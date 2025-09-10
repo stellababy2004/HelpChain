@@ -1,69 +1,140 @@
+# -*- coding: utf-8 -*-
 import os
-
-# Създай папката instance ако не съществува
-os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
-
-from flask import Flask, render_template, request, redirect, url_for, flash, session, make_response, jsonify, Response
+import io
 import csv
-from io import StringIO
+from datetime import datetime
+
+from dotenv import load_dotenv
+from flask import (
+    Flask, render_template, request, redirect, url_for,
+    flash, session, make_response, jsonify, Response
+)
 from flask_babel import Babel, _
-from backend.models import db, Volunteer
 from flask_mail import Mail, Message
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade as _al_upgrade
+from werkzeug.exceptions import BadRequest
+from huggingface_hub import InferenceClient
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
-app = Flask(__name__)
+# Локални модули
+from .models import db, Volunteer, HelpRequest, Feedback, User
+from .forms import VolunteerForm
 
-# Абсолютен път до базата за по-голяма сигурност
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(basedir, 'instance', 'volunteers.db')}"
+# ── ENV ──────────────────────────────────────────────────────────────────────
+load_dotenv()
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+# ── PATHS ────────────────────────────────────────────────────────────────────
+BASEDIR = os.path.abspath(os.path.dirname(__file__))           # backend/
+PROJECT_ROOT = os.path.abspath(os.path.join(BASEDIR, os.pardir))  # корен на проекта
+
+# ── APP ──────────────────────────────────────────────────────────────────────
+app = Flask(
+    __name__,
+    template_folder=os.path.join(PROJECT_ROOT, "frontend", "templates"),
+    static_folder=os.path.join(PROJECT_ROOT, "frontend", "static"),
+)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'supersecretkey')
+app.config['WTF_CSRF_ENABLED'] = True
+app.logger.info("BOOT: SECRET_KEY len=%s", len(app.config.get("SECRET_KEY", "")))
+
+# ── STORAGE / DB ─────────────────────────────────────────────────────────────
+INSTANCE_DIR = os.path.join(BASEDIR, "instance")
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+
+db_url = os.getenv("DATABASE_URL")
+if db_url:
+    # Render/Heroku legacy scheme fix
+    db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(INSTANCE_DIR, 'volunteers.db')}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# Езици
-app.config['BABEL_DEFAULT_LOCALE'] = 'bg'
-app.config['BABEL_SUPPORTED_LOCALES'] = ['bg', 'en']
+# ── I18N ─────────────────────────────────────────────────────────────────────
 babel = Babel(app)
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+def get_locale():
+    return request.args.get('lang') or request.cookies.get('language') or 'bg'
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+babel.locale_selector_func = get_locale
+app.config['BABEL_TRANSLATION_DIRECTORIES'] = os.path.join(PROJECT_ROOT, 'translations')
 
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
-app.secret_key = 'supersecretkey'
-
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
+# ── MAIL ─────────────────────────────────────────────────────────────────────
+app.config['MAIL_SERVER'] = 'smtp.zoho.eu'
+app.config['MAIL_PORT'] =465
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'contact@helpchin.live'
+app.config['MAIL_PASSWORD'] = 'eAaPfTsEFZNv'
 mail = Mail(app)
 
-@app.route('/')
-def index():
-    volunteers_count = Volunteer.query.count()
-    signals_count = 0  # Ако имаш HelpRequest, може да го смениш
-    return render_template('index.html', volunteers_count=volunteers_count, signals_count=signals_count)
+# ── HF CLIENT (по избор) ─────────────────────────────────────────────────────
+hf_model = os.getenv("HF_MODEL", "HuggingFaceH4/zephyr-7b-beta")
+hf_client = InferenceClient(hf_model, token=HF_TOKEN) if HF_TOKEN else None
 
+# ── UPLOADS ──────────────────────────────────────────────────────────────────
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
+UPLOAD_DIR = os.path.join(PROJECT_ROOT, 'uploads')
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_DIR
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5 MB
+
+def allowed_file(filename: str) -> bool:
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# ── 400 handler: чисти счупена session/CSRF cookie ──────────────────────────
+@app.errorhandler(BadRequest)
+def handle_bad_request(e):
+    try:
+        session.clear()
+    except Exception:
+        pass
+    resp = redirect(request.url)
+    resp.delete_cookie(app.config.get("SESSION_COOKIE_NAME", "session"))
+    return resp
+
+# ── CONTEXT ──────────────────────────────────────────────────────────────────
+@app.context_processor
+def inject_get_locale():
+    return dict(get_locale=get_locale)
+
+# ── LOGIN MANAGER ─────────────────────────────────────────────────────────────
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# ── ROUTES ───────────────────────────────────────────────────────────────────
+@app.route("/")
+def index():
+    # return render_template('index.html')
+    return "HelpChain works!"
+
+# ---------- Admin Login ----------
 @app.route('/admin_login', methods=['GET', 'POST'])
 def admin_login():
     error = None
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
         if username == 'admin' and password == 'help2025!':
             session['admin_logged_in'] = True
             return redirect(url_for('admin_dashboard'))
-        else:
-            error = 'Грешно потребителско име или парола!'
+        error = 'Грешно потребителско име или парола!'
     return render_template('admin_login.html', error=error)
 
 @app.route('/admin_dashboard')
 def admin_dashboard():
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
-    requests = {
+    requests_obj = {
         'items': [
             {'id': 1, 'name': 'Мария', 'status': 'Активен'},
             {'id': 2, 'name': 'Георги', 'status': 'Завършен'},
@@ -73,13 +144,14 @@ def admin_dashboard():
         1: [{'status': 'Активен', 'changed_at': '2025-07-22'}],
         2: [{'status': 'Завършен', 'changed_at': '2025-07-21'}],
     }
-    return render_template('admin_dashboard.html', requests=requests, logs_dict=logs_dict)
+    return render_template('admin_dashboard.html', requests=requests_obj, logs_dict=logs_dict)
 
+# ---------- Volunteers ----------
 @app.route('/admin_volunteers', methods=['GET', 'POST'])
 def admin_volunteers():
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
-    volunteers = Volunteer.query.all()
+    volunteers = Volunteer.query.order_by(Volunteer.id.desc()).all()
     return render_template('admin_volunteers.html', volunteers=volunteers)
 
 @app.route('/admin_volunteers/add', methods=['GET', 'POST'])
@@ -87,65 +159,34 @@ def add_volunteer():
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        phone = request.form['phone']
-        location = request.form['location']  # <-- нов ред
+        email = request.form['email'].strip()
+        if Volunteer.query.filter_by(email=email).first():
+            flash('Този имейл вече е регистриран!', 'danger')
+            return redirect(url_for('add_volunteer'))
+        name = request.form['name'].strip()
+        phone = request.form.get('phone', '').strip()
+        location = request.form.get('location', '').strip()
         volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
         db.session.add(volunteer)
         db.session.commit()
-        flash('Доброволецът е добавен успешно!', 'success')
+        flash(_('Доброволецът е добавен успешно!'), 'success')
         return redirect(url_for('admin_volunteers'))
     return render_template('add_volunteer.html')
 
-@app.route('/submit_request', methods=['GET', 'POST'])
-def submit_request():
+@app.route('/admin_volunteers/edit/<int:id>', methods=['GET', 'POST'])
+def edit_volunteer(id):
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    volunteer = Volunteer.query.get_or_404(id)
     if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        category = request.form.get('category')
-        location = request.form.get('location')
-        problem = request.form.get('problem')
-        terms = request.form.get('terms')
-        captcha = request.form.get('captcha')
-        file = request.files.get('file')
-
-        if captcha != '7G5K':
-            flash('Грешен код за защита!')
-            return redirect(url_for('submit_request'))
-
-        filename = None
-        if file and file.filename:
-            if not allowed_file(file.filename):
-                flash('Позволени са само изображения и PDF!')
-                return redirect(url_for('submit_request'))
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], file.filename))
-
-        # Тук можеш да обработиш/запишеш данните (примерно в база)
-        return render_template('submit_success.html')
-    return render_template('submit_request.html')
-
-@app.route('/privacy')
-def privacy():
-    return render_template('privacy.html')
-
-@app.route('/terms')
-def terms():
-    return render_template('terms.html')
-
-@app.route('/volunteer_register', methods=['GET', 'POST'])
-def volunteer_register():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        phone = request.form.get('phone')
-        location = request.form.get('location')
-        volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
-        db.session.add(volunteer)
+        volunteer.name = request.form['name'].strip()
+        volunteer.email = request.form['email'].strip()
+        volunteer.phone = request.form.get('phone', '').strip()
+        volunteer.location = request.form.get('location', '').strip()
         db.session.commit()
-        flash('Успешна регистрация! Ще се свържем с вас при нужда.')
-        return redirect(url_for('volunteer_register'))
-    return render_template('volunteer_register.html')
+        flash('Промените са запазени!', 'success')
+        return redirect(url_for('admin_volunteers'))
+    return render_template('edit_volunteer.html', volunteer=volunteer)
 
 @app.route('/delete_volunteer/<int:id>', methods=['POST'])
 def delete_volunteer(id):
@@ -157,37 +198,59 @@ def delete_volunteer(id):
     flash('Доброволецът е изтрит успешно!', 'success')
     return redirect(url_for('admin_volunteers'))
 
-@app.route('/admin_volunteers/edit/<int:id>', methods=['GET', 'POST'])
-def edit_volunteer(id):
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin_login'))
-    volunteer = Volunteer.query.get_or_404(id)
-    if request.method == 'POST':
-        volunteer.name = request.form['name']
-        volunteer.email = request.form['email']
-        volunteer.phone = request.form['phone']
-        volunteer.location = request.form['location']  # Добави и локацията тук
-        db.session.commit()
-        flash('Промените са запазени!', 'success')
-        return redirect(url_for('admin_volunteers'))
-    return render_template('edit_volunteer.html', volunteer=volunteer)
-
 @app.route('/export_volunteers')
 def export_volunteers():
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin_login'))
-    volunteers = Volunteer.query.all()
-    si = StringIO()
-    cw = csv.writer(si)
-    cw.writerow(['Име', 'Имейл', 'Телефон', 'Град/регион'])
-    for v in volunteers:
-        cw.writerow([v.name, v.email, v.phone, v.location])
-    output = si.getvalue()
+    si = io.StringIO()
+    writer = csv.writer(si)
+    writer.writerow(['ID', 'Име', 'Имейл', 'Телефон', 'Град/регион'])
+    for v in Volunteer.query.order_by(Volunteer.id.asc()).all():
+        writer.writerow([v.id, v.name, v.email, v.phone, v.location])
+    output = '\ufeff' + si.getvalue()  # BOM за Excel
     return Response(
         output,
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment;filename=volunteers.csv"}
     )
+
+# ---------- Help Requests ----------
+@app.route('/submit_request', methods=['GET', 'POST'])
+def submit_request():
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        full_name = request.form.get('full_name', '').strip()
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        description = request.form.get('description', '').strip()
+        message = request.form.get('message', '').strip()
+        help_request = HelpRequest(
+            title=title,
+            name=full_name,
+            email=email,
+            phone=phone,
+            description=description,
+            message=message
+        )
+        db.session.add(help_request)
+        db.session.commit()
+        flash('Вашата заявка беше успешно изпратена.', 'success')
+        return redirect(url_for('index'))  # Промени това
+    return render_template('help_request.html')
+
+@app.route('/admin_requests')
+def admin_requests():
+    if not session.get('admin_logged_in'):
+        return redirect(url_for('admin_login'))
+    requests_q = HelpRequest.query.order_by(HelpRequest.timestamp.desc()).all()
+    return render_template('admin_requests.html', requests=requests_q)
+
+# ---------- Content pages ----------
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
 
 @app.route('/faq')
 def faq():
@@ -200,72 +263,194 @@ def success_stories():
 @app.route('/feedback', methods=['GET', 'POST'])
 def feedback():
     if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        message = request.form.get('message')
-        flash('Благодарим за обратната връзка!')
-        return redirect(url_for('feedback'))
+        name = request.form['name']
+        email = request.form['email']
+        message = request.form['message']
+        feedback = Feedback(name=name, email=email, message=message)
+        db.session.add(feedback)
+        db.session.commit()
+        return redirect(url_for('index'))
     return render_template('feedback.html')
 
+# ---------- Language ----------
 @app.route('/set_language', methods=['POST'])
 def set_language():
-    lang = request.form['language']
+    lang = request.form.get('language', 'bg')
     resp = make_response(redirect(request.referrer or url_for('index')))
     resp.set_cookie('language', lang)
     return resp
 
-@app.route('/admin')
-def admin():
-    return redirect(url_for('admin_login'))
+# ---------- Volunteer public form ----------
+@app.route("/volunteer_register", methods=["GET", "POST"])
+def volunteer_register():
+    form = VolunteerForm()
+    if form.validate_on_submit():
+        if Volunteer.query.filter_by(email=form.email.data).first():
+            flash('Този имейл вече е регистриран!', 'danger')
+            return redirect(url_for('volunteer_register'))
+        volunteer = Volunteer(
+            name=form.name.data.strip(),
+            email=form.email.data.strip(),
+            phone=form.phone.data.strip(),
+            location=form.location.data.strip()
+        )
+        db.session.add(volunteer)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template("volunteer_register.html", form=form)
 
-@app.route('/update_status/<int:req_id>', methods=['POST'])
-def update_status(req_id):
-    return jsonify({"success": True})
+# ---------- Simple chatbot API ----------
+@app.route('/ask', methods=['POST'])
+def ask():
+    user_message = request.json.get('message', '').lower()
+    lang = request.json.get('lang', 'bg')
 
-@app.route('/admin_volunteers/<int:id>')
-def volunteer_detail(id):
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin_login'))
-    volunteer = Volunteer.query.get_or_404(id)
-    return render_template('volunteer_detail.html', volunteer=volunteer)
+    # Ако няма HF_TOKEN, използвай прости отговори
+    # if not hf_client:
+    def answers_en(msg: str) -> str:
+        if "volunteer" in msg:
+            return "To become a volunteer, fill in the registration form and our team will contact you!"
+        if "team" in msg or "contact" in msg:
+            return "You can contact our team via the contact form on the site or at info@helpchain.bg."
+        if "request" in msg or "help" in msg:
+            return "To submit a help request, click the 'Submit Help Request' button and fill in the form."
+        if "platform" in msg:
+            return "HelpChain is a platform connecting people in need with volunteers ready to help."
+        if "security" in msg:
+            return "All your data is processed confidentially and used only for the purpose of helping."
+        return "HelpChain Assistant: I can help with questions about the platform, volunteers, and help requests!"
 
-@app.route('/admin_volunteers/search')
+    def answers_fr(msg: str) -> str:
+        if "bénévole" in msg:
+            return "Pour devenir bénévole, remplissez le formulaire d'inscription et notre équipe vous contactera !"
+        if "équipe" in msg or "contact" in msg:
+            return "Vous pouvez contacter notre équipe via le formulaire de contact sur le site ou à info@helpchain.bg."
+        if "demande" in msg or "aide" in msg:
+            return "Pour soumettre une demande d'aide, cliquez sur le bouton 'Soumettre une demande d'aide' et remplissez le formulaire."
+        if "plateforme" in msg:
+            return "HelpChain est une plateforme qui met en relation les personnes dans le besoin avec des bénévoles prêts à aider."
+        if "sécurité" in msg:
+            return "Toutes vos données sont traitées de manière confidentielle et utilisées uniquement dans le but d'aider."
+        return "HelpChain Assistant : Je peux vous aider avec des questions sur la plateforme, les bénévoles et les demandes d'aide !"
+
+    def answers_bg(msg: str) -> str:
+        if "доброволец" in msg:
+            return "За да станеш доброволец, попълни формата за регистрация и наш екип ще се свърже с теб!"
+        if "екип" in msg or "контакт" in msg:
+            return "Можеш да се свържеш с екипа ни чрез контактната форма на сайта или на имейл info@helpchain.bg."
+        if "заявка" in msg or "сигнал" in msg:
+            return "За да подадеш заявка за помощ, натисни бутона 'Подай сигнал за помощ' и попълни формуляра."
+        if "какво представлява" in msg or "платформа" in msg:
+            return "HelpChain е платформа, която свързва хора в нужда с доброволци, готови да помогнат."
+        if "сигурност" in msg:
+            return "Всички твои данни се обработват поверително и се използват само за целите на помощта."
+        return "HelpChain Assistant: Мога да помогна с въпроси за платформата, доброволци и заявки за помощ!"
+
+    if lang == 'en':
+        answer = answers_en(user_message)
+    elif lang == 'fr':
+        answer = answers_fr(user_message)
+    else:
+        answer = answers_bg(user_message)
+    # else:
+    #     # Използвай AI модел
+    #     prompt = f"Отговори като помощник на платформата HelpChain. Въпрос: {user_message}. Език: {lang}."
+    #     try:
+    #         response = hf_client.conversational({"inputs": {"past_user_inputs": [], "generated_responses": [], "text": prompt}})
+    #         answer = response.get('generated_text', 'Извинявай, не мога да отговоря точно сега.')
+    #     except Exception as e:
+    #         answer = f"Грешка в AI: {str(e)}"
+
+    return jsonify({"answer": answer})
+
+# ---------- Mail test ----------
+@app.route('/test_mail')
+def test_mail():
+    msg = Message(
+        subject="Тест Zoho",
+        recipients=[app.config['MAIL_DEFAULT_SENDER']],
+        body="Това е тестово съобщение от Flask-Mail и Zoho!"
+    )
+    mail.send(msg)
+    return "Имейлът е изпратен успешно!"
+
+# ---------- Search volunteers ----------
+@app.route('/search_volunteers')
 def search_volunteers():
-    if not session.get('admin_logged_in'):
-        return redirect(url_for('admin_login'))
-    q = request.args.get('q', '')
-    volunteers = Volunteer.query.filter(
-        (Volunteer.name.ilike(f'%{q}%')) | (Volunteer.email.ilike(f'%{q}%'))
-    ).all()
-    return render_template('admin_volunteers.html', volunteers=volunteers, q=q)
+    q = request.args.get('q', '').strip()
+    if not q:
+        vols = Volunteer.query.order_by(Volunteer.id.desc()).all()
+    else:
+        vols = Volunteer.query.filter(
+            (Volunteer.name.contains(q)) |
+            (Volunteer.email.contains(q)) |
+            (Volunteer.phone.contains(q))
+        ).order_by(Volunteer.id.desc()).all()
+    return render_template('admin_volunteers.html', volunteers=vols)
 
-@app.context_processor
-def inject_gettext():
-    return dict(_=_)
+# ---------- Stories ----------
+@app.route('/stories')
+def stories():
+    # код
+    return render_template('stories.html')
 
-@app.context_processor
-def inject_get_locale():
-    def get_locale():
-        return request.cookies.get('language') or request.accept_languages.best_match(['bg', 'en'])
-    return dict(get_locale=get_locale)
+# ---------- Search ----------
+@app.route('/search')
+def search():
+    query = request.args.get('q', '')
+    if query:
+        requests = HelpRequest.query.filter(
+            HelpRequest.name.contains(query) | HelpRequest.message.contains(query)
+        ).all()
+        volunteers = Volunteer.query.filter(
+            Volunteer.name.contains(query) | Volunteer.email.contains(query)
+        ).all()
+    else:
+        requests = []
+        volunteers = []
+    return render_template('search.html', requests=requests, volunteers=volunteers, query=query)
 
-# Debug принтове за mail настройките
-print("MAIL_SERVER:", os.getenv('MAIL_SERVER'))
-print("MAIL_PORT:", os.getenv('MAIL_PORT'))
-print("MAIL_USE_SSL:", os.getenv('MAIL_USE_SSL'))
-print("MAIL_USE_TLS:", os.getenv('MAIL_USE_TLS'))
-print("MAIL_USERNAME:", os.getenv('MAIL_USERNAME'))
-print("MAIL_PASSWORD:", os.getenv('MAIL_PASSWORD'))
+# ---------- Register ----------
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = generate_password_hash(request.form['password'])
+        user = User(username=username, email=email, password=password, role='volunteer', created_at=datetime.utcnow())
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('register.html')
 
-if os.getenv('MAIL_PORT'):
-    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
-    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
-    app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL') == 'True'
-    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS') == 'True'
-    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-else:
-    print("Warning: MAIL_PORT environment variable is not set! Имейл функционалността няма да работи.")
+# ---------- Login ----------
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user = User.query.filter_by(email=request.form['email']).first()
+        if user and check_password_hash(user.password, request.form['password']):
+            login_user(user)
+            return redirect(url_for('index'))
+    return render_template('login.html')
 
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+# Авто-миграции при старт (без Render Shell)
+with app.app_context():
+    try:
+        _al_upgrade()
+        app.logger.info("DB auto-upgrade: OK")
+    except Exception as e:
+        app.logger.warning(f"DB auto-upgrade skipped: {e}")
+
+# ── MAIN ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+def test_admin_panel_access(client):
+    response = client.get('/')
+    assert response.status_code in [200, 302, 401, 403]

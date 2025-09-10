@@ -1,24 +1,61 @@
-
 {% extends "base.html" %}
-{% block title %}Обратна връзка{% endblock %}
+{% block title %}Feedback{% endblock %}
 {% block content %}
-<div class="container mt-5 feedback-container">
-  <h2 class="mb-4 text-primary">Обратна връзка</h2>
-  <form method="POST">
-    <div class="mb-3">
-      <label for="name" class="form-label">Име:</label>
-      <input type="text" class="form-control" id="name" name="name" required>
-    </div>
-    <div class="mb-3">
-      <label for="email" class="form-label">Имейл:</label>
-      <input type="email" class="form-control" id="email" name="email" required>
-    </div>
-    <div class="mb-3">
-      <label for="message" class="form-label">Съобщение:</label>
-      <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Изпрати</button>
-  </form>
-</div>
+<h1>Feedback</h1>
+<form method="post">
+    <input type="text" name="name" placeholder="Name" required><br>
+    <input type="email" name="email" placeholder="Email" required><br>
+    <textarea name="message" placeholder="Message" required></textarea><br>
+    <button type="submit">Submit</button>
+</form>
+{% if feedback_sent %}
+<p>Thank you for your feedback!</p>
+{% endif %}
 {% endblock %}
-````
+
+{% block scripts %}
+<script>
+    document.querySelector('form').onsubmit = function() {
+        const name = document.querySelector('input[name="name"]').value;
+        const email = document.querySelector('input[name="email"]').value;
+        const message = document.querySelector('textarea[name="message"]').value;
+
+        fetch('/send_feedback', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ name, email, message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector('form').reset();
+                document.querySelector('h1').insertAdjacentHTML('afterend', '<p>Thank you for your feedback!</p>');
+            } else {
+                alert('There was a problem sending your feedback. Please try again.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+
+        return false;
+    };
+</script>
+{% endblock %}
+
+@app.route('/feedback', methods=['GET', 'POST'])
+def feedback():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        message = request.form['message']
+        feedback = Feedback(name=name, email=email, message=message)
+        db.session.add(feedback)
+        db.session.commit()
+        # Изпрати имейл
+        msg = Message('New Feedback', sender='your_email@gmail.com', recipients=['admin@helpchain.live'])
+        msg.body = f'Name: {name}\nEmail: {email}\nMessage: {message}'
+        mail.send(msg)
+        return redirect(url_for('index'))
+    return render_template('feedback.html')

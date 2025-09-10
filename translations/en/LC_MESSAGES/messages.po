@@ -324,3 +324,87 @@ msgid_plural "{len_type} values are required, but {len_value} were given."
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Welcome!"
+msgstr "Welcome!"
+
+msgid "Табло на доброволец"
+msgstr "Volunteer Dashboard"
+
+msgid "Заявки за помощ"
+msgstr "Help Requests"
+
+msgid "Филтрирай по статус"
+msgstr "Filter by status"
+
+msgid "Всички"
+msgstr "All"
+
+msgid "Очакващ"
+msgstr "Pending"
+
+msgid "В процес"
+msgstr "In Progress"
+
+msgid "Завършен"
+msgstr "Completed"
+
+msgid "Отхвърлен"
+msgstr "Rejected"
+
+msgid "Търси по име или email..."
+msgstr "Search by name or email..."
+
+msgid "Име"
+msgstr "Name"
+
+msgid "Имейл"
+msgstr "Email"
+
+msgid "Съобщение"
+msgstr "Message"
+
+msgid "Статус"
+msgstr "Status"
+
+msgid "Промени статус"
+msgstr "Change status"
+
+msgid "Статусът е обновен!"
+msgstr "Status updated!"
+
+msgid "Админ панел"
+msgstr "Admin Panel"
+
+msgid "Доброволци"
+msgstr "Volunteers"
+
+msgid "Добави доброволец"
+msgstr "Add volunteer"
+
+msgid "Име"
+msgstr "Name"
+
+msgid "Статус"
+msgstr "Status"
+
+msgid "История"
+msgstr "History"
+
+msgid "Без име"
+msgstr "No name"
+
+msgid "Неизвестен статус"
+msgstr "Unknown status"
+
+msgid "Активен"
+msgstr "Active"
+
+msgid "Завършен"
+msgstr "Completed"
+
+msgid "Неизвестен"
+msgstr "Unknown"
+
+msgid "Няма история"
+msgstr "No history"
+

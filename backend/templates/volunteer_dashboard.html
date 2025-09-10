@@ -1,28 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Табло на доброволец | HelpChain{% endblock %}
+{% block title %}{{ _('Табло на доброволец') }} | HelpChain{% endblock %}
 
 {% block content %}
-<h2>Заявки за помощ</h2>
+<h2>{{ _('Заявки за помощ') }}</h2>
 
-<label for="status-filter" class="form-label visually-hidden">Филтрирай по статус</label>
-<select id="status-filter" class="form-select mb-3 status-filter-width" aria-label="Филтрирай по статус">
-  <option value="Всички">Всички</option>
-  <option value="Pending">Очакващ</option>
-  <option value="In Progress">В процес</option>
-  <option value="Completed">Завършен</option>
-  <option value="Rejected">Отхвърлен</option>
+<label for="status-filter" class="form-label visually-hidden">{{ _('Филтрирай по статус') }}</label>
+<select id="status-filter" class="form-select mb-3 status-filter-width" aria-label="{{ _('Филтрирай по статус') }}">
+  <option value="Всички">{{ _('Всички') }}</option>
+  <option value="Pending">{{ _('Очакващ') }}</option>
+  <option value="In Progress">{{ _('В процес') }}</option>
+  <option value="Completed">{{ _('Завършен') }}</option>
+  <option value="Rejected">{{ _('Отхвърлен') }}</option>
 </select>
 
-<input type="text" id="searchInput" class="form-control mb-3" placeholder="Търси по име или email...">
+<input type="text" id="searchInput" class="form-control mb-3" placeholder="{{ _('Търси по име или email...') }}">
 
 <table class="table table-bordered">
   <thead>
     <tr>
-      <th>Име</th>
-      <th>Имейл</th>
-      <th>Съобщение</th>
-      <th>Статус</th>
-      <th>Промени статус</th>
+      <th>{{ _('Име') }}</th>
+      <th>{{ _('Имейл') }}</th>
+      <th>{{ _('Съобщение') }}</th>
+      <th>{{ _('Статус') }}</th>
+      <th>{{ _('Промени статус') }}</th>
     </tr>
   </thead>
   <tbody>
@@ -32,14 +32,14 @@
       <td class="req-email">{{ req.email }}</td>
       <td>{{ req.message }}</td>
       <td>
-        <span class="status-badge" data-status="{{ req.status }}">{{ req.status }}</span>
+        <span class="status-badge" data-status="{{ req.status }}">{{ _(req.status) }}</span>
       </td>
       <td>
         <select class="form-select status-select" data-req-id="{{ req.id }}">
-          <option value="Pending" {% if req.status == 'Pending' %}selected{% endif %}>Очакващ</option>
-          <option value="In Progress" {% if req.status == 'In Progress' %}selected{% endif %}>В процес</option>
-          <option value="Completed" {% if req.status == 'Completed' %}selected{% endif %}>Завършен</option>
-          <option value="Rejected" {% if req.status == 'Rejected' %}selected{% endif %}>Отхвърлен</option>
+          <option value="Pending" {% if req.status == 'Pending' %}selected{% endif %}>{{ _('Очакващ') }}</option>
+          <option value="In Progress" {% if req.status == 'In Progress' %}selected{% endif %}>{{ _('В процес') }}</option>
+          <option value="Completed" {% if req.status == 'Completed' %}selected{% endif %}>{{ _('Завършен') }}</option>
+          <option value="Rejected" {% if req.status == 'Rejected' %}selected{% endif %}>{{ _('Отхвърлен') }}</option>
         </select>
       </td>
     </tr>
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const selected = this.value;
     document.querySelectorAll("tbody tr").forEach(row => {
       const status = row.getAttribute("data-status");
-      row.style.display = (selected === "Всички" || selected === status) ? "" : "none";
+      row.style.display = (selected === "{{ _('Всички') }}" || selected === status) ? "" : "none";
     });
   });
 
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify({ status: newStatus })
       }).then(res => res.json()).then(data => {
         if (data.success) {
-          alert('Статусът е обновен!');
+          alert('{{ _("Статусът е обновен!") }}');
           location.reload();
         }
       });

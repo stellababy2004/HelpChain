@@ -1,6 +1,6 @@
-from backend.app import app
-from backend.extensions import db
+from appy import app
+from models import db  # <-- добави този ред!
 
 with app.app_context():
     db.create_all()
-    print("✅ Базата е създадена успешно.")
+    print("Базата е създадена успешно!")

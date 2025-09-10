@@ -324,3 +324,26 @@ msgid_plural "{len_type} values are required, but {len_value} were given."
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Welcome!"
+msgstr "Добре дошли!"
+
+msgid "Add volunteer"
+msgstr "Добави доброволец"
+
+<h1>{{ _('Добре дошли!') }}</h1>
+
+msgid "Чатбот история"
+msgstr "Чатбот история"
+
+msgid "История на чатбота"
+msgstr "История на чатбота"
+
+msgid "Дата/час"
+msgstr "Дата/час"
+
+msgid "Потребител"
+msgstr "Потребител"
+
+msgid "Съобщение"
+msgstr "Съобщение"
+

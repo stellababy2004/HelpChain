@@ -36,5 +36,9 @@
      <loc>https://helpchain.live/volunteers</loc>
      <changefreq>weekly</changefreq>
    </url>
+   <url>
+     <loc>https://helpchain.live/dashboard</loc>
+     <changefreq>weekly</changefreq>
+   </url>
    <!-- Добави още адреси при нужда -->
 </urlset>

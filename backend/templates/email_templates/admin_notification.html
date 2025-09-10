@@ -11,5 +11,8 @@
   <p><strong>Имейл:</strong> ivan@example.com</p>
   <p><strong>Дата на регистрация:</strong> 25.07.2025</p>
   <p>Моля, провери в системата дали профилът отговаря на критериите.</p>
+  <select>
+    <option value="bg" {% if get_locale() == 'bg' %}selected{% endif %}>Български</option>
+  </select>
 </body>
 </html>

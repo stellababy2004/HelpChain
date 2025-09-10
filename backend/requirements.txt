@@ -1,1 +1,9 @@
+Flask
+Flask-WTF
+Flask-Babel
+Flask-Mail
+SQLAlchemy
+requests
+python-dotenv
+huggingface_hub
 gunicorn

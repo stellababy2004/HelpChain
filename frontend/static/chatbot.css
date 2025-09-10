@@ -1,0 +1,137 @@
+/* Неонов/стъклен стил, съвместим с визията на сайта */
+
+body.neon-bg {
+    background: linear-gradient(135deg, #232526 0%, #414345 100%);
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.chatbot-container {
+    max-width: 400px;
+    margin: 40px auto;
+    background: rgba(30, 34, 45, 0.85);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    padding: 0;
+    overflow: hidden;
+}
+
+.chatbot-header {
+    display: flex;
+    align-items: center;
+    background: rgba(44, 62, 80, 0.95);
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.chatbot-logo {
+    width: 38px;
+    height: 38px;
+    margin-right: 12px;
+    border-radius: 50%;
+    border: 2px solid #00ffe7;
+    background: #fff;
+}
+
+.chatbot-title {
+    font-size: 1.3rem;
+    color: #00ffe7;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px #00ffe7, 0 0 2px #fff;
+}
+
+.chatbot-messages {
+    background: rgba(30, 34, 45, 0.92);
+    min-height: 220px;
+    max-height: 340px;
+    overflow-y: auto;
+    padding: 18px 16px 10px 16px;
+    font-size: 1rem;
+}
+
+.chat-message {
+    margin-bottom: 12px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.chat-message.bot {
+    background: rgba(0,255,231,0.08);
+    border-left: 3px solid #00ffe7;
+    color: #00ffe7;
+    padding: 10px 14px;
+    border-radius: 8px 18px 18px 8px;
+    box-shadow: 0 0 8px #00ffe733;
+}
+
+.chat-message.user {
+    background: rgba(255,255,255,0.10);
+    border-right: 3px solid #ff4b2b;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 18px 8px 8px 18px;
+    text-align: right;
+    margin-left: 40px;
+}
+
+.chatbot-input-form {
+    display: flex;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    background: rgba(44, 62, 80, 0.95);
+    padding: 10px 12px;
+}
+
+.chatbot-input {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.10);
+    color: #fff;
+    outline: none;
+    margin-right: 8px;
+    transition: background 0.2s;
+}
+
+.chatbot-input:focus {
+    background: rgba(0,255,231,0.10);
+}
+
+.chatbot-send-btn {
+    background: linear-gradient(90deg, #00ffe7 0%, #00bfff 100%);
+    color: #232526;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 8px #00ffe7aa;
+    transition: background 0.2s, color 0.2s;
+}
+
+.chatbot-send-btn:hover {
+    background: linear-gradient(90deg, #00bfff 0%, #00ffe7 100%);
+    color: #fff;
+}
+
+/* Стил на езиковите бутони */
+.btn-lang {
+    background: #232526;
+    color: #00ffe7;
+    border: 1px solid #00ffe7;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin-left: 2px;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-lang:hover, .btn-lang.active {
+    background: #00ffe7;
+    color: #232526;
+}

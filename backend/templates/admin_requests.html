@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Requests{% endblock %}
+{% block content %}
+<h1>Requests</h1>
+<ul>
+{% for r in requests %}
+    <li>{{ r.name }} - {{ r.message }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

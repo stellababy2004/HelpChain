@@ -5,3 +5,10 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn backend.app:app"
     region: frankfurt
+    envVars:
+      - key: MAIL_USERNAME
+        value: your_email@domain.com
+      - key: MAIL_PASSWORD
+        value: your_password
+      - key: SECRET_KEY
+        value: your_secret_key
