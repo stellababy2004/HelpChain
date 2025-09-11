@@ -2,7 +2,7 @@
 import os
 import io
 import csv
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -498,7 +498,7 @@ def register():
             email=email,
             password=hashed,
             role="volunteer",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
         try:
             db.session.add(user)
