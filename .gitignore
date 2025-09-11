@@ -21,3 +21,10 @@ Thumbs.db
 *.log
 .env
  backend/instance/*.db
+.venv
+.coverage
+__pycache__/
+*.pyc
+.backend/instance/*.db
+.pytest_cache/
+
