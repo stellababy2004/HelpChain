@@ -20,4 +20,4 @@ Thumbs.db
 # Others
 *.log
 .env
- 
+ backend/instance/*.db
