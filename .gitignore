@@ -28,3 +28,7 @@ __pycache__/
 .backend/instance/*.db
 .pytest_cache/
 
+NB/
+backend/instance/
+.vscode/
+
