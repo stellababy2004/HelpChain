@@ -1,8 +1,6 @@
-import json
-
 # python
 # filepath: backend/test_ask.py
-from .appy import ask  # relative import of the function to test (route handler)
+
 
 def post_and_get(client, payload):
     resp = client.post("/ask", json=payload)
@@ -12,17 +10,31 @@ def post_and_get(client, payload):
     assert "answer" in data
     return data["answer"].lower()
 
+
 def test_ask_returns_english_answer_for_volunteer_keyword(client):
-    answer = post_and_get(client, {"message": "How to become a volunteer?", "lang": "en"})
+    answer = post_and_get(
+        client, {"message": "How to become a volunteer?", "lang": "en"}
+    )
     assert "volunteer" in answer or "to become a volunteer" in answer
+
 
 def test_ask_returns_french_answer_for_benevole_keyword(client):
     answer = post_and_get(client, {"message": "Je veux être bénévole", "lang": "fr"})
-    assert "bénévole" in answer or "bénévole" in answer.lower() or "pour devenir bénévole" in answer
+    assert (
+        "bénévole" in answer
+        or "bénévole" in answer.lower()
+        or "pour devenir bénévole" in answer
+    )
+
 
 def test_ask_returns_bulgarian_answer_by_default(client):
     answer = post_and_get(client, {"message": "Как да стана доброволец?", "lang": "bg"})
-    assert "доброволец" in answer or "доброволец" in answer.lower() or "попълни формата" in answer
+    assert (
+        "доброволец" in answer
+        or "доброволец" in answer.lower()
+        or "попълни формата" in answer
+    )
+
 
 def test_ask_handles_empty_message_and_returns_default_text(client):
     answer = post_and_get(client, {"message": "", "lang": "en"})

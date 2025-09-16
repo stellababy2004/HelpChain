@@ -1,4 +1,6 @@
-import os, ssl, smtplib
+import os
+import ssl
+import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
 
@@ -8,7 +10,7 @@ MAIL_SERVER = os.getenv("MAIL_SERVER") or os.getenv("SMTP_HOST")
 MAIL_PORT = int(os.getenv("MAIL_PORT") or os.getenv("SMTP_PORT") or 587)
 MAIL_USER = os.getenv("MAIL_USERNAME") or os.getenv("SMTP_USER")
 MAIL_PASS = os.getenv("MAIL_PASSWORD") or os.getenv("SMTP_PASS")
-USE_SSL = os.getenv("MAIL_USE_SSL", "False").lower() in ("1","true","yes")
+USE_SSL = os.getenv("MAIL_USE_SSL", "False").lower() in ("1", "true", "yes")
 
 msg = EmailMessage()
 msg["Subject"] = "HelpChain тест"
@@ -20,9 +22,11 @@ msg.add_alternative("<p>HTML тест от HelpChain</p>", subtype="html")
 print("Config:", MAIL_SERVER, MAIL_PORT, "SSL=", USE_SSL, "USER=", MAIL_USER)
 
 try:
-    if USE_SSL or MAIL_PORT==465:
+    if USE_SSL or MAIL_PORT == 465:
         context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(MAIL_SERVER, MAIL_PORT, context=context, timeout=20) as smtp:
+        with smtplib.SMTP_SSL(
+            MAIL_SERVER, MAIL_PORT, context=context, timeout=20
+        ) as smtp:
             if MAIL_USER and MAIL_PASS:
                 smtp.login(MAIL_USER, MAIL_PASS)
             smtp.send_message(msg)

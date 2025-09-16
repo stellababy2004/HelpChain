@@ -1,7 +1,3 @@
-from backend.models import User, db
-from werkzeug.security import generate_password_hash
-
-
 def test_index_shows_brand(client):
     rv = client.get("/")
     text = rv.get_data(as_text=True)

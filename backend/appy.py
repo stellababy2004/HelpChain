@@ -4,8 +4,8 @@ import io
 import csv
 from datetime import datetime, timezone
 from pathlib import Path
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 from flask import (
     Flask,
     render_template,
@@ -16,11 +16,9 @@ from flask import (
     jsonify,
     Response,
     make_response,
-    session,
 )
 from werkzeug.exceptions import BadRequest
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from flask_login import (
     LoginManager,
     login_user,
@@ -28,20 +26,19 @@ from flask_login import (
     login_required,
     current_user,
 )
-
 from flask_migrate import Migrate
 from flask_babel import Babel, _
 from flask_mail import Mail, Message
 
-# HF client (по избор)
+# Hugging Face client (по избор)
 try:
     from huggingface_hub import InferenceClient
-except Exception:
+except Exception:  # noqa: BLE001
     InferenceClient = None
 
 # Локални модули
-from .models import db, Volunteer, HelpRequest, Feedback, User
-from .forms import VolunteerForm
+from .models import db, Volunteer, HelpRequest, Feedback, User  # noqa: F401
+from .forms import VolunteerForm  # noqa: F401
 
 # ── ENV ──────────────────────────────────────────────────────────────────────
 load_dotenv()
@@ -54,25 +51,24 @@ PROJECT_ROOT = BASEDIR.parent.resolve()  # корен на проекта
 # ── APP ──────────────────────────────────────────────────────────────────────
 app = Flask(
     __name__,
-    template_folder=str(PROJECT_ROOT.joinpath("frontend", "templates")),
-    static_folder=str(PROJECT_ROOT.joinpath("frontend", "static")),
+    template_folder=str(PROJECT_ROOT / "frontend" / "templates"),
+    static_folder=str(PROJECT_ROOT / "frontend" / "static"),
 )
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "supersecretkey")
 app.config["WTF_CSRF_ENABLED"] = True
 app.logger.info("BOOT: SECRET_KEY len=%s", len(app.config.get("SECRET_KEY", "")))
 
 # ── STORAGE / DB ─────────────────────────────────────────────────────────────
-INSTANCE_DIR = os.path.join(BASEDIR, "instance")
-os.makedirs(INSTANCE_DIR, exist_ok=True)
+INSTANCE_DIR = BASEDIR / "instance"
+INSTANCE_DIR.mkdir(parents=True, exist_ok=True)
 
 db_url = os.getenv("DATABASE_URL")
 if db_url:
-    # Render/Heroku legacy scheme fix
     db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"sqlite:///{os.path.join(INSTANCE_DIR, 'volunteers.db')}"
+        f"sqlite:///{INSTANCE_DIR / 'volunteers.db'}"
     )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -83,20 +79,26 @@ migrate = Migrate(app, db)
 babel = Babel(app)
 
 
-def get_locale():
+def get_locale() -> str:
     return request.args.get("lang") or request.cookies.get("language") or "bg"
 
 
 babel.locale_selector_func = get_locale
-app.config["BABEL_TRANSLATION_DIRECTORIES"] = os.path.join(PROJECT_ROOT, "translations")
+app.config["BABEL_TRANSLATION_DIRECTORIES"] = str(PROJECT_ROOT / "translations")
 
 # ── MAIL ─────────────────────────────────────────────────────────────────────
-app.config["MAIL_SERVER"] = "smtp.zoho.eu"
-app.config["MAIL_PORT"] = 465
-app.config["MAIL_USE_SSL"] = True
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USERNAME"] = "contact@helpchin.live"
-app.config["MAIL_PASSWORD"] = "eAaPfTsEFZNv"
+# ⚠️ Вземай от .env; не дръж пароли в кода
+app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.zoho.eu")
+app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", "465"))
+app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", "True") == "True"
+app.config["MAIL_USE_TLS"] = (
+    os.getenv("MAIL_USE_TLS", "False") == "True"
+)  # ако си на 465/SSL, остави False
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME", "")
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", "")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
+    "MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"]
+)
 mail = Mail(app)
 
 # ── HF CLIENT (по избор) ─────────────────────────────────────────────────────
@@ -105,9 +107,9 @@ hf_client = InferenceClient(hf_model, token=HF_TOKEN) if HF_TOKEN else None
 
 # ── UPLOADS ──────────────────────────────────────────────────────────────────
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
-UPLOAD_DIR = os.path.join(PROJECT_ROOT, "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_DIR
+UPLOAD_DIR = PROJECT_ROOT / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = str(UPLOAD_DIR)
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB
 
 
@@ -117,10 +119,12 @@ def allowed_file(filename: str) -> bool:
 
 # ── 400 handler: чисти счупена session/CSRF cookie ──────────────────────────
 @app.errorhandler(BadRequest)
-def handle_bad_request(e):
+def handle_bad_request(e):  # noqa: ANN001
     try:
-        session.clear()
-    except Exception:
+        # ако сесията е повредена/стара → изчисти
+        # (няма нужда от current_user тук)
+        pass
+    except Exception:  # noqa: BLE001
         pass
     resp = redirect(request.url)
     resp.delete_cookie(app.config.get("SESSION_COOKIE_NAME", "session"))
@@ -130,25 +134,25 @@ def handle_bad_request(e):
 # ── CONTEXT ──────────────────────────────────────────────────────────────────
 @app.context_processor
 def inject_get_locale():
-    return dict(get_locale=get_locale)
+    return {"get_locale": get_locale}
 
 
-# ── LOGIN MANAGER ─────────────────────────────────────────────────────────────
+# ── LOGIN MANAGER ────────────────────────────────────────────────────────────
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.login_view = "login"
 
 
 @login_manager.user_loader
-def load_user(user_id):
+def load_user(user_id):  # noqa: ANN001
     return User.query.get(int(user_id))
 
 
 # ── ROUTES ───────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
-    # подай минимални тестови данни, за да не хвърля шаблонът грешка
     stats = {"total": 0, "open": 0, "closed": 0}
-    recent = []  # или вземи реални записи от базата, ако желаеш
+    recent = []
     return render_template("index.html", user=current_user, stats=stats, recent=recent)
 
 
@@ -160,7 +164,10 @@ def admin_login():
         username = request.form.get("username", "")
         password = request.form.get("password", "")
         if username == "admin" and password == "help2025!":
-            session["admin_logged_in"] = True
+            # проста демо-сесия (не е за продукция)
+            from flask import session as flask_session
+
+            flask_session["admin_logged_in"] = True
             return redirect(url_for("admin_dashboard"))
         error = "Грешно потребителско име или парола!"
     return render_template("admin_login.html", error=error)
@@ -168,7 +175,9 @@ def admin_login():
 
 @app.route("/admin_dashboard")
 def admin_dashboard():
-    if not session.get("admin_logged_in"):
+    from flask import session as flask_session
+
+    if not flask_session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
     requests_obj = {
         "items": [
@@ -188,7 +197,9 @@ def admin_dashboard():
 # ---------- Volunteers ----------
 @app.route("/admin_volunteers", methods=["GET", "POST"])
 def admin_volunteers():
-    if not session.get("admin_logged_in"):
+    from flask import session as flask_session
+
+    if not flask_session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
     volunteers = Volunteer.query.order_by(Volunteer.id.desc()).all()
     return render_template("admin_volunteers.html", volunteers=volunteers)
@@ -196,7 +207,9 @@ def admin_volunteers():
 
 @app.route("/admin_volunteers/add", methods=["GET", "POST"])
 def add_volunteer():
-    if not session.get("admin_logged_in"):
+    from flask import session as flask_session
+
+    if not flask_session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
     if request.method == "POST":
         email = request.form["email"].strip()
@@ -215,8 +228,10 @@ def add_volunteer():
 
 
 @app.route("/admin_volunteers/edit/<int:id>", methods=["GET", "POST"])
-def edit_volunteer(id):
-    if not session.get("admin_logged_in"):
+def edit_volunteer(id):  # noqa: A002, ANN001
+    from flask import session as flask_session
+
+    if not flask_session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
     volunteer = Volunteer.query.get_or_404(id)
     if request.method == "POST":
@@ -231,8 +246,10 @@ def edit_volunteer(id):
 
 
 @app.route("/delete_volunteer/<int:id>", methods=["POST"])
-def delete_volunteer(id):
-    if not session.get("admin_logged_in"):
+def delete_volunteer(id):  # noqa: A002, ANN001
+    from flask import session as flask_session
+
+    if not flask_session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
     volunteer = Volunteer.query.get_or_404(id)
     db.session.delete(volunteer)
@@ -277,13 +294,15 @@ def submit_request():
         db.session.add(help_request)
         db.session.commit()
         flash("Вашата заявка беше успешно изпратена.", "success")
-        return redirect(url_for("index"))  # Промени това
+        return redirect(url_for("index"))
     return render_template("help_request.html")
 
 
 @app.route("/admin_requests")
 def admin_requests():
-    if not session.get("admin_logged_in"):
+    from flask import session as flask_session
+
+    if not flask_session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
     requests_q = HelpRequest.query.order_by(HelpRequest.timestamp.desc()).all()
     return render_template("admin_requests.html", requests=requests_q)
@@ -313,11 +332,12 @@ def success_stories():
 @app.route("/feedback", methods=["GET", "POST"])
 def feedback():
     if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        message = request.form["message"]
-        feedback = Feedback(name=name, email=email, message=message)
-        db.session.add(feedback)
+        fb = Feedback(
+            name=request.form["name"],
+            email=request.form["email"],
+            message=request.form["message"],
+        )
+        db.session.add(fb)
         db.session.commit()
         return redirect(url_for("index"))
     return render_template("feedback.html")
@@ -337,7 +357,7 @@ def set_language():
 def volunteer_register():
     form = VolunteerForm()
     if form.validate_on_submit():
-        if Volunteer.query.filter_by(email=form.email.data).first():
+        if Volunteer.query.filter_by(email=form.email.data.strip()).first():
             flash("Този имейл вече е регистриран!", "danger")
             return redirect(url_for("volunteer_register"))
         volunteer = Volunteer(
@@ -355,11 +375,10 @@ def volunteer_register():
 # ---------- Simple chatbot API ----------
 @app.route("/ask", methods=["POST"])
 def ask():
-    user_message = request.json.get("message", "").lower()
-    lang = request.json.get("lang", "bg")
+    data = request.get_json(silent=True) or {}
+    user_message = (data.get("message") or "").lower()
+    lang = data.get("lang", "bg")
 
-    # Ако няма HF_TOKEN, използвай прости отговори
-    # if not hf_client:
     def answers_en(msg: str) -> str:
         if "volunteer" in msg:
             return "To become a volunteer, fill in the registration form and our team will contact you!"
@@ -399,20 +418,16 @@ def ask():
             return "Всички твои данни се обработват поверително и се използват само за целите на помощта."
         return "HelpChain Assistant: Мога да помогна с въпроси за платформата, доброволци и заявки за помощ!"
 
+    if HF_TOKEN and InferenceClient:
+        # тук можеш да извикаш реалния модел; оставяме простите отговори за стабилност
+        pass
+
     if lang == "en":
         answer = answers_en(user_message)
     elif lang == "fr":
         answer = answers_fr(user_message)
     else:
         answer = answers_bg(user_message)
-    # else:
-    #     # Използвай AI модел
-    #     prompt = f"Отговори като помощник на платформата HelpChain. Въпрос: {user_message}. Език: {lang}."
-    #     try:
-    #         response = hf_client.conversational({"inputs": {"past_user_inputs": [], "generated_responses": [], "text": prompt}})
-    #         answer = response.get('generated_text', 'Извинявай, не мога да отговоря точно сега.')
-    #     except Exception as e:
-    #         answer = f"Грешка в AI: {str(e)}"
 
     return jsonify({"answer": answer})
 
@@ -420,9 +435,10 @@ def ask():
 # ---------- Mail test ----------
 @app.route("/test_mail")
 def test_mail():
+    sender = app.config.get("MAIL_DEFAULT_SENDER") or app.config.get("MAIL_USERNAME")
     msg = Message(
         subject="Тест Zoho",
-        recipients=[app.config["MAIL_DEFAULT_SENDER"]],
+        recipients=[sender],
         body="Това е тестово съобщение от Flask-Mail и Zoho!",
     )
     mail.send(msg)
@@ -451,7 +467,6 @@ def search_volunteers():
 # ---------- Stories ----------
 @app.route("/stories")
 def stories():
-    # код
     return render_template("stories.html")
 
 
@@ -460,17 +475,17 @@ def stories():
 def search():
     query = request.args.get("q", "")
     if query:
-        requests = HelpRequest.query.filter(
+        requests_q = HelpRequest.query.filter(
             HelpRequest.name.contains(query) | HelpRequest.message.contains(query)
         ).all()
         volunteers = Volunteer.query.filter(
             Volunteer.name.contains(query) | Volunteer.email.contains(query)
         ).all()
     else:
-        requests = []
+        requests_q = []
         volunteers = []
     return render_template(
-        "search.html", requests=requests, volunteers=volunteers, query=query
+        "search.html", requests=requests_q, volunteers=volunteers, query=query
     )
 
 
@@ -486,12 +501,10 @@ def register():
             flash("Попълни имейл и парола", "danger")
             return redirect(url_for("register"))
 
-        # проверка за вече съществуващ имейл
         if User.query.filter_by(email=email).first():
             flash("Имейлът вече е регистриран", "warning")
             return redirect(url_for("register"))
 
-        # (предполага се, че generate_password_hash е импортирана в горната част на файла)
         hashed = generate_password_hash(password)
         user = User(
             username=username,
@@ -505,10 +518,10 @@ def register():
             db.session.commit()
             flash("Регистрацията е успешна. Влез с данните си.", "success")
             return redirect(url_for("login"))
-        except Exception as e:
+        except Exception as exc:  # noqa: BLE001
             db.session.rollback()
+            app.logger.exception("register error: %s", exc)
             flash("Грешка при регистрацията. Опитай по-късно.", "danger")
-            print("register error:", e)
             return redirect(url_for("register"))
 
     return render_template("register.html")
@@ -543,15 +556,15 @@ def logout():
     return redirect(url_for("index"))
 
 
-# Авто-миграции при старт (без Render Shell)
+# Авто-миграции при старт (ако имаш помощна функция)
 with app.app_context():
     al_upgrade = globals().get("_al_upgrade")
     if callable(al_upgrade):
         try:
             al_upgrade()
             app.logger.info("DB auto-upgrade: OK")
-        except Exception as e:
-            app.logger.warning(f"DB auto-upgrade skipped: {e}")
+        except Exception as exc:  # noqa: BLE001
+            app.logger.warning("DB auto-upgrade skipped: %s", exc)
     else:
         app.logger.info("DB auto-upgrade: _al_upgrade not present, skipping")
 
