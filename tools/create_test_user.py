@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
@@ -18,7 +19,7 @@ with app.app_context():
             email=EMAIL,
             password=generate_password_hash(PASSWORD),
             role="volunteer",
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
         )
         db.session.add(user)
         db.session.commit()

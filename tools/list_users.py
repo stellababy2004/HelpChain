@@ -6,6 +6,10 @@ DB = Path(__file__).resolve().parents[1] / "backend" / "instance" / "volunteers.
 engine = create_engine(f"sqlite:///{DB.as_posix()}")
 
 with engine.connect() as conn:
-    rows = conn.execute(text("SELECT id, username, email, role, created_at FROM users")).fetchall()
-    data = [dict(r._mapping) for r in rows]  # използваме ._mapping за съвместимост с всички версии
+    rows = conn.execute(
+        text("SELECT id, username, email, role, created_at FROM users")
+    ).fetchall()
+    data = [
+        dict(r._mapping) for r in rows
+    ]  # използваме ._mapping за съвместимост с всички версии
 print(json.dumps(data, default=str, ensure_ascii=False, indent=2))

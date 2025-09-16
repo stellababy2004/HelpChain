@@ -1,298 +1,153 @@
 {% extends "base.html" %}
-{% block title %}HelpChain{% endblock %}
-
+{% block title %}HelpChain - Свързваме помощта{% endblock %}
 {% block content %}
 <style>
-.animated-icon {
-  animation: iconBounce 2s infinite;
-}
-@keyframes iconBounce {
-  0%, 100% { transform: translateY(0);}
-  50% { transform: translateY(-10px);}
-}
-.platform-desc {
-  background: linear-gradient(90deg, #e3f2fd 0%, #fff 100%);
-  border-left: 6px solid #1976d2;
-  font-size: 1.25em;
-}
-.sidebar {
-  position: fixed;
-  top: 80px;
-  left: 30px;
-  width: 220px;
-  min-height: 300px;
-  z-index: 1000;
-  background: #fff;
-  box-shadow: 0 4px 24px #1976d244;
-  border-radius: 16px;
-}
-@media (max-width: 900px) {
-  .sidebar { display: none; }
-}
-.max-width-900 {
-  max-width: 900px;
-}
-.badge-new {
-  font-size: 0.8em;
-}
-.volunteers-img {
-  max-width: 350px;
-}
-.testimonial-img {
-  height: 40px;
-}
-#feedback-popup {
-  display: none;
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 9999;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px #1976d244;
-  padding: 1.2em 1.5em;
-}
-.feedback-close-btn {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 1.2em;
-}
+  body {
+    background-image: url('/static/helpchain_logo.png.png');
+    background-size: 200px 200px;
+    background-repeat: no-repeat;
+    background-position: 95% 5%;
+    background-attachment: fixed;
+  }
+  .hero-section, .card {
+    background-color: rgba(255, 255, 255, 0.95);
+  }
 </style>
-<div class="animated-bg"></div>
-  <div class="container mt-5 max-width-900">
-    <div class="row justify-content-center">
-      <div class="col-12 col-md-8 text-center glass py-4 mb-5">
-        <img src="{{ url_for('static', filename='hands-heart.png') }}" alt="{{ _('Сърце с ръце') }}" class="heart-img mb-4 mt-2">
-        <!-- SVG анимация -->
-        <svg class="hero-svg mb-4" viewBox="0 0 320 260" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="160" cy="220" rx="60" ry="18" fill="#e0e0e0"/>
-          <circle cx="160" cy="80" r="38" fill="#ffe0b2"/>
-          <rect x="120" y="110" width="80" height="70" rx="30" fill="#1976d2"/>
-          <rect x="70" y="120" width="60" height="18" rx="9" fill="#ffe0b2" transform="rotate(-20 70 120)"/>
-          <rect x="190" y="120" width="60" height="18" rx="9" fill="#ffe0b2" transform="rotate(20 250 120)"/>
-          <g class="europe-map">
-            <path d="M120 140 Q140 120 170 130 Q200 140 190 170 Q180 200 140 190 Q110 180 120 140 Z"
-                  fill="#81d4fa" stroke="#1976d2" stroke-width="2"/>
-            <ellipse cx="155" cy="160" rx="10" ry="5" fill="#1976d2" opacity="0.3"/>
-            <ellipse cx="170" cy="150" rx="6" ry="3" fill="#1976d2" opacity="0.3"/>
-          </g>
-          <path d="M148 92 Q160 105 172 92" stroke="#b8860b" stroke-width="3" fill="none"/>
-          <ellipse cx="148" cy="80" rx="4" ry="6" fill="#333"/>
-          <ellipse cx="172" cy="80" rx="4" ry="6" fill="#333"/>
-        </svg>
-        <h1 class="mb-4 mt-4">{{ _('Добре дошли!') }}</h1>
-        <div class="platform-desc mb-4 py-3 px-4 rounded shadow-sm bg-light d-flex align-items-center justify-content-center">
-          <i class="fa fa-hands-helping fa-lg text-primary me-3"></i>
-          <div>
-            <span class="fw-semibold text-primary">HelpChain.live</span> {{ _('свързва хора в нужда с доброволци, готови да помогнат.') }}<br>
-            <span class="text-secondary">{{ _('Заедно изграждаме общество, в което всеки има значение.') }}</span>
-          </div>
+
+<div class="container mt-4">
+  <h1>HelpChain</h1>
+  <p><a href="/profile">Профил</a> | <a href="/admin">Админ</a></p>
+  <h2>Вход / Регистрация</h2>
+  <form action="/register" method="post" id="reg">
+    <input name="username" placeholder="username"/><br/>
+    <input name="email" placeholder="email"/><br/>
+    <input name="password" placeholder="password" type="password"/><br/>
+    <select name="role"><option value="volunteer">Volunteer</option><option value="admin">Admin</option></select><br/>
+    <button type="submit">Регистрация</button>
+  </form>
+  <hr/>
+  <form action="/login" method="post">
+    <input name="username" placeholder="username"/><br/>
+    <input name="password" placeholder="password" type="password"/><br/>
+    <button type="submit">Вход</button>
+  </form>
+</div>
+
+<div class="hero-section bg-primary text-white py-5" style="margin-top: 50px;">
+  <div class="container text-center">
+    <h1 class="display-1" style="font-size: 4rem; margin-top: -20px;">Свързваме хората в нужда с тези, които могат да помогнат</h1>
+    <p class="lead">Регистрирай се като доброволец или подай заявка за помощ. Ние свързваме нуждите с помощта бързо и ефективно.</p>
+    <div class="d-flex flex-column flex-md-row justify-content-center">
+      <a href="/volunteer_register" class="btn btn-light btn-lg me-md-3 mb-3 mb-md-0">Искам да помогна</a>
+      <a href="/submit_request" class="btn btn-outline-light btn-lg">Имам нужда от помощ</a>
+    </div>
+  </div>
+</div>
+
+<div class="container my-5">
+  <h2 class="text-center mb-4">Прозрачност и доверие</h2>
+  <div class="row text-center">
+    <div class="col-12 col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">📌 {{ users | selectattr('role', 'equalto', 'volunteer') | list | length }} доброволци регистрирани</h3>
         </div>
-        <form action="{{ url_for('submit_request') }}" method="get" class="d-inline mb-4">
-  <button type="submit" class="btn btn-primary btn-lg mb-4 px-4 position-relative">
-    {{ _('Подай сигнал за помощ') }}
-    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger badge-new">
-        NEW
-    </span>
-  </button>
-</form>
-        <br>
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-sm mb-4">{{ _('Админ панел') }}</a>
-        <div class="row mt-4 mb-4">
-  <div class="col-md-4 mb-4">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-body text-center">
-        <i class="fa fa-bullhorn fa-2x text-primary animated-icon"></i>
-        <h5 class="mt-3">{{ _('Подай сигнал') }}</h5>
-        <p>{{ _('Сподели проблема си лесно и бързо.') }}</p>
       </div>
     </div>
-  </div>
-  <div class="col-md-4 mb-4">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-body text-center">
-        <i class="fa fa-users fa-2x text-success animated-icon"></i>
-        <h5 class="mt-3">{{ _('Доброволец откликва') }}</h5>
-        <p>{{ _('Нашите доброволци са винаги готови да помогнат.') }}</p>
+    <div class="col-12 col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">💡 {{ signals | length }} заявки подадени</h3>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="col-md-4 mb-4">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-body text-center">
-        <i class="fa fa-heart fa-2x text-danger animated-icon"></i>
-        <h5 class="mt-3">{{ _('Получаваш помощ') }}</h5>
-        <p>{{ _('Реална подкрепа за теб и твоите близки.') }}</p>
+    <div class="col-12 col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">❤️ {{ signals | selectattr('status', 'equalto', 'resolved') | list | length }} решени случаи</h3>
+        </div>
       </div>
     </div>
   </div>
 </div>
-        <!-- Добави снимка на доброволци тук -->
-        <img src="{{ url_for('static', filename='volunteers.jpg') }}" alt="{{ _('Доброволци') }}" class="img-fluid rounded shadow mb-5 volunteers-img">
+
+<div class="container my-5">
+  <h2 class="text-center mb-4">Какво казват потребителите</h2>
+  <div class="row">
+    <div class="col-12 col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <p class="card-text">"Благодарение на HelpChain намерих доброволец, който ме заведе на лекар."</p>
+          <footer class="blockquote-footer">Иван Иванов</footer>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="mt-5 mb-5 social-icons">
-    <a href="https://facebook.com/helpchain.live" class="me-2 text-primary" aria-label="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook fs-3"></i></a>
-    <a href="https://t.me/helpchain_live" class="me-2 text-info" aria-label="Telegram" target="_blank" rel="noopener"><i class="bi bi-telegram fs-3"></i></a>
-    <a href="mailto:info@helpchain.live" class="text-danger" aria-label="Email"><i class="bi bi-envelope fs-3"></i></a>
-  </div>
-
-  <a href="#why" class="btn btn-outline-primary mb-5">{{ _('Защо да се включа?') }}</a>
-
-  <div id="why" class="mt-5 mb-5 py-4 px-5 bg-why">
-    <!-- съдържание -->
-  </div>
-
-  <div class="row justify-content-center mb-4">
-  <div class="col-auto">
-    <div class="card shadow-sm border-0 px-4 py-3 text-center">
-      <div class="fs-2 fw-bold text-success">{{ volunteers_count }}</div>
-      <div class="text-muted">{{ _('Доброволци') }}</div>
+    <div class="col-12 col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <p class="card-text">"Помогнах на семейство в нужда с храна и транспорт. Чувствам се полезен."</p>
+          <footer class="blockquote-footer">Мария Петрова</footer>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="col-auto">
-    <div class="card shadow-sm border-0 px-4 py-3 text-center">
-      <div class="fs-2 fw-bold text-primary">{{ signals_count }}</div>
-      <div class="text-muted">{{ _('Подадени сигнали') }}</div>
+    <div class="col-12 col-md-4 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <p class="card-text">"Платформата е лесна за използване и свързва хората бързо."</p>
+          <footer class="blockquote-footer">Георги Димитров</footer>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-  <div class="mt-5 mb-5">
-    <blockquote class="blockquote mb-4">
-      <img src="{{ url_for('static', filename='maria.jpg') }}" alt="Мария" class="rounded-circle me-2 testimonial-img">
-      <p>{{ _('„Благодарение на helpchain.live най-много имах нужда!“') }}</p>
-      <footer class="blockquote-footer">Мария, София</footer>
-    </blockquote>
-    <!-- още отзиви -->
+<div class="container my-5">
+  <h2>Търсене на заявки</h2>
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <select id="status" class="form-control">
+        <option value="">Всички статуси</option>
+        <option value="pending">Pending</option>
+        <option value="in_progress">In Progress</option>
+        <option value="resolved">Resolved</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <select id="category" class="form-control">
+        <option value="">Всички категории</option>
+        <option value="здраве">Здраве</option>
+        <option value="администрация">Администрация</option>
+        <option value="транспорт">Транспорт</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <input type="text" id="search" placeholder="Търси..." class="form-control">
+    </div>
   </div>
+  <div id="results"></div>
+</div>
 
-  <div class="alert alert-success mb-5 py-4 fs-5">
-    {{ _('Стани доброволец днес и промени нечий живот!') }}
-  </div>
-
-  <p class="lead slogan mb-5">{{ _('Заедно можем повече!') }}</p>
-
-  <div id="feedback-popup">
-    <strong>{{ _('Имате идея или проблем?') }}</strong><br>
-    <a href="mailto:info@helpchain.live" class="btn btn-primary mt-2" style="font-size:1.2em; font-weight:bold; background: linear-gradient(90deg, #1976d2 60%, #00bfae 100%); color: #fff; border: none; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">{{ _('Пишете ни') }}</a>
-    <button type="button" onclick="document.getElementById('feedback-popup').style.display='none'" class="feedback-close-btn">&times;</button>
-  </div>
-  <script>
-    setTimeout(function(){
-      const popup = document.getElementById('feedback-popup');
-      popup.style.display='block';
-      popup.style.opacity='0';
-      popup.style.transition='opacity 0.8s';
-      setTimeout(()=>popup.style.opacity='1', 50);
-    }, 4000);
-  </script>
-  <div id="testimonials" class="mt-5 mb-5">
-    <blockquote class="blockquote mb-4">
-      <img src="{{ url_for('static', filename='maria.jpg') }}" alt="Мария" class="rounded-circle me-2 testimonial-img">
-      <p id="testimonial-text">{{ _('„Благодарение на helpchain.live най-много имах нужда!“') }}</p>
-      <footer class="blockquote-footer" id="testimonial-author">Мария, София</footer>
-    </blockquote>
-  </div>
-  <script>
-const testimonials = [
-  {text: "{{ _('„Благодарение на helpchain.live най-много имах нужда!“') }}", author: "Мария, София"},
-  {text: "{{ _('„Екипът реагира бързо и професионално!“') }}", author: "Георги, Пловдив"},
-  {text: "{{ _('„Чувствам се подкрепен и разбран!“') }}", author: "Иван, Варна"}
-];
-let idx = 0;
-setInterval(() => {
-  idx = (idx + 1) % testimonials.length;
-  document.getElementById('testimonial-text').innerText = testimonials[idx].text;
-  document.getElementById('testimonial-author').innerText = testimonials[idx].author;
-}, 4000);
+<script>
+  function updateSearch() {
+    const q = document.getElementById('search').value;
+    const status = document.getElementById('status').value;
+    const category = document.getElementById('category').value;
+    const params = new URLSearchParams({ q, status, category });
+    fetch('/api/search?' + params.toString())
+      .then(response => response.json())
+      .then(data => {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+        data.results.forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'card mb-3';
+          div.innerHTML = `<div class="card-body"><h5>${s.title}</h5><p>${s.description}</p><p>Статус: ${s.status}, Категория: ${s.category || 'Няма'}</p></div>`;
+          resultsDiv.appendChild(div);
+        });
+      });
+  }
+  document.getElementById('search').addEventListener('input', updateSearch);
+  document.getElementById('status').addEventListener('change', updateSearch);
+  document.getElementById('category').addEventListener('change', updateSearch);
 </script>
-<!-- Примерен sidebar -->
-<div id="sidebar" class="sidebar bg-white shadow rounded py-4 px-3">
-  <h5 class="mb-4 text-primary"><i class="fa fa-bars me-2"></i>{{ _('Меню') }}</h5>
-  <ul class="nav flex-column">
-    <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="#" data-bs-toggle="modal" data-bs-target="#newsModal">
-        <i class="fa fa-newspaper me-2"></i>{{ _('Новини') }}
-      </a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="{{ url_for('volunteer_register') }}">
-        <i class="fa fa-hands-helping me-2"></i>{{ _('Стани доброволец') }}
-      </a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="#links"><i class="fa fa-link me-2"></i>{{ _('Полезни връзки') }}</a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="#contacts"><i class="fa fa-envelope me-2"></i>{{ _('Контакти') }}</a>
-    </li>
-    <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="{{ url_for('feedback') }}">
-        <i class="fa fa-comment-dots me-2"></i>{{ _('Обратна връзка') }}
-      </a>
-    </li>
-  </ul>
-</div>
-<!-- Примерни секции за навигация -->
-<div id="news" class="mt-5 mb-5 py-4 px-4 bg-why rounded">
-  <h4 class="text-primary mb-3"><i class="fa fa-newspaper me-2"></i>{{ _('Новини') }}</h4>
-  <p>{{ _('HelpChain стартира нова кампания за подкрепа на възрастни хора!') }}</p>
-</div>
-<div id="volunteer" class="mt-5 mb-5 py-4 px-4 bg-light rounded">
-  <h4 class="text-success mb-3"><i class="fa fa-hands-helping me-2"></i>{{ _('Стани доброволец') }}</h4>
-  <p>{{ _('Регистрирай се и помогни на хора в нужда – всеки може да бъде герой!') }}</p>
-  <a href="{{ url_for('volunteer_register') }}" class="btn btn-success mt-2">{{ _('Регистрирай се като доброволец') }}</a>
-</div>
-<div id="links" class="mt-5 mb-5 py-4 px-4 bg-why rounded">
-  <h4 class="text-info mb-3"><i class="fa fa-link me-2"></i>{{ _('Полезни връзки') }}</h4>
-  <ul>
-    <li><a href="https://redcross.bg/" target="_blank" rel="noopener">{{ _('БЧК') }}</a></li>
-    <li><a href="https://gov.bg/" target="_blank" rel="noopener">{{ _('Държавни услуги') }}</a></li>
-  </ul>
-</div>
-<div id="contacts" class="mt-5 mb-5 py-4 px-4 bg-light rounded">
-  <h4 class="text-danger mb-3"><i class="fa fa-envelope me-2"></i>{{ _('Контакти') }}</h4>
-  <p>{{ _('Пиши ни на') }} <a href="mailto:info@helpchain.live">info@helpchain.live</a></p>
-</div>
-
-<!-- Модален прозорец за новини -->
-<div class="modal fade" id="newsModal" tabindex="-1" aria-labelledby="newsModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content rounded-4">
-      <div class="modal-header">
-        <h5 class="modal-title" id="newsModalLabel"><i class="fa fa-newspaper me-2"></i>{{ _('Новини') }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Затвори') }}"></button>
-      </div>
-      <div class="modal-body">
-        <h6 class="text-primary mb-2">{{ _('HelpChain стартира нова кампания за подкрепа на възрастни хора!') }}</h6>
-        <p>{{ _('От 1 август 2025 г. доброволците ни ще посещават домове на възрастни хора и ще оказват помощ с пазаруване, лекарства и социална подкрепа.') }}</p>
-        <p class="text-muted small">{{ _('Публикувано на: 23 юли 2025 г.') }}</p>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="table-responsive">
-    <table class="table">
-        ...
-    </table>
-</div>
-
-{% include "chatbot.html" %}
-<!-- Site24x7 RUM Monitoring -->
-<script type="text/javascript">
-  var site24x7_rum_id = 'TON_ID_TUK'; 
-  (function() {
-    var s = document.createElement('script'); s.type = 'text/javascript';
-    s.async = true;
-    s.src = 'https://static.site24x7rum.com/beacon/site24x7rum-min.js';
-    var x = document.getElementsByTagName('script')[0]; x.parentNode.insertBefore(s, x);
-  })();
-</script>
-
 {% endblock %}

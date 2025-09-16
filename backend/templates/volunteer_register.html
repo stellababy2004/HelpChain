@@ -1,14 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Volunteer Register{% endblock %}
+{% block title %}Стани доброволец{% endblock %}
 {% block content %}
-<h1>Volunteer Registration</h1>
-<form method="post">
-    {{ form.hidden_tag() }}
-    {{ form.name.label }} {{ form.name }}<br>
-    {{ form.email.label }} {{ form.email }}<br>
-    {{ form.phone.label }} {{ form.phone }}<br>
-    {{ form.location.label }} {{ form.location }}<br>
-    {{ form.submit }}
+<h2>Регистрация като доброволец</h2>
+<form action="/register" method="post">
+  <div class="mb-3"><input name="username" class="form-control" placeholder="Потребителско име" required></div>
+  <div class="mb-3"><input name="email" type="email" class="form-control" placeholder="Email" required></div>
+  <div class="mb-3"><input name="password" type="password" class="form-control" placeholder="Парола" required></div>
+  <div class="mb-3"><input name="phone" class="form-control" placeholder="Телефон"></div>
+  <div class="mb-3"><input name="address" class="form-control" placeholder="Адрес"></div>
+  <div class="mb-3"><input name="city" class="form-control" placeholder="Град"></div>
+  <div class="mb-3">
+    <select name="category" class="form-select" required>
+      <option value="">Избери категория</option>
+      <option value="медицинска помощ">Медицинска помощ</option>
+      <option value="транспорт">Транспорт</option>
+      <option value="храна">Храна</option>
+      <option value="образование">Образование</option>
+      <option value="други">Други</option>
+    </select>
+  </div>
+  <div class="mb-3"><input name="availability" class="form-control" placeholder="Наличност (напр. 9-17)"></div>
+  <input type="hidden" name="role" value="volunteer">
+  <button class="btn btn-success">Регистрирай се</button>
 </form>
 {% endblock %}
 
@@ -16,15 +29,23 @@
 <script>
     $('form').on('submit', function(e) {
         e.preventDefault();
-        var name = $('#name').val();
-        var email = $('#email').val();
-        var phone = $('#phone').val();
-        var location = $('#location').val();
+        var username = $('input[name="username"]').val();
+        var email = $('input[name="email"]').val();
+        var password = $('input[name="password"]').val();
+        var phone = $('input[name="phone"]').val();
+        var address = $('input[name="address"]').val();
+        var city = $('input[name="city"]').val();
+        var category = $('input[name="category"]').val();
+        var availability = $('input[name="availability"]').val();
         $.post('/send_mail', {
-            name: name,
+            username: username,
             email: email,
+            password: password,
             phone: phone,
-            location: location
+            address: address,
+            city: city,
+            category: category,
+            availability: availability
         });
     });
 </script>
@@ -34,16 +55,20 @@
 @app.route('/volunteer_register', methods=['GET', 'POST'])
 def volunteer_register():
     if request.method == 'POST':
-        name = request.form['name']
+        username = request.form['username']
         email = request.form['email']
+        password = request.form['password']
         phone = request.form['phone']
-        location = request.form['location']
-        volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
+        address = request.form['address']
+        city = request.form['city']
+        category = request.form['category']
+        availability = request.form['availability']
+        volunteer = Volunteer(username=username, email=email, password=password, phone=phone, address=address, city=city, category=category, availability=availability)
         db.session.add(volunteer)
         db.session.commit()
         # Изпрати имейл
         msg = Message('New Volunteer', sender='your_email@gmail.com', recipients=['admin@helpchain.live'])
-        msg.body = f'Name: {name}\nEmail: {email}\nPhone: {phone}\nLocation: {location}'
+        msg.body = f'Username: {username}\nEmail: {email}\nPhone: {phone}\nAddress: {address}\nCity: {city}\nCategory: {category}\nAvailability: {availability}'
         mail.send(msg)
         return redirect(url_for('index'))
     return render_template('volunteer_register.html')

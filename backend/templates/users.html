@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Всички потребители{% endblock %}
+{% block content %}
+<h2>Всички регистрирани потребители</h2>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Потребителско име</th>
+      <th>Email</th>
+      <th>Роля</th>
+      <th>Телефон</th>
+      <th>Адрес</th>
+      <th>Град</th>
+      <th>Категория</th>
+      <th>Наличност</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td>{{ user.phone or '-' }}</td>
+        <td>{{ user.address or '-' }}</td>
+        <td>{{ user.city or '-' }}</td>
+        <td>{{ user.category or '-' }}</td>
+        <td>{{ user.availability or '-' }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

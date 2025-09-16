@@ -6,22 +6,30 @@ import time
 
 # tests/test_additional.py
 
+
 def test_register_without_follow_redirects(client):
-    resp = client.post("/register", data={
-        "username": "pytest_user",
-        "email": "pytest_user@example.com",
-        "password": "Test12345"
-    }, follow_redirects=False)
+    resp = client.post(
+        "/register",
+        data={
+            "username": "pytest_user",
+            "email": "pytest_user@example.com",
+            "password": "Test12345",
+        },
+        follow_redirects=False,
+    )
     # should either create and redirect (302/303) or return 200
     assert resp.status_code in (200, 302, 303)
 
+
 def test_login_without_follow_redirects(client):
     # attempt login (may redirect on success)
-    resp = client.post("/login", data={
-        "email": "pytest_user@example.com",
-        "password": "Test12345"
-    }, follow_redirects=False)
+    resp = client.post(
+        "/login",
+        data={"email": "pytest_user@example.com", "password": "Test12345"},
+        follow_redirects=False,
+    )
     assert resp.status_code in (200, 302, 303)
+
 
 def test_ask_missing_message_returns_handled_response(client):
     resp = client.post("/ask", json={})
@@ -33,6 +41,7 @@ def test_ask_missing_message_returns_handled_response(client):
         # either provide an assistant answer or an error message
         assert "answer" in data or "error" in data
 
+
 def test_ask_long_message(client):
     # tests/test_extra.py
 
@@ -43,7 +52,9 @@ def test_ask_long_message(client):
         # Add a temporary endpoint so url_for('create_request') in the template won't fail
         app = client.application
         if "create_request" not in app.view_functions:
-            app.add_url_rule("/_test_create_request", "create_request", lambda: ("", 200))
+            app.add_url_rule(
+                "/_test_create_request", "create_request", lambda: ("", 200)
+            )
         rv = client.get("/")
         assert rv.status_code == 200
 
@@ -58,16 +69,28 @@ def test_ask_long_message(client):
         resp = client.get("/submit_request")
         assert resp.status_code in (200, 302, 303)
         # POST minimal form data; ensure no 500
-        resp2 = client.post("/submit_request", data={"title": "Test", "description": "Help"}, follow_redirects=False)
+        resp2 = client.post(
+            "/submit_request",
+            data={"title": "Test", "description": "Help"},
+            follow_redirects=False,
+        )
         assert resp2.status_code != 500
 
     def test_register_login_logout_sequence(client):
         email = unique_email()
         # register
-        r = client.post("/register", data={"username": "pyuser", "email": email, "password": "Test12345"}, follow_redirects=False)
+        r = client.post(
+            "/register",
+            data={"username": "pyuser", "email": email, "password": "Test12345"},
+            follow_redirects=False,
+        )
         assert r.status_code in (200, 302, 303)
         # login
-        r2 = client.post("/login", data={"email": email, "password": "Test12345"}, follow_redirects=False)
+        r2 = client.post(
+            "/login",
+            data={"email": email, "password": "Test12345"},
+            follow_redirects=False,
+        )
         assert r2.status_code in (200, 302, 303)
         # logout (if endpoint exists); accept many safe codes
         r3 = client.get("/logout", follow_redirects=False)

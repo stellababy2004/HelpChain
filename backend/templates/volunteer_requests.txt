@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Заявки за помощ{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Заявки за помощ</h2>
+  <form method="get" class="mb-4">
+    <div class="row">
+      <div class="col-md-4">
+        <select name="status" class="form-select">
+          <option value="">Всички статуси</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <select name="category" class="form-select">
+          <option value="">Всички категории</option>
+          <option value="медицинска помощ">Медицинска помощ</option>
+          <option value="транспорт">Транспорт</option>
+          <option value="храна">Храна</option>
+          <option value="образование">Образование</option>
+          <option value="други">Други</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-primary">Филтрирай</button>
+      </div>
+    </div>
+  </form>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Тема</th>
+        <th>Описание</th>
+        <th>Категория</th>
+        <th>Статус</th>
+        <th>Дата</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in signals %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.title }}</td>
+          <td>{{ s.description }}</td>
+          <td>{{ s.category }}</td>
+          <td>{{ s.status }}</td>
+          <td>{{ s.created }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

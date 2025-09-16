@@ -1,92 +1,13 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Табло на доброволец') }} | HelpChain{% endblock %}
-
+{% block title %}Доброволец панел{% endblock %}
 {% block content %}
-<h2>{{ _('Заявки за помощ') }}</h2>
-
-<label for="status-filter" class="form-label visually-hidden">{{ _('Филтрирай по статус') }}</label>
-<select id="status-filter" class="form-select mb-3 status-filter-width" aria-label="{{ _('Филтрирай по статус') }}">
-  <option value="Всички">{{ _('Всички') }}</option>
-  <option value="Pending">{{ _('Очакващ') }}</option>
-  <option value="In Progress">{{ _('В процес') }}</option>
-  <option value="Completed">{{ _('Завършен') }}</option>
-  <option value="Rejected">{{ _('Отхвърлен') }}</option>
-</select>
-
-<input type="text" id="searchInput" class="form-control mb-3" placeholder="{{ _('Търси по име или email...') }}">
-
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>{{ _('Име') }}</th>
-      <th>{{ _('Имейл') }}</th>
-      <th>{{ _('Съобщение') }}</th>
-      <th>{{ _('Статус') }}</th>
-      <th>{{ _('Промени статус') }}</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for req in help_requests %}
-    <tr data-status="{{ req.status }}">
-      <td class="req-name">{{ req.name }}</td>
-      <td class="req-email">{{ req.email }}</td>
-      <td>{{ req.message }}</td>
-      <td>
-        <span class="status-badge" data-status="{{ req.status }}">{{ _(req.status) }}</span>
-      </td>
-      <td>
-        <select class="form-select status-select" data-req-id="{{ req.id }}">
-          <option value="Pending" {% if req.status == 'Pending' %}selected{% endif %}>{{ _('Очакващ') }}</option>
-          <option value="In Progress" {% if req.status == 'In Progress' %}selected{% endif %}>{{ _('В процес') }}</option>
-          <option value="Completed" {% if req.status == 'Completed' %}selected{% endif %}>{{ _('Завършен') }}</option>
-          <option value="Rejected" {% if req.status == 'Rejected' %}selected{% endif %}>{{ _('Отхвърлен') }}</option>
-        </select>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  // Филтриране по статус
-  document.getElementById("status-filter").addEventListener("change", function () {
-    const selected = this.value;
-    document.querySelectorAll("tbody tr").forEach(row => {
-      const status = row.getAttribute("data-status");
-      row.style.display = (selected === "{{ _('Всички') }}" || selected === status) ? "" : "none";
-    });
-  });
-
-  // Търсене по име или email
-  document.getElementById("searchInput").addEventListener("keyup", function () {
-    const keyword = this.value.toLowerCase();
-    document.querySelectorAll("tbody tr").forEach(row => {
-      const name = row.querySelector(".req-name").textContent.toLowerCase();
-      const email = row.querySelector(".req-email").textContent.toLowerCase();
-      row.style.display = (name.includes(keyword) || email.includes(keyword)) ? "" : "none";
-    });
-  });
-
-  // Промяна на статус
-  document.querySelectorAll('.status-select').forEach(select => {
-    select.addEventListener('change', function () {
-      const reqId = this.getAttribute('data-req-id');
-      const newStatus = this.value;
-      fetch('/update_status/' + reqId, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      }).then(res => res.json()).then(data => {
-        if (data.success) {
-          alert('{{ _("Статусът е обновен!") }}');
-          location.reload();
-        }
-      });
-    });
-  });
-});
-</script>
+<h2>Доброволец панел</h2>
+<p>Добре дошъл, {{ user.username }}!</p>
+<p>Роля: {{ user.role }}</p>
+<p>Email: {{ user.email }}</p>
+<p>Телефон: {{ user.phone or '-' }}</p>
+<p>Адрес: {{ user.address or '-' }}</p>
+<p>Град: {{ user.city or '-' }}</p>
+<p>Категория: {{ user.category or '-' }}</p>
+<p>Наличност: {{ user.availability or '-' }}</p>
 {% endblock %}

@@ -32,3 +32,13 @@ NB/
 backend/instance/
 .vscode/
 
+
+.env
+
+**/.env
+
+instance/
+
+uploads/
+
+__pycache__/

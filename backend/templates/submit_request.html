@@ -1,118 +1,26 @@
-{% extends "base.html" %}
-
-{% block title %}{{ _('Подай сигнал за помощ') }} | HelpChain.live{% endblock %}
-
-{% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4 text-primary">{{ _('Подай сигнал за помощ') }}</h2>
-    <div class="mb-3">
-        <strong>{{ _('Примерни ситуации:') }}</strong>
-        <ul>
-            <li>{{ _('Нужда от медицинска помощ') }}</li>
-            <li>{{ _('Социална подкрепа') }}</li>
-            <li>{{ _('Технически проблем') }}</li>
-        </ul>
-    </div>
-    <form method="POST" action="{{ url_for('submit_request') }}" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label for="name" class="form-label">{{ _('Вашето име:') }}</label>
-            <input type="text" class="form-control" id="name" name="name" required>
-        </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">{{ _('Имейл адрес:') }}</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="mb-3">
-            <label for="category" class="form-label">{{ _('Категория на проблема:') }}</label>
-            <select class="form-select" id="category" name="category" required>
-                <option value="">{{ _('Изберете...') }}</option>
-                <option value="health">{{ _('Здраве') }}</option>
-                <option value="social">{{ _('Социална помощ') }}</option>
-                <option value="technical">{{ _('Техническа помощ') }}</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="location" class="form-label">{{ _('Локация/адрес:') }}</label>
-            <input type="text" class="form-control" id="location" name="location">
-        </div>
-        <div class="mb-3">
-            <label for="problem" class="form-label">{{ _('Описание на проблема:') }}</label>
-            <textarea class="form-control" id="problem" name="problem" rows="4" required></textarea>
-        </div>
-        <div class="mb-3">
-            <label for="file" class="form-label">{{ _('Прикачете файл/снимка (по желание):') }}</label>
-            <input type="file" class="form-control" id="file" name="file">
-        </div>
-        <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
-            <label class="form-check-label" for="terms">
-                {{ _('Съгласен съм с') }} <a href="/terms" target="_blank">{{ _('условията за ползване') }}</a> {{ _('и') }} <a href="/privacy" target="_blank">{{ _('политиката за поверителност') }}</a>.
-            </label>
-        </div>
-        <div class="mb-3">
-            <!-- Примерен Captcha (не работещ, само визуално) -->
-            <label for="captcha" class="form-label">{{ _('Въведете кода:') }} <strong>7G5K</strong></label>
-            <input type="text" class="form-control" id="captcha" name="captcha" required>
-        </div>
-        <button type="submit" class="btn btn-primary" id="submit-btn">{{ _('Изпрати') }}</button>
+<!doctype html>
+<html lang="bg">
+<head><meta charset="utf-8"/><title>Подай заявка - HelpChain</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body>
+  <div class="container mt-4">
+    <h1>Подай заявка за помощ</h1>
+    {% if message %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endif %}
+    <form method="post" action="/submit_request">
+      <div class="mb-3"><label class="form-label">Заглавие</label><input name="title" class="form-control" required></div>
+      <div class="mb-3"><label class="form-label">Описание</label><textarea name="description" class="form-control" rows="4" required></textarea></div>
+      <div class="mb-3"><label class="form-label">Категория</label>
+        <select name="category" class="form-select">
+          <option value="здраве">Здраве</option>
+          <option value="администрация">Администрация</option>
+          <option value="транспорт">Транспорт</option>
+        </select>
+      </div>
+      <div class="mb-3"><label class="form-label">Имейл (ако не сте влезли)</label><input name="email" type="email" class="form-control"></div>
+      <button class="btn btn-primary" type="submit">Подай</button>
     </form>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    // JS валидация за Captcha
-    document.querySelector('form').addEventListener('submit', function(e) {
-        var captcha = document.getElementById('captcha').value.trim();
-        if (captcha !== '7G5K') {
-            e.preventDefault();
-            alert('{{ _("Моля, въведете правилния код за сигурност.") }}');
-            document.getElementById('captcha').focus();
-        }
-    });
-
-    const btn = document.getElementById('submit-btn');
-    if (btn) {
-        btn.addEventListener('click', function() {
-            // ...код...
-        });
-    }
-</script>
-{% endblock %}
-
-@app.route('/submit_request', methods=['GET', 'POST'])
-def submit_request():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        phone = request.form.get('phone')
-        message = request.form.get('message')
-        help_request = HelpRequest(name=name, email=email, phone=phone, message=message)
-        db.session.add(help_request)
-        db.session.commit()
-
-        # Изпращане на имейл до екипа
-        msg = Message(
-            subject="Нова заявка за помощ",
-            sender=app.config['MAIL_USERNAME'],
-            recipients=['contact@helpchain.live'],  # смени с твоя имейл ако искаш
-            body=f"Име: {name}\nИмейл: {email}\nТелефон: {phone}\nСъобщение: {message}"
-        )
-        mail.send(msg)
-
-        flash('Вашата заявка беше успешно изпратена.', 'success')
-        return render_template('submit_success.html')
-    return render_template('help_request.html')
-
-def test_submit_request(client):
-    response = client.post('/submit_request', data={
-        'title': 'Test Title',  # Добави това
-        'full_name': 'Test User',
-        'email': 'test@example.com',
-        'phone': '1234567890',
-        'help_type': 'Храна',
-        'description': 'Нуждая се от помощ',
-        'location': 'Пловдив',
-        'captcha': '7G5K'  # ако има captcha
-    })
-    assert response.status_code in [200, 302]  # 302 ако има redirect
+  </div>
+</body>
+</html>
