@@ -1,9 +1,12 @@
+# backend/tests/test_auth.py
+import uuid
+import secrets
 import pytest
-from fastapi.testclient import TestClient
 
-# опитваме директен импорт от main.py в backend
 try:
-    from main import app
+    # FastAPI TestClient
+    from fastapi.testclient import TestClient
+    from main import app  # увери се, че имаш main.py с app = FastAPI()
 except Exception:
     pytest.skip(
         "Не може да се импортира FastAPI app от main.py. Уверете се, че main.app съществува.",
@@ -13,22 +16,40 @@ except Exception:
 client = TestClient(app)
 
 
+def _rand_password() -> str:
+    # произволна тестова стойност (не е статичен pattern за GitGuardian)
+    return "test-" + secrets.token_urlsafe(16)
+
+
+def _rand_user(prefix: str) -> tuple[str, str, str]:
+    """
+    Връща (username, email, password) с уникални стойности за всеки тест.
+    """
+    salt = uuid.uuid4().hex[:8]
+    username = f"{prefix}_{salt}"
+    email = f"{prefix}.{salt}@example.com"
+    password = _rand_password()
+    return username, email, password
+
+
 @pytest.fixture
 def volunteer_payload():
+    username, email, password = _rand_user("volunteer")
     return {
-        "username": "volunteer1",
-        "email": "vol1@example.com",
-        "password": "Secret123!",
+        "username": username,
+        "email": email,
+        "password": password,
         "role": "volunteer",
     }
 
 
 @pytest.fixture
 def admin_payload():
+    username, email, password = _rand_user("admin")
     return {
-        "username": "admin1",
-        "email": "admin1@example.com",
-        "password": "AdminPass123!",
+        "username": username,
+        "email": email,
+        "password": password,
         "role": "admin",
     }
 
@@ -48,7 +69,10 @@ def test_register_admin(admin_payload):
 
 
 def test_login_volunteer(volunteer_payload):
+    # първо регистрираме
     client.post("/register", json=volunteer_payload)
+
+    # после логваме
     r = client.post(
         "/login",
         data={
@@ -57,12 +81,14 @@ def test_login_volunteer(volunteer_payload):
         },
     )
     assert r.status_code == 200
-    token = r.json().get("access_token") or r.json().get("token")
+    data = r.json()
+    token = data.get("access_token") or data.get("token")
     assert token
 
 
 def test_login_admin(admin_payload):
     client.post("/register", json=admin_payload)
+
     r = client.post(
         "/login",
         data={
@@ -71,5 +97,6 @@ def test_login_admin(admin_payload):
         },
     )
     assert r.status_code == 200
-    token = r.json().get("access_token") or r.json().get("token")
+    data = r.json()
+    token = data.get("access_token") or data.get("token")
     assert token
