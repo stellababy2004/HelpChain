@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<h1>Search</h1>
+<form method="get">
+    <input type="text" name="q" placeholder="Search..." value="{{ query }}">
+    <button type="submit">Search</button>
+</form>
+<h2>Requests</h2>
+<ul>
+{% for r in requests %}
+    <li>{{ r.name }} - {{ r.message }}</li>
+{% endfor %}
+</ul>
+<h2>Volunteers</h2>
+<ul>
+{% for v in volunteers %}
+    <li>{{ v.name }} - {{ v.email }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

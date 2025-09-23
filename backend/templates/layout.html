@@ -1,10 +1,11 @@
 <!-- layout.html -->
+{% extends "base.html" %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ get_locale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}HelpChain{% endblock %}</title>
+    <title>{% block title %}{{ _('HelpChain') }}{% endblock %}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,7 +14,5 @@
         }
     </style>
 </head>
-<body>
-    {% block content %}{% endblock %}
 </body>
 </html>

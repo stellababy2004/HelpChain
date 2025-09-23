@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Чатбот история') }}{% endblock %}
+{% block content %}
+<h2>{{ _('История на чатбота') }}</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{{ _('Дата/час') }}</th>
+            <th>{{ _('Потребител') }}</th>
+            <th>{{ _('Съобщение') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for chat in chats %}
+        <tr>
+            <td>{{ chat.timestamp }}</td>
+            <td>{{ chat.user }}</td>
+            <td>{{ chat.message }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Превод и CV помощ') }}{% endblock %}
+{% block content %}
+<h2>{{ _('Превод и CV помощ') }}</h2>
+<form id="translate-form">
+    <label for="text">{{ _('Текст за превод:') }}</label>
+    <textarea id="text" name="text" class="form-control" required></textarea>
+    <label for="lang" class="mt-2">{{ _('Език:') }}</label>
+    <select id="lang" name="lang" class="form-control">
+        <option value="bg">{{ _('Български') }}</option>
+        <option value="en">{{ _('Английски') }}</option>
+        <option value="fr">{{ _('Френски') }}</option>
+    </select>
+    <button type="submit" class="btn btn-primary mt-2">{{ _('Преведи') }}</button>
+</form>
+<div id="translate-result" class="mt-3"></div>
+<script>
+document.getElementById('translate-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const text = document.getElementById('text').value;
+    const lang = document.getElementById('lang').value;
+    const res = await fetch('/admin/translate', {
+        method: 'POST',
+        body: new URLSearchParams({text, lang}),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    });
+    const data = await res.json();
+    document.getElementById('translate-result').innerText = data.translated;
+};
+</script>
+{% endblock %}

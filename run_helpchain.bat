@@ -4,6 +4,8 @@ cd /d "%~dp0backend"
 REM Активирай виртуалната среда (ако съществува)
 IF EXIST venv\Scripts\activate.bat (
     call venv\Scripts\activate.bat
+) ELSE (
+    echo Виртуалната среда не е намерена! Стартирам без нея...
 )
 
 REM Стартирай Python и създай таблицата
@@ -13,3 +15,5 @@ python -c "from app import db, app; with app.app_context(): db.create_all()"
 REM Стартирай Flask приложението
 echo Starting Flask server...
 python app.py
+
+pause

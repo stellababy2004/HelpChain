@@ -1,42 +1,611 @@
 {% extends "base.html" %}
-{% block title %}Админ панел | HelpChain.live{% endblock %}
-
+{% block title %}Админ панел - HelpChain{% endblock %}
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Админ панел</h2>
-    <a href="{{ url_for('admin_volunteers') }}" class="btn btn-primary mb-3">Доброволци</a>
-    <a href="{{ url_for('add_volunteer') }}" class="btn btn-success mb-3">Добави доброволец</a>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Име</th>
-                <th>Статус</th>
-                <th>История</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for req in requests['items'] %}
-            <tr>
-                <td>{{ req.id }}</td>
-                <td>{{ req.name or 'Без име' }}</td>
-                <td>{{ req.status or 'Неизвестен статус' }}</td>
-                <td>
-                    {% if logs_dict.get(req.id) %}
-                        <ul class="mb-0 pl-3">
-                            {% for log in logs_dict[req.id] %}
-                                <li>
-                                    {{ log.status or 'Неизвестен' }}{% if log.changed_at %} – {{ log.changed_at }}{% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <em>Няма история</em>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<style>
+.admin-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 1400px;
+}
+
+.admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px 12px 0 0;
+}
+
+.stats-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: transform 0.2s;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.action-buttons {
+    margin-bottom: 2rem;
+}
+
+.table-container {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.filter-section {
+    background: #e3f2fd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.news-section {
+    background: #f3e5f5;
+    border-radius: 10px;
+    padding: 1.5rem;
+}
+
+.btn-custom {
+    border-radius: 25px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.delete-btn {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    border: none;
+    color: white;
+}
+
+.edit-btn {
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    border: none;
+    color: white;
+}
+
+.approve-btn {
+    background: linear-gradient(45deg, #a8e6cf, #7fcdcd);
+    border: none;
+    color: #2c3e50;
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        padding: 1rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+.confirmation-tooltip {
+    background: #ff4757;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+}
+</style>
+
+<div class="admin-container">
+    <!-- Header Section -->
+    <div class="admin-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-0"><i class="bi bi-shield-check"></i> Админ панел</h1>
+                <p class="mb-0 mt-2">Управление на HelpChain платформата</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-tools"></i> Инструменти
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('export_requests') }}">
+                            <i class="bi bi-download"></i> Експортирай заявки
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('export_volunteers') }}">
+                            <i class="bi bi-download"></i> Експортирай доброволци
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin_volunteers') }}">
+                            <i class="bi bi-people"></i> Управление на доброволци
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-4">
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ volunteers|length }}</div>
+                    <div class="stats-label">Общо доброволци</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ requests|length }}</div>
+                    <div class="stats-label">Общо заявки</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ requests|selectattr('status', 'equalto', 'Активен')|list|length }}</div>
+                    <div class="stats-label">Активни заявки</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-number">{{ requests|selectattr('status', 'equalto', 'Завършена')|list|length }}</div>
+                    <div class="stats-label">Завършени заявки</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{{ url_for('add_volunteer') }}" class="btn btn-success btn-custom">
+                <i class="bi bi-person-plus"></i> Добави доброволец
+            </a>
+            <a href="{{ url_for('submit_request') }}" class="btn btn-primary btn-custom">
+                <i class="bi bi-plus-circle"></i> Добави заявка
+            </a>
+        </div>
+
+        <!-- Tabs for better organization -->
+        <ul class="nav nav-pills mb-3" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="requests-tab" data-bs-toggle="pill" data-bs-target="#requests" type="button" role="tab">
+                    <i class="bi bi-clipboard-check"></i> Заявки
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="volunteers-tab" data-bs-toggle="pill" data-bs-target="#volunteers" type="button" role="tab">
+                    <i class="bi bi-people"></i> Доброволци
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="{{ url_for('admin_analytics') }}" class="nav-link" style="color: #495057;">
+                    <i class="bi bi-graph-up"></i> 📊 Advanced Analytics
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics" type="button" role="tab">
+                    <i class="bi bi-graph-up"></i> Статистики
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="news-tab" data-bs-toggle="pill" data-bs-target="#news" type="button" role="tab">
+                    <i class="bi bi-newspaper"></i> Новини
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="{{ url_for('admin_logs') }}" class="nav-link" style="color: #495057;">
+                    <i class="bi bi-clock-history"></i> История на действията
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="{{ url_for('admin_2fa_setup') }}" class="nav-link" style="color: #495057;">
+                    <i class="bi bi-shield-check"></i> 2FA настройки
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="adminTabsContent">
+            <!-- Requests Tab -->
+            <div class="tab-pane fade show active" id="requests" role="tabpanel">
+                <div class="table-container">
+                    <h4><i class="bi bi-clipboard-check"></i> Управление на заявки</h4>
+                    
+                    <!-- Filter Section -->
+                    <div class="filter-section">
+                        <form method="get" action="{{ url_for('admin_dashboard') }}" class="row g-3">
+                            <div class="col-auto">
+                                <select name="status" class="form-select">
+                                    <option value="">Всички статуси</option>
+                                    <option value="Активен" {% if request.args.get('status') == 'Активен' %}selected{% endif %}>Активни</option>
+                                    <option value="Завършена" {% if request.args.get('status') == 'Завършена' %}selected{% endif %}>Завършени</option>
+                                    <option value="Pending" {% if request.args.get('status') == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="Отхвърлена" {% if request.args.get('status') == 'Отхвърлена' %}selected{% endif %}>Отхвърлени</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-info btn-custom">
+                                    <i class="bi bi-funnel"></i> Филтрирай
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th><input type="checkbox" id="selectAll"></th>
+                                    <th>ID</th>
+                                    <th>Име</th>
+                                    <th>Статус</th>
+                                    <th>Описание</th>
+                                    <th>Дата</th>
+                                    <th>Контакт</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in requests %}
+                                <tr>
+                                    <td><input type="checkbox" class="request-checkbox" value="{{ req.id }}"></td>
+                                    <td>{{ req.id }}</td>
+                                    <td>{{ req.name }}</td>
+                                    <td>
+                                        {% if req.status == 'Активен' %}
+                                            <span class="badge bg-primary">{{ req.status }}</span>
+                                        {% elif req.status == 'Завършена' %}
+                                            <span class="badge bg-success">{{ req.status }}</span>
+                                        {% elif req.status == 'Отхвърлена' %}
+                                            <span class="badge bg-danger">{{ req.status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ req.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ req.description[:50] }}{% if req.description|length > 50 %}...{% endif %}</td>
+                                    <td>{{ req.timestamp.strftime('%d.%m.%Y') if req.timestamp else '' }}</td>
+                                    <td>
+                                        <small>
+                                            <strong>Email:</strong> {{ req.email }}<br>
+                                            {% if req.phone %}<strong>Тел:</strong> {{ req.phone }}{% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('edit_request', id=req.id) }}" 
+                                               class="btn btn-sm edit-btn" 
+                                               title="Редактирай">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            {% if req.status != 'Завършена' %}
+                                                <form method="post" action="{{ url_for('approve_request', id=req.id) }}" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm approve-btn" title="Одобри">
+                                                        <i class="bi bi-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                            <button type="button" 
+                                                    class="btn btn-sm delete-btn" 
+                                                    onclick="confirmDelete('request', {{ req.id }}, '{{ req.name }}')"
+                                                    title="Изтрий">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="8" class="text-center py-4">Няма заявки за показване.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Bulk Actions -->
+                    <div class="mt-3">
+                        <button id="bulkApprove" class="btn btn-success btn-sm" disabled>
+                            <i class="bi bi-check-circle"></i> Одобри избраните
+                        </button>
+                        <button id="bulkReject" class="btn btn-warning btn-sm" disabled>
+                            <i class="bi bi-x-circle"></i> Отхвърли избраните
+                        </button>
+                        <button id="bulkDelete" class="btn btn-danger btn-sm" disabled>
+                            <i class="bi bi-trash"></i> Изтрий избраните
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Volunteers Tab -->
+            <div class="tab-pane fade" id="volunteers" role="tabpanel">
+                <div class="table-container">
+                    <h4><i class="bi bi-people"></i> Управление на доброволци</h4>
+                    
+                    <!-- Search Section -->
+                    <div class="filter-section">
+                        <form method="get" action="{{ url_for('search_volunteers') }}" class="row g-3">
+                            <div class="col-md-8">
+                                <input type="text" name="q" class="form-control" 
+                                       placeholder="Търси по име, имейл или телефон..." 
+                                       value="{{ request.args.get('q', '') }}">
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-info btn-custom">
+                                    <i class="bi bi-search"></i> Търси
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Име</th>
+                                    <th>Имейл</th>
+                                    <th>Телефон</th>
+                                    <th>Локация</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for v in volunteers %}
+                                <tr>
+                                    <td>{{ v.id }}</td>
+                                    <td>{{ v.name }}</td>
+                                    <td>{{ v.email }}</td>
+                                    <td>{{ v.phone or 'Не е указан' }}</td>
+                                    <td>{{ v.location or 'Не е указана' }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('edit_volunteer', id=v.id) }}" 
+                                               class="btn btn-sm edit-btn"
+                                               title="Редактирай">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-sm delete-btn" 
+                                                    onclick="confirmDelete('volunteer', {{ v.id }}, '{{ v.name }}')"
+                                                    title="Изтрий">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="6" class="text-center py-4">Няма доброволци за показване.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                <div class="table-container">
+                    <h4><i class="bi bi-graph-up"></i> Статистики и анализи</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="requestsChart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="volunteersChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Tab -->
+            <div class="tab-pane fade" id="news" role="tabpanel">
+                <div class="news-section">
+                    <h4><i class="bi bi-newspaper"></i> Управление на новини</h4>
+                    
+                    <!-- Add News Form -->
+                    <div class="mb-4">
+                        <h5>Добави нова новина</h5>
+                        <form method="post" action="{{ url_for('add_news') }}">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <input type="text" name="title" class="form-control" placeholder="Заглавие" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <textarea name="content" class="form-control" placeholder="Съдържание" required rows="2"></textarea>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-success btn-custom w-100">
+                                        <i class="bi bi-plus"></i> Добави
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- News List -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Заглавие</th>
+                                    <th>Съдържание</th>
+                                    <th>Дата</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for news in latest_news %}
+                                <tr>
+                                    <td><strong>{{ news.title }}</strong></td>
+                                    <td>{{ news.content[:100] }}{% if news.content|length > 100 %}...{% endif %}</td>
+                                    <td>{{ news.timestamp.strftime('%d.%m.%Y %H:%M') if news.timestamp else '' }}</td>
+                                    <td>
+                                        <button type="button" 
+                                                class="btn btn-sm delete-btn" 
+                                                onclick="confirmDelete('news', {{ news.id }}, '{{ news.title }}')"
+                                                title="Изтрий">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr><td colspan="4" class="text-center py-4">Няма новини.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Charts
+document.addEventListener('DOMContentLoaded', function() {
+    // Requests Chart
+    const requestsCtx = document.getElementById('requestsChart').getContext('2d');
+    new Chart(requestsCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Активни', 'Завършени', 'Отхвърлени', 'Pending'],
+            datasets: [{
+                data: [
+                    {{ requests|selectattr('status', 'equalto', 'Активен')|list|length }},
+                    {{ requests|selectattr('status', 'equalto', 'Завършена')|list|length }},
+                    {{ requests|selectattr('status', 'equalto', 'Отхвърлена')|list|length }},
+                    {{ requests|selectattr('status', 'equalto', 'Pending')|list|length }}
+                ],
+                backgroundColor: ['#007bff', '#28a745', '#dc3545', '#6c757d']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Статистика на заявките'
+                }
+            }
+        }
+    });
+
+    // Volunteers by location chart
+    const volunteersCtx = document.getElementById('volunteersChart').getContext('2d');
+    new Chart(volunteersCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for location in location_stats.keys() %}'{{ location }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Доброволци по локация',
+                data: [{% for count in location_stats.values() %}{{ count }}{% if not loop.last %},{% endif %}{% endfor %}],
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Доброволци по локации'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+
+// Select All functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.request-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+    toggleBulkButtons();
+});
+
+// Toggle bulk action buttons
+function toggleBulkButtons() {
+    const checkedBoxes = document.querySelectorAll('.request-checkbox:checked');
+    const bulkButtons = ['bulkApprove', 'bulkReject', 'bulkDelete'];
+    
+    bulkButtons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            button.disabled = checkedBoxes.length === 0;
+        }
+    });
+}
+
+// Add event listeners to checkboxes
+document.querySelectorAll('.request-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', toggleBulkButtons);
+});
+
+// Confirmation dialogs
+function confirmDelete(type, id, name) {
+    if (confirm(`Сигурни ли сте, че искате да изтриете ${type === 'request' ? 'заявката' : type === 'volunteer' ? 'доброволеца' : 'новината'} "${name}"?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/delete_${type}/${id}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Bulk actions
+document.getElementById('bulkApprove')?.addEventListener('click', function() {
+    const checkedIds = Array.from(document.querySelectorAll('.request-checkbox:checked')).map(cb => cb.value);
+    if (checkedIds.length > 0 && confirm(`Одобряване на ${checkedIds.length} заявки. Продължаване?`)) {
+        // Implementation for bulk approve
+        console.log('Bulk approve:', checkedIds);
+    }
+});
+
+document.getElementById('bulkReject')?.addEventListener('click', function() {
+    const checkedIds = Array.from(document.querySelectorAll('.request-checkbox:checked')).map(cb => cb.value);
+    if (checkedIds.length > 0 && confirm(`Отхвърляне на ${checkedIds.length} заявки. Продължаване?`)) {
+        // Implementation for bulk reject
+        console.log('Bulk reject:', checkedIds);
+    }
+});
+
+document.getElementById('bulkDelete')?.addEventListener('click', function() {
+    const checkedIds = Array.from(document.querySelectorAll('.request-checkbox:checked')).map(cb => cb.value);
+    if (checkedIds.length > 0 && confirm(`ВНИМАНИЕ: Изтриване на ${checkedIds.length} заявки. Това действие е необратимо!`)) {
+        // Implementation for bulk delete
+        console.log('Bulk delete:', checkedIds);
+    }
+});
+</script>
 {% endblock %}

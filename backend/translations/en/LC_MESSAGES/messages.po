@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-25 09:43+0200\n"
+"POT-Creation-Date: 2025-07-29 17:35+0200\n"
 "PO-Revision-Date: 2025-07-25 09:46+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,8 +18,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
+#: templates/add_volunteer.html:4 templates/base.html:170
 #: templates/index.html:86
 msgid "Добре дошли!"
+msgstr ""
+
+#: templates/admin_volunteers.html:6
+msgid "Списък с доброволци"
+msgstr ""
+
+#: templates/admin_volunteers.html:10
+msgid "Търсене по име, имейл или телефон"
+msgstr ""
+
+#: templates/admin_volunteers.html:11
+msgid "Търси"
+msgstr ""
+
+#: templates/admin_volunteers.html:14
+msgid "Назад към админ панел"
+msgstr ""
+
+#: templates/admin_volunteers.html:15
+msgid "Добави доброволец"
+msgstr ""
+
+#: templates/admin_volunteers.html:20
+msgid "Име"
+msgstr ""
+
+#: templates/admin_volunteers.html:21
+msgid "Имейл"
+msgstr ""
+
+#: templates/admin_volunteers.html:22
+msgid "Телефон"
+msgstr ""
+
+#: templates/admin_volunteers.html:23
+msgid "Град/регион"
+msgstr ""
+
+#: templates/admin_volunteers.html:24
+msgid "Действия"
+msgstr ""
+
+#: templates/admin_volunteers.html:45
+msgid "Експортирай в CSV"
 msgstr ""
 
 #: templates/index.html:96

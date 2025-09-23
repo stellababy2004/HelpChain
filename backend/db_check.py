@@ -10,4 +10,11 @@ with app.app_context():
     requests = HelpRequest.query.all()
     print("Брой заявки в HelpRequest:", len(requests))
     for req in requests:
-        print("ID:", req.id, "Name:", getattr(req, "name", None), "Status:", getattr(req, "status", None))
+        print(
+            "ID:",
+            req.id,
+            "Name:",
+            getattr(req, "name", None),
+            "Status:",
+            getattr(req, "status", None),
+        )

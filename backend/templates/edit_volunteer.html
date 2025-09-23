@@ -1,22 +1,12 @@
 {% extends "base.html" %}
+{% block title %}Edit Volunteer{% endblock %}
 {% block content %}
-<div class="container mt-5">
-    <h2>Редакция на доброволец</h2>
-    <form method="post">
-        <div class="mb-3">
-            <label>Име</label>
-            <input type="text" name="name" class="form-control" value="{{ volunteer.name }}" required>
-        </div>
-        <div class="mb-3">
-            <label>Имейл</label>
-            <input type="email" name="email" class="form-control" value="{{ volunteer.email }}" required>
-        </div>
-        <div class="mb-3">
-            <label>Телефон</label>
-            <input type="text" name="phone" class="form-control" value="{{ volunteer.phone }}">
-        </div>
-        <button type="submit" class="btn btn-primary">Запази</button>
-        <a href="{{ url_for('admin_volunteers') }}" class="btn btn-secondary">Назад</a>
-    </form>
-</div>
+<h1>Edit Volunteer</h1>
+<form method="post">
+    <input type="text" name="name" value="{{ volunteer.name }}" required><br>
+    <input type="email" name="email" value="{{ volunteer.email }}" required><br>
+    <input type="text" name="phone" value="{{ volunteer.phone }}"><br>
+    <input type="text" name="location" value="{{ volunteer.location }}"><br>
+    <button type="submit">Save</button>
+</form>
 {% endblock %}

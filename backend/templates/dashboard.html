@@ -1,29 +1,29 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}{{ _('Табло') }}{% endblock %}
 
 {% block content %}
-<h1>📋 Volunteer Dashboard</h1>
+<h1>📋 {{ _('Табло на доброволеца') }}</h1>
 
 <!-- Филтриране по статус -->
 <form method="GET" action="{{ url_for('dashboard') }}">
-    <label for="status">Filter by status:</label>
-    <select name="status" id="status" title="Filter help requests by status" onchange="this.form.submit()">
-        <option value="All" {% if filter_status == 'All' %}selected{% endif %}>All</option>
-        <option value="In Progress" {% if filter_status == 'In Progress' %}selected{% endif %}>In Progress</option>
-        <option value="Resolved" {% if filter_status == 'Resolved' %}selected{% endif %}>Resolved</option>
+    <label for="status">{{ _('Филтрирай по статус:') }}</label>
+    <select name="status" id="status" title="{{ _('Филтрирай сигналите по статус') }}" onchange="this.form.submit()">
+        <option value="All" {% if filter_status == 'All' %}selected{% endif %}>{{ _('Всички') }}</option>
+        <option value="In Progress" {% if filter_status == 'In Progress' %}selected{% endif %}>{{ _('В процес') }}</option>
+        <option value="Resolved" {% if filter_status == 'Resolved' %}selected{% endif %}>{{ _('Приключени') }}</option>
     </select>
 </form>
 
 {% if requests %}
-    <table class="vol-table">
+    <table class="vol-table table table-bordered">
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>{{ _('Име') }}</th>
+                <th>{{ _('Имейл') }}</th>
+                <th>{{ _('Описание') }}</th>
+                <th>{{ _('Статус') }}</th>
+                <th>{{ _('Действия') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -33,15 +33,15 @@
                 <td>{{ request.name }}</td>
                 <td>{{ request.email }}</td>
                 <td>{{ request.description }}</td>
-                <td>{{ request.status }}</td>
+                <td>{{ _(request.status) }}</td>
                 <td>
                     {% if request.status != "Resolved" %}
-                    <form method="POST" action="/resolve/{{ request.id }}" class="inline-form">
+                    <form method="POST" action="{{ url_for('resolve', request_id=request.id) }}" class="inline-form">
                         <button type="submit">✅</button>
                     </form>
                     {% endif %}
-                    <form method="POST" action="/delete/{{ request.id }}" class="inline-form">
-                        <button type="submit" onclick="return confirm('Are you sure?')">🗑️</button>
+                    <form method="POST" action="{{ url_for('delete', request_id=request.id) }}" class="inline-form">
+                        <button type="submit" onclick="return confirm('{{ _('Сигурни ли сте?') }}')">🗑️</button>
                     </form>
                 </td>
             </tr>
@@ -49,18 +49,27 @@
         </tbody>
     </table>
 {% else %}
-    <p>No help requests found.</p>
+    <p>{{ _('Няма намерени сигнали за помощ.') }}</p>
 {% endif %}
 
 <!-- Линк към конкретен сигнал -->
-<a href="{{ url_for('show_signal', signal_id=7) }}">Виж сигнал 7</a>
+<a href="{{ url_for('show_signal', signal_id=7) }}">{{ _('Виж сигнал 7') }}</a>
 
 <!-- Линк към таблото -->
-<a href="{{ url_for('dashboard') }}">Табло</a>
+<a href="{{ url_for('dashboard') }}">{{ _('Табло') }}</a>
 
 <!-- Линк към доброволците -->
-<a href="{{ url_for('volunteers') }}">Доброволци</a>
+<a href="{{ url_for('volunteers') }}">{{ _('Доброволци') }}</a>
 
-<a href="{{ url_for('submit_request') }}">← Back to Help Form</a>
+<a href="{{ url_for('submit_request') }}">← {{ _('Назад към формата за помощ') }}</a>
+
+<!-- Селектор за език -->
+<form method="POST" action="{{ url_for('set_language') }}" class="language-form">
+    <label for="language-select">{{ _('Изберете език:') }}</label>
+    <select name="language" id="language-select" onchange="this.form.submit()">
+        <option value="en" {% if get_locale() == 'en' %}selected{% endif %}>English</option>
+        <option value="bg" {% if get_locale() == 'bg' %}selected{% endif %}>Български</option>
+    </select>
+</form>
 {% endblock %}
 

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Търсене{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Търсене и филтри</h2>
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4">
+            <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Търси по име или описание">
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">Всички статуси</option>
+                <option value="Активен" {% if status == "Активен" %}selected{% endif %}>Активен</option>
+                <option value="Завършена" {% if status == "Завършена" %}selected{% endif %}>Завършена</option>
+                <option value="Отхвърлена" {% if status == "Отхвърлена" %}selected{% endif %}>Отхвърлена</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="location" value="{{ location }}" class="form-control" placeholder="Локация">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Търси</button>
+        </div>
+    </form>
+
+    <h4>Доброволци</h4>
+    <ul>
+        {% for v in volunteers %}
+            <li>{{ v.name }} – {{ v.location }}</li>
+        {% else %}
+            <li>Няма доброволци.</li>
+        {% endfor %}
+    </ul>
+
+    <h4>Заявки</h4>
+    <ul>
+        {% for r in requests %}
+            <li>{{ r.description }} – {{ r.status }}</li>
+        {% else %}
+            <li>Няма заявки.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

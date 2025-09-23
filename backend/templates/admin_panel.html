@@ -1,0 +1,19 @@
+from flask_login import login_required, current_user
+
+@app.route('/admin')
+@login_required
+def admin_panel():
+    if not current_user.is_admin:
+        return redirect(url_for('index'))
+    # Зареждаш admin_panel.html с нужните данни
+    return render_template('admin_panel.html', ...)
+    <!-- admin_panel.html -->
+{% if current_user.is_authenticated and current_user.is_admin %}
+    <!-- Тук са таблиците с доброволци и заявки -->
+    <h2>Доброволци</h2>
+    <!-- таблица с доброволци -->
+    <h2>Активни заявки</h2>
+    <!-- таблица с заявки -->
+{% else %}
+    <div class="alert alert-danger mt-5 text-center">Нямате достъп до тази страница!</div>
+{% endif %}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Нова регистрация</title>
+  <title>{{ _('Нова регистрация') }}</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -32,11 +32,12 @@
   </style>
 </head>
 <body>
-  <h2>🆕 Нова регистрация в HelpChain</h2>
-  <p><strong>Име:</strong> {{ username }}</p>
-  <p><strong>Имейл:</strong> {{ email }}</p>
-  <p>Моля, провери в системата дали профилът отговаря на критериите.</p>
-  <p>Добре дошъл/дошла в нашата общност!</p>
-  <a href="{{ login_url }}">Вход в системата</a>
+  <h2>🆕 {{ _('Нова регистрация в HelpChain') }}</h2>
+  <p><strong>{{ _('Име') }}:</strong> {{ username }}</p>
+  <p><strong>{{ _('Имейл') }}:</strong> {{ email }}</p>
+  <p>{{ _('Моля, провери в системата дали профилът отговаря на критериите.') }}</p>
+  <p>{{ _('Добре дошъл/дошла в нашата общност!') }}</p>
+  <a href="{{ login_url }}">{{ _('Вход в системата') }}</a>
+ 
 </body>
 </html>

@@ -1,0 +1,492 @@
+2025-07-30 15:11:32,701 24196 INFO http.client instrumented
+2025-07-30 15:11:32,701 24196 INFO http.client instrumented
+2025-07-30 15:11:32,701 24196 INFO urllib.request instrumented
+2025-07-30 15:11:32,701 24196 INFO urllib.request instrumented
+2025-07-30 15:11:32,702 24196 INFO concurrent.futures instrumented
+2025-07-30 15:11:32,702 24196 INFO concurrent.futures instrumented
+2025-07-30 15:11:32,703 24196 INFO django.core.handlers.asgi is not present
+2025-07-30 15:11:32,703 24196 INFO django.core.handlers.asgi is not present
+2025-07-30 15:11:32,703 24196 INFO django.core.handlers.wsgi is not present
+2025-07-30 15:11:32,703 24196 INFO django.core.handlers.wsgi is not present
+2025-07-30 15:11:32,706 24196 INFO django.core.handlers.base is not present
+2025-07-30 15:11:32,706 24196 INFO django.core.handlers.base is not present
+2025-07-30 15:11:32,707 24196 INFO django.conf.urls is not present
+2025-07-30 15:11:32,707 24196 INFO django.conf.urls is not present
+2025-07-30 15:11:32,707 24196 INFO django.urls is not present
+2025-07-30 15:11:32,707 24196 INFO django.urls is not present
+2025-07-30 15:11:32,707 24196 INFO django.template is not present
+2025-07-30 15:11:32,707 24196 INFO django.template is not present
+2025-07-30 15:11:32,708 24196 INFO django.core.wsgi is not present
+2025-07-30 15:11:32,708 24196 INFO django.core.wsgi is not present
+2025-07-30 15:11:32,708 24196 INFO django.core.asgi is not present
+2025-07-30 15:11:32,708 24196 INFO django.core.asgi is not present
+2025-07-30 15:11:32,712 24196 INFO sqlite3 instrumented
+2025-07-30 15:11:32,712 24196 INFO sqlite3 instrumented
+2025-07-30 15:11:32,712 24196 INFO sqlite3.dbapi2 instrumented
+2025-07-30 15:11:32,712 24196 INFO sqlite3.dbapi2 instrumented
+2025-07-30 15:11:32,712 24196 INFO pymysql is not present
+2025-07-30 15:11:32,712 24196 INFO pymysql is not present
+2025-07-30 15:11:32,713 24196 INFO MySQLdb.connections is not present
+2025-07-30 15:11:32,713 24196 INFO MySQLdb.connections is not present
+2025-07-30 15:11:32,860 24196 INFO flask instrumented
+2025-07-30 15:11:32,860 24196 INFO flask instrumented
+2025-07-30 15:11:32,861 24196 INFO redis.client is not present
+2025-07-30 15:11:32,861 24196 INFO redis.client is not present
+2025-07-30 15:11:32,861 24196 INFO redis.connection is not present
+2025-07-30 15:11:32,861 24196 INFO redis.connection is not present
+2025-07-30 15:11:32,861 24196 INFO redis.asyncio.client is not present
+2025-07-30 15:11:32,861 24196 INFO redis.asyncio.client is not present
+2025-07-30 15:11:32,861 24196 INFO jinja2.environment instrumented
+2025-07-30 15:11:32,861 24196 INFO jinja2.environment instrumented
+2025-07-30 15:11:32,862 24196 INFO pymemcache.client.base is not present
+2025-07-30 15:11:32,862 24196 INFO pymemcache.client.base is not present
+2025-07-30 15:11:32,862 24196 INFO psycopg2 is not present
+2025-07-30 15:11:32,862 24196 INFO psycopg2 is not present
+2025-07-30 15:11:32,862 24196 INFO psycopg2.extensions is not present
+2025-07-30 15:11:32,862 24196 INFO psycopg2.extensions is not present
+2025-07-30 15:11:32,863 24196 INFO psycopg2._psycopg is not present
+2025-07-30 15:11:32,863 24196 INFO psycopg2._psycopg is not present
+2025-07-30 15:11:32,863 24196 INFO psycopg2._json is not present
+2025-07-30 15:11:32,863 24196 INFO psycopg2._json is not present
+2025-07-30 15:11:32,863 24196 INFO cassandra.cluster is not present
+2025-07-30 15:11:32,863 24196 INFO cassandra.cluster is not present
+2025-07-30 15:11:32,864 24196 INFO memcache is not present
+2025-07-30 15:11:32,864 24196 INFO memcache is not present
+2025-07-30 15:11:32,864 24196 INFO bottle is not present
+2025-07-30 15:11:32,864 24196 INFO bottle is not present
+2025-07-30 15:11:32,864 24196 INFO cherrypy._cptree is not present
+2025-07-30 15:11:32,864 24196 INFO cherrypy._cptree is not present
+2025-07-30 15:11:32,864 24196 INFO cherrypy._cpwsgi is not present
+2025-07-30 15:11:32,864 24196 INFO cherrypy._cpwsgi is not present
+2025-07-30 15:11:32,865 24196 INFO cherrypy._cprequest is not present
+2025-07-30 15:11:32,865 24196 INFO cherrypy._cprequest is not present
+2025-07-30 15:11:32,865 24196 INFO cherrypy._cpdispatch is not present
+2025-07-30 15:11:32,865 24196 INFO cherrypy._cpdispatch is not present
+2025-07-30 15:11:32,865 24196 INFO pyramid.router is not present
+2025-07-30 15:11:32,865 24196 INFO pyramid.router is not present
+2025-07-30 15:11:32,866 24196 INFO pyramid.config is not present
+2025-07-30 15:11:32,866 24196 INFO pyramid.config is not present
+2025-07-30 15:11:32,866 24196 INFO pyramid.config.views is not present
+2025-07-30 15:11:32,866 24196 INFO pyramid.config.views is not present
+2025-07-30 15:11:32,866 24196 INFO pyramid.renderers is not present
+2025-07-30 15:11:32,866 24196 INFO pyramid.renderers is not present
+2025-07-30 15:11:32,867 24196 INFO pyramid.httpexceptions is not present
+2025-07-30 15:11:32,867 24196 INFO pyramid.httpexceptions is not present
+2025-07-30 15:11:32,922 24196 INFO mako.template instrumented
+2025-07-30 15:11:32,922 24196 INFO mako.template instrumented
+2025-07-30 15:11:32,922 24196 INFO genshi.template is not present
+2025-07-30 15:11:32,922 24196 INFO genshi.template is not present
+2025-07-30 15:11:32,922 24196 INFO genshi is not present
+2025-07-30 15:11:32,922 24196 INFO genshi is not present
+2025-07-30 15:11:33,052 24196 INFO httpx._client instrumented
+2025-07-30 15:11:33,052 24196 INFO httpx._client instrumented
+2025-07-30 15:11:33,052 24196 INFO httplib2 is not present
+2025-07-30 15:11:33,052 24196 INFO httplib2 is not present
+2025-07-30 15:11:33,077 24196 INFO urllib3.connectionpool instrumented
+2025-07-30 15:11:33,077 24196 INFO urllib3.connectionpool instrumented
+2025-07-30 15:11:33,077 24196 INFO asyncpg is not present
+2025-07-30 15:11:33,077 24196 INFO asyncpg is not present
+2025-07-30 15:11:33,077 24196 INFO aiomysql.cursors is not present
+2025-07-30 15:11:33,077 24196 INFO aiomysql.cursors is not present
+2025-07-30 15:11:33,078 24196 INFO aioredis.client is not present
+2025-07-30 15:11:33,078 24196 INFO aioredis.client is not present
+2025-07-30 15:11:33,078 24196 INFO aredis.client is not present
+2025-07-30 15:11:33,078 24196 INFO aredis.client is not present
+2025-07-30 15:11:33,078 24196 INFO pymongo.mongo_client is not present
+2025-07-30 15:11:33,078 24196 INFO pymongo.mongo_client is not present
+2025-07-30 15:11:33,078 24196 INFO pymongo.topology is not present
+2025-07-30 15:11:33,078 24196 INFO pymongo.topology is not present
+2025-07-30 15:11:33,079 24196 INFO pymongo.database is not present
+2025-07-30 15:11:33,079 24196 INFO pymongo.database is not present
+2025-07-30 15:11:33,079 24196 INFO pymongo.collection is not present
+2025-07-30 15:11:33,079 24196 INFO pymongo.collection is not present
+2025-07-30 15:11:33,123 24196 INFO starlette.concurrency instrumented
+2025-07-30 15:11:33,123 24196 INFO starlette.concurrency instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.applications instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.applications instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.routing instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.routing instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.middleware.exceptions instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.middleware.exceptions instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.exceptions instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.exceptions instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.middleware.errors instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.middleware.errors instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.background instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.background instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.responses instrumented
+2025-07-30 15:11:33,153 24196 INFO starlette.responses instrumented
+2025-07-30 15:11:33,465 24196 INFO fastapi.applications instrumented
+2025-07-30 15:11:33,465 24196 INFO fastapi.applications instrumented
+2025-07-30 15:11:33,466 24196 INFO fastapi.routing instrumented
+2025-07-30 15:11:33,466 24196 INFO fastapi.routing instrumented
+2025-07-30 15:11:33,466 24196 INFO cx_Oracle is not present
+2025-07-30 15:11:33,466 24196 INFO cx_Oracle is not present
+2025-07-30 15:11:33,466 24196 INFO oracledb is not present
+2025-07-30 15:11:33,466 24196 INFO oracledb is not present
+2025-07-30 15:11:33,466 24196 INFO pymssql is not present
+2025-07-30 15:11:33,466 24196 INFO pymssql is not present
+2025-07-30 15:11:33,467 24196 INFO pyodbc is not present
+2025-07-30 15:11:33,467 24196 INFO pyodbc is not present
+2025-07-30 15:11:33,467 24196 INFO streamlit.runtime.scriptrunner.script_runner is not present
+2025-07-30 15:11:33,467 24196 INFO streamlit.runtime.scriptrunner.script_runner is not present
+2025-07-30 15:11:33,467 24196 INFO tornado.httpserver is not present
+2025-07-30 15:11:33,467 24196 INFO tornado.httpserver is not present
+2025-07-30 15:11:33,467 24196 INFO tornado.routing is not present
+2025-07-30 15:11:33,467 24196 INFO tornado.routing is not present
+2025-07-30 15:11:33,467 24196 INFO async_cron.job is not present
+2025-07-30 15:11:33,467 24196 INFO async_cron.job is not present
+2025-07-30 15:11:33,468 24196 INFO celery.app.trace is not present
+2025-07-30 15:11:33,468 24196 INFO celery.app.trace is not present
+2025-07-30 15:11:33,468 24196 INFO celery.app.task is not present
+2025-07-30 15:11:33,468 24196 INFO celery.app.task is not present
+2025-07-30 15:11:33,468 24196 INFO gunicorn.workers.sync is not present
+2025-07-30 15:11:33,468 24196 INFO gunicorn.workers.sync is not present
+2025-07-30 15:11:33,468 24196 INFO gunicorn.http.wsgi is not present
+2025-07-30 15:11:33,468 24196 INFO gunicorn.http.wsgi is not present
+2025-07-30 15:11:33,469 24196 INFO waitress.task is not present
+2025-07-30 15:11:33,469 24196 INFO waitress.task is not present
+2025-07-30 15:11:33,469 24196 INFO cheroot.server is not present
+2025-07-30 15:11:33,469 24196 INFO cheroot.server is not present
+2025-07-30 15:11:33,469 24196 INFO cheroot.wsgi is not present
+2025-07-30 15:11:33,469 24196 INFO cheroot.wsgi is not present
+2025-07-30 15:11:33,525 24196 INFO wsgiref.handlers instrumented
+2025-07-30 15:11:33,525 24196 INFO wsgiref.handlers instrumented
+2025-07-30 15:11:33,534 24196 INFO werkzeug.debug instrumented
+2025-07-30 15:11:33,534 24196 INFO werkzeug.debug instrumented
+2025-07-30 15:11:33,534 24196 INFO werkzeug.serving instrumented
+2025-07-30 15:11:33,534 24196 INFO werkzeug.serving instrumented
+2025-07-30 15:11:33,534 24196 INFO werkzeug.wrappers.response instrumented
+2025-07-30 15:11:33,534 24196 INFO werkzeug.wrappers.response instrumented
+2025-07-30 15:11:33,534 24196 INFO pika.channel is not present
+2025-07-30 15:11:33,534 24196 INFO pika.channel is not present
+2025-07-30 15:11:33,961 24196 INFO Agent not hosted in cloud environment
+2025-07-30 15:11:33,961 24196 INFO Agent not hosted in cloud environment
+2025-07-30 15:22:18,080 28520 INFO http.client instrumented
+2025-07-30 15:22:18,080 28520 INFO http.client instrumented
+2025-07-30 15:22:18,080 28520 INFO urllib.request instrumented
+2025-07-30 15:22:18,080 28520 INFO urllib.request instrumented
+2025-07-30 15:22:18,081 28520 INFO concurrent.futures instrumented
+2025-07-30 15:22:18,081 28520 INFO concurrent.futures instrumented
+2025-07-30 15:22:18,081 28520 INFO django.core.handlers.asgi is not present
+2025-07-30 15:22:18,081 28520 INFO django.core.handlers.asgi is not present
+2025-07-30 15:22:18,082 28520 INFO django.core.handlers.wsgi is not present
+2025-07-30 15:22:18,082 28520 INFO django.core.handlers.wsgi is not present
+2025-07-30 15:22:18,082 28520 INFO django.core.handlers.base is not present
+2025-07-30 15:22:18,082 28520 INFO django.core.handlers.base is not present
+2025-07-30 15:22:18,082 28520 INFO django.conf.urls is not present
+2025-07-30 15:22:18,082 28520 INFO django.conf.urls is not present
+2025-07-30 15:22:18,083 28520 INFO django.urls is not present
+2025-07-30 15:22:18,083 28520 INFO django.urls is not present
+2025-07-30 15:22:18,083 28520 INFO django.template is not present
+2025-07-30 15:22:18,083 28520 INFO django.template is not present
+2025-07-30 15:22:18,084 28520 INFO django.core.wsgi is not present
+2025-07-30 15:22:18,084 28520 INFO django.core.wsgi is not present
+2025-07-30 15:22:18,084 28520 INFO django.core.asgi is not present
+2025-07-30 15:22:18,084 28520 INFO django.core.asgi is not present
+2025-07-30 15:22:18,088 28520 INFO sqlite3 instrumented
+2025-07-30 15:22:18,088 28520 INFO sqlite3 instrumented
+2025-07-30 15:22:18,088 28520 INFO sqlite3.dbapi2 instrumented
+2025-07-30 15:22:18,088 28520 INFO sqlite3.dbapi2 instrumented
+2025-07-30 15:22:18,088 28520 INFO pymysql is not present
+2025-07-30 15:22:18,088 28520 INFO pymysql is not present
+2025-07-30 15:22:18,088 28520 INFO MySQLdb.connections is not present
+2025-07-30 15:22:18,088 28520 INFO MySQLdb.connections is not present
+2025-07-30 15:22:18,205 28520 INFO flask instrumented
+2025-07-30 15:22:18,205 28520 INFO flask instrumented
+2025-07-30 15:22:18,206 28520 INFO redis.client is not present
+2025-07-30 15:22:18,206 28520 INFO redis.client is not present
+2025-07-30 15:22:18,206 28520 INFO redis.connection is not present
+2025-07-30 15:22:18,206 28520 INFO redis.connection is not present
+2025-07-30 15:22:18,206 28520 INFO redis.asyncio.client is not present
+2025-07-30 15:22:18,206 28520 INFO redis.asyncio.client is not present
+2025-07-30 15:22:18,206 28520 INFO jinja2.environment instrumented
+2025-07-30 15:22:18,206 28520 INFO jinja2.environment instrumented
+2025-07-30 15:22:18,206 28520 INFO pymemcache.client.base is not present
+2025-07-30 15:22:18,206 28520 INFO pymemcache.client.base is not present
+2025-07-30 15:22:18,207 28520 INFO psycopg2 is not present
+2025-07-30 15:22:18,207 28520 INFO psycopg2 is not present
+2025-07-30 15:22:18,207 28520 INFO psycopg2.extensions is not present
+2025-07-30 15:22:18,207 28520 INFO psycopg2.extensions is not present
+2025-07-30 15:22:18,207 28520 INFO psycopg2._psycopg is not present
+2025-07-30 15:22:18,207 28520 INFO psycopg2._psycopg is not present
+2025-07-30 15:22:18,207 28520 INFO psycopg2._json is not present
+2025-07-30 15:22:18,207 28520 INFO psycopg2._json is not present
+2025-07-30 15:22:18,208 28520 INFO cassandra.cluster is not present
+2025-07-30 15:22:18,208 28520 INFO cassandra.cluster is not present
+2025-07-30 15:22:18,208 28520 INFO memcache is not present
+2025-07-30 15:22:18,208 28520 INFO memcache is not present
+2025-07-30 15:22:18,208 28520 INFO bottle is not present
+2025-07-30 15:22:18,208 28520 INFO bottle is not present
+2025-07-30 15:22:18,208 28520 INFO cherrypy._cptree is not present
+2025-07-30 15:22:18,208 28520 INFO cherrypy._cptree is not present
+2025-07-30 15:22:18,209 28520 INFO cherrypy._cpwsgi is not present
+2025-07-30 15:22:18,209 28520 INFO cherrypy._cpwsgi is not present
+2025-07-30 15:22:18,209 28520 INFO cherrypy._cprequest is not present
+2025-07-30 15:22:18,209 28520 INFO cherrypy._cprequest is not present
+2025-07-30 15:22:18,209 28520 INFO cherrypy._cpdispatch is not present
+2025-07-30 15:22:18,209 28520 INFO cherrypy._cpdispatch is not present
+2025-07-30 15:22:18,210 28520 INFO pyramid.router is not present
+2025-07-30 15:22:18,210 28520 INFO pyramid.router is not present
+2025-07-30 15:22:18,210 28520 INFO pyramid.config is not present
+2025-07-30 15:22:18,210 28520 INFO pyramid.config is not present
+2025-07-30 15:22:18,210 28520 INFO pyramid.config.views is not present
+2025-07-30 15:22:18,210 28520 INFO pyramid.config.views is not present
+2025-07-30 15:22:18,210 28520 INFO pyramid.renderers is not present
+2025-07-30 15:22:18,210 28520 INFO pyramid.renderers is not present
+2025-07-30 15:22:18,211 28520 INFO pyramid.httpexceptions is not present
+2025-07-30 15:22:18,211 28520 INFO pyramid.httpexceptions is not present
+2025-07-30 15:22:18,255 28520 INFO mako.template instrumented
+2025-07-30 15:22:18,255 28520 INFO mako.template instrumented
+2025-07-30 15:22:18,255 28520 INFO genshi.template is not present
+2025-07-30 15:22:18,255 28520 INFO genshi.template is not present
+2025-07-30 15:22:18,255 28520 INFO genshi is not present
+2025-07-30 15:22:18,255 28520 INFO genshi is not present
+2025-07-30 15:22:18,329 28520 INFO httpx._client instrumented
+2025-07-30 15:22:18,329 28520 INFO httpx._client instrumented
+2025-07-30 15:22:18,329 28520 INFO httplib2 is not present
+2025-07-30 15:22:18,329 28520 INFO httplib2 is not present
+2025-07-30 15:22:18,355 28520 INFO urllib3.connectionpool instrumented
+2025-07-30 15:22:18,355 28520 INFO urllib3.connectionpool instrumented
+2025-07-30 15:22:18,356 28520 INFO asyncpg is not present
+2025-07-30 15:22:18,356 28520 INFO asyncpg is not present
+2025-07-30 15:22:18,356 28520 INFO aiomysql.cursors is not present
+2025-07-30 15:22:18,356 28520 INFO aiomysql.cursors is not present
+2025-07-30 15:22:18,356 28520 INFO aioredis.client is not present
+2025-07-30 15:22:18,356 28520 INFO aioredis.client is not present
+2025-07-30 15:22:18,356 28520 INFO aredis.client is not present
+2025-07-30 15:22:18,356 28520 INFO aredis.client is not present
+2025-07-30 15:22:18,357 28520 INFO pymongo.mongo_client is not present
+2025-07-30 15:22:18,357 28520 INFO pymongo.mongo_client is not present
+2025-07-30 15:22:18,357 28520 INFO pymongo.topology is not present
+2025-07-30 15:22:18,357 28520 INFO pymongo.topology is not present
+2025-07-30 15:22:18,357 28520 INFO pymongo.database is not present
+2025-07-30 15:22:18,357 28520 INFO pymongo.database is not present
+2025-07-30 15:22:18,357 28520 INFO pymongo.collection is not present
+2025-07-30 15:22:18,357 28520 INFO pymongo.collection is not present
+2025-07-30 15:22:18,384 28520 INFO starlette.concurrency instrumented
+2025-07-30 15:22:18,384 28520 INFO starlette.concurrency instrumented
+2025-07-30 15:22:18,398 28520 INFO starlette.applications instrumented
+2025-07-30 15:22:18,398 28520 INFO starlette.applications instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.routing instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.routing instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.middleware.exceptions instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.middleware.exceptions instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.exceptions instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.exceptions instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.middleware.errors instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.middleware.errors instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.background instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.background instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.responses instrumented
+2025-07-30 15:22:18,399 28520 INFO starlette.responses instrumented
+2025-07-30 15:22:18,577 28520 INFO fastapi.applications instrumented
+2025-07-30 15:22:18,577 28520 INFO fastapi.applications instrumented
+2025-07-30 15:22:18,578 28520 INFO fastapi.routing instrumented
+2025-07-30 15:22:18,578 28520 INFO fastapi.routing instrumented
+2025-07-30 15:22:18,578 28520 INFO cx_Oracle is not present
+2025-07-30 15:22:18,578 28520 INFO cx_Oracle is not present
+2025-07-30 15:22:18,578 28520 INFO oracledb is not present
+2025-07-30 15:22:18,578 28520 INFO oracledb is not present
+2025-07-30 15:22:18,578 28520 INFO pymssql is not present
+2025-07-30 15:22:18,578 28520 INFO pymssql is not present
+2025-07-30 15:22:18,579 28520 INFO pyodbc is not present
+2025-07-30 15:22:18,579 28520 INFO pyodbc is not present
+2025-07-30 15:22:18,579 28520 INFO streamlit.runtime.scriptrunner.script_runner is not present
+2025-07-30 15:22:18,579 28520 INFO streamlit.runtime.scriptrunner.script_runner is not present
+2025-07-30 15:22:18,579 28520 INFO tornado.httpserver is not present
+2025-07-30 15:22:18,579 28520 INFO tornado.httpserver is not present
+2025-07-30 15:22:18,579 28520 INFO tornado.routing is not present
+2025-07-30 15:22:18,579 28520 INFO tornado.routing is not present
+2025-07-30 15:22:18,580 28520 INFO async_cron.job is not present
+2025-07-30 15:22:18,580 28520 INFO async_cron.job is not present
+2025-07-30 15:22:18,580 28520 INFO celery.app.trace is not present
+2025-07-30 15:22:18,580 28520 INFO celery.app.trace is not present
+2025-07-30 15:22:18,580 28520 INFO celery.app.task is not present
+2025-07-30 15:22:18,580 28520 INFO celery.app.task is not present
+2025-07-30 15:22:18,580 28520 INFO gunicorn.workers.sync is not present
+2025-07-30 15:22:18,580 28520 INFO gunicorn.workers.sync is not present
+2025-07-30 15:22:18,581 28520 INFO gunicorn.http.wsgi is not present
+2025-07-30 15:22:18,581 28520 INFO gunicorn.http.wsgi is not present
+2025-07-30 15:22:18,581 28520 INFO waitress.task is not present
+2025-07-30 15:22:18,581 28520 INFO waitress.task is not present
+2025-07-30 15:22:18,581 28520 INFO cheroot.server is not present
+2025-07-30 15:22:18,581 28520 INFO cheroot.server is not present
+2025-07-30 15:22:18,581 28520 INFO cheroot.wsgi is not present
+2025-07-30 15:22:18,581 28520 INFO cheroot.wsgi is not present
+2025-07-30 15:22:18,588 28520 INFO wsgiref.handlers instrumented
+2025-07-30 15:22:18,588 28520 INFO wsgiref.handlers instrumented
+2025-07-30 15:22:18,594 28520 INFO werkzeug.debug instrumented
+2025-07-30 15:22:18,594 28520 INFO werkzeug.debug instrumented
+2025-07-30 15:22:18,594 28520 INFO werkzeug.serving instrumented
+2025-07-30 15:22:18,594 28520 INFO werkzeug.serving instrumented
+2025-07-30 15:22:18,594 28520 INFO werkzeug.wrappers.response instrumented
+2025-07-30 15:22:18,594 28520 INFO werkzeug.wrappers.response instrumented
+2025-07-30 15:22:18,595 28520 INFO pika.channel is not present
+2025-07-30 15:22:18,595 28520 INFO pika.channel is not present
+2025-07-30 15:22:18,616 28520 INFO Agent not hosted in cloud environment
+2025-07-30 15:22:18,616 28520 INFO Agent not hosted in cloud environment
+2025-07-31 07:33:55,190 10844 INFO http.client instrumented
+2025-07-31 07:33:55,190 10844 INFO http.client instrumented
+2025-07-31 07:33:55,192 10844 INFO urllib.request instrumented
+2025-07-31 07:33:55,192 10844 INFO urllib.request instrumented
+2025-07-31 07:33:55,193 10844 INFO concurrent.futures instrumented
+2025-07-31 07:33:55,193 10844 INFO concurrent.futures instrumented
+2025-07-31 07:33:55,194 10844 INFO django.core.handlers.asgi is not present
+2025-07-31 07:33:55,194 10844 INFO django.core.handlers.asgi is not present
+2025-07-31 07:33:55,194 10844 INFO django.core.handlers.wsgi is not present
+2025-07-31 07:33:55,194 10844 INFO django.core.handlers.wsgi is not present
+2025-07-31 07:33:55,195 10844 INFO django.core.handlers.base is not present
+2025-07-31 07:33:55,195 10844 INFO django.core.handlers.base is not present
+2025-07-31 07:33:55,196 10844 INFO django.conf.urls is not present
+2025-07-31 07:33:55,196 10844 INFO django.conf.urls is not present
+2025-07-31 07:33:55,196 10844 INFO django.urls is not present
+2025-07-31 07:33:55,196 10844 INFO django.urls is not present
+2025-07-31 07:33:55,197 10844 INFO django.template is not present
+2025-07-31 07:33:55,197 10844 INFO django.template is not present
+2025-07-31 07:33:55,197 10844 INFO django.core.wsgi is not present
+2025-07-31 07:33:55,197 10844 INFO django.core.wsgi is not present
+2025-07-31 07:33:55,198 10844 INFO django.core.asgi is not present
+2025-07-31 07:33:55,198 10844 INFO django.core.asgi is not present
+2025-07-31 07:33:55,288 10844 INFO sqlite3 instrumented
+2025-07-31 07:33:55,288 10844 INFO sqlite3 instrumented
+2025-07-31 07:33:55,289 10844 INFO sqlite3.dbapi2 instrumented
+2025-07-31 07:33:55,289 10844 INFO sqlite3.dbapi2 instrumented
+2025-07-31 07:33:55,289 10844 INFO pymysql is not present
+2025-07-31 07:33:55,289 10844 INFO pymysql is not present
+2025-07-31 07:33:55,290 10844 INFO MySQLdb.connections is not present
+2025-07-31 07:33:55,290 10844 INFO MySQLdb.connections is not present
+2025-07-31 07:33:55,738 10844 INFO flask instrumented
+2025-07-31 07:33:55,738 10844 INFO flask instrumented
+2025-07-31 07:33:55,739 10844 INFO redis.client is not present
+2025-07-31 07:33:55,739 10844 INFO redis.client is not present
+2025-07-31 07:33:55,739 10844 INFO redis.connection is not present
+2025-07-31 07:33:55,739 10844 INFO redis.connection is not present
+2025-07-31 07:33:55,740 10844 INFO redis.asyncio.client is not present
+2025-07-31 07:33:55,740 10844 INFO redis.asyncio.client is not present
+2025-07-31 07:33:55,740 10844 INFO jinja2.environment instrumented
+2025-07-31 07:33:55,740 10844 INFO jinja2.environment instrumented
+2025-07-31 07:33:55,740 10844 INFO pymemcache.client.base is not present
+2025-07-31 07:33:55,740 10844 INFO pymemcache.client.base is not present
+2025-07-31 07:33:55,741 10844 INFO psycopg2 is not present
+2025-07-31 07:33:55,741 10844 INFO psycopg2 is not present
+2025-07-31 07:33:55,741 10844 INFO psycopg2.extensions is not present
+2025-07-31 07:33:55,741 10844 INFO psycopg2.extensions is not present
+2025-07-31 07:33:55,741 10844 INFO psycopg2._psycopg is not present
+2025-07-31 07:33:55,741 10844 INFO psycopg2._psycopg is not present
+2025-07-31 07:33:55,742 10844 INFO psycopg2._json is not present
+2025-07-31 07:33:55,742 10844 INFO psycopg2._json is not present
+2025-07-31 07:33:55,742 10844 INFO cassandra.cluster is not present
+2025-07-31 07:33:55,742 10844 INFO cassandra.cluster is not present
+2025-07-31 07:33:55,742 10844 INFO memcache is not present
+2025-07-31 07:33:55,742 10844 INFO memcache is not present
+2025-07-31 07:33:55,743 10844 INFO bottle is not present
+2025-07-31 07:33:55,743 10844 INFO bottle is not present
+2025-07-31 07:33:55,743 10844 INFO cherrypy._cptree is not present
+2025-07-31 07:33:55,743 10844 INFO cherrypy._cptree is not present
+2025-07-31 07:33:55,743 10844 INFO cherrypy._cpwsgi is not present
+2025-07-31 07:33:55,743 10844 INFO cherrypy._cpwsgi is not present
+2025-07-31 07:33:55,743 10844 INFO cherrypy._cprequest is not present
+2025-07-31 07:33:55,743 10844 INFO cherrypy._cprequest is not present
+2025-07-31 07:33:55,744 10844 INFO cherrypy._cpdispatch is not present
+2025-07-31 07:33:55,744 10844 INFO cherrypy._cpdispatch is not present
+2025-07-31 07:33:55,744 10844 INFO pyramid.router is not present
+2025-07-31 07:33:55,744 10844 INFO pyramid.router is not present
+2025-07-31 07:33:55,744 10844 INFO pyramid.config is not present
+2025-07-31 07:33:55,744 10844 INFO pyramid.config is not present
+2025-07-31 07:33:55,745 10844 INFO pyramid.config.views is not present
+2025-07-31 07:33:55,745 10844 INFO pyramid.config.views is not present
+2025-07-31 07:33:55,745 10844 INFO pyramid.renderers is not present
+2025-07-31 07:33:55,745 10844 INFO pyramid.renderers is not present
+2025-07-31 07:33:55,745 10844 INFO pyramid.httpexceptions is not present
+2025-07-31 07:33:55,745 10844 INFO pyramid.httpexceptions is not present
+2025-07-31 07:33:55,872 10844 INFO mako.template instrumented
+2025-07-31 07:33:55,872 10844 INFO mako.template instrumented
+2025-07-31 07:33:55,873 10844 INFO genshi.template is not present
+2025-07-31 07:33:55,873 10844 INFO genshi.template is not present
+2025-07-31 07:33:55,873 10844 INFO genshi is not present
+2025-07-31 07:33:55,873 10844 INFO genshi is not present
+2025-07-31 07:33:56,055 10844 INFO httpx._client instrumented
+2025-07-31 07:33:56,055 10844 INFO httpx._client instrumented
+2025-07-31 07:33:56,055 10844 INFO httplib2 is not present
+2025-07-31 07:33:56,055 10844 INFO httplib2 is not present
+2025-07-31 07:33:56,108 10844 INFO urllib3.connectionpool instrumented
+2025-07-31 07:33:56,108 10844 INFO urllib3.connectionpool instrumented
+2025-07-31 07:33:56,108 10844 INFO asyncpg is not present
+2025-07-31 07:33:56,108 10844 INFO asyncpg is not present
+2025-07-31 07:33:56,109 10844 INFO aiomysql.cursors is not present
+2025-07-31 07:33:56,109 10844 INFO aiomysql.cursors is not present
+2025-07-31 07:33:56,109 10844 INFO aioredis.client is not present
+2025-07-31 07:33:56,109 10844 INFO aioredis.client is not present
+2025-07-31 07:33:56,109 10844 INFO aredis.client is not present
+2025-07-31 07:33:56,109 10844 INFO aredis.client is not present
+2025-07-31 07:33:56,110 10844 INFO pymongo.mongo_client is not present
+2025-07-31 07:33:56,110 10844 INFO pymongo.mongo_client is not present
+2025-07-31 07:33:56,110 10844 INFO pymongo.topology is not present
+2025-07-31 07:33:56,110 10844 INFO pymongo.topology is not present
+2025-07-31 07:33:56,110 10844 INFO pymongo.database is not present
+2025-07-31 07:33:56,110 10844 INFO pymongo.database is not present
+2025-07-31 07:33:56,111 10844 INFO pymongo.collection is not present
+2025-07-31 07:33:56,111 10844 INFO pymongo.collection is not present
+2025-07-31 07:33:56,173 10844 INFO starlette.concurrency instrumented
+2025-07-31 07:33:56,173 10844 INFO starlette.concurrency instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.applications instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.applications instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.routing instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.routing instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.middleware.exceptions instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.middleware.exceptions instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.exceptions instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.exceptions instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.middleware.errors instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.middleware.errors instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.background instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.background instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.responses instrumented
+2025-07-31 07:33:56,210 10844 INFO starlette.responses instrumented
+2025-07-31 07:33:56,939 10844 INFO fastapi.applications instrumented
+2025-07-31 07:33:56,939 10844 INFO fastapi.applications instrumented
+2025-07-31 07:33:56,940 10844 INFO fastapi.routing instrumented
+2025-07-31 07:33:56,940 10844 INFO fastapi.routing instrumented
+2025-07-31 07:33:56,940 10844 INFO cx_Oracle is not present
+2025-07-31 07:33:56,940 10844 INFO cx_Oracle is not present
+2025-07-31 07:33:56,940 10844 INFO oracledb is not present
+2025-07-31 07:33:56,940 10844 INFO oracledb is not present
+2025-07-31 07:33:56,941 10844 INFO pymssql is not present
+2025-07-31 07:33:56,941 10844 INFO pymssql is not present
+2025-07-31 07:33:56,941 10844 INFO pyodbc is not present
+2025-07-31 07:33:56,941 10844 INFO pyodbc is not present
+2025-07-31 07:33:56,941 10844 INFO streamlit.runtime.scriptrunner.script_runner is not present
+2025-07-31 07:33:56,941 10844 INFO streamlit.runtime.scriptrunner.script_runner is not present
+2025-07-31 07:33:56,942 10844 INFO tornado.httpserver is not present
+2025-07-31 07:33:56,942 10844 INFO tornado.httpserver is not present
+2025-07-31 07:33:56,942 10844 INFO tornado.routing is not present
+2025-07-31 07:33:56,942 10844 INFO tornado.routing is not present
+2025-07-31 07:33:56,942 10844 INFO async_cron.job is not present
+2025-07-31 07:33:56,942 10844 INFO async_cron.job is not present
+2025-07-31 07:33:56,942 10844 INFO celery.app.trace is not present
+2025-07-31 07:33:56,942 10844 INFO celery.app.trace is not present
+2025-07-31 07:33:56,943 10844 INFO celery.app.task is not present
+2025-07-31 07:33:56,943 10844 INFO celery.app.task is not present
+2025-07-31 07:33:56,943 10844 INFO gunicorn.workers.sync is not present
+2025-07-31 07:33:56,943 10844 INFO gunicorn.workers.sync is not present
+2025-07-31 07:33:56,943 10844 INFO gunicorn.http.wsgi is not present
+2025-07-31 07:33:56,943 10844 INFO gunicorn.http.wsgi is not present
+2025-07-31 07:33:56,944 10844 INFO waitress.task is not present
+2025-07-31 07:33:56,944 10844 INFO waitress.task is not present
+2025-07-31 07:33:56,944 10844 INFO cheroot.server is not present
+2025-07-31 07:33:56,944 10844 INFO cheroot.server is not present
+2025-07-31 07:33:56,944 10844 INFO cheroot.wsgi is not present
+2025-07-31 07:33:56,944 10844 INFO cheroot.wsgi is not present
+2025-07-31 07:33:56,989 10844 INFO wsgiref.handlers instrumented
+2025-07-31 07:33:56,989 10844 INFO wsgiref.handlers instrumented
+2025-07-31 07:33:57,005 10844 INFO werkzeug.debug instrumented
+2025-07-31 07:33:57,005 10844 INFO werkzeug.debug instrumented
+2025-07-31 07:33:57,005 10844 INFO werkzeug.serving instrumented
+2025-07-31 07:33:57,005 10844 INFO werkzeug.serving instrumented
+2025-07-31 07:33:57,005 10844 INFO werkzeug.wrappers.response instrumented
+2025-07-31 07:33:57,005 10844 INFO werkzeug.wrappers.response instrumented
+2025-07-31 07:33:57,005 10844 INFO pika.channel is not present
+2025-07-31 07:33:57,005 10844 INFO pika.channel is not present
+2025-07-31 07:33:57,085 10844 INFO Agent not hosted in cloud environment
+2025-07-31 07:33:57,085 10844 INFO Agent not hosted in cloud environment

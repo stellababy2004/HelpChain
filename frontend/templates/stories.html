@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Success Stories{% endblock %}
+{% block content %}
+<h1>Success Stories</h1>
+{% for story in stories %}
+    <h2>{{ story.title }}</h2>
+    <p>{{ story.content }}</p>
+    <small>{{ story.timestamp }}</small>
+{% endfor %}
+{% endblock %}

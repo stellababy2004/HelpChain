@@ -1,21 +1,108 @@
 {% extends "base.html" %}
-{% block title %}Вход за админ{% endblock %}
+{% block title %}Admin Login{% endblock %}
 {% block content %}
-<div class="container mt-5" style="max-width:400px;">
-    <h2 class="mb-4 text-primary">Вход за администратор</h2>
-    {% if error %}
-      <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-    <form method="POST">
-        <div class="mb-3">
-            <label for="username" class="form-label">Потребителско име:</label>
-            <input type="text" class="form-control" id="username" name="username" required autofocus>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Парола:</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Вход</button>
-    </form>
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h4 class="card-title mb-3">
+          {% if require_2fa %}
+            <i class="fas fa-shield-alt"></i> Двустепенна автентикация
+          {% else %}
+            <i class="fas fa-user-shield"></i> Админ вход
+          {% endif %}
+        </h4>
+        
+        {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+        
+        <form method="post" action="/admin_login">
+          {% if require_2fa %}
+            <!-- Скрити полета за username и password -->
+            <input type="hidden" name="username" value="{{ username }}">
+            <input type="hidden" name="password" value="{{ password }}">
+            
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              Въведете 6-цифрения код от вашето приложение за автентикация.
+            </div>
+            
+            <div class="mb-3">
+              <label for="totp_token" class="form-label">Код за автентикация</label>
+              <input type="text" 
+                     name="totp_token" 
+                     id="totp_token"
+                     class="form-control text-center" 
+                     placeholder="123456"
+                     maxlength="6"
+                     pattern="[0-9]{6}"
+                     required
+                     autofocus
+                     autocomplete="off">
+              <div class="form-text">
+                <small>Кодът е валиден 30 секунди</small>
+              </div>
+            </div>
+          {% else %}
+            <!-- Обичайни полета за вход -->
+            <div class="mb-3">
+              <label for="username" class="form-label">Потребителско име</label>
+              <input type="text" 
+                     name="username" 
+                     id="username"
+                     class="form-control" 
+                     placeholder="Потребителско име" 
+                     required
+                     autofocus>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Парола</label>
+              <input type="password" 
+                     name="password" 
+                     id="password"
+                     class="form-control" 
+                     placeholder="Парола" 
+                     required>
+            </div>
+          {% endif %}
+          
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">
+              {% if require_2fa %}
+                <i class="fas fa-check"></i> Потвърди
+              {% else %}
+                <i class="fas fa-sign-in-alt"></i> Вход
+              {% endif %}
+            </button>
+          </div>
+          
+          {% if require_2fa %}
+            <div class="text-center mt-3">
+              <a href="{{ url_for('admin_login') }}" class="btn btn-link btn-sm">
+                <i class="fas fa-arrow-left"></i> Назад
+              </a>
+            </div>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
+
+{% if require_2fa %}
+<script>
+// Автоматично изпращане на формата когато се въведат 6 цифри
+document.getElementById('totp_token').addEventListener('input', function(e) {
+    if (e.target.value.length === 6) {
+        // Малка забавка за по-добра user experience
+        setTimeout(function() {
+            e.target.form.submit();
+        }, 300);
+    }
+});
+
+// Автоматично фокусиране на полето
+document.getElementById('totp_token').focus();
+</script>
+{% endif %}
+
 {% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Обратна връзка{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Обратна връзка</h2>
+    <form method="post">
+        <div class="mb-3">
+            <label>Име</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Имейл</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label>Съобщение</label>
+            <textarea name="message" class="form-control" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Изпрати</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,11 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Благодарим!{% endblock %}
+{% block title %}{{ _('Благодарим!') }}{% endblock %}
 {% block content %}
 <div class="container mt-5">
     <div class="alert alert-success">
-        <h2>Благодарим!</h2>
-        <p>Вашата заявка беше изпратена успешно. Ще се свържем с вас при нужда.</p>
-        <a href="{{ url_for('index') }}" class="btn btn-success mt-3">Към началната страница</a>
+        <h2>{{ _('Благодарим!') }}</h2>
+        <p>{{ _('Вашата заявка беше изпратена успешно. Ще се свържем с вас при нужда.') }}</p>
+        <a href="{{ url_for('index') }}" class="btn btn-success mt-3">{{ _('Към началната страница') }}</a>
     </div>
 </div>
+>
+    <option value="bg" {% if get_locale() == 'bg' %}selected{% endif %}>Български</option>
+</sele
 {% endblock %}

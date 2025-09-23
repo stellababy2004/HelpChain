@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Генериране на имейл отговор') }}{% endblock %}
+{% block content %}
+<h2>{{ _('Генериране на имейл отговор') }}</h2>
+<form id="email-form">
+    <label for="question">{{ _('Въпрос от потребител:') }}</label>
+    <input type="text" id="question" name="question" class="form-control" required>
+    <button type="submit" class="btn btn-primary mt-2">{{ _('Генерирай отговор') }}</button>
+</form>
+<div id="email-answer" class="mt-3"></div>
+<script>
+document.getElementById('email-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const question = document.getElementById('question').value;
+    const res = await fetch('/admin/generate_email', {
+        method: 'POST',
+        body: new URLSearchParams({question}),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    });
+    const data = await res.json();
+    document.getElementById('email-answer').innerText = data.answer;
+};
+</script>
+{% endblock %}

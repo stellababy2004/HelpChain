@@ -1,0 +1,45 @@
+from flask import Flask, request, jsonify
+from huggingface_hub import InferenceClient
+
+app = Flask(__name__)
+
+HF_TOKEN = "your_huggingface_token_here"
+
+@app.route('/chatbot_api', methods=['POST'])
+def chatbot_api():
+    user_message = request.json.get('message', '')
+    client = InferenceClient("google/flan-t5-base", token=HF_TOKEN)
+    response = client.text_generation(user_message)
+    return jsonify({'answer': response})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+<div id="chatbot-container">
+    <div id="chatbot-messages">
+        <div class="chat-message bot">
+            Здравей! Аз съм HelpChain Assistant. Как мога да помогна?
+        </div>
+    </div>
+    <form id="chatbot-form">
+        <input type="text" id="chatbot-input" placeholder="Напиши съобщение..." required>
+        <button type="submit">Изпрати</button>
+    </form>
+</div>
+<script>
+document.getElementById('chatbot-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const input = document.getElementById('chatbot-input').value;
+    const res = await fetch('/chatbot_api', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: input})
+    });
+    const data = await res.json();
+    const messages = document.getElementById('chatbot-messages');
+    messages.innerHTML += `<div class="chat-message user">${input}</div>`;
+    messages.innerHTML += `<div class="chat-message bot">${data.answer}</div>`;
+    document.getElementById('chatbot-input').value = '';
+};
+</script>
+<option value="bg" {% if get_locale() == 'bg' %}selected{% endif %}>Български</option>

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Админ панел{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Админ панел</h2>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card text-white bg-primary mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Потребители</h5>
+          <p class="card-text">{{ users|length }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-success mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Доброволци</h5>
+          <p class="card-text">{{ users | selectattr('role', 'equalto', 'volunteer') | list | length }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-warning mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Сигнали</h5>
+          <p class="card-text">{{ signals|length }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="mt-4">Филтри</h3>
+  <form method="get" class="mb-4">
+    <div class="row">
+      <div class="col-md-3">
+        <select name="role" class="form-select">
+          <option value="">Всички роли</option>
+          <option value="admin">Админ</option>
+          <option value="volunteer">Доброволец</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="category" class="form-select">
+          <option value="">Всички категории</option>
+          <option value="медицинска помощ">Медицинска помощ</option>
+          <option value="транспорт">Транспорт</option>
+          <option value="храна">Храна</option>
+          <option value="образование">Образование</option>
+          <option value="други">Други</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-primary">Филтрирай</button>
+      </div>
+    </div>
+  </form>
+
+  <h3 class="mt-4">Потребители</h3>
+  <div class="row">
+    {% set filtered_users = users %}
+    {% if request.query_params.get('role') %}
+      {% set filtered_users = filtered_users | selectattr('role', 'equalto', request.query_params.get('role')) | list %}
+    {% endif %}
+    {% if request.query_params.get('category') %}
+      {% set filtered_users = filtered_users | selectattr('category', 'equalto', request.query_params.get('category')) | list %}
+    {% endif %}
+    {% for u in filtered_users | sort(attribute='username') %}
+      <div class="col-md-4 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">{{ u.username }}</h5>
+            <p class="card-text">Email: {{ u.email }}</p>
+            <p class="card-text">Роля: {{ u.role }}</p>
+            <p class="card-text">Телефон: {{ u.phone or '-' }}</p>
+            <p class="card-text">Адрес: {{ u.address or '-' }}</p>
+            <p class="card-text">Град: {{ u.city or '-' }}</p>
+            <p class="card-text">Категория: {{ u.category or '-' }}</p>
+            <p class="card-text">Наличност: {{ u.availability or '-' }}</p>
+            <a href="/delete_user/{{ u.username }}" class="btn btn-danger btn-sm">Изтрий</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

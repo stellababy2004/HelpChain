@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}История на действията - Админ панел{% endblock %}
+{% block content %}
+<style>
+.logs-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 1400px;
+    padding: 2rem;
+}
+
+.logs-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.filters-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.filter-group select,
+.filter-group input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.log-entry {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s;
+}
+
+.log-entry:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.log-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.log-action {
+    font-weight: bold;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    color: white;
+}
+
+.action-approved_request {
+    background-color: #28a745;
+}
+
+.action-rejected_request {
+    background-color: #dc3545;
+}
+
+.action-added_news {
+    background-color: #007bff;
+}
+
+.action-login {
+    background-color: #6c757d;
+}
+
+.action-default {
+    background-color: #6f42c1;
+}
+
+.log-admin {
+    font-weight: 600;
+    color: #495057;
+}
+
+.log-datetime {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.log-details {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid #007bff;
+}
+
+.log-details-content {
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.log-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.pagination {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pagination a,
+.pagination span {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #495057;
+}
+
+.pagination a:hover {
+    background-color: #e9ecef;
+}
+
+.pagination .current {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.no-logs {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.no-logs i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        min-width: unset;
+    }
+    
+    .log-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .log-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}
+</style>
+
+<div class="logs-container">
+    <div class="logs-header">
+        <h1><i class="fas fa-history"></i> История на действията</h1>
+        <p>Проследяване на всички административни действия в системата</p>
+    </div>
+
+    <!-- Филтри -->
+    <div class="filters-section">
+        <h5><i class="fas fa-filter"></i> Филтри</h5>
+        <form method="GET" action="{{ url_for('admin_logs') }}">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="action">Действие:</label>
+                    <select name="action" id="action">
+                        <option value="">Всички действия</option>
+                        {% for action in unique_actions %}
+                        <option value="{{ action }}" 
+                                {% if action == action_filter %}selected{% endif %}>
+                            {% if action == 'approved_request' %}Одобрена заявка
+                            {% elif action == 'rejected_request' %}Отхвърлена заявка
+                            {% elif action == 'added_news' %}Добавена новина
+                            {% elif action == 'login' %}Влизане в системата
+                            {% else %}{{ action }}
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="entity_type">Тип обект:</label>
+                    <select name="entity_type" id="entity_type">
+                        <option value="">Всички типове</option>
+                        {% for entity_type in unique_entity_types %}
+                        <option value="{{ entity_type }}" 
+                                {% if entity_type == entity_type_filter %}selected{% endif %}>
+                            {% if entity_type == 'help_request' %}Заявка за помощ
+                            {% elif entity_type == 'success_story' %}Успешна история
+                            {% else %}{{ entity_type }}
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="admin">Администратор:</label>
+                    <select name="admin" id="admin">
+                        <option value="">Всички админи</option>
+                        {% for admin_name in unique_admins %}
+                        <option value="{{ admin_name }}" 
+                                {% if admin_name == admin_filter %}selected{% endif %}>
+                            {{ admin_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="filter-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Филтрирай
+                    </button>
+                    <a href="{{ url_for('admin_logs') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Изчисти
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Логове -->
+    {% if logs.items %}
+        <div class="logs-list">
+            {% for log in logs.items %}
+            <div class="log-entry">
+                <div class="log-header">
+                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                        <span class="log-action action-{{ log.action }}">
+                            {% if log.action == 'approved_request' %}
+                                <i class="fas fa-check"></i> Одобрена заявка
+                            {% elif log.action == 'rejected_request' %}
+                                <i class="fas fa-times"></i> Отхвърлена заявка
+                            {% elif log.action == 'added_news' %}
+                                <i class="fas fa-plus"></i> Добавена новина
+                            {% elif log.action == 'login' %}
+                                <i class="fas fa-sign-in-alt"></i> Влизане
+                            {% else %}
+                                <i class="fas fa-cog"></i> {{ log.action }}
+                            {% endif %}
+                        </span>
+                        
+                        <span class="log-admin">
+                            <i class="fas fa-user"></i> {{ log.admin_user.username }}
+                        </span>
+                    </div>
+                    
+                    <span class="log-datetime">
+                        <i class="fas fa-clock"></i> 
+                        {{ log.timestamp.strftime('%d.%m.%Y %H:%M:%S') }}
+                    </span>
+                </div>
+
+                {% if log.details %}
+                <div class="log-details">
+                    {% set details = log.details | from_json %}
+                    <div class="log-details-content">
+                        {% if log.action in ['approved_request', 'rejected_request'] %}
+                            <strong>Заявка:</strong> {{ details.request_title }} (ID: {{ details.request_id }})<br>
+                            <strong>Подател:</strong> {{ details.requester_name }} ({{ details.requester_email }})<br>
+                            <strong>Статус:</strong> {{ details.old_status }} → {{ details.new_status }}
+                        {% elif log.action == 'added_news' %}
+                            <strong>Заглавие:</strong> {{ details.news_title }}<br>
+                            <strong>Съдържание:</strong> {{ details.news_content }}
+                        {% elif log.action == 'login' %}
+                            <strong>Потребител:</strong> {{ details.username }}
+                        {% else %}
+                            {% for key, value in details.items() %}
+                                <strong>{{ key }}:</strong> {{ value }}<br>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="log-meta">
+                    {% if log.entity_type %}
+                    <span><i class="fas fa-tag"></i> 
+                        {% if log.entity_type == 'help_request' %}Заявка за помощ
+                        {% elif log.entity_type == 'success_story' %}Успешна история
+                        {% else %}{{ log.entity_type }}
+                        {% endif %}
+                        {% if log.entity_id %}(ID: {{ log.entity_id }}){% endif %}
+                    </span>
+                    {% endif %}
+                    
+                    {% if log.ip_address %}
+                    <span><i class="fas fa-globe"></i> {{ log.ip_address }}</span>
+                    {% endif %}
+                    
+                    {% if log.user_agent %}
+                    <span><i class="fas fa-desktop"></i> {{ log.user_agent[:50] }}{% if log.user_agent|length > 50 %}...{% endif %}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагиниране -->
+        {% if logs.pages > 1 %}
+        <div class="pagination-container">
+            <div class="pagination">
+                {% if logs.has_prev %}
+                    <a href="{{ url_for('admin_logs', page=logs.prev_num, action=action_filter, entity_type=entity_type_filter, admin=admin_filter) }}">
+                        <i class="fas fa-chevron-left"></i> Предишна
+                    </a>
+                {% endif %}
+                
+                {% for page_num in logs.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != logs.page %}
+                            <a href="{{ url_for('admin_logs', page=page_num, action=action_filter, entity_type=entity_type_filter, admin=admin_filter) }}">
+                                {{ page_num }}
+                            </a>
+                        {% else %}
+                            <span class="current">{{ page_num }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span>...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if logs.has_next %}
+                    <a href="{{ url_for('admin_logs', page=logs.next_num, action=action_filter, entity_type=entity_type_filter, admin=admin_filter) }}">
+                        Следваща <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <div class="no-logs">
+            <i class="fas fa-inbox"></i>
+            <h4>Няма намерени логове</h4>
+            <p>Не са намерени логове, отговарящи на избраните филтри.</p>
+        </div>
+    {% endif %}
+</div>
+
+<div style="text-align: center; margin: 2rem 0;">
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Назад към админ панела
+    </a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="bg">
+<head><meta charset="utf-8"/><title>Профил - HelpChain</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body>
+  <div class="container mt-4">
+    <h2>Моят профил</h2>
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label>Име</label>
+            <input type="text" name="name" value="{{ user.name }}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label>Имейл</label>
+            <input type="email" name="email" value="{{ user.email }}" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label>Снимка</label><br>
+            {% if user.profile_pic %}
+                <img src="{{ url_for('static', filename='profile_pics/' ~ user.profile_pic) }}" width="100">
+            {% endif %}
+            <input type="file" name="profile_pic" class="form-control mt-2">
+        </div>
+        <button type="submit" class="btn btn-primary">Запази промените</button>
+        <a href="{{ url_for('change_password') }}" class="btn btn-secondary">Смени парола</a>
+    </form>
+  </div>
+</body>
+</html>

@@ -76,6 +76,44 @@ Python 3.13 is specified by default.
 
 ---
 
+## 🌍 Multilingual Support
+
+HelpChain поддържа многоезичност чрез [Flask-Babel](https://python-babel.github.io/flask-babel/).
+
+### Добавяне/Обновяване на преводи
+
+1. **Извлечи и обнови преводите:**
+   ```bash
+   python babel_update.py
+   ```
+   Това ще генерира/обнови файловете за всички езици в папка `translations/`.
+
+2. **Редактирай преводите:**
+   - Намери `.po` файловете в `translations/<lang>/LC_MESSAGES/messages.po`
+   - Добави или редактирай преводите с текстов редактор.
+
+3. **Компилирай преводите:**
+   ```bash
+   python babel_update.py
+   ```
+   Скриптът автоматично компилира `.mo` файловете.
+
+4. **Добави нов език:**
+   ```bash
+   python babel_update.py es
+   ```
+   Това ще създаде превод за испански (`es`).
+
+### Как работи преводът в шаблоните
+
+Във всички Jinja2 шаблони текстовете са оградени с:
+```html
+{{ _('Текст за превод') }}
+```
+Това позволява автоматично превключване на езика според избора на потребителя.
+
+---
+
 ## 📬 Contact
 Email: [contact@helpchain.live](mailto:contact@helpchain.live)
 

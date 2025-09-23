@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}HelpChain{% endblock %}</title>
+    <!-- Добави преди </head> -->
+    <script async defer data-domain="helpchain.live" src="https://plausible.io/js/plausible.js"></script>
+</head>
+<body>
+    {% block content %}{% endblock %}
+    <a href="{{ url_for('feedback') }}">Feedback</a>
+    <a href="{{ url_for('stories') }}">Stories</a>
+</body>
+</html>
