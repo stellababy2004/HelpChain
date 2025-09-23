@@ -1,5 +1,5 @@
 from appy import app
-from models import db  # <-- добави този ред!
+from models import db  
 
 with app.app_context():
     db.create_all()

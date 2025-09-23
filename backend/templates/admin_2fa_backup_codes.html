@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block title %}Backup кодове - 2FA{% endblock %}
+{% block content %}
+<style>
+.backup-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 800px;
+    padding: 2rem;
+}
+
+.backup-header {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.backup-codes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.backup-code {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+}
+
+.backup-code:hover {
+    background: #e9ecef;
+    border-color: #007bff;
+}
+
+.warning-box {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.regenerate-form {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.totp-input {
+    font-size: 1.2rem;
+    text-align: center;
+    letter-spacing: 0.3em;
+    font-family: monospace;
+}
+
+@media (max-width: 768px) {
+    .backup-codes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .backup-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 1rem;
+    }
+    
+    .backup-header {
+        background: #333 !important;
+        color: white !important;
+    }
+}
+</style>
+
+<div class="backup-container">
+    <div class="backup-header">
+        <h1><i class="fas fa-key"></i> Backup кодове за 2FA</h1>
+        <p>Кодове за еднократна употреба при загуба на достъп</p>
+    </div>
+
+    <div class="warning-box">
+        <h5><i class="fas fa-exclamation-triangle"></i> Важни указания</h5>
+        <ul class="mb-0">
+            <li><strong>Съхранявайте тези кодове на сигурно място</strong> - предпочитано физически (отпечатани)</li>
+            <li><strong>Всеки код може да се използва само веднъж</strong></li>
+            <li><strong>Използвайте ги само ако загубите достъп до телефона си</strong></li>
+            <li><strong>Никога не ги споделяйте с други хора</strong></li>
+        </ul>
+    </div>
+
+    {% if new_codes %}
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <strong>Нови backup кодове са генерирани!</strong> Старите кодове вече не са валидни.
+    </div>
+    {% endif %}
+
+    <div class="text-center mb-3">
+        <h4>Вашите backup кодове:</h4>
+        <small class="text-muted">Генерирани на {{ admin_user.created_at.strftime('%d.%m.%Y в %H:%M') }}</small>
+    </div>
+
+    {% if backup_codes %}
+    <div class="backup-codes-grid">
+        {% for code in backup_codes %}
+        <div class="backup-code" title="Щракнете за копиране" onclick="copyToClipboard('{{ code }}')">
+            {{ code }}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center">
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle"></i>
+            Няма налични backup кодове. Моля регенерирайте нови.
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="text-center no-print">
+        <button onclick="window.print()" class="btn btn-outline-primary me-2">
+            <i class="fas fa-print"></i> Отпечатай кодовете
+        </button>
+        <button onclick="downloadCodes()" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-download"></i> Изтегли като текст
+        </button>
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#regenerateModal">
+            <i class="fas fa-sync-alt"></i> Регенерирай кодове
+        </button>
+    </div>
+
+    <!-- Modal за регенериране на кодове -->
+    <div class="modal fade" id="regenerateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-sync-alt"></i> Регенериране на backup кодове
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" title="Затвори"></button>
+                </div>
+                <form method="post" action="{{ url_for('admin_2fa_regenerate_backup') }}">
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Внимание!</strong> Регенерирането ще направи текущите backup кодове невалидни.
+                        </div>
+                        <div class="mb-3">
+                            <label for="regen_totp_token" class="form-label">Код за автентикация</label>
+                            <input type="text" 
+                                   name="totp_token" 
+                                   id="regen_totp_token" 
+                                   class="form-control totp-input" 
+                                   placeholder="123456" 
+                                   maxlength="6" 
+                                   required>
+                            <div class="form-text">
+                                Въведете кода от вашето приложение за автентикация
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отказ</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-sync-alt"></i> Регенерирай
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4 no-print">
+        <a href="{{ url_for('admin_2fa_setup') }}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-cog"></i> Настройки 2FA
+        </a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Админ панел
+        </a>
+    </div>
+</div>
+
+<script>
+// Копиране на код в клипборда
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Показваме визуална обратна връзка
+        const event = new CustomEvent('show-toast', {
+            detail: { message: 'Код копиран: ' + text, type: 'success' }
+        });
+        document.dispatchEvent(event);
+    }).catch(function(err) {
+        console.error('Грешка при копиране: ', err);
+    });
+}
+
+// Изтегляне на кодовете като текстов файл
+function downloadCodes() {
+    {% if backup_codes %}
+    const codes = {{ backup_codes | tojson }};
+    const content = `HelpChain.bg - Backup кодове за 2FA
+Генерирани на: {{ admin_user.created_at.strftime('%d.%m.%Y в %H:%M') }}
+Потребител: {{ admin_user.username }}
+
+ВАЖНО: Съхранявайте тези кодове на сигурно място!
+Всеки код може да се използва само веднъж.
+
+Backup кодове:
+${codes.join('\n')}
+
+---
+Тези кодове са поверителни и не трябва да се споделят!`;
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'helpchain-backup-codes.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    {% endif %}
+}
+
+// Автоматично изпращане при въвеждане на 6 цифри
+document.getElementById('regen_totp_token').addEventListener('input', function(e) {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    
+    if (e.target.value.length === 6) {
+        setTimeout(function() {
+            e.target.form.submit();
+        }, 300);
+    }
+});
+
+// Простo toast уведомление
+document.addEventListener('show-toast', function(e) {
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-success position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
+    toast.innerHTML = `<i class="fas fa-check"></i> ${e.detail.message}`;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(function() {
+        toast.style.opacity = '0';
+        setTimeout(function() {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 2000);
+});
+</script>
+
+{% endblock %}

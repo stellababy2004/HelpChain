@@ -1,31 +1,55 @@
-import os
-from flask_mail import Mail, Message
-from dotenv import load_dotenv
+# -*- coding: utf-8 -*-
+from flask import Blueprint, render_template, redirect, url_for, flash, current_app
+from flask_mail import Message
 
-load_dotenv()
+from .forms import VolunteerForm
+from .models import db, Volunteer
 
-app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER")
-app.config["MAIL_PORT"] = int(os.environ.get("MAIL_PORT"))
-app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS") == "True"
-app.config["MAIL_USE_SSL"] = os.environ.get("MAIL_USE_SSL") == "True"
-app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
-app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
-app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER")
-
-mail = Mail(app)
+# Blueprint за публични маршрути
+routes_bp = Blueprint("routes", __name__)
 
 
-@app.route("/volunteer_register", methods=["GET", "POST"])
+@routes_bp.route("/volunteer_register", methods=["GET", "POST"])
 def volunteer_register():
-    form = VolunteerRegisterForm()
+    form = VolunteerForm()
     if form.validate_on_submit():
-        # ... запис в базата данни ...
-        msg = Message(
-            subject="Нова регистрация на доброволец",
-            recipients=["contact@helpchain.live"],
-            body=f"Име: {form.name.data}\nИмейл: {form.email.data}\nТелефон: {form.phone.data}\nЛокация: {form.location.data}",
+        email = form.email.data.strip()
+
+        # предотвратяване на дублиращи регистрации
+        if Volunteer.query.filter_by(email=email).first():
+            flash("Този имейл вече е регистриран!", "danger")
+            return redirect(url_for("routes.volunteer_register"))
+
+        # запис в базата
+        v = Volunteer(
+            name=form.name.data.strip(),
+            email=email,
+            phone=form.phone.data.strip(),
+            location=form.location.data.strip(),
         )
-        mail.send(msg)
+        db.session.add(v)
+        db.session.commit()
+
+        # имейл известие – използваме вече инициализирания Mail от app
+        sender = (
+            current_app.config.get("MAIL_DEFAULT_SENDER")
+            or current_app.config.get("MAIL_USERNAME")
+        )
+        if sender:
+            msg = Message(
+                subject="Нова регистрация на доброволец",
+                recipients=[sender],
+                body=(
+                    f"Име: {form.name.data}\n"
+                    f"Имейл: {form.email.data}\n"
+                    f"Телефон: {form.phone.data}\n"
+                    f"Локация: {form.location.data}"
+                ),
+            )
+            # Mail е достъпен през current_app.extensions["mail"]
+            current_app.extensions["mail"].send(msg)
+
         flash("Успешна регистрация!", "success")
-        return redirect(url_for("home"))
+        return redirect(url_for("index"))
+
     return render_template("volunteer_register.html", form=form)

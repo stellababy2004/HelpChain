@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Редактирай заявка{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="section-title mb-4">Редактирай заявка</h2>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <form method="post" class="bg-white p-4 rounded shadow-sm">
+    <div class="mb-3">
+      <label class="form-label">Име</label>
+      <input type="text" name="name" class="form-control" value="{{ req.name }}" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Имейл</label>
+      <input type="email" name="email" class="form-control" value="{{ req.email }}" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Телефон</label>
+      <input type="text" name="phone" class="form-control" value="{{ req.phone }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Описание</label>
+      <textarea name="description" class="form-control" rows="3" required>{{ req.description }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Статус</label>
+      <select name="status" class="form-select">
+        <option value="Активен" {% if req.status == 'Активен' %}selected{% endif %}>Активен</option>
+        <option value="Завършена" {% if req.status == 'Завършена' %}selected{% endif %}>Завършена</option>
+        <option value="Отхвърлена" {% if req.status == 'Отхвърлена' %}selected{% endif %}>Отхвърлена</option>
+        <option value="Pending" {% if req.status == 'Pending' %}selected{% endif %}>Pending</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Съобщение</label>
+      <textarea name="message" class="form-control" rows="2">{{ req.message }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Запази</button>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary ms-2">Назад</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelpChain.bg – Подай ръка</title>
+    <style>
+        /* ... CSS ... */
+    </style>
+</head>
+<body>
+<header>
+    <div style="text-align:right; margin-top:1rem;">
+        <a href="/login" class="btn btn-outline-light">Вход</a>
+        <a href="/register" class="btn btn-light">Стани доброволец</a>
+    </div>
+</header>
+    <div class="hero-section bg-primary text-white py-5" style="margin-top: 50px;">
+      <div class="container text-center">
+        <h1 class="display-1" style="font-size: 4rem; margin-top: -20px;">Свързваме хората в нужда с тези, които могат да помогнат</h1>
+        <p class="lead" style="font-size: 1.5rem;">Как работи: Регистрирай се като доброволец или подай заявка за помощ. Ние автоматично свързваме нуждите с подходящи доброволци по категория и местоположение.</p>
+        <div class="d-flex flex-column flex-md-row justify-content-center">
+          <a href="/register" class="btn btn-light btn-lg me-md-3 mb-3 mb-md-0">Искам да помогна</a>
+          <a href="/submit_request" class="btn btn-outline-light btn-lg">Имам нужда от помощ</a>
+        </div>
+      </div>
+    </div>
+    <main>
+        <h2>Подай сигнал за помощ</h2>
+        <form method="POST">
+            <label for="name">Име:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="email">Имейл за връзка:</label>
+            <input type="email" id="email" name="email" required>
+            <label for="phone">Телефон:</label>
+            <input type="text" id="phone" name="phone" required>
+            <label for="message">Каква помощ ви е необходима?</label>
+            <textarea id="message" name="message" rows="4" required></textarea>
+            <button type="submit">Изпрати сигнал</button>
+        </form>
+    </main>
+    <footer>
+        &copy; 2025 HelpChain.bg | Помощта е в твоите ръце.
+    </footer>
+</body>
+</html>

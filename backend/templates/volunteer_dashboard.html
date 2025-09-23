@@ -1,13 +1,81 @@
 {% extends "base.html" %}
-{% block title %}Доброволец панел{% endblock %}
+{% block title %}Доброволец{% endblock %}
 {% block content %}
-<h2>Доброволец панел</h2>
-<p>Добре дошъл, {{ user.username }}!</p>
-<p>Роля: {{ user.role }}</p>
-<p>Email: {{ user.email }}</p>
-<p>Телефон: {{ user.phone or '-' }}</p>
-<p>Адрес: {{ user.address or '-' }}</p>
-<p>Град: {{ user.city or '-' }}</p>
-<p>Категория: {{ user.category or '-' }}</p>
-<p>Наличност: {{ user.availability or '-' }}</p>
+<div class="container mt-4">
+  <h2>Добре дошъл, {{ current_user.username }}!</h2>
+  <p><b>Имейл:</b> {{ current_user.email }}</p>
+  {% if current_user.phone %}
+    <p><b>Телефон:</b> {{ current_user.phone }}</p>
+  {% endif %}
+  {% if current_user.location %}
+    <p><b>Локация:</b> {{ current_user.location }}</p>
+  {% endif %}
+  <a href="#" class="btn btn-outline-info btn-sm mb-3">Редактирай профила</a>
+  <hr>
+
+  <h4>Моите заявки за помощ</h4>
+  <ul class="list-group mb-3">
+    {% for req in my_requests %}
+      <li class="list-group-item">
+        <b>{{ req.title }}</b> - {{ req.status }}<br>
+        <small>{{ req.description }}</small>
+      </li>
+    {% else %}
+      <li class="list-group-item">Нямате заявки.</li>
+    {% endfor %}
+  </ul>
+
+  <h4>Чужди заявки за поемане</h4>
+  <ul class="list-group mb-3">
+    {% for req in foreign_requests %}
+      <li class="list-group-item">
+        <b>{{ req.title }}</b> - {{ req.status }}<br>
+        <small>{{ req.description }}</small>
+        <form method="post" action="{{ url_for('take_request', id=req.id) }}" style="display:inline;">
+          <button type="submit" class="btn btn-success btn-sm">Поеми заявка</button>
+        </form>
+      </li>
+    {% else %}
+      <li class="list-group-item">Няма чужди заявки.</li>
+    {% endfor %}
+  </ul>
+
+  <h4>История на завършени заявки</h4>
+  <ul class="list-group mb-3">
+    {% for req in finished_requests %}
+      <li class="list-group-item">
+        <b>{{ req.title }}</b> - Завършена<br>
+        <small>{{ req.description }}</small>
+      </li>
+    {% else %}
+      <li class="list-group-item">Нямате завършени заявки.</li>
+    {% endfor %}
+  </ul>
+
+  <a href="{{ url_for('submit_request') }}" class="btn btn-primary mb-3">Подай заявка за помощ</a>
+  <hr>
+
+  <h4>Свържи се с екипа</h4>
+  <form method="post" action="{{ url_for('feedback') }}">
+    <input type="hidden" name="name" value="{{ current_user.username }}">
+    <input type="hidden" name="email" value="{{ current_user.email }}">
+    <div class="mb-2">
+      <textarea name="message" class="form-control" placeholder="Вашето съобщение"></textarea>
+    </div>
+    <button type="submit" class="btn btn-secondary">Изпрати</button>
+  </form>
+  <hr>
+
+  <h4>Последни новини</h4>
+  <ul class="list-group mb-3">
+    {% for news in latest_news %}
+      <li class="list-group-item">
+        <b>{{ news.title }}</b><br>
+        <small>{{ news.content }}</small>
+      </li>
+    {% else %}
+      <li class="list-group-item">Няма новини.</li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}

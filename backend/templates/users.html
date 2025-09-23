@@ -32,4 +32,9 @@
     {% endfor %}
   </tbody>
 </table>
-{% endblock %}
+{% endblock %}import sqlite3
+conn = sqlite3.connect('instance/volunteers.db')
+cur = conn.cursor()
+cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+print(cur.fetchall())
+conn.close()
