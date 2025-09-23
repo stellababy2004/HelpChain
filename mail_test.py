@@ -4,16 +4,17 @@ from flask_mail import Mail, Message
 app = Flask(__name__)
 
 # Настройки за Zoho SMTP
-app.config['MAIL_SERVER'] = 'smtp.zoho.eu'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'contact@helpchain.live'
-app.config['MAIL_PASSWORD'] = 'ТУК_ВМЕСТИ app password-а'
-app.config['MAIL_DEFAULT_SENDER'] = 'contact@helpchain.live'
+app.config["MAIL_SERVER"] = "smtp.zoho.eu"
+app.config["MAIL_PORT"] = 587
+app.config["MAIL_USE_TLS"] = True
+app.config["MAIL_USERNAME"] = "contact@helpchain.live"
+app.config["MAIL_PASSWORD"] = "ТУК_ВМЕСТИ app password-а"
+app.config["MAIL_DEFAULT_SENDER"] = "contact@helpchain.live"
 
 mail = Mail(app)
 
-@app.route('/')
+
+@app.route("/")
 def index():
     try:
         msg = Message("✅ Test Email from Flask", recipients=["ТВОЯ_ЛИЧЕН@имейл.com"])
@@ -23,5 +24,6 @@ def index():
     except Exception as e:
         return f"❌ Грешка: {e}"
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
