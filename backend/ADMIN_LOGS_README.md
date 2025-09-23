@@ -74,7 +74,7 @@ python init_admin_data.py
 - 9 примерни лога за демонстрация
 
 ### 2. Админ потребители
-- **admin** / help2025! (Super Admin)
+- **admin** / [използвайте вашата парола] (Super Admin)
 - **moderator** / mod2025! (Admin)
 - **helper** / helper2025! (Moderator)
 

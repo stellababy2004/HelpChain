@@ -30,7 +30,7 @@ def create_admin_users():
         super_admin = AdminUser(
             username="admin",
             email="admin@helpchain.bg",
-            password_hash=generate_password_hash("help2025!"),
+            password_hash=generate_password_hash(os.getenv("ADMIN_PASSWORD", "defaultAdminPass123")),
             role=AdminRole.SUPER_ADMIN,
             is_active=True
         )
