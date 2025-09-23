@@ -1,4 +1,4 @@
-import subprocess
+cdimport subprocess
 import time
 import requests
 import webbrowser
@@ -7,14 +7,19 @@ import qrcode
 
 # Стартирай Flask приложението
 print("🚀 Стартиране на Flask сървъра...")
-flask = subprocess.Popen(["cmd", "/k", "cd backend && venv\\Scripts\\activate && python app.py"], creationflags=subprocess.CREATE_NEW_CONSOLE)
+flask = subprocess.Popen(
+    ["cmd", "/k", "cd backend && venv\\Scripts\\activate && python app.py"],
+    creationflags=subprocess.CREATE_NEW_CONSOLE,
+)
 
 # Изчакай Flask да се стартира
 time.sleep(5)
 
 # Стартирай Ngrok
 print("🌐 Стартиране на ngrok тунел...")
-ngrok = subprocess.Popen(["cmd", "/k", "ngrok http 5000"], creationflags=subprocess.CREATE_NEW_CONSOLE)
+ngrok = subprocess.Popen(
+    ["cmd", "/k", "ngrok http 5000"], creationflags=subprocess.CREATE_NEW_CONSOLE
+)
 
 # Изчакай още малко за ngrok
 time.sleep(5)
