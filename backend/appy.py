@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Зареди environment variables от .env файла
+load_dotenv()
 
 # Създай папката instance ако не съществува
 os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
@@ -18,7 +22,7 @@ from flask import (
 import csv
 from io import StringIO
 from flask_babel import Babel, _
-from backend.models import db, Volunteer
+from models import db, Volunteer
 from flask_mail import Mail
 from flask_migrate import Migrate
 
@@ -48,7 +52,7 @@ def allowed_file(filename):
 
 app.config["UPLOAD_FOLDER"] = "uploads"
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
-app.secret_key = "supersecretkey"
+app.secret_key = os.getenv("SECRET_KEY", "fallback_secret_key_for_development")
 
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
