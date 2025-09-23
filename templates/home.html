@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelpChain.bg – Подай ръка</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        nav { margin-bottom: 20px; }
+        nav a { margin-right: 15px; text-decoration: none; color: #2a7ae2; }
+        h1 { color: #2a7ae2; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('home') }}">Начало</a>
+        <a href="{{ url_for('profile') }}">Профил</a>
+        <a href="{{ url_for('change_password') }}">Смяна на парола</a>
+        <a href="{{ url_for('upload_photo') }}">Качи снимка</a>
+        <a href="{{ url_for('feedback') }}">Обратна връзка</a>
+    </nav>
+    <h1>Добре дошъл в HelpChain!</h1>
+    <p>Това е платформата за помощ и връзка между хората.</p>
+    <p>Използвай менюто, за да навигираш в сайта.</p>
+    <form method="POST">
+        <label>Име: <input type="text" name="name" required></label><br>
+        <label>Имейл: <input type="email" name="email" required></label><br>
+        <label>Телефон: <input type="text" name="phone" required></label><br>
+        <label>Съобщение: <textarea name="message" required></textarea></label><br>
+        <button type="submit">Изпрати сигнал</button>
+    </form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

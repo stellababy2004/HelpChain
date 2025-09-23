@@ -239,7 +239,7 @@ def auto_open_demo():
     
     print("\n✅ Браузърът е отворен! Използвайте login данните:")
     print("   👤 Username: admin")
-    print("   🔑 Password: help2025!")
+    print("   🔑 Password: [използвайте вашата парола]")
 
 def main():
     """Главна функция за демото"""

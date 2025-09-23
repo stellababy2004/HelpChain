@@ -246,7 +246,7 @@ if __name__ == "__main__":
             print("   🔗 http://127.0.0.1:5000/admin/analytics")
             print("\n🔐 Логин данни:")
             print("   👤 Username: admin")
-            print("   🔑 Password: help2025!")
+            print("   🔑 Password: [использвайте вашата парола]")
             
     except Exception as e:
         print(f"❌ Грешка при добавяне на данни: {e}")

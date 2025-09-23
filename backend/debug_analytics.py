@@ -116,7 +116,8 @@ def test_web_request():
 
         # Тестваме login
         print("🔐 Тествам login...")
-        login_data = {"username": "admin", "password": "help2025!"}
+        # Use environment variables or prompt for credentials instead
+        login_data = {"username": "[YOUR_ADMIN_USERNAME]", "password": "[YOUR_ADMIN_PASSWORD]"}
         login_response = session.post(
             "http://127.0.0.1:5000/admin_login", data=login_data, timeout=10
         )

@@ -254,7 +254,7 @@ def main():
         print(f"Логове в системата: {log_count}")
         print("\n✅ Инициализацията завърши успешно!")
         print("\nМожете да влезете в админ панела с:")
-        print("- Super Admin: admin / help2025!")
+        print("- Super Admin: admin / [вашата парола]")
         print("- Admin: moderator / mod2025!")
         print("- Moderator: helper / helper2025!")
 
