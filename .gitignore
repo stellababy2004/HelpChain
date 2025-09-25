@@ -20,4 +20,33 @@ Thumbs.db
 # Others
 *.log
 .env
- 
+ # virtual environments
+.venv/
+backend/.venv/
+venv/
+
+# python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# test / coverage
+.pytest_cache/
+coverage.xml
+htmlcov/
+.coverage
+
+# distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# local settings, secrets
+.env
+.env.*
+instance/
+uploads/
+
+# editor temp
+.vscode/
