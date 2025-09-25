@@ -15,7 +15,7 @@ repos:
     rev: v3.0.0
     hooks:
       - id: prettier
-        files: "\.(js|json|md|html|css)$"
+        files: '\.(js|json|md|html|css)$'
 
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.1.1
