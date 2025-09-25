@@ -59,6 +59,9 @@ def run_test_connection():
         print("Error calling ai_service.test_connection():", e)
 
 
+# Compatibility alias: older invocation used `run()`
+run = run_test_connection
+
 if __name__ == '__main__':
     print('\nHelpChain AI diagnostic\n' + '='*30 + '\n')
     print_env()
