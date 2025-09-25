@@ -61,3 +61,37 @@ HelpChain.bg/
 # Temporary files
 *.tmp
 *.temp
+
+# virtualenv
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# env
+.env
+.env.local
+instance/config.py
+
+# local DB, uploads, logs
+*.sqlite3
+instance/*.db
+uploads/
+old_db/
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# pyenv/other
+.python-version
