@@ -1,12 +1,13 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <div class="container mt-5">
-    <h2>Профил на доброволец</h2>
-    <ul class="list-group">
-        <li class="list-group-item"><b>Име:</b> {{ volunteer.name }}</li>
-        <li class="list-group-item"><b>Имейл:</b> {{ volunteer.email }}</li>
-        <li class="list-group-item"><b>Телефон:</b> {{ volunteer.phone }}</li>
-    </ul>
-    <a href="{{ url_for('admin_volunteers') }}" class="btn btn-secondary mt-3">Назад</a>
+  <h2>Профил на доброволец</h2>
+  <ul class="list-group">
+    <li class="list-group-item"><b>Име:</b> {{ volunteer.name }}</li>
+    <li class="list-group-item"><b>Имейл:</b> {{ volunteer.email }}</li>
+    <li class="list-group-item"><b>Телефон:</b> {{ volunteer.phone }}</li>
+  </ul>
+  <a href="{{ url_for('admin_volunteers') }}" class="btn btn-secondary mt-3"
+    >Назад</a
+  >
 </div>
 {% endblock %}

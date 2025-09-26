@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Filter Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        .test-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .test-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .result {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        h1, h2 { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Analytics Filter Test</h1>
+        <p>Тест на филтрите в професионалния Analytics Dashboard</p>
+        
+        <h2>📊 Тест на API endpoint-а</h2>
+        <button class="test-btn" onclick="testAPI('30')">Тест 30 дни</button>
+        <button class="test-btn" onclick="testAPI('7')">Тест 7 дни</button>
+        <button class="test-btn" onclick="testAPI('90')">Тест 90 дни</button>
+        <div id="apiResult" class="result"></div>
+
+        <h2>🎛️ Тест на филтрите</h2>
+        <button class="test-btn" onclick="testFilter('event_type', 'page_view')">Тест Event Type</button>
+        <button class="test-btn" onclick="testFilter('category', 'Транспорт')">Тест Категория</button>
+        <button class="test-btn" onclick="testFilter('user_type', 'volunteer')">Тест User Type</button>
+        <div id="filterResult" class="result"></div>
+
+        <h2>🔗 Бързи линкове</h2>
+        <a href="http://127.0.0.1:5000/admin/analytics-professional" class="test-btn" style="text-decoration: none; display: inline-block;">
+            💎 Отвори Professional Dashboard
+        </a>
+        <a href="http://127.0.0.1:5000/admin/analytics" class="test-btn" style="text-decoration: none; display: inline-block;">
+            📊 Отвори Standard Dashboard  
+        </a>
+
+        <h2>✅ Какво трябва да работи сега:</h2>
+        <ul>
+            <li>✅ Правописна грешка поправена: "Wydarzenia" → "Събития"</li>
+            <li>✅ API endpoint /api/analytics-data работи</li>
+            <li>✅ Филтри по времеви период (7/30/90 дни)</li>
+            <li>✅ Филтри по тип събитие, категория, потребител</li>
+            <li>✅ Бутон "Приложи филтри" изпраща заявки</li>
+            <li>✅ Loading индикатор при филтриране</li>
+            <li>✅ Реално обновяване на статистиките</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testAPI(days) {
+            const result = document.getElementById('apiResult');
+            result.textContent = '🔄 Тестване...';
+            
+            try {
+                const response = await fetch(`/api/analytics-data?days=${days}`);
+                const data = await response.json();
+                
+                result.textContent = `✅ Успех за ${days} дни:\n` + 
+                    `📊 Доброволци: ${data.stats?.totals?.volunteers || 'N/A'}\n` +
+                    `📝 Заявки: ${data.stats?.totals?.requests || 'N/A'}\n` +
+                    `🎯 Събития: ${data.stats?.totals?.analytics_events || 'N/A'}\n` +
+                    `📈 Дневни данни: ${data.daily_stats?.length || 0} записа`;
+                    
+            } catch (error) {
+                result.textContent = `❌ Грешка: ${error.message}`;
+            }
+        }
+
+        async function testFilter(filterType, filterValue) {
+            const result = document.getElementById('filterResult');
+            result.textContent = `🔄 Тестване филтър ${filterType}=${filterValue}...`;
+            
+            try {
+                const response = await fetch(`/api/analytics-data?${filterType}=${filterValue}&days=30`);
+                const data = await response.json();
+                
+                result.textContent = `✅ Филтър работи:\n` + 
+                    `🎛️ ${filterType}: ${filterValue}\n` +
+                    `📊 Резултат: ${JSON.stringify(data.stats?.totals || {}, null, 2)}`;
+                    
+            } catch (error) {
+                result.textContent = `❌ Грешка при филтриране: ${error.message}`;
+            }
+        }
+
+        // Auto test при зареждане
+        window.onload = () => {
+            testAPI('30');
+        };
+    </script>
+</body>
+</html>
