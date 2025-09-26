@@ -1,0 +1,6 @@
+import requests
+try:
+    r = requests.get("http://127.0.0.1:5000", timeout=5)
+    print(r.status_code, r.text[:200])
+except requests.exceptions.ConnectionError as e:
+    print("ConnectionError:", e)

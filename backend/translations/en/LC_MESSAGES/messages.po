@@ -826,4 +826,3 @@ msgstr ""
 #: venv/Lib/site-packages/wtforms/fields/numeric.py:197
 msgid "Not a valid float value."
 msgstr ""
-

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добре дошли в HelpChain.bg</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #007bff;
+        }
+        .header h1 {
+            color: #007bff;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .welcome-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #28a745;
+        }
+        .info-section h3 {
+            color: #28a745;
+            margin-top: 0;
+        }
+        .steps-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        .steps-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .steps-list li:last-child {
+            border-bottom: none;
+        }
+        .contact-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            color: #666;
+        }
+        .emoji {
+            font-size: 1.2em;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>HelpChain.bg</h1>
+            <p><em>Свързваме хора в нужда с доброволци</em></p>
+        </div>
+
+        <div class="welcome-message">
+            <h2><span class="emoji">🎉</span> Добре дошли, {{volunteer_name}}!</h2>
+            <p>Благодарим ви, че се присъединихте към нашата общност от доброволци!</p>
+        </div>
+
+        <div class="info-section">
+            <h3><span class="emoji">✅</span> Вашата регистрация е успешна!</h3>
+            <p>Сега сте част от мрежата на HelpChain.bg - платформа, която свързва хора в нужда с желаещи да помогнат доброволци като вас.</p>
+        </div>
+
+        <h3><span class="emoji">🚀</span> Какво следва?</h3>
+        <div class="steps-list">
+            <ul>
+                <li><span class="emoji">📧</span> <strong>Имейл уведомления:</strong> Ще получавате имейли когато някой има нужда от помощ в района ви</li>
+                <li><span class="emoji">🎯</span> <strong>Избор на заявки:</strong> Можете да откликвате само на заявки които ви интересуват и за които имате време</li>
+                <li><span class="emoji">🤝</span> <strong>Помощ:</strong> Ще помагате на реални хора в нужда и ще правите света по-добро място</li>
+                <li><span class="emoji">🏆</span> <strong>Общност:</strong> Ще сте част от активна общност от хора с добри намерения</li>
+                <li><span class="emoji">💪</span> <strong>Гъвкавост:</strong> Помагате когато можете - без задължения или натиск</li>
+            </ul>
+        </div>
+
+        <div class="contact-info">
+            <h3><span class="emoji">📋</span> Вашите данни за регистрация:</h3>
+            <p><strong>Име:</strong> {{volunteer_name}}</p>
+            <p><strong>Имейл:</strong> <span class="highlight">{{volunteer_email}}</span></p>
+            <p><strong>Локация:</strong> {{volunteer_location}}</p>
+        </div>
+
+        <div class="info-section">
+            <h3><span class="emoji">💡</span> Полезни съвети:</h3>
+            <ul>
+                <li>Винаги проверявайте вашия имейл за нови заявки за помощ</li>
+                <li>Отговаряйте възможно най-бързо ако можете да помогнете</li>
+                <li>Ако не можете да помогнете в конкретна ситуация - няма проблем!</li>
+                <li>При съмнения или въпроси - свържете се с нас</li>
+            </ul>
+        </div>
+
+        <div class="contact-info">
+            <h3><span class="emoji">📞</span> Нужда от помощ?</h3>
+            <p>Ако имате въпроси относно платформата или как да помагате като доброволец, можете да се свържете с нас като отговорите на този имейл.</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>Благодарим ви за доброто сърце! <span class="emoji">💙</span></strong></p>
+            <p><em>Заедно правим България по-добро място за всички!</em></p>
+            <hr>
+            <p>С уважение,<br><strong>Екипът на HelpChain.bg</strong></p>
+        </div>
+    </div>
+</body>
+</html>

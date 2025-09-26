@@ -75,7 +75,9 @@ def admin_login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        if username == "admin" and password == os.getenv("ADMIN_PASSWORD", "defaultAdminPass123"):
+        if username == "admin" and password == os.getenv(
+            "ADMIN_PASSWORD", "defaultAdminPass123"
+        ):
             session["admin_logged_in"] = True
             return redirect(url_for("admin_dashboard"))
         else:

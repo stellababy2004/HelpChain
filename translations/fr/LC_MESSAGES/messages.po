@@ -334,4 +334,3 @@ msgstr "Soumettre une demande d'aide"
 
 msgid "Вашата заявка беше успешно изпратена."
 msgstr "Votre demande a été envoyée avec succès."
-

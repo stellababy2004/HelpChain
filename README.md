@@ -7,11 +7,13 @@ HelpChain is a web application developed with Flask to connect people in need wi
 ---
 
 ## 🌐 Live Site
+
 ➡️ [https://helpchain-s2l5.onrender.com](https://helpchain-s2l5.onrender.com)
 
 ---
 
 ## 📁 Project Structure
+
 ```
 HelpChain/
 ├── backend/
@@ -32,6 +34,7 @@ HelpChain/
 ---
 
 ## ⚙️ Features
+
 - 📨 User registration with welcome email
 - 🔔 Admin notification email on new signup
 - 🌍 Multilingual support with Flask-Babel
@@ -42,21 +45,24 @@ HelpChain/
 ---
 
 ## 📦 Technologies Used
-| Component        | Technology       |
-|------------------|------------------|
-| Backend          | Flask (Python)   |
-| Email            | Flask-Mail + Zoho SMTP |
-| UI Templates     | Jinja2           |
-| i18n             | Flask-Babel      |
-| Database         | SQLite + SQLAlchemy |
-| Deployment       | Render           |
-| Admin UI         | Flask-Admin      |
-| Version Control  | Git + GitHub     |
+
+| Component       | Technology             |
+| --------------- | ---------------------- |
+| Backend         | Flask (Python)         |
+| Email           | Flask-Mail + Zoho SMTP |
+| UI Templates    | Jinja2                 |
+| i18n            | Flask-Babel            |
+| Database        | SQLite + SQLAlchemy    |
+| Deployment      | Render                 |
+| Admin UI        | Flask-Admin            |
+| Version Control | Git + GitHub           |
 
 ---
 
 ## 🚀 Deployment (Render)
+
 The app is deployed with Gunicorn on Render. Run command:
+
 ```bash
 gunicorn backend.app:app
 ```
@@ -66,6 +72,7 @@ Python 3.13 is specified by default.
 ---
 
 ## 🧭 Roadmap
+
 - [ ] Setup Flask-Admin interface
 - [ ] Add login system (volunteers/admins)
 - [ ] Track email logs in database
@@ -77,6 +84,7 @@ Python 3.13 is specified by default.
 ---
 
 ## 📬 Contact
+
 Email: [contact@helpchain.live](mailto:contact@helpchain.live)
 
 Developed by **Stella Barbarella** – [stellabarbarella.com](https://stellabarbarella.com)
