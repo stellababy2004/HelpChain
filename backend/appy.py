@@ -1,11 +1,6 @@
 import os
 from dotenv import load_dotenv
-
-# Зареди environment variables от .env файла
-load_dotenv()
-
-# Създай папката instance ако не съществува
-os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
+from werkzeug.utils import secure_filename
 
 from flask import (
     Flask,
@@ -25,6 +20,12 @@ from flask_babel import Babel, _
 from models import db, Volunteer
 from flask_mail import Mail
 from flask_migrate import Migrate
+
+# Зареди environment variables от .env файла
+load_dotenv()
+
+# Създай папката instance ако не съществува
+os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
 
 app = Flask(__name__)
 
@@ -150,9 +151,22 @@ def submit_request():
             if not allowed_file(file.filename):
                 flash("Позволени са само изображения и PDF!")
                 return redirect(url_for("submit_request"))
-            file.save(os.path.join(app.config["UPLOAD_FOLDER"], file.filename))
+            filename = secure_filename(file.filename)
+            save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(save_path)
 
-        # Тук можеш да обработиш/запишеш данните (примерно в база)
+        # Използваме подадените полета (логваме) за да не са "unused"
+        request_data = {
+            "name": name,
+            "email": email,
+            "category": category,
+            "location": location,
+            "problem": problem,
+            "terms": terms,
+            "filename": filename,
+        }
+        app.logger.info("submit_request received: %s", request_data)
+
         return render_template("submit_success.html")
     return render_template("submit_request.html")
 
@@ -243,6 +257,8 @@ def feedback():
         name = request.form.get("name")
         email = request.form.get("email")
         message = request.form.get("message")
+        # Логваме обратната връзка (използваме променливите)
+        app.logger.info("Feedback received from %s <%s>: %s", name, email, message)
         flash("Благодарим за обратната връзка!")
         return redirect(url_for("feedback"))
     return render_template("feedback.html")

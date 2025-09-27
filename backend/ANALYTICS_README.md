@@ -7,6 +7,7 @@
 ## 🚀 Бърз Старт
 
 ### 1. Стартиране на системата
+
 ```bash
 # Навигирайте до backend директорията
 cd backend
@@ -16,12 +17,15 @@ python appy.py
 ```
 
 ### 2. Достъп до Analytics
+
 ```
 http://localhost:5000/admin/analytics
 ```
+
 > **Забележка:** Нужна е admin аутентификация
 
 ### 3. Debug и тестване
+
 ```bash
 # Пълен debug на системата
 python debug_analytics.py
@@ -36,17 +40,20 @@ python test_full_route.py
 ## 📈 Какво можете да видите?
 
 ### Dashboard Статистики
+
 - 📊 Общо заявки за помощ
 - 👥 Брой доброволци
 - ✅ Процент успешност
 - 📅 Нови заявки днес
 
 ### Визуализации
+
 - 📈 **Графики**: Дневни статистики, статуси, категории
 - 🗺️ **Карта**: Географско разпределение
 - 📋 **Таблици**: Детайлни списъци със заявки
 
 ### Филтри и Търсене
+
 - 🔍 Търсене по ключови думи
 - 📅 Филтър по дати
 - 📍 Филтър по локация
@@ -54,22 +61,24 @@ python test_full_route.py
 - 🏷️ Филтър по категории
 
 ### Real-time Updates
+
 - ⚡ Автоматично обновяване
 - 🕐 Последна активност
 - 📊 Live статистики
 
 ## 🔧 Основни Файлове
 
-| Файл | Описание |
-|------|----------|
-| `admin_analytics.py` | Основна analytics логика |
-| `appy.py` (analytics routes) | Web endpoints |
-| `templates/admin_analytics_dashboard.html` | Frontend interface |
-| `debug_analytics.py` | Debug инструменти |
+| Файл                                       | Описание                 |
+| ------------------------------------------ | ------------------------ |
+| `admin_analytics.py`                       | Основна analytics логика |
+| `appy.py` (analytics routes)               | Web endpoints            |
+| `templates/admin_analytics_dashboard.html` | Frontend interface       |
+| `debug_analytics.py`                       | Debug инструменти        |
 
 ## 🐛 Troubleshooting
 
 ### Проблем: Analytics страницата не се зарежда
+
 ```bash
 # Проверете debug информация
 python debug_analytics.py
@@ -79,18 +88,21 @@ python db_check.py
 ```
 
 ### Проблем: Няма данни
+
 ```bash
 # Добавете тестови данни
 python setup_analytics_data.py
 ```
 
 ### Проблем: Template грешки
+
 - Проверете дали `templates/admin_analytics_dashboard.html` съществува
 - Проверете за syntax грешки в template-а
 
 ## 📊 API Примери
 
 ### Python
+
 ```python
 from admin_analytics import AnalyticsEngine
 
@@ -103,25 +115,34 @@ geo_data = AnalyticsEngine.get_geo_data()
 ```
 
 ### JavaScript (AJAX)
+
 ```javascript
 // Live обновяване
-$.get('/admin/analytics', {}, function(data) {
+$.get(
+  "/admin/analytics",
+  {},
+  function (data) {
     updateCharts(data.stats);
-}, 'json');
+  },
+  "json",
+);
 ```
 
 ## 🎯 Ключови Функции
 
 ### AnalyticsEngine
+
 - `get_dashboard_stats()` - Основни статистики
 - `get_geo_data()` - Карта данни
 - `get_success_rate()` - Процент успешност
 
 ### RequestFilter
+
 - `filter_requests()` - Филтриране на заявки
 - `get_filter_options()` - Налични филтри
 
 ### RealtimeUpdates
+
 - `get_recent_activity()` - Последна активност
 - `get_live_stats()` - Live статистики
 

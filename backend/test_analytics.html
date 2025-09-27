@@ -1,110 +1,136 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bg">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HelpChain Analytics Test</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-        }
-        .btn {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            color: white;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        .status {
-            background: rgba(0, 255, 0, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            border-left: 4px solid #00ff00;
-        }
-        h1 { text-align: center; margin-bottom: 30px; }
-        .links { text-align: center; }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+      }
+      .btn {
+        display: inline-block;
+        padding: 15px 30px;
+        margin: 10px;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        color: white;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+      .status {
+        background: rgba(0, 255, 0, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        border-left: 4px solid #00ff00;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .links {
+        text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🚀 HelpChain Analytics Test Page</h1>
-        
-        <div class="status">
-            ✅ Flask сървър работи на порт 5000<br>
-            ✅ База данни: 50 доброволци, 120 заявки, 814 събития<br>
-            ✅ Професионален dashboard е готов
-        </div>
+      <h1>🚀 HelpChain Analytics Test Page</h1>
 
-        <div class="links">
-            <h3>📊 Достъпни Analytics Dashboard-и:</h3>
-            
-            <a href="http://127.0.0.1:5000/" class="btn">
-                🏠 Главна страница
-            </a>
-            
-            <a href="http://127.0.0.1:5000/admin/analytics" class="btn" style="background: rgba(34, 197, 94, 0.2); border-color: rgba(34, 197, 94, 0.3);">
-                📊 Стандартен Analytics (Зелен)
-            </a>
-            
-            <a href="http://127.0.0.1:5000/admin/analytics-professional" class="btn" style="background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.3);">
-                💎 Професионален Analytics (Лилав)
-            </a>
-        </div>
+      <div class="status">
+        ✅ Flask сървър работи на порт 5000<br />
+        ✅ База данни: 50 доброволци, 120 заявки, 814 събития<br />
+        ✅ Професионален dashboard е готов
+      </div>
 
-        <div style="margin-top: 30px;">
-            <h4>🎯 Какво да очакваш:</h4>
-            <ul>
-                <li>📈 Интерактивни графики с реални данни</li>
-                <li>🔍 Работещи филтри за всички 12 категории</li>
-                <li>🗺️ Географска карта с 25 български града</li>
-                <li>💫 Модерен дизайн с Glass Morphism</li>
-                <li>📱 Отзивчив layout за всички устройства</li>
-            </ul>
-        </div>
+      <div class="links">
+        <h3>📊 Достъпни Analytics Dashboard-и:</h3>
 
-        <div style="text-align: center; margin-top: 30px; font-size: 0.9em; opacity: 0.8;">
-            💡 Двата dashboard-а са напълно РАЗЛИЧНИ:<br>
-            📊 <strong>Стандартен</strong> = светъл зелен дизайн с "STANDARD VERSION" badge<br>
-            💎 <strong>Професионален</strong> = тъмен лилав дизайн с "PROFESSIONAL VERSION" badge<br>
-            🎨 Различни шрифтове: Poppins vs Inter
-        </div>
+        <a href="http://127.0.0.1:5000/" class="btn"> 🏠 Главна страница </a>
+
+        <a
+          href="http://127.0.0.1:5000/admin/analytics"
+          class="btn"
+          style="
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.3);
+          "
+        >
+          📊 Стандартен Analytics (Зелен)
+        </a>
+
+        <a
+          href="http://127.0.0.1:5000/admin/analytics-professional"
+          class="btn"
+          style="
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.3);
+          "
+        >
+          💎 Професионален Analytics (Лилав)
+        </a>
+      </div>
+
+      <div style="margin-top: 30px">
+        <h4>🎯 Какво да очакваш:</h4>
+        <ul>
+          <li>📈 Интерактивни графики с реални данни</li>
+          <li>🔍 Работещи филтри за всички 12 категории</li>
+          <li>🗺️ Географска карта с 25 български града</li>
+          <li>💫 Модерен дизайн с Glass Morphism</li>
+          <li>📱 Отзивчив layout за всички устройства</li>
+        </ul>
+      </div>
+
+      <div
+        style="
+          text-align: center;
+          margin-top: 30px;
+          font-size: 0.9em;
+          opacity: 0.8;
+        "
+      >
+        💡 Двата dashboard-а са напълно РАЗЛИЧНИ:<br />
+        📊 <strong>Стандартен</strong> = светъл зелен дизайн с "STANDARD
+        VERSION" badge<br />
+        💎 <strong>Професионален</strong> = тъмен лилав дизайн с "PROFESSIONAL
+        VERSION" badge<br />
+        🎨 Различни шрифтове: Poppins vs Inter
+      </div>
     </div>
 
     <script>
-        // Тест за connectivity
-        fetch('/admin/analytics-professional')
-            .then(response => {
-                if (response.ok) {
-                    console.log('✅ Професионален dashboard е достъпен');
-                } else {
-                    console.log('❌ Проблем с достъпа');
-                }
-            })
-            .catch(error => {
-                console.log('❌ Грешка при връзка:', error);
-            });
+      // Тест за connectivity
+      fetch("/admin/analytics-professional")
+        .then((response) => {
+          if (response.ok) {
+            console.log("✅ Професионален dashboard е достъпен");
+          } else {
+            console.log("❌ Проблем с достъпа");
+          }
+        })
+        .catch((error) => {
+          console.log("❌ Грешка при връзка:", error);
+        });
     </script>
-</body>
+  </body>
 </html>

@@ -8,7 +8,6 @@
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from models import db, Volunteer
-from collections import defaultdict
 
 
 class AnalyticsEngine:
@@ -26,14 +25,14 @@ class AnalyticsEngine:
             dict: Речник със статистики
         """
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=days)
+        _start_date = end_date - timedelta(days=days)
 
         # Основни числа (само доброволци за момента)
         total_volunteers = Volunteer.query.count()
-        
+
         # Симулирани данни за демонстрация
         total_requests = total_volunteers * 3  # Приблизително 3 заявки на доброволец
-        total_users = total_volunteers * 2     # Приблизително 2 потребителя на доброволец
+        total_users = total_volunteers * 2  # Приблизително 2 потребителя на доброволец
         period_requests = max(1, total_volunteers // 2)  # Нови заявки за периода
 
         # Симулирани статуси на заявки
@@ -80,17 +79,19 @@ class AnalyticsEngine:
         # Създаваме симулирани данни
         daily_data = []
         current_date = start_date
-        
+
         while current_date <= end_date:
             # Симулирани стойности
             day_requests = max(0, 5 + (hash(str(current_date)) % 10) - 5)
             day_volunteers = max(0, 2 + (hash(str(current_date)) % 5) - 2)
-            
-            daily_data.append({
-                "date": current_date.strftime("%d.%m"),
-                "requests": day_requests,
-                "volunteers": day_volunteers,
-            })
+
+            daily_data.append(
+                {
+                    "date": current_date.strftime("%d.%m"),
+                    "requests": day_requests,
+                    "volunteers": day_volunteers,
+                }
+            )
             current_date += timedelta(days=1)
 
         return daily_data

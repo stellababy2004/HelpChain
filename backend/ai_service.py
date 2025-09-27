@@ -32,7 +32,6 @@ except Exception:
         return "bg"
 
 
-import logging
 import traceback
 import os
 import unicodedata
@@ -214,7 +213,7 @@ class AIService:
             # Detect language
             try:
                 detected_lang = detect(user_message)
-            except:
+            except Exception:
                 detected_lang = "bg"  # Default to Bulgarian
 
             # Development mock mode: allow local dev without an API key
@@ -572,7 +571,7 @@ class AIService:
                     else:
                         genai.configure(api_key=provider.api_key)
                         model = genai.GenerativeModel("gemini-pro")
-                        response = model.generate_content("Тест")
+                        _response = model.generate_content("Тест")
                         results[name] = {
                             "status": "ok",
                             "message": "Connection successful",

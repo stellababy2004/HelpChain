@@ -35,12 +35,15 @@ backend/
 #### Методи:
 
 ##### `get_dashboard_stats(days=30)`
+
 Получава основни статистики за dashboard.
 
 **Параметри:**
+
 - `days` (int): Период за анализ в дни (по подразбиране 30)
 
 **Връща:**
+
 ```python
 {
     'totals': {
@@ -70,13 +73,17 @@ backend/
 ```
 
 ##### `get_daily_stats(days=30)`
+
 Получава дневни статистики за графики.
 
 ##### `get_location_stats()`
+
 Анализира заявки и доброволци по географски локации.
 
 ##### `get_category_stats()`
+
 Категоризира заявки по тип въз основа на ключови думи:
+
 - **здраве**: медицински услуги
 - **документи**: административни услуги
 - **социална помощ**: материална подкрепа
@@ -85,9 +92,11 @@ backend/
 - **друго**: останали категории
 
 ##### `get_geo_data()`
+
 Получава геолокационни данни за карта.
 
 **Връща:**
+
 ```python
 {
     'requests': [               # Заявки на картата
@@ -125,6 +134,7 @@ backend/
 ```
 
 ##### `get_success_rate()`
+
 Изчислява процент успешно завършени заявки.
 
 ### 2. RequestFilter
@@ -134,9 +144,11 @@ backend/
 #### Методи:
 
 ##### `filter_requests(status, date_from, date_to, location, keyword, category, priority, page, per_page)`
+
 Филтрира заявки според множество критерии.
 
 **Параметри:**
+
 - `status` (str): Статус на заявката
 - `date_from` (datetime): Начална дата
 - `date_to` (datetime): Крайна дата
@@ -148,6 +160,7 @@ backend/
 - `per_page` (int): Записи на страница
 
 **Връща:**
+
 ```python
 {
     'items': [HelpRequest, ...],   # Списък с заявки
@@ -162,6 +175,7 @@ backend/
 ```
 
 ##### `get_filter_options()`
+
 Получава налични опции за филтри.
 
 ### 3. RealtimeUpdates
@@ -171,19 +185,23 @@ backend/
 #### Методи:
 
 ##### `get_recent_activity(limit=10)`
+
 Получава последна активност в системата.
 
 ##### `get_live_stats()`
+
 Получава статистики за live обновяване.
 
 ## 🌐 Web Routes
 
 ### `/admin/analytics`
+
 Основен analytics dashboard endpoint.
 
-**Метод:** GET  
-**Аутентификация:** Изисква admin login  
+**Метод:** GET
+**Аутентификация:** Изисква admin login
 **Параметри:**
+
 - `page`: Номер на страница
 - `per_page`: Записи на страница
 - `status`: Филтър по статус
@@ -196,6 +214,7 @@ backend/
 **AJAX поддръжка:** Връща JSON при X-Requested-With: XMLHttpRequest
 
 ### `/admin/export`
+
 Export на данни (планиран).
 
 ## 📱 Frontend Dashboard
@@ -257,17 +276,20 @@ Response:
 ## 🐛 Debug и Тестване
 
 ### Debug Script
+
 ```bash
 python debug_analytics.py
 ```
 
 Тестове които се изпълняват:
+
 1. Import тестове
 2. Database свързаност
 3. Analytics функции
 4. Web route тестове
 
 ### Test Scripts
+
 ```bash
 python test_analytics_route.py  # Тест на analytics логика
 python test_full_route.py       # Пълен route тест
@@ -305,25 +327,25 @@ activity = RealtimeUpdates.get_recent_activity(limit=5)
 ```javascript
 // AJAX заявка за live данни
 $.ajax({
-    url: '/admin/analytics',
-    type: 'GET',
-    headers: {'X-Requested-With': 'XMLHttpRequest'},
-    success: function(data) {
-        updateDashboard(data.stats);
-        updateSuccessRate(data.success_rate);
-    }
+  url: "/admin/analytics",
+  type: "GET",
+  headers: { "X-Requested-With": "XMLHttpRequest" },
+  success: function (data) {
+    updateDashboard(data.stats);
+    updateSuccessRate(data.success_rate);
+  },
 });
 
 // Филтриране на заявки
 function filterRequests() {
-    const params = {
-        status: $('#status-filter').val(),
-        keyword: $('#search-input').val(),
-        date_from: $('#date-from').val(),
-        date_to: $('#date-to').val()
-    };
-    
-    window.location.search = $.param(params);
+  const params = {
+    status: $("#status-filter").val(),
+    keyword: $("#search-input").val(),
+    date_from: $("#date-from").val(),
+    date_to: $("#date-to").val(),
+  };
+
+  window.location.search = $.param(params);
 }
 ```
 
@@ -375,6 +397,7 @@ function filterRequests() {
 ## 🛠️ Инсталация и Настройка
 
 ### Изисквания
+
 ```
 Flask
 SQLAlchemy
@@ -385,6 +408,7 @@ Bootstrap
 ```
 
 ### Стартиране
+
 ```bash
 # Стартиране на Flask app
 python appy.py
@@ -394,6 +418,7 @@ http://localhost:5000/admin/analytics
 ```
 
 ### Debug Mode
+
 ```bash
 # Debug режим
 export FLASK_ENV=development
@@ -406,10 +431,11 @@ python debug_analytics.py
 ## 📞 Поддръжка
 
 За въпроси и проблеми:
+
 - Проверете debug_analytics.py
 - Прегледайте Flask logs
-- Тествайте с test_*.py файловете
+- Тествайте с test\_\*.py файловете
 
 ---
 
-*Документацията е актуална към 23.09.2025*
+_Документацията е актуална към 23.09.2025_

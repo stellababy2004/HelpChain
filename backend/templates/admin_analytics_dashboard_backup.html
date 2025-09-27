@@ -20,7 +20,7 @@
     --warning: #f59e0b;
     --danger: #ef4444;
     --info: #0ea5e9;
-    
+
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -28,18 +28,18 @@
     --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     --gradient-info: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     --gradient-dark: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    
+
     /* Typography */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-    
+
     /* Spacing */
     --space-1: 0.25rem;
     --space-2: 0.5rem;
@@ -49,14 +49,14 @@
     --space-6: 1.5rem;
     --space-8: 2rem;
     --space-12: 3rem;
-    
+
     /* Border Radius */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
     --radius-2xl: 1.5rem;
-    
+
     /* Glass Effect */
     --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.1);
@@ -70,7 +70,7 @@
 body {
     font-family: var(--font-sans);
     background: #f8fafc;
-    background-image: 
+    background-image:
         radial-gradient(at 40% 20%, rgba(120, 119, 198, 0.3) 0px, transparent 50%),
         radial-gradient(at 80% 0%, rgba(255, 119, 198, 0.3) 0px, transparent 50%),
         radial-gradient(at 0% 50%, rgba(255, 0, 128, 0.3) 0px, transparent 50%),
@@ -444,11 +444,11 @@ body {
     .content-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .stats-grid {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
-    
+
     .filter-grid {
         grid-template-columns: 1fr;
     }
@@ -458,11 +458,11 @@ body {
     .analytics-container {
         padding: 10px;
     }
-    
+
     .dashboard-header {
         padding: 1rem;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
     }
@@ -628,7 +628,7 @@ body {
                 <i class="bi bi-arrow-clockwise"></i> Изчисти
             </button>
         </div>
-        
+
         <form id="filterForm" method="get">
             <div class="filter-grid">
                 <div class="form-group">
@@ -645,7 +645,7 @@ body {
 
                 <div class="form-group">
                     <label for="date_from">От дата</label>
-                    <input type="date" name="date_from" id="date_from" class="form-control" 
+                    <input type="date" name="date_from" id="date_from" class="form-control"
                            value="{{ request.args.get('date_from', '') }}">
                 </div>
 
@@ -669,7 +669,7 @@ body {
 
                 <div class="form-group">
                     <label for="keyword">Ключова дума</label>
-                    <input type="text" name="keyword" id="keyword" class="form-control" 
+                    <input type="text" name="keyword" id="keyword" class="form-control"
                            placeholder="Търси в заглавие, описание..."
                            value="{{ request.args.get('keyword', '') }}">
                 </div>
@@ -714,7 +714,7 @@ body {
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="chart-container">
@@ -727,7 +727,7 @@ body {
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <div class="chart-container">
@@ -745,7 +745,7 @@ body {
             <!-- Requests Table -->
             <div class="widget fade-in-up">
                 <div class="widget-header">
-                    <h4 class="widget-title"><i class="bi bi-table"></i> Заявки 
+                    <h4 class="widget-title"><i class="bi bi-table"></i> Заявки
                         <span class="badge bg-primary">{{ filtered_requests.total }}</span>
                     </h4>
                     <div class="d-flex gap-2">
@@ -756,7 +756,7 @@ body {
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="table-container">
                     <table class="table table-hover">
                         <thead>
@@ -836,7 +836,7 @@ body {
                             <i class="bi bi-chevron-left"></i>
                         </a>
                         {% endif %}
-                        
+
                         {% for page_num in range(1, filtered_requests.pages + 1) %}
                             {% if page_num == filtered_requests.current_page %}
                             <span class="page-link active">{{ page_num }}</span>
@@ -846,7 +846,7 @@ body {
                             <span class="page-link">...</span>
                             {% endif %}
                         {% endfor %}
-                        
+
                         {% if filtered_requests.has_next %}
                         <a href="{{ url_for('admin_analytics', page=filtered_requests.next_num, **request.args) }}" class="page-link">
                             <i class="bi bi-chevron-right"></i>
@@ -873,9 +873,9 @@ body {
                         </button>
                     </div>
                 </div>
-                
+
                 <div id="map" class="map-container"></div>
-                
+
                 <div class="mt-3">
                     <div class="row">
                         <div class="col-md-4">
@@ -909,7 +909,7 @@ body {
                     <h4 class="widget-title"><i class="bi bi-clock-history"></i> Последна активност</h4>
                     <span class="badge bg-primary">{{ recent_activity|length }}</span>
                 </div>
-                
+
                 <div class="activity-list">
                     {% for activity in recent_activity %}
                     <div class="activity-item activity-{{ activity.type }}">
@@ -941,7 +941,7 @@ body {
                 <div class="widget-header">
                     <h4 class="widget-title"><i class="bi bi-speedometer2"></i> Бързи статистики</h4>
                 </div>
-                
+
                 <div class="d-flex flex-column gap-3">
                     <div class="d-flex justify-content-between">
                         <span>Средно време за отговор:</span>
@@ -967,7 +967,7 @@ body {
                 <div class="widget-header">
                     <h4 class="widget-title"><i class="bi bi-download"></i> Експорт данни</h4>
                 </div>
-                
+
                 <div class="d-flex flex-column gap-2">
                     <button class="btn btn-primary btn-sm" onclick="exportData('csv')">
                         <i class="bi bi-file-earmark-spreadsheet"></i> CSV файл
@@ -1005,10 +1005,10 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCharts();
     initializeMap();
     startAutoRefresh();
-    
+
     // Add event listeners
     document.getElementById('filterForm').addEventListener('submit', handleFilterSubmit);
-    
+
     // Initialize tooltips if needed
     initializeTooltips();
 });
@@ -1138,20 +1138,20 @@ function initializeCharts() {
 function initializeMap() {
     // Initialize Leaflet map
     map = L.map('map').setView([42.7339, 25.4858], 7); // Center of Bulgaria
-    
+
     // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-    
+
     // Create layer groups
     requestsLayer = L.layerGroup().addTo(map);
     volunteersLayer = L.layerGroup().addTo(map);
     centersLayer = L.layerGroup().addTo(map);
-    
+
     // Add geo data
     const geoData = {{ geo_data | tojson }};
-    
+
     // Add requests to map
     geoData.requests.forEach(function(request) {
         const marker = L.circleMarker([request.lat, request.lng], {
@@ -1162,7 +1162,7 @@ function initializeMap() {
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(requestsLayer);
-        
+
         marker.bindPopup(`
             <strong>${request.name}</strong><br>
             ${request.title}<br>
@@ -1170,7 +1170,7 @@ function initializeMap() {
             <small>Дата: ${request.created_at}</small>
         `);
     });
-    
+
     // Add volunteers to map
     geoData.volunteers.forEach(function(volunteer) {
         const marker = L.circleMarker([volunteer.lat, volunteer.lng], {
@@ -1181,13 +1181,13 @@ function initializeMap() {
             opacity: 1,
             fillOpacity: 0.8
         }).addTo(volunteersLayer);
-        
+
         marker.bindPopup(`
             <strong>${volunteer.name}</strong><br>
             Локация: ${volunteer.location}
         `);
     });
-    
+
     // Add city centers to map
     geoData.centers.forEach(function(center) {
         const marker = L.circleMarker([center.lat, center.lng], {
@@ -1198,7 +1198,7 @@ function initializeMap() {
             opacity: 1,
             fillOpacity: 0.6
         }).addTo(centersLayer);
-        
+
         marker.bindPopup(`
             <strong>${center.city}</strong><br>
             Доброволци: ${center.volunteer_count}
@@ -1216,12 +1216,12 @@ function startAutoRefresh() {
 function refreshData(silent = false) {
     const refreshBtn = document.getElementById('refreshBtn');
     const indicator = document.getElementById('refreshIndicator');
-    
+
     if (!silent) {
         refreshBtn.innerHTML = '<div class="loading-spinner"></div> Обновяване...';
         refreshBtn.disabled = true;
     }
-    
+
     // Make AJAX request to refresh data
     fetch(window.location.href, {
         headers: {
@@ -1232,13 +1232,13 @@ function refreshData(silent = false) {
     .then(data => {
         // Update statistics
         updateStatistics(data.stats);
-        
+
         // Update charts if needed
         updateCharts(data.stats);
-        
+
         // Update timestamp
         document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('bg-BG');
-        
+
         if (!silent) {
             // Show refresh indicator
             indicator.classList.add('show');
@@ -1259,7 +1259,7 @@ function refreshData(silent = false) {
 function updateStatistics(stats) {
     document.getElementById('totalRequests').textContent = stats.totals.requests;
     document.getElementById('totalVolunteers').textContent = stats.totals.volunteers;
-    document.getElementById('pendingRequests').textContent = 
+    document.getElementById('pendingRequests').textContent =
         (stats.status_stats.Pending || 0) + (stats.status_stats.Активен || 0);
 }
 
@@ -1294,7 +1294,7 @@ function changePerPage() {
 // Map functions
 function toggleMapLayer(layerType) {
     const button = document.getElementById('toggle' + layerType.charAt(0).toUpperCase() + layerType.slice(1));
-    
+
     if (layerType === 'requests') {
         if (map.hasLayer(requestsLayer)) {
             map.removeLayer(requestsLayer);
@@ -1326,7 +1326,7 @@ function centerMap() {
 function toggleSelectAll() {
     const selectAll = document.getElementById('selectAll');
     const checkboxes = document.querySelectorAll('.request-checkbox');
-    
+
     checkboxes.forEach(checkbox => {
         checkbox.checked = selectAll.checked;
     });
@@ -1374,7 +1374,7 @@ function exportFiltered() {
     const form = document.getElementById('filterForm');
     const formData = new FormData(form);
     formData.append('export', 'csv');
-    
+
     const params = new URLSearchParams(formData);
     window.location.href = '/admin/export?' + params.toString();
 }

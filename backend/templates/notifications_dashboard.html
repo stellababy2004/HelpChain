@@ -1,391 +1,447 @@
-{% extends "base.html" %}
-
-{% block title %}Notifications Dashboard - HelpChain{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Notifications Dashboard - HelpChain{%
+endblock %} {% block content %}
 <div class="container-fluid mt-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="display-5 mb-0">🔔 Notifications Management</h1>
-            <p class="lead text-muted">Управление на нотификации, шаблони и статистики</p>
-        </div>
-        <div class="col-auto">
-            <button class="btn btn-primary" onclick="processQueue()">
-                <i class="fas fa-play"></i> Process Queue
-            </button>
-            <button class="btn btn-success" onclick="loadDashboard()">
-                <i class="fas fa-refresh"></i> Refresh
-            </button>
-        </div>
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="display-5 mb-0">🔔 Notifications Management</h1>
+      <p class="lead text-muted">
+        Управление на нотификации, шаблони и статистики
+      </p>
     </div>
-
-    <!-- Stats Overview -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <div class="display-6 mb-2">📧</div>
-                    <h5>Total Sent</h5>
-                    <h2 id="totalSent">-</h2>
-                    <small>Last 30 days</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <div class="display-6 mb-2">⏳</div>
-                    <h5>Pending</h5>
-                    <h2 id="pendingCount">-</h2>
-                    <small>In queue</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <div class="display-6 mb-2">✅</div>
-                    <h5>Delivery Rate</h5>
-                    <h2 id="deliveryRate">-</h2>
-                    <small>Success percentage</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <div class="display-6 mb-2">📱</div>
-                    <h5>Engagement</h5>
-                    <h2 id="engagementRate">-</h2>
-                    <small>Click rate</small>
-                </div>
-            </div>
-        </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" onclick="processQueue()">
+        <i class="fas fa-play"></i> Process Queue
+      </button>
+      <button class="btn btn-success" onclick="loadDashboard()">
+        <i class="fas fa-refresh"></i> Refresh
+      </button>
     </div>
+  </div>
 
-    <!-- Main Content Tabs -->
-    <div class="row">
-        <div class="col-12">
-            <ul class="nav nav-tabs" id="notificationTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="queue-tab" data-bs-toggle="tab" data-bs-target="#queue" type="button">
-                        📬 Queue Management
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="templates-tab" data-bs-toggle="tab" data-bs-target="#templates" type="button">
-                        📋 Templates
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button">
-                        📊 Statistics
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="send-tab" data-bs-toggle="tab" data-bs-target="#send" type="button">
-                        ✉️ Send Notification
-                    </button>
-                </li>
-            </ul>
-
-            <div class="tab-content" id="notificationTabsContent">
-                <!-- Queue Management Tab -->
-                <div class="tab-pane fade show active" id="queue" role="tabpanel">
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h5 class="mb-0">📬 Notification Queue</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Recipient</th>
-                                            <th>Template</th>
-                                            <th>Status</th>
-                                            <th>Priority</th>
-                                            <th>Attempts</th>
-                                            <th>Scheduled</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="queueTable">
-                                        <tr><td colspan="8" class="text-center">Loading...</td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Templates Tab -->
-                <div class="tab-pane fade" id="templates" role="tabpanel">
-                    <div class="card mt-3">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">📋 Notification Templates</h5>
-                            <button class="btn btn-sm btn-success" onclick="showCreateTemplate()">
-                                <i class="fas fa-plus"></i> New Template
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div class="row" id="templatesGrid">
-                                <div class="col-12 text-center">Loading templates...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Statistics Tab -->
-                <div class="tab-pane fade" id="stats" role="tabpanel">
-                    <div class="mt-3">
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">📈 Notifications by Channel</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <canvas id="channelChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">📊 Delivery Status</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <canvas id="statusChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">🎯 Engagement Metrics</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="row text-center">
-                                            <div class="col-4">
-                                                <div class="metric">
-                                                    <div class="metric-value text-success" id="statsDelivered">-</div>
-                                                    <div class="metric-label">Delivered</div>
-                                                </div>
-                                            </div>
-                                            <div class="col-4">
-                                                <div class="metric">
-                                                    <div class="metric-value text-info" id="statsRead">-</div>
-                                                    <div class="metric-label">Read</div>
-                                                </div>
-                                            </div>
-                                            <div class="col-4">
-                                                <div class="metric">
-                                                    <div class="metric-value text-warning" id="statsClicked">-</div>
-                                                    <div class="metric-label">Clicked</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5 class="mb-0">📂 By Category</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <canvas id="categoryChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Send Notification Tab -->
-                <div class="tab-pane fade" id="send" role="tabpanel">
-                    <div class="card mt-3">
-                        <div class="card-header">
-                            <h5 class="mb-0">✉️ Send New Notification</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="sendNotificationForm">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Template</label>
-                                            <select class="form-select" id="templateSelect" required>
-                                                <option value="">Choose template...</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Recipient Email</label>
-                                            <input type="email" class="form-control" id="recipientEmail" required>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Priority</label>
-                                            <select class="form-select" id="priority">
-                                                <option value="normal">Normal</option>
-                                                <option value="high">High</option>
-                                                <option value="low">Low</option>
-                                                <option value="urgent">Urgent</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Recipient Type</label>
-                                            <select class="form-select" id="recipientType">
-                                                <option value="volunteer">Volunteer</option>
-                                                <option value="admin">Admin</option>
-                                                <option value="system">System</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Personalization Data (JSON)</label>
-                                    <textarea class="form-control" id="personalizationData" rows="4" 
-                                              placeholder='{"name": "John Doe", "city": "Sofia"}'>{}</textarea>
-                                </div>
-
-                                <div class="text-end">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-paper-plane"></i> Send Notification
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <!-- Stats Overview -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body text-center">
+          <div class="display-6 mb-2">📧</div>
+          <h5>Total Sent</h5>
+          <h2 id="totalSent">-</h2>
+          <small>Last 30 days</small>
         </div>
+      </div>
     </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body text-center">
+          <div class="display-6 mb-2">⏳</div>
+          <h5>Pending</h5>
+          <h2 id="pendingCount">-</h2>
+          <small>In queue</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body text-center">
+          <div class="display-6 mb-2">✅</div>
+          <h5>Delivery Rate</h5>
+          <h2 id="deliveryRate">-</h2>
+          <small>Success percentage</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body text-center">
+          <div class="display-6 mb-2">📱</div>
+          <h5>Engagement</h5>
+          <h2 id="engagementRate">-</h2>
+          <small>Click rate</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Tabs -->
+  <div class="row">
+    <div class="col-12">
+      <ul class="nav nav-tabs" id="notificationTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="queue-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#queue"
+            type="button"
+          >
+            📬 Queue Management
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="templates-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#templates"
+            type="button"
+          >
+            📋 Templates
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="stats-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#stats"
+            type="button"
+          >
+            📊 Statistics
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="send-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#send"
+            type="button"
+          >
+            ✉️ Send Notification
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="notificationTabsContent">
+        <!-- Queue Management Tab -->
+        <div class="tab-pane fade show active" id="queue" role="tabpanel">
+          <div class="card mt-3">
+            <div class="card-header">
+              <h5 class="mb-0">📬 Notification Queue</h5>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Recipient</th>
+                      <th>Template</th>
+                      <th>Status</th>
+                      <th>Priority</th>
+                      <th>Attempts</th>
+                      <th>Scheduled</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="queueTable">
+                    <tr>
+                      <td colspan="8" class="text-center">Loading...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div class="tab-pane fade" id="templates" role="tabpanel">
+          <div class="card mt-3">
+            <div
+              class="card-header d-flex justify-content-between align-items-center"
+            >
+              <h5 class="mb-0">📋 Notification Templates</h5>
+              <button
+                class="btn btn-sm btn-success"
+                onclick="showCreateTemplate()"
+              >
+                <i class="fas fa-plus"></i> New Template
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row" id="templatesGrid">
+                <div class="col-12 text-center">Loading templates...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Statistics Tab -->
+        <div class="tab-pane fade" id="stats" role="tabpanel">
+          <div class="mt-3">
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">📈 Notifications by Channel</h5>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="channelChart"></canvas>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">📊 Delivery Status</h5>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="statusChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">🎯 Engagement Metrics</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="row text-center">
+                      <div class="col-4">
+                        <div class="metric">
+                          <div
+                            class="metric-value text-success"
+                            id="statsDelivered"
+                          >
+                            -
+                          </div>
+                          <div class="metric-label">Delivered</div>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="metric">
+                          <div class="metric-value text-info" id="statsRead">
+                            -
+                          </div>
+                          <div class="metric-label">Read</div>
+                        </div>
+                      </div>
+                      <div class="col-4">
+                        <div class="metric">
+                          <div
+                            class="metric-value text-warning"
+                            id="statsClicked"
+                          >
+                            -
+                          </div>
+                          <div class="metric-label">Clicked</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">📂 By Category</h5>
+                  </div>
+                  <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Send Notification Tab -->
+        <div class="tab-pane fade" id="send" role="tabpanel">
+          <div class="card mt-3">
+            <div class="card-header">
+              <h5 class="mb-0">✉️ Send New Notification</h5>
+            </div>
+            <div class="card-body">
+              <form id="sendNotificationForm">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Template</label>
+                      <select class="form-select" id="templateSelect" required>
+                        <option value="">Choose template...</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Recipient Email</label>
+                      <input
+                        type="email"
+                        class="form-control"
+                        id="recipientEmail"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Priority</label>
+                      <select class="form-select" id="priority">
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="low">Low</option>
+                        <option value="urgent">Urgent</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label class="form-label">Recipient Type</label>
+                      <select class="form-select" id="recipientType">
+                        <option value="volunteer">Volunteer</option>
+                        <option value="admin">Admin</option>
+                        <option value="system">System</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Personalization Data (JSON)</label>
+                  <textarea
+                    class="form-control"
+                    id="personalizationData"
+                    rows="4"
+                    placeholder='{"name": "John Doe", "city": "Sofia"}'
+                  >
+{}</textarea
+                  >
+                </div>
+
+                <div class="text-end">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Send Notification
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
-.metric {
+  .metric {
     padding: 15px;
-}
-.metric-value {
+  }
+  .metric-value {
     font-size: 1.5rem;
     font-weight: bold;
-}
-.metric-label {
+  }
+  .metric-label {
     font-size: 0.9rem;
     color: #6c757d;
-}
-.template-card {
+  }
+  .template-card {
     transition: transform 0.2s;
-}
-.template-card:hover {
+  }
+  .template-card:hover {
     transform: translateY(-2px);
-}
+  }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-class NotificationDashboard {
+  class NotificationDashboard {
     constructor() {
-        this.charts = {};
-        this.refreshInterval = null;
-        this.init();
+      this.charts = {};
+      this.refreshInterval = null;
+      this.init();
     }
 
     async init() {
-        await this.loadDashboard();
-        this.setupAutoRefresh();
-        this.setupEventHandlers();
+      await this.loadDashboard();
+      this.setupAutoRefresh();
+      this.setupEventHandlers();
     }
 
     async loadDashboard() {
-        await Promise.all([
-            this.loadQueueStatus(),
-            this.loadTemplates(),
-            this.loadStats()
-        ]);
+      await Promise.all([
+        this.loadQueueStatus(),
+        this.loadTemplates(),
+        this.loadStats(),
+      ]);
     }
 
     async loadQueueStatus() {
-        try {
-            const response = await fetch('/api/notifications/queue/status');
-            const data = await response.json();
-            
-            if (data.success) {
-                this.updateQueueStats(data.queue_stats);
-                this.updateQueueTable(data.recent_items);
-            }
-        } catch (error) {
-            console.error('Error loading queue status:', error);
+      try {
+        const response = await fetch("/api/notifications/queue/status");
+        const data = await response.json();
+
+        if (data.success) {
+          this.updateQueueStats(data.queue_stats);
+          this.updateQueueTable(data.recent_items);
         }
+      } catch (error) {
+        console.error("Error loading queue status:", error);
+      }
     }
 
     async loadTemplates() {
-        try {
-            const response = await fetch('/api/notifications/templates');
-            const data = await response.json();
-            
-            if (data.success) {
-                this.updateTemplatesGrid(data.templates);
-                this.updateTemplateSelect(data.templates);
-            }
-        } catch (error) {
-            console.error('Error loading templates:', error);
+      try {
+        const response = await fetch("/api/notifications/templates");
+        const data = await response.json();
+
+        if (data.success) {
+          this.updateTemplatesGrid(data.templates);
+          this.updateTemplateSelect(data.templates);
         }
+      } catch (error) {
+        console.error("Error loading templates:", error);
+      }
     }
 
     async loadStats() {
-        try {
-            const response = await fetch('/api/notifications/stats?days=30');
-            const data = await response.json();
-            
-            if (data.success) {
-                this.updateOverviewStats(data.stats);
-                this.updateCharts(data.stats);
-            }
-        } catch (error) {
-            console.error('Error loading stats:', error);
+      try {
+        const response = await fetch("/api/notifications/stats?days=30");
+        const data = await response.json();
+
+        if (data.success) {
+          this.updateOverviewStats(data.stats);
+          this.updateCharts(data.stats);
         }
+      } catch (error) {
+        console.error("Error loading stats:", error);
+      }
     }
 
     updateQueueStats(stats) {
-        document.getElementById('pendingCount').textContent = stats.pending || 0;
-        
-        // Update other overview cards with queue data
-        const total = stats.total || 0;
-        if (total > 0) {
-            const successRate = Math.round((stats.sent / total) * 100);
-            document.getElementById('deliveryRate').textContent = successRate + '%';
-        }
+      document.getElementById("pendingCount").textContent = stats.pending || 0;
+
+      // Update other overview cards with queue data
+      const total = stats.total || 0;
+      if (total > 0) {
+        const successRate = Math.round((stats.sent / total) * 100);
+        document.getElementById("deliveryRate").textContent = successRate + "%";
+      }
     }
 
     updateQueueTable(items) {
-        const tbody = document.getElementById('queueTable');
-        
-        if (!items || items.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No items in queue</td></tr>';
-            return;
-        }
+      const tbody = document.getElementById("queueTable");
 
-        tbody.innerHTML = items.map(item => `
+      if (!items || items.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="8" class="text-center text-muted">No items in queue</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items
+        .map(
+          (item) => `
             <tr>
                 <td>#${item.id}</td>
                 <td>${item.recipient_email}</td>
-                <td><span class="badge bg-secondary">Template ${item.template_id || 'N/A'}</span></td>
+                <td><span class="badge bg-secondary">Template ${item.template_id || "N/A"}</span></td>
                 <td>
                     <span class="badge ${this.getStatusColor(item.status)}">${item.status}</span>
                 </td>
@@ -400,18 +456,23 @@ class NotificationDashboard {
                     </button>
                 </td>
             </tr>
-        `).join('');
+        `,
+        )
+        .join("");
     }
 
     updateTemplatesGrid(templates) {
-        const grid = document.getElementById('templatesGrid');
-        
-        if (!templates || templates.length === 0) {
-            grid.innerHTML = '<div class="col-12 text-center text-muted">No templates found</div>';
-            return;
-        }
+      const grid = document.getElementById("templatesGrid");
 
-        grid.innerHTML = templates.map(template => `
+      if (!templates || templates.length === 0) {
+        grid.innerHTML =
+          '<div class="col-12 text-center text-muted">No templates found</div>';
+        return;
+      }
+
+      grid.innerHTML = templates
+        .map(
+          (template) => `
             <div class="col-md-4 mb-3">
                 <div class="card template-card h-100">
                     <div class="card-body">
@@ -424,7 +485,7 @@ class NotificationDashboard {
                             <small class="text-muted">Priority: ${template.priority}</small>
                         </p>
                         <p class="card-text">
-                            ${template.subject || template.title || 'No preview'}
+                            ${template.subject || template.title || "No preview"}
                         </p>
                     </div>
                     <div class="card-footer">
@@ -437,233 +498,260 @@ class NotificationDashboard {
                     </div>
                 </div>
             </div>
-        `).join('');
+        `,
+        )
+        .join("");
     }
 
     updateTemplateSelect(templates) {
-        const select = document.getElementById('templateSelect');
-        select.innerHTML = '<option value="">Choose template...</option>' + 
-            templates.map(template => 
-                `<option value="${template.name}">${template.name} (${template.type})</option>`
-            ).join('');
+      const select = document.getElementById("templateSelect");
+      select.innerHTML =
+        '<option value="">Choose template...</option>' +
+        templates
+          .map(
+            (template) =>
+              `<option value="${template.name}">${template.name} (${template.type})</option>`,
+          )
+          .join("");
     }
 
     updateOverviewStats(stats) {
-        document.getElementById('totalSent').textContent = stats.total_sent || 0;
-        
-        const engagement = stats.engagement || {};
-        document.getElementById('engagementRate').textContent = engagement.click_rate + '%' || '0%';
-        
-        // Update detailed engagement stats
-        document.getElementById('statsDelivered').textContent = engagement.total_delivered || 0;
-        document.getElementById('statsRead').textContent = engagement.total_read || 0;
-        document.getElementById('statsClicked').textContent = engagement.total_clicked || 0;
+      document.getElementById("totalSent").textContent = stats.total_sent || 0;
+
+      const engagement = stats.engagement || {};
+      document.getElementById("engagementRate").textContent =
+        engagement.click_rate + "%" || "0%";
+
+      // Update detailed engagement stats
+      document.getElementById("statsDelivered").textContent =
+        engagement.total_delivered || 0;
+      document.getElementById("statsRead").textContent =
+        engagement.total_read || 0;
+      document.getElementById("statsClicked").textContent =
+        engagement.total_clicked || 0;
     }
 
     updateCharts(stats) {
-        // Channel chart
-        this.updateChart('channelChart', 'doughnut', {
-            labels: Object.keys(stats.by_channel || {}),
-            datasets: [{
-                data: Object.values(stats.by_channel || {}),
-                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545']
-            }]
-        });
+      // Channel chart
+      this.updateChart("channelChart", "doughnut", {
+        labels: Object.keys(stats.by_channel || {}),
+        datasets: [
+          {
+            data: Object.values(stats.by_channel || {}),
+            backgroundColor: ["#007bff", "#28a745", "#ffc107", "#dc3545"],
+          },
+        ],
+      });
 
-        // Status chart
-        this.updateChart('statusChart', 'pie', {
-            labels: Object.keys(stats.by_status || {}),
-            datasets: [{
-                data: Object.values(stats.by_status || {}),
-                backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d']
-            }]
-        });
+      // Status chart
+      this.updateChart("statusChart", "pie", {
+        labels: Object.keys(stats.by_status || {}),
+        datasets: [
+          {
+            data: Object.values(stats.by_status || {}),
+            backgroundColor: ["#28a745", "#ffc107", "#dc3545", "#6c757d"],
+          },
+        ],
+      });
 
-        // Category chart
-        this.updateChart('categoryChart', 'bar', {
-            labels: Object.keys(stats.by_category || {}),
-            datasets: [{
-                data: Object.values(stats.by_category || {}),
-                backgroundColor: 'rgba(0, 123, 255, 0.8)'
-            }]
-        }, {
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
-        });
+      // Category chart
+      this.updateChart(
+        "categoryChart",
+        "bar",
+        {
+          labels: Object.keys(stats.by_category || {}),
+          datasets: [
+            {
+              data: Object.values(stats.by_category || {}),
+              backgroundColor: "rgba(0, 123, 255, 0.8)",
+            },
+          ],
+        },
+        {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } },
+        },
+      );
     }
 
     updateChart(canvasId, type, data, options = {}) {
-        const ctx = document.getElementById(canvasId);
-        if (!ctx) return;
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
 
-        if (this.charts[canvasId]) {
-            this.charts[canvasId].destroy();
-        }
+      if (this.charts[canvasId]) {
+        this.charts[canvasId].destroy();
+      }
 
-        this.charts[canvasId] = new Chart(ctx, {
-            type: type,
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                ...options
-            }
-        });
+      this.charts[canvasId] = new Chart(ctx, {
+        type: type,
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          ...options,
+        },
+      });
     }
 
     setupEventHandlers() {
-        // Send notification form
-        document.getElementById('sendNotificationForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.sendNotification();
+      // Send notification form
+      document
+        .getElementById("sendNotificationForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          await this.sendNotification();
         });
     }
 
     async sendNotification() {
-        try {
-            const formData = {
-                template_name: document.getElementById('templateSelect').value,
-                recipient_email: document.getElementById('recipientEmail').value,
-                priority: document.getElementById('priority').value,
-                recipient_type: document.getElementById('recipientType').value,
-                personalization_data: JSON.parse(document.getElementById('personalizationData').value || '{}')
-            };
+      try {
+        const formData = {
+          template_name: document.getElementById("templateSelect").value,
+          recipient_email: document.getElementById("recipientEmail").value,
+          priority: document.getElementById("priority").value,
+          recipient_type: document.getElementById("recipientType").value,
+          personalization_data: JSON.parse(
+            document.getElementById("personalizationData").value || "{}",
+          ),
+        };
 
-            const response = await fetch('/api/notifications/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+        const response = await fetch("/api/notifications/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
 
-            const result = await response.json();
-            
-            if (result.success) {
-                alert('Notification queued successfully!');
-                document.getElementById('sendNotificationForm').reset();
-                document.getElementById('personalizationData').value = '{}';
-                await this.loadQueueStatus();
-            } else {
-                alert('Error: ' + result.error);
-            }
-        } catch (error) {
-            alert('Error sending notification: ' + error.message);
+        const result = await response.json();
+
+        if (result.success) {
+          alert("Notification queued successfully!");
+          document.getElementById("sendNotificationForm").reset();
+          document.getElementById("personalizationData").value = "{}";
+          await this.loadQueueStatus();
+        } else {
+          alert("Error: " + result.error);
         }
+      } catch (error) {
+        alert("Error sending notification: " + error.message);
+      }
     }
 
     async processQueue() {
-        try {
-            const response = await fetch('/api/notifications/process', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ max_items: 50 })
-            });
+      try {
+        const response = await fetch("/api/notifications/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ max_items: 50 }),
+        });
 
-            const result = await response.json();
-            
-            if (result.success) {
-                alert('Queue processing started!');
-                // Refresh after a few seconds
-                setTimeout(() => this.loadQueueStatus(), 3000);
-            } else {
-                alert('Error: ' + result.error);
-            }
-        } catch (error) {
-            alert('Error processing queue: ' + error.message);
+        const result = await response.json();
+
+        if (result.success) {
+          alert("Queue processing started!");
+          // Refresh after a few seconds
+          setTimeout(() => this.loadQueueStatus(), 3000);
+        } else {
+          alert("Error: " + result.error);
         }
+      } catch (error) {
+        alert("Error processing queue: " + error.message);
+      }
     }
 
     setupAutoRefresh() {
-        this.refreshInterval = setInterval(() => {
-            this.loadQueueStatus();
-        }, 30000); // Refresh every 30 seconds
+      this.refreshInterval = setInterval(() => {
+        this.loadQueueStatus();
+      }, 30000); // Refresh every 30 seconds
     }
 
     // Utility methods
     getStatusColor(status) {
-        const colors = {
-            'pending': 'bg-warning',
-            'processing': 'bg-info',
-            'sent': 'bg-success',
-            'failed': 'bg-danger',
-            'cancelled': 'bg-secondary'
-        };
-        return colors[status] || 'bg-secondary';
+      const colors = {
+        pending: "bg-warning",
+        processing: "bg-info",
+        sent: "bg-success",
+        failed: "bg-danger",
+        cancelled: "bg-secondary",
+      };
+      return colors[status] || "bg-secondary";
     }
 
     getPriorityColor(priority) {
-        const colors = {
-            'low': 'bg-secondary',
-            'normal': 'bg-primary',
-            'high': 'bg-warning',
-            'urgent': 'bg-danger'
-        };
-        return colors[priority] || 'bg-primary';
+      const colors = {
+        low: "bg-secondary",
+        normal: "bg-primary",
+        high: "bg-warning",
+        urgent: "bg-danger",
+      };
+      return colors[priority] || "bg-primary";
     }
 
     getTypeColor(type) {
-        const colors = {
-            'email': 'bg-primary',
-            'push': 'bg-success',
-            'in_app': 'bg-info',
-            'sms': 'bg-warning'
-        };
-        return colors[type] || 'bg-secondary';
+      const colors = {
+        email: "bg-primary",
+        push: "bg-success",
+        in_app: "bg-info",
+        sms: "bg-warning",
+      };
+      return colors[type] || "bg-secondary";
     }
 
     formatDate(dateString) {
-        if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleString('bg-BG');
+      if (!dateString) return "N/A";
+      return new Date(dateString).toLocaleString("bg-BG");
     }
 
     // Placeholder methods for future functionality
     async retryNotification(id) {
-        alert(`Retry notification ${id} - To be implemented`);
+      alert(`Retry notification ${id} - To be implemented`);
     }
 
     async editTemplate(id) {
-        alert(`Edit template ${id} - To be implemented`);
+      alert(`Edit template ${id} - To be implemented`);
     }
 
     async testTemplate(name) {
-        const email = prompt('Enter test email:', 'test@example.com');
-        if (email) {
-            await this.sendTestNotification(name, email);
-        }
+      const email = prompt("Enter test email:", "test@example.com");
+      if (email) {
+        await this.sendTestNotification(name, email);
+      }
     }
 
     async sendTestNotification(templateName, email) {
-        try {
-            const response = await fetch('/api/notifications/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    template_name: templateName,
-                    recipient_email: email,
-                    personalization_data: { name: 'Test User', city: 'Sofia' }
-                })
-            });
+      try {
+        const response = await fetch("/api/notifications/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            template_name: templateName,
+            recipient_email: email,
+            personalization_data: { name: "Test User", city: "Sofia" },
+          }),
+        });
 
-            const result = await response.json();
-            alert(result.success ? 'Test notification sent!' : 'Error: ' + result.error);
-        } catch (error) {
-            alert('Error: ' + error.message);
-        }
+        const result = await response.json();
+        alert(
+          result.success ? "Test notification sent!" : "Error: " + result.error,
+        );
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
     }
-}
+  }
 
-// Global functions
-async function loadDashboard() {
+  // Global functions
+  async function loadDashboard() {
     await dashboard.loadDashboard();
-}
+  }
 
-async function processQueue() {
+  async function processQueue() {
     await dashboard.processQueue();
-}
+  }
 
-// Initialize dashboard
-let dashboard;
-document.addEventListener('DOMContentLoaded', function() {
+  // Initialize dashboard
+  let dashboard;
+  document.addEventListener("DOMContentLoaded", function () {
     dashboard = new NotificationDashboard();
-});
+  });
 </script>
 {% endblock %}
