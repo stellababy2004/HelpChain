@@ -23,14 +23,36 @@ if __name__ == "__main__":
     import ai_config
 
     print("\nHelpChain AI diagnostic\n" + "=" * 30 + "\n")
-    ai_service.print_env()
-    # ако ai_config има помощна функция за печат — викаме през модула
-    if hasattr(ai_config, "print_ai_config"):
-        ai_config.print_ai_config()
+
+    # Ако ai_service има помощна функция — използваме я, иначе fallback
+    if hasattr(ai_service, "print_env"):
+        ai_service.print_env()
     else:
-        # fallback: ако ai_service предоставя печат на конфигурацията
-        if hasattr(ai_service, "print_ai_config"):
-            ai_service.print_ai_config()
+        # безопасен fallback: отпечатваме релевантни env променливи
+        keys = [
+            k
+            for k in os.environ.keys()
+            if any(p in k for p in ("OPENAI", "AZURE", "AI_", "API_KEY"))
+        ]
+        if not keys:
+            print("No AI-related environment variables found.")
+        else:
+            print("AI-related environment variables:")
+            for k in sorted(keys):
+                print(
+                    f" - {k} = {'<redacted>' if 'KEY' in k or 'SECRET' in k or 'TOKEN' in k else os.environ.get(k)}"
+                )
+        # кратко резюме от ai_config (ако има методи/атрибути за провайдъри)
+        if hasattr(ai_config, "get_providers"):
+            try:
+                print("\nai_config providers:", ai_config.get_providers())
+            except Exception:
+                print("\nai_config: get_providers() raised an exception")
+        elif hasattr(ai_config, "providers"):
+            print("\nai_config.providers:", getattr(ai_config, "providers"))
+        else:
+            print("\nai_config summary: (no explicit providers attribute)")
+
     # използваме test_connection от ai_service
     if hasattr(ai_service, "test_connection"):
         ai_service.test_connection()
