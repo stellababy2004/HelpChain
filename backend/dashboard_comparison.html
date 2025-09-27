@@ -1,226 +1,277 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bg">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Analytics Dashboard Comparison</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1400px;
-            margin: 20px auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .comparison-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin: 30px 0;
-        }
-        .dashboard-preview {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-            transition: transform 0.3s ease;
-        }
-        .dashboard-preview:hover {
-            transform: translateY(-5px);
-        }
-        .preview-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .preview-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.8em;
-            margin-bottom: 15px;
-        }
-        .standard-badge {
-            background: linear-gradient(135deg, #10b981, #059669);
-        }
-        .professional-badge {
-            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
-        }
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-        .feature-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .feature-list li:last-child {
-            border-bottom: none;
-        }
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            margin: 10px 5px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-        .btn-standard {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        .btn-professional {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            color: white;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-        .main-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1400px;
+        margin: 20px auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .comparison-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin: 30px 0;
+      }
+      .dashboard-preview {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        transition: transform 0.3s ease;
+      }
+      .dashboard-preview:hover {
+        transform: translateY(-5px);
+      }
+      .preview-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .preview-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8em;
+        margin-bottom: 15px;
+      }
+      .standard-badge {
+        background: linear-gradient(135deg, #10b981, #059669);
+      }
+      .professional-badge {
+        background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+      }
+      .feature-list {
+        list-style: none;
+        padding: 0;
+      }
+      .feature-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .feature-list li:last-child {
+        border-bottom: none;
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 25px;
+        margin: 10px 5px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+      }
+      .btn-standard {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+      }
+      .btn-professional {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      }
+      .main-header {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+      .visual-demo {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin: 20px 0;
+      }
+      .color-swatch {
+        height: 60px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9em;
+      }
+      .standard-swatch {
+        background: linear-gradient(135deg, #10b981, #34d399);
+      }
+      .professional-swatch {
+        background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+      }
+      @media (max-width: 768px) {
+        .comparison-container,
         .visual-demo {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 20px 0;
+          grid-template-columns: 1fr;
         }
-        .color-swatch {
-            height: 60px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.9em;
-        }
-        .standard-swatch {
-            background: linear-gradient(135deg, #10b981, #34d399);
-        }
-        .professional-swatch {
-            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
-        }
-        @media (max-width: 768px) {
-            .comparison-container, .visual-demo {
-                grid-template-columns: 1fr;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="main-header">
-        <h1>🎨 HelpChain Analytics Dashboard Comparison</h1>
-        <p>Професионални dashboard-ове с уникален дизайн за различни нужди</p>
+      <h1>🎨 HelpChain Analytics Dashboard Comparison</h1>
+      <p>Професионални dashboard-ове с уникален дизайн за различни нужди</p>
     </div>
 
     <div class="comparison-container">
-        <div class="dashboard-preview">
-            <div class="preview-header">
-                <div class="preview-badge standard-badge">📊 STANDARD VERSION</div>
-                <h2>Standard Analytics Dashboard</h2>
-                <p>Ефективно управление на основните данни</p>
-            </div>
-            
-            <ul class="feature-list">
-                <li>🎨 <strong>Дизайн:</strong> Светъл зелен професионален</li>
-                <li>🔤 <strong>Шрифт:</strong> Poppins (закръглен, приятелски)</li>
-                <li>🌈 <strong>Цветова схема:</strong> Зелени градиенти</li>
-                <li>📱 <strong>Layout:</strong> Чист и минималистичен</li>
-                <li>🎯 <strong>Фокус:</strong> Основни статистики и KPI</li>
-                <li>⚡ <strong>Performance:</strong> Бързо зареждане</li>
-                <li>🔧 <strong>Функции:</strong> Стандартни филтри</li>
-                <li>👥 <strong>Целева група:</strong> Ежедневна употреба</li>
-            </ul>
-
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="http://127.0.0.1:5000/admin/analytics" class="btn btn-standard">
-                    Отвори Standard Dashboard
-                </a>
-            </div>
+      <div class="dashboard-preview">
+        <div class="preview-header">
+          <div class="preview-badge standard-badge">📊 STANDARD VERSION</div>
+          <h2>Standard Analytics Dashboard</h2>
+          <p>Ефективно управление на основните данни</p>
         </div>
 
-        <div class="dashboard-preview">
-            <div class="preview-header">
-                <div class="preview-badge professional-badge">💎 PROFESSIONAL VERSION</div>
-                <h2>Professional Analytics Dashboard</h2>
-                <p>Усъвършенствано управление в реално време</p>
-            </div>
-            
-            <ul class="feature-list">
-                <li>🎨 <strong>Дизайн:</strong> Тъмен лилав премиум</li>
-                <li>🔤 <strong>Шрифт:</strong> Inter (технически, прецизен)</li>
-                <li>🌈 <strong>Цветова схема:</strong> Лилави/сини градиенти</li>
-                <li>📱 <strong>Layout:</strong> Glass morphism ефекти</li>
-                <li>🎯 <strong>Фокус:</strong> Детайлни анализи</li>
-                <li>⚡ <strong>Performance:</strong> Advanced функции</li>
-                <li>🔧 <strong>Функции:</strong> Професионални филтри</li>
-                <li>👥 <strong>Целева група:</strong> Експерти и анализатори</li>
-            </ul>
+        <ul class="feature-list">
+          <li>🎨 <strong>Дизайн:</strong> Светъл зелен професионален</li>
+          <li>🔤 <strong>Шрифт:</strong> Poppins (закръглен, приятелски)</li>
+          <li>🌈 <strong>Цветова схема:</strong> Зелени градиенти</li>
+          <li>📱 <strong>Layout:</strong> Чист и минималистичен</li>
+          <li>🎯 <strong>Фокус:</strong> Основни статистики и KPI</li>
+          <li>⚡ <strong>Performance:</strong> Бързо зареждане</li>
+          <li>🔧 <strong>Функции:</strong> Стандартни филтри</li>
+          <li>👥 <strong>Целева група:</strong> Ежедневна употреба</li>
+        </ul>
 
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="http://127.0.0.1:5000/admin/analytics-professional" class="btn btn-professional">
-                    Отвори Professional Dashboard
-                </a>
-            </div>
+        <div style="text-align: center; margin-top: 20px">
+          <a
+            href="http://127.0.0.1:5000/admin/analytics"
+            class="btn btn-standard"
+          >
+            Отвори Standard Dashboard
+          </a>
         </div>
-    </div>
+      </div>
 
-    <div style="background: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 15px; margin: 30px 0;">
-        <h3 style="text-align: center; margin-bottom: 25px;">🎨 Визуална демонстрация на цветовете</h3>
-        <div class="visual-demo">
-            <div>
-                <h4 style="text-align: center; margin-bottom: 15px;">📊 Standard (Зелени тонове)</h4>
-                <div class="color-swatch standard-swatch">
-                    Свеж • Професионален • Приятелски
-                </div>
-            </div>
-            <div>
-                <h4 style="text-align: center; margin-bottom: 15px;">💎 Professional (Лилави тонове)</h4>
-                <div class="color-swatch professional-swatch">
-                    Премиум • Технически • Иновативен
-                </div>
-            </div>
+      <div class="dashboard-preview">
+        <div class="preview-header">
+          <div class="preview-badge professional-badge">
+            💎 PROFESSIONAL VERSION
+          </div>
+          <h2>Professional Analytics Dashboard</h2>
+          <p>Усъвършенствано управление в реално време</p>
         </div>
-    </div>
 
-    <div style="text-align: center; margin: 40px 0;">
-        <h3>🚀 Тестови инструменти</h3>
-        <a href="http://127.0.0.1:5000/filter-test" class="btn" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">
-            🧪 Тест на филтрите
-        </a>
-        <a href="http://127.0.0.1:5000/test-analytics" class="btn" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">
-            📋 Основна тестова страница
-        </a>
-    </div>
+        <ul class="feature-list">
+          <li>🎨 <strong>Дизайн:</strong> Тъмен лилав премиум</li>
+          <li>🔤 <strong>Шрифт:</strong> Inter (технически, прецизен)</li>
+          <li>🌈 <strong>Цветова схема:</strong> Лилави/сини градиенти</li>
+          <li>📱 <strong>Layout:</strong> Glass morphism ефекти</li>
+          <li>🎯 <strong>Фокус:</strong> Детайлни анализи</li>
+          <li>⚡ <strong>Performance:</strong> Advanced функции</li>
+          <li>🔧 <strong>Функции:</strong> Професионални филтри</li>
+          <li>👥 <strong>Целева група:</strong> Експерти и анализатори</li>
+        </ul>
 
-    <div style="background: rgba(0, 0, 0, 0.2); padding: 25px; border-radius: 15px; margin: 30px 0;">
-        <h3 style="text-align: center; margin-bottom: 20px;">✅ Какво е готово</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-            <div>
-                <strong>🎨 Дизайн:</strong><br>
-                • Два уникални визуални стила<br>
-                • Различни цветови схеми<br>
-                • Професионални ефекти
-            </div>
-            <div>
-                <strong>⚡ Функционалност:</strong><br>
-                • Работещи филтри<br>
-                • API integration<br>
-                • Real-time данни
-            </div>
-            <div>
-                <strong>📊 Данни:</strong><br>
-                • 50 тестови доброволци<br>
-                • 120 заявки за помощ<br>
-                • 814+ analytics събития
-            </div>
+        <div style="text-align: center; margin-top: 20px">
+          <a
+            href="http://127.0.0.1:5000/admin/analytics-professional"
+            class="btn btn-professional"
+          >
+            Отвори Professional Dashboard
+          </a>
         </div>
+      </div>
     </div>
-</body>
+
+    <div
+      style="
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 15px;
+        margin: 30px 0;
+      "
+    >
+      <h3 style="text-align: center; margin-bottom: 25px">
+        🎨 Визуална демонстрация на цветовете
+      </h3>
+      <div class="visual-demo">
+        <div>
+          <h4 style="text-align: center; margin-bottom: 15px">
+            📊 Standard (Зелени тонове)
+          </h4>
+          <div class="color-swatch standard-swatch">
+            Свеж • Професионален • Приятелски
+          </div>
+        </div>
+        <div>
+          <h4 style="text-align: center; margin-bottom: 15px">
+            💎 Professional (Лилави тонове)
+          </h4>
+          <div class="color-swatch professional-swatch">
+            Премиум • Технически • Иновативен
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin: 40px 0">
+      <h3>🚀 Тестови инструменти</h3>
+      <a
+        href="http://127.0.0.1:5000/filter-test"
+        class="btn"
+        style="
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        "
+      >
+        🧪 Тест на филтрите
+      </a>
+      <a
+        href="http://127.0.0.1:5000/test-analytics"
+        class="btn"
+        style="
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        "
+      >
+        📋 Основна тестова страница
+      </a>
+    </div>
+
+    <div
+      style="
+        background: rgba(0, 0, 0, 0.2);
+        padding: 25px;
+        border-radius: 15px;
+        margin: 30px 0;
+      "
+    >
+      <h3 style="text-align: center; margin-bottom: 20px">✅ Какво е готово</h3>
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 15px;
+        "
+      >
+        <div>
+          <strong>🎨 Дизайн:</strong><br />
+          • Два уникални визуални стила<br />
+          • Различни цветови схеми<br />
+          • Професионални ефекти
+        </div>
+        <div>
+          <strong>⚡ Функционалност:</strong><br />
+          • Работещи филтри<br />
+          • API integration<br />
+          • Real-time данни
+        </div>
+        <div>
+          <strong>📊 Данни:</strong><br />
+          • 50 тестови доброволци<br />
+          • 120 заявки за помощ<br />
+          • 814+ analytics събития
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

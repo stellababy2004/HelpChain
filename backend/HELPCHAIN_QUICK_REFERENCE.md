@@ -3,12 +3,14 @@
 ## 📋 **Essential Commands & Usage**
 
 ### 🚀 **Start HelpChain**
+
 ```bash
 cd "C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\backend"
 python appy.py
 ```
 
 ### 🌍 **Access Points**
+
 - **Main App**: http://localhost:5000
 - **Admin Panel**: http://localhost:5000/admin_quick_login
 - **Translation Dashboard**: http://localhost:5000/admin/translations
@@ -20,61 +22,72 @@ python appy.py
 ## 🔤 **Translation System Usage**
 
 ### 📝 **In HTML Templates**
+
 ```html
 <!-- Basic translation -->
-{{ t('welcome.title') }}           <!-- "Добре дошли в HelpChain" -->
-{{ t('nav.home') }}               <!-- "Начало" -->
-{{ t('common.save') }}            <!-- "Запази" -->
+{{ t('welcome.title') }}
+<!-- "Добре дошли в HelpChain" -->
+{{ t('nav.home') }}
+<!-- "Начало" -->
+{{ t('common.save') }}
+<!-- "Запази" -->
 
 <!-- With variables -->
-{{ t('welcome.user', name=user.name) }}  <!-- "Добре дошли, Стела!" -->
+{{ t('welcome.user', name=user.name) }}
+<!-- "Добре дошли, Стела!" -->
 
 <!-- Date/Time formatting -->
-{{ format_date(datetime.now()) }}  <!-- "24.09.2025" -->
-{{ format_time(datetime.now()) }}  <!-- "15:30" -->
+{{ format_date(datetime.now()) }}
+<!-- "24.09.2025" -->
+{{ format_time(datetime.now()) }}
+<!-- "15:30" -->
 ```
 
 ### 🌐 **Language Switching (JavaScript)**
+
 ```javascript
 // Switch language
 async function switchLanguage(languageCode) {
-    const response = await fetch('/api/translations/switch', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            language_code: languageCode,
-            user_id: getCurrentUserId()  // optional
-        })
-    });
-    
-    if (response.ok) {
-        location.reload();  // Reload to apply new language
-    }
+  const response = await fetch("/api/translations/switch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      language_code: languageCode,
+      user_id: getCurrentUserId(), // optional
+    }),
+  });
+
+  if (response.ok) {
+    location.reload(); // Reload to apply new language
+  }
 }
 
 // Get available languages
 async function getLanguages() {
-    const response = await fetch('/api/languages');
-    const data = await response.json();
-    return data.languages;
+  const response = await fetch("/api/languages");
+  const data = await response.json();
+  return data.languages;
 }
 
 // Get translations for specific keys
 async function getTranslations(languageCode, keys) {
-    const keysList = keys.join(',');
-    const response = await fetch(`/api/translations/${languageCode}?keys=${keysList}`);
-    return await response.json();
+  const keysList = keys.join(",");
+  const response = await fetch(
+    `/api/translations/${languageCode}?keys=${keysList}`,
+  );
+  return await response.json();
 }
 ```
 
 ### 🤖 **AI Translation (Python)**
+
 ```python
 from translation_service import translation_service
 
 # Auto-translate missing keys to English
 translated_count = translation_service.auto_translate_missing(
     target_language_code='en',
-    source_language_code='bg', 
+    source_language_code='bg',
     max_translations=50
 )
 
@@ -95,6 +108,7 @@ text = translation_service.get_translation('welcome.title', 'en')
 ## 📊 **Analytics System**
 
 ### 📈 **Track Events**
+
 ```python
 from analytics_service import analytics_service
 
@@ -117,6 +131,7 @@ analytics_service.track_performance(
 ```
 
 ### 📊 **Get Analytics Data**
+
 ```python
 # Get dashboard data
 stats = analytics_service.get_dashboard_data(days=30)
@@ -130,6 +145,7 @@ funnel = analytics_service.get_conversion_funnel(['page_view', 'form_submit', 'r
 ## 🔔 **Notification System**
 
 ### 📧 **Send Notifications**
+
 ```python
 from notification_service import notification_service
 
@@ -153,6 +169,7 @@ notification_service.queue_notification(
 ```
 
 ### 📱 **Notification Templates**
+
 ```python
 # Create notification template
 template = NotificationTemplate(
@@ -169,6 +186,7 @@ template = NotificationTemplate(
 ## 🗄️ **Database Operations**
 
 ### 🔧 **Initialize Systems**
+
 ```bash
 # Initialize multilingual system
 python init_multilingual.py
@@ -181,9 +199,10 @@ python -c "from appy import app, db; app.app_context().push(); db.create_all()"
 ```
 
 ### 📊 **Database Models Quick Access**
+
 ```python
 from models import (
-    Volunteer, HelpRequest, 
+    Volunteer, HelpRequest,
     SupportedLanguage, Translation, TranslationKey,
     NotificationTemplate, NotificationQueue,
     AnalyticsEvent, AnalyticsMetric
@@ -200,6 +219,7 @@ pending_notifications = NotificationQueue.query.filter_by(status='pending').all(
 ## 🔍 **API Endpoints Reference**
 
 ### 🌐 **Multilingual API**
+
 ```bash
 # Get supported languages
 GET /api/languages
@@ -215,7 +235,8 @@ Body: {"language_code": "en", "user_id": 123}
 GET /api/translations/stats
 ```
 
-### 📊 **Analytics API** 
+### 📊 **Analytics API**
+
 ```bash
 # Get analytics data
 GET /api/analytics/dashboard?days=30
@@ -226,6 +247,7 @@ Body: {"event_type": "user_action", "category": "volunteer", "action": "click"}
 ```
 
 ### 🔔 **Notifications API**
+
 ```bash
 # Send notification
 POST /api/notifications/send
@@ -243,11 +265,12 @@ GET /api/notifications/templates
 ## 🛠️ **Common Tasks**
 
 ### 🌍 **Add New Language**
+
 ```python
 # 1. Add to database
 new_language = SupportedLanguage(
     code='it',
-    name='Italian', 
+    name='Italian',
     native_name='Italiano',
     flag_emoji='🇮🇹',
     currency_code='EUR'
@@ -258,6 +281,7 @@ translation_service.auto_translate_missing('it', 'bg', 100)
 ```
 
 ### 🔤 **Add New Translation Keys**
+
 ```python
 # Register new key
 translation_service.register_translation_key(
@@ -269,6 +293,7 @@ translation_service.register_translation_key(
 ```
 
 ### 📧 **Create Custom Email Template**
+
 ```html
 <!-- In email_templates/ folder -->
 <h1>{{title}}</h1>
@@ -282,6 +307,7 @@ translation_service.register_translation_key(
 ## 🚨 **Troubleshooting**
 
 ### 🔧 **Common Issues**
+
 ```bash
 # If server won't start
 Get-Process -Name 'python' | Stop-Process -Force
@@ -292,11 +318,12 @@ python -c "from appy import app, db; app.app_context().push(); db.drop_all(); db
 # If translation issues
 python init_multilingual.py
 
-# If notification issues  
+# If notification issues
 python create_notification_templates.py
 ```
 
 ### 📝 **Debug Mode**
+
 ```python
 # Enable detailed logging
 import logging
@@ -312,6 +339,7 @@ print(translation_service.get_translation_stats())
 ## 🎯 **Quick Testing Commands**
 
 ### ✅ **Test Translation System**
+
 ```python
 python -c "
 from translation_service import translation_service, t
@@ -322,7 +350,8 @@ print('Stats:', translation_service.get_translation_stats())
 ```
 
 ### ✅ **Test Notification System**
-```python  
+
+```python
 python -c "
 from notification_service import notification_service
 result = notification_service.send_test_notification('test@example.com')
@@ -331,6 +360,7 @@ print('Test result:', result)
 ```
 
 ### ✅ **Test Analytics System**
+
 ```python
 python -c "
 from analytics_service import analytics_service
@@ -345,23 +375,27 @@ print('Events today:', len(stats.get('recent_events', [])))
 ## 🔑 **Key File Locations**
 
 ### 📁 **Core Files**
+
 - `appy.py` - Main Flask application
 - `models.py` - Database models
 - `translation_service.py` - Translation system
-- `notification_service.py` - Notification system  
+- `notification_service.py` - Notification system
 - `analytics_service.py` - Analytics system
 
 ### 📁 **Templates**
+
 - `templates/` - HTML templates
 - `email_templates/` - Email templates
 - `static/` - CSS, JS, images
 
 ### 📁 **Admin Dashboards**
+
 - `templates/admin_translations_dashboard.html`
 - `templates/admin_analytics_dashboard.html`
 - `templates/notifications_dashboard.html`
 
 ### 📁 **Configuration**
+
 - `.env` - Environment variables
 - `requirements.txt` - Python dependencies
 - `babel.cfg` - Babel configuration
@@ -382,6 +416,7 @@ print('Events today:', len(stats.get('recent_events', [])))
 ## 🎉 **Ready to Use!**
 
 Your HelpChain platform now has:
+
 - ✅ **6 languages** (BG, EN, DE, FR, ES, RU)
 - ✅ **AI-powered translations**
 - ✅ **Advanced analytics**

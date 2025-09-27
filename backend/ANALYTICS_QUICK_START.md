@@ -3,8 +3,9 @@
 ## ✅ **Системата е готова и функционална!**
 
 Успешно направихте пълна Analytics система с:
+
 - ✅ Database models (AnalyticsEvent, UserBehavior, PerformanceMetrics)
-- ✅ Analytics Service с всички методи  
+- ✅ Analytics Service с всички методи
 - ✅ API endpoints за проследяване и данни
 - ✅ Admin Dashboard за визуализация
 - ✅ Примерни данни за тестване
@@ -15,18 +16,22 @@
 ## 🚀 **Как да започнете:**
 
 ### **1. Стартиране на системата:**
+
 ```bash
 cd "C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\backend"
 python appy.py
 ```
+
 ✅ **Системата стартира на http://127.0.0.1:5000**
 
 ### **2. Достъп до Analytics Dashboard:**
+
 🔗 **Отворете:** http://127.0.0.1:5000/admin/analytics
 
 ### **3. Налични API endpoints:**
+
 - 📊 `GET /api/analytics/dashboard?days=7` - Dashboard данни
-- 🎯 `POST /api/analytics/track` - Проследяване на събития  
+- 🎯 `POST /api/analytics/track` - Проследяване на събития
 - ⚡ `POST /api/analytics/performance` - Performance метрики
 
 ---
@@ -34,6 +39,7 @@ python appy.py
 ## 📊 **Примерни данни:**
 
 Системата вече има:
+
 - **319 Analytics Events** - различни събития
 - **50 User Behavior Sessions** - потребителски сесии
 - **200 Performance Metrics** - performance данни
@@ -43,15 +49,17 @@ python appy.py
 ## 🔧 **API Примери:**
 
 ### **Получаване на dashboard данни:**
+
 ```powershell
 Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/analytics/dashboard?days=7" -Method Get
 ```
 
 ### **Проследяване на събитие:**
+
 ```powershell
 $event = @{
     event_type = "user_action"
-    event_category = "volunteer"  
+    event_category = "volunteer"
     event_action = "registration"
     event_label = "new_volunteer"
     context = @{
@@ -69,8 +77,9 @@ Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/analytics/track" -Method Post 
 ## 📈 **Dashboard Features:**
 
 Analytics Dashboard показва:
+
 - 📊 **Overview Metrics** - общи статистики
-- 👥 **User Engagement** - потребителска активност  
+- 👥 **User Engagement** - потребителска активност
 - 🤖 **Chatbot Analytics** - чатбот метрики
 - ⚡ **Performance Metrics** - производителност
 - 🎯 **Conversion Funnel** - анализ на конверсии
@@ -82,6 +91,7 @@ Analytics Dashboard показва:
 ## 🎯 **Автоматично проследяване:**
 
 Системата автоматично проследява:
+
 - ✅ **Page views** - при всяко посещение на страница
 - ✅ **Response times** - за всеки HTTP request
 - ✅ **User sessions** - автоматично session tracking
@@ -96,17 +106,17 @@ from analytics_service import analytics_service
 
 # Event tracking
 analytics_service.track_event(
-    'user_action', 
-    'volunteer', 
-    'registration', 
+    'user_action',
+    'volunteer',
+    'registration',
     'form_submit'
 )
 
-# Performance tracking  
+# Performance tracking
 analytics_service.track_performance(
     'response_time',
-    'GET_dashboard', 
-    1.25, 
+    'GET_dashboard',
+    1.25,
     'seconds'
 )
 ```
@@ -116,8 +126,9 @@ analytics_service.track_performance(
 ## 📚 **Документация:**
 
 Пълната документация е в:
+
 - 📄 `ANALYTICS_COMPLETE_DOCUMENTATION.md` - пълна техническа документация
-- 📖 `ANALYTICS_DOCUMENTATION.md` - основна документация  
+- 📖 `ANALYTICS_DOCUMENTATION.md` - основна документация
 - 📋 `ANALYTICS_README.md` - кратък преглед
 
 ---

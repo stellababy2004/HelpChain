@@ -83,8 +83,8 @@ try:
         AdminUser,
         AdminLog,
         AdminRole,
-        TwoFactorAuth,
-        AdminSession,
+        # TwoFactorAuth,  # unused — премахнато
+        # AdminSession,   # unused — премахнато
     )  # type: ignore
 except ImportError:
     from models import (
@@ -306,8 +306,8 @@ def generate_totp_secret():
 def generate_backup_codes(count=10):
     """Генерира backup кодове за 2FA"""
     codes = []
-    for _ in range(count):
-        code = "".join(secrets.choice("0123456789") for _ in range(8))
+    for i in range(count):
+        code = "".join(secrets.choice("0123456789") for j in range(8))
         codes.append(f"{code[:4]}-{code[4:]}")
     return codes
 
@@ -1055,7 +1055,7 @@ def export_requests():
                 req.phone,
                 req.status,
                 req.description,
-                req.timestamp.strftime("%d.%m.%Y %H:%М") if req.timestamp else "",
+                req.timestamp.strftime("%d.%m.%Y %H:%M") if req.timestamp else "",
             ]
         )
     output = "\ufeff" + si.getvalue()

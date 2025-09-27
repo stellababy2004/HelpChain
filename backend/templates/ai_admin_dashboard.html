@@ -1,419 +1,453 @@
-{% extends "base.html" %}
-
-{% block title %}AI Chatbot Management - HelpChain Admin{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}AI Chatbot Management - HelpChain
+Admin{% endblock %} {% block content %}
 <div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="display-5 mb-0">🤖 AI Chatbot Management</h1>
-            <p class="lead text-muted">Управление на AI чатбот и аналитика</p>
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="display-5 mb-0">🤖 AI Chatbot Management</h1>
+      <p class="lead text-muted">Управление на AI чатбот и аналитика</p>
+    </div>
+  </div>
+
+  <!-- AI Status Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <div class="display-4 mb-3" id="ai-status-icon">⚙️</div>
+          <h5 class="card-title">AI Status</h5>
+          <p class="card-text" id="ai-status-text">Зареждане...</p>
+          <button
+            class="btn btn-outline-primary btn-sm"
+            onclick="refreshAIStatus()"
+          >
+            <i class="fas fa-sync"></i> Обнови
+          </button>
         </div>
+      </div>
     </div>
 
-    <!-- AI Status Cards -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="display-4 mb-3" id="ai-status-icon">⚙️</div>
-                    <h5 class="card-title">AI Status</h5>
-                    <p class="card-text" id="ai-status-text">Зареждане...</p>
-                    <button class="btn btn-outline-primary btn-sm" onclick="refreshAIStatus()">
-                        <i class="fas fa-sync"></i> Обнови
-                    </button>
-                </div>
-            </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <div class="display-4 mb-3">📊</div>
+          <h5 class="card-title">AI Разговори</h5>
+          <p class="card-text">
+            <span id="ai-conversations-count">0</span> AI отговора
+          </p>
+          <small class="text-muted"
+            >Средна увереност: <span id="avg-confidence">0%</span></small
+          >
         </div>
-        
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="display-4 mb-3">📊</div>
-                    <h5 class="card-title">AI Разговори</h5>
-                    <p class="card-text">
-                        <span id="ai-conversations-count">0</span> AI отговора
-                    </p>
-                    <small class="text-muted">Средна увереност: <span id="avg-confidence">0%</span></small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="display-4 mb-3">⚡</div>
-                    <h5 class="card-title">Performance</h5>
-                    <p class="card-text">
-                        Средно време: <span id="avg-response-time">0ms</span>
-                    </p>
-                    <small class="text-muted">Tokens използвани: <span id="total-tokens">0</span></small>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- AI Configuration -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-cog"></i> AI Provider Configuration</h5>
-                </div>
-                <div class="card-body">
-                    <div id="ai-providers-list">
-                        <div class="text-center py-4">
-                            <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Зареждане...</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    
-                    <button class="btn btn-success me-2" onclick="testAIConnections()">
-                        <i class="fas fa-plug"></i> Тест връзките
-                    </button>
-                    
-                    <button class="btn btn-info" onclick="showAIDemo()">
-                        <i class="fas fa-robot"></i> AI Demo
-                    </button>
-                </div>
-            </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <div class="display-4 mb-3">⚡</div>
+          <h5 class="card-title">Performance</h5>
+          <p class="card-text">
+            Средно време: <span id="avg-response-time">0ms</span>
+          </p>
+          <small class="text-muted"
+            >Tokens използвани: <span id="total-tokens">0</span></small
+          >
         </div>
-        
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Chatbot Analytics</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="responseTypesChart" width="400" height="200"></canvas>
-                    
-                    <div class="mt-3">
-                        <h6>Най-популярни FAQ:</h6>
-                        <div id="popular-faqs" class="list-group list-group-flush">
-                            <!-- FAQ ще се заредят динамично -->
-                        </div>
-                    </div>
-                </div>
-            </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Configuration -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-cog"></i> AI Provider Configuration
+          </h5>
         </div>
+        <div class="card-body">
+          <div id="ai-providers-list">
+            <div class="text-center py-4">
+              <div class="spinner-border" role="status">
+                <span class="visually-hidden">Зареждане...</span>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+
+          <button class="btn btn-success me-2" onclick="testAIConnections()">
+            <i class="fas fa-plug"></i> Тест връзките
+          </button>
+
+          <button class="btn btn-info" onclick="showAIDemo()">
+            <i class="fas fa-robot"></i> AI Demo
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Recent AI Conversations -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-comments"></i> Последни AI Разговори</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Време</th>
-                                    <th>Потребител</th>
-                                    <th>Въпрос</th>
-                                    <th>AI Отговор</th>
-                                    <th>Provider</th>
-                                    <th>Увереност</th>
-                                    <th>Време обработка</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ai-conversations-table">
-                                <tr>
-                                    <td colspan="7" class="text-center py-4">
-                                        <div class="spinner-border" role="status">
-                                            <span class="visually-hidden">Зареждане...</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-bar"></i> Chatbot Analytics
+          </h5>
         </div>
+        <div class="card-body">
+          <canvas id="responseTypesChart" width="400" height="200"></canvas>
+
+          <div class="mt-3">
+            <h6>Най-популярни FAQ:</h6>
+            <div id="popular-faqs" class="list-group list-group-flush">
+              <!-- FAQ ще се заредят динамично -->
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <!-- Recent AI Conversations -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-comments"></i> Последни AI Разговори
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Време</th>
+                  <th>Потребител</th>
+                  <th>Въпрос</th>
+                  <th>AI Отговор</th>
+                  <th>Provider</th>
+                  <th>Увереност</th>
+                  <th>Време обработка</th>
+                </tr>
+              </thead>
+              <tbody id="ai-conversations-table">
+                <tr>
+                  <td colspan="7" class="text-center py-4">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Зареждане...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- AI Demo Modal -->
 <div class="modal fade" id="aiDemoModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-robot"></i> AI Chatbot Demo</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="demoMessage" class="form-label">Въведете съобщение за тест:</label>
-                    <textarea class="form-control" id="demoMessage" rows="3" 
-                              placeholder="Напр: Как мога да се регистрирам като доброволец?"></textarea>
-                </div>
-                
-                <button class="btn btn-primary" onclick="runAIDemo()">
-                    <i class="fas fa-paper-plane"></i> Изпрати
-                </button>
-                
-                <hr>
-                
-                <div id="demoResponse" style="display: none;">
-                    <h6>AI Отговор:</h6>
-                    <div class="alert alert-info" id="demoResponseContent"></div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <small class="text-muted">
-                                <strong>Provider:</strong> <span id="demoProvider"></span><br>
-                                <strong>Увереност:</strong> <span id="demoConfidence"></span><br>
-                                <strong>Tokens:</strong> <span id="demoTokens"></span>
-                            </small>
-                        </div>
-                        <div class="col-md-6">
-                            <small class="text-muted">
-                                <strong>Model:</strong> <span id="demoModel"></span><br>
-                                <strong>Език:</strong> <span id="demoLanguage"></span>
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-robot"></i> AI Chatbot Demo
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="demoMessage" class="form-label"
+            >Въведете съобщение за тест:</label
+          >
+          <textarea
+            class="form-control"
+            id="demoMessage"
+            rows="3"
+            placeholder="Напр: Как мога да се регистрирам като доброволец?"
+          ></textarea>
         </div>
+
+        <button class="btn btn-primary" onclick="runAIDemo()">
+          <i class="fas fa-paper-plane"></i> Изпрати
+        </button>
+
+        <hr />
+
+        <div id="demoResponse" style="display: none">
+          <h6>AI Отговор:</h6>
+          <div class="alert alert-info" id="demoResponseContent"></div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <small class="text-muted">
+                <strong>Provider:</strong> <span id="demoProvider"></span><br />
+                <strong>Увереност:</strong> <span id="demoConfidence"></span
+                ><br />
+                <strong>Tokens:</strong> <span id="demoTokens"></span>
+              </small>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted">
+                <strong>Model:</strong> <span id="demoModel"></span><br />
+                <strong>Език:</strong> <span id="demoLanguage"></span>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-class AIAdminDashboard {
+  class AIAdminDashboard {
     constructor() {
-        this.chart = null;
-        this.init();
+      this.chart = null;
+      this.init();
     }
 
     async init() {
-        await this.loadAIStatus();
-        await this.loadAnalytics();
-        this.setupAutoRefresh();
+      await this.loadAIStatus();
+      await this.loadAnalytics();
+      this.setupAutoRefresh();
     }
 
     async loadAIStatus() {
-        try {
-            const response = await fetch('/api/ai/status');
-            const data = await response.json();
-            
-            this.updateAIStatusDisplay(data);
-            this.updateProvidersDisplay(data.providers);
-            
-        } catch (error) {
-            console.error('Error loading AI status:', error);
-            this.showError('Грешка при зареждане на AI статуса');
-        }
+      try {
+        const response = await fetch("/api/ai/status");
+        const data = await response.json();
+
+        this.updateAIStatusDisplay(data);
+        this.updateProvidersDisplay(data.providers);
+      } catch (error) {
+        console.error("Error loading AI status:", error);
+        this.showError("Грешка при зареждане на AI статуса");
+      }
     }
 
     updateAIStatusDisplay(data) {
-        const statusIcon = document.getElementById('ai-status-icon');
-        const statusText = document.getElementById('ai-status-text');
-        
-        if (data.ai_enabled) {
-            statusIcon.textContent = '✅';
-            statusText.innerHTML = `<span class="text-success">Активен</span><br><small>${data.active_provider}</small>`;
-        } else {
-            statusIcon.textContent = '❌';
-            statusText.innerHTML = '<span class="text-danger">Неактивен</span><br><small>Няма настроени API ключове</small>';
-        }
+      const statusIcon = document.getElementById("ai-status-icon");
+      const statusText = document.getElementById("ai-status-text");
+
+      if (data.ai_enabled) {
+        statusIcon.textContent = "✅";
+        statusText.innerHTML = `<span class="text-success">Активен</span><br><small>${data.active_provider}</small>`;
+      } else {
+        statusIcon.textContent = "❌";
+        statusText.innerHTML =
+          '<span class="text-danger">Неактивен</span><br><small>Няма настроени API ключове</small>';
+      }
     }
 
     updateProvidersDisplay(providers) {
-        const container = document.getElementById('ai-providers-list');
-        
-        let html = '';
-        for (const [key, provider] of Object.entries(providers)) {
-            const status = provider.enabled ? 'success' : 'secondary';
-            const icon = provider.enabled ? 'fas fa-check-circle' : 'fas fa-times-circle';
-            
-            html += `
+      const container = document.getElementById("ai-providers-list");
+
+      let html = "";
+      for (const [key, provider] of Object.entries(providers)) {
+        const status = provider.enabled ? "success" : "secondary";
+        const icon = provider.enabled
+          ? "fas fa-check-circle"
+          : "fas fa-times-circle";
+
+        html += `
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <div>
                         <strong>${provider.name}</strong><br>
                         <small class="text-muted">${provider.model}</small>
                     </div>
                     <span class="badge bg-${status}">
-                        <i class="${icon}"></i> ${provider.enabled ? 'Активен' : 'Неактивен'}
+                        <i class="${icon}"></i> ${provider.enabled ? "Активен" : "Неактивен"}
                     </span>
                 </div>
             `;
-        }
-        
-        container.innerHTML = html;
+      }
+
+      container.innerHTML = html;
     }
 
     async loadAnalytics() {
-        try {
-            const response = await fetch('/api/chatbot/analytics');
-            const data = await response.json();
-            
-            if (data.success) {
-                this.updateAnalyticsDisplay(data.data);
-                this.updateChart(data.data.response_types);
-                this.updatePopularFAQs(data.data.popular_faqs);
-            }
-            
-        } catch (error) {
-            console.error('Error loading analytics:', error);
+      try {
+        const response = await fetch("/api/chatbot/analytics");
+        const data = await response.json();
+
+        if (data.success) {
+          this.updateAnalyticsDisplay(data.data);
+          this.updateChart(data.data.response_types);
+          this.updatePopularFAQs(data.data.popular_faqs);
         }
+      } catch (error) {
+        console.error("Error loading analytics:", error);
+      }
     }
 
     updateAnalyticsDisplay(data) {
-        document.getElementById('ai-conversations-count').textContent = data.ai_statistics.total_ai_responses;
-        document.getElementById('avg-confidence').textContent = Math.round(data.ai_statistics.avg_confidence * 100) + '%';
-        document.getElementById('avg-response-time').textContent = Math.round(data.ai_statistics.avg_processing_time * 1000) + 'ms';
-        document.getElementById('total-tokens').textContent = data.ai_statistics.total_tokens_used;
+      document.getElementById("ai-conversations-count").textContent =
+        data.ai_statistics.total_ai_responses;
+      document.getElementById("avg-confidence").textContent =
+        Math.round(data.ai_statistics.avg_confidence * 100) + "%";
+      document.getElementById("avg-response-time").textContent =
+        Math.round(data.ai_statistics.avg_processing_time * 1000) + "ms";
+      document.getElementById("total-tokens").textContent =
+        data.ai_statistics.total_tokens_used;
     }
 
     updateChart(responseTypes) {
-        const ctx = document.getElementById('responseTypesChart').getContext('2d');
-        
-        if (this.chart) {
-            this.chart.destroy();
-        }
+      const ctx = document
+        .getElementById("responseTypesChart")
+        .getContext("2d");
 
-        this.chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(responseTypes).map(key => {
-                    const labels = {
-                        'faq': 'FAQ',
-                        'ai': 'AI',
-                        'fallback': 'Fallback',
-                        'faq_low_confidence': 'FAQ (ниска увереност)'
-                    };
-                    return labels[key] || key;
-                }),
-                datasets: [{
-                    data: Object.values(responseTypes),
-                    backgroundColor: [
-                        '#28a745', '#007bff', '#ffc107', '#6f42c1'
-                    ]
-                }]
+      if (this.chart) {
+        this.chart.destroy();
+      }
+
+      this.chart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(responseTypes).map((key) => {
+            const labels = {
+              faq: "FAQ",
+              ai: "AI",
+              fallback: "Fallback",
+              faq_low_confidence: "FAQ (ниска увереност)",
+            };
+            return labels[key] || key;
+          }),
+          datasets: [
+            {
+              data: Object.values(responseTypes),
+              backgroundColor: ["#28a745", "#007bff", "#ffc107", "#6f42c1"],
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+        },
+      });
     }
 
     updatePopularFAQs(faqs) {
-        const container = document.getElementById('popular-faqs');
-        
-        let html = '';
-        faqs.forEach((faq, index) => {
-            html += `
+      const container = document.getElementById("popular-faqs");
+
+      let html = "";
+      faqs.forEach((faq, index) => {
+        html += `
                 <div class="list-group-item d-flex justify-content-between">
                     <span>${faq.question.substring(0, 50)}...</span>
                     <badge class="badge bg-primary">${faq.usage}</badge>
                 </div>
             `;
-        });
-        
-        container.innerHTML = html || '<p class="text-muted">Няма данни</p>';
+      });
+
+      container.innerHTML = html || '<p class="text-muted">Няма данни</p>';
     }
 
     async testAIConnections() {
-        try {
-            const response = await fetch('/api/ai/test');
-            const data = await response.json();
-            
-            let message = 'Резултати от теста:\\n';
-            for (const [provider, result] of Object.entries(data.results)) {
-                message += `${provider}: ${result.status} - ${result.message}\\n`;
-            }
-            
-            alert(message);
-            
-        } catch (error) {
-            alert('Грешка при тест на AI връзките: ' + error.message);
+      try {
+        const response = await fetch("/api/ai/test");
+        const data = await response.json();
+
+        let message = "Резултати от теста:\\n";
+        for (const [provider, result] of Object.entries(data.results)) {
+          message += `${provider}: ${result.status} - ${result.message}\\n`;
         }
+
+        alert(message);
+      } catch (error) {
+        alert("Грешка при тест на AI връзките: " + error.message);
+      }
     }
 
     showAIDemo() {
-        const modal = new bootstrap.Modal(document.getElementById('aiDemoModal'));
-        modal.show();
+      const modal = new bootstrap.Modal(document.getElementById("aiDemoModal"));
+      modal.show();
     }
 
     async runAIDemo() {
-        const message = document.getElementById('demoMessage').value.trim();
-        if (!message) {
-            alert('Моля въведете съобщение за тест');
-            return;
-        }
+      const message = document.getElementById("demoMessage").value.trim();
+      if (!message) {
+        alert("Моля въведете съобщение за тест");
+        return;
+      }
 
-        try {
-            const response = await fetch('/api/ai/demo', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                document.getElementById('demoResponseContent').textContent = data.result.response;
-                document.getElementById('demoProvider').textContent = data.result.provider;
-                document.getElementById('demoConfidence').textContent = Math.round(data.result.confidence * 100) + '%';
-                document.getElementById('demoTokens').textContent = data.result.tokens_used || 'N/A';
-                document.getElementById('demoModel').textContent = data.result.model || 'N/A';
-                document.getElementById('demoLanguage').textContent = data.result.language_detected || 'N/A';
-                
-                document.getElementById('demoResponse').style.display = 'block';
-            } else {
-                alert('Грешка: ' + data.error);
-            }
-            
-        } catch (error) {
-            alert('Грешка при AI demo: ' + error.message);
+      try {
+        const response = await fetch("/api/ai/demo", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById("demoResponseContent").textContent =
+            data.result.response;
+          document.getElementById("demoProvider").textContent =
+            data.result.provider;
+          document.getElementById("demoConfidence").textContent =
+            Math.round(data.result.confidence * 100) + "%";
+          document.getElementById("demoTokens").textContent =
+            data.result.tokens_used || "N/A";
+          document.getElementById("demoModel").textContent =
+            data.result.model || "N/A";
+          document.getElementById("demoLanguage").textContent =
+            data.result.language_detected || "N/A";
+
+          document.getElementById("demoResponse").style.display = "block";
+        } else {
+          alert("Грешка: " + data.error);
         }
+      } catch (error) {
+        alert("Грешка при AI demo: " + error.message);
+      }
     }
 
     setupAutoRefresh() {
-        // Автоматично обновяване на данните на всеки 30 секунди
-        setInterval(() => {
-            this.loadAnalytics();
-        }, 30000);
+      // Автоматично обновяване на данните на всеки 30 секунди
+      setInterval(() => {
+        this.loadAnalytics();
+      }, 30000);
     }
 
     showError(message) {
-        // Показва грешка в UI
-        console.error(message);
+      // Показва грешка в UI
+      console.error(message);
     }
-}
+  }
 
-// Глобални функции за бутоните
-async function refreshAIStatus() {
+  // Глобални функции за бутоните
+  async function refreshAIStatus() {
     dashboard.loadAIStatus();
-}
+  }
 
-async function testAIConnections() {
+  async function testAIConnections() {
     dashboard.testAIConnections();
-}
+  }
 
-function showAIDemo() {
+  function showAIDemo() {
     dashboard.showAIDemo();
-}
+  }
 
-function runAIDemo() {
+  function runAIDemo() {
     dashboard.runAIDemo();
-}
+  }
 
-// Инициализация при зареждане на страницата
-let dashboard;
-document.addEventListener('DOMContentLoaded', function() {
+  // Инициализация при зареждане на страницата
+  let dashboard;
+  document.addEventListener("DOMContentLoaded", function () {
     dashboard = new AIAdminDashboard();
-});
+  });
 </script>
 {% endblock %}
