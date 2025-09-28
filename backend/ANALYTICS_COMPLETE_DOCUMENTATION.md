@@ -713,74 +713,74 @@ def admin_analytics():
 </div>
 
 <script>
-{% raw %}
-// Hourly distribution chart
-const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
-new Chart(hourlyCtx, {
-    type: 'line',
-    data: {
-        labels: Array.from({length: 24}, (_, i) => i + ':00'),
-        datasets: [{
-            label: 'Page Views',
-            data: {{ dashboard_data.hourly_distribution|tojson }},
-            borderColor: 'rgb(75, 192, 192)',
-            tension: 0.1
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            title: {
-                display: true,
-                text: 'Page Views by Hour'
-            }
-        },
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
+  {% raw %}
+  // Hourly distribution chart
+  const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+  new Chart(hourlyCtx, {
+      type: 'line',
+      data: {
+          labels: Array.from({length: 24}, (_, i) => i + ':00'),
+          datasets: [{
+              label: 'Page Views',
+              data: {{ dashboard_data.hourly_distribution|tojson }},
+              borderColor: 'rgb(75, 192, 192)',
+              tension: 0.1
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: {
+              title: {
+                  display: true,
+                  text: 'Page Views by Hour'
+              }
+          },
+          scales: {
+              y: { beginAtZero: true }
+          }
+      }
+  });
 
-// Conversion funnel chart
-const funnelCtx = document.getElementById('funnelChart').getContext('2d');
-new Chart(funnelCtx, {
-    type: 'bar',
-    data: {
-        labels: {{ volunteer_funnel.steps|map(attribute='step')|list|tojson }},
-        datasets: [{
-            label: 'Users',
-            data: {{ volunteer_funnel.steps|map(attribute='users')|list|tojson }},
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            title: {
-                display: true,
-                text: 'Volunteer Registration Funnel'
-            }
-        },
-        scales: { y: { beginAtZero: true } }
-    }
-});
+  // Conversion funnel chart
+  const funnelCtx = document.getElementById('funnelChart').getContext('2d');
+  new Chart(funnelCtx, {
+      type: 'bar',
+      data: {
+          labels: {{ volunteer_funnel.steps|map(attribute='step')|list|tojson }},
+          datasets: [{
+              label: 'Users',
+              data: {{ volunteer_funnel.steps|map(attribute='users')|list|tojson }},
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: {
+              title: {
+                  display: true,
+                  text: 'Volunteer Registration Funnel'
+              }
+          },
+          scales: { y: { beginAtZero: true } }
+      }
+  });
 
-// Real-time updates
-function updateRealTimeMetrics() {
-    fetch('/api/analytics/realtime')
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('activeUsers').textContent = data.active_users;
-            document.getElementById('currentPageViews').textContent = data.current_page_views;
-            document.getElementById('avgResponseTime').textContent = data.server_performance.avg_response_time.toFixed(3) + 's';
-        });
-}
+  // Real-time updates
+  function updateRealTimeMetrics() {
+      fetch('/api/analytics/realtime')
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('activeUsers').textContent = data.active_users;
+              document.getElementById('currentPageViews').textContent = data.current_page_views;
+              document.getElementById('avgResponseTime').textContent = data.server_performance.avg_response_time.toFixed(3) + 's';
+          });
+  }
 
-// Update every 30 seconds
-setInterval(updateRealTimeMetrics, 30000);
-{% endraw %}
+  // Update every 30 seconds
+  setInterval(updateRealTimeMetrics, 30000);
+  {% endraw %}
 </script>
 ```
 
