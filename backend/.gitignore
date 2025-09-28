@@ -130,3 +130,6 @@ Thumbs.db
 
 # pyenv/other
 .python-version
+
+# Ignore prettier cache
+node_modules/.cache/prettier/
