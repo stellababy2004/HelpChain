@@ -83,6 +83,22 @@ Python 3.13 is specified by default.
 
 ---
 
+## Releases
+
+### v0.1.0 — 2025-09-29
+
+Initial test-stable release — 13 passing tests.
+
+Highlights
+
+- Refactored and stabilized unit tests (mocked HTTP for chatbot).
+- Welcome email test made safe by mocking SMTP.
+- Added conftest.py with fixtures and PYTHONPATH fixes for tests.
+- LICENSE (MIT) added and tag v0.1.0 created.
+- Pre-commit hooks (black, ruff) configured and passing.
+
+---
+
 ## 📬 Contact
 
 Email: [contact@helpchain.live](mailto:contact@helpchain.live)
