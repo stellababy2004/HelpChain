@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+No changes yet.
+
 ## [v0.1.0] - 2025-09-29
 
 ### Added
@@ -19,3 +21,6 @@ All notable changes to this project will be documented in this file.
 
 - 13 tests passed locally (pytest).
 - pre-commit checks passing locally.
+
+[v0.1.0]: https://github.com/stellababy2004/HelpChain.bg/releases/tag/v0.1.0
+[v0.1.0-compare]: https://github.com/stellababy2004/HelpChain.bg/compare/v0.1.0...HEAD
