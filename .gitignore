@@ -50,3 +50,6 @@ uploads/
 
 # editor temp
 .vscode/
+
+# ignore prettier cache
+node_modules/.cache/prettier/
