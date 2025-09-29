@@ -35,3 +35,8 @@ def update_help(help_id):
 def delete_help(help_id):
     response = controller.delete_help(help_id)
     return jsonify(response), 204
+
+
+@api_bp.route("/some_endpoint", methods=["GET"])
+def some_endpoint():
+    return jsonify({"ok": True, "message": "endpoint ok"}), 200
