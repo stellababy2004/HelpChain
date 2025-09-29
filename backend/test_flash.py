@@ -1,18 +1,19 @@
 from dotenv import load_dotenv
 from appy import app
+from flask import flash, get_flashed_messages
 
 load_dotenv()
 
+
 # Тестов скрипт за симулация на различни flash съобщения
-with app.app_context():
-    from flask import flash
+def test_flash_messages():
+    # използваме test_request_context, за да има активна сесия/контекст
+    with app.test_request_context():
+        flash("✅ Това е success съобщение!", "success")
+        messages = get_flashed_messages(with_categories=True)
+        assert ("success", "✅ Това е success съобщение!") in messages
 
-    print("🧪 Тестване на flash съобщенията...")
 
-    # Симулираме различни типове съобщения
-    flash("✅ Това е success съобщение!", "success")
-    flash("❌ Това е error съобщение!", "error")
-    flash("⚠️ Това е warning съобщение!", "warning")
-    flash("ℹ️ Това е info съобщение!", "info")
+test_flash_messages()
 
-    print("Flash съобщенията са зададени. Отворете браузъра за да ги видите.")
+print("✅ Тестът на flash съобщенията е успешен!")

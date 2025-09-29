@@ -1,3 +1,4 @@
+# ...existing code...
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -6,8 +7,8 @@
 """
 
 import os
-import smtplib
 import ssl
+import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
@@ -18,69 +19,104 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def test_welcome_email():
-    """Тестваме welcome имейла директно"""
-    try:
-        print("🔧 Тестваме welcome имейл функционалността...")
+def _build_email(
+    volunteer_name, volunteer_email, volunteer_location, template_path, sender
+):
+    if not os.path.exists(template_path):
+        raise FileNotFoundError(template_path)
+    with open(template_path, "r", encoding="utf-8") as f:
+        html_body = f.read()
+    html_body = html_body.replace("{{volunteer_name}}", volunteer_name)
+    html_body = html_body.replace("{{volunteer_email}}", volunteer_email)
+    html_body = html_body.replace("{{volunteer_location}}", volunteer_location)
 
-        # Фалшиви данни за тест
-        volunteer_name = "Тест Потребител"
-        volunteer_email = "stella4889@hotmail.com"  # Заменете с реален имейл за тест
-        volunteer_location = "София"
+    subject = f"🎉 Добре дошли в HelpChain.bg, {volunteer_name}!"
+    msg = MIMEMultipart("alternative")
+    msg["From"] = sender
+    msg["To"] = volunteer_email
+    msg["Subject"] = Header(subject, "utf-8").encode()
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+    return msg, html_body, subject
 
-        # Четем HTML template
-        welcome_template_path = os.path.join(
-            "email_templates", "volunteer_welcome.html"
-        )
-        if os.path.exists(welcome_template_path):
-            with open(welcome_template_path, "r", encoding="utf-8") as f:
-                html_body = f.read()
-                # Заменяме плейсхолдърите
-                html_body = html_body.replace("{{volunteer_name}}", volunteer_name)
-                html_body = html_body.replace("{{volunteer_email}}", volunteer_email)
-                html_body = html_body.replace(
-                    "{{volunteer_location}}", volunteer_location
-                )
-        else:
-            print("❌ Welcome template не е намерен!")
+
+def send_welcome_email(
+    volunteer_name,
+    volunteer_email,
+    volunteer_location,
+    template_path,
+    smtp_class=smtplib.SMTP_SSL,
+):
+    smtp_server = os.getenv("MAIL_SERVER", "smtp.example")
+    smtp_port = int(os.getenv("MAIL_PORT", 465))
+    smtp_username = os.getenv("MAIL_USERNAME", "")
+    smtp_password = os.getenv("MAIL_PASSWORD", "")
+    smtp_sender = os.getenv("MAIL_DEFAULT_SENDER", "noreply@example.com")
+
+    msg, _, _ = _build_email(
+        volunteer_name, volunteer_email, volunteer_location, template_path, smtp_sender
+    )
+
+    context = ssl.create_default_context()
+    with smtp_class(smtp_server, smtp_port, context=context) as server:
+        if smtp_username and smtp_password:
+            server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+
+
+# Тест, който не прави реални мрежови повиквания
+def test_welcome_email_monkeypatched(tmp_path, monkeypatch):
+    # Подготвяме временен template файл
+    email_dir = tmp_path / "email_templates"
+    email_dir.mkdir()
+    template_file = email_dir / "volunteer_welcome.html"
+    template_content = "<html><body>Welcome {{volunteer_name}} &lt;{{volunteer_email}}&gt; from {{volunteer_location}}</body></html>"
+    template_file.write_text(template_content, encoding="utf-8")
+
+    # Настройваме env променливи
+    monkeypatch.setenv("MAIL_SERVER", "smtp.test")
+    monkeypatch.setenv("MAIL_PORT", "465")
+    monkeypatch.setenv("MAIL_USERNAME", "user")
+    monkeypatch.setenv("MAIL_PASSWORD", "pass")
+    monkeypatch.setenv("MAIL_DEFAULT_SENDER", "noreply@test")
+
+    # Dummy SMTP, който записва последното съобщение
+    class DummySMTP:
+        last_instance = None
+
+        def __init__(self, *args, **kwargs):
+            DummySMTP.last_instance = self
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
             return False
 
-        subject = f"🎉 Добре дошли в HelpChain.bg, {volunteer_name}!"
+        def login(self, user, pwd):
+            self.logged = (user, pwd)
 
-        # SMTP настройки
-        smtp_server = os.getenv("MAIL_SERVER", "smtp.zoho.eu")
-        smtp_port = int(os.getenv("MAIL_PORT", 465))
-        smtp_username = os.getenv("MAIL_USERNAME")
-        smtp_password = os.getenv("MAIL_PASSWORD")
-        smtp_sender = os.getenv("MAIL_DEFAULT_SENDER")
+        def send_message(self, msg):
+            self.sent_msg = msg
 
-        print(f"📧 SMTP сървър: {smtp_server}:{smtp_port}")
-        print(f"📧 От: {smtp_sender}")
-        print(f"📧 До: {volunteer_email}")
+    monkeypatch.setattr(smtplib, "SMTP_SSL", DummySMTP)
 
-        # Създаваме имейл съобщението
-        msg = MIMEMultipart("alternative")
-        msg["From"] = smtp_sender
-        msg["To"] = volunteer_email
-        msg["Subject"] = Header(subject, "utf-8").encode()
+    # Call the function (uses dummy SMTP)
+    send_welcome_email(
+        "Тест Потребител",
+        "test@example.com",
+        "София",
+        str(template_file),
+        smtp_class=smtplib.SMTP_SSL,
+    )
 
-        # Прикачваме HTML съдържанието
-        html_part = MIMEText(html_body, "html", "utf-8")
-        msg.attach(html_part)
-
-        # Изпращаме
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
-            server.login(smtp_username, smtp_password)
-            server.send_message(msg)
-
-        print("✅ Welcome имейл изпратен успешно!")
-        return True
-
-    except Exception as e:
-        print(f"❌ Грешка при изпращане: {str(e)}")
-        return False
+    # Asserts — проверяваме че DummySMTP е бил използван и имейлът съдържа правилния текст
+    assert DummySMTP.last_instance is not None
+    sent = getattr(DummySMTP.last_instance, "sent_msg", None)
+    assert sent is not None
+    body = sent.get_payload()[0].get_payload(decode=True).decode("utf-8")
+    assert "Тест Потребител" in body
+    assert "test@example.com" in body
+    assert "София" in body
 
 
-if __name__ == "__main__":
-    test_welcome_email()
+# ...existing code...

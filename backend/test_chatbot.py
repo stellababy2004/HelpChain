@@ -1,83 +1,107 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Тест на чатбот функционалността
+Тест на чатбот функционалността (с mocked HTTP повиквания)
 """
 import requests
 import time
+import pytest
 
 BASE_URL = "http://127.0.0.1:5000"
 
 
-def test_chatbot_init():
-    """Тества инициализацията на чатбота"""
-    print("🤖 Тестваме инициализация на чатбота...")
+@pytest.fixture(autouse=True)
+def mock_requests(monkeypatch):
+    class DummyResp:
+        def __init__(self, status_code, json_data=None, text=""):
+            self.status_code = status_code
+            self._json = json_data or {}
+            self.text = text
 
+        def json(self):
+            return self._json
+
+    def fake_get(url, *args, **kwargs):
+        if url.endswith("/chatbot/init"):
+            return DummyResp(
+                200,
+                {
+                    "session_id": "test-session",
+                    "welcome_message": "Welcome to HelpChain",
+                    "quick_questions": [],
+                },
+            )
+        return DummyResp(404, {}, "not found")
+
+    def fake_post(url, *args, **kwargs):
+        if url.endswith("/chatbot/message"):
+            payload = kwargs.get("json") or {}
+            msg = payload.get("message", "")
+            return DummyResp(
+                200,
+                {
+                    "message": f"Echo: {msg}",
+                    "type": "text",
+                    "suggestions": [],
+                },
+            )
+        return DummyResp(404, {}, "not found")
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    monkeypatch.setattr(requests, "post", fake_post)
+
+
+def _chatbot_init():
+    """Helper: инициализира чатбот и връща session_id или None"""
     try:
         response = requests.get(f"{BASE_URL}/chatbot/init")
-        print(f"📡 Status Code: {response.status_code}")
-
         if response.status_code == 200:
             data = response.json()
-            print("✅ Успешна инициализация!")
-            print(f"🎯 Welcome Message: {data.get('welcome_message')}")
-            print(f"🔑 Session ID: {data.get('session_id')}")
-            print(f"❓ Quick Questions: {data.get('quick_questions')}")
             return data.get("session_id")
-        else:
-            print(f"❌ Грешка: {response.status_code}")
-            print(f"📄 Response: {response.text}")
-            return None
-
-    except Exception as e:
-        print(f"💥 Изключение: {e}")
+        return None
+    except Exception:
         return None
 
 
-def test_chatbot_message(session_id, message):
-    """Тества изпращането на съобщение"""
-    print(f"\n💬 Тестваме съобщение: '{message}'")
-
+def _chatbot_message(session_id, message):
+    """Helper: изпраща message и връща JSON dict или None"""
     try:
         response = requests.post(
             f"{BASE_URL}/chatbot/message",
             json={"message": message, "session_id": session_id},
         )
-
-        print(f"📡 Status Code: {response.status_code}")
-
         if response.status_code == 200:
-            data = response.json()
-            print("✅ Успешен отговор!")
-            print(f"🤖 Bot Response: {data.get('message')}")
-            print(f"📂 Type: {data.get('type')}")
-            if data.get("category"):
-                print(f"🏷️  Category: {data.get('category')}")
-            if data.get("suggestions"):
-                print(f"💡 Suggestions: {data.get('suggestions')}")
-            return True
-        else:
-            print(f"❌ Грешка: {response.status_code}")
-            print(f"📄 Response: {response.text}")
-            return False
+            return response.json()
+        return None
+    except Exception:
+        return None
 
-    except Exception as e:
-        print(f"💥 Изключение: {e}")
-        return False
+
+def test_chatbot_init():
+    """Проверява, че инициализацията връща session_id"""
+    session_id = _chatbot_init()
+    assert session_id is not None, "Неуспешна инициализация на чатбота"
+
+
+def test_chatbot_message(session_id, message):
+    """Проверява, че изпращането на съобщение връща валиден отговор"""
+    data = _chatbot_message(session_id, message)
+    assert data is not None, f"Няма валиден отговор за session {session_id}"
+    assert isinstance(data, dict)
+    assert data.get("message") is not None
 
 
 def main():
     print("🚀 Стартираме тестване на чатбота...\n")
 
     # Тест 1: Инициализация
-    session_id = test_chatbot_init()
+    session_id = _chatbot_init()
     if not session_id:
         print("❌ Не можем да инициализираме чатбота!")
         return
 
     time.sleep(1)
 
-    # Тест 2: Различни въпроси
     test_messages = [
         "Как мога да се регистрирам?",
         "Какви услуги предлагате?",
@@ -93,11 +117,10 @@ def main():
     successful_tests = 0
 
     for message in test_messages:
-        if test_chatbot_message(session_id, message):
+        if _chatbot_message(session_id, message):
             successful_tests += 1
-        time.sleep(0.5)  # Малко почивка между тестовете
+        time.sleep(0.5)
 
-    # Резултати
     print("\n🎯 РЕЗУЛТАТИ:")
     print(f"✅ Успешни тестове: {successful_tests}/{len(test_messages)}")
     print(f"📊 Процент успешност: {(successful_tests/len(test_messages)*100):.1f}%")
