@@ -130,7 +130,7 @@ Developed by **Stella Barbarella** – [stellabarbarella.com](https://stellabarb
 ## Важни бележки
 
 - Актуализирай Python версията в документацията и в Render (3.12 препоръчвам).
-- Добави необходимите ENV променливи (.env): MAIL_*, DATABASE_URL, OPENAI_API_KEY (ако е нужно).
+- Добави необходимите ENV променливи (.env): MAIL\_\*, DATABASE_URL, OPENAI_API_KEY (ако е нужно).
 - Ignore: добави `node_modules/.cache/prettier/` и `node_modules/` в `.gitignore`.
 
 ---
