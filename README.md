@@ -88,3 +88,67 @@ Python 3.13 is specified by default.
 Email: [contact@helpchain.live](mailto:contact@helpchain.live)
 
 Developed by **Stella Barbarella** – [stellabarbarella.com](https://stellabarbarella.com)
+
+---
+
+## Бърз старт (локално)
+
+- Препоръчителна Python: 3.12
+- Създай и активирай virtualenv:
+  ```
+  py -3.12 -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+  ```
+- Инсталирай зависимости:
+  ```
+  pip install --upgrade pip
+  pip install -r backend/helpchain-backend/requirements.txt
+  pip install pytest requests
+  ```
+- Стартирай приложението (dev):
+  ```
+  set FLASK_APP=backend.app
+  set FLASK_ENV=development
+  flask run
+  ```
+  или за production (gunicorn):
+  ```
+  gunicorn backend.app:app
+  ```
+
+---
+
+## Структура
+
+- backend/ — основен Flask код, templates, статични файлове
+- backend/helpchain-backend/src — (модул за deployed package)
+- scripts/ — помощни скриптове
+- tests/ — unit/integration тестове
+
+---
+
+## Важни бележки
+
+- Актуализирай Python версията в документацията и в Render (3.12 препоръчвам).
+- Добави необходимите ENV променливи (.env): MAIL_*, DATABASE_URL, OPENAI_API_KEY (ако е нужно).
+- Ignore: добави `node_modules/.cache/prettier/` и `node_modules/` в `.gitignore`.
+
+---
+
+## Тестове
+
+```
+pytest -q
+```
+
+---
+
+## Контакт
+
+Stella Barbarella — contact@helpchain.live
+
+---
+
+## Лиценз
+
+Добави LICENSE (MIT/друга), ако искаш публично споделяне.
