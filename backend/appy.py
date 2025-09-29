@@ -14,12 +14,23 @@ from flask import (
     jsonify,
     Response,
 )
-import csv
+
+# нови импорти за правилно форматиране и i/o
+from flask_babel import Babel, gettext as _
 from io import StringIO
-from flask_babel import Babel, _
+import csv
+
+# Защитен import на HelpRequest (ruff няма да маркира като undefined)
+try:
+    from models import HelpRequest
+except Exception:
+    HelpRequest = None
+
+# Импорт на модели
 from models import db, Volunteer
 from flask_mail import Mail
 from flask_migrate import Migrate
+from sqlalchemy.exc import OperationalError
 
 # Зареди environment variables от .env файла
 load_dotenv()
@@ -63,10 +74,47 @@ mail = Mail(app)
 
 @app.route("/")
 def index():
-    volunteers_count = Volunteer.query.count()
-    signals_count = 0  # Ако имаш HelpRequest, може да го смениш
-    return render_template(
-        "index.html", volunteers_count=volunteers_count, signals_count=signals_count
+    # безопасно извличаме агрегати — ако моделът липсва или схемата не е съвместима, връщаме fallback
+    try:
+        volunteers_count = Volunteer.query.count() if "Volunteer" in globals() else 0
+    except OperationalError:
+        volunteers_count = 0
+    except Exception:
+        volunteers_count = 0
+
+    try:
+        HelpRequestModel = globals().get("HelpRequest")
+        if HelpRequestModel is not None:
+            requests_count = HelpRequestModel.query.count()
+            open_requests = HelpRequestModel.query.filter(
+                HelpRequestModel.status != "completed"
+            ).count()
+        else:
+            requests_count = 0
+            open_requests = 0
+    except OperationalError:
+        requests_count = 0
+        open_requests = 0
+    except Exception:
+        requests_count = 0
+        open_requests = 0
+
+    if app.jinja_loader:
+        return render_template(
+            "index.html",
+            volunteers_count=volunteers_count,
+            requests_count=requests_count,
+            open_requests=open_requests,
+        )
+    return (
+        jsonify(
+            {
+                "volunteers_count": volunteers_count,
+                "requests_count": requests_count,
+                "open_requests": open_requests,
+            }
+        ),
+        200,
     )
 
 
@@ -335,6 +383,3 @@ else:
     print(
         "Warning: MAIL_PORT environment variable is not set! Имейл функционалността няма да работи."
     )
-
-if __name__ == "__main__":
-    app.run(debug=True)
