@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, send_file
 from ..controllers.helpchain_controller import HelpChainController
+from ..models import Request, RequestLog, db
 
 api_bp = Blueprint("api", __name__)
 controller = HelpChainController()
@@ -110,3 +111,85 @@ def export():
         return jsonify({"error": str(e)}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@api_bp.route("/admin/change_status", methods=["POST", "OPTIONS"])
+def change_status():
+    if request.method == "OPTIONS":
+        response = jsonify({})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST")
+        return response
+
+    try:
+        data = request.get_json()
+        request_id = data.get("request_id")
+        new_status = data.get("status")
+
+        print(f"Received data: {data}")  # Debug log
+
+        if not request_id or not new_status:
+            return jsonify({"success": False, "message": "Invalid data"}), 400
+
+        req = Request.query.get(request_id)
+        if not req:
+            return jsonify({"success": False, "message": "Request not found"}), 404
+
+        req.status = new_status
+        db.session.commit()
+
+        # Add log entry
+        log = RequestLog(request_id=request_id, status=new_status)
+        db.session.add(log)
+        db.session.commit()
+
+        print(f"Status changed for request {request_id} to {new_status}")  # Debug log
+
+        response = jsonify({"success": True})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST")
+        return response
+    except Exception as e:
+        print(f"Error in change_status: {e}")  # Debug log
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@api_bp.route("/admin/delete_request", methods=["POST", "OPTIONS"])
+def delete_request():
+    if request.method == "OPTIONS":
+        response = jsonify({})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST")
+        return response
+
+    try:
+        data = request.get_json()
+        request_id = data.get("request_id")
+
+        print(f"Deleting request: {request_id}")  # Debug log
+
+        if not request_id:
+            return jsonify({"success": False, "message": "Invalid request ID"}), 400
+
+        req = Request.query.get(request_id)
+        if not req:
+            return jsonify({"success": False, "message": "Request not found"}), 404
+
+        # Delete logs first
+        RequestLog.query.filter_by(request_id=request_id).delete()
+        db.session.delete(req)
+        db.session.commit()
+
+        print(f"Deleted request {request_id}")  # Debug log
+
+        response = jsonify({"success": True})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add("Access-Control-Allow-Methods", "POST")
+        return response
+    except Exception as e:
+        print(f"Error in delete_request: {e}")  # Debug log
+        return jsonify({"success": False, "message": str(e)}), 500

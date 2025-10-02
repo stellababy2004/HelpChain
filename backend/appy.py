@@ -13,12 +13,14 @@ from flask import (
     make_response,
     jsonify,
     Response,
+    current_app,
 )
 
 # нови импорти за правилно форматиране и i/o
 from flask_babel import Babel, gettext as _
 from io import StringIO
 import csv
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 # Защитен import на HelpRequest (ruff няма да маркира като undefined)
 try:
@@ -38,7 +40,14 @@ load_dotenv()
 # Създай папката instance ако не съществува
 os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
 
-app = Flask(__name__)
+# Задаваме явни папки за шаблони и статични файлове (адаптирай пътищата ако е нужно)
+_templates = os.path.join(
+    os.path.dirname(__file__), "helpchain-backend", "src", "templates"
+)
+_static = os.path.join(os.path.dirname(__file__), "helpchain-backend", "src", "static")
+
+# Създаваме приложението с правилните пътища
+app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
 # Абсолютен път до базата за по-голяма сигурност
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -70,6 +79,19 @@ if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
 
 mail = Mail(app)
+
+# Настройваме Jinja да търси шаблони в няколко възможни директории
+_template_dirs = [
+    os.path.join(os.path.dirname(__file__), "templates"),
+    os.path.join(os.path.dirname(__file__), "HelpChain.bg", "backend", "templates"),
+    os.path.join(os.path.dirname(__file__), "helpchain-backend", "src", "templates"),
+]
+_loaders = [FileSystemLoader(d) for d in _template_dirs if os.path.isdir(d)]
+# добавяме текущия loader в края (ако има)
+if _loaders:
+    app.jinja_loader = ChoiceLoader(
+        _loaders + ([app.jinja_loader] if getattr(app, "jinja_loader", None) else [])
+    )
 
 
 @app.route("/")
@@ -382,4 +404,24 @@ if os.getenv("MAIL_PORT"):
 else:
     print(
         "Warning: MAIL_PORT environment variable is not set! Имейл функционалността няма да работи."
+    )
+
+
+@app.route("/admin", methods=["GET"])
+def admin_panel():
+    # Опитай да рендерираш template 'admin.html' ако съществува, иначе върни прост HTML
+    try:
+        # проверка дали шаблонът е наличен
+        if current_app.jinja_loader and current_app.jinja_loader.list_templates():
+            return render_template("admin.html")
+    except Exception:
+        # падане към fallback
+        pass
+
+    # fallback прост HTML (явно ще се вижда в браузъра)
+    return (
+        "<!doctype html><html><head><meta charset='utf-8'><title>Admin</title>"
+        "<style>body{font-family:Arial,Helvetica,sans-serif;padding:1rem}h1{font-size:18px}</style>"
+        "</head><body><h1>Admin panel (placeholder)</h1><p>Шаблонът admin.html не е намерен.</p></body></html>",
+        200,
     )

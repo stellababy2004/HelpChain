@@ -1,0 +1,172 @@
+{% extends "base.html" %} {% block title %}Управление на доброволци{% endblock
+%} {% block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_volunteers.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4">Управление на доброволци</h1>
+
+  <!-- Add Volunteer Form -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5>Добави нов доброволец</h5>
+    </div>
+    <div class="card-body">
+      <form id="add-volunteer-form" class="row g-3">
+        <div class="col-md-4">
+          <label for="name" class="form-label">Име</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            name="name"
+            required
+          />
+        </div>
+        <div class="col-md-4">
+          <label for="phone" class="form-label">Телефон</label>
+          <input
+            type="tel"
+            class="form-control"
+            id="phone"
+            name="phone"
+            required
+          />
+        </div>
+        <div class="col-md-4">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" name="email" />
+        </div>
+        <div class="col-md-6">
+          <label for="skills" class="form-label">Умения</label>
+          <input
+            type="text"
+            class="form-control"
+            id="skills"
+            name="skills"
+            placeholder="Например: шофиране, готвене"
+          />
+        </div>
+        <div class="col-md-6">
+          <label for="location" class="form-label">Местоположение</label>
+          <input
+            type="text"
+            class="form-control"
+            id="location"
+            name="location"
+            placeholder="Град, област"
+          />
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary">
+            Добави доброволец
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Volunteers Table -->
+  <div class="card">
+    <div class="card-header">
+      <h5>Списък с доброволци</h5>
+    </div>
+    <div class="card-body">
+      <table class="table table-striped" id="volunteers-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Име</th>
+            <th>Телефон</th>
+            <th>Email</th>
+            <th>Умения</th>
+            <th>Местоположение</th>
+            <th>Статус</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function loadVolunteers() {
+    try {
+      const response = await fetch("/api/admin/volunteers");
+      const volunteers = await response.json();
+      const tableBody = document.querySelector("#volunteers-table tbody");
+      tableBody.innerHTML = "";
+      volunteers.forEach((volunteer) => {
+        const row = tableBody.insertRow();
+        row.insertCell(0).textContent = volunteer.id;
+        row.insertCell(1).textContent = volunteer.name;
+        row.insertCell(2).textContent = volunteer.phone;
+        row.insertCell(3).textContent = volunteer.email;
+        row.insertCell(4).textContent = volunteer.skills;
+        row.insertCell(5).textContent = volunteer.location;
+        row.insertCell(6).textContent = volunteer.status;
+        const actionsCell = row.insertCell(7);
+        actionsCell.innerHTML = `
+                    <button class="btn btn-sm btn-warning" onclick="editVolunteer(${volunteer.id})">Редактирай</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteVolunteer(${volunteer.id})">Изтрий</button>
+                `;
+      });
+    } catch (error) {
+      console.error("Error loading volunteers:", error);
+    }
+  }
+
+  document
+    .getElementById("add-volunteer-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      try {
+        const response = await fetch("/api/admin/volunteers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (response.ok) {
+          loadVolunteers();
+          e.target.reset();
+        } else {
+          alert("Грешка при добавяне");
+        }
+      } catch (error) {
+        console.error("Error adding volunteer:", error);
+      }
+    });
+
+  async function deleteVolunteer(id) {
+    if (confirm("Сигурни ли сте, че искате да изтриете този доброволец?")) {
+      try {
+        const response = await fetch(`/api/admin/volunteers/${id}`, {
+          method: "DELETE",
+        });
+        if (response.ok) {
+          loadVolunteers();
+        } else {
+          alert("Грешка при изтриване");
+        }
+      } catch (error) {
+        console.error("Error deleting volunteer:", error);
+      }
+    }
+  }
+
+  function editVolunteer(id) {
+    // Implement edit functionality
+    alert("Функцията за редактиране ще бъде добавена скоро.");
+  }
+
+  loadVolunteers();
+</script>
+{% endblock %}
