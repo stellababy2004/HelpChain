@@ -1,0 +1,195 @@
+{% extends "base.html" %} {% block title %}Анализи | HelpChain.live{% endblock
+%} {% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Анализи</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <canvas id="statusChart"></canvas>
+    </div>
+    <div class="col-md-6">
+      <canvas id="categoryChart"></canvas>
+    </div>
+  </div>
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <canvas id="urgencyChart"></canvas>
+    </div>
+    <div class="col-md-6">
+      <canvas id="locationChart"></canvas>
+    </div>
+  </div>
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <canvas id="volunteerLocationChart"></canvas>
+    </div>
+    <div class="col-md-6">
+      <canvas id="volunteerSkillsChart"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  fetch("/api/analytics/data")
+    .then((response) => response.json())
+    .then((data) => {
+      // Status chart
+      const statusCtx = document.getElementById("statusChart").getContext("2d");
+      new Chart(statusCtx, {
+        type: "pie",
+        data: {
+          labels: data.status_labels,
+          datasets: [
+            {
+              data: data.status_data,
+              backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Разпределение по статус",
+          },
+        },
+      });
+
+      // Category chart
+      const categoryCtx = document
+        .getElementById("categoryChart")
+        .getContext("2d");
+      new Chart(categoryCtx, {
+        type: "bar",
+        data: {
+          labels: data.category_labels,
+          datasets: [
+            {
+              data: data.category_data,
+              backgroundColor: "#36A2EB",
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Разпределение по категория",
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+
+      // Urgency chart
+      const urgencyCtx = document
+        .getElementById("urgencyChart")
+        .getContext("2d");
+      new Chart(urgencyCtx, {
+        type: "doughnut",
+        data: {
+          labels: data.urgency_labels,
+          datasets: [
+            {
+              data: data.urgency_data,
+              backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Разпределение по спешност",
+          },
+        },
+      });
+
+      // Location chart
+      const locationCtx = document
+        .getElementById("locationChart")
+        .getContext("2d");
+      new Chart(locationCtx, {
+        type: "bar",
+        data: {
+          labels: data.location_labels,
+          datasets: [
+            {
+              data: data.location_data,
+              backgroundColor: "#4BC0C0",
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Разпределение по локация",
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+
+      // Volunteer location chart
+      const volunteerLocationCtx = document
+        .getElementById("volunteerLocationChart")
+        .getContext("2d");
+      new Chart(volunteerLocationCtx, {
+        type: "pie",
+        data: {
+          labels: data.volunteer_location_labels,
+          datasets: [
+            {
+              data: data.volunteer_location_data,
+              backgroundColor: [
+                "#FF6384",
+                "#36A2EB",
+                "#FFCE56",
+                "#4BC0C0",
+                "#9966FF",
+              ],
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Разпределение на доброволци по локация",
+          },
+        },
+      });
+
+      // Volunteer skills chart (simple bar for now)
+      const volunteerSkillsCtx = document
+        .getElementById("volunteerSkillsChart")
+        .getContext("2d");
+      new Chart(volunteerSkillsCtx, {
+        type: "bar",
+        data: {
+          labels: data.volunteer_skills_labels,
+          datasets: [
+            {
+              data: data.volunteer_skills_data,
+              backgroundColor: "#FFCE56",
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Разпределение на доброволци по умения",
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    })
+    .catch((error) => console.error("Error fetching analytics data:", error));
+</script>
+{% endblock %}

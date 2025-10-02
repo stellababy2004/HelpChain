@@ -1,0 +1,18 @@
+import requests
+
+# Test POST to submit_request
+url = "http://127.0.0.1:8003/submit_request"
+data = {
+    "name": "Тестов Потребител",
+    "phone": "+359 88 123 4567",
+    "email": "test@example.com",
+    "location": "София",
+    "category": "food",
+    "description": "Нуждая се от храна за семейството.",
+    "urgency": "medium",
+    "consent": "on"
+}
+
+response = requests.post(url, data=data)
+print(f"Status Code: {response.status_code}")
+print(f"Response: {response.text}")

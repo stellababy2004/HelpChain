@@ -2,6 +2,7 @@ import tempfile
 import os
 from datetime import datetime, timedelta
 from ..extensions import db
+from ..models import Request
 
 # опитваме се да намерим моделите; ако липсват - не вдигаме ImportError при зареждане
 MODELS_AVAILABLE = True
@@ -24,6 +25,7 @@ except Exception:
 
 class HelpChainController:
     def __init__(self):
+        print("HelpChainController initialized")  # Debug log
         pass
 
     def create_help_request(self, data):
@@ -233,3 +235,21 @@ class HelpChainController:
             return path, "application/pdf", os.path.basename(path)
         else:
             raise NotImplementedError()
+
+    def create_help(self, data):
+        print(f"Creating help request with data: {data}")  # Debug log
+        # Create a new request
+        req = Request(
+            name=data.get("name"),
+            phone=data.get("phone"),
+            email=data.get("email"),
+            location=data.get("location"),
+            category=data.get("category"),
+            description=data.get("description"),
+            urgency=data.get("urgency"),
+            status="pending",
+        )
+        db.session.add(req)
+        db.session.commit()
+        print(f"Created request with id: {req.id}")  # Debug log
+        return {"success": True, "id": req.id}

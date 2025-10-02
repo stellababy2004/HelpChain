@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - HelpChain</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <!-- За икони -->
+    <style>
+      /* Допълнителни стилове за по-приятно преживяване */
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      header {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 0;
+      }
+
+      .nav-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+      }
+
+      .logo {
+        font-size: 24px;
+        font-weight: bold;
+        text-decoration: none;
+        color: white;
+      }
+
+      .nav-menu {
+        list-style: none;
+        display: flex;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-menu li {
+        margin-left: 20px;
+      }
+
+      .nav-menu a {
+        color: white;
+        text-decoration: none;
+        padding: 10px;
+        transition: background-color 0.3s;
+      }
+
+      .nav-menu a:hover {
+        background-color: #0056b3;
+        border-radius: 5px;
+      }
+
+      main {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 20px;
+      }
+
+      .welcome {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .welcome h1 {
+        margin: 0;
+        color: #333;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+
+      .hero h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .hero p {
+        font-size: 1.2em;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .stat-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+      }
+
+      .stat-card i {
+        font-size: 3em;
+        margin-bottom: 10px;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .action-card {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: all 0.3s;
+      }
+
+      .action-card:hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        transform: scale(1.05);
+      }
+
+      .action-card i {
+        font-size: 2em;
+        color: #007bff;
+        margin-bottom: 10px;
+      }
+
+      .action-card h3 {
+        margin: 10px 0;
+        color: #333;
+      }
+
+      .action-card p {
+        color: #666;
+        margin-bottom: 15px;
+      }
+
+      .requests-section {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .request-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #fafafa;
+        transition: all 0.3s;
+      }
+
+      .request-card:hover {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .request-card h3 {
+        margin: 0 0 10px 0;
+        color: #007bff;
+        display: flex;
+        align-items: center;
+      }
+
+      .request-card h3 i {
+        margin-right: 10px;
+      }
+
+      .request-card p {
+        margin: 5px 0;
+      }
+
+      .status {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 5px;
+        color: white;
+      }
+
+      .status.pending {
+        background-color: #ffc107;
+      }
+
+      .status.in_progress {
+        background-color: #17a2b8;
+      }
+
+      .status.completed {
+        background-color: #28a745;
+      }
+
+      .motivation {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .motivation h2 {
+        color: #333;
+      }
+
+      .motivation p {
+        font-style: italic;
+        color: #555;
+      }
+
+      footer {
+        text-align: center;
+        padding: 20px;
+        background-color: #007bff;
+        color: white;
+        margin-top: 20px;
+      }
+
+      .profile-section {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+
+      .profile-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .profile-pic {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #007bff;
+      }
+
+      .profile-icon {
+        font-size: 100px;
+        color: #007bff;
+      }
+
+      .profile-info p {
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <nav>
+        <div class="nav-container">
+          <a href="{{ url_for('index') }}" class="logo"
+            ><i class="fas fa-hands-helping"></i> HelpChain</a
+          >
+          <ul class="nav-menu">
+            <li>
+              <a href="{{ url_for('index') }}"
+                ><i class="fas fa-home"></i> Начало</a
+              >
+            </li>
+            <li>
+              <a href="{{ url_for('about') }}"
+                ><i class="fas fa-info-circle"></i> За нас</a
+              >
+            </li>
+            <li>
+              <a href="{{ url_for('dashboard') }}"
+                ><i class="fas fa-tachometer-alt"></i> Dashboard</a
+              >
+            </li>
+            <li>
+              <a href="{{ url_for('profile') }}"
+                ><i class="fas fa-user"></i> Профил</a
+              >
+            </li>
+            <li>
+              <a href="{{ url_for('logout') }}"
+                ><i class="fas fa-sign-out-alt"></i> Изход</a
+              >
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>
+          Добре дошли, {{ current_user.username }}! <i class="fas fa-star"></i>
+        </h1>
+        <p>
+          Вашият принос прави света по-добро място. Да започнем да помагаме
+          заедно!
+        </p>
+      </section>
+
+      <section class="motivation">
+        <h2><i class="fas fa-heart"></i> Мотивация за деня</h2>
+        <p>"Един акт на доброта може да промени живота на някого завинаги."</p>
+      </section>
+
+      <section class="stats">
+        <div class="stat-card">
+          <i class="fas fa-clipboard-list"></i>
+          <h3>Общо заявки</h3>
+          <p>{{ requests|length }}</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-clock"></i>
+          <h3>Чакащи помощ</h3>
+          <p>
+            {{ requests|selectattr('status', 'equalto', 'pending')|list|length
+            }}
+          </p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-spinner"></i>
+          <h3>В процес</h3>
+          <p>
+            {{ requests|selectattr('status', 'equalto',
+            'in_progress')|list|length }}
+          </p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-check-circle"></i>
+          <h3>Завършени</h3>
+          <p>
+            {{ requests|selectattr('status', 'equalto', 'completed')|list|length
+            }}
+          </p>
+        </div>
+      </section>
+
+      <section class="actions">
+        <div class="action-card">
+          <i class="fas fa-plus-circle"></i>
+          <h3>Подай нова заявка</h3>
+          <p>Имаш нужда от помощ? Разкажи ни!</p>
+          <a href="{{ url_for('submit_request') }}" class="action-btn"
+            >Подай заявка</a
+          >
+        </div>
+        <div class="action-card">
+          <i class="fas fa-users"></i>
+          <h3>Стани доброволец</h3>
+          <p>Присъедини се към общността на помощниците.</p>
+          <a href="{{ url_for('become_volunteer') }}" class="action-btn"
+            >Регистрирай се</a
+          >
+        </div>
+        <div class="action-card">
+          <i class="fas fa-user-edit"></i>
+          <h3>Редактирай профил</h3>
+          <p>Обнови информацията си за по-добра помощ.</p>
+          <a href="{{ url_for('profile') }}" class="action-btn">Редактирай</a>
+        </div>
+      </section>
+
+      <section class="requests-section">
+        <h2><i class="fas fa-list"></i> Вашите заявки</h2>
+        {% if requests %} {% for request in requests %}
+        <div class="request-card">
+          <h3>
+            <i class="fas fa-hand-holding-heart"></i> Заявка #{{ request.id }}
+          </h3>
+          <p>
+            <i class="fas fa-user"></i> <strong>Име:</strong> {{ request.name }}
+          </p>
+          <p>
+            <i class="fas fa-phone"></i> <strong>Телефон:</strong> {{
+            request.phone }}
+          </p>
+          <p>
+            <i class="fas fa-envelope"></i> <strong>Имейл:</strong> {{
+            request.email }}
+          </p>
+          <p>
+            <i class="fas fa-map-marker-alt"></i> <strong>Локация:</strong> {{
+            request.location }}
+          </p>
+          <p>
+            <i class="fas fa-tag"></i> <strong>Категория:</strong> {{
+            request.category }}
+          </p>
+          <p>
+            <i class="fas fa-comment"></i> <strong>Описание:</strong> {{
+            request.description }}
+          </p>
+          <p>
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Спешност:</strong> {{ request.urgency }}
+          </p>
+          <p>
+            <i class="fas fa-tasks"></i> <strong>Статус:</strong>
+            <span class="status {{ request.status }}"
+              >{{ request.status }}</span
+            >
+          </p>
+        </div>
+        {% endfor %} {% else %}
+        <div class="action-card">
+          <i class="fas fa-search"></i>
+          <h3>Няма заявки</h3>
+          <p>Нямате активни заявки. Искате ли да подадете нова?</p>
+          <a href="{{ url_for('submit_request') }}" class="action-btn"
+            >Подай заявка</a
+          >
+        </div>
+        {% endif %}
+      </section>
+
+      <section class="profile-section">
+        <h2><i class="fas fa-user-circle"></i> Моят профил</h2>
+        <div class="profile-card">
+          {% if current_user.profile_picture %}
+          <img
+            src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) }}"
+            alt="Профилна снимка"
+            class="profile-pic"
+          />
+          {% else %}
+          <i class="fas fa-user-circle profile-icon"></i>
+          {% endif %}
+          <div class="profile-info">
+            <p>
+              <i class="fas fa-user"></i> <strong>Потребителско име:</strong> {{
+              current_user.username }}
+            </p>
+            <p>
+              <i class="fas fa-envelope"></i> <strong>Имейл:</strong> {{
+              current_user.email }}
+            </p>
+            {% if current_user.phone %}
+            <p>
+              <i class="fas fa-phone"></i> <strong>Телефон:</strong> {{
+              current_user.phone }}
+            </p>
+            {% endif %}
+            <p>
+              <i class="fas fa-map-marker-alt"></i> <strong>Локация:</strong> {{
+              current_user.location or 'Не е зададена' }}
+            </p>
+            <p>
+              <i class="fas fa-tools"></i> <strong>Умения:</strong> {{
+              current_user.skills or 'Не са зададени' }}
+            </p>
+            <p>
+              <i class="fas fa-clock"></i> <strong>Налично време:</strong> {{
+              current_user.available_time or 'Не е зададено' }}
+            </p>
+            <p>
+              <i class="fas fa-flag"></i> <strong>Тип:</strong> {% if
+              current_user.is_volunteer %}Доброволец{% endif %} {% if
+              current_user.is_organization %}Организация{% endif %}
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        &copy; 2025 HelpChain. <i class="fas fa-heart"></i> Помагаме заедно!
+      </p>
+    </footer>
+  </body>
+</html>
