@@ -9,6 +9,7 @@ flask-admin
 flask-login
 flask-talisman
 flask-limiter
+flask-cors
 python-dotenv
 flask-migrate
 pyotp
