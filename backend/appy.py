@@ -1,9 +1,82 @@
 import os
+import sys
 from dotenv import load_dotenv
+
+# All imports at the top
+from werkzeug.utils import secure_filename
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+    make_response,
+    jsonify,
+    Response,
+    # current_app,  # Премахнат за избягване на circular import
+)
+from flask_babel import Babel, gettext as _
+from io import StringIO
+import csv
+from jinja2 import ChoiceLoader, FileSystemLoader
+
+# Защитен import на HelpRequest (ruff няма да маркира като undefined)
+try:
+    from models import HelpRequest
+except Exception:
+    HelpRequest = None
+
+from models import db, Volunteer  # Вместо 'from .models import'
+from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_talisman import Talisman
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_cors import CORS
+from sqlalchemy.exc import OperationalError
+
+# Sentry for error monitoring
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+# Import for 2FA testing
+try:
+    from models_with_analytics import AdminUser, AdminRole
+    from werkzeug.security import generate_password_hash, check_password_hash
+    import pyotp
+    HAS_2FA = True
+    print("2FA modules loaded successfully")
+except ImportError as e:
+    HAS_2FA = False
+    print(f"2FA modules not available: {e}")
+
+    # Fallback 2FA simulation using session
+    class MockAdminUser:
+        def __init__(self):
+            self.two_factor_enabled = False
+            self.totp_secret = None
+
+        def generate_totp_secret(self):
+            if not self.totp_secret:
+                self.totp_secret = pyotp.random_base32()
+            return self.totp_secret
+
+        def get_totp_uri(self):
+            if not self.totp_secret:
+                self.generate_totp_secret()
+            return f"otpauth://totp/HelpChain:admin?secret={self.totp_secret}&issuer=HelpChain"
+
+        def verify_totp(self, token):
+            if not self.totp_secret:
+                return False
+            totp = pyotp.TOTP(self.totp_secret)
+            return totp.verify(token)
 
 # Add the backend directory to Python path so we can import models
 backend_dir = os.path.dirname(__file__)
-import sys
 
 sys.path.insert(0, backend_dir)
 
@@ -20,85 +93,6 @@ print(f"Python path: {sys.path[:3]}...")  # Debug print
 print(f"Current directory: {os.getcwd()}")
 
 print("Starting appy.py...")
-from werkzeug.utils import secure_filename
-
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    session,
-    make_response,
-    jsonify,
-    Response,
-    # current_app,  # Премахнат за избягване на circular import
-)
-
-# нови импорти за правилно форматиране и i/o
-from flask_babel import Babel, gettext as _
-from io import StringIO
-import csv
-from jinja2 import ChoiceLoader, FileSystemLoader
-
-# Защитен import на HelpRequest (ruff няма да маркира като undefined)
-try:
-    from models import HelpRequest
-except Exception:
-    HelpRequest = None
-
-# Поправи всички relative imports на absolute
-from models import db, Volunteer  # Вместо 'from .models import'
-
-# Ако има други, направи същото, напр.:
-# from ai_service import ai_service  # Вместо 'from .ai_service import'
-
-from flask_mail import Mail
-from flask_migrate import Migrate
-from flask_talisman import Talisman
-from flask_wtf.csrf import CSRFProtect
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from flask_cors import CORS
-from sqlalchemy.exc import OperationalError
-
-# Sentry for error monitoring
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
-
-# Import for 2FA testing
-# try:
-#     from models_with_analytics import AdminUser, AdminRole
-#     from werkzeug.security import generate_password_hash, check_password_hash
-#     import pyotp
-#     HAS_2FA = True
-#     print("2FA modules loaded successfully")
-# except ImportError as e:
-#     HAS_2FA = False
-#     print(f"2FA modules not available: {e}")
-
-#     # Fallback 2FA simulation using session
-#     class MockAdminUser:
-#         def __init__(self):
-#             self.two_factor_enabled = False
-#             self.totp_secret = None
-
-#         def generate_totp_secret(self):
-#             if not self.totp_secret:
-#                 self.totp_secret = pyotp.random_base32()
-#             return self.totp_secret
-
-#         def get_totp_uri(self):
-#             if not self.totp_secret:
-#             self.generate_totp_secret()
-#             return f"otpauth://totp/HelpChain:admin?secret={self.totp_secret}&issuer=HelpChain"
-
-#         def verify_totp(self, token):
-#             if not self.totp_secret:
-#                 return False
-#             totp = pyotp.TOTP(self.totp_secret)
-#             return totp.verify(token)
 
 #         def enable_2fa(self):
 #             self.two_factor_enabled = True
@@ -133,7 +127,7 @@ sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
     integrations=[FlaskIntegration()],
     traces_sample_rate=1.0,
-    environment="production" if not app.debug else "development"
+    environment="production" if not app.debug else "development",
 )
 
 # Абсолютен път до базата за по-голяма сигурност
@@ -178,6 +172,10 @@ app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
 
+# Upload folder configuration
+app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB limit
+
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
 
@@ -193,7 +191,10 @@ limiter = Limiter(
 csp = {
     "default-src": ["'self'"],
     "script-src": ["'self'", "'nonce-{{ nonce }}'"],
-    "style-src": ["'self'", "'unsafe-inline'"],  # Consider removing 'unsafe-inline' if possible
+    "style-src": [
+        "'self'",
+        "'unsafe-inline'",
+    ],  # Consider removing 'unsafe-inline' if possible
     "img-src": ["'self'", "data:", "https://helpchain.live"],
     "font-src": ["'self'"],
     "connect-src": ["'self'"],
@@ -207,7 +208,6 @@ talisman = Talisman(
     app,
     content_security_policy=csp,  # ENFORCED - no longer report-only
     content_security_policy_report_uri="https://csp-report.helpchain.live/report",
-    content_security_policy_report_to="csp-endpoint",  # New standard
     force_https=True,
     strict_transport_security=True,
     strict_transport_security_preload=True,
@@ -230,9 +230,6 @@ talisman = Talisman(
         "picture-in-picture": "()",
     },
     feature_policy={},  # Deprecated, but keeping for compatibility
-    cross_origin_opener_policy="same-origin",
-    cross_origin_embedder_policy="require-corp",
-    cross_origin_resource_policy="same-origin",
 )
 
 csrf = CSRFProtect(app)
@@ -336,7 +333,9 @@ def admin_login():
         else:
             error = "Грешно потребителско име или парола!"
             # Log failed login attempt
-            app.logger.warning(f"Failed login attempt for user: {username}, IP: {request.remote_addr}")
+            app.logger.warning(
+                f"Failed login attempt for user: {username}, IP: {request.remote_addr}"
+            )
     return render_template("admin_login.html", error=error)
 
 
@@ -438,7 +437,6 @@ def submit_request():
         category = request.form.get("category")
         location = request.form.get("location")
         problem = request.form.get("problem")
-        terms = request.form.get("terms")
         captcha = request.form.get("captcha")
         file = request.files.get("file")
 
@@ -469,7 +467,13 @@ def submit_request():
             # Basic antivirus check (placeholder - integrate with real AV service)
             # TODO: Integrate with ClamAV or similar service
             # For now, just check for suspicious file signatures
-            dangerous_signatures = [b'<script', b'<?php', b'<%', b'eval(', b'javascript:']
+            dangerous_signatures = [
+                b"<script",
+                b"<?php",
+                b"<%",
+                b"eval(",
+                b"javascript:",
+            ]
             file_content_start = file.read(1024)
             file.seek(0)  # Reset
             if any(sig in file_content_start.lower() for sig in dangerous_signatures):
@@ -696,7 +700,12 @@ def feedback():
             return redirect(url_for("feedback"))
 
         # Log feedback with security tags
-        app.logger.info("[SECURITY:FEEDBACK] Feedback received from %s <%s>: %s", name, email, message[:100] + "..." if len(message) > 100 else message)
+        app.logger.info(
+            "[SECURITY:FEEDBACK] Feedback received from %s <%s>: %s",
+            name,
+            email,
+            message[:100] + "..." if len(message) > 100 else message,
+        )
         flash("Благодарим за обратната връзка!")
         return redirect(url_for("feedback"))
     return render_template("feedback.html")
@@ -714,12 +723,18 @@ def set_language():
 def add_security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     # HSTS header - ensure it's added for all HTTPS responses
-    if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
-        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+    if request.is_secure or request.headers.get("X-Forwarded-Proto") == "https":
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=63072000; includeSubDomains; preload"
+        )
     # Report-To header for CSP reports (new standard)
-    response.headers["Report-To"] = '{"group":"csp-endpoint","max_age":86400,"endpoints":[{"url":"https://csp-report.helpchain.live/report"}],"include_subdomains":true}'
+    response.headers["Report-To"] = (
+        '{"group":"csp-endpoint","max_age":86400,"endpoints":[{"url":"https://csp-report.helpchain.live/report"}],"include_subdomains":true}'
+    )
     # NEL (Network Error Logging) for monitoring
-    response.headers["NEL"] = '{"report_to":"csp-endpoint","max_age":86400,"include_subdomains":true}'
+    response.headers["NEL"] = (
+        '{"report_to":"csp-endpoint","max_age":86400,"include_subdomains":true}'
+    )
     # Cache-Control for sensitive routes
     if request.endpoint in ["admin_login", "admin_dashboard", "admin_volunteers"]:
         response.headers["Cache-Control"] = (
