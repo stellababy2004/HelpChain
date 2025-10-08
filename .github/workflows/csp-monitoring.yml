@@ -1,0 +1,196 @@
+name: CSP Report Handler
+
+on:
+  workflow_dispatch:
+    inputs:
+      setup_csp_endpoint:
+        description: 'Setup CSP report endpoint'
+        required: false
+        default: 'true'
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  setup-csp-monitoring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install flask requests
+
+      - name: Create CSP Report Handler
+        run: |
+          cat > csp_report_handler.py << 'EOF'
+          from flask import Flask, request, jsonify
+          import json
+          import logging
+          from datetime import datetime
+          import os
+
+          app = Flask(__name__)
+
+          # Setup logging
+          logging.basicConfig(
+              filename='csp_reports.log',
+              level=logging.INFO,
+              format='%(asctime)s - %(levelname)s - %(message)s'
+          )
+
+          # In-memory storage for demo (use database in production)
+          csp_reports = []
+
+          @app.route('/report', methods=['POST'])
+          def csp_report():
+              try:
+                  report_data = request.get_json()
+
+                  if not report_data:
+                      return jsonify({'error': 'No report data'}), 400
+
+                  # Log the report
+                  timestamp = datetime.now().isoformat()
+                  report_entry = {
+                      'timestamp': timestamp,
+                      'user_agent': request.headers.get('User-Agent'),
+                      'ip': request.remote_addr,
+                      'report': report_data
+                  }
+
+                  csp_reports.append(report_entry)
+
+                  # Log to file
+                  app.logger.info(f"CSP Violation: {json.dumps(report_entry, indent=2)}")
+
+                  # Check for critical violations
+                  if 'violated-directive' in report_data:
+                      directive = report_data['violated-directive']
+                      if 'script-src' in directive and "'unsafe-inline'" in str(report_data):
+                          app.logger.warning(f"CRITICAL: Inline script violation: {directive}")
+
+                  # Keep only last 1000 reports
+                  if len(csp_reports) > 1000:
+                      csp_reports.pop(0)
+
+                  return jsonify({'status': 'received'}), 200
+
+              except Exception as e:
+                  app.logger.error(f"CSP Report processing error: {e}")
+                  return jsonify({'error': 'Processing failed'}), 500
+
+          @app.route('/reports', methods=['GET'])
+          def get_reports():
+              """Get recent CSP reports (for monitoring)"""
+              return jsonify({
+                  'total_reports': len(csp_reports),
+                  'recent_reports': csp_reports[-10:] if csp_reports else []
+              })
+
+          @app.route('/violations', methods=['GET'])
+          def get_violations():
+              """Get violation summary"""
+              violations = {}
+              for report in csp_reports[-100:]:  # Last 100 reports
+                  directive = report['report'].get('violated-directive', 'unknown')
+                  violations[directive] = violations.get(directive, 0) + 1
+
+              return jsonify({
+                  'timeframe': 'last 100 reports',
+                  'violations': violations
+              })
+
+          if __name__ == '__main__':
+              port = int(os.environ.get('PORT', 8080))
+              app.run(host='0.0.0.0', port=port, debug=False)
+          EOF
+
+      - name: Create Dockerfile for CSP Handler
+        run: |
+          cat > Dockerfile.csp << 'EOF'
+          FROM python:3.11-slim
+
+          WORKDIR /app
+
+          COPY csp_report_handler.py requirements.txt ./
+
+          RUN pip install --no-cache-dir -r requirements.txt
+
+          EXPOSE 8080
+
+          CMD ["python", "csp_report_handler.py"]
+          EOF
+
+      - name: Create requirements for CSP handler
+        run: |
+          echo "flask==2.3.3" > requirements-csp.txt
+          echo "requests==2.31.0" >> requirements-csp.txt
+
+      - name: Upload CSP Handler Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: csp-report-handler
+          path: |
+            csp_report_handler.py
+            Dockerfile.csp
+            requirements-csp.txt
+          retention-days: 30
+
+  create-monitoring-issue:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.setup_csp_endpoint == 'true'
+    steps:
+      - name: Create CSP Monitoring Setup Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔧 Setup CSP Report Monitoring',
+              body: `
+            ## 📊 CSP Report Monitoring Setup
+
+            ### Files Created:
+            - \`csp_report_handler.py\` - Flask app for receiving CSP reports
+            - \`Dockerfile.csp\` - Container for CSP handler
+            - \`requirements-csp.txt\` - Dependencies
+
+            ### Deployment Steps:
+
+            1. **Deploy CSP Handler:**
+               \`\`\`bash
+               # Build and run locally for testing
+               docker build -f Dockerfile.csp -t csp-handler .
+               docker run -p 8080:8080 csp-handler
+               \`\`\`
+
+            2. **Update CSP Header:**
+               Change report-uri to your deployed endpoint:
+               \`\`\`
+               Content-Security-Policy: ... report-uri https://your-csp-handler.com/report
+               \`\`\`
+
+            3. **Monitor Reports:**
+               - Visit \`/reports\` for recent violations
+               - Visit \`/violations\` for summary statistics
+               - Set up alerts for critical violations
+
+            ### Production Deployment:
+            - Deploy to Render/Fly.io as separate service
+            - Use persistent storage (database) for reports
+            - Set up monitoring dashboards
+            - Configure alerts for policy violations
+
+            ---
+            *This issue was automatically created for CSP monitoring setup*
+            `,
+              labels: ['enhancement', 'monitoring', 'csp']
+            })
