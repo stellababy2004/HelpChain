@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+print("Starting appy.py...")
 from werkzeug.utils import secure_filename
 
 from flask import (
@@ -13,7 +14,7 @@ from flask import (
     make_response,
     jsonify,
     Response,
-    current_app,
+    # current_app,  # Премахнат за избягване на circular import
 )
 
 # нови импорти за правилно форматиране и i/o
@@ -28,14 +29,63 @@ try:
 except Exception:
     HelpRequest = None
 
-# Импорт на модели
-from models import db, Volunteer
+# Поправи всички relative imports на absolute
+from models import db, Volunteer  # Вместо 'from .models import'
+# Ако има други, направи същото, напр.:
+# from ai_service import ai_service  # Вместо 'from .ai_service import'
+
 from flask_mail import Mail
 from flask_migrate import Migrate
 from sqlalchemy.exc import OperationalError
 
-# Зареди environment variables от .env файла
-load_dotenv()
+# Import for 2FA testing
+# try:
+#     from models_with_analytics import AdminUser, AdminRole
+#     from werkzeug.security import generate_password_hash, check_password_hash
+#     import pyotp
+#     HAS_2FA = True
+#     print("2FA modules loaded successfully")
+# except ImportError as e:
+#     HAS_2FA = False
+#     print(f"2FA modules not available: {e}")
+    
+#     # Fallback 2FA simulation using session
+#     class MockAdminUser:
+#         def __init__(self):
+#             self.two_factor_enabled = False
+#             self.totp_secret = None
+            
+#         def generate_totp_secret(self):
+#             if not self.totp_secret:
+#                 self.totp_secret = pyotp.random_base32()
+#             return self.totp_secret
+            
+#         def get_totp_uri(self):
+#             if not self.totp_secret:
+#             self.generate_totp_secret()
+#             return f"otpauth://totp/HelpChain:admin?secret={self.totp_secret}&issuer=HelpChain"
+            
+#         def verify_totp(self, token):
+#             if not self.totp_secret:
+#                 return False
+#             totp = pyotp.TOTP(self.totp_secret)
+#             return totp.verify(token)
+            
+#         def enable_2fa(self):
+#             self.two_factor_enabled = True
+            
+#         def disable_2fa(self):
+#             self.two_factor_enabled = False
+#             self.totp_secret = None
+    
+#     mock_admin = MockAdminUser()
+#     AdminUser = MockAdminUser  # Replace with mock
+
+HAS_2FA = False
+mock_admin = None
+
+# Зареди environment variables от .env файла (от корена на проекта)
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 # Създай папката instance ако не съществува
 os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
@@ -77,8 +127,6 @@ app.secret_key = os.getenv("SECRET_KEY", "fallback_secret_key_for_development")
 
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
-
-mail = Mail(app)
 
 # Настройваме Jinja да търси шаблони в няколко възможни директории
 _template_dirs = [
@@ -146,11 +194,15 @@ def admin_login():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        if username == "admin" and password == os.getenv(
-            "ADMIN_PASSWORD", "defaultAdminPass123"
-        ):
-            session["admin_logged_in"] = True
-            return redirect(url_for("admin_dashboard"))
+        
+        # Simple check for demo
+        if username == "admin" and password == "admin123":
+            if HAS_2FA and mock_admin.two_factor_enabled:
+                session["pending_2fa"] = True
+                return redirect(url_for("admin_2fa"))
+            else:
+                session["admin_logged_in"] = True
+                return redirect(url_for("admin_dashboard"))
         else:
             error = "Грешно потребителско име или парола!"
     return render_template("admin_login.html", error=error)
@@ -173,6 +225,51 @@ def admin_dashboard():
     return render_template(
         "admin_dashboard.html", requests=requests, logs_dict=logs_dict
     )
+
+
+@app.route("/admin/2fa", methods=["GET", "POST"])
+def admin_2fa():
+    if not session.get("pending_2fa"):
+        return redirect(url_for("admin_login"))
+    
+    if request.method == "POST":
+        token = request.form.get("token")
+        if mock_admin.verify_totp(token):
+            session["admin_logged_in"] = True
+            session.pop("pending_2fa", None)
+            return redirect(url_for("admin_dashboard"))
+        else:
+            flash("Невалиден 2FA код.", "error")
+    
+    return render_template("admin_2fa.html")
+
+
+@app.route("/admin/2fa/setup", methods=["GET", "POST"])
+def admin_2fa_setup():
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("admin_login"))
+    
+    if request.method == "POST":
+        token = request.form.get("token")
+        if mock_admin.verify_totp(token):
+            mock_admin.enable_2fa()
+            flash("2FA е активиран успешно!", "success")
+            return redirect(url_for("admin_dashboard"))
+        else:
+            flash("Невалиден код.", "error")
+    
+    uri = mock_admin.get_totp_uri()
+    return render_template("admin_2fa_setup.html", totp_uri=uri)
+
+
+@app.route("/admin/2fa/disable", methods=["POST"])
+def admin_2fa_disable():
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("admin_login"))
+    
+    mock_admin.disable_2fa()
+    flash("2FA е деактивиран.", "success")
+    return redirect(url_for("admin_dashboard"))
 
 
 @app.route("/admin_volunteers", methods=["GET", "POST"])
@@ -237,6 +334,36 @@ def submit_request():
         }
         app.logger.info("submit_request received: %s", request_data)
 
+        # Изпрати имейл нотификация
+        try:
+            from flask_mail import Message
+            msg = Message(
+                subject="Нова заявка за помощ в HelpChain",
+                recipients=["contact@helpchain.live"],
+                sender=app.config['MAIL_DEFAULT_SENDER'],
+                body=f"""Нова заявка за помощ:
+
+Име: {name}
+Имейл: {email}
+Категория: {category}
+Локация: {location}
+Описание: {problem}
+
+Моля, свържете се с нуждаещия се възможно най-скоро.
+"""
+            )
+            mail.send(msg)
+            app.logger.info("Email notification sent successfully")
+        except Exception as e:
+            app.logger.error(f"Failed to send email notification: {e}")
+            # Fallback: записваме в файл
+            try:
+                with open("sent_emails.txt", "a", encoding="utf-8") as f:
+                    f.write(f"Subject: Нова заявка за помощ в HelpChain\nTo: contact@helpchain.live\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\nНова заявка за помощ:\n\nИме: {name}\nИмейл: {email}\nКатегория: {category}\nЛокация: {location}\nОписание: {problem}\n\nМоля, свържете се с нуждаещия се възможно най-скоро.\n\n{'='*50}\n")
+                app.logger.info("Email notification saved to file as fallback")
+            except Exception as file_e:
+                app.logger.error(f"Failed to save email to file: {file_e}")
+
         return render_template("submit_success.html")
     return render_template("submit_request.html")
 
@@ -258,12 +385,66 @@ def volunteer_register():
         email = request.form.get("email")
         phone = request.form.get("phone")
         location = request.form.get("location")
-        volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
-        db.session.add(volunteer)
-        db.session.commit()
+        
+        # Провери дали имейлът вече съществува
+        existing_volunteer = Volunteer.query.filter_by(email=email).first()
+        if existing_volunteer:
+            flash("Този имейл вече е регистриран като доброволец.", "error")
+            return redirect(url_for("volunteer_register"))
+        
+        try:
+            volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
+            db.session.add(volunteer)
+            db.session.commit()
+            print("Volunteer added successfully")
+        except Exception as e:
+            print(f"Database error: {e}")
+            return f"Database error: {e}", 500
+
+        # Изпрати имейл нотификация за нов доброволец
+        try:
+            from flask_mail import Message
+            print(f"DEBUG: Mail config - SERVER: {app.config.get('MAIL_SERVER')}, PORT: {app.config.get('MAIL_PORT')}, USERNAME: {app.config.get('MAIL_USERNAME')}, PASSWORD: {'***' if app.config.get('MAIL_PASSWORD') else 'None'}")
+            msg = Message(
+                subject="Нов доброволец в HelpChain",
+                recipients=["contact@helpchain.live"],
+                sender=app.config['MAIL_DEFAULT_SENDER'],
+                body=f"""Нов доброволец се е регистрирал:
+
+Име: {name}
+Имейл: {email}
+Телефон: {phone}
+Локация: {location}
+
+Моля, свържете се с доброволеца за допълнителна информация.
+"""
+            )
+            print(f"DEBUG: Sending email to {msg.recipients} from {msg.sender}")
+            mail.send(msg)
+            print("DEBUG: Email sent successfully!")
+            app.logger.info("Volunteer registration email sent successfully")
+        except Exception as e:
+            print(f"DEBUG: Email send failed with error: {e}")
+            app.logger.error(f"Failed to send volunteer registration email: {e}")
+            # Fallback: записваме в файл
+            try:
+                with open("sent_emails.txt", "a", encoding="utf-8") as f:
+                    f.write(f"Subject: Нов доброволец в HelpChain\nTo: contact@helpchain.live\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\nНов доброволец се е регистрирал:\n\nИме: {name}\nИмейл: {email}\nТелефон: {phone}\nЛокация: {location}\n\nМоля, свържете се с доброволеца за допълнителна информация.\n\n{'='*50}\n")
+                app.logger.info("Volunteer registration email saved to file as fallback")
+            except Exception as file_e:
+                app.logger.error(f"Failed to save email to file: {file_e}")
+
+        app.logger.info("Volunteer registered successfully")
+
         flash("Успешна регистрация! Ще се свържем с вас при нужда.")
         return redirect(url_for("volunteer_register"))
     return render_template("volunteer_register.html")
+
+
+@app.route("/become_volunteer")
+def become_volunteer():
+    """Пренасочване към страницата за регистрация на доброволци"""
+    return redirect(url_for("volunteer_register"))
 
 
 @app.route("/delete_volunteer/<int:id>", methods=["POST"])
@@ -386,7 +567,9 @@ def inject_get_locale():
     return dict(get_locale=get_locale)
 
 
-# Debug принтове за mail настройките
+# Debug принтове за mail настройките (добави MAILTRAP)
+print("MAILTRAP_USERNAME:", os.getenv("MAILTRAP_USERNAME"))
+print("MAILTRAP_PASSWORD:", os.getenv("MAILTRAP_PASSWORD"))
 print("MAIL_SERVER:", os.getenv("MAIL_SERVER"))
 print("MAIL_PORT:", os.getenv("MAIL_PORT"))
 print("MAIL_USE_SSL:", os.getenv("MAIL_USE_SSL"))
@@ -397,8 +580,8 @@ print("MAIL_PASSWORD:", os.getenv("MAIL_PASSWORD"))
 if os.getenv("MAIL_PORT"):
     app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
     app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT"))
-    app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL") == "True"
-    app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS") == "True"
+    app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", "False").lower() == "true"
+    app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
     app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
     app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 else:
@@ -406,9 +589,27 @@ else:
         "Warning: MAIL_PORT environment variable is not set! Имейл функционалността няма да работи."
     )
 
+# В секцията за mail config, използвай Zoho по подразбиране
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.zoho.eu')
+app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False').lower() == 'true'
+app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'contact@helpchain.live')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', 'contact@helpchain.live')
+
+if app.config['MAIL_PASSWORD']:
+    print("Using Zoho for emails - real email notifications enabled")
+else:
+    print("Warning: MAIL_PASSWORD not set! Email functionality will not work.")
+
+# Инициализирай Mail след като конфигурацията е заредена
+mail = Mail(app)
+
 
 @app.route("/admin", methods=["GET"])
 def admin_panel():
+    from flask import current_app  # Локален import за избягване на circular import
     # Опитай да рендерираш template 'admin.html' ако съществува, иначе върни прост HTML
     try:
         # проверка дали шаблонът е наличен
@@ -425,3 +626,20 @@ def admin_panel():
         "</head><body><h1>Admin panel (placeholder)</h1><p>Шаблонът admin.html не е намерен.</p></body></html>",
         200,
     )
+
+
+# Добави mock за mail.send за тестване (симулира изпращане без реални SMTP заявки)
+# from unittest.mock import patch
+
+# Mock mail.send за всички изпращания на имейли
+# mock_mail_send = patch.object(mail, 'send', side_effect=lambda msg: app.logger.info(f"Mocked email sent: {msg.subject} to {msg.recipients}")).start()
+
+if __name__ == "__main__":
+    print("Creating database...")
+    with app.app_context():
+        db.create_all()
+    print("Database created. Starting server...")
+    app.run(debug=True, host="0.0.0.0", port=8000)
+
+# За да спреш mock-а в production, добави:
+# mock_mail_send.stop()  # Премахни за реални имейли

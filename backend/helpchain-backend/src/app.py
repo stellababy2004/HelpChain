@@ -40,10 +40,9 @@ def load_user(user_id):
 def create_app(config_object=None):
     # Задаваме абсолютни пътища към templates/static (относно този файл)
     base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    templates_dir = os.path.join(base, "templates")
     static_dir = os.path.join(base, "static")
 
-    app = Flask(__name__, template_folder=templates_dir, static_folder=static_dir)
+    app = Flask(__name__, static_folder="static", template_folder="templates")
     app.config.from_object(config_object or Config)
 
     # гарантираме, че предупреждението ще бъде заглушено по подразбиране
