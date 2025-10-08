@@ -56,6 +56,10 @@ from models import db, Volunteer  # Вместо 'from .models import'
 
 from flask_mail import Mail
 from flask_migrate import Migrate
+from flask_talisman import Talisman
+from flask_wtf.csrf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from sqlalchemy.exc import OperationalError
 
 # Import for 2FA testing
@@ -151,12 +155,51 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-app.config["UPLOAD_FOLDER"] = "uploads"
-app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
-app.secret_key = os.getenv("SECRET_KEY", "fallback_secret_key_for_development")
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback_secret_key_for_development")
+
+# Security configurations
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
 
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
+
+# Initialize security extensions
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per day", "50 per hour"]
+)
+
+# CSP configuration
+csp = {
+    'default-src': ["'self'"],
+    'script-src': ["'self'", "'nonce-{{ nonce }}'"],
+    'style-src': ["'self'", "'unsafe-inline'"],
+    'img-src': ["'self'", "data:"],
+    'font-src': ["'self'"],
+    'connect-src': ["'self'"],
+    'frame-ancestors': ["'none'"],
+    'upgrade-insecure-requests': [],
+}
+
+talisman = Talisman(
+    app,
+    content_security_policy=csp,
+    force_https=True,
+    strict_transport_security=True,
+    strict_transport_security_preload=True,
+    strict_transport_security_include_subdomains=True,
+    referrer_policy="no-referrer-when-downgrade",
+    permissions_policy={
+        "camera": "()",
+        "microphone": "()",
+        "geolocation": "()",
+    }
+)
+
+csrf = CSRFProtect(app)
 
 # Настройваме Jinja да търси шаблони в няколко възможни директории
 _template_dirs = [
@@ -328,6 +371,7 @@ def add_volunteer():
 
 
 @app.route("/submit_request", methods=["GET", "POST"])
+@limiter.limit("10 per hour")
 def submit_request():
     if request.method == "POST":
         name = request.form.get("name")
@@ -412,6 +456,7 @@ def terms():
 
 
 @app.route("/volunteer_register", methods=["GET", "POST"])
+@limiter.limit("5 per hour")
 def volunteer_register():
     if request.method == "POST":
         name = request.form.get("name")
@@ -545,6 +590,7 @@ def success_stories():
 
 
 @app.route("/feedback", methods=["GET", "POST"])
+@limiter.limit("5 per hour")
 def feedback():
     if request.method == "POST":
         name = request.form.get("name")
@@ -565,9 +611,17 @@ def set_language():
     return resp
 
 
-@app.route("/admin")
-def admin():
-    return redirect(url_for("admin_login"))
+@app.route("/.well-known/security.txt")
+def security_txt():
+    """Security.txt file for responsible disclosure"""
+    content = """Contact: mailto:security@helpchain.live
+Expires: 2026-10-08T00:00:00Z
+Policy: https://helpchain.live/security-policy
+Preferred-Languages: bg, en
+"""
+    response = make_response(content)
+    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    return response
 
 
 @app.route("/update_status/<int:req_id>", methods=["POST"])
