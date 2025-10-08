@@ -6,6 +6,7 @@ flask_babel
 flask_wtf
 email_validator
 flask-admin
+flask-login
 python-dotenv
 flask-migrate
 pyotp
