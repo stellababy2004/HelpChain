@@ -1,0 +1,50 @@
+name: OWASP ZAP Baseline
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 2 * * *"  # всеки ден 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  zap-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Target URL
+        run: |
+          echo "TARGET_URL=${{ vars.ZAP_TARGET_URL }}" >> $GITHUB_ENV
+
+      - name: Validate target
+        run: |
+          if [ -z "${{ env.TARGET_URL }}" ]; then
+            echo "Please set org/repo variable ZAP_TARGET_URL (e.g., https://helpchain.live)"
+            exit 1
+          fi
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ env.TARGET_URL }}
+          rules_file_name: .zap/rules.tsv
+          cmd_options: >-
+            -a
+            -m 5
+            -t ${{ env.TARGET_URL }}
+          allow_issue_writing: false
+
+      - name: Convert ZAP report to SARIF
+        run: |
+          mkdir -p zap
+          # ZAP action генерира report.md и report_html.html; ще архивираме
+          cp -r report.* zap/ || true
+
+      - name: Upload ZAP artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: zap/
