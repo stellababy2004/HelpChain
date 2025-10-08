@@ -60,6 +60,7 @@ from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 from sqlalchemy.exc import OperationalError
 
 # Import for 2FA testing
@@ -155,6 +156,7 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB upload limit
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback_secret_key_for_development")
 
 # Security configurations
@@ -208,6 +210,16 @@ talisman = Talisman(
 )
 
 csrf = CSRFProtect(app)
+
+# CORS configuration for API endpoints
+cors = CORS(app, resources={
+    r"/api/*": {
+        "origins": ["https://helpchain.live", "https://www.helpchain.live"],
+        "methods": ["GET", "POST", "PUT", "DELETE"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": False
+    }
+})
 
 # Настройваме Jinja да търси шаблони в няколко възможни директории
 _template_dirs = [
@@ -270,6 +282,7 @@ def index():
 
 
 @app.route("/admin_login", methods=["GET", "POST"])
+@limiter.limit("5 per minute; 20 per hour")
 def admin_login():
     error = None
     if request.method == "POST":
@@ -400,6 +413,11 @@ def submit_request():
         if file and file.filename:
             if not allowed_file(file.filename):
                 flash("Позволени са само изображения и PDF!")
+                return redirect(url_for("submit_request"))
+            # MIME type validation
+            allowed_mimes = {'image/png', 'image/jpg', 'image/jpeg', 'application/pdf'}
+            if file.mimetype not in allowed_mimes:
+                flash("Невалиден тип файл!")
                 return redirect(url_for("submit_request"))
             filename = secure_filename(file.filename)
             save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
@@ -712,6 +730,19 @@ else:
 
 # Инициализирай Mail след като конфигурацията е заредена
 mail = Mail(app)
+
+
+@app.route("/.well-known/security.txt")
+def security_txt():
+    return Response(
+        """Contact: mailto:security@helpchain.live
+Expires: 2025-12-31T23:59:59.000Z
+Preferred-Languages: bg, en
+Canonical: https://helpchain.live/.well-known/security.txt
+Policy: https://helpchain.live/privacy
+""",
+        mimetype="text/plain"
+    )
 
 
 @app.route("/admin", methods=["GET"])
