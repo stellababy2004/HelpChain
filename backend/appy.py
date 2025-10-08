@@ -11,6 +11,10 @@ sys.path.insert(0, backend_dir)
 parent_dir = os.path.dirname(backend_dir)
 sys.path.insert(0, parent_dir)
 
+# Add helpchain_backend directory to Python path
+helpchain_backend_dir = os.path.join(backend_dir, "helpchain-backend")
+sys.path.insert(0, helpchain_backend_dir)
+
 print(f"Python path: {sys.path[:3]}...")  # Debug print
 print(f"Current directory: {os.getcwd()}")
 
