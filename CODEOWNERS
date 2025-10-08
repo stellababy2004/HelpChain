@@ -1,0 +1,25 @@
+# Code Owners
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/managing-repository-settings/about-code-owners
+
+# Global owners (must review all changes)
+* @stellababy2004
+
+# Security-related files (require security review)
+backend/appy.py
+.github/workflows/security-scans.yml
+.github/workflows/zap-baseline.yml
+.github/workflows/codeql-analysis.yml
+.github/workflows/trivy-scan.yml
+requirements.txt
+SECURITY.md
+.zap/
+.gitignore
+
+# Database and models
+backend/models*.py
+migrations/
+
+# Configuration files
+render.yaml
+babel.cfg
+pytest.ini
