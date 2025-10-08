@@ -3,5 +3,5 @@ services:
     name: helpchain
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn backend.app:app"
+    startCommand: "gunicorn --chdir backend wsgi:application"
     region: frankfurt
