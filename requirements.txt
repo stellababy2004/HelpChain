@@ -7,6 +7,8 @@ flask_wtf
 email_validator
 flask-admin
 flask-login
+flask-talisman
+flask-limiter
 python-dotenv
 flask-migrate
 pyotp
