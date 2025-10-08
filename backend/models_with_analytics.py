@@ -2,6 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
 from enum import Enum
+import pyotp
+import json
 
 db = SQLAlchemy()
 
@@ -63,6 +65,72 @@ class AdminUser(UserMixin, db.Model):
     def can_view_logs(self):
         """Admin и super_admin могат да виждат логове"""
         return self.role in [AdminRole.ADMIN, AdminRole.SUPER_ADMIN]
+
+    def generate_totp_secret(self):
+        """Генерира нов TOTP secret"""
+        if not self.totp_secret:
+            self.totp_secret = pyotp.random_base32()
+            try:
+                db.session.commit()
+            except RuntimeError:
+                pass  # Ignore if no app context
+        return self.totp_secret
+
+    def get_totp_uri(self):
+        """Връща TOTP URI за QR код"""
+        if not self.totp_secret:
+            self.generate_totp_secret()
+        return pyotp.totp.TOTP(self.totp_secret).provisioning_uri(
+            name=self.email, issuer_name="HelpChain Admin"
+        )
+
+    def verify_totp(self, token):
+        """Верифицира TOTP токен"""
+        if not self.totp_secret:
+            return False
+        totp = pyotp.TOTP(self.totp_secret)
+        return totp.verify(token)
+
+    def enable_2fa(self):
+        """Активира 2FA"""
+        if not self.totp_secret:
+            self.generate_totp_secret()
+        self.two_factor_enabled = True
+        try:
+            db.session.commit()
+        except RuntimeError:
+            pass
+
+    def disable_2fa(self):
+        """Деактивира 2FA"""
+        self.two_factor_enabled = False
+        self.totp_secret = None
+        try:
+            db.session.commit()
+        except RuntimeError:
+            pass
+
+    def generate_backup_codes(self, count=10):
+        """Генерира backup кодове"""
+        codes = [pyotp.random_base32(length=8) for _ in range(count)]
+        self.backup_codes = json.dumps(codes)
+        db.session.commit()
+        return codes
+
+    def verify_backup_code(self, code):
+        """Верифицира backup код (еднократна употреба)"""
+        if not self.backup_codes:
+            return False
+        codes = json.loads(self.backup_codes)
+        if code in codes:
+            codes.remove(code)
+            self.backup_codes = json.dumps(codes)
+            try:
+                db.session.commit()
+            except RuntimeError:
+                pass
+            return True
+        return False
 
 
 class AdminLog(db.Model):
@@ -183,3 +251,34 @@ class SuccessStory(db.Model):
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class VideoChatSession(db.Model):
+    """Модел за видео чат сесии между потребители"""
+
+    __tablename__ = "video_chat_sessions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(
+        db.String(128), unique=True, nullable=False
+    )  # WebRTC session ID
+    initiator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    participant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    status = db.Column(
+        db.String(50), default="pending"
+    )  # pending, active, completed, cancelled
+    started_at = db.Column(db.DateTime, nullable=True)
+    ended_at = db.Column(db.DateTime, nullable=True)
+    duration = db.Column(db.Integer, nullable=True)  # в секунди
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relationships
+    initiator = db.relationship(
+        "User", foreign_keys=[initiator_id], backref="initiated_video_chats"
+    )
+    participant = db.relationship(
+        "User", foreign_keys=[participant_id], backref="participated_video_chats"
+    )
+
+    def __repr__(self):
+        return f"<VideoChatSession {self.session_id}>"

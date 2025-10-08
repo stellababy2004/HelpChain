@@ -163,7 +163,7 @@
     {% endblock %}
     <footer class="text-center mt-5">
       © 2025 HelpChain.live |
-      <a href="mailto:info@helpchain.live">Email</a> |
+      <a href="mailto:contact@helpchain.live">Email</a> |
       <a href="https://facebook.com">Facebook</a> |
       <a href="/terms" target="_blank">условията за ползване</a> |
       <a href="/privacy" target="_blank">Политика за поверителност</a> |
@@ -172,10 +172,8 @@
       <a href="/feedback">Обратна връзка</a>
       <form method="post" action="{{ url_for('set_language') }}" class="d-inline mx-2">
         <select name="language" onchange="this.form.submit()" class="form-select d-inline w-auto">
-          <option value="bg" {% if get_locale() and getattr(get_locale(), 'language' , str(get_locale()))=='bg'
-            %}selected{% endif %}>Български</option>
-          <option value="en" {% if get_locale() and getattr(get_locale(), 'language' , str(get_locale()))=='en'
-            %}selected{% endif %}>English</option>
+          <option value="bg" {% if get_locale() and get_locale().language=='bg' %}selected{% endif %}>Български</option>
+          <option value="en" {% if get_locale() and get_locale().language=='en' %}selected{% endif %}>English</option>
         </select>
       </form>
     </footer>

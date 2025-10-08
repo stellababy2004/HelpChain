@@ -3,5 +3,13 @@ Flask-SQLAlchemy==3.0.5
 Flask-Migrate==4.0.5
 Flask-Mail==0.9.1
 Flask-Babel==3.1.0
+Flask-Login==0.6.3
 gunicorn==21.2.0
 python-dotenv==1.0.0
+MAIL_SERVER=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USE_TLS=True
+MAIL_USE_SSL=False
+MAIL_USERNAME=вашия_mailtrap_username
+MAIL_PASSWORD=вашия_mailtrap_password
+MAIL_DEFAULT_SENDER=contact@helpchain.live

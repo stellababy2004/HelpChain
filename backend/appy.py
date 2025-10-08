@@ -116,9 +116,19 @@ app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
 # Абсолютен път до базата за по-голяма сигурност
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    f"sqlite:///{os.path.join(basedir, 'instance', 'volunteers.db')}"
-)
+# За production на Render, използвайме /tmp за SQLite база данни
+if os.getenv("RENDER"):
+    # В production на Render, използвайме временна директория
+    db_path = "/tmp/volunteers.db"
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+else:
+    # Локално development - използвайме instance директория
+    instance_dir = os.path.join(os.path.dirname(basedir), "instance")
+    os.makedirs(instance_dir, exist_ok=True)
+    db_path = os.path.join(instance_dir, "volunteers.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+
+print(f"Database path: {app.config['SQLALCHEMY_DATABASE_URI']}")  # Debug print
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
@@ -666,9 +676,15 @@ def admin_panel():
 
 if __name__ == "__main__":
     print("Creating database...")
-    with app.app_context():
-        db.create_all()
-    print("Database created. Starting server...")
+    try:
+        with app.app_context():
+            db.create_all()
+        print("Database created successfully.")
+    except Exception as e:
+        print(f"Error creating database: {e}")
+        print("Continuing without database...")
+
+    print("Starting server...")
     # Use PORT environment variable for production (Render), default to 8000 for development
     port = int(os.environ.get("PORT", 8000))
     app.run(debug=True, host="0.0.0.0", port=port)

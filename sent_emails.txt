@@ -1,0 +1,535 @@
+
+==================================================
+Email sent at: 2025-10-04 17:53:37.465532
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: noreply@helpchain.live
+Date: 2025-10-04 17:53:37.465561
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: шеяш
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-04 17:53:38.602953
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: noreply@helpchain.live
+Date: 2025-10-04 17:53:38.602977
+
+Нова заявка за помощ:
+ID: 5
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: шеяш
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 15:53:00.578457
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 15:53:00.578498
+
+Нов доброволец се е регистрирал:
+ID: 1
+Име: Test Volunteer
+Имейл: testvolunteer@example.com
+Телефон: +359 88 123 4567
+Локация: Sofia
+Умения: Driving
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 15:54:27.392461
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 15:54:27.392480
+
+Нов доброволец се е регистрирал:
+ID: 2
+Име: Test Volunteer 2
+Имейл: testvolunteer2@example.com
+Телефон: +359 88 123 4568
+Локация: Plovdiv
+Умения: Cooking
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 16:03:18.443721
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 16:03:18.443780
+
+Нов доброволец се е регистрирал:
+ID: 1
+Име: Stiliana Stoyanova
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: 12, rue Yves Kermen
+Умения: тест
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 16:09:54.531056
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 16:09:54.531082
+
+Нов доброволец се е регистрирал:
+ID: 1
+Име: Stiliana
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Умения: jeij
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 16:19:05.578844
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 16:19:05.578860
+
+Нов доброволец се е регистрирал:
+ID: 2
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Умения: инфо
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 16:20:17.180812
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 16:20:17.180823
+
+Нова заявка за помощ:
+ID: 4
+Име: Мишо Ангелов
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: france
+Категория: food
+Описание: давам
+Спешност: medium
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 16:23:34.012426
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 16:23:34.012445
+
+Нова заявка за помощ:
+ID: 5
+Име: HF_TOKEN
+Имейл: stelabarbarella@gmail.com
+Телефон: 0600000000
+Локация: 12, rue Yves Kermen
+Категория: food
+Описание: шеяш
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 16:25:39.636924
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 16:25:39.636936
+
+Нов доброволец се е регистрирал:
+ID: 3
+Име: Test Volunteer
+Имейл: test@example.com
+Телефон: 123456
+Локация: Sofia
+Умения: Driving
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 16:26:22.737916
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 16:26:22.737928
+
+Нов доброволец се е регистрирал:
+ID: 4
+Име: Test Volunteer
+Имейл: test@example.com
+Телефон: 123456
+Локация: Sofia
+Умения: Driving
+==================================================
+
+==================================================
+Email sent at: 2025-10-05 16:29:24.797288
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-05 16:29:24.797303
+
+Нова заявка за помощ:
+ID: 6
+Име: Мишо Ангелов
+Имейл: m.anguelov@abv.bg
+Телефон: 0660708186
+Локация: varna
+Категория: transport
+Описание: pomgam 
+Спешност: medium
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 11:12:58.521871
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 11:12:58.521871
+
+Нова заявка за помощ:
+ID: 4
+Име: Вероника Червеняшка
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0761670377
+Локация: Paris
+Категория: other
+Описание: Помогнете ми нямам работа
+Спешност: medium
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 11:52:48.322637
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 11:52:48.322637
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: test -06.10 11:52
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 11:57:05.739699
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 11:57:05.739699
+
+Нова заявка за помощ:
+ID: 4
+Име: Ludmil Bonev 
+Имейл: l.bonev@abv.bg
+Телефон: 0878412241
+Локация: plovdiv
+Категория: other
+Описание: Имам възможност да помогна ако има нужда някой от нещо
+Спешност: medium
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 12:00:27.055457
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 12:00:27.055457
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: 07 10 
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 12:04:44.145999
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 12:04:44.145999
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: 12 RUE YVES KERMEN
+Категория: medical
+Описание: Бай Мишо
+Спешност: medium
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 13:07:57.249049
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 13:07:57.249049
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: тест 6.10 13 и 07
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 13:10:42.498109
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 13:10:42.498109
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: тест 06 10 13 10
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 13:12:16.986227
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 13:12:16.986227
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: Пловдив
+Категория: food
+Описание: стига айде вече
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-06 13:14:21.618979
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-06 13:14:21.620259
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: гладен съм
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-07 09:18:24.883307
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-07 09:18:24.883331
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: гладна съм
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-07 09:53:31.280839
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-07 09:53:31.280854
+
+Нова заявка за помощ:
+ID: 4
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: тест 
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-07 09:58:34.326265
+Subject: Нова заявка за помощ в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-07 09:58:34.326281
+
+Нова заявка за помощ:
+ID: 5
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: plovdiv
+Категория: food
+Описание: test 7.10
+Спешност: low
+==================================================
+
+==================================================
+Email sent at: 2025-10-07 09:59:20.394699
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-07 09:59:20.394713
+
+Нов доброволец се е регистрирал:
+ID: 1
+Име: Stiliana KIRIMOV
+Имейл: stiliana.stoyanova@orange.fr
+Телефон: 0660708186
+Локация: france
+Умения: rk
+==================================================
+
+==================================================
+Email sent at: 2025-10-07 10:22:56.668890
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+Date: 2025-10-07 10:22:56.668904
+
+Нов доброволец се е регистрирал:
+ID: 1
+Име: Test Volunteer
+Имейл: test@example.com
+Телефон: 123456789
+Локация: Sofia
+Умения: None
+==================================================
+Subject: Нов доброволец в HelpChain
+To: ['contact@helpchain.live']
+From: contact@helpchain.live
+
+Нов доброволец се е регистрирал:
+
+Име: m bacalova
+Имейл: testuser@example.com
+Телефон: 0879926677
+Локация: plovdiv
+
+Моля, свържете се с доброволеца за допълнителна информация.
+
+
+==================================================
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+
+Нов доброволец се е регистрирал:
+
+Име: Jean petit
+Имейл: test4@helpchain.live
+Телефон: 0660708899
+Локация: Paris
+
+Моля, свържете се с доброволеца за допълнителна информация.
+
+==================================================
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+
+Нов доброволец се е регистрирал:
+
+Име: Jean petit
+Имейл: test9@helpchain.live
+Телефон: 0660708899
+Локация: Paris
+
+Моля, свържете се с доброволеца за допълнителна информация.
+
+==================================================
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+
+Нов доброволец се е регистрирал:
+
+Име: Maxime kirimov
+Имейл: m.k@abv.bg
+Телефон: 0978412233
+Локация: Boulogne-Billancourt France
+
+Моля, свържете се с доброволеца за допълнителна информация.
+
+==================================================
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+
+Нов доброволец се е регистрирал:
+
+Име: Maxime kirimov
+Имейл: m.kirimov@test.com
+Телефон: 0888504793
+Локация: plovdiv
+
+Моля, свържете се с доброволеца за допълнителна информация.
+
+==================================================
+Subject: Нов доброволец в HelpChain
+To: contact@helpchain.live
+From: contact@helpchain.live
+
+Нов доброволец се е регистрирал:
+
+Име: Final Test
+Имейл: final@example.com
+Телефон: 555555555
+Локация: Varna
+
+Моля, свържете се с доброволеца за допълнителна информация.
+
+==================================================

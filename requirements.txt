@@ -8,3 +8,9 @@ email_validator
 flask-admin
 python-dotenv
 flask-migrate
+pyotp
+flask-socketio
+python-socketio
+aiortc
+opencv-python
+asgiref

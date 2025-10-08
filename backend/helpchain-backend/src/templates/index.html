@@ -1,5 +1,62 @@
 {% extends "base.html" %} {% block title %}HelpChain.live - Помощ в нужда{%
 endblock %} {% block content %}
+<!-- Hero Section -->
+<section class="hero bg-primary text-white text-center py-5">
+  <div class="container">
+    <h1 class="display-4 fw-bold">Добре дошли в HelpChain</h1>
+    <p class="lead">
+      Свързваме нуждаещите се с доброволци за бърза и ефективна помощ. Заедно
+      можем да направим разлика!
+    </p>
+    <a href="{{ url_for('submit_request') }}" class="btn btn-light btn-lg me-3">
+      <i class="fas fa-plus-circle"></i> Подай заявка
+    </a>
+    <a
+      href="{{ url_for('become_volunteer') }}"
+      class="btn btn-outline-light btn-lg"
+    >
+      <i class="fas fa-hand-holding-heart"></i> Стани доброволец
+    </a>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-5">Как работи HelpChain?</h2>
+    <div class="row g-4">
+      <div class="col-md-4 text-center">
+        <i class="fas fa-search fa-3x text-primary mb-3"></i>
+        <h5>Подай заявка</h5>
+        <p>
+          Опиши нуждата си лесно и бързо. Ние ще намерим подходящ доброволец.
+        </p>
+      </div>
+      <div class="col-md-4 text-center">
+        <i class="fas fa-users fa-3x text-success mb-3"></i>
+        <h5>Свързване</h5>
+        <p>Доброволците се свързват с теб директно за персонализирана помощ.</p>
+      </div>
+      <div class="col-md-4 text-center">
+        <i class="fas fa-check-circle fa-3x text-warning mb-3"></i>
+        <h5>Проследяване</h5>
+        <p>Следи статуса на заявката си в реално време през dashboard-а.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta bg-success text-white text-center py-5">
+  <div class="container">
+    <h3>Готов ли си да помогнеш или да получиш помощ?</h3>
+    <p>Присъедини се към общността ни днес!</p>
+    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+      <i class="fas fa-user-plus"></i> Регистрирай се
+    </a>
+  </div>
+</section>
+
 <style>
   /* Custom styles for HelpChain */
   body {
@@ -150,6 +207,49 @@ endblock %} {% block content %}
     background: linear-gradient(90deg, #e3f2fd 0%, #fff 100%);
     border-left: 6px solid #1976d2;
     font-size: 1.25em;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #007bff 0%, #28a745 100%);
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+  }
+
+  .features .col-md-4:hover {
+    transform: translateY(-5px);
+    transition: 0.3s;
+  }
+
+  .cta {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  }
+
+  .btn:hover {
+    transform: scale(1.05);
+    transition: 0.2s;
+  }
+
+  .sidebar .nav-link {
+    transition:
+      background-color 0.3s,
+      color 0.3s;
+    border-radius: 8px;
+    padding: 10px 15px;
+  }
+
+  .sidebar .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #007bff !important;
+    transform: translateX(5px);
+  }
+
+  .sidebar .nav-link i {
+    transition: transform 0.3s;
+  }
+
+  .sidebar .nav-link:hover i {
+    transform: scale(1.1);
   }
 </style>
 <div class="animated-bg"></div>
@@ -314,7 +414,7 @@ endblock %} {% block content %}
     rel="noopener"
     ><i class="bi bi-telegram fs-3"></i
   ></a>
-  <a href="mailto:info@helpchain.live" class="text-danger" aria-label="Email"
+  <a href="mailto:contact@helpchain.live" class="text-danger" aria-label="Email"
     ><i class="bi bi-envelope fs-3"></i
   ></a>
 </div>
@@ -356,7 +456,7 @@ endblock %} {% block content %}
 
 <div id="feedback-popup">
   <strong>Имате идея или проблем?</strong><br />
-  <a href="mailto:info@helpchain.live" class="btn-sm btn-primary mt-2"
+  <a href="mailto:contact@helpchain.live" class="btn-sm btn-primary mt-2"
     >Пишете ни</a
   >
   <button
@@ -409,36 +509,42 @@ endblock %} {% block content %}
 </script>
 <!-- Примерен sidebar -->
 <div id="sidebar" class="sidebar bg-white shadow rounded py-4 px-3">
-  <h5 class="mb-4 text-primary"><i class="fa fa-bars me-2"></i>Меню</h5>
+  <h5 class="mb-4 text-primary"><i class="fas fa-bars me-2"></i>Меню</h5>
   <ul class="nav flex-column">
     <li class="nav-item mb-2">
       <a
-        class="nav-link text-dark"
+        class="nav-link text-dark d-flex align-items-center"
         href="#"
         data-bs-toggle="modal"
         data-bs-target="#newsModal"
       >
-        <i class="fa fa-newspaper me-2"></i>Новини
+        <i class="fas fa-newspaper me-2"></i>Новини
       </a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="{{ url_for('submit_request') }}">
-        <i class="fa fa-hands-helping me-2"></i>Стани доброволец
+      <a
+        class="nav-link text-dark d-flex align-items-center"
+        href="{{ url_for('submit_request') }}"
+      >
+        <i class="fas fa-hands-helping me-2"></i>Стани доброволец
       </a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="#links"
-        ><i class="fa fa-link me-2"></i>Полезни връзки</a
-      >
+      <a class="nav-link text-dark d-flex align-items-center" href="#links">
+        <i class="fas fa-link me-2"></i>Полезни връзки
+      </a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="#contacts"
-        ><i class="fa fa-envelope me-2"></i>Контакти</a
-      >
+      <a class="nav-link text-dark d-flex align-items-center" href="#contacts">
+        <i class="fas fa-envelope me-2"></i>Контакти
+      </a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="mailto:info@helpchain.live">
-        <i class="fa fa-comment-dots me-2"></i>Обратна връзка
+      <a
+        class="nav-link text-dark d-flex align-items-center"
+        href="mailto:contact@helpchain.live"
+      >
+        <i class="fas fa-comment-dots me-2"></i>Обратна връзка
       </a>
     </li>
   </ul>
@@ -472,7 +578,10 @@ endblock %} {% block content %}
 </div>
 <div id="contacts" class="mt-5 mb-5 py-4 px-4 bg-light rounded">
   <h4 class="text-danger mb-3"><i class="fa fa-envelope me-2"></i>Контакти</h4>
-  <p>Пиши ни на <a href="mailto:info@helpchain.live">info@helpchain.live</a></p>
+  <p>
+    Пиши ни на
+    <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
+  </p>
 </div>
 
 <!-- Модален прозорец за новини -->

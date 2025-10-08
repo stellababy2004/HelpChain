@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - HelpChain</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container">
+        <a class="navbar-brand" href="/">HelpChain</a>
+        <div class="navbar-nav ms-auto">
+          <a class="nav-link" href="{{ url_for('profile') }}">Профил</a>
+          <a class="nav-link" href="{{ url_for('logout') }}">Изход</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <h2>Добре дошли, {{ current_user.username }}!</h2>
+
+      {% if current_user.is_admin %}
+      <div class="alert alert-info">
+        <strong>Админ панел:</strong>
+        <a href="{{ url_for('admin_panel') }}">Управление на заявки</a>
+      </div>
+      {% endif %}
+
+      <h3>Вашите заявки</h3>
+      {% if requests %}
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Име</th>
+              <th>Локация</th>
+              <th>Категория</th>
+              <th>Статус</th>
+              <th>Дата</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for request in requests %}
+            <tr>
+              <td>{{ request.id }}</td>
+              <td>{{ request.name }}</td>
+              <td>{{ request.location }}</td>
+              <td>{{ request.category }}</td>
+              <td>{{ request.status }}</td>
+              <td>
+                {{ request.created_at.strftime('%d.%m.%Y %H:%M') if
+                request.created_at else 'N/A' }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p>Нямате активни заявки.</p>
+      {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

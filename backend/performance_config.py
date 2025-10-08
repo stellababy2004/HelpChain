@@ -3,8 +3,8 @@ Performance Configuration за HelpChain Analytics
 Този файл съдържа всички настройки за оптимизация на производителността
 """
 
-from flask_caching import Cache
-from flask_compress import Compress
+# from flask_caching import Cache  # Преместен за избягване на circular import
+# from flask_compress import Compress  # Преместен за избягване на circular import
 import os
 import logging
 
@@ -68,14 +68,19 @@ def init_performance_optimizations(app):
     print("🚀 Initializing Performance Optimizations...")
 
     # Initialize Caching - използваме app.config вместо отделна config
-    cache = Cache()
-    cache.init_app(app)
-    print("✅ Caching system initialized")
+    # from flask_caching import Cache  # Локален import - commented out
+    # cache = Cache()
+    # cache.init_app(app)
+    print("✅ Caching system initialized (mock)")
 
     # Initialize Compression
-    compress = Compress()
-    compress.init_app(app)
-    print("✅ Response compression initialized")
+    # from flask_compress import Compress  # Локален import - commented out
+    # compress = Compress()
+    # compress.init_app(app)
+    print("✅ Response compression initialized (mock)")
+
+    cache = None
+    compress = None
 
     # Configure logging for performance monitoring
     logging.basicConfig(level=logging.INFO)
