@@ -2,14 +2,14 @@ name: Security Scans (Python)
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
   contents: read
-  security-events: write  # нужно за SARIF към Code Scanning
+  security-events: write # нужно за SARIF към Code Scanning
 
 jobs:
   bandit:
@@ -21,15 +21,17 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install bandit
-        run: pip install bandit
+      - name: Install bandit and sarif formatter
+        run: pip install bandit bandit-sarif-formatter
 
-      - name: Run Bandit (report + SARIF)
-        run: |
-          bandit -r . -f json -o bandit.json || true
-          bandit -r . -f sarif -o bandit.sarif || true
+      - name: Run Bandit (JSON)
+        run: bandit -r . -f json -o bandit.json || true
+
+      - name: Convert to SARIF
+        run: bandit-sarif bandit.json bandit.sarif || true
 
       - name: Upload Bandit SARIF
+        if: hashFiles('bandit.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: bandit.sarif
@@ -57,6 +59,7 @@ jobs:
           pip-audit -r requirements.txt -f sarif -o pip-audit.sarif || true
 
       - name: Upload pip-audit SARIF
+        if: hashFiles('pip-audit.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: pip-audit.sarif
