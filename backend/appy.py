@@ -169,10 +169,11 @@ if not os.path.exists(app.config["UPLOAD_FOLDER"]):
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["200 per day", "50 per hour"]
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://",  # In production, use Redis
 )
 
-# CSP configuration
+# CSP configuration with report-only
 csp = {
     'default-src': ["'self'"],
     'script-src': ["'self'", "'nonce-{{ nonce }}'"],
@@ -187,16 +188,23 @@ csp = {
 talisman = Talisman(
     app,
     content_security_policy=csp,
+    content_security_policy_report_only=csp,  # Report-only mode first
+    content_security_policy_report_uri="https://csp-report.helpchain.live/report",
     force_https=True,
     strict_transport_security=True,
     strict_transport_security_preload=True,
     strict_transport_security_include_subdomains=True,
-    referrer_policy="no-referrer-when-downgrade",
+    strict_transport_security_max_age=63072000,  # 2 years
+    referrer_policy="strict-origin-when-cross-origin",
     permissions_policy={
         "camera": "()",
         "microphone": "()",
         "geolocation": "()",
-    }
+    },
+    feature_policy={},  # Deprecated, but keeping for compatibility
+    cross_origin_opener_policy="same-origin",
+    cross_origin_embedder_policy="require-corp",
+    cross_origin_resource_policy="same-origin",
 )
 
 csrf = CSRFProtect(app)
@@ -274,6 +282,7 @@ def admin_login():
                 session["pending_2fa"] = True
                 return redirect(url_for("admin_2fa"))
             else:
+                session.regenerate()  # Regenerate session ID
                 session["admin_logged_in"] = True
                 return redirect(url_for("admin_dashboard"))
         else:
@@ -371,7 +380,7 @@ def add_volunteer():
 
 
 @app.route("/submit_request", methods=["GET", "POST"])
-@limiter.limit("10 per hour")
+@limiter.limit("20 per minute; 200 per day")
 def submit_request():
     if request.method == "POST":
         name = request.form.get("name")
@@ -399,11 +408,10 @@ def submit_request():
         # Използваме подадените полета (логваме) за да не са "unused"
         request_data = {
             "name": name,
-            "email": email,
+            "email": email[:3] + "***",  # Sanitize PII
             "category": category,
             "location": location,
-            "problem": problem,
-            "terms": terms,
+            "problem": problem[:50] + "..." if len(problem) > 50 else problem,  # Truncate
             "filename": filename,
         }
         app.logger.info("submit_request received: %s", request_data)
@@ -456,7 +464,7 @@ def terms():
 
 
 @app.route("/volunteer_register", methods=["GET", "POST"])
-@limiter.limit("5 per hour")
+@limiter.limit("10 per minute; 50 per day")
 def volunteer_register():
     if request.method == "POST":
         name = request.form.get("name")
@@ -521,7 +529,12 @@ def volunteer_register():
             except Exception as file_e:
                 app.logger.error(f"Failed to save email to file: {file_e}")
 
-        app.logger.info("Volunteer registered successfully")
+        app.logger.info("Volunteer registered successfully: %s", {
+            "name": name,
+            "email": email[:3] + "***",
+            "phone": phone[:3] + "***",
+            "location": location
+        })
 
         flash("Успешна регистрация! Ще се свържем с вас при нужда.")
         return redirect(url_for("volunteer_register"))
@@ -590,7 +603,7 @@ def success_stories():
 
 
 @app.route("/feedback", methods=["GET", "POST"])
-@limiter.limit("5 per hour")
+@limiter.limit("10 per minute; 50 per day")
 def feedback():
     if request.method == "POST":
         name = request.form.get("name")
@@ -611,16 +624,12 @@ def set_language():
     return resp
 
 
-@app.route("/.well-known/security.txt")
-def security_txt():
-    """Security.txt file for responsible disclosure"""
-    content = """Contact: mailto:security@helpchain.live
-Expires: 2026-10-08T00:00:00Z
-Policy: https://helpchain.live/security-policy
-Preferred-Languages: bg, en
-"""
-    response = make_response(content)
-    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    # Cache-Control for sensitive routes
+    if request.endpoint in ['admin_login', 'admin_dashboard', 'admin_volunteers']:
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
 
