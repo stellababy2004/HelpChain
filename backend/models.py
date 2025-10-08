@@ -2,7 +2,7 @@ from sqlalchemy import func
 import enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from extensions import db
+from .extensions import db
 
 # Използваме db инстанцията от src.extensions (няма да създаваме новa SQLAlchemy())
 
