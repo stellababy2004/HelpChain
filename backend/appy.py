@@ -24,11 +24,11 @@ from jinja2 import ChoiceLoader, FileSystemLoader
 
 # Защитен import на HelpRequest (ruff няма да маркира като undefined)
 try:
-    from models import HelpRequest
+    from models_with_analytics import HelpRequest
 except Exception:
     HelpRequest = None
 
-from models import db, Volunteer  # Вместо 'from .models import'
+from .models import db, Volunteer  # Relative import to avoid path issues
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_talisman import Talisman
@@ -47,6 +47,7 @@ try:
     from models_with_analytics import AdminUser, AdminRole
     from werkzeug.security import generate_password_hash, check_password_hash
     import pyotp
+
     HAS_2FA = True
     print("2FA modules loaded successfully")
 except ImportError as e:
@@ -74,6 +75,7 @@ except ImportError as e:
                 return False
             totp = pyotp.TOTP(self.totp_secret)
             return totp.verify(token)
+
 
 # Add the backend directory to Python path so we can import models
 backend_dir = os.path.dirname(__file__)
