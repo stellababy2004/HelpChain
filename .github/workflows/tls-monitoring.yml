@@ -1,0 +1,134 @@
+name: TLS Security Monitoring
+
+on:
+  schedule:
+    - cron: "0 6 * * *"  # Daily at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write  # To create issues on TLS failures
+
+jobs:
+  ssl-labs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Target URL
+        run: |
+          echo "TARGET_URL=${{ vars.TARGET_URL || 'https://helpchain.live' }}" >> $GITHUB_ENV
+
+      - name: SSL Labs Assessment
+        id: ssl-labs
+        run: |
+          # Install required tools
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+
+          # Run SSL Labs assessment
+          echo "Running SSL Labs assessment for ${{ env.TARGET_URL }}"
+
+          # Start assessment
+          response=$(curl -s "https://api.ssllabs.com/api/v3/analyze?host=${{ env.TARGET_URL }}&startNew=on&all=done")
+
+          # Wait for completion (up to 5 minutes)
+          for i in {1..30}; do
+            status=$(echo $response | jq -r '.status')
+            if [ "$status" = "READY" ]; then
+              break
+            fi
+            echo "Assessment in progress... ($i/30)"
+            sleep 10
+            response=$(curl -s "https://api.ssllabs.com/api/v3/analyze?host=${{ env.TARGET_URL }}")
+          done
+
+          # Extract results
+          grade=$(echo $response | jq -r '.endpoints[0].grade')
+          server_name=$(echo $response | jq -r '.endpoints[0].serverName')
+          ip_address=$(echo $response | jq -r '.endpoints[0].ipAddress')
+
+          # Check for issues
+          has_warnings=$(echo $response | jq '.endpoints[0].details | has("cert") and (.cert.issues != 0 or .cert.chainIssues != 0 or .cert.selfSigned != false)')
+
+          echo "grade=$grade" >> $GITHUB_OUTPUT
+          echo "server_name=$server_name" >> $GITHUB_OUTPUT
+          echo "ip_address=$ip_address" >> $GITHUB_OUTPUT
+          echo "has_warnings=$has_warnings" >> $GITHUB_OUTPUT
+
+          # Save full report
+          echo "$response" > ssl-labs-report.json
+
+      - name: Display Results
+        run: |
+          echo "🔒 TLS Assessment Results:"
+          echo "Domain: ${{ env.TARGET_URL }}"
+          echo "Grade: ${{ steps.ssl-labs.outputs.grade }}"
+          echo "Server: ${{ steps.ssl-labs.outputs.server_name }}"
+          echo "IP: ${{ steps.ssl-labs.outputs.ip_address }}"
+
+      - name: Check Grade Threshold
+        if: steps.ssl-labs.outputs.grade == 'F' || steps.ssl-labs.outputs.grade == 'T'
+        run: |
+          echo "❌ CRITICAL: TLS grade is ${{ steps.ssl-labs.outputs.grade }}"
+          echo "Immediate action required!"
+          exit 1
+
+      - name: Create Issue on TLS Issues
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 CRITICAL: TLS Security Issues Detected',
+              body: `
+            ## 🚨 TLS Security Alert
+
+            **Domain:** ${{ env.TARGET_URL }}
+            **Grade:** ${{ steps.ssl-labs.outputs.grade }}
+            **Server:** ${{ steps.ssl-labs.outputs.server_name }}
+
+            ### Immediate Actions Required:
+            1. Review SSL Labs report: https://www.ssllabs.com/ssltest/analyze.html?d=${{ env.TARGET_URL }}
+            2. Fix certificate issues
+            3. Update cipher suites
+            4. Enable HSTS preload if not already done
+
+            ### Full Report:
+            See attached SSL Labs assessment in workflow artifacts.
+
+            ---
+            *This issue was automatically created by TLS monitoring workflow*
+            `,
+              labels: ['security', 'critical', 'tls']
+            })
+
+      - name: Upload SSL Labs Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssl-labs-assessment
+          path: ssl-labs-report.json
+          retention-days: 30
+
+  hsts-preload-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check HSTS Preload Status
+        run: |
+          TARGET_DOMAIN="helpchain.live"
+
+          echo "Checking HSTS preload status for $TARGET_DOMAIN"
+
+          # Check if domain is in HSTS preload list
+          preload_status=$(curl -s "https://hstspreload.org/api/v2/status?domain=$TARGET_DOMAIN")
+
+          is_preloaded=$(echo $preload_status | jq -r '.status')
+
+          echo "HSTS Preload Status: $is_preloaded"
+
+          if [ "$is_preloaded" != "preloaded" ]; then
+            echo "⚠️  Domain not in HSTS preload list"
+            echo "Consider submitting to https://hstspreload.org/"
+          else
+            echo "✅ Domain is HSTS preloaded"
+          fi
