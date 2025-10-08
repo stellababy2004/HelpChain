@@ -63,6 +63,10 @@ from flask_limiter.util import get_remote_address
 from flask_cors import CORS
 from sqlalchemy.exc import OperationalError
 
+# Sentry for error monitoring
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
 # Import for 2FA testing
 # try:
 #     from models_with_analytics import AdminUser, AdminRole
@@ -124,6 +128,14 @@ _static = os.path.join(os.path.dirname(__file__), "helpchain-backend", "src", "s
 # Създаваме приложението с правилните пътища
 app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
+# Initialize Sentry for error monitoring
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    integrations=[FlaskIntegration()],
+    traces_sample_rate=1.0,
+    environment="production" if not app.debug else "development"
+)
+
 # Абсолютен път до базата за по-голяма сигурност
 basedir = os.path.abspath(os.path.dirname(__file__))
 # За production на Render, използвайме /tmp за SQLite база данни
@@ -157,7 +169,9 @@ def allowed_file(filename):
 
 
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB upload limit
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "fallback_secret_key_for_development")
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY", "fallback_secret_key_for_development"
+)
 
 # Security configurations
 app.config["SESSION_COOKIE_SECURE"] = True
@@ -177,14 +191,14 @@ limiter = Limiter(
 
 # CSP configuration with report-only
 csp = {
-    'default-src': ["'self'"],
-    'script-src': ["'self'", "'nonce-{{ nonce }}'"],
-    'style-src': ["'self'", "'unsafe-inline'"],
-    'img-src': ["'self'", "data:"],
-    'font-src': ["'self'"],
-    'connect-src': ["'self'"],
-    'frame-ancestors': ["'none'"],
-    'upgrade-insecure-requests': [],
+    "default-src": ["'self'"],
+    "script-src": ["'self'", "'nonce-{{ nonce }}'"],
+    "style-src": ["'self'", "'unsafe-inline'"],
+    "img-src": ["'self'", "data:"],
+    "font-src": ["'self'"],
+    "connect-src": ["'self'"],
+    "frame-ancestors": ["'none'"],
+    "upgrade-insecure-requests": [],
 }
 
 talisman = Talisman(
@@ -212,14 +226,17 @@ talisman = Talisman(
 csrf = CSRFProtect(app)
 
 # CORS configuration for API endpoints
-cors = CORS(app, resources={
-    r"/api/*": {
-        "origins": ["https://helpchain.live", "https://www.helpchain.live"],
-        "methods": ["GET", "POST", "PUT", "DELETE"],
-        "allow_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": False
-    }
-})
+cors = CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": ["https://helpchain.live", "https://www.helpchain.live"],
+            "methods": ["GET", "POST", "PUT", "DELETE"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": False,
+        }
+    },
+)
 
 # Настройваме Jinja да търси шаблони в няколко възможни директории
 _template_dirs = [
@@ -415,7 +432,7 @@ def submit_request():
                 flash("Позволени са само изображения и PDF!")
                 return redirect(url_for("submit_request"))
             # MIME type validation
-            allowed_mimes = {'image/png', 'image/jpg', 'image/jpeg', 'application/pdf'}
+            allowed_mimes = {"image/png", "image/jpg", "image/jpeg", "application/pdf"}
             if file.mimetype not in allowed_mimes:
                 flash("Невалиден тип файл!")
                 return redirect(url_for("submit_request"))
@@ -429,7 +446,9 @@ def submit_request():
             "email": email[:3] + "***",  # Sanitize PII
             "category": category,
             "location": location,
-            "problem": problem[:50] + "..." if len(problem) > 50 else problem,  # Truncate
+            "problem": (
+                problem[:50] + "..." if len(problem) > 50 else problem
+            ),  # Truncate
             "filename": filename,
         }
         app.logger.info("submit_request received: %s", request_data)
@@ -547,12 +566,15 @@ def volunteer_register():
             except Exception as file_e:
                 app.logger.error(f"Failed to save email to file: {file_e}")
 
-        app.logger.info("Volunteer registered successfully: %s", {
-            "name": name,
-            "email": email[:3] + "***",
-            "phone": phone[:3] + "***",
-            "location": location
-        })
+        app.logger.info(
+            "Volunteer registered successfully: %s",
+            {
+                "name": name,
+                "email": email[:3] + "***",
+                "phone": phone[:3] + "***",
+                "location": location,
+            },
+        )
 
         flash("Успешна регистрация! Ще се свържем с вас при нужда.")
         return redirect(url_for("volunteer_register"))
@@ -644,10 +666,12 @@ def set_language():
 
 @app.after_request
 def add_security_headers(response):
-    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers["X-Content-Type-Options"] = "nosniff"
     # Cache-Control for sensitive routes
-    if request.endpoint in ['admin_login', 'admin_dashboard', 'admin_volunteers']:
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    if request.endpoint in ["admin_login", "admin_dashboard", "admin_volunteers"]:
+        response.headers["Cache-Control"] = (
+            "no-store, no-cache, must-revalidate, max-age=0"
+        )
     return response
 
 
@@ -741,7 +765,7 @@ Preferred-Languages: bg, en
 Canonical: https://helpchain.live/.well-known/security.txt
 Policy: https://helpchain.live/privacy
 """,
-        mimetype="text/plain"
+        mimetype="text/plain",
     )
 
 
