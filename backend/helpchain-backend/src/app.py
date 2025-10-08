@@ -1,11 +1,18 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
+print(f"MAILTRAP_USERNAME from env: {os.environ.get('MAILTRAP_USERNAME')}")
+print(f"MAILTRAP_PASSWORD from env: {os.environ.get('MAILTRAP_PASSWORD')}")
+
 from flask import (
     Flask,
     render_template,
     request,
     redirect,
     url_for,
-    flash,  # Add flash
+    flash,
+    session,
 )
 from flask_login import (
     LoginManager,
@@ -19,12 +26,19 @@ from .routes.api import api_bp
 from .config import Config
 from .extensions import db, babel, mail, migrate
 from flask_babel import get_locale
-
+from flask_mail import Mail, Message  # Добави ако няма
 
 import datetime  # Add this import
 
 from .controllers.helpchain_controller import HelpChainController  # Add this import
-from .models import Request, RequestLog, Volunteer, Feedback, User  # Add this import
+from .models import (
+    Request,
+    RequestLog,
+    Volunteer,
+    Feedback,
+    User,
+    AdminUser,
+)  # Add this import
 
 
 controller = HelpChainController()  # Add this
@@ -182,6 +196,22 @@ def create_app(config_object=None):
     # Регистрираме API blueprint под /api
     app.register_blueprint(api_bp, url_prefix="/api")
 
+    # Регистрираме main blueprint (основни публични страници)
+    try:
+        from .routes.main import main_bp
+
+        app.register_blueprint(main_bp)
+    except Exception as e:
+        app.logger.info("main blueprint not loaded: %s", e)
+
+    # Регистрираме admin blueprint под /admin
+    try:
+        from .routes.admin import admin_bp
+
+        app.register_blueprint(admin_bp, url_prefix="/admin")
+    except Exception as e:
+        app.logger.info("admin blueprint not loaded: %s", e)
+
     # Регистрираме analytics blueprint (pages + api + stream)
     try:
         from .routes.analytics import analytics_bp
@@ -238,11 +268,213 @@ def create_app(config_object=None):
         return render_template("submit_request.html")
 
     def send_email_notification(req):
-        # For now, just print the email
-        print(
-            f"New request submitted: ID {req.id}, Name: {req.name}, Email: {req.email}"
+        from flask_mail import Message
+        import datetime
+        import sqlite3
+        import os
+
+        # Database setup for notifications
+        DB_PATH = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "notifications.db"
         )
-        # TODO: Implement actual email sending with Flask-Mail
+
+        def save_notification_to_db(
+            recipient, subject, content, status="saved", smtp_error=None
+        ):
+            """Save notification to database"""
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute(
+                """CREATE TABLE IF NOT EXISTS notifications
+                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          timestamp TEXT,
+                          recipient TEXT,
+                          subject TEXT,
+                          content TEXT,
+                          status TEXT,
+                          smtp_error TEXT)"""
+            )
+            c.execute(
+                """INSERT INTO notifications (timestamp, recipient, subject, content, status, smtp_error)
+                         VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    datetime.datetime.now().isoformat(),
+                    recipient,
+                    subject,
+                    content,
+                    status,
+                    smtp_error,
+                ),
+            )
+            conn.commit()
+            conn.close()
+
+        content = f"""Нова заявка за помощ:
+ID: {req.id}
+Име: {req.name}
+Имейл: {req.email}
+Телефон: {req.phone}
+Локация: {req.location}
+Категория: {req.category}
+Описание: {req.description}
+Спешност: {req.urgency}"""
+
+        subject = "Нова заявка за помощ в HelpChain"
+
+        # Save to file (backup)
+        try:
+            with open(
+                os.path.join(
+                    os.path.dirname(__file__), "..", "..", "..", "sent_emails.txt"
+                ),
+                "a",
+                encoding="utf-8",
+            ) as f:
+                f.write(f"\n{'='*50}\n")
+                f.write(f"Email sent at: {datetime.datetime.now()}\n")
+                f.write(f"Subject: {subject}\n")
+                f.write(f"To: contact@helpchain.live\n")
+                f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
+                f.write(f"Date: {datetime.datetime.now()}\n\n")
+                f.write(content)
+                f.write(f"\n{'='*50}\n")
+            print(f"✅ Email saved to file for request ID {req.id}")
+        except Exception as e:
+            print(f"❌ Failed to save email to file: {e}")
+
+        # Try to send real email
+        msg = Message(
+            subject=subject,
+            recipients=["contact@helpchain.live"],
+            sender=app.config["MAIL_DEFAULT_SENDER"],
+            body=content,
+        )
+
+        smtp_error = None
+        status = "saved"
+
+        try:
+            mail.send(msg)
+            status = "sent"
+            print(f"✅ Email sent successfully for request ID {req.id}")
+        except Exception as e:
+            smtp_error = str(e)
+            print(f"⚠️  Email send failed, but saved to database: {e}")
+
+        # Save to database
+        try:
+            save_notification_to_db(
+                "contact@helpchain.live", subject, content, status, smtp_error
+            )
+            print(f"✅ Notification saved to database for request ID {req.id}")
+        except Exception as e:
+            print(f"❌ Failed to save to database: {e}")
+
+        return status == "sent"
+
+    # Добави тази функция след send_email_notification
+    def send_volunteer_notification(volunteer):
+        from flask_mail import Message
+        import datetime
+        import sqlite3
+        import os
+
+        # Database setup for notifications
+        DB_PATH = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "notifications.db"
+        )
+
+        def save_notification_to_db(
+            recipient, subject, content, status="saved", smtp_error=None
+        ):
+            """Save notification to database"""
+            conn = sqlite3.connect(DB_PATH)
+            c = conn.cursor()
+            c.execute(
+                """CREATE TABLE IF NOT EXISTS notifications
+                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          timestamp TEXT,
+                          recipient TEXT,
+                          subject TEXT,
+                          content TEXT,
+                          status TEXT,
+                          smtp_error TEXT)"""
+            )
+            c.execute(
+                """INSERT INTO notifications (timestamp, recipient, subject, content, status, smtp_error)
+                         VALUES (?, ?, ?, ?, ?, ?)""",
+                (
+                    datetime.datetime.now().isoformat(),
+                    recipient,
+                    subject,
+                    content,
+                    status,
+                    smtp_error,
+                ),
+            )
+            conn.commit()
+            conn.close()
+
+        content = f"""Нов доброволец се е регистрирал:
+ID: {volunteer.id}
+Име: {volunteer.name}
+Имейл: {volunteer.email}
+Телефон: {volunteer.phone}
+Локация: {volunteer.location}
+Умения: {volunteer.skills}"""
+
+        subject = "Нов доброволец в HelpChain"
+
+        # Save to file (backup)
+        try:
+            with open(
+                os.path.join(
+                    os.path.dirname(__file__), "..", "..", "..", "sent_emails.txt"
+                ),
+                "a",
+                encoding="utf-8",
+            ) as f:
+                f.write(f"\n{'='*50}\n")
+                f.write(f"Email sent at: {datetime.datetime.now()}\n")
+                f.write(f"Subject: {subject}\n")
+                f.write(f"To: contact@helpchain.live\n")
+                f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
+                f.write(f"Date: {datetime.datetime.now()}\n\n")
+                f.write(content)
+                f.write(f"\n{'='*50}\n")
+            print(f"✅ Email saved to file for volunteer ID {volunteer.id}")
+        except Exception as e:
+            print(f"❌ Failed to save email to file: {e}")
+
+        # Try to send real email
+        msg = Message(
+            subject=subject,
+            recipients=["contact@helpchain.live"],
+            sender=app.config["MAIL_DEFAULT_SENDER"],
+            body=content,
+        )
+
+        smtp_error = None
+        status = "saved"
+
+        try:
+            mail.send(msg)
+            status = "sent"
+            print(f"✅ Email sent successfully for volunteer ID {volunteer.id}")
+        except Exception as e:
+            smtp_error = str(e)
+            print(f"⚠️  Email send failed, but saved to database: {e}")
+
+        # Save to database
+        try:
+            save_notification_to_db(
+                "contact@helpchain.live", subject, content, status, smtp_error
+            )
+            print(f"✅ Notification saved to database for volunteer ID {volunteer.id}")
+        except Exception as e:
+            print(f"❌ Failed to save to database: {e}")
+
+        return status == "sent"
 
     @app.route("/admin", methods=["GET"])
     @login_required
@@ -322,6 +554,8 @@ def create_app(config_object=None):
                     "Благодарим ви че се записахте като доброволец! Ще се свържем с вас скоро.",
                     "success",
                 )
+                # Send volunteer notification email
+                send_volunteer_notification(volunteer)
                 return redirect(url_for("index"))
             except Exception as e:
                 print(f"Error in become_volunteer: {e}")  # Debug log
@@ -341,6 +575,26 @@ def create_app(config_object=None):
             )
             db.session.add(feedback_entry)
             db.session.commit()
+
+            # Track feedback event for analytics
+            try:
+                from ...analytics_service import analytics_service
+
+                analytics_service.track_event(
+                    event_type="user_feedback",
+                    event_category="engagement",
+                    event_action="submit_feedback",
+                    context={
+                        "feedback_length": len(data.get("message", "")),
+                        "has_email": bool(data.get("email")),
+                        "user_agent": request.headers.get("User-Agent"),
+                        "ip_address": request.remote_addr,
+                        "page_url": request.referrer or "/about",
+                    },
+                )
+            except Exception as analytics_error:
+                print(f"Analytics tracking failed: {analytics_error}")  # Non-blocking
+
             flash("Благодарим ви за обратната връзка!", "success")
             return redirect(url_for("about"))
         except Exception as e:
@@ -358,6 +612,7 @@ def create_app(config_object=None):
             user = User(
                 username=data.get("username"),
                 email=data.get("email"),
+                citizen_id=data.get("citizen_id"),  # Добави
                 is_volunteer=data.get("is_volunteer") == "on",
                 is_organization=data.get("is_organization") == "on",
             )
@@ -422,6 +677,274 @@ def create_app(config_object=None):
             return redirect(url_for("profile"))
         return render_template("profile.html")
 
+    @app.route("/admin/login", methods=["GET", "POST"])
+    def admin_login():
+        if request.method == "POST":
+            username = request.form.get("username")
+            password = request.form.get("password")
+            admin_user = AdminUser.query.filter_by(username=username).first()
+            if admin_user and admin_user.check_password(password):
+                if admin_user.two_factor_enabled:
+                    session["pending_admin_user_id"] = admin_user.id
+                    return redirect(url_for("admin_2fa"))
+                else:
+                    login_user(admin_user)
+                    return redirect(url_for("admin_dashboard"))
+            flash("Невалидно потребителско име или парола.", "error")
+        return render_template("admin_login.html")
+
+    @app.route("/admin/2fa", methods=["GET", "POST"])
+    def admin_2fa():
+        user_id = session.get("pending_admin_user_id")
+        if not user_id:
+            return redirect(url_for("admin_login"))
+
+        admin_user = AdminUser.query.get(user_id)
+        if not admin_user:
+            return redirect(url_for("admin_login"))
+
+        if request.method == "POST":
+            token = request.form.get("token")
+            if admin_user.verify_totp(token):
+                login_user(admin_user)
+                session.pop("pending_admin_user_id", None)
+                return redirect(url_for("admin_dashboard"))
+            else:
+                flash("Невалиден 2FA код.", "error")
+
+        return render_template("admin_2fa.html")
+
+    @app.route("/admin/2fa/setup", methods=["GET", "POST"])
+    @login_required
+    def admin_2fa_setup():
+        if not isinstance(current_user, AdminUser):
+            flash("Нямате достъп.", "error")
+            return redirect(url_for("index"))
+
+        if request.method == "POST":
+            token = request.form.get("token")
+            if current_user.verify_totp(token):
+                current_user.enable_2fa()
+                flash("2FA е активиран успешно!", "success")
+                return redirect(url_for("admin_dashboard"))
+            else:
+                flash("Невалиден код.", "error")
+
+        uri = current_user.get_totp_uri()
+        return render_template("admin_2fa_setup.html", totp_uri=uri)
+
+    @app.route("/admin/2fa/disable", methods=["POST"])
+    @login_required
+    def admin_2fa_disable():
+        if not isinstance(current_user, AdminUser):
+            flash("Нямате достъп.", "error")
+            return redirect(url_for("index"))
+
+        current_user.disable_2fa()
+        flash("2FA е деактивиран.", "success")
+        return redirect(url_for("admin_dashboard"))
+
+    # Video Chat Routes
+    @app.route("/video_chat")
+    @login_required
+    def video_chat():
+        """Показва списък с активни видео чат сесии"""
+        from .models import VideoChatSession, User
+
+        # Показваме активни сесии където текущият потребител участва
+        active_sessions = VideoChatSession.query.filter(
+            (
+                (VideoChatSession.initiator_id == current_user.id)
+                | (VideoChatSession.participant_id == current_user.id)
+            )
+            & (VideoChatSession.status.in_(["pending", "active"]))
+        ).all()
+
+        # Показваме онлайн потребители (опростена версия - всички регистрирани)
+        online_users = User.query.filter(User.id != current_user.id).all()
+
+        return render_template(
+            "video_chat.html",
+            active_sessions=active_sessions,
+            online_users=online_users,
+        )
+
+    @app.route("/video_chat/start/<int:user_id>", methods=["POST"])
+    @login_required
+    def start_video_chat(user_id):
+        """Започва нова видео чат сесия с даден потребител"""
+        from .models import VideoChatSession, User
+        import uuid
+
+        participant = User.query.get_or_404(user_id)
+
+        # Проверяваме дали вече има активна сесия между тези потребители
+        existing_session = VideoChatSession.query.filter(
+            (
+                (VideoChatSession.initiator_id == current_user.id)
+                & (VideoChatSession.participant_id == user_id)
+            )
+            | (
+                (VideoChatSession.initiator_id == user_id)
+                & (VideoChatSession.participant_id == current_user.id)
+            ),
+            VideoChatSession.status.in_(["pending", "active"]),
+        ).first()
+
+        if existing_session:
+            flash("Вече има активна видео чат сесия с този потребител.", "warning")
+            return redirect(url_for("video_chat"))
+
+        # Създаваме нова сесия
+        session_id = str(uuid.uuid4())
+        video_session = VideoChatSession(
+            session_id=session_id,
+            initiator_id=current_user.id,
+            participant_id=user_id,
+            status="pending",
+        )
+
+        db.session.add(video_session)
+        db.session.commit()
+
+        # Track video chat event for analytics
+        try:
+            from ...analytics_service import analytics_service
+
+            analytics_service.track_event(
+                event_type="video_chat_started",
+                event_category="communication",
+                event_action="start_session",
+                context={
+                    "participant_id": user_id,
+                    "session_id": session_id,
+                    "user_agent": request.headers.get("User-Agent"),
+                    "ip_address": request.remote_addr,
+                },
+            )
+        except Exception as analytics_error:
+            print(f"Analytics tracking failed: {analytics_error}")
+
+        flash(f"Видео чат сесия е започната с {participant.username}.", "success")
+        return redirect(url_for("join_video_chat", session_id=session_id))
+
+    @app.route("/video_chat/join/<session_id>")
+    @login_required
+    def join_video_chat(session_id):
+        """Присъединява се към видео чат сесия"""
+        from .models import VideoChatSession
+
+        session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
+
+        # Проверяваме дали текущият потребител има право да се присъедини
+        if (
+            session.initiator_id != current_user.id
+            and session.participant_id != current_user.id
+        ):
+            flash("Нямате право да се присъедините към тази сесия.", "error")
+            return redirect(url_for("video_chat"))
+
+        # Ако сесията е pending и текущият потребител е participant, я активираме
+        if session.status == "pending" and session.participant_id == current_user.id:
+            session.status = "active"
+            session.started_at = datetime.datetime.utcnow()
+            db.session.commit()
+
+        return render_template(
+            "video_chat_room.html", session=session, current_user=current_user
+        )
+
+    @app.route("/video_chat/end/<session_id>", methods=["POST"])
+    @login_required
+    def end_video_chat(session_id):
+        """Завършва видео чат сесия"""
+        from .models import VideoChatSession
+
+        session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
+
+        # Проверяваме дали текущият потребител участва в сесията
+        if (
+            session.initiator_id != current_user.id
+            and session.participant_id != current_user.id
+        ):
+            flash("Нямате право да завършите тази сесия.", "error")
+            return redirect(url_for("video_chat"))
+
+        # Изчисляваме продължителността
+        if session.started_at and not session.ended_at:
+            session.ended_at = datetime.datetime.utcnow()
+            duration = (session.ended_at - session.started_at).total_seconds()
+            session.duration = int(duration)
+
+        session.status = "completed"
+        db.session.commit()
+
+        # Track video chat end event for analytics
+        try:
+            from ...analytics_service import analytics_service
+
+            analytics_service.track_event(
+                event_type="video_chat_ended",
+                event_category="communication",
+                event_action="end_session",
+                context={
+                    "session_id": session_id,
+                    "duration": session.duration,
+                    "user_agent": request.headers.get("User-Agent"),
+                    "ip_address": request.remote_addr,
+                },
+            )
+        except Exception as analytics_error:
+            print(f"Analytics tracking failed: {analytics_error}")
+
+        flash("Видео чат сесията е завършена.", "success")
+        return redirect(url_for("video_chat"))
+
+    # WebRTC Signaling API
+    @app.route("/api/video_chat/signal/<session_id>", methods=["POST"])
+    @login_required
+    def video_chat_signal(session_id):
+        """WebRTC signaling endpoint за обмен на сигнали между участниците"""
+        from .models import VideoChatSession
+
+        session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
+
+        # Проверяваме дали текущият потребител участва в сесията
+        if (
+            session.initiator_id != current_user.id
+            and session.participant_id != current_user.id
+        ):
+            return {"error": "Unauthorized"}, 403
+
+        data = request.get_json()
+        if not data:
+            return {"error": "No data provided"}, 400
+
+        # Тук можем да съхраняваме сигнали в база данни или да ги предаваме чрез WebSocket
+        # За опростеност връщаме success - в реално приложение ще има WebSocket сървър
+        signal_type = data.get("type")
+        signal_data = data.get("data")
+
+        # Track signaling event for analytics
+        try:
+            from ...analytics_service import analytics_service
+
+            analytics_service.track_event(
+                event_type="video_chat_signal",
+                event_category="communication",
+                event_action=signal_type,
+                context={
+                    "session_id": session_id,
+                    "signal_type": signal_type,
+                    "user_agent": request.headers.get("User-Agent"),
+                    "ip_address": request.remote_addr,
+                },
+            )
+        except Exception as analytics_error:
+            print(f"Analytics tracking failed: {analytics_error}")
+
+        return {"status": "signal_received", "type": signal_type}
+
     # (production: премахнати подробните before/after логове)
 
     return app
@@ -435,7 +958,7 @@ def init_sample_data():
     with app.app_context():
         from .models import Request, RequestLog, User
 
-        db.create_all()  # Create tables if they don't exist
+        db.create_all()  # Create tables if they exist
 
         # Check if users table is empty
         if User.query.count() == 0:
@@ -524,3 +1047,7 @@ def init_sample_data():
             ]
             db.session.add_all(sample_logs)
             db.session.commit()
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

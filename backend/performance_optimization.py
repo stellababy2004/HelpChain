@@ -3,7 +3,7 @@ Performance Optimization для Analytics System
 Caching, Database optimization и API improvements
 """
 
-from flask_caching import Cache
+# from flask_caching import Cache  # Преместен вътре в класа за избягване на circular import
 from functools import wraps
 import json
 from datetime import datetime
@@ -11,6 +11,10 @@ from datetime import datetime
 
 class AnalyticsCache:
     def __init__(self, app=None):
+        from flask_caching import (
+            Cache,
+        )  # Локален import за избягване на circular import
+
         self.cache = Cache()
         if app:
             self.init_app(app)
@@ -172,7 +176,7 @@ def setup_performance_optimizations(app, db):
     """Setup всички performance optimizations"""
 
     # Initialize caching
-    cache = AnalyticsCache(app)
+    # cache = AnalyticsCache(app)  # Коментирано за избягване на circular import
 
     # Create database indexes
     DatabaseOptimizer.create_analytics_indexes(db)
@@ -197,7 +201,7 @@ def setup_performance_optimizations(app, db):
     cache_thread = threading.Thread(target=warm_cache, daemon=True)
     cache_thread.start()
 
-    return cache
+    # return cache  # Коментирано за избягване на circular import
 
 
 # Configuration за production

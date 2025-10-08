@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Config:
@@ -11,4 +14,14 @@ class Config:
         os.environ.get("ALLOWED_HOSTS", "").split(",")
         if os.environ.get("ALLOWED_HOSTS")
         else []
+    )
+    MAIL_SERVER = os.environ.get(
+        "MAIL_SERVER", "smtp.mailtrap.io"
+    )  # Mailtrap за тестове
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 2525))
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "True").lower() in ["true", "1"]
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", os.environ.get("MAILTRAP_USERNAME"))
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", os.environ.get("MAILTRAP_PASSWORD"))
+    MAIL_DEFAULT_SENDER = os.environ.get(
+        "MAIL_DEFAULT_SENDER", "contact@helpchain.live"
     )

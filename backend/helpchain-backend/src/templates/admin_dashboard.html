@@ -2,6 +2,25 @@
 endblock %} {% block content %}
 <div class="container mt-5">
   <h2 class="mb-4">Админ панел</h2>
+
+  <!-- 2FA Settings -->
+  <div class="mb-3">
+    <h4>Настройки за сигурност</h4>
+    {% if current_user.two_factor_enabled %}
+    <p>2FA е активиран.</p>
+    <form action="/admin/2fa/disable" method="post" class="d-inline">
+      <button type="submit" class="btn btn-warning btn-sm">
+        Деактивирай 2FA
+      </button>
+    </form>
+    {% else %}
+    <p>2FA не е активиран.</p>
+    <a href="{{ url_for('admin_2fa_setup') }}" class="btn btn-success btn-sm"
+      >Настрой 2FA</a
+    >
+    {% endif %}
+  </div>
+
   <div class="mb-3">
     <p>Общо заявки: {{ requests['items'] | length }}</p>
     <p>Общо доброволци: {{ volunteers | length }}</p>
@@ -203,89 +222,89 @@ endblock %} {% block content %}
 {% endblock %} {% block scripts %}
 <script>
   function viewDetails(id) {
-      // Fetch details via AJAX or use static data
-      // For now, use static data from the table
-      const row = document.querySelector(`tr[data-id="${id}"]`);
-      if (row) {
-          const cells = row.querySelectorAll('td');
-          const details = `
+    // Fetch details via AJAX or use static data
+    // For now, use static data from the table
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    if (row) {
+      const cells = row.querySelectorAll('td');
+      const details = `
               <p><strong>ID:</strong> ${cells[0].textContent}</p>
               <p><strong>Име:</strong> ${cells[1].textContent}</p>
               <p><strong>Статус:</strong> ${cells[2].textContent}</p>
               <p><strong>История:</strong> ${cells[3].innerHTML}</p>
           `;
-          document.getElementById('detailsContent').innerHTML = details;
-          const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
-          modal.show();
-      }
+      document.getElementById('detailsContent').innerHTML = details;
+      const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+      modal.show();
+    }
   }
 
   function changeStatus(id) {
-      document.getElementById('requestId').value = id;
-      const modal = new bootstrap.Modal(document.getElementById('statusModal'));
-      modal.show();
+    document.getElementById('requestId').value = id;
+    const modal = new bootstrap.Modal(document.getElementById('statusModal'));
+    modal.show();
   }
 
   function submitStatusChange() {
-      const form = document.getElementById('statusForm');
-      const formData = new FormData(form);
-      const data = {
-          request_id: formData.get('request_id'),
-          status: formData.get('status')
-      };
+    const form = document.getElementById('statusForm');
+    const formData = new FormData(form);
+    const data = {
+      request_id: formData.get('request_id'),
+      status: formData.get('status')
+    };
 
-      fetch('/api/admin/change_status', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
+    fetch('/api/admin/change_status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert('Грешка при промяна на статуса');
+        }
       })
-          .then(response => response.json())
-          .then(data => {
-              if (data.success) {
-                  location.reload();
-              } else {
-                  alert('Грешка при промяна на статуса');
-              }
-          })
-          .catch(error => {
-              console.error('Error:', error);
-              alert('Грешка при промяна на статуса');
-          });
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Грешка при промяна на статуса');
+      });
   }
 
   function deleteRequest() {
-      const requestId = document.getElementById('requestId').value;
-      if (confirm('Сигурни ли сте, че искате да изтриете тази заявка?')) {
-          fetch('/api/admin/delete_request', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ request_id: requestId }),
-          })
-              .then(response => response.json())
-              .then(data => {
-                  if (data.success) {
-                      location.reload();
-                  } else {
-                      alert('Грешка при изтриване на заявката');
-                  }
-              })
-              .catch(error => {
-                  console.error('Error:', error);
-                  alert('Грешка при изтриване на заявката');
-              });
-      }
+    const requestId = document.getElementById('requestId').value;
+    if (confirm('Сигурни ли сте, че искате да изтриете тази заявка?')) {
+      fetch('/api/admin/delete_request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ request_id: requestId }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Грешка при изтриване на заявката');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Грешка при изтриване на заявката');
+        });
+    }
   }
 
   function exportData() {
-      const data = {{ requests_json | tojson
+    const data = {{ requests_json | tojson
   }};
   const csvContent = "data:text/csv;charset=utf-8,"
-      + "ID,Име,Телефон,Имейл,Локация,Категория,Описание,Статус,Спешност\n"
-      + data.map(row => `"${row.id}","${row.name}","${row.phone}","${row.email}","${row.location}","${row.category}","${row.description}","${row.status}","${row.urgency}"`).join("\n");
+    + "ID,Име,Телефон,Имейл,Локация,Категория,Описание,Статус,Спешност\n"
+    + data.map(row => `"${row.id}","${row.name}","${row.phone}","${row.email}","${row.location}","${row.category}","${row.description}","${row.status}","${row.urgency}"`).join("\n");
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
@@ -296,11 +315,11 @@ endblock %} {% block content %}
   }
 
   function exportVolunteers() {
-      const data = {{ volunteers_json | tojson
+    const data = {{ volunteers_json | tojson
   }};
   const csvContent = "data:text/csv;charset=utf-8,"
-      + "ID,Име,Имейл,Телефон,Локация,Умения\n"
-      + data.map(row => `"${row.id}","${row.name}","${row.email}","${row.phone}","${row.location}","${row.skills}"`).join("\n");
+    + "ID,Име,Имейл,Телефон,Локация,Умения\n"
+    + data.map(row => `"${row.id}","${row.name}","${row.email}","${row.phone}","${row.location}","${row.skills}"`).join("\n");
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
@@ -315,20 +334,20 @@ endblock %} {% block content %}
   document.getElementById('statusFilter').addEventListener('change', filterTable);
 
   function filterTable() {
-      const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-      const statusFilter = document.getElementById('statusFilter').value;
-      const rows = document.querySelectorAll('tbody tr');
-      rows.forEach(row => {
-          const name = row.cells[1].textContent.toLowerCase();
-          const status = row.cells[3].textContent.toLowerCase();
-          const matchesSearch = name.includes(searchFilter);
-          const matchesStatus = !statusFilter || status.includes(statusFilter);
-          if (matchesSearch && matchesStatus) {
-              row.style.display = '';
-          } else {
-              row.style.display = 'none';
-          }
-      });
+    const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      const name = row.cells[1].textContent.toLowerCase();
+      const status = row.cells[3].textContent.toLowerCase();
+      const matchesSearch = name.includes(searchFilter);
+      const matchesStatus = !statusFilter || status.includes(statusFilter);
+      if (matchesSearch && matchesStatus) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
   }
 </script>
 {% endblock %} # Script to add sample data to the database for testing admin

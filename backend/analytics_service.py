@@ -10,7 +10,8 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 from collections import Counter
 from sqlalchemy import func, and_
-from flask import current_app
+
+# from flask import current_app  # Премахнат за избягване на circular import
 from models import (
     db,
     AnalyticsEvent,
@@ -115,6 +116,10 @@ class AdvancedAnalytics:
     def _safe_database_operation(self, operation, *args, **kwargs):
         """Безопасно извършва database операция с proper Flask app context"""
         try:
+            from flask import (
+                current_app,
+            )  # Локален import за избягване на circular import
+
             # Проверяваме дали имаме Flask app context
             if current_app:
                 # Ако сме в request context, изпълняваме директно

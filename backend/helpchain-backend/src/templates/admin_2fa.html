@@ -1,0 +1,37 @@
+{% extends "base.html" %} {% block title %}2FA Верификация | HelpChain.live{%
+endblock %} {% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Двуфакторна автентикация</h2>
+  <p>Въведете кода от вашето 2FA приложение.</p>
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% for category, message in messages %}
+  <div
+    class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="alert"
+      aria-label="Close"
+    ></button>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+  <form action="/admin/2fa" method="post">
+    <div class="mb-3">
+      <label for="token" class="form-label">2FA Код</label>
+      <input
+        type="text"
+        class="form-control"
+        id="token"
+        name="token"
+        required
+        maxlength="6"
+        pattern="[0-9]{6}"
+      />
+    </div>
+    <button type="submit" class="btn btn-primary">Верифицирай</button>
+  </form>
+</div>
+{% endblock %}

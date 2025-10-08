@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Подай заявка - HelpChain</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="text-center">Подай заявка за помощ</h3>
+            </div>
+            <div class="card-body">
+              <form method="POST">
+                <div class="mb-3">
+                  <label for="name" class="form-label">Име</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    name="name"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="phone" class="form-label">Телефон</label>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    id="phone"
+                    name="phone"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="email" class="form-label">Имейл</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    name="email"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="location" class="form-label">Локация</label>
+                  <select
+                    class="form-control"
+                    id="location"
+                    name="location"
+                    required
+                  >
+                    <option value="sofia">София</option>
+                    <option value="plovdiv">Пловдив</option>
+                    <option value="varna">Варна</option>
+                    <option value="burgas">Бургас</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="category" class="form-label">Категория</label>
+                  <select
+                    class="form-control"
+                    id="category"
+                    name="category"
+                    required
+                  >
+                    <option value="food">Храна</option>
+                    <option value="medical">Медицинска помощ</option>
+                    <option value="transport">Транспорт</option>
+                    <option value="other">Друго</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="description" class="form-label">Описание</label>
+                  <textarea
+                    class="form-control"
+                    id="description"
+                    name="description"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="urgency" class="form-label">Спешност</label>
+                  <select class="form-control" id="urgency" name="urgency">
+                    <option value="low">Ниска</option>
+                    <option value="medium">Средна</option>
+                    <option value="high">Висока</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  Изпрати заявка
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

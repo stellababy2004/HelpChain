@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Админ панел - HelpChain</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+      <div class="container">
+        <a class="navbar-brand" href="/">HelpChain - Админ</a>
+        <div class="navbar-nav ms-auto">
+          <a class="nav-link" href="{{ url_for('dashboard') }}"
+            >Обратно към dashboard</a
+          >
+          <a class="nav-link" href="{{ url_for('logout') }}">Изход</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <h2>Админ панел</h2>
+
+      <div class="row">
+        <div class="col-md-8">
+          <h3>Заявки</h3>
+          {% if requests.items %}
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Име</th>
+                  <th>Телефон</th>
+                  <th>Имейл</th>
+                  <th>Локация</th>
+                  <th>Категория</th>
+                  <th>Описание</th>
+                  <th>Статус</th>
+                  <th>Спешност</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for request in requests.items %}
+                <tr>
+                  <td>{{ request.id }}</td>
+                  <td>{{ request.name }}</td>
+                  <td>{{ request.phone }}</td>
+                  <td>{{ request.email }}</td>
+                  <td>{{ request.location }}</td>
+                  <td>{{ request.category }}</td>
+                  <td>{{ request.description[:50] }}...</td>
+                  <td>{{ request.status }}</td>
+                  <td>{{ request.urgency }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p>Няма заявки.</p>
+          {% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <h3>Доброволци</h3>
+          {% if volunteers %}
+          <div class="list-group">
+            {% for volunteer in volunteers %}
+            <div class="list-group-item">
+              <h6>{{ volunteer.name }}</h6>
+              <p class="mb-1">{{ volunteer.email }} | {{ volunteer.phone }}</p>
+              <small>{{ volunteer.location }} | {{ volunteer.skills }}</small>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p>Няма регистрирани доброволци.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

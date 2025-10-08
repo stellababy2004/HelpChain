@@ -1,4 +1,4 @@
- HelpChain – Social & Health Support Platform
+HelpChain – Social & Health Support Platform
 
 [![Website](https://img.shields.io/badge/Live%20Demo-helpchain.live-green)](https://helpchain-s2l5.onrender.com)
 
@@ -57,8 +57,10 @@ The app is deployed with Uvicorn on Render. Run command:
 uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port 10000
 <<<<<<< Updated upstream
 ```
+
 =======
->>>>>>> Stashed changes
+
+> > > > > > > Stashed changes
 
 Python 3.12 is specified.
 
@@ -90,6 +92,7 @@ v0.2.0 — 2025-10-02
 Updated release with new features.
 
 <<<<<<< Updated upstream
+
 ## 🧭 Roadmap
 
 - [ ] Setup Flask-Admin interface
@@ -104,9 +107,11 @@ Updated release with new features.
 ## Releases
 
 ### v0.1.0 — 2025-09-29
+
 =======
 Highlights
->>>>>>> Stashed changes
+
+> > > > > > > Stashed changes
 
 Implemented admin panel for managing requests and volunteers.
 Added login system for volunteers and admins.
@@ -160,7 +165,7 @@ backend/helpchain-backend/static — CSS, JS, images
 tests/ — unit/integration тестове
 Важни бележки
 Актуализирай Python версията в документацията и в Render (3.12 препоръчвам).
-Добави необходимите ENV променливи (.env): MAIL_*, DATABASE_URL.
+Добави необходимите ENV променливи (.env): MAIL\_\*, DATABASE_URL.
 Ignore: добави node_modules/.cache/prettier/ и node_modules/ в .gitignore.
 
 Тестове
@@ -171,22 +176,21 @@ Stella Barbarella — contact@helpchain.live
 Лиценз
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-
 <<<<<<< Updated upstream
 Добави LICENSE (MIT/друга), ако искаш публично споделяне.
 Python 3.12 is specified.
 
 🧭 Roadmap
- Setup admin panel for managing requests/volunteers
- Add login system (volunteers/admins)
- Add volunteer dashboard with task status
- Implement profile management with photo upload
- Improve UI/UX with Font Awesome and responsive design
- Track email logs in database
- Allow users to choose language
- Connect to custom domain: helpchain.live
- Make frontend fully mobile-friendly
- Add API documentation
+Setup admin panel for managing requests/volunteers
+Add login system (volunteers/admins)
+Add volunteer dashboard with task status
+Implement profile management with photo upload
+Improve UI/UX with Font Awesome and responsive design
+Track email logs in database
+Allow users to choose language
+Connect to custom domain: helpchain.live
+Make frontend fully mobile-friendly
+Add API documentation
 📡 API Endpoints
 GET / - Home page
 GET /login - Login page
@@ -237,5 +241,7 @@ py -3.12 -m venv .venv
 [Activate.ps1](http://_vscodecontentref_/3)
 
 =======
+
 ```
 >>>>>>> Stashed changes
+```
