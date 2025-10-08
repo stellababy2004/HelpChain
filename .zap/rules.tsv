@@ -1,0 +1,18 @@
+# ZAP Baseline Rules Configuration
+# Format: RuleID\tThreshold\tDescription
+# This file allows you to customize ZAP scan behavior
+# Rules with threshold 'OFF' will be disabled
+
+# Example: Disable some common false positives for modern web apps
+# 10020	OFF	Cross-Domain JavaScript Source File Inclusion (common with CDNs)
+# 10021	OFF	X-Frame-Options Header Not Set (handled by CSP frame-ancestors)
+# 10035	OFF	Strict-Transport-Security Header Not Set (handled by Talisman)
+# 10055	OFF	CSP: Wildcard Directive (we use specific policies)
+# 10063	OFF	Permissions Policy Header Not Set (handled by Talisman)
+
+# Uncomment and modify as needed for your application
+# 10020	OFF	Cross-Domain JavaScript Source File Inclusion
+# 10021	OFF	X-Frame-Options Header Not Set
+# 10035	OFF	Strict-Transport-Security Header Not Set
+# 10055	OFF	CSP: Wildcard Directive
+# 10063	OFF	Permissions Policy Header Not Set
