@@ -189,23 +189,25 @@ limiter = Limiter(
     storage_uri="memory://",  # In production, use Redis
 )
 
-# CSP configuration with report-only
+# CSP configuration - ENFORCED MODE (after 24-48h telemetry)
 csp = {
     "default-src": ["'self'"],
     "script-src": ["'self'", "'nonce-{{ nonce }}'"],
-    "style-src": ["'self'", "'unsafe-inline'"],
-    "img-src": ["'self'", "data:"],
+    "style-src": ["'self'", "'unsafe-inline'"],  # Consider removing 'unsafe-inline' if possible
+    "img-src": ["'self'", "data:", "https://helpchain.live"],
     "font-src": ["'self'"],
     "connect-src": ["'self'"],
     "frame-ancestors": ["'none'"],
     "upgrade-insecure-requests": [],
+    "base-uri": ["'self'"],
+    "form-action": ["'self'"],
 }
 
 talisman = Talisman(
     app,
-    content_security_policy=csp,
-    content_security_policy_report_only=csp,  # Report-only mode first
+    content_security_policy=csp,  # ENFORCED - no longer report-only
     content_security_policy_report_uri="https://csp-report.helpchain.live/report",
+    content_security_policy_report_to="csp-endpoint",  # New standard
     force_https=True,
     strict_transport_security=True,
     strict_transport_security_preload=True,
@@ -216,6 +218,16 @@ talisman = Talisman(
         "camera": "()",
         "microphone": "()",
         "geolocation": "()",
+        "payment": "()",
+        "usb": "()",
+        "magnetometer": "()",
+        "accelerometer": "()",
+        "gyroscope": "()",
+        "ambient-light-sensor": "()",
+        "autoplay": "()",
+        "encrypted-media": "()",
+        "fullscreen": "()",
+        "picture-in-picture": "()",
     },
     feature_policy={},  # Deprecated, but keeping for compatibility
     cross_origin_opener_policy="same-origin",
@@ -225,17 +237,23 @@ talisman = Talisman(
 
 csrf = CSRFProtect(app)
 
-# CORS configuration for API endpoints
+# CORS configuration - STRICT allowlist (no wildcards)
 cors = CORS(
     app,
     resources={
         r"/api/*": {
-            "origins": ["https://helpchain.live", "https://www.helpchain.live"],
-            "methods": ["GET", "POST", "PUT", "DELETE"],
-            "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": False,
+            "origins": [
+                "https://helpchain.live",
+                "https://www.helpchain.live",
+                # Add staging if needed: "https://staging.helpchain.live"
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "supports_credentials": False,  # Never allow credentials for API
+            "max_age": 86400,  # Cache preflight for 24h
         }
     },
+    # Disable CORS for non-API routes (default deny)
 )
 
 # Настройваме Jinja да търси шаблони в няколко възможни директории
@@ -299,7 +317,7 @@ def index():
 
 
 @app.route("/admin_login", methods=["GET", "POST"])
-@limiter.limit("5 per minute; 20 per hour")
+@limiter.limit("5 per minute; 20 per hour")  # Brute-force protection
 def admin_login():
     error = None
     if request.method == "POST":
@@ -317,6 +335,8 @@ def admin_login():
                 return redirect(url_for("admin_dashboard"))
         else:
             error = "Грешно потребителско име или парола!"
+            # Log failed login attempt
+            app.logger.warning(f"Failed login attempt for user: {username}, IP: {request.remote_addr}")
     return render_template("admin_login.html", error=error)
 
 
@@ -431,11 +451,31 @@ def submit_request():
             if not allowed_file(file.filename):
                 flash("Позволени са само изображения и PDF!")
                 return redirect(url_for("submit_request"))
-            # MIME type validation
+
+            # Enhanced file validation
             allowed_mimes = {"image/png", "image/jpg", "image/jpeg", "application/pdf"}
             if file.mimetype not in allowed_mimes:
                 flash("Невалиден тип файл!")
                 return redirect(url_for("submit_request"))
+
+            # Check file size (additional to MAX_CONTENT_LENGTH)
+            file.seek(0, 2)  # Seek to end
+            file_size = file.tell()
+            file.seek(0)  # Reset to beginning
+            if file_size > 5 * 1024 * 1024:  # 5MB
+                flash("Файлът е твърде голям (макс. 5MB)!")
+                return redirect(url_for("submit_request"))
+
+            # Basic antivirus check (placeholder - integrate with real AV service)
+            # TODO: Integrate with ClamAV or similar service
+            # For now, just check for suspicious file signatures
+            dangerous_signatures = [b'<script', b'<?php', b'<%', b'eval(', b'javascript:']
+            file_content_start = file.read(1024)
+            file.seek(0)  # Reset
+            if any(sig in file_content_start.lower() for sig in dangerous_signatures):
+                flash("Файлът съдържа подозрително съдържание!")
+                return redirect(url_for("submit_request"))
+
             filename = secure_filename(file.filename)
             save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
             file.save(save_path)
@@ -643,14 +683,20 @@ def success_stories():
 
 
 @app.route("/feedback", methods=["GET", "POST"])
-@limiter.limit("10 per minute; 50 per day")
+@limiter.limit("3 per minute; 10 per hour")  # Rate limit feedback submissions
 def feedback():
     if request.method == "POST":
         name = request.form.get("name")
         email = request.form.get("email")
         message = request.form.get("message")
-        # Логваме обратната връзка (използваме променливите)
-        app.logger.info("Feedback received from %s <%s>: %s", name, email, message)
+
+        # Basic input validation
+        if not all([name, email, message]) or len(message) < 10:
+            flash("Моля, попълнете всички полета коректно!")
+            return redirect(url_for("feedback"))
+
+        # Log feedback with security tags
+        app.logger.info("[SECURITY:FEEDBACK] Feedback received from %s <%s>: %s", name, email, message[:100] + "..." if len(message) > 100 else message)
         flash("Благодарим за обратната връзка!")
         return redirect(url_for("feedback"))
     return render_template("feedback.html")
@@ -667,6 +713,13 @@ def set_language():
 @app.after_request
 def add_security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
+    # HSTS header - ensure it's added for all HTTPS responses
+    if request.is_secure or request.headers.get('X-Forwarded-Proto') == 'https':
+        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+    # Report-To header for CSP reports (new standard)
+    response.headers["Report-To"] = '{"group":"csp-endpoint","max_age":86400,"endpoints":[{"url":"https://csp-report.helpchain.live/report"}],"include_subdomains":true}'
+    # NEL (Network Error Logging) for monitoring
+    response.headers["NEL"] = '{"report_to":"csp-endpoint","max_age":86400,"include_subdomains":true}'
     # Cache-Control for sensitive routes
     if request.endpoint in ["admin_login", "admin_dashboard", "admin_volunteers"]:
         response.headers["Cache-Control"] = (
