@@ -15,16 +15,23 @@ jobs:
   zap-baseline:
     runs-on: ubuntu-latest
     steps:
-      - name: Target URL
+      - name: Set target URL
         run: |
-          echo "TARGET_URL=${{ vars.ZAP_TARGET_URL }}" >> $GITHUB_ENV
+          TARGET_URL="${{ vars.ZAP_TARGET_URL }}"
+          if [ -z "$TARGET_URL" ]; then
+            # Default to production URL if variable not set
+            TARGET_URL="https://helpchain.live"
+            echo "Using default TARGET_URL: $TARGET_URL"
+          fi
+          echo "TARGET_URL=$TARGET_URL" >> $GITHUB_ENV
 
       - name: Validate target
         run: |
-          if [ -z "${{ env.TARGET_URL }}" ]; then
-            echo "Please set org/repo variable ZAP_TARGET_URL (e.g., https://helpchain.live)"
+          if [ -z "$TARGET_URL" ]; then
+            echo "Error: TARGET_URL is not set"
             exit 1
           fi
+          echo "Scanning target: $TARGET_URL"
 
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.14.0
