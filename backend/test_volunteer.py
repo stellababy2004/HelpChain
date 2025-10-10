@@ -13,11 +13,8 @@ This module contains extensive tests for all volunteer dashboard features includ
 - Logout functionality
 """
 
-import pytest
-import json
-from unittest.mock import MagicMock, patch
-from datetime import datetime, timedelta
-from flask import session, url_for
+from unittest.mock import patch
+from datetime import datetime
 
 
 class TestVolunteerDashboard:
@@ -587,7 +584,7 @@ class TestVolunteerLogout:
                 assert "volunteer_logged_in" not in sess
                 assert "volunteer_id" not in sess
                 assert "volunteer_name" not in sess
-                assert sess.get("admin_logged_in") == True
+                assert sess.get("admin_logged_in")
                 assert sess.get("admin_user_id") == 1
                 assert sess.get("admin_username") == "admin"
 

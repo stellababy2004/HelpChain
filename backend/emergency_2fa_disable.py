@@ -5,7 +5,6 @@ Use this when an admin loses access to their 2FA device
 """
 
 import sys
-import os
 
 # Add current directory to path
 sys.path.insert(0, ".")

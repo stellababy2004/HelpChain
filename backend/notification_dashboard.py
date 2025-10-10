@@ -11,15 +11,12 @@ from datetime import datetime
 from flask import (
     Flask,
     render_template_string,
-    request,
     redirect,
     url_for,
     flash,
-    session,
 )
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
 
 # Load environment variables
 load_dotenv()

@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       setup_csp_endpoint:
-        description: 'Setup CSP report endpoint'
+        description: "Setup CSP report endpoint"
         required: false
-        default: 'true'
+        default: "true"
 
 permissions:
   contents: read

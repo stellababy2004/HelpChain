@@ -26,7 +26,7 @@ from .routes.api import api_bp
 from .config import Config
 from .extensions import db, babel, mail, migrate
 from flask_babel import get_locale, refresh
-from flask_mail import Mail, Message  # Добави ако няма
+from flask_mail import Message  # Добави ако няма
 
 import datetime  # Add this import
 
@@ -279,7 +279,6 @@ def create_app(config_object=None):
         return render_template("submit_request.html")
 
     def send_email_notification(req):
-        from flask_mail import Message
         import datetime
         import sqlite3
         import os
@@ -344,7 +343,7 @@ ID: {req.id}
                 f.write(f"\n{'='*50}\n")
                 f.write(f"Email sent at: {datetime.datetime.now()}\n")
                 f.write(f"Subject: {subject}\n")
-                f.write(f"To: contact@helpchain.live\n")
+                f.write("To: contact@helpchain.live\n")
                 f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
                 f.write(f"Date: {datetime.datetime.now()}\n\n")
                 f.write(content)
@@ -385,7 +384,6 @@ ID: {req.id}
 
     # Добави тази функция след send_email_notification
     def send_volunteer_notification(volunteer):
-        from flask_mail import Message
         import datetime
         import sqlite3
         import os
@@ -448,7 +446,7 @@ ID: {volunteer.id}
                 f.write(f"\n{'='*50}\n")
                 f.write(f"Email sent at: {datetime.datetime.now()}\n")
                 f.write(f"Subject: {subject}\n")
-                f.write(f"To: contact@helpchain.live\n")
+                f.write("To: contact@helpchain.live\n")
                 f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
                 f.write(f"Date: {datetime.datetime.now()}\n\n")
                 f.write(content)
@@ -741,7 +739,6 @@ ID: {volunteer.id}
         # Тук можем да съхраняваме сигнали в база данни или да ги предаваме чрез WebSocket
         # За опростеност връщаме success - в реално приложение ще има WebSocket сървър
         signal_type = data.get("type")
-        signal_data = data.get("data")
 
         # Track signaling event for analytics
         try:
@@ -987,7 +984,6 @@ ID: {volunteer.id}
             return render_template("submit_request.html")
 
         def send_email_notification(req):
-            from flask_mail import Message
             import datetime
             import sqlite3
             import os
@@ -1052,7 +1048,7 @@ ID: {req.id}
                     f.write(f"\n{'='*50}\n")
                     f.write(f"Email sent at: {datetime.datetime.now()}\n")
                     f.write(f"Subject: {subject}\n")
-                    f.write(f"To: contact@helpchain.live\n")
+                    f.write("To: contact@helpchain.live\n")
                     f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
                     f.write(f"Date: {datetime.datetime.now()}\n\n")
                     f.write(content)
@@ -1093,7 +1089,6 @@ ID: {req.id}
 
         # Добави тази функция след send_email_notification
         def send_volunteer_notification(volunteer):
-            from flask_mail import Message
             import datetime
             import sqlite3
             import os
@@ -1156,7 +1151,7 @@ ID: {volunteer.id}
                     f.write(f"\n{'='*50}\n")
                     f.write(f"Email sent at: {datetime.datetime.now()}\n")
                     f.write(f"Subject: {subject}\n")
-                    f.write(f"To: contact@helpchain.live\n")
+                    f.write("To: contact@helpchain.live\n")
                     f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
                     f.write(f"Date: {datetime.datetime.now()}\n\n")
                     f.write(content)
@@ -1657,7 +1652,6 @@ ID: {volunteer.id}
             # Тук можем да съхраняваме сигнали в база данни или да ги предаваме чрез WebSocket
             # За опростеност връщаме success - в реално приложение ще има WebSocket сървър
             signal_type = data.get("type")
-            signal_data = data.get("data")
 
             # Track signaling event for analytics
             try:

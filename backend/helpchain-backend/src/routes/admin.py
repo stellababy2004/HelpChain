@@ -10,8 +10,6 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from ..models import Request, RequestLog, Volunteer, AdminUser, db
-from werkzeug.utils import secure_filename
-import os
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -260,7 +258,6 @@ def update_status(req_id):
     new_status = request.form.get("status")
     if new_status:
         req = Request.query.get_or_404(req_id)
-        old_status = req.status
         req.status = new_status
         db.session.commit()
 

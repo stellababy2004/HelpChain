@@ -3,11 +3,9 @@ import sys
 sys.path.insert(0, ".")
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from models import db, User, Role, Permission, UserRole
+from models import db, User, Role, UserRole
 from permissions import initialize_default_roles_and_permissions
 from werkzeug.security import generate_password_hash
-import os
 
 # Create a simple Flask app for testing
 app = Flask(__name__)
@@ -45,7 +43,6 @@ with app.app_context():
     print(f"Role has {len(admin_role.role_permissions)} permissions")
 
     # Test permission checking - create a mock session
-    from flask import session
     import flask
 
     # Create a mock session

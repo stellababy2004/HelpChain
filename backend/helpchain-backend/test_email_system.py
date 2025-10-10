@@ -112,7 +112,7 @@ ID: {req.id}
         try:
             mail.send(msg)
             print("✅ Email sent successfully via SMTP")
-            print(f"📧 Sent to: contact@helpchain.live")
+            print("📧 Sent to: contact@helpchain.live")
         except Exception as e:
             print(f"⚠️  SMTP send failed, but file saving works: {e}")
             print("🔧 Email configuration details:")

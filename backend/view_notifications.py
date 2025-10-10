@@ -38,7 +38,7 @@ def view_notifications(limit=10):
         try:
             dt = datetime.fromisoformat(timestamp)
             time_str = dt.strftime("%d.%m.%Y %H:%M:%S")
-        except:
+        except Exception:
             time_str = timestamp
 
         # Status emoji
@@ -90,6 +90,6 @@ if __name__ == "__main__":
         if len(sys.argv) > 1:
             try:
                 limit = int(sys.argv[1])
-            except:
+            except Exception:
                 pass
         view_notifications(limit)

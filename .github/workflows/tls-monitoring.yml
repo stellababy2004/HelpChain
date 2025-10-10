@@ -2,12 +2,12 @@ name: TLS Security Monitoring
 
 on:
   schedule:
-    - cron: "0 6 * * *"  # Daily at 06:00 UTC
+    - cron: "0 6 * * *" # Daily at 06:00 UTC
   workflow_dispatch:
 
 permissions:
   contents: read
-  issues: write  # To create issues on TLS failures
+  issues: write # To create issues on TLS failures
 
 jobs:
   ssl-labs-check:
