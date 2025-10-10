@@ -1,7 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from ..models import Volunteer, Request, RequestLog, db
-from werkzeug.utils import secure_filename
-import os
+from ..models import Volunteer, Request, db
 
 main_bp = Blueprint("main", __name__)
 
@@ -13,7 +11,7 @@ def index():
         volunteers_count = Volunteer.query.count()
         requests_count = Request.query.count()
         open_requests = Request.query.filter(Request.status != "completed").count()
-    except:
+    except Exception:
         volunteers_count = requests_count = open_requests = 0
 
     return render_template(

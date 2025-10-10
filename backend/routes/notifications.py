@@ -5,10 +5,9 @@ Handles notification preferences, push subscriptions, and sending notifications
 
 from flask import Blueprint, request, jsonify, current_app, render_template
 from flask_login import login_required, current_user
-from models_with_analytics import db, User, HelpRequest, Volunteer
+from models_with_analytics import db, User
 
 # from analytics_service import analytics_service  # Temporarily disabled for testing
-import json
 from datetime import datetime
 
 notification_bp = Blueprint("notification", __name__, url_prefix="/api/notification")

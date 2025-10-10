@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
-from flask_login import login_required, current_user
+from flask_login import login_required
 from werkzeug.utils import secure_filename
-from models import db, ChatMessage, ChatRoom
+from models import ChatMessage, ChatRoom
 from analytics_service import analytics_service
 import os
 

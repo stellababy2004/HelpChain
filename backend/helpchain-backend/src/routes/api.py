@@ -257,7 +257,7 @@ def get_nearby_volunteers():
             200,
         )
 
-    except ValueError as e:
+    except ValueError:
         return jsonify({"error": "Invalid coordinates or radius"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500

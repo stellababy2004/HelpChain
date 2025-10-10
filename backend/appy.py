@@ -30,7 +30,6 @@ from flask import (
     url_for,
     flash,
     session,
-    make_response,
     jsonify,
     Response,
     # current_app,  # Премахнат за избягване на circular import
@@ -40,7 +39,7 @@ from io import StringIO
 import csv
 from jinja2 import ChoiceLoader, FileSystemLoader
 import math
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 
 # HelpRequest is now imported directly from models
@@ -48,10 +47,7 @@ import json
 from extensions import db
 from models import (
     User,
-    Role,
-    UserRole,
     Volunteer,
-    PermissionEnum,
     RoleEnum,
     ChatRoom,
     ChatParticipant,
@@ -59,26 +55,18 @@ from models import (
     AdminUser,
     HelpRequest,
 )
-from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Mail
 from flask_migrate import Migrate
-from flask_talisman import Talisman
-from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_cors import CORS
 from sqlalchemy.exc import OperationalError
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
 # Import permissions system
 from permissions import (
     require_permission,
-    require_any_permission,
-    require_all_permissions,
-    require_login,
     require_admin_login,
     initialize_default_roles_and_permissions,
-    has_permission,
 )
 
 # Import admin roles blueprint
@@ -282,6 +270,12 @@ app.config["BABEL_SUPPORTED_LOCALES"] = ["bg", "en"]
 babel = Babel(app)
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
+
+
+def allowed_file(filename):
+    """Check if file extension is allowed"""
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # Email configuration
 app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
@@ -1604,7 +1598,7 @@ def export_volunteers_pdf(volunteers):
     """Export volunteers to PDF format"""
     try:
         from reportlab.lib import colors
-        from reportlab.lib.pagesizes import letter, A4
+        from reportlab.lib.pagesizes import A4
         from reportlab.platypus import (
             SimpleDocTemplate,
             Table,
@@ -1877,7 +1871,7 @@ def chat():
                     .filter(
                         ChatParticipant.volunteer_id == volunteer.id,
                         ChatRoom.room_type.in_(["private", "help_request"]),
-                        ChatRoom.is_active == True,
+                        ChatRoom.is_active,
                     )
                     .all()
                 )
@@ -1975,7 +1969,7 @@ def api_get_chat_rooms():
                     .filter(
                         ChatParticipant.volunteer_id == volunteer_id,
                         ChatRoom.room_type.in_(["private", "help_request"]),
-                        ChatRoom.is_active == True,
+                        ChatRoom.is_active,
                     )
                     .all()
                 )
@@ -2129,7 +2123,6 @@ def inject_get_locale():
     return dict(get_locale=get_locale)
 
 
-from flask import session, redirect, request
 from flask_babel import refresh
 
 
@@ -2550,7 +2543,6 @@ def handle_file_upload(data):
     sender_name = data.get("sender_name")
     file_data = data.get("file_data")  # Base64 encoded file
     file_name = data.get("file_name")
-    file_type = data.get("file_type")
 
     if not all([room_id, sender_type, sender_name, file_data, file_name]):
         emit("error", {"message": "Invalid file upload data"})
@@ -2786,7 +2778,7 @@ def get_nearby_volunteers():
             200,
         )
 
-    except ValueError as e:
+    except ValueError:
         return jsonify({"error": "Invalid coordinates or radius"}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500

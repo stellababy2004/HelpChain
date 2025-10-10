@@ -8,7 +8,6 @@ import os
 from flask import Flask, render_template_string, request, redirect, url_for, flash
 from flask_mail import Mail, Message
 from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
 import datetime
 
 # Load environment variables

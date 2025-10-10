@@ -4,7 +4,6 @@ Setup 2FA for admin user
 """
 
 import sys
-import os
 
 # Add current directory to path
 sys.path.insert(0, ".")

@@ -2,11 +2,11 @@ name: Trivy Security Scan
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   schedule:
-    - cron: "0 4 * * *"  # Всеки ден 04:00 UTC
+    - cron: "0 4 * * *" # Всеки ден 04:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -24,16 +24,16 @@ jobs:
       - name: Run Trivy IaC Scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'config'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-iac-results.sarif'
+          scan-type: "config"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-iac-results.sarif"
 
       - name: Upload Trivy IaC SARIF
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-iac-results.sarif'
+          sarif_file: "trivy-iac-results.sarif"
 
   trivy-repo:
     name: Trivy Repository Scan
@@ -45,14 +45,14 @@ jobs:
       - name: Run Trivy Repository Scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-repo-results.sarif'
-          skip-dirs: 'node_modules,.git,.venv,venv,__pycache__,.pytest_cache'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-repo-results.sarif"
+          skip-dirs: "node_modules,.git,.venv,venv,__pycache__,.pytest_cache"
 
       - name: Upload Trivy Repo SARIF
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: 'trivy-repo-results.sarif'
+          sarif_file: "trivy-repo-results.sarif"

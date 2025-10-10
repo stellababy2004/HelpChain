@@ -3,7 +3,7 @@ Permission-based access control decorators and utilities for HelpChain
 """
 
 from functools import wraps
-from flask import session, flash, redirect, url_for, request, current_app
+from flask import session, flash, redirect, url_for, current_app
 from models import User, Role, Permission, UserRole, RolePermission, PermissionEnum
 from extensions import db
 

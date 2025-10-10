@@ -53,7 +53,7 @@ def test_email():
             # Send the email
             mail.send(msg)
             print("✅ Test email sent successfully!")
-            print(f"📧 Sent to: contact@helpchain.live")
+            print("📧 Sent to: contact@helpchain.live")
             print(f"📨 From: {app.config['MAIL_DEFAULT_SENDER']}")
             print(f"🖥️  Server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
 

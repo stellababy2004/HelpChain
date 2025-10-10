@@ -24,6 +24,7 @@ If you discover a security vulnerability, please:
 ## 🛡️ Security Measures
 
 ### Web Application Security
+
 - **Content Security Policy (CSP)**: Strict policy with violation reporting
 - **HTTPS Only**: All traffic forced to HTTPS with HSTS
 - **Secure Headers**: Comprehensive security headers via Talisman
@@ -31,18 +32,21 @@ If you discover a security vulnerability, please:
 - **Rate Limiting**: Progressive rate limits on sensitive endpoints
 
 ### Authentication & Authorization
+
 - **Session Security**: Secure cookies with regeneration
 - **Password Policies**: Strong password requirements
 - **Two-Factor Authentication**: TOTP support for admin accounts
 - **Account Lockout**: Progressive delays on failed login attempts
 
 ### Data Protection
+
 - **PII Sanitization**: Personal data masked in logs
 - **Input Validation**: Server-side validation on all inputs
 - **SQL Injection Prevention**: Parameterized queries via SQLAlchemy
 - **File Upload Security**: MIME type validation and size limits
 
 ### Infrastructure Security
+
 - **Automated Scanning**: Bandit, pip-audit, OWASP ZAP, CodeQL, Trivy
 - **Dependency Updates**: Automated via Dependabot
 - **Container Security**: Trivy IaC and repository scans
@@ -77,6 +81,7 @@ Cross-Origin-Embedder-Policy: require-corp
 ## 🎯 Bug Bounty Program
 
 We appreciate security researchers helping us keep HelpChain secure. Responsible disclosure is rewarded with:
+
 - Public acknowledgment (with permission)
 - Priority consideration for future security roles
 - HelpChain swag
@@ -84,6 +89,7 @@ We appreciate security researchers helping us keep HelpChain secure. Responsible
 ## 📞 Emergency Contact
 
 For critical security incidents requiring immediate attention:
+
 - **Phone**: +359 XX XXX XXX (available 24/7 for emergencies)
 - **Email**: security@helpchain.live
 

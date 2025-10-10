@@ -5,19 +5,15 @@ This module contains comprehensive tests for email functionality in the HelpChai
 including volunteer registration notifications and access code emails.
 """
 
-import pytest
-import os
-from unittest.mock import patch, MagicMock
-from flask import Flask
-from flask_mail import Mail, Message
+from unittest.mock import MagicMock
+from flask_mail import Message
 from datetime import datetime
-import tempfile
 
 
 class TestEmailFunctionality:
     """Test class for email functionality testing"""
 
-    def test_volunteer_registration_email_success(self, app, client, monkeypatch):
+    def test_volunteer_registration_email_success(self, app, client, mocker):
         """Test successful volunteer registration email sending"""
         with app.app_context():
             # Mock the mail.send method
@@ -314,7 +310,7 @@ class TestEmailFunctionality:
             )
 
             # Send the message
-            mail.send(msg)
+            mock_send(msg)
 
             # Verify the call
             mock_send.assert_called_once()
@@ -359,7 +355,7 @@ HelpChain системата
             )
 
             # Send the message
-            mail.send(msg)
+            mock_send(msg)
 
             # Verify the call
             mock_send.assert_called_once()
@@ -377,9 +373,6 @@ HelpChain системата
         with app.app_context():
             # Mock mail.send to fail
             mocker.patch("backend.appy.mail.send", side_effect=Exception("SMTP Error"))
-
-            # Create a temporary file for testing
-            fallback_file = tmp_path / "test_sent_emails.txt"
 
             # Mock the open function to use our test file
             mock_open = mocker.patch("builtins.open")
@@ -495,7 +488,7 @@ HelpChain системата
         """Test that email operations are properly logged"""
         with app.app_context():
             # Mock mail operations
-            mock_send = mocker.patch("backend.appy.mail.send")
+            mocker.patch("backend.appy.mail.send")
 
             # Mock volunteer
             mock_volunteer = MagicMock()
@@ -511,7 +504,7 @@ HelpChain системата
 
             # Perform login operation
             test_data = {"email": "test@example.com"}
-            response = client.post("/volunteer_login", data=test_data)
+            client.post("/volunteer_login", data=test_data)
 
             # Check that appropriate log messages were generated
             assert any(

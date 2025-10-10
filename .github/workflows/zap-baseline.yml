@@ -2,9 +2,9 @@ name: OWASP ZAP Baseline
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   schedule:
-    - cron: "0 2 * * *"  # всеки ден 02:00 UTC
+    - cron: "0 2 * * *" # всеки ден 02:00 UTC
   workflow_dispatch:
 
 permissions:

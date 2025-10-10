@@ -3,6 +3,7 @@
 ## Pre-Deployment Verification
 
 ### 🔒 Security Readiness
+
 - [ ] **HSTS Preload**: Submit helpchain.live to [hstspreload.org](https://hstspreload.org)
 - [ ] **SSL Labs Test**: Achieve A/A+ rating on [ssllabs.com/ssltest](https://www.ssllabs.com/ssltest)
 - [ ] **CSP Enforcement**: Monitor reports for 24-48h, then enforce
@@ -10,6 +11,7 @@
 - [ ] **Secrets Rotation**: Initial rotation completed
 
 ### 🏗️ Infrastructure Setup
+
 - [ ] **Render Deployment**: App deployed and accessible
 - [ ] **Database**: SQLite/PostgreSQL configured and migrated
 - [ ] **Email Service**: Zoho SMTP working
@@ -17,6 +19,7 @@
 - [ ] **Environment Variables**: All secrets configured
 
 ### 🔍 Security Monitoring
+
 - [ ] **GitHub Security**: CodeQL, Bandit, pip-audit enabled
 - [ ] **OWASP ZAP**: Baseline scan passing
 - [ ] **Trivy**: IaC and repository scans clean
@@ -26,6 +29,7 @@
 ## Deployment Steps
 
 ### Phase 1: Infrastructure
+
 1. **Domain Setup**
    - [ ] DNS configured for helpchain.live
    - [ ] SSL certificate auto-renewal enabled
@@ -43,6 +47,7 @@
    - [ ] Security headers via [securityheaders.com](https://securityheaders.com)
 
 ### Phase 2: Security Validation
+
 1. **Automated Scans**
    - [ ] All GitHub Actions workflows passing
    - [ ] Security scans clean (no critical findings)
@@ -60,6 +65,7 @@
    - [ ] Security Headers: Grade A+
 
 ### Phase 3: Monitoring Setup
+
 1. **Error Monitoring**
    - [ ] Sentry configured with alerts
    - [ ] Log aggregation set up
@@ -78,12 +84,14 @@
 ## Post-Deployment Monitoring
 
 ### Week 1
+
 - [ ] Monitor CSP reports for violations
 - [ ] Check SSL Labs rating stability
 - [ ] Verify automated backups working
 - [ ] Monitor error rates in Sentry
 
 ### Ongoing
+
 - [ ] Weekly security scans
 - [ ] Monthly secrets rotation
 - [ ] Quarterly backup restoration tests
@@ -98,6 +106,7 @@
 ## Rollback Plan
 
 If critical issues arise:
+
 1. **Immediate**: Revert to previous deployment
 2. **Investigation**: Check logs and monitoring
 3. **Fix**: Address root cause
@@ -105,6 +114,6 @@ If critical issues arise:
 
 ---
 
-**Deployment Date**: __________
-**Deployed By**: __________
-**Security Review By**: __________
+**Deployment Date**: \***\*\_\_\*\***
+**Deployed By**: \***\*\_\_\*\***
+**Security Review By**: \***\*\_\_\*\***

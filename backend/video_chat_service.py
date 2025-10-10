@@ -5,10 +5,8 @@ WebRTC-based video chat functionality
 """
 
 import uuid
-import json
 from datetime import datetime
 from typing import Dict, Any, Optional
-from flask import current_app
 from models import db, VideoChatSession, User
 import logging
 
