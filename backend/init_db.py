@@ -5,6 +5,7 @@ Creates default roles, permissions, and admin user
 """
 
 import sys
+import os
 
 # Add current directory to path
 sys.path.insert(0, ".")
@@ -35,7 +36,9 @@ def main():
             admin_user = User(
                 username="admin",
                 email="admin@helpchain.live",
-                password_hash=generate_password_hash("admin123"),
+                password_hash=generate_password_hash(
+                    os.getenv("ADMIN_USER_PASSWORD", "admin123")
+                ),
                 role=RoleEnum.superadmin,
                 is_active=True,
             )

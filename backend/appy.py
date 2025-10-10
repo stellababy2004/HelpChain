@@ -3,23 +3,6 @@ import sys
 import logging
 from dotenv import load_dotenv
 
-# Add the backend directory to Python path for imports
-backend_dir = os.path.dirname(__file__)
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-
-# Настройка на logging преди всичко друго
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("helpchain.log", encoding="utf-8"),
-    ],
-)
-
-logger = logging.getLogger(__name__)
-
 # All imports at the top
 from werkzeug.utils import secure_filename
 from flask import (
@@ -34,16 +17,13 @@ from flask import (
     Response,
     # current_app,  # Премахнат за избягване на circular import
 )
-from flask_babel import Babel, gettext as _
+from flask_babel import Babel, gettext as _, refresh
 from io import StringIO
 import csv
 from jinja2 import ChoiceLoader, FileSystemLoader
 import math
 from datetime import datetime
 import json
-
-# HelpRequest is now imported directly from models
-
 from extensions import db
 from models import (
     User,
@@ -61,23 +41,34 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from sqlalchemy.exc import OperationalError
 from flask_socketio import SocketIO, emit, join_room, leave_room
-
-# Import permissions system
 from permissions import (
     require_permission,
     require_admin_login,
     initialize_default_roles_and_permissions,
 )
-
-# Import admin roles blueprint
 from admin_roles import admin_roles_bp
-
-# Import notification blueprint
 from routes.notifications import notification_bp
 
 # Sentry for error monitoring
 # import sentry_sdk
-# from sentry_sdk.integrations.flask import FlaskIntegration
+# from sentry_sdk.integrations.flask import FlaskIntegration import random
+
+# Add the backend directory to Python path for imports
+backend_dir = os.path.dirname(__file__)
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+# Настройка на logging преди всичко друго
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("helpchain.log", encoding="utf-8"),
+    ],
+)
+
+logger = logging.getLogger(__name__)
 
 
 def initialize_default_admin():
@@ -98,7 +89,7 @@ def initialize_default_admin():
             username="admin",
             email="admin@helpchain.live",
         )
-        admin_user.set_password("admin123")
+        admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "admin123"))
         db.session.add(admin_user)
         db.session.commit()
         logger.info("Default admin user created successfully")
@@ -2121,9 +2112,6 @@ def inject_get_locale():
         )
 
     return dict(get_locale=get_locale)
-
-
-from flask_babel import refresh
 
 
 @app.route("/set_language/<language>", methods=["POST"])

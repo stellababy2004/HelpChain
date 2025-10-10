@@ -1,0 +1,18 @@
+name: Maintenance check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-node:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run maintenance script
+        uses: actions/github-script@v8
+        with:
+          script: |
+            core.info(`Node version: ${process.version}`);
+            // твоя JS логика тук
