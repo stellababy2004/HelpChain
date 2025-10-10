@@ -1,247 +1,317 @@
-HelpChain – Social & Health Support Platform
+# HelpChain – Платформа за социална и здравна подкрепа
 
 [![Website](https://img.shields.io/badge/Live%20Demo-helpchain.live-green)](https://helpchain-s2l5.onrender.com)
+[![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
+[![Flask](https://img.shields.io/badge/Flask-3.0+-lightgrey.svg)](https://flask.palletsprojects.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-HelpChain is a web application developed with Flask to connect people in need with volunteers who can provide help. The goal is to build a real-world platform to manage requests, assign volunteers, and support multilingual and accessible communication.
+HelpChain е уеб приложение, разработено с Flask, което свързва нуждаещи се хора с доброволци, които могат да предоставят помощ. Целта е да се създаде реална платформа за управление на заявки, разпределяне на доброволци и поддържане на многоезична и достъпна комуникация.
 
----
+## 🌐 Жив сайт
 
-## 🌐 Live Site
+➡️ **[https://helpchain.live](https://helpchain.live)**
 
-➡️ [https://helpchain-s2l5.onrender.com](https://helpchain-s2l5.onrender.com)
+## 📋 Съдържание
 
----
+- [Бърз старт](#-бърз-старт)
+- [Функционалности](#-функционалности)
+- [Технологии](#-технологии)
+- [Архитектура](#-архитектура)
+- [API документация](#-api-документация)
+- [Разработка](#-разработка)
+- [Тестване](#-тестване)
+- [Деплоймънт](#-деплоймънт)
+- [Принос](#-принос)
+- [Лиценз](#-лиценз)
 
-## 📁 Project Structure
+## � Бърз старт
 
-HelpChain/ ├── backend/ │ └── helpchain-backend/ │ ├── src/ │ │ ├── app.py │ │ ├── models.py │ │ ├── extensions.py │ │ ├── routes/ │ │ │ ├── analytics.py │ │ │ └── api.py │ │ ├── controllers/ │ │ │ └── helpchain_controller.py │ │ └── asgi.py │ ├── templates/ │ │ ├── base.html │ │ ├── index.html │ │ ├── login.html │ │ ├── register.html │ │ ├── dashboard.html │ │ ├── profile.html │ │ ├── admin_dashboard.html │ │ ├── about.html │ │ └── submit_request.html │ ├── static/ │ │ ├── css/ │ │ ├── js/ │ │ └── uploads/ │ └── requirements.txt ├── tests/ ├── .gitignore ├── README.md └── run.py
+### Предварителни изисквания
 
----
+- Python 3.12+
+- pip
+- Git
 
-## ⚙️ Features
+### Инсталация
 
-- 📨 User registration with welcome email
-- 🔔 Admin notification email on new signup
-- 🌍 Multilingual support with Flask-Babel
-- 📥 Form for submitting help requests
-- 🛠️ Admin panel for managing requests and volunteers
-- 🔐 Login system for volunteers and admins
-- 📊 Volunteer dashboard with task status
-- 📷 Profile management with photo upload
-- 🎨 Responsive UI with Font Awesome icons
-- 🔒 Secure configuration for email via Zoho SMTP
+1. **Клонирайте репозитория:**
 
----
+   ```bash
+   git clone https://github.com/stellababy2004/HelpChain.bg.git
+   cd HelpChain.bg
+   ```
 
-## 📦 Technologies Used
+2. **Създайте виртуална среда:**
 
-| Component       | Technology             |
-| --------------- | ---------------------- |
-| Backend         | Flask (Python)         |
-| Email           | Flask-Mail + Zoho SMTP |
-| UI Templates    | Jinja2                 |
-| i18n            | Flask-Babel            |
-| Database        | SQLite + SQLAlchemy    |
-| Deployment      | Render                 |
-| Admin UI        | Custom admin panel     |
-| Version Control | Git + GitHub           |
-| ASGI            | Uvicorn                |
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Linux/Mac
+   # или
+   venv\Scripts\activate     # Windows
+   ```
 
----
+3. **Инсталирайте зависимостите:**
 
-## 🚀 Deployment (Render)
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt  # за разработка
+   ```
 
-The app is deployed with Uvicorn on Render. Run command:
+4. **Настройте environment променливите:**
+
+   ```bash
+   cp .env.example .env
+   # Редактирайте .env файла с вашите настройки
+   ```
+
+5. **Стартирайте приложението:**
+
+   ```bash
+   # За разработка
+   python backend/appy.py
+
+   # Или с uvicorn
+   uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 127.0.0.1 --port 8000
+   ```
+
+6. **Отворете в браузър:**
+   - Главна страница: http://127.0.0.1:3000
+   - Админ панел: http://127.0.0.1:3000/admin_login
+
+## 🌟 Функционалности
+
+### За потребители
+
+- � **Подаване на заявки за помощ** - Лесна форма за изпращане на заявки
+- 🌍 **Многоезична поддръжка** - Български и английски език
+- 📱 **Responsive дизайн** - Работи на всички устройства
+- � **Сигурна комуникация** - Защитени форми и валидация
+
+### За доброволци
+
+- � **Регистрация и профил** - Лесна регистрация с валидация
+- � **Табло за управление** - Преглед на задачи и статус
+- � **Геолокация** - Автоматично намиране на близки заявки
+- � **Известия** - Имейл нотификации за нови задачи
+
+### За администратори
+
+- 🔐 **2FA защита** - Двуфакторна автентикация по имейл
+- � **Управление на доброволци** - Добавяне, редактиране, изтриване
+- 📈 **Аналитика** - Статистики и отчети
+- � **Имейл система** - Проследяване на изпратени съобщения
+- 🛠️ **Ролева система** - Управление на права и роли
+
+## 🛠 Технологии
+
+| Компонент  | Технология                     | Версия |
+| ---------- | ------------------------------ | ------ |
+| Backend    | Flask                          | 3.0+   |
+| Database   | SQLAlchemy + SQLite/PostgreSQL | -      |
+| Email      | Flask-Mail + Zoho SMTP         | -      |
+| Auth       | Flask-Login + 2FA              | -      |
+| i18n       | Flask-Babel                    | -      |
+| Security   | Flask-Talisman + Flask-Limiter | -      |
+| Real-time  | Flask-SocketIO                 | -      |
+| AI         | OpenAI/Gemini API              | -      |
+| Deployment | Uvicorn + Render               | -      |
+
+## 🏗 Архитектура
+
+```
+HelpChain/
+├── backend/
+│   ├── appy.py                 # Основно Flask приложение
+│   ├── models.py               # SQLAlchemy модели
+│   ├── models_with_analytics.py # Модели с аналитика
+│   ├── ai_service.py           # AI чатбот услуга
+│   ├── analytics_service.py    # Аналитика и метрики
+│   ├── permissions.py          # Система за права
+│   └── helpchain-backend/
+│       └── src/
+│           ├── app.py          # Основно приложение (ASGI)
+│           ├── routes/         # Blueprint routes
+│           ├── controllers/    # Business logic
+│           ├── templates/      # Jinja2 шаблони
+│           └── static/         # CSS, JS, images
+├── tests/                      # Unit и integration тестове
+├── instance/                   # Database и конфигурация
+├── translations/               # i18n файлове
+└── docs/                       # Документация
+```
+
+## 📡 API документация
+
+### Основни endpoints
+
+| Метод | Endpoint                 | Описание                       |
+| ----- | ------------------------ | ------------------------------ |
+| GET   | `/`                      | Главна страница                |
+| GET   | `/all_categories`        | Всички категории помощ         |
+| POST  | `/volunteer_register`    | Регистрация на доброволец      |
+| POST  | `/submit_request`        | Подаване на заявка             |
+| GET   | `/admin_login`           | Админ вход                     |
+| GET   | `/api/volunteers/nearby` | Намиране на доброволци наблизо |
+
+### Геолокационни API
 
 ```bash
-uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port 10000
-<<<<<<< Updated upstream
+# Намиране на доброволци в радиус
+GET /api/volunteers/nearby?lat=42.6977&lng=23.3219&radius=50
+
+# Обновяване на локацията на доброволец
+PUT /api/volunteers/{id}/location
+Content-Type: application/json
+{
+  "latitude": 42.6977,
+  "longitude": 23.3219,
+  "location": "София"
+}
 ```
 
-=======
+## 💻 Разработка
 
-> > > > > > > Stashed changes
+### Настройка за разработка
 
-Python 3.12 is specified.
+1. **Инсталирайте development зависимости:**
 
-🧭 Roadmap
-Setup admin panel for managing requests/volunteers
-Add login system (volunteers/admins)
-Add volunteer dashboard with task status
-Implement profile management with photo upload
-Improve UI/UX with Font Awesome and responsive design
-Track email logs in database
-Allow users to choose language
-Connect to custom domain: helpchain.live
-Make frontend fully mobile-friendly
-Add API documentation
-📡 API Endpoints
-GET / - Home page
-GET /login - Login page
-POST /login - Authenticate user
-GET /register - Registration page
-POST /register - Register new user
-GET /dashboard - Volunteer dashboard
-GET /profile - User profile
-POST /profile - Update profile
-GET /admin - Admin panel (admin only)
-GET /about - About page
-POST /submit_request - Submit help request
-Releases
-v0.2.0 — 2025-10-02
-Updated release with new features.
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
 
-<<<<<<< Updated upstream
+2. **Настройте pre-commit hooks:**
 
-## 🧭 Roadmap
+   ```bash
+   pre-commit install
+   ```
 
-- [ ] Setup Flask-Admin interface
-- [ ] Track email logs in database
-- [ ] Allow users to choose language
-- [ ] Connect to custom domain: `helpchain.live`
-- [ ] Make frontend fully mobile-friendly
-- [ ] Add volunteer dashboard with task status
+3. **Стартирайте с debug режим:**
+   ```bash
+   FLASK_ENV=development python backend/appy.py
+   ```
+
+### Логиране и debugging
+
+Приложението използва структурирано логиране с различни нива:
+
+- **DEBUG**: Детайлна информация за debugging
+- **INFO**: Обща информация за операции
+- **WARNING**: Предупреждения за потенциални проблеми
+- **ERROR**: Грешки, които изискват внимание
+
+Логовете се записват в конзолата и могат да се конфигурират за файл.
+
+### Environment променливи
+
+```bash
+# Database
+DATABASE_URL=sqlite:///instance/volunteers.db
+
+# Email (Zoho SMTP)
+MAIL_SERVER=smtp.zoho.eu
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USERNAME=contact@helpchain.live
+MAIL_PASSWORD=your_password
+
+# Security
+SECRET_KEY=your_secret_key
+FLASK_ENV=development
+
+# AI Services
+OPENAI_API_KEY=your_openai_key
+GEMINI_API_KEY=your_gemini_key
+
+# Admin
+ADMIN_EMAIL=admin@helpchain.live
+```
+
+## 🧪 Тестване
+
+### Unit тестове
+
+```bash
+# Стартирайте всички тестове
+pytest
+
+# С покритие
+pytest --cov=backend --cov-report=html
+
+# Конкретен тест
+pytest tests/test_app.py::test_home_page
+```
+
+### Integration тестове
+
+```bash
+# Тестове с база данни
+pytest tests/test_database.py
+
+# Email тестове (mocked)
+pytest tests/test_email.py
+```
+
+### Performance тестване
+
+```bash
+# Load testing с locust
+pip install locust
+locust -f tests/locustfile.py
+```
+
+## 🚀 Деплоймънт
+
+### Render (препоръчително)
+
+1. **Свържете GitHub репозитория**
+2. **Настройте environment променливи**
+3. **Изберете Python версия 3.12+**
+4. **Build command:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+5. **Start command:**
+   ```bash
+   uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port $PORT
+   ```
+
+### Локален production
+
+```bash
+# С Gunicorn
+gunicorn -w 4 -b 0.0.0.0:8000 backend.helpchain-backend.src.asgi:app
+
+# С Uvicorn
+uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port 8000 --workers 4
+```
+
+## 🤝 Принос
+
+1. Fork-нете проекта
+2. Създайте feature branch: `git checkout -b feature/amazing-feature`
+3. Commit-нете промените: `git commit -m 'Add amazing feature'`
+4. Push-нете към branch-a: `git push origin feature/amazing-feature`
+5. Отворете Pull Request
+
+### Code style
+
+- Използвайте Black за форматиране
+- Ruff за linting
+- Pre-commit hooks за автоматична проверка
+- Пишете тестове за нов функционал
+
+## 📞 Контакт
+
+- **Email:** contact@helpchain.live
+- **Website:** https://helpchain.live
+- **GitHub:** [@stellababy2004](https://github.com/stellababy2004)
+
+**Разработено от:** Stella Barbarella
+
+## 📄 Лиценз
+
+Този проект е лицензиран под MIT License - вижте [LICENSE](LICENSE) файла за детайли.
 
 ---
 
-## Releases
-
-### v0.1.0 — 2025-09-29
-
-=======
-Highlights
-
-> > > > > > > Stashed changes
-
-Implemented admin panel for managing requests and volunteers.
-Added login system for volunteers and admins.
-Created volunteer dashboard with task status.
-Added profile management with photo upload.
-Improved UI/UX with Font Awesome icons and responsive design.
-Published project on GitHub.
-Fixed pre-commit hooks and code formatting.
-v0.1.0 — 2025-09-29
-Initial test-stable release — 13 passing tests.
-
-Highlights
-
-Refactored and stabilized unit tests (mocked HTTP for chatbot).
-Welcome email test made safe by mocking SMTP.
-Added conftest.py with fixtures and PYTHONPATH fixes for tests.
-LICENSE (MIT) added and tag v0.1.0 created.
-Pre-commit hooks (black, ruff) configured and passing.
-🤝 Contributing
-Fork the repository.
-Create a feature branch: git checkout -b feature-name.
-Commit changes: git commit -m "Add feature".
-Push to branch: git push origin feature-name.
-Open a Pull Request.
-📬 Contact
-Email: contact@helpchain.live
-
-Developed by Stella Barbarella – stellabarbarella.com
-
-Бърз старт (локално)
-
-Препоръчителна Python: 3.12
-
-Създай и активирай virtualenv:
-
-py -3.12 -m venv .venv[Activate.ps1](http://_vscodecontentref_/4)
-py -3.12 -m venv .venv
-[Activate.ps1](http://_vscodecontentref_/4)
-
-Инсталирай зависимости:
-pip install -r [requirements.txt](http://_vscodecontentref_/5)
-pip install Pillow --only-binary=all
-
-Стартирай приложението:
-uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 127.0.0.1 --port 8003
-
-Структура
-backend/helpchain-backend/src — основен Flask код
-backend/helpchain-backend/templates — HTML templates
-backend/helpchain-backend/static — CSS, JS, images
-tests/ — unit/integration тестове
-Важни бележки
-Актуализирай Python версията в документацията и в Render (3.12 препоръчвам).
-Добави необходимите ENV променливи (.env): MAIL\_\*, DATABASE_URL.
-Ignore: добави node_modules/.cache/prettier/ и node_modules/ в .gitignore.
-
-Тестове
-pytest -q
-Контакт
-Stella Barbarella — contact@helpchain.live
-
-Лиценз
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-<<<<<<< Updated upstream
-Добави LICENSE (MIT/друга), ако искаш публично споделяне.
-Python 3.12 is specified.
-
-🧭 Roadmap
-Setup admin panel for managing requests/volunteers
-Add login system (volunteers/admins)
-Add volunteer dashboard with task status
-Implement profile management with photo upload
-Improve UI/UX with Font Awesome and responsive design
-Track email logs in database
-Allow users to choose language
-Connect to custom domain: helpchain.live
-Make frontend fully mobile-friendly
-Add API documentation
-📡 API Endpoints
-GET / - Home page
-GET /login - Login page
-POST /login - Authenticate user
-GET /register - Registration page
-POST /register - Register new user
-GET /dashboard - Volunteer dashboard
-GET /profile - User profile
-POST /profile - Update profile
-GET /admin - Admin panel (admin only)
-GET /about - About page
-POST /submit_request - Submit help request
-Releases
-v0.2.0 — 2025-10-02
-Updated release with new features.
-
-Highlights
-
-Implemented admin panel for managing requests and volunteers.
-Added login system for volunteers and admins.
-Created volunteer dashboard with task status.
-Added profile management with photo upload.
-Improved UI/UX with Font Awesome icons and responsive design.
-Published project on GitHub.
-Fixed pre-commit hooks and code formatting.
-v0.1.0 — 2025-09-29
-Initial test-stable release — 13 passing tests.
-
-Highlights
-
-Refactored and stabilized unit tests (mocked HTTP for chatbot).
-Welcome email test made safe by mocking SMTP.
-Added conftest.py with fixtures and PYTHONPATH fixes for tests.
-LICENSE (MIT) added and tag v0.1.0 created.
-Pre-commit hooks (black, ruff) configured and passing.
-🤝 Contributing
-Fork the repository.
-Create a feature branch: git checkout -b feature-name.
-Commit changes: git commit -m "Add feature".
-Push to branch: git push origin feature-name.
-Open a Pull Request.
-📬 Contact
-Email: contact@helpchain.live
-
-Developed by Stella Barbarella – stellabarbarella.com
-
-py -3.12 -m venv .venv
-[Activate.ps1](http://_vscodecontentref_/3)
-
-=======
-
-```
->>>>>>> Stashed changes
-```
+⭐ Ако харесвате проекта, не забравяйте да го звездайте!

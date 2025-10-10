@@ -1,0 +1,147 @@
+{% extends "base.html" %} {% block title %}HelpChain - Добре дошли{% endblock %}
+{% block content %}
+
+<div class="container-fluid bg-light min-vh-100">
+  <div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-12 col-md-8 col-lg-6 text-center">
+      <!-- Welcome Section -->
+      <div class="card shadow-lg border-0 mb-4">
+        <div class="card-body p-5">
+          <div class="mb-4">
+            <i class="fas fa-hands-helping fa-4x text-primary mb-3"></i>
+            <h1 class="display-4 fw-bold text-primary mb-3">
+              Добре дошли в HelpChain!
+            </h1>
+            <p class="lead text-muted fs-5 mb-4">
+              Платформа за свързване на хора в нужда с доброволци, готови да
+              помогнат
+            </p>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="row g-3 mb-4">
+            <div class="col-4">
+              <div class="p-3 bg-primary text-white rounded">
+                <div class="h4 mb-1">{{ volunteers_count }}</div>
+                <small>Доброволци</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-3 bg-success text-white rounded">
+                <div class="h4 mb-1">{{ requests_count }}</div>
+                <small>Помогнати</small>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-3 bg-warning text-white rounded">
+                <div class="h4 mb-1">{{ open_requests }}</div>
+                <small>Активни</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Actions -->
+          <div class="d-grid gap-3 mb-4">
+            <a
+              href="{{ url_for('submit_request') }}"
+              class="btn btn-primary btn-lg"
+            >
+              <i class="fas fa-plus-circle me-2"></i>Подай заявка за помощ
+            </a>
+            <a
+              href="{{ url_for('volunteer_register') }}"
+              class="btn btn-outline-primary btn-lg"
+            >
+              <i class="fas fa-hand-holding-heart me-2"></i>Стани доброволец
+            </a>
+          </div>
+
+          <!-- Quick Links -->
+          <div class="row g-2">
+            <div class="col-6">
+              <a
+                href="{{ url_for('admin_panel') }}"
+                class="btn btn-outline-secondary w-100"
+              >
+                <i class="fas fa-cog me-1"></i>Админ
+              </a>
+            </div>
+            <div class="col-6">
+              <a
+                href="/api/volunteers/nearby?lat=42.6977&lng=23.3219&radius=50"
+                class="btn btn-outline-info w-100"
+                target="_blank"
+              >
+                <i class="fas fa-search me-1"></i>API тест
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How It Works - Simple -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+          <h5 class="card-title text-center mb-3">Как работи?</h5>
+          <div class="row g-3 text-start">
+            <div class="col-12">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-primary me-3">1</span>
+                <span>Подай заявка с описание на нуждата</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge bg-success me-3">2</span>
+                <span>Намираме доброволец близо до теб</span>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="d-flex align-items-center">
+                <span class="badge bg-warning me-3">3</span>
+                <span>Получаваш помощ директно</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+
+  .card {
+    border-radius: 20px !important;
+  }
+
+  .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+
+  .min-vh-100 {
+    min-height: 100vh !important;
+  }
+</style>
+
+{% endblock %}

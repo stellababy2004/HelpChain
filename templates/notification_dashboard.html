@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Нотификации - HelpChain Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #667eea;
+        --secondary-color: #764ba2;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --danger-color: #f44336;
+        --info-color: #2196f3;
+        --light-bg: #f8f9fa;
+        --dark-text: #333;
+        --border-radius: 10px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .notifications-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin: 2rem auto;
+        max-width: 1200px;
+      }
+
+      .notifications-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--light-bg);
+      }
+
+      .notifications-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 2rem;
+      }
+
+      .notification-item {
+        background: var(--light-bg);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+        transition: transform 0.2s;
+      }
+
+      .notification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+
+      .notification-item.unread {
+        border-left-color: var(--warning-color);
+        background: #fff3cd;
+      }
+
+      .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+      }
+
+      .notification-icon.new-volunteer {
+        background: var(--success-color);
+      }
+
+      .notification-icon.new-request {
+        background: var(--info-color);
+      }
+
+      .notification-icon.system {
+        background: var(--warning-color);
+      }
+
+      .notification-icon.error {
+        background: var(--danger-color);
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        transition: transform 0.2s;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .alert {
+        border-radius: var(--border-radius);
+        border: none;
+      }
+
+      .breadcrumb {
+        background: transparent;
+        margin-bottom: 2rem;
+      }
+
+      .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .breadcrumb-item.active {
+        color: var(--dark-text);
+        font-weight: 600;
+      }
+
+      .filters {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow);
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">
+          <i class="fas fa-shield-alt me-2"></i>HelpChain Admin
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
+                <i class="fas fa-users me-1"></i>Доброволци
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_analytics') }}">
+                <i class="fas fa-chart-bar me-1"></i>Аналитика
+              </a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i>{{ current_user.username
+                if current_user else 'Admin' }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('profile') }}">
+                    <i class="fas fa-user me-2"></i>Профил
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin_settings') }}"
+                  >
+                    <i class="fas fa-cog me-2"></i>Настройки
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Изход
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <!-- Breadcrumbs -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('admin_dashboard') }}">
+              <i class="fas fa-home me-1"></i>Dashboard
+            </a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-envelope me-1"></i>Нотификации
+          </li>
+        </ol>
+      </nav>
+
+      <div class="notifications-container">
+        <div class="notifications-header">
+          <div class="notifications-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <h2>Системни нотификации</h2>
+          <p class="text-muted">
+            Управлявайте имейл нотификациите и системните съобщения
+          </p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+          <div class="row">
+            <div class="col-md-4">
+              <label for="typeFilter" class="form-label">Тип нотификация</label>
+              <select class="form-select" id="typeFilter">
+                <option value="all">Всички</option>
+                <option value="new_volunteer">Нови доброволци</option>
+                <option value="new_request">Нови заявки</option>
+                <option value="system">Системни</option>
+                <option value="error">Грешки</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="statusFilter" class="form-label">Статус</label>
+              <select class="form-select" id="statusFilter">
+                <option value="all">Всички</option>
+                <option value="unread">Непрочетени</option>
+                <option value="read">Прочетени</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label for="dateFilter" class="form-label">Период</label>
+              <select class="form-select" id="dateFilter">
+                <option value="all">Всички</option>
+                <option value="today">Днес</option>
+                <option value="week">Тази седмица</option>
+                <option value="month">Този месец</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications List -->
+        <div class="notifications-list">
+          {% if notifications %} {% for notification in notifications %}
+          <div
+            class="notification-item {% if not notification.read %}unread{% endif %}"
+          >
+            <div class="d-flex align-items-center">
+              <div class="notification-icon {{ notification.type }}">
+                {% if notification.type == 'new_volunteer' %}
+                <i class="fas fa-user-plus"></i>
+                {% elif notification.type == 'new_request' %}
+                <i class="fas fa-clipboard-list"></i>
+                {% elif notification.type == 'system' %}
+                <i class="fas fa-cog"></i>
+                {% elif notification.type == 'error' %}
+                <i class="fas fa-exclamation-triangle"></i>
+                {% else %}
+                <i class="fas fa-bell"></i>
+                {% endif %}
+              </div>
+              <div class="flex-grow-1 ms-3">
+                <h6 class="mb-1">{{ notification.message }}</h6>
+                <small class="text-muted">{{ notification.timestamp }}</small>
+              </div>
+              <div class="ms-3">
+                <button
+                  class="btn btn-sm btn-outline-primary me-2"
+                  onclick="viewNotification({{ notification.id }})"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger"
+                  onclick="deleteNotification({{ notification.id }})"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Няма нотификации</h5>
+            <p class="text-muted">Всички нотификации са обработени</p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <div>
+            <button class="btn btn-outline-secondary" onclick="markAllRead()">
+              <i class="fas fa-check-double me-1"></i>Маркирай всички като
+              прочетени
+            </button>
+            <button class="btn btn-outline-danger ms-2" onclick="clearAll()">
+              <i class="fas fa-trash me-1"></i>Изчисти всички
+            </button>
+          </div>
+          <div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">
+              <i class="fas fa-arrow-left me-1"></i>Назад към Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function viewNotification(id) {
+        // In real implementation, this would open a modal or redirect to notification details
+        console.log("View notification:", id);
+      }
+
+      function deleteNotification(id) {
+        if (
+          confirm("Сигурни ли сте, че искате да изтриете тази нотификация?")
+        ) {
+          // In real implementation, this would make an AJAX call
+          console.log("Delete notification:", id);
+        }
+      }
+
+      function markAllRead() {
+        // In real implementation, this would make an AJAX call
+        console.log("Mark all notifications as read");
+      }
+
+      function clearAll() {
+        if (
+          confirm("Сигурни ли сте, че искате да изтриете всички нотификации?")
+        ) {
+          // In real implementation, this would make an AJAX call
+          console.log("Clear all notifications");
+        }
+      }
+    </script>
+  </body>
+</html>

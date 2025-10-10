@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Администраторски панел - HelpChain</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .admin-card {
+        transition: transform 0.2s;
+      }
+
+      .admin-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-hands-helping"></i> HelpChain - Админ панел
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          title="Отвори менюто"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('index') }}">
+                <i class="fas fa-home"></i> Начало
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-cogs"></i> Управление
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="/admin_volunteers">
+                    <i class="fas fa-users"></i> Доброволци
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/admin_requests">
+                    <i class="fas fa-clipboard-list"></i> Заявки
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/admin_roles">
+                    <i class="fas fa-user-shield"></i> Роли и потребители
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/analytics">
+                <i class="fas fa-chart-bar"></i> Аналитика
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin_logs">
+                <i class="fas fa-history"></i> Логове
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/export">
+                <i class="fas fa-download"></i> Експорт
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-warning" href="/admin/2fa">
+                <i class="fas fa-shield-alt"></i> 2FA
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-danger" href="#" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Изход
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h1 class="h3 mb-0">
+                <i class="fas fa-tools text-danger"></i> Администраторски панел
+              </h1>
+              <p class="text-muted mb-0">
+                Добре дошли в системата за управление на HelpChain
+              </p>
+            </div>
+            <div class="text-end">
+              <small class="text-muted">
+                <i class="fas fa-clock"></i> {{ moment().format('DD/MM/YYYY
+                HH:mm') }}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Статистика -->
+      <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+          <div class="card stats-card admin-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <h5 class="card-title mb-1">
+                    <i class="fas fa-users"></i> Доброволци
+                  </h5>
+                  <h3 class="mb-0">{{ volunteers_count or 0 }}</h3>
+                </div>
+                <div class="text-end">
+                  <i class="fas fa-users fa-2x opacity-75"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <div class="card stats-card admin-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <h5 class="card-title mb-1">
+                    <i class="fas fa-clipboard-list"></i> Заявки
+                  </h5>
+                  <h3 class="mb-0">{{ requests_count or 0 }}</h3>
+                </div>
+                <div class="text-end">
+                  <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <div class="card stats-card admin-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <h5 class="card-title mb-1">
+                    <i class="fas fa-user-shield"></i> Администратори
+                  </h5>
+                  <h3 class="mb-0">{{ admins_count or 0 }}</h3>
+                </div>
+                <div class="text-end">
+                  <i class="fas fa-user-shield fa-2x opacity-75"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <div class="card stats-card admin-card">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <h5 class="card-title mb-1">
+                    <i class="fas fa-chart-line"></i> Активност
+                  </h5>
+                  <h3 class="mb-0">{{ active_sessions or 0 }}</h3>
+                </div>
+                <div class="text-end">
+                  <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Бързи действия -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <h4 class="mb-3">
+            <i class="fas fa-bolt text-warning"></i> Бързи действия
+          </h4>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <div class="card admin-card h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-users fa-3x text-primary mb-3"></i>
+              <h5 class="card-title">Управление на доброволци</h5>
+              <p class="card-text text-muted">
+                Добавяне, редактиране и управление на доброволци в системата
+              </p>
+              <a href="/admin_volunteers" class="btn btn-primary">
+                <i class="fas fa-arrow-right"></i> Отиди
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <div class="card admin-card h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-clipboard-list fa-3x text-success mb-3"></i>
+              <h5 class="card-title">Управление на заявки</h5>
+              <p class="card-text text-muted">
+                Преглед и управление на всички заявки за помощ
+              </p>
+              <a href="/admin_requests" class="btn btn-success">
+                <i class="fas fa-arrow-right"></i> Отиди
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <div class="card admin-card h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+              <h5 class="card-title">Аналитика и статистика</h5>
+              <p class="card-text text-muted">
+                Преглед на метрики, графики и аналитика на системата
+              </p>
+              <a href="/admin/analytics" class="btn btn-info">
+                <i class="fas fa-arrow-right"></i> Отиди
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <div class="card admin-card h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-user-shield fa-3x text-warning mb-3"></i>
+              <h5 class="card-title">Роли и потребители</h5>
+              <p class="card-text text-muted">
+                Управление на роли, разрешения и потребителски акаунти
+              </p>
+              <a href="/admin_roles" class="btn btn-warning">
+                <i class="fas fa-arrow-right"></i> Отиди
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <div class="card admin-card h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-history fa-3x text-secondary mb-3"></i>
+              <h5 class="card-title">Системни логове</h5>
+              <p class="card-text text-muted">
+                Преглед на системни логове и одит на действията
+              </p>
+              <a href="/admin_logs" class="btn btn-secondary">
+                <i class="fas fa-arrow-right"></i> Отиди
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <div class="card admin-card h-100">
+            <div class="card-body text-center">
+              <i class="fas fa-cogs fa-3x text-danger mb-3"></i>
+              <h5 class="card-title">Системни настройки</h5>
+              <p class="card-text text-muted">
+                Конфигурация и настройки на системата
+              </p>
+              <a href="/admin/settings" class="btn btn-danger">
+                <i class="fas fa-arrow-right"></i> Отиди
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Системна информация -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-info-circle"></i> Системна информация
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <strong>Версия:</strong> HelpChain v1.0.0<br />
+                  <strong>Статус:</strong>
+                  <span class="badge bg-success">
+                    <i class="fas fa-check-circle"></i> Активна
+                  </span>
+                </div>
+                <div class="col-md-4">
+                  <strong>База данни:</strong> SQLite<br />
+                  <strong>Последна актуализация:</strong> {{
+                  moment().format('DD/MM/YYYY') }}
+                </div>
+                <div class="col-md-4">
+                  <strong>Администратор:</strong> {{ current_user.username if
+                  current_user else 'Неизвестен' }}<br />
+                  <strong>Сесия:</strong> Активна
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function logout() {
+        if (confirm("Сигурни ли сте, че искате да излезете?")) {
+          // Create and submit logout form
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = "/admin_logout";
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+    </script>
+  </body>
+</html>

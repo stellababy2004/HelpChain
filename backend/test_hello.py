@@ -26,7 +26,7 @@ def test_submit_request(client):
             "email": "test@example.com",
             "phone": "1234567890",
             "help_type": "Храна",
-            "description": "Нуждая се от помощ",
+            "problem": "Нуждая се от помощ",
             "location": "Пловдив",
             "captcha": "7G5K",  # ако има captcha
         },

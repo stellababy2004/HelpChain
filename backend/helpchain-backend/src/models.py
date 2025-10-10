@@ -2,6 +2,8 @@ from sqlalchemy import func
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
+import pyotp
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
 
@@ -65,3 +67,30 @@ class AdminUser(db.Model, UserMixin):
     twofa_secret = db.Column(db.String(32))
     twofa_enabled = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def enable_2fa(self):
+        if not self.twofa_secret:
+            self.twofa_secret = pyotp.random_base32()
+        self.twofa_enabled = True
+
+    def disable_2fa(self):
+        self.twofa_enabled = False
+        self.twofa_secret = None
+
+    def verify_totp(self, token):
+        if not self.twofa_secret:
+            return False
+        totp = pyotp.TOTP(self.twofa_secret)
+        return totp.verify(token)
+
+    def get_totp_uri(self):
+        if not self.twofa_secret:
+            self.twofa_secret = pyotp.random_base32()
+        totp = pyotp.TOTP(self.twofa_secret)
+        return totp.provisioning_uri(name=self.username, issuer_name="HelpChain")

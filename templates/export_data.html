@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Експорт данни - HelpChain Admin</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #667eea;
+        --secondary-color: #764ba2;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --danger-color: #f44336;
+        --info-color: #2196f3;
+        --light-bg: #f8f9fa;
+        --dark-text: #333;
+        --border-radius: 10px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .export-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin: 2rem auto;
+        max-width: 1000px;
+      }
+
+      .export-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--light-bg);
+      }
+
+      .export-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 2rem;
+      }
+
+      .export-option {
+        background: var(--light-bg);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 2px solid transparent;
+        transition: all 0.3s;
+        cursor: pointer;
+      }
+
+      .export-option:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+
+      .export-option.selected {
+        border-color: var(--primary-color);
+        background: #e8f0fe;
+      }
+
+      .export-icon-small {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .export-icon-small.csv {
+        background: var(--success-color);
+      }
+
+      .export-icon-small.json {
+        background: var(--info-color);
+      }
+
+      .export-icon-small.pdf {
+        background: var(--danger-color);
+      }
+
+      .export-icon-small.excel {
+        background: var(--warning-color);
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        transition: transform 0.2s;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .alert {
+        border-radius: var(--border-radius);
+        border: none;
+      }
+
+      .breadcrumb {
+        background: transparent;
+        margin-bottom: 2rem;
+      }
+
+      .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .breadcrumb-item.active {
+        color: var(--dark-text);
+        font-weight: 600;
+      }
+
+      .filters-section {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">
+          <i class="fas fa-shield-alt me-2"></i>HelpChain Admin
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
+                <i class="fas fa-users me-1"></i>Доброволци
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_analytics') }}">
+                <i class="fas fa-chart-bar me-1"></i>Аналитика
+              </a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i>{{ current_user.username
+                if current_user else 'Admin' }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('profile') }}">
+                    <i class="fas fa-user me-2"></i>Профил
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin_settings') }}"
+                  >
+                    <i class="fas fa-cog me-2"></i>Настройки
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Изход
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <!-- Breadcrumbs -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('admin_dashboard') }}">
+              <i class="fas fa-home me-1"></i>Dashboard
+            </a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-file-export me-1"></i>Експорт данни
+          </li>
+        </ol>
+      </nav>
+
+      <div class="export-container">
+        <div class="export-header">
+          <div class="export-icon">
+            <i class="fas fa-file-export"></i>
+          </div>
+          <h2>Експорт на данни</h2>
+          <p class="text-muted">
+            Изтеглете данни от системата в различни формати
+          </p>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+          <h4 class="mb-3"><i class="fas fa-filter me-2"></i>Филтри</h4>
+          <form id="exportForm">
+            <div class="row">
+              <div class="col-md-4">
+                <label for="dataType" class="form-label">Тип данни</label>
+                <select class="form-select" id="dataType" name="data_type">
+                  <option value="volunteers">Доброволци</option>
+                  <option value="requests">Заявки за помощ</option>
+                  <option value="analytics">Аналитика</option>
+                  <option value="all">Всички данни</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="dateFrom" class="form-label">От дата</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="dateFrom"
+                  name="date_from"
+                />
+              </div>
+              <div class="col-md-4">
+                <label for="dateTo" class="form-label">До дата</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="dateTo"
+                  name="date_to"
+                />
+              </div>
+            </div>
+            <div class="row mt-3">
+              <div class="col-md-6">
+                <label for="location" class="form-label">Локация</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="location"
+                  name="location"
+                  placeholder="Всички локации"
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="status" class="form-label">Статус</label>
+                <select class="form-select" id="status" name="status">
+                  <option value="">Всички статуси</option>
+                  <option value="active">Активни</option>
+                  <option value="inactive">Неактивни</option>
+                  <option value="pending">Чакащи</option>
+                  <option value="completed">Завършени</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Export Options -->
+        <h4 class="mb-3">
+          <i class="fas fa-download me-2"></i>Изберете формат
+        </h4>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="export-option text-center" data-format="csv">
+              <div class="export-icon-small csv">
+                <i class="fas fa-file-csv"></i>
+              </div>
+              <h5>CSV</h5>
+              <p class="text-muted small">Разделени със запетая</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="export-option text-center" data-format="json">
+              <div class="export-icon-small json">
+                <i class="fas fa-file-code"></i>
+              </div>
+              <h5>JSON</h5>
+              <p class="text-muted small">Структурирани данни</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="export-option text-center" data-format="pdf">
+              <div class="export-icon-small pdf">
+                <i class="fas fa-file-pdf"></i>
+              </div>
+              <h5>PDF</h5>
+              <p class="text-muted small">Форматиран документ</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="export-option text-center" data-format="excel">
+              <div class="export-icon-small excel">
+                <i class="fas fa-file-excel"></i>
+              </div>
+              <h5>Excel</h5>
+              <p class="text-muted small">Електронна таблица</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export Actions -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <div>
+            <small class="text-muted">
+              <i class="fas fa-info-circle me-1"></i>
+              Ще бъдат експортирани само данните, до които имате достъп
+            </small>
+          </div>
+          <div>
+            <button
+              class="btn btn-outline-secondary me-2"
+              onclick="previewExport()"
+            >
+              <i class="fas fa-eye me-1"></i>Преглед
+            </button>
+            <button
+              class="btn btn-primary"
+              onclick="startExport()"
+              id="exportBtn"
+            >
+              <i class="fas fa-download me-1"></i>Експорт
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar (hidden by default) -->
+        <div class="mt-3" id="progressSection" style="display: none">
+          <div class="progress">
+            <div
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              role="progressbar"
+              style="width: 0%"
+              id="progressBar"
+            ></div>
+          </div>
+          <small class="text-muted mt-1" id="progressText"
+            >Подготовка на данните...</small
+          >
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      let selectedFormat = null;
+
+      // Handle export option selection
+      document.querySelectorAll(".export-option").forEach((option) => {
+        option.addEventListener("click", function () {
+          // Remove selected class from all options
+          document.querySelectorAll(".export-option").forEach((opt) => {
+            opt.classList.remove("selected");
+          });
+
+          // Add selected class to clicked option
+          this.classList.add("selected");
+          selectedFormat = this.dataset.format;
+        });
+      });
+
+      function previewExport() {
+        if (!selectedFormat) {
+          alert("Моля, изберете формат за експорт");
+          return;
+        }
+
+        // In real implementation, this would open a preview modal
+        alert(
+          `Преглед на експорта във формат: ${selectedFormat.toUpperCase()}`,
+        );
+      }
+
+      function startExport() {
+        if (!selectedFormat) {
+          alert("Моля, изберете формат за експорт");
+          return;
+        }
+
+        // Show progress bar
+        document.getElementById("progressSection").style.display = "block";
+        document.getElementById("exportBtn").disabled = true;
+
+        // Simulate export progress
+        let progress = 0;
+        const progressBar = document.getElementById("progressBar");
+        const progressText = document.getElementById("progressText");
+
+        const interval = setInterval(() => {
+          progress += Math.random() * 15;
+          if (progress > 100) progress = 100;
+
+          progressBar.style.width = progress + "%";
+
+          if (progress < 30) {
+            progressText.textContent = "Подготовка на данните...";
+          } else if (progress < 70) {
+            progressText.textContent = "Форматиране на данните...";
+          } else if (progress < 90) {
+            progressText.textContent = "Генериране на файла...";
+          } else {
+            progressText.textContent = "Завършване...";
+          }
+
+          if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              // In real implementation, this would trigger the actual download
+              alert(
+                `Експортът във формат ${selectedFormat.toUpperCase()} е готов!`,
+              );
+
+              // Hide progress bar
+              document.getElementById("progressSection").style.display = "none";
+              document.getElementById("exportBtn").disabled = false;
+
+              // Reset progress
+              progressBar.style.width = "0%";
+              progressText.textContent = "Подготовка на данните...";
+            }, 500);
+          }
+        }, 200);
+      }
+    </script>
+  </body>
+</html>

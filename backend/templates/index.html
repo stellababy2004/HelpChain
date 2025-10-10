@@ -1,15 +1,245 @@
 <!doctype html>
-{% extends "base.html" %}
-{% block title %}HelpChain{% endblock %}
-{% block content %}
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-12 col-md-8 text-center py-4 mb-5">
-      <h1 class="mb-4">Welcome to HelpChain</h1>
-      <h2 class="mb-3">Добре дошли</h2>
-      <p class="lead">Опростена начална страница за тестове.</p>
-      <a href="/become_volunteer" class="btn btn-primary">Стани доброволец</a>
+<html lang="bg">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="HelpChain - Свързваме нуждаещи се хора с доброволци за бърза и ефективна помощ в България. Подайте заявка или станете доброволец." />
+  <meta name="keywords" content="помощ, доброволци, нуждаещи се, HelpChain, България" />
+  <title>HelpChain - Свързваме нуждаещи се с доброволци</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .hero-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 100px 0;
+    }
+
+    .stats-section {
+      background-color: #f8f9fa;
+      padding: 60px 0;
+    }
+
+    .feature-card {
+      transition: transform 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .cta-section {
+      background-color: #28a745;
+      color: white;
+      padding: 60px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="/"><i class="fas fa-hand-holding-heart me-2"></i>HelpChain</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="navbar-nav ms-auto">
+          <a class="nav-link" href="{{ url_for('admin_login') }}"><i class="fas fa-user-shield me-1"></i>Админ вход</a>
+          <a class="nav-link" href="{{ url_for('volunteer_register') }}"><i class="fas fa-user-plus me-1"></i>Стани
+            доброволец</a>
+          <a class="nav-link" href="{{ url_for('volunteer_login') }}"><i class="fas fa-sign-in-alt me-1"></i>Вход за
+            доброволци</a>
+          <a class="nav-link" href="{{ url_for('faq') }}"><i class="fas fa-question-circle me-1"></i>ЧЗВ</a>
+          <a class="nav-link" href="{{ url_for('feedback') }}"><i class="fas fa-comments me-1"></i>Обратна връзка</a>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
-{% endblock %}
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container text-center">
+      <h1 class="display-4 fw-bold mb-4">Добре дошли в HelpChain!</h1>
+      <p class="lead mb-4 fs-5">
+        Свързваме нуждаещи се хора с доброволци за бърза и ефективна помощ в България.
+      </p>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a class="btn btn-light btn-lg px-4" href="{{ url_for('submit_request') }}">
+          <i class="fas fa-plus-circle me-2"></i>Подай заявка за помощ
+        </a>
+        <a class="btn btn-outline-light btn-lg px-4" href="{{ url_for('volunteer_register') }}">
+          <i class="fas fa-hand-paper me-2"></i>Стани доброволец
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Statistics Section -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="row text-center">
+        <div class="col-md-4 mb-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <i class="fas fa-users fa-3x text-primary mb-3"></i>
+              <h3 class="card-title">{{ volunteers_count }}</h3>
+              <p class="card-text">Регистрирани доброволци</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <i class="fas fa-clipboard-list fa-3x text-success mb-3"></i>
+              <h3 class="card-title">{{ requests_count }}</h3>
+              <p class="card-text">Общо заявки</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <i class="fas fa-check-circle fa-3x text-warning mb-3"></i>
+              <h3 class="card-title">{{ open_requests }}</h3>
+              <p class="card-text">Активни заявки</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories Section -->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <h2 class="text-center mb-5">Категории помощ</h2>
+      <div class="row">
+        <div class="col-md-3 mb-4">
+          <div class="card h-100 text-center feature-card">
+            <div class="card-body">
+              <i class="fas fa-utensils fa-3x text-success mb-3"></i>
+              <h5 class="card-title">Храна</h5>
+              <p class="card-text">Помощ с хранителни продукти</p>
+              <a href="{{ url_for('category_help', category='food') }}" class="btn btn-outline-success">Виж
+                доброволци</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card h-100 text-center feature-card">
+            <div class="card-body">
+              <i class="fas fa-medkit fa-3x text-danger mb-3"></i>
+              <h5 class="card-title">Медицинска помощ</h5>
+              <p class="card-text">Здравни услуги и консултации</p>
+              <a href="{{ url_for('category_help', category='medical') }}" class="btn btn-outline-danger">Виж
+                доброволци</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card h-100 text-center feature-card">
+            <div class="card-body">
+              <i class="fas fa-car fa-3x text-info mb-3"></i>
+              <h5 class="card-title">Транспорт</h5>
+              <p class="card-text">Превоз на хора и стоки</p>
+              <a href="{{ url_for('category_help', category='transport') }}" class="btn btn-outline-info">Виж
+                доброволци</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 mb-4">
+          <div class="card h-100 text-center feature-card">
+            <div class="card-body">
+              <i class="fas fa-hands-helping fa-3x text-secondary mb-3"></i>
+              <h5 class="card-title">Друго</h5>
+              <p class="card-text">Различни видове помощ</p>
+              <a href="{{ url_for('category_help', category='other') }}" class="btn btn-outline-secondary">Виж
+                доброволци</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-4">
+        <a href="{{ url_for('all_categories') }}" class="btn btn-primary">Виж всички категории</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Success Stories Section -->
+  <section class="bg-light py-5">
+    <div class="container">
+      <h2 class="text-center mb-5">Успешни истории</h2>
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">"Бърза помощ при нужда"</h5>
+              <p class="card-text">"HelpChain ми помогна да намеря доброволец за 2 часа. Благодаря на всички!"</p>
+              <footer class="blockquote-footer">Мария, София</footer>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 mb-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">"Лесно и ефективно"</h5>
+              <p class="card-text">"Като доброволец помогнах на 5 семейства. Платформата е интуитивна."</p>
+              <footer class="blockquote-footer">Георги, Пловдив</footer>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-center mt-4">
+        <a href="{{ url_for('success_stories') }}" class="btn btn-outline-primary">Вижте още истории</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container text-center">
+      <h2 class="mb-4">Готови ли сте да помогнете?</h2>
+      <p class="lead mb-4">Присъединете се към нашата общност от доброволци и помогнете на нуждаещите се.</p>
+      <a class="btn btn-light btn-lg px-5" href="{{ url_for('volunteer_register') }}">
+        <i class="fas fa-user-plus me-2"></i>Регистрирай се като доброволец
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-light py-4">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>HelpChain</h5>
+          <p>Свързваме нуждаещи се с доброволци за по-добро бъдеще.</p>
+        </div>
+        <div class="col-md-3">
+          <h5>Връзки</h5>
+          <ul class="list-unstyled">
+            <li><a href="{{ url_for('privacy') }}" class="text-light">Политика за поверителност</a></li>
+            <li><a href="{{ url_for('terms') }}" class="text-light">Условия за ползване</a></li>
+            <li><a href="{{ url_for('faq') }}" class="text-light">ЧЗВ</a></li>
+          </ul>
+        </div>
+        <div class="col-md-3">
+          <h5>Контакти</h5>
+          <p><i class="fas fa-envelope me-2"></i>contact@helpchain.live</p>
+          <p><i class="fas fa-phone me-2"></i>+359 XX XXX XXX</p>
+        </div>
+      </div>
+      <hr>
+      <div class="text-center">
+        <p>&copy; 2025 HelpChain. Всички права запазени.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

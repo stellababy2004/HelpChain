@@ -125,3 +125,36 @@ def set_language():
     resp = redirect(request.referrer or url_for("main.index"))
     resp.set_cookie("language", lang, max_age=30 * 24 * 3600)
     return resp
+
+
+@main_bp.route("/category_help/<category>")
+def category_help(category):
+    """Показва доброволци в дадена категория"""
+    # Дефинираме mapping на категориите
+    category_names = {
+        "food": "Храна",
+        "medical": "Медицинска помощ",
+        "transport": "Транспорт",
+        "other": "Друго",
+    }
+
+    category_display = category_names.get(category, category.title())
+
+    # Филтрираме доброволци които имат тази категория в skills
+    # Предполагаме че skills съдържа категории разделени със запетаи или като текст
+    volunteers = Volunteer.query.filter(Volunteer.skills.ilike(f"%{category}%")).all()
+
+    # Ако няма доброволци, показваме съобщение
+    no_volunteers = len(volunteers) == 0
+
+    # Проверяваме дали потребителят е администратор
+    is_admin = session.get("admin_logged_in", False)
+
+    return render_template(
+        "category_help.html",
+        category=category,
+        category_display=category_display,
+        volunteers=volunteers,
+        no_volunteers=no_volunteers,
+        is_admin=is_admin,
+    )

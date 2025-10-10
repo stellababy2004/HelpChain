@@ -16,7 +16,7 @@ import os
 admin_bp = Blueprint("admin", __name__)
 
 
-@admin_bp.route("/admin/login", methods=["GET", "POST"])
+@admin_bp.route("/login", methods=["GET", "POST"])
 def admin_login():
     """Админ вход"""
     if request.method == "POST":
@@ -24,7 +24,7 @@ def admin_login():
         password = request.form.get("password")
         admin_user = AdminUser.query.filter_by(username=username).first()
         if admin_user and admin_user.check_password(password):
-            if admin_user.two_factor_enabled:
+            if admin_user.twofa_enabled:
                 session["pending_admin_user_id"] = admin_user.id
                 return redirect(url_for("admin.admin_2fa"))
             else:
@@ -36,7 +36,7 @@ def admin_login():
     return render_template("admin_login.html")
 
 
-@admin_bp.route("/admin/2fa", methods=["GET", "POST"])
+@admin_bp.route("/2fa", methods=["GET", "POST"])
 def admin_2fa():
     """2FA верификация за админ"""
     user_id = session.get("pending_admin_user_id")
@@ -61,7 +61,7 @@ def admin_2fa():
     return render_template("admin_2fa.html")
 
 
-@admin_bp.route("/admin/2fa/setup", methods=["GET", "POST"])
+@admin_bp.route("/2fa/setup", methods=["GET", "POST"])
 @login_required
 def admin_2fa_setup():
     """Настройка на 2FA за админ"""
@@ -82,7 +82,7 @@ def admin_2fa_setup():
     return render_template("admin_2fa_setup.html", totp_uri=uri)
 
 
-@admin_bp.route("/admin/2fa/disable", methods=["POST"])
+@admin_bp.route("/2fa/disable", methods=["POST"])
 @login_required
 def admin_2fa_disable():
     """Деактивиране на 2FA за админ"""
@@ -95,7 +95,7 @@ def admin_2fa_disable():
     return redirect(url_for("admin.admin_dashboard"))
 
 
-@admin_bp.route("/admin")
+@admin_bp.route("/")
 @login_required
 def admin_dashboard():
     """Админ панел"""

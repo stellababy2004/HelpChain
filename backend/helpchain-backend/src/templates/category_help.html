@@ -1,0 +1,208 @@
+{% extends "base.html" %} {% block title %}{{ category_display }} - Доброволци |
+HelpChain{% endblock %} {% block content %}
+<div class="container mt-4">
+  <!-- Header с персонализиран дизайн за категорията -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm category-header {{ category }}">
+        <div class="card-body text-center py-5">
+          <div class="category-icon mb-3">
+            {% if category == "food" %}
+            <i class="fas fa-utensils fa-4x text-white"></i>
+            {% elif category == "medical" %}
+            <i class="fas fa-medkit fa-4x text-white"></i>
+            {% elif category == "transport" %}
+            <i class="fas fa-car fa-4x text-white"></i>
+            {% else %}
+            <i class="fas fa-hands-helping fa-4x text-white"></i>
+            {% endif %}
+          </div>
+          <h1 class="display-5 text-white mb-2">{{ category_display }}</h1>
+          <p class="lead text-white-50 mb-0">
+            Намерете доброволци готови да помогнат
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Навигация обратно -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Обратно към началната страница
+      </a>
+    </div>
+  </div>
+
+  {% if no_volunteers %}
+  <!-- Няма доброволци -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-5">
+          <i class="fas fa-users fa-3x text-muted mb-3"></i>
+          <h3 class="text-muted mb-3">
+            Все още няма регистрирани доброволци в тази категория
+          </h3>
+          <p class="text-muted mb-4">
+            Бъдете първият доброволец в категорията "{{ category_display }}"!
+          </p>
+          <a
+            href="{{ url_for('main.become_volunteer') }}"
+            class="btn btn-primary btn-lg"
+          >
+            <i class="fas fa-hand-holding-heart me-2"></i>Стани доброволец
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <!-- Списък с доброволци -->
+  <div class="row">
+    <div class="col-12">
+      <h3 class="mb-4">Налични доброволци ({{ volunteers|length }})</h3>
+    </div>
+  </div>
+
+  {% if is_admin %}
+  <div class="row g-4">
+    {% for volunteer in volunteers %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card h-100 border-0 shadow-sm volunteer-card">
+        <div class="card-body d-flex flex-column">
+          <div class="volunteer-avatar mb-3">
+            <i class="fas fa-user-circle fa-3x text-primary"></i>
+          </div>
+
+          <h5 class="card-title mb-2">{{ volunteer.name }}</h5>
+
+          {% if volunteer.location %}
+          <p class="text-muted mb-2">
+            <i class="fas fa-map-marker-alt me-1"></i>{{ volunteer.location }}
+          </p>
+          {% endif %} {% if volunteer.skills %}
+          <p class="text-muted small mb-3">
+            <i class="fas fa-tools me-1"></i>{{ volunteer.skills }}
+          </p>
+          {% endif %}
+
+          <div class="contact-info mt-auto">
+            {% if volunteer.email %}
+            <div class="mb-2">
+              <i class="fas fa-envelope me-2 text-primary"></i>
+              <a
+                href="mailto:{{ volunteer.email }}"
+                class="text-decoration-none"
+              >
+                {{ volunteer.email }}
+              </a>
+            </div>
+            {% endif %} {% if volunteer.phone %}
+            <div class="mb-0">
+              <i class="fas fa-phone me-2 text-success"></i>
+              <a href="tel:{{ volunteer.phone }}" class="text-decoration-none">
+                {{ volunteer.phone }}
+              </a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center py-4">
+          <i class="fas fa-users fa-2x text-primary mb-3"></i>
+          <p class="mb-0">
+            За повече информация, моля свържете се с администратора.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %} {% endif %}
+
+  <!-- Допълнителни линкове -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="mb-3">Други категории помощ</h5>
+          <div class="row g-2">
+            {% for cat, name in [('food', 'Храна'), ('medical', 'Медицинска
+            помощ'), ('transport', 'Транспорт'), ('other', 'Друго')] %} {% if
+            cat != category %}
+            <div class="col-6 col-md-3">
+              <a
+                href="{{ url_for('main.category_help', category=cat) }}"
+                class="btn btn-outline-secondary w-100"
+              >
+                {{ name }}
+              </a>
+            </div>
+            {% endif %} {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Персонализирани цветове за категориите */
+  .category.food {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  }
+
+  .category.medical {
+    background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  }
+
+  .category.transport {
+    background: linear-gradient(135deg, #45b7d1, #96c93d);
+  }
+
+  .category.other {
+    background: linear-gradient(135deg, #a8a8a8, #6c757d);
+  }
+
+  .category-header {
+    border-radius: 15px;
+  }
+
+  .category-icon {
+    opacity: 0.9;
+  }
+
+  .volunteer-card {
+    border-radius: 12px;
+    transition:
+      transform 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .volunteer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .volunteer-avatar {
+    text-align: center;
+  }
+
+  .contact-info {
+    border-top: 1px solid #eee;
+    padding-top: 1rem;
+  }
+
+  .contact-info a:hover {
+    color: #0056b3 !important;
+  }
+</style>
+{% endblock %}

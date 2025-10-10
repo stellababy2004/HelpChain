@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карти и Геолокация - HelpChain</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --primary-hover: #5a67d8;
+            --secondary-color: #718096;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --light-bg: #f7fafc;
+            --dark-text: #2d3748;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+            --border-radius: 12px;
+            --border-radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-text);
+        }
+
+        .navbar {
+            background: var(--primary-gradient);
+            box-shadow: var(--shadow-md);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: none;
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .map-container {
+            height: calc(100vh - 200px);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            padding: 16px;
+            min-width: 280px;
+        }
+
+        .location-marker {
+            background: var(--primary-color);
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .volunteer-marker {
+            background: var(--success-color);
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .request-marker {
+            background: var(--danger-color);
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .route-line {
+            background: transparent;
+            border: 3px solid var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .coverage-area {
+            fill: var(--primary-color);
+            fill-opacity: 0.1;
+            stroke: var(--primary-color);
+            stroke-width: 2;
+            stroke-opacity: 0.5;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-gradient);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 12px 16px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .location-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .location-card.volunteer {
+            border-left-color: var(--success-color);
+        }
+
+        .location-card.request {
+            border-left-color: var(--danger-color);
+        }
+
+        .distance-badge {
+            background: var(--info-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .route-info {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-top: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .route-step {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .route-step:last-child {
+            border-bottom: none;
+        }
+
+        .route-step i {
+            color: var(--primary-color);
+            margin-right: 12px;
+            width: 20px;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            border-radius: var(--border-radius-lg);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .map-container {
+                height: calc(100vh - 160px);
+            }
+
+            .map-controls {
+                position: static;
+                margin: 16px;
+                min-width: auto;
+            }
+
+            .location-card {
+                margin: 8px 0;
+            }
+        }
+
+        .location-results {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-hand-holding-heart me-2"></i>
+                HelpChain
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/volunteer_dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>Табло
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my_tasks">
+                            <i class="fas fa-tasks me-1"></i>Моите задачи
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/location_map">
+                            <i class="fas fa-map-marked-alt me-1"></i>Карта
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/volunteer_logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>Изход
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Map Container -->
+                <div class="map-container position-relative">
+                    <div id="map"></div>
+
+                    <!-- Loading Overlay -->
+                    <div class="loading-overlay d-none" id="loadingOverlay">
+                        <div class="text-center">
+                            <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+                            <h5>Зареждане на картата...</h5>
+                        </div>
+                    </div>
+
+                    <!-- Map Controls -->
+                    <div class="map-controls">
+                        <h6 class="mb-3">
+                            <i class="fas fa-sliders-h me-2"></i>
+                            Филтри
+                        </h6>
+
+                        <div class="mb-3">
+                            <label class="form-label">Радиус на търсене</label>
+                            <select class="form-control" id="searchRadius" aria-label="Радиус на търсене">
+                                <option value="5">5 км</option>
+                                <option value="10" selected>10 км</option>
+                                <option value="25">25 км</option>
+                                <option value="50">50 км</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Показване</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="showVolunteers" checked>
+                                <label class="form-check-label" for="showVolunteers">
+                                    <i class="fas fa-user text-success me-1"></i>Доброволци
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="showRequests" checked>
+                                <label class="form-check-label" for="showRequests">
+                                    <i class="fas fa-exclamation-triangle text-danger me-1"></i>Заявки
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="showCoverage" checked>
+                                <label class="form-check-label" for="showCoverage">
+                                    <i class="fas fa-shield-alt text-primary me-1"></i>Покрити райони
+                                </label>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary w-100" onclick="findNearbyVolunteers()">
+                            <i class="fas fa-search me-2"></i>Намери помощ наблизо
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Location Results -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Резултати
+                        </h5>
+                    </div>
+                    <div class="card-body location-results" id="locationResults">
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
+                            <p>Изберете локация на картата или използвайте филтрите</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route Information -->
+                <div class="route-info d-none" id="routeInfo">
+                    <h6 class="mb-3">
+                        <i class="fas fa-route me-2"></i>
+                        Насоки
+                    </h6>
+                    <div id="routeSteps">
+                        <!-- Route steps will be populated here -->
+                    </div>
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            <span id="routeTime">0 мин</span> •
+                            <i class="fas fa-road me-1"></i>
+                            <span id="routeDistance">0 км</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Routing Machine -->
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+    <script>
+        // Initialize map
+        let map;
+        let userMarker;
+        let volunteerMarkers = [];
+        let requestMarkers = [];
+        let coverageLayer;
+        let routingControl;
+        let currentLocation = null;
+
+        // Mock data
+        const mockVolunteers = [
+            { id: 1, name: 'Иван Петров', lat: 42.6977, lng: 23.3219, skills: 'Транспорт, Домакинска помощ', distance: 2.3 },
+            { id: 2, name: 'Мария Димитрова', lat: 42.6842, lng: 23.3199, skills: 'Медицинска помощ', distance: 1.8 },
+            { id: 3, name: 'Георги Стоянов', lat: 42.7100, lng: 23.3400, skills: 'Образование', distance: 3.7 },
+            { id: 4, name: 'Анна Колева', lat: 42.6800, lng: 23.3100, skills: 'Храна, Транспорт', distance: 2.1 }
+        ];
+
+        const mockRequests = [
+            { id: 1, title: 'Помощ с пазаруване', lat: 42.6950, lng: 23.3250, category: 'Храна', urgency: 'Средна', distance: 1.2 },
+            { id: 2, title: 'Съпровод до лекар', lat: 42.6900, lng: 23.3150, category: 'Медицинска помощ', urgency: 'Висока', distance: 0.8 },
+            { id: 3, title: 'Доставка на лекарства', lat: 42.7000, lng: 23.3300, category: 'Медицинска помощ', urgency: 'Спешна', distance: 2.5 }
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeMap();
+            setupEventListeners();
+            getUserLocation();
+        });
+
+        function initializeMap() {
+            // Create map centered on Sofia
+            map = L.map('map').setView([42.6977, 23.3219], 13);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add scale control
+            L.control.scale().addTo(map);
+
+            // Add location control
+            L.control.locate({
+                position: 'topleft',
+                strings: {
+                    title: "Покажи моето местоположение"
+                }
+            }).addTo(map);
+        }
+
+        function setupEventListeners() {
+            // Filter checkboxes
+            document.getElementById('showVolunteers').addEventListener('change', updateMapDisplay);
+            document.getElementById('showRequests').addEventListener('change', updateMapDisplay);
+            document.getElementById('showCoverage').addEventListener('change', updateMapDisplay);
+
+            // Search radius
+            document.getElementById('searchRadius').addEventListener('change', function () {
+                if (currentLocation) {
+                    findNearbyVolunteers();
+                }
+            });
+        }
+
+        function getUserLocation() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.remove('d-none');
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        currentLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+
+                        // Add user marker
+                        userMarker = L.marker([currentLocation.lat, currentLocation.lng], {
+                            icon: L.divIcon({
+                                className: 'location-marker',
+                                html: '<i class="fas fa-map-marker-alt text-white"></i>',
+                                iconSize: [24, 24],
+                                iconAnchor: [12, 24]
+                            })
+                        }).addTo(map);
+
+                        // Center map on user location
+                        map.setView([currentLocation.lat, currentLocation.lng], 14);
+
+                        // Find nearby volunteers
+                        findNearbyVolunteers();
+
+                        loadingOverlay.classList.add('d-none');
+                    },
+                    function (error) {
+                        console.error('Error getting location:', error);
+                        // Default to Sofia center
+                        currentLocation = { lat: 42.6977, lng: 23.3219 };
+                        loadingOverlay.classList.add('d-none');
+                        showLocationError();
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 300000
+                    }
+                );
+            } else {
+                console.error('Geolocation not supported');
+                currentLocation = { lat: 42.6977, lng: 23.3219 };
+                loadingOverlay.classList.add('d-none');
+                showLocationError();
+            }
+        }
+
+        function showLocationError() {
+            // Show error message
+            const resultsContainer = document.getElementById('locationResults');
+            resultsContainer.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Не можахме да определим вашето местоположение. Моля, разрешете достъпа до геолокация или изберете локация на картата.
+                </div>
+            `;
+        }
+
+        function findNearbyVolunteers() {
+            if (!currentLocation) return;
+
+            const radius = parseInt(document.getElementById('searchRadius').value);
+            const showVolunteers = document.getElementById('showVolunteers').checked;
+            const showRequests = document.getElementById('showRequests').checked;
+
+            // Clear existing markers
+            clearMarkers();
+
+            // Filter volunteers within radius
+            const nearbyVolunteers = mockVolunteers.filter(volunteer => {
+                const distance = calculateDistance(currentLocation.lat, currentLocation.lng, volunteer.lat, volunteer.lng);
+                volunteer.distance = distance;
+                return distance <= radius;
+            });
+
+            // Filter requests within radius
+            const nearbyRequests = mockRequests.filter(request => {
+                const distance = calculateDistance(currentLocation.lat, currentLocation.lng, request.lat, request.lng);
+                request.distance = distance;
+                return distance <= radius;
+            });
+
+            // Add volunteer markers
+            if (showVolunteers) {
+                nearbyVolunteers.forEach(volunteer => {
+                    const marker = L.marker([volunteer.lat, volunteer.lng], {
+                        icon: L.divIcon({
+                            className: 'volunteer-marker',
+                            html: '<i class="fas fa-user text-white"></i>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 20]
+                        })
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <div class="text-center">
+                            <h6>${volunteer.name}</h6>
+                            <p class="mb-1">${volunteer.skills}</p>
+                            <small class="text-muted">${volunteer.distance.toFixed(1)} км</small>
+                            <br>
+                            <button class="btn btn-sm btn-success mt-2" onclick="createRoute(${volunteer.lat}, ${volunteer.lng})">
+                                <i class="fas fa-route me-1"></i>Насоки
+                            </button>
+                        </div>
+                    `);
+
+                    volunteerMarkers.push(marker);
+                });
+            }
+
+            // Add request markers
+            if (showRequests) {
+                nearbyRequests.forEach(request => {
+                    const marker = L.marker([request.lat, request.lng], {
+                        icon: L.divIcon({
+                            className: 'request-marker',
+                            html: '<i class="fas fa-exclamation-triangle text-white"></i>',
+                            iconSize: [20, 20],
+                            iconAnchor: [10, 20]
+                        })
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <div class="text-center">
+                            <h6>${request.title}</h6>
+                            <p class="mb-1">${request.category}</p>
+                            <span class="badge bg-${request.urgency === 'Спешна' ? 'danger' : request.urgency === 'Висока' ? 'warning' : 'info'}">${request.urgency}</span>
+                            <br>
+                            <small class="text-muted">${request.distance.toFixed(1)} км</small>
+                        </div>
+                    `);
+
+                    requestMarkers.push(marker);
+                });
+            }
+
+            // Add coverage area
+            if (document.getElementById('showCoverage').checked) {
+                addCoverageArea(radius);
+            }
+
+            // Update results list
+            updateResultsList(nearbyVolunteers, nearbyRequests);
+        }
+
+        function clearMarkers() {
+            volunteerMarkers.forEach(marker => map.removeLayer(marker));
+            requestMarkers.forEach(marker => map.removeLayer(marker));
+            volunteerMarkers = [];
+            requestMarkers = [];
+
+            if (coverageLayer) {
+                map.removeLayer(coverageLayer);
+                coverageLayer = null;
+            }
+
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+        }
+
+        function addCoverageArea(radius) {
+            const circle = L.circle([currentLocation.lat, currentLocation.lng], {
+                color: 'var(--primary-color)',
+                fillColor: 'var(--primary-color)',
+                fillOpacity: 0.1,
+                radius: radius * 1000 // Convert km to meters
+            }).addTo(map);
+
+            coverageLayer = circle;
+        }
+
+        function updateMapDisplay() {
+            findNearbyVolunteers();
+        }
+
+        function updateResultsList(volunteers, requests) {
+            const container = document.getElementById('locationResults');
+
+            if (volunteers.length === 0 && requests.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-search fa-3x mb-3"></i>
+                        <p>Няма намерени резултати в избрания радиус</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+
+            // Add volunteers
+            volunteers.forEach(volunteer => {
+                html += `
+                    <div class="location-card volunteer">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${volunteer.name}</h6>
+                                <p class="mb-1 text-sm">${volunteer.skills}</p>
+                            </div>
+                            <span class="distance-badge">${volunteer.distance.toFixed(1)} км</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-success mt-2" onclick="createRoute(${volunteer.lat}, ${volunteer.lng})">
+                            <i class="fas fa-route me-1"></i>Насоки
+                        </button>
+                    </div>
+                `;
+            });
+
+            // Add requests
+            requests.forEach(request => {
+                const urgencyClass = request.urgency === 'Спешна' ? 'danger' : request.urgency === 'Висока' ? 'warning' : 'info';
+                html += `
+                    <div class="location-card request">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${request.title}</h6>
+                                <p class="mb-1 text-sm">${request.category}</p>
+                                <span class="badge bg-${urgencyClass}">${request.urgency}</span>
+                            </div>
+                            <span class="distance-badge">${request.distance.toFixed(1)} км</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function createRoute(destLat, destLng) {
+            if (!currentLocation) return;
+
+            // Remove existing route
+            if (routingControl) {
+                map.removeControl(routingControl);
+            }
+
+            // Create new route
+            routingControl = L.Routing.control({
+                waypoints: [
+                    L.latLng(currentLocation.lat, currentLocation.lng),
+                    L.latLng(destLat, destLng)
+                ],
+                routeWhileDragging: true,
+                lineOptions: {
+                    styles: [{ className: 'route-line' }]
+                },
+                createMarker: function () { return null; }, // Don't create default markers
+                language: 'bg'
+            }).addTo(map);
+
+            // Show route info when route is found
+            routingControl.on('routesfound', function (e) {
+                const route = e.routes[0];
+                showRouteInfo(route);
+            });
+        }
+
+        function showRouteInfo(route) {
+            const routeInfo = document.getElementById('routeInfo');
+            const routeSteps = document.getElementById('routeSteps');
+            const routeTime = document.getElementById('routeTime');
+            const routeDistance = document.getElementById('routeDistance');
+
+            // Show route info
+            routeInfo.classList.remove('d-none');
+
+            // Format time and distance
+            const time = Math.round(route.summary.totalTime / 60);
+            const distance = (route.summary.totalDistance / 1000).toFixed(1);
+
+            routeTime.textContent = `${time} мин`;
+            routeDistance.textContent = `${distance} км`;
+
+            // Show route steps
+            let stepsHtml = '';
+            route.instructions.forEach((instruction, index) => {
+                stepsHtml += `
+                    <div class="route-step">
+                        <i class="fas fa-arrow-right"></i>
+                        <span>${instruction.text}</span>
+                    </div>
+                `;
+            });
+
+            routeSteps.innerHTML = stepsHtml;
+        }
+
+        // Utility functions
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        // Global functions
+        window.findNearbyVolunteers = findNearbyVolunteers;
+        window.createRoute = createRoute;
+    </script>
+</body>
+
+</html>
+</content>
+<parameter name="filePath">c:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet
+    BG\HelpChain\backend\templates\location_map.html

@@ -193,3 +193,108 @@ def delete_request():
     except Exception as e:
         print(f"Error in delete_request: {e}")  # Debug log
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@api_bp.route("/volunteers/nearby", methods=["GET"])
+def get_nearby_volunteers():
+    try:
+        lat = float(request.args.get("lat", 0))
+        lng = float(request.args.get("lng", 0))
+        radius_km = float(request.args.get("radius", 10))  # default 10km
+
+        # Simple distance calculation using Haversine formula
+        # For production, consider using PostGIS or similar
+        from math import radians, sin, cos, sqrt, atan2
+
+        def haversine_distance(lat1, lon1, lat2, lon2):
+            R = 6371  # Earth radius in km
+            dlat = radians(lat2 - lat1)
+            dlon = radians(lon2 - lon1)
+            a = (
+                sin(dlat / 2) ** 2
+                + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+            )
+            c = 2 * atan2(sqrt(a), sqrt(1 - a))
+            return R * c
+
+        from ..models import Volunteer
+
+        volunteers = Volunteer.query.filter(
+            Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)
+        ).all()
+
+        nearby = []
+        for vol in volunteers:
+            if vol.latitude and vol.longitude:
+                distance = haversine_distance(lat, lng, vol.latitude, vol.longitude)
+                if distance <= radius_km:
+                    nearby.append(
+                        {
+                            "id": vol.id,
+                            "name": vol.name,
+                            "email": vol.email,
+                            "phone": vol.phone,
+                            "skills": vol.skills,
+                            "location": vol.location,
+                            "latitude": vol.latitude,
+                            "longitude": vol.longitude,
+                            "distance_km": round(distance, 2),
+                        }
+                    )
+
+        # Sort by distance
+        nearby.sort(key=lambda x: x["distance_km"])
+
+        return (
+            jsonify(
+                {
+                    "volunteers": nearby,
+                    "count": len(nearby),
+                    "search_location": {"lat": lat, "lng": lng},
+                    "radius_km": radius_km,
+                }
+            ),
+            200,
+        )
+
+    except ValueError as e:
+        return jsonify({"error": "Invalid coordinates or radius"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api_bp.route("/volunteers/<int:volunteer_id>/location", methods=["PUT"])
+def update_volunteer_location(volunteer_id):
+    try:
+        data = request.get_json()
+        lat = data.get("latitude")
+        lng = data.get("longitude")
+
+        if lat is None or lng is None:
+            return jsonify({"error": "latitude and longitude required"}), 400
+
+        from ..models import Volunteer
+
+        vol = Volunteer.query.get(volunteer_id)
+        if not vol:
+            return jsonify({"error": "Volunteer not found"}), 404
+
+        vol.latitude = float(lat)
+        vol.longitude = float(lng)
+        db.session.commit()
+
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "volunteer_id": volunteer_id,
+                    "location": {"lat": vol.latitude, "lng": vol.longitude},
+                }
+            ),
+            200,
+        )
+
+    except ValueError:
+        return jsonify({"error": "Invalid coordinates"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

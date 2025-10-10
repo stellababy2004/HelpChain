@@ -1,155 +1,304 @@
-{% extends "base.html" %} {% block title %}Табло на доброволец | HelpChain{%
-endblock %} {% block content %}
-<h2>Заявки за помощ</h2>
+{% extends "base.html" %}
+{% block title %}Доброволчески панел{% endblock %}
+{% block content %}
 
-<label for="status-filter" class="form-label visually-hidden"
-  >Филтрирай по статус</label
->
-<select
-  id="status-filter"
-  class="form-select mb-3 status-filter-width"
-  aria-label="Филтрирай по статус"
->
-  <option value="Всички">Всички</option>
-  <option value="Pending">Очакващ</option>
-  <option value="In Progress">В процес</option>
-  <option value="Completed">Завършен</option>
-  <option value="Rejected">Отхвърлен</option>
-</select>
+<!-- Include Dashboard Navigation -->
+{% include 'dashboard_nav.html' %}
 
-<input
-  type="text"
-  id="searchInput"
-  class="form-control mb-3"
-  placeholder="Търси по име или email..."
-/>
+<!-- Breadcrumbs -->
+{% set breadcrumbs = [
+{'title': 'Доброволчески панел', 'url': None}
+] %}
+{% include 'breadcrumbs.html' %}
 
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>Име</th>
-      <th>Имейл</th>
-      <th>Съобщение</th>
-      <th>Статус</th>
-      <th>Промени статус</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for req in help_requests %}
-    <tr data-status="{{ req.status }}">
-      <td class="req-name">{{ req.name }}</td>
-      <td class="req-email">{{ req.email }}</td>
-      <td>{{ req.message }}</td>
-      <td>
-        <span class="status-badge" data-status="{{ req.status }}"
-          >{{ req.status }}</span
-        >
-      </td>
-      <td>
-        <select class="form-select status-select" data-req-id="{{ req.id }}">
-          <option
-            value="Pending"
-            {%
-            if
-            req.status=""
-            ="Pending"
-            %}selected{%
-            endif
-            %}
-          >
-            Очакващ
-          </option>
-          <option
-            value="In Progress"
-            {%
-            if
-            req.status=""
-            ="In Progress"
-            %}selected{%
-            endif
-            %}
-          >
-            В процес
-          </option>
-          <option
-            value="Completed"
-            {%
-            if
-            req.status=""
-            ="Completed"
-            %}selected{%
-            endif
-            %}
-          >
-            Завършен
-          </option>
-          <option
-            value="Rejected"
-            {%
-            if
-            req.status=""
-            ="Rejected"
-            %}selected{%
-            endif
-            %}
-          >
-            Отхвърлен
-          </option>
-        </select>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% endblock %} {% block scripts %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="text-primary mb-1">Добре дошли, {{ current_user.name if current_user else 'Доброволец' }}!</h2>
+          <p class="text-muted mb-0">Това е вашият доброволчески панел</p>
+        </div>
+        <div>
+          <a href="{{ url_for('volunteer_logout') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-sign-out-alt me-1"></i>Изход
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
+          <h3 class="card-title">{{ requests|length }}</h3>
+          <p class="card-text">Налични заявки</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-map-marker-alt fa-3x text-success mb-3"></i>
+          <h3 class="card-title">{{ current_user.location or 'Няма' }}</h3>
+          <p class="card-text">Вашата локация</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body text-center">
+          <i class="fas fa-calendar-check fa-3x text-warning mb-3"></i>
+          <h3 class="card-title">0</h3>
+          <p class="card-text">Завършени заявки</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Requests Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="card-title mb-0">
+            <i class="fas fa-hand-holding-heart me-2"></i>Налични заявки за помощ
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if requests %}
+          <div class="row">
+            {% for request in requests %}
+            <div class="col-md-6 col-lg-4 mb-3">
+              <div class="card h-100 border-left-primary">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title text-primary mb-1">{{ request.requester_name }}</h6>
+                    <span
+                      class="badge bg-{{ 'success' if request.category == 'Домакинска помощ' else 'info' if request.category == 'Транспорт' else 'warning' }}">
+                      {{ request.category }}
+                    </span>
+                  </div>
+                  <p class="card-text small text-muted mb-2">
+                    <i class="fas fa-map-marker-alt me-1"></i>{{ request.location }}
+                  </p>
+                  <p class="card-text">{{ request.description }}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                      <i class="fas fa-clock me-1"></i>{{ request.created_at }}
+                    </small>
+                    <button class="btn btn-primary btn-sm" onclick="contactRequester('{{ request.id }}')">
+                      <i class="fas fa-phone me-1"></i>Свържи се
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Няма налични заявки в момента</h5>
+            <p class="text-muted">Ще бъдете уведомени, когато има нови заявки за помощ.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light">
+          <h6 class="card-title mb-0">
+            <i class="fas fa-bolt me-2"></i>Бързи действия
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3 mb-3">
+              <a href="{{ url_for('all_categories') }}" class="text-decoration-none">
+                <div class="p-3 border rounded hover-shadow">
+                  <i class="fas fa-list fa-2x text-primary mb-2"></i>
+                  <div class="small">Виж категории</div>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="#" onclick="startVideoChat()" class="text-decoration-none">
+                <div class="p-3 border rounded hover-shadow">
+                  <i class="fas fa-video fa-2x text-danger mb-2"></i>
+                  <div class="small">Видео чат</div>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="mailto:contact@helpchain.live" class="text-decoration-none">
+                <div class="p-3 border rounded hover-shadow">
+                  <i class="fas fa-envelope fa-2x text-info mb-2"></i>
+                  <div class="small">Контакт</div>
+                </div>
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="{{ url_for('feedback') }}" class="text-decoration-none">
+                <div class="p-3 border rounded hover-shadow">
+                  <i class="fas fa-comments fa-2x text-success mb-2"></i>
+                  <div class="small">Обратна връзка</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Location Section -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h6 class="card-title mb-0">
+            <i class="fas fa-map-marker-alt me-2"></i>Актуализирайте вашата локация
+          </h6>
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">
+            За да можем да ви намираме близки заявки за помощ, моля актуализирайте вашата локация.
+          </p>
+          <form id="locationForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="latitude" class="form-label">Ширина (Latitude)</label>
+                <input type="number" step="0.000001" class="form-control" id="latitude" placeholder="42.6977"
+                  value="{{ current_user.latitude or '' }}">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="longitude" class="form-label">Дължина (Longitude)</label>
+                <input type="number" step="0.000001" class="form-control" id="longitude" placeholder="23.3219"
+                  value="{{ current_user.longitude or '' }}">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="locationText" class="form-label">Град/Населено място</label>
+                <input type="text" class="form-control" id="locationText" placeholder="София"
+                  value="{{ current_user.location or '' }}">
+              </div>
+              <div class="col-md-6 mb-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary me-2" onclick="getCurrentLocation()">
+                  <i class="fas fa-crosshairs me-1"></i>Използвай GPS
+                </button>
+                <button type="button" class="btn btn-success" onclick="updateLocation()">
+                  <i class="fas fa-save me-1"></i>Запази локация
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Филтриране по статус
-    document
-      .getElementById("status-filter")
-      .addEventListener("change", function () {
-        const selected = this.value;
-        document.querySelectorAll("tbody tr").forEach((row) => {
-          const status = row.getAttribute("data-status");
-          row.style.display =
-            selected === "Всички" || selected === status ? "" : "none";
-        });
-      });
+  function contactRequester(requestId) {
+    // In a real implementation, this would show contact details or open a modal
+    alert('Функционалността за контакт ще бъде добавена скоро. Можете да се свържете директно с администратора на contact@helpchain.live');
+  }
 
-    // Търсене по име или email
-    document
-      .getElementById("searchInput")
-      .addEventListener("keyup", function () {
-        const keyword = this.value.toLowerCase();
-        document.querySelectorAll("tbody tr").forEach((row) => {
-          const name = row.querySelector(".req-name").textContent.toLowerCase();
-          const email = row
-            .querySelector(".req-email")
-            .textContent.toLowerCase();
-          row.style.display =
-            name.includes(keyword) || email.includes(keyword) ? "" : "none";
-        });
-      });
+  function startVideoChat() {
+    // Generate a unique room ID based on timestamp and random number
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    const roomId = `room_${timestamp}_${random}`;
 
-    // Промяна на статус
-    document.querySelectorAll(".status-select").forEach((select) => {
-      select.addEventListener("change", function () {
-        const reqId = this.getAttribute("data-req-id");
-        const newStatus = this.value;
-        fetch("/update_status/" + reqId, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.success) {
-              alert("Статусът е обновен!");
-              location.reload();
-            }
-          });
+    // Redirect to video chat page
+    window.location.href = `/video_chat/${roomId}`;
+  }
+
+  function getCurrentLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+          document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+
+          // Optional: Reverse geocode to get city name
+          fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=bg`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.city) {
+                document.getElementById('locationText').value = data.city;
+              }
+            })
+            .catch(error => {
+              console.log('Reverse geocoding failed:', error);
+            });
+        },
+        function (error) {
+          alert('Не можахме да получим вашата локация. Моля, въведете я ръчно.');
+          console.error('Geolocation error:', error);
+        }
+      );
+    } else {
+      alert('Вашият браузър не поддържа геолокация.');
+    }
+  }
+
+  function updateLocation() {
+    const latitude = document.getElementById('latitude').value;
+    const longitude = document.getElementById('longitude').value;
+    const locationText = document.getElementById('locationText').value;
+
+    if (!latitude || !longitude) {
+      alert('Моля, въведете валидни координати.');
+      return;
+    }
+
+    // Update location via API
+    fetch(`/api/volunteers/{{ current_user.id }}/location`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude)
+      })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Локацията е актуализирана успешно!');
+          // Reload the page to show updated location
+          window.location.reload();
+        } else {
+          alert('Грешка при актуализиране на локацията: ' + (data.error || 'Неизвестна грешка'));
+        }
+      })
+      .catch(error => {
+        alert('Грешка при свързване със сървъра.');
+        console.error('Update location error:', error);
       });
-    });
-  });
+  }
 </script>
+
+<style>
+  .hover-shadow:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .border-left-primary {
+    border-left: 4px solid #007bff !important;
+  }
+</style>
 {% endblock %}

@@ -4,97 +4,1073 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Регистрация - HelpChain</title>
+
+    <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+        --border-radius: 15px;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+        --shadow: var(--shadow-dark);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      * {
+        transition: all 0.3s ease;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+      }
+
+      /* Navigation */
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Register Container */
+      .register-container {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        width: 100%;
+        max-width: 500px;
+        margin: 80px auto 20px;
+        position: relative;
+      }
+
+      .register-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .register-header::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
+        animation: float 20s infinite linear;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateX(-50%) translateY(-50%) rotate(0deg);
+        }
+
+        100% {
+          transform: translateX(-50%) translateY(-50%) rotate(360deg);
+        }
+      }
+
+      .register-header h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .register-header p {
+        opacity: 0.9;
+        font-size: 1rem;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+      }
+
+      .register-body {
+        padding: 2.5rem;
+      }
+
+      /* Progress Indicator */
+      .progress-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+      }
+
+      .progress-step {
+        display: flex;
+        align-items: center;
+        margin: 0 0.5rem;
+      }
+
+      .step-circle {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-right: 0.3rem;
+        transition: all 0.3s ease;
+      }
+
+      .step-circle.active {
+        background: var(--primary-gradient);
+        color: white;
+      }
+
+      .step-circle.completed {
+        background: #28a745;
+        color: white;
+      }
+
+      .step-text {
+        font-size: 0.85rem;
+        color: var(--text-color);
+        opacity: 0.7;
+      }
+
+      /* Form Groups */
+      .form-group-modern {
+        margin-bottom: 1.5rem;
+        position: relative;
+      }
+
+      .form-label-modern {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.95rem;
+      }
+
+      .form-control-modern {
+        width: 100%;
+        padding: 0.9rem 1rem;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: var(--card-bg);
+        color: var(--text-color);
+      }
+
+      [data-theme="dark"] .form-control-modern {
+        border-color: #495057;
+        background: var(--dark-card);
+      }
+
+      .form-control-modern:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
+      }
+
+      .form-control-modern:hover {
+        border-color: #667eea;
+      }
+
+      /* Password Strength Indicator */
+      .password-strength {
+        margin-top: 0.5rem;
+        display: none;
+      }
+
+      .password-strength-bar {
+        height: 4px;
+        background: #e9ecef;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 0.3rem;
+      }
+
+      .password-strength-fill {
+        height: 100%;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+      }
+
+      .password-strength-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+      }
+
+      /* Custom Checkboxes */
+      .checkbox-modern {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: var(--card-bg);
+      }
+
+      [data-theme="dark"] .checkbox-modern {
+        border-color: #495057;
+      }
+
+      .checkbox-modern:hover {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.02);
+      }
+
+      .checkbox-modern.selected {
+        border-color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      .checkbox-modern input[type="checkbox"] {
+        display: none;
+      }
+
+      .checkbox-modern .checkmark {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #667eea;
+        border-radius: 4px;
+        margin-right: 1rem;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .checkbox-modern.selected .checkmark {
+        background: #667eea;
+      }
+
+      .checkbox-modern.selected .checkmark::after {
+        content: "✓";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .checkbox-modern .checkbox-content {
+        flex: 1;
+      }
+
+      .checkbox-modern .checkbox-title {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.2rem;
+      }
+
+      .checkbox-modern .checkbox-description {
+        font-size: 0.85rem;
+        color: #6c757d;
+      }
+
+      /* Modern Buttons */
+      .btn-modern {
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        display: block;
+        width: 100%;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1rem;
+      }
+
+      .btn-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn-modern:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary-modern {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-google {
+        background: #4285f4;
+        color: white;
+        border: 1px solid #4285f4;
+      }
+
+      .btn-google:hover {
+        background: #3367d6;
+        transform: translateY(-2px);
+      }
+
+      /* Alert Messages */
+      .alert-modern {
+        border-radius: 10px;
+        border: none;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .alert-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+      }
+
+      .alert-danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+      }
+
+      .alert-warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        color: #856404;
+      }
+
+      /* Links */
+      .register-links {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e1e5e9;
+      }
+
+      [data-theme="dark"] .register-links {
+        border-top-color: #495057;
+      }
+
+      .register-links a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .register-links a:hover {
+        color: #5a67d8;
+        text-decoration: underline;
+      }
+
+      /* Terms and Privacy */
+      .terms-privacy {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-align: center;
+        margin-top: 1rem;
+      }
+
+      .terms-privacy a {
+        color: #667eea;
+        text-decoration: none;
+      }
+
+      .terms-privacy a:hover {
+        text-decoration: underline;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 576px) {
+        .register-header h1 {
+          font-size: 1.8rem;
+        }
+
+        .register-body {
+          padding: 2rem 1.5rem;
+        }
+
+        body {
+          padding: 10px;
+        }
+
+        .progress-indicator {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .progress-step {
+          margin: 0.3rem 0;
+        }
+      }
+
+      /* Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .bounce-in {
+        animation: bounceIn 0.6s ease-out;
+      }
+
+      @keyframes bounceIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.3);
+        }
+
+        50% {
+          opacity: 1;
+          transform: scale(1.05);
+        }
+
+        70% {
+          transform: scale(0.9);
+        }
+
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    </style>
   </head>
 
-  <body>
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="text-center">Регистрация</h3>
-            </div>
-            <div class="card-body">
-              <form method="POST">
-                <div class="mb-3">
-                  <label for="username" class="form-label"
-                    >Потребителско име</label
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="username"
-                    name="username"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label for="email" class="form-label">Имейл</label>
-                  <input
-                    type="email"
-                    class="form-control"
-                    id="email"
-                    name="email"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label for="password" class="form-label">Парола</label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    name="password"
-                    required
-                  />
-                </div>
-                <div class="mb-3">
-                  <label for="citizen_id" class="form-label">ЕГН</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="citizen_id"
-                    name="citizen_id"
-                  />
-                </div>
-                <div class="mb-3 form-check">
-                  <input
-                    type="checkbox"
-                    class="form-check-input"
-                    id="is_volunteer"
-                    name="is_volunteer"
-                  />
-                  <label class="form-check-label" for="is_volunteer"
-                    >Искам да бъда доброволец</label
-                  >
-                </div>
-                <div class="mb-3 form-check">
-                  <input
-                    type="checkbox"
-                    class="form-check-input"
-                    id="is_organization"
-                    name="is_organization"
-                  />
-                  <label class="form-check-label" for="is_organization"
-                    >Представлявам организация</label
-                  >
-                </div>
-                <button type="submit" class="btn btn-primary w-100">
-                  Регистрирай се
-                </button>
-              </form>
-              <div class="text-center mt-3">
-                <a href="{{ url_for('login') }}">Вече имаш акаунт? Влез</a>
+  <body data-theme="light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern">
+      <div class="container">
+        <a class="navbar-brand navbar-brand-modern" href="/">HelpChain</a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          title="Отвори меню"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('index') }}">Начало</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('all_categories') }}"
+                >Категории</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('faq') }}">ЧЗВ</a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('login') }}">Вход</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ url_for('register') }}"
+                >Регистрация</a
+              >
+            </li>
+            <li class="nav-item">
+              <button
+                class="theme-toggle"
+                id="themeToggle"
+                title="Превключи тема"
+              >
+                <i class="fas fa-moon"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="register-container bounce-in">
+      <div class="register-header">
+        <h1><i class="fas fa-user-plus me-3"></i>Присъединете се към нас</h1>
+        <p>Създайте акаунт и започнете да помагате или да получавате помощ</p>
+      </div>
+
+      <div class="register-body">
+        <!-- Progress Indicator -->
+        <div class="progress-indicator">
+          <div class="progress-step">
+            <div class="step-circle active">1</div>
+            <div class="step-text">Информация</div>
+          </div>
+          <div class="progress-step">
+            <div class="step-circle">2</div>
+            <div class="step-text">Тип акаунт</div>
+          </div>
+          <div class="progress-step">
+            <div class="step-circle">3</div>
+            <div class="step-text">Потвърждение</div>
+          </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div
+          class="alert alert-modern alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'warning' }}"
+        >
+          <i
+            class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'error' else 'info-circle' }} me-2"
+          ></i>
+          {{ message }}
+        </div>
+        {% endfor %} {% endif %} {% endwith %}
+
+        <!-- Social Registration -->
+        <button class="btn btn-google btn-modern" type="button">
+          <i class="fab fa-google me-2"></i>Регистрирай се с Google
+        </button>
+
+        <div class="text-center mb-4">
+          <span style="color: #6c757d; font-size: 0.9rem">или</span>
+        </div>
+
+        <form method="POST" id="registerForm">
+          <div class="form-group-modern">
+            <label for="username" class="form-label-modern">
+              <i class="fas fa-user me-2"></i>Потребителско име *
+            </label>
+            <input
+              type="text"
+              class="form-control-modern"
+              id="username"
+              name="username"
+              required
+              placeholder="Изберете потребителско име"
+              autocomplete="username"
+            />
+          </div>
+
+          <div class="form-group-modern">
+            <label for="email" class="form-label-modern">
+              <i class="fas fa-envelope me-2"></i>Имейл адрес *
+            </label>
+            <input
+              type="email"
+              class="form-control-modern"
+              id="email"
+              name="email"
+              required
+              placeholder="your.email@example.com"
+              autocomplete="email"
+            />
+          </div>
+
+          <div class="form-group-modern">
+            <label for="password" class="form-label-modern">
+              <i class="fas fa-lock me-2"></i>Парола *
+            </label>
+            <input
+              type="password"
+              class="form-control-modern"
+              id="password"
+              name="password"
+              required
+              placeholder="Силна парола (мин. 8 символа)"
+              autocomplete="new-password"
+            />
+            <div class="password-strength" id="passwordStrength">
+              <div class="password-strength-bar">
+                <div
+                  class="password-strength-fill"
+                  id="passwordStrengthFill"
+                ></div>
+              </div>
+              <div class="password-strength-text" id="passwordStrengthText">
+                Слабa парола
               </div>
             </div>
           </div>
+
+          <div class="form-group-modern">
+            <label for="confirm_password" class="form-label-modern">
+              <i class="fas fa-lock me-2"></i>Потвърди парола *
+            </label>
+            <input
+              type="password"
+              class="form-control-modern"
+              id="confirm_password"
+              name="confirm_password"
+              required
+              placeholder="Повторете паролата"
+              autocomplete="new-password"
+            />
+          </div>
+
+          <div class="form-group-modern">
+            <label for="citizen_id" class="form-label-modern">
+              <i class="fas fa-id-card me-2"></i>ЕГН (по избор)
+            </label>
+            <input
+              type="text"
+              class="form-control-modern"
+              id="citizen_id"
+              name="citizen_id"
+              placeholder="Единен граждански номер"
+              pattern="[0-9]{10}"
+              maxlength="10"
+            />
+          </div>
+
+          <!-- Account Type Selection -->
+          <div class="form-group-modern">
+            <label class="form-label-modern">
+              <i class="fas fa-users me-2"></i>Тип на акаунта
+            </label>
+
+            <div class="checkbox-modern" id="volunteerOption">
+              <input type="checkbox" id="is_volunteer" name="is_volunteer" />
+              <div class="checkmark"></div>
+              <div class="checkbox-content">
+                <div class="checkbox-title">Доброволец</div>
+                <div class="checkbox-description">
+                  Искам да помагам на нуждаещите се хора в общността
+                </div>
+              </div>
+            </div>
+
+            <div class="checkbox-modern" id="organizationOption">
+              <input
+                type="checkbox"
+                id="is_organization"
+                name="is_organization"
+              />
+              <div class="checkmark"></div>
+              <div class="checkbox-content">
+                <div class="checkbox-title">Организация</div>
+                <div class="checkbox-description">
+                  Представлявам организация или институция
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group-modern">
+            <div class="checkbox-modern" id="termsOption">
+              <input
+                type="checkbox"
+                id="accept_terms"
+                name="accept_terms"
+                required
+              />
+              <div class="checkmark"></div>
+              <div class="checkbox-content">
+                <div class="checkbox-title">
+                  Приемам условията за ползване *
+                </div>
+                <div class="checkbox-description">
+                  Съгласен съм с
+                  <a href="{{ url_for('terms') }}">общите условия</a> и
+                  <a href="{{ url_for('privacy') }}"
+                    >политиката за поверителност</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary-modern btn-modern"
+            id="registerBtn"
+          >
+            <i class="fas fa-user-plus me-2"></i>Създай акаунт
+          </button>
+        </form>
+
+        <div class="register-links">
+          <p style="margin: 0; color: #6c757d; font-size: 0.9rem">
+            Вече имате акаунт?
+            <a href="{{ url_for('login') }}" style="font-weight: 600"
+              >Влезте тук</a
+            >
+          </p>
         </div>
       </div>
     </div>
+
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      // Theme Toggle Functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const html = document.documentElement;
+      const themeIcon = themeToggle.querySelector("i");
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "light";
+      html.setAttribute("data-theme", savedTheme);
+      updateThemeIcon(savedTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        html.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
+      }
+
+      // Password Strength Indicator
+      const passwordInput = document.getElementById("password");
+      const passwordStrength = document.getElementById("passwordStrength");
+      const passwordStrengthFill = document.getElementById(
+        "passwordStrengthFill",
+      );
+      const passwordStrengthText = document.getElementById(
+        "passwordStrengthText",
+      );
+
+      passwordInput.addEventListener("input", function () {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+
+        if (password.length > 0) {
+          passwordStrength.style.display = "block";
+          updatePasswordStrengthIndicator(strength);
+        } else {
+          passwordStrength.style.display = "none";
+        }
+      });
+
+      function calculatePasswordStrength(password) {
+        let strength = 0;
+
+        // Length check
+        if (password.length >= 8) strength += 25;
+        if (password.length >= 12) strength += 25;
+
+        // Character variety checks
+        if (/[a-z]/.test(password)) strength += 15;
+        if (/[A-Z]/.test(password)) strength += 15;
+        if (/[0-9]/.test(password)) strength += 10;
+        if (/[^A-Za-z0-9]/.test(password)) strength += 10;
+
+        return Math.min(strength, 100);
+      }
+
+      function updatePasswordStrengthIndicator(strength) {
+        passwordStrengthFill.style.width = strength + "%";
+
+        if (strength < 30) {
+          passwordStrengthFill.style.background = "#dc3545";
+          passwordStrengthText.textContent = "Много слаба парола";
+          passwordStrengthText.style.color = "#dc3545";
+        } else if (strength < 50) {
+          passwordStrengthFill.style.background = "#fd7e14";
+          passwordStrengthText.textContent = "Слаба парола";
+          passwordStrengthText.style.color = "#fd7e14";
+        } else if (strength < 70) {
+          passwordStrengthFill.style.background = "#ffc107";
+          passwordStrengthText.textContent = "Средна парола";
+          passwordStrengthText.style.color = "#ffc107";
+        } else if (strength < 90) {
+          passwordStrengthFill.style.background = "#20c997";
+          passwordStrengthText.textContent = "Силна парола";
+          passwordStrengthText.style.color = "#20c997";
+        } else {
+          passwordStrengthFill.style.background = "#28a745";
+          passwordStrengthText.textContent = "Много силна парола";
+          passwordStrengthText.style.color = "#28a745";
+        }
+      }
+
+      // Checkbox Selection Functionality
+      const volunteerOption = document.getElementById("volunteerOption");
+      const organizationOption = document.getElementById("organizationOption");
+      const termsOption = document.getElementById("termsOption");
+
+      [volunteerOption, organizationOption, termsOption].forEach((option) => {
+        option.addEventListener("click", function () {
+          const checkbox = this.querySelector('input[type="checkbox"]');
+          checkbox.checked = !checkbox.checked;
+          this.classList.toggle("selected", checkbox.checked);
+        });
+      });
+
+      // Loading States for form submission
+      function showLoading() {
+        document.getElementById("loadingSpinner").style.display = "block";
+        document.getElementById("registerBtn").disabled = true;
+        document.getElementById("registerBtn").innerHTML =
+          '<i class="fas fa-spinner fa-spin me-2"></i>Регистриране...';
+      }
+
+      function hideLoading() {
+        document.getElementById("loadingSpinner").style.display = "none";
+        document.getElementById("registerBtn").disabled = false;
+        document.getElementById("registerBtn").innerHTML =
+          '<i class="fas fa-user-plus me-2"></i>Създай акаунт';
+      }
+
+      // Form Validation and Submission
+      const form = document.getElementById("registerForm");
+
+      form.addEventListener("submit", function (e) {
+        // Basic validation
+        const username = document.getElementById("username");
+        const email = document.getElementById("email");
+        const password = document.getElementById("password");
+        const confirmPassword = document.getElementById("confirm_password");
+        const citizenId = document.getElementById("citizen_id");
+        const acceptTerms = document.getElementById("accept_terms");
+
+        let isValid = true;
+
+        // Username validation
+        if (!username.value.trim() || username.value.length < 3) {
+          username.style.borderColor = "#dc3545";
+          isValid = false;
+        } else {
+          username.style.borderColor = "#28a745";
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.value.trim() || !emailRegex.test(email.value)) {
+          email.style.borderColor = "#dc3545";
+          isValid = false;
+        } else {
+          email.style.borderColor = "#28a745";
+        }
+
+        // Password validation
+        if (password.value.length < 8) {
+          password.style.borderColor = "#dc3545";
+          isValid = false;
+        } else {
+          password.style.borderColor = "#28a745";
+        }
+
+        // Confirm password validation
+        if (password.value !== confirmPassword.value) {
+          confirmPassword.style.borderColor = "#dc3545";
+          isValid = false;
+        } else if (confirmPassword.value) {
+          confirmPassword.style.borderColor = "#28a745";
+        }
+
+        // Citizen ID validation (if provided)
+        if (citizenId.value && !/^[0-9]{10}$/.test(citizenId.value)) {
+          citizenId.style.borderColor = "#dc3545";
+          isValid = false;
+        } else if (citizenId.value) {
+          citizenId.style.borderColor = "#28a745";
+        }
+
+        // Terms acceptance
+        if (!acceptTerms.checked) {
+          termsOption.style.borderColor = "#dc3545";
+          isValid = false;
+        } else {
+          termsOption.style.borderColor = "#667eea";
+        }
+
+        if (!isValid) {
+          e.preventDefault();
+          alert("Моля, попълнете всички задължителни полета правилно!");
+          return;
+        }
+
+        // Show loading state
+        showLoading();
+      });
+
+      // Real-time validation
+      document.querySelectorAll(".form-control-modern").forEach((field) => {
+        field.addEventListener("blur", function () {
+          if (this.hasAttribute("required") && !this.value.trim()) {
+            this.style.borderColor = "#dc3545";
+          } else {
+            this.style.borderColor = "#28a745";
+          }
+        });
+
+        field.addEventListener("input", function () {
+          if (this.value.trim()) {
+            this.style.borderColor = "#28a745";
+          }
+        });
+      });
+
+      // Citizen ID formatting
+      document
+        .getElementById("citizen_id")
+        .addEventListener("input", function (e) {
+          // Only allow numbers
+          this.value = this.value.replace(/\D/g, "");
+          // Limit to 10 digits
+          if (this.value.length > 10) {
+            this.value = this.value.substring(0, 10);
+          }
+        });
+
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add fade-in animation to form elements
+        const formElements = document.querySelectorAll(".form-group-modern");
+        formElements.forEach((element, index) => {
+          element.style.animationDelay = `${index * 0.1}s`;
+          element.classList.add("fade-in");
+        });
+      });
+    </script>
   </body>
 </html>
