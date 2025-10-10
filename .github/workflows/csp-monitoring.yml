@@ -148,7 +148,7 @@ jobs:
     if: github.event.inputs.setup_csp_endpoint == 'true'
     steps:
       - name: Create CSP Monitoring Setup Issue
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.create({
