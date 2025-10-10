@@ -170,11 +170,11 @@
       <a href="/faq">FAQ</a> |
       <a href="/success_stories">Истории на успеха</a> |
       <a href="/feedback">Обратна връзка</a>
-      <form method="post" action="{{ url_for('set_language') }}" class="d-inline mx-2">
-        <select name="language" onchange="this.form.submit()" class="form-select d-inline w-auto">
-          <option value="bg" {% if get_locale() and get_locale().language=='bg' %}selected{% endif %}>Български</option>
-          <option value="en" {% if get_locale() and get_locale().language=='en' %}selected{% endif %}>English</option>
-        </select>
+      <form method="post" action="{{ url_for('set_language', language='bg') }}" class="d-inline mx-2">
+        <button type="submit" class="btn btn-sm btn-outline-primary">BG</button>
+      </form>
+      <form method="post" action="{{ url_for('set_language', language='en') }}" class="d-inline mx-2">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">EN</button>
       </form>
     </footer>
   </div>
@@ -187,6 +187,16 @@
       document.querySelectorAll(".glass").forEach(function (el) {
         el.classList.add("visible");
       });
+    });
+
+    // Global search keyboard shortcut (Ctrl+K or Cmd+K)
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        if (typeof openGlobalSearch === 'function') {
+          openGlobalSearch();
+        }
+      }
     });
   </script>
 </body>

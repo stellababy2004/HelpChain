@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <title>Чат - HelpChain</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>Обща стая</h1>
+    <div id="messages"></div>
+    <input id="message" placeholder="Въведете съобщение" />
+    <input type="file" id="file" />
+    <button onclick="sendMessage()">Изпрати</button>
+    <div id="typing"></div>
+
+    <script>
+      const socket = io();
+      const room = "Обща стая";
+      const username = "{{ current_user.username }}";
+
+      socket.emit("join", { room, username });
+
+      socket.on("message", (data) => {
+        const msgDiv = document.createElement("div");
+        msgDiv.innerHTML = `<strong>${data.username}:</strong> ${data.message} ${data.file_path ? `<a href="${data.file_path}">Файл</a>` : ""} (${data.timestamp})`;
+        document.getElementById("messages").appendChild(msgDiv);
+      });
+
+      socket.on("typing", (data) => {
+        document.getElementById("typing").innerText = data.is_typing
+          ? `${data.username} пише...`
+          : "";
+      });
+
+      function sendMessage() {
+        const message = document.getElementById("message").value;
+        const fileInput = document.getElementById("file");
+        let filePath = null;
+        if (fileInput.files[0]) {
+          const formData = new FormData();
+          formData.append("file", fileInput.files[0]);
+          fetch("/api/chat/upload", { method: "POST", body: formData })
+            .then((res) => res.json())
+            .then((data) => {
+              filePath = data.file_path;
+              socket.emit("message", {
+                room,
+                username,
+                message,
+                file_path: filePath,
+              });
+            });
+        } else {
+          socket.emit("message", { room, username, message });
+        }
+        document.getElementById("message").value = "";
+      }
+
+      document.getElementById("message").addEventListener("input", () => {
+        socket.emit("typing", { room, username, is_typing: true });
+        setTimeout(
+          () => socket.emit("typing", { room, username, is_typing: false }),
+          1000,
+        );
+      });
+
+      // Зареждане на history
+      fetch(`/api/chat/history/${room}`)
+        .then((res) => res.json())
+        .then((history) =>
+          history.forEach((msg) => {
+            const msgDiv = document.createElement("div");
+            msgDiv.innerHTML = `<strong>${msg.username}:</strong> ${msg.message} ${msg.file_path ? `<a href="${msg.file_path}">Файл</a>` : ""} (${msg.timestamp})`;
+            document.getElementById("messages").appendChild(msgDiv);
+          }),
+        );
+    </script>
+  </body>
+</html>

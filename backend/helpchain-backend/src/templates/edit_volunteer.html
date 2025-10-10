@@ -1,0 +1,391 @@
+{% extends "base.html" %} {% block title %}Редактиране на доброволец{% endblock
+%} {% block head %}
+<style>
+  .form-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+  }
+
+  .form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+  }
+
+  .form-control:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    border: none;
+    border-radius: 6px;
+    padding: 12px 30px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    color: #212529;
+  }
+
+  .btn-submit:hover {
+    background: linear-gradient(135deg, #e0a800 0%, #d39e00 100%);
+    color: #212529;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+  }
+
+  .btn-cancel {
+    background: #6c757d;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 30px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+  }
+
+  .btn-cancel:hover {
+    background: #5a6268;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+  }
+
+  .required-field::after {
+    content: " *";
+    color: #dc3545;
+  }
+
+  .form-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 5px;
+  }
+
+  .alert-warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    color: #856404;
+  }
+
+  .current-info {
+    background: #e9ecef;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+
+  .current-info strong {
+    color: #495057;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-user-edit me-2"></i>Редактиране на доброволец</h1>
+    <a
+      href="{{ url_for('admin_volunteers') }}"
+      class="btn btn-outline-secondary"
+    >
+      <i class="fas fa-arrow-left me-2"></i>Обратно към списъка
+    </a>
+  </div>
+
+  <!-- Current Info Alert -->
+  <div class="alert alert-warning" role="alert">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>Редактиране:</strong> Променяте информацията за доброволец
+    <strong>{{ volunteer.name }}</strong> (ID: {{ volunteer.id }}). Бъдете
+    внимателни при промените.
+  </div>
+
+  <!-- Current Information Display -->
+  <div class="current-info">
+    <h6><i class="fas fa-eye me-2"></i>Текуща информация:</h6>
+    <div class="row">
+      <div class="col-md-3"><strong>Име:</strong> {{ volunteer.name }}</div>
+      <div class="col-md-3"><strong>Имейл:</strong> {{ volunteer.email }}</div>
+      <div class="col-md-3">
+        <strong>Телефон:</strong> {{ volunteer.phone }}
+      </div>
+      <div class="col-md-3">
+        <strong>Локация:</strong> {{ volunteer.location }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Volunteer Form -->
+  <div class="form-section">
+    <form
+      method="POST"
+      action="{{ url_for('edit_volunteer', id=volunteer.id) }}"
+    >
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="name" class="form-label required-field">
+              <i class="fas fa-user me-1"></i>Име и фамилия
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              name="name"
+              required
+              placeholder="Въведете пълното име на доброволеца"
+              minlength="2"
+              maxlength="100"
+              value="{{ volunteer.name }}"
+            />
+            <div class="form-text">Минимум 2 символа, максимум 100 символа</div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="email" class="form-label required-field">
+              <i class="fas fa-envelope me-1"></i>Имейл адрес
+            </label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="email"
+              required
+              placeholder="primer@helpchain.live"
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              value="{{ volunteer.email }}"
+            />
+            <div class="form-text">Валиден имейл адрес за контакт</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="phone" class="form-label required-field">
+              <i class="fas fa-phone me-1"></i>Телефонен номер
+            </label>
+            <input
+              type="tel"
+              class="form-control"
+              id="phone"
+              name="phone"
+              required
+              placeholder="+359 88 123 4567"
+              pattern="[\+]?[0-9\s\-\(\)]{7,15}"
+              value="{{ volunteer.phone }}"
+            />
+            <div class="form-text">
+              Валиден телефонен номер с код на държавата
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="location" class="form-label required-field">
+              <i class="fas fa-map-marker-alt me-1"></i>Локация
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              id="location"
+              name="location"
+              required
+              placeholder="Град, област"
+              minlength="2"
+              maxlength="100"
+              value="{{ volunteer.location }}"
+            />
+            <div class="form-text">
+              Град или област, където доброволецът е активен
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center">
+            <a
+              href="{{ url_for('volunteer_detail', id=volunteer.id) }}"
+              class="btn-cancel"
+            >
+              <i class="fas fa-eye me-2"></i>Преглед
+            </a>
+
+            <button type="submit" class="btn btn-submit">
+              <i class="fas fa-save me-2"></i>Запази промените
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Help Section -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="fas fa-question-circle me-2"></i>Помощ при редактиране
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h6>Важни съвети:</h6>
+          <ul class="list-unstyled">
+            <li>
+              <i class="fas fa-exclamation-triangle text-warning me-2"></i
+              >Промените влизат в сила веднага
+            </li>
+            <li>
+              <i class="fas fa-envelope text-info me-2"></i>При промяна на
+              имейл, доброволецът трябва да потвърди новия адрес
+            </li>
+            <li>
+              <i class="fas fa-phone text-info me-2"></i>Телефонният номер се
+              използва за спешни случаи
+            </li>
+            <li>
+              <i class="fas fa-map-marker-alt text-info me-2"></i>Локацията
+              влияе върху видимите заявки за помощ
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h6>След редактирането:</h6>
+          <ul class="list-unstyled">
+            <li>
+              <i class="fas fa-check text-success me-2"></i>Ще видите съобщение
+              за успех
+            </li>
+            <li>
+              <i class="fas fa-undo text-info me-2"></i>Можете да редактирате
+              отново по всяко време
+            </li>
+            <li>
+              <i class="fas fa-trash text-danger me-2"></i>Имайте предвид
+              опцията за изтриване в детайлите
+            </li>
+            <li>
+              <i class="fas fa-history text-info me-2"></i>Промените се записват
+              в базата данни
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Form validation and enhancement
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+
+    form.addEventListener("submit", function (e) {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const location = document.getElementById("location").value.trim();
+
+      // Additional validation
+      if (name.length < 2) {
+        alert("Името трябва да е поне 2 символа!");
+        e.preventDefault();
+        return false;
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert("Моля, въведете валиден имейл адрес!");
+        e.preventDefault();
+        return false;
+      }
+
+      if (phone.length < 7) {
+        alert("Телефонният номер е твърде кратък!");
+        e.preventDefault();
+        return false;
+      }
+
+      if (location.length < 2) {
+        alert("Локацията трябва да е поне 2 символа!");
+        e.preventDefault();
+        return false;
+      }
+
+      // Show loading state
+      const submitBtn = document.querySelector(".btn-submit");
+      submitBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin me-2"></i>Запазване...';
+      submitBtn.disabled = true;
+    });
+
+    // Real-time validation feedback
+    const inputs = document.querySelectorAll("input[required]");
+    inputs.forEach((input) => {
+      input.addEventListener("blur", function () {
+        if (this.value.trim() === "") {
+          this.classList.add("is-invalid");
+        } else {
+          this.classList.remove("is-invalid");
+          this.classList.add("is-valid");
+        }
+      });
+
+      input.addEventListener("input", function () {
+        if (this.classList.contains("is-invalid") && this.value.trim() !== "") {
+          this.classList.remove("is-invalid");
+          this.classList.add("is-valid");
+        }
+      });
+    });
+
+    // Highlight changes
+    const originalValues = {
+      name: "{{ volunteer.name }}",
+      email: "{{ volunteer.email }}",
+      phone: "{{ volunteer.phone }}",
+      location: "{{ volunteer.location }}",
+    };
+
+    inputs.forEach((input) => {
+      input.addEventListener("input", function () {
+        const fieldName = this.name;
+        const originalValue = originalValues[fieldName];
+        if (this.value !== originalValue) {
+          this.style.borderColor = "#ffc107";
+          this.style.boxShadow = "0 0 0 0.2rem rgba(255, 193, 7, 0.25)";
+        } else {
+          this.style.borderColor = "#ced4da";
+          this.style.boxShadow = "none";
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

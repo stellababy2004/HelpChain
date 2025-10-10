@@ -1,0 +1,1289 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Доброволчески панел - HelpChain</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+        --border-radius: 15px;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+        --shadow: var(--shadow-dark);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      * {
+        transition: all 0.3s ease;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+      }
+
+      /* Modern Navigation */
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow);
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      /* Stats Cards */
+      .stats-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-gradient);
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      /* Task Cards */
+      .task-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .task-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+      }
+
+      .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .task-title {
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .task-meta {
+        display: flex;
+        gap: 1rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+
+      .task-description {
+        color: #6c757d;
+        margin-bottom: 1rem;
+      }
+
+      .task-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      /* Status Badges */
+      .status-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-available {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .status-in-progress {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .status-completed {
+        background: #28a745;
+        color: white;
+      }
+
+      .status-urgent {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      /* Action Buttons */
+      .btn-modern {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0.125rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-primary-modern {
+        background: var(--primary-gradient);
+        color: white;
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-success-modern {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .btn-warning-modern {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .btn-danger-modern {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      /* Quick Actions */
+      .quick-actions {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .action-card {
+        background: var(--card-bg);
+        border: 2px solid #e1e5e9;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--text-color);
+      }
+
+      [data-theme="dark"] .action-card {
+        border-color: #495057;
+      }
+
+      .action-card:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+      }
+
+      .action-icon {
+        font-size: 2rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+      }
+
+      .action-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .action-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+
+      /* Activity Feed */
+      .activity-feed {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e1e5e9;
+      }
+
+      [data-theme="dark"] .activity-item {
+        border-bottom-color: #495057;
+      }
+
+      .activity-item:last-child {
+        border-bottom: none;
+      }
+
+      .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .activity-content {
+        flex: 1;
+      }
+
+      .activity-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .activity-meta {
+        color: #6c757d;
+        font-size: 0.8rem;
+      }
+
+      /* Progress Bar */
+      .progress-modern {
+        height: 8px;
+        border-radius: 4px;
+        background: #e1e5e9;
+        overflow: hidden;
+      }
+
+      [data-theme="dark"] .progress-modern {
+        background: #495057;
+      }
+
+      .progress-bar-modern {
+        background: var(--primary-gradient);
+        transition: width 0.3s ease;
+      }
+
+      /* Chart Containers */
+      .chart-container {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-color);
+      }
+
+      /* Loading States */
+      .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Achievement Badges */
+      .achievement-badge {
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0.5rem;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+      }
+
+      .achievement-badge:hover {
+        transform: scale(1.1);
+      }
+
+      .achievement-locked {
+        background: #6c757d;
+        opacity: 0.5;
+      }
+
+      /* Enhanced Button Styles */
+      .btn-modern {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .btn-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
+
+      .btn-modern:hover::before {
+        left: 100%;
+      }
+
+      /* Enhanced Card Hover Effects */
+      .action-card {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .action-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .action-card:hover::before {
+        opacity: 1;
+      }
+
+      /* Improved Task Cards */
+      .task-card {
+        position: relative;
+      }
+
+      .task-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background: var(--primary-gradient);
+        transition: width 0.3s ease;
+      }
+
+      .task-card:hover::after {
+        width: 100%;
+      }
+
+      /* Better Status Badges */
+      .status-badge {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .status-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+      }
+
+      .status-badge:hover::before {
+        left: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .task-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .task-meta {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .task-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .navbar-brand-modern {
+        font-size: 1.2rem;
+      }
+
+      .welcome-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+      }
+      }
+
+      @media (max-width: 576px) {
+        .stats-card {
+          padding: 1rem;
+        }
+
+        .stats-value {
+          font-size: 1.5rem;
+        }
+
+        .quick-actions {
+          padding: 1.5rem;
+        }
+
+        .chart-container {
+          padding: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body data-theme="light">
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand navbar-brand-modern" href="/">
+          <i class="fas fa-heart me-2"></i>HelpChain Volunteer
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          title="Отвори меню"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                href="{{ url_for('volunteer_dashboard') }}"
+              >
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('my_tasks') }}">
+                <i class="fas fa-tasks me-1"></i>Моите задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('available_tasks') }}">
+                <i class="fas fa-search me-1"></i>Налични задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('volunteer_profile') }}">
+                <i class="fas fa-user me-1"></i>Профил
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('achievements') }}">
+                <i class="fas fa-trophy me-1"></i>Постижения
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i>{{ current_user.name if
+                current_user else 'Доброволец' }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_profile') }}"
+                  >
+                    <i class="fas fa-user me-2"></i>Моят профил
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_settings') }}"
+                  >
+                    <i class="fas fa-cog me-2"></i>Настройки
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_logout') }}"
+                  >
+                    <i class="fas fa-sign-out-alt me-2"></i>Изход
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <button
+                class="theme-toggle"
+                id="themeToggle"
+                title="Превключи тема"
+              >
+                <i class="fas fa-moon"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Spacer for fixed navbar -->
+    <div style="height: 80px"></div>
+
+    <div class="container-fluid">
+      <!-- Welcome Header -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div
+            class="d-flex justify-content-between align-items-center welcome-header"
+          >
+            <div>
+              <h1 class="h2 mb-1">
+                <i class="fas fa-heart text-danger me-2"></i>Добре дошли, {{
+                current_user.name if current_user else 'Доброволец' }}!
+              </h1>
+              <p class="text-muted mb-0">
+                Благодарим ви за помощта! Днес можете да помогнете на още {{
+                available_tasks|default(0) }} души.
+              </p>
+            </div>
+            <div class="d-flex gap-2">
+              <button
+                class="btn btn-primary-modern btn-modern"
+                onclick="refreshTasks()"
+              >
+                <i class="fas fa-sync-alt me-1"></i>Обнови
+              </button>
+              <button
+                class="btn btn-success-modern btn-modern"
+                onclick="findNearbyTasks()"
+              >
+                <i class="fas fa-map-marker-alt me-1"></i>Намери наблизо
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--success-gradient)">
+              <i class="fas fa-check-circle text-white"></i>
+            </div>
+            <div class="stats-value" id="completedTasks">
+              {{ stats.completed_tasks|default(0) }}
+            </div>
+            <p class="stats-label">Завършени задачи</p>
+            <small class="text-success">
+              <i class="fas fa-arrow-up me-1"></i>+3 тази седмица
+            </small>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--warning-gradient)">
+              <i class="fas fa-clock text-white"></i>
+            </div>
+            <div class="stats-value" id="activeTasks">
+              {{ stats.active_tasks|default(0) }}
+            </div>
+            <p class="stats-label">Активни задачи</p>
+            <small class="text-warning">
+              <i class="fas fa-exclamation-triangle me-1"></i>{{
+              urgent_tasks|default(0) }} спешни
+            </small>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--info-gradient)">
+              <i class="fas fa-star text-white"></i>
+            </div>
+            <div class="stats-value" id="rating">
+              {{ "%.1f"|format(stats.rating|default(0)) }}
+            </div>
+            <p class="stats-label">Ваш рейтинг</p>
+            <small class="text-info">
+              <i class="fas fa-thumbs-up me-1"></i>{{ stats.reviews|default(0)
+              }} отзива
+            </small>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--primary-gradient)">
+              <i class="fas fa-heart text-white"></i>
+            </div>
+            <div class="stats-value" id="impact">
+              {{ stats.people_helped|default(0) }}
+            </div>
+            <p class="stats-label">Помогнати хора</p>
+            <small class="text-primary">
+              <i class="fas fa-hand-holding-heart me-1"></i>Вашата мисия
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions mb-4">
+        <h4 class="mb-3">
+          <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
+        </h4>
+        <div class="action-grid">
+          <a href="{{ url_for('available_tasks') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-search-plus"></i>
+            </div>
+            <div class="action-title">Намери задачи</div>
+            <div class="action-description">
+              Разгледай наличните заявки за помощ
+            </div>
+          </a>
+
+          <a href="{{ url_for('my_tasks') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-tasks"></i>
+            </div>
+            <div class="action-title">Моите задачи</div>
+            <div class="action-description">
+              Проследи активните си ангажименти
+            </div>
+          </a>
+
+          <a href="{{ url_for('volunteer_profile') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-user-edit"></i>
+            </div>
+            <div class="action-title">Обнови профил</div>
+            <div class="action-description">
+              Добави умения или промени информацията
+            </div>
+          </a>
+
+          <a href="{{ url_for('achievements') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-trophy"></i>
+            </div>
+            <div class="action-title">Постижения</div>
+            <div class="action-description">Виж наградите и значките си</div>
+          </a>
+
+          <a href="{{ url_for('volunteer_chat') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <div class="action-title">Чат с нуждаещи се</div>
+            <div class="action-description">
+              Комуникирай с хората, на които помагаш
+            </div>
+          </a>
+
+          <a href="{{ url_for('volunteer_reports') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="action-title">Моите отчети</div>
+            <div class="action-description">Анализирай своята дейност</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Active Tasks -->
+        <div class="col-xl-8 mb-4">
+          <div class="chart-container">
+            <div class="chart-header">
+              <h3 class="chart-title">
+                <i class="fas fa-tasks me-2"></i>Активни задачи
+              </h3>
+              <div class="dropdown">
+                <button
+                  class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                >
+                  <i class="fas fa-filter me-1"></i>Филтър
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="filterTasks('all')"
+                      >Всички</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="filterTasks('urgent')"
+                      >Спешни</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="filterTasks('nearby')"
+                      >Наблизо</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="filterTasks('high-priority')"
+                      >Висок приоритет</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div id="tasksContainer">
+              {% if active_tasks %} {% for task in active_tasks %}
+              <div class="task-card">
+                <div class="task-header">
+                  <h5 class="task-title">{{ task.title }}</h5>
+                  <span class="status-badge status-{{ task.priority|lower }}">
+                    {{ task.priority }}
+                  </span>
+                </div>
+
+                <div class="task-meta">
+                  <span
+                    ><i class="fas fa-map-marker-alt me-1"></i>{{ task.location
+                    }}</span
+                  >
+                  <span
+                    ><i class="fas fa-calendar me-1"></i>{{ task.date }}</span
+                  >
+                  <span
+                    ><i class="fas fa-clock me-1"></i>{{ task.time_remaining
+                    }}</span
+                  >
+                </div>
+
+                <p class="task-description">{{ task.description[:100] }}...</p>
+
+                <div class="progress-modern mb-3">
+                  <div
+                    class="progress-bar-modern"
+                    style="width: {{ task.progress }}%"
+                  ></div>
+                </div>
+
+                <div class="task-actions">
+                  <button
+                    class="btn btn-primary-modern btn-modern btn-sm"
+                    onclick="viewTaskDetails({{ task.id }})"
+                  >
+                    <i class="fas fa-eye me-1"></i>Детайли
+                  </button>
+                  <button
+                    class="btn btn-success-modern btn-modern btn-sm"
+                    onclick="updateProgress({{ task.id }})"
+                  >
+                    <i class="fas fa-check me-1"></i>Напредък
+                  </button>
+                  <button
+                    class="btn btn-warning-modern btn-modern btn-sm"
+                    onclick="contactRequester({{ task.id }})"
+                  >
+                    <i class="fas fa-comments me-1"></i>Контакт
+                  </button>
+                  <button
+                    class="btn btn-danger-modern btn-modern btn-sm"
+                    onclick="completeTask({{ task.id }})"
+                  >
+                    <i class="fas fa-check-circle me-1"></i>Завърши
+                  </button>
+                </div>
+              </div>
+              {% endfor %} {% else %}
+              <div class="text-center py-5">
+                <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Нямате активни задачи</h5>
+                <p class="text-muted">
+                  Намерете нови възможности за помощ в секцията "Налични задачи"
+                </p>
+                <a
+                  href="{{ url_for('available_tasks') }}"
+                  class="btn btn-primary-modern btn-modern"
+                >
+                  <i class="fas fa-search me-1"></i>Намери задачи
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-xl-4">
+          <!-- Achievements Preview -->
+          <div class="activity-feed mb-4">
+            <h4 class="mb-3">
+              <i class="fas fa-trophy text-warning me-2"></i>Последни постижения
+            </h4>
+
+            <div class="text-center mb-3">
+              <div class="achievement-badge">
+                <i class="fas fa-heart"></i>
+              </div>
+              <div class="achievement-badge">
+                <i class="fas fa-hands-helping"></i>
+              </div>
+              <div class="achievement-badge">
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="achievement-badge achievement-locked">
+                <i class="fas fa-crown"></i>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div
+                class="activity-icon"
+                style="background: var(--warning-gradient)"
+              >
+                <i class="fas fa-trophy text-white"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">Помогнахте на 10 души!</div>
+                <div class="activity-meta">преди 2 дни • Значка "Помощник"</div>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div
+                class="activity-icon"
+                style="background: var(--success-gradient)"
+              >
+                <i class="fas fa-star text-white"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">5-звезден рейтинг</div>
+                <div class="activity-meta">
+                  преди 1 седмица • Отзив от Мария
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats Chart -->
+          <div class="chart-container">
+            <h4 class="chart-title mb-3">
+              <i class="fas fa-chart-pie text-success me-2"></i>Вашата активност
+            </h4>
+            <canvas id="activityChart" width="300" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Common HelpChain utilities -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      // Chart.js initialization
+      document.addEventListener("DOMContentLoaded", function () {
+        // Activity distribution chart
+        const ctx = document.getElementById("activityChart").getContext("2d");
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: [
+              "Медицинска помощ",
+              "Транспорт",
+              "Домакинска помощ",
+              "Образование",
+              "Храна",
+            ],
+            datasets: [
+              {
+                data: [35, 25, 20, 10, 10],
+                backgroundColor: [
+                  "#667eea",
+                  "#764ba2",
+                  "#f093fb",
+                  "#f5576c",
+                  "#4facfe",
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  padding: 20,
+                  usePointStyle: true,
+                },
+              },
+            },
+          },
+        });
+      });
+
+      // Action functions
+      function refreshTasks() {
+        window.helpChainUtils.showLoading();
+        setTimeout(() => {
+          window.helpChainUtils.hideLoading();
+          console.log("Tasks refreshed");
+        }, 1500);
+      }
+
+      function findNearbyTasks() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function (position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            // In real implementation, this would send coordinates to server
+            window.helpChainUtils.showAlert(
+              `Търсене на задачи близо до координати: ${lat}, ${lng}`,
+            );
+          });
+        } else {
+          window.helpChainUtils.showAlert(
+            "Геолокацията не е поддържана от вашия браузър",
+          );
+        }
+      }
+
+      function viewTaskDetails(taskId) {
+        window.location.href = `/volunteer/task/${taskId}`;
+      }
+
+      function updateProgress(taskId) {
+        // In real implementation, this would open a modal or redirect
+        window.helpChainUtils.showAlert(
+          `Обновяване на напредък за задача #${taskId}`,
+        );
+      }
+
+      function contactRequester(taskId) {
+        window.location.href = `/volunteer/chat/${taskId}`;
+      }
+
+      function completeTask(taskId) {
+        if (
+          window.helpChainUtils.confirmAction(
+            "Сигурни ли сте, че искате да завършите тази задача?",
+          )
+        ) {
+          // In real implementation, this would make an AJAX call
+          window.helpChainUtils.showAlert(`Задача #${taskId} е завършена!`);
+        }
+      }
+
+      function filterTasks(filter) {
+        // In real implementation, this would filter the tasks
+        window.helpChainUtils.showAlert(`Филтриране по: ${filter}`);
+      }
+
+      // Real-time updates simulation
+      window.helpChainUtils.startRealtimeUpdates(() => {
+        // Simulate real-time updates
+        const statsElements = [
+          "completedTasks",
+          "activeTasks",
+          "rating",
+          "impact",
+        ];
+        statsElements.forEach((id) => {
+          const element = document.getElementById(id);
+          if (element && Math.random() > 0.98) {
+            // 2% chance to update
+            if (id === "rating") {
+              const currentValue = parseFloat(element.textContent);
+              const newValue = Math.max(
+                0,
+                Math.min(5, currentValue + (Math.random() - 0.5) * 0.1),
+              );
+              element.textContent = newValue.toFixed(1);
+            } else {
+              const currentValue = parseInt(element.textContent);
+              const newValue = Math.max(
+                0,
+                currentValue + Math.floor(Math.random() * 3) - 1,
+              );
+              element.textContent = newValue;
+            }
+          }
+        });
+      }, 60000); // Update every minute
+
+      // Theme toggle functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const currentTheme = localStorage.getItem("theme") || "light";
+
+      // Set initial theme
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      updateThemeIcon(currentTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        const icon = themeToggle.querySelector("i");
+        if (theme === "dark") {
+          icon.className = "fas fa-sun";
+          themeToggle.title = "Превключи на светла тема";
+        } else {
+          icon.className = "fas fa-moon";
+          themeToggle.title = "Превключи на тъмна тема";
+        }
+      }
+
+      // Add stagger animation to cards
+      document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(".stats-card, .action-card");
+        cards.forEach((card, index) => {
+          card.style.animationDelay = `${index * 0.1}s`;
+        });
+      });
+    </script>
+  </body>
+</html>

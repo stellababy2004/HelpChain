@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки - HelpChain</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --dark-text: #212529;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+        }
+
+        .settings-section {
+            margin-bottom: 30px;
+        }
+
+        .setting-item {
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .danger-zone {
+            border: 2px solid var(--danger-color);
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        .danger-zone .card-header {
+            background: linear-gradient(135deg, var(--danger-color), #c82333);
+            color: white;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .skill-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--info-color), #138496);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            margin: 2px;
+            font-size: 0.9rem;
+        }
+
+        .skill-tag .remove-skill {
+            margin-left: 8px;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .skill-tag .remove-skill:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-hands-helping me-2"></i>
+                HelpChain
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/volunteer_dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>Табло
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my_tasks">
+                            <i class="fas fa-tasks me-1"></i>Моите задачи
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/volunteer_settings">
+                            <i class="fas fa-cog me-1"></i>Настройки
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/volunteer_logout">
+                            <i class="fas fa-sign-out-alt me-1"></i>Изход
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-cog text-primary me-2"></i>
+                    Настройки на профила
+                </h1>
+
+                <!-- Notification Settings -->
+                <div class="card settings-section">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bell text-primary me-2"></i>
+                            Нотификации
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Имейл нотификации</h6>
+                                    <p class="text-muted mb-0">Получавайте имейли за нови задачи и актуализации</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">SMS нотификации</h6>
+                                    <p class="text-muted mb-0">Получавайте SMS за спешни задачи</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="smsNotifications">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Браузър нотификации</h6>
+                                    <p class="text-muted mb-0">Показвайте известия в браузъра</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="browserNotifications" checked>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Нотификации за чат</h6>
+                                    <p class="text-muted mb-0">Получавайте известия за нови съобщения</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="chatNotifications" checked>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="card settings-section">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shield-alt text-primary me-2"></i>
+                            Поверителност
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Публичен профил</h6>
+                                    <p class="text-muted mb-0">Други потребители да виждат вашия профил</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="publicProfile" checked>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Показвай активност</h6>
+                                    <p class="text-muted mb-0">Други да виждат кога сте активни</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="showActivity" checked>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Показвай локация</h6>
+                                    <p class="text-muted mb-0">Други да виждат вашата локация</p>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="showLocation">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills and Preferences -->
+                <div class="card settings-section">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tools text-primary me-2"></i>
+                            Умения и предпочитания
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Моите умения</label>
+                            <div id="skillsContainer" class="mb-3">
+                                <span class="skill-tag">Първа помощ <span class="remove-skill"
+                                        onclick="removeSkill('Първа помощ')">&times;</span></span>
+                                <span class="skill-tag">Транспорт <span class="remove-skill"
+                                        onclick="removeSkill('Транспорт')">&times;</span></span>
+                                <span class="skill-tag">Домакинска помощ <span class="remove-skill"
+                                        onclick="removeSkill('Домакинска помощ')">&times;</span></span>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="newSkillInput"
+                                    placeholder="Добавете ново умение...">
+                                <button class="btn btn-outline-primary" type="button" onclick="addSkill()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Предпочитани категории задачи</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="prefMedical" checked>
+                                        <label class="form-check-label" for="prefMedical">
+                                            Медицинска помощ
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="prefTransport" checked>
+                                        <label class="form-check-label" for="prefTransport">
+                                            Транспорт
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="prefHousehold" checked>
+                                        <label class="form-check-label" for="prefHousehold">
+                                            Домакинска помощ
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="prefEducation">
+                                        <label class="form-check-label" for="prefEducation">
+                                            Образование
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="prefOther" checked>
+                                        <label class="form-check-label" for="prefOther">
+                                            Друго
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Максимално разстояние за задачи (км)</label>
+                            <input type="range" class="form-range" id="maxDistance" min="1" max="50" value="25">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">1 км</small>
+                                <small class="text-muted" id="distanceValue">25 км</small>
+                                <small class="text-muted">50 км</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="card settings-section">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-cog text-primary me-2"></i>
+                            Настройки на акаунта
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Двуфакторна автентикация</h6>
+                                    <p class="text-muted mb-0">Допълнителна защита на акаунта</p>
+                                </div>
+                                <button class="btn btn-outline-primary btn-sm" onclick="setup2FA()">
+                                    Настрой
+                                </button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Смяна на парола</h6>
+                                    <p class="text-muted mb-0">Променете паролата си за достъп</p>
+                                </div>
+                                <button class="btn btn-outline-primary btn-sm" onclick="changePassword()">
+                                    Промени
+                                </button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-toggle">
+                                <div>
+                                    <h6 class="mb-1">Експорт на данни</h6>
+                                    <p class="text-muted mb-0">Изтеглете всичките си данни</p>
+                                </div>
+                                <button class="btn btn-outline-primary btn-sm" onclick="exportData()">
+                                    Експорт
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="card settings-section danger-zone">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Опасна зона
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="setting-item">
+                            <div>
+                                <h6 class="mb-1 text-danger">Деактивиране на акаунта</h6>
+                                <p class="text-muted mb-3">Акаунтът ви ще бъде временно деактивиран. Можете да го
+                                    активирате отново по всяко време.</p>
+                                <button class="btn btn-warning" onclick="deactivateAccount()">
+                                    <i class="fas fa-pause me-1"></i>Деактивирай акаунта
+                                </button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div>
+                                <h6 class="mb-1 text-danger">Изтриване на акаунта</h6>
+                                <p class="text-muted mb-3">Всички данни ще бъдат permanently изтрити. Това действие е
+                                    необратимо.</p>
+                                <button class="btn btn-danger" onclick="deleteAccount()">
+                                    <i class="fas fa-trash me-1"></i>Изтрий акаунта
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Settings -->
+                <div class="text-center mb-4">
+                    <button class="btn btn-primary btn-lg" onclick="saveSettings()">
+                        <i class="fas fa-save me-2"></i>Запази настройки
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Load settings on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            // Distance slider
+            const distanceSlider = document.getElementById('maxDistance');
+            const distanceValue = document.getElementById('distanceValue');
+
+            distanceSlider.addEventListener('input', function () {
+                distanceValue.textContent = this.value + ' км';
+            });
+        });
+
+        function addSkill() {
+            const input = document.getElementById('newSkillInput');
+            const skillName = input.value.trim();
+
+            if (skillName) {
+                const container = document.getElementById('skillsContainer');
+                const skillTag = document.createElement('span');
+                skillTag.className = 'skill-tag';
+                skillTag.innerHTML = `${skillName} <span class="remove-skill" onclick="removeSkill('${skillName}')">&times;</span>`;
+                container.appendChild(skillTag);
+                input.value = '';
+            }
+        }
+
+        function removeSkill(skillName) {
+            const container = document.getElementById('skillsContainer');
+            const skillTags = container.querySelectorAll('.skill-tag');
+
+            skillTags.forEach(tag => {
+                if (tag.textContent.includes(skillName)) {
+                    tag.remove();
+                }
+            });
+        }
+
+        function saveSettings() {
+            // Collect all settings
+            const settings = {
+                notifications: {
+                    email: document.getElementById('emailNotifications').checked,
+                    sms: document.getElementById('smsNotifications').checked,
+                    browser: document.getElementById('browserNotifications').checked,
+                    chat: document.getElementById('chatNotifications').checked
+                },
+                privacy: {
+                    publicProfile: document.getElementById('publicProfile').checked,
+                    showActivity: document.getElementById('showActivity').checked,
+                    showLocation: document.getElementById('showLocation').checked
+                },
+                preferences: {
+                    categories: {
+                        medical: document.getElementById('prefMedical').checked,
+                        transport: document.getElementById('prefTransport').checked,
+                        household: document.getElementById('prefHousehold').checked,
+                        education: document.getElementById('prefEducation').checked,
+                        other: document.getElementById('prefOther').checked
+                    },
+                    maxDistance: document.getElementById('maxDistance').value
+                }
+            };
+
+            // Simulate save
+            console.log('Settings saved:', settings);
+            alert('Настройките са запазени успешно!');
+        }
+
+        function setup2FA() {
+            alert('Настройка на 2FA - функцията ще бъде достъпна скоро!');
+        }
+
+        function changePassword() {
+            alert('Смяна на парола - функцията ще бъде достъпна скоро!');
+        }
+
+        function exportData() {
+            alert('Експорт на данни - функцията ще бъде достъпна скоро!');
+        }
+
+        function deactivateAccount() {
+            if (confirm('Сигурни ли сте, че искате да деактивирате акаунта си?')) {
+                alert('Акаунтът е деактивиран временно.');
+            }
+        }
+
+        function deleteAccount() {
+            if (confirm('Сигурни ли сте, че искате да изтриете акаунта си? Това действие е необратимо!')) {
+                if (confirm('Последно потвърждение: Наистина ли искате да изтриете акаунта си завинаги?')) {
+                    alert('Акаунтът е изтрит.');
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

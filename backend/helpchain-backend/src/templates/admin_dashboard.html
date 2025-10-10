@@ -6,7 +6,7 @@ endblock %} {% block content %}
   <!-- 2FA Settings -->
   <div class="mb-3">
     <h4>Настройки за сигурност</h4>
-    {% if current_user.two_factor_enabled %}
+    {% if current_user and current_user.two_factor_enabled %}
     <p>2FA е активиран.</p>
     <form action="/admin/2fa/disable" method="post" class="d-inline">
       <button type="submit" class="btn btn-warning btn-sm">
@@ -22,8 +22,10 @@ endblock %} {% block content %}
   </div>
 
   <div class="mb-3">
-    <p>Общо заявки: {{ requests['items'] | length }}</p>
-    <p>Общо доброволци: {{ volunteers | length }}</p>
+    <p>Общо заявки: {{ stats.total_requests|default(0) }}</p>
+    <p>Чакащи заявки: {{ stats.pending_requests|default(0) }}</p>
+    <p>Завършени заявки: {{ stats.completed_requests|default(0) }}</p>
+    <p>Общо доброволци: {{ stats.total_volunteers|default(0) }}</p>
     <button
       id="refresh-btn"
       class="btn btn-secondary"

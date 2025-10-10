@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Управление на роли и права - HelpChain</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+      <div class="container">
+        <a class="navbar-brand" href="/">HelpChain - Админ</a>
+        <div class="navbar-nav ms-auto">
+          <a class="nav-link" href="{{ url_for('admin_dashboard') }}"
+            >Админ панел</a
+          >
+          <a class="nav-link" href="{{ url_for('admin_volunteers') }}"
+            >Доброволци</a
+          >
+          <a class="nav-link" href="{{ url_for('logout') }}">Изход</a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+      <!-- Breadcrumbs -->
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('admin_dashboard') }}">
+              <i class="fas fa-home me-1"></i>Админ панел
+            </a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-users-cog me-1"></i>Роли и права
+          </li>
+        </ol>
+      </nav>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users-cog"></i> Управление на роли и права</h2>
+        <div>
+          <a
+            href="{{ url_for('admin_roles.create_role') }}"
+            class="btn btn-success"
+          >
+            <i class="fas fa-plus"></i> Нова роля
+          </a>
+          <a
+            href="{{ url_for('admin_roles.create_user') }}"
+            class="btn btn-primary"
+          >
+            <i class="fas fa-user-plus"></i> Нов потребител
+          </a>
+          <a
+            href="{{ url_for('admin_roles.create_permission') }}"
+            class="btn btn-warning"
+          >
+            <i class="fas fa-key"></i> Ново право
+          </a>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div
+        class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Затвори"
+        ></button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <!-- Roles Section -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-user-tag"></i> Роли</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Име</th>
+                  <th>Описание</th>
+                  <th>Системна</th>
+                  <th>Права</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for role in roles %}
+                <tr>
+                  <td>{{ role.id }}</td>
+                  <td>
+                    <strong>{{ role.name }}</strong>
+                    {% if role.is_system_role %}
+                    <span class="badge bg-secondary ms-1">Системна</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ role.description or 'Няма описание' }}</td>
+                  <td>
+                    {% if role.is_system_role %}
+                    <i class="fas fa-check text-success"></i>
+                    {% else %}
+                    <i class="fas fa-times text-muted"></i>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% set role_perms = role_permissions.get(role.id, []) %} {%
+                    if role_perms %}
+                    <span class="badge bg-info"
+                      >{{ role_perms|length }} права</span
+                    >
+                    {% else %}
+                    <span class="badge bg-light text-muted">Няма права</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if not role.is_system_role %}
+                    <a
+                      href="{{ url_for('admin_roles.edit_role', role_id=role.id) }}"
+                      class="btn btn-sm btn-outline-primary"
+                    >
+                      <i class="fas fa-edit"></i> Редактирай
+                    </a>
+                    <form
+                      method="POST"
+                      action="{{ url_for('admin_roles.delete_role', role_id=role.id) }}"
+                      class="d-inline"
+                      onsubmit="return confirm('Сигурни ли сте, че искате да изтриете тази роля?')"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-danger"
+                      >
+                        <i class="fas fa-trash"></i> Изтрий
+                      </button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">Не може да се редактира</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Section -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-users"></i> Потребители</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Потребителско име</th>
+                  <th>Имейл</th>
+                  <th>Роли</th>
+                  <th>Активен</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td>{{ user.id }}</td>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>
+                    {% set user_roles_list = user_roles.get(user.id, []) %} {%
+                    if user_roles_list %} {% for role_name in user_roles_list %}
+                    <span class="badge bg-primary me-1">{{ role_name }}</span>
+                    {% endfor %} {% else %}
+                    <span class="badge bg-light text-muted">Няма роли</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if user.is_active %}
+                    <i class="fas fa-check text-success"></i>
+                    {% else %}
+                    <i class="fas fa-times text-danger"></i>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a
+                      href="{{ url_for('admin_roles.manage_user_roles', user_id=user.id) }}"
+                      class="btn btn-sm btn-outline-primary"
+                    >
+                      <i class="fas fa-user-tag"></i> Управление роли
+                    </a>
+                    <form
+                      method="POST"
+                      action="{{ url_for('admin_roles.toggle_user_status', user_id=user.id) }}"
+                      class="d-inline"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-{{ 'warning' if user.is_active else 'success' }}"
+                      >
+                        <i
+                          class="fas fa-{{ 'ban' if user.is_active else 'check' }}"
+                        ></i>
+                        {{ 'Деактивирай' if user.is_active else 'Активирай' }}
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions Section -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-key"></i> Права</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for permission in permissions %}
+            <div class="col-md-6 col-lg-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    {{ permission.name }} {% if permission.is_system_permission
+                    %}
+                    <span class="badge bg-secondary">Системно</span>
+                    {% endif %}
+                  </h6>
+                  <p class="card-text small text-muted">
+                    {{ permission.codename }}
+                  </p>
+                  {% if permission.description %}
+                  <p class="card-text">{{ permission.description }}</p>
+                  {% endif %} {% if permission.category %}
+                  <span class="badge bg-info">{{ permission.category }}</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -4,88 +4,1145 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Админ панел - HelpChain</title>
+
+    <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+        --border-radius: 15px;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+        --shadow: var(--shadow-dark);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      * {
+        transition: all 0.3s ease;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+      }
+
+      /* Modern Navigation */
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow);
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      /* Stats Cards */
+      .stats-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-gradient);
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      /* Charts Container */
+      .chart-container {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .chart-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .chart-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      /* Tables */
+      .table-modern {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .table-modern thead th {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+      }
+
+      .table-modern tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #e1e5e9;
+        vertical-align: middle;
+      }
+
+      [data-theme="dark"] .table-modern tbody td {
+        border-bottom-color: #495057;
+      }
+
+      /* Status Badges */
+      .status-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-pending {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .status-active {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .status-completed {
+        background: #28a745;
+        color: white;
+      }
+
+      .status-cancelled {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      /* Action Buttons */
+      .btn-modern {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0.125rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-primary-modern {
+        background: var(--primary-gradient);
+        color: white;
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-success-modern {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .btn-warning-modern {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .btn-danger-modern {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      /* Quick Actions */
+      .quick-actions {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .action-card {
+        background: var(--card-bg);
+        border: 2px solid #e1e5e9;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--text-color);
+      }
+
+      [data-theme="dark"] .action-card {
+        border-color: #495057;
+      }
+
+      .action-card:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+      }
+
+      .action-icon {
+        font-size: 2rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+      }
+
+      .action-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .action-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+
+      /* Recent Activity */
+      .activity-feed {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        max-height: 500px;
+        overflow-y: auto;
+      }
+
+      .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e1e5e9;
+      }
+
+      [data-theme="dark"] .activity-item {
+        border-bottom-color: #495057;
+      }
+
+      .activity-item:last-child {
+        border-bottom: none;
+      }
+
+      .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .activity-content {
+        flex: 1;
+      }
+
+      .activity-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .activity-meta {
+        color: #6c757d;
+        font-size: 0.8rem;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .action-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .chart-container {
+          padding: 1rem;
+        }
+      }
+
+      /* Mobile-first responsive design for screens ≤375px */
+      @media (max-width: 375px) {
+        .navbar-brand-modern {
+          font-size: 1.2rem;
+        }
+
+        .stats-card {
+          padding: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .stats-value {
+          font-size: 1.5rem;
+        }
+
+        .stats-icon {
+          width: 40px;
+          height: 40px;
+          font-size: 1.2rem;
+        }
+
+        .action-card {
+          padding: 1rem;
+        }
+
+        .action-icon {
+          font-size: 1.8rem;
+        }
+
+        .action-title {
+          font-size: 0.9rem;
+        }
+
+        .action-description {
+          font-size: 0.8rem;
+        }
+
+        .chart-container {
+          padding: 0.75rem;
+          margin-bottom: 1rem;
+        }
+
+        .chart-title {
+          font-size: 1.2rem;
+        }
+
+        .table-responsive {
+          font-size: 0.85rem;
+        }
+
+        .btn-modern {
+          padding: 0.4rem 0.8rem;
+          font-size: 0.8rem;
+        }
+
+        .activity-feed {
+          padding: 1rem;
+        }
+
+        .activity-title {
+          font-size: 0.9rem;
+        }
+
+        .activity-meta {
+          font-size: 0.75rem;
+        }
+
+        /* Stack buttons vertically on very small screens */
+        .d-flex.gap-2 {
+          flex-direction: column;
+          gap: 0.5rem !important;
+        }
+
+        .d-flex.gap-2 .btn-modern {
+          width: 100%;
+        }
+
+        /* Adjust navbar for mobile */
+        .navbar-nav .nav-link {
+          padding: 0.5rem 1rem;
+          font-size: 0.9rem;
+        }
+
+        /* Make dropdown menu full width on mobile */
+        .dropdown-menu {
+          width: 100%;
+          margin-top: 0.5rem;
+        }
+
+        /* Adjust breadcrumbs for mobile */
+        .breadcrumb {
+          font-size: 0.8rem;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+          content: "/";
+          padding: 0 0.5rem;
+        }
+      }
+
+      /* Loading States */
+      .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
   </head>
 
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-      <div class="container">
-        <a class="navbar-brand" href="/">HelpChain - Админ</a>
-        <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="{{ url_for('dashboard') }}"
-            >Обратно към dashboard</a
-          >
-          <a class="nav-link" href="{{ url_for('logout') }}">Изход</a>
+  <body data-theme="light">
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand navbar-brand-modern" href="/">
+          <i class="fas fa-crown me-2"></i>HelpChain Admin
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                href="{{ url_for('admin_dashboard') }}"
+              >
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('admin_roles.roles_dashboard') }}"
+              >
+                <i class="fas fa-users-cog me-1"></i>Роли и права
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
+                <i class="fas fa-hand-holding-heart me-1"></i>Доброволци
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_analytics') }}">
+                <i class="fas fa-chart-line me-1"></i>Аналитика
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('notification_dashboard') }}"
+              >
+                <i class="fas fa-bell me-1"></i>Нотификации
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i>{{ current_user.username
+                if current_user else 'Admin' }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('profile') }}">
+                    <i class="fas fa-user me-2"></i>Профил
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin_settings') }}"
+                  >
+                    <i class="fas fa-cog me-2"></i>Настройки
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Изход
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <button
+                class="theme-toggle"
+                id="themeToggle"
+                title="Превключи тема"
+              >
+                <i class="fas fa-moon"></i>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
 
-    <div class="container mt-5">
-      <h2>Админ панел</h2>
+    <!-- Spacer for fixed navbar -->
+    <div style="height: 80px"></div>
 
-      <div class="row">
-        <div class="col-md-8">
-          <h3>Заявки</h3>
-          {% if requests.items %}
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Име</th>
-                  <th>Телефон</th>
-                  <th>Имейл</th>
-                  <th>Локация</th>
-                  <th>Категория</th>
-                  <th>Описание</th>
-                  <th>Статус</th>
-                  <th>Спешност</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for request in requests.items %}
-                <tr>
-                  <td>{{ request.id }}</td>
-                  <td>{{ request.name }}</td>
-                  <td>{{ request.phone }}</td>
-                  <td>{{ request.email }}</td>
-                  <td>{{ request.location }}</td>
-                  <td>{{ request.category }}</td>
-                  <td>{{ request.description[:50] }}...</td>
-                  <td>{{ request.status }}</td>
-                  <td>{{ request.urgency }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+    <div class="container-fluid">
+      <!-- Welcome Header -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="h2 mb-1">
+                <i class="fas fa-tachometer-alt text-primary me-2"></i>Админ
+                Dashboard
+              </h1>
+              <p class="text-muted mb-0">
+                Добре дошли в административния панел на HelpChain
+              </p>
+            </div>
+            <div class="d-flex gap-2">
+              <button
+                class="btn btn-primary-modern btn-modern"
+                onclick="refreshData()"
+              >
+                <i class="fas fa-sync-alt me-1"></i>Обнови
+              </button>
+              <button
+                class="btn btn-success-modern btn-modern"
+                onclick="exportData()"
+              >
+                <i class="fas fa-download me-1"></i>Експорт
+              </button>
+            </div>
           </div>
-          {% else %}
-          <p>Няма заявки.</p>
-          {% endif %}
+        </div>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--primary-gradient)">
+              <i class="fas fa-clipboard-list text-white"></i>
+            </div>
+            <div class="stats-value" id="totalRequests">
+              {{ stats.total_requests|default(0) }}
+            </div>
+            <p class="stats-label">Общо заявки</p>
+            <small class="text-success">
+              <i class="fas fa-arrow-up me-1"></i>+12% от миналата седмица
+            </small>
+          </div>
         </div>
 
-        <div class="col-md-4">
-          <h3>Доброволци</h3>
-          {% if volunteers %}
-          <div class="list-group">
-            {% for volunteer in volunteers %}
-            <div class="list-group-item">
-              <h6>{{ volunteer.name }}</h6>
-              <p class="mb-1">{{ volunteer.email }} | {{ volunteer.phone }}</p>
-              <small>{{ volunteer.location }} | {{ volunteer.skills }}</small>
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--success-gradient)">
+              <i class="fas fa-users text-white"></i>
             </div>
-            {% endfor %}
+            <div class="stats-value" id="totalVolunteers">
+              {{ stats.total_volunteers|default(0) }}
+            </div>
+            <p class="stats-label">Активни доброволци</p>
+            <small class="text-success">
+              <i class="fas fa-arrow-up me-1"></i>+8% от миналата седмица
+            </small>
           </div>
-          {% else %}
-          <p>Няма регистрирани доброволци.</p>
-          {% endif %}
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--warning-gradient)">
+              <i class="fas fa-clock text-white"></i>
+            </div>
+            <div class="stats-value" id="pendingRequests">
+              {{ stats.pending_requests|default(0) }}
+            </div>
+            <p class="stats-label">Чакащи заявки</p>
+            <small class="text-warning">
+              <i class="fas fa-exclamation-triangle me-1"></i>Изисква внимание
+            </small>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--info-gradient)">
+              <i class="fas fa-check-circle text-white"></i>
+            </div>
+            <div class="stats-value" id="completedRequests">
+              {{ stats.completed_requests|default(0) }}
+            </div>
+            <p class="stats-label">Завършени заявки</p>
+            <small class="text-info">
+              <i class="fas fa-star me-1"></i>95% удовлетвореност
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions mb-4">
+        <h4 class="mb-3">
+          <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
+        </h4>
+        <div class="action-grid">
+          <a href="{{ url_for('admin_volunteers') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="action-title">Добави доброволец</div>
+            <div class="action-description">
+              Регистрирай нов доброволец в системата
+            </div>
+          </a>
+
+          <a
+            href="{{ url_for('admin_roles.create_role') }}"
+            class="action-card"
+          >
+            <div class="action-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="action-title">Създай роля</div>
+            <div class="action-description">
+              Добави нова роля с определени права
+            </div>
+          </a>
+
+          <a href="{{ url_for('admin_analytics') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="action-title">Аналитика</div>
+            <div class="action-description">
+              Разгледай детайлни статистики и отчети
+            </div>
+          </a>
+
+          <a href="{{ url_for('notification_dashboard') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="action-title">Нотификации</div>
+            <div class="action-description">Управлявай имейл нотификациите</div>
+          </a>
+
+          <a href="{{ url_for('admin_settings') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-cog"></i>
+            </div>
+            <div class="action-title">Настройки</div>
+            <div class="action-description">
+              Конфигурирай системните настройки
+            </div>
+          </a>
+
+          <a href="{{ url_for('export_data') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-file-export"></i>
+            </div>
+            <div class="action-title">Експорт данни</div>
+            <div class="action-description">
+              Изтегли данни в различни формати
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Recent Requests -->
+        <div class="col-xl-8 mb-4">
+          <div class="chart-container">
+            <div class="chart-header">
+              <h3 class="chart-title">
+                <i class="fas fa-list-ul me-2"></i>Последни заявки
+              </h3>
+              <div class="dropdown">
+                <button
+                  class="btn btn-outline-secondary btn-sm dropdown-toggle"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                >
+                  <i class="fas fa-filter me-1"></i>Филтър
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="filterRequests('all')"
+                      >Всички</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="filterRequests('pending')"
+                      >Чакащи</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="filterRequests('active')"
+                      >Активни</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="#"
+                      onclick="filterRequests('completed')"
+                      >Завършени</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-modern">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Име</th>
+                    <th>Телефон</th>
+                    <th>Локация</th>
+                    <th>Категория</th>
+                    <th>Статус</th>
+                    <th>Спешност</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody id="requestsTable">
+                  {% if requests.items %} {% for request in requests.items %}
+                  <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.name }}</td>
+                    <td>{{ request.phone }}</td>
+                    <td>{{ request.location }}</td>
+                    <td>{{ request.category }}</td>
+                    <td>
+                      <span
+                        class="status-badge status-{{ request.status|lower }}"
+                      >
+                        {{ request.status }}
+                      </span>
+                    </td>
+                    <td>
+                      {% if request.urgency == 'high' %}
+                      <span class="badge bg-danger">Висока</span>
+                      {% elif request.urgency == 'medium' %}
+                      <span class="badge bg-warning">Средна</span>
+                      {% else %}
+                      <span class="badge bg-success">Ниска</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <button
+                          class="btn btn-primary-modern btn-modern btn-sm"
+                          onclick="viewRequest({{ request.id }})"
+                        >
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button
+                          class="btn btn-success-modern btn-modern btn-sm"
+                          onclick="assignVolunteer({{ request.id }})"
+                        >
+                          <i class="fas fa-user-plus"></i>
+                        </button>
+                        <button
+                          class="btn btn-warning-modern btn-modern btn-sm"
+                          onclick="updateStatus({{ request.id }}, 'completed')"
+                        >
+                          <i class="fas fa-check"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %} {% else %}
+                  <tr>
+                    <td colspan="8" class="text-center py-4">
+                      <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                      <p class="text-muted">Няма заявки в момента</p>
+                    </td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Feed & Quick Stats -->
+        <div class="col-xl-4">
+          <!-- Activity Feed -->
+          <div class="activity-feed mb-4">
+            <h4 class="mb-3">
+              <i class="fas fa-history text-info me-2"></i>Последна активност
+            </h4>
+
+            <div id="activityFeed">
+              <div class="activity-item">
+                <div
+                  class="activity-icon"
+                  style="background: var(--primary-gradient)"
+                >
+                  <i class="fas fa-plus text-white"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Нова заявка #1234</div>
+                  <div class="activity-meta">преди 5 минути • София</div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div
+                  class="activity-icon"
+                  style="background: var(--success-gradient)"
+                >
+                  <i class="fas fa-user-plus text-white"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Нов доброволец се регистрира</div>
+                  <div class="activity-meta">преди 12 минути • Пловдив</div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div
+                  class="activity-icon"
+                  style="background: var(--warning-gradient)"
+                >
+                  <i class="fas fa-exclamation-triangle text-white"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Спешна заявка #1229</div>
+                  <div class="activity-meta">преди 18 минути • Варна</div>
+                </div>
+              </div>
+
+              <div class="activity-item">
+                <div
+                  class="activity-icon"
+                  style="background: var(--info-gradient)"
+                >
+                  <i class="fas fa-check text-white"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">Завършена заявка #1225</div>
+                  <div class="activity-meta">преди 25 минути • Бургас</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats Chart -->
+          <div class="chart-container">
+            <h4 class="chart-title mb-3">
+              <i class="fas fa-chart-pie text-success me-2"></i>Разпределение по
+              категории
+            </h4>
+            <canvas id="categoryChart" width="300" height="300"></canvas>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Common HelpChain utilities -->
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      // Chart.js initialization
+      document.addEventListener("DOMContentLoaded", function () {
+        // Category distribution chart
+        const ctx = document.getElementById("categoryChart").getContext("2d");
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: [
+              "Медицинска помощ",
+              "Транспорт",
+              "Домакинска помощ",
+              "Образование",
+              "Храна",
+              "Други",
+            ],
+            datasets: [
+              {
+                data: [35, 25, 15, 10, 10, 5],
+                backgroundColor: [
+                  "#667eea",
+                  "#764ba2",
+                  "#f093fb",
+                  "#f5576c",
+                  "#4facfe",
+                  "#00f2fe",
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  padding: 20,
+                  usePointStyle: true,
+                },
+              },
+            },
+          },
+        });
+      });
+
+      // Action functions
+      function refreshData() {
+        window.helpChainUtils.showLoading();
+        // Simulate data refresh
+        setTimeout(() => {
+          window.helpChainUtils.hideLoading();
+          // In real implementation, this would fetch new data from server
+          console.log("Data refreshed");
+        }, 1500);
+      }
+
+      function exportData() {
+        // In real implementation, this would trigger a download
+        window.helpChainUtils.showAlert(
+          "Експорт на данни ще бъде достъпен скоро!",
+        );
+      }
+
+      function viewRequest(id) {
+        window.location.href = `/admin/request/${id}`;
+      }
+
+      function assignVolunteer(requestId) {
+        // In real implementation, this would open a modal or redirect to assignment page
+        window.helpChainUtils.showAlert(
+          `Присвояване на доброволец за заявка #${requestId}`,
+        );
+      }
+
+      function updateStatus(requestId, status) {
+        if (
+          window.helpChainUtils.confirmAction(
+            `Сигурни ли сте, че искате да промените статуса на заявка #${requestId}?`,
+          )
+        ) {
+          // In real implementation, this would make an AJAX call
+          window.helpChainUtils.showAlert(
+            `Статусът на заявка #${requestId} е променен на "${status}"`,
+          );
+        }
+      }
+
+      function filterRequests(status) {
+        // In real implementation, this would filter the table
+        window.helpChainUtils.showAlert(`Филтриране по статус: ${status}`);
+      }
+
+      // Real-time updates simulation
+      window.helpChainUtils.startRealtimeUpdates(() => {
+        // Simulate real-time updates
+        const statsElements = [
+          "totalRequests",
+          "totalVolunteers",
+          "pendingRequests",
+          "completedRequests",
+        ];
+        statsElements.forEach((id) => {
+          const element = document.getElementById(id);
+          if (element && Math.random() > 0.95) {
+            // 5% chance to update
+            const currentValue = parseInt(element.textContent);
+            const newValue = currentValue + Math.floor(Math.random() * 3) - 1; // -1, 0, or +1
+            if (newValue >= 0) {
+              element.textContent = newValue;
+            }
+          }
+        });
+      }, 30000); // Update every 30 seconds
+    </script>
   </body>
 </html>

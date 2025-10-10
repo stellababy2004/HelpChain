@@ -1,0 +1,97 @@
+<!-- Dashboard Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top shadow-sm">
+    <div class="container-fluid">
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+            <i class="fas fa-hand-holding-heart text-primary me-2"></i>
+            <span class="fw-bold text-primary">HelpChain</span>
+        </a>
+
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+            data-bs-target="#dashboardNavbar" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navigation Items -->
+        <div class="collapse navbar-collapse" id="dashboardNavbar">
+            <!-- Left Side - Navigation Links -->
+            <ul class="navbar-nav me-auto">
+                {% if session.get('volunteer_logged_in') %}
+                <!-- Volunteer Navigation -->
+                <li class="nav-item"><a
+                        class="nav-link {{ 'active' if request.endpoint == 'volunteer_dashboard' else '' }}"
+                        href="{{ url_for('volunteer_dashboard') }}"><i class="fas fa-tachometer-alt me-1"></i>Табло</a>
+                </li>
+                <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'my_tasks' else '' }}"
+                        href="{{ url_for('my_tasks') }}"><i class="fas fa-tasks me-1"></i>Моите задачи</a></li>
+                <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'available_tasks' else '' }}"
+                        href="{{ url_for('available_tasks') }}"><i class="fas fa-list me-1"></i>Налични задачи</a></li>
+                <li class="nav-item"><a
+                        class="nav-link {{ 'active' if request.endpoint == 'volunteer_profile' else '' }}"
+                        href="{{ url_for('volunteer_profile') }}"><i class="fas fa-user me-1"></i>Профил</a></li>
+                <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'achievements' else '' }}"
+                        href="{{ url_for('achievements') }}"><i class="fas fa-trophy me-1"></i>Постижения</a></li>
+                {% elif session.get('admin_logged_in') %}
+                <!-- Admin Navigation -->
+                <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'admin_dashboard' else '' }}"
+                        href="{{ url_for('admin_dashboard') }}"><i class="fas fa-tachometer-alt me-1"></i>Табло</a></li>
+                <li class="nav-item"><a
+                        class="nav-link {{ 'active' if request.endpoint == 'admin_volunteers' else '' }}"
+                        href="{{ url_for('admin_volunteers') }}"><i class="fas fa-users me-1"></i>Доброволци</a></li>
+                <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'admin_analytics' else '' }}"
+                        href="{{ url_for('admin_analytics') }}"><i class="fas fa-chart-bar me-1"></i>Аналитика</a></li>
+                {% endif %}
+            </ul>
+
+            <!-- Right Side - Search and User Menu -->
+            <ul class="navbar-nav ms-auto">
+                <!-- Global Search -->
+                <li class="nav-item">
+                    <button class="btn btn-outline-secondary me-2" onclick="openGlobalSearch()"
+                        title="Глобално търсене">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </li>
+
+                <!-- User Menu -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                        data-bs-toggle="dropdown">
+                        {% if session.get('volunteer_logged_in') %}
+                        <i class="fas fa-user-circle fa-lg me-2"></i>
+                        {{ session.get('volunteer_name', 'Доброволец') }}
+                        {% elif session.get('admin_logged_in') %}
+                        <i class="fas fa-user-shield fa-lg me-2"></i>
+                        {{ session.get('admin_username', 'Админ') }}
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% if session.get('volunteer_logged_in') %}
+                        <li><a class="dropdown-item" href="{{ url_for('volunteer_profile') }}"><i
+                                    class="fas fa-user me-2"></i>Профил</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('volunteer_settings') }}"><i
+                                    class="fas fa-cog me-2"></i>Настройки</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('volunteer_logout') }}"><i
+                                    class="fas fa-sign-out-alt me-2"></i>Изход</a></li>
+                        {% elif session.get('admin_logged_in') %}
+                        <li><a class="dropdown-item" href="{{ url_for('admin_dashboard') }}"><i
+                                    class="fas fa-tachometer-alt me-2"></i>Админ панел</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('admin_logout') }}"><i
+                                    class="fas fa-sign-out-alt me-2"></i>Изход</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Include Global Search Modal -->
+{% include 'global_search.html' %}

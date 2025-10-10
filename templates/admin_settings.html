@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Админ настройки - HelpChain</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #667eea;
+        --secondary-color: #764ba2;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --danger-color: #f44336;
+        --info-color: #2196f3;
+        --light-bg: #f8f9fa;
+        --dark-text: #333;
+        --border-radius: 10px;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .settings-container {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin: 2rem auto;
+        max-width: 1000px;
+      }
+
+      .settings-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--light-bg);
+      }
+
+      .settings-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        color: white;
+        font-size: 2rem;
+      }
+
+      .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+      }
+
+      .btn-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        transition: transform 0.2s;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .alert {
+        border-radius: var(--border-radius);
+        border: none;
+      }
+
+      .form-label {
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+      }
+
+      .setting-group {
+        background: var(--light-bg);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .setting-group h4 {
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 0.5rem;
+      }
+
+      .breadcrumb {
+        background: transparent;
+        margin-bottom: 2rem;
+      }
+
+      .breadcrumb-item a {
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .breadcrumb-item.active {
+        color: var(--dark-text);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">
+          <i class="fas fa-shield-alt me-2"></i>HelpChain Admin
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
+                <i class="fas fa-users me-1"></i>Доброволци
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_analytics') }}">
+                <i class="fas fa-chart-bar me-1"></i>Аналитика
+              </a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i>{{ current_user.username
+                if current_user else 'Admin' }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('profile') }}">
+                    <i class="fas fa-user me-2"></i>Профил
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item active"
+                    href="{{ url_for('admin_settings') }}"
+                  >
+                    <i class="fas fa-cog me-2"></i>Настройки
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt me-2"></i>Изход
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <!-- Breadcrumbs -->
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('admin_dashboard') }}">
+              <i class="fas fa-home me-1"></i>Dashboard
+            </a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            <i class="fas fa-cog me-1"></i>Настройки
+          </li>
+        </ol>
+      </nav>
+
+      <div class="settings-container">
+        <div class="settings-header">
+          <div class="settings-icon">
+            <i class="fas fa-cog"></i>
+          </div>
+          <h2>Системни настройки</h2>
+          <p class="text-muted">
+            Конфигурирайте параметрите на HelpChain системата
+          </p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %} {% for category, message in messages %}
+        <div
+          class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+          ></button>
+        </div>
+        {% endfor %} {% endif %} {% endwith %}
+
+        <form method="POST">
+          <!-- General Settings -->
+          <div class="setting-group">
+            <h4><i class="fas fa-globe me-2"></i>Общи настройки</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="site_name" class="form-label">Име на сайта</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="site_name"
+                    name="site_name"
+                    value="HelpChain"
+                  />
+                  <div class="form-text">
+                    Показва се в заглавието и навигацията
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="default_language" class="form-label"
+                    >Език по подразбиране</label
+                  >
+                  <select
+                    class="form-control"
+                    id="default_language"
+                    name="default_language"
+                  >
+                    <option value="bg" selected>Български</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email Settings -->
+          <div class="setting-group">
+            <h4><i class="fas fa-envelope me-2"></i>Имейл настройки</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="smtp_server" class="form-label"
+                    >SMTP сървър</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="smtp_server"
+                    name="smtp_server"
+                    value="smtp.zoho.com"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="smtp_port" class="form-label">SMTP порт</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="smtp_port"
+                    name="smtp_port"
+                    value="587"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="email_sender" class="form-label">Подател</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="email_sender"
+                    name="email_sender"
+                    value="contact@helpchain.live"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="email_notifications" class="form-label"
+                    >Имейл нотификации</label
+                  >
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="email_notifications"
+                      name="email_notifications"
+                      checked
+                    />
+                    <label class="form-check-label" for="email_notifications">
+                      Активирани
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Settings -->
+          <div class="setting-group">
+            <h4><i class="fas fa-shield-alt me-2"></i>Сигурност</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="session_timeout" class="form-label"
+                    >Timeout на сесия (минути)</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="session_timeout"
+                    name="session_timeout"
+                    value="60"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="max_login_attempts" class="form-label"
+                    >Максимални опити за вход</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="max_login_attempts"
+                    name="max_login_attempts"
+                    value="5"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="require_2fa" class="form-label"
+                    >Изисквай 2FA за админи</label
+                  >
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="require_2fa"
+                      name="require_2fa"
+                    />
+                    <label class="form-check-label" for="require_2fa">
+                      Задължително
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="password_policy" class="form-label"
+                    >Политика за пароли</label
+                  >
+                  <select
+                    class="form-control"
+                    id="password_policy"
+                    name="password_policy"
+                  >
+                    <option value="basic" selected>Основна</option>
+                    <option value="strong">Силна</option>
+                    <option value="complex">Комплексна</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Analytics Settings -->
+          <div class="setting-group">
+            <h4><i class="fas fa-chart-bar me-2"></i>Аналитика</h4>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="analytics_enabled" class="form-label"
+                    >Аналитика</label
+                  >
+                  <div class="form-check form-switch">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="analytics_enabled"
+                      name="analytics_enabled"
+                      checked
+                    />
+                    <label class="form-check-label" for="analytics_enabled">
+                      Активирана
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="data_retention" class="form-label"
+                    >Запазване на данни (дни)</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="data_retention"
+                    name="data_retention"
+                    value="365"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a
+              href="{{ url_for('admin_dashboard') }}"
+              class="btn btn-outline-secondary me-md-2"
+            >
+              <i class="fas fa-arrow-left me-1"></i>Назад към Dashboard
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-1"></i>Запази настройките
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

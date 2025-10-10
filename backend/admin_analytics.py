@@ -6,9 +6,16 @@
 филтриране, търсене и геолокационна аналитика
 """
 
+import sys
+import os
+
+sys.path.insert(0, os.path.dirname(__file__))
+
 from datetime import datetime, timedelta
 from sqlalchemy import func, or_
-from models import db, HelpRequest, Volunteer, AdminLog, User
+from extensions import db
+from models import User, Volunteer, HelpRequest
+from models_with_analytics import AdminLog
 from collections import defaultdict
 
 
@@ -56,7 +63,7 @@ class AnalyticsEngine:
         # Геолокационни данни
         location_stats = AnalyticsEngine.get_location_stats()
 
-        # Категории заявки (ако имаме поле category)
+        # Категории заявка (ако имаме поле category)
         category_stats = AnalyticsEngine.get_category_stats()
 
         return {
@@ -180,118 +187,177 @@ class AnalyticsEngine:
         return Volunteer.query.count()
 
     @staticmethod
-    def get_success_rate():
-        """Изчислява процент успех (завършени заявки)"""
-        total = HelpRequest.query.count()
-        if total == 0:
-            return 0
+    def get_trends_data(months=12):
+        """Получава трендове за определен период"""
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=months * 30)
 
-        completed = HelpRequest.query.filter(
-            or_(
-                HelpRequest.status == "Завършена",
-                HelpRequest.status == "Resolved",
-                HelpRequest.status == "Completed",
+        trends = {"labels": [], "requests": [], "volunteers": [], "completed": []}
+
+        # Групиране по месеци
+        for i in range(months):
+            month_start = start_date + timedelta(days=i * 30)
+            month_end = month_start + timedelta(days=30)
+
+            month_requests = HelpRequest.query.filter(
+                HelpRequest.created_at >= month_start,
+                HelpRequest.created_at < month_end,
+            ).count()
+
+            month_completed = HelpRequest.query.filter(
+                HelpRequest.created_at >= month_start,
+                HelpRequest.created_at < month_end,
+                HelpRequest.status == "completed",
+            ).count()
+
+            month_volunteers = Volunteer.query.filter(
+                Volunteer.created_at >= month_start, Volunteer.created_at < month_end
+            ).count()
+
+            trends["labels"].append(month_start.strftime("%Y-%m"))
+            trends["requests"].append(month_requests)
+            trends["completed"].append(month_completed)
+            trends["volunteers"].append(month_volunteers)
+
+        return trends
+
+    @staticmethod
+    def get_predictions(months=3):
+        """Прогнозира бъдещи тенденции (опростена версия без ML)"""
+        # Взимаме исторически данни за последните 3 месеца
+        trends = AnalyticsEngine.get_trends_data(months=3)
+
+        predictions = {
+            "labels": [],
+            "requests_predicted": [],
+            "volunteers_predicted": [],
+        }
+
+        if trends["requests"]:
+            # Проста линейна прогноза - средно от последните 3 месеца
+            avg_requests = sum(trends["requests"][-3:]) / len(trends["requests"][-3:])
+            avg_volunteers = (
+                sum(trends["volunteers"][-3:]) / len(trends["volunteers"][-3:])
+                if trends["volunteers"]
+                else 0
             )
+
+            # Прогнозираме за следващите months с лек ръст
+            growth_factor = 1.1  # 10% ръст
+
+            for i in range(months):
+                future_requests = int(avg_requests * (growth_factor ** (i + 1)))
+                future_volunteers = int(avg_volunteers * (growth_factor ** (i + 1)))
+
+                future_date = datetime.now() + timedelta(days=(i + 1) * 30)
+                predictions["labels"].append(future_date.strftime("%Y-%m"))
+                predictions["requests_predicted"].append(max(0, future_requests))
+                predictions["volunteers_predicted"].append(max(0, future_volunteers))
+
+        return predictions
+
+    @staticmethod
+    def get_performance_metrics():
+        """Performance метрики"""
+        # Средно време за отговор
+        avg_response_time = db.session.query(
+            func.avg(
+                func.julianday(HelpRequest.updated_at)
+                - func.julianday(HelpRequest.created_at)
+            )
+        ).scalar()
+
+        # Success rate
+        total_requests = HelpRequest.query.count()
+        completed_requests = HelpRequest.query.filter_by(status="completed").count()
+        success_rate = (
+            (completed_requests / total_requests * 100) if total_requests > 0 else 0
+        )
+
+        # Volunteer utilization
+        active_volunteers = Volunteer.query.count()
+        active_requests = HelpRequest.query.filter(
+            HelpRequest.status.in_(["pending", "active", "in_progress"])
         ).count()
 
-        return round((completed / total) * 100, 2)
+        utilization_rate = min(100, (active_requests / max(active_volunteers, 1)) * 100)
+
+        return {
+            "avg_response_time_days": round(avg_response_time or 0, 2),
+            "success_rate": round(success_rate, 2),
+            "utilization_rate": round(utilization_rate, 2),
+            "total_requests": total_requests,
+            "completed_requests": completed_requests,
+            "active_requests": active_requests,
+            "active_volunteers": active_volunteers,
+        }
+
+    @staticmethod
+    def get_success_rate():
+        """Изчислява success rate"""
+        total = HelpRequest.query.count()
+        completed = HelpRequest.query.filter_by(status="completed").count()
+        return round((completed / total * 100) if total > 0 else 0, 2)
 
     @staticmethod
     def get_geo_data():
-        """
-        Получава геолокационни данни за карта
+        """Получава геолокационни данни за карта"""
+        # Заявки с координати
+        requests_with_location = HelpRequest.query.filter(
+            HelpRequest.latitude.isnot(None), HelpRequest.longitude.isnot(None)
+        ).all()
 
-        Returns:
-            dict: Данни за заявки и доброволци с координати
-        """
-        # Координати за основни градове в България
-        city_coords = {
-            "софия": [42.6977, 23.3219],
-            "пловдив": [42.1354, 24.7453],
-            "варна": [43.2141, 27.9147],
-            "бургас": [42.5048, 27.4626],
-            "русе": [43.8564, 25.9706],
-            "стара загора": [42.4258, 25.6347],
-            "плевен": [43.4170, 24.6167],
-            "сливен": [42.6858, 26.3253],
-            "добрич": [43.5723, 27.8274],
-            "шумен": [43.2706, 26.9247],
-        }
+        # Доброволци с координати
+        volunteers_with_location = Volunteer.query.filter(
+            Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)
+        ).all()
 
-        geo_data = {"requests": [], "volunteers": [], "centers": []}
-
-        # Доброволци по локации
-        volunteers = Volunteer.query.filter(Volunteer.location.isnot(None)).all()
-
-        location_counts = defaultdict(int)
-
-        for volunteer in volunteers:
-            if volunteer.location:
-                location = volunteer.location.lower().strip()
-                location_counts[location] += 1
-
-                # Търсим координати
-                coords = None
-                for city, coord in city_coords.items():
-                    if city in location:
-                        coords = coord
-                        break
-
-                if coords:
-                    geo_data["volunteers"].append(
-                        {
-                            "id": volunteer.id,
-                            "name": volunteer.name,
-                            "location": volunteer.location,
-                            "lat": coords[0],
-                            "lng": coords[1],
-                            "type": "volunteer",
-                        }
-                    )
-
-        # Заявки (използваме произволни координати около градовете)
-        requests = HelpRequest.query.limit(50).all()  # Ограничаваме за производителност
-
-        import random
-
-        for i, req in enumerate(requests):
-            # Избираме произволен град
-            city_name, coords = random.choice(list(city_coords.items()))
-
-            # Добавяме малка произволност към координатите
-            lat_offset = random.uniform(-0.05, 0.05)
-            lng_offset = random.uniform(-0.05, 0.05)
-
-            geo_data["requests"].append(
+        return {
+            "requests": [
                 {
                     "id": req.id,
-                    "name": req.name,
-                    "title": req.title or "Заявка за помощ",
+                    "title": req.title,
+                    "lat": req.latitude,
+                    "lng": req.longitude,
                     "status": req.status,
-                    "lat": coords[0] + lat_offset,
-                    "lng": coords[1] + lng_offset,
-                    "type": "request",
                     "created_at": (
-                        req.created_at.strftime("%d.%m.%Y") if req.created_at else ""
+                        req.created_at.isoformat() if req.created_at else None
                     ),
                 }
-            )
+                for req in requests_with_location
+            ],
+            "volunteers": [
+                {
+                    "id": vol.id,
+                    "name": vol.name,
+                    "lat": vol.latitude,
+                    "lng": vol.longitude,
+                    "location": vol.location,
+                    "skills": getattr(vol, "skills", ""),
+                }
+                for vol in volunteers_with_location
+            ],
+        }
 
-        # Добавяме центрове на градове
-        for city, coords in city_coords.items():
-            volunteer_count = sum(1 for loc in location_counts.keys() if city in loc)
-            if volunteer_count > 0:
-                geo_data["centers"].append(
-                    {
-                        "city": city.title(),
-                        "lat": coords[0],
-                        "lng": coords[1],
-                        "volunteer_count": volunteer_count,
-                        "type": "center",
-                    }
-                )
+    @staticmethod
+    def get_live_stats():
+        """Получава live статистики за dashboard"""
+        today = datetime.now().date()
+        week_ago = datetime.now() - timedelta(days=7)
 
-        return geo_data
+        return {
+            "requests_today": HelpRequest.query.filter(
+                func.date(HelpRequest.created_at) == today
+            ).count(),
+            "requests_this_week": HelpRequest.query.filter(
+                HelpRequest.created_at >= week_ago
+            ).count(),
+            "active_requests": HelpRequest.query.filter(
+                HelpRequest.status.in_(["pending", "active", "in_progress"])
+            ).count(),
+            "total_volunteers": Volunteer.query.count(),
+            "success_rate": AnalyticsEngine.get_success_rate(),
+        }
 
 
 class RequestFilter:

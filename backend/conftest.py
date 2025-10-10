@@ -17,10 +17,16 @@ if str(HERE) not in sys.path:
 
 
 @pytest.fixture
-def session_id():
-    return "test-session"
+def app():
+    """Create and configure a test app instance."""
+    from appy import app
+
+    app.config["TESTING"] = True
+    app.config["WTF_CSRF_ENABLED"] = False  # Disable CSRF for testing
+    return app
 
 
 @pytest.fixture
-def message():
-    return "Hello, test message"
+def client(app):
+    """A test client for the app."""
+    return app.test_client()
