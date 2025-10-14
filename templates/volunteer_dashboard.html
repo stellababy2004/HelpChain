@@ -892,11 +892,15 @@
           <div class="mt-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <span class="badge bg-primary">
-                <i class="fas fa-level-up-alt me-1"></i>Ниво {{ current_user.level if current_user and hasattr(current_user, 'level') else 1 }}
+                <i class="fas fa-level-up-alt me-1"></i>Ниво {{
+                current_user.level if current_user and hasattr(current_user,
+                'level') else 1 }}
               </span>
               <small class="text-muted">
-                {{ current_user.experience if current_user and hasattr(current_user, 'experience') else 0 }} /
-                {{ (current_user.level if current_user and hasattr(current_user, 'level') else 1) * 100 }} XP
+                {{ current_user.experience if current_user and
+                hasattr(current_user, 'experience') else 0 }} / {{
+                (current_user.level if current_user and hasattr(current_user,
+                'level') else 1) * 100 }} XP
               </small>
             </div>
             <div class="progress-modern">
@@ -917,11 +921,13 @@
               <i class="fas fa-star text-white"></i>
             </div>
             <div class="stats-value" id="points">
-              {{ current_user.points if current_user and hasattr(current_user, 'points') else 0 }}
+              {{ current_user.points if current_user and hasattr(current_user,
+              'points') else 0 }}
             </div>
             <p class="stats-label">Точки</p>
             <small class="text-success">
-              <i class="fas fa-arrow-up me-1"></i>+{{ recent_points|default(0) }} тази седмица
+              <i class="fas fa-arrow-up me-1"></i>+{{ recent_points|default(0)
+              }} тази седмица
             </small>
           </div>
         </div>
@@ -1177,7 +1183,7 @@
             </div>
 
             <!-- Skeleton Loading -->
-            <div id="skeletonLoading" style="display: none;">
+            <div id="skeletonLoading" style="display: none">
               <div class="task-card skeleton-card">
                 <div class="skeleton skeleton-title"></div>
                 <div class="skeleton skeleton-text"></div>
@@ -1259,8 +1265,15 @@
                   <i class="fas fa-user-circle fa-2x"></i>
                 </div>
                 <div class="leaderboard-info">
-                  <div class="leaderboard-name">{{ current_user.name if current_user else 'Вие' }}</div>
-                  <div class="leaderboard-stats">{{ current_user.points if current_user and hasattr(current_user, 'points') else 0 }} точки • Ниво {{ current_user.level if current_user and hasattr(current_user, 'level') else 1 }}</div>
+                  <div class="leaderboard-name">
+                    {{ current_user.name if current_user else 'Вие' }}
+                  </div>
+                  <div class="leaderboard-stats">
+                    {{ current_user.points if current_user and
+                    hasattr(current_user, 'points') else 0 }} точки • Ниво {{
+                    current_user.level if current_user and hasattr(current_user,
+                    'level') else 1 }}
+                  </div>
                 </div>
                 <div class="leaderboard-badge">
                   <i class="fas fa-star text-primary"></i>
@@ -1291,81 +1304,112 @@
             </div>
 
             <div class="text-center mt-3">
-              <a href="{{ url_for('leaderboard') }}" class="btn btn-outline-primary btn-sm">
+              <a
+                href="{{ url_for('leaderboard') }}"
+                class="btn btn-outline-primary btn-sm"
+              >
                 <i class="fas fa-trophy me-1"></i>Виж пълната класация
               </a>
             </div>
           </div>
 
-            <div class="text-center mb-3">
-              <div class="achievement-badge">
-                <i class="fas fa-heart"></i>
-              </div>
-              <div class="achievement-badge">
-                <i class="fas fa-hands-helping"></i>
-              </div>
-              <div class="achievement-badge">
-                <i class="fas fa-star"></i>
-              </div>
-              <div class="achievement-badge achievement-locked">
-                <i class="fas fa-crown"></i>
-              </div>
+          <div class="text-center mb-3">
+            <div class="achievement-badge">
+              <i class="fas fa-heart"></i>
             </div>
-
-            <div class="activity-item">
-              <div
-                class="activity-icon"
-                style="background: var(--warning-gradient)"
-              >
-                <i class="fas fa-trophy text-white"></i>
-              </div>
-              <div class="activity-content">
-                <div class="activity-title">Помогнахте на 10 души!</div>
-                <div class="activity-meta">преди 2 дни • Значка "Помощник"</div>
-              </div>
+            <div class="achievement-badge">
+              <i class="fas fa-hands-helping"></i>
             </div>
-
-            <div class="activity-item">
-              <div
-                class="activity-icon"
-                style="background: var(--success-gradient)"
-              >
-                <i class="fas fa-star text-white"></i>
-              </div>
-              <div class="activity-content">
-                <div class="activity-title">5-звезден рейтинг</div>
-                <div class="activity-meta">
-                  преди 1 седмица • Отзив от Мария
-                </div>
-              </div>
+            <div class="achievement-badge">
+              <i class="fas fa-star"></i>
+            </div>
+            <div class="achievement-badge achievement-locked">
+              <i class="fas fa-crown"></i>
             </div>
           </div>
 
-          <!-- Quick Stats Chart -->
-          <div class="chart-container">
-            <h4 class="chart-title mb-3">
-              <i class="fas fa-chart-pie text-success me-2"></i>Вашата активност
-            </h4>
-            <canvas id="activityChart" width="300" height="300"></canvas>
+          <div class="activity-item">
+            <div
+              class="activity-icon"
+              style="background: var(--warning-gradient)"
+            >
+              <i class="fas fa-trophy text-white"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Помогнахте на 10 души!</div>
+              <div class="activity-meta">преди 2 дни • Значка "Помощник"</div>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div
+              class="activity-icon"
+              style="background: var(--success-gradient)"
+            >
+              <i class="fas fa-star text-white"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">5-звезден рейтинг</div>
+              <div class="activity-meta">преди 1 седмица • Отзив от Мария</div>
+            </div>
           </div>
         </div>
+
+        <!-- Quick Stats Chart -->
+        <div class="chart-container">
+          <h4 class="chart-title mb-3">
+            <i class="fas fa-chart-pie text-success me-2"></i>Вашата активност
+          </h4>
+          <canvas id="activityChart" width="300" height="300"></canvas>
+        </div>
       </div>
+    </div>
 
     <!-- Complete Task Modal -->
-    <div class="modal fade" id="completeTaskModal" tabindex="-1" aria-labelledby="completeTaskModalLabel" aria-hidden="true">
+    <div
+      class="modal fade"
+      id="completeTaskModal"
+      tabindex="-1"
+      aria-labelledby="completeTaskModalLabel"
+      aria-hidden="true"
+    >
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="completeTaskModalLabel">Завърши задача</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h5 class="modal-title" id="completeTaskModalLabel">
+              Завърши задача
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
           </div>
           <div class="modal-body">
             <p>Моля, добавете кратък коментар за изпълнението на задачата:</p>
-            <textarea class="form-control" id="taskFeedback" rows="3" placeholder="Опишете как премина задачата..."></textarea>
+            <textarea
+              class="form-control"
+              id="taskFeedback"
+              rows="3"
+              placeholder="Опишете как премина задачата..."
+            ></textarea>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отказ</button>
-            <button type="button" class="btn btn-success" onclick="confirmCompleteTask()">Завърши задача</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Отказ
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              onclick="confirmCompleteTask()"
+            >
+              Завърши задача
+            </button>
           </div>
         </div>
       </div>
@@ -1373,32 +1417,68 @@
 
     <!-- Toast Notifications -->
     <div class="toast-container position-fixed top-0 end-0 p-3">
-      <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div
+        id="successToast"
+        class="toast align-items-center text-white bg-success border-0"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
         <div class="d-flex">
           <div class="toast-body">
-            <i class="fas fa-check-circle me-2"></i><span id="toastMessage"></span>
+            <i class="fas fa-check-circle me-2"></i
+            ><span id="toastMessage"></span>
           </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"
+            aria-label="Close"
+          ></button>
         </div>
       </div>
     </div>
 
     <!-- Sound Effects -->
     <audio id="levelUpSound" preload="auto">
-      <source src="{{ url_for('static', filename='sounds/level_up.mp3') }}" type="audio/mpeg">
-      <source src="{{ url_for('static', filename='sounds/level_up.wav') }}" type="audio/wav">
+      <source
+        src="{{ url_for('static', filename='sounds/level_up.mp3') }}"
+        type="audio/mpeg"
+      />
+      <source
+        src="{{ url_for('static', filename='sounds/level_up.wav') }}"
+        type="audio/wav"
+      />
     </audio>
     <audio id="achievementSound" preload="auto">
-      <source src="{{ url_for('static', filename='sounds/achievement.mp3') }}" type="audio/mpeg">
-      <source src="{{ url_for('static', filename='sounds/achievement.wav') }}" type="audio/wav">
+      <source
+        src="{{ url_for('static', filename='sounds/achievement.mp3') }}"
+        type="audio/mpeg"
+      />
+      <source
+        src="{{ url_for('static', filename='sounds/achievement.wav') }}"
+        type="audio/wav"
+      />
     </audio>
     <audio id="taskCompleteSound" preload="auto">
-      <source src="{{ url_for('static', filename='sounds/task_complete.mp3') }}" type="audio/mpeg">
-      <source src="{{ url_for('static', filename='sounds/task_complete.wav') }}" type="audio/wav">
+      <source
+        src="{{ url_for('static', filename='sounds/task_complete.mp3') }}"
+        type="audio/mpeg"
+      />
+      <source
+        src="{{ url_for('static', filename='sounds/task_complete.wav') }}"
+        type="audio/wav"
+      />
     </audio>
     <audio id="buttonClickSound" preload="auto">
-      <source src="{{ url_for('static', filename='sounds/button_click.mp3') }}" type="audio/mpeg">
-      <source src="{{ url_for('static', filename='sounds/button_click.wav') }}" type="audio/wav">
+      <source
+        src="{{ url_for('static', filename='sounds/button_click.mp3') }}"
+        type="audio/mpeg"
+      />
+      <source
+        src="{{ url_for('static', filename='sounds/button_click.wav') }}"
+        type="audio/wav"
+      />
     </audio>
 
     <!-- Bootstrap JS -->
@@ -1416,16 +1496,16 @@
         const audio = document.getElementById(soundId);
         if (audio) {
           audio.currentTime = 0; // Reset to start
-          audio.play().catch(e => {
+          audio.play().catch((e) => {
             // Ignore errors if sound can't play (user hasn't interacted yet)
-            console.log('Sound play failed:', e);
+            console.log("Sound play failed:", e);
           });
         }
       }
 
       function showToast(message) {
-        const toastElement = document.getElementById('successToast');
-        const toastMessage = document.getElementById('toastMessage');
+        const toastElement = document.getElementById("successToast");
+        const toastMessage = document.getElementById("toastMessage");
         toastMessage.textContent = message;
         const toast = new bootstrap.Toast(toastElement);
         toast.show();
@@ -1433,10 +1513,10 @@
 
       // Level up animation and sound
       function showLevelUp(newLevel) {
-        playSound('levelUpSound');
+        playSound("levelUpSound");
 
         // Create particle effect
-        createParticles('level-up-particles');
+        createParticles("level-up-particles");
 
         // Create level up modal
         const modalHtml = `
@@ -1458,23 +1538,27 @@
           </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        const modal = new bootstrap.Modal(document.getElementById('levelUpModal'));
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+        const modal = new bootstrap.Modal(
+          document.getElementById("levelUpModal"),
+        );
         modal.show();
 
         // Remove modal after it's hidden
-        document.getElementById('levelUpModal').addEventListener('hidden.bs.modal', function() {
-          this.remove();
-          removeParticles('level-up-particles');
-        });
+        document
+          .getElementById("levelUpModal")
+          .addEventListener("hidden.bs.modal", function () {
+            this.remove();
+            removeParticles("level-up-particles");
+          });
       }
 
       // Achievement unlock animation and sound
       function showAchievement(achievementName, achievementIcon) {
-        playSound('achievementSound');
+        playSound("achievementSound");
 
         // Create particle effect
-        createParticles('achievement-particles');
+        createParticles("achievement-particles");
 
         // Create achievement modal
         const modalHtml = `
@@ -1496,20 +1580,24 @@
           </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        const modal = new bootstrap.Modal(document.getElementById('achievementModal'));
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+        const modal = new bootstrap.Modal(
+          document.getElementById("achievementModal"),
+        );
         modal.show();
 
         // Remove modal after it's hidden
-        document.getElementById('achievementModal').addEventListener('hidden.bs.modal', function() {
-          this.remove();
-          removeParticles('achievement-particles');
-        });
+        document
+          .getElementById("achievementModal")
+          .addEventListener("hidden.bs.modal", function () {
+            this.remove();
+            removeParticles("achievement-particles");
+          });
       }
 
       // Task completion animation and sound
       function showTaskComplete(pointsEarned) {
-        playSound('taskCompleteSound');
+        playSound("taskCompleteSound");
 
         // Create task complete modal
         const modalHtml = `
@@ -1531,14 +1619,18 @@
           </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        const modal = new bootstrap.Modal(document.getElementById('taskCompleteModal'));
+        document.body.insertAdjacentHTML("beforeend", modalHtml);
+        const modal = new bootstrap.Modal(
+          document.getElementById("taskCompleteModal"),
+        );
         modal.show();
 
         // Remove modal after it's hidden
-        document.getElementById('taskCompleteModal').addEventListener('hidden.bs.modal', function() {
-          this.remove();
-        });
+        document
+          .getElementById("taskCompleteModal")
+          .addEventListener("hidden.bs.modal", function () {
+            this.remove();
+          });
       }
       // Chart.js initialization
       let activityChart;
@@ -1587,7 +1679,8 @@
 
       function generateActivityData() {
         // Generate random data based on completed tasks
-        const completedTasks = parseInt(document.getElementById('completedTasks').textContent) || 0;
+        const completedTasks =
+          parseInt(document.getElementById("completedTasks").textContent) || 0;
         const base = Math.max(1, completedTasks / 5);
         return [
           Math.floor(base * (0.3 + Math.random() * 0.4)), // Medical
@@ -1608,18 +1701,18 @@
       // Action functions
       function refreshTasks() {
         playButtonSound();
-        const tasksContainer = document.getElementById('tasksContainer');
-        const skeletonLoading = document.getElementById('skeletonLoading');
+        const tasksContainer = document.getElementById("tasksContainer");
+        const skeletonLoading = document.getElementById("skeletonLoading");
 
         // Show skeleton
-        tasksContainer.style.display = 'none';
-        skeletonLoading.style.display = 'block';
+        tasksContainer.style.display = "none";
+        skeletonLoading.style.display = "block";
 
         window.helpChainUtils.showLoading();
         setTimeout(() => {
           // Hide skeleton and show tasks
-          skeletonLoading.style.display = 'none';
-          tasksContainer.style.display = 'block';
+          skeletonLoading.style.display = "none";
+          tasksContainer.style.display = "block";
           window.helpChainUtils.hideLoading();
           updateChart(); // Update chart with new data
           showToast("Задачите са обновени!");
@@ -1662,12 +1755,12 @@
 
       // Button click sound
       function playButtonSound() {
-        playSound('buttonClickSound');
+        playSound("buttonClickSound");
       }
 
       // Particle effects
       function createParticles(containerId) {
-        const container = document.createElement('div');
+        const container = document.createElement("div");
         container.id = containerId;
         container.style.cssText = `
           position: fixed;
@@ -1680,12 +1773,12 @@
         `;
 
         for (let i = 0; i < 50; i++) {
-          const particle = document.createElement('div');
+          const particle = document.createElement("div");
           particle.style.cssText = `
             position: absolute;
             width: 10px;
             height: 10px;
-            background: ${Math.random() > 0.5 ? '#ffd700' : '#667eea'};
+            background: ${Math.random() > 0.5 ? "#ffd700" : "#667eea"};
             border-radius: 50%;
             left: ${Math.random() * 100}%;
             top: ${Math.random() * 100}%;
@@ -1710,19 +1803,21 @@
 
         try {
           const response = await fetch(`/complete_task/${taskId}`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-            }
+              "Content-Type": "application/json",
+            },
           });
 
           const data = await response.json();
 
           if (data.success) {
             // Update UI
-            const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+            const taskCard = document.querySelector(
+              `[data-task-id="${taskId}"]`,
+            );
             if (taskCard) {
-              taskCard.classList.add('animate__animated', 'animate__fadeOut');
+              taskCard.classList.add("animate__animated", "animate__fadeOut");
               setTimeout(() => {
                 taskCard.remove();
                 updateStats(data.stats);
@@ -1735,35 +1830,41 @@
             }
 
             if (data.achievement_unlocked) {
-              setTimeout(() => showAchievement(data.achievement_name, data.achievement_icon), 1200);
+              setTimeout(
+                () =>
+                  showAchievement(data.achievement_name, data.achievement_icon),
+                1200,
+              );
             }
 
             // Always show task complete
             setTimeout(() => showTaskComplete(data.points_earned), 100);
 
-            showToast('Задачата е завършена успешно!');
+            showToast("Задачата е завършена успешно!");
           } else {
-            showToast('Грешка при завършване на задачата.');
+            showToast("Грешка при завършване на задачата.");
           }
         } catch (error) {
-          console.error('Error completing task:', error);
-          showToast('Грешка при завършване на задачата.');
+          console.error("Error completing task:", error);
+          showToast("Грешка при завършване на задачата.");
         }
       }
 
       // Update stats display
       function updateStats(stats) {
         if (stats.points !== undefined) {
-          document.getElementById('points').textContent = stats.points;
+          document.getElementById("points").textContent = stats.points;
         }
         if (stats.active_tasks !== undefined) {
-          document.getElementById('activeTasks').textContent = stats.active_tasks;
+          document.getElementById("activeTasks").textContent =
+            stats.active_tasks;
         }
         if (stats.rating !== undefined) {
-          document.getElementById('rating').textContent = stats.rating.toFixed(1);
+          document.getElementById("rating").textContent =
+            stats.rating.toFixed(1);
         }
         if (stats.people_helped !== undefined) {
-          document.getElementById('impact').textContent = stats.people_helped;
+          document.getElementById("impact").textContent = stats.people_helped;
         }
         updateChart();
         updateLeaderboard();
@@ -1773,22 +1874,27 @@
       function updateLeaderboard() {
         // In real implementation, this would fetch updated leaderboard data
         // For now, we'll just refresh the current user's position
-        const currentUserItem = document.querySelector('.current-user .leaderboard-stats');
+        const currentUserItem = document.querySelector(
+          ".current-user .leaderboard-stats",
+        );
         if (currentUserItem) {
           // Simulate updated stats
-          const currentPoints = parseInt(document.getElementById('points').textContent) || 0;
+          const currentPoints =
+            parseInt(document.getElementById("points").textContent) || 0;
           const currentLevel = Math.floor(currentPoints / 100) + 1;
           currentUserItem.textContent = `${currentPoints} точки • Ниво ${currentLevel}`;
         }
       }
 
       function confirmCompleteTask() {
-        const feedback = document.getElementById('taskFeedback').value;
+        const feedback = document.getElementById("taskFeedback").value;
         // In real implementation, this would make an AJAX call with feedback
         showToast(`Задача #${currentTaskId} е завършена!`);
-        const modal = bootstrap.Modal.getInstance(document.getElementById('completeTaskModal'));
+        const modal = bootstrap.Modal.getInstance(
+          document.getElementById("completeTaskModal"),
+        );
         modal.hide();
-        document.getElementById('taskFeedback').value = '';
+        document.getElementById("taskFeedback").value = "";
         currentTaskId = null;
       }
 
@@ -1805,8 +1911,8 @@
           const element = document.getElementById(id);
           if (element && Math.random() > 0.98) {
             // 2% chance to update
-            element.classList.add('pulse');
-            setTimeout(() => element.classList.remove('pulse'), 500);
+            element.classList.add("pulse");
+            setTimeout(() => element.classList.remove("pulse"), 500);
             if (id === "rating") {
               const currentValue = parseFloat(element.textContent);
               const newValue = Math.max(
@@ -1863,7 +1969,9 @@
         });
 
         // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="tooltip"]'),
+        );
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
           return new bootstrap.Tooltip(tooltipTriggerEl);
         });
