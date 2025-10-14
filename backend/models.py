@@ -12,6 +12,7 @@ except ImportError:
     except ImportError:
         # Last resort - create a new db instance (for testing)
         from flask_sqlalchemy import SQLAlchemy
+
         db = SQLAlchemy()
 
 from flask_login import UserMixin
