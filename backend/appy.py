@@ -70,7 +70,10 @@ except ImportError:
         UserRole,
         Volunteer,
     )
-from models_with_analytics import Task
+try:
+    from .models_with_analytics import Task
+except ImportError:
+    from models_with_analytics import Task
 
 try:
     from permissions import (
