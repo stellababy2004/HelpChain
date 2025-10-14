@@ -50,7 +50,7 @@ except ImportError:
     except ImportError:
         from extensions import db
 
-from models import (
+from .models import (
     AdminUser,
     ChatMessage,
     ChatParticipant,
@@ -62,7 +62,7 @@ from models import (
     UserRole,
     Volunteer,
 )
-from models_with_analytics import Task
+from .models_with_analytics import Task
 
 try:
     from .permissions import (
@@ -1816,7 +1816,7 @@ def volunteer_dashboard():
 def _get_volunteer_stats_safe(volunteer_id):
     """Safely get volunteer statistics with fallback values"""
     try:
-        from models_with_analytics import Task, TaskPerformance
+        from .models_with_analytics import Task, TaskPerformance
 
         # Completed tasks count with timeout protection
         completed_tasks = (
@@ -1873,7 +1873,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 def _get_active_tasks_safe(volunteer_id):
     """Safely get active tasks for volunteer"""
     try:
-        from models_with_analytics import Task
+        from .models_with_analytics import Task
 
         active_tasks_query = (
             db.session.query(Task)
@@ -2139,7 +2139,7 @@ def achievements():
 
         # Import gamification service
         from gamification_service import GamificationService
-        from models import Achievement
+        from .models import Achievement
 
         # Get all achievements and calculate progress for each
         all_achievements = db.session.query(Achievement).all()
@@ -4371,7 +4371,7 @@ def api_volunteer_task_recommendations(volunteer_id):
             from smart_matching import smart_matching_engine
         except ImportError:
             from smart_matching import smart_matching_engine
-        from models_with_analytics import Task
+        from .models_with_analytics import Task
 
         # Вземи отворени задачи
         open_tasks = db.session.query(Task).filter_by(status="open").all()
@@ -4598,7 +4598,7 @@ if __name__ == "__main__":
     try:
         with app.app_context():
             # Import AdminUser to ensure it's registered with SQLAlchemy
-            from models import AdminUser
+            from .models import AdminUser
 
             db.create_all()
         # Initialize default roles and permissions
