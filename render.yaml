@@ -10,6 +10,8 @@ services:
         value: production
       - key: FLASK_DEBUG
         value: false
+      - key: PRODUCTION
+        value: true
       - key: FLASK_APP
         value: appy.py
     databases:
