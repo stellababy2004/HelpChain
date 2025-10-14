@@ -323,35 +323,41 @@ _static = os.path.join(os.path.dirname(__file__), "static")
 app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
 
-# Initialize Celery
+# Initialize Celery (optional - app will work without it)
 def make_celery(app):
-    celery = Celery(
-        app.import_name,
-        backend=os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0"),
-        broker_url=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0"),
-    )
-    celery.conf.update(app.config)
+    try:
+        celery = Celery(
+            app.import_name,
+            backend=os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0"),
+            broker_url=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0"),
+        )
+        celery.conf.update(app.config)
 
-    class ContextTask(celery.Task):
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return self.run(*args, **kwargs)
+        class ContextTask(celery.Task):
+            def __call__(self, *args, **kwargs):
+                with app.app_context():
+                    return self.run(*args, **kwargs)
 
-    celery.Task = ContextTask
-    return celery
+        celery.Task = ContextTask
+        return celery
+    except Exception as e:
+        app.logger.warning(f"Celery initialization failed (Redis not available): {e}")
+        app.logger.warning("Background tasks will not be available")
+        return None
 
 
 celery = make_celery(app)
 
-# Configure Celery
-celery.conf.update(
-    result_expires=3600,
-    task_serializer="json",
-    accept_content=["json"],
-    result_serializer="json",
-    timezone="UTC",
-    enable_utc=True,
-)
+# Configure Celery if available
+if celery:
+    celery.conf.update(
+        result_expires=3600,
+        task_serializer="json",
+        accept_content=["json"],
+        result_serializer="json",
+        timezone="UTC",
+        enable_utc=True,
+    )
 
 # Задаваме SECRET_KEY за сесии и сигурност
 app.config["SECRET_KEY"] = os.getenv(
