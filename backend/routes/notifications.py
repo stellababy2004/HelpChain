@@ -5,8 +5,8 @@ Handles notification preferences, push subscriptions, and sending notifications
 
 from flask import Blueprint, request, jsonify, current_app, render_template
 from flask_login import login_required, current_user
-from models import User
-from extensions import db
+from ..models import User
+from ..extensions import db
 
 # from analytics_service import analytics_service  # Temporarily disabled for testing
 from datetime import datetime
