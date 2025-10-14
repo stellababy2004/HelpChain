@@ -36,7 +36,7 @@ from werkzeug.utils import secure_filename
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
-    from .extensions import db
+    from backend.extensions import db
 except ImportError:
     # Fallback for standalone execution
     try:
@@ -45,7 +45,7 @@ except ImportError:
         from extensions import db
 
 try:
-    from .models import (
+    from backend.models import (
         AdminUser,
         ChatMessage,
         ChatParticipant,
@@ -71,12 +71,12 @@ except ImportError:
         Volunteer,
     )
 try:
-    from .models_with_analytics import Task
+    from backend.models_with_analytics import Task
 except ImportError:
     from models_with_analytics import Task
 
 try:
-    from .permissions import (
+    from backend.permissions import (
         initialize_default_roles_and_permissions,
         require_admin_login,
         require_permission,
@@ -89,18 +89,18 @@ except ImportError:
     )
 
 try:
-    from .admin_roles import admin_roles_bp
+    from backend.admin_roles import admin_roles_bp
 except ImportError:
     from admin_roles import admin_roles_bp
 
 try:
-    from .routes.notifications import notification_bp
+    from backend.routes.notifications import notification_bp
 except ImportError:
     from routes.notifications import notification_bp
 
 # Import smart matching engine
 try:
-    from .ai_service import ai_service
+    from backend.ai_service import ai_service
 except ImportError:
     from ai_service import ai_service
 
@@ -526,7 +526,7 @@ limiter = Limiter(
 
 # Register analytics blueprint first to avoid import issues
 try:
-    from .analytics_routes import analytics_bp
+    from backend.analytics_routes import analytics_bp
 except ImportError:
     from analytics_routes import analytics_bp
 
