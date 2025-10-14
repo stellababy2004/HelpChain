@@ -50,7 +50,7 @@ except ImportError:
     except ImportError:
         from extensions import db
 
-from .models import (
+from models import (
     AdminUser,
     ChatMessage,
     ChatParticipant,
@@ -62,10 +62,10 @@ from .models import (
     UserRole,
     Volunteer,
 )
-from .models_with_analytics import Task
+from models_with_analytics import Task
 
 try:
-    from .permissions import (
+    from permissions import (
         initialize_default_roles_and_permissions,
         require_admin_login,
         require_permission,
@@ -78,18 +78,18 @@ except ImportError:
     )
 
 try:
-    from .admin_roles import admin_roles_bp
+    from admin_roles import admin_roles_bp
 except ImportError:
     from admin_roles import admin_roles_bp
 
 try:
-    from .routes.notifications import notification_bp
+    from routes.notifications import notification_bp
 except ImportError:
     from routes.notifications import notification_bp
 
 # Import smart matching engine
 try:
-    from .ai_service import ai_service
+    from ai_service import ai_service
 except ImportError:
     from ai_service import ai_service
 
@@ -465,7 +465,7 @@ limiter = Limiter(
 
 # Register analytics blueprint first to avoid import issues
 try:
-    from .analytics_routes import analytics_bp
+    from analytics_routes import analytics_bp
 except ImportError:
     from analytics_routes import analytics_bp
 
@@ -1816,7 +1816,7 @@ def volunteer_dashboard():
 def _get_volunteer_stats_safe(volunteer_id):
     """Safely get volunteer statistics with fallback values"""
     try:
-        from .models_with_analytics import Task, TaskPerformance
+        from models_with_analytics import Task, TaskPerformance
 
         # Completed tasks count with timeout protection
         completed_tasks = (
@@ -1873,7 +1873,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 def _get_active_tasks_safe(volunteer_id):
     """Safely get active tasks for volunteer"""
     try:
-        from .models_with_analytics import Task
+        from models_with_analytics import Task
 
         active_tasks_query = (
             db.session.query(Task)
@@ -2139,7 +2139,7 @@ def achievements():
 
         # Import gamification service
         from gamification_service import GamificationService
-        from .models import Achievement
+        from models import Achievement
 
         # Get all achievements and calculate progress for each
         all_achievements = db.session.query(Achievement).all()
@@ -3895,7 +3895,7 @@ def api_analytics_anomalies():
 def api_get_tasks():
     """Получава списък със задачи"""
     try:
-        from .models_with_analytics import Task
+        from models_with_analytics import Task
 
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 20))
@@ -3954,7 +3954,7 @@ def api_get_tasks():
 def api_create_task():
     """Създава нова задача"""
     try:
-        from .models_with_analytics import Task
+        from models_with_analytics import Task
 
         data = request.get_json()
 
@@ -4017,7 +4017,7 @@ def api_create_task():
 def api_get_task(task_id):
     """Получава детайли за конкретна задача"""
     try:
-        from .models_with_analytics import Task
+        from models_with_analytics import Task
 
         task = db.session.query(Task).get_or_404(task_id)
 
@@ -4080,7 +4080,7 @@ def api_get_task(task_id):
 def api_update_task(task_id):
     """Обновява задача"""
     try:
-        from .models_with_analytics import Task
+        from models_with_analytics import Task
 
         task = db.session.query(Task).get_or_404(task_id)
         data = request.get_json()
@@ -4132,7 +4132,7 @@ def api_update_task(task_id):
 def api_assign_task(task_id, volunteer_id):
     """Ръчно разпределя задача на доброволец"""
     try:
-        from .models_with_analytics import Task, TaskAssignment
+        from models_with_analytics import Task, TaskAssignment
 
         task = db.session.query(Task).get_or_404(task_id)
         volunteer = db.session.query(Volunteer).get_or_404(volunteer_id)
@@ -4184,8 +4184,8 @@ def api_complete_task(task_id):
         if not volunteer_id:
             return jsonify({"success": False, "error": "Невалидна сесия"}), 401
 
-        from .gamification_service import GamificationService
-        from .models_with_analytics import Task, TaskPerformance
+        from gamification_service import GamificationService
+        from models_with_analytics import Task, TaskPerformance
 
         task = db.session.query(Task).get_or_404(task_id)
 
@@ -4269,7 +4269,7 @@ def api_get_task_matches(task_id):
     """Намира най-добрите съпоставяния за задача"""
     try:
         try:
-            from .smart_matching import smart_matching_engine
+            from smart_matching import smart_matching_engine
         except ImportError:
             from smart_matching import smart_matching_engine
 
@@ -4309,7 +4309,7 @@ def api_auto_assign_task(task_id):
     """Автоматично разпределя задача на най-добрия кандидат"""
     try:
         try:
-            from .smart_matching import smart_matching_engine
+            from smart_matching import smart_matching_engine
         except ImportError:
             from smart_matching import smart_matching_engine
 
@@ -4351,7 +4351,7 @@ def api_matching_analytics():
     """Аналитика за ефективността на matching системата"""
     try:
         try:
-            from .smart_matching import smart_matching_engine
+            from smart_matching import smart_matching_engine
         except ImportError:
             from smart_matching import smart_matching_engine
 
@@ -4371,7 +4371,7 @@ def api_volunteer_task_recommendations(volunteer_id):
             from smart_matching import smart_matching_engine
         except ImportError:
             from smart_matching import smart_matching_engine
-        from .models_with_analytics import Task
+        from models_with_analytics import Task
 
         # Вземи отворени задачи
         open_tasks = db.session.query(Task).filter_by(status="open").all()
@@ -4493,7 +4493,7 @@ def admin_tasks():
 
         # Get smart matching analytics
         try:
-            from .smart_matching import smart_matching_engine
+            from smart_matching import smart_matching_engine
         except ImportError:
             from smart_matching import smart_matching_engine
 
@@ -4598,7 +4598,7 @@ if __name__ == "__main__":
     try:
         with app.app_context():
             # Import AdminUser to ensure it's registered with SQLAlchemy
-            from .models import AdminUser
+            from models import AdminUser
 
             db.create_all()
         # Initialize default roles and permissions

@@ -3,13 +3,14 @@ HelpChain Notification Routes
 Handles notification preferences, push subscriptions, and sending notifications
 """
 
-from flask import Blueprint, request, jsonify, current_app, render_template
-from flask_login import login_required, current_user
-from ..models import User
-from ..extensions import db
-
 # from analytics_service import analytics_service  # Temporarily disabled for testing
 from datetime import datetime
+
+from flask import Blueprint, current_app, jsonify, render_template, request
+from flask_login import current_user, login_required
+
+from extensions import db
+from models import User
 
 notification_bp = Blueprint("notification", __name__, url_prefix="/api/notification")
 
@@ -290,7 +291,10 @@ def _send_new_request_email(recipient, context):
                 "notification_type": "new_request",
                 "recipient_name": recipient.name,
                 "request": context.get("request", {}),
-                "action_url": f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}",
+                "action_url": (
+                    f"{current_app.config['FRONTEND_URL']}/request/"
+                    f"{context.get('request', {}).get('id')}"
+                ),
             },
         )
     except Exception as e:
@@ -310,7 +314,10 @@ def _send_urgent_request_email(recipient, context):
                 "notification_type": "urgent_request",
                 "recipient_name": recipient.name,
                 "request": context.get("request", {}),
-                "action_url": f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}",
+                "action_url": (
+                    f"{current_app.config['FRONTEND_URL']}/request/"
+                    f"{context.get('request', {}).get('id')}"
+                ),
                 "call_url": f"tel:{context.get('request', {}).get('emergency_phone', '')}",
             },
         )
@@ -346,7 +353,11 @@ def _send_new_request_sms(recipient, context):
         from sms_service import send_notification_sms
 
         request = context.get("request", {})
-        message = f"HelpChain: Нова заявка - {request.get('category', '')} ул.{request.get('address', '')}. {request.get('distance', '')}km от вас."
+        message = (
+            f"HelpChain: Нова заявка - {request.get('category', '')} "
+            f"ул.{request.get('address', '')}. "
+            f"{request.get('distance', '')}km от вас."
+        )
 
         send_notification_sms(recipient.phone, message)
     except Exception as e:
@@ -359,7 +370,11 @@ def _send_urgent_request_sms(recipient, context):
         from sms_service import send_notification_sms
 
         request = context.get("request", {})
-        message = f"СПЕШНО HelpChain: {request.get('category', '')} ул.{request.get('address', '')}. Тел:{request.get('emergency_phone', '')}"
+        message = (
+            f"СПЕШНО HelpChain: {request.get('category', '')} "
+            f"ул.{request.get('address', '')}. "
+            f"Тел:{request.get('emergency_phone', '')}"
+        )
 
         send_notification_sms(recipient.phone, message)
     except Exception as e:
@@ -387,14 +402,20 @@ def _send_push_notification(recipient, notification_type, context):
             push_data.update(
                 {
                     "title": "Нова заявка за помощ",
-                    "body": f"{context.get('request', {}).get('category', '')} - {context.get('request', {}).get('distance', '')}km от вас",
+                    "body": (
+                        f"{context.get('request', {}).get('category', '')} - "
+                        f"{context.get('request', {}).get('distance', '')}km от вас"
+                    ),
                 }
             )
         elif notification_type == "urgent_request":
             push_data.update(
                 {
                     "title": "СПЕШНА заявка!",
-                    "body": f"{context.get('request', {}).get('category', '')} - Нужда от незабавна помощ!",
+                    "body": (
+                        f"{context.get('request', {}).get('category', '')} - "
+                        "Нужда от незабавна помощ!"
+                    ),
                     "urgent": True,
                 }
             )
