@@ -19,10 +19,10 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="{{ url_for('static', filename='js/chartjs_adapter_date_fns.js') }}"></script>
 
     <!-- ApexCharts for advanced charts -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="{{ url_for('static', filename='js/apexcharts.js') }}"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -399,7 +399,10 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_roles') }}">
+              <a
+                class="nav-link"
+                href="{{ url_for('admin_roles.roles_dashboard') }}"
+              >
                 <i class="fas fa-user-shield me-1"></i>Роли
               </a>
             </li>
@@ -592,7 +595,7 @@
                 </select>
               </div>
             </div>
-            <div id="trendsChart" class="chart-canvas"></div>
+            <canvas id="trendsChart" class="chart-canvas"></canvas>
           </div>
         </div>
 
@@ -603,7 +606,7 @@
                 <i class="fas fa-chart-pie me-2"></i>Разпределение по категории
               </h3>
             </div>
-            <div id="categoryChart" class="chart-canvas"></div>
+            <canvas id="categoryChart" class="chart-canvas"></canvas>
           </div>
         </div>
       </div>
@@ -618,7 +621,7 @@
                 разпределение
               </h3>
             </div>
-            <div id="geoChart" class="chart-canvas-small"></div>
+            <canvas id="geoChart" class="chart-canvas-small"></canvas>
           </div>
         </div>
 
@@ -630,7 +633,7 @@
                 месеца
               </h3>
             </div>
-            <div id="predictionChart" class="chart-canvas-small"></div>
+            <canvas id="predictionChart" class="chart-canvas-small"></canvas>
           </div>
         </div>
       </div>
@@ -714,6 +717,12 @@
         document.getElementById("predictions").textContent,
       );
 
+      console.log("Analytics data loaded:", {
+        trendsData,
+        categoryStats,
+        predictions,
+      });
+
       // Initialize charts when page loads
       document.addEventListener("DOMContentLoaded", function () {
         initializeCharts();
@@ -721,159 +730,199 @@
       });
 
       function initializeCharts() {
-        // Trends Chart
-        const trendsCtx = document
-          .getElementById("trendsChart")
-          .getContext("2d");
-        trendsChart = new Chart(trendsCtx, {
-          type: "line",
-          data: {
-            labels: trendsData.labels,
-            datasets: [
-              {
-                label: "Заявки",
-                data: trendsData.requests,
-                borderColor: "#667eea",
-                backgroundColor: "rgba(102, 126, 234, 0.1)",
-                tension: 0.4,
-                fill: true,
-              },
-              {
-                label: "Завършени",
-                data: trendsData.completed,
-                borderColor: "#28a745",
-                backgroundColor: "rgba(40, 167, 69, 0.1)",
-                tension: 0.4,
-                fill: true,
-              },
-              {
-                label: "Доброволци",
-                data: trendsData.volunteers,
-                borderColor: "#ffc107",
-                backgroundColor: "rgba(255, 193, 7, 0.1)",
-                tension: 0.4,
-                fill: true,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
-          },
-        });
-
-        // Category Chart
-        const categoryCtx = document
-          .getElementById("categoryChart")
-          .getContext("2d");
-        categoryChart = new Chart(categoryCtx, {
-          type: "doughnut",
-          data: {
-            labels: categoryStats.categories,
-            datasets: [
-              {
-                data: categoryStats.counts,
-                backgroundColor: [
-                  "#667eea",
-                  "#28a745",
-                  "#ffc107",
-                  "#dc3545",
-                  "#6f42c1",
-                  "#20c997",
+        try {
+          // Trends Chart
+          const trendsCtx = document
+            .getElementById("trendsChart")
+            .getContext("2d");
+          if (trendsCtx && trendsData) {
+            trendsChart = new Chart(trendsCtx, {
+              type: "line",
+              data: {
+                labels: trendsData.labels || [],
+                datasets: [
+                  {
+                    label: "Заявки",
+                    data: trendsData.requests || [],
+                    borderColor: "#667eea",
+                    backgroundColor: "rgba(102, 126, 234, 0.1)",
+                    tension: 0.4,
+                    fill: true,
+                  },
+                  {
+                    label: "Завършени",
+                    data: trendsData.completed || [],
+                    borderColor: "#28a745",
+                    backgroundColor: "rgba(40, 167, 69, 0.1)",
+                    tension: 0.4,
+                    fill: true,
+                  },
+                  {
+                    label: "Доброволци",
+                    data: trendsData.volunteers || [],
+                    borderColor: "#ffc107",
+                    backgroundColor: "rgba(255, 193, 7, 0.1)",
+                    tension: 0.4,
+                    fill: true,
+                  },
                 ],
               },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "bottom",
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "top",
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                  },
+                },
               },
-            },
-          },
-        });
+            });
+            console.log("Trends chart initialized successfully");
+          } else {
+            console.warn(
+              "Trends chart not initialized - missing data or canvas",
+            );
+          }
+        } catch (error) {
+          console.error("Error initializing trends chart:", error);
+        }
+
+        // Category Chart
+        try {
+          const categoryCtx = document
+            .getElementById("categoryChart")
+            .getContext("2d");
+          if (categoryCtx) {
+            const categoryLabels =
+              Object.keys(categoryStats || {}).length > 0
+                ? Object.keys(categoryStats)
+                : ["Няма данни"];
+            const categoryData =
+              Object.values(categoryStats || {}).length > 0
+                ? Object.values(categoryStats)
+                : [1];
+            categoryChart = new Chart(categoryCtx, {
+              type: "doughnut",
+              data: {
+                labels: categoryLabels,
+                datasets: [
+                  {
+                    data: categoryData,
+                    backgroundColor: [
+                      "#667eea",
+                      "#28a745",
+                      "#ffc107",
+                      "#dc3545",
+                      "#6f42c1",
+                      "#20c997",
+                    ],
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                  },
+                },
+              },
+            });
+            console.log("Category chart initialized successfully");
+          }
+        } catch (error) {
+          console.error("Error initializing category chart:", error);
+        }
 
         // Geo Chart (simplified - would need actual map integration)
-        const geoCtx = document.getElementById("geoChart").getContext("2d");
-        geoChart = new Chart(geoCtx, {
-          type: "bar",
-          data: {
-            labels: ["София", "Пловдив", "Варна", "Бургас", "Други"],
-            datasets: [
-              {
-                label: "Заявки по регион",
-                data: [45, 23, 18, 12, 8],
-                backgroundColor: "#667eea",
+        try {
+          const geoCtx = document.getElementById("geoChart");
+          if (geoCtx) {
+            const geoContext = geoCtx.getContext("2d");
+            geoChart = new Chart(geoContext, {
+              type: "bar",
+              data: {
+                labels: ["София", "Пловдив", "Варна", "Бургас", "Други"],
+                datasets: [
+                  {
+                    label: "Заявки по регион",
+                    data: [45, 23, 18, 12, 8],
+                    backgroundColor: "#667eea",
+                  },
+                ],
               },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                  },
+                },
               },
-            },
-          },
-        });
+            });
+            console.log("Geo chart initialized successfully");
+          }
+        } catch (error) {
+          console.error("Error initializing geo chart:", error);
+        }
 
         // Prediction Chart
-        const predictionCtx = document
-          .getElementById("predictionChart")
-          .getContext("2d");
-        predictionChart = new Chart(predictionCtx, {
-          type: "line",
-          data: {
-            labels: predictions.labels,
-            datasets: [
-              {
-                label: "Прогноза заявки",
-                data: predictions.requests_predicted,
-                borderColor: "#dc3545",
-                backgroundColor: "rgba(220, 53, 69, 0.1)",
-                borderDash: [5, 5],
-                tension: 0.4,
-                fill: true,
+        try {
+          const predictionCtx = document.getElementById("predictionChart");
+          if (predictionCtx && predictions) {
+            const predContext = predictionCtx.getContext("2d");
+            predictionChart = new Chart(predContext, {
+              type: "line",
+              data: {
+                labels: predictions.labels || [],
+                datasets: [
+                  {
+                    label: "Прогноза заявки",
+                    data: predictions.requests_predicted || [],
+                    borderColor: "#dc3545",
+                    backgroundColor: "rgba(220, 53, 69, 0.1)",
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: true,
+                  },
+                  {
+                    label: "Прогноза доброволци",
+                    data: predictions.volunteers_predicted || [],
+                    borderColor: "#ffc107",
+                    backgroundColor: "rgba(255, 193, 7, 0.1)",
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: true,
+                  },
+                ],
               },
-              {
-                label: "Прогноза доброволци",
-                data: predictions.volunteers_predicted,
-                borderColor: "#ffc107",
-                backgroundColor: "rgba(255, 193, 7, 0.1)",
-                borderDash: [5, 5],
-                tension: 0.4,
-                fill: true,
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: "top",
+                  },
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                  },
+                },
               },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "top",
-              },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
-          },
-        });
+            });
+            console.log("Prediction chart initialized successfully");
+          }
+        } catch (error) {
+          console.error("Error initializing prediction chart:", error);
+        }
       }
 
       function startLiveUpdates() {

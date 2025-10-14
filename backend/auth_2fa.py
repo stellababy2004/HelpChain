@@ -3,7 +3,7 @@ from typing import Tuple
 
 import pyotp
 from cryptography.fernet import Fernet
-from models import User
+from .models import User
 
 
 def _get_fernet() -> Fernet:

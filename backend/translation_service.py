@@ -14,7 +14,7 @@ from functools import lru_cache
 from datetime import datetime, timedelta
 import threading
 
-from models import (
+from .models import (
     db,
     SupportedLanguage,
     TranslationKey,

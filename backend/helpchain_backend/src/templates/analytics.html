@@ -1,0 +1,201 @@
+{% extends "base.html" %} {% block title %}Анализи | HelpChain.live{% endblock
+%} {% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Анализи</h2>
+
+  <!-- Overview Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5 class="card-title">Общо сесии</h5>
+          <h3 id="totalSessions">0</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">Уникални посетители</h5>
+          <h3 id="uniqueVisitors">0</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <h5 class="card-title">Конверсии</h5>
+          <h3 id="conversions">0</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5 class="card-title">Активни потребители</h5>
+          <h3 id="activeUsers">0</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <canvas id="performanceChart"></canvas>
+    </div>
+    <div class="col-md-6">
+      <canvas id="chatbotChart"></canvas>
+    </div>
+  </div>
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <canvas id="engagementChart"></canvas>
+    </div>
+    <div class="col-md-6">
+      <canvas id="conversionChart"></canvas>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  fetch("/api/analytics/data")
+    .then((response) => response.json())
+    .then((data) => {
+      // Update overview cards
+      document.getElementById("totalSessions").textContent =
+        data.overview.total_sessions || 0;
+      document.getElementById("uniqueVisitors").textContent =
+        data.overview.unique_visitors || 0;
+      document.getElementById("conversions").textContent =
+        data.overview.conversions || 0;
+      document.getElementById("activeUsers").textContent =
+        data.real_time.active_users_now || 0;
+
+      // Performance chart
+      const performanceCtx = document
+        .getElementById("performanceChart")
+        .getContext("2d");
+      new Chart(performanceCtx, {
+        type: "bar",
+        data: {
+          labels: ["Сесии", "Посещения", "Конверсии"],
+          datasets: [
+            {
+              label: "Брой",
+              data: [
+                data.overview.total_sessions || 0,
+                data.overview.total_page_views || 0,
+                data.overview.conversions || 0,
+              ],
+              backgroundColor: ["#36A2EB", "#FF6384", "#FFCE56"],
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Общи метрики",
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+
+      // Chatbot chart
+      const chatbotCtx = document
+        .getElementById("chatbotChart")
+        .getContext("2d");
+      const chatbotData = data.chatbot_analytics?.ai_statistics || {};
+      new Chart(chatbotCtx, {
+        type: "pie",
+        data: {
+          labels: ["Общо AI отговори", "Токени", "Средна точност"],
+          datasets: [
+            {
+              data: [
+                chatbotData.total_ai_responses || 0,
+                chatbotData.total_tokens || 0,
+                Math.round((chatbotData.avg_confidence || 0) * 100),
+              ],
+              backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "AI Чатбот статистики",
+          },
+        },
+      });
+
+      // Engagement chart
+      const engagementCtx = document
+        .getElementById("engagementChart")
+        .getContext("2d");
+      new Chart(engagementCtx, {
+        type: "line",
+        data: {
+          labels: ["Посещения/час", "Съобщения/час"],
+          datasets: [
+            {
+              label: "Последен час",
+              data: [
+                data.real_time.page_views_last_hour || 0,
+                data.real_time.chatbot_messages_last_hour || 0,
+              ],
+              backgroundColor: "#4BC0C0",
+              borderColor: "#4BC0C0",
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Активност в реално време",
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+
+      // Conversion funnel chart
+      const conversionCtx = document
+        .getElementById("conversionChart")
+        .getContext("2d");
+      const funnelData = data.conversion_funnel || {};
+      new Chart(conversionCtx, {
+        type: "bar",
+        data: {
+          labels: Object.keys(funnelData),
+          datasets: [
+            {
+              label: "Конверсии",
+              data: Object.values(funnelData),
+              backgroundColor: "#9966FF",
+            },
+          ],
+        },
+        options: {
+          title: {
+            display: true,
+            text: "Конверсионна фуния",
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    })
+    .catch((error) => console.error("Error fetching analytics data:", error));
+</script>
+{% endblock %}

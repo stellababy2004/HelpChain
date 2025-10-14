@@ -2,7 +2,7 @@ import sys
 
 sys.path.insert(0, ".")
 from appy import app
-from models import User, Role, UserRole, RolePermission
+from .models import User, Role, UserRole, RolePermission
 from permissions import has_permission
 
 with app.app_context():

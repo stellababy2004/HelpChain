@@ -3,7 +3,7 @@
 Скрипт за инициализация на чатбот базата данни с начални FAQ данни
 """
 from appy import app
-from models import db, ChatbotFAQ, ChatbotSettings
+from .models import db, ChatbotFAQ, ChatbotSettings
 from datetime import datetime
 
 

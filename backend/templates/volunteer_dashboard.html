@@ -1,7 +1,430 @@
 {% extends "base.html" %}
-{% block title %}Доброволчески панел{% endblock %}
-{% block content %}
+{% block title %}Доброволчески панел - HelpChain{% endblock %}
 
+{% block head %}
+<style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  --card-shadow-hover: 0 20px 40px rgba(0,0,0,0.15);
+  --border-radius: 15px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+}
+
+.dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Welcome Section */
+.welcome-section {
+  background: var(--primary-gradient);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+  50% { transform: translate(-50%, -50%) rotate(180deg); }
+}
+
+.welcome-content {
+  position: relative;
+  z-index: 2;
+}
+
+/* Stats Cards */
+.stats-card {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition);
+  border: none;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.stats-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--primary-gradient);
+}
+
+.stats-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.stats-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.stats-completed .stats-icon { background: var(--success-gradient); color: white; }
+.stats-active .stats-icon { background: var(--warning-gradient); color: white; }
+.stats-rating .stats-icon { background: var(--info-gradient); color: white; }
+.stats-people .stats-icon { background: var(--primary-gradient); color: white; }
+
+.stats-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stats-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Tasks Section */
+.tasks-section {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.section-header {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  padding: 2rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Task Cards */
+.task-card {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f1f3f4;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.task-card:last-child {
+  border-bottom: none;
+}
+
+.task-card:hover {
+  background: #f8f9ff;
+  transform: translateX(5px);
+}
+
+.task-header {
+  display: flex;
+  justify-content: between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.task-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.25rem;
+}
+
+.task-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.task-meta i {
+  margin-right: 0.25rem;
+}
+
+.task-description {
+  color: #6c757d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.task-progress {
+  margin-bottom: 1rem;
+}
+
+.progress {
+  height: 8px;
+  border-radius: 4px;
+  background: #e9ecef;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background: var(--primary-gradient);
+  transition: width 0.6s ease;
+}
+
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btn-task {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.btn-task:hover {
+  transform: translateY(-1px);
+}
+
+/* Priority Badges */
+.priority-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-urgent { background: #dc3545; color: white; }
+.priority-high { background: #fd7e14; color: white; }
+.priority-medium { background: #ffc107; color: #212529; }
+.priority-low { background: #28a745; color: white; }
+
+/* Quick Actions */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.action-card {
+  background: white;
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+  transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
+  border: 2px solid transparent;
+}
+
+.action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-shadow-hover);
+  border-color: #667eea;
+}
+
+.action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  font-size: 1.25rem;
+}
+
+.action-tasks .action-icon { background: var(--primary-gradient); color: white; }
+.action-location .action-icon { background: var(--success-gradient); color: white; }
+.action-profile .action-icon { background: var(--warning-gradient); color: white; }
+.action-support .action-icon { background: var(--info-gradient); color: white; }
+
+.action-title {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 0.25rem;
+}
+
+.action-description {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Location Update */
+.location-section {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 2rem;
+}
+
+.location-form .form-control {
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  padding: 0.75rem;
+  transition: var(--transition);
+}
+
+.location-form .form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-location {
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.btn-location:hover {
+  transform: translateY(-1px);
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6c757d;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+.empty-description {
+  font-size: 0.9rem;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+
+  .welcome-section {
+    padding: 1.5rem;
+  }
+
+  .stats-card {
+    margin-bottom: 1rem;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .task-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .task-meta {
+    flex-wrap: wrap;
+  }
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Search and Filter Styles */
+.task-search-input {
+  width: 200px;
+}
+
+.task-filter-select {
+  width: 150px;
+}
+
+/* Progress Bar Styles */
+.progress-bar-custom {
+  transition: width 0.6s ease;
+  width: var(--progress-width, 0%);
+}
+</style>
+{% endblock %}
+
+{% block content %}
 <!-- Include Dashboard Navigation -->
 {% include 'dashboard_nav.html' %}
 
@@ -11,16 +434,17 @@
 ] %}
 {% include 'breadcrumbs.html' %}
 
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="dashboard-container">
+  <!-- Welcome Section -->
+  <div class="welcome-section fade-in-up">
+    <div class="welcome-content">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div>
-          <h2 class="text-primary mb-1">Добре дошли, {{ current_user.name if current_user else 'Доброволец' }}!</h2>
-          <p class="text-muted mb-0">Това е вашият доброволчески панел</p>
+          <h1 class="mb-2">Добре дошли, {{ current_user.name if current_user else 'Доброволец' }}! 👋</h1>
+          <p class="mb-0 opacity-75">Благодарим ви за доброволчеството! Днес можете да помогнете на още {{ available_tasks }} души.</p>
         </div>
-        <div>
-          <a href="{{ url_for('volunteer_logout') }}" class="btn btn-outline-secondary">
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('volunteer_logout') }}" class="btn btn-light">
             <i class="fas fa-sign-out-alt me-1"></i>Изход
           </a>
         </div>
@@ -30,275 +454,578 @@
 
   <!-- Statistics Cards -->
   <div class="row mb-4">
-    <div class="col-md-4 mb-3">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-body text-center">
-          <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
-          <h3 class="card-title">{{ requests|length }}</h3>
-          <p class="card-text">Налични заявки</p>
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="stats-card stats-completed fade-in-up">
+        <div class="stats-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stats-number">{{ stats.completed_tasks }}</div>
+        <div class="stats-label">Завършени задачи</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="stats-card stats-active fade-in-up">
+        <div class="stats-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stats-number">{{ stats.active_tasks }}</div>
+        <div class="stats-label">Активни задачи</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="stats-card stats-rating fade-in-up">
+        <div class="stats-icon">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="stats-number">{{ "%.1f"|format(stats.rating) }}</div>
+        <div class="stats-label">Средна оценка</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="stats-card stats-people fade-in-up">
+        <div class="stats-icon">
+          <i class="fas fa-heart"></i>
+        </div>
+        <div class="stats-number">{{ stats.people_helped }}</div>
+        <div class="stats-label">Помогнати хора</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gamification Section -->
+  <div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+      <div class="stats-card fade-in-up" style="height: auto;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h5 class="mb-1">
+              <i class="fas fa-trophy text-warning me-2"></i>Ниво {{ gamification.level }}
+            </h5>
+            <p class="text-muted mb-0">{{ gamification.points }} точки</p>
+          </div>
+          <div class="text-end">
+            <div class="stats-number">{{ gamification.experience }}</div>
+            <small class="text-muted">Опит</small>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <small class="text-muted">Прогрес към следващо ниво</small>
+            <small class="text-muted">{{ gamification.level_progress }}%</small>
+          </div>
+          <div class="progress" style="height: 10px;">
+            <div class="progress-bar bg-warning" style="width: {{ gamification.level_progress }}%"></div>
+          </div>
+        </div>
+        <div class="text-center">
+          <small class="text-muted">
+            Още {{ gamification.next_level_exp - gamification.experience }} опит до ниво {{ gamification.level + 1 }}
+          </small>
         </div>
       </div>
     </div>
-    <div class="col-md-4 mb-3">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-body text-center">
-          <i class="fas fa-map-marker-alt fa-3x text-success mb-3"></i>
-          <h3 class="card-title">{{ current_user.location or 'Няма' }}</h3>
-          <p class="card-text">Вашата локация</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 mb-3">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-body text-center">
-          <i class="fas fa-calendar-check fa-3x text-warning mb-3"></i>
-          <h3 class="card-title">0</h3>
-          <p class="card-text">Завършени заявки</p>
+    <div class="col-lg-4 mb-4">
+      <div class="stats-card fade-in-up" style="height: auto;">
+        <h6 class="mb-3">
+          <i class="fas fa-medal text-success me-2"></i>Постижения
+        </h6>
+        <div class="text-center">
+          <div class="mb-2">
+            <i class="fas fa-star text-warning" style="font-size: 2rem;"></i>
+          </div>
+          <small class="text-muted">Нови постижения скоро!</small>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Help Requests Section -->
-  <div class="row">
-    <div class="col-12">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-primary text-white">
-          <h5 class="card-title mb-0">
-            <i class="fas fa-hand-holding-heart me-2"></i>Налични заявки за помощ
-          </h5>
-        </div>
-        <div class="card-body">
-          {% if requests %}
-          <div class="row">
-            {% for request in requests %}
-            <div class="col-md-6 col-lg-4 mb-3">
-              <div class="card h-100 border-left-primary">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="card-title text-primary mb-1">{{ request.requester_name }}</h6>
-                    <span
-                      class="badge bg-{{ 'success' if request.category == 'Домакинска помощ' else 'info' if request.category == 'Транспорт' else 'warning' }}">
-                      {{ request.category }}
-                    </span>
-                  </div>
-                  <p class="card-text small text-muted mb-2">
-                    <i class="fas fa-map-marker-alt me-1"></i>{{ request.location }}
-                  </p>
-                  <p class="card-text">{{ request.description }}</p>
-                  <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">
-                      <i class="fas fa-clock me-1"></i>{{ request.created_at }}
-                    </small>
-                    <button class="btn btn-primary btn-sm" onclick="contactRequester('{{ request.id }}')">
-                      <i class="fas fa-phone me-1"></i>Свържи се
-                    </button>
-                  </div>
-                </div>
-              </div>
+  <!-- Active Tasks Section -->
+  <div class="tasks-section fade-in-up">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fas fa-tasks text-primary me-2"></i>Вашите активни задачи
+      </h2>
+      <p class="section-subtitle">Задачи, по които работите в момента</p>
+    </div>
+
+    {% if active_tasks %}
+      {% for task in active_tasks %}
+      <div class="task-card">
+        <div class="task-header">
+          <div class="flex-grow-1">
+            <h5 class="task-title">{{ task.title }}</h5>
+            <div class="task-meta">
+              <span><i class="fas fa-map-marker-alt"></i>{{ task.location }}</span>
+              <span><i class="fas fa-calendar"></i>{{ task.date }}</span>
+              <span><i class="fas fa-clock"></i>{{ task.time_remaining }}</span>
             </div>
-            {% endfor %}
           </div>
-          {% else %}
-          <div class="text-center py-5">
-            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">Няма налични заявки в момента</h5>
-            <p class="text-muted">Ще бъдете уведомени, когато има нови заявки за помощ.</p>
+          <span class="priority-badge priority-{{ task.priority }}">
+            {{ task.priority }}
+          </span>
+        </div>
+
+        <p class="task-description">{{ task.description }}</p>
+
+        <div class="task-progress">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <small class="text-muted">Прогрес</small>
+            <small class="text-muted">{{ task.progress }}%</small>
           </div>
-          {% endif %}
+          <div class="progress">
+            <div class="progress-bar progress-bar-custom" style="width: {{ task.progress }}%"></div>
+          </div>
+        </div>
+
+        <div class="task-actions">
+          <button class="btn btn-outline-primary btn-task" onclick="updateProgress({{ task.id }}, {{ task.progress + 10 }})">
+            <i class="fas fa-plus me-1"></i>Обнови
+          </button>
+          <button class="btn btn-success btn-task" onclick="completeTask({{ task.id }})">
+            <i class="fas fa-check me-1"></i>Завърши
+          </button>
         </div>
       </div>
-    </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <h5 class="empty-title">Нямате активни задачи</h5>
+        <p class="empty-description">Приемете нова задача от секцията "Налични задачи" по-долу.</p>
+      </div>
+    {% endif %}
   </div>
 
   <!-- Quick Actions -->
-  <div class="row mt-4">
-    <div class="col-12">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-light">
-          <h6 class="card-title mb-0">
-            <i class="fas fa-bolt me-2"></i>Бързи действия
-          </h6>
+  <div class="quick-actions">
+    <a href="#available-tasks" class="action-card action-tasks fade-in-up">
+      <div class="action-icon">
+        <i class="fas fa-plus-circle"></i>
+      </div>
+      <div class="action-title">Налични задачи</div>
+      <div class="action-description">{{ available_tasks }} задачи чакат помощ</div>
+    </a>
+
+    <a href="#location-update" class="action-card action-location fade-in-up">
+      <div class="action-icon">
+        <i class="fas fa-map-marker-alt"></i>
+      </div>
+      <div class="action-title">Актуализирай локация</div>
+      <div class="action-description">Намери близки заявки за помощ</div>
+    </a>
+
+    <a href="{{ url_for('volunteer_profile') }}" class="action-card action-profile fade-in-up">
+      <div class="action-icon">
+        <i class="fas fa-user-edit"></i>
+      </div>
+      <div class="action-title">Редактирай профил</div>
+      <div class="action-description">Обнови информацията си</div>
+    </a>
+
+    <a href="mailto:contact@helpchain.live" class="action-card action-support fade-in-up">
+      <div class="action-icon">
+        <i class="fas fa-headset"></i>
+      </div>
+      <div class="action-title">Поддръжка</div>
+      <div class="action-description">Свържи се с нас</div>
+    </a>
+  </div>
+
+  <!-- Available Tasks Section -->
+  <div id="available-tasks" class="tasks-section fade-in-up">
+    <div class="section-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="section-title">
+            <i class="fas fa-search text-success me-2"></i>Налични задачи
+          </h2>
+          <p class="section-subtitle">Задачи, които се нуждаят от доброволци</p>
         </div>
-        <div class="card-body">
-          <div class="row text-center">
-            <div class="col-md-3 mb-3">
-              <a href="{{ url_for('all_categories') }}" class="text-decoration-none">
-                <div class="p-3 border rounded hover-shadow">
-                  <i class="fas fa-list fa-2x text-primary mb-2"></i>
-                  <div class="small">Виж категории</div>
-                </div>
-              </a>
-            </div>
-            <div class="col-md-3 mb-3">
-              <a href="#" onclick="startVideoChat()" class="text-decoration-none">
-                <div class="p-3 border rounded hover-shadow">
-                  <i class="fas fa-video fa-2x text-danger mb-2"></i>
-                  <div class="small">Видео чат</div>
-                </div>
-              </a>
-            </div>
-            <div class="col-md-3 mb-3">
-              <a href="mailto:contact@helpchain.live" class="text-decoration-none">
-                <div class="p-3 border rounded hover-shadow">
-                  <i class="fas fa-envelope fa-2x text-info mb-2"></i>
-                  <div class="small">Контакт</div>
-                </div>
-              </a>
-            </div>
-            <div class="col-md-3 mb-3">
-              <a href="{{ url_for('feedback') }}" class="text-decoration-none">
-                <div class="p-3 border rounded hover-shadow">
-                  <i class="fas fa-comments fa-2x text-success mb-2"></i>
-                  <div class="small">Обратна връзка</div>
-                </div>
-              </a>
-            </div>
-          </div>
+        <div class="d-flex gap-2">
+          <input type="text" id="taskSearch" class="form-control task-search-input" placeholder="Търси задачи...">
+          <select id="taskFilter" class="form-select task-filter-select" title="Филтрирай по приоритет">
+            <option value="">Всички</option>
+            <option value="urgent">Спешни</option>
+            <option value="high">Високи</option>
+            <option value="medium">Средни</option>
+          </select>
         </div>
+      </div>
+    </div>
+
+    <div id="availableTasksContainer">
+      <!-- Tasks will be loaded here via AJAX -->
+      <div class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Зареждане...</span>
+        </div>
+        <p class="mt-2 text-muted">Зареждане на налични задачи...</p>
       </div>
     </div>
   </div>
 
-  <!-- Update Location Section -->
-  <div class="row mt-4">
-    <div class="col-12">
-      <div class="card border-0 shadow-sm">
-        <div class="card-header bg-info text-white">
-          <h6 class="card-title mb-0">
-            <i class="fas fa-map-marker-alt me-2"></i>Актуализирайте вашата локация
-          </h6>
+  <!-- Location Update Section -->
+  <div id="location-update" class="location-section fade-in-up">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="mb-1">
+          <i class="fas fa-map-marker-alt text-info me-2"></i>Актуализирайте вашата локация
+        </h3>
+        <p class="text-muted mb-0">За да намирате близки заявки за помощ</p>
+      </div>
+      {% if urgent_tasks > 0 %}
+      <div class="alert alert-warning py-2 px-3 mb-0">
+        <i class="fas fa-exclamation-triangle me-1"></i>
+        {{ urgent_tasks }} спешни задачи наблизо!
+      </div>
+      {% endif %}
+    </div>
+
+    <form id="locationForm" class="location-form">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="latitude" class="form-label fw-semibold">
+            <i class="fas fa-globe me-1"></i>Ширина (Latitude)
+          </label>
+          <input type="number" step="0.000001" class="form-control" id="latitude"
+                 placeholder="42.6977" value="{{ current_user.latitude or '' }}">
         </div>
-        <div class="card-body">
-          <p class="text-muted small mb-3">
-            За да можем да ви намираме близки заявки за помощ, моля актуализирайте вашата локация.
-          </p>
-          <form id="locationForm">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="latitude" class="form-label">Ширина (Latitude)</label>
-                <input type="number" step="0.000001" class="form-control" id="latitude" placeholder="42.6977"
-                  value="{{ current_user.latitude or '' }}">
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="longitude" class="form-label">Дължина (Longitude)</label>
-                <input type="number" step="0.000001" class="form-control" id="longitude" placeholder="23.3219"
-                  value="{{ current_user.longitude or '' }}">
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="locationText" class="form-label">Град/Населено място</label>
-                <input type="text" class="form-control" id="locationText" placeholder="София"
-                  value="{{ current_user.location or '' }}">
-              </div>
-              <div class="col-md-6 mb-3 d-flex align-items-end">
-                <button type="button" class="btn btn-primary me-2" onclick="getCurrentLocation()">
-                  <i class="fas fa-crosshairs me-1"></i>Използвай GPS
-                </button>
-                <button type="button" class="btn btn-success" onclick="updateLocation()">
-                  <i class="fas fa-save me-1"></i>Запази локация
-                </button>
-              </div>
-            </div>
-          </form>
+        <div class="col-md-6 mb-3">
+          <label for="longitude" class="form-label fw-semibold">
+            <i class="fas fa-globe me-1"></i>Дължина (Longitude)
+          </label>
+          <input type="number" step="0.000001" class="form-control" id="longitude"
+                 placeholder="23.3219" value="{{ current_user.longitude or '' }}">
         </div>
       </div>
-    </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="locationText" class="form-label fw-semibold">
+            <i class="fas fa-city me-1"></i>Град/Населено място
+          </label>
+          <input type="text" class="form-control" id="locationText"
+                 placeholder="София" value="{{ current_user.location or '' }}">
+        </div>
+        <div class="col-md-6 mb-3 d-flex align-items-end gap-2">
+          <button type="button" class="btn btn-outline-primary btn-location flex-fill" onclick="getCurrentLocation()">
+            <i class="fas fa-crosshairs me-1"></i>GPS
+          </button>
+          <button type="button" class="btn btn-success btn-location flex-fill" onclick="updateLocation()">
+            <i class="fas fa-save me-1"></i>Запази
+          </button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 
+<!-- Notification Container -->
+<div id="notificationContainer" class="notification"></div>
+
 <script>
-  function contactRequester(requestId) {
-    // In a real implementation, this would show contact details or open a modal
-    alert('Функционалността за контакт ще бъде добавена скоро. Можете да се свържете директно с администратора на contact@helpchain.live');
-  }
+// Global variables
+let availableTasks = [];
+let filteredTasks = [];
 
-  function startVideoChat() {
-    // Generate a unique room ID based on timestamp and random number
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    const roomId = `room_${timestamp}_${random}`;
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+  loadAvailableTasks();
+  setupSearchAndFilter();
+});
 
-    // Redirect to video chat page
-    window.location.href = `/video_chat/${roomId}`;
-  }
+// Load available tasks
+async function loadAvailableTasks() {
+  try {
+    const response = await fetch('/api/tasks?status=open&limit=10');
+    const data = await response.json();
 
-  function getCurrentLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
-          document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
-
-          // Optional: Reverse geocode to get city name
-          fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=bg`)
-            .then(response => response.json())
-            .then(data => {
-              if (data.city) {
-                document.getElementById('locationText').value = data.city;
-              }
-            })
-            .catch(error => {
-              console.log('Reverse geocoding failed:', error);
-            });
-        },
-        function (error) {
-          alert('Не можахме да получим вашата локация. Моля, въведете я ръчно.');
-          console.error('Geolocation error:', error);
-        }
-      );
+    if (data.success) {
+      availableTasks = data.tasks;
+      filteredTasks = [...availableTasks];
+      renderAvailableTasks(filteredTasks);
     } else {
-      alert('Вашият браузър не поддържа геолокация.');
+      showNotification('Грешка при зареждане на задачите', 'danger');
     }
+  } catch (error) {
+    console.error('Error loading tasks:', error);
+    showNotification('Грешка при свързване със сървъра', 'danger');
+  }
+}
+
+// Render available tasks
+function renderAvailableTasks(tasks) {
+  const container = document.getElementById('availableTasksContainer');
+
+  if (tasks.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-search"></i>
+        </div>
+        <h5 class="empty-title">Няма намерени задачи</h5>
+        <p class="empty-description">Опитайте с други критерии за търсене.</p>
+      </div>
+    `;
+    return;
   }
 
-  function updateLocation() {
-    const latitude = document.getElementById('latitude').value;
-    const longitude = document.getElementById('longitude').value;
-    const locationText = document.getElementById('locationText').value;
+  const tasksHtml = tasks.map(task => `
+    <div class="task-card">
+      <div class="task-header">
+        <div class="flex-grow-1">
+          <h5 class="task-title">${task.title}</h5>
+          <div class="task-meta">
+            <span><i class="fas fa-map-marker-alt"></i>${task.location_text || 'Не е посочена'}</span>
+            <span><i class="fas fa-calendar"></i>${new Date(task.created_at).toLocaleDateString('bg-BG')}</span>
+            <span><i class="fas fa-clock"></i>${task.estimated_hours ? task.estimated_hours + 'ч' : 'Няма'}</span>
+          </div>
+        </div>
+        <span class="priority-badge priority-${task.priority}">
+          ${task.priority}
+        </span>
+      </div>
 
-    if (!latitude || !longitude) {
-      alert('Моля, въведете валидни координати.');
-      return;
+      <p class="task-description">${task.description || 'Няма описание'}</p>
+
+      <div class="task-actions">
+        <button class="btn btn-outline-info btn-task" onclick="viewTaskDetails(${task.id})">
+          <i class="fas fa-eye me-1"></i>Детайли
+        </button>
+        <button class="btn btn-primary btn-task" onclick="acceptTask(${task.id})">
+          <i class="fas fa-hand-paper me-1"></i>Приеми
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  container.innerHTML = tasksHtml;
+}
+
+// Setup search and filter
+function setupSearchAndFilter() {
+  const searchInput = document.getElementById('taskSearch');
+  const filterSelect = document.getElementById('taskFilter');
+
+  function filterTasks() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const priorityFilter = filterSelect.value;
+
+    filteredTasks = availableTasks.filter(task => {
+      const matchesSearch = task.title.toLowerCase().includes(searchTerm) ||
+                           (task.description && task.description.toLowerCase().includes(searchTerm));
+      const matchesPriority = !priorityFilter || task.priority === priorityFilter;
+
+      return matchesSearch && matchesPriority;
+    });
+
+    renderAvailableTasks(filteredTasks);
+  }
+
+  searchInput.addEventListener('input', filterTasks);
+  filterSelect.addEventListener('change', filterTasks);
+}
+
+// Task actions
+async function acceptTask(taskId) {
+  if (!confirm('Сигурни ли сте, че искате да приемете тази задача?')) return;
+
+  try {
+    const response = await fetch(`/api/tasks/${taskId}/assign/{{ current_user.id }}`, {
+      method: 'POST'
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showNotification('Задачата е приета успешно!', 'success');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showNotification('Грешка при приемане на задачата: ' + (data.error || ''), 'danger');
     }
+  } catch (error) {
+    console.error('Error accepting task:', error);
+    showNotification('Грешка при свързване със сървъра', 'danger');
+  }
+}
 
-    // Update location via API
-    fetch(`/api/volunteers/{{ current_user.id }}/location`, {
+function viewTaskDetails(taskId) {
+  // For now, just show an alert. In a real app, this would open a modal
+  showNotification('Детайлите за задачата ще бъдат показани в модален прозорец', 'info');
+}
+
+async function updateProgress(taskId, newProgress) {
+  try {
+    const response = await fetch(`/api/tasks/${taskId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ progress: Math.min(newProgress, 100) })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showNotification('Прогресът е обновен!', 'success');
+      setTimeout(() => location.reload(), 1000);
+    } else {
+      showNotification('Грешка при обновяване на прогреса', 'danger');
+    }
+  } catch (error) {
+    console.error('Error updating progress:', error);
+    showNotification('Грешка при свързване със сървъра', 'danger');
+  }
+}
+
+async function completeTask(taskId) {
+  if (!confirm('Сигурни ли сте, че задачата е завършена?')) return;
+
+  try {
+    const response = await fetch(`/api/tasks/${taskId}/complete`, {
+      method: 'POST'
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showNotification('Задачата е отбелязана като завършена!', 'success');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showNotification('Грешка при завършване на задачата', 'danger');
+    }
+  } catch (error) {
+    console.error('Error completing task:', error);
+    showNotification('Грешка при свързване със сървъра', 'danger');
+  }
+}
+
+// Location functions
+function getCurrentLocation() {
+  const btn = event.target.closest('button');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Зареждане...';
+  btn.classList.add('loading');
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+        document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+
+        // Reverse geocode to get city name
+        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=bg`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.city) {
+              document.getElementById('locationText').value = data.city;
+            }
+          })
+          .catch(error => console.log('Reverse geocoding failed:', error));
+
+        btn.innerHTML = originalText;
+        btn.classList.remove('loading');
+        showNotification('Локацията е получена успешно!', 'success');
       },
+      function(error) {
+        btn.innerHTML = originalText;
+        btn.classList.remove('loading');
+        showNotification('Не можахме да получим вашата локация. Моля, въведете я ръчно.', 'warning');
+      }
+    );
+  } else {
+    btn.innerHTML = originalText;
+    btn.classList.remove('loading');
+    showNotification('Вашият браузър не поддържа геолокация.', 'warning');
+  }
+}
+
+async function updateLocation() {
+  const latitude = document.getElementById('latitude').value;
+  const longitude = document.getElementById('longitude').value;
+  const locationText = document.getElementById('locationText').value;
+
+  if (!latitude || !longitude) {
+    showNotification('Моля, въведете валидни координати.', 'warning');
+    return;
+  }
+
+  const btn = event.target;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Запазване...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch(`/api/volunteers/{{ current_user.id }}/location`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude)
+        longitude: parseFloat(longitude),
+        location: locationText
       })
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          alert('Локацията е актуализирана успешно!');
-          // Reload the page to show updated location
-          window.location.reload();
-        } else {
-          alert('Грешка при актуализиране на локацията: ' + (data.error || 'Неизвестна грешка'));
-        }
-      })
-      .catch(error => {
-        alert('Грешка при свързване със сървъра.');
-        console.error('Update location error:', error);
-      });
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      showNotification('Локацията е актуализирана успешно!', 'success');
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      showNotification('Грешка при актуализиране на локацията: ' + (data.error || ''), 'danger');
+    }
+  } catch (error) {
+    console.error('Update location error:', error);
+    showNotification('Грешка при свързване със сървъра.', 'danger');
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
   }
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+  const container = document.getElementById('notificationContainer');
+  const notificationId = 'notification-' + Date.now();
+
+  const notificationHtml = `
+    <div id="${notificationId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+
+  container.insertAdjacentHTML('beforeend', notificationHtml);
+
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    const notification = document.getElementById(notificationId);
+    if (notification) {
+      notification.remove();
+    }
+  }, 5000);
+}
+
+// Add loading animation to cards
+const observerOptions = {
+  threshold: 0.1,
+  rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, observerOptions);
+
+// Observe all cards
+document.querySelectorAll('.stats-card, .action-card, .tasks-section').forEach(card => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(30px)';
+  card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(card);
+});
 </script>
-
-<style>
-  .hover-shadow:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-    transition: box-shadow 0.3s ease;
-  }
-
-  .border-left-primary {
-    border-left: 4px solid #007bff !important;
-  }
-</style>
 {% endblock %}

@@ -25,6 +25,32 @@
       rel="stylesheet"
     />
 
+    <!-- HelpChain Design System -->
+    <!-- Custom CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/design-system.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/performance-optimizations.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/accessibility.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/mobile-responsiveness.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/user-feedback.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/navigation-improvements.css') }}"
+    />
     <style>
       :root {
         --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -479,289 +505,351 @@
   </head>
 
   <body data-theme="light">
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loadingSpinner">
-      <div class="spinner"></div>
+    <!-- Skip to main content -->
+    <a href="#main-content" class="skip-link">Отиди към основното съдържание</a>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+      <div class="spinner-light"></div>
     </div>
 
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
+    <nav
+      class="navbar-light main-nav"
+      role="navigation"
+      aria-label="Основна навигация"
+    >
       <div class="container">
-        <a class="navbar-brand navbar-brand-modern" href="/">HelpChain</a>
+        <a class="navbar-brand-light" href="/">HelpChain</a>
 
         <button
-          class="navbar-toggler"
+          class="navbar-toggler d-md-none"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
+          aria-expanded="false"
+          aria-controls="navbarNav"
           title="Отвори меню"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="#features">Функции</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('all_categories') }}"
+        <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
+          <ul class="nav-menu">
+            <li><a class="nav-link-light" href="#features">Функции</a></li>
+            <li>
+              <a class="nav-link-light" href="{{ url_for('all_categories') }}"
                 >Категории</a
               >
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('faq') }}">ЧЗВ</a>
+            <li>
+              <a class="nav-link-light" href="{{ url_for('faq') }}">ЧЗВ</a>
             </li>
-          </ul>
-
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('login') }}">Вход</a>
+            <li>
+              <a class="nav-link-light" href="{{ url_for('login') }}">Вход</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('register') }}"
+            <li>
+              <a class="nav-link-light" href="{{ url_for('register') }}"
                 >Регистрация</a
               >
             </li>
-            <li class="nav-item">
+            <li>
+              <a class="nav-link-light" href="{{ url_for('volunteer_login') }}"
+                >Вход за доброволци</a
+              >
+            </li>
+            <li>
               <button
-                class="theme-toggle"
+                class="btn btn-sm ms-3 focus-visible"
                 id="themeToggle"
                 title="Превключи тема"
+                aria-label="Превключи между светла и тъмна тема"
               >
-                <i class="fas fa-moon"></i>
+                <i class="fas fa-moon" aria-hidden="true"></i>
               </button>
             </li>
           </ul>
+        </div>
+
+        <!-- Search Container -->
+        <div class="search-container d-none d-md-block ms-3">
+          <div class="search-input-group">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Търси в HelpChain..."
+              aria-label="Търсене"
+            />
+            <button class="search-button" aria-label="Търси">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
       </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="floating-shapes">
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
-        <div class="shape"></div>
+    <section class="hero-light" role="banner" aria-labelledby="hero-title">
+      <div class="hero-shapes" aria-hidden="true">
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
       </div>
 
-      <div class="hero-content">
-        <h1 class="hero-title">Добре дошли в HelpChain!</h1>
-        <p class="hero-subtitle">
-          Свързваме нуждаещи се хора с доброволци за бърза и ефективна помощ.
-          Заедно можем да направим света по-добро място.
-        </p>
+      <div class="container">
+        <div class="hero-content text-center">
+          <h1 id="hero-title" class="hero-title">Добре дошли в HelpChain!</h1>
+          <p class="hero-subtitle">
+            Свързваме нуждаещи се хора с доброволци за бърза и ефективна помощ.
+            Заедно можем да направим света по-добро място.
+          </p>
 
-        <div class="hero-buttons">
-          <a
-            class="btn btn-primary-modern btn-modern"
-            href="{{ url_for('submit_request') }}"
+          <div
+            class="hero-buttons d-flex justify-content-center gap-3 flex-wrap"
           >
-            <i class="fas fa-plus-circle me-2"></i>Подай заявка за помощ
-          </a>
-          <a
-            class="btn btn-success-modern btn-modern"
-            href="{{ url_for('become_volunteer') }}"
-          >
-            <i class="fas fa-hand-holding-heart me-2"></i>Стани доброволец
-          </a>
+            <a
+              class="btn-light btn-primary focus-visible"
+              href="{{ url_for('submit_request') }}"
+            >
+              <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>Подай
+              заявка за помощ
+            </a>
+            <a
+              class="btn-light btn-success focus-visible"
+              href="{{ url_for('become_volunteer') }}"
+            >
+              <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i
+              >Стани доброволец
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Stats Section -->
-    <section class="stats-section">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-4">
-            <div class="stat-card fade-in">
-              <div class="stat-number" id="volunteersCount">
+    <!-- Main Content -->
+    <main
+      id="main-content"
+      class="main-content"
+      role="main"
+      aria-label="Основно съдържание"
+    >
+      <!-- Stats Section -->
+      <section class="stats-section">
+        <div class="container">
+          <div class="stats-grid">
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="volunteersCount">
                 {{ volunteers_count }}
               </div>
-              <div class="stat-label">Активни доброволци</div>
+              <div class="stat-label-light">Активни доброволци</div>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="stat-card fade-in">
-              <div class="stat-number" id="requestsCount">
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="requestsCount">
                 {{ requests_count }}
               </div>
-              <div class="stat-label">Помогнати хора</div>
+              <div class="stat-label-light">Помогнати хора</div>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="stat-card fade-in">
-              <div class="stat-number" id="openRequestsCount">
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="openRequestsCount">
                 {{ open_requests }}
               </div>
-              <div class="stat-label">Отворени заявки</div>
+              <div class="stat-label-light">Отворени заявки</div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Features Section -->
-    <section class="features-section" id="features">
-      <div class="container">
-        <div class="text-center mb-5">
-          <h2 class="display-5 fw-bold mb-3 gradient-text">
-            Защо да изберете HelpChain?
-          </h2>
-          <p class="lead text-muted">
-            Ние предлагаме модерна платформа за свързване на хората, които се
-            нуждаят от помощ, с тези, които искат да помогнат.
-          </p>
-        </div>
+      <!-- Features Section -->
+      <section class="features-section" id="features">
+        <div class="container">
+          <div class="text-center mb-5">
+            <h2 class="h1 mb-3">Защо да изберете HelpChain?</h2>
+            <p class="lead text-muted">
+              Ние предлагаме модерна платформа за свързване на хората, които се
+              нуждаят от помощ, с тези, които искат да помогнат.
+            </p>
+          </div>
 
-        <div class="row g-4">
-          <div class="col-md-4">
-            <div class="feature-card fade-in">
-              <div class="feature-icon">
+          <div class="features-grid">
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
                 <i class="fas fa-bolt"></i>
               </div>
-              <h3 class="feature-title">Бърза помощ</h3>
-              <p class="feature-description">
+              <h3 class="feature-title-light">Бърза помощ</h3>
+              <p class="feature-description-light">
                 Нашата платформа свързва нуждаещите се с доброволци в рамките на
                 минути, осигурявайки бърза и ефективна помощ.
               </p>
             </div>
-          </div>
 
-          <div class="col-md-4">
-            <div class="feature-card fade-in">
-              <div class="feature-icon">
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
                 <i class="fas fa-shield-alt"></i>
               </div>
-              <h3 class="feature-title">Сигурност</h3>
-              <p class="feature-description">
+              <h3 class="feature-title-light">Сигурност</h3>
+              <p class="feature-description-light">
                 Всички потребители преминават през верификация, а комуникацията
                 е защитена с най-съвременни технологии за сигурност.
               </p>
             </div>
-          </div>
 
-          <div class="col-md-4">
-            <div class="feature-card fade-in">
-              <div class="feature-icon">
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
                 <i class="fas fa-users"></i>
               </div>
-              <h3 class="feature-title">Общност</h3>
-              <p class="feature-description">
+              <h3 class="feature-title-light">Общност</h3>
+              <p class="feature-description-light">
                 Присъединете се към растящата общност от доброволци и хора,
                 които вярват, че заедно можем да направим света по-добро място.
               </p>
             </div>
-          </div>
 
-          <div class="col-md-4">
-            <div class="feature-card fade-in">
-              <div class="feature-icon">
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
                 <i class="fas fa-mobile-alt"></i>
               </div>
-              <h3 class="feature-title">Мобилна достъпност</h3>
-              <p class="feature-description">
+              <h3 class="feature-title-light">Мобилна достъпност</h3>
+              <p class="feature-description-light">
                 Нашата платформа работи перфектно на всички устройства - от
                 смартфони до десктоп компютри.
               </p>
             </div>
-          </div>
 
-          <div class="col-md-4">
-            <div class="feature-card fade-in">
-              <div class="feature-icon">
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
                 <i class="fas fa-clock"></i>
               </div>
-              <h3 class="feature-title">24/7 поддръжка</h3>
-              <p class="feature-description">
+              <h3 class="feature-title-light">24/7 поддръжка</h3>
+              <p class="feature-description-light">
                 Нашият екип е винаги на разположение да помогне. Независимо от
                 часа, можете да разчитате на нашата поддръжка.
               </p>
             </div>
-          </div>
 
-          <div class="col-md-4">
-            <div class="feature-card fade-in">
-              <div class="feature-icon">
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
                 <i class="fas fa-heart"></i>
               </div>
-              <h3 class="feature-title">Безплатно</h3>
-              <p class="feature-description">
+              <h3 class="feature-title-light">Безплатно</h3>
+              <p class="feature-description-light">
                 HelpChain е напълно безплатна платформа. Ние вярваме, че помощта
                 трябва да бъде достъпна за всички.
               </p>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-light py-5 mt-5">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-4">
-            <h5>HelpChain</h5>
-            <p>Свързваме нуждаещи се с доброволци за по-добър свят.</p>
-          </div>
-          <div class="col-md-4">
-            <h5>Бързи връзки</h5>
-            <ul class="list-unstyled">
-              <li>
-                <a href="{{ url_for('all_categories') }}" class="text-light"
-                  >Категории помощ</a
+      <!-- Footer -->
+      <footer
+        class="footer bg-dark text-light py-5 mt-5"
+        role="contentinfo"
+        aria-label="Информация за сайта"
+      >
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4">
+              <h5>HelpChain</h5>
+              <p>Свързваме нуждаещи се с доброволци за по-добър свят.</p>
+            </div>
+            <div class="col-md-4">
+              <h5>Бързи връзки</h5>
+              <ul class="list-unstyled">
+                <li>
+                  <a href="{{ url_for('all_categories') }}" class="text-light"
+                    >Категории помощ</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('faq') }}" class="text-light"
+                    >Често задавани въпроси</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('privacy') }}" class="text-light"
+                    >Поверителност</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('terms') }}" class="text-light"
+                    >Условия за ползване</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h5>Контакти</h5>
+              <p>
+                <i class="fas fa-envelope me-2" aria-hidden="true"></i
+                >contact@helpchain.live
+              </p>
+              <p>
+                <i class="fas fa-phone me-2" aria-hidden="true"></i>+359 XX XXX
+                XXX
+              </p>
+              <div class="social-links mt-3">
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="Facebook"
+                  aria-label="Посети ни във Facebook"
                 >
-              </li>
-              <li>
-                <a href="{{ url_for('faq') }}" class="text-light"
-                  >Често задавани въпроси</a
+                  <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="Twitter"
+                  aria-label="Посети ни в Twitter"
                 >
-              </li>
-              <li>
-                <a href="{{ url_for('privacy') }}" class="text-light"
-                  >Поверителност</a
+                  <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="Instagram"
+                  aria-label="Посети ни в Instagram"
                 >
-              </li>
-              <li>
-                <a href="{{ url_for('terms') }}" class="text-light"
-                  >Условия за ползване</a
+                  <i class="fab fa-instagram" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light"
+                  title="LinkedIn"
+                  aria-label="Посети ни в LinkedIn"
                 >
-              </li>
-            </ul>
-          </div>
-          <div class="col-md-4">
-            <h5>Контакти</h5>
-            <p><i class="fas fa-envelope me-2"></i>contact@helpchain.live</p>
-            <p><i class="fas fa-phone me-2"></i>+359 XX XXX XXX</p>
-            <div class="social-links mt-3">
-              <a href="#" class="text-light me-3" title="Facebook"
-                ><i class="fab fa-facebook-f"></i
-              ></a>
-              <a href="#" class="text-light me-3" title="Twitter"
-                ><i class="fab fa-twitter"></i
-              ></a>
-              <a href="#" class="text-light me-3" title="Instagram"
-                ><i class="fab fa-instagram"></i
-              ></a>
-              <a href="#" class="text-light" title="LinkedIn"
-                ><i class="fab fa-linkedin-in"></i
-              ></a>
+                  <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                </a>
+              </div>
             </div>
           </div>
+          <hr class="my-4" />
+          <div class="text-center">
+            <p>&copy; 2025 HelpChain. Всички права запазени.</p>
+          </div>
         </div>
-        <hr class="my-4" />
-        <div class="text-center">
-          <p>&copy; 2025 HelpChain. Всички права запазени.</p>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </main>
+
+    <!-- Back to Top Button -->
+    <button
+      class="back-to-top"
+      aria-label="Обратно към началото на страницата"
+      title="Обратно към началото"
+    >
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/feedback.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script>
+      // Initialize feedback system
+      const feedback = new HelpChainFeedback();
+
       // Theme Toggle Functionality
       const themeToggle = document.getElementById("themeToggle");
       const html = document.documentElement;
@@ -779,31 +867,45 @@
         html.setAttribute("data-theme", newTheme);
         localStorage.setItem("theme", newTheme);
         updateThemeIcon(newTheme);
+
+        // Show toast notification for theme change
+        feedback.showToast(
+          `Темата е превключена на ${newTheme === "light" ? "светла" : "тъмна"}`,
+          "success",
+          3000,
+        );
       });
 
       function updateThemeIcon(theme) {
         themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
+        themeToggle.setAttribute(
+          "aria-label",
+          `Превключи към ${theme === "light" ? "тъмна" : "светла"} тема`,
+        );
       }
 
-      // Loading States for AJAX requests
-      function showLoading() {
-        document.getElementById("loadingSpinner").style.display = "block";
-      }
-
-      function hideLoading() {
-        document.getElementById("loadingSpinner").style.display = "none";
-      }
-
-      // Intercept all AJAX requests
+      // Intercept all AJAX requests with loading states
       const originalFetch = window.fetch;
       window.fetch = function (...args) {
-        showLoading();
-        return originalFetch.apply(this, args).finally(() => {
-          hideLoading();
-        });
+        feedback.showLoading("Зареждане...");
+        return originalFetch
+          .apply(this, args)
+          .then((response) => {
+            feedback.hideLoading();
+            return response;
+          })
+          .catch((error) => {
+            feedback.hideLoading();
+            feedback.showToast(
+              "Възникна грешка при зареждането",
+              "error",
+              5000,
+            );
+            throw error;
+          });
       };
 
-      // Smooth Scrolling
+      // Smooth Scrolling with focus management
       document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
         anchor.addEventListener("click", function (e) {
           e.preventDefault();
@@ -813,51 +915,29 @@
               behavior: "smooth",
               block: "start",
             });
+
+            // Focus the target element for keyboard navigation
+            target.focus({ preventScroll: true });
           }
         });
       });
 
-      // Scroll Animations
-      const observerOptions = {
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px",
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
+      // Keyboard navigation improvements
+      document.addEventListener("keydown", function (e) {
+        // Close mobile menu with Escape key
+        if (e.key === "Escape") {
+          const navbarCollapse = document.getElementById("navbarNav");
+          if (navbarCollapse.classList.contains("show")) {
+            navbarCollapse.classList.remove("show");
+            themeToggle.focus();
           }
-        });
-      }, observerOptions);
-
-      // Observe all fade-in elements
-      document.querySelectorAll(".fade-in").forEach((el) => {
-        observer.observe(el);
+        }
       });
-
-      // Dynamic Stats Update (simulate real-time updates)
-      function updateStats() {
-        // This would normally fetch from an API
-        // For demo purposes, we'll add some animation
-        const statCards = document.querySelectorAll(".stat-card");
-        statCards.forEach((card) => {
-          card.addEventListener("mouseenter", function () {
-            this.style.transform = "translateY(-10px) scale(1.02)";
-          });
-
-          card.addEventListener("mouseleave", function () {
-            this.style.transform = "translateY(0) scale(1)";
-          });
-        });
-      }
 
       // Initialize when DOM is loaded
       document.addEventListener("DOMContentLoaded", function () {
-        updateStats();
-
-        // Add click animations to buttons
-        document.querySelectorAll(".btn-modern").forEach((btn) => {
+        // Add click animations to buttons with accessibility
+        document.querySelectorAll(".btn-light").forEach((btn) => {
           btn.addEventListener("click", function (e) {
             this.style.transform = "scale(0.95)";
             setTimeout(() => {
@@ -865,19 +945,41 @@
             }, 150);
           });
         });
+
+        // Navbar scroll effect with reduced motion support
+        const navbar = document.querySelector(".navbar-light");
+        if (navbar) {
+          window.addEventListener("scroll", function () {
+            if (window.scrollY > 50) {
+              navbar.style.background = "rgba(255, 255, 255, 0.98)";
+              navbar.style.backdropFilter = "blur(20px)";
+            } else {
+              navbar.style.background = "rgba(255, 255, 255, 0.95)";
+              navbar.style.backdropFilter = "blur(8px)";
+            }
+          });
+        }
+
+        // Show welcome toast
+        setTimeout(() => {
+          feedback.showToast("Добре дошли в HelpChain! 🚀", "info", 4000);
+        }, 1000);
       });
 
-      // Navbar scroll effect
-      window.addEventListener("scroll", function () {
-        const navbar = document.querySelector(".navbar-modern");
-        if (window.scrollY > 50) {
-          navbar.style.background = "rgba(255, 255, 255, 0.98)";
-          navbar.style.backdropFilter = "blur(20px)";
-        } else {
-          navbar.style.background = "rgba(255, 255, 255, 0.95)";
-          navbar.style.backdropFilter = "blur(10px)";
-        }
-      });
+      // Handle reduced motion preference
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        // Disable smooth scrolling
+        document.documentElement.style.scrollBehavior = "auto";
+
+        // Disable animations
+        document.querySelectorAll("*").forEach((el) => {
+          el.style.animation = "none";
+          el.style.transition = "none";
+        });
+      }
     </script>
   </body>
 </html>

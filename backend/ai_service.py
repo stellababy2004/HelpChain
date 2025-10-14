@@ -37,7 +37,26 @@ import os
 import unicodedata
 import re
 from typing import Optional, Dict, Any, Tuple
-from ai_config import ai_config, logger
+from ai_config import get_ai_config, logger
+
+# Monkey patch httpx.Client to handle proxies parameter (compatibility fix)
+try:
+    import httpx
+
+    original_httpx_init = httpx.Client.__init__
+
+    def patched_httpx_init(self, *args, **kwargs):
+        # Remove proxies if present and map it to proxy
+        if "proxies" in kwargs:
+            if "proxy" not in kwargs:
+                kwargs["proxy"] = kwargs["proxies"]
+            del kwargs["proxies"]
+        return original_httpx_init(self, *args, **kwargs)
+
+    httpx.Client.__init__ = patched_httpx_init
+except Exception:
+    # If httpx patching fails, continue without it
+    httpx = None
 
 
 def _safe_message(exc: Exception) -> str:
@@ -172,7 +191,7 @@ class AIService:
         """Initialize AI providers"""
         try:
             # Setup OpenAI (only if SDK is available)
-            openai_provider = ai_config.get_provider("openai")
+            openai_provider = get_ai_config().get_provider("openai")
             if openai_provider and openai_provider.enabled:
                 if openai is None:
                     logger.warning(
@@ -183,7 +202,7 @@ class AIService:
                     logger.info("✅ OpenAI configured successfully")
 
             # Setup Gemini (only if SDK is available)
-            gemini_provider = ai_config.get_provider("gemini")
+            gemini_provider = get_ai_config().get_provider("gemini")
             if gemini_provider and gemini_provider.enabled:
                 if genai is None:
                     logger.warning(
@@ -219,22 +238,33 @@ class AIService:
             # Development mock mode: allow local dev without an API key
             mock_flag = os.getenv("AI_DEV_MOCK", "").lower() in ("1", "true", "yes")
             if mock_flag:
-                # Simple canned reply useful for UI/workflow testing
+                # Intelligent canned replies useful for UI/workflow testing
+                user_msg_lower = user_message.lower()
+
+                if "здравей" in user_msg_lower or "здрасти" in user_msg_lower:
+                    response_text = "Здравейте! Аз съм AI асистентът на HelpChain. Как мога да ви помогна днес?"
+                elif "helpchain" in user_msg_lower or "какво" in user_msg_lower:
+                    response_text = "HelpChain е платформа за доброволчество в България. Свързваме хора нуждаещи се от помощ с проверени доброволци в София, Пловдив, Варна, Бургас и Стара Загора."
+                elif "регистрация" in user_msg_lower or "регистрирам" in user_msg_lower:
+                    response_text = "Регистрацията в HelpChain е безплатна! Можете да се регистрирате през нашето мобилно приложение или уеб сайта. За доброволци има процес на проверка и обучение."
+                elif (
+                    "цена" in user_msg_lower
+                    or "струва" in user_msg_lower
+                    or "такса" in user_msg_lower
+                ):
+                    response_text = "Цените зависят от вида на услугата. Свържете се с нашия екип за точна информация и консултация."
+                elif "доброволец" in user_msg_lower or "стана" in user_msg_lower:
+                    response_text = "За да станете доброволец в HelpChain, трябва да минете през процес на регистрация, проверка и кратко обучение. Ще се свържем с вас след регистрацията."
+                elif "услуги" in user_msg_lower or "помощ" in user_msg_lower:
+                    response_text = "Предлагаме различни услуги: домашна грижа, придружаване, пазарски покупки, помощ в домакинството и градинарство."
+                else:
+                    response_text = "Благодаря за въпроса! За повече информация или помощ с регистрацията, моля свържете се с нашия екип на contact@helpchain.live."
+
                 return {
-                    "response": "Това е mock отговор за разработка. (AI_DEV_MOCK=1)",
-                    "confidence": 0.5,
+                    "response": response_text,
+                    "confidence": 0.8,
                     "provider": "mock",
                     "language_detected": "bg",
-                }
-
-            # Get active provider
-            provider = ai_config.get_active_provider()
-            if not provider:
-                return {
-                    "response": "Извинявам се, AI услугата временно не е достъпна. Моля опитайте пак по-късно.",
-                    "confidence": 0.0,
-                    "provider": "fallback",
-                    "error": "No AI provider available",
                 }
 
             # Prepare the conversation context
@@ -242,50 +272,75 @@ class AIService:
                 user_message, context, detected_lang
             )
 
-            # Generate response based on provider
-            if provider.name == "OpenAI GPT":
-                result = await self._generate_openai_response(
-                    conversation_context, provider
-                )
-            elif provider.name == "Google Gemini":
-                result = await self._generate_gemini_response(
-                    conversation_context, provider
-                )
-            else:
-                raise ValueError(f"Unknown provider: {provider.name}")
+            # Try providers in priority order until one succeeds
+            providers_to_try = sorted(
+                [p for p in get_ai_config().providers.values() if p.enabled],
+                key=lambda p: p.priority,
+            )
 
-            # Post-process response
-            result["language_detected"] = detected_lang
-            result["provider"] = provider.name
+            logger.info(
+                f"🤖 Trying providers in order: {[p.name for p in providers_to_try]}"
+            )
 
-            logger.info(f"🤖 AI Response generated via {provider.name}")
-            return result
+            last_error = None
+            for provider in providers_to_try:
+                try:
+                    logger.info(f"🤖 Attempting to use provider: {provider.name}")
+                    if provider.name == "OpenAI GPT":
+                        result = await self._generate_openai_response(
+                            conversation_context, provider
+                        )
+                    elif provider.name == "Google Gemini":
+                        result = await self._generate_gemini_response(
+                            conversation_context, provider
+                        )
+                    else:
+                        continue
+
+                    # Post-process response
+                    result["language_detected"] = detected_lang
+                    result["provider"] = provider.name
+
+                    logger.info(f"🤖 AI Response generated via {provider.name}")
+                    return result
+
+                except Exception as e:
+                    logger.warning(f"Provider {provider.name} failed: {e}")
+                    last_error = e
+                    continue
+
+            # All providers failed
+            raise last_error or RuntimeError("All AI providers failed")
         except Exception as e:
             logger.error(f"❌ Error generating AI response: {_safe_message(e)}")
             logger.error(traceback.format_exc())
             return {
-                "response": "Извинявам се, възникна грешка при генерирането на отговора. Моля свържете се с нашия екип за помощ.",
+                "response": (
+                    "Извинявам се, възникна грешка при генерирането на отговора. "
+                    "Моля свържете се с нашия екип за помощ."
+                ),
                 "confidence": 0.0,
                 "provider": "error_fallback",
                 "error": _safe_message(e),
             }
 
     def _build_context(
-        self, user_message: str, context: Optional[Dict[str, Any]], language: str
+        self, user_message: str, context: dict[str, Any] | None, language: str
     ) -> str:
         """Build conversation context for AI"""
 
-        context_parts = [ai_config.system_prompt]
+        context_parts = [get_ai_config().system_prompt]
 
         if context and context.get("conversation_history"):
             context_parts.append("\nПОСЛЕДНИ СЪОБЩЕНИЯ:")
-            for msg in context["conversation_history"][-3:]:  # Last 3 messages
+            for msg in context["conversation_history"][-2:]:  # Last 2 messages
                 context_parts.append(f"Потребител: {msg.get('user_message', '')}")
                 context_parts.append(f"Асистент: {msg.get('bot_response', '')}")
 
         if language != "bg":
             context_parts.append(
-                f"\nЗАБЕЛЕЖКА: Потребителят пише на {language}, но отговори ЗАДЪЛЖИТЕЛНО на български език."
+                f"\nЗАБЕЛЕЖКА: Потребителят пише на {language}, но "
+                "Отговаряй ЗАДЪЛЖИТЕЛНО на български език."
             )
 
         context_parts.append(f"\nВЪПРОС НА ПОТРЕБИТЕЛЯ: {user_message}")
@@ -293,46 +348,18 @@ class AIService:
 
         return "\n".join(context_parts)
 
-    async def _generate_openai_response(self, context: str, provider) -> Dict[str, Any]:
+    async def _generate_openai_response(self, context: str, provider) -> dict[str, Any]:
         """Generate response using OpenAI"""
         try:
             if openai is None:
                 raise RuntimeError(
-                    "OpenAI SDK is not installed. Install with 'pip install openai' to enable this provider."
+                    "OpenAI SDK is not installed. Install with 'pip install openai' "
+                    "to enable this provider."
                 )
 
-            # Support both pre-1.0 (openai.ChatCompletion.create) and openai>=1.0 (OpenAI client)
-            ai_response = None
-            tokens_used = None
-
-            # Old-style API
-            if hasattr(openai, "ChatCompletion"):
-                response = openai.ChatCompletion.create(
-                    model=provider.model,
-                    messages=[{"role": "system", "content": context}],
-                    max_tokens=provider.max_tokens,
-                    temperature=provider.temperature,
-                    top_p=0.9,
-                    frequency_penalty=0.1,
-                    presence_penalty=0.1,
-                )
-                ai_response = response.choices[0].message.content.strip()
-                # usage may be an object with total_tokens
-                try:
-                    tokens_used = response.usage.total_tokens
-                except Exception:
-                    tokens_used = None
-
-            else:
-                # New-style openai>=1.0 API: instantiate client and call chat completions
-                try:
-                    client = openai.OpenAI()
-                except Exception as e:
-                    raise RuntimeError(
-                        "Detected openai>=1.0 but failed to instantiate OpenAI client. "
-                        "See https://github.com/openai/openai-python for migration instructions. "
-                        f"Original error: {e}"
-                    )
+            # Use OpenAI >= 1.0 API (new client-based approach)
+            try:
+                client = openai.OpenAI(api_key=provider.api_key)
 
                 # Call chat completions on the new client
                 resp = client.chat.completions.create(
@@ -342,28 +369,21 @@ class AIService:
                     temperature=provider.temperature,
                 )
 
-                # Parse response (new SDK structures can vary) -- try common access patterns
-                try:
-                    ai_response = resp.choices[0].message.content.strip()
-                except Exception:
-                    try:
-                        ai_response = resp.choices[0]["message"]["content"].strip()
-                    except Exception:
-                        ai_response = str(resp)
+                # Parse response
+                ai_response = resp.choices[0].message.content.strip()
 
-                # tokens usage may be present
+                # Get token usage
                 usage = getattr(resp, "usage", None)
-                if usage is None and isinstance(resp, dict):
-                    usage = resp.get("usage")
-
+                tokens_used = None
                 if usage:
                     try:
                         tokens_used = usage.total_tokens
                     except Exception:
-                        try:
-                            tokens_used = usage.get("total_tokens")
-                        except Exception:
-                            tokens_used = None
+                        tokens_used = None
+
+            except Exception as e:
+                logger.error(f"OpenAI API error: {e}")
+                raise
 
             confidence = self._calculate_confidence(ai_response or "")
 
@@ -378,12 +398,13 @@ class AIService:
             logger.error(f"OpenAI API error: {e}")
             raise
 
-    async def _generate_gemini_response(self, context: str, provider) -> Dict[str, Any]:
+    async def _generate_gemini_response(self, context: str, provider) -> dict[str, Any]:
         """Generate response using Google Gemini"""
         try:
             if genai is None:
                 raise RuntimeError(
-                    "Google Generative AI SDK is not installed. Install the appropriate package to enable Gemini provider."
+                    "Google Generative AI SDK is not installed. Install the "
+                    "appropriate package to enable Gemini provider."
                 )
             model = genai.GenerativeModel(provider.model)
 
@@ -430,18 +451,18 @@ class AIService:
         else:
             return 0.7
 
-    def get_ai_status(self) -> Dict[str, Any]:
+    def get_ai_status(self) -> dict[str, Any]:
         """Get AI service status"""
-        status = ai_config.get_status()
-        status["service_ready"] = ai_config.is_ai_enabled()
+        status = get_ai_config().get_status()
+        status["service_ready"] = get_ai_config().is_ai_enabled()
         return status
 
-    def test_connection(self) -> Dict[str, Any]:
+    def test_connection(self) -> dict[str, Any]:
         """Test AI provider connections"""
         results = {}
         mock_flag = os.getenv("AI_DEV_MOCK", "").lower() in ("1", "true", "yes")
 
-        for name, provider in ai_config.providers.items():
+        for name, provider in get_ai_config().providers.items():
             if mock_flag:
                 results[name] = {
                     "status": "ok",
@@ -467,7 +488,8 @@ class AIService:
                     else:
                         # Try to use old API if present
                         try:
-                            # Prefer direct REST call to OpenAI to avoid SDK-internal encoding issues.
+                            # Prefer direct REST call to OpenAI to avoid
+                            # SDK-internal encoding issues.
                             if requests is None:
                                 # Fall back to SDK check if requests isn't available
                                 raise RuntimeError("requests package not available")
@@ -513,7 +535,8 @@ class AIService:
                             # If requests is missing or REST check failed, try SDK fallback
                             if requests is None and openai is not None:
                                 try:
-                                    # SDK fallback: try minimal call to list models or create a tiny completion
+                                    # SDK fallback: try minimal call to list models
+                                    # or create a tiny completion
                                     try:
                                         # Old-style
                                         if hasattr(openai, "ChatCompletion"):
@@ -527,7 +550,9 @@ class AIService:
                                             )
                                             results[name] = {
                                                 "status": "ok",
-                                                "message": "Connection successful (via SDK fallback)",
+                                                "message": (
+                                                    "Connection successful (via SDK fallback)"
+                                                ),
                                             }
                                             continue
                                         else:
@@ -541,7 +566,9 @@ class AIService:
                                             )
                                             results[name] = {
                                                 "status": "ok",
-                                                "message": "Connection successful (via SDK fallback)",
+                                                "message": (
+                                                    "Connection successful (via SDK fallback)"
+                                                ),
                                             }
                                             continue
                                     except Exception as sdk_e:
@@ -581,6 +608,35 @@ class AIService:
                 results[name] = {"status": "error", "message": _safe_message(e)}
 
         return results
+
+    def generate_response_sync(
+        self, user_message: str, context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """
+        Synchronous version of generate_response for Flask routes
+        """
+        import asyncio
+
+        try:
+            # Create event loop if none exists
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+            # Run async function synchronously
+            return loop.run_until_complete(
+                self.generate_response(user_message, context)
+            )
+        except Exception as e:
+            logger.error(f"Error in sync wrapper: {e}")
+            return {
+                "response": "Извинявам се, възникна грешка при генерирането на отговора.",
+                "confidence": 0.0,
+                "provider": "error_fallback",
+                "error": str(e),
+            }
 
 
 # Global AI service instance

@@ -19,31 +19,57 @@ from flask_login import (
     current_user,
 )
 from werkzeug.utils import secure_filename
-from .routes.api import api_bp
-from .config import Config
-from .extensions import db, babel, mail, migrate
+
+# Try relative imports first, fall back to absolute imports for standalone execution
+try:
+    from .config import Config
+    from .extensions import db, babel, mail
+    from .models import (
+        Request,
+        RequestLog,
+        User,
+        AdminUser,
+        ChatRoom,
+        ChatMessage,
+    )
+    from ...analytics_service import analytics_service
+except ImportError:
+    # Fallback for standalone execution
+    import sys
+
+    backend_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..")
+    sys.path.insert(0, backend_dir)
+
+    from config import Config
+    from extensions import db, babel, mail
+    from models import (
+        Request,
+        RequestLog,
+        User,
+        AdminUser,
+        ChatRoom,
+        ChatMessage,
+    )
+    from analytics_service import analytics_service
+
 from flask_babel import get_locale, refresh
 from flask_mail import Message
 import datetime
-from .controllers.helpchain_controller import HelpChainController
-from .models import (
-    Request,
-    RequestLog,
-    User,
-    AdminUser,
-    ChatRoom,
-    ChatMessage,
-)
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from ...analytics_service import analytics_service
 import uuid
 import sqlite3
+
+# Try to import Migrate for database migrations
+try:
+    from flask_migrate import Migrate
+
+    migrate_available = True
+except ImportError:
+    migrate_available = False
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 print(f"MAILTRAP_USERNAME from env: {os.environ.get('MAILTRAP_USERNAME')}")
 print(f"MAILTRAP_PASSWORD from env: {os.environ.get('MAILTRAP_PASSWORD')}")
-
-controller = HelpChainController()  # Add this
 
 login_manager = LoginManager()
 socketio = SocketIO()
@@ -76,11 +102,10 @@ def create_app(config_object=None):
     babel.init_app(app)
     mail.init_app(app)
     # migrate може да бъде инициализиран с app и db
-    try:
-        migrate.init_app(app, db)
-    except Exception:
-        # ignore if migrate not configured or already initialized
-        pass
+    if migrate_available:
+        migrate = Migrate(app, db)
+    else:
+        migrate = None
 
     # Initialize login manager
     login_manager.init_app(app)
@@ -208,31 +233,32 @@ def create_app(config_object=None):
     app.jinja_env.globals["getattr"] = getattr
 
     # Регистрираме API blueprint под /api
-    app.register_blueprint(api_bp, url_prefix="/api")
+    # try:
+    #     from routes.api import api_bp
+    #     app.register_blueprint(api_bp, url_prefix="/api")
+    # except Exception as e:
+    #     app.logger.info("api blueprint not loaded: %s", e)
 
     # Регистрираме main blueprint (основни публични страници)
-    try:
-        from .routes.main import main_bp
-
-        app.register_blueprint(main_bp)
-    except Exception as e:
-        app.logger.info("main blueprint not loaded: %s", e)
+    # try:
+    #     from routes.main import main_bp
+    #     app.register_blueprint(main_bp)
+    # except Exception as e:
+    #     app.logger.info("main blueprint not loaded: %s", e)
 
     # Регистрираме admin blueprint под /admin
-    try:
-        from .routes.admin import admin_bp
-
-        app.register_blueprint(admin_bp, url_prefix="/admin")
-    except Exception as e:
-        app.logger.info("admin blueprint not loaded: %s", e)
+    # try:
+    #     from routes.admin import admin_bp
+    #     app.register_blueprint(admin_bp, url_prefix="/admin")
+    # except Exception as e:
+    #     app.logger.info("admin blueprint not loaded: %s", e)
 
     # Регистрираме analytics blueprint (pages + api + stream)
-    try:
-        from .routes.analytics import analytics_bp
-
-        app.register_blueprint(analytics_bp)
-    except Exception as e:
-        app.logger.info("analytics blueprint not loaded: %s", e)
+    # try:
+    #     from routes.analytics import analytics_bp
+    #     app.register_blueprint(analytics_bp)
+    # except Exception as e:
+    #     app.logger.info("analytics blueprint not loaded: %s", e)
 
     # Ако няма index шаблон/маршрут в appy, осигуряваме прост home route
     @app.route("/")
@@ -341,14 +367,14 @@ ID: {req.id}
                 "a",
                 encoding="utf-8",
             ) as f:
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
                 f.write(f"Email sent at: {datetime.datetime.now()}\n")
                 f.write(f"Subject: {subject}\n")
                 f.write("To: contact@helpchain.live\n")
                 f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
                 f.write(f"Date: {datetime.datetime.now()}\n\n")
                 f.write(content)
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
             print(f"✅ Email saved to file for request ID {req.id}")
         except Exception as e:
             print(f"❌ Failed to save email to file: {e}")
@@ -442,14 +468,14 @@ ID: {volunteer.id}
                 "a",
                 encoding="utf-8",
             ) as f:
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
                 f.write(f"Email sent at: {datetime.datetime.now()}\n")
                 f.write(f"Subject: {subject}\n")
                 f.write("To: contact@helpchain.live\n")
                 f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
                 f.write(f"Date: {datetime.datetime.now()}\n\n")
                 f.write(content)
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
             print(f"✅ Email saved to file for volunteer ID {volunteer.id}")
         except Exception as e:
             print(f"❌ Failed to save email to file: {e}")
@@ -526,6 +552,13 @@ ID: {volunteer.id}
     @login_required
     def logout():
         logout_user()
+        return redirect(url_for("index"))
+
+    @app.route("/volunteer_logout")
+    @login_required
+    def volunteer_logout():
+        logout_user()
+        flash("Успешен изход", "info")
         return redirect(url_for("index"))
 
     @app.route("/dashboard")
@@ -767,7 +800,7 @@ ID: {volunteer.id}
         join_room(room)
         emit(
             "status",
-            {"msg": f'{data["username"]} се присъедини към {room}'},
+            {"msg": f"{data['username']} се присъедини към {room}"},
             room=room,
         )
         analytics_service.track_event(
@@ -778,7 +811,7 @@ ID: {volunteer.id}
     def on_leave(data):
         room = data["room"]
         leave_room(room)
-        emit("status", {"msg": f'{data["username"]} напусна {room}'}, room=room)
+        emit("status", {"msg": f"{data['username']} напусна {room}"}, room=room)
 
     @socketio.on("message")
     def handle_message(data):
@@ -831,6 +864,284 @@ ID: {volunteer.id}
             room=room,
             skip_sid=True,
         )
+
+    @app.route("/volunteer_dashboard")
+    @login_required
+    def volunteer_dashboard():
+        try:
+            app.logger.info("Starting volunteer_dashboard function")
+            # Check if user is volunteer
+            if not current_user.is_volunteer:
+                flash("Нямате достъп до доброволческия панел.", "error")
+                return redirect(url_for("index"))
+
+            app.logger.info(
+                f"Volunteer found: {current_user.username} (id: {current_user.id})"
+            )
+
+            # Get real statistics from database
+            try:
+                from .models import Task, TaskPerformance
+
+                # Completed tasks count
+                completed_tasks = Task.query.filter_by(
+                    assigned_to=current_user.id, status="completed"
+                ).count()
+
+                # Active tasks count (assigned but not completed)
+                active_tasks_count = (
+                    Task.query.filter_by(assigned_to=current_user.id)
+                    .filter(Task.status.in_(["assigned", "in_progress"]))
+                    .count()
+                )
+
+                # Average rating from performance records
+                avg_rating_result = (
+                    db.session.query(db.func.avg(TaskPerformance.quality_rating))
+                    .filter_by(volunteer_id=current_user.id)
+                    .scalar()
+                )
+
+                rating = round(avg_rating_result, 1) if avg_rating_result else 0.0
+
+                # People helped count (unique tasks completed)
+                people_helped = completed_tasks  # Approximation
+
+                # Reviews count
+                reviews_count = TaskPerformance.query.filter_by(
+                    volunteer_id=current_user.id
+                ).count()
+
+            except Exception as e:
+                app.logger.error(f"Error fetching volunteer stats: {e}")
+                completed_tasks = 0
+                active_tasks_count = 0
+                rating = 0.0
+                people_helped = 0
+                reviews_count = 0
+
+            # Get active tasks assigned to this volunteer
+            try:
+                # Get active tasks assigned to this volunteer
+                active_tasks_query = (
+                    Task.query.filter_by(assigned_to=current_user.id)
+                    .filter(Task.status.in_(["assigned", "in_progress"]))
+                    .order_by(Task.created_at.desc())
+                    .limit(5)
+                )
+
+                active_tasks = []
+                for task in active_tasks_query:
+                    # Calculate progress based on status
+                    if task.status == "assigned":
+                        progress = 10
+                    elif task.status == "in_progress":
+                        progress = 50
+                    else:
+                        progress = 0
+
+                    # Calculate time remaining (simplified)
+                    time_remaining = "Няма краен срок"
+                    if task.deadline:
+                        from datetime import datetime
+
+                        now = datetime.utcnow()
+                        if task.deadline > now:
+                            days_remaining = (task.deadline - now).days
+                            if days_remaining == 0:
+                                time_remaining = "Днес"
+                            elif days_remaining == 1:
+                                time_remaining = "1 ден"
+                            elif days_remaining < 7:
+                                time_remaining = f"{days_remaining} дни"
+                            else:
+                                time_remaining = f"{days_remaining // 7} седмици"
+                        else:
+                            time_remaining = "Просрочена"
+
+                    active_tasks.append(
+                        {
+                            "id": task.id,
+                            "title": task.title,
+                            "location": task.location_text or "Не е посочена локация",
+                            "date": (
+                                task.created_at.strftime("%Y-%m-%d")
+                                if task.created_at
+                                else "Няма дата"
+                            ),
+                            "time_remaining": time_remaining,
+                            "description": task.description or "Няма описание",
+                            "priority": task.priority or "medium",
+                            "progress": progress,
+                        }
+                    )
+
+            except Exception as e:
+                app.logger.error(f"Error fetching active tasks: {e}")
+                active_tasks = []
+
+            # Get available tasks count (open tasks not assigned)
+            try:
+                available_tasks_count = Task.query.filter_by(status="open").count()
+            except Exception as e:
+                app.logger.error(f"Error fetching available tasks count: {e}")
+                available_tasks_count = 0
+
+            # Get urgent tasks count (high priority open tasks)
+            try:
+                urgent_tasks_count = Task.query.filter_by(
+                    status="open", priority="urgent"
+                ).count()
+            except Exception as e:
+                app.logger.error(f"Error fetching urgent tasks count: {e}")
+                urgent_tasks_count = 0
+
+            # Prepare stats dictionary
+            stats = {
+                "completed_tasks": completed_tasks,
+                "active_tasks": active_tasks_count,
+                "rating": rating,
+                "people_helped": people_helped,
+                "reviews": reviews_count,
+            }
+
+            # Get gamification data
+            gamification = {
+                "points": getattr(current_user, "points", 0),
+                "level": getattr(current_user, "level", 1),
+                "experience": getattr(current_user, "experience", 0),
+                "level_progress": (
+                    getattr(current_user, "get_level_progress", lambda: 0)()
+                    if hasattr(current_user, "get_level_progress")
+                    else 0
+                ),
+                "next_level_exp": (
+                    (getattr(current_user, "level", 1) * 100)
+                    if hasattr(current_user, "level")
+                    else 100
+                ),  # Simple calculation
+            }
+
+            app.logger.info("Rendering template with volunteer data")
+            return render_template(
+                "volunteer_dashboard.html",
+                current_user=current_user,
+                stats=stats,
+                active_tasks=active_tasks,
+                available_tasks=available_tasks_count,
+                urgent_tasks=urgent_tasks_count,
+                gamification=gamification,
+            )
+
+        except Exception as e:
+            app.logger.error(f"Error loading volunteer dashboard: {e}", exc_info=True)
+            flash("Възникна грешка при зареждането на панела", "error")
+            return redirect(url_for("index"))
+
+    @app.route("/my_tasks", methods=["GET"], endpoint="my_tasks")
+    @login_required
+    def my_tasks():
+        if not current_user.is_volunteer:
+            flash("Моля, влезте като доброволец.", "warning")
+            return redirect(url_for("volunteer_login"))
+        # Placeholder for my tasks page
+        return render_template("my_tasks.html")
+
+    @app.route("/available_tasks", methods=["GET"], endpoint="available_tasks")
+    @login_required
+    def available_tasks():
+        if not current_user.is_volunteer:
+            flash("Моля, влезте като доброволец.", "warning")
+            return redirect(url_for("volunteer_login"))
+        # Placeholder for available tasks page
+        return render_template("available_tasks.html")
+
+    @app.route("/achievements", methods=["GET"], endpoint="achievements")
+    @login_required
+    def achievements():
+        if not current_user.is_volunteer:
+            flash("Моля, влезте като доброволец.", "warning")
+            return redirect(url_for("volunteer_login"))
+        # Placeholder for achievements page
+        return render_template("achievements.html")
+
+    @app.route("/volunteer_chat", methods=["GET"], endpoint="volunteer_chat")
+    @login_required
+    def volunteer_chat():
+        if not current_user.is_volunteer:
+            flash("Моля, влезте като доброволец.", "warning")
+            return redirect(url_for("volunteer_login"))
+        # Placeholder for volunteer chat page
+        return render_template("volunteer_chat.html")
+
+    @app.route("/volunteer_reports", methods=["GET"], endpoint="volunteer_reports")
+    @login_required
+    def volunteer_reports():
+        if not current_user.is_volunteer:
+            flash("Моля, влезте като доброволец.", "warning")
+            return redirect(url_for("volunteer_login"))
+        # Placeholder for volunteer reports page
+        return render_template("volunteer_reports.html")
+
+    @app.route(
+        "/volunteer_settings", methods=["GET", "POST"], endpoint="volunteer_profile"
+    )
+    @login_required
+    def volunteer_settings():
+        if not current_user.is_volunteer:
+            flash("Моля, влезте като доброволец.", "warning")
+            return redirect(url_for("volunteer_login"))
+        # Placeholder for volunteer settings page
+        return render_template("volunteer_settings.html")
+
+    @app.route("/leaderboard", methods=["GET"], endpoint="leaderboard")
+    @login_required
+    def leaderboard():
+        if not current_user.is_volunteer:
+            flash("Моля, влезте като доброволец.", "warning")
+            return redirect(url_for("volunteer_login"))
+        # Placeholder for leaderboard page
+        return render_template("leaderboard.html")
+
+    @app.route("/volunteer_login", methods=["GET", "POST"])
+    def volunteer_login():
+        if request.method == "POST":
+            email = request.form.get("email")
+            password = request.form.get("password")
+            user = User.query.filter_by(email=email).first()
+            if user and user.check_password(password) and user.is_volunteer:
+                login_user(user)
+                return redirect(url_for("volunteer_dashboard"))
+            flash("Невалиден имейл или парола.", "error")
+        return render_template("volunteer_login.html")
+
+    @app.route("/admin_dashboard")
+    @login_required
+    def admin_dashboard():
+        if not current_user.is_admin:
+            flash("Нямате достъп до администраторския панел.", "error")
+            return redirect(url_for("index"))
+        # Placeholder for admin dashboard
+        return render_template("admin_dashboard.html")
+
+    @app.route("/volunteer_register", methods=["GET", "POST"])
+    def volunteer_register():
+        if request.method == "POST":
+            data = request.form.to_dict()
+            if User.query.filter_by(email=data.get("email")).first():
+                flash("Имейлът вече е регистриран.", "error")
+                return redirect(url_for("volunteer_register"))
+            user = User(
+                username=data.get("username"),
+                email=data.get("email"),
+                is_volunteer=True,
+            )
+            user.set_password(data.get("password"))
+            db.session.add(user)
+            db.session.commit()
+            flash("Регистрацията е успешна! Можете да влезете.", "success")
+            return redirect(url_for("volunteer_login"))
+        return render_template("volunteer_register.html")
 
     return app
 

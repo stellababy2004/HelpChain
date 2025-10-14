@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% block title %}Управление на задачи | HelpChain.live{% endblock %}
+{% block content %}
+
+<!-- Include Dashboard Navigation -->
+{% include 'dashboard_nav.html' %}
+
+<!-- Breadcrumbs -->
+{% set breadcrumbs = [
+{'title': 'Админ панел', 'url': url_for('admin_dashboard')},
+{'title': 'Управление на задачи', 'url': None}
+] %}
+{% include 'breadcrumbs.html' %}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-tasks"></i> Управление на задачи</h2>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+            <i class="fas fa-plus"></i> Нова задача
+        </button>
+    </div>
+
+    <!-- Matching Analytics -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line"></i> Аналитика на съпоставяне</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <h4 class="text-primary">{{ matching_stats.total_tasks }}</h4>
+                                <small class="text-muted">Общо задачи</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <h4 class="text-success">{{ matching_stats.assigned_tasks }}</h4>
+                                <small class="text-muted">Разпределени</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <h4 class="text-info">{{ matching_stats.completed_tasks }}</h4>
+                                <small class="text-muted">Завършени</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <h4 class="text-warning">{{ matching_stats.assignment_rate }}%</h4>
+                                <small class="text-muted">Коеф. разпределение</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <h4 class="text-danger">{{ matching_stats.completion_rate }}%</h4>
+                                <small class="text-muted">Коеф. завършване</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <h4 class="text-secondary">{{ matching_stats.avg_overall_match }}</h4>
+                                <small class="text-muted">Среден match</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-list"></i> Задачи</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Заглавие</th>
+                            <th>Статус</th>
+                            <th>Приоритет</th>
+                            <th>Доброволец</th>
+                            <th>Създадена</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>{{ task.id }}</td>
+                            <td>
+                                <strong>{{ task.title }}</strong>
+                                <br><small class="text-muted">{{ task.description[:50] }}...</small>
+                            </td>
+                            <td>
+                                <span class="badge
+                  {% if task.status == 'pending' %}bg-warning
+                  {% elif task.status == 'assigned' %}bg-info
+                  {% elif task.status == 'in_progress' %}bg-primary
+                  {% elif task.status == 'completed' %}bg-success
+                  {% else %}bg-secondary{% endif %}">
+                                    {% if task.status == 'pending' %}Чакаща
+                                    {% elif task.status == 'assigned' %}Разпределена
+                                    {% elif task.status == 'in_progress' %}В процес
+                                    {% elif task.status == 'completed' %}Завършена
+                                    {% else %}{{ task.status }}{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge
+                  {% if task.priority == 'urgent' %}bg-danger
+                  {% elif task.priority == 'high' %}bg-warning
+                  {% elif task.priority == 'medium' %}bg-info
+                  {% else %}bg-secondary{% endif %}">
+                                    {% if task.priority == 'urgent' %}Спешна
+                                    {% elif task.priority == 'high' %}Висок
+                                    {% elif task.priority == 'medium' %}Среден
+                                    {% else %}Нисък{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                {% if task.volunteer %}
+                                {{ task.volunteer.name }}
+                                <br><small class="text-muted">{{ task.volunteer.email }}</small>
+                                {% else %}
+                                <em>Неразпределена</em>
+                                {% endif %}
+                            </td>
+                            <td>{{ task.created_at.strftime('%d.%m.%Y %H:%M') if task.created_at else '-' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewTask({{ task.id }})"
+                                        title="Преглед">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    {% if task.status == 'pending' %}
+                                    <button class="btn btn-sm btn-outline-success" onclick="findMatches({{ task.id }})"
+                                        title="Намери съпоставяния">
+                                        <i class="fas fa-search"></i> Намери
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="autoAssign({{ task.id }})"
+                                        title="Автоматично разпределение">
+                                        <i class="fas fa-magic"></i> Авто
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-outline-warning" onclick="editTask({{ task.id }})"
+                                        title="Редактирай">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTask({{ task.id }})"
+                                        title="Изтрий">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Task Modal -->
+<div class="modal fade" id="createTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Създай нова задача</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" title="Затвори"></button>
+            </div>
+            <form id="createTaskForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Заглавие *</label>
+                                <input type="text" class="form-control" name="title"
+                                    placeholder="Въведете заглавие на задачата" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Приоритет</label>
+                                <select class="form-control" name="priority">
+                                    <option value="low">Нисък</option>
+                                    <option value="medium" selected>Среден</option>
+                                    <option value="high">Висок</option>
+                                    <option value="urgent">Спешна</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Описание *</label>
+                        <textarea class="form-control" name="description" rows="3"
+                            placeholder="Опишете задачата подробно" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Категория</label>
+                                <select class="form-control" name="category">
+                                    <option value="medical">Медицинска помощ</option>
+                                    <option value="transport">Транспорт</option>
+                                    <option value="household">Домакинска помощ</option>
+                                    <option value="education">Образование</option>
+                                    <option value="other" selected>Друго</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Краен срок</label>
+                                <input type="datetime-local" class="form-control" name="deadline"
+                                    placeholder="Изберете краен срок">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Местоположение</label>
+                        <input type="text" class="form-control" name="location" placeholder="Град, област">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Задължителни умения</label>
+                                <input type="text" class="form-control" name="required_skills"
+                                    placeholder="умение1, умение2">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Предпочитани умения</label>
+                                <input type="text" class="form-control" name="preferred_skills"
+                                    placeholder="умение1, умение2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отказ</button>
+                    <button type="submit" class="btn btn-success">Създай задача</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Matches Modal -->
+<div class="modal fade" id="matchesModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">AI предложения за задача</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" title="Затвори"></button>
+            </div>
+            <div class="modal-body">
+                <div id="matchesContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Зареждане...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Create task
+    document.getElementById('createTaskForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch('/api/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(Object.fromEntries(formData))
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Грешка: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Възникна грешка при създаване на задачата');
+            });
+    });
+
+    // Find matches
+    function findMatches(taskId) {
+        const modal = new bootstrap.Modal(document.getElementById('matchesModal'));
+        modal.show();
+
+        fetch(`/api/tasks/${taskId}/matches`)
+            .then(response => response.json())
+            .then(data => {
+                let html = '<div class="list-group">';
+
+                if (data.matches && data.matches.length > 0) {
+                    data.matches.forEach(match => {
+                        const volunteer = match.volunteer;
+                        const scores = match.scores;
+
+                        html += `
+            <div class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-1">${volunteer.name}</h6>
+                  <p class="mb-1">${volunteer.email}</p>
+                  <small class="text-muted">${match.recommendation_reason}</small>
+                </div>
+                <div class="text-end">
+                  <div class="mb-2">
+                    <span class="badge bg-success">${scores.overall.toFixed(1)}% match</span>
+                  </div>
+                  <button class="btn btn-sm btn-success" onclick="assignTask(${taskId}, ${volunteer.id})">
+                    <i class="fas fa-check"></i> Разпредели
+                  </button>
+                </div>
+              </div>
+              <div class="mt-2">
+                <small class="text-muted">
+                  Умения: ${scores.skill_match.toFixed(1)}% |
+                  Локация: ${scores.location_match.toFixed(1)}% |
+                  Производителност: ${scores.performance_match.toFixed(1)}%
+                </small>
+              </div>
+            </div>
+          `;
+                    });
+                } else {
+                    html += '<div class="text-center text-muted">Няма намерени подходящи доброволци</div>';
+                }
+
+                html += '</div>';
+                document.getElementById('matchesContent').innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('matchesContent').innerHTML = '<div class="text-center text-danger">Грешка при зареждане на предложенията</div>';
+            });
+    }
+
+    // Auto assign
+    function autoAssign(taskId) {
+        if (!confirm('Сигурни ли сте, че искате да разпределите задачата автоматично?')) {
+            return;
+        }
+
+        fetch(`/api/tasks/${taskId}/auto-assign`, {
+            method: 'POST'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Задачата беше разпределена успешно!');
+                    location.reload();
+                } else {
+                    alert('Грешка: ' + (data.error || 'Неуспешно разпределение'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Възникна грешка при автоматичното разпределение');
+            });
+    }
+
+    // Assign task to volunteer
+    function assignTask(taskId, volunteerId) {
+        if (!confirm('Сигурни ли сте, че искате да разпределите задачата на този доброволец?')) {
+            return;
+        }
+
+        // For now, just close modal and refresh - in real implementation would call API
+        bootstrap.Modal.getInstance(document.getElementById('matchesModal')).hide();
+        location.reload();
+    }
+
+    // View task details
+    function viewTask(taskId) {
+        // TODO: Implement task details modal
+        alert('Функцията за преглед на детайли ще бъде добавена скоро');
+    }
+
+    // Edit task
+    function editTask(taskId) {
+        // TODO: Implement task editing
+        alert('Функцията за редактиране ще бъде добавена скоро');
+    }
+
+    // Delete task
+    function deleteTask(taskId) {
+        if (!confirm('Сигурни ли сте, че искате да изтриете тази задача?')) {
+            return;
+        }
+
+        fetch(`/api/tasks/${taskId}`, {
+            method: 'DELETE'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Грешка: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Възникна грешка при изтриване на задачата');
+            });
+    }
+</script>
+
+{% endblock %}

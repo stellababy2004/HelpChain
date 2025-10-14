@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_mail import Mail, Message
 
@@ -7,7 +8,7 @@ app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USE_SSL"] = False
 app.config["MAIL_USERNAME"] = "contact@helpchain.live"
-app.config["MAIL_PASSWORD"] = "dFjmPT19x9h4"
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", "REPLACE_ME")
 app.config["MAIL_DEFAULT_SENDER"] = "contact@helpchain.live"
 
 mail = Mail(app)

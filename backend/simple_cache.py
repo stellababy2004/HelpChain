@@ -91,7 +91,7 @@ def get_cache_key(func_name, args=None, kwargs=None):
         # Сортирай kwargs за consistent key
         sorted_kwargs = sorted(kwargs.items())
         kwargs_str = json.dumps(sorted_kwargs, sort_keys=True, default=str)
-        kwargs_hash = hashlib.md5(kwargs_str.encode()).hexdigest()[:10]
+        kwargs_hash = hashlib.sha256(kwargs_str.encode()).hexdigest()[:10]
         key_parts.append(f"kwargs_{kwargs_hash}")
 
     return "_".join(key_parts)

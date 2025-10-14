@@ -46,10 +46,10 @@
         border-radius: 10px;
         border: 2px solid #e1e5e9;
         padding: 0.75rem 1rem;
-        font-size: 1.2rem;
+        font-size: 1.5rem;
         font-weight: bold;
         text-align: center;
-        letter-spacing: 0.5rem;
+        letter-spacing: 0.3rem;
         transition: all 0.3s ease;
       }
 
@@ -146,6 +146,11 @@
             <strong>Въведете 6-цифрения код за достъп,</strong>
           </p>
           <p class="mb-0">изпратен на вашия имейл адрес.</p>
+          <div class="alert alert-info mt-3" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Важно:</strong> Кодът е валиден за 15 минути. Проверете
+            папката "Спам/Junk" ако не го виждате в основната поща.
+          </div>
         </div>
 
         <form method="POST">
@@ -155,15 +160,18 @@
             </label>
             <input
               type="text"
-              class="form-control"
+              class="form-control text-center"
               id="code"
               name="code"
               required
               maxlength="6"
               pattern="[0-9]{6}"
-              placeholder="000000"
+              placeholder="Въведете 6-цифрения код"
               autocomplete="off"
             />
+            <div class="form-text text-center">
+              <small class="text-muted">Въведете само цифри (0-9)</small>
+            </div>
           </div>
 
           <button type="submit" class="btn btn-login">
@@ -175,6 +183,11 @@
           <p class="mb-2">
             <a href="{{ url_for('volunteer_login') }}" class="resend-link">
               <i class="fas fa-arrow-left me-1"></i>Обратно към вход
+            </a>
+          </p>
+          <p class="mb-2">
+            <a href="#" onclick="resendCode()" class="resend-link">
+              <i class="fas fa-envelope me-1"></i>Изпрати кода отново
             </a>
           </p>
           <p class="mb-0">
@@ -200,6 +213,52 @@
           // e.target.form.submit();
         }
       });
+
+      // Form validation
+      document.querySelector("form").addEventListener("submit", function (e) {
+        const codeInput = document.getElementById("code");
+        const code = codeInput.value.trim();
+
+        if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+          e.preventDefault();
+          alert("Моля, въведете валиден 6-цифрен код!");
+          codeInput.focus();
+          return false;
+        }
+      });
+
+      // Resend code function
+      function resendCode() {
+        if (confirm("Сигурни ли сте, че искате да изпратим кода отново?")) {
+          const btn = event.target;
+          const originalText = btn.innerHTML;
+          btn.innerHTML =
+            '<i class="fas fa-spinner fa-spin me-1"></i>Изпращане...';
+          btn.style.pointerEvents = "none";
+
+          fetch("/resend_volunteer_code", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert("Кодът е изпратен отново на вашия имейл!");
+              } else {
+                alert("Грешка при изпращане на кода: " + data.message);
+              }
+            })
+            .catch((error) => {
+              alert("Грешка при свързване със сървъра. Опитайте отново.");
+            })
+            .finally(() => {
+              btn.innerHTML = originalText;
+              btn.style.pointerEvents = "auto";
+            });
+        }
+      }
     </script>
   </body>
 </html>

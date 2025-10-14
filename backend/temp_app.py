@@ -24,12 +24,12 @@ from jinja2 import ChoiceLoader, FileSystemLoader
 
 # Защитен import на HelpRequest (ruff няма да маркира като undefined)
 try:
-    from models import HelpRequest
+    from .models import HelpRequest
 except Exception:
     HelpRequest = None
 
 # Поправи всички relative imports на absolute
-from models import db, Volunteer  # Вместо 'from .models import'
+from .models import db, Volunteer  # Вместо 'from .models import'
 
 # Ако има други, направи същото, напр.:
 # from ai_service import ai_service  # Вместо 'from .ai_service import'

@@ -4,7 +4,7 @@ HelpChain Multilingual Database Initialization
 """
 
 from datetime import datetime
-from models import (
+from .models import (
     db,
     SupportedLanguage,
     TranslationKey,

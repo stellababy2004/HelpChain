@@ -4,13 +4,29 @@ Real-time notifications, predictive analytics, και advanced visualizations
 """
 
 from datetime import datetime, timedelta
+from collections import defaultdict
+
+# Try relative imports first, fall back to absolute imports for standalone execution
+try:
+    from .extensions import db
+    from .models import User, Volunteer, HelpRequest
+except ImportError:
+    from extensions import db
+    from models import User, Volunteer, HelpRequest
+
+from models_with_analytics import (
+    AnalyticsEvent,
+    UserBehavior,
+    PerformanceMetrics,
+    ChatbotConversation,
+)
 
 
 class AdvancedAnalytics:
     """Advanced analytics features за HelpChain"""
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self, db_session=None):
+        self.db = db_session or db
 
     def detect_anomalies(self, timeframe_days=7):
         """Detect unusual patterns в analytics data"""
@@ -23,10 +39,17 @@ class AdvancedAnalytics:
 
         events = self.get_events_by_hour(start_date, end_date)
 
-        # Раздели на два периода
+        # Раздели на два периода - events е list от list-ове с dict-ове
         midpoint = start_date + timedelta(days=timeframe_days)
-        baseline_events = [e for e in events if e.timestamp < midpoint]
-        current_events = [e for e in events if e.timestamp >= midpoint]
+        baseline_events = []
+        current_events = []
+
+        for hour_events in events:
+            for event in hour_events:
+                if event["timestamp"] < midpoint:
+                    baseline_events.append(event)
+                else:
+                    current_events.append(event)
 
         # Анализирай anomalies
         anomalies = []
@@ -52,10 +75,10 @@ class AdvancedAnalytics:
 
         # Error rate anomalies
         baseline_errors = len(
-            [e for e in baseline_events if "error" in str(e.details).lower()]
+            [e for e in baseline_events if "error" in str(e.get("details", "")).lower()]
         )
         current_errors = len(
-            [e for e in current_events if "error" in str(e.details).lower()]
+            [e for e in current_events if "error" in str(e.get("details", "")).lower()]
         )
 
         baseline_error_rate = (
@@ -96,9 +119,9 @@ class AdvancedAnalytics:
         # Simplified conversion prediction
         if user_id:
             user_events = self.get_user_events(user_id)
-            page_views = len([e for e in user_events if e.event_type == "page_view"])
+            page_views = len([e for e in user_events if e["event_type"] == "page_view"])
             form_interactions = len(
-                [e for e in user_events if e.event_type == "form_interaction"]
+                [e for e in user_events if e["event_type"] == "form_interaction"]
             )
 
             # Simple scoring
@@ -125,8 +148,8 @@ class AdvancedAnalytics:
         # Анализирай engagement по часове
         events = self.get_recent_events(days=30)
         for event in events:
-            hour = event.timestamp.hour
-            if event.event_type in ["form_interaction", "feature_usage"]:
+            hour = event["timestamp"].hour
+            if event["event_type"] in ["form_interaction", "feature_usage"]:
                 hour_engagement[hour] += 1
 
         # Намери peak hour
@@ -152,7 +175,7 @@ class AdvancedAnalytics:
         if user_id:
             events = self.get_user_events(user_id)
             used_features = set(
-                e.category for e in events if e.event_type == "feature_usage"
+                e["category"] for e in events if e["event_type"] == "feature_usage"
             )
 
             # All available features
@@ -201,7 +224,7 @@ class AdvancedAnalytics:
         if not events:
             return {"risk": "high", "score": 0.9, "reason": "No activity recorded"}
 
-        last_activity = max(e.timestamp for e in events)
+        last_activity = max(e["timestamp"] for e in events)
         days_since_activity = (datetime.now() - last_activity).days
 
         # Calculate risk
@@ -254,16 +277,20 @@ class AdvancedAnalytics:
 
             weeks_data.append(
                 {
-                    "week": f"Week {4-i}",
+                    "week": f"Week {4 - i}",
                     "total_events": len(week_events),
                     "unique_users": len(
-                        set(e.user_id for e in week_events if e.user_id)
+                        set(e["user_id"] for e in week_events if e["user_id"])
                     ),
                     "page_views": len(
-                        [e for e in week_events if e.event_type == "page_view"]
+                        [e for e in week_events if e["event_type"] == "page_view"]
                     ),
                     "conversions": len(
-                        [e for e in week_events if e.event_type == "form_interaction"]
+                        [
+                            e
+                            for e in week_events
+                            if e["event_type"] == "form_interaction"
+                        ]
                     ),
                 }
             )
@@ -302,13 +329,13 @@ class AdvancedAnalytics:
         user_activity = {}
 
         for event in recent_events:
-            if event.user_id:
-                if event.user_id not in user_activity:
-                    user_activity[event.user_id] = {"events": 0, "features": set()}
+            if event["user_id"]:
+                if event["user_id"] not in user_activity:
+                    user_activity[event["user_id"]] = {"events": 0, "features": set()}
 
-                user_activity[event.user_id]["events"] += 1
-                if event.event_type == "feature_usage":
-                    user_activity[event.user_id]["features"].add(event.category)
+                user_activity[event["user_id"]]["events"] += 1
+                if event["event_type"] == "feature_usage":
+                    user_activity[event["user_id"]]["features"].add(event["category"])
 
         # Classify users
         for user_id, activity in user_activity.items():
@@ -358,23 +385,108 @@ class AdvancedAnalytics:
     # Helper methods
     def get_events_by_hour(self, start_date, end_date):
         """Get events grouped by hour"""
-        # Placeholder - implement με actual database query
-        return []
+        try:
+            events = AnalyticsEvent.query.filter(
+                AnalyticsEvent.created_at >= start_date,
+                AnalyticsEvent.created_at <= end_date,
+            ).all()
+
+            # Group by hour
+            events_by_hour = defaultdict(list)
+            for event in events:
+                hour_key = event.created_at.replace(minute=0, second=0, microsecond=0)
+                events_by_hour[hour_key].append(
+                    {
+                        "timestamp": event.created_at,
+                        "event_type": event.event_type,
+                        "details": event.event_label or event.event_action,
+                        "user_type": event.user_type,
+                        "page_url": event.page_url,
+                    }
+                )
+
+            return list(events_by_hour.values())
+        except Exception as e:
+            print(f"Error getting events by hour: {e}")
+            return []
 
     def get_user_events(self, user_id):
         """Get all events για specific user"""
-        # Placeholder - implement με actual database query
-        return []
+        try:
+            events = (
+                AnalyticsEvent.query.filter(AnalyticsEvent.user_session == str(user_id))
+                .order_by(AnalyticsEvent.created_at.desc())
+                .all()
+            )
+
+            return [
+                {
+                    "timestamp": event.created_at,
+                    "event_type": event.event_type,
+                    "category": event.event_category,
+                    "action": event.event_action,
+                    "details": event.event_label,
+                    "page_url": event.page_url,
+                }
+                for event in events
+            ]
+        except Exception as e:
+            print(f"Error getting user events: {e}")
+            return []
 
     def get_recent_events(self, days=7):
         """Get recent events"""
-        # Placeholder - implement με actual database query
-        return []
+        try:
+            start_date = datetime.now() - timedelta(days=days)
+            events = (
+                AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= start_date)
+                .order_by(AnalyticsEvent.created_at.desc())
+                .all()
+            )
+
+            return [
+                {
+                    "timestamp": event.created_at,
+                    "event_type": event.event_type,
+                    "category": event.event_category,
+                    "action": event.event_action,
+                    "user_id": event.user_session,
+                    "user_type": event.user_type,
+                    "page_url": event.page_url,
+                }
+                for event in events
+            ]
+        except Exception as e:
+            print(f"Error getting recent events: {e}")
+            return []
 
     def get_events_in_range(self, start_date, end_date):
         """Get events in date range"""
-        # Placeholder - implement με actual database query
-        return []
+        try:
+            events = (
+                AnalyticsEvent.query.filter(
+                    AnalyticsEvent.created_at >= start_date,
+                    AnalyticsEvent.created_at <= end_date,
+                )
+                .order_by(AnalyticsEvent.created_at.desc())
+                .all()
+            )
+
+            return [
+                {
+                    "timestamp": event.created_at,
+                    "event_type": event.event_type,
+                    "category": event.event_category,
+                    "action": event.event_action,
+                    "user_id": event.user_session,
+                    "user_type": event.user_type,
+                    "page_url": event.page_url,
+                }
+                for event in events
+            ]
+        except Exception as e:
+            print(f"Error getting events in range: {e}")
+            return []
 
 
 # WebSocket για real-time notifications

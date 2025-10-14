@@ -4,9 +4,10 @@ Create a test volunteer user for HelpChain
 """
 
 import sys
+import os
 
 # Add current directory to path
-sys.path.insert(0, ".")
+sys.path.insert(0, os.path.dirname(__file__))
 
 from appy import app
 from extensions import db

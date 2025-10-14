@@ -5,37 +5,887 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Постижения - HelpChain</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+      }
+
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      .stats-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-gradient);
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      .achievement-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .achievement-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+      }
+
+      .achievement-card.unlocked {
+        border-left: 4px solid #28a745;
+      }
+
+      .achievement-card.locked {
+        opacity: 0.6;
+        border-left: 4px solid #6c757d;
+      }
+
+      .achievement-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      .achievement-card.unlocked .achievement-icon {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .achievement-card.locked .achievement-icon {
+        background: #e9ecef;
+        color: #6c757d;
+      }
+
+      .achievement-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .achievement-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+      }
+
+      .progress-modern {
+        height: 8px;
+        border-radius: 4px;
+        background: #e1e5e9;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+      }
+
+      [data-theme="dark"] .progress-modern {
+        background: #495057;
+      }
+
+      .progress-bar-modern {
+        background: var(--primary-gradient);
+        transition: width 0.3s ease;
+      }
+
+      .progress-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-align: center;
+      }
+
+      .rarity-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .rarity-common {
+        background: #6c757d;
+        color: white;
+      }
+
+      .rarity-rare {
+        background: #007bff;
+        color: white;
+      }
+
+      .rarity-epic {
+        background: #6f42c1;
+        color: white;
+      }
+
+      .rarity-legendary {
+        background: #fd7e14;
+        color: white;
+      }
+
+      .level-progress {
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .level-display {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .level-number {
+        font-size: 3rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
+      .level-label {
+        color: #6c757d;
+        font-size: 1.1rem;
+      }
+
+      .leaderboard-section {
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .leaderboard-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: var(--card-bg);
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+      }
+
+      .leaderboard-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .leaderboard-item.current-user {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-left-color: #667eea;
+      }
+
+      .leaderboard-rank {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-right: 1rem;
+        min-width: 40px;
+        text-align: center;
+      }
+
+      .leaderboard-avatar {
+        margin-right: 1rem;
+        color: #6c757d;
+      }
+
+      .leaderboard-item.current-user .leaderboard-avatar {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .leaderboard-info {
+        flex: 1;
+      }
+
+      .leaderboard-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .leaderboard-stats {
+        font-size: 0.85rem;
+        color: #6c757d;
+      }
+
+      .leaderboard-item.current-user .leaderboard-stats {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .streak-display {
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .streak-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ff6b35;
+        margin-bottom: 0.5rem;
+      }
+
+      .streak-label {
+        color: #6c757d;
+        font-size: 1rem;
+      }
+
+      .filter-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        border: 2px solid #e1e5e9;
+        background: white;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+      }
+
+      [data-theme="dark"] .filter-btn {
+        background: var(--dark-card);
+        border-color: #495057;
+        color: #adb5bd;
+      }
+
+      .filter-btn.active {
+        background: var(--primary-gradient);
+        border-color: transparent;
+        color: white;
+      }
+
+      .filter-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+      }
+
+      .achievement-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+      }
+
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .pulse {
+        animation: pulse 0.5s ease-in-out;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .achievement-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .filter-buttons {
+          justify-content: center;
+        }
+
+        .level-number {
+          font-size: 2.5rem;
+        }
+      }
+    </style>
   </head>
 
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" href="{{ url_for('index') }}">HelpChain</a>
-        <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="{{ url_for('volunteer_dashboard') }}"
-            >Табло</a
-          >
-          <a class="nav-link active" href="{{ url_for('achievements') }}"
-            >Постижения</a
-          >
-          <a class="nav-link" href="{{ url_for('volunteer_logout') }}">Изход</a>
+  <body data-theme="light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand navbar-brand-modern" href="/">
+          <i class="fas fa-heart me-2"></i>HelpChain Volunteer
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          title="Отвори меню"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('volunteer_dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('my_tasks') }}">
+                <i class="fas fa-tasks me-1"></i>Моите задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('available_tasks') }}">
+                <i class="fas fa-search me-1"></i>Налични задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ url_for('achievements') }}">
+                <i class="fas fa-trophy me-1"></i>Постижения
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i>{{ current_user.name if
+                current_user else 'Доброволец' }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_profile') }}"
+                  >
+                    <i class="fas fa-user me-2"></i>Моят профил
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_settings') }}"
+                  >
+                    <i class="fas fa-cog me-2"></i>Настройки
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_logout') }}"
+                  >
+                    <i class="fas fa-sign-out-alt me-2"></i>Изход
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <button
+                class="theme-toggle"
+                id="themeToggle"
+                title="Превключи тема"
+              >
+                <i class="fas fa-moon"></i>
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
 
-    <div class="container mt-4">
-      <h1>Постижения</h1>
-      <p class="text-muted">Вашите постижения като доброволец в HelpChain.</p>
+    <!-- Spacer for fixed navbar -->
+    <div style="height: 80px"></div>
 
-      <div class="alert alert-info">
-        <strong>Информация:</strong> Тази страница е в процес на разработка.
-        Скоро ще можете да виждате своите постижения и награди.
+    <div class="container-fluid">
+      <!-- Header -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="text-center">
+            <h1 class="h2 mb-1">
+              <i class="fas fa-trophy text-warning me-2"></i>Постижения и
+              награди
+            </h1>
+            <p class="text-muted mb-0">
+              Проследявай своя прогрес и отключвай нови постижения!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--success-gradient)">
+              <i class="fas fa-star text-white"></i>
+            </div>
+            <div class="stats-value" id="points">
+              {{ gamification.points|default(0) }}
+            </div>
+            <p class="stats-label">Общо точки</p>
+            <small class="text-success">
+              <i class="fas fa-arrow-up me-1"></i>Продължавай да помагаш!
+            </small>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--warning-gradient)">
+              <i class="fas fa-level-up-alt text-white"></i>
+            </div>
+            <div class="stats-value" id="level">
+              {{ gamification.level|default(1) }}
+            </div>
+            <p class="stats-label">Ниво</p>
+            <small class="text-warning">
+              <i class="fas fa-target me-1"></i>{{
+              gamification.experience|default(0) }}/{{
+              gamification.next_level_exp|default(100) }} XP
+            </small>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--info-gradient)">
+              <i class="fas fa-trophy text-white"></i>
+            </div>
+            <div class="stats-value" id="achievements">
+              {{ unlocked_count|default(0) }}
+            </div>
+            <p class="stats-label">Отключени постижения</p>
+            <small class="text-info">
+              <i class="fas fa-lock me-1"></i>{{ total_achievements|default(0) -
+              unlocked_count|default(0) }} остават
+            </small>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--primary-gradient)">
+              <i class="fas fa-fire text-white"></i>
+            </div>
+            <div class="stats-value" id="streak">
+              {{ gamification.streak_days|default(0) }}
+            </div>
+            <p class="stats-label">Поредни дни</p>
+            <small class="text-primary">
+              <i class="fas fa-calendar-check me-1"></i>Поддържай серията!
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Progress -->
+      <div class="level-progress">
+        <div class="level-display">
+          <div class="level-number">{{ gamification.level|default(1) }}</div>
+          <div class="level-label">Ниво</div>
+        </div>
+        <div class="progress-modern">
+          <div
+            class="progress-bar-modern"
+            style="width: {{ gamification.level_progress|default(0) }}%"
+          ></div>
+        </div>
+        <div class="progress-text">
+          {{ gamification.experience|default(0) }} / {{
+          gamification.next_level_exp|default(100) }} XP до ниво {{
+          gamification.level|default(1) + 1 }}
+        </div>
+      </div>
+
+      <!-- Achievements Section -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">
+              <i class="fas fa-medal text-primary me-2"></i>Постижения
+            </h3>
+            <div class="filter-buttons">
+              <button
+                class="filter-btn active"
+                onclick="filterAchievements('all')"
+              >
+                Всички
+              </button>
+              <button
+                class="filter-btn"
+                onclick="filterAchievements('unlocked')"
+              >
+                Отключени
+              </button>
+              <button class="filter-btn" onclick="filterAchievements('locked')">
+                Заключени
+              </button>
+              <button
+                class="filter-btn"
+                onclick="filterAchievements('in-progress')"
+              >
+                В прогрес
+              </button>
+            </div>
+          </div>
+
+          <div class="achievement-grid" id="achievementsContainer">
+            {% if achievements %} {% for achievement in achievements %}
+            <div
+              class="achievement-card fade-in {{ 'unlocked' if achievement.unlocked else 'locked' }}"
+              data-category="{{ achievement.category }}"
+              data-unlocked="{{ achievement.unlocked|lower }}"
+            >
+              <div class="rarity-badge rarity-{{ achievement.rarity }}">
+                {{ achievement.rarity }}
+              </div>
+              <div class="achievement-icon">
+                <i class="{{ achievement.icon }}"></i>
+              </div>
+              <div class="achievement-title">{{ achievement.name }}</div>
+              <div class="achievement-description">
+                {{ achievement.description }}
+              </div>
+
+              {% if not achievement.unlocked %}
+              <div class="progress-modern">
+                <div
+                  class="progress-bar-modern"
+                  style="width: {{ achievement.progress }}%"
+                ></div>
+              </div>
+              <div class="progress-text">
+                {{ achievement.current }} / {{ achievement.required }} ({{
+                achievement.progress }}%)
+              </div>
+              {% else %}
+              <div class="text-center">
+                <small class="text-success">
+                  <i class="fas fa-check-circle me-1"></i>Отключено!
+                </small>
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %} {% else %}
+            <div class="text-center py-5">
+              <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">Няма налични постижения</h5>
+              <p class="text-muted">
+                Скоро ще бъдат добавени нови предизвикателства!
+              </p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Section -->
+      <div class="leaderboard-section">
+        <h3 class="mb-3">
+          <i class="fas fa-crown text-warning me-2"></i>Класация на доброволците
+        </h3>
+
+        <div id="leaderboardContainer">
+          {% if leaderboard %} {% for volunteer in leaderboard %}
+          <div
+            class="leaderboard-item {{ 'current-user' if volunteer.is_current_user else '' }}"
+          >
+            <div class="leaderboard-rank">#{{ volunteer.rank }}</div>
+            <div class="leaderboard-avatar">
+              <i class="fas fa-user-circle fa-2x"></i>
+            </div>
+            <div class="leaderboard-info">
+              <div class="leaderboard-name">
+                {{ volunteer.name }} {% if volunteer.is_current_user %}
+                <small class="text-warning">(Ти)</small>
+                {% endif %}
+              </div>
+              <div class="leaderboard-stats">
+                {{ volunteer.points }} точки • Ниво {{ volunteer.level }}
+              </div>
+            </div>
+            {% if volunteer.rank <= 3 %}
+            <div class="leaderboard-badge">
+              <i class="fas fa-crown text-warning"></i>
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %} {% else %}
+          <div class="text-center py-3">
+            <p class="text-muted">Няма достатъчно данни за класация</p>
+          </div>
+          {% endif %}
+        </div>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      // Theme toggle functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const currentTheme = localStorage.getItem("theme") || "light";
+
+      // Set initial theme
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      updateThemeIcon(currentTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        const icon = themeToggle.querySelector("i");
+        if (theme === "dark") {
+          icon.className = "fas fa-sun";
+          themeToggle.title = "Превключи на светла тема";
+        } else {
+          icon.className = "fas fa-moon";
+          themeToggle.title = "Превключи на тъмна тема";
+        }
+      }
+
+      // Achievement filtering
+      function filterAchievements(filter) {
+        // Update active filter button
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+
+        // Filter achievements
+        const achievements = document.querySelectorAll(".achievement-card");
+
+        achievements.forEach((achievement) => {
+          const isUnlocked = achievement.dataset.unlocked === "true";
+          let show = false;
+
+          switch (filter) {
+            case "all":
+              show = true;
+              break;
+            case "unlocked":
+              show = isUnlocked;
+              break;
+            case "locked":
+              show = !isUnlocked;
+              break;
+            case "in-progress":
+              show =
+                !isUnlocked &&
+                parseInt(
+                  achievement.querySelector(".progress-bar-modern")?.style
+                    .width || "0",
+                ) > 0;
+              break;
+          }
+
+          achievement.style.display = show ? "block" : "none";
+        });
+      }
+
+      // Add stagger animation to cards
+      document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(
+          ".stats-card, .achievement-card",
+        );
+        cards.forEach((card, index) => {
+          card.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="tooltip"]'),
+        );
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+      });
+
+      // Real-time updates simulation
+      setInterval(() => {
+        // Simulate real-time stat updates
+        const statsElements = ["points", "level", "achievements", "streak"];
+        statsElements.forEach((id) => {
+          const element = document.getElementById(id);
+          if (element && Math.random() > 0.95) {
+            // 5% chance to update
+            element.classList.add("pulse");
+            setTimeout(() => element.classList.remove("pulse"), 500);
+          }
+        });
+      }, 30000); // Update every 30 seconds
+    </script>
   </body>
 </html>

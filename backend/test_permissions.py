@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, ".")
 
 from appy import app
-from models import db, User, Role, UserRole
+from .models import db, User, Role, UserRole
 from permissions import initialize_default_roles_and_permissions
 from werkzeug.security import generate_password_hash
 import os

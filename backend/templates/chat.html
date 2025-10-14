@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="bg">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +17,7 @@
         .chat-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
             margin: 2rem auto;
             overflow: hidden;
         }
@@ -56,7 +57,7 @@
         .room-card {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             margin-bottom: 1.5rem;
             transition: all 0.3s ease;
             border: none;
@@ -65,7 +66,7 @@
 
         .room-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
 
         .room-card.public {
@@ -191,6 +192,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="chat-container">
@@ -219,31 +221,31 @@
                 </h2>
 
                 {% if public_rooms %}
-                    {% for room in public_rooms %}
-                    <div class="room-card public">
-                        <div class="room-header">
-                            <div class="room-title">{{ room.name }}</div>
-                            {% if room.description %}
-                            <div class="room-description">{{ room.description }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="room-stats">
-                            <div class="online-count">
-                                <i class="fas fa-circle"></i>
-                                {{ room.online_count or 0 }} онлайн
-                            </div>
-                            <a href="{{ url_for('chat_room', room_id=room.id) }}" class="join-btn">
-                                <i class="fas fa-sign-in-alt"></i> Влез
-                            </a>
-                        </div>
+                {% for room in public_rooms %}
+                <div class="room-card public">
+                    <div class="room-header">
+                        <div class="room-title">{{ room.name }}</div>
+                        {% if room.description %}
+                        <div class="room-description">{{ room.description }}</div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
+                    <div class="room-stats">
+                        <div class="online-count">
+                            <i class="fas fa-circle"></i>
+                            {{ room.online_count or 0 }} онлайн
+                        </div>
+                        <a href="{{ url_for('chat_room', room_id=room.id) }}" class="join-btn">
+                            <i class="fas fa-sign-in-alt"></i> Влез
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
                 {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-comments"></i>
-                        <h4>Няма публични стаи</h4>
-                        <p>Бъдете първият, който ще създаде стая!</p>
-                    </div>
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <h4>Няма публични стаи</h4>
+                    <p>Бъдете първият, който ще създаде стая!</p>
+                </div>
                 {% endif %}
 
                 <!-- Private Rooms -->
@@ -360,4 +362,5 @@
         }
     </script>
 </body>
+
 </html>

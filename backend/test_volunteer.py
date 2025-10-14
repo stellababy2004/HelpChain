@@ -24,7 +24,7 @@ class TestVolunteerDashboard:
         """Test that authenticated volunteer can access dashboard"""
         with app.app_context():
             # Create test volunteer
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Test Volunteer",
@@ -97,7 +97,7 @@ class TestVolunteerDashboard:
         """Test that dashboard displays correct statistics"""
         with app.app_context():
             # Create test volunteer
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Test Volunteer",
@@ -132,7 +132,7 @@ class TestVolunteerDashboard:
         """Test that dashboard displays active tasks correctly"""
         with app.app_context():
             # Create test volunteer
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Test Volunteer",
@@ -167,7 +167,7 @@ class TestVolunteerDashboard:
         """Test that dashboard displays correct task counts"""
         with app.app_context():
             # Create test volunteer
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Test Volunteer",
@@ -328,7 +328,7 @@ class TestVolunteerProfile:
         """Test profile update functionality"""
         with app.app_context():
             # Create test volunteer
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Test Volunteer",
@@ -601,7 +601,7 @@ class TestVolunteerDashboardIntegration:
             assert "/volunteer_login" in response.headers["Location"]
 
             # Step 2: Mock volunteer login process
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Integration Test Volunteer",
@@ -685,7 +685,7 @@ class TestVolunteerDashboardIntegration:
         """Test that volunteer session persists across requests"""
         with app.app_context():
             # Create test volunteer
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Session Test Volunteer",
@@ -718,7 +718,7 @@ class TestVolunteerDashboardIntegration:
         """Test that volunteer sessions are properly isolated"""
         with app.app_context():
             # Create two test volunteers
-            from models import Volunteer
+            from .models import Volunteer
 
             volunteer1 = Volunteer(
                 name="Volunteer 1", email="vol1@test.com", phone="111", location="Sofia"
@@ -792,7 +792,7 @@ class TestVolunteerDashboardSecurity:
         """Test protection against XSS in volunteer dashboard"""
         with app.app_context():
             # Create volunteer with potentially malicious name
-            from models import Volunteer
+            from .models import Volunteer
 
             malicious_volunteer = Volunteer(
                 name="<script>alert('XSS')</script>Test Volunteer",
@@ -869,7 +869,7 @@ class TestVolunteerDashboardPerformance:
             import time
 
             # Create test volunteer
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Performance Test Volunteer",
@@ -904,7 +904,7 @@ class TestVolunteerDashboardPerformance:
         """Test dashboard handles concurrent access"""
         with app.app_context():
             # Create multiple test volunteers
-            from models import Volunteer
+            from .models import Volunteer
 
             volunteers = []
             for i in range(3):  # Reduced to 3 to avoid session conflicts
@@ -940,7 +940,7 @@ class TestVolunteerDashboardPerformance:
         """Test dashboard doesn't have memory leaks"""
         with app.app_context():
             # Create test volunteer
-            from models import Volunteer
+            from .models import Volunteer
 
             test_volunteer = Volunteer(
                 name="Memory Test Volunteer",

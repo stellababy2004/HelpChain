@@ -1,0 +1,58 @@
+{% extends "base.html" %} {% block title %}Верификация на код{% endblock %} {% block
+content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <h2 class="mb-4 text-primary text-center">Верификация на код</h2>
+            <p class="text-muted mb-4 text-center">Въведете 6-цифрения код за достъп, който получихте на вашия имейл.</p>
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="code" class="form-label">Код за достъп:</label>
+                    <input type="text" class="form-control text-center" id="code" name="code" required autofocus
+                        placeholder="123456" maxlength="6" pattern="[0-9]{6}" style="font-size: 1.5rem; letter-spacing: 0.5rem;" />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Влез</button>
+            </form>
+            <div class="mt-3 text-center">
+                <p class="mb-2">Не получихте код?</p>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resendCode()">Изпрати отново</button>
+            </div>
+            <div class="mt-3 text-center">
+                <a href="{{ url_for('volunteer_login') }}" class="btn btn-link btn-sm">Назад към вход</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function resendCode() {
+    fetch('/resend_volunteer_code', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Нов код е изпратен на вашия имейл.');
+        } else {
+            alert('Грешка: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Възникна грешка при изпращане на кода.');
+    });
+}
+
+// Auto-format the code input
+document.getElementById('code').addEventListener('input', function(e) {
+    // Remove non-numeric characters
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+</script>
+{% endblock %}
