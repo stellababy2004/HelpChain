@@ -1,18 +1,22 @@
+import json
 import os
 import time
-import json
+
 from flask import (
     Blueprint,
-    render_template,
-    request,
-    jsonify,
     current_app,
-    session,
-    redirect,
-    url_for,
     flash,
+    jsonify,
+    redirect,
+    request,
+    session,
+    url_for,
 )
-from permissions import require_admin_login
+
+try:
+    from .permissions import require_admin_login
+except ImportError:
+    from permissions import require_admin_login
 
 analytics_bp = Blueprint("analytics_main", __name__)
 
@@ -31,7 +35,10 @@ def analytics_page():
 @require_admin_login
 def analytics_data():
     try:
-        from analytics_service import analytics_service
+        try:
+            from .analytics_service import analytics_service
+        except ImportError:
+            from analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
         return jsonify(data)
@@ -39,7 +46,10 @@ def analytics_data():
         print(f"Error getting analytics data: {e}")
         # Fallback to basic stats
         try:
-            from admin_analytics import AnalyticsEngine
+            try:
+                from .admin_analytics import AnalyticsEngine
+            except ImportError:
+                from admin_analytics import AnalyticsEngine
 
             data = AnalyticsEngine.get_dashboard_stats()
             return jsonify(data)
@@ -61,7 +71,7 @@ def _bookmarks_path():
 def analytics_bookmarks():
     path = _bookmarks_path()
     if request.method == "GET":
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return jsonify(json.load(f))
     if request.method == "POST":
         payload = request.get_json(force=True)
@@ -86,7 +96,8 @@ def analytics_bookmarks():
 @analytics_bp.route("/stream")
 def analytics_stream():
     # Non-blocking fallback: връщаме последни n събития като JSON.
-    # За реална SSE реализация използвай отделен ASGI endpoint (EventSourceResponse от starlette/fastapi)
+    # За реална SSE реализация използвай отделен ASGI endpoint
+    # (EventSourceResponse от starlette/fastapi)
     sample_events = [
         {"ts": int(time.time()), "msg": "new_analytics_event"},
     ]
@@ -98,7 +109,10 @@ def analytics_stream():
 def analytics_live():
     """Get live analytics data for real-time updates"""
     try:
-        from analytics_service import analytics_service
+        try:
+            from .analytics_service import analytics_service
+        except ImportError:
+            from analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
 
@@ -123,7 +137,6 @@ def analytics_trends():
     """Get trend data for charts"""
     try:
         months = int(request.args.get("months", 6))
-        from analytics_service import analytics_service
 
         # For now, return mock trend data
         # In a real implementation, this would query historical data
@@ -160,7 +173,10 @@ def analytics_export():
     try:
         export_format = request.args.get("format", "json")
 
-        from analytics_service import analytics_service
+        try:
+            from .analytics_service import analytics_service
+        except ImportError:
+            from analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
 
