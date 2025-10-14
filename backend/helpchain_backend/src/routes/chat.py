@@ -1,9 +1,11 @@
-from flask import Blueprint, request, jsonify, current_app
+import os
+
+from flask import Blueprint, current_app, jsonify, request
 from flask_login import login_required
 from werkzeug.utils import secure_filename
-from ...models import ChatMessage, ChatRoom
+
 from ...analytics_service import analytics_service
-import os
+from ...models import ChatMessage, ChatRoom
 
 chat_bp = Blueprint("chat", __name__)
 

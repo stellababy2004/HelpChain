@@ -2606,8 +2606,7 @@ def export_volunteers_pdf(volunteers):
             mimetype="application/pdf",
             headers={
                 "Content-Disposition": (
-                    f"attachment;filename=volunteers_"
-                    f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                    f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
                 )
             },
         )
