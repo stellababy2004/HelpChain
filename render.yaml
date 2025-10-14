@@ -3,7 +3,7 @@ services:
     name: helpchain
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "cd backend && gunicorn --bind 0.0.0.0:$PORT simple_app:app"
+    startCommand: "cd backend && gunicorn --bind 0.0.0.0:$PORT appy:app"
     region: frankfurt
     envVars:
       - key: FLASK_ENV
