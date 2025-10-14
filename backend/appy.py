@@ -76,7 +76,7 @@ except ImportError:
     from models_with_analytics import Task
 
 try:
-    from permissions import (
+    from .permissions import (
         initialize_default_roles_and_permissions,
         require_admin_login,
         require_permission,
@@ -89,18 +89,18 @@ except ImportError:
     )
 
 try:
-    from admin_roles import admin_roles_bp
+    from .admin_roles import admin_roles_bp
 except ImportError:
     from admin_roles import admin_roles_bp
 
 try:
-    from routes.notifications import notification_bp
+    from .routes.notifications import notification_bp
 except ImportError:
     from routes.notifications import notification_bp
 
 # Import smart matching engine
 try:
-    from ai_service import ai_service
+    from .ai_service import ai_service
 except ImportError:
     from ai_service import ai_service
 
@@ -526,7 +526,7 @@ limiter = Limiter(
 
 # Register analytics blueprint first to avoid import issues
 try:
-    from analytics_routes import analytics_bp
+    from .analytics_routes import analytics_bp
 except ImportError:
     from analytics_routes import analytics_bp
 
