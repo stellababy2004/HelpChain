@@ -12,13 +12,27 @@ from collections import Counter
 from sqlalchemy import func, and_
 
 # from flask import current_app  # Премахнат за избягване на circular import
-from .extensions import db
-from models_with_analytics import (
-    AnalyticsEvent,
-    UserBehavior,
-    PerformanceMetrics,
-    ChatbotConversation,
-)
+try:
+    from extensions import db
+except ImportError:
+    # Fallback for when imported as a module
+    from .extensions import db
+
+try:
+    from models_with_analytics import (
+        AnalyticsEvent,
+        UserBehavior,
+        PerformanceMetrics,
+        ChatbotConversation,
+    )
+except ImportError:
+    # Fallback for when imported as a module
+    from .models_with_analytics import (
+        AnalyticsEvent,
+        UserBehavior,
+        PerformanceMetrics,
+        ChatbotConversation,
+    )
 import logging
 
 logger = logging.getLogger(__name__)

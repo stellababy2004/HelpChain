@@ -532,7 +532,7 @@ app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
 # Register notification blueprint
 app.register_blueprint(notification_bp, url_prefix="/api/notifications")
 
-# CSP configuration - ENFORCED MODE (after 24-48h telemetry)
+# CSP configuration - TEMPORARILY PERMISSIVE TO OVERRIDE CACHE
 csp = {
     "default-src": ["'self'"],
     "script-src": [
@@ -540,25 +540,32 @@ csp = {
         "'unsafe-inline'",
         "https://cdn.jsdelivr.net",
         "https://cdnjs.cloudflare.com",
+        "*",
     ],
     "style-src": [
         "'self'",
         "'unsafe-inline'",
         "https://cdn.jsdelivr.net",
         "https://cdnjs.cloudflare.com",
+        "https://fonts.googleapis.com",
+        "*",
     ],
-    "img-src": ["'self'", "data:", "https://helpchain.live"],
-    "font-src": ["'self'", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
-    "connect-src": ["'self'", "https://cdn.jsdelivr.net"],
+    "img-src": ["'self'", "data:", "https://helpchain.live", "*"],
+    "font-src": [
+        "'self'",
+        "https://cdnjs.cloudflare.com",
+        "https://cdn.jsdelivr.net",
+        "*",
+    ],
+    "connect-src": ["'self'", "https://cdn.jsdelivr.net", "*"],
     "frame-ancestors": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'"],
 }
 
-# talisman = Talisman(
 talisman = Talisman(
     app,
-    content_security_policy=csp,  # ENFORCED - no longer report-only
+    content_security_policy=csp,  # TEMPORARILY PERMISSIVE TO OVERRIDE BROWSER CACHE
     content_security_policy_report_uri="https://csp-report.helpchain.live/report",
     force_https=False,  # Disabled for development testing
     strict_transport_security=False,  # TEMPORARILY DISABLED FOR TESTING
@@ -1105,46 +1112,66 @@ def admin_volunteers():
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 25))
 
-    # Build query
-    query = db.session.query(Volunteer)
+    try:
+        # Build query
+        query = db.session.query(Volunteer)
 
-    # Apply filters
-    if search:
-        query = query.filter(
-            (Volunteer.name.ilike(f"%{search}%"))
-            | (Volunteer.email.ilike(f"%{search}%"))
-            | (Volunteer.phone.ilike(f"%{search}%"))
+        # Apply filters
+        if search:
+            query = query.filter(
+                (Volunteer.name.ilike(f"%{search}%"))
+                | (Volunteer.email.ilike(f"%{search}%"))
+                | (Volunteer.phone.ilike(f"%{search}%"))
+            )
+
+        if location_filter:
+            query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
+
+        # Apply sorting
+        if sort_by == "name":
+            query = query.order_by(
+                Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc()
+            )
+        elif sort_by == "location":
+            query = query.order_by(
+                Volunteer.location.asc()
+                if sort_order == "asc"
+                else Volunteer.location.desc()
+            )
+        elif sort_by == "created_at":
+            query = query.order_by(
+                Volunteer.created_at.asc()
+                if sort_order == "asc"
+                else Volunteer.created_at.desc()
+            )
+        else:
+            query = query.order_by(Volunteer.id.asc())
+
+        # Apply pagination using SQLAlchemy's paginate method for better reliability
+        try:
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+            volunteers = pagination.items
+            total_volunteers = pagination.total
+            total_pages = pagination.pages
+        except Exception as e:
+            # Fallback to manual pagination if paginate fails
+            app.logger.warning(f"Pagination failed, using manual pagination: {e}")
+            total_volunteers = query.count()
+            volunteers = query.offset((page - 1) * per_page).limit(per_page).all()
+            total_pages = (total_volunteers + per_page - 1) // per_page
+
+        app.logger.info(
+            f"Admin volunteers query successful: {len(volunteers)} volunteers returned, page {page}/{total_pages}"
         )
 
-    if location_filter:
-        query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
-
-    # Apply sorting
-    if sort_by == "name":
-        query = query.order_by(
-            Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc()
-        )
-    elif sort_by == "location":
-        query = query.order_by(
-            Volunteer.location.asc()
-            if sort_order == "asc"
-            else Volunteer.location.desc()
-        )
-    elif sort_by == "created_at":
-        query = query.order_by(
-            Volunteer.created_at.asc()
-            if sort_order == "asc"
-            else Volunteer.created_at.desc()
-        )
-    else:
-        query = query.order_by(Volunteer.id.asc())
-
-    # Apply pagination
-    total_volunteers = query.count()
-    volunteers = query.offset((page - 1) * per_page).limit(per_page).all()
-
-    # Calculate pagination info
-    total_pages = (total_volunteers + per_page - 1) // per_page
+    except Exception as e:
+        app.logger.error(f"Error in admin_volunteers: {e}", exc_info=True)
+        flash("Възникна грешка при зареждането на доброволците", "error")
+        # Return empty results on error
+        volunteers = []
+        total_volunteers = 0
+        total_pages = 1
+        page = 1
 
     return render_template(
         "admin_volunteers.html",
@@ -1367,6 +1394,23 @@ def volunteer_register():
         phone = request.form.get("phone")
         location = request.form.get("location")
 
+        # Валидация на задължителни полета
+        if not name or not name.strip():
+            flash("Моля, въведете име.", "error")
+            return redirect(url_for("volunteer_register"))
+
+        if not email or not email.strip():
+            flash("Моля, въведете имейл.", "error")
+            return redirect(url_for("volunteer_register"))
+
+        # Основна валидация на имейл формат
+        import re
+
+        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+        if not re.match(email_pattern, email):
+            flash("Моля, въведете валиден имейл адрес.", "error")
+            return redirect(url_for("volunteer_register"))
+
         # Провери дали имейлът вече съществува
         existing_volunteer = db.session.query(Volunteer).filter_by(email=email).first()
         if existing_volunteer:
@@ -1375,7 +1419,10 @@ def volunteer_register():
 
         try:
             volunteer = Volunteer(
-                name=name, email=email, phone=phone, location=location
+                name=name.strip(),
+                email=email.strip(),
+                phone=phone.strip() if phone else None,
+                location=location.strip() if location else None,
             )
             db.session.add(volunteer)
             db.session.commit()

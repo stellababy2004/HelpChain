@@ -1242,5 +1242,20 @@
         }
       }
     </script>
+    <script>
+      window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+          // Page was restored from bfcache
+          // Re-establish the connection to the extension here
+          console.log(
+            "Page restored from bfcache, re-establishing extension connection.",
+          );
+          // Example: chrome.runtime.connect(...) or chrome.runtime.sendMessage(...)
+        }
+      });
+
+      // Also, handle the initial connection when the page loads normally
+      // ... establish initial extension connection ...
+    </script>
   </body>
 </html>
