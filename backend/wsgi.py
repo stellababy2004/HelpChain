@@ -12,6 +12,23 @@ sys.path.insert(0, parent_dir)
 print(f"Python path: {sys.path[:3]}...")  # Debug print
 print(f"Current directory: {os.getcwd()}")
 
+# Test imports before importing the app
+try:
+    from models import AdminUser, User, Volunteer, HelpRequest
+
+    print("Models import successful")
+except ImportError as e:
+    print(f"Models import failed: {e}")
+    sys.exit(1)
+
+try:
+    from models_with_analytics import Task
+
+    print("Models with analytics import successful")
+except ImportError as e:
+    print(f"Models with analytics import failed: {e}")
+    sys.exit(1)
+
 # Import the Flask app
 from appy import app
 
