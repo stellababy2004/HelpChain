@@ -3,11 +3,16 @@ import enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-# Try relative imports first, fall back to absolute imports for standalone execution
+# Try multiple import strategies for extensions
 try:
     from .extensions import db
 except ImportError:
-    from extensions import db
+    try:
+        from extensions import db
+    except ImportError:
+        # Last resort - create a new db instance (for testing)
+        from flask_sqlalchemy import SQLAlchemy
+        db = SQLAlchemy()
 
 from flask_login import UserMixin
 import pyotp
