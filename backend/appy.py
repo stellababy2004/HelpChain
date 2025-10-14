@@ -44,18 +44,32 @@ except ImportError:
     except ImportError:
         from extensions import db
 
-from models import (
-    AdminUser,
-    ChatMessage,
-    ChatParticipant,
-    ChatRoom,
-    HelpRequest,
-    Role,
-    RoleEnum,
-    User,
-    UserRole,
-    Volunteer,
-)
+try:
+    from .models import (
+        AdminUser,
+        ChatMessage,
+        ChatParticipant,
+        ChatRoom,
+        HelpRequest,
+        Role,
+        RoleEnum,
+        User,
+        UserRole,
+        Volunteer,
+    )
+except ImportError:
+    from models import (
+        AdminUser,
+        ChatMessage,
+        ChatParticipant,
+        ChatRoom,
+        HelpRequest,
+        Role,
+        RoleEnum,
+        User,
+        UserRole,
+        Volunteer,
+    )
 from models_with_analytics import Task
 
 try:
@@ -1161,7 +1175,8 @@ def admin_volunteers():
             total_pages = (total_volunteers + per_page - 1) // per_page
 
         app.logger.info(
-            f"Admin volunteers query successful: {len(volunteers)} volunteers returned, page {page}/{total_pages}"
+            f"Admin volunteers query successful: {len(volunteers)} volunteers "
+            f"returned, page {page}/{total_pages}"
         )
 
     except Exception as e:
