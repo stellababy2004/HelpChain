@@ -1,50 +1,38 @@
-import os
-import sys
-import logging
-from dotenv import load_dotenv
-import secrets
-
-# Add all necessary directories to Python path for imports
-backend_dir = os.path.dirname(__file__)
-parent_dir = os.path.dirname(backend_dir)
-helpchain_backend_dir = os.path.join(backend_dir, "helpchain-backend")
-src_dir = os.path.join(helpchain_backend_dir, "src")
-
-# Add directories to sys.path in order of priority (backend first, exclude src_dir to avoid conflicts)
-for path_dir in [backend_dir, parent_dir]:
-    if path_dir not in sys.path:
-        sys.path.insert(0, path_dir)
-
-# Remove conflicting directories from sys.path if they exist
-for path_dir in [src_dir, helpchain_backend_dir]:
-    if path_dir in sys.path:
-        sys.path.remove(path_dir)
-
-# All imports at the top
-from werkzeug.utils import secure_filename
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    session,
-    jsonify,
-    Response,
-    # current_app,  # Премахнат за избягване на circular import
-)
-from flask_babel import Babel, gettext as _, refresh
-from io import StringIO
 import csv
-from jinja2 import ChoiceLoader, FileSystemLoader
-import math
-from datetime import datetime
 import json
+import logging
+import math
+import os
+import secrets
+import sys
+from datetime import datetime
+from io import StringIO
 
 # Import Celery for background tasks
 from celery import Celery
-from celery.schedules import crontab
+from dotenv import load_dotenv
+from flask import (
+    Flask,
+    Response,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_babel import Babel, refresh
+from flask_babel import gettext as _
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_socketio import emit, join_room, leave_room
+from flask_talisman import Talisman
+from jinja2 import ChoiceLoader, FileSystemLoader
+from sqlalchemy.exc import OperationalError
+from werkzeug.utils import secure_filename
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
@@ -61,43 +49,39 @@ except ImportError:
         from .extensions import db
     except ImportError:
         from extensions import db
+
 from models import (
-    User,
-    Volunteer,
-    RoleEnum,
-    ChatRoom,
-    ChatParticipant,
-    ChatMessage,
     AdminUser,
+    ChatMessage,
+    ChatParticipant,
+    ChatRoom,
     HelpRequest,
     Role,
+    RoleEnum,
+    User,
     UserRole,
+    Volunteer,
 )
 from models_with_analytics import Task
-from flask_mail import Mail
-from flask_migrate import Migrate
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from sqlalchemy.exc import OperationalError
-from flask_socketio import SocketIO, emit, join_room, leave_room
-from flask_talisman import Talisman
 
 try:
     from .permissions import (
-        require_permission,
-        require_admin_login,
         initialize_default_roles_and_permissions,
+        require_admin_login,
+        require_permission,
     )
 except ImportError:
     from permissions import (
-        require_permission,
-        require_admin_login,
         initialize_default_roles_and_permissions,
+        require_admin_login,
+        require_permission,
     )
+
 try:
     from .admin_roles import admin_roles_bp
 except ImportError:
     from admin_roles import admin_roles_bp
+
 try:
     from .routes.notifications import notification_bp
 except ImportError:
@@ -302,9 +286,23 @@ HelpChain системата
         try:
             logger.warning("Attempting fallback: saving email to file")
             with open("sent_emails.txt", "a", encoding="utf-8") as f:
-                f.write(
-                    f"Subject: HelpChain - Код за верификация на администратор\nTo: {EMAIL_2FA_RECIPIENT}\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\nЗдравейте,\n\nПолучен е опит за вход в администраторския панел на HelpChain.\n\nКод за верификация: {code}\n\nДетайли за достъпа:\n- IP адрес: {ip_address}\n- Браузър: {user_agent}\n- Време: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\nАко това не сте вие, моля игнорирайте това съобщение.\n\nС уважение,\nHelpChain системата\n\n{'=' * 50}\n"
+                email_content = (
+                    f"Subject: HelpChain - Код за верификация на администратор\n"
+                    f"To: {EMAIL_2FA_RECIPIENT}\n"
+                    f"From: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
+                    "Здравейте,\n\n"
+                    "Получен е опит за вход в администраторския панел на HelpChain.\n\n"
+                    f"Код за верификация: {code}\n\n"
+                    "Детайли за достъпа:\n"
+                    f"- IP адрес: {ip_address}\n"
+                    f"- Браузър: {user_agent}\n"
+                    f"- Време: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                    "Ако това не сте вие, моля игнорирайте това съобщение.\n\n"
+                    "С уважение,\n"
+                    "HelpChain системата\n\n"
+                    f"{'=' * 50}\n"
                 )
+                f.write(email_content)
             logger.info("Email 2FA code saved to file as fallback")
             return True
         except Exception as file_e:
@@ -376,15 +374,18 @@ app.config["PREFERRED_URL_SCHEME"] = os.getenv("PREFERRED_URL_SCHEME", "http")
 basedir = os.path.abspath(os.path.dirname(__file__))
 # За production на Render, използвайме променлива от средата или persistent директория
 if os.getenv("RENDER") == "true" or os.getenv("PRODUCTION") == "true":
-    # Използвайме DATABASE_URL от средата или persistent storage path
-    db_path = os.getenv("DATABASE_URL", "/opt/render/project/src/volunteers.db")
-    if db_path.startswith("sqlite:///"):
-        db_path = db_path.replace("sqlite:///", "")
-    elif not db_path.startswith("/"):
-        # Ако е само име на файл, използвайме persistent директория
-        db_path = f"/opt/render/project/src/{db_path}"
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-    logger.info(f"Production mode detected, using database path: {db_path}")
+    # Check if DATABASE_URL is provided (for PostgreSQL on Render)
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+        logger.info("Production mode detected, using DATABASE_URL from environment")
+    else:
+        # Fallback to SQLite for development/production without DATABASE_URL
+        db_path = "/opt/render/project/src/volunteers.db"
+        app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+        logger.info(
+            f"Production mode detected, using fallback SQLite database: {db_path}"
+        )
 else:
     # Локално development - използвайме instance директория в root проекта
     instance_dir = os.path.join(os.path.dirname(basedir), "instance")
@@ -596,7 +597,8 @@ def log_request():
 
 @app.route("/")
 def index():
-    # безопасно извличаме агрегати — ако моделът липсва или схемата не е съвместима, връщаме fallback
+    # безопасно извличаме агрегати — ако моделът липсва или схемата
+    # не е съвместима, връщаме fallback
     try:
         volunteers_count = (
             db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
@@ -690,7 +692,8 @@ def admin_login():
                     )  # For permission system compatibility
                     session.permanent = True  # Make session persistent
                     logger.info(
-                        f"Session set: admin_logged_in={session.get('admin_logged_in')}, admin_user_id={session.get('admin_user_id')}"
+                        f"Session set: admin_logged_in={session.get('admin_logged_in')}, "
+                        f"admin_user_id={session.get('admin_user_id')}"
                     )
                     return redirect(url_for("admin_dashboard"))
             else:
@@ -1372,7 +1375,12 @@ def volunteer_register():
             try:
                 with open("sent_emails.txt", "a", encoding="utf-8") as f:
                     f.write(
-                        f"Subject: Нов доброволец в HelpChain\nTo: contact@helpchain.live\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\nНов доброволец се е регистрирал:\n\nИме: {name}\nИмейл: {email}\nТелефон: {phone}\nЛокация: {location}\n\nМоля, свържете се с доброволеца за допълнителна информация.\n\n{'=' * 50}\n"
+                        "Subject: Нов доброволец в HelpChain\n"
+                        f"To: contact@helpchain.live\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
+                        "Нов доброволец се е регистрирал:\n\n"
+                        f"Име: {name}\nИмейл: {email}\nТелефон: {phone}\nЛокация: {location}\n\n"
+                        "Моля, свържете се с доброволеца за допълнителна информация.\n\n"
+                        f"{'=' * 50}\n"
                     )
                 logger.info("Volunteer registration email saved to file as fallback")
             except Exception as file_e:
@@ -1418,7 +1426,8 @@ def volunteer_login():
             app.logger.info(f"Volunteer found: {volunteer is not None}")
             if volunteer:
                 app.logger.info(
-                    f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, Email={volunteer.email}"
+                    f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, "
+                    f"Email={volunteer.email}"
                 )
 
                 # TEMPORARY: Skip 2FA for test email
@@ -1435,7 +1444,8 @@ def volunteer_login():
                     session["volunteer_name"] = volunteer.name
                     session.modified = True  # Force session save
                     app.logger.info(
-                        f"Session set: volunteer_logged_in={session.get('volunteer_logged_in')}, volunteer_id={session.get('volunteer_id')}"
+                        f"Session set: volunteer_logged_in={session.get('volunteer_logged_in')}, "
+                        f"volunteer_id={session.get('volunteer_id')}"
                     )
 
                     app.logger.info(
@@ -1509,7 +1519,15 @@ HelpChain системата
                     try:
                         with open("sent_emails.txt", "a", encoding="utf-8") as f:
                             f.write(
-                                f"Subject: HelpChain - Код за достъп\nTo: {email}\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\nЗдравейте {volunteer.name},\n\nПолучен е опит за вход в доброволческия панел на HelpChain.\n\nВашият код за достъп: {access_code}\n\nКодът е валиден за 15 минути.\n\nАко това не сте вие, моля игнорирайте това съобщение.\n\nС уважение,\nHelpChain системата\n\n{'=' * 50}\n"
+                                "Subject: HelpChain - Код за достъп\n"
+                                f"To: {email}\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
+                                f"Здравейте {volunteer.name},\n\n"
+                                "Получен е опит за вход в доброволческия панел на HelpChain.\n\n"
+                                f"Вашият код за достъп: {access_code}\n\n"
+                                "Кодът е валиден за 15 минути.\n\n"
+                                "Ако това не сте вие, моля игнорирайте това съобщение.\n\n"
+                                "С уважение,\nHelpChain системата\n\n"
+                                f"{'=' * 50}\n"
                             )
                         app.logger.info("Access code saved to file as fallback")
                     except Exception as file_e:
@@ -1686,7 +1704,15 @@ HelpChain системата
             try:
                 with open("sent_emails.txt", "a", encoding="utf-8") as f:
                     f.write(
-                        f"Subject: HelpChain - Нов код за достъп\nTo: {volunteer.email}\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\nЗдравейте {volunteer.name},\n\nПолучен е нов опит за вход в доброволческия панел на HelpChain.\n\nВашият нов код за достъп: {access_code}\n\nКодът е валиден за 15 минути.\n\nАко това не сте вие, моля игнорирайте това съобщение.\n\nС уважение,\nHelpChain системата\n\n{'=' * 50}\n"
+                        "Subject: HelpChain - Нов код за достъп\n"
+                        f"To: {volunteer.email}\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
+                        f"Здравейте {volunteer.name},\n\n"
+                        "Получен е нов опит за вход в доброволческия панел на HelpChain.\n\n"
+                        f"Вашият нов код за достъп: {access_code}\n\n"
+                        "Кодът е валиден за 15 минути.\n\n"
+                        "Ако това не сте вие, моля игнорирайте това съобщение.\n\n"
+                        "С уважение,\nHelpChain системата\n\n"
+                        f"{'=' * 50}\n"
                     )
                 app.logger.info("New access code saved to file as fallback")
             except Exception as file_e:
@@ -1994,7 +2020,8 @@ def chatbot_message():
         return (
             jsonify(
                 {
-                    "response": "Извинявам се, възникна грешка. Моля, опитайте пак или се свържете с екипа ни.",
+                    "response": "Извинявам се, възникна грешка. Моля, опитайте пак или "
+                    "се свържете с екипа ни.",
                     "error": True,
                 }
             ),
@@ -2076,7 +2103,6 @@ def update_volunteer_settings():
         return jsonify({"success": False, "message": "Доброволецът не е намерен"}), 404
 
     try:
-        data = request.get_json()
         # Here you can save settings to volunteer model or separate settings table
         # For now, just return success
         return jsonify({"success": True, "message": "Настройките са запазени"})
@@ -2276,9 +2302,7 @@ def admin_assign_volunteer(request_id):
                 flash("Моля, изберете доброволец", "error")
 
         # Get available volunteers
-        volunteers = (
-            db.session.query(Volunteer).filter(Volunteer.is_active == True).all()
-        )
+        volunteers = db.session.query(Volunteer).filter(Volunteer.is_active).all()
 
         # Get current admin user
         current_user = None
@@ -2432,7 +2456,8 @@ def export_volunteers_csv(volunteers):
         output,
         mimetype="text/csv; charset=utf-8",
         headers={
-            "Content-Disposition": f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            "Content-Disposition": f"attachment;filename=volunteers_"
+            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             "Content-Type": "text/csv; charset=utf-8",
         },
     )
@@ -2465,7 +2490,8 @@ def export_volunteers_json(volunteers):
         json.dumps(export_data, ensure_ascii=False, indent=2),
         mimetype="application/json; charset=utf-8",
         headers={
-            "Content-Disposition": f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+            "Content-Disposition": f"attachment;filename=volunteers_"
+            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
             "Content-Type": "application/json; charset=utf-8",
         },
     )
@@ -2474,18 +2500,19 @@ def export_volunteers_json(volunteers):
 def export_volunteers_pdf(volunteers):
     """Export volunteers to PDF format"""
     try:
+        from io import BytesIO
+
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.lib.units import inch
         from reportlab.platypus import (
+            Paragraph,
             SimpleDocTemplate,
+            Spacer,
             Table,
             TableStyle,
-            Paragraph,
-            Spacer,
         )
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import inch
-        from io import BytesIO
 
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -2507,7 +2534,10 @@ def export_volunteers_pdf(volunteers):
         elements.append(Spacer(1, 12))
 
         # Export info
-        info_text = f"Общо доброволци: {len(volunteers)} | Експортирано на: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
+        info_text = (
+            f"Общо доброволци: {len(volunteers)} | Експортирано на: "
+            f"{datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
+        )
         info_paragraph = Paragraph(info_text, styles["Normal"])
         elements.append(info_paragraph)
         elements.append(Spacer(1, 20))
@@ -2569,7 +2599,10 @@ def export_volunteers_pdf(volunteers):
             buffer.getvalue(),
             mimetype="application/pdf",
             headers={
-                "Content-Disposition": f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                "Content-Disposition": (
+                    f"attachment;filename=volunteers_"
+                    f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                )
             },
         )
 
@@ -3037,7 +3070,8 @@ logger.debug("MAIL_PASSWORD: %s", "***" if os.getenv("MAIL_PASSWORD") else None)
 # mail = Mail(app)  # Преместен по-горе
 
 # Инициализирай SocketIO за видео чат функционалност
-# socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)  # DISABLED FOR TESTING
+# socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)  \
+# DISABLED FOR TESTING
 
 
 # Video chat SocketIO event handlers - DISABLED FOR TESTING
@@ -3455,6 +3489,7 @@ def handle_file_upload(data):
     try:
         import base64
         import os
+
         from werkzeug.utils import secure_filename
 
         # Decode base64 file
@@ -3549,7 +3584,8 @@ def get_room_participants(room_id):
 
 def admin_panel():
     try:
-        # безопасно извличаме агрегати — ако моделът липсва или схемата не е съвместима, връщаме fallback
+        # безопасно извличаме агрегати — ако моделът липсва или схемата не е съвместима, \
+        # връщаме fallback
         try:
             volunteers_count = (
                 db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
@@ -3596,7 +3632,9 @@ def admin_panel():
         return (
             "<!doctype html><html><head><meta charset='utf-8'><title>Admin</title>"
             "<style>body{font-family:Arial,Helvetica,sans-serif;padding:1rem}h1{font-size:18px}</style>"
-            "</head><body><h1>Admin panel (placeholder)</h1><p>Шаблонът admin.html не е намерен.</p></body></html>",
+            "</head><body><h1>Admin panel (placeholder)</h1><p>Шаблонът admin.html не е "
+            "намерен.</p>"
+            "</body></html>",
             200,
         )
 
@@ -3605,7 +3643,12 @@ def admin_panel():
 # from unittest.mock import patch
 
 # Mock mail.send за всички изпращания на имейли
-# mock_mail_send = patch.object(mail, 'send', side_effect=lambda msg: app.logger.info(f"Mocked email sent: {msg.subject} to {msg.recipients}")).start()
+# mock_mail_send = patch.object(
+#     mail, 'send',
+#     side_effect=lambda msg: app.logger.info(
+#         f"Mocked email sent: {msg.subject} to {msg.recipients}"
+#     )
+# ).start()
 
 
 # Геолокационни API endpoints
@@ -4135,8 +4178,8 @@ def api_complete_task(task_id):
         if not volunteer_id:
             return jsonify({"success": False, "error": "Невалидна сесия"}), 401
 
-        from .models_with_analytics import Task, TaskPerformance
         from .gamification_service import GamificationService
+        from .models_with_analytics import Task, TaskPerformance
 
         task = db.session.query(Task).get_or_404(task_id)
 
@@ -4390,7 +4433,10 @@ def api_volunteer_task_recommendations(volunteer_id):
                 json.dumps(data, ensure_ascii=False, indent=2, default=str),
                 mimetype="application/json",
                 headers={
-                    "Content-Disposition": f"attachment;filename=analytics_{data_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                    "Content-Disposition": (
+                        f"attachment;filename=analytics_{data_type}_"
+                        f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                    )
                 },
             )
         elif export_format == "csv":
@@ -4412,7 +4458,10 @@ def api_volunteer_task_recommendations(volunteer_id):
                 output,
                 mimetype="text/csv",
                 headers={
-                    "Content-Disposition": f"attachment;filename=analytics_{data_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+                    "Content-Disposition": (
+                        f"attachment;filename=analytics_{data_type}_"
+                        f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+                    )
                 },
             )
         else:
@@ -4437,6 +4486,11 @@ def admin_tasks():
         )
 
         # Get smart matching analytics
+        try:
+            from .smart_matching import smart_matching_engine
+        except ImportError:
+            from smart_matching import smart_matching_engine
+
         matching_stats = smart_matching_engine.get_matching_analytics()
 
         return render_template(
@@ -4567,9 +4621,8 @@ if __name__ == "__main__":
 
 # Import Celery tasks to register them with the app
 try:
-    import tasks
-
-    logger.info("Celery tasks imported successfully")
+    # import tasks  # Disabled - tasks module not available
+    logger.info("Celery tasks import skipped")
 except ImportError as e:
     logger.warning("Could not import Celery tasks: %s", str(e))
     logger.warning("Celery background tasks will not be available")

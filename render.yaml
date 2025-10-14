@@ -5,3 +5,15 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn --chdir backend wsgi:application"
     region: frankfurt
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: false
+      - key: PORT
+        value: 10000
+    databases:
+      - name: helpchain-db
+        databaseName: helpchain
+        user: helpchain_user
+        region: frankfurt
