@@ -2,7 +2,7 @@ services:
   - type: web
     name: helpchain
     env: python
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install -r requirements.txt && cd backend && flask db upgrade"
     startCommand: "gunicorn --bind 0.0.0.0:$PORT --chdir backend wsgi:application"
     region: frankfurt
     envVars:
@@ -10,6 +10,8 @@ services:
         value: production
       - key: FLASK_DEBUG
         value: false
+      - key: FLASK_APP
+        value: appy.py
     databases:
       - name: helpchain-db
         databaseName: helpchain
