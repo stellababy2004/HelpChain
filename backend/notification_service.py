@@ -24,7 +24,7 @@ import time
 from jinja2 import Template
 import os
 
-from models import (
+from .models import (
     db,
     NotificationTemplate,
     NotificationQueue,

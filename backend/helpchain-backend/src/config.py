@@ -1,27 +1,40 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "default_secret_key"
-    DEBUG = os.environ.get("DEBUG", "False").lower() in ["true", "1"]
-    DATABASE_URI = os.environ.get("DATABASE_URI") or "sqlite:///app.db"
-    NGROK_AUTH_TOKEN = os.environ.get("NGROK_AUTH_TOKEN")
-    QR_CODE_SIZE = int(os.environ.get("QR_CODE_SIZE", 250))  # Size in pixels
-    ALLOWED_HOSTS = (
-        os.environ.get("ALLOWED_HOSTS", "").split(",")
-        if os.environ.get("ALLOWED_HOSTS")
-        else []
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-secret-key-change-in-production"
+    SQLALCHEMY_DATABASE_URI = (
+        os.environ.get("SQLALCHEMY_DATABASE_URI") or "sqlite:///helpchain.db"
     )
-    MAIL_SERVER = os.environ.get(
-        "MAIL_SERVER", "smtp.mailtrap.io"
-    )  # Mailtrap за тестове
-    MAIL_PORT = int(os.environ.get("MAIL_PORT", 2525))
-    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "True").lower() in ["true", "1"]
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", os.environ.get("MAILTRAP_USERNAME"))
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", os.environ.get("MAILTRAP_PASSWORD"))
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Email configuration
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.zoho.com")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "True").lower() == "true"
+    MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL", "False").lower() == "true"
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
     MAIL_DEFAULT_SENDER = os.environ.get(
-        "MAIL_DEFAULT_SENDER", "contact@helpchain.live"
+        "MAIL_DEFAULT_SENDER", "noreply@helpchain.live"
     )
+
+    # Upload folder
+    UPLOAD_FOLDER = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "static", "uploads"
+    )
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
+
+    # Session configuration
+    SESSION_TYPE = "filesystem"
+    SESSION_PERMANENT = False
+    SESSION_USE_SIGNER = True
+
+    # Babel configuration
+    BABEL_DEFAULT_LOCALE = "bg"
+    BABEL_DEFAULT_TIMEZONE = "Europe/Sofia"
+
+    # AI Configuration
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+    AI_DEV_MOCK = os.environ.get("AI_DEV_MOCK", "False").lower() == "true"

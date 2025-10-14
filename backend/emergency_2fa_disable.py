@@ -10,8 +10,8 @@ import sys
 sys.path.insert(0, ".")
 
 from appy import app
-from models import AdminUser
-from extensions import db
+from .models import AdminUser
+from .extensions import db
 
 
 def main():

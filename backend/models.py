@@ -2,7 +2,13 @@ from sqlalchemy import func
 import enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from extensions import db
+
+# Try relative imports first, fall back to absolute imports for standalone execution
+try:
+    from .extensions import db
+except ImportError:
+    from extensions import db
+
 from flask_login import UserMixin
 import pyotp
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -46,6 +52,12 @@ class PermissionEnum(str, enum.Enum):
     SUPER_ADMIN = "super_admin"
 
 
+class PriorityEnum(str, enum.Enum):
+    low = "low"
+    normal = "normal"
+    urgent = "urgent"
+
+
 class User(db.Model):
     __tablename__ = "users"
     __table_args__ = {"extend_existing": True}
@@ -78,6 +90,16 @@ class AdminUser(db.Model, UserMixin):
         return True
 
     def set_password(self, password):
+        """Задава парола с валидация"""
+        if not password or len(password) < 8:
+            raise ValueError("Паролата трябва да бъде поне 8 символа")
+        if not any(c.isupper() for c in password):
+            raise ValueError("Паролата трябва да съдържа поне една главна буква")
+        if not any(c.islower() for c in password):
+            raise ValueError("Паролата трябва да съдържа поне една малка буква")
+        if not any(c.isdigit() for c in password):
+            raise ValueError("Паролата трябва да съдържа поне една цифра")
+
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
@@ -93,10 +115,19 @@ class AdminUser(db.Model, UserMixin):
         self.twofa_secret = None
 
     def verify_totp(self, token):
-        if not self.twofa_secret:
+        """Проверява TOTP токен"""
+        if not self.twofa_secret or not self.twofa_enabled:
             return False
-        totp = pyotp.TOTP(self.twofa_secret)
-        return totp.verify(token)
+
+        try:
+            # Валидираме че token е 6 цифри
+            if not token or not token.isdigit() or len(token) != 6:
+                return False
+
+            totp = pyotp.TOTP(self.twofa_secret)
+            return totp.verify(token, valid_window=1)  # 30 секунди tolerance
+        except Exception:
+            return False
 
     def get_totp_uri(self):
         if not self.twofa_secret:
@@ -193,6 +224,155 @@ class Volunteer(db.Model):
     longitude = db.Column(db.Float, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Геймификация полета
+    points = db.Column(db.Integer, default=0, nullable=False)
+    level = db.Column(db.Integer, default=1, nullable=False)
+    experience = db.Column(db.Integer, default=0, nullable=False)
+    total_tasks_completed = db.Column(db.Integer, default=0, nullable=False)
+    total_hours_volunteered = db.Column(db.Float, default=0.0, nullable=False)
+    rating = db.Column(db.Float, default=0.0, nullable=False)
+    rating_count = db.Column(db.Integer, default=0, nullable=False)
+    achievements = db.Column(
+        db.JSON, default=list, nullable=False
+    )  # List of achievement IDs
+    badges = db.Column(db.JSON, default=list, nullable=False)  # List of badge IDs
+    streak_days = db.Column(db.Integer, default=0, nullable=False)
+    last_activity = db.Column(db.DateTime, default=datetime.utcnow)
+    rank = db.Column(db.Integer, default=0, nullable=False)  # Leaderboard rank
+
+    # Relationships
+    assigned_tasks = db.relationship("Task", back_populates="volunteer", lazy=True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # Инициализираме defaults за тестове
+        if self.points is None:
+            self.points = 0
+        if self.level is None:
+            self.level = 1
+        if self.experience is None:
+            self.experience = 0
+        if self.total_tasks_completed is None:
+            self.total_tasks_completed = 0
+        if self.total_hours_volunteered is None:
+            self.total_hours_volunteered = 0.0
+        if self.rating is None:
+            self.rating = 0.0
+        if self.rating_count is None:
+            self.rating_count = 0
+        if self.achievements is None:
+            self.achievements = []
+        if self.badges is None:
+            self.badges = []
+        if self.streak_days is None:
+            self.streak_days = 0
+        if self.rank is None:
+            self.rank = 0
+
+    # Геймификация методи
+    def add_points(self, points):
+        """Добавя точки и проверява за level up"""
+        self.points += points
+        self.experience += points
+        self.check_level_up()
+
+    def check_level_up(self):
+        """Проверява дали има level up"""
+        required_exp = self.level * 100  # 100 точки за level
+        while self.experience >= required_exp:
+            self.level += 1
+            self.experience -= required_exp
+            required_exp = self.level * 100
+
+    def add_rating(self, rating):
+        """Добавя рейтинг"""
+        try:
+            rating = float(rating)
+            if 1 <= rating <= 5:
+                total_rating = self.rating * self.rating_count
+                self.rating_count += 1
+                self.rating = round((total_rating + rating) / self.rating_count, 2)
+                return True
+            return False
+        except (ValueError, TypeError):
+            return False
+
+    def complete_task(self, hours=1):
+        """Завършва задача с валидация"""
+        try:
+            hours = float(hours)
+            if hours <= 0 or hours > 24:  # Максимум 24 часа на задача
+                return False
+
+            self.total_tasks_completed += 1
+            self.total_hours_volunteered += hours
+            self.add_points(50)  # 50 точки за завършена задача
+            self.update_streak()
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    def update_streak(self):
+        """Обновява streak на активност"""
+        from datetime import datetime, timezone
+
+        now = datetime.now(timezone.utc)
+        if self.last_activity:
+            # Конвертираме last_activity към UTC ако не е timezone-aware
+            if self.last_activity.tzinfo is None:
+                last_activity_utc = self.last_activity.replace(tzinfo=timezone.utc)
+            else:
+                last_activity_utc = self.last_activity.astimezone(timezone.utc)
+
+            days_diff = (now.date() - last_activity_utc.date()).days
+
+            if days_diff == 1:
+                self.streak_days += 1
+            elif days_diff > 1:
+                self.streak_days = 1
+            # Ако days_diff == 0, не правим нищо (днес вече е активен)
+        else:
+            self.streak_days = 1
+
+        self.last_activity = now
+
+    def unlock_achievement(self, achievement_id):
+        """Отключва постижение"""
+        if achievement_id not in self.achievements:
+            self.achievements.append(achievement_id)
+            self.add_points(100)  # 100 точки за постижение
+
+    def get_level_progress(self):
+        """Връща прогрес към следващия level като процент"""
+        required_exp = self.level * 100
+        return min(100, (self.experience / required_exp) * 100)
+
+    def get_total_score(self):
+        """Връща общ резултат за leaderboard"""
+        return (
+            self.points * 0.4
+            + self.total_tasks_completed * 10
+            + self.rating * 20
+            + self.level * 50
+        )
+
+
+class Achievement(db.Model):
+    __tablename__ = "achievements"
+    __table_args__ = {"extend_existing": True}
+    id = db.Column(db.String(50), primary_key=True)  # Unique achievement ID
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(200), nullable=False)
+    icon = db.Column(db.String(50), nullable=False)  # FontAwesome icon class
+    category = db.Column(db.String(50), nullable=False)  # tasks, rating, streak, etc.
+    points_reward = db.Column(db.Integer, default=100, nullable=False)
+    requirement_type = db.Column(db.String(50), nullable=False)  # count, value, streak
+    requirement_value = db.Column(db.Integer, nullable=False)
+    rarity = db.Column(
+        db.String(20), default="common", nullable=False
+    )  # common, rare, epic, legendary
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class AuditLog(db.Model):
     __tablename__ = "audit_logs"
@@ -216,13 +396,18 @@ class HelpRequest(db.Model):
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), default="Pending")
+    priority = db.Column(
+        db.Enum(PriorityEnum), default=PriorityEnum.normal, nullable=False
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20))
     message = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
 

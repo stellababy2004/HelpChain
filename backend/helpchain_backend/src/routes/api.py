@@ -269,6 +269,7 @@ def update_volunteer_location(volunteer_id):
         data = request.get_json()
         lat = data.get("latitude")
         lng = data.get("longitude")
+        location = data.get("location")
 
         if lat is None or lng is None:
             return jsonify({"error": "latitude and longitude required"}), 400
@@ -281,6 +282,8 @@ def update_volunteer_location(volunteer_id):
 
         vol.latitude = float(lat)
         vol.longitude = float(lng)
+        if location is not None:
+            vol.location = location
         db.session.commit()
 
         return (
@@ -288,7 +291,11 @@ def update_volunteer_location(volunteer_id):
                 {
                     "success": True,
                     "volunteer_id": volunteer_id,
-                    "location": {"lat": vol.latitude, "lng": vol.longitude},
+                    "location": {
+                        "lat": vol.latitude,
+                        "lng": vol.longitude,
+                        "location": vol.location,
+                    },
                 }
             ),
             200,

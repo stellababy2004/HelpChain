@@ -1,0 +1,326 @@
+/* Navigation Improvements - Breadcrumbs and Search */
+.breadcrumb-container {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
+.breadcrumb {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.breadcrumb-item {
+  color: var(--text-muted);
+}
+
+.breadcrumb-item a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-item a:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+/* Search Component */
+.search-container {
+  position: relative;
+  max-width: 400px;
+  margin: 20px 0;
+}
+
+.search-input-group {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 45px 12px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 25px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-button:hover {
+  transform: translateY(-50%) scale(1.05);
+}
+
+.search-button:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* Search Results */
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  margin-top: 5px;
+}
+
+.search-result-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+  background: var(--hover-bg);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-title {
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 4px;
+}
+
+.search-result-description {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Navigation Menu Enhancements */
+.nav-menu-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-item-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-toggle {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.nav-dropdown-toggle:hover {
+  background: var(--hover-bg);
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  min-width: 200px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.nav-item-dropdown:hover .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.nav-dropdown-item {
+  display: block;
+  padding: 12px 16px;
+  color: var(--text-color);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--hover-bg);
+}
+
+.nav-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+/* Page Navigation */
+.page-nav {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
+.page-nav-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 15px;
+}
+
+.page-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.page-nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.page-nav-link:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.page-nav-link i {
+  margin-right: 6px;
+}
+
+/* Back to Top Button */
+.back-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+  box-shadow: var(--shadow);
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-to-top:hover {
+  transform: scale(1.1);
+}
+
+/* Mobile Navigation Improvements */
+@media (max-width: 768px) {
+  .breadcrumb-container {
+    padding: 10px 15px;
+  }
+
+  .search-container {
+    max-width: 100%;
+    margin: 15px 0;
+  }
+
+  .nav-menu-enhanced {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .nav-dropdown-menu {
+    position: static;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+    margin-top: 10px;
+  }
+
+  .page-nav-links {
+    justify-content: center;
+  }
+
+  .back-to-top {
+    bottom: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+  }
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .breadcrumb-container,
+[data-theme="dark"] .search-results,
+[data-theme="dark"] .nav-dropdown-menu,
+[data-theme="dark"] .page-nav {
+  background: var(--card-bg-dark);
+  border-color: var(--border-color-dark);
+}
+
+[data-theme="dark"] .search-result-item:hover,
+[data-theme="dark"] .nav-dropdown-item:hover {
+  background: var(--hover-bg-dark);
+}

@@ -4,56 +4,581 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Администраторски панел - HelpChain</title>
+
+    <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <!-- Font Awesome for icons -->
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
     <style>
-      .admin-card {
-        transition: transform 0.2s;
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --admin-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+        --border-radius: 15px;
       }
 
-      .admin-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+        --shadow: var(--shadow-dark);
       }
 
-      .stats-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      * {
+        transition: all 0.3s ease;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+      }
+
+      /* Modern Navigation */
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--admin-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      /* Admin Hero */
+      .admin-hero {
+        background: var(--admin-gradient);
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .admin-hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+          radial-gradient(
+            circle at 30% 70%,
+            rgba(255, 107, 107, 0.4) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 70% 30%,
+            rgba(238, 90, 82, 0.4) 0%,
+            transparent 50%
+          );
+        animation: float 8s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+
+        33% {
+          transform: translateY(-15px) rotate(120deg);
+        }
+
+        66% {
+          transform: translateY(10px) rotate(240deg);
+        }
+      }
+
+      .admin-welcome {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      .admin-title {
+        font-size: 2.5rem;
+        font-weight: 700;
         color: white;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1rem;
+      }
+
+      .admin-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        color: white;
+        margin-bottom: 2rem;
+      }
+
+      .admin-badges {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .admin-badge {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      /* Stats Cards */
+      .stats-card-modern {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: none;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .stats-card-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--admin-gradient);
+      }
+
+      .stats-card-modern:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .stats-icon-modern {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: white;
+      }
+
+      .stats-value-modern {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+      }
+
+      .stats-label-modern {
+        color: #6c757d;
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      /* Quick Actions */
+      .actions-section {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .action-card-modern {
+        background: var(--card-bg);
+        border: 2px solid #e1e5e9;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--text-color);
+        position: relative;
+        overflow: hidden;
+      }
+
+      [data-theme="dark"] .action-card-modern {
+        border-color: #495057;
+      }
+
+      .action-card-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(102, 126, 234, 0.1),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .action-card-modern:hover::before {
+        left: 100%;
+      }
+
+      .action-card-modern:hover {
+        border-color: #667eea;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+      }
+
+      .action-icon-modern {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #667eea;
+        transition: all 0.3s ease;
+      }
+
+      .action-card-modern:hover .action-icon-modern {
+        transform: scale(1.1);
+      }
+
+      .action-title-modern {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+      }
+
+      .action-description-modern {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      /* System Info */
+      .system-info-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .system-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+      }
+
+      .info-item {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 12px;
+        border: 1px solid rgba(102, 126, 234, 0.1);
+      }
+
+      [data-theme="dark"] .info-item {
+        background: rgba(102, 126, 234, 0.1);
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .info-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+      }
+
+      .info-status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .status-active {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      /* Modern Buttons */
+      .btn-modern {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0.25rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn-modern:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary-modern {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success-modern {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .btn-warning-modern {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .btn-danger-modern {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      .btn-info-modern {
+        background: var(--info-gradient);
+        color: white;
+      }
+
+      .btn-secondary-modern {
+        background: #6c757d;
+        color: white;
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Dropdown Menu */
+      .dropdown-menu-modern {
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 0.5rem 0;
+      }
+
+      .dropdown-item-modern {
+        color: var(--text-color);
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .dropdown-item-modern:hover {
+        background: rgba(102, 126, 234, 0.1);
+        color: #667eea;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .admin-title {
+          font-size: 2rem;
+        }
+
+        .admin-badges {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .actions-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .system-info-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stats-card-modern {
+          padding: 1.5rem;
+        }
       }
     </style>
   </head>
 
-  <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+  <body data-theme="light">
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="/">
-          <i class="fas fa-hands-helping"></i> HelpChain - Админ панел
+        <a class="navbar-brand navbar-brand-modern" href="/">
+          <i class="fas fa-tools me-2"></i>HelpChain Admin
         </a>
+
         <button
           class="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
-          title="Отвори менюто"
+          title="Отвори меню"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto">
+          <ul class="navbar-nav me-auto">
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('index') }}">
-                <i class="fas fa-home"></i> Начало
+                <i class="fas fa-home me-1"></i>Начало
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
+              <a class="nav-link active" href="{{ url_for('admin_panel') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item dropdown">
@@ -62,50 +587,72 @@
                 href="#"
                 role="button"
                 data-bs-toggle="dropdown"
+                title="Управление"
               >
-                <i class="fas fa-cogs"></i> Управление
+                <i class="fas fa-cogs me-1"></i>Управление
               </a>
-              <ul class="dropdown-menu">
+              <ul class="dropdown-menu dropdown-menu-modern">
                 <li>
-                  <a class="dropdown-item" href="/admin_volunteers">
-                    <i class="fas fa-users"></i> Доброволци
+                  <a
+                    class="dropdown-item dropdown-item-modern"
+                    href="/admin_volunteers"
+                  >
+                    <i class="fas fa-users me-2"></i>Доброволци
                   </a>
                 </li>
                 <li>
-                  <a class="dropdown-item" href="/admin_requests">
-                    <i class="fas fa-clipboard-list"></i> Заявки
+                  <a
+                    class="dropdown-item dropdown-item-modern"
+                    href="/admin_requests"
+                  >
+                    <i class="fas fa-clipboard-list me-2"></i>Заявки
                   </a>
                 </li>
                 <li>
-                  <a class="dropdown-item" href="/admin_roles">
-                    <i class="fas fa-user-shield"></i> Роли и потребители
+                  <a
+                    class="dropdown-item dropdown-item-modern"
+                    href="/admin_roles"
+                  >
+                    <i class="fas fa-user-shield me-2"></i>Роли и потребители
                   </a>
                 </li>
               </ul>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/admin/analytics">
-                <i class="fas fa-chart-bar"></i> Аналитика
+                <i class="fas fa-chart-bar me-1"></i>Аналитика
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/admin_logs">
-                <i class="fas fa-history"></i> Логове
+                <i class="fas fa-history me-1"></i>Логове
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/admin/export">
-                <i class="fas fa-download"></i> Експорт
+                <i class="fas fa-download me-1"></i>Експорт
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-warning" href="/admin/2fa">
-                <i class="fas fa-shield-alt"></i> 2FA
+                <i class="fas fa-shield-alt me-1"></i>2FA
               </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <button
+                class="theme-toggle"
+                id="themeToggle"
+                title="Превключи тема"
+              >
+                <i class="fas fa-moon"></i>
+              </button>
             </li>
             <li class="nav-item">
               <a class="nav-link text-danger" href="#" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Изход
+                <i class="fas fa-sign-out-alt me-1"></i>Изход
               </a>
             </li>
           </ul>
@@ -113,243 +660,270 @@
       </div>
     </nav>
 
+    <!-- Spacer for fixed navbar -->
+    <div style="height: 80px"></div>
+
+    <!-- Admin Hero -->
+    <section class="admin-hero">
+      <div class="admin-welcome">
+        <h1 class="admin-title">
+          <i class="fas fa-tools me-3"></i>Администраторски панел
+        </h1>
+        <p class="admin-subtitle">
+          Управлявайте системата HelpChain и следете ключовите метрики
+        </p>
+        <div class="admin-badges">
+          <span class="admin-badge">
+            <i class="fas fa-shield-alt me-1"></i>Администратор
+          </span>
+          <span class="admin-badge">
+            <i class="fas fa-clock me-1"></i>{{ moment().format('DD/MM/YYYY
+            HH:mm') }}
+          </span>
+          <span class="admin-badge">
+            <i class="fas fa-server me-1"></i>Система активна
+          </span>
+        </div>
+      </div>
+    </section>
+
     <div class="container-fluid mt-4">
-      <div class="row">
-        <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-              <h1 class="h3 mb-0">
-                <i class="fas fa-tools text-danger"></i> Администраторски панел
-              </h1>
-              <p class="text-muted mb-0">
-                Добре дошли в системата за управление на HelpChain
-              </p>
-            </div>
-            <div class="text-end">
-              <small class="text-muted">
-                <i class="fas fa-clock"></i> {{ moment().format('DD/MM/YYYY
-                HH:mm') }}
-              </small>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Статистика -->
+      <!-- Stats Overview -->
       <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-          <div class="card stats-card admin-card">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                  <h5 class="card-title mb-1">
-                    <i class="fas fa-users"></i> Доброволци
-                  </h5>
-                  <h3 class="mb-0">{{ volunteers_count or 0 }}</h3>
-                </div>
-                <div class="text-end">
-                  <i class="fas fa-users fa-2x opacity-75"></i>
-                </div>
-              </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card-modern fade-in">
+            <div
+              class="stats-icon-modern"
+              style="background: var(--primary-gradient)"
+            >
+              <i class="fas fa-users"></i>
             </div>
+            <div class="stats-value-modern">{{ volunteers_count or 0 }}</div>
+            <p class="stats-label-modern">Доброволци</p>
           </div>
         </div>
 
-        <div class="col-md-3 mb-3">
-          <div class="card stats-card admin-card">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                  <h5 class="card-title mb-1">
-                    <i class="fas fa-clipboard-list"></i> Заявки
-                  </h5>
-                  <h3 class="mb-0">{{ requests_count or 0 }}</h3>
-                </div>
-                <div class="text-end">
-                  <i class="fas fa-clipboard-list fa-2x opacity-75"></i>
-                </div>
-              </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card-modern fade-in">
+            <div
+              class="stats-icon-modern"
+              style="background: var(--success-gradient)"
+            >
+              <i class="fas fa-clipboard-list"></i>
             </div>
+            <div class="stats-value-modern">{{ requests_count or 0 }}</div>
+            <p class="stats-label-modern">Заявки</p>
           </div>
         </div>
 
-        <div class="col-md-3 mb-3">
-          <div class="card stats-card admin-card">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                  <h5 class="card-title mb-1">
-                    <i class="fas fa-user-shield"></i> Администратори
-                  </h5>
-                  <h3 class="mb-0">{{ admins_count or 0 }}</h3>
-                </div>
-                <div class="text-end">
-                  <i class="fas fa-user-shield fa-2x opacity-75"></i>
-                </div>
-              </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card-modern fade-in">
+            <div
+              class="stats-icon-modern"
+              style="background: var(--warning-gradient)"
+            >
+              <i class="fas fa-user-shield"></i>
             </div>
+            <div class="stats-value-modern">{{ admins_count or 0 }}</div>
+            <p class="stats-label-modern">Администратори</p>
           </div>
         </div>
 
-        <div class="col-md-3 mb-3">
-          <div class="card stats-card admin-card">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <div class="flex-grow-1">
-                  <h5 class="card-title mb-1">
-                    <i class="fas fa-chart-line"></i> Активност
-                  </h5>
-                  <h3 class="mb-0">{{ active_sessions or 0 }}</h3>
-                </div>
-                <div class="text-end">
-                  <i class="fas fa-chart-line fa-2x opacity-75"></i>
-                </div>
-              </div>
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card-modern fade-in">
+            <div
+              class="stats-icon-modern"
+              style="background: var(--info-gradient)"
+            >
+              <i class="fas fa-chart-line"></i>
             </div>
+            <div class="stats-value-modern">{{ active_sessions or 0 }}</div>
+            <p class="stats-label-modern">Активни сесии</p>
           </div>
         </div>
       </div>
 
-      <!-- Бързи действия -->
-      <div class="row mb-4">
-        <div class="col-12">
-          <h4 class="mb-3">
-            <i class="fas fa-bolt text-warning"></i> Бързи действия
-          </h4>
+      <!-- Quick Actions -->
+      <div class="actions-section fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="mb-0">
+            <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
+          </h3>
+          <small class="text-muted">Кликнете върху действие за достъп</small>
+        </div>
+
+        <div class="actions-grid">
+          <a href="/admin_volunteers" class="action-card-modern">
+            <div class="action-icon-modern">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="action-title-modern">Управление на доброволци</div>
+            <div class="action-description-modern">
+              Добавяне, редактиране и управление на доброволци в системата.
+              Преглед на профили и активност.
+            </div>
+          </a>
+
+          <a href="/admin_requests" class="action-card-modern">
+            <div class="action-icon-modern">
+              <i class="fas fa-clipboard-list"></i>
+            </div>
+            <div class="action-title-modern">Управление на заявки</div>
+            <div class="action-description-modern">
+              Преглед и управление на всички заявки за помощ. Присвояване на
+              доброволци и проследяване.
+            </div>
+          </a>
+
+          <a href="/admin/analytics" class="action-card-modern">
+            <div class="action-icon-modern">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <div class="action-title-modern">Аналитика и статистика</div>
+            <div class="action-description-modern">
+              Подробни метрики, графики и аналитика на системата. Проследяване
+              на ефективността.
+            </div>
+          </a>
+
+          <a href="/admin_roles" class="action-card-modern">
+            <div class="action-icon-modern">
+              <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="action-title-modern">Роли и потребители</div>
+            <div class="action-description-modern">
+              Управление на роли, разрешения и потребителски акаунти. Настройки
+              за сигурност.
+            </div>
+          </a>
+
+          <a href="/admin_logs" class="action-card-modern">
+            <div class="action-icon-modern">
+              <i class="fas fa-history"></i>
+            </div>
+            <div class="action-title-modern">Системни логове</div>
+            <div class="action-description-modern">
+              Преглед на системни логове и одит на действията. Проследяване на
+              промени и грешки.
+            </div>
+          </a>
+
+          <a href="/admin/export" class="action-card-modern">
+            <div class="action-icon-modern">
+              <i class="fas fa-download"></i>
+            </div>
+            <div class="action-title-modern">Експорт на данни</div>
+            <div class="action-description-modern">
+              Експортиране на данни в различни формати. Създаване на отчети и
+              архиви.
+            </div>
+          </a>
+
+          <a href="/admin/2fa" class="action-card-modern">
+            <div class="action-icon-modern">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="action-title-modern">Двуфакторна автентикация</div>
+            <div class="action-description-modern">
+              Управление на 2FA настройки за администратори. Подобряване на
+              сигурността.
+            </div>
+          </a>
+
+          <a href="/admin/settings" class="action-card-modern">
+            <div class="action-icon-modern">
+              <i class="fas fa-cogs"></i>
+            </div>
+            <div class="action-title-modern">Системни настройки</div>
+            <div class="action-description-modern">
+              Конфигурация и настройки на системата. Персонализиране на
+              функционалности.
+            </div>
+          </a>
         </div>
       </div>
 
-      <div class="row">
-        <div class="col-md-4 mb-3">
-          <div class="card admin-card h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-users fa-3x text-primary mb-3"></i>
-              <h5 class="card-title">Управление на доброволци</h5>
-              <p class="card-text text-muted">
-                Добавяне, редактиране и управление на доброволци в системата
-              </p>
-              <a href="/admin_volunteers" class="btn btn-primary">
-                <i class="fas fa-arrow-right"></i> Отиди
-              </a>
-            </div>
-          </div>
+      <!-- System Information -->
+      <div class="system-info-card fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Системна информация
+          </h3>
+          <button
+            class="btn btn-primary-modern btn-modern btn-sm"
+            onclick="refreshSystemInfo()"
+          >
+            <i class="fas fa-sync-alt me-1"></i>Обнови
+          </button>
         </div>
 
-        <div class="col-md-4 mb-3">
-          <div class="card admin-card h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-clipboard-list fa-3x text-success mb-3"></i>
-              <h5 class="card-title">Управление на заявки</h5>
-              <p class="card-text text-muted">
-                Преглед и управление на всички заявки за помощ
-              </p>
-              <a href="/admin_requests" class="btn btn-success">
-                <i class="fas fa-arrow-right"></i> Отиди
-              </a>
-            </div>
+        <div class="system-info-grid">
+          <div class="info-item">
+            <div class="info-label">Версия</div>
+            <div class="info-value">HelpChain v1.0.0</div>
+            <span class="info-status status-active">Стабилна</span>
           </div>
-        </div>
 
-        <div class="col-md-4 mb-3">
-          <div class="card admin-card h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
-              <h5 class="card-title">Аналитика и статистика</h5>
-              <p class="card-text text-muted">
-                Преглед на метрики, графики и аналитика на системата
-              </p>
-              <a href="/admin/analytics" class="btn btn-info">
-                <i class="fas fa-arrow-right"></i> Отиди
-              </a>
-            </div>
+          <div class="info-item">
+            <div class="info-label">База данни</div>
+            <div class="info-value">SQLite</div>
+            <small class="text-muted"
+              >Последна актуализация: {{ moment().format('DD/MM/YYYY') }}</small
+            >
           </div>
-        </div>
 
-        <div class="col-md-4 mb-3">
-          <div class="card admin-card h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-user-shield fa-3x text-warning mb-3"></i>
-              <h5 class="card-title">Роли и потребители</h5>
-              <p class="card-text text-muted">
-                Управление на роли, разрешения и потребителски акаунти
-              </p>
-              <a href="/admin_roles" class="btn btn-warning">
-                <i class="fas fa-arrow-right"></i> Отиди
-              </a>
+          <div class="info-item">
+            <div class="info-label">Администратор</div>
+            <div class="info-value">
+              {{ current_user.username if current_user else 'Неизвестен' }}
             </div>
+            <small class="text-muted">Активна сесия</small>
           </div>
-        </div>
 
-        <div class="col-md-4 mb-3">
-          <div class="card admin-card h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-history fa-3x text-secondary mb-3"></i>
-              <h5 class="card-title">Системни логове</h5>
-              <p class="card-text text-muted">
-                Преглед на системни логове и одит на действията
-              </p>
-              <a href="/admin_logs" class="btn btn-secondary">
-                <i class="fas fa-arrow-right"></i> Отиди
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-          <div class="card admin-card h-100">
-            <div class="card-body text-center">
-              <i class="fas fa-cogs fa-3x text-danger mb-3"></i>
-              <h5 class="card-title">Системни настройки</h5>
-              <p class="card-text text-muted">
-                Конфигурация и настройки на системата
-              </p>
-              <a href="/admin/settings" class="btn btn-danger">
-                <i class="fas fa-arrow-right"></i> Отиди
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Системна информация -->
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h5 class="mb-0">
-                <i class="fas fa-info-circle"></i> Системна информация
-              </h5>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-4">
-                  <strong>Версия:</strong> HelpChain v1.0.0<br />
-                  <strong>Статус:</strong>
-                  <span class="badge bg-success">
-                    <i class="fas fa-check-circle"></i> Активна
-                  </span>
-                </div>
-                <div class="col-md-4">
-                  <strong>База данни:</strong> SQLite<br />
-                  <strong>Последна актуализация:</strong> {{
-                  moment().format('DD/MM/YYYY') }}
-                </div>
-                <div class="col-md-4">
-                  <strong>Администратор:</strong> {{ current_user.username if
-                  current_user else 'Неизвестен' }}<br />
-                  <strong>Сесия:</strong> Активна
-                </div>
-              </div>
-            </div>
+          <div class="info-item">
+            <div class="info-label">Сървър</div>
+            <div class="info-value">Python Flask</div>
+            <small class="text-muted">Port: 8000</small>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
     <script>
+      // Theme Toggle Functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const html = document.documentElement;
+      const themeIcon = themeToggle.querySelector("i");
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "light";
+      html.setAttribute("data-theme", savedTheme);
+      updateThemeIcon(savedTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        html.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
+      }
+
+      // Logout function
       function logout() {
-        if (confirm("Сигурни ли сте, че искате да излезете?")) {
+        if (
+          confirm(
+            "Сигурни ли сте, че искате да излезете от администраторския панел?",
+          )
+        ) {
           // Create and submit logout form
           const form = document.createElement("form");
           form.method = "POST";
@@ -358,6 +932,82 @@
           form.submit();
         }
       }
+
+      // Refresh system info
+      function refreshSystemInfo() {
+        const btn = event.target.closest("button");
+        const originalText = btn.innerHTML;
+        btn.innerHTML =
+          '<i class="fas fa-spinner fa-spin me-1"></i>Обновяване...';
+        btn.disabled = true;
+
+        // Simulate refresh (in real implementation, this would make an AJAX call)
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          showToast("Системната информация е обновена", "success");
+        }, 1500);
+      }
+
+      // Toast notifications
+      function showToast(message, type = "success") {
+        const toast = document.createElement("div");
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: ${type === "success" ? "var(--success-gradient)" : "var(--danger-gradient)"};
+          color: white;
+          padding: 1rem 1.5rem;
+          border-radius: 8px;
+          box-shadow: var(--shadow);
+          z-index: 1000;
+          animation: slideInRight 0.3s ease-out;
+        `;
+        toast.innerHTML = `<i class="fas fa-${type === "success" ? "check" : "exclamation"}-circle me-2"></i>${message}`;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.animation = "slideOutRight 0.3s ease-out";
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Add toast animations
+      const style = document.createElement("style");
+      style.textContent = `
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Initialize animations
+      document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(
+          ".stats-card-modern, .action-card-modern, .system-info-card",
+        );
+        cards.forEach((card, index) => {
+          card.style.animationDelay = `${index * 0.1}s`;
+        });
+      });
+
+      // Add hover effects to action cards
+      document.querySelectorAll(".action-card-modern").forEach((card) => {
+        card.addEventListener("mouseenter", function () {
+          this.style.transform = "translateY(-5px) scale(1.02)";
+        });
+
+        card.addEventListener("mouseleave", function () {
+          this.style.transform = "translateY(0) scale(1)";
+        });
+      });
     </script>
   </body>
 </html>

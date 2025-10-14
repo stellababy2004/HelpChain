@@ -7,7 +7,7 @@ WebRTC-based video chat functionality
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional
-from models import db, VideoChatSession, User
+from .models import db, VideoChatSession, User
 import logging
 
 logger = logging.getLogger(__name__)

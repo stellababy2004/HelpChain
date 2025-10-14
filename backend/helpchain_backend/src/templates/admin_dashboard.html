@@ -33,6 +33,9 @@ endblock %} {% block content %}
     >
       Обнови данни
     </button>
+    <a href="{{ url_for('analytics.analytics_page') }}" class="btn btn-info"
+      >Аналитика</a
+    >
     <button class="btn btn-primary" onclick="exportData()">
       Експорт заявки
     </button>

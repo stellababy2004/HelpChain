@@ -1,0 +1,443 @@
+/* HelpChain Mobile Responsiveness Improvements */
+/* Version 1.0 - October 2025 */
+
+/* ===== MOBILE FIRST APPROACH ===== */
+
+/* Base mobile styles (applied to all screen sizes) */
+@media (max-width: 575.98px) {
+  /* Container adjustments */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Typography scaling */
+  h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  h2 {
+    font-size: 1.75rem;
+    line-height: 1.3;
+  }
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.4;
+  }
+
+  /* Button improvements for touch */
+  .btn {
+    min-height: 44px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .btn:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Form improvements */
+  .form-control {
+    min-height: 44px;
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+
+  .form-label {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Navigation improvements */
+  .navbar-light {
+    padding: 0.75rem 0;
+  }
+
+  .navbar-brand-light {
+    font-size: 1.25rem;
+  }
+
+  /* Hero section mobile optimization */
+  .hero-light {
+    min-height: 70vh;
+    padding: 2rem 1rem;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-buttons .btn-light {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  /* Stats grid mobile layout */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 2rem 0;
+  }
+
+  .stat-card-light {
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .stat-number-light {
+    font-size: 2rem;
+  }
+
+  /* Features grid mobile layout */
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 2rem 0;
+  }
+
+  .feature-card-light {
+    padding: 1.5rem;
+  }
+
+  .feature-icon-light {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature-title-light {
+    font-size: 1.25rem;
+  }
+
+  /* Footer mobile layout */
+  .footer {
+    padding: 2rem 0;
+  }
+
+  .footer .row {
+    text-align: center;
+  }
+
+  .footer .col-md-4 {
+    margin-bottom: 2rem;
+  }
+
+  .footer .col-md-4:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Social links mobile */
+  .social-links {
+    justify-content: center;
+  }
+
+  .social-links a {
+    margin: 0 0.5rem;
+  }
+}
+
+/* ===== TABLET OPTIMIZATIONS ===== */
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+  /* Tablet-specific adjustments */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+  }
+
+  /* Tablet navigation */
+  .nav-menu {
+    gap: 1.5rem;
+  }
+
+  /* Footer tablet layout */
+  .footer .row {
+    text-align: left;
+  }
+
+  .footer .col-md-4 {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+
+/* Touch targets for all devices */
+@media (pointer: coarse) {
+  /* Larger touch targets */
+  .btn,
+  .nav-link,
+  .form-control,
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better spacing for touch */
+  .nav-link {
+    padding: 0.75rem 1rem;
+  }
+
+  /* Larger focus indicators */
+  .btn:focus-visible,
+  .nav-link:focus-visible,
+  .form-control:focus-visible {
+    outline-width: 3px;
+    outline-offset: 2px;
+  }
+
+  /* Better card spacing */
+  .card-light,
+  .stat-card-light,
+  .feature-card-light {
+    margin-bottom: 1rem;
+  }
+}
+
+/* ===== MOBILE NAVIGATION IMPROVEMENTS ===== */
+
+/* Mobile menu overlay */
+@media (max-width: 767.98px) {
+  .navbar-collapse {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    z-index: 1040;
+    padding: 5rem 2rem;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  [data-theme="dark"] .navbar-collapse {
+    background: rgba(0, 0, 0, 0.95);
+  }
+
+  .navbar-collapse.show {
+    display: flex;
+  }
+
+  .navbar-collapse .nav-menu {
+    flex-direction: column;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .navbar-collapse .nav-link-light {
+    font-size: 1.25rem;
+    padding: 1rem;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  /* Mobile menu toggle button */
+  .navbar-toggler {
+    border: none;
+    background: none;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+  }
+
+  .navbar-toggler:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .navbar-toggler-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    background-image: none;
+    position: relative;
+  }
+
+  .navbar-toggler-icon::before,
+  .navbar-toggler-icon::after,
+  .navbar-toggler-icon::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    transition: all 0.3s ease;
+  }
+
+  .navbar-toggler-icon::before {
+    top: 0;
+  }
+
+  .navbar-toggler-icon::after {
+    bottom: 0;
+  }
+
+  .navbar-toggler-icon::before {
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Hamburger animation */
+  .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::before {
+    transform: rotate(45deg);
+  }
+
+  .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::after {
+    transform: rotate(-45deg);
+  }
+
+  .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon::before {
+    opacity: 0;
+  }
+}
+
+/* ===== MOBILE INTERACTION IMPROVEMENTS ===== */
+
+/* Better scrolling on mobile */
+@media (max-width: 767.98px) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent horizontal scroll */
+  * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Better text selection */
+  p,
+  span,
+  div {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Better tap targets */
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: rgba(102, 126, 234, 0.1);
+    -webkit-touch-callout: none;
+  }
+
+  /* Better form inputs on mobile */
+  input[type="email"],
+  input[type="password"],
+  input[type="text"],
+  textarea {
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0.375rem;
+  }
+
+  /* Better number inputs */
+  input[type="number"] {
+    -webkit-appearance: textfield;
+    appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+/* ===== MOBILE PERFORMANCE OPTIMIZATIONS ===== */
+
+/* Reduce motion for mobile devices */
+@media (max-width: 767.98px) and (prefers-reduced-motion: no-preference) {
+  /* Lighter animations on mobile */
+  .hero-shape {
+    animation-duration: 4s;
+  }
+
+  .btn-light:hover {
+    transform: none; /* Disable hover transform on touch devices */
+  }
+
+  .stat-card-light:hover,
+  .feature-card-light:hover {
+    transform: none; /* Disable hover effects on touch devices */
+  }
+}
+
+/* ===== MOBILE ACCESSIBILITY ===== */
+
+/* Better focus management on mobile */
+@media (max-width: 767.98px) {
+  /* Larger focus indicators */
+  .btn:focus-visible,
+  .nav-link:focus-visible,
+  .form-control:focus-visible {
+    outline-width: 4px;
+    outline-offset: 3px;
+  }
+
+  /* Better keyboard navigation */
+  .skip-link {
+    top: 10px;
+    left: 10px;
+    z-index: 1050;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .skip-link:focus {
+    top: 10px;
+  }
+}
+
+/* ===== PRINT STYLES FOR MOBILE ===== */
+
+/* Hide mobile-specific elements when printing */
+@media print {
+  .navbar-toggler,
+  .skip-link,
+  .theme-toggle {
+    display: none !important;
+  }
+
+  .hero-light {
+    min-height: initial;
+    background: white !important;
+    color: black !important;
+  }
+
+  .hero-shapes {
+    display: none !important;
+  }
+}

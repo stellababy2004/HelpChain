@@ -12,8 +12,8 @@ from collections import Counter
 from sqlalchemy import func, and_
 
 # from flask import current_app  # Премахнат за избягване на circular import
-from models import (
-    db,
+from .extensions import db
+from models_with_analytics import (
     AnalyticsEvent,
     UserBehavior,
     PerformanceMetrics,
@@ -116,12 +116,10 @@ class AdvancedAnalytics:
     def _safe_database_operation(self, operation, *args, **kwargs):
         """Безопасно извършва database операция с proper Flask app context"""
         try:
-            from flask import (
-                current_app,
-            )  # Локален import за избягване на circular import
+            from flask import has_app_context, current_app
 
             # Проверяваме дали имаме Flask app context
-            if current_app:
+            if has_app_context():
                 # Ако сме в request context, изпълняваме директно
                 return operation(*args, **kwargs)
             else:
@@ -129,13 +127,6 @@ class AdvancedAnalytics:
                 logger.warning(
                     "No Flask app context - skipping database operation for thread safety"
                 )
-                return False
-        except RuntimeError as e:
-            if "application context" in str(e).lower():
-                logger.warning("Flask app context not available - operation skipped")
-                return False
-            else:
-                logger.error(f"Unexpected error in database operation: {e}")
                 return False
         except Exception as e:
             logger.error(f"Error in safe database operation: {e}")
@@ -226,6 +217,11 @@ class AdvancedAnalytics:
     def get_dashboard_analytics(self, days: int = 30) -> Dict[str, Any]:
         """Получава подробна аналитика за dashboard"""
         try:
+            from flask import current_app
+
+            if not current_app:
+                return self._get_fallback_analytics()
+
             cache_key = f"dashboard_analytics_{days}"
             if self._is_cached(cache_key):
                 return self._cache[cache_key]
@@ -256,88 +252,108 @@ class AdvancedAnalytics:
         self, start_date: datetime, end_date: datetime
     ) -> Dict[str, Any]:
         """Общи метрики за периода"""
+        try:
+            from flask import current_app
 
-        # Уникални посетители (по session_id)
-        unique_visitors = (
-            db.session.query(func.count(func.distinct(UserBehavior.session_id)))
-            .filter(UserBehavior.session_start.between(start_date, end_date))
-            .scalar()
-            or 0
-        )
+            if not current_app:
+                return {
+                    "unique_visitors": 0,
+                    "total_page_views": 0,
+                    "avg_session_time": 0,
+                    "bounce_rate": 0,
+                    "conversion_rate": 0,
+                }
 
-        # Общо page views
-        total_page_views = (
-            db.session.query(func.count(AnalyticsEvent.id))
-            .filter(
-                and_(
-                    AnalyticsEvent.event_type == "page_view",
-                    AnalyticsEvent.created_at.between(start_date, end_date),
-                )
+            # Уникални посетители (по session_id)
+            unique_visitors = (
+                db.session.query(func.count(func.distinct(UserBehavior.session_id)))
+                .filter(UserBehavior.session_start.between(start_date, end_date))
+                .scalar()
+                or 0
             )
-            .scalar()
-            or 0
-        )
 
-        # Средно време на сесия
-        avg_session_time = (
-            db.session.query(func.avg(UserBehavior.total_time_spent))
-            .filter(UserBehavior.session_start.between(start_date, end_date))
-            .scalar()
-            or 0
-        )
-
-        # Bounce rate
-        total_sessions = (
-            db.session.query(func.count(UserBehavior.id))
-            .filter(UserBehavior.session_start.between(start_date, end_date))
-            .scalar()
-            or 0
-        )
-
-        bounced_sessions = (
-            db.session.query(func.count(UserBehavior.id))
-            .filter(
-                and_(
-                    UserBehavior.bounce_rate,
-                    UserBehavior.session_start.between(start_date, end_date),
+            # Общо page views
+            total_page_views = (
+                db.session.query(func.count(AnalyticsEvent.id))
+                .filter(
+                    and_(
+                        AnalyticsEvent.event_type == "page_view",
+                        AnalyticsEvent.created_at.between(start_date, end_date),
+                    )
                 )
+                .scalar()
+                or 0
             )
-            .scalar()
-            or 0
-        )
 
-        bounce_rate = (
-            (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
-        )
+            # Средно време на сесия
+            avg_session_time = (
+                db.session.query(func.avg(UserBehavior.total_time_spent))
+                .filter(UserBehavior.session_start.between(start_date, end_date))
+                .scalar()
+                or 0
+            )
 
-        # Конверсии
-        conversions = (
-            db.session.query(func.count(UserBehavior.id))
-            .filter(
-                and_(
-                    UserBehavior.conversion_action.isnot(None),
-                    UserBehavior.session_start.between(start_date, end_date),
+            # Bounce rate
+            total_sessions = (
+                db.session.query(func.count(UserBehavior.id))
+                .filter(UserBehavior.session_start.between(start_date, end_date))
+                .scalar()
+                or 0
+            )
+
+            bounced_sessions = (
+                db.session.query(func.count(UserBehavior.id))
+                .filter(
+                    and_(
+                        UserBehavior.bounce_rate,
+                        UserBehavior.session_start.between(start_date, end_date),
+                    )
                 )
+                .scalar()
+                or 0
             )
-            .scalar()
-            or 0
-        )
 
-        conversion_rate = (
-            (conversions / total_sessions * 100) if total_sessions > 0 else 0
-        )
+            bounce_rate = (
+                (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
+            )
 
-        return {
-            "unique_visitors": unique_visitors,
-            "total_page_views": total_page_views,
-            "avg_session_time": (
-                round(avg_session_time / 60, 2) if avg_session_time else 0
-            ),  # в минути
-            "bounce_rate": round(bounce_rate, 2),
-            "total_sessions": total_sessions,
-            "conversions": conversions,
-            "conversion_rate": round(conversion_rate, 2),
-        }
+            # Конверсии
+            conversions = (
+                db.session.query(func.count(UserBehavior.id))
+                .filter(
+                    and_(
+                        UserBehavior.conversion_action.isnot(None),
+                        UserBehavior.session_start.between(start_date, end_date),
+                    )
+                )
+                .scalar()
+                or 0
+            )
+
+            conversion_rate = (
+                (conversions / total_sessions * 100) if total_sessions > 0 else 0
+            )
+
+            return {
+                "unique_visitors": unique_visitors,
+                "total_page_views": total_page_views,
+                "avg_session_time": (
+                    round(avg_session_time / 60, 2) if avg_session_time else 0
+                ),  # в минути
+                "bounce_rate": round(bounce_rate, 2),
+                "total_sessions": total_sessions,
+                "conversions": conversions,
+                "conversion_rate": round(conversion_rate, 2),
+            }
+        except Exception as e:
+            logger.error(f"Error in _get_overview_metrics: {e}")
+            return {
+                "unique_visitors": 0,
+                "total_page_views": 0,
+                "avg_session_time": 0,
+                "bounce_rate": 0,
+                "conversion_rate": 0,
+            }
 
     def _get_user_engagement(
         self, start_date: datetime, end_date: datetime

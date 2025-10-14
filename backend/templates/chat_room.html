@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="bg">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,7 +27,7 @@
             background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
             padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
 
@@ -43,7 +44,7 @@
         }
 
         .back-btn {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
             padding: 0.5rem 1rem;
@@ -53,7 +54,7 @@
         }
 
         .back-btn:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
             color: white;
         }
 
@@ -86,7 +87,7 @@
             color: #333;
             margin-right: auto;
             border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .message.system {
@@ -238,7 +239,7 @@
             top: 100px;
             background: white;
             border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
             padding: 1rem;
             max-width: 250px;
             display: none;
@@ -256,7 +257,7 @@
             width: 50px;
             height: 50px;
             cursor: pointer;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
             z-index: 1001;
         }
 
@@ -287,8 +288,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 768px) {
@@ -313,6 +321,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="chat-container">
         <!-- Chat Header -->
@@ -350,7 +359,8 @@
             <button class="file-btn" onclick="document.getElementById('fileInput').click()" title="Прикачи файл">
                 <i class="fas fa-paperclip"></i>
             </button>
-            <input type="text" id="messageInput" class="message-input" placeholder="Напишете съобщение..." maxlength="1000">
+            <input type="text" id="messageInput" class="message-input" placeholder="Напишете съобщение..."
+                maxlength="1000">
             <button class="send-btn" id="sendButton" onclick="sendMessage()" disabled title="Изпрати съобщение">
                 <i class="fas fa-paper-plane"></i>
             </button>
@@ -386,35 +396,35 @@
             });
 
             // Handle room joined
-            socket.on('room_joined', function(data) {
+            socket.on('room_joined', function (data) {
                 console.log('Joined room:', data);
                 loadMessages(data.messages);
                 loadParticipants(data.participants);
             });
 
             // Handle new messages
-            socket.on('new_message', function(message) {
+            socket.on('new_message', function (message) {
                 addMessage(message, false);
             });
 
             // Handle typing indicators
-            socket.on('user_typing', function(data) {
+            socket.on('user_typing', function (data) {
                 showTypingIndicator(data);
             });
 
             // Handle user joined/left
-            socket.on('user_joined_chat', function(data) {
+            socket.on('user_joined_chat', function (data) {
                 addSystemMessage(`${data.user_name} се присъедини към чата`);
                 updateParticipantStatus(data.user_name, data.user_type, true);
             });
 
-            socket.on('user_left_chat', function(data) {
+            socket.on('user_left_chat', function (data) {
                 addSystemMessage(`${data.user_name} напусна чата`);
                 updateParticipantStatus(data.user_name, data.user_type, false);
             });
 
             // Handle errors
-            socket.on('error', function(data) {
+            socket.on('error', function (data) {
                 console.error('Socket error:', data.message);
                 alert('Грешка: ' + data.message);
             });
@@ -541,7 +551,7 @@
         }
 
         // Handle file upload
-        document.getElementById('fileInput').addEventListener('change', function(e) {
+        document.getElementById('fileInput').addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -553,7 +563,7 @@
 
             // Read file as base64
             const reader = new FileReader();
-            reader.onload = function(event) {
+            reader.onload = function (event) {
                 const fileData = event.target.result;
 
                 socket.emit('upload_file', {
@@ -572,7 +582,7 @@
         });
 
         // Handle typing
-        document.getElementById('messageInput').addEventListener('input', function() {
+        document.getElementById('messageInput').addEventListener('input', function () {
             updateSendButton();
 
             // Send typing indicator
@@ -596,7 +606,7 @@
         });
 
         // Handle Enter key
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+        document.getElementById('messageInput').addEventListener('keypress', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
@@ -656,13 +666,13 @@
         }
 
         // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             initSocket();
             updateSendButton();
         });
 
         // Handle page unload
-        window.addEventListener('beforeunload', function() {
+        window.addEventListener('beforeunload', function () {
             if (socket) {
                 socket.emit('leave_chat_room', {
                     room_id: roomId,
@@ -673,4 +683,5 @@
         });
     </script>
 </body>
+
 </html>

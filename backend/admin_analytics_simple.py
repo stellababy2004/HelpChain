@@ -7,7 +7,7 @@
 
 from datetime import datetime, timedelta
 from sqlalchemy import func
-from models import db, Volunteer
+from .models import db, Volunteer
 
 
 class AnalyticsEngine:

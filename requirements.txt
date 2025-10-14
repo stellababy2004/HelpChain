@@ -19,3 +19,11 @@ aiortc
 opencv-python
 asgiref
 sentry-sdk[flask]
+# Security updates for vulnerable dependencies
+urllib3>=2.5.0
+requests>=2.32.4
+Pillow>=11.3.0
+gradio>=5.35.0
+starlette>=0.47.2
+transformers>=4.53.0
+regex>=2025.2.10

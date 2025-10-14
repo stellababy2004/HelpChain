@@ -1,120 +1,120 @@
-&lt;!DOCTYPE html&gt;
-&lt;html lang="bg"&gt;
-&lt;head&gt;
-&lt;meta charset="UTF-8"&gt;
-&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-&lt;title&gt;Управление на роли - {{ user.username }} - HelpChain&lt;/title&gt;
-&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
-&lt;link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"&gt;
-&lt;/head&gt;
-&lt;body&gt;
-&lt;nav class="navbar navbar-expand-lg navbar-dark bg-primary"&gt;
-&lt;div class="container"&gt;
-&lt;a class="navbar-brand" href="#"&gt;
-&lt;i class="fas fa-user-tag"&gt;&lt;/i&gt; Роли на {{ user.username }}
-&lt;/a&gt;
-&lt;div class="navbar-nav ms-auto"&gt;
-&lt;a class="nav-link" href="{{ url_for('admin_roles.roles_dashboard') }}"&gt;
-&lt;i class="fas fa-arrow-left"&gt;&lt;/i&gt; Обратно
-&lt;/a&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/nav&gt;
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Управление на роли - {{ user.username }} - HelpChain</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<div class="container">
+<a class="navbar-brand" href="#">
+<i class="fas fa-user-tag"></i> Роли на {{ user.username }}
+</a>
+<div class="navbar-nav ms-auto">
+<a class="nav-link" href="{{ url_for('admin_roles.roles_dashboard') }}">
+<i class="fas fa-arrow-left"></i> Обратно
+</a>
+</div>
+</div>
+</nav>
 
-&lt;div class="container mt-4"&gt;
-&lt;div class="row justify-content-center"&gt;
-&lt;div class="col-md-8"&gt;
-&lt;div class="card"&gt;
-&lt;div class="card-header"&gt;
-&lt;h4&gt;&lt;i class="fas fa-user"&gt;&lt;/i&gt; {{ user.username }}&lt;/h4&gt;
-&lt;p class="mb-0 text-muted"&gt;{{ user.email or 'Няма имейл' }}&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="card-body"&gt;
-&lt;form method="post"&gt;
-&lt;div class="mb-3"&gt;
-&lt;label class="form-label"&gt;Присвоени роли&lt;/label&gt;
-&lt;div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;"&gt;
+<div class="container mt-4">
+<div class="row justify-content-center">
+<div class="col-md-8">
+<div class="card">
+<div class="card-header">
+<h4><i class="fas fa-user"></i> {{ user.username }}</h4>
+<p class="mb-0 text-muted">{{ user.email or 'Няма имейл' }}</p>
+</div>
+<div class="card-body">
+<form method="post">
+<div class="mb-3">
+<label class="form-label">Присвоени роли</label>
+<div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
 {% for role in roles %}
-&lt;div class="form-check"&gt;
-&lt;input class="form-check-input" type="checkbox" id="role_{{ role.id }}" name="roles" value="{{ role.id }}"
-{% if role.id in current_roles %}checked{% endif %}&gt;
-&lt;label class="form-check-label" for="role_{{ role.id }}"&gt;
-&lt;strong&gt;{{ role.name }}&lt;/strong&gt;
+<div class="form-check">
+<input class="form-check-input" type="checkbox" id="role_{{ role.id }}" name="roles" value="{{ role.id }}"
+{% if role.id in current_roles %}checked{% endif %}>
+<label class="form-check-label" for="role_{{ role.id }}">
+<strong>{{ role.name }}</strong>
 {% if role.description %}
-&lt;br&gt;&lt;small class="text-muted"&gt;{{ role.description }}&lt;/small&gt;
+<br><small class="text-muted">{{ role.description }}</small>
 {% endif %}
 {% if role.is_system_role %}
-&lt;span class="badge bg-secondary ms-2"&gt;Системна&lt;/span&gt;
+<span class="badge bg-secondary ms-2">Системна</span>
 {% endif %}
-&lt;/label&gt;
-&lt;/div&gt;
+</label>
+</div>
 {% endfor %}
-&lt;/div&gt;
-&lt;div class="form-text"&gt;Изберете ролите, които този потребител ще има&lt;/div&gt;
-&lt;/div&gt;
+</div>
+<div class="form-text">Изберете ролите, които този потребител ще има</div>
+</div>
 
-&lt;div class="alert alert-info"&gt;
-&lt;i class="fas fa-info-circle"&gt;&lt;/i&gt;
-&lt;strong&gt;Забележка:&lt;/strong&gt; Промените в ролите влизат в сила веднага. Уверете се, че разбирате последствията
+<div class="alert alert-info">
+<i class="fas fa-info-circle"></i>
+<strong>Забележка:</strong> Промените в ролите влизат в сила веднага. Уверете се, че разбирате последствията
 от присвояването на определени роли.
-&lt;/div&gt;
+</div>
 
-&lt;div class="d-grid gap-2 d-md-flex justify-content-md-end"&gt;
-&lt;a href="{{ url_for('admin_roles.roles_dashboard') }}" class="btn btn-secondary"&gt;
-&lt;i class="fas fa-times"&gt;&lt;/i&gt; Отказ
-&lt;/a&gt;
-&lt;button type="submit" class="btn btn-success"&gt;
-&lt;i class="fas fa-save"&gt;&lt;/i&gt; Запази роли
-&lt;/button&gt;
-&lt;/div&gt;
-&lt;/form&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+<div class="d-grid gap-2 d-md-flex justify-content-md-end">
+<a href="{{ url_for('admin_roles.roles_dashboard') }}" class="btn btn-secondary">
+<i class="fas fa-times"></i> Отказ
+</a>
+<button type="submit" class="btn btn-success">
+<i class="fas fa-save"></i> Запази роли
+</button>
+</div>
+</form>
+</div>
+</div>
 
-&lt;!-- Current Permissions Preview --&gt;
-&lt;div class="card mt-4"&gt;
-&lt;div class="card-header"&gt;
-&lt;h5&gt;&lt;i class="fas fa-eye"&gt;&lt;/i&gt; Преглед на текущи права&lt;/h5&gt;
-&lt;/div&gt;
-&lt;div class="card-body"&gt;
-&lt;p&gt;&lt;strong&gt;Текущи роли:&lt;/strong&gt;&lt;/p&gt;
-&lt;div class="mb-3"&gt;
+<!-- Current Permissions Preview -->
+<div class="card mt-4">
+<div class="card-header">
+<h5><i class="fas fa-eye"></i> Преглед на текущи права</h5>
+</div>
+<div class="card-body">
+<p><strong>Текущи роли:</strong></p>
+<div class="mb-3">
 {% for role in roles %}
 {% if role.id in current_roles %}
-&lt;span class="badge bg-primary me-2"&gt;{{ role.name }}&lt;/span&gt;
+<span class="badge bg-primary me-2">{{ role.name }}</span>
 {% endif %}
 {% endfor %}
 {% if not current_roles %}
-&lt;span class="text-muted"&gt;Няма присвоени роли&lt;/span&gt;
+<span class="text-muted">Няма присвоени роли</span>
 {% endif %}
-&lt;/div&gt;
+</div>
 
-&lt;p&gt;&lt;strong&gt;Права от ролите:&lt;/strong&gt;&lt;/p&gt;
-&lt;div&gt;
+<p><strong>Права от ролите:</strong></p>
+<div>
 {% set user_permissions = [] %}
 {% for role in roles %}
 {% if role.id in current_roles %}
-{% for perm in role.role_permissions %}
-{% if perm.permission.codename not in user_permissions %}
-{% set _ = user_permissions.append(perm.permission.codename) %}
+{% for rp in role.role_permissions %}
+{% if rp.permission.codename not in user_permissions %}
+{% do user_permissions.append(rp.permission.codename) %}
 {% endif %}
 {% endfor %}
 {% endif %}
 {% endfor %}
 
 {% for perm_codename in user_permissions %}
-&lt;span class="badge bg-light text-dark me-1 mb-1"&gt;{{ perm_codename }}&lt;/span&gt;
+<span class="badge bg-light text-dark me-1 mb-1">{{ perm_codename }}</span>
 {% endfor %}
 {% if not user_permissions %}
-&lt;span class="text-muted"&gt;Няма права&lt;/span&gt;
+<span class="text-muted">Няма права</span>
 {% endif %}
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
-&lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

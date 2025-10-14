@@ -3,8 +3,17 @@ Admin routes for role and user management
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from models import User, Role, Permission, UserRole, RolePermission, db
-from permissions import require_permission
+
+# Try relative imports first, fall back to absolute imports for standalone execution
+try:
+    from .models import User, Role, Permission, UserRole, RolePermission
+    from .extensions import db
+    from .permissions import require_permission
+except ImportError:
+    from models import User, Role, Permission, UserRole, RolePermission
+    from extensions import db
+    from permissions import require_permission
+
 from werkzeug.security import generate_password_hash
 
 admin_roles_bp = Blueprint("admin_roles", __name__)
@@ -66,7 +75,7 @@ def create_role():
 
         # Assign permissions
         for perm_id in permission_ids:
-            permission = Permission.query.get(int(perm_id))
+            permission = db.session.get(Permission, int(perm_id))
             if permission:
                 role_permission = RolePermission(
                     role_id=role.id, permission_id=permission.id
@@ -115,7 +124,7 @@ def edit_role(role_id):
 
         # Add new permissions
         for perm_id in permission_ids:
-            permission = Permission.query.get(int(perm_id))
+            permission = db.session.get(Permission, int(perm_id))
             if permission:
                 role_permission = RolePermission(
                     role_id=role.id, permission_id=permission.id
@@ -180,7 +189,7 @@ def manage_user_roles(user_id):
 
         # Add new roles
         for role_id in role_ids:
-            role = Role.query.get(int(role_id))
+            role = db.session.get(Role, int(role_id))
             if role:
                 user_role = UserRole(
                     user_id=user.id, role_id=role.id, assigned_by=session.get("user_id")

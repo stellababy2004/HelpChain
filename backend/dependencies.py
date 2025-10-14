@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from models import User
+from .models import User
 from db import get_db  # адаптирай към твоя get_db / session
 
 oauth2_scheme = ...  # ...existing code...

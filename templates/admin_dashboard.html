@@ -59,8 +59,23 @@
         --text-color: var(--text-dark);
       }
 
-      * {
+      .stats-card.clickable-card {
+        cursor: pointer;
         transition: all 0.3s ease;
+      }
+
+      .stats-card.clickable-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .stats-card.clickable-card:active {
+        transform: translateY(-2px);
+      }
+
+      .stats-card.clickable-card:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
       }
 
       body {
@@ -689,7 +704,13 @@
       <!-- Stats Overview -->
       <div class="row mb-4">
         <div class="col-xl-3 col-md-6">
-          <div class="stats-card fade-in">
+          <div
+            class="stats-card fade-in clickable-card"
+            onclick="viewAllRequests()"
+            role="button"
+            tabindex="0"
+            aria-label="Виж всички заявки"
+          >
             <div class="stats-icon" style="background: var(--primary-gradient)">
               <i class="fas fa-clipboard-list text-white"></i>
             </div>
@@ -704,7 +725,13 @@
         </div>
 
         <div class="col-xl-3 col-md-6">
-          <div class="stats-card fade-in">
+          <div
+            class="stats-card fade-in clickable-card"
+            onclick="viewVolunteers()"
+            role="button"
+            tabindex="0"
+            aria-label="Управление на доброволци"
+          >
             <div class="stats-icon" style="background: var(--success-gradient)">
               <i class="fas fa-users text-white"></i>
             </div>
@@ -719,7 +746,13 @@
         </div>
 
         <div class="col-xl-3 col-md-6">
-          <div class="stats-card fade-in">
+          <div
+            class="stats-card fade-in clickable-card"
+            onclick="viewPendingRequests()"
+            role="button"
+            tabindex="0"
+            aria-label="Виж чакащите заявки"
+          >
             <div class="stats-icon" style="background: var(--warning-gradient)">
               <i class="fas fa-clock text-white"></i>
             </div>
@@ -734,7 +767,13 @@
         </div>
 
         <div class="col-xl-3 col-md-6">
-          <div class="stats-card fade-in">
+          <div
+            class="stats-card fade-in clickable-card"
+            onclick="viewCompletedRequests()"
+            role="button"
+            tabindex="0"
+            aria-label="Виж завършените заявки"
+          >
             <div class="stats-icon" style="background: var(--info-gradient)">
               <i class="fas fa-check-circle text-white"></i>
             </div>
@@ -1143,6 +1182,65 @@
           }
         });
       }, 30000); // Update every 30 seconds
+    </script>
+    <script>
+      // Функции за навигация на кликаемите карти
+      function viewAllRequests() {
+        window.location.href = "/admin_dashboard?filter=all";
+      }
+
+      function viewVolunteers() {
+        window.location.href = "/admin_volunteers";
+      }
+
+      function viewPendingRequests() {
+        window.location.href = "/admin_dashboard?filter=pending";
+      }
+
+      function viewCompletedRequests() {
+        window.location.href = "/admin_dashboard?filter=completed";
+      }
+
+      // Функции за управление на заявките
+      function viewRequest(requestId) {
+        window.location.href = "/admin_request_details/" + requestId;
+      }
+
+      function assignVolunteer(requestId) {
+        // Отваря модал или пренасочва към страница за присвояване
+        window.location.href = "/admin_assign_volunteer/" + requestId;
+      }
+
+      function updateStatus(requestId, status) {
+        if (
+          confirm(
+            "Сигурни ли сте, че искате да промените статуса на тази заявка?",
+          )
+        ) {
+          fetch("/admin_update_request_status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              request_id: requestId,
+              status: status,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                location.reload();
+              } else {
+                alert("Грешка при обновяване на статуса: " + data.message);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("Възникна грешка при обновяване на статуса");
+            });
+        }
+      }
     </script>
   </body>
 </html>

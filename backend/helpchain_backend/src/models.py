@@ -4,17 +4,7 @@ from datetime import datetime
 import pyotp
 from werkzeug.security import generate_password_hash, check_password_hash
 
-db = SQLAlchemy()
-
-
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True)
-    email = db.Column(db.String(120), unique=True)
-    password = db.Column(db.String(128))
-    citizen_id = db.Column(db.String(10), unique=True, nullable=True)  # ЕГН (10 цифри)
-    role = db.Column(db.String(20), default="user")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+from .extensions import db
 
 
 class Request(db.Model):

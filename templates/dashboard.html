@@ -4,69 +4,919 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard - HelpChain</title>
+
+    <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/performance-optimizations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/accessibility.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-responsiveness.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user-feedback.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation-improvements.css') }}">
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+        --border-radius: 15px;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+        --shadow: var(--shadow-dark);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      * {
+        transition: all 0.3s ease;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+      }
+
+      /* Modern Navigation */
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      /* Welcome Section */
+      .welcome-section {
+        background: var(--primary-gradient);
+        padding: 60px 0;
+        color: white;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .welcome-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background:
+          radial-gradient(
+            circle at 20% 80%,
+            rgba(120, 119, 198, 0.3) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(255, 119, 198, 0.3) 0%,
+            transparent 50%
+          );
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+
+        33% {
+          transform: translateY(-20px) rotate(120deg);
+        }
+
+        66% {
+          transform: translateY(10px) rotate(240deg);
+        }
+      }
+
+      .welcome-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      .welcome-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .welcome-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+      }
+
+      /* Stats Cards */
+      .stats-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-gradient);
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+      }
+
+      .stats-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .stats-label {
+        color: #6c757d;
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      /* Quick Actions */
+      .quick-actions {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .action-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+      }
+
+      .action-card {
+        background: var(--card-bg);
+        border: 2px solid #e1e5e9;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--text-color);
+      }
+
+      [data-theme="dark"] .action-card {
+        border-color: #495057;
+      }
+
+      .action-card:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+      }
+
+      .action-icon {
+        font-size: 2.5rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+      }
+
+      .action-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .action-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+      }
+
+      /* Requests Table */
+      .requests-section {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .table-modern {
+        background: var(--card-bg);
+        color: var(--text-color);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .table-modern thead th {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+      }
+
+      .table-modern tbody tr {
+        transition: all 0.3s ease;
+      }
+
+      .table-modern tbody tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      .table-modern td {
+        padding: 1rem;
+        border-bottom: 1px solid #e1e5e9;
+        vertical-align: middle;
+      }
+
+      [data-theme="dark"] .table-modern td {
+        border-bottom-color: #495057;
+      }
+
+      .status-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-pending {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .status-in-progress {
+        background: var(--info-gradient);
+        color: white;
+      }
+
+      .status-completed {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .status-cancelled {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      /* Modern Buttons */
+      .btn-modern {
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0.25rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn-modern:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary-modern {
+        background: var(--primary-gradient);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success-modern {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .btn-warning-modern {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .btn-danger-modern {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .welcome-title {
+          font-size: 2rem;
+        }
+
+        .stats-card {
+          padding: 1.5rem;
+        }
+
+        .action-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .table-responsive {
+          font-size: 0.9rem;
+        }
+
+        .table-modern thead th,
+        .table-modern td {
+          padding: 0.75rem 0.5rem;
+        }
+      }
+    </style>
   </head>
 
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <body data-theme="light">
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="/">HelpChain</a>
-        <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="{{ url_for('profile') }}">Профил</a>
-          <a class="nav-link" href="{{ url_for('logout') }}">Изход</a>
+        <a class="navbar-brand navbar-brand-modern" href="/">HelpChain</a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          title="Отвори меню"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('submit_request') }}">
+                <i class="fas fa-plus-circle me-1"></i>Нова заявка
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('profile') }}">
+                <i class="fas fa-user me-1"></i>Профил
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            {% if current_user.is_admin %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_panel') }}">
+                <i class="fas fa-cogs me-1"></i>Админ
+              </a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">
+                <i class="fas fa-sign-out-alt me-1"></i>Изход
+              </a>
+            </li>
+            <li class="nav-item">
+              <button
+                class="theme-toggle"
+                id="themeToggle"
+                title="Превключи тема"
+              >
+                <i class="fas fa-moon"></i>
+              </button>
+            </li>
+          </ul>
+
+          <!-- Search Container -->
+          <div class="search-container d-none d-md-block ms-3">
+            <div class="search-input-group">
+              <input type="text" class="search-input" placeholder="Търси в dashboard..." aria-label="Търсене">
+              <button class="search-button" aria-label="Търси">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
 
-    <div class="container mt-5">
-      <h2>Добре дошли, {{ current_user.username }}!</h2>
+    <!-- Spacer for fixed navbar -->
+    <div style="height: 80px"></div>
 
-      {% if current_user.is_admin %}
-      <div class="alert alert-info">
-        <strong>Админ панел:</strong>
-        <a href="{{ url_for('admin_panel') }}">Управление на заявки</a>
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <div class="welcome-content">
+        <h1 class="welcome-title">
+          <i class="fas fa-user-circle me-3"></i>Добре дошли, {{ current_user.username }}!
+        </h1>
+        <p class="welcome-subtitle">
+          Управлявайте своите заявки и следете напредъка на помощта
+        </p>
       </div>
-      {% endif %}
+    </section>
 
-      <h3>Вашите заявки</h3>
-      {% if requests %}
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Име</th>
-              <th>Локация</th>
-              <th>Категория</th>
-              <th>Статус</th>
-              <th>Дата</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for request in requests %}
-            <tr>
-              <td>{{ request.id }}</td>
-              <td>{{ request.name }}</td>
-              <td>{{ request.location }}</td>
-              <td>{{ request.category }}</td>
-              <td>{{ request.status }}</td>
-              <td>
-                {{ request.created_at.strftime('%d.%m.%Y %H:%M') if
-                request.created_at else 'N/A' }}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumb-container" aria-label="Навигация">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="/">HelpChain</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+      </ol>
+    </nav>
+
+    <div class="container-fluid mt-4">
+      <!-- Stats Overview -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--success-gradient)">
+              <i class="fas fa-check-circle text-white"></i>
+            </div>
+            <div class="stats-value">{{ stats.completed_requests or 0 }}</div>
+            <p class="stats-label">Завършени заявки</p>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--warning-gradient)">
+              <i class="fas fa-clock text-white"></i>
+            </div>
+            <div class="stats-value">{{ stats.pending_requests or 0 }}</div>
+            <p class="stats-label">Чакащи заявки</p>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--info-gradient)">
+              <i class="fas fa-star text-white"></i>
+            </div>
+            <div class="stats-value">{{ "%.1f"|format(stats.average_rating or 0) }}</div>
+            <p class="stats-label">Среден рейтинг</p>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--primary-gradient)">
+              <i class="fas fa-heart text-white"></i>
+            </div>
+            <div class="stats-value">{{ stats.total_impact or 0 }}</div>
+            <p class="stats-label">Общ принос</p>
+          </div>
+        </div>
       </div>
-      {% else %}
-      <p>Нямате активни заявки.</p>
-      {% endif %}
+
+      <!-- Quick Actions -->
+      <div class="quick-actions fade-in">
+        <h4 class="mb-3">
+          <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
+        </h4>
+        <div class="action-grid">
+          <a href="{{ url_for('submit_request') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="action-title">Нова заявка</div>
+            <div class="action-description">
+              Подайте нова заявка за помощ
+            </div>
+          </a>
+
+          <a href="{{ url_for('profile') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-user-edit"></i>
+            </div>
+            <div class="action-title">Редактирай профил</div>
+            <div class="action-description">
+              Обновете информацията си
+            </div>
+          </a>
+
+          <a href="{{ url_for('my_requests') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-list"></i>
+            </div>
+            <div class="action-title">Моите заявки</div>
+            <div class="action-description">
+              Вижте всички ваши заявки
+            </div>
+          </a>
+
+          <a href="{{ url_for('feedback') }}" class="action-card">
+            <div class="action-icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <div class="action-title">Обратна връзка</div>
+            <div class="action-description">
+              Споделете мнението си
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Recent Requests -->
+      <div class="requests-section fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="mb-0">
+            <i class="fas fa-history me-2"></i>Последни заявки
+          </h4>
+          <a href="{{ url_for('my_requests') }}" class="btn btn-primary-modern btn-modern">
+            <i class="fas fa-eye me-1"></i>Виж всички
+          </a>
+        </div>
+
+        {% if requests %}
+        <div class="table-responsive">
+          <table class="table table-modern">
+            <thead>
+              <tr>
+                <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                <th><i class="fas fa-user me-1"></i>Име</th>
+                <th><i class="fas fa-map-marker-alt me-1"></i>Локация</th>
+                <th><i class="fas fa-tag me-1"></i>Категория</th>
+                <th><i class="fas fa-info-circle me-1"></i>Статус</th>
+                <th><i class="fas fa-calendar me-1"></i>Дата</th>
+                <th><i class="fas fa-cogs me-1"></i>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for request in requests[:5] %}
+              <tr>
+                <td>#{{ request.id }}</td>
+                <td>{{ request.name }}</td>
+                <td>{{ request.location }}</td>
+                <td>{{ request.category }}</td>
+                <td>
+                  <span class="status-badge status-{{ request.status|lower }}">
+                    {% if request.status == 'pending' %}Чакаща{% elif request.status == 'in_progress' %}В процес{% elif request.status == 'completed' %}Завършена{% else %}Отказана{% endif %}
+                  </span>
+                </td>
+                <td>
+                  {{ request.created_at.strftime('%d.%m.%Y') if request.created_at else 'N/A' }}
+                </td>
+                <td>
+                  <button class="btn btn-primary-modern btn-modern btn-sm" onclick="viewRequest({{ request.id }})">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  {% if request.status == 'pending' %}
+                  <button class="btn btn-danger-modern btn-modern btn-sm" onclick="cancelRequest({{ request.id }})">
+                    <i class="fas fa-times"></i>
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+          <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">Нямате активни заявки</h5>
+          <p class="text-muted">
+            Подайте първата си заявка за помощ и ние ще се погрижим за вас
+          </p>
+          <a href="{{ url_for('submit_request') }}" class="btn btn-primary-modern btn-modern">
+            <i class="fas fa-plus-circle me-1"></i>Подай заявка
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="requests-section fade-in">
+            <h4 class="mb-3">
+              <i class="fas fa-bell me-2"></i>Последна активност
+            </h4>
+            <div class="activity-feed">
+              {% if activities %}
+              {% for activity in activities[:3] %}
+              <div class="activity-item">
+                <div class="activity-icon" style="background: var(--primary-gradient)">
+                  <i class="fas fa-info-circle text-white"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">{{ activity.title }}</div>
+                  <div class="activity-meta">{{ activity.timestamp }} • {{ activity.type }}</div>
+                </div>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="text-center py-4">
+                <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                <p class="text-muted mb-0">Няма скорошна активност</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="requests-section fade-in">
+            <h4 class="mb-3">
+              <i class="fas fa-chart-line me-2"></i>Статистика
+            </h4>
+            <div class="text-center">
+              <canvas id="requestsChart" width="300" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      // Theme Toggle Functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const html = document.documentElement;
+      const themeIcon = themeToggle.querySelector("i");
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "light";
+      html.setAttribute("data-theme", savedTheme);
+      updateThemeIcon(savedTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        html.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
+      }
+
+      // Chart.js initialization
+      document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById("requestsChart").getContext("2d");
+        new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Завършени", "Чакащи", "В процес"],
+            datasets: [
+              {
+                data: [
+                  {{ stats.completed_requests or 0 }},
+                  {{ stats.pending_requests or 0 }},
+                  {{ stats.in_progress_requests or 0 }}
+                ],
+                backgroundColor: [
+                  "#28a745",
+                  "#ffc107",
+                  "#17a2b8"
+                ],
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+            },
+          },
+        });
+      });
+
+      // Action functions
+      function viewRequest(requestId) {
+        window.location.href = `/request/${requestId}`;
+      }
+
+      function cancelRequest(requestId) {
+        if (confirm("Сигурни ли сте, че искате да отмените тази заявка?")) {
+          // In real implementation, this would make an AJAX call
+          showToast("Заявката е отменена");
+          // Refresh the page or update the table
+          setTimeout(() => location.reload(), 1000);
+        }
+      }
+
+      function showToast(message) {
+        // Simple toast implementation
+        const toast = document.createElement("div");
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: var(--primary-gradient);
+          color: white;
+          padding: 1rem 1.5rem;
+          border-radius: 8px;
+          box-shadow: var(--shadow);
+          z-index: 1000;
+          animation: slideInRight 0.3s ease-out;
+        `;
+        toast.innerHTML = `<i class="fas fa-check-circle me-2"></i>${message}`;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.animation = "slideOutRight 0.3s ease-out";
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Add animations
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // Initialize animations
+      document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(".stats-card, .action-card, .requests-section");
+        cards.forEach((card, index) => {
+          card.style.animationDelay = `${index * 0.1}s`;
+        });
+      });
+    </script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" aria-label="Обратно към началото на страницата" title="Обратно към началото">
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
   </body>
 </html>

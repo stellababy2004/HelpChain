@@ -11,8 +11,8 @@ import os
 sys.path.insert(0, ".")
 
 from appy import app
-from extensions import db
-from models import User, RoleEnum
+from .extensions import db
+from .models import User, RoleEnum
 from werkzeug.security import generate_password_hash
 from permissions import initialize_default_roles_and_permissions
 

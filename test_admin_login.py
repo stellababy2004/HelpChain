@@ -3,6 +3,7 @@
 """
 Test admin login with email 2FA
 """
+
 import requests
 import time
 import re
@@ -10,7 +11,7 @@ import re
 
 def test_admin_login():
     """Test the complete admin login flow with email 2FA"""
-    base_url = "http://127.0.0.1:3000"
+    base_url = "http://127.0.0.1:8000"
 
     # Start a session to maintain cookies
     session = requests.Session()

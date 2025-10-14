@@ -13,10 +13,15 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from datetime import datetime, timedelta
 from sqlalchemy import func, or_
-from extensions import db
 from models import User, Volunteer, HelpRequest
-from models_with_analytics import AdminLog
+from models import AuditLog
 from collections import defaultdict
+
+# Import db from extensions
+try:
+    from .extensions import db
+except ImportError:
+    from extensions import db
 
 
 class AnalyticsEngine:
@@ -37,16 +42,16 @@ class AnalyticsEngine:
         start_date = end_date - timedelta(days=days)
 
         # Основни числа
-        total_requests = HelpRequest.query.count()
-        total_volunteers = Volunteer.query.count()
-        total_users = User.query.count()
+        total_requests = db.session.query(HelpRequest).count()
+        total_volunteers = db.session.query(Volunteer).count()
+        total_users = db.session.query(User).count()
 
         # Заявки за периода
-        period_requests = HelpRequest.query.filter(
-            HelpRequest.created_at >= start_date
-        ).count()
-
-        # Статуси на заявки
+        period_requests = (
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.created_at >= start_date)
+            .count()
+        )
         status_counts = (
             db.session.query(
                 HelpRequest.status, func.count(HelpRequest.id).label("count")
@@ -157,7 +162,7 @@ class AnalyticsEngine:
         }
 
         # Получаваме всички заявки
-        requests = HelpRequest.query.all()
+        requests = db.session.query(HelpRequest).all()
         category_counts = defaultdict(int)
 
         for req in requests:
@@ -184,7 +189,7 @@ class AnalyticsEngine:
         """Получава активни доброволци (с активност през последните 30 дни)"""
         # За сега връщаме всички доброволци
         # В бъдеще можем да добавим tracking на активността
-        return Volunteer.query.count()
+        return db.session.query(Volunteer).count()
 
     @staticmethod
     def get_trends_data(months=12):
@@ -199,20 +204,33 @@ class AnalyticsEngine:
             month_start = start_date + timedelta(days=i * 30)
             month_end = month_start + timedelta(days=30)
 
-            month_requests = HelpRequest.query.filter(
-                HelpRequest.created_at >= month_start,
-                HelpRequest.created_at < month_end,
-            ).count()
+            month_requests = (
+                db.session.query(HelpRequest)
+                .filter(
+                    HelpRequest.created_at >= month_start,
+                    HelpRequest.created_at < month_end,
+                )
+                .count()
+            )
 
-            month_completed = HelpRequest.query.filter(
-                HelpRequest.created_at >= month_start,
-                HelpRequest.created_at < month_end,
-                HelpRequest.status == "completed",
-            ).count()
+            month_completed = (
+                db.session.query(HelpRequest)
+                .filter(
+                    HelpRequest.created_at >= month_start,
+                    HelpRequest.created_at < month_end,
+                    HelpRequest.status == "completed",
+                )
+                .count()
+            )
 
-            month_volunteers = Volunteer.query.filter(
-                Volunteer.created_at >= month_start, Volunteer.created_at < month_end
-            ).count()
+            month_volunteers = (
+                db.session.query(Volunteer)
+                .filter(
+                    Volunteer.created_at >= month_start,
+                    Volunteer.created_at < month_end,
+                )
+                .count()
+            )
 
             trends["labels"].append(month_start.strftime("%Y-%m"))
             trends["requests"].append(month_requests)
@@ -223,8 +241,76 @@ class AnalyticsEngine:
 
     @staticmethod
     def get_predictions(months=3):
-        """Прогнозира бъдещи тенденции (опростена версия без ML)"""
-        # Взимаме исторически данни за последните 3 месеца
+        """Прогнозира бъдещи тенденции с ML insights"""
+        try:
+            from advanced_analytics import AdvancedAnalytics
+
+            advanced_analytics = AdvancedAnalytics()
+
+            # Получаваме ML insights от AdvancedAnalytics
+            ml_insights = advanced_analytics.generate_insights_report()
+
+            # Взимаме исторически данни за последните 3 месеца
+            trends = AnalyticsEngine.get_trends_data(months=3)
+
+            predictions = {
+                "labels": [],
+                "requests_predicted": [],
+                "volunteers_predicted": [],
+                "ml_insights": ml_insights,
+            }
+
+            if trends["requests"]:
+                # Използваме по-сложна прогноза базирана на ML insights
+                avg_requests = sum(trends["requests"][-3:]) / len(
+                    trends["requests"][-3:]
+                )
+                avg_volunteers = (
+                    sum(trends["volunteers"][-3:]) / len(trends["volunteers"][-3:])
+                    if trends["volunteers"]
+                    else 0
+                )
+
+                # Фактор на растеж базиран на ML insights
+                growth_factor = 1.05  # базов фактор
+
+                # Ако има аномалии в трафика, коригираме прогнозата
+                anomalies = ml_insights.get("anomalies", [])
+                if any(
+                    a.get("type") == "traffic_spike"
+                    for a in anomalies
+                    if isinstance(a, dict)
+                ):
+                    growth_factor = 1.15  # по-агресивен растеж при spike
+                elif any(
+                    a.get("type") == "traffic_drop"
+                    for a in anomalies
+                    if isinstance(a, dict)
+                ):
+                    growth_factor = 0.95  # по-консервативен при drop
+
+                # Прогнозираме за следващите months
+                for i in range(months):
+                    future_requests = int(avg_requests * (growth_factor ** (i + 1)))
+                    future_volunteers = int(avg_volunteers * (growth_factor ** (i + 1)))
+
+                    future_date = datetime.now() + timedelta(days=(i + 1) * 30)
+                    predictions["labels"].append(future_date.strftime("%Y-%m"))
+                    predictions["requests_predicted"].append(max(0, future_requests))
+                    predictions["volunteers_predicted"].append(
+                        max(0, future_volunteers)
+                    )
+
+            return predictions
+
+        except Exception as e:
+            # Fallback към опростена версия при грешка
+            print(f"ML predictions failed, using simple forecast: {e}")
+            return AnalyticsEngine._get_simple_predictions(months)
+
+    @staticmethod
+    def _get_simple_predictions(months=3):
+        """Опростена прогноза като fallback"""
         trends = AnalyticsEngine.get_trends_data(months=3)
 
         predictions = {
@@ -234,7 +320,6 @@ class AnalyticsEngine:
         }
 
         if trends["requests"]:
-            # Проста линейна прогноза - средно от последните 3 месеца
             avg_requests = sum(trends["requests"][-3:]) / len(trends["requests"][-3:])
             avg_volunteers = (
                 sum(trends["volunteers"][-3:]) / len(trends["volunteers"][-3:])
@@ -242,7 +327,6 @@ class AnalyticsEngine:
                 else 0
             )
 
-            # Прогнозираме за следващите months с лек ръст
             growth_factor = 1.1  # 10% ръст
 
             for i in range(months):
@@ -268,17 +352,21 @@ class AnalyticsEngine:
         ).scalar()
 
         # Success rate
-        total_requests = HelpRequest.query.count()
-        completed_requests = HelpRequest.query.filter_by(status="completed").count()
+        total_requests = db.session.query(HelpRequest).count()
+        completed_requests = (
+            db.session.query(HelpRequest).filter_by(status="completed").count()
+        )
         success_rate = (
             (completed_requests / total_requests * 100) if total_requests > 0 else 0
         )
 
         # Volunteer utilization
-        active_volunteers = Volunteer.query.count()
-        active_requests = HelpRequest.query.filter(
-            HelpRequest.status.in_(["pending", "active", "in_progress"])
-        ).count()
+        active_volunteers = db.session.query(Volunteer).count()
+        active_requests = (
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.status.in_(["pending", "active", "in_progress"]))
+            .count()
+        )
 
         utilization_rate = min(100, (active_requests / max(active_volunteers, 1)) * 100)
 
@@ -295,22 +383,26 @@ class AnalyticsEngine:
     @staticmethod
     def get_success_rate():
         """Изчислява success rate"""
-        total = HelpRequest.query.count()
-        completed = HelpRequest.query.filter_by(status="completed").count()
+        total = db.session.query(HelpRequest).count()
+        completed = db.session.query(HelpRequest).filter_by(status="completed").count()
         return round((completed / total * 100) if total > 0 else 0, 2)
 
     @staticmethod
     def get_geo_data():
         """Получава геолокационни данни за карта"""
         # Заявки с координати
-        requests_with_location = HelpRequest.query.filter(
-            HelpRequest.latitude.isnot(None), HelpRequest.longitude.isnot(None)
-        ).all()
+        requests_with_location = (
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.latitude.isnot(None), HelpRequest.longitude.isnot(None))
+            .all()
+        )
 
         # Доброволци с координати
-        volunteers_with_location = Volunteer.query.filter(
-            Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)
-        ).all()
+        volunteers_with_location = (
+            db.session.query(Volunteer)
+            .filter(Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None))
+            .all()
+        )
 
         return {
             "requests": [
@@ -346,16 +438,16 @@ class AnalyticsEngine:
         week_ago = datetime.now() - timedelta(days=7)
 
         return {
-            "requests_today": HelpRequest.query.filter(
-                func.date(HelpRequest.created_at) == today
-            ).count(),
-            "requests_this_week": HelpRequest.query.filter(
-                HelpRequest.created_at >= week_ago
-            ).count(),
-            "active_requests": HelpRequest.query.filter(
-                HelpRequest.status.in_(["pending", "active", "in_progress"])
-            ).count(),
-            "total_volunteers": Volunteer.query.count(),
+            "requests_today": db.session.query(HelpRequest)
+            .filter(func.date(HelpRequest.created_at) == today)
+            .count(),
+            "requests_this_week": db.session.query(HelpRequest)
+            .filter(HelpRequest.created_at >= week_ago)
+            .count(),
+            "active_requests": db.session.query(HelpRequest)
+            .filter(HelpRequest.status.in_(["pending", "active", "in_progress"]))
+            .count(),
+            "total_volunteers": db.session.query(Volunteer).count(),
             "success_rate": AnalyticsEngine.get_success_rate(),
         }
 
@@ -392,7 +484,7 @@ class RequestFilter:
         Returns:
             dict: Филтрирани резултати с пагинация
         """
-        query = HelpRequest.query
+        query = db.session.query(HelpRequest)
 
         # Филтър по статус
         if status and status != "all":
@@ -469,13 +561,19 @@ class RealtimeUpdates:
         """Получава последна активност"""
         # Последни заявки
         recent_requests = (
-            HelpRequest.query.order_by(HelpRequest.created_at.desc()).limit(limit).all()
+            db.session.query(HelpRequest)
+            .order_by(HelpRequest.created_at.desc())
+            .limit(limit)
+            .all()
         )
 
         # Последни логове (ако има)
         try:
             recent_logs = (
-                AdminLog.query.order_by(AdminLog.timestamp.desc()).limit(limit).all()
+                db.session.query(AuditLog)
+                .order_by(AuditLog.created_at.desc())
+                .limit(limit)
+                .all()
             )
         except Exception:
             recent_logs = []
@@ -524,16 +622,16 @@ class RealtimeUpdates:
         """Получава статистики за live обновяване"""
         return {
             "timestamp": datetime.now().isoformat(),
-            "requests_today": HelpRequest.query.filter(
-                func.date(HelpRequest.created_at) == datetime.now().date()
-            ).count(),
-            "requests_this_week": HelpRequest.query.filter(
-                HelpRequest.created_at >= datetime.now() - timedelta(days=7)
-            ).count(),
-            "active_requests": HelpRequest.query.filter(
-                HelpRequest.status.in_(["Pending", "Активен", "In Progress"])
-            ).count(),
-            "total_volunteers": Volunteer.query.count(),
+            "requests_today": db.session.query(HelpRequest)
+            .filter(func.date(HelpRequest.created_at) == datetime.now().date())
+            .count(),
+            "requests_this_week": db.session.query(HelpRequest)
+            .filter(HelpRequest.created_at >= datetime.now() - timedelta(days=7))
+            .count(),
+            "active_requests": db.session.query(HelpRequest)
+            .filter(HelpRequest.status.in_(["Pending", "Активен", "In Progress"]))
+            .count(),
+            "total_volunteers": db.session.query(Volunteer).count(),
             "success_rate": AnalyticsEngine.get_success_rate(),
         }
 

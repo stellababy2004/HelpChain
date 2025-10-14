@@ -87,7 +87,7 @@ try:
         # AdminSession,   # unused — премахнато
     )  # type: ignore
 except ImportError:
-    from models import (
+    from .models import (
         db,
         User,
         Volunteer,
@@ -1635,7 +1635,7 @@ def update_request_status():
 
         # Логване на действието
         try:
-            from models import AdminLog
+            from .models import AdminLog
 
             log = AdminLog(
                 admin_user_id=session.get("admin_user_id", 1),  # Default admin

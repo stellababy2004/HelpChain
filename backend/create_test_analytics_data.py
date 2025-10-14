@@ -12,7 +12,7 @@ from faker import Faker
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from appy import app, db
-from models import Volunteer, HelpRequest, AnalyticsEvent
+from .models import Volunteer, HelpRequest, AnalyticsEvent
 
 fake = Faker("bg_BG")  # Bulgarian locale
 
