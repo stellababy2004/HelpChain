@@ -3,7 +3,7 @@ services:
     name: helpchain
     env: python
     buildCommand: "pip install -r requirements.txt && cd backend && FLASK_APP=appy.py flask db upgrade"
-    startCommand: "cd backend && PYTHONPATH=/opt/render/project/src/backend:/opt/render/project/src gunicorn --bind 0.0.0.0:$PORT wsgi:application"
+    startCommand: "cd backend && python -c 'from appy import app; app.run(host=\"0.0.0.0\", port=int(__import__(\"os\").environ.get(\"PORT\", 10000)))'"
     region: frankfurt
     envVars:
       - key: FLASK_ENV
