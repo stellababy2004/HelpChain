@@ -11,12 +11,12 @@ from typing import Dict, Any
 from collections import Counter
 from sqlalchemy import func, and_
 
-# from flask import current_app  # Премахнат за избягване на circular import
-try:
-    from extensions import db
-except ImportError:
-    # Fallback for when imported as a module
-    from .extensions import db
+# Remove direct db import - we'll get it from current_app
+# try:
+#     from extensions import db
+# except ImportError:
+#     # Fallback for when imported as a module
+#     from .extensions import db
 
 try:
     from models_with_analytics import (
@@ -36,6 +36,27 @@ except ImportError:
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def get_db():
+    """Get the database instance from current Flask app context"""
+    from flask import current_app
+
+    if current_app and "sqlalchemy" in current_app.extensions:
+        return current_app.extensions["sqlalchemy"]
+    else:
+        # Fallback - try to import from extensions
+        try:
+            from extensions import db
+
+            return db
+        except ImportError:
+            try:
+                from .extensions import db
+
+                return db
+            except ImportError:
+                raise RuntimeError("Could not get database instance")
 
 
 class AdvancedAnalytics:
@@ -96,8 +117,8 @@ class AdvancedAnalytics:
                 device_type=context.get("device_type", "unknown"),
             )
 
-            db.session.add(event)
-            db.session.commit()
+            get_db().session.add(event)
+            get_db().session.commit()
 
             # Обновяваме user behavior
             self._update_user_behavior_impl(context)
@@ -106,7 +127,7 @@ class AdvancedAnalytics:
 
         except Exception as e:
             logger.error(f"Error tracking event: {e}")
-            db.session.rollback()
+            get_db().session.rollback()
             return False
 
     def track_performance(
@@ -170,14 +191,14 @@ class AdvancedAnalytics:
                 context_data=json.dumps(context.get("metadata", {})),
             )
 
-            db.session.add(metric)
-            db.session.commit()
+            get_db().session.add(metric)
+            get_db().session.commit()
 
             return True
 
         except Exception as e:
             logger.error(f"Error tracking performance: {e}")
-            db.session.rollback()
+            get_db().session.rollback()
             return False
 
     def _update_user_behavior_impl(self, context: Dict[str, Any]):
@@ -199,7 +220,7 @@ class AdvancedAnalytics:
                     device_info=context.get("device_type"),
                     location=context.get("location"),
                 )
-                db.session.add(behavior)
+                get_db().session.add(behavior)
 
             # Обновяваме метриките
             behavior.pages_visited += 1
@@ -222,11 +243,11 @@ class AdvancedAnalytics:
                 pages_sequence[-20:]
             )  # Последните 20 страници
 
-            db.session.commit()
+            get_db().session.commit()
 
         except Exception as e:
             logger.error(f"Error updating user behavior: {e}")
-            db.session.rollback()
+            get_db().session.rollback()
 
     def get_dashboard_analytics(self, days: int = 30) -> Dict[str, Any]:
         """Получава подробна аналитика за dashboard"""
@@ -280,7 +301,8 @@ class AdvancedAnalytics:
 
             # Уникални посетители (по session_id)
             unique_visitors = (
-                db.session.query(func.count(func.distinct(UserBehavior.session_id)))
+                get_db()
+                .session.query(func.count(func.distinct(UserBehavior.session_id)))
                 .filter(UserBehavior.session_start.between(start_date, end_date))
                 .scalar()
                 or 0
@@ -288,7 +310,8 @@ class AdvancedAnalytics:
 
             # Общо page views
             total_page_views = (
-                db.session.query(func.count(AnalyticsEvent.id))
+                get_db()
+                .session.query(func.count(AnalyticsEvent.id))
                 .filter(
                     and_(
                         AnalyticsEvent.event_type == "page_view",
@@ -301,7 +324,8 @@ class AdvancedAnalytics:
 
             # Средно време на сесия
             avg_session_time = (
-                db.session.query(func.avg(UserBehavior.total_time_spent))
+                get_db()
+                .session.query(func.avg(UserBehavior.total_time_spent))
                 .filter(UserBehavior.session_start.between(start_date, end_date))
                 .scalar()
                 or 0
@@ -309,14 +333,16 @@ class AdvancedAnalytics:
 
             # Bounce rate
             total_sessions = (
-                db.session.query(func.count(UserBehavior.id))
+                get_db()
+                .session.query(func.count(UserBehavior.id))
                 .filter(UserBehavior.session_start.between(start_date, end_date))
                 .scalar()
                 or 0
             )
 
             bounced_sessions = (
-                db.session.query(func.count(UserBehavior.id))
+                get_db()
+                .session.query(func.count(UserBehavior.id))
                 .filter(
                     and_(
                         UserBehavior.bounce_rate,
@@ -333,7 +359,8 @@ class AdvancedAnalytics:
 
             # Конверсии
             conversions = (
-                db.session.query(func.count(UserBehavior.id))
+                get_db()
+                .session.query(func.count(UserBehavior.id))
                 .filter(
                     and_(
                         UserBehavior.conversion_action.isnot(None),
@@ -376,7 +403,8 @@ class AdvancedAnalytics:
 
         # Най-посещавани страници
         top_pages = (
-            db.session.query(
+            get_db()
+            .session.query(
                 AnalyticsEvent.page_url, func.count(AnalyticsEvent.id).label("views")
             )
             .filter(
@@ -394,7 +422,8 @@ class AdvancedAnalytics:
 
         # Device breakdown
         device_stats = (
-            db.session.query(
+            get_db()
+            .session.query(
                 UserBehavior.device_info, func.count(UserBehavior.id).label("sessions")
             )
             .filter(UserBehavior.session_start.between(start_date, end_date))
@@ -406,7 +435,8 @@ class AdvancedAnalytics:
         hourly_activity = []
         for hour in range(24):
             count = (
-                db.session.query(func.count(AnalyticsEvent.id))
+                get_db()
+                .session.query(func.count(AnalyticsEvent.id))
                 .filter(
                     and_(
                         AnalyticsEvent.event_type == "page_view",
@@ -440,7 +470,8 @@ class AdvancedAnalytics:
 
         # По тип отговор
         response_types = (
-            db.session.query(
+            get_db()
+            .session.query(
                 ChatbotConversation.response_type,
                 func.count(ChatbotConversation.id).label("count"),
             )
@@ -503,7 +534,8 @@ class AdvancedAnalytics:
 
         # Average response times by endpoint
         response_times = (
-            db.session.query(
+            get_db()
+            .session.query(
                 PerformanceMetrics.endpoint,
                 func.avg(PerformanceMetrics.metric_value).label("avg_time"),
             )
@@ -527,7 +559,8 @@ class AdvancedAnalytics:
             next_date = current_date + timedelta(days=1)
 
             avg_response = (
-                db.session.query(func.avg(PerformanceMetrics.metric_value))
+                get_db()
+                .session.query(func.avg(PerformanceMetrics.metric_value))
                 .filter(
                     and_(
                         PerformanceMetrics.metric_type == "response_time",
@@ -562,7 +595,8 @@ class AdvancedAnalytics:
 
         # Основни стъпки във funnel-а
         total_visitors = (
-            db.session.query(func.count(func.distinct(UserBehavior.session_id)))
+            get_db()
+            .session.query(func.count(func.distinct(UserBehavior.session_id)))
             .filter(UserBehavior.session_start.between(start_date, end_date))
             .scalar()
             or 0
@@ -570,7 +604,8 @@ class AdvancedAnalytics:
 
         # Посетили форма за регистрация
         visited_register = (
-            db.session.query(func.count(func.distinct(AnalyticsEvent.user_session)))
+            get_db()
+            .session.query(func.count(func.distinct(AnalyticsEvent.user_session)))
             .filter(
                 and_(
                     AnalyticsEvent.page_url.like("%register%"),
@@ -583,7 +618,8 @@ class AdvancedAnalytics:
 
         # Започнали регистрация
         started_registration = (
-            db.session.query(func.count(func.distinct(AnalyticsEvent.user_session)))
+            get_db()
+            .session.query(func.count(func.distinct(AnalyticsEvent.user_session)))
             .filter(
                 and_(
                     AnalyticsEvent.event_action == "form_start",
@@ -597,7 +633,8 @@ class AdvancedAnalytics:
 
         # Завършили регистрация - използваме conversion_action в UserBehavior
         completed_registration = (
-            db.session.query(func.count(UserBehavior.id))
+            get_db()
+            .session.query(func.count(UserBehavior.id))
             .filter(
                 and_(
                     UserBehavior.conversion_action == "registration",
@@ -610,7 +647,8 @@ class AdvancedAnalytics:
 
         # Използвали чатбота
         chatbot_users = (
-            db.session.query(func.count(func.distinct(ChatbotConversation.session_id)))
+            get_db()
+            .session.query(func.count(func.distinct(ChatbotConversation.session_id)))
             .filter(ChatbotConversation.created_at.between(start_date, end_date))
             .scalar()
             or 0
@@ -653,7 +691,8 @@ class AdvancedAnalytics:
 
         # Най-чести entry points
         entry_pages = (
-            db.session.query(
+            get_db()
+            .session.query(
                 UserBehavior.entry_page, func.count(UserBehavior.id).label("entries")
             )
             .filter(
@@ -670,7 +709,8 @@ class AdvancedAnalytics:
 
         # Най-чести exit points
         exit_pages = (
-            db.session.query(
+            get_db()
+            .session.query(
                 UserBehavior.exit_page, func.count(UserBehavior.id).label("exits")
             )
             .filter(
@@ -729,7 +769,8 @@ class AdvancedAnalytics:
         # Активни потребители (последните 30 минути)
         thirty_min_ago = datetime.utcnow() - timedelta(minutes=30)
         active_users = (
-            db.session.query(func.count(func.distinct(UserBehavior.session_id)))
+            get_db()
+            .session.query(func.count(func.distinct(UserBehavior.session_id)))
             .filter(UserBehavior.last_activity >= thirty_min_ago)
             .scalar()
             or 0
