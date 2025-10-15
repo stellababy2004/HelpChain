@@ -11,6 +11,16 @@ try:
 except ImportError:
     from extensions import db
 
+# Import AdminUser for relationship resolution
+try:
+    from .models import AdminUser
+except ImportError:
+    try:
+        from models import AdminUser
+    except ImportError:
+        # Define a placeholder if models.py is not available
+        AdminUser = None
+
 
 class AdminRole(Enum):
     """Роли в административната система"""
