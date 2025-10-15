@@ -646,7 +646,7 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ url_for('logout') }}">
+                  <a class="dropdown-item" href="#" onclick="logout()">
                     <i class="fas fa-sign-out-alt me-2"></i>Изход
                   </a>
                 </li>
@@ -1256,6 +1256,20 @@
 
       // Also, handle the initial connection when the page loads normally
       // ... establish initial extension connection ...
+    </script>
+
+    <script>
+      // Logout function
+      function logout() {
+        if (confirm("Сигурни ли сте, че искате да излезете от администраторския панел?")) {
+          // Create and submit logout form
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = "/admin_logout";
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
     </script>
   </body>
 </html>

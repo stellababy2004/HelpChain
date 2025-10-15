@@ -239,9 +239,7 @@ class AdvancedAnalytics:
                     "title": context.get("page_title"),
                 }
             )
-            behavior.pages_sequence = json.dumps(
-                pages_sequence[-20:]
-            )  # Последните 20 страници
+            behavior.pages_sequence = json.dumps(pages_sequence[-20:])  # Последните 20 страници
 
             get_db().session.commit()
 
@@ -268,9 +266,7 @@ class AdvancedAnalytics:
                 "overview": self._get_overview_metrics(start_date, end_date),
                 "user_engagement": self._get_user_engagement(start_date, end_date),
                 "chatbot_analytics": self._get_chatbot_analytics(start_date, end_date),
-                "performance_metrics": self._get_performance_metrics(
-                    start_date, end_date
-                ),
+                "performance_metrics": self._get_performance_metrics(start_date, end_date),
                 "conversion_funnel": self._get_conversion_funnel(start_date, end_date),
                 "user_journey": self._get_user_journey_analytics(start_date, end_date),
                 "real_time": self._get_real_time_metrics(),
@@ -283,9 +279,7 @@ class AdvancedAnalytics:
             logger.error(f"Error getting dashboard analytics: {e}")
             return self._get_fallback_analytics()
 
-    def _get_overview_metrics(
-        self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    def _get_overview_metrics(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """Общи метрики за периода"""
         try:
             from flask import current_app
@@ -353,9 +347,7 @@ class AdvancedAnalytics:
                 or 0
             )
 
-            bounce_rate = (
-                (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
-            )
+            bounce_rate = (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
 
             # Конверсии
             conversions = (
@@ -371,9 +363,7 @@ class AdvancedAnalytics:
                 or 0
             )
 
-            conversion_rate = (
-                (conversions / total_sessions * 100) if total_sessions > 0 else 0
-            )
+            conversion_rate = (conversions / total_sessions * 100) if total_sessions > 0 else 0
 
             return {
                 "unique_visitors": unique_visitors,
@@ -396,17 +386,13 @@ class AdvancedAnalytics:
                 "conversion_rate": 0,
             }
 
-    def _get_user_engagement(
-        self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    def _get_user_engagement(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """Метрики за потребителската ангажираност"""
 
         # Най-посещавани страници
         top_pages = (
             get_db()
-            .session.query(
-                AnalyticsEvent.page_url, func.count(AnalyticsEvent.id).label("views")
-            )
+            .session.query(AnalyticsEvent.page_url, func.count(AnalyticsEvent.id).label("views"))
             .filter(
                 and_(
                     AnalyticsEvent.event_type == "page_view",
@@ -423,9 +409,7 @@ class AdvancedAnalytics:
         # Device breakdown
         device_stats = (
             get_db()
-            .session.query(
-                UserBehavior.device_info, func.count(UserBehavior.id).label("sessions")
-            )
+            .session.query(UserBehavior.device_info, func.count(UserBehavior.id).label("sessions"))
             .filter(UserBehavior.session_start.between(start_date, end_date))
             .group_by(UserBehavior.device_info)
             .all()
@@ -458,9 +442,7 @@ class AdvancedAnalytics:
             "hourly_activity": hourly_activity,
         }
 
-    def _get_chatbot_analytics(
-        self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    def _get_chatbot_analytics(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """Аналитика на чатбота"""
 
         # Общо разговори
@@ -491,14 +473,12 @@ class AdvancedAnalytics:
         ai_stats = {
             "total_ai_responses": len(ai_conversations),
             "avg_confidence": (
-                sum(c.ai_confidence or 0 for c in ai_conversations)
-                / len(ai_conversations)
+                sum(c.ai_confidence or 0 for c in ai_conversations) / len(ai_conversations)
                 if ai_conversations
                 else 0
             ),
             "avg_processing_time": (
-                sum(c.processing_time or 0 for c in ai_conversations)
-                / len(ai_conversations)
+                sum(c.processing_time or 0 for c in ai_conversations) / len(ai_conversations)
                 if ai_conversations
                 else 0
             ),
@@ -527,9 +507,7 @@ class AdvancedAnalytics:
             "rated_conversations": len(rated_conversations),
         }
 
-    def _get_performance_metrics(
-        self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    def _get_performance_metrics(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """Метрики за производителност"""
 
         # Average response times by endpoint
@@ -582,15 +560,12 @@ class AdvancedAnalytics:
 
         return {
             "endpoint_performance": [
-                {"endpoint": ep, "avg_time": round(time, 3)}
-                for ep, time in response_times
+                {"endpoint": ep, "avg_time": round(time, 3)} for ep, time in response_times
             ],
             "daily_performance": daily_performance,
         }
 
-    def _get_conversion_funnel(
-        self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    def _get_conversion_funnel(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """Анализ на conversion funnel"""
 
         # Основни стъпки във funnel-а
@@ -662,9 +637,7 @@ class AdvancedAnalytics:
             "chatbot_users": chatbot_users,
             "conversion_rates": {
                 "visit_to_register_page": (
-                    round(visited_register / total_visitors * 100, 2)
-                    if total_visitors
-                    else 0
+                    round(visited_register / total_visitors * 100, 2) if total_visitors else 0
                 ),
                 "register_page_to_start": (
                     round(started_registration / visited_register * 100, 2)
@@ -677,9 +650,7 @@ class AdvancedAnalytics:
                     else 0
                 ),
                 "overall_conversion": (
-                    round(completed_registration / total_visitors * 100, 2)
-                    if total_visitors
-                    else 0
+                    round(completed_registration / total_visitors * 100, 2) if total_visitors else 0
                 ),
             },
         }
@@ -692,9 +663,7 @@ class AdvancedAnalytics:
         # Най-чести entry points
         entry_pages = (
             get_db()
-            .session.query(
-                UserBehavior.entry_page, func.count(UserBehavior.id).label("entries")
-            )
+            .session.query(UserBehavior.entry_page, func.count(UserBehavior.id).label("entries"))
             .filter(
                 and_(
                     UserBehavior.session_start.between(start_date, end_date),
@@ -710,9 +679,7 @@ class AdvancedAnalytics:
         # Най-чести exit points
         exit_pages = (
             get_db()
-            .session.query(
-                UserBehavior.exit_page, func.count(UserBehavior.id).label("exits")
-            )
+            .session.query(UserBehavior.exit_page, func.count(UserBehavior.id).label("exits"))
             .filter(
                 and_(
                     UserBehavior.session_start.between(start_date, end_date),
@@ -747,17 +714,14 @@ class AdvancedAnalytics:
                 continue
 
         common_paths = [
-            {"path": path, "count": count}
-            for path, count in path_counter.most_common(10)
+            {"path": path, "count": count} for path, count in path_counter.most_common(10)
         ]
 
         return {
             "top_entry_pages": [
                 {"page": page, "entries": entries} for page, entries in entry_pages
             ],
-            "top_exit_pages": [
-                {"page": page, "exits": exits} for page, exits in exit_pages
-            ],
+            "top_exit_pages": [{"page": page, "exits": exits} for page, exits in exit_pages],
             "common_user_paths": common_paths,
         }
 

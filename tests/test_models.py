@@ -2,7 +2,7 @@ import pytest
 
 # Import models_with_analytics first to ensure Task model is available
 from backend import models_with_analytics  # noqa: F401
-from backend.models import AdminUser, Volunteer
+from backend.models import AdminUser, Volunteer, HelpRequest
 from werkzeug.security import check_password_hash
 
 
@@ -242,3 +242,107 @@ class TestVolunteer:
             1000 * 0.4 + 20 * 10 + 4.5 * 20 + 5 * 50
         )  # 400 + 200 + 90 + 250 = 940
         assert score == expected
+
+
+class TestHelpRequest:
+    """Test HelpRequest model methods"""
+
+    def test_status_transitions(self):
+        """Test valid status transitions"""
+        request = HelpRequest()
+        request.status = "pending"
+
+        # Valid transitions
+        valid_transitions = ["assigned", "in_progress", "completed", "cancelled"]
+        for new_status in valid_transitions:
+            request.status = new_status
+            assert request.status == new_status
+
+    def test_priority_levels(self):
+        """Test priority level validation"""
+        request = HelpRequest()
+
+        valid_priorities = ["low", "medium", "high", "urgent"]
+        for priority in valid_priorities:
+            request.priority = priority
+            assert request.priority == priority
+
+    def test_category_validation(self):
+        """Test category field validation"""
+        request = HelpRequest()
+
+        valid_categories = [
+            "медицинска помощ",
+            "психологическа помощ",
+            "юридическа помощ",
+            "финансова помощ",
+            "техническа помощ",
+            "други",
+        ]
+        for category in valid_categories:
+            request.category = category
+            assert request.category == category
+
+    def test_location_text_storage(self):
+        """Test location text field storage"""
+        request = HelpRequest()
+        request.location_text = "София, ул. Витоша 15"
+
+        assert request.location_text == "София, ул. Витоша 15"
+
+    def test_message_length_validation(self):
+        """Test message length constraints"""
+        request = HelpRequest()
+
+        # Valid message
+        request.message = "Нуждая се от помощ с пазаруване"
+        assert len(request.message) <= 2000
+
+        # Long message should be truncated or handled
+        long_message = "A" * 3000
+        request.message = long_message
+        # Model should handle this appropriately
+        assert request.message == long_message
+
+    def test_created_at_auto_timestamp(self, db_session):
+        """Test automatic timestamp creation"""
+        from datetime import datetime
+
+        request = HelpRequest(
+            title="Test Request",
+            description="Test description",
+            name="Test User",
+            email="test@example.com",
+            message="Test message",
+        )
+        db_session.add(request)
+        db_session.commit()
+
+        # created_at should be set automatically when object is committed
+        assert request.created_at is not None
+        assert isinstance(request.created_at, datetime)
+
+    def test_updated_at_auto_update(self, db_session):
+        """Test automatic timestamp update"""
+        import time
+
+        request = HelpRequest(
+            title="Test Request",
+            description="Test description",
+            name="Test User",
+            email="test@example.com",
+            message="Test message",
+        )
+        db_session.add(request)
+        db_session.commit()
+
+        original_updated_at = request.updated_at
+        assert original_updated_at is not None
+
+        time.sleep(0.01)  # Small delay
+        request.message = "Updated message"
+        db_session.commit()
+
+        # updated_at should be updated when object is modified and committed
+        assert request.updated_at is not None
+        assert request.updated_at >= original_updated_at

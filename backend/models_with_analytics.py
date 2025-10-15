@@ -37,16 +37,12 @@ class AdminLog(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    admin_user_id = db.Column(
-        db.Integer, db.ForeignKey("admin_users.id"), nullable=False
-    )
+    admin_user_id = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=False)
     action = db.Column(
         db.String(100), nullable=False
     )  # "approved_request", "rejected_request", etc.
     details = db.Column(db.Text, nullable=True)  # JSON или описание на действието
-    entity_type = db.Column(
-        db.String(50), nullable=True
-    )  # "help_request", "volunteer", etc.
+    entity_type = db.Column(db.String(50), nullable=True)  # "help_request", "volunteer", etc.
     entity_id = db.Column(db.Integer, nullable=True)  # ID на обекта
     ip_address = db.Column(db.String(45), nullable=True)  # IP адрес
     user_agent = db.Column(db.String(500), nullable=True)  # Browser info
@@ -63,9 +59,7 @@ class TwoFactorAuth(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    admin_user_id = db.Column(
-        db.Integer, db.ForeignKey("admin_users.id"), nullable=False
-    )
+    admin_user_id = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=False)
     session_token = db.Column(db.String(128), unique=True, nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     expires_at = db.Column(db.DateTime, nullable=False)
@@ -84,9 +78,7 @@ class AdminSession(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    admin_user_id = db.Column(
-        db.Integer, db.ForeignKey("admin_users.id"), nullable=False
-    )
+    admin_user_id = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=False)
     session_id = db.Column(db.String(128), unique=True, nullable=False)
     ip_address = db.Column(db.String(45), nullable=True)
     user_agent = db.Column(db.String(500), nullable=True)
@@ -127,14 +119,10 @@ class VideoChatSession(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(
-        db.String(128), unique=True, nullable=False
-    )  # WebRTC session ID
+    session_id = db.Column(db.String(128), unique=True, nullable=False)  # WebRTC session ID
     initiator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     participant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    status = db.Column(
-        db.String(50), default="pending"
-    )  # pending, active, completed, cancelled
+    status = db.Column(db.String(50), default="pending")  # pending, active, completed, cancelled
     started_at = db.Column(db.DateTime, nullable=True)
     ended_at = db.Column(db.DateTime, nullable=True)
     duration = db.Column(db.Integer, nullable=True)  # в секунди
@@ -159,12 +147,8 @@ class AnalyticsEvent(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    event_type = db.Column(
-        db.String(100), nullable=False
-    )  # page_view, button_click, etc.
-    event_category = db.Column(
-        db.String(100), nullable=True
-    )  # navigation, engagement, etc.
+    event_type = db.Column(db.String(100), nullable=False)  # page_view, button_click, etc.
+    event_category = db.Column(db.String(100), nullable=True)  # navigation, engagement, etc.
     event_action = db.Column(db.String(100), nullable=True)  # specific action
     event_label = db.Column(db.String(255), nullable=True)  # additional info
     event_value = db.Column(db.Integer, nullable=True)  # numeric value
@@ -220,9 +204,7 @@ class UserBehavior(db.Model):
 
     # Behavior flags
     bounce_rate = db.Column(db.Boolean, default=False)  # left after one page
-    conversion_action = db.Column(
-        db.String(100), nullable=True
-    )  # registration, request_help, etc.
+    conversion_action = db.Column(db.String(100), nullable=True)  # registration, request_help, etc.
 
     # Page sequence (JSON array of visited pages)
     pages_sequence = db.Column(db.Text, nullable=True)  # JSON string
@@ -238,9 +220,7 @@ class PerformanceMetrics(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    metric_type = db.Column(
-        db.String(100), nullable=False
-    )  # response_time, db_query_time, etc.
+    metric_type = db.Column(db.String(100), nullable=False)  # response_time, db_query_time, etc.
     metric_name = db.Column(db.String(100), nullable=False)  # specific metric name
     metric_value = db.Column(db.Float, nullable=False)
     unit = db.Column(db.String(20), nullable=True)  # ms, seconds, bytes, etc.
@@ -306,9 +286,7 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    category = db.Column(
-        db.String(100), nullable=True
-    )  # здраве, образование, социална помощ, etc.
+    category = db.Column(db.String(100), nullable=True)  # здраве, образование, социална помощ, etc.
     priority = db.Column(db.String(20), default="medium")  # low, medium, high, urgent
     status = db.Column(
         db.String(50), default="open"
@@ -322,9 +300,7 @@ class Task(db.Model):
 
     # Skills requirements
     required_skills = db.Column(db.Text, nullable=True)  # JSON array of required skills
-    preferred_skills = db.Column(
-        db.Text, nullable=True
-    )  # JSON array of preferred skills
+    preferred_skills = db.Column(db.Text, nullable=True)  # JSON array of preferred skills
 
     # Time requirements
     estimated_hours = db.Column(db.Integer, nullable=True)
@@ -339,9 +315,7 @@ class Task(db.Model):
     # Metadata
     created_by = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     volunteer = db.relationship("Volunteer", back_populates="assigned_tasks")
@@ -383,9 +357,7 @@ class TaskAssignment(db.Model):
 
     # Metadata
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     task = db.relationship("Task", backref="assignments")

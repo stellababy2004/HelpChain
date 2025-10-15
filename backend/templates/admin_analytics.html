@@ -496,9 +496,9 @@
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-value text-primary" id="totalRequests">
-          {{ dashboard_stats.totals.requests|default(0) }}
+          {{ dashboard_stats.overview.total_page_views|default(0) }}
         </div>
-        <div class="kpi-label">Общо заявки</div>
+        <div class="kpi-label">Общо посещения</div>
         <div class="kpi-trend text-success">
           <i class="fas fa-arrow-up"></i>
           <span>+12.5%</span>
@@ -507,9 +507,9 @@
 
       <div class="kpi-card">
         <div class="kpi-value text-success" id="successRate">
-          {{ "%.1f"|format(performance_metrics.success_rate|default(0)) }}%
+          {{ "%.1f"|format(dashboard_stats.overview.conversion_rate|default(0)) }}%
         </div>
-        <div class="kpi-label">Успеваемост</div>
+        <div class="kpi-label">Конверсии</div>
         <div class="kpi-trend text-success">
           <i class="fas fa-arrow-up"></i>
           <span>+2.1%</span>
@@ -519,10 +519,10 @@
       <div class="kpi-card">
         <div class="kpi-value text-info" id="avgResponseTime">
           {{
-          "%.1f"|format(performance_metrics.avg_response_time_days|default(0))
+          "%.1f"|format(dashboard_stats.overview.avg_session_time|default(0))
           }}
         </div>
-        <div class="kpi-label">Средно време за отговор (дни)</div>
+        <div class="kpi-label">Средно време на сесия (мин)</div>
         <div class="kpi-trend text-danger">
           <i class="fas fa-arrow-down"></i>
           <span>-0.5</span>
@@ -531,9 +531,9 @@
 
       <div class="kpi-card">
         <div class="kpi-value text-warning" id="activeVolunteers">
-          {{ dashboard_stats.totals.volunteers|default(0) }}
+          {{ dashboard_stats.overview.unique_visitors|default(0) }}
         </div>
-        <div class="kpi-label">Активни доброволци</div>
+        <div class="kpi-label">Уникални посетители</div>
         <div class="kpi-trend text-success">
           <i class="fas fa-arrow-up"></i>
           <span>+8.3%</span>
@@ -613,36 +613,36 @@
         <div class="col-md-3">
           <div class="text-center">
             <div class="display-4 text-primary mb-2">
-              {{ performance_metrics.utilization_rate|default(0) }}%
+              {{ dashboard_stats.overview.bounce_rate|default(0) }}%
             </div>
-            <div class="text-muted">Utilization Rate</div>
+            <div class="text-muted">Bounce Rate</div>
           </div>
         </div>
 
         <div class="col-md-3">
           <div class="text-center">
             <div class="display-4 text-success mb-2">
-              {{ performance_metrics.completed_requests|default(0) }}
+              {{ dashboard_stats.overview.conversions|default(0) }}
             </div>
-            <div class="text-muted">Завършени заявки</div>
+            <div class="text-muted">Конверсии</div>
           </div>
         </div>
 
         <div class="col-md-3">
           <div class="text-center">
             <div class="display-4 text-warning mb-2">
-              {{ performance_metrics.active_requests|default(0) }}
+              {{ dashboard_stats.overview.total_sessions|default(0) }}
             </div>
-            <div class="text-muted">Активни заявки</div>
+            <div class="text-muted">Общо сесии</div>
           </div>
         </div>
 
         <div class="col-md-3">
           <div class="text-center">
             <div class="display-4 text-info mb-2">
-              {{ performance_metrics.active_volunteers|default(0) }}
+              {{ "%.1f"|format(dashboard_stats.overview.avg_session_time|default(0)) }}
             </div>
-            <div class="text-muted">Активни доброволци</div>
+            <div class="text-muted">Средно време (мин)</div>
           </div>
         </div>
       </div>
