@@ -50,12 +50,16 @@ def notification_settings():
             #     }
             # )
 
-            return jsonify({"success": True, "message": "Настройките са запазени успешно"})
+            return jsonify(
+                {"success": True, "message": "Настройките са запазени успешно"}
+            )
 
     except Exception as e:
         current_app.logger.error(f"Error updating notification settings: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при запазване на настройките"}),
+            jsonify(
+                {"success": False, "message": "Грешка при запазване на настройките"}
+            ),
             500,
         )
 
@@ -124,7 +128,8 @@ def test_email():
                 "recipient_name": current_user.name,
                 "subject": "HelpChain - Тест имейл",
                 "content": "Това е тестов имейл за проверка на нотификационната система.",
-                "action_url": current_app.config["FRONTEND_URL"] + "/notification_preferences",
+                "action_url": current_app.config["FRONTEND_URL"]
+                + "/notification_preferences",
             },
         )
 
@@ -136,17 +141,23 @@ def test_email():
             #     context={"user_id": current_user.id}
             # )
 
-            return jsonify({"success": True, "message": "Тестовият имейл е изпратен успешно"})
+            return jsonify(
+                {"success": True, "message": "Тестовият имейл е изпратен успешно"}
+            )
         else:
             return (
-                jsonify({"success": False, "message": "Грешка при изпращане на тест имейл"}),
+                jsonify(
+                    {"success": False, "message": "Грешка при изпращане на тест имейл"}
+                ),
                 500,
             )
 
     except Exception as e:
         current_app.logger.error(f"Error sending test email: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при изпращане на тест имейл"}),
+            jsonify(
+                {"success": False, "message": "Грешка при изпращане на тест имейл"}
+            ),
             500,
         )
 
@@ -172,10 +183,14 @@ def test_sms():
             #     context={"user_id": current_user.id}
             # )
 
-            return jsonify({"success": True, "message": "Тестовото SMS е изпратено успешно"})
+            return jsonify(
+                {"success": True, "message": "Тестовото SMS е изпратено успешно"}
+            )
         else:
             return (
-                jsonify({"success": False, "message": "Грешка при изпращане на тест SMS"}),
+                jsonify(
+                    {"success": False, "message": "Грешка при изпращане на тест SMS"}
+                ),
                 500,
             )
 
@@ -263,7 +278,9 @@ def send_notification():
     except Exception as e:
         current_app.logger.error(f"Error sending notification: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при изпращане на нотификация"}),
+            jsonify(
+                {"success": False, "message": "Грешка при изпращане на нотификация"}
+            ),
             500,
         )
 
@@ -419,7 +436,9 @@ def _send_push_notification(recipient, notification_type, context):
 
         # Send push notification (would integrate with push service like FCM)
         # For now, just log it
-        current_app.logger.info(f"Push notification queued for user {recipient.id}: {push_data}")
+        current_app.logger.info(
+            f"Push notification queued for user {recipient.id}: {push_data}"
+        )
 
     except Exception as e:
         current_app.logger.error(f"Error sending push notification: {e}")
@@ -457,6 +476,8 @@ def notification_stats():
     except Exception as e:
         current_app.logger.error(f"Error getting notification stats: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при зареждане на статистики"}),
+            jsonify(
+                {"success": False, "message": "Грешка при зареждане на статистики"}
+            ),
             500,
         )

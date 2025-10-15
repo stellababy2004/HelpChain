@@ -155,9 +155,13 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.Text, nullable=True)
-    is_system_role = db.Column(db.Boolean, default=False, nullable=False)  # Cannot be deleted
+    is_system_role = db.Column(
+        db.Boolean, default=False, nullable=False
+    )  # Cannot be deleted
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relationships
     role_permissions = relationship(
@@ -170,10 +174,14 @@ class Permission(db.Model):
     __table_args__ = {"extend_existing": True}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
-    codename = db.Column(db.String(100), unique=True, nullable=False)  # For programmatic checks
+    codename = db.Column(
+        db.String(100), unique=True, nullable=False
+    )  # For programmatic checks
     description = db.Column(db.Text, nullable=True)
     category = db.Column(db.String(50), nullable=True)  # Group permissions by category
-    is_system_permission = db.Column(db.Boolean, default=False, nullable=False)  # Cannot be deleted
+    is_system_permission = db.Column(
+        db.Boolean, default=False, nullable=False
+    )  # Cannot be deleted
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -193,7 +201,9 @@ class UserRole(db.Model):
 
     # Relationships
     user = relationship("User", backref="user_roles", foreign_keys=[user_id])
-    assigner = relationship("User", foreign_keys=[assigned_by], backref="assigned_user_roles")
+    assigner = relationship(
+        "User", foreign_keys=[assigned_by], backref="assigned_user_roles"
+    )
     role = relationship("Role", backref="user_roles")
 
 
@@ -202,7 +212,9 @@ class RolePermission(db.Model):
     __table_args__ = {"extend_existing": True}
     id = db.Column(db.Integer, primary_key=True)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=False)
-    permission_id = db.Column(db.Integer, db.ForeignKey("permissions.id"), nullable=False)
+    permission_id = db.Column(
+        db.Integer, db.ForeignKey("permissions.id"), nullable=False
+    )
     granted_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     granted_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -233,7 +245,9 @@ class Volunteer(db.Model):
     total_hours_volunteered = db.Column(db.Float, default=0.0, nullable=False)
     rating = db.Column(db.Float, default=0.0, nullable=False)
     rating_count = db.Column(db.Integer, default=0, nullable=False)
-    achievements = db.Column(db.JSON, default=list, nullable=False)  # List of achievement IDs
+    achievements = db.Column(
+        db.JSON, default=list, nullable=False
+    )  # List of achievement IDs
     badges = db.Column(db.JSON, default=list, nullable=False)  # List of badge IDs
     streak_days = db.Column(db.Integer, default=0, nullable=False)
     last_activity = db.Column(db.DateTime, default=datetime.utcnow)
@@ -350,7 +364,10 @@ class Volunteer(db.Model):
     def get_total_score(self):
         """Връща общ резултат за leaderboard"""
         return (
-            self.points * 0.4 + self.total_tasks_completed * 10 + self.rating * 20 + self.level * 50
+            self.points * 0.4
+            + self.total_tasks_completed * 10
+            + self.rating * 20
+            + self.level * 50
         )
 
 
@@ -393,9 +410,13 @@ class HelpRequest(db.Model):
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(50), default="Pending")
-    priority = db.Column(db.Enum(PriorityEnum), default=PriorityEnum.normal, nullable=False)
+    priority = db.Column(
+        db.Enum(PriorityEnum), default=PriorityEnum.normal, nullable=False
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
@@ -422,7 +443,9 @@ class ChatParticipant(db.Model):
     room_id = db.Column(db.Integer, db.ForeignKey("chat_rooms.id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     volunteer_id = db.Column(db.Integer, db.ForeignKey("volunteers.id"), nullable=True)
-    participant_type = db.Column(db.String(20), nullable=False)  # user, volunteer, admin
+    participant_type = db.Column(
+        db.String(20), nullable=False
+    )  # user, volunteer, admin
     participant_name = db.Column(db.String(100), nullable=False)
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
@@ -440,14 +463,18 @@ class ChatMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     room_id = db.Column(db.Integer, db.ForeignKey("chat_rooms.id"), nullable=False)
     sender_id = db.Column(db.Integer, nullable=True)  # Can be user_id or volunteer_id
-    sender_type = db.Column(db.String(20), nullable=False)  # user, volunteer, admin, system
+    sender_type = db.Column(
+        db.String(20), nullable=False
+    )  # user, volunteer, admin, system
     sender_name = db.Column(db.String(100), nullable=False)
     message_type = db.Column(db.String(20), default="text")  # text, file, image, system
     content = db.Column(db.Text, nullable=False)
     file_url = db.Column(db.String(500), nullable=True)  # For file messages
     file_name = db.Column(db.String(255), nullable=True)
     file_size = db.Column(db.Integer, nullable=True)  # Size in bytes
-    reply_to_id = db.Column(db.Integer, db.ForeignKey("chat_messages.id"), nullable=True)
+    reply_to_id = db.Column(
+        db.Integer, db.ForeignKey("chat_messages.id"), nullable=True
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     edited_at = db.Column(db.DateTime, nullable=True)
     is_deleted = db.Column(db.Boolean, default=False)

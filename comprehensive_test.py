@@ -102,9 +102,11 @@ class HelpChainTester:
                 self.log_test(
                     "Analytics",
                     has_analytics,
-                    "Analytics data present"
-                    if has_analytics
-                    else "No analytics content found",
+                    (
+                        "Analytics data present"
+                        if has_analytics
+                        else "No analytics content found"
+                    ),
                 )
                 return has_analytics
             else:
@@ -186,9 +188,11 @@ class HelpChainTester:
                     self.log_test(
                         "AI Chatbot",
                         has_response,
-                        "AI response generated"
-                        if has_response
-                        else "No response in API",
+                        (
+                            "AI response generated"
+                            if has_response
+                            else "No response in API"
+                        ),
                     )
                     return has_response
                 else:
