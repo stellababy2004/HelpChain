@@ -7,6 +7,7 @@ Tests all major functionality: admin login, analytics, AI chatbot, volunteers, h
 import requests
 import time
 import sys
+import os
 from datetime import datetime
 
 BASE_URL = "http://127.0.0.1:5000"
@@ -48,7 +49,7 @@ class HelpChainTester:
                 return False
 
             # Test login with correct credentials
-            login_data = {"username": "admin", "password": "Admin123"}
+            login_data = {"username": "admin", "password": os.getenv("ADMIN_PASSWORD", "Admin123")}
             response = self.session.post(
                 f"{BASE_URL}/admin_login", data=login_data, allow_redirects=False
             )
