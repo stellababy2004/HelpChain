@@ -1,0 +1,19 @@
+INFO:ai_config:\u2705 OpenAI configured successfully
+2025-10-15 08:27:40,609 - INFO - Starting HelpChain application...
+2025-10-15 08:27:40,610 - INFO - Python version: 3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]
+2025-10-15 08:27:40,610 - INFO - Working directory: C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain
+2025-10-15 08:27:40,610 - INFO - Python path: ['C:\\Users\\Stella Barbarella\\OneDrive\\Documents\\chatGPT\\Projet BG\\HelpChain\\backend\\helpchain-backend\\src', 'C:\\Users\\Stella Barbarella\\OneDrive\\Documents\\chatGPT\\Projet BG\\HelpChain', 'C:\\Users\\Stella Barbarella\\OneDrive\\Documents\\chatGPT\\Projet BG\\HelpChain\\backend']...
+2025-10-15 08:27:40,610 - INFO - Starting appy.py...
+2025-10-15 08:27:40,619 - WARNING - SENTRY_DSN not configured, Sentry monitoring disabled
+2025-10-15 08:27:40,619 - INFO - Development mode, using database path: C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db
+2025-10-15 08:27:40,619 - INFO - Database URI: sqlite:///C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db
+2025-10-15 08:27:40,635 - INFO - Email configuration loaded
+2025-10-15 08:27:40,698 - INFO - Starting HelpChain application...
+2025-10-15 08:27:40,774 - INFO - Database created successfully and default roles initialized
+2025-10-15 08:27:40,774 - INFO - Starting server...
+2025-10-15 08:27:40,774 - INFO - Server starting on port 5000
+ * Serving Flask app 'appy'
+ * Debug mode: off
+2025-10-15 08:27:40,781 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-10-15 08:27:40,781 - INFO - [33mPress CTRL+C to quit[0m

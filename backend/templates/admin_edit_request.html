@@ -1,0 +1,148 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="bg"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Редактиране на заявка - HelpChain&lt;/title&gt;
+    &lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+    &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"&gt;
+    &lt;link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;nav class="navbar navbar-expand-lg navbar-dark bg-primary"&gt;
+        &lt;div class="container"&gt;
+            &lt;a class="navbar-brand" href="{{ url_for('admin_dashboard') }}"&gt;
+                &lt;i class="fas fa-hand-holding-heart"&gt;&lt;/i&gt; HelpChain - Админ панел
+            &lt;/a&gt;
+            &lt;div class="navbar-nav ms-auto"&gt;
+                &lt;span class="navbar-text me-3"&gt;
+                    Добре дошли, {{ current_user.username if current_user else 'Админ' }}
+                &lt;/span&gt;
+                &lt;a class="nav-link" href="{{ url_for('admin_logout') }}"&gt;
+                    &lt;i class="fas fa-sign-out-alt"&gt;&lt;/i&gt; Изход
+                &lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/nav&gt;
+
+    &lt;div class="container mt-4"&gt;
+        &lt;div class="row justify-content-center"&gt;
+            &lt;div class="col-md-8"&gt;
+                &lt;nav aria-label="breadcrumb"&gt;
+                    &lt;ol class="breadcrumb"&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('admin_dashboard') }}"&gt;Админ панел&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('admin_request_details', request_id=request.id) }}"&gt;Заявка #{{ request.id }}&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item active" aria-current="page"&gt;Редактиране&lt;/li&gt;
+                    &lt;/ol&gt;
+                &lt;/nav&gt;
+
+                &lt;div class="card"&gt;
+                    &lt;div class="card-header"&gt;
+                        &lt;h5 class="mb-0"&gt;
+                            &lt;i class="fas fa-edit"&gt;&lt;/i&gt; Редактиране на заявка #{{ request.id }}
+                        &lt;/h5&gt;
+                    &lt;/div&gt;
+                    &lt;div class="card-body"&gt;
+                        &lt;form method="POST" action="{{ url_for('admin_edit_request', request_id=request.id) }}"&gt;
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-md-6"&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="name" class="form-label"&gt;Име *&lt;/label&gt;
+                                        &lt;input type="text" class="form-control" id="name" name="name"
+                                               value="{{ request.name or '' }}" required&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-md-6"&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="email" class="form-label"&gt;Имейл *&lt;/label&gt;
+                                        &lt;input type="email" class="form-control" id="email" name="email"
+                                               value="{{ request.email or '' }}" required&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="row"&gt;
+                                &lt;div class="col-md-6"&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="phone" class="form-label"&gt;Телефон&lt;/label&gt;
+                                        &lt;input type="tel" class="form-control" id="phone" name="phone"
+                                               value="{{ request.phone or '' }}"&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                                &lt;div class="col-md-6"&gt;
+                                    &lt;div class="mb-3"&gt;
+                                        &lt;label for="category" class="form-label"&gt;Категория *&lt;/label&gt;
+                                        &lt;select class="form-select" id="category" name="category" required&gt;
+                                            &lt;option value=""&gt;Избери категория...&lt;/option&gt;
+                                            &lt;option value="Медицинска помощ" {% if request.title == 'Медицинска помощ' %}selected{% endif %}&gt;Медицинска помощ&lt;/option&gt;
+                                            &lt;option value="Транспорт" {% if request.title == 'Транспорт' %}selected{% endif %}&gt;Транспорт&lt;/option&gt;
+                                            &lt;option value="Домакинска помощ" {% if request.title == 'Домакинска помощ' %}selected{% endif %}&gt;Домакинска помощ&lt;/option&gt;
+                                            &lt;option value="Образование" {% if request.title == 'Образование' %}selected{% endif %}&gt;Образование&lt;/option&gt;
+                                            &lt;option value="Правна помощ" {% if request.title == 'Правна помощ' %}selected{% endif %}&gt;Правна помощ&lt;/option&gt;
+                                            &lt;option value="Психологическа помощ" {% if request.title == 'Психологическа помощ' %}selected{% endif %}&gt;Психологическа помощ&lt;/option&gt;
+                                            &lt;option value="Храна" {% if request.title == 'Храна' %}selected{% endif %}&gt;Храна&lt;/option&gt;
+                                            &lt;option value="Друго" {% if request.title == 'Друго' %}selected{% endif %}&gt;Друго&lt;/option&gt;
+                                        &lt;/select&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="mb-3"&gt;
+                                &lt;label for="location" class="form-label"&gt;Локация *&lt;/label&gt;
+                                &lt;input type="text" class="form-control" id="location" name="location"
+                                       value="{{ request.location_text or '' }}" required&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="mb-3"&gt;
+                                &lt;label for="message" class="form-label"&gt;Описание на проблема *&lt;/label&gt;
+                                &lt;textarea class="form-control" id="message" name="message" rows="5" required&gt;{{ request.message or request.description or '' }}&lt;/textarea&gt;
+                            &lt;/div&gt;
+
+                            &lt;div class="d-flex justify-content-between"&gt;
+                                &lt;a href="{{ url_for('admin_request_details', request_id=request.id) }}" class="btn btn-secondary"&gt;
+                                    &lt;i class="fas fa-arrow-left"&gt;&lt;/i&gt; Назад
+                                &lt;/a&gt;
+                                &lt;button type="submit" class="btn btn-primary"&gt;
+                                    &lt;i class="fas fa-save"&gt;&lt;/i&gt; Запази промените
+                                &lt;/button&gt;
+                            &lt;/div&gt;
+                        &lt;/form&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const category = document.getElementById('category').value;
+            const location = document.getElementById('location').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            if (!name || !email || !category || !location || !message) {
+                e.preventDefault();
+                alert('Моля, попълнете всички задължителни полета!');
+                return false;
+            }
+
+            // Basic email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                alert('Моля, въведете валиден имейл адрес!');
+                return false;
+            }
+
+            if (message.length &lt; 10) {
+                e.preventDefault();
+                alert('Описанието трябва да бъде поне 10 символа!');
+                return false;
+            }
+        });
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;

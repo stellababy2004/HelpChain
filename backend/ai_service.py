@@ -171,9 +171,7 @@ def _sanitize_api_key(raw_key: Any) -> Tuple[str, list]:
                     if not cleaned.lower().startswith("sk-"):
                         issues.append('Extracted key does not start with "sk-"')
                     if not issues:
-                        issues.append(
-                            "Extracted key from input (used for connectivity test)"
-                        )
+                        issues.append("Extracted key from input (used for connectivity test)")
         except Exception:
             # If extraction fails silently, keep original issues
             pass
@@ -242,7 +240,9 @@ class AIService:
                 user_msg_lower = user_message.lower()
 
                 if "здравей" in user_msg_lower or "здрасти" in user_msg_lower:
-                    response_text = "Здравейте! Аз съм AI асистентът на HelpChain. Как мога да ви помогна днес?"
+                    response_text = (
+                        "Здравейте! Аз съм AI асистентът на HelpChain. Как мога да ви помогна днес?"
+                    )
                 elif "helpchain" in user_msg_lower or "какво" in user_msg_lower:
                     response_text = "HelpChain е платформа за доброволчество в България. Свързваме хора нуждаещи се от помощ с проверени доброволци в София, Пловдив, Варна, Бургас и Стара Загора."
                 elif "регистрация" in user_msg_lower or "регистрирам" in user_msg_lower:
@@ -268,9 +268,7 @@ class AIService:
                 }
 
             # Prepare the conversation context
-            conversation_context = self._build_context(
-                user_message, context, detected_lang
-            )
+            conversation_context = self._build_context(user_message, context, detected_lang)
 
             # Try providers in priority order until one succeeds
             providers_to_try = sorted(
@@ -278,9 +276,7 @@ class AIService:
                 key=lambda p: p.priority,
             )
 
-            logger.info(
-                f"🤖 Trying providers in order: {[p.name for p in providers_to_try]}"
-            )
+            logger.info(f"🤖 Trying providers in order: {[p.name for p in providers_to_try]}")
 
             last_error = None
             for provider in providers_to_try:
@@ -415,9 +411,7 @@ class AIService:
                 top_k=40,
             )
 
-            response = model.generate_content(
-                context, generation_config=generation_config
-            )
+            response = model.generate_content(context, generation_config=generation_config)
 
             ai_response = response.text.strip()
             confidence = self._calculate_confidence(ai_response)
@@ -425,8 +419,7 @@ class AIService:
             return {
                 "response": ai_response,
                 "confidence": confidence,
-                "tokens_used": len(context.split())
-                + len(ai_response.split()),  # Approximate
+                "tokens_used": len(context.split()) + len(ai_response.split()),  # Approximate
                 "model": provider.model,
             }
 
@@ -543,9 +536,7 @@ class AIService:
                                             openai.api_key = provider.api_key
                                             openai.ChatCompletion.create(
                                                 model="gpt-3.5-turbo",
-                                                messages=[
-                                                    {"role": "user", "content": "Test"}
-                                                ],
+                                                messages=[{"role": "user", "content": "Test"}],
                                                 max_tokens=1,
                                             )
                                             results[name] = {
@@ -559,9 +550,7 @@ class AIService:
                                             client = openai.OpenAI()
                                             client.chat.completions.create(
                                                 model="gpt-3.5-turbo",
-                                                messages=[
-                                                    {"role": "user", "content": "Test"}
-                                                ],
+                                                messages=[{"role": "user", "content": "Test"}],
                                                 max_tokens=1,
                                             )
                                             results[name] = {
@@ -626,9 +615,7 @@ class AIService:
                 asyncio.set_event_loop(loop)
 
             # Run async function synchronously
-            return loop.run_until_complete(
-                self.generate_response(user_message, context)
-            )
+            return loop.run_until_complete(self.generate_response(user_message, context))
         except Exception as e:
             logger.error(f"Error in sync wrapper: {e}")
             return {

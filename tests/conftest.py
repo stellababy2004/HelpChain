@@ -3,6 +3,14 @@ import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+# CRITICAL: Import models_with_analytics FIRST to ensure Task model is registered
+# before Volunteer model tries to reference it
+try:
+    import models_with_analytics  # noqa: F401
+    from models_with_analytics import Task  # noqa: F401
+except ImportError:
+    pass
+
 import pytest
 
 # Добавяме helpchain-backend (родител на папката src) в началото на sys.path,
@@ -20,6 +28,9 @@ if str(HERE) not in sys.path:
 # Import models_with_analytics first to ensure Task model is available for relationships
 try:
     import models_with_analytics  # noqa: F401
+
+    # Force import of Task model to ensure it's registered
+    from models_with_analytics import Task  # noqa: F401
 except ImportError:
     pass
 
@@ -41,7 +52,9 @@ def app():
 
         app.config["TESTING"] = True
         app.config["WTF_CSRF_ENABLED"] = False  # Disable CSRF for testing
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"  # In-memory database for tests
+        app.config["SQLALCHEMY_DATABASE_URI"] = (
+            "sqlite:///:memory:"  # In-memory database for tests
+        )
         return app
     except ImportError:
         # Fallback if appy import fails
@@ -101,15 +114,21 @@ def mock_ai_service():
         "confidence": 0.8,
         "provider": "mock",
     }
+    mock_service.get_ai_status.return_value = {
+        "status": "healthy",
+        "providers": ["OpenAI GPT", "Google Gemini"],
+        "active_provider": "mock",
+    }
 
-    with patch("ai_service.ai_service", mock_service):
+    # Patch at the app level where it's imported
+    with patch("appy.ai_service", mock_service):
         yield mock_service
 
 
 @pytest.fixture
 def test_admin_user(db_session):
     """Create a test admin user."""
-    from models import AdminUser
+    from backend.models import AdminUser
 
     admin = AdminUser(username="test_admin", email="admin@test.com")
     admin.set_password("TestPass123")
@@ -121,7 +140,7 @@ def test_admin_user(db_session):
 @pytest.fixture
 def test_volunteer(db_session):
     """Create a test volunteer."""
-    from models import Volunteer
+    from backend.models import Volunteer
 
     volunteer = Volunteer(
         name="Тестов Доброволец",
@@ -137,9 +156,11 @@ def test_volunteer(db_session):
 @pytest.fixture
 def test_help_request(db_session, test_volunteer):
     """Create a test help request."""
-    from models import HelpRequest
+    from backend.models import HelpRequest
 
     request = HelpRequest(
+        title="Тестова заявка за помощ",
+        description="Това е тестова заявка за помощ",
         name="Тестов Потребител",
         email="user@test.com",
         message="Нуждая се от помощ с тестване",
@@ -170,3 +191,37 @@ def authenticated_volunteer_client(client, test_volunteer, app):
             sess["volunteer_id"] = test_volunteer.id
             sess["volunteer_name"] = test_volunteer.name
     return client
+
+
+@pytest.fixture
+def app_context(app):
+    """Provide app context for tests that need it."""
+    with app.app_context():
+        yield
+
+
+@pytest.fixture
+def db_transaction(db_session):
+    """Provide a database transaction that rolls back after test."""
+    db_session.begin_nested()
+    yield db_session
+    db_session.rollback()
+
+
+@pytest.fixture
+def temp_upload_file(tmp_path):
+    """Create a temporary file for upload testing."""
+    file_path = tmp_path / "test_file.png"
+    file_path.write_bytes(b"fake png content")
+    return file_path
+
+
+@pytest.fixture
+def init_test_data(db_session, test_admin_user, test_volunteer, test_help_request):
+    """Initialize test data for comprehensive tests."""
+    # Additional test data can be added here
+    yield {
+        "admin": test_admin_user,
+        "volunteer": test_volunteer,
+        "help_request": test_help_request,
+    }

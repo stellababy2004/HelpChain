@@ -1,0 +1,312 @@
+&lt;!DOCTYPE html&gt;
+&lt;html lang="bg"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Детайли за заявка - HelpChain&lt;/title&gt;
+    &lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+    &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"&gt;
+    &lt;link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;nav class="navbar navbar-expand-lg navbar-dark bg-primary"&gt;
+        &lt;div class="container"&gt;
+            &lt;a class="navbar-brand" href="{{ url_for('admin_dashboard') }}"&gt;
+                &lt;i class="fas fa-hand-holding-heart"&gt;&lt;/i&gt; HelpChain - Админ панел
+            &lt;/a&gt;
+            &lt;div class="navbar-nav ms-auto"&gt;
+                &lt;span class="navbar-text me-3"&gt;
+                    Добре дошли, {{ current_user.username if current_user else 'Админ' }}
+                &lt;/span&gt;
+                &lt;a class="nav-link" href="{{ url_for('admin_logout') }}"&gt;
+                    &lt;i class="fas fa-sign-out-alt"&gt;&lt;/i&gt; Изход
+                &lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/nav&gt;
+
+    &lt;div class="container mt-4"&gt;
+        &lt;div class="row"&gt;
+            &lt;div class="col-md-12"&gt;
+                &lt;nav aria-label="breadcrumb"&gt;
+                    &lt;ol class="breadcrumb"&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('admin_dashboard') }}"&gt;Админ панел&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item"&gt;&lt;a href="{{ url_for('admin_dashboard') }}"&gt;Заявки&lt;/a&gt;&lt;/li&gt;
+                        &lt;li class="breadcrumb-item active" aria-current="page"&gt;Детайли за заявка #{{ request.id }}&lt;/li&gt;
+                    &lt;/ol&gt;
+                &lt;/nav&gt;
+
+                &lt;div class="card"&gt;
+                    &lt;div class="card-header d-flex justify-content-between align-items-center"&gt;
+                        &lt;h5 class="mb-0"&gt;
+                            &lt;i class="fas fa-info-circle"&gt;&lt;/i&gt; Детайли за заявка #{{ request.id }}
+                        &lt;/h5&gt;
+                        &lt;div&gt;
+                            &lt;span class="badge
+                                {% if request.status == 'pending' %}bg-warning
+                                {% elif request.status == 'approved' %}bg-success
+                                {% elif request.status == 'assigned' %}bg-info
+                                {% elif request.status == 'in_progress' %}bg-primary
+                                {% elif request.status == 'completed' %}bg-success
+                                {% elif request.status == 'cancelled' %}bg-secondary
+                                {% else %}bg-light text-dark{% endif %}"&gt;
+                                {% if request.status == 'pending' %}Чакаща
+                                {% elif request.status == 'approved' %}Одобрена
+                                {% elif request.status == 'assigned' %}Присвоена
+                                {% elif request.status == 'in_progress' %}В процес
+                                {% elif request.status == 'completed' %}Завършена
+                                {% elif request.status == 'cancelled' %}Отказана
+                                {% else %}{{ request.status }}{% endif %}
+                            &lt;/span&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;div class="card-body"&gt;
+                        &lt;div class="row"&gt;
+                            &lt;div class="col-md-8"&gt;
+                                &lt;h6&gt;Информация за заявителя&lt;/h6&gt;
+                                &lt;table class="table table-sm"&gt;
+                                    &lt;tr&gt;
+                                        &lt;td&gt;&lt;strong&gt;Име:&lt;/strong&gt;&lt;/td&gt;
+                                        &lt;td&gt;{{ request.name or 'Няма информация' }}&lt;/td&gt;
+                                    &lt;/tr&gt;
+                                    &lt;tr&gt;
+                                        &lt;td&gt;&lt;strong&gt;Имейл:&lt;/strong&gt;&lt;/td&gt;
+                                        &lt;td&gt;{{ request.email or 'Няма информация' }}&lt;/td&gt;
+                                    &lt;/tr&gt;
+                                    &lt;tr&gt;
+                                        &lt;td&gt;&lt;strong&gt;Телефон:&lt;/strong&gt;&lt;/td&gt;
+                                        &lt;td&gt;{{ request.phone or 'Няма информация' }}&lt;/td&gt;
+                                    &lt;/tr&gt;
+                                    &lt;tr&gt;
+                                        &lt;td&gt;&lt;strong&gt;Локация:&lt;/strong&gt;&lt;/td&gt;
+                                        &lt;td&gt;{{ request.location_text or 'Няма информация' }}&lt;/td&gt;
+                                    &lt;/tr&gt;
+                                &lt;/table&gt;
+
+                                &lt;h6 class="mt-4"&gt;Детайли на заявката&lt;/h6&gt;
+                                &lt;div class="border p-3 rounded"&gt;
+                                    &lt;strong&gt;Категория:&lt;/strong&gt; {{ request.title or 'Няма категория' }}&lt;br&gt;
+                                    &lt;strong&gt;Описание:&lt;/strong&gt;&lt;br&gt;
+                                    &lt;p class="mt-2"&gt;{{ request.message or request.description or 'Няма описание' }}&lt;/p&gt;
+                                &lt;/div&gt;
+
+                                {% if request.created_at %}
+                                &lt;p class="text-muted mt-3"&gt;
+                                    &lt;small&gt;&lt;i class="fas fa-calendar"&gt;&lt;/i&gt; Създадена на: {{ request.created_at.strftime('%d.%m.%Y %H:%M') }}&lt;/small&gt;
+                                &lt;/p&gt;
+                                {% endif %}
+                            &lt;/div&gt;
+
+                            &lt;div class="col-md-4"&gt;
+                                &lt;div class="card"&gt;
+                                    &lt;div class="card-header"&gt;
+                                        &lt;h6 class="mb-0"&gt;&lt;i class="fas fa-cogs"&gt;&lt;/i&gt; Действия&lt;/h6&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="card-body"&gt;
+                                        {% if request.status == 'pending' %}
+                                            &lt;button class="btn btn-success btn-sm w-100 mb-2" onclick="approveRequest({{ request.id }})"&gt;
+                                                &lt;i class="fas fa-check"&gt;&lt;/i&gt; Одобри
+                                            &lt;/button&gt;
+                                            &lt;button class="btn btn-danger btn-sm w-100 mb-2" onclick="rejectRequest({{ request.id }})"&gt;
+                                                &lt;i class="fas fa-times"&gt;&lt;/i&gt; Отхвърли
+                                            &lt;/button&gt;
+                                        {% endif %}
+
+                                        {% if request.status == 'approved' %}
+                                            &lt;button class="btn btn-info btn-sm w-100 mb-2" onclick="assignVolunteer({{ request.id }})"&gt;
+                                                &lt;i class="fas fa-user-plus"&gt;&lt;/i&gt; Присвои доброволец
+                                            &lt;/button&gt;
+                                        {% endif %}
+
+                                        &lt;button class="btn btn-warning btn-sm w-100 mb-2" onclick="editRequest({{ request.id }})"&gt;
+                                            &lt;i class="fas fa-edit"&gt;&lt;/i&gt; Редактирай
+                                        &lt;/button&gt;
+
+                                        {% if request.status in ['pending', 'cancelled'] %}
+                                            &lt;button class="btn btn-danger btn-sm w-100" onclick="deleteRequest({{ request.id }})"&gt;
+                                                &lt;i class="fas fa-trash"&gt;&lt;/i&gt; Изтрий
+                                            &lt;/button&gt;
+                                        {% endif %}
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+
+                                {% if request.assigned_volunteer_id %}
+                                &lt;div class="card mt-3"&gt;
+                                    &lt;div class="card-header"&gt;
+                                        &lt;h6 class="mb-0"&gt;&lt;i class="fas fa-user"&gt;&lt;/i&gt; Присвоен доброволец&lt;/h6&gt;
+                                    &lt;/div&gt;
+                                    &lt;div class="card-body"&gt;
+                                        &lt;p&gt;ID: {{ request.assigned_volunteer_id }}&lt;/p&gt;
+                                        &lt;!-- TODO: Show volunteer details --&gt;
+                                    &lt;/div&gt;
+                                &lt;/div&gt;
+                                {% endif %}
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Modal for volunteer assignment --&gt;
+    &lt;div class="modal fade" id="assignVolunteerModal" tabindex="-1"&gt;
+        &lt;div class="modal-dialog"&gt;
+            &lt;div class="modal-content"&gt;
+                &lt;div class="modal-header"&gt;
+                    &lt;h5 class="modal-title"&gt;Присвои доброволец&lt;/h5&gt;
+                    &lt;button type="button" class="btn-close" data-bs-dismiss="modal"&gt;&lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div class="modal-body"&gt;
+                    &lt;form id="assignVolunteerForm"&gt;
+                        &lt;div class="mb-3"&gt;
+                            &lt;label for="volunteerSelect" class="form-label"&gt;Избери доброволец&lt;/label&gt;
+                            &lt;select class="form-select" id="volunteerSelect" name="volunteer_id" required&gt;
+                                &lt;option value=""&gt;Избери доброволец...&lt;/option&gt;
+                                &lt;!-- Volunteers will be loaded here --&gt;
+                            &lt;/select&gt;
+                        &lt;/div&gt;
+                    &lt;/form&gt;
+                &lt;/div&gt;
+                &lt;div class="modal-footer"&gt;
+                    &lt;button type="button" class="btn btn-secondary" data-bs-dismiss="modal"&gt;Отказ&lt;/button&gt;
+                    &lt;button type="button" class="btn btn-primary" onclick="submitAssignVolunteer()"&gt;Присвои&lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        let currentRequestId = null;
+
+        function approveRequest(requestId) {
+            if (confirm('Сигурни ли сте, че искате да одобрите тази заявка?')) {
+                fetch(`/admin/request/${requestId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response =&gt; response.json())
+                .then(data =&gt; {
+                    if (data.success) {
+                        alert('Заявката е одобрена успешно!');
+                        location.reload();
+                    } else {
+                        alert('Грешка: ' + data.message);
+                    }
+                })
+                .catch(error =&gt; {
+                    console.error('Error:', error);
+                    alert('Възникна грешка при одобряването');
+                });
+            }
+        }
+
+        function rejectRequest(requestId) {
+            if (confirm('Сигурни ли сте, че искате да отхвърлите тази заявка?')) {
+                fetch(`/admin/request/${requestId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response =&gt; response.json())
+                .then(data =&gt; {
+                    if (data.success) {
+                        alert('Заявката е отхвърлена!');
+                        location.reload();
+                    } else {
+                        alert('Грешка: ' + data.message);
+                    }
+                })
+                .catch(error =&gt; {
+                    console.error('Error:', error);
+                    alert('Възникна грешка при отхвърлянето');
+                });
+            }
+        }
+
+        function assignVolunteer(requestId) {
+            currentRequestId = requestId;
+            // Load volunteers
+            fetch('/api/volunteers')
+                .then(response =&gt; response.json())
+                .then(data =&gt; {
+                    const select = document.getElementById('volunteerSelect');
+                    select.innerHTML = '&lt;option value=""&gt;Избери доброволец...&lt;/option&gt;';
+                    data.volunteers.forEach(volunteer =&gt; {
+                        const option = document.createElement('option');
+                        option.value = volunteer.id;
+                        option.textContent = `${volunteer.name} (${volunteer.location || 'Няма локация'})`;
+                        select.appendChild(option);
+                    });
+                    new bootstrap.Modal(document.getElementById('assignVolunteerModal')).show();
+                })
+                .catch(error =&gt; {
+                    console.error('Error loading volunteers:', error);
+                    alert('Грешка при зареждане на доброволците');
+                });
+        }
+
+        function submitAssignVolunteer() {
+            const volunteerId = document.getElementById('volunteerSelect').value;
+            if (!volunteerId) {
+                alert('Моля, изберете доброволец');
+                return;
+            }
+
+            fetch(`/admin/request/${currentRequestId}/assign`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ volunteer_id: volunteerId })
+            })
+            .then(response =&gt; response.json())
+            .then(data =&gt; {
+                if (data.success) {
+                    alert('Доброволецът е присвоен успешно!');
+                    bootstrap.Modal.getInstance(document.getElementById('assignVolunteerModal')).hide();
+                    location.reload();
+                } else {
+                    alert('Грешка: ' + data.message);
+                }
+            })
+            .catch(error =&gt; {
+                console.error('Error:', error);
+                alert('Възникна грешка при присвояването');
+            });
+        }
+
+        function editRequest(requestId) {
+            window.location.href = `/admin/request/${requestId}/edit`;
+        }
+
+        function deleteRequest(requestId) {
+            if (confirm('Сигурни ли сте, че искате да изтриете тази заявка? Това действие е необратимо!')) {
+                fetch(`/admin/request/${requestId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response =&gt; response.json())
+                .then(data =&gt; {
+                    if (data.success) {
+                        alert('Заявката е изтрита успешно!');
+                        window.location.href = '{{ url_for("admin_dashboard") }}';
+                    } else {
+                        alert('Грешка: ' + data.message);
+                    }
+                })
+                .catch(error =&gt; {
+                    console.error('Error:', error);
+                    alert('Възникна грешка при изтриването');
+                });
+            }
+        }
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
