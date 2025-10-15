@@ -1,7 +1,6 @@
 import csv
 import json
 import logging
-import math
 import os
 import secrets
 import sys
@@ -23,17 +22,16 @@ from flask import (
     url_for,
 )
 from flask_babel import Babel, refresh
-from flask_babel import gettext as _
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_mail import Mail
 from flask_migrate import Migrate
-from flask_socketio import emit, join_room, leave_room
+from flask_socketio import leave_room
 from flask_talisman import Talisman
 from jinja2 import ChoiceLoader, FileSystemLoader
 from sqlalchemy.exc import OperationalError
-from werkzeug.utils import secure_filename
 from werkzeug.exceptions import BadRequest
+from werkzeug.utils import secure_filename
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
@@ -53,7 +51,6 @@ try:
         ChatRoom,
         HelpRequest,
         Role,
-        RoleEnum,
         User,
         UserRole,
         Volunteer,
@@ -66,7 +63,6 @@ except ImportError:
         ChatRoom,
         HelpRequest,
         Role,
-        RoleEnum,
         User,
         UserRole,
         Volunteer,
@@ -122,9 +118,6 @@ if backend_dir not in sys.path:
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Sentry for error monitoring
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
-import random
 
 # Add the backend directory to Python path for imports
 backend_dir = os.path.dirname(__file__)
@@ -4466,5 +4459,5 @@ if __name__ == "__main__":
     print("📍 http://127.0.0.1:5000")
     print("👤 Admin: admin / Admin123")
     print("Press Ctrl+C to stop")
-    debug_mode = os.getenv("FLASK_DEBUG", "True").lower() == "true"
+    debug_mode = False  # Temporarily disable debug mode
     app.run(debug=debug_mode, host="127.0.0.1", port=5000)
