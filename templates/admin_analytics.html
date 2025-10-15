@@ -540,7 +540,9 @@
 
         <div class="kpi-card">
           <div class="kpi-value text-success" id="successRate">
-            {{ "%.1f"|format(dashboard_stats.overview.conversion_rate|default(0)) }}%
+            {{
+            "%.1f"|format(dashboard_stats.overview.conversion_rate|default(0))
+            }}%
           </div>
           <div class="kpi-label">Успеваемост</div>
           <div class="kpi-trend text-success">
@@ -551,7 +553,9 @@
 
         <div class="kpi-card">
           <div class="kpi-value text-info" id="avgResponseTime">
-            {{ "%.1f"|format(dashboard_stats.overview.avg_session_time|default(0)) }}
+            {{
+            "%.1f"|format(dashboard_stats.overview.avg_session_time|default(0))
+            }}
           </div>
           <div class="kpi-label">Средно време на сесия (мин)</div>
           <div class="kpi-trend text-danger">
@@ -648,7 +652,9 @@
           <div class="col-md-3">
             <div class="text-center">
               <div class="display-4 text-primary mb-2">
-                {{ dashboard_stats.performance_metrics.endpoint_performance|length|default(0) }}
+                {{
+                dashboard_stats.performance_metrics.endpoint_performance|length|default(0)
+                }}
               </div>
               <div class="text-muted">Endpoints</div>
             </div>
@@ -657,7 +663,9 @@
           <div class="col-md-3">
             <div class="text-center">
               <div class="display-4 text-success mb-2">
-                {{ dashboard_stats.chatbot_analytics.total_conversations|default(0) }}
+                {{
+                dashboard_stats.chatbot_analytics.total_conversations|default(0)
+                }}
               </div>
               <div class="text-muted">Чатбот разговори</div>
             </div>
@@ -675,7 +683,8 @@
           <div class="col-md-3">
             <div class="text-center">
               <div class="display-4 text-info mb-2">
-                {{ dashboard_stats.chatbot_analytics.average_rating|default(0) }}
+                {{ dashboard_stats.chatbot_analytics.average_rating|default(0)
+                }}
               </div>
               <div class="text-muted">Среден рейтинг</div>
             </div>
@@ -1010,7 +1019,11 @@
 
       // Logout function
       function logout() {
-        if (confirm("Сигурни ли сте, че искате да излезете от администраторския панел?")) {
+        if (
+          confirm(
+            "Сигурни ли сте, че искате да излезете от администраторския панел?",
+          )
+        ) {
           // Create and submit logout form
           const form = document.createElement("form");
           form.method = "POST";

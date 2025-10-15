@@ -201,7 +201,9 @@ def analytics_export():
             return Response(
                 csv_data,
                 mimetype="text/csv",
-                headers={"Content-Disposition": "attachment; filename=analytics_export.csv"},
+                headers={
+                    "Content-Disposition": "attachment; filename=analytics_export.csv"
+                },
             )
         else:
             return jsonify({"error": "Unsupported export format"})

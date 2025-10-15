@@ -21,7 +21,9 @@ def test_admin_login():
         print(f"Final URL: {response.request.url}")
 
         # Check if we got redirected to admin_dashboard
-        if b"admin_dashboard" in response.data or "admin_dashboard" in str(response.data):
+        if b"admin_dashboard" in response.data or "admin_dashboard" in str(
+            response.data
+        ):
             print("SUCCESS: Admin login worked!")
             return True
         else:

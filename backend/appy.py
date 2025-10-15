@@ -255,7 +255,9 @@ def initialize_default_admin():
         db.session.flush()  # Get user ID
 
         # Assign super admin role to the user
-        superadmin_role = db.session.query(Role).filter_by(name="Супер администратор").first()
+        superadmin_role = (
+            db.session.query(Role).filter_by(name="Супер администратор").first()
+        )
         if superadmin_role:
             # Check if user already has this role
             existing_role = (
@@ -386,7 +388,9 @@ HelpChain системата
             logger.info("Email 2FA code saved to file as fallback")
             return True
         except Exception as file_e:
-            logger.error(f"Failed to save email 2FA code to file: {file_e}", exc_info=True)
+            logger.error(
+                f"Failed to save email 2FA code to file: {file_e}", exc_info=True
+            )
             return False
 
 
@@ -438,7 +442,9 @@ if celery:
     )
 
 # Задаваме SECRET_KEY за сесии и сигурност
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY", "dev-secret-key-change-in-production"
+)
 
 # Конфигурация за URL генерация извън контекста на заявка
 # app.config["SERVER_NAME"] = os.getenv("SERVER_NAME", "localhost:3000")
@@ -486,7 +492,9 @@ if os.getenv("RENDER") == "true" or os.getenv("PRODUCTION") == "true":
         # Fallback to SQLite for development/production without DATABASE_URL
         db_path = "/opt/render/project/src/volunteers.db"
         app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-        logger.info(f"Production mode detected, using fallback SQLite database: {db_path}")
+        logger.info(
+            f"Production mode detected, using fallback SQLite database: {db_path}"
+        )
 else:
     # Локално development - използвайме instance директория в root проекта
     instance_dir = os.path.join(os.path.dirname(basedir), "instance")
@@ -559,16 +567,24 @@ else:
                 if admin_user:
                     app.logger.info("Default admin user initialized for development")
                 else:
-                    app.logger.warning("Failed to initialize default admin user for development")
+                    app.logger.warning(
+                        "Failed to initialize default admin user for development"
+                    )
             except Exception as admin_error:
-                app.logger.warning(f"Admin initialization failed for development: {admin_error}")
+                app.logger.warning(
+                    f"Admin initialization failed for development: {admin_error}"
+                )
 
             # Initialize default roles and permissions for development
             try:
                 initialize_default_roles_and_permissions()
-                app.logger.info("Default roles and permissions initialized for development")
+                app.logger.info(
+                    "Default roles and permissions initialized for development"
+                )
             except Exception as roles_error:
-                app.logger.warning(f"Roles initialization failed for development: {roles_error}")
+                app.logger.warning(
+                    f"Roles initialization failed for development: {roles_error}"
+                )
 
     except Exception as e:
         app.logger.error(f"Database initialization failed for development: {e}")
@@ -617,7 +633,9 @@ def allowed_file(filename):
 
 
 # Email configuration
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "noreply@helpchain.live")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
+    "MAIL_DEFAULT_SENDER", "noreply@helpchain.live"
+)
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
 app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
@@ -808,13 +826,16 @@ def page_not_found(error):
     """Handle 404 errors with custom template"""
     app.logger.warning(f"404 error: {request.url} - {error}")
     if request.is_json or request.path.startswith("/api/"):
-        return jsonify(
-            {
-                "error": "Not Found",
-                "message": "The requested resource was not found",
-                "status_code": 404,
-            }
-        ), 404
+        return (
+            jsonify(
+                {
+                    "error": "Not Found",
+                    "message": "The requested resource was not found",
+                    "status_code": 404,
+                }
+            ),
+            404,
+        )
     return render_template("errors/404.html"), 404
 
 
@@ -843,13 +864,16 @@ def internal_server_error(error):
         app.logger.warning(f"Failed to track 500 error: {analytics_error}")
 
     if request.is_json or request.path.startswith("/api/"):
-        return jsonify(
-            {
-                "error": "Internal Server Error",
-                "message": "An unexpected error occurred. Please try again later.",
-                "status_code": 500,
-            }
-        ), 500
+        return (
+            jsonify(
+                {
+                    "error": "Internal Server Error",
+                    "message": "An unexpected error occurred. Please try again later.",
+                    "status_code": 500,
+                }
+            ),
+            500,
+        )
     return render_template("errors/500.html"), 500
 
 
@@ -858,13 +882,16 @@ def forbidden(error):
     """Handle 403 errors"""
     app.logger.warning(f"403 error: {request.url} - {error}")
     if request.is_json or request.path.startswith("/api/"):
-        return jsonify(
-            {
-                "error": "Forbidden",
-                "message": "You don't have permission to access this resource",
-                "status_code": 403,
-            }
-        ), 403
+        return (
+            jsonify(
+                {
+                    "error": "Forbidden",
+                    "message": "You don't have permission to access this resource",
+                    "status_code": 403,
+                }
+            ),
+            403,
+        )
     flash("Нямате права за достъп до тази страница.", "error")
     return redirect(url_for("index"))
 
@@ -874,14 +901,19 @@ def rate_limit_exceeded(error):
     """Handle rate limit errors"""
     app.logger.warning(f"429 error: {request.url} - Rate limit exceeded")
     if request.is_json or request.path.startswith("/api/"):
-        return jsonify(
-            {
-                "error": "Too Many Requests",
-                "message": "Rate limit exceeded. Please try again later.",
-                "status_code": 429,
-            }
-        ), 429
-    flash("Твърде много заявки. Моля, изчакайте малко преди да опитате отново.", "warning")
+        return (
+            jsonify(
+                {
+                    "error": "Too Many Requests",
+                    "message": "Rate limit exceeded. Please try again later.",
+                    "status_code": 429,
+                }
+            ),
+            429,
+        )
+    flash(
+        "Твърде много заявки. Моля, изчакайте малко преди да опитате отново.", "warning"
+    )
     return redirect(request.referrer or url_for("index"))
 
 
@@ -890,7 +922,9 @@ def index():
     # безопасно извличаме агрегати — ако моделът липсва или схемата
     # не е съвместима, връщаме fallback
     try:
-        volunteers_count = db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
+        volunteers_count = (
+            db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
+        )
     except OperationalError:
         volunteers_count = 0
     except Exception:
@@ -935,7 +969,9 @@ def index():
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     logger.info("Admin login route called")
-    logger.debug(f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}")
+    logger.debug(
+        f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}"
+    )
     error = None
     if request.method == "POST":
         logger.info("Processing admin login POST request")
@@ -973,7 +1009,9 @@ def admin_login():
                     session["admin_logged_in"] = True
                     session["admin_user_id"] = admin_user.id
                     session["admin_username"] = admin_user.username
-                    session["user_id"] = admin_user.id  # For permission system compatibility
+                    session["user_id"] = (
+                        admin_user.id
+                    )  # For permission system compatibility
                     session.permanent = True  # Make session persistent
                     logger.info(
                         f"Session set: admin_logged_in={session.get('admin_logged_in')}, "
@@ -1018,10 +1056,14 @@ def admin_dashboard():
         # Check if HelpRequest model is available
         total_requests = db.session.query(HelpRequest).count()
         pending_requests = (
-            db.session.query(HelpRequest).filter(HelpRequest.status == "pending").count()
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.status == "pending")
+            .count()
         )
         completed_requests = (
-            db.session.query(HelpRequest).filter(HelpRequest.status == "completed").count()
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.status == "completed")
+            .count()
         )
         total_volunteers = db.session.query(Volunteer).count()
     except Exception as e:
@@ -1034,14 +1076,20 @@ def admin_dashboard():
     # Get filtered requests based on filter parameter
     try:
         if filter_param == "pending":
-            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "pending")
+            requests_query = db.session.query(HelpRequest).filter(
+                HelpRequest.status == "pending"
+            )
         elif filter_param == "completed":
-            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "completed")
+            requests_query = db.session.query(HelpRequest).filter(
+                HelpRequest.status == "completed"
+            )
         else:  # "all" or default
             requests_query = db.session.query(HelpRequest)
 
         # Limit to recent requests for dashboard display
-        requests = requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
+        requests = (
+            requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
+        )
 
         # Convert to the expected format for template
         requests_data = []
@@ -1052,7 +1100,9 @@ def admin_dashboard():
                     "name": getattr(req, "name", "Неизвестно име"),
                     "status": req.status,
                     "created_at": (
-                        req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "Няма дата"
+                        req.created_at.strftime("%Y-%m-%d %H:%M")
+                        if req.created_at
+                        else "Няма дата"
                     ),
                 }
             )
@@ -1104,7 +1154,10 @@ def admin_approve_request(request_id):
         request_obj = db.session.query(HelpRequest).get_or_404(request_id)
 
         if request_obj.status != "pending":
-            return jsonify({"success": False, "message": "Заявката вече е обработена"}), 400
+            return (
+                jsonify({"success": False, "message": "Заявката вече е обработена"}),
+                400,
+            )
 
         request_obj.status = "approved"
         db.session.commit()
@@ -1127,7 +1180,10 @@ def admin_approve_request(request_id):
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error approving request {request_id}: {e}")
-        return jsonify({"success": False, "message": "Грешка при одобряване на заявката"}), 500
+        return (
+            jsonify({"success": False, "message": "Грешка при одобряване на заявката"}),
+            500,
+        )
 
 
 @app.route("/admin/request/<int:request_id>/reject", methods=["POST"])
@@ -1141,7 +1197,10 @@ def admin_reject_request(request_id):
         request_obj = db.session.query(HelpRequest).get_or_404(request_id)
 
         if request_obj.status != "pending":
-            return jsonify({"success": False, "message": "Заявката вече е обработена"}), 400
+            return (
+                jsonify({"success": False, "message": "Заявката вече е обработена"}),
+                400,
+            )
 
         request_obj.status = "rejected"
         if reason:
@@ -1168,7 +1227,10 @@ def admin_reject_request(request_id):
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error rejecting request {request_id}: {e}")
-        return jsonify({"success": False, "message": "Грешка при отхвърляне на заявката"}), 500
+        return (
+            jsonify({"success": False, "message": "Грешка при отхвърляне на заявката"}),
+            500,
+        )
 
 
 @app.route("/admin/request/<int:request_id>/assign", methods=["POST"])
@@ -1180,15 +1242,24 @@ def admin_assign_volunteer(request_id):
         volunteer_id = data.get("volunteer_id")
 
         if not volunteer_id:
-            return jsonify({"success": False, "message": "Не е посочен доброволец"}), 400
+            return (
+                jsonify({"success": False, "message": "Не е посочен доброволец"}),
+                400,
+            )
 
         request_obj = db.session.query(HelpRequest).get_or_404(request_id)
         volunteer = db.session.query(Volunteer).get_or_404(volunteer_id)
 
         if request_obj.status != "approved":
-            return jsonify(
-                {"success": False, "message": "Заявката трябва да бъде одобрена преди присвояване"}
-            ), 400
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "Заявката трябва да бъде одобрена преди присвояване",
+                    }
+                ),
+                400,
+            )
 
         # Here you would typically create a task from the request
         # For now, just update the request status
@@ -1210,13 +1281,21 @@ def admin_assign_volunteer(request_id):
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
         return jsonify(
-            {"success": True, "message": f"Доброволецът {volunteer.name} е присвоен успешно"}
+            {
+                "success": True,
+                "message": f"Доброволецът {volunteer.name} е присвоен успешно",
+            }
         )
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error assigning volunteer to request {request_id}: {e}")
-        return jsonify({"success": False, "message": "Грешка при присвояване на доброволец"}), 500
+        return (
+            jsonify(
+                {"success": False, "message": "Грешка при присвояване на доброволец"}
+            ),
+            500,
+        )
 
 
 @app.route("/admin/request/<int:request_id>/delete", methods=["POST"])
@@ -1228,9 +1307,15 @@ def admin_delete_request(request_id):
 
         # Optional: Check if request can be deleted (not assigned, etc.)
         if request_obj.status == "assigned":
-            return jsonify(
-                {"success": False, "message": "Не може да изтриете присвоена заявка"}
-            ), 400
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "Не може да изтриете присвоена заявка",
+                    }
+                ),
+                400,
+            )
 
         db.session.delete(request_obj)
         db.session.commit()
@@ -1253,7 +1338,10 @@ def admin_delete_request(request_id):
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error deleting request {request_id}: {e}")
-        return jsonify({"success": False, "message": "Грешка при изтриване на заявката"}), 500
+        return (
+            jsonify({"success": False, "message": "Грешка при изтриване на заявката"}),
+            500,
+        )
 
 
 @app.route("/admin/request/<int:request_id>/edit", methods=["GET", "POST"])
@@ -1269,7 +1357,9 @@ def admin_edit_request(request_id):
             request_obj.email = request.form.get("email", request_obj.email)
             request_obj.message = request.form.get("message", request_obj.message)
             request_obj.title = request.form.get("category", request_obj.title)
-            request_obj.location_text = request.form.get("location", request_obj.location_text)
+            request_obj.location_text = request.form.get(
+                "location", request_obj.location_text
+            )
 
             db.session.commit()
 
@@ -1369,7 +1459,9 @@ def admin_settings():
     return render_template("admin_settings.html", current_user=admin_user)
 
 
-@app.route("/notification_dashboard", methods=["GET"], endpoint="notification_dashboard")
+@app.route(
+    "/notification_dashboard", methods=["GET"], endpoint="notification_dashboard"
+)
 @require_admin_login
 def notification_dashboard():
     # Get current admin user
@@ -1544,11 +1636,15 @@ def admin_volunteers():
             )
         elif sort_by == "location":
             query = query.order_by(
-                Volunteer.location.asc() if sort_order == "asc" else Volunteer.location.desc()
+                Volunteer.location.asc()
+                if sort_order == "asc"
+                else Volunteer.location.desc()
             )
         elif sort_by == "created_at":
             query = query.order_by(
-                Volunteer.created_at.asc() if sort_order == "asc" else Volunteer.created_at.desc()
+                Volunteer.created_at.asc()
+                if sort_order == "asc"
+                else Volunteer.created_at.desc()
             )
         else:
             query = query.order_by(Volunteer.id.asc())
@@ -1630,7 +1726,9 @@ def add_volunteer():
             return render_template("add_volunteer.html")
 
         try:
-            volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
+            volunteer = Volunteer(
+                name=name, email=email, phone=phone, location=location
+            )
             db.session.add(volunteer)
             db.session.commit()
             flash("Доброволецът е добавен успешно!", "success")
@@ -1745,7 +1843,9 @@ def submit_request():
             "email": email[:3] + "***",  # Sanitize PII
             "category": category,
             "location": location,
-            "problem": (problem[:50] + "..." if len(problem) > 50 else problem),  # Truncate
+            "problem": (
+                problem[:50] + "..." if len(problem) > 50 else problem
+            ),  # Truncate
             "filename": filename,
         }
         app.logger.info("submit_request received: %s", request_data)
@@ -1753,7 +1853,11 @@ def submit_request():
         # TODO: Save to database instead of just logging
         try:
             help_request = HelpRequest(
-                name=name, email=email, message=problem, description=problem, status="pending"
+                name=name,
+                email=email,
+                message=problem,
+                description=problem,
+                status="pending",
             )
             if category:
                 help_request.title = category
@@ -1765,7 +1869,9 @@ def submit_request():
 
             db.session.add(help_request)
             db.session.commit()
-            app.logger.info("Help request saved to database with ID: %s", help_request.id)
+            app.logger.info(
+                "Help request saved to database with ID: %s", help_request.id
+            )
         except Exception as e:
             db.session.rollback()
             app.logger.error("Error saving help request to database: %s", str(e))
@@ -1946,7 +2052,9 @@ def volunteer_login():
                         f"volunteer_id={session.get('volunteer_id')}"
                     )
 
-                    app.logger.info(f"Volunteer {volunteer.name} logged in directly (test mode)")
+                    app.logger.info(
+                        f"Volunteer {volunteer.name} logged in directly (test mode)"
+                    )
                     # For testing, return dashboard directly instead of redirecting
                     # This bypasses session persistence issues in test environment
                     try:
@@ -1955,7 +2063,9 @@ def volunteer_login():
                         active_tasks = _get_active_tasks_safe(volunteer.id)
                         gamification = _get_gamification_data_safe(volunteer)
 
-                        app.logger.info("Rendering dashboard template directly for test mode")
+                        app.logger.info(
+                            "Rendering dashboard template directly for test mode"
+                        )
                         return render_template(
                             "volunteer_dashboard.html",
                             current_user=volunteer,
@@ -1966,7 +2076,9 @@ def volunteer_login():
                             recent_points=0,  # Add missing recent_points variable
                         )
                     except Exception as e:
-                        app.logger.error(f"Error rendering dashboard for test mode: {e}")
+                        app.logger.error(
+                            f"Error rendering dashboard for test mode: {e}"
+                        )
                         return f"Test mode dashboard error: {e}", 500
 
                 # Generate 6-digit access code
@@ -2026,7 +2138,10 @@ HelpChain системата
                         app.logger.error(f"Failed to save email to file: {file_e}")
                         return (
                             jsonify(
-                                {"success": False, "message": "Грешка при изпращане на имейл."}
+                                {
+                                    "success": False,
+                                    "message": "Грешка при изпращане на имейл.",
+                                }
                             ),
                             500,
                         )
@@ -2039,7 +2154,9 @@ HelpChain системата
                 app.logger.warning(f"No volunteer found with email: {email}")
         except Exception as e:
             error = f"Database error: {e}"
-            app.logger.error(f"Database error during volunteer login: {e}", exc_info=True)
+            app.logger.error(
+                f"Database error during volunteer login: {e}", exc_info=True
+            )
     return render_template("volunteer_login.html", error=error)
 
 
@@ -2214,16 +2331,22 @@ HelpChain системата
             except Exception as file_e:
                 app.logger.error(f"Failed to save email to file: {file_e}")
                 return (
-                    jsonify({"success": False, "message": "Грешка при изпращане на имейл."}),
+                    jsonify(
+                        {"success": False, "message": "Грешка при изпращане на имейл."}
+                    ),
                     500,
                 )
 
-        return jsonify({"success": True, "message": "Нов код е изпратен на вашия имейл."})
+        return jsonify(
+            {"success": True, "message": "Нов код е изпратен на вашия имейл."}
+        )
 
     except Exception as e:
         app.logger.error(f"Error resending volunteer code: {e}")
         return (
-            jsonify({"success": False, "message": "Възникна грешка при изпращане на кода."}),
+            jsonify(
+                {"success": False, "message": "Възникна грешка при изпращане на кода."}
+            ),
             500,
         )
 
@@ -2250,7 +2373,11 @@ def volunteer_dashboard():
         # Get volunteer with optimized query
         volunteer = (
             db.session.query(Volunteer)
-            .options(db.joinedload(Volunteer.assigned_tasks).joinedload(Task.performance_records))
+            .options(
+                db.joinedload(Volunteer.assigned_tasks).joinedload(
+                    Task.performance_records
+                )
+            )
             .filter_by(id=volunteer_id)
             .first()
         )
@@ -2270,7 +2397,9 @@ def volunteer_dashboard():
 
         # Count urgent tasks nearby (simplified - all urgent pending requests)
         urgent_tasks = (
-            db.session.query(HelpRequest).filter_by(status="pending", priority="urgent").count()
+            db.session.query(HelpRequest)
+            .filter_by(status="pending", priority="urgent")
+            .count()
         )
 
         app.logger.info("Rendering template with volunteer data")
@@ -2285,7 +2414,9 @@ def volunteer_dashboard():
 
     except Exception as e:
         app.logger.error(f"Critical error in volunteer dashboard: {e}", exc_info=True)
-        flash("Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error")
+        flash(
+            "Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error"
+        )
         return redirect(url_for("index"))
 
 
@@ -2296,7 +2427,9 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         # Completed tasks count with timeout protection
         completed_tasks = (
-            db.session.query(Task).filter_by(assigned_to=volunteer_id, status="completed").count()
+            db.session.query(Task)
+            .filter_by(assigned_to=volunteer_id, status="completed")
+            .count()
         )
 
         # Active tasks count
@@ -2320,7 +2453,9 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         # Reviews count
         reviews_count = (
-            db.session.query(TaskPerformance).filter_by(volunteer_id=volunteer_id).count()
+            db.session.query(TaskPerformance)
+            .filter_by(volunteer_id=volunteer_id)
+            .count()
         )
 
         return {
@@ -2386,7 +2521,9 @@ def _get_active_tasks_safe(volunteer_id):
                     "title": task.title,
                     "location": task.location_text or "Не е посочена локация",
                     "date": (
-                        task.created_at.strftime("%Y-%m-%d") if task.created_at else "Няма дата"
+                        task.created_at.strftime("%Y-%m-%d")
+                        if task.created_at
+                        else "Няма дата"
                     ),
                     "time_remaining": time_remaining,
                     "description": task.description or "Няма описание",
@@ -2398,7 +2535,9 @@ def _get_active_tasks_safe(volunteer_id):
         return active_tasks
 
     except Exception as e:
-        app.logger.error(f"Error fetching active tasks for volunteer {volunteer_id}: {e}")
+        app.logger.error(
+            f"Error fetching active tasks for volunteer {volunteer_id}: {e}"
+        )
         return []
 
 
@@ -2410,12 +2549,18 @@ def _get_gamification_data_safe(volunteer):
             "level": volunteer.level,
             "experience": volunteer.experience,
             "level_progress": (
-                volunteer.get_level_progress() if hasattr(volunteer, "get_level_progress") else 0
+                volunteer.get_level_progress()
+                if hasattr(volunteer, "get_level_progress")
+                else 0
             ),
-            "next_level_exp": ((volunteer.level * 100) if hasattr(volunteer, "level") else 100),
+            "next_level_exp": (
+                (volunteer.level * 100) if hasattr(volunteer, "level") else 100
+            ),
         }
     except Exception as e:
-        app.logger.error(f"Error getting gamification data for volunteer {volunteer.id}: {e}")
+        app.logger.error(
+            f"Error getting gamification data for volunteer {volunteer.id}: {e}"
+        )
         return {
             "points": 0,
             "level": 1,
@@ -2490,7 +2635,10 @@ def api_admin_dashboard():
 
         # Get recent requests
         recent_requests = (
-            db.session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).limit(5).all()
+            db.session.query(HelpRequest)
+            .order_by(HelpRequest.created_at.desc())
+            .limit(5)
+            .all()
         )
 
         requests_data = []
@@ -2586,11 +2734,18 @@ def api_ai_status():
     try:
         # Return basic status info for API compatibility
         return jsonify(
-            {"status": "healthy", "providers": ["openai", "gemini"], "active_provider": "openai"}
+            {
+                "status": "healthy",
+                "providers": ["openai", "gemini"],
+                "active_provider": "openai",
+            }
         )
     except Exception as e:
         app.logger.error(f"Error getting AI status: {e}")
-        return jsonify({"status": "error", "providers": [], "active_provider": "none"}), 500
+        return (
+            jsonify({"status": "error", "providers": [], "active_provider": "none"}),
+            500,
+        )
 
 
 @app.route("/api/volunteer/tasks", methods=["GET"])
@@ -2634,7 +2789,9 @@ def api_volunteer_tasks():
                 "estimated_hours": task.estimated_hours,
                 "deadline": task.deadline.isoformat() if task.deadline else None,
                 "created_at": task.created_at.isoformat(),
-                "assigned_at": task.assigned_at.isoformat() if task.assigned_at else None,
+                "assigned_at": (
+                    task.assigned_at.isoformat() if task.assigned_at else None
+                ),
             }
 
         return jsonify(
@@ -2680,7 +2837,9 @@ def update_volunteer_settings():
     except Exception as e:
         app.logger.error(f"Error updating volunteer settings: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при запазване на настройките"}),
+            jsonify(
+                {"success": False, "message": "Грешка при запазване на настройките"}
+            ),
             500,
         )
 
@@ -2713,7 +2872,9 @@ def achievements():
         all_achievements = db.session.query(Achievement).all()
         achievements_data = []
         for achievement in all_achievements:
-            progress = GamificationService.get_achievement_progress(volunteer, achievement)
+            progress = GamificationService.get_achievement_progress(
+                volunteer, achievement
+            )
             is_unlocked = achievement.id in volunteer.achievements
 
             achievements_data.append(
@@ -2873,7 +3034,9 @@ def available_tasks():
 
         # Apply pagination
         total_tasks = available_tasks_query.count()
-        available_tasks = available_tasks_query.offset((page - 1) * per_page).limit(per_page).all()
+        available_tasks = (
+            available_tasks_query.offset((page - 1) * per_page).limit(per_page).all()
+        )
 
         total_pages = (total_tasks + per_page - 1) // per_page
 
@@ -2949,11 +3112,15 @@ def admin_tasks():
         stats = {
             "total_tasks": db.session.query(Task).count(),
             "open_tasks": db.session.query(Task).filter_by(status="open").count(),
-            "assigned_tasks": db.session.query(Task).filter_by(status="assigned").count(),
+            "assigned_tasks": db.session.query(Task)
+            .filter_by(status="assigned")
+            .count(),
             "in_progress_tasks": db.session.query(Task)
             .filter(Task.status == "in_progress")
             .count(),
-            "completed_tasks": db.session.query(Task).filter_by(status="completed").count(),
+            "completed_tasks": db.session.query(Task)
+            .filter_by(status="completed")
+            .count(),
         }
 
         return render_template(
@@ -2986,7 +3153,9 @@ def create_task():
             priority = request.form.get("priority", "medium")
             location_required = request.form.get("location_required") == "on"
             location_text = (
-                request.form.get("location_text", "").strip() if location_required else None
+                request.form.get("location_text", "").strip()
+                if location_required
+                else None
             )
             estimated_hours = request.form.get("estimated_hours")
             deadline_str = request.form.get("deadline", "").strip()
@@ -3065,7 +3234,9 @@ def edit_task(task_id):
             task.priority = request.form.get("priority", "medium")
             task.location_required = request.form.get("location_required") == "on"
             task.location_text = (
-                request.form.get("location_text", "").strip() if task.location_required else None
+                request.form.get("location_text", "").strip()
+                if task.location_required
+                else None
             )
 
             estimated_hours = request.form.get("estimated_hours")
@@ -3125,7 +3296,9 @@ def delete_task(task_id):
 
         # Check if task is assigned
         if task.assigned_to:
-            flash("Не може да изтриете задача, която е присвоена на доброволец", "error")
+            flash(
+                "Не може да изтриете задача, която е присвоена на доброволец", "error"
+            )
             return redirect(url_for("admin_tasks"))
 
         db.session.delete(task)
@@ -3264,7 +3437,9 @@ def admin_update_request_status():
 
         if not request_id or not new_status:
             return (
-                jsonify({"success": False, "message": "Липсват задължителни параметри"}),
+                jsonify(
+                    {"success": False, "message": "Липсват задължителни параметри"}
+                ),
                 400,
             )
 
@@ -3287,7 +3462,9 @@ def admin_update_request_status():
         request_obj.status = new_status
         db.session.commit()
 
-        app.logger.info(f"Request {request_id} status changed from {old_status} to {new_status}")
+        app.logger.info(
+            f"Request {request_id} status changed from {old_status} to {new_status}"
+        )
 
         return jsonify(
             {
@@ -3606,7 +3783,11 @@ def category_help(category):
 
     # Филтрираме доброволци които имат тази категория в skills
     # Търсим case-insensitive в skills полето
-    volunteers = db.session.query(Volunteer).filter(Volunteer.skills.ilike(f"%{category}%")).all()
+    volunteers = (
+        db.session.query(Volunteer)
+        .filter(Volunteer.skills.ilike(f"%{category}%"))
+        .all()
+    )
 
     # Ако няма доброволци, показваме съобщение
     no_volunteers = len(volunteers) == 0
@@ -3824,7 +4005,9 @@ def api_get_chat_rooms():
         for room in rooms:
             # Count online participants
             online_count = (
-                db.session.query(ChatParticipant).filter_by(room_id=room.id, is_online=True).count()
+                db.session.query(ChatParticipant)
+                .filter_by(room_id=room.id, is_online=True)
+                .count()
             )
 
             rooms_data.append(
@@ -4230,7 +4413,9 @@ def admin_analytics():
             "volunteers_predicted": [14, 16, 18],
             "ml_insights": {
                 "anomalies": [],
-                "predictions": {"optimal_engagement_time": {"hour": 14, "engagement_score": 85}},
+                "predictions": {
+                    "optimal_engagement_time": {"hour": 14, "engagement_score": 85}
+                },
                 "recommendations": [
                     {
                         "title": "Подобри видимостта",
@@ -4247,7 +4432,12 @@ def admin_analytics():
 
         # Категорийни статистики - предоставяме примерни данни
         category_stats = {
-            "categories": ["Медицинска помощ", "Транспорт", "Домакинска помощ", "Образование"],
+            "categories": [
+                "Медицинска помощ",
+                "Транспорт",
+                "Домакинска помощ",
+                "Образование",
+            ],
             "counts": [15, 8, 12, 6],
         }
 

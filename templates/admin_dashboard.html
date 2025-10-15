@@ -1261,7 +1261,11 @@
     <script>
       // Logout function
       function logout() {
-        if (confirm("Сигурни ли сте, че искате да излезете от администраторския панел?")) {
+        if (
+          confirm(
+            "Сигурни ли сте, че искате да излезете от администраторския панел?",
+          )
+        ) {
           // Create and submit logout form
           const form = document.createElement("form");
           form.method = "POST";
