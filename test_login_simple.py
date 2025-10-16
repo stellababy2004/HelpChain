@@ -2,6 +2,7 @@
 """
 Simple test for admin login using urllib
 """
+
 import urllib.request
 import urllib.parse
 import http.cookiejar
@@ -14,7 +15,7 @@ def test_admin_login():
 
     # Prepare login data
     login_data = urllib.parse.urlencode(
-        {"username": "admin", "password": "Admin123"}
+        {"username": "admin", "password": "Admin123"}  # pragma: allowlist secret
     ).encode("utf-8")
 
     try:

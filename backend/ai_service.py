@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 AI Service for HelpChain Chatbot
 Integrates with OpenAI GPT and Google Gemini
@@ -32,11 +31,12 @@ except Exception:
         return "bg"
 
 
-import traceback
 import os
-import unicodedata
 import re
-from typing import Optional, Dict, Any, Tuple
+import traceback
+import unicodedata
+from typing import Any
+
 from ai_config import get_ai_config, logger
 
 # Monkey patch httpx.Client to handle proxies parameter (compatibility fix)
@@ -96,7 +96,7 @@ def _safe_message(exc: Exception) -> str:
             return "<unprintable exception>"
 
 
-def _sanitize_api_key(raw_key: Any) -> Tuple[str, list]:
+def _sanitize_api_key(raw_key: Any) -> tuple[str, list]:
     """Clean and validate an API key string.
 
     Returns a tuple (cleaned_key, issues) where issues is a list of
@@ -147,7 +147,7 @@ def _sanitize_api_key(raw_key: Any) -> Tuple[str, list]:
     ]
     for ph in placeholder_indicators:
         if ph in lower:
-            issues.append('API key looks like a placeholder (contains "%s")' % ph)
+            issues.append(f'API key looks like a placeholder (contains "{ph}")')
             break
 
     # Ensure likely format: starts with sk-
@@ -206,7 +206,8 @@ class AIService:
             if gemini_provider and gemini_provider.enabled:
                 if genai is None:
                     logger.warning(
-                        "⚠️ Google Generative AI SDK not installed - Gemini provider disabled at runtime"
+                        "⚠️ Google Generative AI SDK not installed - "
+                        "Gemini provider disabled at runtime"
                     )
                 else:
                     genai.configure(api_key=gemini_provider.api_key)
@@ -216,8 +217,8 @@ class AIService:
             logger.error(f"❌ Error setting up AI providers: {e}")
 
     async def generate_response(
-        self, user_message: str, context: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        self, user_message: str, context: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Generate AI response to user message
 
@@ -242,23 +243,49 @@ class AIService:
                 user_msg_lower = user_message.lower()
 
                 if "здравей" in user_msg_lower or "здрасти" in user_msg_lower:
-                    response_text = "Здравейте! Аз съм AI асистентът на HelpChain. Как мога да ви помогна днес?"
+                    response_text = (
+                        "Здравейте! Аз съм AI асистентът на HelpChain. "
+                        "Как мога да ви помогна днес?"
+                    )
                 elif "helpchain" in user_msg_lower or "какво" in user_msg_lower:
-                    response_text = "HelpChain е платформа за доброволчество в България. Свързваме хора нуждаещи се от помощ с проверени доброволци в София, Пловдив, Варна, Бургас и Стара Загора."
+                    response_text = (
+                        "HelpChain е платформа за доброволчество в България. "
+                        "Свързваме хора нуждаещи се от помощ с проверени доброволци "
+                        "в София, Пловдив, Варна, Бургас и Стара Загора."
+                    )
                 elif "регистрация" in user_msg_lower or "регистрирам" in user_msg_lower:
-                    response_text = "Регистрацията в HelpChain е безплатна! Можете да се регистрирате през нашето мобилно приложение или уеб сайта. За доброволци има процес на проверка и обучение."
+                    response_text = (
+                        "Регистрацията в HelpChain е безплатна! "
+                        "Можете да се регистрирате през нашето мобилно приложение "
+                        "или уеб сайта. За доброволци има процес на проверка и обучение."
+                    )
                 elif (
                     "цена" in user_msg_lower
                     or "струва" in user_msg_lower
                     or "такса" in user_msg_lower
                 ):
-                    response_text = "Цените зависят от вида на услугата. Свържете се с нашия екип за точна информация и консултация."
+                    response_text = (
+                        "Цените зависят от вида на услугата. "
+                        "Свържете се с нашия екип за точна информация и консултация."
+                    )
                 elif "доброволец" in user_msg_lower or "стана" in user_msg_lower:
-                    response_text = "За да станете доброволец в HelpChain, трябва да минете през процес на регистрация, проверка и кратко обучение. Ще се свържем с вас след регистрацията."
+                    response_text = (
+                        "За да станете доброволец в HelpChain, трябва да минете през "
+                        "процес на регистрация, проверка и кратко обучение. "
+                        "Ще се свържем с вас след регистрацията."
+                    )
                 elif "услуги" in user_msg_lower or "помощ" in user_msg_lower:
-                    response_text = "Предлагаме различни услуги: домашна грижа, придружаване, пазарски покупки, помощ в домакинството и градинарство."
+                    response_text = (
+                        "Предлагаме различни услуги: "
+                        "домашна грижа, придружаване, пазарски покупки, "
+                        "помощ в домакинството и градинарство."
+                    )
                 else:
-                    response_text = "Благодаря за въпроса! За повече информация или помощ с регистрацията, моля свържете се с нашия екип на contact@helpchain.live."
+                    response_text = (
+                        "Благодаря за въпроса! За повече информация или "
+                        "помощ с регистрацията, моля свържете се с нашия "
+                        "екип на contact@helpchain.live."
+                    )
 
                 return {
                     "response": response_text,

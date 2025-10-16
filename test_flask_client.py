@@ -2,6 +2,7 @@
 """
 Test admin login using Flask test client
 """
+
 import os
 import sys
 
@@ -9,7 +10,7 @@ import sys
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
 sys.path.insert(0, backend_dir)
 
-from appy import app
+from appy import app  # noqa: E402
 
 
 def test_admin_login():
@@ -19,7 +20,10 @@ def test_admin_login():
         # Test login
         response = client.post(
             "/admin_login",
-            data={"username": "admin", "password": "Admin123"},
+            data={
+                "username": "admin",
+                "password": "Admin123",  # pragma: allowlist secret
+            },  # pragma: allowlist secret
             follow_redirects=True,
         )
 

@@ -2,6 +2,7 @@
 """
 Check admin password hash in database
 """
+
 import os
 import sys
 
@@ -9,8 +10,8 @@ import sys
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
 sys.path.insert(0, backend_dir)
 
-from appy import app, db, AdminUser
-from werkzeug.security import check_password_hash, generate_password_hash
+from appy import app, db, AdminUser  # noqa: E402
+from werkzeug.security import check_password_hash, generate_password_hash  # noqa: E402
 
 
 def check_admin_password():
