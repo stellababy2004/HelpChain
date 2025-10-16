@@ -53,3 +53,4 @@ uploads/
 
 # ignore prettier cache
 node_modules/.cache/prettier/
+.git_clean_backup/
