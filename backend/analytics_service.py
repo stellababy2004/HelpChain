@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Advanced Analytics Service for HelpChain
 Provides comprehensive analytics and user behavior tracking
@@ -6,10 +5,11 @@ Provides comprehensive analytics and user behavior tracking
 
 import json
 import time
-from datetime import datetime, timedelta
-from typing import Dict, Any
 from collections import Counter
-from sqlalchemy import func, and_
+from datetime import datetime, timedelta
+from typing import Any
+
+from sqlalchemy import and_, func
 
 # Remove direct db import - we'll get it from current_app
 # try:
@@ -21,17 +21,17 @@ from sqlalchemy import func, and_
 try:
     from models_with_analytics import (
         AnalyticsEvent,
-        UserBehavior,
-        PerformanceMetrics,
         ChatbotConversation,
+        PerformanceMetrics,
+        UserBehavior,
     )
 except ImportError:
     # Fallback for when imported as a module
-    from .models_with_analytics import (
+    from backend.models_with_analytics import (
         AnalyticsEvent,
-        UserBehavior,
-        PerformanceMetrics,
         ChatbotConversation,
+        PerformanceMetrics,
+        UserBehavior,
     )
 import logging
 
@@ -52,11 +52,11 @@ def get_db():
             return db
         except ImportError:
             try:
-                from .extensions import db
+                from backend.extensions import db
 
                 return db
             except ImportError:
-                raise RuntimeError("Could not get database instance")
+                raise RuntimeError("Could not get database instance") from None
 
 
 class AdvancedAnalytics:
@@ -73,7 +73,7 @@ class AdvancedAnalytics:
         event_action: str = None,
         event_label: str = None,
         event_value: int = None,
-        context: Dict[str, Any] = None,
+        context: dict[str, Any] = None,
     ):
         """Проследява събитие за аналитика с thread safety"""
         return self._safe_database_operation(
@@ -93,7 +93,7 @@ class AdvancedAnalytics:
         event_action: str = None,
         event_label: str = None,
         event_value: int = None,
-        context: Dict[str, Any] = None,
+        context: dict[str, Any] = None,
     ):
         """Internal implementation of track_event"""
         try:
@@ -136,7 +136,7 @@ class AdvancedAnalytics:
         metric_name: str,
         metric_value: float,
         unit: str = None,
-        context: Dict[str, Any] = None,
+        context: dict[str, Any] = None,
     ):
         """Проследява метрики за производителност с thread safety"""
         return self._safe_database_operation(
@@ -151,7 +151,7 @@ class AdvancedAnalytics:
     def _safe_database_operation(self, operation, *args, **kwargs):
         """Безопасно извършва database операция с proper Flask app context"""
         try:
-            from flask import has_app_context, current_app
+            from flask import has_app_context
 
             # Проверяваме дали имаме Flask app context
             if has_app_context():
@@ -173,7 +173,7 @@ class AdvancedAnalytics:
         metric_name: str,
         metric_value: float,
         unit: str = None,
-        context: Dict[str, Any] = None,
+        context: dict[str, Any] = None,
     ):
         """Internal implementation of track_performance"""
         try:
@@ -201,7 +201,7 @@ class AdvancedAnalytics:
             get_db().session.rollback()
             return False
 
-    def _update_user_behavior_impl(self, context: Dict[str, Any]):
+    def _update_user_behavior_impl(self, context: dict[str, Any]):
         """Обновява потребителското поведение"""
         try:
             session_id = context.get("session_id")
@@ -239,7 +239,9 @@ class AdvancedAnalytics:
                     "title": context.get("page_title"),
                 }
             )
-            behavior.pages_sequence = json.dumps(pages_sequence[-20:])  # Последните 20 страници
+            behavior.pages_sequence = json.dumps(
+                pages_sequence[-20:]
+            )  # Последните 20 страници
 
             get_db().session.commit()
 
@@ -247,7 +249,7 @@ class AdvancedAnalytics:
             logger.error(f"Error updating user behavior: {e}")
             get_db().session.rollback()
 
-    def get_dashboard_analytics(self, days: int = 30) -> Dict[str, Any]:
+    def get_dashboard_analytics(self, days: int = 30) -> dict[str, Any]:
         """Получава подробна аналитика за dashboard"""
         try:
             from flask import current_app
@@ -266,7 +268,9 @@ class AdvancedAnalytics:
                 "overview": self._get_overview_metrics(start_date, end_date),
                 "user_engagement": self._get_user_engagement(start_date, end_date),
                 "chatbot_analytics": self._get_chatbot_analytics(start_date, end_date),
-                "performance_metrics": self._get_performance_metrics(start_date, end_date),
+                "performance_metrics": self._get_performance_metrics(
+                    start_date, end_date
+                ),
                 "conversion_funnel": self._get_conversion_funnel(start_date, end_date),
                 "user_journey": self._get_user_journey_analytics(start_date, end_date),
                 "real_time": self._get_real_time_metrics(),
@@ -279,7 +283,9 @@ class AdvancedAnalytics:
             logger.error(f"Error getting dashboard analytics: {e}")
             return self._get_fallback_analytics()
 
-    def _get_overview_metrics(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def _get_overview_metrics(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Общи метрики за периода"""
         try:
             from flask import current_app
@@ -347,7 +353,9 @@ class AdvancedAnalytics:
                 or 0
             )
 
-            bounce_rate = (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
+            bounce_rate = (
+                (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
+            )
 
             # Конверсии
             conversions = (
@@ -363,7 +371,9 @@ class AdvancedAnalytics:
                 or 0
             )
 
-            conversion_rate = (conversions / total_sessions * 100) if total_sessions > 0 else 0
+            conversion_rate = (
+                (conversions / total_sessions * 100) if total_sessions > 0 else 0
+            )
 
             return {
                 "unique_visitors": unique_visitors,
@@ -386,13 +396,17 @@ class AdvancedAnalytics:
                 "conversion_rate": 0,
             }
 
-    def _get_user_engagement(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def _get_user_engagement(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Метрики за потребителската ангажираност"""
 
         # Най-посещавани страници
         top_pages = (
             get_db()
-            .session.query(AnalyticsEvent.page_url, func.count(AnalyticsEvent.id).label("views"))
+            .session.query(
+                AnalyticsEvent.page_url, func.count(AnalyticsEvent.id).label("views")
+            )
             .filter(
                 and_(
                     AnalyticsEvent.event_type == "page_view",
@@ -409,7 +423,9 @@ class AdvancedAnalytics:
         # Device breakdown
         device_stats = (
             get_db()
-            .session.query(UserBehavior.device_info, func.count(UserBehavior.id).label("sessions"))
+            .session.query(
+                UserBehavior.device_info, func.count(UserBehavior.id).label("sessions")
+            )
             .filter(UserBehavior.session_start.between(start_date, end_date))
             .group_by(UserBehavior.device_info)
             .all()
@@ -442,7 +458,9 @@ class AdvancedAnalytics:
             "hourly_activity": hourly_activity,
         }
 
-    def _get_chatbot_analytics(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def _get_chatbot_analytics(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Аналитика на чатбота"""
 
         # Общо разговори
@@ -473,12 +491,14 @@ class AdvancedAnalytics:
         ai_stats = {
             "total_ai_responses": len(ai_conversations),
             "avg_confidence": (
-                sum(c.ai_confidence or 0 for c in ai_conversations) / len(ai_conversations)
+                sum(c.ai_confidence or 0 for c in ai_conversations)
+                / len(ai_conversations)
                 if ai_conversations
                 else 0
             ),
             "avg_processing_time": (
-                sum(c.processing_time or 0 for c in ai_conversations) / len(ai_conversations)
+                sum(c.processing_time or 0 for c in ai_conversations)
+                / len(ai_conversations)
                 if ai_conversations
                 else 0
             ),
@@ -507,7 +527,9 @@ class AdvancedAnalytics:
             "rated_conversations": len(rated_conversations),
         }
 
-    def _get_performance_metrics(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def _get_performance_metrics(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Метрики за производителност"""
 
         # Average response times by endpoint
@@ -560,12 +582,15 @@ class AdvancedAnalytics:
 
         return {
             "endpoint_performance": [
-                {"endpoint": ep, "avg_time": round(time, 3)} for ep, time in response_times
+                {"endpoint": ep, "avg_time": round(time, 3)}
+                for ep, time in response_times
             ],
             "daily_performance": daily_performance,
         }
 
-    def _get_conversion_funnel(self, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
+    def _get_conversion_funnel(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Анализ на conversion funnel"""
 
         # Основни стъпки във funnel-а
@@ -637,7 +662,9 @@ class AdvancedAnalytics:
             "chatbot_users": chatbot_users,
             "conversion_rates": {
                 "visit_to_register_page": (
-                    round(visited_register / total_visitors * 100, 2) if total_visitors else 0
+                    round(visited_register / total_visitors * 100, 2)
+                    if total_visitors
+                    else 0
                 ),
                 "register_page_to_start": (
                     round(started_registration / visited_register * 100, 2)
@@ -650,20 +677,24 @@ class AdvancedAnalytics:
                     else 0
                 ),
                 "overall_conversion": (
-                    round(completed_registration / total_visitors * 100, 2) if total_visitors else 0
+                    round(completed_registration / total_visitors * 100, 2)
+                    if total_visitors
+                    else 0
                 ),
             },
         }
 
     def _get_user_journey_analytics(
         self, start_date: datetime, end_date: datetime
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Анализ на потребителските пътища"""
 
         # Най-чести entry points
         entry_pages = (
             get_db()
-            .session.query(UserBehavior.entry_page, func.count(UserBehavior.id).label("entries"))
+            .session.query(
+                UserBehavior.entry_page, func.count(UserBehavior.id).label("entries")
+            )
             .filter(
                 and_(
                     UserBehavior.session_start.between(start_date, end_date),
@@ -679,7 +710,9 @@ class AdvancedAnalytics:
         # Най-чести exit points
         exit_pages = (
             get_db()
-            .session.query(UserBehavior.exit_page, func.count(UserBehavior.id).label("exits"))
+            .session.query(
+                UserBehavior.exit_page, func.count(UserBehavior.id).label("exits")
+            )
             .filter(
                 and_(
                     UserBehavior.session_start.between(start_date, end_date),
@@ -714,18 +747,21 @@ class AdvancedAnalytics:
                 continue
 
         common_paths = [
-            {"path": path, "count": count} for path, count in path_counter.most_common(10)
+            {"path": path, "count": count}
+            for path, count in path_counter.most_common(10)
         ]
 
         return {
             "top_entry_pages": [
                 {"page": page, "entries": entries} for page, entries in entry_pages
             ],
-            "top_exit_pages": [{"page": page, "exits": exits} for page, exits in exit_pages],
+            "top_exit_pages": [
+                {"page": page, "exits": exits} for page, exits in exit_pages
+            ],
             "common_user_paths": common_paths,
         }
 
-    def _get_real_time_metrics(self) -> Dict[str, Any]:
+    def _get_real_time_metrics(self) -> dict[str, Any]:
         """Real-time метрики (последният час)"""
 
         one_hour_ago = datetime.utcnow() - timedelta(hours=1)
@@ -768,7 +804,7 @@ class AdvancedAnalytics:
         cache_time = self._cache.get(f"{key}_timestamp", 0)
         return (time.time() - cache_time) < self.cache_duration
 
-    def _get_fallback_analytics(self) -> Dict[str, Any]:
+    def _get_fallback_analytics(self) -> dict[str, Any]:
         """Fallback аналитика при грешка"""
         return {
             "overview": {
