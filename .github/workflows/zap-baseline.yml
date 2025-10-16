@@ -34,7 +34,7 @@ jobs:
           echo "Scanning target: $TARGET_URL"
 
       - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.14.0
+        uses: zaproxy/action-baseline@7c4deb10e6261301961c86d65d54a516394f9aed
         with:
           target: ${{ env.TARGET_URL }}
           rules_file_name: .zap/rules.tsv
