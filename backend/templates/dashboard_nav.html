@@ -39,8 +39,8 @@
                 <li class="nav-item"><a
                         class="nav-link {{ 'active' if request.endpoint == 'admin_volunteers' else '' }}"
                         href="{{ url_for('admin_volunteers') }}"><i class="fas fa-users me-1"></i>Доброволци</a></li>
-                <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'test_analytics' else '' }}"
-                        href="{{ url_for('test_analytics') }}"><i class="fas fa-chart-bar me-1"></i>Аналитика</a></li>
+                <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == 'admin_analytics' else '' }}"
+                        href="{{ url_for('admin_analytics') }}"><i class="fas fa-chart-bar me-1"></i>Аналитика</a></li>
                 {% endif %}
             </ul>
 
