@@ -1,42 +1,30 @@
+import csv
 import os
-from dotenv import load_dotenv
-from werkzeug.utils import secure_filename
+from io import StringIO
+from unittest.mock import patch
 
+from dotenv import load_dotenv
 from flask import (
     Flask,
+    Response,
+    flash,
+    jsonify,
+    make_response,
+    redirect,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
     session,
-    make_response,
-    jsonify,
-    Response,
-    # current_app,  # Премахнат за избягване на circular import
+    url_for,
 )
-
-# нови импорти за правилно форматиране и i/o
 from flask_babel import Babel, gettext as _
-from io import StringIO
-import csv
-from jinja2 import ChoiceLoader, FileSystemLoader
-
-# Защитен import на HelpRequest (ruff няма да маркира като undefined)
-try:
-    from .models import HelpRequest
-except Exception:
-    HelpRequest = None
-
-# Поправи всички relative imports на absolute
-from .models import db, Volunteer  # Вместо 'from .models import'
-
-# Ако има други, направи същото, напр.:
-# from ai_service import ai_service  # Вместо 'from .ai_service import'
-
 from flask_mail import Mail
 from flask_migrate import Migrate
+from jinja2 import ChoiceLoader, FileSystemLoader
 from sqlalchemy.exc import OperationalError
+from werkzeug.utils import secure_filename
+
+# Поправи всички relative imports на absolute
+from backend.models import db, Volunteer  # Вместо 'from .models import'
 
 # Import for 2FA testing
 # try:
@@ -146,7 +134,8 @@ if _loaders:
 
 @app.route("/")
 def index():
-    # безопасно извличаме агрегати — ако моделът липсва или схемата не е съвместима, връщаме fallback
+    # безопасно извличаме агрегати — ако моделът липсва или схемата
+    # не е съвместима, връщаме fallback
     try:
         volunteers_count = Volunteer.query.count() if "Volunteer" in globals() else 0
     except OperationalError:
@@ -552,14 +541,14 @@ def admin_panel():
     # fallback прост HTML (явно ще се вижда в браузъра)
     return (
         "<!doctype html><html><head><meta charset='utf-8'><title>Admin</title>"
-        "<style>body{font-family:Arial,Helvetica,sans-serif;padding:1rem}h1{font-size:18px}</style>"
-        "</head><body><h1>Admin panel (placeholder)</h1><p>Шаблонът admin.html не е намерен.</p></body></html>",
+        "<style>body{font-family:Arial,Helvetica,sans-serif;padding:1rem}"
+        "h1{font-size:18px}</style></head><body><h1>Admin panel (placeholder)</h1>"
+        "<p>Шаблонът admin.html не е намерен.</p></body></html>",
         200,
     )
 
 
 # Добави mock за mail.send за тестване (симулира изпращане без реални SMTP заявки)
-from unittest.mock import patch
 
 # Mock mail.send за всички изпращания на имейли
 mock_mail_send = patch.object(

@@ -4,18 +4,16 @@
 Test script for AI functionality
 """
 
-import sys
 import os
+import sys
+from dotenv import load_dotenv
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
 
-# Load environment variables
-from dotenv import load_dotenv
+from backend.ai_service import ai_service
 
 load_dotenv()
-
-from ai_service import ai_service
 
 
 def test_ai():

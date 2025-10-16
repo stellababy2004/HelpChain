@@ -39,9 +39,9 @@ try:
 except ImportError:
     # Fallback for standalone execution
     try:
-        from extensions import db
+        from backend.extensions import db
     except ImportError:
-        from extensions import db
+        from backend.extensions import db
 
 try:
     from backend.models import (
@@ -56,7 +56,7 @@ try:
         Volunteer,
     )
 except ImportError:
-    from models import (
+    from backend.models import (
         AdminUser,
         ChatMessage,
         ChatParticipant,
@@ -71,7 +71,7 @@ except ImportError:
     try:
         from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
     except ImportError:
-        from models_with_analytics import Task, TaskAssignment, TaskPerformance
+        from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
 
 # Import permissions module - always needed
 try:
@@ -81,7 +81,7 @@ try:
         require_permission,
     )
 except ImportError:
-    from permissions import (
+    from backend.permissions import (
         initialize_default_roles_and_permissions,
         require_admin_login,
         require_permission,
@@ -91,23 +91,23 @@ except ImportError:
 try:
     from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
 except ImportError:
-    from models_with_analytics import Task, TaskAssignment, TaskPerformance
+    from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
 
 try:
     from backend.admin_roles import admin_roles_bp
 except ImportError:
-    from admin_roles import admin_roles_bp
+    from backend.admin_roles import admin_roles_bp
 
 try:
     from backend.routes.notifications import notification_bp
 except ImportError:
-    from routes.notifications import notification_bp
+    from backend.routes.notifications import notification_bp
 
 # Import smart matching engine
 try:
     from backend.ai_service import ai_service
 except ImportError:
-    from ai_service import ai_service
+    from backend.ai_service import ai_service
 
 # Add the backend directory to Python path so we can import models and extensions
 backend_dir = os.path.dirname(__file__)

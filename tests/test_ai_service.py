@@ -14,7 +14,7 @@ os.environ["AI_DEV_MOCK"] = "1"
 sys.path.insert(0, "backend")
 
 try:
-    from ai_service import ai_service
+    from backend.ai_service import ai_service
 
     print("AI Status:", ai_service.get_ai_status())
 
