@@ -11,8 +11,7 @@ HelpChain Translation Service
 
 import threading
 from datetime import datetime, timedelta
-from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from backend.ai_service import ai_service
 from backend.models import (
@@ -23,14 +22,10 @@ from backend.models import (
     UserLanguagePreference,
     db,
 )
-    UserLanguagePreference,
-    ContentTranslation,
-)
 
 # AI Translation dependencies
 try:
-    from backend.ai_service import ai_service
-
+    # ai_service вече е импортиран по-горе
     AI_TRANSLATION_AVAILABLE = True
 except ImportError:
     AI_TRANSLATION_AVAILABLE = False
@@ -52,7 +47,7 @@ class TranslationService:
     # LANGUAGE MANAGEMENT
     # ========================================================================
 
-    def get_supported_languages(self) -> List[SupportedLanguage]:
+    def get_supported_languages(self) -> list[SupportedLanguage]:
         """Получава всички поддържани езици"""
         return (
             SupportedLanguage.query.filter_by(is_active=True)
@@ -60,7 +55,7 @@ class TranslationService:
             .all()
         )
 
-    def get_language_by_code(self, code: str) -> Optional[SupportedLanguage]:
+    def get_language_by_code(self, code: str) -> SupportedLanguage | None:
         """Получава език по код"""
         return SupportedLanguage.query.filter_by(code=code, is_active=True).first()
 
@@ -99,7 +94,7 @@ class TranslationService:
         # 3. Fallback към default
         return self.default_language
 
-    def _parse_accept_language(self, accept_lang: str) -> List[str]:
+    def _parse_accept_language(self, accept_lang: str) -> list[str]:
         """Парсира Accept-Language header"""
         languages = []
         for item in accept_lang.split(","):
@@ -165,7 +160,7 @@ class TranslationService:
             print(f"❌ Error registering translation key: {str(e)}")
             raise
 
-    def bulk_register_keys(self, keys_data: List[Dict[str, Any]]) -> int:
+    def bulk_register_keys(self, keys_data: list[dict[str, Any]]) -> int:
         """Bulk регистрация на ключове"""
         registered_count = 0
 
@@ -208,7 +203,7 @@ class TranslationService:
         self,
         key: str,
         language_code: str = None,
-        variables: Dict[str, Any] = None,
+        variables: dict[str, Any] = None,
         fallback_to_source: bool = True,
     ) -> str:
         """Получава превод за ключ"""
@@ -236,8 +231,8 @@ class TranslationService:
         return text or key  # Fallback към ключа ако няма превод
 
     def get_translations_batch(
-        self, keys: List[str], language_code: str = None
-    ) -> Dict[str, str]:
+        self, keys: list[str], language_code: str = None
+    ) -> dict[str, str]:
         """Получава batch от преводи"""
         if not language_code:
             language_code = self.default_language
@@ -326,8 +321,8 @@ class TranslationService:
             return None
 
     def _fetch_translations_batch_from_db(
-        self, keys: List[str], language_code: str
-    ) -> Dict[str, str]:
+        self, keys: list[str], language_code: str
+    ) -> dict[str, str]:
         """Batch вземане на преводи от DB"""
         try:
             language = self.get_language_by_code(language_code)
@@ -353,7 +348,7 @@ class TranslationService:
             print(f"❌ Error fetching batch translations: {str(e)}")
             return {}
 
-    def _process_variables(self, text: str, variables: Dict[str, Any]) -> str:
+    def _process_variables(self, text: str, variables: dict[str, Any]) -> str:
         """Обработва променливи в текста"""
         try:
             # Поддържаме както {{ var }} така и {var} формати
@@ -381,7 +376,7 @@ class TranslationService:
         translator_name: str = None,
         status: str = "draft",
         translation_method: str = "manual",
-    ) -> Optional[Translation]:
+    ) -> Translation | None:
         """Добавя нов превод"""
         try:
             # Намираме ключа
@@ -433,7 +428,7 @@ class TranslationService:
             print(f"❌ Error adding translation: {str(e)}")
             return None
 
-    def bulk_add_translations(self, translations_data: List[Dict[str, Any]]) -> int:
+    def bulk_add_translations(self, translations_data: list[dict[str, Any]]) -> int:
         """Bulk добавяне на преводи"""
         added_count = 0
 
@@ -554,7 +549,7 @@ class TranslationService:
 
     def _translate_with_ai(
         self, text: str, target_language: str, source_language: str = "bg"
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Превежда текст с AI"""
         if not AI_TRANSLATION_AVAILABLE:
             return None
@@ -615,7 +610,7 @@ class TranslationService:
         title: str = None,
         content: str = None,
         **kwargs,
-    ) -> Optional[ContentTranslation]:
+    ) -> ContentTranslation | None:
         """Превежда динамично съдържание"""
         try:
             language = self.get_language_by_code(language_code)
@@ -673,7 +668,7 @@ class TranslationService:
 
     def get_content_translation(
         self, content_type: str, content_id: int, language_code: str
-    ) -> Optional[ContentTranslation]:
+    ) -> ContentTranslation | None:
         """Получава превод на съдържание"""
         language = self.get_language_by_code(language_code)
         if not language:
@@ -702,7 +697,7 @@ class TranslationService:
             for k in keys_to_remove:
                 del self.cache[k]
 
-    def get_translation_stats(self) -> Dict[str, Any]:
+    def get_translation_stats(self) -> dict[str, Any]:
         """Получава статистики за преводите"""
         try:
             languages = self.get_supported_languages()
@@ -742,7 +737,6 @@ class TranslationService:
             print(f"❌ Error getting translation stats: {str(e)}")
             return {}
 
-    @lru_cache(maxsize=1000)
     def format_date(self, date_obj, language_code: str = None) -> str:
         """Форматира дата според езиковите настройки"""
         if not language_code:
@@ -755,7 +749,6 @@ class TranslationService:
         # Default format
         return date_obj.strftime("%d.%m.%Y")
 
-    @lru_cache(maxsize=1000)
     def format_time(self, time_obj, language_code: str = None) -> str:
         """Форматира време според езиковите настройки"""
         if not language_code:
@@ -779,7 +772,7 @@ def t(key: str, language_code: str = None, **variables) -> str:
     return translation_service.get_translation(key, language_code, variables)
 
 
-def get_supported_languages() -> List[SupportedLanguage]:
+def get_supported_languages() -> list[SupportedLanguage]:
     """Бърз helper за поддържани езици"""
     return translation_service.get_supported_languages()
 
