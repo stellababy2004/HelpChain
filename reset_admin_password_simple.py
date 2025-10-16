@@ -2,6 +2,7 @@
 """
 Reset admin password to Admin123
 """
+
 import os
 import sys
 
@@ -9,7 +10,7 @@ import sys
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
 sys.path.insert(0, backend_dir)
 
-from appy import app, db, AdminUser
+from appy import app, db, AdminUser  # noqa: E402
 
 
 def reset_admin_password():
@@ -26,7 +27,7 @@ def reset_admin_password():
         admin_user.set_password("Admin123")
         db.session.commit()
 
-        print(f"Password reset successful")
+        print("Password reset successful")
         print(f"New password hash: {admin_user.password_hash}")
 
         # Verify it works

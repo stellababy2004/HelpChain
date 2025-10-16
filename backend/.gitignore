@@ -133,3 +133,4 @@ Thumbs.db
 
 # Ignore prettier cache
 node_modules/.cache/prettier/
+.git_clean_backup/
