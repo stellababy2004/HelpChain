@@ -11,7 +11,7 @@ import re
 
 def test_admin_login():
     """Test the complete admin login flow with email 2FA"""
-    base_url = "http://127.0.0.1:8000"
+    base_url = "http://127.0.0.1:5000"
 
     # Start a session to maintain cookies
     session = requests.Session()
@@ -27,7 +27,7 @@ def test_admin_login():
 
     print("2. Attempting login with credentials...")
     # Step 2: Post login credentials
-    login_data = {"username": "admin", "password": "admin123"}
+    login_data = {"username": "admin", "password": "Admin123"}
 
     response = session.post(
         f"{base_url}/admin_login", data=login_data, allow_redirects=False

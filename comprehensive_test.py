@@ -49,7 +49,10 @@ class HelpChainTester:
                 return False
 
             # Test login with correct credentials
-            login_data = {"username": "admin", "password": os.getenv("ADMIN_PASSWORD", "Admin123")}
+            login_data = {
+                "username": "admin",
+                "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
+            }
             response = self.session.post(
                 f"{BASE_URL}/admin_login", data=login_data, allow_redirects=False
             )

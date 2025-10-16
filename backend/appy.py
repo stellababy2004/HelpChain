@@ -394,8 +394,26 @@ os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
 _templates = os.path.join(os.path.dirname(__file__), "templates")
 _static = os.path.join(os.path.dirname(__file__), "static")
 
-# Създаваме приложението с правилните пътища
+# from flask_session import Session
+
+# Initialize Flask app
 app = Flask(__name__, template_folder=_templates, static_folder=_static)
+
+# Задаваме SECRET_KEY за сесии и сигурност ПРЕДИ Flask-Session инициализация
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY", "dev-secret-key-change-in-production"
+)
+
+# TEMPORARILY DISABLE Flask-Session to test standard Flask sessions
+# Configure Flask-Session for better session persistence in development
+# app.config['SESSION_TYPE'] = 'filesystem'  # Store sessions on filesystem
+# app.config['SESSION_FILE_DIR'] = os.path.join(os.path.dirname(__file__), 'flask_sessions')
+# app.config['SESSION_PERMANENT'] = True
+# app.config['SESSION_USE_SIGNER'] = True
+# app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour
+
+# Initialize Flask-Session
+# Session(app)
 
 
 # Initialize Celery (optional - app will work without it)
@@ -434,10 +452,7 @@ if celery:
         enable_utc=True,
     )
 
-# Задаваме SECRET_KEY за сесии и сигурност
-app.config["SECRET_KEY"] = os.getenv(
-    "SECRET_KEY", "dev-secret-key-change-in-production"
-)
+# Задаваме SECRET_KEY за сесии и сигурност - ПРЕМЕСТЕН ПО-ГОРЕ ПРЕДИ Session(app)
 
 # Конфигурация за URL генерация извън контекста на заявка
 # app.config["SERVER_NAME"] = os.getenv("SERVER_NAME", "localhost:3000")
@@ -752,6 +767,27 @@ talisman = Talisman(
     feature_policy={},  # Deprecated, but keeping for compatibility
 )
 
+
+# Add CSP headers manually to ensure they are applied
+@app.after_request
+def add_csp_headers(response):
+    """Add Content Security Policy headers to all responses"""
+    csp_value = (
+        "default-src 'self'; "
+        "font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+        "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-inline'; "
+        "style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com "
+        "https://cdn.jsdelivr.net 'unsafe-inline'; "
+        "connect-src 'self' https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https://helpchain.live *; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'"
+    )
+    response.headers["Content-Security-Policy"] = csp_value
+    return response
+
+
 # csrf = CSRFProtect(app)  # Disabled for development testing
 
 # CORS configuration - STRICT allowlist (no wildcards)
@@ -965,6 +1001,13 @@ def admin_login():
     logger.debug(
         f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}"
     )
+    # DEBUG: Log current session state
+    logger.info(f"admin_login called - session keys: {list(session.keys())}")
+    logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
+    logger.info(
+        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
+    )
+    logger.info(f"Session object id: {id(session)}")
     error = None
     if request.method == "POST":
         logger.info("Processing admin login POST request")
@@ -1041,6 +1084,17 @@ def admin_logout():
 @app.route("/admin_dashboard", endpoint="admin_dashboard")
 @require_admin_login
 def admin_dashboard():
+    # DEBUG: Log session state
+    app.logger.info(f"admin_dashboard called - session keys: {list(session.keys())}")
+    app.logger.info(f"admin_logged_in: {session.get('admin_logged_in')}")
+    app.logger.info(f"admin_user_id: {session.get('admin_user_id')}")
+    app.logger.info(f"admin_username: {session.get('admin_username')}")
+    app.logger.info(
+        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
+    )
+    app.logger.info(f"Session object id: {id(session)}")
+    app.logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
+
     # Get filter parameter
     filter_param = request.args.get("filter", "all")
 
@@ -4455,9 +4509,9 @@ def admin_analytics():
 
 
 if __name__ == "__main__":
-    print("🚀 HelpChain server starting...")
-    print("📍 http://127.0.0.1:5000")
-    print("👤 Admin: admin / Admin123")
+    print("HelpChain server starting...")
+    print("http://127.0.0.1:5000")
+    print("Admin: admin / Admin123")
     print("Press Ctrl+C to stop")
-    debug_mode = False  # Temporarily disable debug mode
-    app.run(debug=debug_mode, host="127.0.0.1", port=5000)
+    debug_mode = True  # Enable debug mode to see errors
+    app.run(debug=debug_mode, host="127.0.0.1", port=5000, use_reloader=False)

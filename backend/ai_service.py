@@ -199,7 +199,7 @@ class AIService:
                     )
                 else:
                     openai.api_key = openai_provider.api_key
-                    logger.info("✅ OpenAI configured successfully")
+                    logger.info("OpenAI configured successfully")
 
             # Setup Gemini (only if SDK is available)
             gemini_provider = get_ai_config().get_provider("gemini")
@@ -210,7 +210,7 @@ class AIService:
                     )
                 else:
                     genai.configure(api_key=gemini_provider.api_key)
-                    logger.info("✅ Gemini configured successfully")
+                    logger.info("Gemini configured successfully")
 
         except Exception as e:
             logger.error(f"❌ Error setting up AI providers: {e}")
