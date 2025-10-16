@@ -9,23 +9,27 @@ HelpChain Translation Service
 - Quality control
 """
 
-from typing import Dict, List, Optional, Any
-from functools import lru_cache
-from datetime import datetime, timedelta
 import threading
+from datetime import datetime, timedelta
+from functools import lru_cache
+from typing import Any, Dict, List, Optional
 
-from .models import (
-    db,
+from backend.ai_service import ai_service
+from backend.models import (
+    ContentTranslation,
     SupportedLanguage,
-    TranslationKey,
     Translation,
+    TranslationKey,
+    UserLanguagePreference,
+    db,
+)
     UserLanguagePreference,
     ContentTranslation,
 )
 
 # AI Translation dependencies
 try:
-    from ai_service import ai_service
+    from backend.ai_service import ai_service
 
     AI_TRANSLATION_AVAILABLE = True
 except ImportError:
