@@ -875,7 +875,7 @@ def internal_server_error(error):
 
     # Track error in analytics if available
     try:
-        from analytics_service import analytics_service
+        from backend.analytics_service import analytics_service
 
         analytics_service.track_event(
             event_type="error",
@@ -1211,7 +1211,7 @@ def admin_approve_request(request_id):
 
         # Track analytics
         try:
-            from analytics_service import analytics_service
+            from backend.analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="request_action",
@@ -1258,7 +1258,7 @@ def admin_reject_request(request_id):
 
         # Track analytics
         try:
-            from analytics_service import analytics_service
+            from backend.analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="request_action",
@@ -1316,7 +1316,7 @@ def admin_assign_volunteer(request_id):
 
         # Track analytics
         try:
-            from analytics_service import analytics_service
+            from backend.analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="request_action",
@@ -1369,7 +1369,7 @@ def admin_delete_request(request_id):
 
         # Track analytics
         try:
-            from analytics_service import analytics_service
+            from backend.analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="request_action",
@@ -2732,7 +2732,7 @@ def chatbot_message():
 
         # Track conversation for analytics
         try:
-            from analytics_service import analytics_service
+            from backend.analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="chatbot_interaction",
@@ -2908,8 +2908,8 @@ def achievements():
 
         # Import gamification service
         try:
-            from gamification_service import GamificationService
-            from models import Achievement
+            from backend.gamification_service import GamificationService
+            from backend.models import Achievement
         except ImportError:
             # Fallback for standalone execution
             from backend.gamification_service import GamificationService
@@ -4437,7 +4437,7 @@ def update_task_progress(task_id):
 def admin_analytics():
     """Advanced Analytics Dashboard с real-time графики и прогнози"""
     try:
-        from analytics_service import analytics_service
+        from backend.analytics_service import analytics_service
 
         # Получаваме основни статистики
         dashboard_stats = analytics_service.get_dashboard_analytics(days=30)

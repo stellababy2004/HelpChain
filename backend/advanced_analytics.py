@@ -6,13 +6,13 @@ Real-time notifications, predictive analytics, και advanced visualizations
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-# Try relative imports first, fall back to absolute imports for standalone execution
+# Try absolute imports first, fall back to relative imports for standalone execution
 try:
+    from backend.extensions import db
+    from backend.models import User, Volunteer, HelpRequest
+except ImportError:
     from .extensions import db
     from .models import User, Volunteer, HelpRequest
-except ImportError:
-    from extensions import db
-    from models import User, Volunteer, HelpRequest
 
 from models_with_analytics import (
     AnalyticsEvent,
