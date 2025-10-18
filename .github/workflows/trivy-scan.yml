@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Run Trivy IaC Scanner
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
         with:
           scan-type: "config"
           scan-ref: "."
@@ -43,13 +43,12 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Run Trivy Repository Scanner
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
         with:
           scan-type: "fs"
           scan-ref: "."
           format: "sarif"
           output: "trivy-repo-results.sarif"
-          skip-dirs: "node_modules,.git,.venv,venv,__pycache__,.pytest_cache"
 
       - name: Upload Trivy Repo SARIF
         uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0
