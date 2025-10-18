@@ -19,13 +19,20 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: Fail on version tags
+      - name: Fail on problematic version tags
         run: |
           set -euo pipefail
-          if grep -RHEn "uses:\s*[^@]+@v[0-9]+" .github/workflows; then
-            echo "❌ Found version tags (@vN). Use 40-char commit SHAs."; exit 1
+          PROBLEMATIC_TAGS=$(grep -RHEn "uses:\s*(actions/checkout@v[0-9]|aquasecurity/trivy-action@master|github/codeql-action/upload-sarif@v[0-9])" .github/workflows || true)
+          if [ -n "$PROBLEMATIC_TAGS" ]; then
+            echo "❌ Found problematic version tags that must be pinned to SHAs:"
+            echo "$PROBLEMATIC_TAGS"
+            echo "Replace with:"
+            echo "actions/checkout@v4 -> actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
+            echo "aquasecurity/trivy-action@master -> aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8"
+            echo "github/codeql-action/upload-sarif@v3 -> github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0"
+            exit 1
           else
-            echo "✅ No version tags found."
+            echo "✅ No problematic version tags found."
           fi
       - name: Require 40-char SHAs
         run: |
