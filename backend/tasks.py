@@ -58,6 +58,11 @@ try:
 except ImportError:
     from backend.analytics_service import analytics_service
 
+try:
+    from smart_matching import smart_matching_service
+except ImportError:
+    from backend.smart_matching import smart_matching_service
+
 logger = logging.getLogger(__name__)
 
 
@@ -251,9 +256,8 @@ def auto_evaluate_tasks(self):
                 Върни JSON с оценки и коментар.
                 """
 
-                ai_response = ai_service.generate_response(evaluation_prompt, "system")
-                # Parse AI response and create performance record
-                # This would need proper JSON parsing from AI response
+                # TODO: Parse AI response and create performance record
+                ai_service.generate_response(evaluation_prompt, "system")
 
                 performance = TaskPerformance(
                     task_id=task.id,
@@ -378,7 +382,8 @@ def cleanup_old_data(self):
         db.session.commit()
 
         logger.info(
-            f"Data cleanup completed. Deleted {deleted_events} events and {deleted_messages} messages"
+            f"Data cleanup completed. Deleted {deleted_events} events and "
+            f"{deleted_messages} messages"
         )
 
     except Exception as e:
@@ -416,21 +421,8 @@ def process_ml_analysis(self, request_id):
             return
 
         # AI-powered categorization
-        categorization_prompt = f"""
-        Класифицирай следната заявка за помощ и определи:
-        1. Категория (здравеопазване, образование, социални услуги, техническа помощ, други)
-        2. Приоритет (urgent, high, medium, low)
-        3. Ключови думи за търсене на доброволци
-        4. Препоръчителни умения на доброволеца
-
-        Заявка: {request.message}
-        Локация: {request.location_text or "Не е посочена"}
-
-        Върни резултата като JSON.
-        """
-
         # TODO: Parse AI response and update request
-        # ai_response = ai_service.generate_response(categorization_prompt, "system")
+        # ai_service.generate_response(categorization_prompt, "system")
 
         # Update request with AI categorization
         request.category = "AI_analyzed"  # Placeholder
@@ -708,7 +700,8 @@ def generate_performance_report(self, volunteer_id=None, period="weekly"):
                 self.send_notification.delay(
                     admin.email,
                     f"Общ отчет за представянето - {period}",
-                    f"Отчетът за всички доброволци е готов. Общо оценки: {report['total_performances']}",
+                    f"Отчетът за всички доброволци е готов. "
+                    f"Общо оценки: {report['total_performances']}",
                 )
 
         logger.info(f"Performance report generated for period: {period}")

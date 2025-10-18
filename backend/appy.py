@@ -732,8 +732,12 @@ mail = Mail(app)
 
 # Security configurations
 app.config["SESSION_COOKIE_SECURE"] = True  # Require HTTPS for session cookies
-app.config["SESSION_COOKIE_HTTPONLY"] = True  # Prevent JavaScript access to session cookies
-app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # CSRF protection while allowing some cross-site requests
+app.config["SESSION_COOKIE_HTTPONLY"] = (
+    True  # Prevent JavaScript access to session cookies
+)
+app.config["SESSION_COOKIE_SAMESITE"] = (
+    "Lax"  # CSRF protection while allowing some cross-site requests
+)
 
 # Upload folder configuration
 app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
@@ -868,7 +872,8 @@ talisman = Talisman(
 #     csp_value = (
 #         "default-src 'self'; "
 #         "font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
-#         "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-inline'; "
+#         "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net "
+#         "'unsafe-inline'; "
 #         "style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com "
 #         "https://cdn.jsdelivr.net 'unsafe-inline'; "
 #         "connect-src 'self' https://cdn.jsdelivr.net; "
@@ -2329,7 +2334,9 @@ def add_volunteer():
 
 
 @app.route("/submit_request", methods=["GET", "POST"])
-@limiter.limit("5 per minute; 20 per hour; 50 per day")  # Stricter limits for form submissions
+@limiter.limit(
+    "5 per minute; 20 per hour; 50 per day"
+)  # Stricter limits for form submissions
 def submit_request():
     if request.method == "POST":
         # Enhanced input validation and sanitization
@@ -2479,7 +2486,9 @@ def terms():
 
 
 @app.route("/volunteer_register", methods=["GET", "POST"])
-@limiter.limit("3 per minute; 10 per hour; 25 per day")  # Very strict limits for registrations
+@limiter.limit(
+    "3 per minute; 10 per hour; 25 per day"
+)  # Very strict limits for registrations
 def volunteer_register():
     if request.method == "POST":
         name = request.form.get("name")
@@ -5335,7 +5344,5 @@ if __name__ == "__main__":
             app.run(debug=debug_mode, host="127.0.0.1", port=8000, use_reloader=False)
     except Exception as e:
         print(f"Server crashed with error: {e}")
-        import traceback
-
         traceback.print_exc()
         raise
