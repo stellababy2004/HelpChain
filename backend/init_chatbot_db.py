@@ -1,6 +1,7 @@
 """
 Скрипт за инициализация на чатбот базата данни с начални FAQ данни
 """
+
 from datetime import datetime
 
 from appy import app

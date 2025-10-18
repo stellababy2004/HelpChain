@@ -1,5 +1,3 @@
-
-
 class TestAPIAuthentication:
     """Тестове за API автентикация"""
 
