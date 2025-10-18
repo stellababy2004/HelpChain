@@ -3,23 +3,15 @@ name: Maintenance check
 on:
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
 jobs:
   check-node:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v5
 
       - name: Run maintenance script
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        uses: actions/github-script@v8
         with:
           script: |
             core.info(`Node version: ${process.version}`);

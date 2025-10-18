@@ -7,10 +7,6 @@ on:
     - cron: "0 2 * * *" # всеки ден 02:00 UTC
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
   security-events: write
@@ -18,7 +14,6 @@ permissions:
 jobs:
   zap-baseline:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
       - name: Set target URL
         run: |
@@ -39,7 +34,7 @@ jobs:
           echo "Scanning target: $TARGET_URL"
 
       - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@2b5fc7f98d837319798ab7f128ea50b7d40563b6
+        uses: zaproxy/action-baseline@v0.14.0
         with:
           target: ${{ env.TARGET_URL }}
           rules_file_name: .zap/rules.tsv
@@ -56,7 +51,7 @@ jobs:
           cp -r report.* zap/ || true
 
       - name: Upload ZAP artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@v4
         with:
           name: zap-baseline-report
           path: zap/
