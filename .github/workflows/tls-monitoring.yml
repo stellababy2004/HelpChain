@@ -5,6 +5,10 @@ on:
     - cron: "0 6 * * *" # Daily at 06:00 UTC
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   issues: write # To create issues on TLS failures
@@ -12,6 +16,7 @@ permissions:
 jobs:
   ssl-labs-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Target URL
         run: |
@@ -112,6 +117,7 @@ jobs:
 
   hsts-preload-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check HSTS Preload Status
         run: |
