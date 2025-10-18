@@ -1,10 +1,12 @@
-from ..extensions import db
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+import json
 from datetime import datetime
 from enum import Enum
+
 import pyotp
-import json
+from flask_login import UserMixin
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from ..extensions import db
 
 
 class AdminRole(Enum):

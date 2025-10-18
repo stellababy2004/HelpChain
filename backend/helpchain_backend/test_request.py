@@ -4,6 +4,7 @@ Test script to simulate submitting a request and check email notification
 """
 import os
 import sys
+
 from dotenv import load_dotenv
 
 # Add the src directory to the path
@@ -54,23 +55,21 @@ def test_request_submission():
                 # Check if email is in mock mode
                 if os.environ.get("MAIL_MOCK", "").lower() in ["true", "1"]:
                     print(
-                        "📧 [MOCK MODE] Email notification for request ID {}:".format(
-                            req.id
-                        )
+                        f"📧 [MOCK MODE] Email notification for request ID {req.id}:"
                     )
                     print("📧 Subject: Нова заявка за помощ в HelpChain")
                     print("📧 To: contact@helpchain.live")
                     print("📧 From: {}".format(app.config["MAIL_DEFAULT_SENDER"]))
                     print("📧 Body:")
                     print("    Нова заявка за помощ:")
-                    print("    ID: {}".format(req.id))
-                    print("    Име: {}".format(req.name))
-                    print("    Имейл: {}".format(req.email))
-                    print("    Телефон: {}".format(req.phone))
-                    print("    Локация: {}".format(req.location))
-                    print("    Категория: {}".format(req.category))
-                    print("    Описание: {}".format(req.description))
-                    print("    Спешност: {}".format(req.urgency))
+                    print(f"    ID: {req.id}")
+                    print(f"    Име: {req.name}")
+                    print(f"    Имейл: {req.email}")
+                    print(f"    Телефон: {req.phone}")
+                    print(f"    Локация: {req.location}")
+                    print(f"    Категория: {req.category}")
+                    print(f"    Описание: {req.description}")
+                    print(f"    Спешност: {req.urgency}")
                     print("✅ [MOCK MODE] Email logged successfully!")
                     return
 

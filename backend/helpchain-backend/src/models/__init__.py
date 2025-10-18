@@ -1,10 +1,12 @@
-from ..extensions import db
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
+import json
 from datetime import datetime
 from enum import Enum
+
 import pyotp
-import json
+from flask_login import UserMixin
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from ..extensions import db
 
 
 class AdminRole(Enum):
@@ -33,6 +35,9 @@ class AdminUser(UserMixin, db.Model):
 
     # Метаданни
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     last_login = db.Column(db.DateTime, nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     failed_login_attempts = db.Column(db.Integer, default=0)
@@ -128,6 +133,11 @@ class Request(db.Model):
     urgency = db.Column(db.String(20))
     status = db.Column(db.String(20), default="pending")
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp(),
+    )
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
@@ -145,6 +155,11 @@ class RequestLog(db.Model):
     request_id = db.Column(db.Integer, db.ForeignKey("request.id"))
     status = db.Column(db.String(20))
     changed_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp(),
+    )
 
 
 class Volunteer(db.Model):
@@ -155,6 +170,11 @@ class Volunteer(db.Model):
     skills = db.Column(db.Text, nullable=True)
     location = db.Column(db.String(150), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp(),
+    )
 
 
 class Feedback(db.Model):
@@ -163,6 +183,11 @@ class Feedback(db.Model):
     email = db.Column(db.String(150), nullable=False)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp(),
+    )
 
 
 class VideoChatSession(db.Model):
@@ -183,6 +208,9 @@ class VideoChatSession(db.Model):
     ended_at = db.Column(db.DateTime, nullable=True)
     duration = db.Column(db.Integer, nullable=True)  # в секунди
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relationships
     initiator = db.relationship(

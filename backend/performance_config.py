@@ -5,8 +5,8 @@ Performance Configuration за HelpChain Analytics
 
 # from flask_caching import Cache  # Преместен за избягване на circular import
 # from flask_compress import Compress  # Преместен за избягване на circular import
-import os
 import logging
+import os
 
 
 # Performance Configuration
@@ -91,6 +91,7 @@ def init_performance_optimizations(app):
     def before_request():
         """Record request start time за performance monitoring"""
         import time
+
         from flask import g
 
         g.start_time = time.time()
@@ -99,6 +100,7 @@ def init_performance_optimizations(app):
     def after_request(response):
         """Log request performance metrics"""
         import time
+
         from flask import g, request
 
         if hasattr(g, "start_time"):
@@ -129,6 +131,7 @@ def cache_analytics_data(timeout=None, key_prefix="analytics"):
         key_prefix: Prefix за cache key
     """
     from functools import wraps
+
     from flask import request
 
     def decorator(f):
@@ -358,6 +361,7 @@ class PerformanceMonitor:
         @app.before_request
         def start_timer():
             import time
+
             from flask import g
 
             g.start_time = time.time()
@@ -365,6 +369,7 @@ class PerformanceMonitor:
         @app.after_request
         def record_metrics(response):
             import time
+
             from flask import g, request
 
             if hasattr(g, "start_time"):

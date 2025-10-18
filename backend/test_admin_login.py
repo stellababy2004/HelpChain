@@ -5,7 +5,7 @@ import sys
 backend_dir = os.path.dirname(__file__)
 sys.path.insert(0, backend_dir)
 
-from appy import app, db
+from appy import app
 
 
 def test_admin_login():

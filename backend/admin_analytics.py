@@ -1,21 +1,21 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Модул за административен анализ и статистики
 Съдържа функции за изчисляване на статистики в реално време,
 филтриране, търсене и геолокационна аналитика
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from datetime import datetime, timedelta
-from sqlalchemy import func, or_
-from models import User, Volunteer, HelpRequest
-from models import AuditLog
 from collections import defaultdict
+from datetime import datetime, timedelta
+
+from sqlalchemy import func, or_
+
+from models import AuditLog, HelpRequest, User, Volunteer
 
 # Import db from extensions
 try:

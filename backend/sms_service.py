@@ -3,8 +3,9 @@ HelpChain SMS Service
 Handles sending notification SMS messages
 """
 
-import requests
 import logging
+
+import requests
 from flask import current_app
 
 logger = logging.getLogger(__name__)

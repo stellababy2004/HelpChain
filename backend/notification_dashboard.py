@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HelpChain Notification Dashboard
 Web interface to view email notifications and requests
@@ -8,15 +7,16 @@ Web interface to view email notifications and requests
 import os
 import sqlite3
 from datetime import datetime
+
+from dotenv import load_dotenv
 from flask import (
     Flask,
-    render_template_string,
-    redirect,
-    url_for,
     flash,
+    redirect,
+    render_template_string,
+    url_for,
 )
 from flask_mail import Mail, Message
-from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()

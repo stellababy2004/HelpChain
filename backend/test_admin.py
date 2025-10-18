@@ -1,5 +1,4 @@
-import os
-from appy import app, AdminUser
+from appy import AdminUser, app
 
 with app.app_context():
     admin = AdminUser.query.filter_by(username="admin").first()

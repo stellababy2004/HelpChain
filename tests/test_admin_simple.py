@@ -1,5 +1,4 @@
 import requests
-import time
 import os
 
 # Test admin login on port 8000

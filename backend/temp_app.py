@@ -16,7 +16,8 @@ from flask import (
     session,
     url_for,
 )
-from flask_babel import Babel, gettext as _
+from flask_babel import Babel
+from flask_babel import gettext as _
 from flask_mail import Mail
 from flask_migrate import Migrate
 from jinja2 import ChoiceLoader, FileSystemLoader
@@ -24,7 +25,7 @@ from sqlalchemy.exc import OperationalError
 from werkzeug.utils import secure_filename
 
 # Поправи всички relative imports на absolute
-from backend.models import db, Volunteer  # Вместо 'from .models import'
+from backend.models import Volunteer, db  # Вместо 'from .models import'
 
 # Import for 2FA testing
 # try:

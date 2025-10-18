@@ -1,44 +1,45 @@
+import datetime
 import os
+import sqlite3
+import uuid
+
 from dotenv import load_dotenv
 
 # All imports at the top
 from flask import (
     Flask,
+    flash,
+    redirect,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
     session,
+    url_for,
 )
+from flask_babel import get_locale, refresh
 from flask_login import (
     LoginManager,
-    login_user,
-    login_required,
-    logout_user,
     current_user,
+    login_required,
+    login_user,
+    logout_user,
 )
-from werkzeug.utils import secure_filename
-from .routes.api import api_bp
-from .config import Config
-from .extensions import db, babel, mail, migrate
-from flask_babel import get_locale, refresh
 from flask_mail import Message
-import datetime
-from .controllers.helpchain_controller import HelpChainController
-from .models import (
-    Request,
-    RequestLog,
-    AdminUser,
-)
-from backend.models import ChatRoom, ChatMessage
+from flask_socketio import SocketIO, emit, join_room, leave_room
+from werkzeug.utils import secure_filename
 
 # from backend.models_with_analytics import VideoChatSession
-from backend.models import User
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from backend.models import ChatMessage, ChatRoom, User
+
 from ...analytics_service import analytics_service
-import uuid
-import sqlite3
+from .config import Config
+from .controllers.helpchain_controller import HelpChainController
+from .extensions import babel, db, mail, migrate
+from .models import (
+    AdminUser,
+    Request,
+    RequestLog,
+)
+from .routes.api import api_bp
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 print(f"MAILTRAP_USERNAME from env: {os.environ.get('MAILTRAP_USERNAME')}")
@@ -94,31 +95,6 @@ def create_app(config_object=None):
     # Import models before creating tables
     from backend.models import (
         User,
-        Role,
-        Permission,
-        UserRole,
-        RolePermission,
-        Volunteer,
-        AuditLog,
-        HelpRequest,
-        ChatRoom,
-        ChatParticipant,
-        ChatMessage,
-    )
-    from backend.models_with_analytics import (
-        AdminLog,
-        TwoFactorAuth,
-        AdminSession,
-        Feedback,
-        SuccessStory,
-        VideoChatSession,
-        AnalyticsEvent,
-        UserBehavior,
-        PerformanceMetrics,
-        ChatbotConversation,
-        Task,
-        TaskAssignment,
-        TaskPerformance,
     )
 
     # from .models import Request, RequestLog, Volunteer, Feedback, User  # Remove this duplicate import
@@ -594,7 +570,7 @@ ID: {volunteer.id}
     @login_required
     def video_chat():
         """Показва списък с активни видео чат сесии"""
-        from .models import VideoChatSession, User
+        from .models import User, VideoChatSession
 
         # Показваме активни сесии където текущият потребител участва
         active_sessions = VideoChatSession.query.filter(
@@ -618,7 +594,7 @@ ID: {volunteer.id}
     @login_required
     def start_video_chat(user_id):
         """Започва нова видео чат сесия с даден потребител"""
-        from .models import VideoChatSession, User
+        from .models import User, VideoChatSession
 
         participant = User.query.get_or_404(user_id)
 

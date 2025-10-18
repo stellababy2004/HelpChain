@@ -1,11 +1,11 @@
 # ...existing code...
+import os
 import subprocess
 import time
-import requests
 import webbrowser
-import os
 from pathlib import Path
 
+import requests
 
 try:
     import qrcode

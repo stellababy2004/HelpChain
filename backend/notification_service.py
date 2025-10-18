@@ -12,30 +12,57 @@ HelpChain Notification Service
 """
 
 import json
+import os
 import smtplib
 import ssl
-from datetime import datetime, timedelta
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.header import Header
-from typing import Dict, List, Optional, Any
 import threading
 import time
-from jinja2 import Template
-import os
+from datetime import datetime, timedelta
+from email.header import Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import Any
 
-from .models import (
-    db,
-    NotificationTemplate,
-    NotificationQueue,
-    Notification,
-    NotificationPreference,
-    PushSubscription,
-)
+from jinja2 import Template
+
+# Try different import strategies for models
+try:
+    from .models import (
+        Notification,
+        NotificationPreference,
+        NotificationQueue,
+        NotificationTemplate,
+        PushSubscription,
+        db,
+    )
+except ImportError:
+    try:
+        from models import (
+            Notification,
+            NotificationPreference,
+            NotificationQueue,
+            NotificationTemplate,
+            PushSubscription,
+            db,
+        )
+    except ImportError:
+        # For standalone execution
+        import os
+        import sys
+
+        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+        from models import (
+            Notification,
+            NotificationPreference,
+            NotificationQueue,
+            NotificationTemplate,
+            PushSubscription,
+            db,
+        )
 
 # Web Push dependencies (ще се инсталират при нужда)
 try:
-    from pywebpush import webpush, WebPushException
+    from pywebpush import WebPushException, webpush
 
     PUSH_AVAILABLE = True
 except ImportError:
@@ -52,7 +79,7 @@ class NotificationService:
         self.templates_cache = {}
         self.processing_queue = False
 
-    def _load_email_config(self) -> Dict[str, Any]:
+    def _load_email_config(self) -> dict[str, Any]:
         """Зарежда email конфигурация"""
         return {
             "smtp_server": os.getenv("MAIL_SERVER", "smtp.zoho.eu"),
@@ -63,7 +90,7 @@ class NotificationService:
             "use_ssl": os.getenv("MAIL_USE_SSL", "True").lower() == "true",
         }
 
-    def _load_push_config(self) -> Dict[str, str]:
+    def _load_push_config(self) -> dict[str, str]:
         """Зарежда push notification конфигурация"""
         return {
             "vapid_public_key": os.getenv("VAPID_PUBLIC_KEY", ""),
@@ -83,7 +110,7 @@ class NotificationService:
         subject: str = None,
         title: str = None,
         content: str = "",
-        variables: List[str] = None,
+        variables: list[str] = None,
         **kwargs,
     ) -> NotificationTemplate:
         """Създава нов шаблон за нотификации"""
@@ -118,7 +145,7 @@ class NotificationService:
             print(f"❌ Грешка при създаване на шаблон: {str(e)}")
             raise
 
-    def get_template(self, name: str) -> Optional[NotificationTemplate]:
+    def get_template(self, name: str) -> NotificationTemplate | None:
         """Получава шаблон по име (с кеширане)"""
         if name in self.templates_cache:
             return self.templates_cache[name]
@@ -132,8 +159,8 @@ class NotificationService:
         return template
 
     def render_template(
-        self, template: NotificationTemplate, variables: Dict[str, Any]
-    ) -> Dict[str, str]:
+        self, template: NotificationTemplate, variables: dict[str, Any]
+    ) -> dict[str, str]:
         """Рендерира шаблон с променливи"""
         try:
             result = {}
@@ -168,7 +195,7 @@ class NotificationService:
         recipient_email: str,
         recipient_type: str = "volunteer",
         recipient_id: int = None,
-        personalization_data: Dict[str, Any] = None,
+        personalization_data: dict[str, Any] = None,
         priority: str = "normal",
         scheduled_for: datetime = None,
     ) -> NotificationQueue:
@@ -199,7 +226,7 @@ class NotificationService:
             print(f"❌ Грешка при добавяне в опашката: {str(e)}")
             raise
 
-    def process_queue(self, max_items: int = 100) -> Dict[str, int]:
+    def process_queue(self, max_items: int = 100) -> dict[str, int]:
         """Обработва опашката за нотификации"""
         if self.processing_queue:
             return {"skipped": 1, "reason": "already_processing"}
@@ -555,7 +582,7 @@ class NotificationService:
         self,
         queue_item: NotificationQueue,
         template: NotificationTemplate,
-        rendered: Dict[str, str],
+        rendered: dict[str, str],
     ):
         """Създава запис в историята на нотификациите"""
         try:
@@ -578,7 +605,7 @@ class NotificationService:
         except Exception as e:
             print(f"⚠️  Грешка при създаване на notification record: {str(e)}")
 
-    def get_notification_stats(self, days: int = 30) -> Dict[str, Any]:
+    def get_notification_stats(self, days: int = 30) -> dict[str, Any]:
         """Получава статистики за нотификациите"""
         try:
             start_date = datetime.utcnow() - timedelta(days=days)
@@ -675,7 +702,7 @@ notification_service = NotificationService()
 def send_notification(
     template_name: str,
     recipient_email: str,
-    personalization_data: Dict[str, Any] = None,
+    personalization_data: dict[str, Any] = None,
     **kwargs,
 ):
     """Бърз начин за изпращане на нотификация"""

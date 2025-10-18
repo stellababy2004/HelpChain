@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Database migration script for AI features
 Добавя нови полета за AI функционалност

@@ -4,7 +4,6 @@ Test script to verify volunteer registration validation fixes
 """
 
 import requests
-import json
 
 
 def test_volunteer_registration():

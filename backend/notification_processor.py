@@ -4,9 +4,11 @@ Background Notification Processor за HelpChain
 """
 
 import time
+
 import schedule
-from notification_service import notification_service
+
 from appy import app
+from notification_service import notification_service
 
 
 def process_notifications():

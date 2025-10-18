@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
-from appy import app
 from flask import flash, get_flashed_messages
+
+from appy import app
 
 load_dotenv()
 

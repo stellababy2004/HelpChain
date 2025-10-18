@@ -3,22 +3,18 @@ Advanced Analytics Features
 Real-time notifications, predictive analytics, και advanced visualizations
 """
 
-from datetime import datetime, timedelta
 from collections import defaultdict
+from datetime import datetime, timedelta
 
 # Try absolute imports first, fall back to relative imports for standalone execution
 try:
     from backend.extensions import db
-    from backend.models import User, Volunteer, HelpRequest
+    from backend.models import HelpRequest, User, Volunteer
 except ImportError:
     from .extensions import db
-    from .models import User, Volunteer, HelpRequest
 
 from models_with_analytics import (
     AnalyticsEvent,
-    UserBehavior,
-    PerformanceMetrics,
-    ChatbotConversation,
 )
 
 

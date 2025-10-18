@@ -108,8 +108,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background:
-          radial-gradient(
+        background: radial-gradient(
             circle at 20% 80%,
             rgba(120, 119, 198, 0.3) 0%,
             transparent 50%
@@ -568,6 +567,16 @@
                 <i class="fas fa-moon" aria-hidden="true"></i>
               </button>
             </li>
+            <li>
+              <button
+                class="btn btn-sm ms-2 focus-visible push-notifications"
+                id="pushNotifications"
+                title="Управление на push известия"
+                aria-label="Управление на push известия"
+              >
+                <i class="fas fa-bell" aria-hidden="true"></i>
+              </button>
+            </li>
           </ul>
         </div>
 
@@ -846,9 +855,13 @@
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/feedback.js') }}"></script>
     <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/notification_service.js') }}"></script>
     <script>
       // Initialize feedback system
       const feedback = new HelpChainFeedback();
+
+      // Initialize push notifications
+      const notificationService = new NotificationService();
 
       // Theme Toggle Functionality
       const themeToggle = document.getElementById("themeToggle");
@@ -870,7 +883,9 @@
 
         // Show toast notification for theme change
         feedback.showToast(
-          `Темата е превключена на ${newTheme === "light" ? "светла" : "тъмна"}`,
+          `Темата е превключена на ${
+            newTheme === "light" ? "светла" : "тъмна"
+          }`,
           "success",
           3000,
         );
@@ -945,6 +960,36 @@
             }, 150);
           });
         });
+
+        // Push notification button handler
+        const pushNotificationsBtn =
+          document.getElementById("pushNotifications");
+        if (pushNotificationsBtn) {
+          pushNotificationsBtn.addEventListener("click", async () => {
+            try {
+              const result = await notificationService.init();
+              if (result) {
+                feedback.showToast(
+                  "Push известията са активирани!",
+                  "success",
+                  3000,
+                );
+              } else {
+                feedback.showToast(
+                  "Push известията са деактивирани.",
+                  "info",
+                  3000,
+                );
+              }
+            } catch (error) {
+              feedback.showToast(
+                "Грешка при настройката на push известия",
+                "error",
+                5000,
+              );
+            }
+          });
+        }
 
         // Navbar scroll effect with reduced motion support
         const navbar = document.querySelector(".navbar-light");

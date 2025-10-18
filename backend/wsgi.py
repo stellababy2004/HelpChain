@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 # Add the backend directory to Python path so we can import models
 backend_dir = os.path.dirname(__file__)
@@ -14,7 +14,7 @@ print(f"Current directory: {os.getcwd()}")
 
 # Test imports before importing the app
 try:
-    from models import AdminUser, User, Volunteer, HelpRequest
+    from models import AdminUser, HelpRequest, User, Volunteer
 
     print("Models import successful")
 except ImportError as e:

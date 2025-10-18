@@ -8,15 +8,16 @@ from flask import (
     flash,
     jsonify,
     redirect,
+    render_template,
     request,
     session,
     url_for,
 )
 
 try:
-    from backend.permissions import require_admin_login
+    from permissions import require_admin_login
 except ImportError:
-    from backend.permissions import require_admin_login
+    from permissions import require_admin_login
 
 analytics_bp = Blueprint("analytics_main", __name__)
 
@@ -36,9 +37,9 @@ def analytics_page():
 def analytics_data():
     try:
         try:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
         except ImportError:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
         return jsonify(data)
@@ -47,9 +48,9 @@ def analytics_data():
         # Fallback to basic stats
         try:
             try:
-                from backend.admin_analytics import AnalyticsEngine
+                from admin_analytics import AnalyticsEngine
             except ImportError:
-                from backend.admin_analytics import AnalyticsEngine
+                from admin_analytics import AnalyticsEngine
 
             data = AnalyticsEngine.get_dashboard_stats()
             return jsonify(data)
@@ -110,9 +111,9 @@ def analytics_live():
     """Get live analytics data for real-time updates"""
     try:
         try:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
         except ImportError:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
 
@@ -174,9 +175,9 @@ def analytics_export():
         export_format = request.args.get("format", "json")
 
         try:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
         except ImportError:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
 
@@ -211,3 +212,170 @@ def analytics_export():
     except Exception as e:
         print(f"Error exporting analytics: {e}")
         return jsonify({"error": "Export failed", "details": str(e)})
+
+
+# Predictive Analytics Routes
+
+
+@analytics_bp.route("/predictive-analytics")
+def predictive_analytics_page():
+    """Predictive analytics dashboard page"""
+    if not session.get("admin_logged_in"):
+        flash("Предиктивната аналитика е достъпна само за администратори.", "info")
+        return redirect(url_for("admin_login"))
+
+    return render_template("predictive_analytics.html")
+
+
+@analytics_bp.route("/api/predictive/regional-demand")
+@require_admin_login
+def predictive_regional_demand():
+    """Get regional demand forecast"""
+    try:
+        region = request.args.get("region")
+        days_ahead = int(request.args.get("days", 7))
+
+        try:
+            from predictive_analytics import predictive_analytics
+        except ImportError:
+            return jsonify(
+                {
+                    "error": "Predictive analytics not available",
+                    "details": "Import failed",
+                }
+            )
+
+        data = predictive_analytics.get_regional_demand_forecast(
+            region=region, days_ahead=days_ahead
+        )
+        return jsonify(data)
+
+    except Exception as e:
+        print(f"Error getting regional demand forecast: {e}")
+        return jsonify(
+            {"error": "Failed to get regional demand forecast", "details": str(e)}
+        )
+
+
+@analytics_bp.route("/api/predictive/workload")
+@require_admin_login
+def predictive_workload():
+    """Get workload prediction"""
+    try:
+        hours_ahead = int(request.args.get("hours", 24))
+
+        try:
+            from predictive_analytics import predictive_analytics
+        except ImportError:
+            return jsonify(
+                {
+                    "error": "Predictive analytics not available",
+                    "details": "Import failed",
+                }
+            )
+
+        data = predictive_analytics.get_workload_prediction(hours_ahead=hours_ahead)
+        return jsonify(data)
+
+    except Exception as e:
+        print(f"Error getting workload prediction: {e}")
+        return jsonify(
+            {"error": "Failed to get workload prediction", "details": str(e)}
+        )
+
+
+@analytics_bp.route("/api/predictive/insights")
+@require_admin_login
+def predictive_insights():
+    """Get predictive insights and recommendations"""
+    try:
+        try:
+            from predictive_analytics import predictive_analytics
+        except ImportError:
+            return jsonify(
+                {
+                    "error": "Predictive analytics not available",
+                    "details": "Import failed",
+                }
+            )
+
+        data = predictive_analytics.get_predictive_insights()
+        return jsonify(data)
+
+    except Exception as e:
+        print(f"Error getting predictive insights: {e}")
+        return jsonify(
+            {"error": "Failed to get predictive insights", "details": str(e)}
+        )
+
+
+@analytics_bp.route("/api/predictive/model-info")
+@require_admin_login
+def predictive_model_info():
+    """Get information about predictive models"""
+    try:
+        try:
+            from predictive_analytics import predictive_analytics
+        except ImportError:
+            return jsonify(
+                {
+                    "error": "Predictive analytics not available",
+                    "details": "Import failed",
+                }
+            )
+
+        # Get sample predictions to show model capabilities
+        regional_sample = predictive_analytics.get_regional_demand_forecast(
+            days_ahead=1
+        )
+        workload_sample = predictive_analytics.get_workload_prediction(hours_ahead=1)
+
+        model_info = {
+            "regional_demand_model": {
+                "type": "Random Forest Regression",
+                "features": [
+                    "day_of_week",
+                    "month",
+                    "season",
+                    "historical_avg",
+                    "trend_factor",
+                    "volunteer_density",
+                    "population_density",
+                ],
+                "prediction_horizon": "1-30 days",
+                "accuracy_metrics": regional_sample.get("model_info", {}).get(
+                    "accuracy", "N/A"
+                ),
+                "last_trained": regional_sample.get("generated_at", "N/A"),
+            },
+            "workload_prediction_model": {
+                "type": "Gradient Boosting Regression",
+                "features": [
+                    "current_requests",
+                    "active_volunteers",
+                    "avg_response_time",
+                    "day_of_week",
+                    "hour_of_day",
+                    "season",
+                ],
+                "prediction_horizon": "1-168 hours",
+                "accuracy_metrics": workload_sample.get("model_info", {}).get(
+                    "accuracy", "N/A"
+                ),
+                "last_trained": workload_sample.get("generated_at", "N/A"),
+            },
+            "data_sources": [
+                "HelpRequest table (historical patterns)",
+                "Volunteer table (capacity data)",
+                "UserActivity table (engagement patterns)",
+                "Real-time system metrics",
+            ],
+            "update_frequency": "Real-time predictions with 1-hour cache",
+            "fallback_strategy": "Rule-based heuristics when ML models unavailable",
+        }
+
+        return jsonify(model_info)
+
+    except Exception as e:
+        print(f"Error getting model info: {e}")
+        return jsonify({"error": "Failed to get model information", "details": str(e)})
