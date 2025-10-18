@@ -19,19 +19,32 @@ jobs:
         run: |
           TARGET_URL="${{ vars.ZAP_TARGET_URL }}"
           if [ -z "$TARGET_URL" ]; then
-            # Default to production URL if variable not set
-            TARGET_URL="https://helpchain.live"
-            echo "Using default TARGET_URL: $TARGET_URL"
+            # For PRs, skip ZAP scan as preview deployments may not be accessible
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "Skipping ZAP scan for PR - preview deployment may not be accessible"
+              echo "SKIP_ZAP=true" >> $GITHUB_ENV
+              exit 0
+            else
+              # Default to production URL for main branch/scheduled runs
+              TARGET_URL="https://helpchain.live"
+              echo "Using default TARGET_URL: $TARGET_URL"
+            fi
           fi
           echo "TARGET_URL=$TARGET_URL" >> $GITHUB_ENV
 
-      - name: Validate target
+      - name: Validate target accessibility
         run: |
-          if [ -z "$TARGET_URL" ]; then
-            echo "Error: TARGET_URL is not set"
-            exit 1
+          if [ "${{ env.SKIP_ZAP }}" = "true" ]; then
+            echo "Skipping ZAP scan as requested"
+            exit 0
           fi
-          echo "Scanning target: $TARGET_URL"
+
+          echo "Testing accessibility of: ${{ env.TARGET_URL }}"
+          if ! curl -f --max-time 30 --retry 3 --retry-delay 5 "${{ env.TARGET_URL }}" > /dev/null 2>&1; then
+            echo "Target URL is not accessible, skipping ZAP scan"
+            exit 0
+          fi
+          echo "Target URL is accessible, proceeding with scan"
 
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@2b5fc7f98d837319798ab7f128ea50b7d40563b6
