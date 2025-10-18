@@ -286,9 +286,7 @@ def initialize_default_admin():
         db.session.flush()  # Get user ID
 
         # Assign super admin role to the user
-        superadmin_role = (
-            db.session.query(Role).filter_by(name="Супер администратор").first()
-        )
+        superadmin_role = db.session.query(Role).filter_by(name="Супер администратор").first()
         if superadmin_role:
             # Check if user already has this role
             existing_role = (
@@ -419,9 +417,7 @@ HelpChain системата
             logger.info("Email 2FA code saved to file as fallback")
             return True
         except Exception as file_e:
-            logger.error(
-                f"Failed to save email 2FA code to file: {file_e}", exc_info=True
-            )
+            logger.error(f"Failed to save email 2FA code to file: {file_e}", exc_info=True)
             return False
 
 
@@ -438,15 +434,11 @@ _static = os.path.join(os.path.dirname(__file__), "static")
 app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
 # Задаваме SECRET_KEY за сесии и сигурност ПРЕДИ Flask-Session инициализация
-app.config["SECRET_KEY"] = os.getenv(
-    "SECRET_KEY", "dev-secret-key-change-in-production"
-)
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
 
 # JWT Configuration
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", app.config["SECRET_KEY"])
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(
-    os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600)
-)  # 1 hour
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600))  # 1 hour
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = int(
     os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 86400)
 )  # 24 hours
@@ -457,9 +449,7 @@ app.config["VAPID_PRIVATE_KEY"] = os.getenv("VAPID_PRIVATE_KEY")
 
 # Debug logging for VAPID keys
 app.logger.info(f"VAPID_PUBLIC_KEY loaded: {bool(app.config.get('VAPID_PUBLIC_KEY'))}")
-app.logger.info(
-    f"VAPID_PRIVATE_KEY loaded: {bool(app.config.get('VAPID_PRIVATE_KEY'))}"
-)
+app.logger.info(f"VAPID_PRIVATE_KEY loaded: {bool(app.config.get('VAPID_PRIVATE_KEY'))}")
 
 # TEMPORARILY DISABLE Flask-Session to test standard Flask sessions
 # Configure Flask-Session for better session persistence in development
@@ -557,9 +547,7 @@ if os.getenv("RENDER") == "true" or os.getenv("PRODUCTION") == "true":
         # Fallback to SQLite for development/production without DATABASE_URL
         db_path = "/opt/render/project/src/volunteers.db"
         app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-        logger.info(
-            f"Production mode detected, using fallback SQLite database: {db_path}"
-        )
+        logger.info(f"Production mode detected, using fallback SQLite database: {db_path}")
 else:
     # Локално development - използвайме instance директория в root проекта
     instance_dir = os.path.join(os.path.dirname(basedir), "instance")
@@ -632,24 +620,16 @@ else:
                 if admin_user:
                     app.logger.info("Default admin user initialized for development")
                 else:
-                    app.logger.warning(
-                        "Failed to initialize default admin user for development"
-                    )
+                    app.logger.warning("Failed to initialize default admin user for development")
             except Exception as admin_error:
-                app.logger.warning(
-                    f"Admin initialization failed for development: {admin_error}"
-                )
+                app.logger.warning(f"Admin initialization failed for development: {admin_error}")
 
             # Initialize default roles and permissions for development
             try:
                 initialize_default_roles_and_permissions()
-                app.logger.info(
-                    "Default roles and permissions initialized for development"
-                )
+                app.logger.info("Default roles and permissions initialized for development")
             except Exception as roles_error:
-                app.logger.warning(
-                    f"Roles initialization failed for development: {roles_error}"
-                )
+                app.logger.warning(f"Roles initialization failed for development: {roles_error}")
 
     except Exception as e:
         app.logger.error(f"Database initialization failed for development: {e}")
@@ -693,9 +673,7 @@ def set_language(language):
 def serve_sw():
     """Serve the service worker from the static directory"""
     response = make_response(
-        send_from_directory(
-            app.static_folder, "sw.js", mimetype="application/javascript"
-        )
+        send_from_directory(app.static_folder, "sw.js", mimetype="application/javascript")
     )
     response.headers["Service-Worker-Allowed"] = "/"
     return response
@@ -710,9 +688,7 @@ def allowed_file(filename):
 
 
 # Email configuration
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
-    "MAIL_DEFAULT_SENDER", "noreply@helpchain.live"
-)
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "noreply@helpchain.live")
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
 app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
@@ -732,9 +708,7 @@ mail = Mail(app)
 
 # Security configurations
 app.config["SESSION_COOKIE_SECURE"] = True  # Require HTTPS for session cookies
-app.config["SESSION_COOKIE_HTTPONLY"] = (
-    True  # Prevent JavaScript access to session cookies
-)
+app.config["SESSION_COOKIE_HTTPONLY"] = True  # Prevent JavaScript access to session cookies
 app.config["SESSION_COOKIE_SAMESITE"] = (
     "Lax"  # CSRF protection while allowing some cross-site requests
 )
@@ -1115,9 +1089,7 @@ def rate_limit_exceeded(error):
             ),
             429,
         )
-    flash(
-        "Твърде много заявки. Моля, изчакайте малко преди да опитате отново.", "warning"
-    )
+    flash("Твърде много заявки. Моля, изчакайте малко преди да опитате отново.", "warning")
     return redirect(request.referrer or url_for("index"))
 
 
@@ -1126,9 +1098,7 @@ def index():
     # безопасно извличаме агрегати — ако моделът липсва или схемата
     # не е съвместима, връщаме fallback
     try:
-        volunteers_count = (
-            db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
-        )
+        volunteers_count = db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
     except OperationalError:
         volunteers_count = 0
     except Exception:
@@ -1173,15 +1143,11 @@ def index():
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     logger.info("Admin login route called")
-    logger.debug(
-        f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}"
-    )
+    logger.debug(f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}")
     # DEBUG: Log current session state
     logger.info(f"admin_login called - session keys: {list(session.keys())}")
     logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
-    logger.info(
-        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
-    )
+    logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
     logger.info(f"Session object id: {id(session)}")
     logger.info(f"Current directory: {os.getcwd()}")
     logger.info(f"Request form data: {dict(request.form)}")
@@ -1222,9 +1188,7 @@ def admin_login():
                     session["admin_logged_in"] = True
                     session["admin_user_id"] = admin_user.id
                     session["admin_username"] = admin_user.username
-                    session["user_id"] = (
-                        admin_user.id
-                    )  # For permission system compatibility
+                    session["user_id"] = admin_user.id  # For permission system compatibility
                     session.permanent = True  # Make session persistent
                     logger.info(
                         f"Session set: admin_logged_in={session.get('admin_logged_in')}, "
@@ -1638,9 +1602,7 @@ def admin_dashboard():
     app.logger.info(f"admin_logged_in: {session.get('admin_logged_in')}")
     app.logger.info(f"admin_user_id: {session.get('admin_user_id')}")
     app.logger.info(f"admin_username: {session.get('admin_username')}")
-    app.logger.info(
-        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
-    )
+    app.logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
     app.logger.info(f"Session object id: {id(session)}")
     app.logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
 
@@ -1652,14 +1614,10 @@ def admin_dashboard():
         # Check if HelpRequest model is available
         total_requests = db.session.query(HelpRequest).count()
         pending_requests = (
-            db.session.query(HelpRequest)
-            .filter(HelpRequest.status == "pending")
-            .count()
+            db.session.query(HelpRequest).filter(HelpRequest.status == "pending").count()
         )
         completed_requests = (
-            db.session.query(HelpRequest)
-            .filter(HelpRequest.status == "completed")
-            .count()
+            db.session.query(HelpRequest).filter(HelpRequest.status == "completed").count()
         )
         total_volunteers = db.session.query(Volunteer).count()
     except Exception as e:
@@ -1672,20 +1630,14 @@ def admin_dashboard():
     # Get filtered requests based on filter parameter
     try:
         if filter_param == "pending":
-            requests_query = db.session.query(HelpRequest).filter(
-                HelpRequest.status == "pending"
-            )
+            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "pending")
         elif filter_param == "completed":
-            requests_query = db.session.query(HelpRequest).filter(
-                HelpRequest.status == "completed"
-            )
+            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "completed")
         else:  # "all" or default
             requests_query = db.session.query(HelpRequest)
 
         # Limit to recent requests for dashboard display
-        requests = (
-            requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
-        )
+        requests = requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
 
         # Convert to the expected format for template
         requests_data = []
@@ -1696,9 +1648,7 @@ def admin_dashboard():
                     "name": getattr(req, "name", "Неизвестно име"),
                     "status": req.status,
                     "created_at": (
-                        req.created_at.strftime("%Y-%m-%d %H:%M")
-                        if req.created_at
-                        else "Няма дата"
+                        req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "Няма дата"
                     ),
                 }
             )
@@ -1887,9 +1837,7 @@ def admin_assign_volunteer(request_id):
         db.session.rollback()
         app.logger.error(f"Error assigning volunteer to request {request_id}: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Грешка при присвояване на доброволец"}
-            ),
+            jsonify({"success": False, "message": "Грешка при присвояване на доброволец"}),
             500,
         )
 
@@ -1953,9 +1901,7 @@ def admin_edit_request(request_id):
             request_obj.email = request.form.get("email", request_obj.email)
             request_obj.message = request.form.get("message", request_obj.message)
             request_obj.title = request.form.get("category", request_obj.title)
-            request_obj.location_text = request.form.get(
-                "location", request_obj.location_text
-            )
+            request_obj.location_text = request.form.get("location", request_obj.location_text)
 
             db.session.commit()
 
@@ -2055,9 +2001,7 @@ def admin_settings():
     return render_template("admin_settings.html", current_user=admin_user)
 
 
-@app.route(
-    "/notification_dashboard", methods=["GET"], endpoint="notification_dashboard"
-)
+@app.route("/notification_dashboard", methods=["GET"], endpoint="notification_dashboard")
 @require_admin_login
 def notification_dashboard():
     # Get current admin user
@@ -2211,6 +2155,7 @@ def admin_volunteers():
     per_page = int(request.args.get("per_page", 25))
 
     # Build query
+   
     query = Volunteer.query
 
     # Apply filters
@@ -2231,15 +2176,11 @@ def admin_volunteers():
         )
     elif sort_by == "location":
         query = query.order_by(
-            Volunteer.location.asc()
-            if sort_order == "asc"
-            else Volunteer.location.desc()
+            Volunteer.location.asc() if sort_order == "asc" else Volunteer.location.desc()
         )
     elif sort_by == "created_at":
         query = query.order_by(
-            Volunteer.created_at.asc()
-            if sort_order == "asc"
-            else Volunteer.created_at.desc()
+            Volunteer.created_at.asc() if sort_order == "asc" else Volunteer.created_at.desc()
         )
     else:
         query = query.order_by(Volunteer.id.asc())
@@ -2317,9 +2258,7 @@ def add_volunteer():
             return render_template("add_volunteer.html")
 
         try:
-            volunteer = Volunteer(
-                name=name, email=email, phone=phone, location=location
-            )
+            volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
             db.session.add(volunteer)
             db.session.commit()
             flash("Доброволецът е добавен успешно!", "success")
@@ -2334,9 +2273,7 @@ def add_volunteer():
 
 
 @app.route("/submit_request", methods=["GET", "POST"])
-@limiter.limit(
-    "5 per minute; 20 per hour; 50 per day"
-)  # Stricter limits for form submissions
+@limiter.limit("5 per minute; 20 per hour; 50 per day")  # Stricter limits for form submissions
 def submit_request():
     if request.method == "POST":
         # Enhanced input validation and sanitization
@@ -2436,9 +2373,7 @@ def submit_request():
             "email": email[:3] + "***",  # Sanitize PII
             "category": category,
             "location": location,
-            "problem": (
-                problem[:50] + "..." if len(problem) > 50 else problem
-            ),  # Truncate
+            "problem": (problem[:50] + "..." if len(problem) > 50 else problem),  # Truncate
             "filename": filename,
         }
         app.logger.info("submit_request received: %s", request_data)
@@ -2462,9 +2397,7 @@ def submit_request():
 
             db.session.add(help_request)
             db.session.commit()
-            app.logger.info(
-                "Help request saved to database with ID: %s", help_request.id
-            )
+            app.logger.info("Help request saved to database with ID: %s", help_request.id)
         except Exception as e:
             db.session.rollback()
             app.logger.error("Error saving help request to database: %s", str(e))
@@ -2486,9 +2419,7 @@ def terms():
 
 
 @app.route("/volunteer_register", methods=["GET", "POST"])
-@limiter.limit(
-    "3 per minute; 10 per hour; 25 per day"
-)  # Very strict limits for registrations
+@limiter.limit("3 per minute; 10 per hour; 25 per day")  # Very strict limits for registrations
 def volunteer_register():
     if request.method == "POST":
         name = request.form.get("name")
@@ -2656,9 +2587,7 @@ def volunteer_login():
                         f"volunteer_id={session.get('volunteer_id')}"
                     )
 
-                    app.logger.info(
-                        f"Volunteer {volunteer.name} logged in directly (test mode)"
-                    )
+                    app.logger.info(f"Volunteer {volunteer.name} logged in directly (test mode)")
                     # For testing, return dashboard directly instead of redirecting
                     # This bypasses session persistence issues in test environment
                     try:
@@ -2667,9 +2596,7 @@ def volunteer_login():
                         active_tasks = _get_active_tasks_safe(volunteer.id)
                         gamification = _get_gamification_data_safe(volunteer)
 
-                        app.logger.info(
-                            "Rendering dashboard template directly for test mode"
-                        )
+                        app.logger.info("Rendering dashboard template directly for test mode")
                         return render_template(
                             "volunteer_dashboard.html",
                             current_user=volunteer,
@@ -2680,9 +2607,7 @@ def volunteer_login():
                             recent_points=0,  # Add missing recent_points variable
                         )
                     except Exception as e:
-                        app.logger.error(
-                            f"Error rendering dashboard for test mode: {e}"
-                        )
+                        app.logger.error(f"Error rendering dashboard for test mode: {e}")
                         return f"Test mode dashboard error: {e}", 500
 
                 # Generate 6-digit access code
@@ -2758,9 +2683,7 @@ HelpChain системата
                 app.logger.warning(f"No volunteer found with email: {email}")
         except Exception as e:
             error = f"Database error: {e}"
-            app.logger.error(
-                f"Database error during volunteer login: {e}", exc_info=True
-            )
+            app.logger.error(f"Database error during volunteer login: {e}", exc_info=True)
     return render_template("volunteer_login.html", error=error)
 
 
@@ -2935,22 +2858,16 @@ HelpChain системата
             except Exception as file_e:
                 app.logger.error(f"Failed to save email to file: {file_e}")
                 return (
-                    jsonify(
-                        {"success": False, "message": "Грешка при изпращане на имейл."}
-                    ),
+                    jsonify({"success": False, "message": "Грешка при изпращане на имейл."}),
                     500,
                 )
 
-        return jsonify(
-            {"success": True, "message": "Нов код е изпратен на вашия имейл."}
-        )
+        return jsonify({"success": True, "message": "Нов код е изпратен на вашия имейл."})
 
     except Exception as e:
         app.logger.error(f"Error resending volunteer code: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Възникна грешка при изпращане на кода."}
-            ),
+            jsonify({"success": False, "message": "Възникна грешка при изпращане на кода."}),
             500,
         )
 
@@ -2977,11 +2894,7 @@ def volunteer_dashboard():
         # Get volunteer with optimized query
         volunteer = (
             db.session.query(Volunteer)
-            .options(
-                db.joinedload(Volunteer.assigned_tasks).joinedload(
-                    Task.performance_records
-                )
-            )
+            .options(db.joinedload(Volunteer.assigned_tasks).joinedload(Task.performance_records))
             .filter_by(id=volunteer_id)
             .first()
         )
@@ -3001,9 +2914,7 @@ def volunteer_dashboard():
 
         # Count urgent tasks nearby (simplified - all urgent pending requests)
         urgent_tasks = (
-            db.session.query(HelpRequest)
-            .filter_by(status="pending", priority="urgent")
-            .count()
+            db.session.query(HelpRequest).filter_by(status="pending", priority="urgent").count()
         )
 
         app.logger.info("Rendering template with volunteer data")
@@ -3018,9 +2929,7 @@ def volunteer_dashboard():
 
     except Exception as e:
         app.logger.error(f"Critical error in volunteer dashboard: {e}", exc_info=True)
-        flash(
-            "Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error"
-        )
+        flash("Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error")
         return redirect(url_for("index"))
 
 
@@ -3048,9 +2957,7 @@ def my_tasks():
             .all()
         )
 
-        return render_template(
-            "my_tasks.html", current_user=volunteer, tasks=assigned_tasks
-        )
+        return render_template("my_tasks.html", current_user=volunteer, tasks=assigned_tasks)
 
     except Exception as e:
         db.session.rollback()
@@ -3066,9 +2973,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         # Completed tasks count with timeout protection
         completed_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id, status="completed")
-            .count()
+            db.session.query(Task).filter_by(assigned_to=volunteer_id, status="completed").count()
         )
 
         # Active tasks count
@@ -3092,9 +2997,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         # Reviews count
         reviews_count = (
-            db.session.query(TaskPerformance)
-            .filter_by(volunteer_id=volunteer_id)
-            .count()
+            db.session.query(TaskPerformance).filter_by(volunteer_id=volunteer_id).count()
         )
 
         return {
@@ -3160,9 +3063,7 @@ def _get_active_tasks_safe(volunteer_id):
                     "title": task.title,
                     "location": task.location_text or "Не е посочена локация",
                     "date": (
-                        task.created_at.strftime("%Y-%m-%d")
-                        if task.created_at
-                        else "Няма дата"
+                        task.created_at.strftime("%Y-%m-%d") if task.created_at else "Няма дата"
                     ),
                     "time_remaining": time_remaining,
                     "description": task.description or "Няма описание",
@@ -3174,9 +3075,7 @@ def _get_active_tasks_safe(volunteer_id):
         return active_tasks
 
     except Exception as e:
-        app.logger.error(
-            f"Error fetching active tasks for volunteer {volunteer_id}: {e}"
-        )
+        app.logger.error(f"Error fetching active tasks for volunteer {volunteer_id}: {e}")
         return []
 
 
@@ -3188,18 +3087,12 @@ def _get_gamification_data_safe(volunteer):
             "level": volunteer.level,
             "experience": volunteer.experience,
             "level_progress": (
-                volunteer.get_level_progress()
-                if hasattr(volunteer, "get_level_progress")
-                else 0
+                volunteer.get_level_progress() if hasattr(volunteer, "get_level_progress") else 0
             ),
-            "next_level_exp": (
-                (volunteer.level * 100) if hasattr(volunteer, "level") else 100
-            ),
+            "next_level_exp": ((volunteer.level * 100) if hasattr(volunteer, "level") else 100),
         }
     except Exception as e:
-        app.logger.error(
-            f"Error getting gamification data for volunteer {volunteer.id}: {e}"
-        )
+        app.logger.error(f"Error getting gamification data for volunteer {volunteer.id}: {e}")
         return {
             "points": 0,
             "level": 1,
@@ -3322,515 +3215,922 @@ def chatbot_message():
         )
 
 
-@app.route("/api/ai/status", methods=["GET"])
-def api_ai_status():
-    """Get AI service status"""
+@app.route("/api/health")
+def health_check():
+    """Health check endpoint for monitoring"""
     try:
-        # Return basic status info for API compatibility
-        return jsonify(
-            {
-                "status": "healthy",
-                "providers": ["openai", "gemini"],
-                "active_provider": "openai",
-            }
-        )
-    except Exception as e:
-        app.logger.error(f"Error getting AI status: {e}")
-        return (
-            jsonify({"status": "error", "providers": [], "active_provider": "none"}),
-            500,
-        )
+        # Check database connectivity
+        db.session.execute("SELECT 1").first()
 
-
-@app.route("/api/volunteer/tasks", methods=["GET"])
-def api_volunteer_tasks():
-    """Get tasks for logged in volunteer"""
-    if not session.get("volunteer_logged_in"):
-        return jsonify({"error": "Authentication required"}), 401
-
-    try:
-        volunteer_id = session.get("volunteer_id")
-
-        # Get assigned tasks
-        assigned_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id)
-            .filter(Task.status.in_(["assigned", "in_progress"]))
-            .order_by(Task.created_at.desc())
-            .all()
-        )
-
-        # Get available tasks (not assigned to anyone)
-        available_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=None)
-            .filter_by(status="open")
-            .order_by(Task.created_at.desc())
-            .limit(10)  # Limit to prevent overwhelming the volunteer
-            .all()
-        )
-
-        def format_task(task):
-            return {
-                "id": task.id,
-                "title": task.title,
-                "description": task.description,
-                "category": task.category,
-                "priority": task.priority,
-                "status": task.status,
-                "location_required": task.location_required,
-                "location_text": task.location_text,
-                "estimated_hours": task.estimated_hours,
-                "deadline": task.deadline.isoformat() if task.deadline else None,
-                "created_at": task.created_at.isoformat(),
-                "assigned_at": (
-                    task.assigned_at.isoformat() if task.assigned_at else None
-                ),
-            }
-
-        return jsonify(
-            {
-                "assigned_tasks": [format_task(task) for task in assigned_tasks],
-                "available_tasks": [format_task(task) for task in available_tasks],
-            }
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error getting volunteer tasks: {e}")
-        return jsonify({"error": "Internal server error"}), 500
-
-
-@app.route("/available_tasks", methods=["GET"])
-def available_tasks():
-    """Show available tasks for volunteers"""
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-
-    # Get current volunteer
-    volunteer_id = session.get("volunteer_id")
-    volunteer = db.session.query(Volunteer).get(volunteer_id)
-
-    if not volunteer:
-        flash("Доброволецът не е намерен.", "error")
-        return redirect(url_for("volunteer_login"))
-
-    # Get available tasks (not assigned to anyone)
-    tasks_list = (
-        db.session.query(Task)
-        .filter_by(assigned_to=None)
-        .filter_by(status="open")
-        .order_by(Task.created_at.desc())
-        .all()
-    )
-
-    return render_template(
-        "available_tasks.html", tasks=tasks_list, volunteer=volunteer
-    )
-
-
-@app.route("/volunteer_settings", methods=["GET", "POST"], endpoint="volunteer_profile")
-def volunteer_profile():
-    """Volunteer profile/settings page"""
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-
-    # Get current volunteer
-    volunteer_id = session.get("volunteer_id")
-    volunteer = db.session.query(Volunteer).get(volunteer_id)
-
-    if not volunteer:
-        flash("Доброволецът не е намерен.", "error")
-        return redirect(url_for("volunteer_login"))
-
-    if request.method == "POST":
-        # Handle profile updates
+        # Check Celery connectivity (if available)
+        celery_status = "unknown"
         try:
-            volunteer.name = request.form.get("name", "").strip()
-            volunteer.phone = request.form.get("phone", "").strip()
-            volunteer.location = request.form.get("location", "").strip()
-            volunteer.skills = request.form.get("skills", "").strip()
+            from backend.celery_app import celery
 
-            # Basic validation
-            if not volunteer.name:
-                flash("Моля, въведете име.", "error")
-                return redirect(url_for("volunteer_profile"))
+            inspect = celery.control.inspect()
+            active = inspect.active()
+            celery_status = "healthy" if active is not None else "unhealthy"
+        except Exception:
+            celery_status = "unavailable"
 
-            db.session.commit()
-            flash("Профилът е обновен успешно!", "success")
-            return redirect(url_for("volunteer_profile"))
+        health_info = {
+            "status": "healthy",
+            "database": "connected",
+            "celery": celery_status,
+            "timestamp": datetime.now().isoformat(),
+        }
 
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Error updating volunteer profile {volunteer_id}: {e}")
-            flash("Грешка при обновяване на профила.", "error")
-            return redirect(url_for("volunteer_profile"))
-
-    return render_template("volunteer_profile.html", volunteer=volunteer)
-
-
-@app.route("/achievements", methods=["GET"], endpoint="achievements")
-def achievements():
-    # Check if volunteer is logged in
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-    # Placeholder for achievements page
-    return render_template("achievements.html")
-
-
-@app.route("/volunteer_chat", methods=["GET"], endpoint="volunteer_chat")
-def volunteer_chat():
-    # Check if volunteer is logged in
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-    # Placeholder for volunteer chat page
-    return render_template("volunteer_chat.html")
-
-
-@app.route("/volunteer_reports", methods=["GET"], endpoint="volunteer_reports")
-def volunteer_reports():
-    # Check if volunteer is logged in
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-    # Placeholder for volunteer reports page
-    return render_template("volunteer_reports.html")
-
-
-@app.route("/leaderboard", methods=["GET"], endpoint="leaderboard")
-def leaderboard():
-    # Check if volunteer is logged in
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-    # Placeholder for leaderboard page
-    return render_template("leaderboard.html")
-
-
-@app.route("/api/admin/dashboard", methods=["GET"])
-@require_admin_login
-def api_admin_dashboard():
-    """API endpoint for admin dashboard data"""
-    try:
-        # Get basic counts
-        volunteers_count = db.session.query(Volunteer).count()
-        requests_count = db.session.query(HelpRequest).count()
-        admins_count = db.session.query(AdminUser).count()
-
-        # Get recent requests
-        recent_requests = (
-            db.session.query(HelpRequest)
-            .order_by(HelpRequest.created_at.desc())
-            .limit(5)
-            .all()
-        )
-
-        requests_data = []
-        for req in recent_requests:
-            requests_data.append(
-                {
-                    "id": req.id,
-                    "title": req.title,
-                    "status": req.status,
-                    "created_at": req.created_at.isoformat(),
-                    "requester_name": req.requester_name,
-                }
-            )
-
-        return jsonify(
-            {
-                "stats": {
-                    "volunteers_count": volunteers_count,
-                    "requests_count": requests_count,
-                    "admins_count": admins_count,
-                },
-                "recent_requests": requests_data,
-            }
-        )
+        return jsonify(health_info)
 
     except Exception as e:
-        app.logger.error(f"Error getting admin dashboard: {e}")
-        return jsonify({"error": "Internal server error"}), 500
-
-
-@app.route("/admin/edit_task/<int:task_id>", methods=["GET", "POST"])
-@require_admin_login
-def edit_task(task_id):
-    """Edit an existing task"""
-    task = db.session.query(Task).get_or_404(task_id)
-
-    if request.method == "POST":
-        try:
-            # Update task fields
-            task.title = request.form.get("title", "").strip()
-            task.description = request.form.get("description", "").strip()
-            task.category = request.form.get("category", "").strip()
-            task.priority = request.form.get("priority", "medium")
-            task.location_required = request.form.get("location_required") == "on"
-            task.location_text = request.form.get("location_text", "").strip()
-
-            estimated_hours = request.form.get("estimated_hours")
-            if estimated_hours:
-                try:
-                    task.estimated_hours = int(estimated_hours)
-                    if task.estimated_hours <= 0:
-                        raise ValueError
-                except ValueError:
-                    flash("Невалиден брой часове", "error")
-                    return redirect(url_for("edit_task", task_id=task_id))
-            else:
-                task.estimated_hours = None
-
-            deadline_str = request.form.get("deadline", "").strip()
-            if deadline_str:
-                try:
-                    from datetime import datetime
-
-                    task.deadline = datetime.strptime(deadline_str, "%Y-%m-%dT%H:%M")
-                except ValueError:
-                    flash("Невалиден формат на краен срок", "error")
-                    return redirect(url_for("edit_task", task_id=task_id))
-            else:
-                task.deadline = None
-
-            # Validation
-            if not task.title or not task.description or not task.category:
-                flash("Моля, попълнете всички задължителни полета", "error")
-                return redirect(url_for("edit_task", task_id=task_id))
-
-            db.session.commit()
-
-            flash("Задачата е обновена успешно!", "success")
-            return redirect(url_for("admin_tasks"))
-
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Error updating task {task_id}: {e}")
-            flash("Грешка при обновяване на задачата", "error")
-            return redirect(url_for("edit_task", task_id=task_id))
-
-    # Get current admin user
-    current_user = None
-    if session.get("admin_user_id"):
-        current_user = db.session.get(AdminUser, session.get("admin_user_id"))
-
-    return render_template("edit_task.html", task=task, current_user=current_user)
-
-
-@app.route("/admin_tasks/<int:task_id>/delete", methods=["POST"])
-@require_admin_login
-def delete_task(task_id):
-    """Delete a task"""
-    try:
-        task = db.session.query(Task).get_or_404(task_id)
-
-        # Check if task is assigned
-        if task.assigned_to:
-            flash(
-                "Не може да изтриете задача, която е присвоена на доброволец", "error"
-            )
-            return redirect(url_for("admin_tasks"))
-
-        db.session.delete(task)
-        db.session.commit()
-
-        flash("Задачата е изтрита успешно!", "success")
-
-    except Exception as e:
-        db.session.rollback()
-        app.logger.error(f"Error deleting task {task_id}: {e}")
-        flash("Грешка при изтриване на задачата", "error")
-
-    return redirect(url_for("admin_tasks"))
-
-
-@app.route("/admin_tasks/<int:task_id>/assign", methods=["GET", "POST"])
-@require_admin_login
-def assign_task(task_id):
-    """Assign a task to a volunteer"""
-    task = db.session.query(Task).get_or_404(task_id)
-
-    if request.method == "POST":
-        volunteer_id = request.form.get("volunteer_id")
-
-        if not volunteer_id:
-            flash("Моля, изберете доброволец", "error")
-            return redirect(url_for("assign_task", task_id=task_id))
-
-        try:
-            volunteer = db.session.query(Volunteer).get(volunteer_id)
-            if not volunteer:
-                flash("Избраният доброволец не е намерен", "error")
-                return redirect(url_for("assign_task", task_id=task_id))
-
-            # Assign task to volunteer
-            task.assigned_to = volunteer.id
-            task.assigned_at = datetime.utcnow()
-            task.status = "assigned"
-
-            # Create task assignment record
-            assignment = TaskAssignment(
-                task_id=task.id, volunteer_id=volunteer.id, assigned_by="volunteer"
-            )
-            db.session.add(assignment)
-
-            db.session.commit()
-
-            flash(f"Задачата е присвоена успешно на {volunteer.name}!", "success")
-            return redirect(url_for("admin_tasks"))
-
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Error assigning task {task_id}: {e}")
-            flash("Грешка при присвояване на задачата", "error")
-            return redirect(url_for("assign_task", task_id=task_id))
-
-    # Get available volunteers
-    volunteers = db.session.query(Volunteer).filter_by(is_active=True).all()
-
-    # Get current admin user
-    current_user = None
-    if session.get("admin_user_id"):
-        current_user = db.session.get(AdminUser, session.get("admin_user_id"))
-
-    return render_template(
-        "assign_task.html", task=task, volunteers=volunteers, current_user=current_user
-    )
-
-
-@app.route("/admin_tasks/<int:task_id>/unassign", methods=["POST"])
-@require_admin_login
-def unassign_task(task_id):
-    """Unassign a task from volunteer"""
-    try:
-        task = db.session.query(Task).get_or_404(task_id)
-
-        if not task.assigned_to:
-            flash("Задачата не е присвоена на никого", "warning")
-            return redirect(url_for("admin_tasks"))
-
-        # Update task
-        task.assigned_to = None
-        task.assigned_at = None
-        task.status = "open"
-
-        # Update assignment record
-        assignment = (
-            db.session.query(TaskAssignment)
-            .filter_by(task_id=task_id, volunteer_id=task.assigned_to)
-            .first()
-        )
-        if assignment:
-            assignment.status = "cancelled"
-
-        db.session.commit()
-
-        flash("Задачата е освободена успешно!", "success")
-
-    except Exception as e:
-        db.session.rollback()
-        app.logger.error(f"Error unassigning task {task_id}: {e}")
-        flash("Грешка при освобождаване на задачата", "error")
-
-    return redirect(url_for("admin_tasks"))
-
-
-@app.route("/admin_request_details/<int:request_id>")
-@require_admin_login
-def admin_request_details(request_id):
-    """Show detailed view of a specific help request"""
-    try:
-        request_obj = db.session.query(HelpRequest).get_or_404(request_id)
-
-        # Get current admin user
-        current_user = None
-        if session.get("admin_user_id"):
-            current_user = db.session.get(AdminUser, session.get("admin_user_id"))
-
-        return render_template(
-            "admin_request_details.html", request=request_obj, current_user=current_user
-        )
-    except Exception as e:
-        app.logger.error(f"Error loading request details for ID {request_id}: {e}")
-        flash("Грешка при зареждането на детайлите за заявката", "error")
-        return redirect(url_for("admin_dashboard"))
-
-
-@app.route("/admin_update_request_status", methods=["POST"])
-@require_admin_login
-def admin_update_request_status():
-    """Update the status of a help request via AJAX"""
-    try:
-        data = request.get_json()
-        request_id = data.get("request_id")
-        new_status = data.get("status")
-
-        if not request_id or not new_status:
-            return (
-                jsonify(
-                    {"success": False, "message": "Липсват задължителни параметри"}
-                ),
-                400,
-            )
-
-        request_obj = db.session.query(HelpRequest).get(request_id)
-        if not request_obj:
-            return jsonify({"success": False, "message": "Заявката не е намерена"}), 404
-
-        # Validate status
-        valid_statuses = [
-            "pending",
-            "assigned",
-            "in_progress",
-            "completed",
-            "cancelled",
-        ]
-        if new_status not in valid_statuses:
-            return jsonify({"success": False, "message": "Невалиден статус"}), 400
-
-        old_status = request_obj.status
-        request_obj.status = new_status
-        db.session.commit()
-
-        app.logger.info(
-            f"Request {request_id} status changed from {old_status} to {new_status}"
-        )
-
-        return jsonify(
-            {
-                "success": True,
-                "message": f"Статусът е обновен на '{new_status}'",
-                "new_status": new_status,
-            }
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        app.logger.error(f"Error updating request status: {e}")
+        app.logger.error(f"Health check failed: {e}")
         return (
             jsonify(
                 {
-                    "success": False,
-                    "message": "Възникна грешка при обновяване на статуса",
+                    "status": "unhealthy",
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat(),
                 }
             ),
             500,
         )
 
 
-@app.route("/export_volunteers")
+@app.route("/api/tasks/trigger/<task_name>", methods=["POST"])
 @require_admin_login
-def export_volunteers():
-    export_format = request.args.get("format", "csv")
+def trigger_task(task_name):
+    """Manually trigger a Celery task (admin only)"""
+    try:
+        from backend import tasks
+
+        # Map task names to functions
+        task_map = {
+            "auto_match_requests": tasks.auto_match_requests,
+            "send_reminders": tasks.send_reminders,
+            "generate_daily_reports": tasks.generate_daily_reports,
+            "cleanup_old_data": tasks.cleanup_old_data,
+            "monitor_system_health": tasks.monitor_system_health,
+            "update_realtime_stats": tasks.update_realtime_stats,
+        }
+
+        if task_name not in task_map:
+            return jsonify({"error": f"Unknown task: {task_name}"}), 400
+
+        # Trigger the task
+        result = task_map[task_name].delay()
+
+        return jsonify(
+            {
+                "task_id": result.id,
+                "task_name": task_name,
+                "status": "triggered",
+            }
+        )
+
+    except Exception as e:
+        app.logger.error(f"Error triggering task {task_name}: {e}")
+        return jsonify({"error": f"Failed to trigger task: {str(e)}"}), 500
+
+
+# Predictive Analytics Routes
+@app.route("/api/predictive/regional-demand")
+@require_admin_login
+def predictive_regional_demand():
+    """Get regional demand forecast data"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        region = request.args.get("region")
+        days_ahead = int(request.args.get("days_ahead", 7))
+
+        forecast = predictive_analytics.get_regional_demand_forecast(
+            region=region, days_ahead=days_ahead
+        )
+        return jsonify(forecast)
+
+    except Exception as e:
+        app.logger.error(f"Error getting regional demand forecast: {e}")
+        return (
+            jsonify({"error": "Failed to get regional demand forecast", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/workload")
+@require_admin_login
+def predictive_workload():
+    """Get workload prediction data"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        hours_ahead = int(request.args.get("hours_ahead", 24))
+
+        prediction = predictive_analytics.get_workload_prediction(hours_ahead=hours_ahead)
+        return jsonify(prediction)
+
+    except Exception as e:
+        app.logger.error(f"Error getting workload prediction: {e}")
+        return (
+            jsonify({"error": "Failed to get workload prediction", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/insights")
+@require_admin_login
+def predictive_insights():
+    """Get predictive insights and recommendations"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        insights = predictive_analytics.get_predictive_insights()
+        return jsonify(insights)
+
+    except Exception as e:
+        app.logger.error(f"Error getting predictive insights: {e}")
+        return (
+            jsonify({"error": "Failed to get predictive insights", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/model-info")
+@require_admin_login
+def predictive_model_info():
+    """Get information about predictive models"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        # Get sample data to extract model info
+        regional_sample = predictive_analytics.get_regional_demand_forecast(days_ahead=1)
+        workload_sample = predictive_analytics.get_workload_prediction(hours_ahead=1)
+
+        model_info = {
+            "regional_demand_model": {
+                "type": "Random Forest Regression",
+                "features": [
+                    "day_of_week",
+                    "month",
+                    "season",
+                    "historical_avg",
+                    "trend_factor",
+                    "volunteer_density",
+                    "population_density",
+                ],
+                "prediction_horizon": "1-30 days",
+                "accuracy_metrics": regional_sample.get("model_info", {}).get("accuracy", "N/A"),
+                "last_trained": regional_sample.get("generated_at", "N/A"),
+            },
+            "workload_prediction_model": {
+                "type": "Gradient Boosting Regression",
+                "features": [
+                    "current_requests",
+                    "active_volunteers",
+                    "avg_response_time",
+                    "day_of_week",
+                    "hour_of_day",
+                    "season",
+                ],
+                "prediction_horizon": "1-168 hours",
+                "accuracy_metrics": workload_sample.get("model_info", {}).get("accuracy", "N/A"),
+                "last_trained": workload_sample.get("generated_at", "N/A"),
+            },
+            "data_sources": [
+                "HelpRequest table (historical patterns)",
+                "Volunteer table (capacity data)",
+                "UserActivity table (engagement patterns)",
+                "Real-time system metrics",
+            ],
+            "update_frequency": "Real-time predictions with 1-hour cache",
+            "fallback_strategy": "Rule-based heuristics when ML models unavailable",
+        }
+
+        return jsonify(model_info)
+
+    except Exception as e:
+        app.logger.error(f"Error getting model info: {e}")
+        return (
+            jsonify({"error": "Failed to get model information", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/predictive-analytics")
+@require_admin_login
+def predictive_analytics_page():
+    """Render the predictive analytics dashboard"""
+    return render_template("predictive_analytics.html")
+
+
+@app.route("/analytics")
+@require_admin_login
+def analytics_page():
+    """Render the main analytics dashboard"""
+    return render_template("analytics.html")
+
+
+# Smart Matching API Routes
+@app.route("/api/matching/find-matches/<int:request_id>")
+@require_admin_login
+def find_matches(request_id):
+    """Find best volunteer matches for a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        limit = int(request.args.get("limit", 5))
+        matches = smart_matching_service.find_best_matches(request_id, limit)
+
+        # Convert volunteer objects to dictionaries for JSON response
+        result = []
+        for match in matches:
+            volunteer = match["volunteer"]
+            result.append(
+                {
+                    "volunteer_id": volunteer.id,
+                    "name": volunteer.name,
+                    "email": volunteer.email,
+                    "phone": volunteer.phone,
+                    "skills": volunteer.skills,
+                    "location": volunteer.location,
+                    "rating": volunteer.rating,
+                    "experience": volunteer.experience,
+                    "total_tasks_completed": volunteer.total_tasks_completed,
+                    "match_score": match["scores"],
+                    "recommendation_reason": match["recommendation_reason"],
+                }
+            )
+
+        return jsonify({"request_id": request_id, "matches": result, "total_matches": len(result)})
+
+    except Exception as e:
+        app.logger.error(f"Error finding matches for request {request_id}: {e}")
+        return jsonify({"error": "Failed to find matches", "details": str(e)}), 500
+
+
+@app.route("/api/matching/auto-assign/<int:request_id>", methods=["POST"])
+@require_admin_login
+def auto_assign_request(request_id):
+    """Automatically assign the best matching volunteer to a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        result = smart_matching_service.auto_assign_request(request_id)
+
+        if result:
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Request auto-assigned successfully",
+                    "assignment": {
+                        "request_id": result["help_request"].id,
+                        "volunteer_id": result["volunteer"].id,
+                        "volunteer_name": result["volunteer"].name,
+                        "match_score": result["match_score"],
+                    },
+                }
+            )
+        else:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "No suitable volunteer found for auto-assignment",
+                    }
+                ),
+                404,
+            )
+
+    except Exception as e:
+        app.logger.error(f"Error auto-assigning request {request_id}: {e}")
+        return (
+            jsonify({"error": "Failed to auto-assign request", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/matching/analytics")
+@require_admin_login
+def matching_analytics():
+    """Get analytics for the smart matching system"""
+    try:
+        from smart_matching import smart_matching_service
+
+        analytics = smart_matching_service.get_matching_analytics()
+        return jsonify(analytics)
+
+    except Exception as e:
+        app.logger.error(f"Error getting matching analytics: {e}")
+        return (
+            jsonify({"error": "Failed to get matching analytics", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/matching/ai-insights/<int:request_id>")
+@require_admin_login
+def get_ai_insights(request_id):
+    """Get AI-powered insights for a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        insights = smart_matching_service.get_ai_insights(request_id)
+        return jsonify(insights)
+
+    except Exception as e:
+        app.logger.error(f"Error getting AI insights for request {request_id}: {e}")
+        return jsonify({"error": "Failed to get AI insights", "details": str(e)}), 500
+
+
+@app.route("/api/matching/assign/<int:request_id>/<int:volunteer_id>", methods=["POST"])
+@require_admin_login
+def manual_assign_request(request_id, volunteer_id):
+    """Manually assign a volunteer to a help request"""
+    try:
+        # Get the request and volunteer
+        help_request = HelpRequest.query.get_or_404(request_id)
+        volunteer = Volunteer.query.get_or_404(volunteer_id)
+
+        # Update request status
+        help_request.status = "assigned"
+        help_request.updated_at = datetime.utcnow()
+
+        # Create assignment record if TaskAssignment exists
+        try:
+            from models_with_analytics import TaskAssignment
+
+            assignment = TaskAssignment(
+                task_id=request_id,  # Using request_id as task_id
+                volunteer_id=volunteer.id,
+                skill_match_score=50.0,  # Default for manual assignment
+                location_match_score=50.0,
+                availability_match_score=100.0,
+                performance_match_score=volunteer.rating * 20,
+                overall_match_score=50.0,  # Manual assignment
+                assigned_at=datetime.utcnow(),
+                status="assigned",
+                assigned_by="manual",
+            )
+            db.session.add(assignment)
+        except ImportError:
+            assignment = None
+
+        db.session.commit()
+
+        return jsonify(
+            {
+                "success": True,
+                "message": "Volunteer assigned successfully",
+                "assignment": {
+                    "request_id": request_id,
+                    "volunteer_id": volunteer_id,
+                    "volunteer_name": volunteer.name,
+                },
+            }
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(
+            f"Error manually assigning request {request_id} to volunteer {volunteer_id}: {e}"
+        )
+        return jsonify({"error": "Failed to assign volunteer", "details": str(e)}), 500
+
+
+@app.route("/admin_analytics", methods=["GET"])
+@require_admin_login
+def admin_analytics():
+    """Render the admin analytics dashboard"""
+    try:
+        from analytics_service import analytics_service
+        dashboard_stats = analytics_service.get_dashboard_analytics()
+        
+        # Prepare chart data
+        trends_data = {
+            "labels": ["Яну", "Фев", "Мар", "Апр", "Май", "Юни", 
+                      "Юли", "Авг", "Сеп", "Окт", "Ное", "Дек"],
+            "requests": [65, 59, 80, 81, 56, 55, 40, 45, 60, 75, 85, 90],
+            "completed": [28, 48, 40, 19, 86, 27, 90, 35, 50, 65, 75, 80],
+            "volunteers": [12, 15, 18, 22, 25, 28, 30, 32, 35, 38, 40, 42]
+        }
+        
+        category_stats = {
+            "categories": ["Медицинска помощ", "Транспорт", "Домакинска помощ", 
+                          "Образование", "Други"],
+            "counts": [35, 25, 20, 15, 5]
+        }
+        
+        predictions = {
+            "labels": ["Месец 1", "Месец 2", "Месец 3"],
+            "requests_predicted": [95, 105, 115],
+            "volunteers_predicted": [45, 48, 52],
+            "ml_insights": {
+                "anomalies": [],
+                "predictions": {
+                    "optimal_engagement_time": {"hour": 14, "engagement_score": 85},
+                    "churn_risk": {"risk": "low", "days_since_activity": 2}
+                },
+                "recommendations": [
+                    {"title": "Оптимизация на работното време", 
+                     "description": "Най-добрите резултати са между 14:00 и 16:00", 
+                     "action": "Фокусирай маркетинговите кампании в този период", 
+                     "priority": "medium"}
+                ]
+            }
+        }
+        
+    except Exception as e:
+        print(f"Error getting analytics data: {type(e).__name__}")
+        dashboard_stats = {"error": "Analytics not available"}
+        trends_data = {"labels": [], "requests": [], "completed": [], "volunteers": []}
+        category_stats = {"categories": [], "counts": []}
+        predictions = {"ml_insights": None}
+    
+    return render_template("admin_analytics.html", 
+                         dashboard_stats=dashboard_stats,
+                         trends_data=trends_data,
+                         category_stats=category_stats,
+                         predictions=predictions)
+
+
+print("DEBUG: Checking if admin_analytics route is registered")
+for rule in app.url_map.iter_rules():
+    if "admin_analytics" in rule.rule:
+        print(f"  Found route: {rule.rule} -> {rule.endpoint}")
+print("DEBUG: Route check complete")
+
+
+# Celery monitoring endpoints
+@app.route("/api/celery/stats")
+def celery_stats():
+    """Get Celery worker and task statistics"""
+    try:
+        from backend.celery_app import celery
+
+        # Get active workers
+        inspect = celery.control.inspect()
+
+        stats = {
+            "active_workers": inspect.active() or {},
+            "scheduled_tasks": inspect.scheduled() or {},
+            "active_tasks": inspect.active() or {},
+            "registered_tasks": inspect.registered() or {},
+            "stats": inspect.stats() or {},
+        }
+
+        return jsonify(stats)
+
+    except Exception as e:
+        app.logger.error(f"Error getting Celery stats: {e}")
+        return jsonify({"error": "Failed to get Celery statistics"}), 500
+
+
+@app.route("/api/celery/tasks/<task_id>")
+def celery_task_status(task_id):
+    """Get status of a specific Celery task"""
+    try:
+        from backend.celery_app import celery
+
+        # Get task result
+        result = celery.AsyncResult(task_id)
+
+        task_info = {
+            "task_id": task_id,
+            "state": result.state,
+            "current": result.current,
+            "info": str(result.info) if result.info else None,
+            "result": str(result.result) if result.result else None,
+        }
+
+        return jsonify(task_info)
+
+    except Exception as e:
+        app.logger.error(f"Error getting task status: {e}")
+        return jsonify({"error": "Failed to get task status"}), 500
+
+
+@app.route("/api/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Check database connectivity
+        db.session.execute("SELECT 1").first()
+
+        # Check Celery connectivity (if available)
+        celery_status = "unknown"
+        try:
+            from backend.celery_app import celery
+
+            inspect = celery.control.inspect()
+            active = inspect.active()
+            celery_status = "healthy" if active is not None else "unhealthy"
+        except Exception:
+            celery_status = "unavailable"
+
+        health_info = {
+            "status": "healthy",
+            "database": "connected",
+            "celery": celery_status,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        return jsonify(health_info)
+
+    except Exception as e:
+        app.logger.error(f"Health check failed: {e}")
+        return (
+            jsonify(
+                {
+                    "status": "unhealthy",
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat(),
+                }
+            ),
+            500,
+        )
+
+
+@app.route("/api/tasks/trigger/<task_name>", methods=["POST"])
+@require_admin_login
+def trigger_task(task_name):
+    """Manually trigger a Celery task (admin only)"""
+    try:
+        from backend import tasks
+
+        # Map task names to functions
+        task_map = {
+            "auto_match_requests": tasks.auto_match_requests,
+            "send_reminders": tasks.send_reminders,
+            "generate_daily_reports": tasks.generate_daily_reports,
+            "cleanup_old_data": tasks.cleanup_old_data,
+            "monitor_system_health": tasks.monitor_system_health,
+            "update_realtime_stats": tasks.update_realtime_stats,
+        }
+
+        if task_name not in task_map:
+            return jsonify({"error": f"Unknown task: {task_name}"}), 400
+
+        # Trigger the task
+        result = task_map[task_name].delay()
+
+        return jsonify(
+            {
+                "task_id": result.id,
+                "task_name": task_name,
+                "status": "triggered",
+            }
+        )
+
+    except Exception as e:
+        app.logger.error(f"Error triggering task {task_name}: {e}")
+        return jsonify({"error": f"Failed to trigger task: {str(e)}"}), 500
+
+
+# Predictive Analytics Routes
+@app.route("/api/predictive/regional-demand")
+@require_admin_login
+def predictive_regional_demand():
+    """Get regional demand forecast data"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        region = request.args.get("region")
+        days_ahead = int(request.args.get("days_ahead", 7))
+
+        forecast = predictive_analytics.get_regional_demand_forecast(
+            region=region, days_ahead=days_ahead
+        )
+        return jsonify(forecast)
+
+    except Exception as e:
+        app.logger.error(f"Error getting regional demand forecast: {e}")
+        return (
+            jsonify({"error": "Failed to get regional demand forecast", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/workload")
+@require_admin_login
+def predictive_workload():
+    """Get workload prediction data"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        hours_ahead = int(request.args.get("hours_ahead", 24))
+
+        prediction = predictive_analytics.get_workload_prediction(hours_ahead=hours_ahead)
+        return jsonify(prediction)
+
+    except Exception as e:
+        app.logger.error(f"Error getting workload prediction: {e}")
+        return (
+            jsonify({"error": "Failed to get workload prediction", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/insights")
+@require_admin_login
+def predictive_insights():
+    """Get predictive insights and recommendations"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        insights = predictive_analytics.get_predictive_insights()
+        return jsonify(insights)
+
+    except Exception as e:
+        app.logger.error(f"Error getting predictive insights: {e}")
+        return (
+            jsonify({"error": "Failed to get predictive insights", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/model-info")
+@require_admin_login
+def predictive_model_info():
+    """Get information about predictive models"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        # Get sample data to extract model info
+        regional_sample = predictive_analytics.get_regional_demand_forecast(days_ahead=1)
+        workload_sample = predictive_analytics.get_workload_prediction(hours_ahead=1)
+
+        model_info = {
+            "regional_demand_model": {
+                "type": "Random Forest Regression",
+                "features": [
+                    "day_of_week",
+                    "month",
+                    "season",
+                    "historical_avg",
+                    "trend_factor",
+                    "volunteer_density",
+                    "population_density",
+                ],
+                "prediction_horizon": "1-30 days",
+                "accuracy_metrics": regional_sample.get("model_info", {}).get("accuracy", "N/A"),
+                "last_trained": regional_sample.get("generated_at", "N/A"),
+            },
+            "workload_prediction_model": {
+                "type": "Gradient Boosting Regression",
+                "features": [
+                    "current_requests",
+                    "active_volunteers",
+                    "avg_response_time",
+                    "day_of_week",
+                    "hour_of_day",
+                    "season",
+                ],
+                "prediction_horizon": "1-168 hours",
+                "accuracy_metrics": workload_sample.get("model_info", {}).get("accuracy", "N/A"),
+                "last_trained": workload_sample.get("generated_at", "N/A"),
+            },
+            "data_sources": [
+                "HelpRequest table (historical patterns)",
+                "Volunteer table (capacity data)",
+                "UserActivity table (engagement patterns)",
+                "Real-time system metrics",
+            ],
+            "update_frequency": "Real-time predictions with 1-hour cache",
+            "fallback_strategy": "Rule-based heuristics when ML models unavailable",
+        }
+
+        return jsonify(model_info)
+
+    except Exception as e:
+        app.logger.error(f"Error getting model info: {e}")
+        return (
+            jsonify({"error": "Failed to get model information", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/predictive-analytics")
+@require_admin_login
+def predictive_analytics_page():
+    """Render the predictive analytics dashboard"""
+    return render_template("predictive_analytics.html")
+
+
+@app.route("/analytics")
+@require_admin_login
+def analytics_page():
+    """Render the main analytics dashboard"""
+    return render_template("analytics.html")
+
+
+# Smart Matching API Routes
+@app.route("/api/matching/find-matches/<int:request_id>")
+@require_admin_login
+def find_matches(request_id):
+    """Find best volunteer matches for a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        limit = int(request.args.get("limit", 5))
+        matches = smart_matching_service.find_best_matches(request_id, limit)
+
+        # Convert volunteer objects to dictionaries for JSON response
+        result = []
+        for match in matches:
+            volunteer = match["volunteer"]
+            result.append(
+                {
+                    "volunteer_id": volunteer.id,
+                    "name": volunteer.name,
+                    "email": volunteer.email,
+                    "phone": volunteer.phone,
+                    "skills": volunteer.skills,
+                    "location": volunteer.location,
+                    "rating": volunteer.rating,
+                    "experience": volunteer.experience,
+                    "total_tasks_completed": volunteer.total_tasks_completed,
+                    "match_score": match["scores"],
+                    "recommendation_reason": match["recommendation_reason"],
+                }
+            )
+
+        return jsonify({"request_id": request_id, "matches": result, "total_matches": len(result)})
+
+    except Exception as e:
+        app.logger.error(f"Error finding matches for request {request_id}: {e}")
+        return jsonify({"error": "Failed to find matches", "details": str(e)}), 500
+
+
+@app.route("/api/matching/auto-assign/<int:request_id>", methods=["POST"])
+@require_admin_login
+def auto_assign_request(request_id):
+    """Automatically assign the best matching volunteer to a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        result = smart_matching_service.auto_assign_request(request_id)
+
+        if result:
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Request auto-assigned successfully",
+                    "assignment": {
+                        "request_id": result["help_request"].id,
+                        "volunteer_id": result["volunteer"].id,
+                        "volunteer_name": result["volunteer"].name,
+                        "match_score": result["match_score"],
+                    },
+                }
+            )
+        else:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "No suitable volunteer found for auto-assignment",
+                    }
+                ),
+                404,
+            )
+
+    except Exception as e:
+        app.logger.error(f"Error auto-assigning request {request_id}: {e}")
+        return (
+            jsonify({"error": "Failed to auto-assign request", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/matching/analytics")
+@require_admin_login
+def matching_analytics():
+    """Get analytics for the smart matching system"""
+    try:
+        from smart_matching import smart_matching_service
+
+        analytics = smart_matching_service.get_matching_analytics()
+        return jsonify(analytics)
+
+    except Exception as e:
+        app.logger.error(f"Error getting matching analytics: {e}")
+        return (
+            jsonify({"error": "Failed to get matching analytics", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/matching/ai-insights/<int:request_id>", methods=["POST"])
+@require_admin_login
+def get_ai_insights(request_id):
+    """Get AI-powered insights for a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        insights = smart_matching_service.get_ai_insights(request_id)
+        return jsonify(insights)
+
+    except Exception as e:
+        app.logger.error(f"Error getting AI insights for request {request_id}: {e}")
+        return jsonify({"error": "Failed to get AI insights", "details": str(e)}), 500
+
+
+@app.route("/api/matching/assign/<int:request_id>/<int:volunteer_id>", methods=["POST"])
+@require_admin_login
+def manual_assign_request(request_id, volunteer_id):
+    """Manually assign a volunteer to a help request"""
+    try:
+        # Get the request and volunteer
+        help_request = HelpRequest.query.get_or_404(request_id)
+        volunteer = Volunteer.query.get_or_404(volunteer_id)
+
+        # Update request status
+        help_request.status = "assigned"
+        help_request.updated_at = datetime.utcnow()
+
+        # Create assignment record if TaskAssignment exists
+        try:
+            from models_with_analytics import TaskAssignment
+
+            assignment = TaskAssignment(
+                task_id=request_id,  # Using request_id as task_id
+                volunteer_id=volunteer.id,
+                skill_match_score=50.0,  # Default for manual assignment
+                location_match_score=50.0,
+                availability_match_score=100.0,
+                performance_match_score=volunteer.rating * 20,
+                overall_match_score=50.0,  # Manual assignment
+                assigned_at=datetime.utcnow(),
+                status="assigned",
+                assigned_by="manual",
+            )
+            db.session.add(assignment)
+        except ImportError:
+            assignment = None
+
+        db.session.commit()
+
+        return jsonify(
+            {
+                "success": True,
+                "message": "Volunteer assigned successfully",
+                "assignment": {
+                    "request_id": request_id,
+                    "volunteer_id": volunteer_id,
+                    "volunteer_name": volunteer.name,
+                },
+            }
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(
+            f"Error manually assigning request {request_id} to volunteer {volunteer_id}: {e}"
+        )
+        return jsonify({"error": "Failed to assign volunteer", "details": str(e)}), 500
+
+
+@app.route("/admin_volunteers/<int:volunteer_id>/delete", methods=["POST"])
+@require_admin_login
+def admin_delete_volunteer(volunteer_id):
+    """Delete a volunteer"""
+    try:
+        volunteer = db.session.query(Volunteer).get_or_404(volunteer_id)
+
+        # Check if volunteer has assigned tasks
+        assigned_tasks = db.session.query(Task).filter_by(assigned_to=volunteer_id).count()
+        if assigned_tasks > 0:
+            flash("Не може да изтриете доброволец, който има присвоени задачи", "error")
+            return redirect(url_for("admin_volunteers"))
+
+        # Delete the volunteer
+        db.session.delete(volunteer)
+        db.session.commit()
+
+        flash("Доброволецът е изтрит успешно!", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error deleting volunteer {volunteer_id}: {e}")
+        flash("Грешка при изтриване на доброволеца", "error")
+
+    return redirect(url_for("admin_volunteers"))
+
+
+@app.route("/admin_volunteers", methods=["GET", "POST"])
+@require_admin_login
+def admin_volunteers():
+    # Get filter parameters
     search = request.args.get("search", "")
     location_filter = request.args.get("location", "")
+    sort_by = request.args.get("sort", "name")
+    sort_order = request.args.get("order", "asc")
+    page = int(request.args.get("page", 1))
+    per_page = int(request.args.get("per_page", 25))
 
-    # Build query with same filters as admin_volunteers
-    query = db.session.query(Volunteer)
+    # Build query
+    query = Volunteer.query
 
+    # Apply filters
     if search:
         query = query.filter(
             (Volunteer.name.ilike(f"%{search}%"))
@@ -3841,576 +4141,199 @@ def export_volunteers():
     if location_filter:
         query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
 
-    volunteers = query.all()
-
-    if export_format == "csv":
-        return export_volunteers_csv(volunteers)
-    elif export_format == "json":
-        return export_volunteers_json(volunteers)
-    elif export_format == "pdf":
-        return export_volunteers_pdf(volunteers)
+    # Apply sorting
+    if sort_by == "name":
+        query = query.order_by(
+            Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc()
+        )
+    elif sort_by == "location":
+        query = query.order_by(
+            Volunteer.location.asc() if sort_order == "asc" else Volunteer.location.desc()
+        )
+    elif sort_by == "created_at":
+        query = query.order_by(
+            Volunteer.created_at.asc() if sort_order == "asc" else Volunteer.created_at.desc()
+        )
     else:
-        return export_volunteers_csv(volunteers)
+        query = query.order_by(Volunteer.id.asc())
 
+    # Apply pagination
+    total_volunteers = query.count()
+    volunteers = query.offset((page - 1) * per_page).limit(per_page).all()
 
-def export_volunteers_csv(volunteers):
-    """Export volunteers to CSV format"""
-    si = StringIO()
-    cw = csv.writer(si)
+    # Calculate pagination info
+    total_pages = (total_volunteers + per_page - 1) // per_page
 
-    # Write header
-    cw.writerow(
-        [
-            "ID",
-            "Име",
-            "Имейл",
-            "Телефон",
-            "Локация",
-            "Умения",
-            "Дата на регистрация",
-            "Ширина",
-            "Дължина",
-        ]
-    )
+    # Create pagination object for template compatibility
+    class Pagination:
+        def __init__(self, page, per_page, total, items):
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.items = items
+            self.pages = (total + per_page - 1) // per_page
+            self.has_prev = page > 1
+            self.has_next = page < self.pages
+            self.prev_num = page - 1 if self.has_prev else None
+            self.next_num = page + 1 if self.has_next else None
 
-    # Write data
-    for v in volunteers:
-        cw.writerow(
-            [
-                v.id,
-                v.name,
-                v.email,
-                v.phone,
-                v.location or "",
-                getattr(v, "skills", "") or "",
-                v.created_at.strftime("%Y-%m-%d %H:%M:%S") if v.created_at else "",
-                getattr(v, "latitude", "") or "",
-                getattr(v, "longitude", "") or "",
-            ]
-        )
+    pagination = Pagination(page, per_page, total_volunteers, volunteers)
 
-    output = si.getvalue()
-    return Response(
-        output,
-        mimetype="text/csv; charset=utf-8",
-        headers={
-            "Content-Disposition": f"attachment;filename=volunteers_"
-            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            "Content-Type": "text/csv; charset=utf-8",
-        },
+    return render_template(
+        "admin_volunteers.html",
+        volunteers=volunteers,
+        search=search,
+        location_filter=location_filter,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=page,
+        per_page=per_page,
+        total_volunteers=total_volunteers,
+        total_pages=total_pages,
+        pagination=pagination,
     )
 
 
-def export_volunteers_json(volunteers):
-    """Export volunteers to JSON format"""
-    volunteers_data = []
-    for v in volunteers:
-        volunteer_dict = {
-            "id": v.id,
-            "name": v.name,
-            "email": v.email,
-            "phone": v.phone,
-            "location": v.location,
-            "skills": getattr(v, "skills", ""),
-            "created_at": v.created_at.isoformat() if v.created_at else None,
-            "latitude": getattr(v, "latitude", None),
-            "longitude": getattr(v, "longitude", None),
-        }
-        volunteers_data.append(volunteer_dict)
-
-    export_data = {
-        "export_date": datetime.now().isoformat(),
-        "total_volunteers": len(volunteers_data),
-        "volunteers": volunteers_data,
-    }
-
-    return Response(
-        json.dumps(export_data, ensure_ascii=False, indent=2),
-        mimetype="application/json; charset=utf-8",
-        headers={
-            "Content-Disposition": f"attachment;filename=volunteers_"
-            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            "Content-Type": "application/json; charset=utf-8",
-        },
-    )
-
-
-def export_volunteers_pdf(volunteers):
-    """Export volunteers to PDF format"""
-    try:
-        from io import BytesIO
-
-        from reportlab.lib import colors
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-        from reportlab.lib.units import inch
-        from reportlab.platypus import (
-            Paragraph,
-            SimpleDocTemplate,
-            Spacer,
-            Table,
-            TableStyle,
-        )
-
-        buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4)
-        elements = []
-
-        # Styles
-        styles = getSampleStyleSheet()
-        title_style = ParagraphStyle(
-            "CustomTitle",
-            parent=styles["Heading1"],
-            fontSize=16,
-            spaceAfter=30,
-            alignment=1,  # Center alignment
-        )
-
-        # Title
-        title = Paragraph("Списък с доброволци - HelpChain", title_style)
-        elements.append(title)
-        elements.append(Spacer(1, 12))
-
-        # Export info
-        info_text = (
-            f"Общо доброволци: {len(volunteers)} | Експортирано на: "
-            f"{datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
-        )
-        info_paragraph = Paragraph(info_text, styles["Normal"])
-        elements.append(info_paragraph)
-        elements.append(Spacer(1, 20))
-
-        # Table data
-        data = [["ID", "Име", "Имейл", "Телефон", "Локация", "Регистриран"]]
-
-        for v in volunteers:
-            data.append(
-                [
-                    str(v.id),
-                    v.name,
-                    v.email,
-                    v.phone,
-                    v.location or "",
-                    v.created_at.strftime("%d.%m.%Y") if v.created_at else "",
-                ]
-            )
-
-        # Create table
-        table = Table(
-            data,
-            colWidths=[
-                0.5 * inch,
-                1.5 * inch,
-                2 * inch,
-                1.5 * inch,
-                1.5 * inch,
-                1 * inch,
-            ],
-        )
-
-        # Table style
-        table_style = TableStyle(
-            [
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, 0), 12),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-                ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
-                ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
-                ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
-                ("FONTSIZE", (0, 1), (-1, -1), 10),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ]
-        )
-
-        table.setStyle(table_style)
-        elements.append(table)
-
-        # Build PDF
-        doc.build(elements)
-        buffer.seek(0)
-
-        return Response(
-            buffer.getvalue(),
-            mimetype="application/pdf",
-            headers={
-                "Content-Disposition": (
-                    f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-                )
-            },
-        )
-
-    except ImportError:
-        # Fallback to CSV if reportlab is not installed
-        return export_volunteers_csv(volunteers)
-
-
-@app.route("/faq")
-def faq():
-    return render_template("faq.html")
-
-
-@app.route("/success_stories")
-def success_stories():
-    return render_template("success_stories.html")
-
-
-@app.route("/feedback", methods=["GET", "POST"])
-# @limiter.limit("2 per minute; 5 per hour; 10 per day")  # Very strict limits for feedback
-def feedback():
+@app.route("/admin_volunteers/add", methods=["GET", "POST"])
+@require_permission("manage_volunteers", redirect_url="admin_login")
+def add_volunteer():
     if request.method == "POST":
-        name = request.form.get("name")
-        email = request.form.get("email")
-        message = request.form.get("message")
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
+        location = request.form.get("location", "").strip()
 
-        # Basic input validation
-        if not all([name, email, message]) or len(message) < 10:
-            flash("Моля, попълнете всички полета коректно!")
-            return redirect(url_for("feedback"))
+        # Validate required fields
+        errors = []
+        if not name:
+            errors.append("Името е задължително")
+        if not email:
+            errors.append("Имейлът е задължителен")
+        if not phone:
+            errors.append("Телефонът е задължителен")
+        if not location:
+            errors.append("Локацията е задължителна")
+
+        # Basic email validation
+        if email and "@" not in email:
+            errors.append("Невалиден имейл адрес")
+
+        if errors:
+            for error in errors:
+                flash(error, "error")
+            return render_template("add_volunteer.html")
+
+        # Check if email already exists
+        existing_volunteer = db.session.query(Volunteer).filter_by(email=email).first()
+        if existing_volunteer:
+            flash("Доброволец с този имейл вече съществува!", "error")
+            return render_template("add_volunteer.html")
 
         try:
-            # Import feedback model and sentiment service
-            from models_with_analytics import Feedback
-            from sentiment_analysis import sentiment_analysis_service
+            volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
+            db.session.add(volunteer)
+            db.session.commit()
+            flash("Доброволецът е добавен успешно!", "success")
+            return redirect(url_for("admin_volunteers"))
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error adding volunteer: {e}")
+            flash("Грешка при добавяне на доброволец. Опитайте отново.", "error")
+            return render_template("add_volunteer.html")
 
-            # Determine user type and ID
-            user_type = "guest"
-            user_id = None
-            if session.get("volunteer_logged_in"):
-                user_type = "volunteer"
-                user_id = session.get("volunteer_id")
-            elif session.get("admin_logged_in"):
-                user_type = "admin"
-                user_id = session.get("admin_user_id")
+    return render_template("add_volunteer.html")
 
-            # Create feedback record
-            feedback_record = Feedback(
+
+@app.route("/submit_request", methods=["GET", "POST"])
+@limiter.limit("5 per minute; 20 per hour; 50 per day")  # Stricter limits for form submissions
+def submit_request():
+    if request.method == "POST":
+        # Enhanced input validation and sanitization
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        category = request.form.get("category", "").strip()
+        location = request.form.get("location", "").strip()
+        problem = request.form.get("problem", "").strip()
+        captcha = request.form.get("captcha", "").strip()
+
+        # Validate required fields
+        errors = []
+        if not name or len(name) < 2:
+            errors.append("Името трябва да бъде поне 2 символа.")
+        if not email or "@" not in email:
+            errors.append("Въведете валиден имейл адрес.")
+        if not category:
+            errors.append("Изберете категория на помощта.")
+        if not location:
+            errors.append("Въведете местоположение.")
+        if not problem or len(problem) < 10:
+            errors.append("Опишете проблема си (минимум 10 символа).")
+        
+        # Check CAPTCHA
+        if not captcha or captcha != session.get("captcha"):
+            errors.append("Невалиден CAPTCHA код.")
+        
+        if errors:
+            for error in errors:
+                flash(error, "error")
+            return render_template("submit_request.html", 
+                                 name=name, email=email, category=category, 
+                                 location=location, problem=problem)
+
+        try:
+            # Create help request
+            help_request = HelpRequest(
                 name=name,
                 email=email,
-                message=message,
-                user_type=user_type,
-                user_id=user_id,
-                page_url=request.referrer,
-                user_agent=request.headers.get("User-Agent"),
+                category=category,
+                location=location,
+                problem=problem,
+                status="pending",
+                created_at=datetime.utcnow(),
                 ip_address=request.remote_addr,
+                user_agent=request.headers.get("User-Agent")
             )
-
-            db.session.add(feedback_record)
-            db.session.flush()  # Get the ID
-
-            # Trigger sentiment analysis asynchronously
-            try:
-                from backend.tasks import process_feedback_sentiment
-
-                process_feedback_sentiment.delay(feedback_record.id)
-            except ImportError:
-                # Fallback: analyze immediately
-                sentiment_analysis_service.analyze_feedback(feedback_record.id)
-
+            db.session.add(help_request)
             db.session.commit()
 
-            # Log feedback with security tags
-            app.logger.info(
-                "[SECURITY:FEEDBACK] Feedback received from %s <%s>: %s (ID: %d)",
-                name,
-                email,
-                message[:100] + "..." if len(message) > 100 else message,
-                feedback_record.id,
-            )
+            # Send confirmation email
+            try:
+                from flask_mail import Message
+                msg = Message(
+                    subject="Вашата заявка за помощ е получена - HelpChain",
+                    recipients=[email],
+                    body=f"""Здравейте {name},
 
-            flash("Благодарим за обратната връзка! Тя беше обработена успешно.")
-            return redirect(url_for("feedback"))
+Благодарим Ви, че се обърнахте към HelpChain!
+
+Вашата заявка за помощ е получена успешно и ще бъде обработена в най-кратък срок.
+
+Детайли на заявката:
+- Категория: {category}
+- Местоположение: {location}
+- Проблем: {problem}
+
+Ще се свържем с Вас скоро с допълнителна информация.
+
+С уважение,
+Екипът на HelpChain
+helpchain.live
+"""
+                )
+                mail.send(msg)
+            except Exception as email_error:
+                app.logger.error(f"Failed to send confirmation email: {email_error}")
+
+            flash("Вашата заявка за помощ е изпратена успешно! Ще се свържем с Вас скоро.", "success")
+            return redirect(url_for("index"))
 
         except Exception as e:
             db.session.rollback()
-            app.logger.error(f"Error saving feedback: {e}")
-            flash(
-                "Възникна грешка при обработката на обратната връзка. Моля, опитайте отново."
-            )
-            return redirect(url_for("feedback"))
-
-    return render_template("feedback.html")
-
-
-@app.route("/category_help/<category>")
-def category_help(category):
-    """Показва доброволци по категория помощ"""
-    # Дефинираме категориите и техните описания
-    categories = {
-        "food": {
-            "name": "Храна",
-            "icon": "fas fa-utensils",
-            "color": "success",
-        },
-        "medical": {
-            "name": "Медицинска помощ",
-            "icon": "fas fa-medkit",
-            "color": "danger",
-        },
-        "transport": {
-            "name": "Транспорт",
-            "icon": "fas fa-car",
-            "color": "info",
-        },
-        "other": {
-            "name": "Друго",
-            "icon": "fas fa-hands-helping",
-            "color": "secondary",
-        },
-    }
-
-    if category not in categories:
-        flash("Категорията не е намерена!")
-        return redirect(url_for("index"))
-
-    # Филтрираме доброволци които имат тази категория в skills
-    # Търсим case-insensitive в skills полето
-    volunteers = (
-        db.session.query(Volunteer)
-        .filter(Volunteer.skills.ilike(f"%{category}%"))
-        .all()
-    )
-
-    # Ако няма доброволци, показваме съобщение
-    no_volunteers = len(volunteers) == 0
-
-    # Проверяваме дали потребителят е администратор
-    is_admin = session.get("admin_logged_in", False)
-
-    category_display = categories[category]["name"]
-
-    return render_template(
-        "category_help.html",
-        category=category,
-        category_info=categories[category],
-        volunteers=volunteers,
-        is_admin=is_admin,
-        category_display=category_display,
-        no_volunteers=no_volunteers,
-    )
-
-
-@app.route("/all_categories")
-def all_categories():
-    """Показва всички категории помощ"""
-    categories = [
-        {
-            "slug": "medical",
-            "name": "Спешна помощ",
-            "icon": "fas fa-ambulance",
-            "color": "danger",
-            "description": "Медицинска помощ, спешни случаи",
-        },
-        {
-            "slug": "transport",
-            "name": "Транспорт",
-            "icon": "fas fa-car",
-            "color": "info",
-            "description": "Превоз на хора и стоки",
-        },
-        {
-            "slug": "household",
-            "name": "Домакинска помощ",
-            "icon": "fas fa-home",
-            "color": "success",
-            "description": "Почистване, ремонт, грижи за дома",
-        },
-        {
-            "slug": "education",
-            "name": "Образование",
-            "icon": "fas fa-graduation-cap",
-            "color": "warning",
-            "description": "Помощ с уроци, консултации",
-        },
-        {
-            "slug": "legal",
-            "name": "Правна помощ",
-            "icon": "fas fa-gavel",
-            "color": "primary",
-            "description": "Юридически консултации",
-        },
-        {
-            "slug": "psychological",
-            "name": "Психологическа помощ",
-            "icon": "fas fa-brain",
-            "color": "secondary",
-            "description": "Подкрепа и консултации",
-        },
-    ]
-
-    return render_template("all_categories.html", categories=categories)
-
-
-@app.route("/chat")
-def chat():
-    """Main chat page - shows available chat rooms"""
-    try:
-        # Get public chat rooms
-        public_rooms = (
-            db.session.query(ChatRoom)
-            .filter_by(room_type="public", is_active=True)
-            .order_by(ChatRoom.created_at.desc())
-            .all()
-        )
-
-        # Get user's private rooms if logged in
-        private_rooms = []
-        user_info = {}
-
-        # Check if user is logged in (volunteer or admin)
-        if session.get("volunteer_logged_in"):
-            volunteer_id = session.get("volunteer_id")
-            volunteer = db.session.query(Volunteer).get(volunteer_id)
-            if volunteer:
-                user_info = {
-                    "type": "volunteer",
-                    "id": volunteer.id,
-                    "name": volunteer.name,
-                }
-                # Get rooms where volunteer is participant
-                private_rooms = (
-                    db.session.query(ChatRoom)
-                    .join(ChatParticipant)
-                    .filter(
-                        ChatParticipant.volunteer_id == volunteer.id,
-                        ChatRoom.room_type.in_(["private", "help_request"]),
-                        ChatRoom.is_active,
-                    )
-                    .all()
-                )
-        elif session.get("user_id"):
-            user = db.session.query(User).get(session.get("user_id"))
-            if user:
-                user_info = {"type": "admin", "id": user.id, "name": user.username}
-
-        return render_template(
-            "chat.html",
-            public_rooms=public_rooms,
-            private_rooms=private_rooms,
-            user_info=user_info,
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error loading chat page: {e}")
-        flash("Възникна грешка при зареждането на чата", "error")
-        return redirect(url_for("index"))
-
-
-@app.route("/chat/room/<int:room_id>")
-def chat_room(room_id):
-    """Chat room page"""
-    try:
-        room = db.session.query(ChatRoom).get_or_404(room_id)
-
-        # Check permissions
-        if room.room_type == "private":
-            # Check if user has access to private room
-            has_access = False
-            if session.get("volunteer_logged_in"):
-                volunteer_id = session.get("volunteer_id")
-                participant = (
-                    db.session.query(ChatParticipant)
-                    .filter_by(room_id=room_id, volunteer_id=volunteer_id)
-                    .first()
-                )
-                has_access = participant is not None
-            elif session.get("user_id"):
-                # Admin has access to all rooms
-                has_access = True
-
-            if not has_access:
-                flash("Нямате достъп до тази стая", "error")
-                return redirect(url_for("chat"))
-
-        # Get user info
-        user_info = {}
-        if session.get("volunteer_logged_in"):
-            volunteer = db.session.query(Volunteer).get(session.get("volunteer_id"))
-            if volunteer:
-                user_info = {
-                    "type": "volunteer",
-                    "id": volunteer.id,
-                    "name": volunteer.name,
-                }
-        elif session.get("user_id"):
-            user = db.session.query(User).get(session.get("user_id"))
-            if user:
-                user_info = {"type": "admin", "id": user.id, "name": user.username}
-        else:
-            # Allow anonymous access to public rooms
-            if room.room_type == "public":
-                user_info = {"type": "guest", "id": 0, "name": "Гост"}
-            else:
-                flash("Трябва да сте логнати за достъп до тази стая", "error")
-                return redirect(url_for("chat"))
-
-        return render_template("chat_room.html", room=room, user_info=user_info)
-
-    except Exception as e:
-        app.logger.error(f"Error loading chat room {room_id}: {e}")
-        flash("Възникна грешка при зареждането на стаята", "error")
-        return redirect(url_for("chat"))
-
-
-@app.route("/api/chat/rooms", methods=["GET"])
-def api_get_chat_rooms():
-    """API endpoint to get available chat rooms"""
-    try:
-        room_type = request.args.get("type", "public")
-
-        if room_type == "public":
-            rooms = (
-                db.session.query(ChatRoom)
-                .filter_by(room_type="public", is_active=True)
-                .order_by(ChatRoom.created_at.desc())
-                .all()
-            )
-        else:
-            # For private rooms, check user permissions
-            rooms = []
-            if session.get("volunteer_logged_in"):
-                volunteer_id = session.get("volunteer_id")
-                rooms = (
-                    db.session.query(ChatRoom)
-                    .join(ChatParticipant)
-                    .filter(
-                        ChatParticipant.volunteer_id == volunteer_id,
-                        ChatRoom.room_type.in_(["private", "help_request"]),
-                        ChatRoom.is_active,
-                    )
-                    .all()
-                )
-            elif session.get("user_id"):
-                # Admin sees all rooms
-                rooms = db.session.query(ChatRoom).filter_by(is_active=True).all()
-
-        rooms_data = []
-        for room in rooms:
-            # Count online participants
-            online_count = (
-                db.session.query(ChatParticipant)
-                .filter_by(room_id=room.id, is_online=True)
-                .count()
-            )
-
-            rooms_data.append(
-                {
-                    "id": room.id,
-                    "name": room.name,
-                    "description": room.description,
-                    "room_type": room.room_type,
-                    "created_at": room.created_at.isoformat(),
-                    "online_count": online_count,
-                }
-            )
-
-        return jsonify({"rooms": rooms_data})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            app.logger.error(f"Error submitting help request: {e}")
+            flash("Възникна грешка при изпращането на заявката. Опитайте отново.", "error")
+            return render_template("submit_request.html", 
+                                 name=name, email=email, category=category, 
+                                 location=location, problem=problem)
 
 
 @app.route("/api/chat/room/<int:room_id>/messages", methods=["GET"])
@@ -4727,10 +4650,59 @@ print("DEBUG: About to define admin_analytics route")
 
 
 @app.route("/admin_analytics", methods=["GET"])
-# @require_admin_login  # Temporarily disabled for testing
+@require_admin_login
 def admin_analytics():
-    print("DEBUG: admin_analytics route called")
-    return "Route works! Analytics service not called yet."
+    """Render the admin analytics dashboard"""
+    try:
+        from analytics_service import analytics_service
+        dashboard_stats = analytics_service.get_dashboard_analytics()
+        
+        # Prepare chart data
+        trends_data = {
+            "labels": ["Яну", "Фев", "Мар", "Апр", "Май", "Юни", 
+                      "Юли", "Авг", "Сеп", "Окт", "Ное", "Дек"],
+            "requests": [65, 59, 80, 81, 56, 55, 40, 45, 60, 75, 85, 90],
+            "completed": [28, 48, 40, 19, 86, 27, 90, 35, 50, 65, 75, 80],
+            "volunteers": [12, 15, 18, 22, 25, 28, 30, 32, 35, 38, 40, 42]
+        }
+        
+        category_stats = {
+            "categories": ["Медицинска помощ", "Транспорт", "Домакинска помощ", 
+                          "Образование", "Други"],
+            "counts": [35, 25, 20, 15, 5]
+        }
+        
+        predictions = {
+            "labels": ["Месец 1", "Месец 2", "Месец 3"],
+            "requests_predicted": [95, 105, 115],
+            "volunteers_predicted": [45, 48, 52],
+            "ml_insights": {
+                "anomalies": [],
+                "predictions": {
+                    "optimal_engagement_time": {"hour": 14, "engagement_score": 85},
+                    "churn_risk": {"risk": "low", "days_since_activity": 2}
+                },
+                "recommendations": [
+                    {"title": "Оптимизация на работното време", 
+                     "description": "Най-добрите резултати са между 14:00 и 16:00", 
+                     "action": "Фокусирай маркетинговите кампании в този период", 
+                     "priority": "medium"}
+                ]
+            }
+        }
+        
+    except Exception as e:
+        print(f"Error getting analytics data: {type(e).__name__}")
+        dashboard_stats = {"error": "Analytics not available"}
+        trends_data = {"labels": [], "requests": [], "completed": [], "volunteers": []}
+        category_stats = {"categories": [], "counts": []}
+        predictions = {"ml_insights": None}
+    
+    return render_template("admin_analytics.html", 
+                         dashboard_stats=dashboard_stats,
+                         trends_data=trends_data,
+                         category_stats=category_stats,
+                         predictions=predictions)
 
 
 print("DEBUG: Checking if admin_analytics route is registered")
@@ -4885,9 +4857,7 @@ def predictive_regional_demand():
     except Exception as e:
         app.logger.error(f"Error getting regional demand forecast: {e}")
         return (
-            jsonify(
-                {"error": "Failed to get regional demand forecast", "details": str(e)}
-            ),
+            jsonify({"error": "Failed to get regional demand forecast", "details": str(e)}),
             500,
         )
 
@@ -4901,9 +4871,7 @@ def predictive_workload():
 
         hours_ahead = int(request.args.get("hours_ahead", 24))
 
-        prediction = predictive_analytics.get_workload_prediction(
-            hours_ahead=hours_ahead
-        )
+        prediction = predictive_analytics.get_workload_prediction(hours_ahead=hours_ahead)
         return jsonify(prediction)
 
     except Exception as e:
@@ -4940,9 +4908,7 @@ def predictive_model_info():
         from predictive_analytics import predictive_analytics
 
         # Get sample data to extract model info
-        regional_sample = predictive_analytics.get_regional_demand_forecast(
-            days_ahead=1
-        )
+        regional_sample = predictive_analytics.get_regional_demand_forecast(days_ahead=1)
         workload_sample = predictive_analytics.get_workload_prediction(hours_ahead=1)
 
         model_info = {
@@ -4958,9 +4924,7 @@ def predictive_model_info():
                     "population_density",
                 ],
                 "prediction_horizon": "1-30 days",
-                "accuracy_metrics": regional_sample.get("model_info", {}).get(
-                    "accuracy", "N/A"
-                ),
+                "accuracy_metrics": regional_sample.get("model_info", {}).get("accuracy", "N/A"),
                 "last_trained": regional_sample.get("generated_at", "N/A"),
             },
             "workload_prediction_model": {
@@ -4974,9 +4938,7 @@ def predictive_model_info():
                     "season",
                 ],
                 "prediction_horizon": "1-168 hours",
-                "accuracy_metrics": workload_sample.get("model_info", {}).get(
-                    "accuracy", "N/A"
-                ),
+                "accuracy_metrics": workload_sample.get("model_info", {}).get("accuracy", "N/A"),
                 "last_trained": workload_sample.get("generated_at", "N/A"),
             },
             "data_sources": [
@@ -5044,9 +5006,7 @@ def find_matches(request_id):
                 }
             )
 
-        return jsonify(
-            {"request_id": request_id, "matches": result, "total_matches": len(result)}
-        )
+        return jsonify({"request_id": request_id, "matches": result, "total_matches": len(result)})
 
     except Exception as e:
         app.logger.error(f"Error finding matches for request {request_id}: {e}")
@@ -5203,9 +5163,7 @@ def analyze_feedback_sentiment(feedback_id):
     except Exception as e:
         app.logger.error(f"Error analyzing feedback sentiment {feedback_id}: {e}")
         return (
-            jsonify(
-                {"error": "Failed to analyze feedback sentiment", "details": str(e)}
-            ),
+            jsonify({"error": "Failed to analyze feedback sentiment", "details": str(e)}),
             500,
         )
 

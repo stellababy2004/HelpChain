@@ -218,9 +218,7 @@ def auto_evaluate_tasks(self):
         evaluated_count = 0
         for task in completed_tasks:
             # Check if performance record already exists
-            existing_perf = (
-                db.session.query(TaskPerformance).filter_by(task_id=task.id).first()
-            )
+            existing_perf = db.session.query(TaskPerformance).filter_by(task_id=task.id).first()
             if existing_perf:
                 continue
 
@@ -366,17 +364,13 @@ def cleanup_old_data(self):
         # Delete old analytics events (older than 90 days)
         cutoff_date = datetime.utcnow() - timedelta(days=90)
         deleted_events = (
-            db.session.query(AnalyticsEvent)
-            .filter(AnalyticsEvent.timestamp < cutoff_date)
-            .delete()
+            db.session.query(AnalyticsEvent).filter(AnalyticsEvent.timestamp < cutoff_date).delete()
         )
 
         # Delete old chat messages (older than 180 days)
         cutoff_date = datetime.utcnow() - timedelta(days=180)
         deleted_messages = (
-            db.session.query(ChatMessage)
-            .filter(ChatMessage.timestamp < cutoff_date)
-            .delete()
+            db.session.query(ChatMessage).filter(ChatMessage.timestamp < cutoff_date).delete()
         )
 
         db.session.commit()
@@ -459,16 +453,12 @@ def update_realtime_stats(self):
         # Calculate current statistics
         stats = {
             "total_requests": db.session.query(HelpRequest).count(),
-            "pending_requests": db.session.query(HelpRequest)
-            .filter_by(status="pending")
-            .count(),
+            "pending_requests": db.session.query(HelpRequest).filter_by(status="pending").count(),
             "completed_requests": db.session.query(HelpRequest)
             .filter_by(status="completed")
             .count(),
             "total_volunteers": db.session.query(Volunteer).count(),
-            "active_volunteers": db.session.query(Volunteer)
-            .filter_by(is_active=True)
-            .count(),
+            "active_volunteers": db.session.query(Volunteer).filter_by(is_active=True).count(),
             "timestamp": datetime.utcnow().isoformat(),
         }
 
@@ -477,9 +467,7 @@ def update_realtime_stats(self):
             from redis import Redis
 
             redis_client = Redis.from_url(celery.conf.broker_url)
-            redis_client.setex(
-                "helpchain:stats", 300, json.dumps(stats)
-            )  # Cache for 5 minutes
+            redis_client.setex("helpchain:stats", 300, json.dumps(stats))  # Cache for 5 minutes
         except Exception as redis_error:
             logger.warning(f"Redis caching failed: {redis_error}")
 
@@ -516,14 +504,10 @@ def send_bulk_notifications(self, notifications):
                 )
                 success_count += 1
             except Exception as e:
-                logger.error(
-                    f"Failed to send notification to {notification['email']}: {e}"
-                )
+                logger.error(f"Failed to send notification to {notification['email']}: {e}")
                 continue
 
-        logger.info(
-            f"Bulk notifications completed: {success_count}/{len(notifications)} sent"
-        )
+        logger.info(f"Bulk notifications completed: {success_count}/{len(notifications)} sent")
 
         # Track analytics
         analytics_service.track_event(
@@ -645,9 +629,7 @@ def generate_performance_report(self, volunteer_id=None, period="weekly"):
                     if performances
                     else 0
                 ),
-                "tasks_completed": len(
-                    [p for p in performances if p.task.status == "completed"]
-                ),
+                "tasks_completed": len([p for p in performances if p.task.status == "completed"]),
             }
         else:
             # All volunteers report
@@ -722,9 +704,7 @@ def monitor_system_health(self):
         db.session.execute("SELECT 1").first()
 
         # Check pending requests count
-        pending_count = (
-            db.session.query(HelpRequest).filter_by(status="pending").count()
-        )
+        pending_count = db.session.query(HelpRequest).filter_by(status="pending").count()
         if pending_count > 50:  # Alert threshold
             admins = db.session.query(AdminUser).all()
             for admin in admins:
@@ -735,9 +715,7 @@ def monitor_system_health(self):
                 )
 
         # Check volunteer availability
-        active_volunteers = (
-            db.session.query(Volunteer).filter_by(is_active=True).count()
-        )
+        active_volunteers = db.session.query(Volunteer).filter_by(is_active=True).count()
         if active_volunteers < 5:  # Alert threshold
             admins = db.session.query(AdminUser).all()
             for admin in admins:
@@ -774,7 +752,5 @@ def process_feedback_sentiment(self, feedback_id):
         return result
 
     except Exception as e:
-        logger.error(
-            f"Error in process_feedback_sentiment for feedback {feedback_id}: {e}"
-        )
+        logger.error(f"Error in process_feedback_sentiment for feedback {feedback_id}: {e}")
         raise self.retry(countdown=300, max_retries=3) from e
