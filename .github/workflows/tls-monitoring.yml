@@ -74,7 +74,7 @@ jobs:
 
       - name: Create Issue on TLS Issues
         if: failure()
-        uses: actions/github-script@v8
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             github.rest.issues.create({
@@ -104,7 +104,7 @@ jobs:
             })
 
       - name: Upload SSL Labs Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1
         with:
           name: ssl-labs-assessment
           path: ssl-labs-report.json

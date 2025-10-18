@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38
         with:
           python-version: "3.11"
 
@@ -134,7 +134,7 @@ jobs:
           echo "requests==2.31.0" >> requirements-csp.txt
 
       - name: Upload CSP Handler Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1
         with:
           name: csp-report-handler
           path: |
@@ -148,7 +148,7 @@ jobs:
     if: github.event.inputs.setup_csp_endpoint == 'true'
     steps:
       - name: Create CSP Monitoring Setup Issue
-        uses: actions/github-script@v8
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
             github.rest.issues.create({

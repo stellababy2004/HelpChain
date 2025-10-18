@@ -60,6 +60,6 @@ jobs:
 
       - name: Upload pip-audit SARIF
         if: hashFiles('pip-audit.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0
         with:
           sarif_file: pip-audit.sarif
