@@ -1,0 +1,41 @@
+name: Guard - Pin GitHub Actions
+on:
+  pull_request:
+    paths: [".github/workflows/**"]
+  push:
+    branches: ["main"]
+    paths: [".github/workflows/**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pin-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Fail on version tags
+        run: |
+          set -euo pipefail
+          if grep -RHEn "uses:\s*[^@]+@v[0-9]+" .github/workflows; then
+            echo "❌ Found version tags (@vN). Use 40-char commit SHAs."; exit 1
+          else
+            echo "✅ No version tags found."
+          fi
+      - name: Require 40-char SHAs
+        run: |
+          set -euo pipefail
+          # Разрешаваме локални/relative actions (./) и composite без @
+          NOT_SHA=$(grep -RHEn "uses:\s*[^./][^@]+@[^[:space:]]+" .github/workflows \
+            | grep -vE "@[a-f0-9]{40}$" || true)
+          if [ -n "$NOT_SHA" ]; then
+            echo "❌ Some actions are not pinned to a 40-char SHA:"
+            echo "$NOT_SHA"; exit 1
+          else
+            echo "✅ All external actions pinned to SHAs."
+          fi
