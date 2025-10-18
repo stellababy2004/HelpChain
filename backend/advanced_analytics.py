@@ -9,7 +9,6 @@ from datetime import datetime, timedelta
 # Try absolute imports first, fall back to relative imports for standalone execution
 try:
     from backend.extensions import db
-    from backend.models import HelpRequest, User, Volunteer
 except ImportError:
     from .extensions import db
 
@@ -334,7 +333,7 @@ class AdvancedAnalytics:
                     user_activity[event["user_id"]]["features"].add(event["category"])
 
         # Classify users
-        for user_id, activity in user_activity.items():
+        for _user_id, activity in user_activity.items():
             events_count = activity["events"]
             features_count = len(activity["features"])
 

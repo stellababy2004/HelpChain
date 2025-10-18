@@ -12,12 +12,6 @@ from typing import Any
 from sqlalchemy import and_, func
 
 # Remove direct db import - we'll get it from current_app
-# try:
-#     from extensions import db
-# except ImportError:
-#     # Fallback for when imported as a module
-#     from .extensions import db
-
 try:
     from models_with_analytics import (
         AnalyticsEvent,

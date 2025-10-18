@@ -44,7 +44,7 @@ def analytics_data():
         data = analytics_service.get_dashboard_analytics()
         return jsonify(data)
     except Exception as e:
-        print(f"Error getting analytics data: {e}")
+        print(f"Error getting analytics data: {type(e).__name__}")
         # Fallback to basic stats
         try:
             try:
@@ -55,8 +55,8 @@ def analytics_data():
             data = AnalyticsEngine.get_dashboard_stats()
             return jsonify(data)
         except Exception as fallback_e:
-            print(f"Fallback analytics also failed: {fallback_e}")
-            return jsonify({"error": "Analytics not available", "details": str(e)})
+            print(f"Fallback analytics also failed: {type(fallback_e).__name__}")
+            return jsonify({"error": "Analytics not available"})
 
 
 def _bookmarks_path():
@@ -128,8 +128,8 @@ def analytics_live():
         }
         return jsonify(live_data)
     except Exception as e:
-        print(f"Error getting live analytics: {e}")
-        return jsonify({"error": "Live analytics not available", "details": str(e)})
+        print(f"Error getting live analytics: {type(e).__name__}")
+        return jsonify({"error": "Live analytics not available"})
 
 
 @analytics_bp.route("/api/analytics/trends")
@@ -163,8 +163,8 @@ def analytics_trends():
         }
         return jsonify(trend_data)
     except Exception as e:
-        print(f"Error getting trend analytics: {e}")
-        return jsonify({"error": "Trend analytics not available", "details": str(e)})
+        print(f"Error getting trend analytics: {type(e).__name__}")
+        return jsonify({"error": "Trend analytics not available"})
 
 
 @analytics_bp.route("/api/analytics/export")
@@ -210,8 +210,8 @@ def analytics_export():
             return jsonify({"error": "Unsupported export format"})
 
     except Exception as e:
-        print(f"Error exporting analytics: {e}")
-        return jsonify({"error": "Export failed", "details": str(e)})
+        print(f"Error exporting analytics: {type(e).__name__}")
+        return jsonify({"error": "Export failed"})
 
 
 # Predictive Analytics Routes
@@ -251,10 +251,8 @@ def predictive_regional_demand():
         return jsonify(data)
 
     except Exception as e:
-        print(f"Error getting regional demand forecast: {e}")
-        return jsonify(
-            {"error": "Failed to get regional demand forecast", "details": str(e)}
-        )
+        print(f"Error getting regional demand forecast: {type(e).__name__}")
+        return jsonify({"error": "Failed to get regional demand forecast"})
 
 
 @analytics_bp.route("/api/predictive/workload")
@@ -278,10 +276,8 @@ def predictive_workload():
         return jsonify(data)
 
     except Exception as e:
-        print(f"Error getting workload prediction: {e}")
-        return jsonify(
-            {"error": "Failed to get workload prediction", "details": str(e)}
-        )
+        print(f"Error getting workload prediction: {type(e).__name__}")
+        return jsonify({"error": "Failed to get workload prediction"})
 
 
 @analytics_bp.route("/api/predictive/insights")
@@ -303,10 +299,8 @@ def predictive_insights():
         return jsonify(data)
 
     except Exception as e:
-        print(f"Error getting predictive insights: {e}")
-        return jsonify(
-            {"error": "Failed to get predictive insights", "details": str(e)}
-        )
+        print(f"Error getting predictive insights: {type(e).__name__}")
+        return jsonify({"error": "Failed to get predictive insights"})
 
 
 @analytics_bp.route("/api/predictive/model-info")
@@ -377,5 +371,5 @@ def predictive_model_info():
         return jsonify(model_info)
 
     except Exception as e:
-        print(f"Error getting model info: {e}")
-        return jsonify({"error": "Failed to get model information", "details": str(e)})
+        print(f"Error getting model info: {type(e).__name__}")
+        return jsonify({"error": "Failed to get model information"})
