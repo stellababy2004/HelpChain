@@ -1,9 +1,9 @@
 import pytest
+from werkzeug.security import check_password_hash
 
 # Import models_with_analytics first to ensure Task model is available
 from backend import models_with_analytics  # noqa: F401
-from backend.models import AdminUser, Volunteer, HelpRequest
-from werkzeug.security import check_password_hash
+from backend.models import AdminUser, HelpRequest, Volunteer
 
 
 class TestAdminUser:

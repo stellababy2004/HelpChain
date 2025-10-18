@@ -706,7 +706,7 @@ class TestVolunteerDashboardIntegration:
                 mock_get.return_value = test_volunteer
 
                 # Make multiple requests
-                for i in range(3):
+                for _i in range(3):
                     response = client.get("/volunteer_dashboard")
                     assert response.status_code == 200
                     # Just check that dashboard loads successfully

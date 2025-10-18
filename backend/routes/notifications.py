@@ -51,7 +51,7 @@ def notification_settings():
             return jsonify({"success": True, "settings": settings})
 
         elif request.method == "POST":
-            data = request.get_json()
+            request.get_json()
 
             # Update user notification settings
             # current_user.notification_settings = data

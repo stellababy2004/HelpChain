@@ -1,6 +1,6 @@
 import re
 
-with open("backend/appy.py", "r", encoding="utf-8") as f:
+with open("backend/appy.py", encoding="utf-8") as f:
     content = f.read()
 
 # Pattern for the admin_dashboard function

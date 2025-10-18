@@ -7,7 +7,7 @@ class TestErrorHandling:
 
         assert response.status_code == 404
         assert b"404" in response.data
-        assert "Страницата не е намерена".encode("utf-8") in response.data
+        assert "Страницата не е намерена".encode() in response.data
 
     def test_404_error_json_response(self, client):
         """Тест за 404 грешка с JSON отговор за API"""

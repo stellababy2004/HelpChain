@@ -1677,7 +1677,7 @@ def update_volunteer_settings():
         return jsonify({"success": False, "message": "Доброволецът не е намерен"}), 404
 
     try:
-        data = request.get_json()
+        request.get_json()
         # Here you can save settings to volunteer model or separate settings table
         # For now, just return success
         return jsonify({"success": True, "message": "Настройките са запазени"})

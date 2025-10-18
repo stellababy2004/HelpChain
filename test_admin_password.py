@@ -9,9 +9,10 @@ sys.path.insert(0, "backend/helpchain-backend/src")
 os.environ["FLASK_APP"] = "backend/appy.py"
 
 # Import Flask app and models
-from backend.models import AdminUser, db
-from backend.extensions import db as db_ext
 from flask import Flask
+
+from backend.extensions import db as db_ext
+from backend.models import AdminUser, db
 
 # Create a minimal app for testing
 app = Flask(__name__)
@@ -19,7 +20,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
     r"sqlite:///C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"] = "test-key"
+app.config["SECRET_KEY"] = "test-key"  # pragma: allowlist secret
 
 db_ext.init_app(app)
 

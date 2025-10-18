@@ -18,7 +18,7 @@ def some_endpoint():
     if callable(fn):
         try:
             out = fn()
-            if isinstance(out, (dict, list)):
+            if isinstance(out, dict | list):
                 return jsonify(out), 200
             return jsonify({"ok": True, "result": out}), 200
         except Exception as e:

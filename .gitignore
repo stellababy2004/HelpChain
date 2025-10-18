@@ -67,3 +67,6 @@ node_modules/.cache/prettier/
 instance/*.db
 *.sqlite*
 .env
+
+# local backups
+backend/backups/*

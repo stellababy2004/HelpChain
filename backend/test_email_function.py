@@ -474,7 +474,7 @@ HelpChain системата
             mock_query.filter_by.return_value.first.return_value = mock_volunteer
 
             # Test multiple rapid email sends
-            for i in range(5):
+            for _i in range(5):
                 with client.session_transaction() as sess:
                     sess.clear()
 

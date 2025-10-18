@@ -305,7 +305,7 @@ def generate_totp_secret():
 def generate_backup_codes(count=10):
     """Генерира backup кодове за 2FA"""
     codes = []
-    for i in range(count):
+    for _i in range(count):
         code = "".join(secrets.choice("0123456789") for j in range(8))
         codes.append(f"{code[:4]}-{code[4:]}")
     return codes

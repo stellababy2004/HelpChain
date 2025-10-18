@@ -1,7 +1,7 @@
 # babel_update.py
 import os
-import sys
 import subprocess
+import sys
 
 LANGUAGES = sys.argv[1:] if len(sys.argv) > 1 else ["bg", "en", "fr"]
 

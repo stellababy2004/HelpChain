@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Test script for AI functionality
 """
 
 import os
 import sys
+
 from dotenv import load_dotenv
 
 # Add backend to path

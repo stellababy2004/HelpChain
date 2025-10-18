@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Намира всички файлове с име `asgi.py` в директорията на проекта.
 Използване:
@@ -11,14 +10,13 @@
 """
 from __future__ import annotations
 
+import argparse
 import os
 import sys
-import argparse
-from typing import List
 
 
-def find_asgi(root: str) -> List[str]:
-    matches: List[str] = []
+def find_asgi(root: str) -> list[str]:
+    matches: list[str] = []
     for dirpath, _, files in os.walk(root):
         if "asgi.py" in files:
             matches.append(os.path.join(dirpath, "asgi.py"))

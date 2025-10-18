@@ -1,4 +1,5 @@
 import pytest
+
 from backend.gamification_service import GamificationService
 from backend.models import Achievement
 

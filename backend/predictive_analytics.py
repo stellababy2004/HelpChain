@@ -351,7 +351,7 @@ class PredictiveAnalytics:
                 y = daily_counts["requests_count"]
 
                 # Use time series split for validation
-                tscv = TimeSeriesSplit(n_splits=min(3, len(daily_counts) - 7))
+                TimeSeriesSplit(n_splits=min(3, len(daily_counts) - 7))
 
                 model = RandomForestRegressor(
                     n_estimators=100, random_state=42, max_depth=10

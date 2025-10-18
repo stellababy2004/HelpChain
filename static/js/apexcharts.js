@@ -2738,7 +2738,9 @@
             return (e.remove(), i);
           } catch (e) {
             throw new Error(
-              `Getting bbox of element "${t.node.nodeName}" is not possible: ${e.toString()}`,
+              `Getting bbox of element "${
+                t.node.nodeName
+              }" is not possible: ${e.toString()}`,
             );
           }
         },
@@ -3159,15 +3161,13 @@
     },
     Defs: {
       pattern: K(function (t, e, i) {
-        return this.put(new ce())
-          .update(i)
-          .attr({
-            x: 0,
-            y: 0,
-            width: t,
-            height: e,
-            patternUnits: "userSpaceOnUse",
-          });
+        return this.put(new ce()).update(i).attr({
+          x: 0,
+          y: 0,
+          width: t,
+          height: e,
+          patternUnits: "userSpaceOnUse",
+        });
       }),
     },
   }),
@@ -19664,13 +19664,11 @@
                       updateRot: function () {},
                       createHandle: function (t, e, i, a, s) {
                         return "l" === s || "r" === s
-                          ? t
-                              .circle(8)
-                              .css({
-                                "stroke-width": 1,
-                                stroke: "#333",
-                                fill: "#fff",
-                              })
+                          ? t.circle(8).css({
+                              "stroke-width": 1,
+                              stroke: "#333",
+                              fill: "#fff",
+                            })
                           : t.circle(0);
                       },
                       updateHandle: function (t, e) {
@@ -26592,15 +26590,13 @@
                 })),
                 t.forEach(function (t, n) {
                   var o = t.length === i.globals.dataPoints,
-                    l = e.graphics
-                      .group()
-                      .attr({
-                        class: "apexcharts-series",
-                        "data:longestSeries": o,
-                        seriesName: v.escapeString(i.globals.seriesNames[n]),
-                        rel: n + 1,
-                        "data:realIndex": n,
-                      });
+                    l = e.graphics.group().attr({
+                      class: "apexcharts-series",
+                      "data:longestSeries": o,
+                      seriesName: v.escapeString(i.globals.seriesNames[n]),
+                      rel: n + 1,
+                      "data:realIndex": n,
+                    });
                   ((e.dataRadiusOfPercent[n] = []),
                     (e.dataRadius[n] = []),
                     (e.angleArr[n] = []),
