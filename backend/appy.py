@@ -25,6 +25,7 @@ from flask import (
     url_for,
 )
 from flask_babel import Babel, refresh
+from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
@@ -33,9 +34,12 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_required,
 )
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_socketio import leave_room
+from flask_talisman import Talisman
 from jinja2 import ChoiceLoader, FileSystemLoader
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import BadRequest
@@ -282,7 +286,9 @@ def initialize_default_admin():
         db.session.flush()  # Get user ID
 
         # Assign super admin role to the user
-        superadmin_role = db.session.query(Role).filter_by(name="Супер администратор").first()
+        superadmin_role = (
+            db.session.query(Role).filter_by(name="Супер администратор").first()
+        )
         if superadmin_role:
             # Check if user already has this role
             existing_role = (
@@ -413,7 +419,9 @@ HelpChain системата
             logger.info("Email 2FA code saved to file as fallback")
             return True
         except Exception as file_e:
-            logger.error(f"Failed to save email 2FA code to file: {file_e}", exc_info=True)
+            logger.error(
+                f"Failed to save email 2FA code to file: {file_e}", exc_info=True
+            )
             return False
 
 
@@ -430,11 +438,15 @@ _static = os.path.join(os.path.dirname(__file__), "static")
 app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
 # Задаваме SECRET_KEY за сесии и сигурност ПРЕДИ Flask-Session инициализация
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY", "dev-secret-key-change-in-production"
+)
 
 # JWT Configuration
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", app.config["SECRET_KEY"])
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600))  # 1 hour
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(
+    os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600)
+)  # 1 hour
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = int(
     os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 86400)
 )  # 24 hours
@@ -445,7 +457,9 @@ app.config["VAPID_PRIVATE_KEY"] = os.getenv("VAPID_PRIVATE_KEY")
 
 # Debug logging for VAPID keys
 app.logger.info(f"VAPID_PUBLIC_KEY loaded: {bool(app.config.get('VAPID_PUBLIC_KEY'))}")
-app.logger.info(f"VAPID_PRIVATE_KEY loaded: {bool(app.config.get('VAPID_PRIVATE_KEY'))}")
+app.logger.info(
+    f"VAPID_PRIVATE_KEY loaded: {bool(app.config.get('VAPID_PRIVATE_KEY'))}"
+)
 
 # TEMPORARILY DISABLE Flask-Session to test standard Flask sessions
 # Configure Flask-Session for better session persistence in development
@@ -543,7 +557,9 @@ if os.getenv("RENDER") == "true" or os.getenv("PRODUCTION") == "true":
         # Fallback to SQLite for development/production without DATABASE_URL
         db_path = "/opt/render/project/src/volunteers.db"
         app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-        logger.info(f"Production mode detected, using fallback SQLite database: {db_path}")
+        logger.info(
+            f"Production mode detected, using fallback SQLite database: {db_path}"
+        )
 else:
     # Локално development - използвайме instance директория в root проекта
     instance_dir = os.path.join(os.path.dirname(basedir), "instance")
@@ -616,16 +632,24 @@ else:
                 if admin_user:
                     app.logger.info("Default admin user initialized for development")
                 else:
-                    app.logger.warning("Failed to initialize default admin user for development")
+                    app.logger.warning(
+                        "Failed to initialize default admin user for development"
+                    )
             except Exception as admin_error:
-                app.logger.warning(f"Admin initialization failed for development: {admin_error}")
+                app.logger.warning(
+                    f"Admin initialization failed for development: {admin_error}"
+                )
 
             # Initialize default roles and permissions for development
             try:
                 initialize_default_roles_and_permissions()
-                app.logger.info("Default roles and permissions initialized for development")
+                app.logger.info(
+                    "Default roles and permissions initialized for development"
+                )
             except Exception as roles_error:
-                app.logger.warning(f"Roles initialization failed for development: {roles_error}")
+                app.logger.warning(
+                    f"Roles initialization failed for development: {roles_error}"
+                )
 
     except Exception as e:
         app.logger.error(f"Database initialization failed for development: {e}")
@@ -669,7 +693,9 @@ def set_language(language):
 def serve_sw():
     """Serve the service worker from the static directory"""
     response = make_response(
-        send_from_directory(app.static_folder, "sw.js", mimetype="application/javascript")
+        send_from_directory(
+            app.static_folder, "sw.js", mimetype="application/javascript"
+        )
     )
     response.headers["Service-Worker-Allowed"] = "/"
     return response
@@ -684,7 +710,9 @@ def allowed_file(filename):
 
 
 # Email configuration
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "noreply@helpchain.live")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
+    "MAIL_DEFAULT_SENDER", "noreply@helpchain.live"
+)
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
 app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
@@ -703,9 +731,9 @@ logger.debug(f"MAIL_DEFAULT_SENDER: {app.config.get('MAIL_DEFAULT_SENDER')}")
 mail = Mail(app)
 
 # Security configurations
-app.config["SESSION_COOKIE_SECURE"] = False  # Disabled for development
-app.config["SESSION_COOKIE_HTTPONLY"] = False  # Changed to False for testing
-app.config["SESSION_COOKIE_SAMESITE"] = None  # Changed to None for testing
+app.config["SESSION_COOKIE_SECURE"] = True  # Require HTTPS for session cookies
+app.config["SESSION_COOKIE_HTTPONLY"] = True  # Prevent JavaScript access to session cookies
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # CSRF protection while allowing some cross-site requests
 
 # Upload folder configuration
 app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
@@ -715,14 +743,14 @@ if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
 
 # Initialize security extensions
-# limiter = Limiter(
-#     app=app,
-#     default_limits=["100 per day", "30 per hour"],  # Stricter default limits
-#     storage_uri="memory://",  # In production, use Redis: "redis://localhost:6379/0"
-#     strategy="fixed-window",  # Use fixed window for more predictable limiting
-#     key_func=get_remote_address,
-#     headers_enabled=True,  # Enable rate limit headers
-# )
+limiter = Limiter(
+    app=app,
+    default_limits=["100 per day", "30 per hour"],  # Stricter default limits
+    storage_uri="memory://",  # In production, use Redis: "redis://localhost:6379/0"
+    strategy="fixed-window",  # Use fixed window for more predictable limiting
+    key_func=get_remote_address,
+    headers_enabled=True,  # Enable rate limit headers
+)
 
 # Initialize JWT Manager
 jwt = JWTManager(app)
@@ -804,32 +832,33 @@ csp = {
 }
 
 # talisman = Talisman(
-#     app,
-#     content_security_policy=csp,  # TEMPORARILY PERMISSIVE TO OVERRIDE BROWSER CACHE
-#     content_security_policy_report_uri="https://csp-report.helpchain.live/report",
-#     force_https=False,  # Disabled for development testing
-#     strict_transport_security=False,  # TEMPORARILY DISABLED FOR TESTING
-#     strict_transport_security_preload=True,
-#     strict_transport_security_include_subdomains=True,
-#     strict_transport_security_max_age=63072000,  # 2 years
-#     referrer_policy="strict-origin-when-cross-origin",
-#     permissions_policy={
-#         "camera": "()",
-#         "microphone": "()",
-#         "geolocation": "()",
-#         "payment": "()",
-#         "usb": "()",
-#         "magnetometer": "()",
-#         "accelerometer": "()",
-#         "gyroscope": "()",
-#         "ambient-light-sensor": "()",
-#         "autoplay": "()",
-#         "encrypted-media": "()",
-#         "fullscreen": "()",
-#         "picture-in-picture": "()",
-#     },
-#     feature_policy={},  # Deprecated, but keeping for compatibility
-# )
+talisman = Talisman(
+    app,
+    content_security_policy=csp,  # ENFORCED - no longer report-only
+    content_security_policy_report_uri="https://csp-report.helpchain.live/report",
+    force_https=False,  # Disabled for development testing
+    strict_transport_security=False,  # TEMPORARILY DISABLED FOR TESTING
+    strict_transport_security_preload=True,
+    strict_transport_security_include_subdomains=True,
+    strict_transport_security_max_age=63072000,  # 2 years
+    referrer_policy="strict-origin-when-cross-origin",
+    permissions_policy={
+        "camera": "()",
+        "microphone": "()",
+        "geolocation": "()",
+        "payment": "()",
+        "usb": "()",
+        "magnetometer": "()",
+        "accelerometer": "()",
+        "gyroscope": "()",
+        "ambient-light-sensor": "()",
+        "autoplay": "()",
+        "encrypted-media": "()",
+        "fullscreen": "()",
+        "picture-in-picture": "()",
+    },
+    feature_policy={},  # Deprecated, but keeping for compatibility
+)
 
 
 # Add CSP headers manually to ensure they are applied
@@ -855,23 +884,23 @@ csp = {
 # csrf = CSRFProtect(app)  # Disabled for development testing
 
 # CORS configuration - STRICT allowlist (no wildcards)
-# cors = CORS(
-#     app,
-#     resources={
-#         r"/api/*": {
-#             "origins": [
-#                 "https://helpchain.live",
-#                 "https://www.helpchain.live",
-#                 # Add staging if needed: "https://staging.helpchain.live"
-#             ],
-#             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-#             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-#             "supports_credentials": False,  # Never allow credentials for API
-#             "max_age": 86400,  # Cache preflight for 24h
-#         }
-#     },
-#     # Disable CORS for non-API routes (default deny)
-# )
+cors = CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": [
+                "https://helpchain.live",
+                "https://www.helpchain.live",
+                # Add staging if needed: "https://staging.helpchain.live"
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "supports_credentials": False,  # Never allow credentials for API
+            "max_age": 86400,  # Cache preflight for 24h
+        }
+    },
+    # Disable CORS for non-API routes (default deny)
+)
 
 # Настройваме Jinja да търси шаблони в няколко възможни директории
 _template_dirs = [
@@ -1081,7 +1110,9 @@ def rate_limit_exceeded(error):
             ),
             429,
         )
-    flash("Твърде много заявки. Моля, изчакайте малко преди да опитате отново.", "warning")
+    flash(
+        "Твърде много заявки. Моля, изчакайте малко преди да опитате отново.", "warning"
+    )
     return redirect(request.referrer or url_for("index"))
 
 
@@ -1090,7 +1121,9 @@ def index():
     # безопасно извличаме агрегати — ако моделът липсва или схемата
     # не е съвместима, връщаме fallback
     try:
-        volunteers_count = db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
+        volunteers_count = (
+            db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
+        )
     except OperationalError:
         volunteers_count = 0
     except Exception:
@@ -1135,11 +1168,15 @@ def index():
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     logger.info("Admin login route called")
-    logger.debug(f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}")
+    logger.debug(
+        f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}"
+    )
     # DEBUG: Log current session state
     logger.info(f"admin_login called - session keys: {list(session.keys())}")
     logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
-    logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
+    logger.info(
+        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
+    )
     logger.info(f"Session object id: {id(session)}")
     logger.info(f"Current directory: {os.getcwd()}")
     logger.info(f"Request form data: {dict(request.form)}")
@@ -1180,7 +1217,9 @@ def admin_login():
                     session["admin_logged_in"] = True
                     session["admin_user_id"] = admin_user.id
                     session["admin_username"] = admin_user.username
-                    session["user_id"] = admin_user.id  # For permission system compatibility
+                    session["user_id"] = (
+                        admin_user.id
+                    )  # For permission system compatibility
                     session.permanent = True  # Make session persistent
                     logger.info(
                         f"Session set: admin_logged_in={session.get('admin_logged_in')}, "
@@ -1200,7 +1239,7 @@ def admin_login():
 
 
 @app.route("/api/auth/admin/login", methods=["POST"])
-# @limiter.limit("5 per minute; 20 per hour")  # Rate limit login attempts
+@limiter.limit("5 per minute; 20 per hour")  # Rate limit login attempts
 def jwt_admin_login():
     """JWT-based admin login endpoint"""
     try:
@@ -1339,7 +1378,7 @@ def jwt_admin_2fa():
 
 
 @app.route("/api/auth/volunteer/login", methods=["POST"])
-# @limiter.limit("5 per minute; 15 per hour")  # Rate limit volunteer login attempts
+@limiter.limit("5 per minute; 15 per hour")  # Rate limit volunteer login attempts
 def jwt_volunteer_login():
     """JWT-based volunteer login endpoint"""
     try:
@@ -1594,7 +1633,9 @@ def admin_dashboard():
     app.logger.info(f"admin_logged_in: {session.get('admin_logged_in')}")
     app.logger.info(f"admin_user_id: {session.get('admin_user_id')}")
     app.logger.info(f"admin_username: {session.get('admin_username')}")
-    app.logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
+    app.logger.info(
+        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
+    )
     app.logger.info(f"Session object id: {id(session)}")
     app.logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
 
@@ -1606,10 +1647,14 @@ def admin_dashboard():
         # Check if HelpRequest model is available
         total_requests = db.session.query(HelpRequest).count()
         pending_requests = (
-            db.session.query(HelpRequest).filter(HelpRequest.status == "pending").count()
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.status == "pending")
+            .count()
         )
         completed_requests = (
-            db.session.query(HelpRequest).filter(HelpRequest.status == "completed").count()
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.status == "completed")
+            .count()
         )
         total_volunteers = db.session.query(Volunteer).count()
     except Exception as e:
@@ -1622,14 +1667,20 @@ def admin_dashboard():
     # Get filtered requests based on filter parameter
     try:
         if filter_param == "pending":
-            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "pending")
+            requests_query = db.session.query(HelpRequest).filter(
+                HelpRequest.status == "pending"
+            )
         elif filter_param == "completed":
-            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "completed")
+            requests_query = db.session.query(HelpRequest).filter(
+                HelpRequest.status == "completed"
+            )
         else:  # "all" or default
             requests_query = db.session.query(HelpRequest)
 
         # Limit to recent requests for dashboard display
-        requests = requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
+        requests = (
+            requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
+        )
 
         # Convert to the expected format for template
         requests_data = []
@@ -1640,7 +1691,9 @@ def admin_dashboard():
                     "name": getattr(req, "name", "Неизвестно име"),
                     "status": req.status,
                     "created_at": (
-                        req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "Няма дата"
+                        req.created_at.strftime("%Y-%m-%d %H:%M")
+                        if req.created_at
+                        else "Няма дата"
                     ),
                 }
             )
@@ -1829,7 +1882,9 @@ def admin_assign_volunteer(request_id):
         db.session.rollback()
         app.logger.error(f"Error assigning volunteer to request {request_id}: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при присвояване на доброволец"}),
+            jsonify(
+                {"success": False, "message": "Грешка при присвояване на доброволец"}
+            ),
             500,
         )
 
@@ -1893,7 +1948,9 @@ def admin_edit_request(request_id):
             request_obj.email = request.form.get("email", request_obj.email)
             request_obj.message = request.form.get("message", request_obj.message)
             request_obj.title = request.form.get("category", request_obj.title)
-            request_obj.location_text = request.form.get("location", request_obj.location_text)
+            request_obj.location_text = request.form.get(
+                "location", request_obj.location_text
+            )
 
             db.session.commit()
 
@@ -1993,7 +2050,9 @@ def admin_settings():
     return render_template("admin_settings.html", current_user=admin_user)
 
 
-@app.route("/notification_dashboard", methods=["GET"], endpoint="notification_dashboard")
+@app.route(
+    "/notification_dashboard", methods=["GET"], endpoint="notification_dashboard"
+)
 @require_admin_login
 def notification_dashboard():
     # Get current admin user
@@ -2167,11 +2226,15 @@ def admin_volunteers():
         )
     elif sort_by == "location":
         query = query.order_by(
-            Volunteer.location.asc() if sort_order == "asc" else Volunteer.location.desc()
+            Volunteer.location.asc()
+            if sort_order == "asc"
+            else Volunteer.location.desc()
         )
     elif sort_by == "created_at":
         query = query.order_by(
-            Volunteer.created_at.asc() if sort_order == "asc" else Volunteer.created_at.desc()
+            Volunteer.created_at.asc()
+            if sort_order == "asc"
+            else Volunteer.created_at.desc()
         )
     else:
         query = query.order_by(Volunteer.id.asc())
@@ -2249,7 +2312,9 @@ def add_volunteer():
             return render_template("add_volunteer.html")
 
         try:
-            volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
+            volunteer = Volunteer(
+                name=name, email=email, phone=phone, location=location
+            )
             db.session.add(volunteer)
             db.session.commit()
             flash("Доброволецът е добавен успешно!", "success")
@@ -2264,7 +2329,7 @@ def add_volunteer():
 
 
 @app.route("/submit_request", methods=["GET", "POST"])
-# @limiter.limit("5 per minute; 20 per hour; 50 per day")  # Stricter limits for form submissions
+@limiter.limit("5 per minute; 20 per hour; 50 per day")  # Stricter limits for form submissions
 def submit_request():
     if request.method == "POST":
         # Enhanced input validation and sanitization
@@ -2364,7 +2429,9 @@ def submit_request():
             "email": email[:3] + "***",  # Sanitize PII
             "category": category,
             "location": location,
-            "problem": (problem[:50] + "..." if len(problem) > 50 else problem),  # Truncate
+            "problem": (
+                problem[:50] + "..." if len(problem) > 50 else problem
+            ),  # Truncate
             "filename": filename,
         }
         app.logger.info("submit_request received: %s", request_data)
@@ -2388,7 +2455,9 @@ def submit_request():
 
             db.session.add(help_request)
             db.session.commit()
-            app.logger.info("Help request saved to database with ID: %s", help_request.id)
+            app.logger.info(
+                "Help request saved to database with ID: %s", help_request.id
+            )
         except Exception as e:
             db.session.rollback()
             app.logger.error("Error saving help request to database: %s", str(e))
@@ -2410,7 +2479,7 @@ def terms():
 
 
 @app.route("/volunteer_register", methods=["GET", "POST"])
-# @limiter.limit("3 per minute; 10 per hour; 25 per day")  # Very strict limits for registrations
+@limiter.limit("3 per minute; 10 per hour; 25 per day")  # Very strict limits for registrations
 def volunteer_register():
     if request.method == "POST":
         name = request.form.get("name")
@@ -2578,7 +2647,9 @@ def volunteer_login():
                         f"volunteer_id={session.get('volunteer_id')}"
                     )
 
-                    app.logger.info(f"Volunteer {volunteer.name} logged in directly (test mode)")
+                    app.logger.info(
+                        f"Volunteer {volunteer.name} logged in directly (test mode)"
+                    )
                     # For testing, return dashboard directly instead of redirecting
                     # This bypasses session persistence issues in test environment
                     try:
@@ -2587,7 +2658,9 @@ def volunteer_login():
                         active_tasks = _get_active_tasks_safe(volunteer.id)
                         gamification = _get_gamification_data_safe(volunteer)
 
-                        app.logger.info("Rendering dashboard template directly for test mode")
+                        app.logger.info(
+                            "Rendering dashboard template directly for test mode"
+                        )
                         return render_template(
                             "volunteer_dashboard.html",
                             current_user=volunteer,
@@ -2598,7 +2671,9 @@ def volunteer_login():
                             recent_points=0,  # Add missing recent_points variable
                         )
                     except Exception as e:
-                        app.logger.error(f"Error rendering dashboard for test mode: {e}")
+                        app.logger.error(
+                            f"Error rendering dashboard for test mode: {e}"
+                        )
                         return f"Test mode dashboard error: {e}", 500
 
                 # Generate 6-digit access code
@@ -2674,7 +2749,9 @@ HelpChain системата
                 app.logger.warning(f"No volunteer found with email: {email}")
         except Exception as e:
             error = f"Database error: {e}"
-            app.logger.error(f"Database error during volunteer login: {e}", exc_info=True)
+            app.logger.error(
+                f"Database error during volunteer login: {e}", exc_info=True
+            )
     return render_template("volunteer_login.html", error=error)
 
 
@@ -2849,16 +2926,22 @@ HelpChain системата
             except Exception as file_e:
                 app.logger.error(f"Failed to save email to file: {file_e}")
                 return (
-                    jsonify({"success": False, "message": "Грешка при изпращане на имейл."}),
+                    jsonify(
+                        {"success": False, "message": "Грешка при изпращане на имейл."}
+                    ),
                     500,
                 )
 
-        return jsonify({"success": True, "message": "Нов код е изпратен на вашия имейл."})
+        return jsonify(
+            {"success": True, "message": "Нов код е изпратен на вашия имейл."}
+        )
 
     except Exception as e:
         app.logger.error(f"Error resending volunteer code: {e}")
         return (
-            jsonify({"success": False, "message": "Възникна грешка при изпращане на кода."}),
+            jsonify(
+                {"success": False, "message": "Възникна грешка при изпращане на кода."}
+            ),
             500,
         )
 
@@ -2885,7 +2968,11 @@ def volunteer_dashboard():
         # Get volunteer with optimized query
         volunteer = (
             db.session.query(Volunteer)
-            .options(db.joinedload(Volunteer.assigned_tasks).joinedload(Task.performance_records))
+            .options(
+                db.joinedload(Volunteer.assigned_tasks).joinedload(
+                    Task.performance_records
+                )
+            )
             .filter_by(id=volunteer_id)
             .first()
         )
@@ -2905,7 +2992,9 @@ def volunteer_dashboard():
 
         # Count urgent tasks nearby (simplified - all urgent pending requests)
         urgent_tasks = (
-            db.session.query(HelpRequest).filter_by(status="pending", priority="urgent").count()
+            db.session.query(HelpRequest)
+            .filter_by(status="pending", priority="urgent")
+            .count()
         )
 
         app.logger.info("Rendering template with volunteer data")
@@ -2920,7 +3009,9 @@ def volunteer_dashboard():
 
     except Exception as e:
         app.logger.error(f"Critical error in volunteer dashboard: {e}", exc_info=True)
-        flash("Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error")
+        flash(
+            "Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error"
+        )
         return redirect(url_for("index"))
 
 
@@ -2948,7 +3039,9 @@ def my_tasks():
             .all()
         )
 
-        return render_template("my_tasks.html", current_user=volunteer, tasks=assigned_tasks)
+        return render_template(
+            "my_tasks.html", current_user=volunteer, tasks=assigned_tasks
+        )
 
     except Exception as e:
         db.session.rollback()
@@ -2964,7 +3057,9 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         # Completed tasks count with timeout protection
         completed_tasks = (
-            db.session.query(Task).filter_by(assigned_to=volunteer_id, status="completed").count()
+            db.session.query(Task)
+            .filter_by(assigned_to=volunteer_id, status="completed")
+            .count()
         )
 
         # Active tasks count
@@ -2988,7 +3083,9 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         # Reviews count
         reviews_count = (
-            db.session.query(TaskPerformance).filter_by(volunteer_id=volunteer_id).count()
+            db.session.query(TaskPerformance)
+            .filter_by(volunteer_id=volunteer_id)
+            .count()
         )
 
         return {
@@ -3054,7 +3151,9 @@ def _get_active_tasks_safe(volunteer_id):
                     "title": task.title,
                     "location": task.location_text or "Не е посочена локация",
                     "date": (
-                        task.created_at.strftime("%Y-%m-%d") if task.created_at else "Няма дата"
+                        task.created_at.strftime("%Y-%m-%d")
+                        if task.created_at
+                        else "Няма дата"
                     ),
                     "time_remaining": time_remaining,
                     "description": task.description or "Няма описание",
@@ -3066,7 +3165,9 @@ def _get_active_tasks_safe(volunteer_id):
         return active_tasks
 
     except Exception as e:
-        app.logger.error(f"Error fetching active tasks for volunteer {volunteer_id}: {e}")
+        app.logger.error(
+            f"Error fetching active tasks for volunteer {volunteer_id}: {e}"
+        )
         return []
 
 
@@ -3078,12 +3179,18 @@ def _get_gamification_data_safe(volunteer):
             "level": volunteer.level,
             "experience": volunteer.experience,
             "level_progress": (
-                volunteer.get_level_progress() if hasattr(volunteer, "get_level_progress") else 0
+                volunteer.get_level_progress()
+                if hasattr(volunteer, "get_level_progress")
+                else 0
             ),
-            "next_level_exp": ((volunteer.level * 100) if hasattr(volunteer, "level") else 100),
+            "next_level_exp": (
+                (volunteer.level * 100) if hasattr(volunteer, "level") else 100
+            ),
         }
     except Exception as e:
-        app.logger.error(f"Error getting gamification data for volunteer {volunteer.id}: {e}")
+        app.logger.error(
+            f"Error getting gamification data for volunteer {volunteer.id}: {e}"
+        )
         return {
             "points": 0,
             "level": 1,
@@ -3267,7 +3374,9 @@ def api_volunteer_tasks():
                 "estimated_hours": task.estimated_hours,
                 "deadline": task.deadline.isoformat() if task.deadline else None,
                 "created_at": task.created_at.isoformat(),
-                "assigned_at": (task.assigned_at.isoformat() if task.assigned_at else None),
+                "assigned_at": (
+                    task.assigned_at.isoformat() if task.assigned_at else None
+                ),
             }
 
         return jsonify(
@@ -3306,7 +3415,9 @@ def available_tasks():
         .all()
     )
 
-    return render_template("available_tasks.html", tasks=tasks_list, volunteer=volunteer)
+    return render_template(
+        "available_tasks.html", tasks=tasks_list, volunteer=volunteer
+    )
 
 
 @app.route("/volunteer_settings", methods=["GET", "POST"], endpoint="volunteer_profile")
@@ -3402,7 +3513,10 @@ def api_admin_dashboard():
 
         # Get recent requests
         recent_requests = (
-            db.session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).limit(5).all()
+            db.session.query(HelpRequest)
+            .order_by(HelpRequest.created_at.desc())
+            .limit(5)
+            .all()
         )
 
         requests_data = []
@@ -3506,7 +3620,9 @@ def delete_task(task_id):
 
         # Check if task is assigned
         if task.assigned_to:
-            flash("Не може да изтриете задача, която е присвоена на доброволец", "error")
+            flash(
+                "Не може да изтриете задача, която е присвоена на доброволец", "error"
+            )
             return redirect(url_for("admin_tasks"))
 
         db.session.delete(task)
@@ -3645,7 +3761,9 @@ def admin_update_request_status():
 
         if not request_id or not new_status:
             return (
-                jsonify({"success": False, "message": "Липсват задължителни параметри"}),
+                jsonify(
+                    {"success": False, "message": "Липсват задължителни параметри"}
+                ),
                 400,
             )
 
@@ -3668,7 +3786,9 @@ def admin_update_request_status():
         request_obj.status = new_status
         db.session.commit()
 
-        app.logger.info(f"Request {request_id} status changed from {old_status} to {new_status}")
+        app.logger.info(
+            f"Request {request_id} status changed from {old_status} to {new_status}"
+        )
 
         return jsonify(
             {
@@ -3998,7 +4118,9 @@ def feedback():
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error saving feedback: {e}")
-            flash("Възникна грешка при обработката на обратната връзка. Моля, опитайте отново.")
+            flash(
+                "Възникна грешка при обработката на обратната връзка. Моля, опитайте отново."
+            )
             return redirect(url_for("feedback"))
 
     return render_template("feedback.html")
@@ -4037,7 +4159,11 @@ def category_help(category):
 
     # Филтрираме доброволци които имат тази категория в skills
     # Търсим case-insensitive в skills полето
-    volunteers = db.session.query(Volunteer).filter(Volunteer.skills.ilike(f"%{category}%")).all()
+    volunteers = (
+        db.session.query(Volunteer)
+        .filter(Volunteer.skills.ilike(f"%{category}%"))
+        .all()
+    )
 
     # Ако няма доброволци, показваме съобщение
     no_volunteers = len(volunteers) == 0
@@ -4256,7 +4382,9 @@ def api_get_chat_rooms():
         for room in rooms:
             # Count online participants
             online_count = (
-                db.session.query(ChatParticipant).filter_by(room_id=room.id, is_online=True).count()
+                db.session.query(ChatParticipant)
+                .filter_by(room_id=room.id, is_online=True)
+                .count()
             )
 
             rooms_data.append(
@@ -4748,7 +4876,9 @@ def predictive_regional_demand():
     except Exception as e:
         app.logger.error(f"Error getting regional demand forecast: {e}")
         return (
-            jsonify({"error": "Failed to get regional demand forecast", "details": str(e)}),
+            jsonify(
+                {"error": "Failed to get regional demand forecast", "details": str(e)}
+            ),
             500,
         )
 
@@ -4762,7 +4892,9 @@ def predictive_workload():
 
         hours_ahead = int(request.args.get("hours_ahead", 24))
 
-        prediction = predictive_analytics.get_workload_prediction(hours_ahead=hours_ahead)
+        prediction = predictive_analytics.get_workload_prediction(
+            hours_ahead=hours_ahead
+        )
         return jsonify(prediction)
 
     except Exception as e:
@@ -4799,7 +4931,9 @@ def predictive_model_info():
         from predictive_analytics import predictive_analytics
 
         # Get sample data to extract model info
-        regional_sample = predictive_analytics.get_regional_demand_forecast(days_ahead=1)
+        regional_sample = predictive_analytics.get_regional_demand_forecast(
+            days_ahead=1
+        )
         workload_sample = predictive_analytics.get_workload_prediction(hours_ahead=1)
 
         model_info = {
@@ -4815,7 +4949,9 @@ def predictive_model_info():
                     "population_density",
                 ],
                 "prediction_horizon": "1-30 days",
-                "accuracy_metrics": regional_sample.get("model_info", {}).get("accuracy", "N/A"),
+                "accuracy_metrics": regional_sample.get("model_info", {}).get(
+                    "accuracy", "N/A"
+                ),
                 "last_trained": regional_sample.get("generated_at", "N/A"),
             },
             "workload_prediction_model": {
@@ -4829,7 +4965,9 @@ def predictive_model_info():
                     "season",
                 ],
                 "prediction_horizon": "1-168 hours",
-                "accuracy_metrics": workload_sample.get("model_info", {}).get("accuracy", "N/A"),
+                "accuracy_metrics": workload_sample.get("model_info", {}).get(
+                    "accuracy", "N/A"
+                ),
                 "last_trained": workload_sample.get("generated_at", "N/A"),
             },
             "data_sources": [
@@ -4897,7 +5035,9 @@ def find_matches(request_id):
                 }
             )
 
-        return jsonify({"request_id": request_id, "matches": result, "total_matches": len(result)})
+        return jsonify(
+            {"request_id": request_id, "matches": result, "total_matches": len(result)}
+        )
 
     except Exception as e:
         app.logger.error(f"Error finding matches for request {request_id}: {e}")
@@ -5054,7 +5194,9 @@ def analyze_feedback_sentiment(feedback_id):
     except Exception as e:
         app.logger.error(f"Error analyzing feedback sentiment {feedback_id}: {e}")
         return (
-            jsonify({"error": "Failed to analyze feedback sentiment", "details": str(e)}),
+            jsonify(
+                {"error": "Failed to analyze feedback sentiment", "details": str(e)}
+            ),
             500,
         )
 

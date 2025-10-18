@@ -1,5 +1,3 @@
-
-
 def clean_duplicates():
     # Read the file
     with open("backend/appy.py", "r", encoding="utf-8") as f:

@@ -54,9 +54,7 @@ def test_request_submission():
             def send_email_notification(req):
                 # Check if email is in mock mode
                 if os.environ.get("MAIL_MOCK", "").lower() in ["true", "1"]:
-                    print(
-                        f"📧 [MOCK MODE] Email notification for request ID {req.id}:"
-                    )
+                    print(f"📧 [MOCK MODE] Email notification for request ID {req.id}:")
                     print("📧 Subject: Нова заявка за помощ в HelpChain")
                     print("📧 To: contact@helpchain.live")
                     print("📧 From: {}".format(app.config["MAIL_DEFAULT_SENDER"]))
