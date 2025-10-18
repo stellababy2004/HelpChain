@@ -22,7 +22,7 @@ jobs:
       - name: Fail on problematic version tags
         run: |
           set -euo pipefail
-          PROBLEMATIC_TAGS=$(grep -RHEn "uses:\s*(actions/checkout@v[0-9]|aquasecurity/trivy-action@master|github/codeql-action/upload-sarif@v[0-9])" .github/workflows || true)
+          PROBLEMATIC_TAGS=$(grep -RHEn "uses:\s*(actions/checkout@v[0-9]|aquasecurity/trivy-action@master|github/codeql-action/upload-sarif@v[0-9])" .github/workflows backend/.github/workflows || true)
           if [ -n "$PROBLEMATIC_TAGS" ]; then
             echo "❌ Found problematic version tags that must be pinned to SHAs:"
             echo "$PROBLEMATIC_TAGS"
@@ -38,7 +38,7 @@ jobs:
         run: |
           set -euo pipefail
           # Разрешаваме локални/relative actions (./) и composite без @
-          NOT_SHA=$(grep -RHEn "uses:\s*[^./][^@]+@[^[:space:]]+" .github/workflows \
+          NOT_SHA=$(grep -RHEn "uses:\s*[^./][^@]+@[^[:space:]]+" .github/workflows backend/.github/workflows \
             | grep -vE "@[a-f0-9]{40}$" || true)
           if [ -n "$NOT_SHA" ]; then
             echo "❌ Some actions are not pinned to a 40-char SHA:"
