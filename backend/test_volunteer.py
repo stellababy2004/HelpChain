@@ -13,8 +13,8 @@ This module contains extensive tests for all volunteer dashboard features includ
 - Logout functionality
 """
 
-from unittest.mock import patch
 from datetime import datetime
+from unittest.mock import patch
 
 
 class TestVolunteerDashboard:

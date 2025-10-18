@@ -1,38 +1,39 @@
 import os
+
 from dotenv import load_dotenv
 
 # All imports at the top
 from flask import (
     Flask,
+    flash,
+    redirect,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
     session,
+    url_for,
 )
 from flask_login import (
     LoginManager,
-    login_user,
-    login_required,
-    logout_user,
     current_user,
+    login_required,
+    login_user,
+    logout_user,
 )
 from werkzeug.utils import secure_filename
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
+    from ...analytics_service import analytics_service
     from .config import Config
-    from .extensions import db, babel, mail
+    from .extensions import babel, db, mail
     from .models import (
+        AdminUser,
+        ChatMessage,
+        ChatRoom,
         Request,
         RequestLog,
         User,
-        AdminUser,
-        ChatRoom,
-        ChatMessage,
     )
-    from ...analytics_service import analytics_service
 except ImportError:
     # Fallback for standalone execution
     import sys
@@ -41,23 +42,25 @@ except ImportError:
     sys.path.insert(0, backend_dir)
 
     from config import Config
-    from extensions import db, babel, mail
+
+    from analytics_service import analytics_service
+    from extensions import babel, db, mail
     from models import (
+        AdminUser,
+        ChatMessage,
+        ChatRoom,
         Request,
         RequestLog,
         User,
-        AdminUser,
-        ChatRoom,
-        ChatMessage,
     )
-    from analytics_service import analytics_service
+
+import datetime
+import sqlite3
+import uuid
 
 from flask_babel import get_locale, refresh
 from flask_mail import Message
-import datetime
 from flask_socketio import SocketIO, emit, join_room, leave_room
-import uuid
-import sqlite3
 
 # Try to import Migrate for database migrations
 try:
@@ -271,6 +274,21 @@ def create_app(config_object=None):
             session["language"] = language
             refresh()
         return redirect(request.referrer or "/")
+
+    # Service Worker route
+    @app.route("/sw.js")
+    def service_worker():
+        """Serve the service worker from the static directory"""
+        import os
+
+        sw_path = os.path.join(app.static_folder, "sw.js")
+        if os.path.exists(sw_path):
+            with open(sw_path, encoding="utf-8") as f:
+                content = f.read()
+            response = app.response_class(content, mimetype="application/javascript")
+            response.headers["Service-Worker-Allowed"] = "/"
+            return response
+        return "Service Worker not found", 404
 
     # Добавени липсващи маршрути за тестовете
     @app.route("/submit_request", methods=["GET", "POST"])
@@ -597,7 +615,7 @@ ID: {volunteer.id}
     @login_required
     def video_chat():
         """Показва списък с активни видео чат сесии"""
-        from .models import VideoChatSession, User
+        from .models import User, VideoChatSession
 
         # Показваме активни сесии където текущият потребител участва
         active_sessions = VideoChatSession.query.filter(
@@ -621,7 +639,7 @@ ID: {volunteer.id}
     @login_required
     def start_video_chat(user_id):
         """Започва нова видео чат сесия с даден потребител"""
-        from .models import VideoChatSession, User
+        from .models import User, VideoChatSession
 
         participant = User.query.get_or_404(user_id)
 

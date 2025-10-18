@@ -2,8 +2,9 @@ import sys
 
 sys.path.insert(0, ".")
 from appy import app
-from .models import User, Role, UserRole, RolePermission
 from permissions import has_permission
+
+from .models import Role, RolePermission, User, UserRole
 
 with app.app_context():
     admin = User.query.filter_by(username="admin").first()

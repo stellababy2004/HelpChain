@@ -1,58 +1,62 @@
+import csv
+import json
+import logging
+import math
 import os
 import sys
-import logging
+from datetime import datetime
+from io import StringIO
+
 from dotenv import load_dotenv
+from flask import (
+    Flask,
+    Response,
+    # current_app,  # Премахнат за избягване на circular import
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_babel import Babel, refresh
+from flask_babel import gettext as _
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_socketio import emit, join_room, leave_room
+from flask_talisman import Talisman
+from jinja2 import ChoiceLoader, FileSystemLoader
+from sqlalchemy.exc import OperationalError
 
 # All imports at the top
 from werkzeug.utils import secure_filename
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    session,
-    jsonify,
-    Response,
-    # current_app,  # Премахнат за избягване на circular import
-)
-from flask_babel import Babel, gettext as _, refresh
-from io import StringIO
-import csv
-from jinja2 import ChoiceLoader, FileSystemLoader
-import math
-from datetime import datetime
-import json
-from .extensions import db
-from .models import (
-    User,
-    Volunteer,
-    RoleEnum,
-    ChatRoom,
-    ChatParticipant,
-    ChatMessage,
-    AdminUser,
-    HelpRequest,
-)
-from .models_with_analytics import Task
-from flask_mail import Mail
-from flask_migrate import Migrate
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from sqlalchemy.exc import OperationalError
-from flask_socketio import SocketIO, emit, join_room, leave_room
-from flask_talisman import Talisman
-from .permissions import (
-    require_permission,
-    require_admin_login,
-    # initialize_default_roles_and_permissions,
-)
+
 from admin_roles import admin_roles_bp
 from routes.notifications import notification_bp
 
 # Import smart matching engine
 from smart_matching import smart_matching_engine
+
+from .extensions import db
+from .models import (
+    AdminUser,
+    ChatMessage,
+    ChatParticipant,
+    ChatRoom,
+    HelpRequest,
+    RoleEnum,
+    User,
+    Volunteer,
+)
+from .models_with_analytics import Task
+from .permissions import (
+    require_admin_login,
+    # initialize_default_roles_and_permissions,
+    require_permission,
+)
 
 # Sentry for error monitoring
 # import sentry_sdk
@@ -1874,18 +1878,19 @@ def export_volunteers_json(volunteers):
 def export_volunteers_pdf(volunteers):
     """Export volunteers to PDF format"""
     try:
+        from io import BytesIO
+
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.lib.units import inch
         from reportlab.platypus import (
+            Paragraph,
             SimpleDocTemplate,
+            Spacer,
             Table,
             TableStyle,
-            Paragraph,
-            Spacer,
         )
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import inch
-        from io import BytesIO
 
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -2825,6 +2830,7 @@ def handle_file_upload(data):
     try:
         import base64
         import os
+
         from werkzeug.utils import secure_filename
 
         # Decode base64 file
@@ -3635,6 +3641,7 @@ def api_volunteer_task_recommendations(volunteer_id):
     """Препоръчва задачи за конкретен доброволец"""
     try:
         from smart_matching import smart_matching_engine
+
         from .models_with_analytics import Task
 
         # Вземи отворени задачи

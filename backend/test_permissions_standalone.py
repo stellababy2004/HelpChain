@@ -3,9 +3,11 @@ import sys
 sys.path.insert(0, ".")
 
 from flask import Flask
-from .models import db, User, Role, UserRole
-from permissions import initialize_default_roles_and_permissions
 from werkzeug.security import generate_password_hash
+
+from permissions import initialize_default_roles_and_permissions
+
+from .models import Role, User, UserRole, db
 
 # Create a simple Flask app for testing
 app = Flask(__name__)

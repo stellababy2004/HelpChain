@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
 """
 Video Chat Service for HelpChain
 WebRTC-based video chat functionality
 """
 
+import logging
 import uuid
 from datetime import datetime
-from typing import Dict, Any, Optional
-from .models import db, VideoChatSession, User
-import logging
+from typing import Any
+
+from .models import User, VideoChatSession, db
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class VideoChatService:
     @staticmethod
     def create_session(
         initiator_id: int, participant_id: int
-    ) -> Optional[VideoChatSession]:
+    ) -> VideoChatSession | None:
         """Create a new video chat session"""
         try:
             # Check if users exist
@@ -67,7 +67,7 @@ class VideoChatService:
             return None
 
     @staticmethod
-    def get_session(session_id: str) -> Optional[VideoChatSession]:
+    def get_session(session_id: str) -> VideoChatSession | None:
         """Get session by ID"""
         return VideoChatSession.query.filter_by(session_id=session_id).first()
 
@@ -126,7 +126,7 @@ class VideoChatService:
             return False
 
     @staticmethod
-    def store_offer(session_id: str, offer: Dict[str, Any]) -> bool:
+    def store_offer(session_id: str, offer: dict[str, Any]) -> bool:
         """Store WebRTC offer"""
         if session_id in active_sessions:
             active_sessions[session_id]["offer"] = offer
@@ -134,7 +134,7 @@ class VideoChatService:
         return False
 
     @staticmethod
-    def store_answer(session_id: str, answer: Dict[str, Any]) -> bool:
+    def store_answer(session_id: str, answer: dict[str, Any]) -> bool:
         """Store WebRTC answer"""
         if session_id in active_sessions:
             active_sessions[session_id]["answer"] = answer
@@ -142,7 +142,7 @@ class VideoChatService:
         return False
 
     @staticmethod
-    def add_ice_candidate(session_id: str, candidate: Dict[str, Any]) -> bool:
+    def add_ice_candidate(session_id: str, candidate: dict[str, Any]) -> bool:
         """Add ICE candidate"""
         if session_id in active_sessions:
             active_sessions[session_id]["ice_candidates"].append(candidate)
@@ -150,7 +150,7 @@ class VideoChatService:
         return False
 
     @staticmethod
-    def get_session_data(session_id: str) -> Optional[Dict[str, Any]]:
+    def get_session_data(session_id: str) -> dict[str, Any] | None:
         """Get session data for WebRTC signaling"""
         return active_sessions.get(session_id)
 

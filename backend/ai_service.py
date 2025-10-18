@@ -37,7 +37,10 @@ import traceback
 import unicodedata
 from typing import Any
 
-from backend.ai_config import get_ai_config, logger
+try:
+    from ai_config import get_ai_config, logger
+except ImportError:
+    from backend.ai_config import get_ai_config, logger
 
 # Monkey patch httpx.Client to handle proxies parameter (compatibility fix)
 try:
@@ -243,10 +246,7 @@ class AIService:
                 user_msg_lower = user_message.lower()
 
                 if "здравей" in user_msg_lower or "здрасти" in user_msg_lower:
-                    response_text = (
-                        "Здравейте! Аз съм AI асистентът на HelpChain. "
-                        "Как мога да ви помогна днес?"
-                    )
+                    response_text = "Здравейте! Аз съм AI асистентът на HelpChain. Как мога да ви помогна днес?"
                 elif "helpchain" in user_msg_lower or "какво" in user_msg_lower:
                     response_text = (
                         "HelpChain е платформа за доброволчество в България. "

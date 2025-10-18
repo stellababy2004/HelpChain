@@ -4,9 +4,9 @@ Caching, Database optimization и API improvements
 """
 
 # from flask_caching import Cache  # Преместен вътре в класа за избягване на circular import
-from functools import wraps
 import json
 from datetime import datetime
+from functools import wraps
 
 
 class AnalyticsCache:

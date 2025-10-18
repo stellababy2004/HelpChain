@@ -4,6 +4,7 @@ import logging
 import os
 import secrets
 import sys
+import traceback
 from datetime import datetime
 from io import StringIO
 
@@ -15,19 +16,26 @@ from flask import (
     Response,
     flash,
     jsonify,
+    make_response,
     redirect,
     render_template,
     request,
+    send_from_directory,
     session,
     url_for,
 )
 from flask_babel import Babel, refresh
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    create_refresh_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
+)
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_socketio import leave_room
-from flask_talisman import Talisman
 from jinja2 import ChoiceLoader, FileSystemLoader
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import BadRequest
@@ -35,16 +43,16 @@ from werkzeug.utils import secure_filename
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
-    from backend.extensions import db
+    from extensions import db
 except ImportError:
     # Fallback for standalone execution
     try:
-        from backend.extensions import db
+        from extensions import db
     except ImportError:
-        from backend.extensions import db
+        from extensions import db
 
 try:
-    from backend.models import (
+    from models import (
         AdminUser,
         ChatMessage,
         ChatParticipant,
@@ -56,7 +64,7 @@ try:
         Volunteer,
     )
 except ImportError:
-    from backend.models import (
+    from models import (
         AdminUser,
         ChatMessage,
         ChatParticipant,
@@ -69,19 +77,19 @@ except ImportError:
     )
 
     try:
-        from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
+        from models_with_analytics import Task, TaskAssignment, TaskPerformance
     except ImportError:
-        from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
+        from models_with_analytics import Task, TaskAssignment, TaskPerformance
 
 # Import permissions module - always needed
 try:
-    from backend.permissions import (
+    from permissions import (
         initialize_default_roles_and_permissions,
         require_admin_login,
         require_permission,
     )
 except ImportError:
-    from backend.permissions import (
+    from permissions import (
         initialize_default_roles_and_permissions,
         require_admin_login,
         require_permission,
@@ -89,25 +97,37 @@ except ImportError:
 
 # Import Task models globally for use in routes
 try:
-    from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
+    from models_with_analytics import Task, TaskAssignment, TaskPerformance
 except ImportError:
-    from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
+    from models_with_analytics import Task, TaskAssignment, TaskPerformance
 
 try:
-    from backend.admin_roles import admin_roles_bp
+    from admin_roles import admin_roles_bp
 except ImportError:
-    from backend.admin_roles import admin_roles_bp
+    from admin_roles import admin_roles_bp
 
-try:
-    from backend.routes.notifications import notification_bp
-except ImportError:
-    from backend.routes.notifications import notification_bp
+# try:
+#     from routes.notifications import notification_bp
+# except ImportError:
+#     from routes.notifications import notification_bp
 
 # Import smart matching engine
 try:
-    from backend.ai_service import ai_service
+    from ai_service import ai_service
 except ImportError:
-    from backend.ai_service import ai_service
+    from ai_service import ai_service
+
+# Import analytics service
+# try:
+#     from analytics_service import analytics_service
+# except ImportError:
+#     from analytics_service import analytics_service
+
+# Import Celery tasks
+# try:
+#     from tasks import process_request_immediately
+# except ImportError:
+#     pass
 
 # Add the backend directory to Python path so we can import models and extensions
 backend_dir = os.path.dirname(__file__)
@@ -115,7 +135,12 @@ if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
 # Зареди environment variables от .env файла (от корена на проекта)
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
+dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+print(f"Loading .env from: {dotenv_path}")
+print(f".env file exists: {os.path.exists(dotenv_path)}")
+load_dotenv(dotenv_path=dotenv_path)
+print(f"SECRET_KEY after load_dotenv: {os.getenv('SECRET_KEY')}")
+print(f"VAPID_PUBLIC_KEY after load_dotenv: {os.getenv('VAPID_PUBLIC_KEY')}")
 
 # Sentry for error monitoring
 
@@ -192,17 +217,26 @@ def setup_logging():
 # Setup enhanced logging
 logger = setup_logging()
 
+# Debug logging for environment variables after logger setup
+logger.info(f"VAPID_PUBLIC_KEY from env: {repr(os.getenv('VAPID_PUBLIC_KEY'))}")
+logger.info(f"VAPID_PRIVATE_KEY from env: {repr(os.getenv('VAPID_PRIVATE_KEY'))}")
+logger.info(f"SECRET_KEY from env: {repr(os.getenv('SECRET_KEY'))}")
+
 
 def initialize_default_admin():
     """
-    Initialize default admin user if it doesn't exist
+    Initialize default admin user if it doesn't exist, or update password if it does
     """
     try:
         logger.info("Checking for existing admin user...")
         # Check if admin user exists
         admin_user = db.session.query(AdminUser).filter_by(username="admin").first()
         if admin_user:
-            logger.info("Admin user already exists")
+            logger.info("Admin user already exists, updating password...")
+            # Update the password to ensure it matches the expected value
+            admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "Admin123"))
+            db.session.commit()
+            logger.info("Admin password updated successfully")
             # Check if User record exists and has super admin role
             user = db.session.query(User).filter_by(username="admin").first()
             if user:
@@ -248,9 +282,7 @@ def initialize_default_admin():
         db.session.flush()  # Get user ID
 
         # Assign super admin role to the user
-        superadmin_role = (
-            db.session.query(Role).filter_by(name="Супер администратор").first()
-        )
+        superadmin_role = db.session.query(Role).filter_by(name="Супер администратор").first()
         if superadmin_role:
             # Check if user already has this role
             existing_role = (
@@ -381,9 +413,7 @@ HelpChain системата
             logger.info("Email 2FA code saved to file as fallback")
             return True
         except Exception as file_e:
-            logger.error(
-                f"Failed to save email 2FA code to file: {file_e}", exc_info=True
-            )
+            logger.error(f"Failed to save email 2FA code to file: {file_e}", exc_info=True)
             return False
 
 
@@ -400,9 +430,22 @@ _static = os.path.join(os.path.dirname(__file__), "static")
 app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
 # Задаваме SECRET_KEY за сесии и сигурност ПРЕДИ Flask-Session инициализация
-app.config["SECRET_KEY"] = os.getenv(
-    "SECRET_KEY", "dev-secret-key-change-in-production"
-)
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+
+# JWT Configuration
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", app.config["SECRET_KEY"])
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 3600))  # 1 hour
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = int(
+    os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 86400)
+)  # 24 hours
+
+# VAPID Configuration for Push Notifications
+app.config["VAPID_PUBLIC_KEY"] = os.getenv("VAPID_PUBLIC_KEY")
+app.config["VAPID_PRIVATE_KEY"] = os.getenv("VAPID_PRIVATE_KEY")
+
+# Debug logging for VAPID keys
+app.logger.info(f"VAPID_PUBLIC_KEY loaded: {bool(app.config.get('VAPID_PUBLIC_KEY'))}")
+app.logger.info(f"VAPID_PRIVATE_KEY loaded: {bool(app.config.get('VAPID_PRIVATE_KEY'))}")
 
 # TEMPORARILY DISABLE Flask-Session to test standard Flask sessions
 # Configure Flask-Session for better session persistence in development
@@ -500,9 +543,7 @@ if os.getenv("RENDER") == "true" or os.getenv("PRODUCTION") == "true":
         # Fallback to SQLite for development/production without DATABASE_URL
         db_path = "/opt/render/project/src/volunteers.db"
         app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
-        logger.info(
-            f"Production mode detected, using fallback SQLite database: {db_path}"
-        )
+        logger.info(f"Production mode detected, using fallback SQLite database: {db_path}")
 else:
     # Локално development - използвайме instance директория в root проекта
     instance_dir = os.path.join(os.path.dirname(basedir), "instance")
@@ -575,24 +616,16 @@ else:
                 if admin_user:
                     app.logger.info("Default admin user initialized for development")
                 else:
-                    app.logger.warning(
-                        "Failed to initialize default admin user for development"
-                    )
+                    app.logger.warning("Failed to initialize default admin user for development")
             except Exception as admin_error:
-                app.logger.warning(
-                    f"Admin initialization failed for development: {admin_error}"
-                )
+                app.logger.warning(f"Admin initialization failed for development: {admin_error}")
 
             # Initialize default roles and permissions for development
             try:
                 initialize_default_roles_and_permissions()
-                app.logger.info(
-                    "Default roles and permissions initialized for development"
-                )
+                app.logger.info("Default roles and permissions initialized for development")
             except Exception as roles_error:
-                app.logger.warning(
-                    f"Roles initialization failed for development: {roles_error}"
-                )
+                app.logger.warning(f"Roles initialization failed for development: {roles_error}")
 
     except Exception as e:
         app.logger.error(f"Database initialization failed for development: {e}")
@@ -632,6 +665,16 @@ def set_language(language):
     return redirect(request.referrer or url_for("index"))
 
 
+@app.route("/sw.js")
+def serve_sw():
+    """Serve the service worker from the static directory"""
+    response = make_response(
+        send_from_directory(app.static_folder, "sw.js", mimetype="application/javascript")
+    )
+    response.headers["Service-Worker-Allowed"] = "/"
+    return response
+
+
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
 
 
@@ -641,9 +684,7 @@ def allowed_file(filename):
 
 
 # Email configuration
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
-    "MAIL_DEFAULT_SENDER", "noreply@helpchain.live"
-)
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "noreply@helpchain.live")
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
 app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", 587))
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
@@ -674,18 +715,23 @@ if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.makedirs(app.config["UPLOAD_FOLDER"])
 
 # Initialize security extensions
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["200 per day", "50 per hour"],
-    storage_uri="memory://",  # In production, use Redis
-)
+# limiter = Limiter(
+#     app=app,
+#     default_limits=["100 per day", "30 per hour"],  # Stricter default limits
+#     storage_uri="memory://",  # In production, use Redis: "redis://localhost:6379/0"
+#     strategy="fixed-window",  # Use fixed window for more predictable limiting
+#     key_func=get_remote_address,
+#     headers_enabled=True,  # Enable rate limit headers
+# )
+
+# Initialize JWT Manager
+jwt = JWTManager(app)
 
 # Register blueprints after app is created
 
 # Register analytics blueprint first to avoid import issues
 try:
-    from backend.analytics_routes import analytics_bp
+    from analytics_routes import analytics_bp
 except ImportError:
     from analytics_routes import analytics_bp
 
@@ -706,7 +752,25 @@ def simple_test():
 app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
 
 # Register notification blueprint
-app.register_blueprint(notification_bp, url_prefix="/api/notifications")
+try:
+    from routes.notifications import notification_bp
+
+    print(f"Notification blueprint imported: {notification_bp}")  # Debug print
+    app.register_blueprint(notification_bp, url_prefix="/api/notification")
+    app.logger.info("Notification blueprint registered successfully")
+    print("Notification blueprint registered successfully")  # Debug print
+
+    # Debug: Print all registered routes
+    print("Registered routes:")
+    for rule in app.url_map.iter_rules():
+        print(f"  {rule.rule} -> {rule.endpoint}")
+
+except ImportError as e:
+    app.logger.error(f"Failed to import notification blueprint: {e}")
+    print(f"Failed to import notification blueprint: {e}")  # Debug print
+except Exception as e:
+    app.logger.error(f"Failed to register notification blueprint: {e}")
+    print(f"Failed to register notification blueprint: {e}")  # Debug print
 
 # CSP configuration - TEMPORARILY PERMISSIVE TO OVERRIDE CACHE
 csp = {
@@ -739,53 +803,53 @@ csp = {
     "form-action": ["'self'"],
 }
 
-talisman = Talisman(
-    app,
-    content_security_policy=csp,  # TEMPORARILY PERMISSIVE TO OVERRIDE BROWSER CACHE
-    content_security_policy_report_uri="https://csp-report.helpchain.live/report",
-    force_https=False,  # Disabled for development testing
-    strict_transport_security=False,  # TEMPORARILY DISABLED FOR TESTING
-    strict_transport_security_preload=True,
-    strict_transport_security_include_subdomains=True,
-    strict_transport_security_max_age=63072000,  # 2 years
-    referrer_policy="strict-origin-when-cross-origin",
-    permissions_policy={
-        "camera": "()",
-        "microphone": "()",
-        "geolocation": "()",
-        "payment": "()",
-        "usb": "()",
-        "magnetometer": "()",
-        "accelerometer": "()",
-        "gyroscope": "()",
-        "ambient-light-sensor": "()",
-        "autoplay": "()",
-        "encrypted-media": "()",
-        "fullscreen": "()",
-        "picture-in-picture": "()",
-    },
-    feature_policy={},  # Deprecated, but keeping for compatibility
-)
+# talisman = Talisman(
+#     app,
+#     content_security_policy=csp,  # TEMPORARILY PERMISSIVE TO OVERRIDE BROWSER CACHE
+#     content_security_policy_report_uri="https://csp-report.helpchain.live/report",
+#     force_https=False,  # Disabled for development testing
+#     strict_transport_security=False,  # TEMPORARILY DISABLED FOR TESTING
+#     strict_transport_security_preload=True,
+#     strict_transport_security_include_subdomains=True,
+#     strict_transport_security_max_age=63072000,  # 2 years
+#     referrer_policy="strict-origin-when-cross-origin",
+#     permissions_policy={
+#         "camera": "()",
+#         "microphone": "()",
+#         "geolocation": "()",
+#         "payment": "()",
+#         "usb": "()",
+#         "magnetometer": "()",
+#         "accelerometer": "()",
+#         "gyroscope": "()",
+#         "ambient-light-sensor": "()",
+#         "autoplay": "()",
+#         "encrypted-media": "()",
+#         "fullscreen": "()",
+#         "picture-in-picture": "()",
+#     },
+#     feature_policy={},  # Deprecated, but keeping for compatibility
+# )
 
 
 # Add CSP headers manually to ensure they are applied
-@app.after_request
-def add_csp_headers(response):
-    """Add Content Security Policy headers to all responses"""
-    csp_value = (
-        "default-src 'self'; "
-        "font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
-        "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-inline'; "
-        "style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com "
-        "https://cdn.jsdelivr.net 'unsafe-inline'; "
-        "connect-src 'self' https://cdn.jsdelivr.net; "
-        "img-src 'self' data: https://helpchain.live *; "
-        "frame-ancestors 'none'; "
-        "base-uri 'self'; "
-        "form-action 'self'"
-    )
-    response.headers["Content-Security-Policy"] = csp_value
-    return response
+# @app.after_request
+# def add_csp_headers(response):
+#     """Add Content Security Policy headers to all responses"""
+#     csp_value = (
+#         "default-src 'self'; "
+#         "font-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+#         "script-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-inline'; "
+#         "style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com "
+#         "https://cdn.jsdelivr.net 'unsafe-inline'; "
+#         "connect-src 'self' https://cdn.jsdelivr.net; "
+#         "img-src 'self' data: https://helpchain.live *; "
+#         "frame-ancestors 'none'; "
+#         "base-uri 'self'; "
+#         "form-action 'self'"
+#     )
+#     response.headers["Content-Security-Policy"] = csp_value
+#     return response
 
 
 # csrf = CSRFProtect(app)  # Disabled for development testing
@@ -849,11 +913,76 @@ def log_request():
     pass
 
 
-# Error handlers
+# Centralized error logging function
+def log_error(error, error_type="general", context=None):
+    """Centralized error logging with comprehensive context"""
+    try:
+        # Prepare error context
+        error_context = {
+            "error_type": error_type,
+            "error_message": str(error),
+            "url": request.url if request else "N/A",
+            "method": request.method if request else "N/A",
+            "user_agent": request.headers.get("User-Agent") if request else "N/A",
+            "ip_address": request.remote_addr if request else "N/A",
+            "user_id": (
+                session.get("user_id")
+                or session.get("volunteer_id")
+                or session.get("admin_user_id")
+            ),
+            "session_id": session.sid if hasattr(session, "sid") else "N/A",
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        # Add additional context if provided
+        if context:
+            error_context.update(context)
+
+        # Log to different handlers based on error type
+        if error_type == "security":
+            security_logger = logging.getLogger("security")
+            security_logger.warning(f"Security error: {error_context}")
+        elif error_type == "rate_limit":
+            security_logger = logging.getLogger("security")
+            security_logger.info(f"Rate limit exceeded: {error_context}")
+        elif isinstance(error, Exception) and "database" in str(error).lower():
+            app.logger.error(f"Database error: {error_context}", exc_info=True)
+        else:
+            app.logger.error(f"Application error: {error_context}", exc_info=True)
+
+        # Track error in analytics if available
+        try:
+            from analytics_service import analytics_service
+
+            analytics_service.track_event(
+                event_type="error",
+                event_category="system",
+                event_action=f"{error_type}_error",
+                context=error_context,
+            )
+        except Exception as analytics_error:
+            app.logger.debug(f"Analytics tracking failed: {analytics_error}")
+
+    except Exception as log_error:
+        # Fallback logging if centralized logging fails
+        print(f"CRITICAL: Error in log_error function: {log_error}")
+        app.logger.critical(f"Error in centralized logging: {log_error}", exc_info=True)
+
+
 @app.errorhandler(404)
 def page_not_found(error):
     """Handle 404 errors with custom template"""
-    app.logger.warning(f"404 error: {request.url} - {error}")
+    log_error(
+        error,
+        "page_not_found",
+        {
+            "url": request.url,
+            "method": request.method,
+            "user_agent": request.headers.get("User-Agent"),
+            "ip": request.remote_addr,
+            "referrer": request.referrer,
+        },
+    )
     if request.is_json or request.path.startswith("/api/"):
         return (
             jsonify(
@@ -871,27 +1000,18 @@ def page_not_found(error):
 @app.errorhandler(500)
 def internal_server_error(error):
     """Handle 500 errors with custom template and error tracking"""
-    app.logger.error(f"500 error: {request.url} - {error}", exc_info=True)
-
-    # Track error in analytics if available
-    try:
-        from backend.analytics_service import analytics_service
-
-        analytics_service.track_event(
-            event_type="error",
-            event_category="system",
-            event_action="500_error",
-            context={
-                "url": request.url,
-                "method": request.method,
-                "user_agent": request.headers.get("User-Agent"),
-                "ip": request.remote_addr,
-                "error_message": str(error),
-            },
-        )
-    except Exception as analytics_error:
-        app.logger.warning(f"Failed to track 500 error: {analytics_error}")
-
+    log_error(
+        error,
+        "internal_server_error",
+        {
+            "url": request.url,
+            "method": request.method,
+            "user_agent": request.headers.get("User-Agent"),
+            "ip": request.remote_addr,
+            "error_message": str(error),
+            "traceback": traceback.format_exc(),
+        },
+    )
     if request.is_json or request.path.startswith("/api/"):
         return (
             jsonify(
@@ -909,7 +1029,17 @@ def internal_server_error(error):
 @app.errorhandler(403)
 def forbidden(error):
     """Handle 403 errors"""
-    app.logger.warning(f"403 error: {request.url} - {error}")
+    log_error(
+        error,
+        "forbidden",
+        {
+            "url": request.url,
+            "method": request.method,
+            "user_agent": request.headers.get("User-Agent"),
+            "ip": request.remote_addr,
+            "referrer": request.referrer,
+        },
+    )
     if request.is_json or request.path.startswith("/api/"):
         return (
             jsonify(
@@ -928,7 +1058,18 @@ def forbidden(error):
 @app.errorhandler(429)
 def rate_limit_exceeded(error):
     """Handle rate limit errors"""
-    app.logger.warning(f"429 error: {request.url} - Rate limit exceeded")
+    log_error(
+        error,
+        "rate_limit",
+        {
+            "url": request.url,
+            "method": request.method,
+            "user_agent": request.headers.get("User-Agent"),
+            "ip": request.remote_addr,
+            "referrer": request.referrer,
+            "rate_limit_info": getattr(error, "description", "Rate limit exceeded"),
+        },
+    )
     if request.is_json or request.path.startswith("/api/"):
         return (
             jsonify(
@@ -940,9 +1081,7 @@ def rate_limit_exceeded(error):
             ),
             429,
         )
-    flash(
-        "Твърде много заявки. Моля, изчакайте малко преди да опитате отново.", "warning"
-    )
+    flash("Твърде много заявки. Моля, изчакайте малко преди да опитате отново.", "warning")
     return redirect(request.referrer or url_for("index"))
 
 
@@ -951,9 +1090,7 @@ def index():
     # безопасно извличаме агрегати — ако моделът липсва или схемата
     # не е съвместима, връщаме fallback
     try:
-        volunteers_count = (
-            db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
-        )
+        volunteers_count = db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
     except OperationalError:
         volunteers_count = 0
     except Exception:
@@ -998,16 +1135,14 @@ def index():
 @app.route("/admin_login", methods=["GET", "POST"])
 def admin_login():
     logger.info("Admin login route called")
-    logger.debug(
-        f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}"
-    )
+    logger.debug(f"Request method: {request.method}, EMAIL_2FA_ENABLED = {EMAIL_2FA_ENABLED}")
     # DEBUG: Log current session state
     logger.info(f"admin_login called - session keys: {list(session.keys())}")
     logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
-    logger.info(
-        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
-    )
+    logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
     logger.info(f"Session object id: {id(session)}")
+    logger.info(f"Current directory: {os.getcwd()}")
+    logger.info(f"Request form data: {dict(request.form)}")
     error = None
     if request.method == "POST":
         logger.info("Processing admin login POST request")
@@ -1045,9 +1180,7 @@ def admin_login():
                     session["admin_logged_in"] = True
                     session["admin_user_id"] = admin_user.id
                     session["admin_username"] = admin_user.username
-                    session["user_id"] = (
-                        admin_user.id
-                    )  # For permission system compatibility
+                    session["user_id"] = admin_user.id  # For permission system compatibility
                     session.permanent = True  # Make session persistent
                     logger.info(
                         f"Session set: admin_logged_in={session.get('admin_logged_in')}, "
@@ -1064,6 +1197,378 @@ def admin_login():
                     f"Failed login attempt for user: {username}, IP: {request.remote_addr}"
                 )
     return render_template("admin_login.html", error=error)
+
+
+@app.route("/api/auth/admin/login", methods=["POST"])
+# @limiter.limit("5 per minute; 20 per hour")  # Rate limit login attempts
+def jwt_admin_login():
+    """JWT-based admin login endpoint"""
+    try:
+        data = request.get_json()
+        username = data.get("username", "").strip()
+        password = data.get("password", "").strip()
+
+        if not username or not password:
+            return jsonify({"error": "Username and password are required"}), 400
+
+        # Initialize default admin if needed
+        admin_user = initialize_default_admin()
+        if not admin_user:
+            return jsonify({"error": "Admin initialization failed"}), 500
+
+        # Check credentials
+        if admin_user.username == username and admin_user.check_password(password):
+            # Check if 2FA is enabled
+            if admin_user.twofa_enabled:
+                return (
+                    jsonify(
+                        {
+                            "error": "2FA required",
+                            "requires_2fa": True,
+                            "admin_id": admin_user.id,
+                        }
+                    ),
+                    200,
+                )
+
+            # Generate JWT tokens
+            access_token = create_access_token(
+                identity=str(admin_user.id),
+                additional_claims={"role": "admin", "username": admin_user.username},
+            )
+            refresh_token = create_refresh_token(
+                identity=str(admin_user.id),
+                additional_claims={"role": "admin", "username": admin_user.username},
+            )
+
+            # Track analytics
+            try:
+                from analytics_service import analytics_service
+
+                analytics_service.track_event(
+                    event_type="admin_login",
+                    event_category="authentication",
+                    event_action="jwt_login_success",
+                    context={"admin_id": admin_user.id, "method": "jwt"},
+                )
+            except Exception as analytics_error:
+                app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+            return (
+                jsonify(
+                    {
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                        "user": {
+                            "id": admin_user.id,
+                            "username": admin_user.username,
+                            "role": "admin",
+                        },
+                    }
+                ),
+                200,
+            )
+        else:
+            # Track failed login
+            try:
+                from analytics_service import analytics_service
+
+                analytics_service.track_event(
+                    event_type="admin_login",
+                    event_category="authentication",
+                    event_action="jwt_login_failed",
+                    context={"username": username, "ip": request.remote_addr},
+                )
+            except Exception as analytics_error:
+                app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+            return jsonify({"error": "Invalid credentials"}), 401
+
+    except Exception as e:
+        app.logger.error(f"JWT admin login error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/api/auth/admin/2fa", methods=["POST"])
+def jwt_admin_2fa():
+    """JWT-based admin 2FA verification"""
+    try:
+        data = request.get_json()
+        admin_id = data.get("admin_id")
+        token = data.get("token", "").strip()
+
+        if not admin_id or not token:
+            return jsonify({"error": "Admin ID and token are required"}), 400
+
+        admin_user = db.session.query(AdminUser).get(admin_id)
+        if not admin_user:
+            return jsonify({"error": "Admin not found"}), 404
+
+        # Verify TOTP token
+        if admin_user.verify_totp(token):
+            # Generate JWT tokens
+            access_token = create_access_token(
+                identity=str(admin_user.id),
+                additional_claims={"role": "admin", "username": admin_user.username},
+            )
+            refresh_token = create_refresh_token(
+                identity=str(admin_user.id),
+                additional_claims={"role": "admin", "username": admin_user.username},
+            )
+
+            return (
+                jsonify(
+                    {
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                        "user": {
+                            "id": admin_user.id,
+                            "username": admin_user.username,
+                            "role": "admin",
+                        },
+                    }
+                ),
+                200,
+            )
+        else:
+            return jsonify({"error": "Invalid 2FA token"}), 401
+
+    except Exception as e:
+        app.logger.error(f"JWT admin 2FA error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/api/auth/volunteer/login", methods=["POST"])
+# @limiter.limit("5 per minute; 15 per hour")  # Rate limit volunteer login attempts
+def jwt_volunteer_login():
+    """JWT-based volunteer login endpoint"""
+    try:
+        data = request.get_json()
+        email = data.get("email", "").strip()
+
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+
+        # Check if volunteer exists
+        volunteer = db.session.query(Volunteer).filter_by(email=email).first()
+        if not volunteer:
+            return jsonify({"error": "Volunteer not found"}), 404
+
+        # For test volunteer, skip email verification
+        if email == "ivan@example.com":
+            access_token = create_access_token(
+                identity=str(volunteer.id),
+                additional_claims={"role": "volunteer", "name": volunteer.name},
+            )
+            refresh_token = create_refresh_token(
+                identity=str(volunteer.id),
+                additional_claims={"role": "volunteer", "name": volunteer.name},
+            )
+
+            # Track analytics
+            try:
+                from analytics_service import analytics_service
+
+                analytics_service.track_event(
+                    event_type="volunteer_login",
+                    event_category="authentication",
+                    event_action="jwt_login_success",
+                    context={
+                        "volunteer_id": volunteer.id,
+                        "method": "jwt",
+                        "test_mode": True,
+                    },
+                )
+            except Exception as analytics_error:
+                app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+            return (
+                jsonify(
+                    {
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                        "user": {
+                            "id": volunteer.id,
+                            "name": volunteer.name,
+                            "email": volunteer.email,
+                            "role": "volunteer",
+                        },
+                    }
+                ),
+                200,
+            )
+
+        # Generate verification code
+        import secrets
+
+        verification_code = str(secrets.randbelow(900000) + 100000)
+
+        # Store in session with expiration
+        session["jwt_volunteer_pending"] = {
+            "volunteer_id": volunteer.id,
+            "email": email,
+            "verification_code": verification_code,
+            "expires": datetime.now().timestamp() + 900,  # 15 minutes
+        }
+
+        # Send verification email
+        try:
+            from flask_mail import Message
+
+            msg = Message(
+                subject="HelpChain - JWT Код за достъп",
+                recipients=[email],
+                sender=app.config["MAIL_DEFAULT_SENDER"],
+                body=f"""Здравейте {volunteer.name},
+
+Получен е опит за JWT вход в доброволческия панел на HelpChain.
+
+Вашият код за верификация: {verification_code}
+
+Кодът е валиден за 15 минути.
+
+Използвайте този код в приложението за да завършите входа.
+
+С уважение,
+HelpChain системата
+""",
+            )
+            mail.send(msg)
+            app.logger.info(f"JWT verification code sent to {email}")
+        except Exception as e:
+            app.logger.error(f"Failed to send JWT verification email: {e}")
+            # Fallback: save to file
+            try:
+                with open("sent_emails.txt", "a", encoding="utf-8") as f:
+                    f.write(
+                        "Subject: HelpChain - JWT Код за достъп\n"
+                        f"To: {email}\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
+                        f"Здравейте {volunteer.name},\n\n"
+                        "Получен е опит за JWT вход в доброволческия панел на HelpChain.\n\n"
+                        f"Вашият код за верификация: {verification_code}\n\n"
+                        "Кодът е валиден за 15 минути.\n\n"
+                        "Използвайте този код в приложението за да завършите входа.\n\n"
+                        "С уважение,\nHelpChain системата\n\n"
+                        f"{'=' * 50}\n"
+                    )
+                app.logger.info("JWT verification code saved to file as fallback")
+            except Exception as file_e:
+                app.logger.error(f"Failed to save JWT email to file: {file_e}")
+                return jsonify({"error": "Failed to send verification email"}), 500
+
+        return (
+            jsonify(
+                {
+                    "message": "Verification code sent to email",
+                    "requires_verification": True,
+                }
+            ),
+            200,
+        )
+
+    except Exception as e:
+        app.logger.error(f"JWT volunteer login error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/api/auth/volunteer/verify", methods=["POST"])
+def jwt_volunteer_verify():
+    """JWT-based volunteer verification endpoint"""
+    try:
+        data = request.get_json()
+        code = data.get("code", "").strip()
+
+        if not code:
+            return jsonify({"error": "Verification code is required"}), 400
+
+        # Check pending verification
+        pending = session.get("jwt_volunteer_pending")
+        if not pending:
+            return jsonify({"error": "No pending verification"}), 400
+
+        # Check expiration
+        if datetime.now().timestamp() > pending.get("expires", 0):
+            session.pop("jwt_volunteer_pending", None)
+            return jsonify({"error": "Verification code expired"}), 400
+
+        # Verify code
+        if code == pending.get("verification_code"):
+            volunteer = db.session.query(Volunteer).get(pending["volunteer_id"])
+            if not volunteer:
+                return jsonify({"error": "Volunteer not found"}), 404
+
+            # Generate JWT tokens
+            access_token = create_access_token(
+                identity=str(volunteer.id),
+                additional_claims={"role": "volunteer", "name": volunteer.name},
+            )
+            refresh_token = create_refresh_token(
+                identity=str(volunteer.id),
+                additional_claims={"role": "volunteer", "name": volunteer.name},
+            )
+
+            # Clear pending verification
+            session.pop("jwt_volunteer_pending", None)
+
+            # Track analytics
+            try:
+                from analytics_service import analytics_service
+
+                analytics_service.track_event(
+                    event_type="volunteer_login",
+                    event_category="authentication",
+                    event_action="jwt_login_success",
+                    context={"volunteer_id": volunteer.id, "method": "jwt"},
+                )
+            except Exception as analytics_error:
+                app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+            return (
+                jsonify(
+                    {
+                        "access_token": access_token,
+                        "refresh_token": refresh_token,
+                        "user": {
+                            "id": volunteer.id,
+                            "name": volunteer.name,
+                            "email": volunteer.email,
+                            "role": "volunteer",
+                        },
+                    }
+                ),
+                200,
+            )
+        else:
+            return jsonify({"error": "Invalid verification code"}), 401
+
+    except Exception as e:
+        app.logger.error(f"JWT volunteer verification error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/api/auth/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh_token():
+    """Refresh access token using refresh token"""
+    try:
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+
+        # Generate new access token
+        access_token = create_access_token(
+            identity=current_user_id,
+            additional_claims={
+                "role": claims.get("role"),
+                "username": claims.get("username"),
+                "name": claims.get("name"),
+            },
+        )
+
+        return jsonify({"access_token": access_token}), 200
+
+    except Exception as e:
+        app.logger.error(f"Token refresh error: {e}")
+        return jsonify({"error": "Invalid refresh token"}), 401
 
 
 @app.route("/logout", methods=["GET", "POST"])
@@ -1089,9 +1594,7 @@ def admin_dashboard():
     app.logger.info(f"admin_logged_in: {session.get('admin_logged_in')}")
     app.logger.info(f"admin_user_id: {session.get('admin_user_id')}")
     app.logger.info(f"admin_username: {session.get('admin_username')}")
-    app.logger.info(
-        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
-    )
+    app.logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
     app.logger.info(f"Session object id: {id(session)}")
     app.logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
 
@@ -1103,14 +1606,10 @@ def admin_dashboard():
         # Check if HelpRequest model is available
         total_requests = db.session.query(HelpRequest).count()
         pending_requests = (
-            db.session.query(HelpRequest)
-            .filter(HelpRequest.status == "pending")
-            .count()
+            db.session.query(HelpRequest).filter(HelpRequest.status == "pending").count()
         )
         completed_requests = (
-            db.session.query(HelpRequest)
-            .filter(HelpRequest.status == "completed")
-            .count()
+            db.session.query(HelpRequest).filter(HelpRequest.status == "completed").count()
         )
         total_volunteers = db.session.query(Volunteer).count()
     except Exception as e:
@@ -1123,20 +1622,14 @@ def admin_dashboard():
     # Get filtered requests based on filter parameter
     try:
         if filter_param == "pending":
-            requests_query = db.session.query(HelpRequest).filter(
-                HelpRequest.status == "pending"
-            )
+            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "pending")
         elif filter_param == "completed":
-            requests_query = db.session.query(HelpRequest).filter(
-                HelpRequest.status == "completed"
-            )
+            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "completed")
         else:  # "all" or default
             requests_query = db.session.query(HelpRequest)
 
         # Limit to recent requests for dashboard display
-        requests = (
-            requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
-        )
+        requests = requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
 
         # Convert to the expected format for template
         requests_data = []
@@ -1147,9 +1640,7 @@ def admin_dashboard():
                     "name": getattr(req, "name", "Неизвестно име"),
                     "status": req.status,
                     "created_at": (
-                        req.created_at.strftime("%Y-%m-%d %H:%M")
-                        if req.created_at
-                        else "Няма дата"
+                        req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "Няма дата"
                     ),
                 }
             )
@@ -1211,7 +1702,7 @@ def admin_approve_request(request_id):
 
         # Track analytics
         try:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="request_action",
@@ -1258,7 +1749,7 @@ def admin_reject_request(request_id):
 
         # Track analytics
         try:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="request_action",
@@ -1316,7 +1807,7 @@ def admin_assign_volunteer(request_id):
 
         # Track analytics
         try:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="request_action",
@@ -1338,9 +1829,7 @@ def admin_assign_volunteer(request_id):
         db.session.rollback()
         app.logger.error(f"Error assigning volunteer to request {request_id}: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Грешка при присвояване на доброволец"}
-            ),
+            jsonify({"success": False, "message": "Грешка при присвояване на доброволец"}),
             500,
         )
 
@@ -1369,7 +1858,7 @@ def admin_delete_request(request_id):
 
         # Track analytics
         try:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="request_action",
@@ -1404,9 +1893,7 @@ def admin_edit_request(request_id):
             request_obj.email = request.form.get("email", request_obj.email)
             request_obj.message = request.form.get("message", request_obj.message)
             request_obj.title = request.form.get("category", request_obj.title)
-            request_obj.location_text = request.form.get(
-                "location", request_obj.location_text
-            )
+            request_obj.location_text = request.form.get("location", request_obj.location_text)
 
             db.session.commit()
 
@@ -1506,9 +1993,7 @@ def admin_settings():
     return render_template("admin_settings.html", current_user=admin_user)
 
 
-@app.route(
-    "/notification_dashboard", methods=["GET"], endpoint="notification_dashboard"
-)
+@app.route("/notification_dashboard", methods=["GET"], endpoint="notification_dashboard")
 @require_admin_login
 def notification_dashboard():
     # Get current admin user
@@ -1661,67 +2146,57 @@ def admin_volunteers():
     page = int(request.args.get("page", 1))
     per_page = int(request.args.get("per_page", 25))
 
-    try:
-        # Build query
-        query = db.session.query(Volunteer)
+    # Build query
+    query = Volunteer.query
 
-        # Apply filters
-        if search:
-            query = query.filter(
-                (Volunteer.name.ilike(f"%{search}%"))
-                | (Volunteer.email.ilike(f"%{search}%"))
-                | (Volunteer.phone.ilike(f"%{search}%"))
-            )
-
-        if location_filter:
-            query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
-
-        # Apply sorting
-        if sort_by == "name":
-            query = query.order_by(
-                Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc()
-            )
-        elif sort_by == "location":
-            query = query.order_by(
-                Volunteer.location.asc()
-                if sort_order == "asc"
-                else Volunteer.location.desc()
-            )
-        elif sort_by == "created_at":
-            query = query.order_by(
-                Volunteer.created_at.asc()
-                if sort_order == "asc"
-                else Volunteer.created_at.desc()
-            )
-        else:
-            query = query.order_by(Volunteer.id.asc())
-
-        # Apply pagination using SQLAlchemy's paginate method for better reliability
-        try:
-            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-            volunteers = pagination.items
-            total_volunteers = pagination.total
-            total_pages = pagination.pages
-        except Exception as e:
-            # Fallback to manual pagination if paginate fails
-            app.logger.warning(f"Pagination failed, using manual pagination: {e}")
-            total_volunteers = query.count()
-            volunteers = query.offset((page - 1) * per_page).limit(per_page).all()
-            total_pages = (total_volunteers + per_page - 1) // per_page
-
-        app.logger.info(
-            f"Admin volunteers query successful: {len(volunteers)} volunteers "
-            f"returned, page {page}/{total_pages}"
+    # Apply filters
+    if search:
+        query = query.filter(
+            (Volunteer.name.ilike(f"%{search}%"))
+            | (Volunteer.email.ilike(f"%{search}%"))
+            | (Volunteer.phone.ilike(f"%{search}%"))
         )
 
-    except Exception as e:
-        app.logger.error(f"Error in admin_volunteers: {e}", exc_info=True)
-        flash("Възникна грешка при зареждането на доброволците", "error")
-        # Return empty results on error
-        volunteers = []
-        total_volunteers = 0
-        total_pages = 1
-        page = 1
+    if location_filter:
+        query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
+
+    # Apply sorting
+    if sort_by == "name":
+        query = query.order_by(
+            Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc()
+        )
+    elif sort_by == "location":
+        query = query.order_by(
+            Volunteer.location.asc() if sort_order == "asc" else Volunteer.location.desc()
+        )
+    elif sort_by == "created_at":
+        query = query.order_by(
+            Volunteer.created_at.asc() if sort_order == "asc" else Volunteer.created_at.desc()
+        )
+    else:
+        query = query.order_by(Volunteer.id.asc())
+
+    # Apply pagination
+    total_volunteers = query.count()
+    volunteers = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    # Calculate pagination info
+    total_pages = (total_volunteers + per_page - 1) // per_page
+
+    # Create pagination object for template compatibility
+    class Pagination:
+        def __init__(self, page, per_page, total, items):
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.items = items
+            self.pages = (total + per_page - 1) // per_page
+            self.has_prev = page > 1
+            self.has_next = page < self.pages
+            self.prev_num = page - 1 if self.has_prev else None
+            self.next_num = page + 1 if self.has_next else None
+
+    pagination = Pagination(page, per_page, total_volunteers, volunteers)
 
     return render_template(
         "admin_volunteers.html",
@@ -1734,6 +2209,7 @@ def admin_volunteers():
         per_page=per_page,
         total_volunteers=total_volunteers,
         total_pages=total_pages,
+        pagination=pagination,
     )
 
 
@@ -1773,9 +2249,7 @@ def add_volunteer():
             return render_template("add_volunteer.html")
 
         try:
-            volunteer = Volunteer(
-                name=name, email=email, phone=phone, location=location
-            )
+            volunteer = Volunteer(name=name, email=email, phone=phone, location=location)
             db.session.add(volunteer)
             db.session.commit()
             flash("Доброволецът е добавен успешно!", "success")
@@ -1790,7 +2264,7 @@ def add_volunteer():
 
 
 @app.route("/submit_request", methods=["GET", "POST"])
-@limiter.limit("20 per minute; 200 per day")
+# @limiter.limit("5 per minute; 20 per hour; 50 per day")  # Stricter limits for form submissions
 def submit_request():
     if request.method == "POST":
         # Enhanced input validation and sanitization
@@ -1890,9 +2364,7 @@ def submit_request():
             "email": email[:3] + "***",  # Sanitize PII
             "category": category,
             "location": location,
-            "problem": (
-                problem[:50] + "..." if len(problem) > 50 else problem
-            ),  # Truncate
+            "problem": (problem[:50] + "..." if len(problem) > 50 else problem),  # Truncate
             "filename": filename,
         }
         app.logger.info("submit_request received: %s", request_data)
@@ -1916,9 +2388,7 @@ def submit_request():
 
             db.session.add(help_request)
             db.session.commit()
-            app.logger.info(
-                "Help request saved to database with ID: %s", help_request.id
-            )
+            app.logger.info("Help request saved to database with ID: %s", help_request.id)
         except Exception as e:
             db.session.rollback()
             app.logger.error("Error saving help request to database: %s", str(e))
@@ -1940,7 +2410,7 @@ def terms():
 
 
 @app.route("/volunteer_register", methods=["GET", "POST"])
-@limiter.limit("10 per minute; 50 per day")
+# @limiter.limit("3 per minute; 10 per hour; 25 per day")  # Very strict limits for registrations
 def volunteer_register():
     if request.method == "POST":
         name = request.form.get("name")
@@ -2036,6 +2506,15 @@ def volunteer_register():
                 logger.info("Volunteer registration email saved to file as fallback")
             except Exception as file_e:
                 logger.error("Failed to save email to file: %s", str(file_e))
+                return (
+                    jsonify(
+                        {
+                            "success": False,
+                            "message": "Грешка при изпращане на имейл.",
+                        }
+                    ),
+                    500,
+                )
 
         app.logger.info(
             "Volunteer registered successfully: %s",
@@ -2081,8 +2560,8 @@ def volunteer_login():
                     f"Email={volunteer.email}"
                 )
 
-                # TEMPORARY: Skip 2FA for test email
-                if email == "ivan@example.com":
+                # TEMPORARY: Skip 2FA for test emails
+                if email in ["ivan@example.com", "test@example.com"]:
                     app.logger.info("Skipping 2FA for test email")
                     # Clear any admin session to prevent conflicts
                     session.pop("admin_logged_in", None)
@@ -2099,9 +2578,7 @@ def volunteer_login():
                         f"volunteer_id={session.get('volunteer_id')}"
                     )
 
-                    app.logger.info(
-                        f"Volunteer {volunteer.name} logged in directly (test mode)"
-                    )
+                    app.logger.info(f"Volunteer {volunteer.name} logged in directly (test mode)")
                     # For testing, return dashboard directly instead of redirecting
                     # This bypasses session persistence issues in test environment
                     try:
@@ -2110,9 +2587,7 @@ def volunteer_login():
                         active_tasks = _get_active_tasks_safe(volunteer.id)
                         gamification = _get_gamification_data_safe(volunteer)
 
-                        app.logger.info(
-                            "Rendering dashboard template directly for test mode"
-                        )
+                        app.logger.info("Rendering dashboard template directly for test mode")
                         return render_template(
                             "volunteer_dashboard.html",
                             current_user=volunteer,
@@ -2123,9 +2598,7 @@ def volunteer_login():
                             recent_points=0,  # Add missing recent_points variable
                         )
                     except Exception as e:
-                        app.logger.error(
-                            f"Error rendering dashboard for test mode: {e}"
-                        )
+                        app.logger.error(f"Error rendering dashboard for test mode: {e}")
                         return f"Test mode dashboard error: {e}", 500
 
                 # Generate 6-digit access code
@@ -2134,9 +2607,9 @@ def volunteer_login():
 
                 # Store in session with expiration (15 minutes)
                 session["pending_volunteer_login"] = {
-                    "email": email,
                     "volunteer_id": volunteer.id,
-                    "access_code": access_code,
+                    "email": email,
+                    "verification_code": access_code,
                     "expires": datetime.now().timestamp() + 900,  # 15 minutes
                 }
 
@@ -2201,9 +2674,7 @@ HelpChain системата
                 app.logger.warning(f"No volunteer found with email: {email}")
         except Exception as e:
             error = f"Database error: {e}"
-            app.logger.error(
-                f"Database error during volunteer login: {e}", exc_info=True
-            )
+            app.logger.error(f"Database error during volunteer login: {e}", exc_info=True)
     return render_template("volunteer_login.html", error=error)
 
 
@@ -2378,22 +2849,16 @@ HelpChain системата
             except Exception as file_e:
                 app.logger.error(f"Failed to save email to file: {file_e}")
                 return (
-                    jsonify(
-                        {"success": False, "message": "Грешка при изпращане на имейл."}
-                    ),
+                    jsonify({"success": False, "message": "Грешка при изпращане на имейл."}),
                     500,
                 )
 
-        return jsonify(
-            {"success": True, "message": "Нов код е изпратен на вашия имейл."}
-        )
+        return jsonify({"success": True, "message": "Нов код е изпратен на вашия имейл."})
 
     except Exception as e:
         app.logger.error(f"Error resending volunteer code: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Възникна грешка при изпращане на кода."}
-            ),
+            jsonify({"success": False, "message": "Възникна грешка при изпращане на кода."}),
             500,
         )
 
@@ -2420,11 +2885,7 @@ def volunteer_dashboard():
         # Get volunteer with optimized query
         volunteer = (
             db.session.query(Volunteer)
-            .options(
-                db.joinedload(Volunteer.assigned_tasks).joinedload(
-                    Task.performance_records
-                )
-            )
+            .options(db.joinedload(Volunteer.assigned_tasks).joinedload(Task.performance_records))
             .filter_by(id=volunteer_id)
             .first()
         )
@@ -2444,9 +2905,7 @@ def volunteer_dashboard():
 
         # Count urgent tasks nearby (simplified - all urgent pending requests)
         urgent_tasks = (
-            db.session.query(HelpRequest)
-            .filter_by(status="pending", priority="urgent")
-            .count()
+            db.session.query(HelpRequest).filter_by(status="pending", priority="urgent").count()
         )
 
         app.logger.info("Rendering template with volunteer data")
@@ -2461,10 +2920,41 @@ def volunteer_dashboard():
 
     except Exception as e:
         app.logger.error(f"Critical error in volunteer dashboard: {e}", exc_info=True)
-        flash(
-            "Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error"
-        )
+        flash("Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error")
         return redirect(url_for("index"))
+
+
+@app.route("/my_tasks")
+def my_tasks():
+    """Show volunteer's assigned tasks"""
+    if not session.get("volunteer_logged_in"):
+        flash("Моля, влезте като доброволец.", "warning")
+        return redirect(url_for("volunteer_login"))
+
+    try:
+        volunteer_id = session.get("volunteer_id")
+        volunteer = db.session.query(Volunteer).get(volunteer_id)
+
+        if not volunteer:
+            flash("Доброволецът не е намерен.", "error")
+            return redirect(url_for("volunteer_login"))
+
+        # Get assigned tasks
+        assigned_tasks = (
+            db.session.query(Task)
+            .filter_by(assigned_to=volunteer_id)
+            .filter(Task.status.in_(["assigned", "in_progress"]))
+            .order_by(Task.created_at.desc())
+            .all()
+        )
+
+        return render_template("my_tasks.html", current_user=volunteer, tasks=assigned_tasks)
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error loading my tasks for volunteer {volunteer_id}: {e}")
+        flash("Възникна грешка при зареждането на задачите.", "error")
+        return redirect(url_for("volunteer_dashboard"))
 
 
 def _get_volunteer_stats_safe(volunteer_id):
@@ -2474,9 +2964,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         # Completed tasks count with timeout protection
         completed_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id, status="completed")
-            .count()
+            db.session.query(Task).filter_by(assigned_to=volunteer_id, status="completed").count()
         )
 
         # Active tasks count
@@ -2500,9 +2988,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         # Reviews count
         reviews_count = (
-            db.session.query(TaskPerformance)
-            .filter_by(volunteer_id=volunteer_id)
-            .count()
+            db.session.query(TaskPerformance).filter_by(volunteer_id=volunteer_id).count()
         )
 
         return {
@@ -2568,9 +3054,7 @@ def _get_active_tasks_safe(volunteer_id):
                     "title": task.title,
                     "location": task.location_text or "Не е посочена локация",
                     "date": (
-                        task.created_at.strftime("%Y-%m-%d")
-                        if task.created_at
-                        else "Няма дата"
+                        task.created_at.strftime("%Y-%m-%d") if task.created_at else "Няма дата"
                     ),
                     "time_remaining": time_remaining,
                     "description": task.description or "Няма описание",
@@ -2582,9 +3066,7 @@ def _get_active_tasks_safe(volunteer_id):
         return active_tasks
 
     except Exception as e:
-        app.logger.error(
-            f"Error fetching active tasks for volunteer {volunteer_id}: {e}"
-        )
+        app.logger.error(f"Error fetching active tasks for volunteer {volunteer_id}: {e}")
         return []
 
 
@@ -2596,18 +3078,12 @@ def _get_gamification_data_safe(volunteer):
             "level": volunteer.level,
             "experience": volunteer.experience,
             "level_progress": (
-                volunteer.get_level_progress()
-                if hasattr(volunteer, "get_level_progress")
-                else 0
+                volunteer.get_level_progress() if hasattr(volunteer, "get_level_progress") else 0
             ),
-            "next_level_exp": (
-                (volunteer.level * 100) if hasattr(volunteer, "level") else 100
-            ),
+            "next_level_exp": ((volunteer.level * 100) if hasattr(volunteer, "level") else 100),
         }
     except Exception as e:
-        app.logger.error(
-            f"Error getting gamification data for volunteer {volunteer.id}: {e}"
-        )
+        app.logger.error(f"Error getting gamification data for volunteer {volunteer.id}: {e}")
         return {
             "points": 0,
             "level": 1,
@@ -2670,53 +3146,8 @@ def api_volunteer_dashboard():
         return jsonify({"error": "Internal server error"}), 500
 
 
-@app.route("/api/admin/dashboard", methods=["GET"])
-@require_admin_login
-def api_admin_dashboard():
-    """API endpoint for admin dashboard data"""
-    try:
-        # Get basic counts
-        volunteers_count = db.session.query(Volunteer).count()
-        requests_count = db.session.query(HelpRequest).count()
-        admins_count = db.session.query(AdminUser).count()
-
-        # Get recent requests
-        recent_requests = (
-            db.session.query(HelpRequest)
-            .order_by(HelpRequest.created_at.desc())
-            .limit(5)
-            .all()
-        )
-
-        requests_data = []
-        for req in recent_requests:
-            requests_data.append(
-                {
-                    "id": req.id,
-                    "title": req.title,
-                    "status": req.status,
-                    "created_at": req.created_at.isoformat(),
-                    "requester_name": req.requester_name,
-                }
-            )
-
-        return jsonify(
-            {
-                "stats": {
-                    "volunteers_count": volunteers_count,
-                    "requests_count": requests_count,
-                    "admins_count": admins_count,
-                },
-                "recent_requests": requests_data,
-            }
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error getting admin dashboard: {e}")
-        return jsonify({"error": "Internal server error"}), 500
-
-
 @app.route("/api/chatbot/message", methods=["POST"])
+# @limiter.limit("10 per minute; 50 per hour; 100 per day")  # Rate limit chatbot usage
 def chatbot_message():
     """Handle chatbot messages with AI responses"""
     try:
@@ -2732,7 +3163,7 @@ def chatbot_message():
 
         # Track conversation for analytics
         try:
-            from backend.analytics_service import analytics_service
+            from analytics_service import analytics_service
 
             analytics_service.track_event(
                 event_type="chatbot_interaction",
@@ -2836,9 +3267,7 @@ def api_volunteer_tasks():
                 "estimated_hours": task.estimated_hours,
                 "deadline": task.deadline.isoformat() if task.deadline else None,
                 "created_at": task.created_at.isoformat(),
-                "assigned_at": (
-                    task.assigned_at.isoformat() if task.assigned_at else None
-                ),
+                "assigned_at": (task.assigned_at.isoformat() if task.assigned_at else None),
             }
 
         return jsonify(
@@ -2853,42 +3282,72 @@ def api_volunteer_tasks():
         return jsonify({"error": "Internal server error"}), 500
 
 
-@app.route("/dashboard", endpoint="dashboard")
-def dashboard():
-    """General dashboard for logged in users"""
-    # Check if user is logged in as volunteer
-    if session.get("volunteer_logged_in"):
-        return redirect(url_for("volunteer_dashboard"))
-    # Check if admin is logged in
-    elif session.get("admin_logged_in"):
-        return redirect(url_for("admin_dashboard"))
-    else:
-        flash("Моля, влезте в системата", "warning")
-        return redirect(url_for("index"))
-
-
-@app.route("/update_volunteer_settings", methods=["POST"])
-def update_volunteer_settings():
+@app.route("/available_tasks", methods=["GET"])
+def available_tasks():
+    """Show available tasks for volunteers"""
     if not session.get("volunteer_logged_in"):
-        return jsonify({"success": False, "message": "Не сте логнати"}), 401
+        flash("Моля, влезте като доброволец.", "warning")
+        return redirect(url_for("volunteer_login"))
 
+    # Get current volunteer
     volunteer_id = session.get("volunteer_id")
     volunteer = db.session.query(Volunteer).get(volunteer_id)
-    if not volunteer:
-        return jsonify({"success": False, "message": "Доброволецът не е намерен"}), 404
 
-    try:
-        # Here you can save settings to volunteer model or separate settings table
-        # For now, just return success
-        return jsonify({"success": True, "message": "Настройките са запазени"})
-    except Exception as e:
-        app.logger.error(f"Error updating volunteer settings: {e}")
-        return (
-            jsonify(
-                {"success": False, "message": "Грешка при запазване на настройките"}
-            ),
-            500,
-        )
+    if not volunteer:
+        flash("Доброволецът не е намерен.", "error")
+        return redirect(url_for("volunteer_login"))
+
+    # Get available tasks (not assigned to anyone)
+    tasks_list = (
+        db.session.query(Task)
+        .filter_by(assigned_to=None)
+        .filter_by(status="open")
+        .order_by(Task.created_at.desc())
+        .all()
+    )
+
+    return render_template("available_tasks.html", tasks=tasks_list, volunteer=volunteer)
+
+
+@app.route("/volunteer_settings", methods=["GET", "POST"], endpoint="volunteer_profile")
+def volunteer_profile():
+    """Volunteer profile/settings page"""
+    if not session.get("volunteer_logged_in"):
+        flash("Моля, влезте като доброволец.", "warning")
+        return redirect(url_for("volunteer_login"))
+
+    # Get current volunteer
+    volunteer_id = session.get("volunteer_id")
+    volunteer = db.session.query(Volunteer).get(volunteer_id)
+
+    if not volunteer:
+        flash("Доброволецът не е намерен.", "error")
+        return redirect(url_for("volunteer_login"))
+
+    if request.method == "POST":
+        # Handle profile updates
+        try:
+            volunteer.name = request.form.get("name", "").strip()
+            volunteer.phone = request.form.get("phone", "").strip()
+            volunteer.location = request.form.get("location", "").strip()
+            volunteer.skills = request.form.get("skills", "").strip()
+
+            # Basic validation
+            if not volunteer.name:
+                flash("Моля, въведете име.", "error")
+                return redirect(url_for("volunteer_profile"))
+
+            db.session.commit()
+            flash("Профилът е обновен успешно!", "success")
+            return redirect(url_for("volunteer_profile"))
+
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error updating volunteer profile {volunteer_id}: {e}")
+            flash("Грешка при обновяване на профила.", "error")
+            return redirect(url_for("volunteer_profile"))
+
+    return render_template("volunteer_profile.html", volunteer=volunteer)
 
 
 @app.route("/achievements", methods=["GET"], endpoint="achievements")
@@ -2897,84 +3356,8 @@ def achievements():
     if not session.get("volunteer_logged_in"):
         flash("Моля, влезте като доброволец.", "warning")
         return redirect(url_for("volunteer_login"))
-
-    try:
-        volunteer_id = session.get("volunteer_id")
-        volunteer = db.session.query(Volunteer).get(volunteer_id)
-
-        if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
-            return redirect(url_for("volunteer_login"))
-
-        # Import gamification service
-        try:
-            from backend.gamification_service import GamificationService
-            from backend.models import Achievement
-        except ImportError:
-            # Fallback for standalone execution
-            from backend.gamification_service import GamificationService
-            from backend.models import Achievement
-
-        # Get all achievements and calculate progress for each
-        all_achievements = db.session.query(Achievement).all()
-        achievements_data = []
-        for achievement in all_achievements:
-            progress = GamificationService.get_achievement_progress(
-                volunteer, achievement
-            )
-            is_unlocked = achievement.id in volunteer.achievements
-
-            achievements_data.append(
-                {
-                    "id": achievement.id,
-                    "name": achievement.name,
-                    "description": achievement.description,
-                    "icon": achievement.icon,
-                    "category": achievement.category,
-                    "rarity": achievement.rarity,
-                    "progress": progress,
-                    "is_unlocked": is_unlocked,
-                    "requirement_value": achievement.requirement_value,
-                    "requirement_type": achievement.requirement_type,
-                }
-            )
-
-        # Get leaderboard data
-        leaderboard = GamificationService.get_leaderboard(limit=10)
-
-        # Get volunteer's rank
-        volunteer_rank = None
-        for i, entry in enumerate(leaderboard, 1):
-            if entry.id == volunteer_id:
-                volunteer_rank = i
-                break
-
-        # Prepare stats for display
-        volunteer_stats = {
-            "points": volunteer.points,
-            "level": volunteer.level,
-            "experience": volunteer.experience,
-            "total_tasks_completed": volunteer.total_tasks_completed,
-            "streak_days": volunteer.streak_days,
-            "rank": volunteer_rank,
-        }
-
-        # Get level progress info
-        level_progress = volunteer.get_level_progress()
-
-        return render_template(
-            "achievements.html",
-            volunteer=volunteer,
-            achievements=achievements_data,
-            leaderboard=leaderboard,
-            stats=volunteer_stats,
-            level_progress=level_progress,
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error loading achievements page: {e}")
-        flash("Възникна грешка при зареждането на постиженията", "error")
-        return redirect(url_for("volunteer_dashboard"))
+    # Placeholder for achievements page
+    return render_template("achievements.html")
 
 
 @app.route("/volunteer_chat", methods=["GET"], endpoint="volunteer_chat")
@@ -2997,277 +3380,60 @@ def volunteer_reports():
     return render_template("volunteer_reports.html")
 
 
-@app.route("/volunteer_settings", methods=["GET", "POST"], endpoint="volunteer_profile")
-def volunteer_settings():
+@app.route("/leaderboard", methods=["GET"], endpoint="leaderboard")
+def leaderboard():
     # Check if volunteer is logged in
     if not session.get("volunteer_logged_in"):
         flash("Моля, влезте като доброволец.", "warning")
         return redirect(url_for("volunteer_login"))
-    # Placeholder for volunteer settings page
-    return render_template("volunteer_settings.html")
+    # Placeholder for leaderboard page
+    return render_template("leaderboard.html")
 
 
-@app.route("/my_tasks", endpoint="my_tasks")
-def my_tasks():
-    """Show volunteer's assigned tasks"""
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-
-    try:
-        volunteer_id = session.get("volunteer_id")
-        volunteer = db.session.query(Volunteer).get(volunteer_id)
-
-        if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
-            return redirect(url_for("volunteer_login"))
-
-        # Get assigned tasks with different statuses
-        active_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id)
-            .filter(Task.status.in_(["assigned", "in_progress"]))
-            .order_by(Task.created_at.desc())
-            .all()
-        )
-
-        completed_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id)
-            .filter_by(status="completed")
-            .order_by(Task.completed_at.desc())
-            .limit(10)
-            .all()
-        )
-
-        return render_template(
-            "my_tasks.html",
-            volunteer=volunteer,
-            active_tasks=active_tasks,
-            completed_tasks=completed_tasks,
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error loading my tasks: {e}")
-        flash("Възникна грешка при зареждането на задачите", "error")
-        return redirect(url_for("volunteer_dashboard"))
-
-
-@app.route("/available_tasks", endpoint="available_tasks")
-def available_tasks():
-    """Show available tasks for volunteers to apply"""
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-
-    try:
-        volunteer_id = session.get("volunteer_id")
-        volunteer = db.session.query(Volunteer).get(volunteer_id)
-
-        if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
-            return redirect(url_for("volunteer_login"))
-
-        # Get available tasks (not assigned to anyone)
-        page = int(request.args.get("page", 1))
-        per_page = 12
-
-        available_tasks_query = (
-            db.session.query(Task)
-            .filter_by(assigned_to=None)
-            .filter_by(status="open")
-            .order_by(Task.created_at.desc())
-        )
-
-        # Apply pagination
-        total_tasks = available_tasks_query.count()
-        available_tasks = (
-            available_tasks_query.offset((page - 1) * per_page).limit(per_page).all()
-        )
-
-        total_pages = (total_tasks + per_page - 1) // per_page
-
-        return render_template(
-            "available_tasks.html",
-            volunteer=volunteer,
-            available_tasks=available_tasks,
-            page=page,
-            total_pages=total_pages,
-            total_tasks=total_tasks,
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error loading available tasks: {e}")
-        flash("Възникна грешка при зареждането на наличните задачи", "error")
-        return redirect(url_for("volunteer_dashboard"))
-
-
-@app.route("/admin_volunteers/edit/<int:id>", methods=["GET", "POST"])
+@app.route("/api/admin/dashboard", methods=["GET"])
 @require_admin_login
-def edit_volunteer(id):
-    volunteer = db.session.query(Volunteer).get_or_404(id)
-    if request.method == "POST":
-        volunteer.name = request.form["name"]
-        volunteer.email = request.form["email"]
-        volunteer.phone = request.form["phone"]
-        volunteer.location = request.form["location"]  # Добави и локацията тук
-        db.session.commit()
-        flash("Промените са запазени!", "success")
-        return redirect(url_for("admin_volunteers"))
-    return render_template("edit_volunteer.html", volunteer=volunteer)
-
-
-@app.route("/admin_tasks", methods=["GET"])
-@require_admin_login
-def admin_tasks():
-    """Admin interface for managing tasks"""
+def api_admin_dashboard():
+    """API endpoint for admin dashboard data"""
     try:
-        # Get filter parameters
-        status_filter = request.args.get("status", "all")
-        category_filter = request.args.get("category", "all")
-        page = int(request.args.get("page", 1))
-        per_page = 20
+        # Get basic counts
+        volunteers_count = db.session.query(Volunteer).count()
+        requests_count = db.session.query(HelpRequest).count()
+        admins_count = db.session.query(AdminUser).count()
 
-        # Build query
-        query = db.session.query(Task)
-
-        if status_filter != "all":
-            query = query.filter_by(status=status_filter)
-
-        if category_filter != "all":
-            query = query.filter_by(category=category_filter)
-
-        # Get total count for pagination
-        total_tasks = query.count()
-
-        # Apply pagination and ordering
-        tasks = (
-            query.order_by(Task.created_at.desc())
-            .offset((page - 1) * per_page)
-            .limit(per_page)
-            .all()
+        # Get recent requests
+        recent_requests = (
+            db.session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).limit(5).all()
         )
 
-        total_pages = (total_tasks + per_page - 1) // per_page
-
-        # Get current admin user
-        current_user = None
-        if session.get("admin_user_id"):
-            current_user = db.session.get(AdminUser, session.get("admin_user_id"))
-
-        # Get task statistics
-        stats = {
-            "total_tasks": db.session.query(Task).count(),
-            "open_tasks": db.session.query(Task).filter_by(status="open").count(),
-            "assigned_tasks": db.session.query(Task)
-            .filter_by(status="assigned")
-            .count(),
-            "in_progress_tasks": db.session.query(Task)
-            .filter(Task.status == "in_progress")
-            .count(),
-            "completed_tasks": db.session.query(Task)
-            .filter_by(status="completed")
-            .count(),
-        }
-
-        return render_template(
-            "admin_tasks.html",
-            tasks=tasks,
-            current_user=current_user,
-            stats=stats,
-            status_filter=status_filter,
-            category_filter=category_filter,
-            page=page,
-            total_pages=total_pages,
-            total_tasks=total_tasks,
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error loading admin tasks: {e}")
-        flash("Възникна грешка при зареждането на задачите", "error")
-        return redirect(url_for("admin_dashboard"))
-
-
-@app.route("/admin_tasks/create", methods=["GET", "POST"])
-@require_admin_login
-def create_task():
-    """Create a new task"""
-    if request.method == "POST":
-        try:
-            title = request.form.get("title", "").strip()
-            description = request.form.get("description", "").strip()
-            category = request.form.get("category", "").strip()
-            priority = request.form.get("priority", "medium")
-            location_required = request.form.get("location_required") == "on"
-            location_text = (
-                request.form.get("location_text", "").strip()
-                if location_required
-                else None
-            )
-            estimated_hours = request.form.get("estimated_hours")
-            deadline_str = request.form.get("deadline", "").strip()
-
-            # Validation
-            if not title or not description or not category:
-                flash("Моля, попълнете всички задължителни полета", "error")
-                return redirect(url_for("create_task"))
-
-            # Parse deadline
-            deadline = None
-            if deadline_str:
-                try:
-                    from datetime import datetime
-
-                    deadline = datetime.strptime(deadline_str, "%Y-%m-%dT%H:%M")
-                except ValueError:
-                    flash("Невалиден формат на краен срок", "error")
-                    return redirect(url_for("create_task"))
-
-            # Parse estimated hours
-            estimated_hours_int = None
-            if estimated_hours:
-                try:
-                    estimated_hours_int = int(estimated_hours)
-                    if estimated_hours_int <= 0:
-                        raise ValueError
-                except ValueError:
-                    flash("Невалиден брой часове", "error")
-                    return redirect(url_for("create_task"))
-
-            # Create task
-            task = Task(
-                title=title,
-                description=description,
-                category=category,
-                priority=priority,
-                location_required=location_required,
-                location_text=location_text,
-                estimated_hours=estimated_hours_int,
-                deadline=deadline,
-                created_by=session.get("admin_user_id"),
+        requests_data = []
+        for req in recent_requests:
+            requests_data.append(
+                {
+                    "id": req.id,
+                    "title": req.title,
+                    "status": req.status,
+                    "created_at": req.created_at.isoformat(),
+                    "requester_name": req.requester_name,
+                }
             )
 
-            db.session.add(task)
-            db.session.commit()
+        return jsonify(
+            {
+                "stats": {
+                    "volunteers_count": volunteers_count,
+                    "requests_count": requests_count,
+                    "admins_count": admins_count,
+                },
+                "recent_requests": requests_data,
+            }
+        )
 
-            flash("Задачата е създадена успешно!", "success")
-            return redirect(url_for("admin_tasks"))
-
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Error creating task: {e}")
-            flash("Грешка при създаване на задачата", "error")
-            return redirect(url_for("create_task"))
-
-    # Get current admin user
-    current_user = None
-    if session.get("admin_user_id"):
-        current_user = db.session.get(AdminUser, session.get("admin_user_id"))
-
-    return render_template("create_task.html", current_user=current_user)
+    except Exception as e:
+        app.logger.error(f"Error getting admin dashboard: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
-@app.route("/admin_tasks/<int:task_id>/edit", methods=["GET", "POST"])
+@app.route("/admin/edit_task/<int:task_id>", methods=["GET", "POST"])
 @require_admin_login
 def edit_task(task_id):
     """Edit an existing task"""
@@ -3275,16 +3441,13 @@ def edit_task(task_id):
 
     if request.method == "POST":
         try:
+            # Update task fields
             task.title = request.form.get("title", "").strip()
             task.description = request.form.get("description", "").strip()
             task.category = request.form.get("category", "").strip()
             task.priority = request.form.get("priority", "medium")
             task.location_required = request.form.get("location_required") == "on"
-            task.location_text = (
-                request.form.get("location_text", "").strip()
-                if task.location_required
-                else None
-            )
+            task.location_text = request.form.get("location_text", "").strip()
 
             estimated_hours = request.form.get("estimated_hours")
             if estimated_hours:
@@ -3343,9 +3506,7 @@ def delete_task(task_id):
 
         # Check if task is assigned
         if task.assigned_to:
-            flash(
-                "Не може да изтриете задача, която е присвоена на доброволец", "error"
-            )
+            flash("Не може да изтриете задача, която е присвоена на доброволец", "error")
             return redirect(url_for("admin_tasks"))
 
         db.session.delete(task)
@@ -3484,9 +3645,7 @@ def admin_update_request_status():
 
         if not request_id or not new_status:
             return (
-                jsonify(
-                    {"success": False, "message": "Липсват задължителни параметри"}
-                ),
+                jsonify({"success": False, "message": "Липсват задължителни параметри"}),
                 400,
             )
 
@@ -3509,9 +3668,7 @@ def admin_update_request_status():
         request_obj.status = new_status
         db.session.commit()
 
-        app.logger.info(
-            f"Request {request_id} status changed from {old_status} to {new_status}"
-        )
+        app.logger.info(f"Request {request_id} status changed from {old_status} to {new_status}")
 
         return jsonify(
             {
@@ -3773,7 +3930,7 @@ def success_stories():
 
 
 @app.route("/feedback", methods=["GET", "POST"])
-@limiter.limit("3 per minute; 10 per hour")  # Rate limit feedback submissions
+# @limiter.limit("2 per minute; 5 per hour; 10 per day")  # Very strict limits for feedback
 def feedback():
     if request.method == "POST":
         name = request.form.get("name")
@@ -3785,15 +3942,65 @@ def feedback():
             flash("Моля, попълнете всички полета коректно!")
             return redirect(url_for("feedback"))
 
-        # Log feedback with security tags
-        app.logger.info(
-            "[SECURITY:FEEDBACK] Feedback received from %s <%s>: %s",
-            name,
-            email,
-            message[:100] + "..." if len(message) > 100 else message,
-        )
-        flash("Благодарим за обратната връзка!")
-        return redirect(url_for("feedback"))
+        try:
+            # Import feedback model and sentiment service
+            from models_with_analytics import Feedback
+            from sentiment_analysis import sentiment_analysis_service
+
+            # Determine user type and ID
+            user_type = "guest"
+            user_id = None
+            if session.get("volunteer_logged_in"):
+                user_type = "volunteer"
+                user_id = session.get("volunteer_id")
+            elif session.get("admin_logged_in"):
+                user_type = "admin"
+                user_id = session.get("admin_user_id")
+
+            # Create feedback record
+            feedback_record = Feedback(
+                name=name,
+                email=email,
+                message=message,
+                user_type=user_type,
+                user_id=user_id,
+                page_url=request.referrer,
+                user_agent=request.headers.get("User-Agent"),
+                ip_address=request.remote_addr,
+            )
+
+            db.session.add(feedback_record)
+            db.session.flush()  # Get the ID
+
+            # Trigger sentiment analysis asynchronously
+            try:
+                from backend.tasks import process_feedback_sentiment
+
+                process_feedback_sentiment.delay(feedback_record.id)
+            except ImportError:
+                # Fallback: analyze immediately
+                sentiment_analysis_service.analyze_feedback(feedback_record.id)
+
+            db.session.commit()
+
+            # Log feedback with security tags
+            app.logger.info(
+                "[SECURITY:FEEDBACK] Feedback received from %s <%s>: %s (ID: %d)",
+                name,
+                email,
+                message[:100] + "..." if len(message) > 100 else message,
+                feedback_record.id,
+            )
+
+            flash("Благодарим за обратната връзка! Тя беше обработена успешно.")
+            return redirect(url_for("feedback"))
+
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error saving feedback: {e}")
+            flash("Възникна грешка при обработката на обратната връзка. Моля, опитайте отново.")
+            return redirect(url_for("feedback"))
+
     return render_template("feedback.html")
 
 
@@ -3830,11 +4037,7 @@ def category_help(category):
 
     # Филтрираме доброволци които имат тази категория в skills
     # Търсим case-insensitive в skills полето
-    volunteers = (
-        db.session.query(Volunteer)
-        .filter(Volunteer.skills.ilike(f"%{category}%"))
-        .all()
-    )
+    volunteers = db.session.query(Volunteer).filter(Volunteer.skills.ilike(f"%{category}%")).all()
 
     # Ако няма доброволци, показваме съобщение
     no_volunteers = len(volunteers) == 0
@@ -3924,7 +4127,8 @@ def chat():
 
         # Check if user is logged in (volunteer or admin)
         if session.get("volunteer_logged_in"):
-            volunteer = db.session.query(Volunteer).get(session.get("volunteer_id"))
+            volunteer_id = session.get("volunteer_id")
+            volunteer = db.session.query(Volunteer).get(volunteer_id)
             if volunteer:
                 user_info = {
                     "type": "volunteer",
@@ -4052,9 +4256,7 @@ def api_get_chat_rooms():
         for room in rooms:
             # Count online participants
             online_count = (
-                db.session.query(ChatParticipant)
-                .filter_by(room_id=room.id, is_online=True)
-                .count()
+                db.session.query(ChatParticipant).filter_by(room_id=room.id, is_online=True).count()
             )
 
             rooms_data.append(
@@ -4131,56 +4333,8 @@ def api_get_room_messages(room_id):
         return jsonify({"messages": messages_data})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/chat/create_room", methods=["POST"])
-def api_create_chat_room():
-    """API endpoint to create a new chat room"""
-    try:
-        data = request.get_json()
-        room_name = data.get("name", "").strip()
-        room_type = data.get("type", "public")
-        description = data.get("description", "").strip()
-
-        if not room_name:
-            return jsonify({"error": "Room name is required"}), 400
-
-        # Check permissions for private rooms
-        if room_type == "private" and not session.get("user_id"):
-            return jsonify({"error": "Only admins can create private rooms"}), 403
-
-        # Get creator info
-        creator_id = None
-        if session.get("user_id"):
-            creator_id = session.get("user_id")
-
-        # Create room
-        room = ChatRoom(
-            name=room_name,
-            description=description,
-            room_type=room_type,
-            created_by=creator_id,
-        )
-        db.session.add(room)
-        db.session.commit()
-
-        return jsonify(
-            {
-                "success": True,
-                "room": {
-                    "id": room.id,
-                    "name": room.name,
-                    "description": room.description,
-                    "room_type": room.room_type,
-                    "created_at": room.created_at.isoformat(),
-                },
-            }
-        )
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        app.logger.error(f"Error retrieving chat messages: {e}")
+        return jsonify({"error": "Failed to retrieve messages"}), 500
 
 
 @app.route("/api/chat/leave_room", methods=["POST"])
@@ -4432,86 +4586,614 @@ def update_task_progress(task_id):
         return redirect(url_for("my_tasks"))
 
 
+print("DEBUG: About to define admin_analytics route")
+
+
 @app.route("/admin_analytics", methods=["GET"])
-@require_admin_login
+# @require_admin_login  # Temporarily disabled for testing
 def admin_analytics():
-    """Advanced Analytics Dashboard с real-time графики и прогнози"""
+    print("DEBUG: admin_analytics route called")
+    return "Route works! Analytics service not called yet."
+
+
+print("DEBUG: Checking if admin_analytics route is registered")
+for rule in app.url_map.iter_rules():
+    if "admin_analytics" in rule.rule:
+        print(f"  Found route: {rule.rule} -> {rule.endpoint}")
+print("DEBUG: Route check complete")
+
+
+# Celery monitoring endpoints
+@app.route("/api/celery/stats")
+def celery_stats():
+    """Get Celery worker and task statistics"""
     try:
-        from backend.analytics_service import analytics_service
+        from backend.celery_app import celery
 
-        # Получаваме основни статистики
-        dashboard_stats = analytics_service.get_dashboard_analytics(days=30)
+        # Get active workers
+        inspect = celery.control.inspect()
 
-        # Геолокационни данни за карта
-        geo_data = []  # Placeholder - implement if needed
-
-        # Трендове за последните 12 месеца - предоставяме основни данни
-        trends_data = {
-            "labels": ["Януари", "Февруари", "Март", "Април", "Май", "Юни"],
-            "requests": [10, 15, 8, 22, 18, 25],
-            "completed": [8, 12, 6, 18, 15, 20],
-            "volunteers": [5, 7, 4, 12, 9, 14],
+        stats = {
+            "active_workers": inspect.active() or {},
+            "scheduled_tasks": inspect.scheduled() or {},
+            "active_tasks": inspect.active() or {},
+            "registered_tasks": inspect.registered() or {},
+            "stats": inspect.stats() or {},
         }
 
-        # Прогнози за следващите 3 месеца - предоставяме примерни данни
-        predictions = {
-            "labels": ["Месец 1", "Месец 2", "Месец 3"],
-            "requests_predicted": [25, 28, 32],
-            "volunteers_predicted": [14, 16, 18],
-            "ml_insights": {
-                "anomalies": [],
-                "predictions": {
-                    "optimal_engagement_time": {"hour": 14, "engagement_score": 85}
-                },
-                "recommendations": [
-                    {
-                        "title": "Подобри видимостта",
-                        "description": "Увеличи броя на доброволците",
-                        "action": "Рекламирай повече",
-                        "priority": "high",
-                    }
-                ],
-            },
+        return jsonify(stats)
+
+    except Exception as e:
+        app.logger.error(f"Error getting Celery stats: {e}")
+        return jsonify({"error": "Failed to get Celery statistics"}), 500
+
+
+@app.route("/api/celery/tasks/<task_id>")
+def celery_task_status(task_id):
+    """Get status of a specific Celery task"""
+    try:
+        from backend.celery_app import celery
+
+        # Get task result
+        result = celery.AsyncResult(task_id)
+
+        task_info = {
+            "task_id": task_id,
+            "state": result.state,
+            "current": result.current,
+            "info": str(result.info) if result.info else None,
+            "result": str(result.result) if result.result else None,
         }
 
-        # Live статистики
-        live_stats = dashboard_stats.get("real_time", {})
+        return jsonify(task_info)
 
-        # Категорийни статистики - предоставяме примерни данни
-        category_stats = {
-            "categories": [
-                "Медицинска помощ",
-                "Транспорт",
-                "Домакинска помощ",
-                "Образование",
-            ],
-            "counts": [15, 8, 12, 6],
+    except Exception as e:
+        app.logger.error(f"Error getting task status: {e}")
+        return jsonify({"error": "Failed to get task status"}), 500
+
+
+@app.route("/api/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Check database connectivity
+        db.session.execute("SELECT 1").first()
+
+        # Check Celery connectivity (if available)
+        celery_status = "unknown"
+        try:
+            from backend.celery_app import celery
+
+            inspect = celery.control.inspect()
+            active = inspect.active()
+            celery_status = "healthy" if active is not None else "unhealthy"
+        except Exception:
+            celery_status = "unavailable"
+
+        health_info = {
+            "status": "healthy",
+            "database": "connected",
+            "celery": celery_status,
+            "timestamp": datetime.now().isoformat(),
         }
 
-        # Performance метрики
-        performance_metrics = dashboard_stats.get("performance_metrics", {})
+        return jsonify(health_info)
 
-        return render_template(
-            "admin_analytics.html",
-            dashboard_stats=dashboard_stats,
-            geo_data=geo_data,
-            trends_data=trends_data,
-            predictions=predictions,
-            live_stats=live_stats,
-            category_stats=category_stats,
-            performance_metrics=performance_metrics,
+    except Exception as e:
+        app.logger.error(f"Health check failed: {e}")
+        return (
+            jsonify(
+                {
+                    "status": "unhealthy",
+                    "error": str(e),
+                    "timestamp": datetime.now().isoformat(),
+                }
+            ),
+            500,
+        )
+
+
+@app.route("/api/tasks/trigger/<task_name>", methods=["POST"])
+@require_admin_login
+def trigger_task(task_name):
+    """Manually trigger a Celery task (admin only)"""
+    try:
+        from backend import tasks
+
+        # Map task names to functions
+        task_map = {
+            "auto_match_requests": tasks.auto_match_requests,
+            "send_reminders": tasks.send_reminders,
+            "generate_daily_reports": tasks.generate_daily_reports,
+            "cleanup_old_data": tasks.cleanup_old_data,
+            "monitor_system_health": tasks.monitor_system_health,
+            "update_realtime_stats": tasks.update_realtime_stats,
+        }
+
+        if task_name not in task_map:
+            return jsonify({"error": f"Unknown task: {task_name}"}), 400
+
+        # Trigger the task
+        result = task_map[task_name].delay()
+
+        return jsonify(
+            {
+                "task_id": result.id,
+                "task_name": task_name,
+                "status": "triggered",
+            }
         )
 
     except Exception as e:
-        app.logger.error(f"Error loading analytics dashboard: {e}")
-        flash("Възникна грешка при зареждането на аналитиката", "error")
-        return redirect(url_for("admin_dashboard"))
+        app.logger.error(f"Error triggering task {task_name}: {e}")
+        return jsonify({"error": f"Failed to trigger task: {str(e)}"}), 500
+
+
+# Predictive Analytics Routes
+@app.route("/api/predictive/regional-demand")
+@require_admin_login
+def predictive_regional_demand():
+    """Get regional demand forecast data"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        region = request.args.get("region")
+        days_ahead = int(request.args.get("days_ahead", 7))
+
+        forecast = predictive_analytics.get_regional_demand_forecast(
+            region=region, days_ahead=days_ahead
+        )
+        return jsonify(forecast)
+
+    except Exception as e:
+        app.logger.error(f"Error getting regional demand forecast: {e}")
+        return (
+            jsonify({"error": "Failed to get regional demand forecast", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/workload")
+@require_admin_login
+def predictive_workload():
+    """Get workload prediction data"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        hours_ahead = int(request.args.get("hours_ahead", 24))
+
+        prediction = predictive_analytics.get_workload_prediction(hours_ahead=hours_ahead)
+        return jsonify(prediction)
+
+    except Exception as e:
+        app.logger.error(f"Error getting workload prediction: {e}")
+        return (
+            jsonify({"error": "Failed to get workload prediction", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/insights")
+@require_admin_login
+def predictive_insights():
+    """Get predictive insights and recommendations"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        insights = predictive_analytics.get_predictive_insights()
+        return jsonify(insights)
+
+    except Exception as e:
+        app.logger.error(f"Error getting predictive insights: {e}")
+        return (
+            jsonify({"error": "Failed to get predictive insights", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/predictive/model-info")
+@require_admin_login
+def predictive_model_info():
+    """Get information about predictive models"""
+    try:
+        from predictive_analytics import predictive_analytics
+
+        # Get sample data to extract model info
+        regional_sample = predictive_analytics.get_regional_demand_forecast(days_ahead=1)
+        workload_sample = predictive_analytics.get_workload_prediction(hours_ahead=1)
+
+        model_info = {
+            "regional_demand_model": {
+                "type": "Random Forest Regression",
+                "features": [
+                    "day_of_week",
+                    "month",
+                    "season",
+                    "historical_avg",
+                    "trend_factor",
+                    "volunteer_density",
+                    "population_density",
+                ],
+                "prediction_horizon": "1-30 days",
+                "accuracy_metrics": regional_sample.get("model_info", {}).get("accuracy", "N/A"),
+                "last_trained": regional_sample.get("generated_at", "N/A"),
+            },
+            "workload_prediction_model": {
+                "type": "Gradient Boosting Regression",
+                "features": [
+                    "current_requests",
+                    "active_volunteers",
+                    "avg_response_time",
+                    "day_of_week",
+                    "hour_of_day",
+                    "season",
+                ],
+                "prediction_horizon": "1-168 hours",
+                "accuracy_metrics": workload_sample.get("model_info", {}).get("accuracy", "N/A"),
+                "last_trained": workload_sample.get("generated_at", "N/A"),
+            },
+            "data_sources": [
+                "HelpRequest table (historical patterns)",
+                "Volunteer table (capacity data)",
+                "UserActivity table (engagement patterns)",
+                "Real-time system metrics",
+            ],
+            "update_frequency": "Real-time predictions with 1-hour cache",
+            "fallback_strategy": "Rule-based heuristics when ML models unavailable",
+        }
+
+        return jsonify(model_info)
+
+    except Exception as e:
+        app.logger.error(f"Error getting model info: {e}")
+        return (
+            jsonify({"error": "Failed to get model information", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/predictive-analytics")
+@require_admin_login
+def predictive_analytics_page():
+    """Render the predictive analytics dashboard"""
+    return render_template("predictive_analytics.html")
+
+
+@app.route("/analytics")
+@require_admin_login
+def analytics_page():
+    """Render the main analytics dashboard"""
+    return render_template("analytics.html")
+
+
+# Smart Matching API Routes
+@app.route("/api/matching/find-matches/<int:request_id>")
+@require_admin_login
+def find_matches(request_id):
+    """Find best volunteer matches for a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        limit = int(request.args.get("limit", 5))
+        matches = smart_matching_service.find_best_matches(request_id, limit)
+
+        # Convert volunteer objects to dictionaries for JSON response
+        result = []
+        for match in matches:
+            volunteer = match["volunteer"]
+            result.append(
+                {
+                    "volunteer_id": volunteer.id,
+                    "name": volunteer.name,
+                    "email": volunteer.email,
+                    "phone": volunteer.phone,
+                    "skills": volunteer.skills,
+                    "location": volunteer.location,
+                    "rating": volunteer.rating,
+                    "experience": volunteer.experience,
+                    "total_tasks_completed": volunteer.total_tasks_completed,
+                    "match_score": match["scores"],
+                    "recommendation_reason": match["recommendation_reason"],
+                }
+            )
+
+        return jsonify({"request_id": request_id, "matches": result, "total_matches": len(result)})
+
+    except Exception as e:
+        app.logger.error(f"Error finding matches for request {request_id}: {e}")
+        return jsonify({"error": "Failed to find matches", "details": str(e)}), 500
+
+
+@app.route("/api/matching/auto-assign/<int:request_id>", methods=["POST"])
+@require_admin_login
+def auto_assign_request(request_id):
+    """Automatically assign the best matching volunteer to a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        result = smart_matching_service.auto_assign_request(request_id)
+
+        if result:
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Request auto-assigned successfully",
+                    "assignment": {
+                        "request_id": result["help_request"].id,
+                        "volunteer_id": result["volunteer"].id,
+                        "volunteer_name": result["volunteer"].name,
+                        "match_score": result["match_score"],
+                    },
+                }
+            )
+        else:
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "No suitable volunteer found for auto-assignment",
+                    }
+                ),
+                404,
+            )
+
+    except Exception as e:
+        app.logger.error(f"Error auto-assigning request {request_id}: {e}")
+        return (
+            jsonify({"error": "Failed to auto-assign request", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/matching/analytics")
+@require_admin_login
+def matching_analytics():
+    """Get analytics for the smart matching system"""
+    try:
+        from smart_matching import smart_matching_service
+
+        analytics = smart_matching_service.get_matching_analytics()
+        return jsonify(analytics)
+
+    except Exception as e:
+        app.logger.error(f"Error getting matching analytics: {e}")
+        return (
+            jsonify({"error": "Failed to get matching analytics", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/matching/ai-insights/<int:request_id>")
+@require_admin_login
+def get_ai_insights(request_id):
+    """Get AI-powered insights for a help request"""
+    try:
+        from smart_matching import smart_matching_service
+
+        insights = smart_matching_service.get_ai_insights(request_id)
+        return jsonify(insights)
+
+    except Exception as e:
+        app.logger.error(f"Error getting AI insights for request {request_id}: {e}")
+        return jsonify({"error": "Failed to get AI insights", "details": str(e)}), 500
+
+
+@app.route("/api/matching/assign/<int:request_id>/<int:volunteer_id>", methods=["POST"])
+@require_admin_login
+def manual_assign_request(request_id, volunteer_id):
+    """Manually assign a volunteer to a help request"""
+    try:
+        # Get the request and volunteer
+        help_request = HelpRequest.query.get_or_404(request_id)
+        volunteer = Volunteer.query.get_or_404(volunteer_id)
+
+        # Update request status
+        help_request.status = "assigned"
+        help_request.updated_at = datetime.utcnow()
+
+        # Create assignment record if TaskAssignment exists
+        try:
+            from models_with_analytics import TaskAssignment
+
+            assignment = TaskAssignment(
+                task_id=request_id,  # Using request_id as task_id
+                volunteer_id=volunteer.id,
+                skill_match_score=50.0,  # Default for manual assignment
+                location_match_score=50.0,
+                availability_match_score=100.0,
+                performance_match_score=volunteer.rating * 20,
+                overall_match_score=50.0,  # Manual assignment
+                assigned_at=datetime.utcnow(),
+                status="assigned",
+                assigned_by="manual",
+            )
+            db.session.add(assignment)
+        except ImportError:
+            assignment = None
+
+        db.session.commit()
+
+        return jsonify(
+            {
+                "success": True,
+                "message": "Volunteer assigned successfully",
+                "assignment": {
+                    "request_id": request_id,
+                    "volunteer_id": volunteer_id,
+                    "volunteer_name": volunteer.name,
+                },
+            }
+        )
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(
+            f"Error manually assigning request {request_id} to volunteer {volunteer_id}: {e}"
+        )
+        return jsonify({"error": "Failed to assign volunteer", "details": str(e)}), 500
+
+
+@app.route("/matching")
+@require_admin_login
+def matching_dashboard():
+    """Render the smart matching dashboard"""
+    return render_template("smart_matching.html")
+
+
+# Sentiment Analysis API Routes
+@app.route("/api/sentiment/analyze/<int:feedback_id>")
+@require_admin_login
+def analyze_feedback_sentiment(feedback_id):
+    """Analyze sentiment for a specific feedback"""
+    try:
+        from sentiment_analysis import sentiment_analysis_service
+
+        result = sentiment_analysis_service.analyze_feedback(feedback_id)
+        return jsonify(result)
+
+    except Exception as e:
+        app.logger.error(f"Error analyzing feedback sentiment {feedback_id}: {e}")
+        return (
+            jsonify({"error": "Failed to analyze feedback sentiment", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/sentiment/analytics")
+@require_admin_login
+def sentiment_analytics():
+    """Get sentiment analysis analytics"""
+    try:
+        from sentiment_analysis import sentiment_analysis_service
+
+        days = int(request.args.get("days", 30))
+        analytics = sentiment_analysis_service.get_sentiment_analytics(days)
+        return jsonify(analytics)
+
+    except Exception as e:
+        app.logger.error(f"Error getting sentiment analytics: {e}")
+        return (
+            jsonify({"error": "Failed to get sentiment analytics", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/sentiment/batch-analyze", methods=["POST"])
+@require_admin_login
+def batch_analyze_sentiment():
+    """Batch analyze unprocessed feedback"""
+    try:
+        from sentiment_analysis import sentiment_analysis_service
+
+        limit = int(request.args.get("limit", 50))
+        result = sentiment_analysis_service.batch_analyze_unprocessed_feedback(limit)
+        return jsonify(result)
+
+    except Exception as e:
+        app.logger.error(f"Error in batch sentiment analysis: {e}")
+        return (
+            jsonify({"error": "Failed to batch analyze sentiment", "details": str(e)}),
+            500,
+        )
+
+
+@app.route("/api/feedback/list")
+@require_admin_login
+def list_feedback():
+    """Get list of feedback with sentiment analysis"""
+    try:
+        from models_with_analytics import Feedback
+
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 20))
+        sentiment_filter = request.args.get("sentiment")
+
+        query = Feedback.query
+
+        if sentiment_filter and sentiment_filter != "all":
+            query = query.filter_by(sentiment_label=sentiment_filter)
+
+        query = query.order_by(Feedback.timestamp.desc())
+
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        feedback_list = []
+        for feedback in pagination.items:
+            feedback_list.append(
+                {
+                    "id": feedback.id,
+                    "name": feedback.name,
+                    "email": feedback.email,
+                    "message": (
+                        feedback.message[:200] + "..."
+                        if len(feedback.message) > 200
+                        else feedback.message
+                    ),
+                    "timestamp": feedback.timestamp.isoformat(),
+                    "sentiment_score": feedback.sentiment_score,
+                    "sentiment_label": feedback.sentiment_label,
+                    "sentiment_confidence": feedback.sentiment_confidence,
+                    "ai_processed": feedback.ai_processed,
+                    "user_type": feedback.user_type,
+                }
+            )
+
+        return jsonify(
+            {
+                "feedback": feedback_list,
+                "pagination": {
+                    "page": pagination.page,
+                    "per_page": pagination.per_page,
+                    "total": pagination.total,
+                    "pages": pagination.pages,
+                    "has_next": pagination.has_next,
+                    "has_prev": pagination.has_prev,
+                },
+            }
+        )
+
+    except Exception as e:
+        app.logger.error(f"Error listing feedback: {e}")
+        return jsonify({"error": "Failed to list feedback", "details": str(e)}), 500
+
+
+@app.route("/sentiment-analytics")
+@require_admin_login
+def sentiment_analytics_page():
+    """Render the sentiment analytics dashboard"""
+    return render_template("sentiment_analytics.html")
 
 
 if __name__ == "__main__":
     print("HelpChain server starting...")
-    print("http://127.0.0.1:5000")
+    print("http://127.0.0.1:8000")
     print("Admin: admin / Admin123")
     print("Press Ctrl+C to stop")
-    debug_mode = True  # Enable debug mode to see errors
-    app.run(debug=debug_mode, host="127.0.0.1", port=5000, use_reloader=False)
+    try:
+        debug_mode = True  # Enable debug mode for development
+        use_https = False  # Set to True to enable HTTPS for push notifications
+
+        if use_https:
+            # For HTTPS development (requires SSL certificates)
+            import ssl
+
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+            # Load the generated certificates
+            cert_path = os.path.join(os.path.dirname(__file__), "..", "cert.pem")
+            key_path = os.path.join(os.path.dirname(__file__), "..", "key.pem")
+            context.load_cert_chain(cert_path, key_path)
+            app.run(
+                debug=debug_mode,
+                host="127.0.0.1",
+                port=8000,
+                ssl_context=context,
+                use_reloader=False,
+            )
+        else:
+            app.run(debug=debug_mode, host="127.0.0.1", port=8000, use_reloader=False)
+    except Exception as e:
+        print(f"Server crashed with error: {e}")
+        import traceback
+
+        traceback.print_exc()
+        raise

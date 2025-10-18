@@ -1,15 +1,16 @@
 from flask import (
     Blueprint,
+    flash,
+    jsonify,
+    redirect,
     render_template,
     request,
-    redirect,
-    url_for,
-    flash,
     session,
-    jsonify,
+    url_for,
 )
-from flask_login import login_required, current_user
-from ..models import Request, RequestLog, Volunteer, AdminUser, db
+from flask_login import current_user, login_required
+
+from ..models import AdminUser, Request, RequestLog, Volunteer, db
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -229,8 +230,9 @@ def export_volunteers():
         flash("Нямате достъп.", "error")
         return redirect(url_for("main.index"))
 
-    from io import StringIO
     import csv
+    from io import StringIO
+
     from flask import Response
 
     volunteers = Volunteer.query.all()

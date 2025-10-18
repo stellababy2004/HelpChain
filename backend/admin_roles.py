@@ -2,16 +2,16 @@
 Admin routes for role and user management
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
-    from .models import User, Role, Permission, UserRole, RolePermission
     from .extensions import db
+    from .models import Permission, Role, RolePermission, User, UserRole
     from .permissions import require_permission
 except ImportError:
-    from models import User, Role, Permission, UserRole, RolePermission
     from extensions import db
+    from models import Permission, Role, RolePermission, User, UserRole
     from permissions import require_permission
 
 from werkzeug.security import generate_password_hash

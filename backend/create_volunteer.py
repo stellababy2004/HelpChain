@@ -3,16 +3,17 @@
 Create a test volunteer user for HelpChain
 """
 
-import sys
 import os
+import sys
 
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(__file__))
 
+from werkzeug.security import generate_password_hash
+
 from appy import app
 from extensions import db
 from models import User, Volunteer
-from werkzeug.security import generate_password_hash
 
 
 def main():

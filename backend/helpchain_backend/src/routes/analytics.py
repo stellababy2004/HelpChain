@@ -1,16 +1,16 @@
+import json
 import os
 import time
-import json
+
 from flask import (
     Blueprint,
-    render_template,
-    request,
-    jsonify,
     current_app,
-    session,
-    redirect,
-    url_for,
     flash,
+    jsonify,
+    redirect,
+    request,
+    session,
+    url_for,
 )
 
 analytics_bp = Blueprint(
@@ -36,8 +36,9 @@ def analytics_data():
     if not session.get("admin_logged_in"):
         return jsonify({"error": "Unauthorized"}), 403
 
-    from ..models import Request, Volunteer
     from collections import Counter
+
+    from ..models import Request, Volunteer
 
     # Get requests data
     requests = Request.query.all()
@@ -118,7 +119,7 @@ def analytics_bookmarks():
 
     path = _bookmarks_path()
     if request.method == "GET":
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return jsonify(json.load(f))
     if request.method == "POST":
         payload = request.get_json(force=True)

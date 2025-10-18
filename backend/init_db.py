@@ -4,17 +4,19 @@ Database initialization script for HelpChain
 Creates default roles, permissions, and admin user
 """
 
-import sys
 import os
+import sys
 
 # Add current directory to path
 sys.path.insert(0, ".")
 
-from appy import app
-from .extensions import db
-from .models import User, RoleEnum
 from werkzeug.security import generate_password_hash
+
+from appy import app
 from permissions import initialize_default_roles_and_permissions
+
+from .extensions import db
+from .models import RoleEnum, User
 
 
 def main():

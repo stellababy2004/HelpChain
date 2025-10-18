@@ -1,4 +1,4 @@
-from backend.models import db, Volunteer, Achievement
+from backend.models import Achievement, Volunteer, db
 
 
 class GamificationService:

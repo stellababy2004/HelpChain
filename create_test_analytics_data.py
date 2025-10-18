@@ -8,7 +8,6 @@ import sys
 import os
 from datetime import datetime, timedelta
 import random
-import json
 from werkzeug.security import generate_password_hash
 
 # Add backend to path
@@ -16,7 +15,7 @@ backend_dir = os.path.join(os.path.dirname(__file__), "backend")
 sys.path.insert(0, backend_dir)
 
 from appy import app, db
-from models import User, Volunteer, HelpRequest, AdminUser
+from models import User, Volunteer, HelpRequest
 from models_with_analytics import (
     AnalyticsEvent,
     UserBehavior,

@@ -5,8 +5,9 @@ Revises: <prev_revision>
 Create Date: 2025-09-29
 """
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "add_roles_and_audit"

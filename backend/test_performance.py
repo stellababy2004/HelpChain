@@ -3,10 +3,11 @@ Performance Testing Script за HelpChain Analytics
 Този скрипт тества производителността на оптимизираното приложение
 """
 
-import time
-import requests
 import statistics
+import time
 from datetime import datetime
+
+import requests
 
 
 class PerformanceTester:
@@ -131,8 +132,8 @@ class PerformanceTester:
 
         print(f"\n👥 Testing Concurrent Performance ({concurrent_users} users)...")
 
-        import threading
         import queue
+        import threading
 
         results_queue = queue.Queue()
 

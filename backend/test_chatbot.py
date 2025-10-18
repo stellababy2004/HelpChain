@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Тест на чатбот функционалността (с mocked HTTP повиквания)
 """
 import os
-import requests
+
 import pytest
+import requests
 
 BASE_URL = os.getenv("HELPCHAIN_BASE_URL", "http://127.0.0.1:5000")
 

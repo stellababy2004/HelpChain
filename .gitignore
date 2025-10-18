@@ -48,6 +48,15 @@ build/
 instance/
 uploads/
 
+# SSL certificates and keys
+*.pem
+key.pem
+cert.pem
+
+# Cookies and session files
+cookies.txt
+backend/cookies.txt
+
 # editor temp
 .vscode/
 

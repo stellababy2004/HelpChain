@@ -10,7 +10,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
 
 from appy import app
-import tempfile
 
 
 def test_error_handlers():
@@ -38,9 +37,8 @@ def test_error_handlers():
         with app.test_request_context():
             try:
                 raise Exception("Test error")
-            except Exception as e:
+            except Exception:
                 # This simulates what happens in the error handler
-                from flask import jsonify
 
                 response_data = {
                     "error": "Internal Server Error",

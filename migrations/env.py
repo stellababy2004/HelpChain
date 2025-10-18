@@ -1,4 +1,5 @@
 import logging
+import os
 from logging.config import fileConfig
 
 from flask import current_app
@@ -19,15 +20,20 @@ def get_engine():
     try:
         # this works with Flask-SQLAlchemy<3 and Alchemical
         return current_app.extensions["migrate"].db.get_engine()
-    except (TypeError, AttributeError):
-        # this works with Flask-SQLAlchemy>=3
+    except (TypeError, AttributeError, RuntimeError):
+        # this works with Flask-SQLAlchemy>=3 or when no app context
         return current_app.extensions["migrate"].db.engine
 
 
 def get_engine_url():
+    # First try to get DATABASE_URL from environment
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        return database_url.replace("%", "%%")
+
     try:
         return get_engine().url.render_as_string(hide_password=False).replace("%", "%%")
-    except AttributeError:
+    except (AttributeError, RuntimeError):
         return str(get_engine().url).replace("%", "%%")
 
 
@@ -36,7 +42,13 @@ def get_engine_url():
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 config.set_main_option("sqlalchemy.url", get_engine_url())
-target_db = current_app.extensions["migrate"].db
+
+# Try to get target_db from Flask app, but handle case where no app context exists
+try:
+    target_db = current_app.extensions["migrate"].db
+except RuntimeError:
+    # No app context, we'll handle this in the migration functions
+    target_db = None
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -45,9 +57,23 @@ target_db = current_app.extensions["migrate"].db
 
 
 def get_metadata():
-    if hasattr(target_db, "metadatas"):
+    if target_db and hasattr(target_db, "metadatas"):
         return target_db.metadatas[None]
-    return target_db.metadata
+    elif target_db:
+        return target_db.metadata
+    else:
+        # Import metadata directly when no app context
+        import sys
+        import os
+
+        # Add current directory to path for imports
+        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if current_dir not in sys.path:
+            sys.path.insert(0, current_dir)
+
+        from backend.models import db
+
+        return db.metadata
 
 
 def run_migrations_offline():
@@ -87,11 +113,21 @@ def run_migrations_online():
                 directives[:] = []
                 logger.info("No changes in schema detected.")
 
-    conf_args = current_app.extensions["migrate"].configure_args
-    if conf_args.get("process_revision_directives") is None:
-        conf_args["process_revision_directives"] = process_revision_directives
+    connectable = None
+    conf_args = {}
 
-    connectable = get_engine()
+    if target_db:
+        # We have app context, use Flask-Migrate configuration
+        conf_args = current_app.extensions["migrate"].configure_args
+        if conf_args.get("process_revision_directives") is None:
+            conf_args["process_revision_directives"] = process_revision_directives
+        connectable = get_engine()
+    else:
+        # No app context, create engine directly from DATABASE_URL
+        from sqlalchemy import create_engine
+
+        database_url = os.getenv("DATABASE_URL", "sqlite:///app.db")
+        connectable = create_engine(database_url)
 
     with connectable.connect() as connection:
         context.configure(

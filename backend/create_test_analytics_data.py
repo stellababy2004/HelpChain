@@ -2,17 +2,19 @@
 Създаване на тестова база данни с разнообразни потребители и заявки за analytics тестване
 """
 
-import sys
 import os
-from datetime import timedelta
 import random
+import sys
+from datetime import timedelta
+
 from faker import Faker
 
 # Add the project root to the path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from appy import app, db
-from .models import Volunteer, HelpRequest, AnalyticsEvent
+
+from .models import AnalyticsEvent, HelpRequest, Volunteer
 
 fake = Faker("bg_BG")  # Bulgarian locale
 

@@ -1,6 +1,6 @@
+from backend.app import app
 from backend.extensions import db
 from backend.models import HelpRequest
-from backend.app import app
 
 with app.app_context():
     # Покажи всички таблици

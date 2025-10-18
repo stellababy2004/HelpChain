@@ -1,9 +1,5 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from flask_login import UserMixin
 from enum import Enum
-import pyotp
-import json
 
 # Import db from extensions instead of creating a new instance
 from .extensions import db

@@ -2,22 +2,61 @@
 Automated tasks for HelpChain platform
 """
 
+import json
 import logging
 from datetime import datetime, timedelta
+
 from sqlalchemy import and_
-from backend.celery_app import celery
-from backend.extensions import db
-from backend.models import (
-    HelpRequest,
-    Volunteer,
-    AdminUser,
-    ChatMessage,
-)
-from backend.models_with_analytics import Task, TaskPerformance, AnalyticsEvent
-from backend.smart_matching import smart_matching_engine
-from backend.mail_service import send_notification_email
-from backend.ai_service import ai_service
-from backend.analytics_service import analytics_service
+
+try:
+    from celery_app import celery
+except ImportError:
+    from backend.celery_app import celery
+
+try:
+    from extensions import db
+except ImportError:
+    from backend.extensions import db
+
+try:
+    from models import (
+        AdminUser,
+        ChatMessage,
+        HelpRequest,
+        Volunteer,
+    )
+except ImportError:
+    from backend.models import (
+        AdminUser,
+        ChatMessage,
+        HelpRequest,
+        Volunteer,
+    )
+
+try:
+    from models_with_analytics import AnalyticsEvent, Task, TaskPerformance
+except ImportError:
+    from backend.models_with_analytics import AnalyticsEvent, Task, TaskPerformance
+
+try:
+    from sentiment_analysis import sentiment_analysis_service
+except ImportError:
+    from backend.sentiment_analysis import sentiment_analysis_service
+
+try:
+    from mail_service import send_notification_email
+except ImportError:
+    from backend.mail_service import send_notification_email
+
+try:
+    from ai_service import ai_service
+except ImportError:
+    from backend.ai_service import ai_service
+
+try:
+    from analytics_service import analytics_service
+except ImportError:
+    from backend.analytics_service import analytics_service
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +83,7 @@ def auto_match_requests(self):
         for request in pending_requests:
             try:
                 # Use smart matching engine to find best volunteer
-                matches = smart_matching_engine.find_matches(request.id, limit=3)
+                matches = smart_matching_service.find_best_matches(request.id, limit=3)
 
                 if matches:
                     best_match = matches[0]
@@ -92,7 +131,7 @@ def auto_match_requests(self):
     except Exception as e:
         logger.error(f"Error in auto_match_requests: {e}")
         db.session.rollback()
-        raise self.retry(countdown=60, max_retries=3)
+        raise self.retry(countdown=60, max_retries=3) from e
 
 
 @celery.task(bind=True)
@@ -149,7 +188,7 @@ def send_reminders(self):
 
     except Exception as e:
         logger.error(f"Error in send_reminders: {e}")
-        raise self.retry(countdown=300, max_retries=3)
+        raise self.retry(countdown=300, max_retries=3) from e
 
 
 @celery.task(bind=True)
@@ -240,7 +279,7 @@ def auto_evaluate_tasks(self):
     except Exception as e:
         logger.error(f"Error in auto_evaluate_tasks: {e}")
         db.session.rollback()
-        raise self.retry(countdown=3600, max_retries=3)
+        raise self.retry(countdown=3600, max_retries=3) from e
 
 
 @celery.task(bind=True)
@@ -311,7 +350,7 @@ def generate_daily_reports(self):
 
     except Exception as e:
         logger.error(f"Error in generate_daily_reports: {e}")
-        raise self.retry(countdown=3600, max_retries=3)
+        raise self.retry(countdown=3600, max_retries=3) from e
 
 
 @celery.task(bind=True)
@@ -345,7 +384,7 @@ def cleanup_old_data(self):
     except Exception as e:
         logger.error(f"Error in cleanup_old_data: {e}")
         db.session.rollback()
-        raise self.retry(countdown=86400, max_retries=3)
+        raise self.retry(countdown=86400, max_retries=3) from e
 
 
 @celery.task(bind=True)
@@ -361,7 +400,323 @@ def send_notification(self, email, subject, message):
         logger.info(f"Notification sent to {email}")
     except Exception as e:
         logger.error(f"Error sending notification to {email}: {e}")
-        raise self.retry(countdown=60, max_retries=3)
+        raise self.retry(countdown=60, max_retries=3) from e
+
+
+@celery.task(bind=True)
+def process_ml_analysis(self, request_id):
+    """Process ML analysis for help request categorization and volunteer matching"""
+    try:
+        logger.info(f"Processing ML analysis for request {request_id}")
+
+        # Get request details
+        request = db.session.get(HelpRequest, request_id)
+        if not request:
+            logger.error(f"Request {request_id} not found")
+            return
+
+        # AI-powered categorization
+        categorization_prompt = f"""
+        Класифицирай следната заявка за помощ и определи:
+        1. Категория (здравеопазване, образование, социални услуги, техническа помощ, други)
+        2. Приоритет (urgent, high, medium, low)
+        3. Ключови думи за търсене на доброволци
+        4. Препоръчителни умения на доброволеца
+
+        Заявка: {request.message}
+        Локация: {request.location_text or "Не е посочена"}
+
+        Върни резултата като JSON.
+        """
+
+        # TODO: Parse AI response and update request
+        # ai_response = ai_service.generate_response(categorization_prompt, "system")
+
+        # Update request with AI categorization
+        request.category = "AI_analyzed"  # Placeholder
+        request.priority = "medium"  # Placeholder
+        request.ai_processed = True
+
+        # Store analysis results in analytics
+        analytics_service.track_event(
+            event_type="ml_analysis",
+            event_category="ai",
+            event_action="request_categorized",
+            context={
+                "request_id": request_id,
+                "category": request.category,
+                "priority": request.priority,
+            },
+        )
+
+        db.session.commit()
+        logger.info(f"ML analysis completed for request {request_id}")
+
+    except Exception as e:
+        logger.error(f"Error in ML analysis for request {request_id}: {e}")
+        db.session.rollback()
+        raise self.retry(countdown=300, max_retries=3) from e
+
+
+@celery.task(bind=True)
+def update_realtime_stats(self):
+    """Update real-time statistics and cache them in Redis"""
+    try:
+        logger.info("Updating real-time statistics...")
+
+        # Calculate current statistics
+        stats = {
+            "total_requests": db.session.query(HelpRequest).count(),
+            "pending_requests": db.session.query(HelpRequest)
+            .filter_by(status="pending")
+            .count(),
+            "completed_requests": db.session.query(HelpRequest)
+            .filter_by(status="completed")
+            .count(),
+            "total_volunteers": db.session.query(Volunteer).count(),
+            "active_volunteers": db.session.query(Volunteer)
+            .filter_by(is_active=True)
+            .count(),
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+        # Cache in Redis (if available)
+        try:
+            from redis import Redis
+
+            redis_client = Redis.from_url(celery.conf.broker_url)
+            redis_client.setex(
+                "helpchain:stats", 300, json.dumps(stats)
+            )  # Cache for 5 minutes
+        except Exception as redis_error:
+            logger.warning(f"Redis caching failed: {redis_error}")
+
+        # Store in analytics for historical tracking
+        analytics_service.track_event(
+            event_type="stats_update",
+            event_category="system",
+            event_action="realtime_stats",
+            context=stats,
+        )
+
+        logger.info("Real-time statistics updated")
+        return stats
+
+    except Exception as e:
+        logger.error(f"Error updating real-time stats: {e}")
+        raise self.retry(countdown=60, max_retries=3) from e
+
+
+@celery.task(bind=True)
+def send_bulk_notifications(self, notifications):
+    """Send bulk email notifications efficiently"""
+    try:
+        logger.info(f"Sending bulk notifications to {len(notifications)} recipients")
+
+        success_count = 0
+        for notification in notifications:
+            try:
+                send_notification_email(
+                    recipient=notification["email"],
+                    subject=notification["subject"],
+                    template="email_template.html",
+                    context={"message": notification["message"]},
+                )
+                success_count += 1
+            except Exception as e:
+                logger.error(
+                    f"Failed to send notification to {notification['email']}: {e}"
+                )
+                continue
+
+        logger.info(
+            f"Bulk notifications completed: {success_count}/{len(notifications)} sent"
+        )
+
+        # Track analytics
+        analytics_service.track_event(
+            event_type="bulk_notification",
+            event_category="communication",
+            event_action="bulk_sent",
+            context={
+                "total": len(notifications),
+                "successful": success_count,
+                "failed": len(notifications) - success_count,
+            },
+        )
+
+    except Exception as e:
+        logger.error(f"Error in bulk notifications: {e}")
+        raise self.retry(countdown=300, max_retries=3) from e
+
+
+@celery.task(bind=True)
+def process_request_immediately(self, request_data):
+    """Process new help request immediately with AI analysis"""
+    try:
+        logger.info("Processing new request immediately")
+
+        # Create request in database
+        request = HelpRequest(
+            name=request_data["name"],
+            email=request_data["email"],
+            message=request_data["message"],
+            status="pending",
+        )
+
+        if "category" in request_data:
+            request.title = request_data["category"]
+        if "location" in request_data:
+            request.location_text = request_data["location"]
+
+        db.session.add(request)
+        db.session.flush()  # Get request ID
+
+        # Trigger immediate ML analysis
+        self.process_ml_analysis.delay(request.id)
+
+        # Try immediate matching
+        self.auto_match_requests.delay()
+
+        # Send confirmation email
+        confirmation_message = f"""
+        Здравейте {request.name},
+
+        Вашата заявка за помощ е получена успешно.
+
+        Ще се свържем с вас скоро след като намерим подходящ доброволец.
+
+        Детайли на заявката:
+        - Категория: {request.title or "Не е посочена"}
+        - Локация: {request.location_text or "Не е посочена"}
+        - Съобщение: {request.message}
+
+        Благодаря, че използвате HelpChain!
+        """
+
+        self.send_notification.delay(
+            request.email,
+            "Заявката ви е получена - HelpChain",
+            confirmation_message,
+        )
+
+        db.session.commit()
+        logger.info(f"Request {request.id} processed immediately")
+
+        return {"request_id": request.id, "status": "processed"}
+
+    except Exception as e:
+        logger.error(f"Error processing request immediately: {e}")
+        db.session.rollback()
+        raise self.retry(countdown=60, max_retries=3) from e
+
+
+@celery.task(bind=True)
+def generate_performance_report(self, volunteer_id=None, period="weekly"):
+    """Generate detailed performance report for volunteer or all volunteers"""
+    try:
+        logger.info(f"Generating performance report for period: {period}")
+
+        # Calculate date range
+        if period == "weekly":
+            start_date = datetime.utcnow() - timedelta(days=7)
+        elif period == "monthly":
+            start_date = datetime.utcnow() - timedelta(days=30)
+        else:  # daily
+            start_date = datetime.utcnow() - timedelta(days=1)
+
+        # Get performance data
+        if volunteer_id:
+            # Single volunteer report
+            volunteer = db.session.get(Volunteer, volunteer_id)
+            if not volunteer:
+                return {"error": "Volunteer not found"}
+
+            performances = (
+                db.session.query(TaskPerformance)
+                .filter(
+                    and_(
+                        TaskPerformance.volunteer_id == volunteer_id,
+                        TaskPerformance.evaluated_at >= start_date,
+                    )
+                )
+                .all()
+            )
+
+            report = {
+                "volunteer_name": volunteer.name,
+                "volunteer_email": volunteer.email,
+                "period": period,
+                "total_tasks": len(performances),
+                "avg_rating": (
+                    sum(p.overall_rating for p in performances) / len(performances)
+                    if performances
+                    else 0
+                ),
+                "tasks_completed": len(
+                    [p for p in performances if p.task.status == "completed"]
+                ),
+            }
+        else:
+            # All volunteers report
+            performances = (
+                db.session.query(TaskPerformance)
+                .filter(TaskPerformance.evaluated_at >= start_date)
+                .all()
+            )
+
+            volunteer_stats = {}
+            for perf in performances:
+                vid = perf.volunteer_id
+                if vid not in volunteer_stats:
+                    volunteer_stats[vid] = {
+                        "tasks": 0,
+                        "total_rating": 0,
+                        "completed": 0,
+                    }
+                volunteer_stats[vid]["tasks"] += 1
+                volunteer_stats[vid]["total_rating"] += perf.overall_rating
+                if perf.task.status == "completed":
+                    volunteer_stats[vid]["completed"] += 1
+
+            report = {
+                "period": period,
+                "total_performances": len(performances),
+                "volunteers": [
+                    {
+                        "volunteer_id": vid,
+                        "avg_rating": stats["total_rating"] / stats["tasks"],
+                        "tasks_completed": stats["completed"],
+                        "total_tasks": stats["tasks"],
+                    }
+                    for vid, stats in volunteer_stats.items()
+                ],
+            }
+
+        # Send report via email
+        if volunteer_id:
+            volunteer = db.session.get(Volunteer, volunteer_id)
+            self.send_notification.delay(
+                volunteer.email,
+                f"Отчет за представянето - {period}",
+                f"Вашият отчет за периода е готов. Средна оценка: {report['avg_rating']:.1f}",
+            )
+        else:
+            # Send to admins
+            admins = db.session.query(AdminUser).all()
+            for admin in admins:
+                self.send_notification.delay(
+                    admin.email,
+                    f"Общ отчет за представянето - {period}",
+                    f"Отчетът за всички доброволци е готов. Общо оценки: {report['total_performances']}",
+                )
+
+        logger.info(f"Performance report generated for period: {period}")
+        return report
+
+    except Exception as e:
+        logger.error(f"Error generating performance report: {e}")
+        raise self.retry(countdown=3600, max_retries=3) from e
 
 
 @celery.task(bind=True)
@@ -403,4 +758,30 @@ def monitor_system_health(self):
 
     except Exception as e:
         logger.error(f"Error in monitor_system_health: {e}")
-        raise self.retry(countdown=300, max_retries=3)
+        raise self.retry(countdown=300, max_retries=3) from e
+
+
+@celery.task(bind=True)
+def process_feedback_sentiment(self, feedback_id):
+    """Process sentiment analysis for user feedback"""
+    try:
+        logger.info(f"Processing sentiment analysis for feedback {feedback_id}")
+
+        result = sentiment_analysis_service.analyze_feedback(feedback_id)
+
+        if "error" in result:
+            logger.error(f"Error analyzing feedback {feedback_id}: {result['error']}")
+            raise self.retry(countdown=60, max_retries=3)
+        else:
+            sentiment_label = result.get("sentiment_label", "unknown")
+            logger.info(
+                f"Successfully analyzed sentiment for feedback {feedback_id}: {sentiment_label}"
+            )
+
+        return result
+
+    except Exception as e:
+        logger.error(
+            f"Error in process_feedback_sentiment for feedback {feedback_id}: {e}"
+        )
+        raise self.retry(countdown=300, max_retries=3) from e

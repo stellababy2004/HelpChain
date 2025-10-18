@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 HelpChain Notification Viewer
 Command-line tool to view email notifications
 """
 
-import sqlite3
 import os
+import sqlite3
 from datetime import datetime
 
 DB_PATH = "notifications.db"

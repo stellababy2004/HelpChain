@@ -1,5 +1,5 @@
-import pytest
 from appy import app, db
+
 from .models import Volunteer
 
 

@@ -10,7 +10,7 @@ try:
     from src.app import app
 except Exception:
     traceback.print_exc()
-    raise SystemExit(1)
+    raise SystemExit(1) from None
 
 try:
     with app.test_client() as client:

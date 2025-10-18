@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
 """
 Скрипт за инициализация на чатбот базата данни с начални FAQ данни
 """
-from appy import app
-from .models import db, ChatbotFAQ, ChatbotSettings
 from datetime import datetime
+
+from appy import app
+
+from .models import ChatbotFAQ, ChatbotSettings, db
 
 
 def init_chatbot_data():
