@@ -8,6 +8,10 @@ on:
         required: false
         default: "true"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   issues: write
@@ -15,6 +19,7 @@ permissions:
 jobs:
   setup-csp-monitoring:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -146,6 +151,7 @@ jobs:
   create-monitoring-issue:
     runs-on: ubuntu-latest
     if: github.event.inputs.setup_csp_endpoint == 'true'
+    timeout-minutes: 5
     steps:
       - name: Create CSP Monitoring Setup Issue
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea

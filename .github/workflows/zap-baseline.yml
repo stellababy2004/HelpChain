@@ -7,6 +7,10 @@ on:
     - cron: "0 2 * * *" # всеки ден 02:00 UTC
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   security-events: write
@@ -14,6 +18,7 @@ permissions:
 jobs:
   zap-baseline:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Set target URL
         run: |
