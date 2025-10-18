@@ -1,10 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Test script for admin analytics functionality
 """
-
-import pytest
 
 
 def test_admin_analytics(authenticated_admin_client):

@@ -4,12 +4,12 @@ HelpChain Server Launcher
 Simple script to start the HelpChain Flask application
 """
 
-import sys
 import os
-import subprocess
-import time
-import signal
 import platform
+import signal
+import subprocess
+import sys
+import time
 
 
 def signal_handler(signum, frame):

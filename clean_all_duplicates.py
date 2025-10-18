@@ -1,6 +1,6 @@
 def clean_duplicates():
     # Read the file
-    with open("backend/appy.py", "r", encoding="utf-8") as f:
+    with open("backend/appy.py", encoding="utf-8") as f:
         content = f.read()
 
     # Split into lines

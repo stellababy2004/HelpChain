@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Test script for email functionality
 """
-import sys
 import os
+import sys
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
@@ -30,7 +29,7 @@ def test_email():
 
         # Check if email was saved to file (fallback)
         if os.path.exists("backend/sent_emails.txt"):
-            with open("backend/sent_emails.txt", "r", encoding="utf-8") as f:
+            with open("backend/sent_emails.txt", encoding="utf-8") as f:
                 content = f.read()
                 if "123456" in content:
                     print("Email was saved to fallback file - SMTP failed")

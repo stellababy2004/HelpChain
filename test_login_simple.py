@@ -3,9 +3,9 @@
 Simple test for admin login using urllib
 """
 
-import urllib.request
-import urllib.parse
 import http.cookiejar
+import urllib.parse
+import urllib.request
 
 
 def test_admin_login():

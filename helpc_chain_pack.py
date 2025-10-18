@@ -9,14 +9,13 @@
 import os
 import zipfile
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
-
-import numpy as np
-import pandas as pd
-from PIL import Image, ImageDraw, ImageFont
 
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from dateutil.relativedelta import relativedelta
 from matplotlib.backends.backend_pdf import PdfPages
+from PIL import Image, ImageDraw, ImageFont
 
 # ------------- PARAMETERS (from user) -------------
 initial_capital = 500

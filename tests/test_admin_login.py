@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Test admin login with email 2FA
 """
 
-import requests
-import time
 import re
+import time
+
+import requests
 
 
 def test_admin_login():
@@ -44,7 +44,7 @@ def test_admin_login():
             time.sleep(2)  # Wait a bit for email processing
 
             try:
-                with open("backend/sent_emails.txt", "r", encoding="utf-8") as f:
+                with open("backend/sent_emails.txt", encoding="utf-8") as f:
                     content = f.read()
                     # Get the last email in the file
                     emails = content.split("=" * 50)

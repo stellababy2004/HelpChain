@@ -6,8 +6,9 @@ Tests all components: models, API endpoints, VAPID configuration, frontend integ
 
 import os
 import sys
-import requests
 import unittest
+
+import requests
 
 # Add backend to path
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
@@ -22,8 +23,8 @@ except ImportError:
     pass
 
 # Flask imports
-from flask import Flask
 from extensions import db
+from flask import Flask
 
 # Model imports - moved to setUp to ensure proper db initialization
 # try:
@@ -70,19 +71,19 @@ class TestPushNotifications(unittest.TestCase):
         # Import models after app creation
         try:
             from models_with_analytics import (
-                PushSubscription,
-                NotificationTemplate,
                 NotificationPreference,
-                User,
+                NotificationTemplate,
+                PushSubscription,
                 Task,
                 TaskAssignment,
                 TaskPerformance,
+                User,
             )
         except ImportError:
             from models import (
-                PushSubscription,
-                NotificationTemplate,
                 NotificationPreference,
+                NotificationTemplate,
+                PushSubscription,
                 User,
             )
 
@@ -329,7 +330,7 @@ class TestPushNotifications(unittest.TestCase):
         # Check index.html has push notification elements
         html_path = os.path.join(os.path.dirname(__file__), "templates", "index.html")
         if os.path.exists(html_path):
-            with open(html_path, "r", encoding="utf-8") as f:
+            with open(html_path, encoding="utf-8") as f:
                 content = f.read()
                 self.assertIn(
                     "notification_service.js",

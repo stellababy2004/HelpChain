@@ -147,7 +147,7 @@ class TestVolunteerAPI:
             assert response.status_code == 200
 
             data = response.get_json()
-            assert data["success"] == True
+            assert data["success"]
             assert data["volunteer_id"] == vol_id
             assert data["location"]["lat"] == 42.6977
             assert data["location"]["lng"] == 23.3219

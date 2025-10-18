@@ -106,9 +106,9 @@ def create_app(config_object=None):
     mail.init_app(app)
     # migrate може да бъде инициализиран с app и db
     if migrate_available:
-        migrate = Migrate(app, db)
+        Migrate(app, db)
     else:
-        migrate = None
+        pass
 
     # Initialize login manager
     login_manager.init_app(app)

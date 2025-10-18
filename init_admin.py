@@ -6,7 +6,7 @@ SRC_DIR = Path(__file__).resolve().parent / "backend" / "helpchain-backend" / "s
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from app import create_app, Config  # noqa: E402
+from app import Config, create_app  # noqa: E402
 
 app = create_app(Config)
 

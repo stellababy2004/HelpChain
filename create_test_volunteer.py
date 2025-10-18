@@ -4,8 +4,8 @@ Create a test volunteer account for testing purposes.
 This account bypasses email verification for easier testing.
 """
 
-import sys
 import os
+import sys
 from datetime import datetime
 
 # Add the backend directory to the path

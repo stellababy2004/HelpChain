@@ -1,7 +1,7 @@
 import sys
 
 sys.path.insert(0, "backend")
-from appy import app, db, AdminUser
+from appy import AdminUser, app, db
 
 with app.app_context():
     admins = db.session.query(AdminUser).all()

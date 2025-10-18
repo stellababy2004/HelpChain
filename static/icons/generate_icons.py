@@ -5,6 +5,7 @@ Creates PNG icons for PWA manifest from SVG base
 """
 
 import os
+
 from PIL import Image, ImageDraw, ImageFont
 
 

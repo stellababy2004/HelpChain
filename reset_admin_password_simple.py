@@ -10,7 +10,7 @@ import sys
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
 sys.path.insert(0, backend_dir)
 
-from appy import app, db, AdminUser  # noqa: E402
+from appy import AdminUser, app, db  # noqa: E402
 
 
 def reset_admin_password():

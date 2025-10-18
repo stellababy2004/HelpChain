@@ -288,7 +288,7 @@ class TestErrorHandlers:
 
         assert response.status_code == 404
         assert b"404" in response.data
-        assert "не е намерена".encode("utf-8") in response.data
+        assert "не е намерена".encode() in response.data
 
     def test_404_error_handler_json(self, client):
         """Тест за 404 error handler - JSON response"""

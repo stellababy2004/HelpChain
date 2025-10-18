@@ -37,7 +37,7 @@ class TestAPIAuthentication:
 
     def test_api_cors_headers(self, client):
         """Тест за CORS headers в API responses"""
-        response = client.get("/api/ai/status")
+        client.get("/api/ai/status")
 
         # Проверяваме CORS headers (ако са конфигурирани)
         # assert "Access-Control-Allow-Origin" in response.headers

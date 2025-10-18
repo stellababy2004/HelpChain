@@ -15,8 +15,7 @@ def test_sw_route():
     """Test that /sw.js route serves the service worker correctly"""
     try:
         # Start a simple Flask test server
-        from flask import Flask
-        from flask import send_from_directory
+        from flask import Flask, send_from_directory
 
         app = Flask(__name__)
         app.static_folder = os.path.join(backend_dir, "static")
@@ -61,7 +60,7 @@ def test_push_subscription_logic():
             return False
 
         # Read the file and check for subscribe_push function
-        with open(notifications_file, "r", encoding="utf-8") as f:
+        with open(notifications_file, encoding="utf-8") as f:
             content = f.read()
 
         if "def subscribe_push" in content:

@@ -1,5 +1,6 @@
-import requests
 import os
+
+import requests
 
 # Test admin login on port 8000
 url = "http://localhost:8000/admin_login"

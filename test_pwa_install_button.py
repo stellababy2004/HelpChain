@@ -3,8 +3,9 @@
 Test script to verify PWA install button functionality
 """
 
-import requests
 import time
+
+import requests
 from bs4 import BeautifulSoup
 
 

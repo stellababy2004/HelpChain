@@ -25,17 +25,13 @@ def init_database():
 
         try:
             from models_with_analytics import (
-                Task,
                 AnalyticsEvent,
                 PredictiveModel,
                 SentimentAnalysis,
+                Task,
             )
         except ImportError:
             print("Analytics models not available, skipping...")
-            Task = None
-            AnalyticsEvent = None
-            PredictiveModel = None
-            SentimentAnalysis = None
 
         # Create all tables
         from extensions import db

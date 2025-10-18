@@ -4,11 +4,12 @@ Comprehensive integration test for HelpChain application
 Tests all major functionality: admin login, analytics, AI chatbot, volunteers, help requests, emails, gamification
 """
 
-import requests
-import time
-import sys
 import os
+import sys
+import time
 from datetime import datetime
+
+import requests
 
 BASE_URL = "http://127.0.0.1:5000"
 
@@ -253,7 +254,7 @@ class HelpChainTester:
             # Test user profile/stats if logged in
             if self.admin_logged_in:
                 response = self.session.get(f"{BASE_URL}/profile")
-                response.status_code == 200  # Just check accessibility
+                assert response.status_code == 200  # Just check accessibility
 
             success = leaderboard_works
             self.log_test("Gamification", success, f"Leaderboard: {leaderboard_works}")
@@ -276,7 +277,7 @@ class HelpChainTester:
             # Test 2FA verification (would need actual token)
             # For testing, we'll just check if the endpoint exists
             response = self.session.get(f"{BASE_URL}/admin_2fa_verify")
-            response.status_code in [200, 302]  # May redirect if not set up
+            assert response.status_code in [200, 302]  # May redirect if not set up
 
             success = setup_accessible
             self.log_test("Admin 2FA", success, f"Setup: {setup_accessible}")

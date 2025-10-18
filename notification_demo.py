@@ -5,8 +5,8 @@
 
 from backend.models import (
     Notification,
-    NotificationTypeEnum,
     NotificationStatusEnum,
+    NotificationTypeEnum,
     PriorityEnum,
 )
 

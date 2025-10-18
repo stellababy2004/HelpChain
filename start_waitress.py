@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 from waitress import serve
 
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")

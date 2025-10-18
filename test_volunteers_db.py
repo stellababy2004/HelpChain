@@ -3,15 +3,15 @@
 Simple test to check if volunteers table exists and can be queried
 """
 
-import sys
 import os
+import sys
 
 # Add backend to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
 
 try:
-    from backend.extensions import db
     from backend.appy import app
+    from backend.extensions import db
     from backend.models import Volunteer
 
     with app.app_context():
