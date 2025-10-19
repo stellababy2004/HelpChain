@@ -25,4 +25,4 @@ fixable = ["ALL"]
 # Форматиране (ако ползваш ruff-format)
 [format]
 # По избор: "double"|"single"|"preserve"
-quote-style = "preserve"
+quote-style = "double"
