@@ -1216,8 +1216,7 @@ def admin_login():
                     )  # For permission system compatibility
                     session.permanent = True  # Make session persistent
                     logger.info(
-                        f"Session set: admin_logged_in={session.get('admin_logged_in')}, "
-                        f"admin_user_id={session.get('admin_user_id')}"
+                        f"Session set: admin_logged_in={session.get('admin_logged_in')}, admin_user_id={session.get('admin_user_id')}"
                     )
                     return redirect(url_for("admin_dashboard"))
             else:
@@ -2624,8 +2623,7 @@ def volunteer_login():
             app.logger.info(f"Volunteer found: {volunteer is not None}")
             if volunteer:
                 app.logger.info(
-                    f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, "
-                    f"Email={volunteer.email}"
+                    f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, Email={volunteer.email}"
                 )
 
                 # TEMPORARY: Skip 2FA for test emails
@@ -2642,8 +2640,7 @@ def volunteer_login():
                     session["volunteer_name"] = volunteer.name
                     session.modified = True  # Force session save
                     app.logger.info(
-                        f"Session set: volunteer_logged_in={session.get('volunteer_logged_in')}, "
-                        f"volunteer_id={session.get('volunteer_id')}"
+                        f"Session set: volunteer_logged_in={session.get('volunteer_logged_in')}, volunteer_id={session.get('volunteer_id')}"
                     )
 
                     app.logger.info(
@@ -3049,6 +3046,16 @@ def my_tasks():
         return redirect(url_for("volunteer_dashboard"))
 
 
+@app.route("/achievements", methods=["GET"], endpoint="achievements")
+def achievements():
+    # Check if volunteer is logged in
+    if not session.get("volunteer_logged_in"):
+        flash("Моля, влезте като доброволец.", "warning")
+        return redirect(url_for("volunteer_login"))
+    # Placeholder for achievements page
+    return render_template("achievements.html")
+
+
 def _get_volunteer_stats_safe(volunteer_id):
     """Safely get volunteer statistics with fallback values"""
     try:
@@ -3303,8 +3310,7 @@ def chatbot_message():
         return (
             jsonify(
                 {
-                    "response": "Извинявам се, възникна грешка. Моля, опитайте пак или "
-                    "се свържете с екипа ни.",
+                    "response": "Извинявам се, възникна грешка. Моля, опитайте пак или се свържете с екипа ни.",
                     "error": True,
                 }
             ),
