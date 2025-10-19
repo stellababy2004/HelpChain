@@ -1,17 +1,28 @@
-line-length = 150
+# ruff.toml — standalone конфигурация
+
+# Общи настройки
+line-length = 200
 target-version = "py311"
 
+# Изключвания (backup-и и т.н.)
 extend-exclude = [
-  "**/backup*.py",
+  "backend/backups/*",
   "**/*.backup*.py",
   "**/appy.backup*.py",
-  "backend/backups/*"
+  "migrations/**",
+  "tests/**"
 ]
 
+# Линт правила
 [lint]
+# Включи базовите набори + import order (I) и pyupgrade (UP)
 select = ["E", "F", "I", "B", "UP"]
+# Ако искаш да игнорираш нещо, добави тук:
 ignore = ["E203", "E501", "E402", "F841", "B008", "F401", "B007", "E722", "UP038", "B904", "F811"]
+# Разреши автофиксове (за локално ruff --fix; pre-commit може да го override-не)
+fixable = ["ALL"]
 
+# Форматиране (ако ползваш ruff-format)
 [format]
-quote-style = "double"
-indent-style = "space"
+# По избор: "double"|"single"|"preserve"
+quote-style = "preserve"
