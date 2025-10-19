@@ -3359,6 +3359,55 @@ def health_check():
         )
 
 
+@app.route("/api/ai/status")
+def ai_status():
+    """Get AI service status and available providers"""
+    try:
+        from ai_service import ai_service
+
+        # Get AI service status
+        status_info = ai_service.get_ai_status()
+
+        # Format response to match expected API structure
+        providers_list = []
+        active_provider = status_info.get("active_provider")
+
+        if "providers" in status_info:
+            for provider_key, provider_info in status_info["providers"].items():
+                if provider_info.get("enabled", False):
+                    providers_list.append(
+                        {
+                            "name": provider_info.get("name", provider_key),
+                            "model": provider_info.get("model", ""),
+                            "enabled": provider_info.get("enabled", False),
+                        }
+                    )
+
+        response = {
+            "status": (
+                "healthy" if status_info.get("service_ready", False) else "unhealthy"
+            ),
+            "providers": providers_list,
+            "active_provider": active_provider,
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
+        app.logger.error(f"Error getting AI status: {e}")
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "providers": [],
+                    "active_provider": None,
+                    "error": str(e),
+                }
+            ),
+            500,
+        )
+
+
 @app.route("/api/tasks/trigger/<task_name>", methods=["POST"])
 @require_admin_login
 def trigger_task(task_name):
