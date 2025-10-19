@@ -15,13 +15,16 @@ class TestAPIAuthentication:
         """Тест че защитени API endpoints изискват автентикация"""
         # Тези endpoints трябва да изискват автентикация
         protected_endpoints = [
-            "/api/admin/dashboard",
-            "/api/volunteer/tasks",
-            "/api/user/profile",
+            "/api/tasks/trigger/test_task",  # POST only
+            "/api/predictive/regional-demand",
+            "/api/matching/find-matches/1",
         ]
 
         for endpoint in protected_endpoints:
-            response = client.get(endpoint)
+            if "trigger" in endpoint:
+                response = client.post(endpoint)
+            else:
+                response = client.get(endpoint)
             assert response.status_code in [
                 401,
                 403,
@@ -135,7 +138,7 @@ class TestAPIAuthenticationFlows:
     def test_admin_api_requires_login(self, client):
         """Тест че admin API изисква login"""
         # Опит за достъп до admin API без автентикация
-        response = client.get("/api/admin/dashboard")
+        response = client.post("/api/tasks/trigger/test_task")
         assert response.status_code in [401, 403, 302]
 
     def test_authenticated_volunteer_api_access(self, authenticated_volunteer_client):

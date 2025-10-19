@@ -2187,6 +2187,30 @@ def admin_2fa_setup():
     return render_template("admin_2fa_setup.html", totp_uri=uri)
 
 
+@app.route("/admin_volunteers/delete/<int:volunteer_id>", methods=["POST"])
+@require_admin_login
+def admin_delete_volunteer(volunteer_id):
+    """Delete a volunteer"""
+    try:
+        volunteer = Volunteer.query.get_or_404(volunteer_id)
+
+        # Store name for flash message
+        volunteer_name = volunteer.name
+
+        # Delete the volunteer
+        db.session.delete(volunteer)
+        db.session.commit()
+
+        flash(f"Доброволецът '{volunteer_name}' е изтрит успешно!", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error deleting volunteer {volunteer_id}: {e}")
+        flash("Грешка при изтриване на доброволеца. Опитайте отново.", "error")
+
+    return redirect(url_for("admin_volunteers"))
+
+
 @app.route("/admin_volunteers", methods=["GET", "POST"])
 @require_admin_login
 def admin_volunteers():
