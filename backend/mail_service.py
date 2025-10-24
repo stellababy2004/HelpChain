@@ -69,7 +69,7 @@ def send_notification_email(recipient, subject, template, context=None):
             subject=subject,
             recipients=[recipient],
             html=html_content,
-            message_id=message_id
+            message_id=message_id,
         )
 
         # Track analytics for queued email
@@ -137,9 +137,7 @@ def send_bulk_notification_email(recipients, subject, template, context=None):
             },
         )
 
-    logger.info(
-        f"Bulk email queued: {results['queued']}/{results['total']} successful"
-    )
+    logger.info(f"Bulk email queued: {results['queued']}/{results['total']} successful")
     return results
 
 

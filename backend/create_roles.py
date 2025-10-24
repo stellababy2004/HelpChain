@@ -5,21 +5,25 @@ from appy import app, db
 
 # Опит за модели от двата възможни модула
 try:
-    from models_with_analytics import Role, Permission
+    from models_with_analytics import Permission, Role
 except Exception:
-    from models import Role, Permission  # fallback
+    from models import Permission, Role  # fallback
+
 
 def get_or_create_permission(code: str, description: str | None = None):
-    perm = db.session.execute(db.select(Permission).filter_by(codename=code)).scalar_one_or_none()
+    perm = db.session.execute(
+        db.select(Permission).filter_by(codename=code)
+    ).scalar_one_or_none()
     if perm:
         return perm
     perm = Permission(
         name=code.replace(":", " ").title() if hasattr(Permission, "name") else None,
         codename=code,
-        description=description if hasattr(Permission, "description") else None
+        description=description if hasattr(Permission, "description") else None,
     )
     db.session.add(perm)
     return perm
+
 
 def get_or_create_role(name: str, slug: str | None, description: str | None):
     q = db.select(Role).filter_by(name=name)
@@ -40,6 +44,7 @@ def get_or_create_role(name: str, slug: str | None, description: str | None):
     db.session.add(role)
     return role
 
+
 def ensure_rel(role, perm):
     """
     Закачва perm към role, ако нямат връзка.
@@ -49,9 +54,13 @@ def ensure_rel(role, perm):
         return  # няма релация в модела – нищо не правим
     # проверка по code/ id
     for p in role.permissions:
-        if getattr(p, "id", None) == getattr(perm, "id", object()) or getattr(p, "codename", None) == perm.codename:
+        if (
+            getattr(p, "id", None) == getattr(perm, "id", object())
+            or getattr(p, "codename", None) == perm.codename
+        ):
             return
     role.permissions.append(perm)
+
 
 def main():
     roles_path = Path(__file__).with_name("roles.json")
@@ -68,7 +77,9 @@ def main():
             role = get_or_create_role(r["name"], r.get("slug"), r.get("description"))
             # Създаваме всички разрешения от списъка
             for code in r.get("permissions", []):
-                perm = db.session.execute(db.select(Permission).filter_by(codename=code)).scalar_one_or_none()
+                perm = db.session.execute(
+                    db.select(Permission).filter_by(codename=code)
+                ).scalar_one_or_none()
                 if not perm:
                     perm = get_or_create_permission(code)
                     created_perms += 1
@@ -80,6 +91,7 @@ def main():
     print("[OK] Ролите са синхронизирани.")
     print(f"  Роли обработени: {created_roles}")
     print(f"  Нови permissions: {created_perms}")
+
 
 if __name__ == "__main__":
     main()

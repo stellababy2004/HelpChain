@@ -2,8 +2,9 @@
 """
 Test script to verify admin login session persistence
 """
-import requests
 import time
+
+import requests
 
 # Base URL
 base_url = "http://127.0.0.1:5000"
@@ -24,16 +25,15 @@ else:
 
 # Step 2: Login as admin
 print("\n2. Logging in as admin...")
-login_data = {
-    "username": "admin",
-    "password": "Admin123"
-}
-response = session.post(f"{base_url}/admin_login", data=login_data, allow_redirects=False)
+login_data = {"username": "admin", "password": "Admin123"}
+response = session.post(
+    f"{base_url}/admin_login", data=login_data, allow_redirects=False
+)
 print(f"Status: {response.status_code}")
 if response.status_code == 302:
     print("✓ Login successful, redirecting to dashboard")
     # Follow the redirect
-    redirect_url = response.headers.get('Location')
+    redirect_url = response.headers.get("Location")
     if redirect_url:
         print(f"Redirecting to: {redirect_url}")
         response = session.get(redirect_url, allow_redirects=False)
@@ -59,7 +59,7 @@ print("\n4. Checking session cookies...")
 cookies = session.cookies.get_dict()
 session_cookie = None
 for name, value in cookies.items():
-    if 'session' in name.lower():
+    if "session" in name.lower():
         session_cookie = (name, value)
         break
 

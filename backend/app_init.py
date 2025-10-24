@@ -3,6 +3,7 @@ Shared Flask app and mail initialization to avoid circular imports
 """
 
 import os
+
 from flask import Flask
 from flask_mail import Mail
 
@@ -35,10 +36,12 @@ for s_dir in _static:
 app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
 
 # Set basic configuration (the full config is done in appy.py)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY", "dev-secret-key-change-in-production"
+)
 
 # Initialize Flask-Mail
 mail = Mail(app)
 
 # Export app and mail for use in other modules
-__all__ = ['app', 'mail']
+__all__ = ["app", "mail"]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import sqlite3
 import os
+import sqlite3
 
 # Use the same database path calculation as appy.py
 basedir = os.path.abspath(os.path.dirname(__file__))  # backend directory

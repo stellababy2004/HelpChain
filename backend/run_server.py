@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-import sys
 import os
 import subprocess
+import sys
 
 # Path to virtual environment Python
 venv_python = r"C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\backend\.venv\Scripts\python.exe"

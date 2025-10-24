@@ -40,8 +40,8 @@ except ImportError:
 if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
     try:
         # Force import the real AdminUser class
-        import sys
         import os
+        import sys
 
         # Add backend directory to path if not already there
         backend_dir = os.path.dirname(os.path.abspath(__file__))

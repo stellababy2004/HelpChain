@@ -4,6 +4,7 @@ Simple test to verify volunteer addition route accessibility after permission fi
 """
 import requests
 
+
 def test_route_accessibility():
     """Test that the volunteer addition routes are accessible"""
     base_url = "http://127.0.0.1:5000"
@@ -30,15 +31,22 @@ def test_route_accessibility():
     # Test 3: Check if add_volunteer page requires authentication (should redirect)
     print("3. Testing add_volunteer page (should require auth)...")
     response = requests.get(f"{base_url}/admin_volunteers/add")
-    if response.status_code == 302 or "redirect" in response.text.lower() or "Вход за админ" in response.text:
+    if (
+        response.status_code == 302
+        or "redirect" in response.text.lower()
+        or "Вход за админ" in response.text
+    ):
         print("✓ Add volunteer page properly requires authentication")
     else:
         print(f"? Add volunteer page response: {response.status_code}")
 
     print("\n🎉 Route accessibility test completed!")
     print("The permission fixes appear to be working correctly.")
-    print("Admin routes now properly require authentication instead of failing with permission errors.")
+    print(
+        "Admin routes now properly require authentication instead of failing with permission errors."
+    )
     return True
+
 
 if __name__ == "__main__":
     success = test_route_accessibility()

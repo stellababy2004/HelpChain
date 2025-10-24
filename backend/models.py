@@ -1431,7 +1431,9 @@ class FailedEmail(db.Model):
     error_message = db.Column(db.Text, nullable=False)
     retry_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    last_attempt_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_attempt_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     def __repr__(self):
         return f"<FailedEmail id={self.id} recipient={self.recipient} subject={self.subject[:50]}...>"
@@ -1447,5 +1449,7 @@ class FailedEmail(db.Model):
             "error_message": self.error_message,
             "retry_count": self.retry_count,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "last_attempt_at": self.last_attempt_at.isoformat() if self.last_attempt_at else None,
+            "last_attempt_at": (
+                self.last_attempt_at.isoformat() if self.last_attempt_at else None
+            ),
         }

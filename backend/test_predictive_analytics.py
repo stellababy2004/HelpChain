@@ -3,11 +3,12 @@ Unit tests for PredictiveAnalytics class
 Tests forecasting, workload prediction, and predictive insights functionality
 """
 
+from datetime import datetime, timedelta
+from unittest.mock import MagicMock, Mock, patch
+
 import numpy as np
 import pandas as pd
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, Mock, patch
 
 from predictive_analytics import PredictiveAnalytics
 
@@ -94,44 +95,66 @@ class TestPredictiveAnalytics:
         """Test region extraction from help request"""
         # Test with location field
         mock_help_request.location = "Sofia"
-        assert predictive_analytics._extract_region_from_request(mock_help_request) == "Sofia"
+        assert (
+            predictive_analytics._extract_region_from_request(mock_help_request)
+            == "Sofia"
+        )
 
         # Test with Sofia coordinates
         mock_help_request.location = None
         mock_help_request.latitude = 42.7
         mock_help_request.longitude = 23.3
-        assert predictive_analytics._extract_region_from_request(mock_help_request) == "Sofia"
+        assert (
+            predictive_analytics._extract_region_from_request(mock_help_request)
+            == "Sofia"
+        )
 
         # Test with Plovdiv coordinates
         mock_help_request.latitude = 42.15
         mock_help_request.longitude = 24.75
-        assert predictive_analytics._extract_region_from_request(mock_help_request) == "Plovdiv"
+        assert (
+            predictive_analytics._extract_region_from_request(mock_help_request)
+            == "Plovdiv"
+        )
 
         # Test with Varna coordinates
         mock_help_request.latitude = 43.2
         mock_help_request.longitude = 27.9
-        assert predictive_analytics._extract_region_from_request(mock_help_request) == "Varna"
+        assert (
+            predictive_analytics._extract_region_from_request(mock_help_request)
+            == "Varna"
+        )
 
         # Test with unknown coordinates
         mock_help_request.latitude = 40.0
         mock_help_request.longitude = 20.0
-        assert predictive_analytics._extract_region_from_request(mock_help_request) == "Other"
+        assert (
+            predictive_analytics._extract_region_from_request(mock_help_request)
+            == "Other"
+        )
 
         # Test error handling
         mock_help_request.latitude = None
         mock_help_request.longitude = None
-        assert predictive_analytics._extract_region_from_request(mock_help_request) == "Unknown"
+        assert (
+            predictive_analytics._extract_region_from_request(mock_help_request)
+            == "Unknown"
+        )
 
-    @patch('predictive_analytics._get_models')
-    def test_get_historical_request_data_no_models(self, mock_get_models, predictive_analytics):
+    @patch("predictive_analytics._get_models")
+    def test_get_historical_request_data_no_models(
+        self, mock_get_models, predictive_analytics
+    ):
         """Test getting historical data when models are not available"""
         mock_get_models.return_value = (None, None, None, None)
 
         result = predictive_analytics._get_historical_request_data()
         assert result == []
 
-    @patch.object(PredictiveAnalytics, '_get_historical_request_data')
-    def test_get_historical_request_data_with_data(self, mock_get_data, predictive_analytics, mock_help_request):
+    @patch.object(PredictiveAnalytics, "_get_historical_request_data")
+    def test_get_historical_request_data_with_data(
+        self, mock_get_data, predictive_analytics, mock_help_request
+    ):
         """Test getting historical data with mock database"""
         # Mock the method to return sample data
         mock_get_data.return_value = [
@@ -165,25 +188,36 @@ class TestPredictiveAnalytics:
 
     def test_filter_data_by_region(self, predictive_analytics, sample_historical_data):
         """Test filtering data by specific region"""
-        sofia_data = predictive_analytics._filter_data_by_region(sample_historical_data, "Sofia")
+        sofia_data = predictive_analytics._filter_data_by_region(
+            sample_historical_data, "Sofia"
+        )
 
         assert all(item["region"] == "Sofia" for item in sofia_data)
         assert len(sofia_data) > 0
 
-    @patch('predictive_analytics._get_models')
-    def test_get_current_system_state_no_models(self, mock_get_models, predictive_analytics):
+    @patch("predictive_analytics._get_models")
+    def test_get_current_system_state_no_models(
+        self, mock_get_models, predictive_analytics
+    ):
         """Test getting system state when models are not available"""
         mock_get_models.return_value = (None, None, None, None)
 
         result = predictive_analytics._get_current_system_state()
 
-        expected_keys = ["active_requests", "pending_requests", "active_volunteers", "avg_response_time_hours"]
+        expected_keys = [
+            "active_requests",
+            "pending_requests",
+            "active_volunteers",
+            "avg_response_time_hours",
+        ]
         assert all(key in result for key in expected_keys)
         assert result["active_requests"] == 0
         assert result["active_volunteers"] == 0
 
-    @patch.object(PredictiveAnalytics, '_get_current_system_state')
-    def test_get_current_system_state_with_data(self, mock_get_state, predictive_analytics, mock_help_request, mock_volunteer):
+    @patch.object(PredictiveAnalytics, "_get_current_system_state")
+    def test_get_current_system_state_with_data(
+        self, mock_get_state, predictive_analytics, mock_help_request, mock_volunteer
+    ):
         """Test getting system state with mock data"""
         # Mock the method to return sample data
         mock_get_state.return_value = {
@@ -203,7 +237,14 @@ class TestPredictiveAnalytics:
     def test_predict_workload(self, predictive_analytics):
         """Test workload prediction calculation"""
         # Test with typical features
-        features = [10, 20, 24, 1, 14, 1]  # current_requests, volunteers, response_time, day, hour, season
+        features = [
+            10,
+            20,
+            24,
+            1,
+            14,
+            1,
+        ]  # current_requests, volunteers, response_time, day, hour, season
 
         prediction = predictive_analytics._predict_workload(features)
 
@@ -284,15 +325,21 @@ class TestPredictiveAnalytics:
 
         # Valid cache
         predictive_analytics.prediction_cache["test_key"] = "data"
-        predictive_analytics.prediction_cache["test_key_timestamp"] = datetime.utcnow().timestamp()
+        predictive_analytics.prediction_cache["test_key_timestamp"] = (
+            datetime.utcnow().timestamp()
+        )
         assert predictive_analytics._is_cache_valid("test_key")
 
         # Expired cache
-        predictive_analytics.prediction_cache["expired_key_timestamp"] = datetime.utcnow().timestamp() - 7200  # 2 hours ago
+        predictive_analytics.prediction_cache["expired_key_timestamp"] = (
+            datetime.utcnow().timestamp() - 7200
+        )  # 2 hours ago
         assert not predictive_analytics._is_cache_valid("expired_key")
 
-    @patch('predictive_analytics._get_models')
-    def test_get_regional_demand_forecast_no_data(self, mock_get_models, predictive_analytics):
+    @patch("predictive_analytics._get_models")
+    def test_get_regional_demand_forecast_no_data(
+        self, mock_get_models, predictive_analytics
+    ):
         """Test regional forecast when no historical data"""
         mock_get_models.return_value = (None, None, None, None)
 
@@ -302,8 +349,10 @@ class TestPredictiveAnalytics:
         assert "generated_at" in result
         assert result["method"] == "fallback_no_data"
 
-    @patch('predictive_analytics._get_models')
-    def test_get_workload_prediction_no_data(self, mock_get_models, predictive_analytics):
+    @patch("predictive_analytics._get_models")
+    def test_get_workload_prediction_no_data(
+        self, mock_get_models, predictive_analytics
+    ):
         """Test workload prediction when no historical data"""
         mock_get_models.return_value = (None, None, None, None)
 
@@ -323,7 +372,7 @@ class TestPredictiveAnalytics:
                     "forecast": [
                         {"predicted_requests": 10},
                         {"predicted_requests": 15},
-                        {"predicted_requests": 8}
+                        {"predicted_requests": 8},
                     ]
                 }
             }
@@ -333,11 +382,13 @@ class TestPredictiveAnalytics:
             "predictions": [
                 {"predicted_requests": 5},
                 {"predicted_requests": 12},
-                {"predicted_requests": 3}
+                {"predicted_requests": 3},
             ]
         }
 
-        result = predictive_analytics._analyze_forecasts(regional_forecast, workload_forecast)
+        result = predictive_analytics._analyze_forecasts(
+            regional_forecast, workload_forecast
+        )
 
         assert "regional" in result
         assert "workload" in result
@@ -350,7 +401,11 @@ class TestPredictiveAnalytics:
 
     def test_get_predictive_insights_error_handling(self, predictive_analytics):
         """Test predictive insights error handling"""
-        with patch.object(predictive_analytics, 'get_regional_demand_forecast', side_effect=Exception("Test error")):
+        with patch.object(
+            predictive_analytics,
+            "get_regional_demand_forecast",
+            side_effect=Exception("Test error"),
+        ):
             result = predictive_analytics.get_predictive_insights()
 
             assert "error" in result
@@ -359,13 +414,15 @@ class TestPredictiveAnalytics:
     def test_analyze_seasonal_pattern(self, predictive_analytics):
         """Test seasonal pattern analysis"""
         # Create sample data
-        dates = pd.date_range('2023-01-01', periods=30, freq='D')
-        data = pd.DataFrame({
-            'date': dates,
-            'day_of_week': dates.weekday,
-            'month': dates.month,
-            'requests_count': np.random.randint(1, 20, 30)
-        })
+        dates = pd.date_range("2023-01-01", periods=30, freq="D")
+        data = pd.DataFrame(
+            {
+                "date": dates,
+                "day_of_week": dates.weekday,
+                "month": dates.month,
+                "requests_count": np.random.randint(1, 20, 30),
+            }
+        )
 
         result = predictive_analytics._analyze_seasonal_pattern(data)
 
@@ -379,10 +436,12 @@ class TestPredictiveAnalytics:
         mock_model = Mock()
         mock_model.predict.return_value = [8, 12, 6]
 
-        X_test = pd.DataFrame({'feature1': [1, 2, 3]})
+        X_test = pd.DataFrame({"feature1": [1, 2, 3]})
         y_test = pd.Series([10, 15, 5])
 
-        result = predictive_analytics._evaluate_model_accuracy(mock_model, X_test, y_test)
+        result = predictive_analytics._evaluate_model_accuracy(
+            mock_model, X_test, y_test
+        )
 
         assert "mae" in result
         assert "rmse" in result
@@ -394,26 +453,29 @@ class TestPredictiveAnalytics:
     def test_prepare_forecast_features(self, predictive_analytics):
         """Test forecast feature preparation"""
         # Create sample historical data
-        dates = pd.date_range('2023-01-01', periods=20, freq='D')
-        historical_data = pd.DataFrame({
-            'date': dates,
-            'requests_count': np.random.randint(1, 15, 20)
-        })
+        dates = pd.date_range("2023-01-01", periods=20, freq="D")
+        historical_data = pd.DataFrame(
+            {"date": dates, "requests_count": np.random.randint(1, 15, 20)}
+        )
 
-        forecast_date = pd.Timestamp('2023-01-21')  # Next day
+        forecast_date = pd.Timestamp("2023-01-21")  # Next day
 
-        features = predictive_analytics._prepare_forecast_features(forecast_date, historical_data)
+        features = predictive_analytics._prepare_forecast_features(
+            forecast_date, historical_data
+        )
 
         assert len(features) == 7  # Should have 7 features
         assert all(isinstance(f, (int, float)) for f in features)
 
     def test_prepare_workload_features(self, predictive_analytics):
         """Test workload feature preparation"""
-        prediction_time = datetime(2023, 1, 14, 14, 30)  # Saturday afternoon (weekday 5)
+        prediction_time = datetime(
+            2023, 1, 14, 14, 30
+        )  # Saturday afternoon (weekday 5)
         current_state = {
             "active_requests": 8,
             "active_volunteers": 12,
-            "avg_response_time_hours": 6
+            "avg_response_time_hours": 6,
         }
         historical_data = []  # Not used in current implementation
 
@@ -424,7 +486,7 @@ class TestPredictiveAnalytics:
         assert len(features) == 6  # Should have 6 features
         assert features[0] == 8  # active_requests
         assert features[1] == 12  # active_volunteers
-        assert features[2] == 6   # avg_response_time
-        assert features[3] == 5   # Saturday
+        assert features[2] == 6  # avg_response_time
+        assert features[3] == 5  # Saturday
         assert features[4] == 14  # 2 PM
         assert features[5] in [0, 1, 2, 3]  # season

@@ -198,13 +198,11 @@ ID: {req.id}
         subject=subject,
         recipients=["contact@helpchain.live"],
         body=content,
-        message_id=message_id
+        message_id=message_id,
     )
 
     # Save to database as queued
-    save_notification_to_db(
-        "contact@helpchain.live", subject, content, "queued", None
-    )
+    save_notification_to_db("contact@helpchain.live", subject, content, "queued", None)
 
     print(f"✅ Email queued successfully for request ID {req.id}")
     return True

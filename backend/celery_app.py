@@ -7,8 +7,12 @@ from flask import current_app
 # Celery configuration with Redis
 celery = Celery(
     "helpchain",
-    broker=os.getenv("CELERY_BROKER_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0")),
-    backend=os.getenv("CELERY_RESULT_BACKEND", os.getenv("REDIS_URL", "redis://localhost:6379/0")),
+    broker=os.getenv(
+        "CELERY_BROKER_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    ),
+    backend=os.getenv(
+        "CELERY_RESULT_BACKEND", os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    ),
     include=["tasks"],
 )
 

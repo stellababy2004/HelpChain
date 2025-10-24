@@ -66,14 +66,17 @@ except ImportError:
 
 try:
     from flask_mail import Message
+
     from app_init import app, mail
 except ImportError:
     from flask_mail import Message
+
     from backend.app_init import app, mail
 
 try:
-    from redis import Redis
     import os
+
+    from redis import Redis
 except ImportError:
     import os
 
@@ -434,8 +437,24 @@ def send_notification(self, email, subject, message):
         raise self.retry(countdown=60, max_retries=3) from e
 
 
-@celery.task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_backoff_max=600, retry_jitter=True, max_retries=MAX_RETRIES, rate_limit="30/m")
-def send_email_task(self, subject: str, recipients: list, body: str, sender: str = None, html: str = None, message_id: str = None):
+@celery.task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_jitter=True,
+    max_retries=MAX_RETRIES,
+    rate_limit="30/m",
+)
+def send_email_task(
+    self,
+    subject: str,
+    recipients: list,
+    body: str,
+    sender: str = None,
+    html: str = None,
+    message_id: str = None,
+):
     """
     Надеждно изпращане с автоматичен retry.
     - autoretry_for=Exception: автоматичен retry на всяка грешка
@@ -450,14 +469,16 @@ def send_email_task(self, subject: str, recipients: list, body: str, sender: str
         "body": body,
         "sender": sender,
         "html": html,
-        "message_id": message_id or f"mail-{int(time.time()*1000)}"
+        "message_id": message_id or f"mail-{int(time.time()*1000)}",
     }
 
     try:
         with app.app_context():
-            msg = Message(subject=subject,
-                          sender=sender or app.config["MAIL_DEFAULT_SENDER"],
-                          recipients=recipients)
+            msg = Message(
+                subject=subject,
+                sender=sender or app.config["MAIL_DEFAULT_SENDER"],
+                recipients=recipients,
+            )
             if html:
                 msg.html = html
             else:
@@ -467,7 +488,12 @@ def send_email_task(self, subject: str, recipients: list, body: str, sender: str
             # if already_sent(message_id): return "duplicate-skip"
 
             mail.send(msg)
-            app.logger.info("✅ Email sent | to=%s | subject=%s | id=%s", recipients, subject, payload["message_id"])
+            app.logger.info(
+                "✅ Email sent | to=%s | subject=%s | id=%s",
+                recipients,
+                subject,
+                payload["message_id"],
+            )
             return "sent"
 
     except Exception as e:
@@ -475,11 +501,20 @@ def send_email_task(self, subject: str, recipients: list, body: str, sender: str
         if self.request.retries + 1 >= MAX_RETRIES:
             # Последен fail → DLQ
             _save_to_dlq(payload, reason=str(e))
-            app.logger.error("❌ Email permanently failed → DLQ | to=%s | err=%s | id=%s",
-                             recipients, e, payload["message_id"])
+            app.logger.error(
+                "❌ Email permanently failed → DLQ | to=%s | err=%s | id=%s",
+                recipients,
+                e,
+                payload["message_id"],
+            )
             return "dlq"
-        app.logger.warning("⚠️ Email send failed (retry %s/%s) | to=%s | err=%s",
-                           self.request.retries + 1, MAX_RETRIES, recipients, e)
+        app.logger.warning(
+            "⚠️ Email send failed (retry %s/%s) | to=%s | err=%s",
+            self.request.retries + 1,
+            MAX_RETRIES,
+            recipients,
+            e,
+        )
         raise  # тригърва Celery autoretry
 
 
@@ -497,25 +532,30 @@ def retry_failed_emails(self):
         logger.info("Starting periodic retry of failed emails from DLQ")
 
         # Get failed emails older than retry interval (configurable)
-        retry_interval_hours = int(os.getenv('EMAIL_RETRY_INTERVAL_HOURS', '24'))
+        retry_interval_hours = int(os.getenv("EMAIL_RETRY_INTERVAL_HOURS", "24"))
         cutoff_time = datetime.utcnow() - timedelta(hours=retry_interval_hours)
 
-        failed_emails = db.session.query(FailedEmail).filter(
-            FailedEmail.created_at < cutoff_time
-        ).limit(50).all()  # Process in batches
+        failed_emails = (
+            db.session.query(FailedEmail)
+            .filter(FailedEmail.created_at < cutoff_time)
+            .limit(50)
+            .all()
+        )  # Process in batches
 
         retried_count = 0
         for failed_email in failed_emails:
             try:
                 # Parse context back to dict
-                context = json.loads(failed_email.context) if failed_email.context else {}
+                context = (
+                    json.loads(failed_email.context) if failed_email.context else {}
+                )
 
                 # Retry sending the email
                 self.send_email_with_retry.delay(
                     recipient=failed_email.recipient,
                     subject=failed_email.subject,
                     template=failed_email.template,
-                    context=context
+                    context=context,
                 )
 
                 # Delete from DLQ after retry attempt
@@ -523,12 +563,16 @@ def retry_failed_emails(self):
                 retried_count += 1
 
             except Exception as e:
-                logger.error(f"Error retrying failed email to {failed_email.recipient}: {e}")
+                logger.error(
+                    f"Error retrying failed email to {failed_email.recipient}: {e}"
+                )
                 # Keep in DLQ for next retry cycle
                 continue
 
         db.session.commit()
-        logger.info(f"Periodic retry completed. Retried {retried_count} emails from DLQ")
+        logger.info(
+            f"Periodic retry completed. Retried {retried_count} emails from DLQ"
+        )
 
         return {"retried": retried_count, "total_failed": len(failed_emails)}
 
@@ -570,13 +614,17 @@ def requeue_dlq_emails(self, limit: int = 50):
                 )
 
                 requeued_count += 1
-                logger.info(f"Requeued email: {payload.get('message_id')} to {payload['recipients']}")
+                logger.info(
+                    f"Requeued email: {payload.get('message_id')} to {payload['recipients']}"
+                )
 
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse DLQ payload: {raw}, error: {e}")
                 continue
             except KeyError as e:
-                logger.error(f"Missing required field in DLQ payload: {e}, payload: {payload}")
+                logger.error(
+                    f"Missing required field in DLQ payload: {e}, payload: {payload}"
+                )
                 continue
             except Exception as e:
                 logger.error(f"Error requeuing email from DLQ: {e}, payload: {payload}")

@@ -101,4 +101,4 @@ DLQ behavior is controlled by these environment variables:
 - `EMAIL_MAX_RETRIES=6` - Maximum retry attempts before DLQ
 - `EMAIL_RETRY_BASE_SECONDS=10` - Base delay for exponential backoff
 - `CELERY_BROKER_URL` - Redis connection for DLQ storage</content>
-<parameter name="filePath">c:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\backend\DLQ_README.md
+  <parameter name="filePath">c:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\backend\DLQ_README.md

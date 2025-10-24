@@ -2,9 +2,11 @@
 """
 Test script to verify volunteer addition functionality works after permission fixes.
 """
-import requests
 import json
+
+import requests
 from flask import Flask
+
 
 def test_volunteer_addition():
     """Test the volunteer addition functionality"""
@@ -17,17 +19,18 @@ def test_volunteer_addition():
 
     # First, login as admin
     print("1. Logging in as admin...")
-    login_data = {
-        'username': 'admin',
-        'password': 'Admin123'
-    }
+    login_data = {"username": "admin", "password": "Admin123"}
 
     try:
         response = session.post(f"{base_url}/admin_login", data=login_data)
         print(f"Login response status: {response.status_code}")
 
         # Check if login was successful by looking for dashboard content or redirect
-        if response.status_code == 302 or "Админ панел" in response.text or "admin_dashboard" in response.text:
+        if (
+            response.status_code == 302
+            or "Админ панел" in response.text
+            or "admin_dashboard" in response.text
+        ):
             print("✓ Admin login successful")
         else:
             print("Login failed - checking response content...")
@@ -56,10 +59,10 @@ def test_volunteer_addition():
         # Now try to add a volunteer
         print("3. Adding a test volunteer...")
         volunteer_data = {
-            'name': 'Test Volunteer',
-            'email': 'test@example.com',
-            'phone': '+359123456789',
-            'location': 'Sofia'
+            "name": "Test Volunteer",
+            "email": "test@example.com",
+            "phone": "+359123456789",
+            "location": "Sofia",
         }
 
         response = session.post(f"{base_url}/admin_volunteers/add", data=volunteer_data)
@@ -77,9 +80,12 @@ def test_volunteer_addition():
         print(f"Error during testing: {e}")
         return False
 
+
 if __name__ == "__main__":
     success = test_volunteer_addition()
     if success:
-        print("\n🎉 All tests passed! Volunteer addition functionality is working correctly.")
+        print(
+            "\n🎉 All tests passed! Volunteer addition functionality is working correctly."
+        )
     else:
         print("\n❌ Tests failed. There may still be issues with volunteer addition.")

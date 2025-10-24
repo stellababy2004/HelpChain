@@ -1,4 +1,5 @@
 import os
+
 from appy import AdminUser, app
 
 with app.app_context():

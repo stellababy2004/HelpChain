@@ -10,7 +10,7 @@ parent_dir = os.path.dirname(backend_dir)
 sys.path.insert(0, backend_dir)
 sys.path.insert(0, parent_dir)
 
-from appy import app, db, AdminUser
+from appy import AdminUser, app, db
 
 with app.app_context():
     # Ensure database is created

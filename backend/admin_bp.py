@@ -2,29 +2,27 @@
 Admin routes for authentication and dashboard
 """
 
-from datetime import datetime
 import traceback
+from datetime import datetime
 
 from flask import (
     Blueprint,
+    current_app,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
     session,
     url_for,
-    jsonify,
-    current_app,
 )
-
-# Import required modules with absolute paths
-from extensions import mail
-
-# Import db from backend.models to ensure consistency
-from extensions import db
 
 # Import models explicitly from backend.models module
 from backend import models
+
+# Import required modules with absolute paths
+# Import db from backend.models to ensure consistency
+from extensions import db, mail
 
 AdminUser = models.AdminUser
 HelpRequest = models.HelpRequest

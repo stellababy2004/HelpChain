@@ -2,10 +2,12 @@
 """
 Test script to verify admin volunteers functionality
 """
-import requests
 import json
 
+import requests
+
 BASE_URL = "http://127.0.0.1:5000"
+
 
 def test_admin_volunteers():
     """Test the admin volunteers page and delete functionality"""
@@ -26,10 +28,7 @@ def test_admin_volunteers():
 
         # Try to login as admin
         print("\n2. Testing admin login...")
-        login_data = {
-            'username': 'admin',
-            'password': 'Admin123'
-        }
+        login_data = {"username": "admin", "password": "Admin123"}
         response = session.post(f"{BASE_URL}/admin_login", data=login_data)
         print(f"   Status: {response.status_code}")
 
@@ -75,6 +74,7 @@ def test_admin_volunteers():
     except Exception as e:
         print(f"❌ Test failed with error: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = test_admin_volunteers()
