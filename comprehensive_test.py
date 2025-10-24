@@ -42,7 +42,7 @@ class HelpChainTester:
         """Test admin login functionality"""
         try:
             # Test login page
-            response = self.session.get(f"{BASE_URL}/admin_login")
+            response = self.session.get(f"{BASE_URL}/admin/login")
             if response.status_code != 200:
                 self.log_test(
                     "Admin Login Page", False, f"Status: {response.status_code}"
@@ -55,7 +55,7 @@ class HelpChainTester:
                 "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
             }
             response = self.session.post(
-                f"{BASE_URL}/admin_login", data=login_data, allow_redirects=False
+                f"{BASE_URL}/admin/login", data=login_data, allow_redirects=False
             )
 
             if response.status_code == 302:  # Redirect after successful login

@@ -56,7 +56,7 @@ def main():
         print("")
 
         # Enable 2FA
-        admin.twofa_enabled = True
+        admin.two_factor_enabled = True
         db.session.commit()
 
         print("✅ 2FA е активиран за администратора!")

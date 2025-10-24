@@ -55,7 +55,10 @@ endblock %} {% block content %}
           </form>
 
           <div class="mt-3 text-center">
-            <a href="/admin_login" class="btn btn-outline-secondary">
+            <a
+              href="{{ url_for('admin_login') }}"
+              class="btn btn-outline-secondary"
+            >
               <i class="fas fa-arrow-left"></i> Обратно към вход
             </a>
           </div>

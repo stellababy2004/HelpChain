@@ -3,6 +3,7 @@
 Test admin login with email 2FA
 """
 
+import os
 import re
 import time
 
@@ -20,17 +21,20 @@ def test_admin_login():
 
     # Step 1: Get the login page to establish session
     print("1. Getting login page...")
-    response = session.get(f"{base_url}/admin_login")
+    response = session.get(f"{base_url}/admin/login")
     if response.status_code != 200:
         print(f"Failed to get login page: {response.status_code}")
         return False
 
     print("2. Attempting login with credentials...")
     # Step 2: Post login credentials
-    login_data = {"username": "admin", "password": "Admin123"}
+    login_data = {
+        "username": "admin",
+        "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
+    }
 
     response = session.post(
-        f"{base_url}/admin_login", data=login_data, allow_redirects=False
+        f"{base_url}/admin/login", data=login_data, allow_redirects=False
     )
 
     if response.status_code == 302:  # Redirect to email 2FA

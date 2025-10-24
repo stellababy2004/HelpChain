@@ -87,8 +87,9 @@ def create_app(config_object=None):
     # Задаваме абсолютни пътища към templates/static (относно този файл)
     base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     static_dir = os.path.join(base, "static")
+    template_dir = os.path.join(base, "templates")
 
-    app = Flask(__name__, static_folder="static", template_folder="templates")
+    app = Flask(__name__, static_folder=static_dir, template_folder=template_dir)
     app.config.from_object(config_object or Config)
 
     # гарантираме, че предупреждението ще бъде заглушено по подразбиране

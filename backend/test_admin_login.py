@@ -12,8 +12,11 @@ def test_admin_login():
     with app.test_client() as client:
         # Test admin login
         response = client.post(
-            "/admin_login",
-            data={"username": "admin", "password": "Admin123"},
+            "/admin/login",
+            data={
+                "username": "admin",
+                "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
+            },
             follow_redirects=True,
         )
 

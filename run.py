@@ -1,14 +1,19 @@
 import os
 import sys
 
-# Add the backend directory to Python path
-backend_dir = os.path.join(
-    os.path.dirname(__file__), "backend", "helpchain-backend", "src"
-)
+# Change to backend directory to make it the working directory
+backend_dir = os.path.join(os.path.dirname(__file__), "backend")
+os.chdir(backend_dir)
+
+# Add the backend directory to Python path so we can import modules
 sys.path.insert(0, backend_dir)
 
+# Also add the src directory for direct imports
+src_dir = os.path.join(backend_dir, "helpchain-backend", "src")
+sys.path.insert(0, src_dir)
+
 # Import and run the app
-from app import app
+from appy import app
 
 if __name__ == "__main__":
     app.run(debug=True)

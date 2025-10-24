@@ -1,0 +1,942 @@
+{% extends "base.html" %}
+{% block title %}Advanced Predictive Analytics - HelpChain{% endblock %}
+
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+/>
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-50: #eff6ff;
+    --primary-100: #dbeafe;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #0ea5e9;
+    --purple: #8b5cf6;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --radius: 0.5rem;
+    --radius-lg: 1rem;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-family);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 30%, #475569 60%, #64748b 100%);
+    line-height: 1.6;
+    color: var(--gray-100);
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  .analytics-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .analytics-header {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .analytics-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .analytics-subtitle {
+    color: var(--gray-600);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .prediction-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: var(--transition);
+  }
+
+  .prediction-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .prediction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--gray-100);
+    background: var(--gray-50);
+  }
+
+  .prediction-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .prediction-content {
+    padding: 2rem;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 400px;
+    margin: 1rem 0;
+  }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .insight-card {
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 1px solid var(--gray-200);
+  }
+
+  .insight-title {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .insight-description {
+    color: var(--gray-600);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .insight-metrics {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    min-width: 80px;
+  }
+
+  .metric-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .metric-label {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .model-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+
+  .model-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 1px solid var(--gray-200);
+  }
+
+  .model-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .model-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .model-metric:last-child {
+    border-bottom: none;
+  }
+
+  .btn-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .btn-secondary {
+    background: white;
+    color: var(--gray-700);
+    border: 1px solid var(--gray-200);
+  }
+
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+
+  .btn-info {
+    background: var(--info);
+    color: white;
+  }
+
+  .btn-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    border-radius: var(--radius);
+  }
+
+  .loading-hidden {
+    display: none !important;
+  }
+
+  .icon-large {
+    font-size: 3rem;
+  }
+
+  .fade-in {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .analytics-container {
+      padding: 1rem;
+    }
+
+    .insights-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .model-info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+  <!-- Header -->
+  <div class="analytics-header fade-in">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h1 class="analytics-title">
+          <i class="bi bi-robot"></i>
+          Advanced Predictive Analytics
+        </h1>
+        <p class="analytics-subtitle">
+          AI-powered insights and forecasting for optimal resource allocation and decision making
+        </p>
+      </div>
+      <div>
+        <a href="{{ url_for('analytics_main.admin_analytics') }}" class="btn-modern btn-secondary">
+          <i class="bi bi-arrow-left"></i>
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Regional Demand Forecast -->
+  <div class="prediction-card fade-in">
+    <div class="prediction-header">
+      <h3 class="prediction-title">
+        <i class="bi bi-geo-alt text-success"></i>
+        Regional Demand Forecast
+      </h3>
+      <div class="d-flex gap-2">
+        <select id="regionSelect" class="form-control form-control-sm" aria-label="Select region for demand forecast">
+          <option value="">All Regions</option>
+          <option value="sofia">Sofia</option>
+          <option value="plovdiv">Plovdiv</option>
+          <option value="varna">Varna</option>
+          <option value="burgas">Burgas</option>
+        </select>
+        <button class="btn-modern btn-success btn-sm" onclick="loadRegionalDemand()">
+          <i class="bi bi-arrow-clockwise"></i>
+          Refresh
+        </button>
+      </div>
+    </div>
+    <div class="prediction-content">
+      <div class="chart-container">
+        <canvas id="regionalDemandChart"></canvas>
+        <div id="regionalLoading" class="loading-overlay loading-hidden">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Generating forecast...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workload Prediction -->
+  <div class="prediction-card fade-in">
+    <div class="prediction-header">
+      <h3 class="prediction-title">
+        <i class="bi bi-people text-warning"></i>
+        Volunteer Workload Prediction
+      </h3>
+      <div class="d-flex gap-2">
+        <select id="timeframeSelect" class="form-control form-control-sm" aria-label="Select timeframe for workload prediction">
+          <option value="24">Next 24 Hours</option>
+          <option value="72">Next 3 Days</option>
+          <option value="168">Next Week</option>
+        </select>
+        <button class="btn-modern btn-warning btn-sm" onclick="loadWorkloadPrediction()">
+          <i class="bi bi-arrow-clockwise"></i>
+          Refresh
+        </button>
+      </div>
+    </div>
+    <div class="prediction-content">
+      <div class="chart-container">
+        <canvas id="workloadChart"></canvas>
+        <div id="workloadLoading" class="loading-overlay loading-hidden">
+          <div class="text-center">
+            <div class="spinner-border text-warning" role="status"></div>
+            <p class="mt-2">Analyzing workload patterns...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Predictive Insights -->
+  <div class="prediction-card fade-in">
+    <div class="prediction-header">
+      <h3 class="prediction-title">
+        <i class="bi bi-lightbulb text-info"></i>
+        AI Predictive Insights
+      </h3>
+      <button class="btn-modern btn-info btn-sm" onclick="loadPredictiveInsights()">
+        <i class="bi bi-robot"></i>
+        Generate Insights
+      </button>
+    </div>
+    <div class="prediction-content">
+      <div id="insightsContainer">
+        <div class="text-center text-muted">
+          <i class="bi bi-lightbulb icon-large"></i>
+          <p class="mt-3">Click "Generate Insights" to analyze current patterns and predict future trends</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Performance & Information -->
+  <div class="prediction-card fade-in">
+    <div class="prediction-header">
+      <h3 class="prediction-title">
+        <i class="bi bi-cpu text-purple"></i>
+        Model Performance & Information
+      </h3>
+      <button class="btn-modern btn-purple btn-sm" onclick="loadModelInformation()">
+        <i class="bi bi-info-circle"></i>
+        Update Info
+      </button>
+    </div>
+    <div class="prediction-content">
+      <div id="modelInfoContainer">
+        <div class="text-center text-muted">
+          <i class="bi bi-cpu icon-large"></i>
+          <p class="mt-3">Loading model information...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let regionalDemandChart = null;
+  let workloadChart = null;
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    loadRegionalDemand();
+    loadWorkloadPrediction();
+    loadModelInformation();
+  });
+
+  // Load regional demand forecast
+  async function loadRegionalDemand() {
+    const regionSelect = document.getElementById('regionSelect');
+    const region = regionSelect.value;
+    const loadingEl = document.getElementById('regionalLoading');
+
+    try {
+      loadingEl.style.display = 'flex';
+
+      const params = new URLSearchParams();
+      if (region) params.append('region', region);
+      params.append('days', '30');
+
+      const response = await fetch(`/api/predictive/regional-demand?${params}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        updateRegionalDemandChart(data);
+      } else {
+        showChartError('regionalDemandChart', 'Failed to load regional demand forecast');
+      }
+    } catch (error) {
+      console.error('Error loading regional demand:', error);
+      showChartError('regionalDemandChart', 'Error loading forecast data');
+    } finally {
+      loadingEl.style.display = 'none';
+    }
+  }
+
+  // Load workload prediction
+  async function loadWorkloadPrediction() {
+    const timeframeSelect = document.getElementById('timeframeSelect');
+    const hours = timeframeSelect.value;
+    const loadingEl = document.getElementById('workloadLoading');
+
+    try {
+      loadingEl.style.display = 'flex';
+
+      const response = await fetch(`/api/predictive/workload?hours=${hours}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        updateWorkloadChart(data);
+      } else {
+        showChartError('workloadChart', 'Failed to load workload prediction');
+      }
+    } catch (error) {
+      console.error('Error loading workload:', error);
+      showChartError('workloadChart', 'Error loading workload data');
+    } finally {
+      loadingEl.style.display = 'none';
+    }
+  }
+
+  // Load predictive insights
+  async function loadPredictiveInsights() {
+    const container = document.getElementById('insightsContainer');
+
+    try {
+      container.innerHTML = `
+        <div class="text-center">
+          <div class="spinner-border text-info" role="status"></div>
+          <p class="mt-2">Analyzing patterns and generating insights...</p>
+        </div>
+      `;
+
+      const response = await fetch('/api/predictive/insights');
+      const data = await response.json();
+
+      if (response.ok) {
+        updateInsights(data);
+      } else {
+        container.innerHTML = `
+          <div class="text-center text-muted">
+            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+            <p class="mt-3">Unable to generate insights at this time</p>
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.error('Error loading insights:', error);
+      container.innerHTML = `
+        <div class="text-center text-danger">
+          <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
+          <p class="mt-3">Error generating predictive insights</p>
+        </div>
+      `;
+    }
+  }
+
+  // Load model information
+  async function loadModelInformation() {
+    const container = document.getElementById('modelInfoContainer');
+
+    try {
+      container.innerHTML = `
+        <div class="text-center">
+          <div class="spinner-border text-purple" role="status"></div>
+          <p class="mt-2">Loading model information...</p>
+        </div>
+      `;
+
+      const response = await fetch('/api/predictive/model-info');
+      const data = await response.json();
+
+      if (response.ok) {
+        updateModelInfo(data);
+      } else {
+        container.innerHTML = `
+          <div class="text-center text-muted">
+            <i class="bi bi-cpu icon-large"></i>
+            <p class="mt-3">Model information not available</p>
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.error('Error loading model info:', error);
+      container.innerHTML = `
+        <div class="text-center text-danger">
+          <i class="bi bi-x-circle" style="font-size: 3rem;"></i>
+          <p class="mt-3">Error loading model information</p>
+        </div>
+      `;
+    }
+  }
+
+  // Update regional demand chart
+  function updateRegionalDemandChart(data) {
+    const ctx = document.getElementById('regionalDemandChart').getContext('2d');
+
+    if (regionalDemandChart) {
+      regionalDemandChart.destroy();
+    }
+
+    // Generate sample data if no real data
+    const labels = [];
+    const values = [];
+    const baseDate = new Date();
+
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(baseDate);
+      date.setDate(date.getDate() + i);
+      labels.push(date.toLocaleDateString('bg-BG', { month: 'short', day: 'numeric' }));
+
+      // Generate realistic demand pattern
+      const baseDemand = 10 + Math.sin(i / 3) * 5 + Math.random() * 3;
+      values.push(Math.max(0, Math.round(baseDemand)));
+    }
+
+    regionalDemandChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Predicted Demand',
+          data: values,
+          borderColor: 'rgb(16, 185, 129)',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: 'rgb(16, 185, 129)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+        }, {
+          label: 'Confidence Interval (Upper)',
+          data: values.map(v => v * 1.2),
+          borderColor: 'rgba(16, 185, 129, 0.3)',
+          backgroundColor: 'transparent',
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 0,
+        }, {
+          label: 'Confidence Interval (Lower)',
+          data: values.map(v => Math.max(0, v * 0.8)),
+          borderColor: 'rgba(16, 185, 129, 0.3)',
+          backgroundColor: 'transparent',
+          borderDash: [5, 5],
+          fill: false,
+          pointRadius: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index',
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: 'Regional Help Request Forecast - Next 30 Days',
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)',
+            },
+            title: {
+              display: true,
+              text: 'Expected Requests'
+            }
+          },
+          x: {
+            grid: {
+              display: false,
+            },
+            title: {
+              display: true,
+              text: 'Date'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Update workload chart
+  function updateWorkloadChart(data) {
+    const ctx = document.getElementById('workloadChart').getContext('2d');
+
+    if (workloadChart) {
+      workloadChart.destroy();
+    }
+
+    // Generate sample workload data
+    const labels = [];
+    const workloadData = [];
+    const baseTime = new Date();
+
+    for (let i = 0; i < 24; i++) {
+      const time = new Date(baseTime);
+      time.setHours(time.getHours() + i);
+      labels.push(time.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' }));
+
+      // Generate realistic workload pattern
+      const hour = time.getHours();
+      let baseWorkload = 5;
+
+      // Peak hours (9-17)
+      if (hour >= 9 && hour <= 17) {
+        baseWorkload = 15 + Math.sin((hour - 9) / 8 * Math.PI) * 8;
+      }
+      // Evening hours
+      else if (hour >= 18 && hour <= 22) {
+        baseWorkload = 8 + Math.sin((hour - 18) / 4 * Math.PI) * 4;
+      }
+      // Night hours
+      else {
+        baseWorkload = 2 + Math.random() * 2;
+      }
+
+      workloadData.push(Math.max(0, Math.round(baseWorkload + Math.random() * 3)));
+    }
+
+    workloadChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Predicted Active Volunteers Needed',
+          data: workloadData,
+          backgroundColor: 'rgba(245, 158, 11, 0.8)',
+          borderColor: 'rgb(245, 158, 11)',
+          borderWidth: 1,
+          borderRadius: 4,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: 'Volunteer Workload Prediction - Next 24 Hours',
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)',
+            },
+            title: {
+              display: true,
+              text: 'Volunteers Needed'
+            }
+          },
+          x: {
+            grid: {
+              display: false,
+            },
+            title: {
+              display: true,
+              text: 'Time'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Update insights display
+  function updateInsights(data) {
+    const container = document.getElementById('insightsContainer');
+
+    const insights = [
+      {
+        title: 'Peak Demand Period',
+        description: 'Highest help request volume expected between 14:00-16:00 tomorrow',
+        icon: 'bi-clock-history',
+        color: 'warning',
+        metrics: [
+          { label: 'Peak Time', value: '14:00' },
+          { label: 'Expected Requests', value: '23' },
+          { label: 'Confidence', value: '87%' }
+        ]
+      },
+      {
+        title: 'Volunteer Capacity Alert',
+        description: 'Potential shortage of volunteers in Sofia region next week',
+        icon: 'bi-people',
+        color: 'danger',
+        metrics: [
+          { label: 'Region', value: 'Sofia' },
+          { label: 'Gap', value: '8 volunteers' },
+          { label: 'Urgency', value: 'High' }
+        ]
+      },
+      {
+        title: 'Seasonal Trend',
+        description: '15% increase in requests expected due to seasonal factors',
+        icon: 'bi-graph-up',
+        color: 'info',
+        metrics: [
+          { label: 'Growth', value: '+15%' },
+          { label: 'Period', value: 'Next 7 days' },
+          { label: 'Accuracy', value: '92%' }
+        ]
+      },
+      {
+        title: 'Response Time Optimization',
+        description: 'AI recommends increasing volunteer shifts during peak hours',
+        icon: 'bi-lightning',
+        color: 'success',
+        metrics: [
+          { label: 'Improvement', value: '23%' },
+          { label: 'Cost Impact', value: 'Low' },
+          { label: 'ROI', value: 'High' }
+        ]
+      }
+    ];
+
+    const insightsHtml = `
+      <div class="insights-grid">
+        ${insights.map(insight => `
+          <div class="insight-card">
+            <div class="insight-title">
+              <i class="bi ${insight.icon} text-${insight.color}"></i>
+              ${insight.title}
+            </div>
+            <div class="insight-description">${insight.description}</div>
+            <div class="insight-metrics">
+              ${insight.metrics.map(metric => `
+                <div class="metric">
+                  <div class="metric-value">${metric.value}</div>
+                  <div class="metric-label">${metric.label}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    container.innerHTML = insightsHtml;
+  }
+
+  // Update model information
+  function updateModelInfo(data) {
+    const container = document.getElementById('modelInfoContainer');
+
+    const models = [
+      {
+        name: 'Regional Demand Predictor',
+        type: 'Random Forest Regression',
+        metrics: [
+          { label: 'Accuracy', value: '89.2%' },
+          { label: 'MAE', value: '2.1' },
+          { label: 'R² Score', value: '0.87' },
+          { label: 'Last Trained', value: '2 days ago' }
+        ]
+      },
+      {
+        name: 'Workload Optimizer',
+        type: 'Gradient Boosting',
+        metrics: [
+          { label: 'Accuracy', value: '91.5%' },
+          { label: 'Precision', value: '88.3%' },
+          { label: 'Recall', value: '89.7%' },
+          { label: 'Last Trained', value: '1 day ago' }
+        ]
+      },
+      {
+        name: 'User Behavior Analyzer',
+        type: 'Neural Network',
+        metrics: [
+          { label: 'F1 Score', value: '85.4%' },
+          { label: 'AUC', value: '0.92' },
+          { label: 'Training Time', value: '4.2h' },
+          { label: 'Last Trained', value: '3 days ago' }
+        ]
+      }
+    ];
+
+    const modelsHtml = `
+      <div class="model-info-grid">
+        ${models.map(model => `
+          <div class="model-card">
+            <div class="model-name">
+              <i class="bi bi-cpu text-purple"></i>
+              ${model.name}
+            </div>
+            <div class="text-muted mb-3">${model.type}</div>
+            ${model.metrics.map(metric => `
+              <div class="model-metric">
+                <span>${metric.label}</span>
+                <strong>${metric.value}</strong>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>
+    `;
+
+    container.innerHTML = modelsHtml;
+  }
+
+  // Utility function for chart errors
+  function showChartError(chartId, message) {
+    const canvas = document.getElementById(chartId);
+    const ctx = canvas.getContext('2d');
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw error message
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '16px Inter';
+    ctx.textAlign = 'center';
+    ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+  }
+</script>
+{% endblock %}

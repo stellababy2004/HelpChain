@@ -32,7 +32,7 @@ def get_db():
 
 
 try:
-    from ..models import PushSubscription, User
+    from models import PushSubscription, User
 except ImportError:
     from models import PushSubscription, User
 

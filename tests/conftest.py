@@ -217,11 +217,16 @@ def temp_upload_file(tmp_path):
 
 
 @pytest.fixture
-def init_test_data(db_session, test_admin_user, test_volunteer, test_help_request):
-    """Initialize test data for comprehensive tests."""
-    # Additional test data can be added here
-    yield {
-        "admin": test_admin_user,
-        "volunteer": test_volunteer,
-        "help_request": test_help_request,
-    }
+def admin_credentials():
+    """Get admin login credentials from environment."""
+    return {"username": "admin", "password": os.getenv("ADMIN_PASSWORD", "Admin123")}
+
+
+@pytest.fixture
+def login_admin(client, admin_credentials):
+    """Helper to login as admin and return authenticated client."""
+    response = client.post(
+        "/admin/login", data=admin_credentials, follow_redirects=True
+    )
+    assert response.status_code == 200
+    return client

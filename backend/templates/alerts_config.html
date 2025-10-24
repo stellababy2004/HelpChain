@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+{% block title %}Alert Configuration - HelpChain{% endblock %}
+
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+/>
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-50: #eff6ff;
+    --primary-100: #dbeafe;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --radius: 0.5rem;
+    --radius-lg: 1rem;
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-family);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 30%, #475569 60%, #64748b 100%);
+    line-height: 1.6;
+    color: var(--gray-100);
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  .config-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .config-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .config-title {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .config-subtitle {
+    color: var(--gray-600);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .alert-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: var(--transition);
+  }
+
+  .alert-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--gray-100);
+    background: var(--gray-50);
+  }
+
+  .alert-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .alert-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .status-enabled {
+    background: var(--primary-100);
+    color: var(--primary-700);
+  }
+
+  .status-disabled {
+    background: var(--gray-100);
+    color: var(--gray-600);
+  }
+
+  .alert-content {
+    padding: 1.5rem;
+  }
+
+  .alert-description {
+    color: var(--gray-600);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .alert-config {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .config-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-700);
+  }
+
+  .config-input {
+    padding: 0.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    transition: var(--transition);
+  }
+
+  .config-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .config-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .config-checkbox input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--primary);
+  }
+
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .channel-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    background: var(--gray-50);
+    font-size: 0.85rem;
+  }
+
+  .channel-option.selected {
+    background: var(--primary-50);
+    border-color: var(--primary);
+    color: var(--primary-700);
+  }
+
+  .alert-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--gray-100);
+    background: var(--gray-50);
+  }
+
+  .btn-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .btn-secondary {
+    background: white;
+    color: var(--gray-700);
+    border: 1px solid var(--gray-200);
+  }
+
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+
+  .btn-danger {
+    background: var(--danger);
+    color: white;
+  }
+
+  .btn-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .notification {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 1rem 1.5rem;
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: var(--transition);
+  }
+
+  .notification.show {
+    transform: translateX(0);
+  }
+
+  .notification.success {
+    border-left: 4px solid var(--success);
+  }
+
+  .notification.error {
+    border-left: 4px solid var(--danger);
+  }
+
+  .fade-in {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .config-container {
+      padding: 1rem;
+    }
+
+    .alert-config {
+      grid-template-columns: 1fr;
+    }
+
+    .channels-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .alert-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="config-container">
+  <!-- Header -->
+  <div class="config-header fade-in">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h1 class="config-title">
+          <i class="bi bi-gear"></i>
+          Alert Configuration
+        </h1>
+        <p class="config-subtitle">
+          Configure alert thresholds and notification settings for your analytics dashboard
+        </p>
+      </div>
+      <div>
+        <a href="{{ url_for('analytics_main.admin_analytics') }}" class="btn-modern btn-secondary">
+          <i class="bi bi-arrow-left"></i>
+          Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts List -->
+  <div id="alertsContainer">
+    <!-- Alerts will be loaded here -->
+  </div>
+</div>
+
+<!-- Notification Toast -->
+<div id="notification" class="notification">
+  <div class="d-flex align-items-center gap-2">
+    <i class="bi bi-check-circle text-success"></i>
+    <span id="notificationMessage">Configuration saved successfully</span>
+  </div>
+</div>
+
+<script>
+  let alertsData = [];
+
+  // Load alerts configuration
+  async function loadAlertsConfig() {
+    try {
+      const response = await fetch('/api/alerts/config');
+      const data = await response.json();
+
+      if (response.ok) {
+        alertsData = data.alerts;
+        renderAlerts();
+      } else {
+        showNotification('Failed to load alerts configuration', 'error');
+      }
+    } catch (error) {
+      console.error('Error loading alerts config:', error);
+      showNotification('Error loading configuration', 'error');
+    }
+  }
+
+  // Render alerts
+  function renderAlerts() {
+    const container = document.getElementById('alertsContainer');
+
+    if (!alertsData || alertsData.length === 0) {
+      container.innerHTML = `
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle"></i>
+          No alerts configured
+        </div>
+      `;
+      return;
+    }
+
+    const alertsHtml = alertsData.map(alert => `
+      <div class="alert-card fade-in" data-alert-id="${alert.id}">
+        <div class="alert-header">
+          <h3 class="alert-title">
+            <i class="bi ${getAlertIcon(alert.id)}"></i>
+            ${alert.name}
+          </h3>
+          <div class="alert-status">
+            <span class="status-badge ${alert.enabled ? 'status-enabled' : 'status-disabled'}">
+              ${alert.enabled ? 'Enabled' : 'Disabled'}
+            </span>
+          </div>
+        </div>
+
+        <div class="alert-content">
+          <p class="alert-description">${alert.description}</p>
+
+          <div class="alert-config">
+            <div class="config-item">
+              <label class="config-label">Threshold</label>
+              <input
+                type="number"
+                class="config-input"
+                value="${alert.threshold || 0}"
+                data-field="threshold"
+                ${alert.type === 'trend' ? 'step="0.1"' : ''}
+              >
+            </div>
+
+            <div class="config-item">
+              <label class="config-label">Cooldown (minutes)</label>
+              <input
+                type="number"
+                class="config-input"
+                value="${alert.cooldown_minutes || 60}"
+                data-field="cooldown_minutes"
+                min="1"
+              >
+            </div>
+
+            <div class="config-item">
+              <label class="config-label">Enabled</label>
+              <div class="config-checkbox">
+                <input
+                  type="checkbox"
+                  data-field="enabled"
+                  ${alert.enabled ? 'checked' : ''}
+                >
+                <span>Enable this alert</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="config-item">
+            <label class="config-label">Notification Channels</label>
+            <div class="channels-grid">
+              ${['dashboard', 'email', 'sms'].map(channel => `
+                <div
+                  class="channel-option ${alert.notification_channels?.includes(channel) ? 'selected' : ''}"
+                  onclick="toggleChannel('${alert.id}', '${channel}')"
+                  data-channel="${channel}"
+                >
+                  <i class="bi ${getChannelIcon(channel)}"></i>
+                  ${channel.charAt(0).toUpperCase() + channel.slice(1)}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="alert-actions">
+          <button class="btn-modern btn-primary" onclick="saveAlert('${alert.id}')">
+            <i class="bi bi-check"></i>
+            Save Changes
+          </button>
+          <button class="btn-modern btn-secondary" onclick="testAlert('${alert.id}')">
+            <i class="bi bi-play"></i>
+            Test Alert
+          </button>
+          <button class="btn-modern btn-danger" onclick="resetAlert('${alert.id}')">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Reset
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    container.innerHTML = alertsHtml;
+  }
+
+  function getAlertIcon(alertId) {
+    const icons = {
+      'traffic_spike': 'bi-graph-up-arrow',
+      'error_rate_high': 'bi-exclamation-triangle',
+      'conversion_drop': 'bi-graph-down',
+      'user_engagement_low': 'bi-people'
+    };
+    return icons[alertId] || 'bi-bell';
+  }
+
+  function getChannelIcon(channel) {
+    const icons = {
+      'dashboard': 'bi-display',
+      'email': 'bi-envelope',
+      'sms': 'bi-phone'
+    };
+    return icons[channel] || 'bi-bell';
+  }
+
+  // Toggle notification channel
+  function toggleChannel(alertId, channel) {
+    const alert = alertsData.find(a => a.id === alertId);
+    if (!alert) return;
+
+    if (!alert.notification_channels) {
+      alert.notification_channels = [];
+    }
+
+    const index = alert.notification_channels.indexOf(channel);
+    if (index > -1) {
+      alert.notification_channels.splice(index, 1);
+    } else {
+      alert.notification_channels.push(channel);
+    }
+
+    // Update UI
+    const channelElement = document.querySelector(`[data-alert-id="${alertId}"] [data-channel="${channel}"]`);
+    if (channelElement) {
+      channelElement.classList.toggle('selected');
+    }
+  }
+
+  // Save alert configuration
+  async function saveAlert(alertId) {
+    try {
+      const alertCard = document.querySelector(`[data-alert-id="${alertId}"]`);
+      if (!alertCard) return;
+
+      const threshold = parseFloat(alertCard.querySelector('[data-field="threshold"]').value);
+      const cooldownMinutes = parseInt(alertCard.querySelector('[data-field="cooldown_minutes"]').value);
+      const enabled = alertCard.querySelector('[data-field="enabled"]').checked;
+
+      const alert = alertsData.find(a => a.id === alertId);
+      if (!alert) return;
+
+      const updates = {
+        threshold: threshold,
+        cooldown_minutes: cooldownMinutes,
+        enabled: enabled,
+        notification_channels: alert.notification_channels || []
+      };
+
+      const response = await fetch(`/api/alerts/config/${alertId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates)
+      });
+
+      if (response.ok) {
+        showNotification('Alert configuration saved successfully', 'success');
+
+        // Update local data
+        Object.assign(alert, updates);
+
+        // Update status badge
+        const statusBadge = alertCard.querySelector('.status-badge');
+        if (statusBadge) {
+          statusBadge.className = `status-badge ${enabled ? 'status-enabled' : 'status-disabled'}`;
+          statusBadge.textContent = enabled ? 'Enabled' : 'Disabled';
+        }
+      } else {
+        showNotification('Failed to save configuration', 'error');
+      }
+    } catch (error) {
+      console.error('Error saving alert:', error);
+      showNotification('Error saving configuration', 'error');
+    }
+  }
+
+  // Test alert
+  async function testAlert(alertId) {
+    try {
+      // Create a test alert payload
+      const testAlert = {
+        alert_id: alertId,
+        name: `Test ${alertId.replace('_', ' ').toUpperCase()}`,
+        description: 'This is a test alert to verify notification channels',
+        severity: 'medium',
+        triggered_at: new Date().toISOString(),
+        data: { test: true }
+      };
+
+      // Send test alert through SSE (this would normally come from the server)
+      console.log('Test alert:', testAlert);
+
+      showNotification(`Test alert sent for ${alertId}`, 'info');
+    } catch (error) {
+      console.error('Error testing alert:', error);
+      showNotification('Error testing alert', 'error');
+    }
+  }
+
+  // Reset alert to defaults
+  function resetAlert(alertId) {
+    if (confirm('Are you sure you want to reset this alert to default settings?')) {
+      // Reload configuration from server
+      loadAlertsConfig();
+      showNotification('Alert reset to defaults', 'info');
+    }
+  }
+
+  // Notification system
+  function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    const messageEl = document.getElementById('notificationMessage');
+
+    messageEl.textContent = message;
+
+    // Remove existing classes
+    notification.classList.remove('success', 'error', 'info');
+    notification.classList.add(type);
+
+    // Show notification
+    notification.classList.add('show');
+
+    // Hide after 3 seconds
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 3000);
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', function() {
+    loadAlertsConfig();
+  });
+</script>
+{% endblock %}

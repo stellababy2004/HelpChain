@@ -3,8 +3,8 @@ import os
 import requests
 
 # Test admin login on port 8000
-url = "http://localhost:8000/admin_login"
-data = {"username": "admin", "password": os.getenv("ADMIN_USER_PASSWORD", "Admin123")}
+url = "http://localhost:8000/admin/login"
+data = {"username": "admin", "password": os.getenv("ADMIN_PASSWORD", "Admin123")}
 
 print("Testing admin login...")
 try:

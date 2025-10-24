@@ -251,6 +251,29 @@ pytest tests/test_database.py
 pytest tests/test_email.py
 ```
 
+### Admin credentials за тестване
+
+За тестване на admin панела използвайте следните credentials:
+
+- **Username:** `admin`
+- **Password:** стойността на `ADMIN_PASSWORD` от `.env` файла (по подразбиране: `Admin123`)
+
+**Пример за тестване на login:**
+
+```bash
+# Стартирайте приложението
+python backend/appy.py
+
+# В друг терминал тествайте login
+python -c "
+import requests
+response = requests.post('http://127.0.0.1:5000/admin/login',
+                        data={'username': 'admin', 'password': 'YOUR_ADMIN_PASSWORD'},
+                        allow_redirects=False)
+print('Status:', response.status_code)
+"
+```
+
 ### Performance тестване
 
 ```bash

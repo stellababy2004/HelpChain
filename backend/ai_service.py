@@ -38,9 +38,9 @@ import unicodedata
 from typing import Any
 
 try:
-    from ai_config import get_ai_config, logger
+    from .ai_config import get_ai_config, logger
 except ImportError:
-    from backend.ai_config import get_ai_config, logger
+    from ai_config import get_ai_config, logger
 
 # Monkey patch httpx.Client to handle proxies parameter (compatibility fix)
 try:

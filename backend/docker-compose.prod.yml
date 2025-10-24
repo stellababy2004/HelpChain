@@ -1,0 +1,103 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    command: gunicorn --bind 0.0.0.0:5000 --worker-class=eventlet --workers=3 --timeout=60 appy:app
+    env_file: [.env.prod]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports: ["5000:5000"]
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5000/healthz || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+
+  celery-worker:
+    build: .
+    command: celery -A celery_app.app worker --loglevel=info --concurrency=4 --prefetch-multiplier=1
+    env_file: [.env.prod]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_app.app inspect ping -t 2 >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+
+  celery-beat:
+    build: .
+    command: celery -A celery_app.app beat --loglevel=info
+    env_file: [.env.prod]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_app.app inspect stats -t 2 >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports: ["5432:5432"]
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    ports: ["6379:6379"]
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    env_file: [.env.prod]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports: ["5050:80"]
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: always
+
+  flower:
+    image: mher/flower:latest
+    environment:
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+    command: ["flower", "--broker=${CELERY_BROKER_URL}", "--port=5555"]
+    ports: ["5555:5555"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  pgdata:
+  redisdata:
+  pgadmin_data:

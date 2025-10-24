@@ -3,7 +3,8 @@ import os
 import sys
 
 # Add backend to path
-sys.path.insert(0, os.path.dirname(__file__))
+backend_dir = os.path.dirname(__file__)
+sys.path.insert(0, backend_dir)
 
 from appy import app
 

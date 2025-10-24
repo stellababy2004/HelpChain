@@ -46,13 +46,13 @@ HelpChain.live{% endblock %} {% block content %}
         <div class="col-md-2">
           <label for="per_page" class="form-label">На страница</label>
           <select class="form-select" id="per_page" name="per_page">
-            <option value="10" {% if per_page="" ="10" %}selected{% endif %}>
+            <option value="10" {% if per_page == "10" %}selected{% endif %}>
               10
             </option>
-            <option value="25" {% if per_page="" ="25" %}selected{% endif %}>
+            <option value="25" {% if per_page == "25" %}selected{% endif %}>
               25
             </option>
-            <option value="50" {% if per_page="" ="50" %}selected{% endif %}>
+            <option value="50" {% if per_page == "50" %}selected{% endif %}>
               50
             </option>
           </select>
@@ -384,11 +384,7 @@ HelpChain.live{% endblock %} {% block content %}
   // Функция за изтриване на доброволец
   function deleteVolunteer(volunteerId, volunteerName) {
     document.getElementById("volunteerName").textContent = volunteerName;
-    document.getElementById("deleteForm").action =
-      '{{ url_for("admin_delete_volunteer", volunteer_id=0) }}'.replace(
-        "0",
-        volunteerId,
-      );
+    document.getElementById("deleteForm").action = '/admin_volunteers/' + volunteerId + '/delete';
     new bootstrap.Modal(document.getElementById("deleteModal")).show();
   }
 

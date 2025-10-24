@@ -35,7 +35,7 @@ def test_admin_analytics():
             admin = AdminUser.query.filter_by(username="admin").first()
             if not admin:
                 admin = AdminUser(username="admin", email="admin@helpchain.live")
-                admin.set_password(os.getenv("ADMIN_USER_PASSWORD", "Admin123"))
+                admin.set_password(os.getenv("ADMIN_PASSWORD", "Admin123"))
                 db.session.add(admin)
                 db.session.commit()
                 print("Admin user created successfully")
@@ -46,10 +46,10 @@ def test_admin_analytics():
             with app.test_client() as client:
                 # Login
                 response = client.post(
-                    "/admin_login",
+                    "/admin/login",
                     data={
                         "username": "admin",
-                        "password": os.getenv("ADMIN_USER_PASSWORD", "Admin123"),
+                        "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
                     },
                     follow_redirects=True,
                 )

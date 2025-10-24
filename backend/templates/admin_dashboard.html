@@ -5,29 +5,87 @@ endblock %} {% block content %}
 {% include 'dashboard_nav.html' %}
 
 <!-- Breadcrumbs -->
-{% set breadcrumbs = [
-{'title': 'Админ панел', 'url': None}
-] %}
-{% include 'breadcrumbs.html' %}
+{% set breadcrumbs = [ {'title': 'Админ панел', 'url': None} ] %} {% include
+'breadcrumbs.html' %}
 
 <div class="container mt-5">
   <h2 class="mb-4">Админ панел</h2>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fas fa-clipboard-list"></i> Общо заявки
+          </h5>
+          <h3 class="card-text">{{ stats.total_requests|default(0) }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-dark">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fas fa-clock"></i> Чакащи заявки
+          </h5>
+          <h3 class="card-text">{{ stats.pending_requests|default(0) }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fas fa-check-circle"></i> Завършени заявки
+          </h5>
+          <h3 class="card-text">{{ stats.completed_requests|default(0) }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fas fa-users"></i> Доброволци
+          </h5>
+          <h3 class="card-text">{{ stats.total_volunteers|default(0) }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="row mb-4">
     <div class="col-md-12">
       <div class="d-flex flex-wrap gap-2">
-        <a href="{{ url_for('admin_roles.roles_dashboard') }}" class="btn btn-warning">
+        <a
+          href="{{ url_for('admin_roles.roles_dashboard') }}"
+          class="btn btn-warning"
+        >
           <i class="fas fa-shield-alt"></i> Управление на роли
         </a>
-        <a href="{{ url_for('admin_volunteers') }}" class="btn btn-primary">
+        <a
+          href="{{ url_for('admin_volunteers') }}"
+          class="btn btn-primary"
+        >
           <i class="fas fa-users"></i> Доброволци
         </a>
-        <a href="{{ url_for('add_volunteer') }}" class="btn btn-success">
+        <a
+          href="{{ url_for('add_volunteer') }}"
+          class="btn btn-success"
+        >
           <i class="fas fa-user-plus"></i> Добави доброволец
+        </a>
+        <a
+          href="{{ url_for('analytics_main.admin_analytics') }}"
+          class="btn btn-info"
+        >
+          <i class="fas fa-chart-bar"></i> Аналитика
         </a>
       </div>
     </div>
   </div>
-  <table class="table table-bordered">
+  <table class="table table-bordered table-responsive">
     <thead>
       <tr>
         <th>ID</th>
@@ -43,17 +101,13 @@ endblock %} {% block content %}
         <td>{{ req.id }}</td>
         <td>{{ req.name or 'Без име' }}</td>
         <td>
-          <span class="badge 
-            {% if req.status == 'pending' %}bg-warning text-dark
-            {% elif req.status == 'approved' %}bg-success
-            {% elif req.status == 'rejected' %}bg-danger
-            {% elif req.status == 'completed' %}bg-info
-            {% else %}bg-secondary{% endif %}">
-            {% if req.status == 'pending' %}Чака одобрение
-            {% elif req.status == 'approved' %}Одобрена
-            {% elif req.status == 'rejected' %}Отхвърлена
-            {% elif req.status == 'completed' %}Завършена
-            {% else %}{{ req.status or 'Неизвестен' }}{% endif %}
+          <span
+            class="badge {% if req.status == 'pending' %}bg-warning text-dark {% elif req.status == 'approved' %}bg-success {% elif req.status == 'rejected' %}bg-danger {% elif req.status == 'completed' %}bg-info {% else %}bg-secondary{% endif %}"
+          >
+            {% if req.status == 'pending' %}Чака одобрение {% elif req.status ==
+            'approved' %}Одобрена {% elif req.status == 'rejected' %}Отхвърлена
+            {% elif req.status == 'completed' %}Завършена {% else %}{{
+            req.status or 'Неизвестен' }}{% endif %}
           </span>
         </td>
         <td>
@@ -71,42 +125,60 @@ endblock %} {% block content %}
           {% endif %}
         </td>
         <td>
-          <div class="btn-group btn-group-sm" role="group">
+          <div class="btn-group btn-group-sm flex-wrap" role="group">
             <!-- Прегледай детайли -->
-            <button class="btn btn-outline-primary" onclick="viewRequestDetails({{ req.id }})" 
-                    title="Прегледай детайли">
+            <button
+              class="btn btn-outline-primary mb-1"
+              onclick="viewRequestDetails({{ req.id }})"
+              title="Прегледай детайли"
+            >
               <i class="fas fa-eye"></i>
             </button>
-            
+
             {% if req.status == 'pending' %}
             <!-- Одобри заявка -->
-            <button class="btn btn-outline-success" onclick="approveRequest({{ req.id }})" 
-                    title="Одобри заявка">
+            <button
+              class="btn btn-outline-success mb-1"
+              onclick="approveRequest({{ req.id }})"
+              title="Одобри заявка"
+            >
               <i class="fas fa-check"></i>
             </button>
-            
+
             <!-- Отхвърли заявка -->
-            <button class="btn btn-outline-danger" onclick="rejectRequest({{ req.id }})" 
-                    title="Отхвърли заявка">
+            <button
+              class="btn btn-outline-danger mb-1"
+              onclick="rejectRequest({{ req.id }})"
+              title="Отхвърли заявка"
+            >
               <i class="fas fa-times"></i>
             </button>
             {% endif %}
-            
+
             <!-- Присвои доброволец -->
-            <button class="btn btn-outline-info" onclick="assignVolunteer({{ req.id }})" 
-                    title="Присвои доброволец">
+            <button
+              class="btn btn-outline-info mb-1"
+              onclick="assignVolunteer({{ req.id }})"
+              title="Присвои доброволец"
+            >
               <i class="fas fa-user-plus"></i>
             </button>
-            
+
             <!-- Редактирай -->
-            <button class="btn btn-outline-warning" onclick="editRequest({{ req.id }})" 
-                    title="Редактирай">
+            <button
+              class="btn btn-outline-warning mb-1"
+              onclick="editRequest({{ req.id }})"
+              title="Редактирай"
+            >
               <i class="fas fa-edit"></i>
             </button>
-            
+
             <!-- Изтрий -->
-            <button class="btn btn-outline-danger" onclick="deleteRequest({{ req.id }})" 
-                    title="Изтрий">
+            <button
+              class="btn btn-outline-danger mb-1"
+              onclick="deleteRequest({{ req.id }})"
+              title="Изтрий"
+            >
               <i class="fas fa-trash"></i>
             </button>
           </div>
@@ -118,112 +190,217 @@ endblock %} {% block content %}
 </div>
 
 <script>
-// Функции за управление на заявките
-function viewRequestDetails(requestId) {
+  // Функции за управление на заявките
+  function viewRequestDetails(requestId) {
     window.location.href = `/admin/request/${requestId}`;
-}
+  }
 
-function approveRequest(requestId) {
-    if (confirm('Сигурни ли сте, че искате да одобрите тази заявка?')) {
-        fetch(`/admin/request/${requestId}/approve`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Заявката е одобрена успешно!');
-                location.reload();
-            } else {
-                alert('Грешка при одобряване: ' + (data.message || 'Неизвестна грешка'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Грешка при одобряване на заявката');
-        });
-    }
-}
-
-function rejectRequest(requestId) {
-    const reason = prompt('Причина за отхвърляне (по избор):');
-    fetch(`/admin/request/${requestId}/reject`, {
-        method: 'POST',
+  function approveRequest(requestId) {
+    if (confirm("Сигурни ли сте, че искате да одобрите тази заявка?")) {
+      fetch(`/admin/request/${requestId}/approve`, {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ reason: reason })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Заявката е отхвърлена успешно!');
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            alert("Заявката е одобрена успешно!");
             location.reload();
-        } else {
-            alert('Грешка при отхвърляне: ' + (data.message || 'Неизвестна грешка'));
-        }
+          } else {
+            alert(
+              "Грешка при одобряване: " + (data.message || "Неизвестна грешка"),
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Грешка при одобряване на заявката");
+        });
+    }
+  }
+
+  function rejectRequest(requestId) {
+    const reason = prompt("Причина за отхвърляне (по избор):");
+    fetch(`/admin/request/${requestId}/reject`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reason: reason }),
     })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Грешка при отхвърляне на заявката');
-    });
-}
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert("Заявката е отхвърлена успешно!");
+          location.reload();
+        } else {
+          alert(
+            "Грешка при отхвърляне: " + (data.message || "Неизвестна грешка"),
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Грешка при отхвърляне на заявката");
+      });
+  }
 
-function assignVolunteer(requestId) {
-    const volunteerId = prompt('Въведете ID на доброволеца:');
+  function assignVolunteer(requestId) {
+    const volunteerId = prompt("Въведете ID на доброволеца:");
     if (volunteerId) {
-        fetch(`/admin/request/${requestId}/assign`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ volunteer_id: parseInt(volunteerId) })
+      fetch(`/admin/request/${requestId}/assign`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ volunteer_id: parseInt(volunteerId) }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            alert("Доброволецът е присвоен успешно!");
+            location.reload();
+          } else {
+            alert(
+              "Грешка при присвояване: " +
+                (data.message || "Неизвестна грешка"),
+            );
+          }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Доброволецът е присвоен успешно!');
-                location.reload();
-            } else {
-                alert('Грешка при присвояване: ' + (data.message || 'Неизвестна грешка'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Грешка при присвояване на доброволец');
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Грешка при присвояване на доброволец");
         });
     }
-}
+  }
 
-function editRequest(requestId) {
+  function editRequest(requestId) {
     window.location.href = `/admin/request/${requestId}/edit`;
-}
+  }
 
-function deleteRequest(requestId) {
-    if (confirm('Сигурни ли сте, че искате да изтриете тази заявка? Това действие е необратимо!')) {
-        fetch(`/admin/request/${requestId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+  function deleteRequest(requestId) {
+    if (
+      confirm(
+        "Сигурни ли сте, че искате да изтриете тази заявка? Това действие е необратимо!",
+      )
+    ) {
+      fetch(`/admin/request/${requestId}/delete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            alert("Заявката е изтрита успешно!");
+            location.reload();
+          } else {
+            alert(
+              "Грешка при изтриване: " + (data.message || "Неизвестна грешка"),
+            );
+          }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Заявката е изтрита успешно!');
-                location.reload();
-            } else {
-                alert('Грешка при изтриване: ' + (data.message || 'Неизвестна грешка'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Грешка при изтриване на заявката');
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("Грешка при изтриване на заявката");
         });
     }
-}
+  }
 </script>
+
+<!-- SocketIO Client for Real-time Updates -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+<script>
+  // Initialize SocketIO connection
+  const socket = io();
+
+  // Handle connection
+  socket.on('connect', function() {
+    console.log('Connected to WebSocket server');
+    // Join analytics room for real-time updates
+    socket.emit('join_analytics', {room: 'analytics'});
+  });
+
+  // Handle disconnection
+  socket.on('disconnect', function() {
+    console.log('Disconnected from WebSocket server');
+  });
+
+  // Handle analytics notifications
+  socket.on('analytics_notification', function(notification) {
+    console.log('Received analytics notification:', notification);
+
+    // Show notification to user
+    showNotification(notification);
+
+    // If it's a critical anomaly, refresh the dashboard
+    if (notification.action_required) {
+      setTimeout(function() {
+        location.reload();
+      }, 2000); // Refresh after 2 seconds
+    }
+  });
+
+  // Handle analytics data updates
+  socket.on('analytics_update', function(data) {
+    console.log('Received analytics update:', data);
+    // Update dashboard stats if available
+    updateDashboardStats(data);
+  });
+
+  // Function to show notifications
+  function showNotification(notification) {
+    // Create notification element
+    const notificationDiv = document.createElement('div');
+    notificationDiv.className = `alert alert-${getAlertClass(notification.severity)} alert-dismissible fade show position-fixed`;
+    notificationDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notificationDiv.innerHTML = `
+      <strong>${notification.title}</strong><br>
+      ${notification.message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    // Add to page
+    document.body.appendChild(notificationDiv);
+
+    // Auto-remove after 10 seconds
+    setTimeout(function() {
+      if (notificationDiv.parentNode) {
+        notificationDiv.remove();
+      }
+    }, 10000);
+  }
+
+  // Helper function to get Bootstrap alert class
+  function getAlertClass(severity) {
+    switch(severity) {
+      case 'critical': return 'danger';
+      case 'high': return 'warning';
+      case 'medium': return 'info';
+      case 'low': return 'secondary';
+      case 'info': return 'info';
+      default: return 'info';
+    }
+  }
+
+  // Function to update dashboard stats (placeholder)
+  function updateDashboardStats(data) {
+    // This would update the dashboard statistics in real-time
+    // For now, just log the data
+    console.log('Dashboard stats update:', data);
+  }
+
+  // Request analytics update on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Request initial analytics update
+    socket.emit('request_analytics_update');
+  });
+</script>
+
+<!-- Add this link in the footer section -->
+<a href="{{ url_for('privacy') }}">Поверителност</a>
 
 {% endblock %}

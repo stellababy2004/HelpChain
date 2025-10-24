@@ -25,7 +25,7 @@ class TestRoutes:
 
     def test_admin_login_get(self, client):
         """Тест за admin login страница (GET)"""
-        response = client.get("/admin_login")
+        response = client.get("/admin/login")
 
         assert response.status_code == 200
         assert (
@@ -36,7 +36,7 @@ class TestRoutes:
     def test_admin_login_post_invalid_credentials(self, client):
         """Тест за admin login с невалидни данни"""
         response = client.post(
-            "/admin_login",
+            "/admin/login",
             data={"username": "wrong", "password": "wrong"},
             follow_redirects=True,
         )

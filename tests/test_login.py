@@ -1,7 +1,7 @@
 import requests
 
 # Test admin login
-url = "http://127.0.0.1:5000/admin_login"
+url = "http://127.0.0.1:5000/admin/login"
 data = {"username": "admin", "password": "admin123"}
 
 try:

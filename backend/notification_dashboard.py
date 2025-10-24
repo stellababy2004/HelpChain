@@ -6,6 +6,7 @@ Web interface to view email notifications and requests
 
 import os
 import sqlite3
+import time
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -17,6 +18,8 @@ from flask import (
     url_for,
 )
 from flask_mail import Mail, Message
+
+# from .tasks import send_email_task  # Moved inside function to avoid import issues
 
 # Load environment variables
 load_dotenv()
@@ -184,31 +187,27 @@ ID: {req.id}
 
     subject = "Нова заявка за помощ в HelpChain"
 
-    # Try to send email
-    msg = Message(
+    # Generate unique message ID
+    message_id = f"notification_request_{req.id}_{int(time.time())}"
+
+    # Import here to avoid circular imports
+    from .tasks import send_email_task
+
+    # Queue email task with retry
+    send_email_task.delay(
         subject=subject,
         recipients=["contact@helpchain.live"],
-        sender=app.config["MAIL_DEFAULT_SENDER"],
         body=content,
+        message_id=message_id
     )
 
-    smtp_error = None
-    status = "saved"
-
-    try:
-        mail.send(msg)
-        status = "sent"
-        print(f"✅ Email sent successfully for request ID {req.id}")
-    except Exception as e:
-        smtp_error = str(e)
-        print(f"⚠️  Email send failed, saving to database: {e}")
-
-    # Save to database regardless
+    # Save to database as queued
     save_notification_to_db(
-        "contact@helpchain.live", subject, content, status, smtp_error
+        "contact@helpchain.live", subject, content, "queued", None
     )
 
-    return status == "sent"
+    print(f"✅ Email queued successfully for request ID {req.id}")
+    return True
 
 
 @app.route("/")

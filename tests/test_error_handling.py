@@ -37,7 +37,7 @@ class TestErrorHandling:
 
         # Трябва да редиректира към admin_login
         assert response.status_code == 302  # Redirect
-        assert "/admin_login" in response.headers.get("Location", "")
+        assert "/admin/login" in response.headers.get("Location", "")
 
     def test_403_error_json_response(self, client):
         """Тест за 403 грешка с JSON отговор за API - очакваме redirect към admin login"""
@@ -46,7 +46,7 @@ class TestErrorHandling:
 
         # Трябва да редиректира към admin_login (302), не да върне 403
         assert response.status_code == 302  # Redirect
-        assert "/admin_login" in response.headers.get("Location", "")
+        assert "/admin/login" in response.headers.get("Location", "")
 
     def test_429_error_basic(self, client):
         """Тест че rate limiting е конфигуриран"""

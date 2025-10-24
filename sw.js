@@ -3,7 +3,7 @@ const CACHE_NAME = "helpchain-v1.0.0";
 const STATIC_CACHE = "helpchain-static-v1.0.0";
 const DYNAMIC_CACHE = "helpchain-dynamic-v1.0.0";
 
-// Resources to cache immediately
+// Resources to cache immediately (only local assets)
 const STATIC_ASSETS = [
   "/",
   "/static/manifest.json",
@@ -16,9 +16,8 @@ const STATIC_ASSETS = [
   "/static/js/bootstrap.bundle.min.js",
   "/static/icons/icon-192x192.png",
   "/static/icons/icon-512x512.png",
-  "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
-  "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css",
-  "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
+  // Note: External CDN resources (Bootstrap, etc.) are not cached here
+  // as they are handled by browser cache and can cause caching failures
 ];
 
 // Install event - cache static assets
@@ -29,10 +28,20 @@ self.addEventListener("install", (event) => {
       .open(STATIC_CACHE)
       .then((cache) => {
         console.log("[SW] Caching static assets");
-        return cache.addAll(STATIC_ASSETS);
+        // Cache assets individually to prevent one failure from breaking all caching
+        const cachePromises = STATIC_ASSETS.map(async (url) => {
+          try {
+            await cache.add(url);
+            console.log(`[SW] Successfully cached: ${url}`);
+          } catch (error) {
+            console.warn(`[SW] Failed to cache: ${url}`, error);
+            // Continue with other assets even if one fails
+          }
+        });
+        return Promise.all(cachePromises);
       })
       .catch((error) => {
-        console.error("[SW] Error caching static assets:", error);
+        console.error("[SW] Error opening cache:", error);
       }),
   );
   // Force activation of new service worker

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: helpchain-config
+  namespace: helpchain
+  labels:
+    app: helpchain
+data:
+  FLASK_ENV: "production"
+  CELERY_BROKER_URL: "redis://redis-service:6379/0"
+  CELERY_RESULT_BACKEND: "redis://redis-service:6379/0"
+  MAIL_SERVER: "smtp.zoho.eu"
+  MAIL_PORT: "465"
+  MAIL_USE_SSL: "true"
+  MAIL_USE_TLS: "false"
+  MAIL_DEFAULT_SENDER: "contact@helpchain.live"
+  # Database URL will be constructed from secret
+  SECRET_KEY: "change-this-in-production-really-secure-key"
+  # Admin settings
+  ADMIN_USERNAME: "admin"
+  ADMIN_EMAIL: "contact@helpchain.live"
