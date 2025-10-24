@@ -1,5 +1,5 @@
 lines = []
-with open("backend/appy.py", "r", encoding="utf-8") as f:
+with open("backend/appy.py", encoding="utf-8") as f:
     lines = f.readlines()
 
 # Find the line with 'return render_template' that ends the first admin_dashboard

@@ -1,5 +1,6 @@
-import requests
 import time
+
+import requests
 
 time.sleep(2)  # Wait for server to be ready
 

@@ -3,7 +3,7 @@ import re
 
 
 def fix_admin_dashboard():
-    with open("backend/appy.py", "r", encoding="utf-8") as f:
+    with open("backend/appy.py", encoding="utf-8") as f:
         content = f.read()
 
     # Find the admin_dashboard function and fix the missing closing parenthesis

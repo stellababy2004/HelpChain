@@ -4,9 +4,9 @@ Script to add test data to the HelpChain database for admin panel testing.
 """
 
 import os
+import random
 import sys
 from datetime import datetime, timedelta
-import random
 
 # Add the backend directory to Python path
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
@@ -18,7 +18,7 @@ os.environ["FLASK_APP"] = "backend.appy"
 os.environ["FLASK_ENV"] = "development"
 
 from appy import app, db
-from models import Volunteer, HelpRequest, AdminUser
+from models import AdminUser, HelpRequest, Volunteer
 
 
 def create_test_volunteers():

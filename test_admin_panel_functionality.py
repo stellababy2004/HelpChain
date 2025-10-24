@@ -5,8 +5,9 @@ Test script to verify admin panel functionality with test data.
 
 import os
 import sys
-import requests
 from datetime import datetime
+
+import requests
 
 # Add the backend directory to Python path
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")

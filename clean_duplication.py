@@ -6,7 +6,7 @@ def clean_duplicated_functions():
     """Remove duplicated function definitions in appy.py"""
 
     # Read the file
-    with open("backend/appy.py", "r", encoding="utf-8") as f:
+    with open("backend/appy.py", encoding="utf-8") as f:
         content = f.read()
 
     # Find the first occurrence of admin_dashboard function

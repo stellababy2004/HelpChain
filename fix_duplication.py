@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # Read the file
-with open("backend/appy.py", "r", encoding="utf-8") as f:
+with open("backend/appy.py", encoding="utf-8") as f:
     content = f.read()
 
 # Remove the broken code after the first admin_dashboard function

@@ -30,7 +30,7 @@ sys.modules["analytics_service"] = type(
 
 # Import the existing app
 from backend.appy import app, db
-from backend.models import HelpRequest, AdminUser
+from backend.models import AdminUser, HelpRequest
 
 
 def test_admin_request_details():

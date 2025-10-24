@@ -3,7 +3,7 @@ import re
 
 
 def fix_syntax_error():
-    with open("backend/appy.py", "r", encoding="utf-8") as f:
+    with open("backend/appy.py", encoding="utf-8") as f:
         content = f.read()
 
     # Find and remove the orphaned line

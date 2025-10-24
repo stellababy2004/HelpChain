@@ -10,7 +10,8 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
 
 from flask import Flask
-from backend.models import db, AdminUser
+
+from backend.models import AdminUser, db
 
 
 def debug_admin_password():
