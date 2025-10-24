@@ -22,22 +22,26 @@ HelpChain consists of the following components:
 ### Local Development Setup
 
 1. **Clone the repository and navigate to backend:**
+
    ```bash
    cd backend
    ```
 
 2. **Create environment file:**
+
    ```bash
    cp .env.example .env
    # Edit .env with your actual values
    ```
 
 3. **Start all services:**
+
    ```bash
    docker-compose up -d
    ```
 
 4. **Run database migrations:**
+
    ```bash
    docker-compose exec app flask db upgrade
    ```
@@ -70,12 +74,14 @@ HelpChain consists of the following components:
 ### Environment Setup
 
 1. **Configure your environment variables:**
+
    ```bash
    export DOCKER_REGISTRY=your-registry.com
    export IMAGE_TAG=v1.0.0
    ```
 
 2. **Update Kubernetes secrets:**
+
    ```bash
    # Edit k8s/secret.yaml with your actual base64-encoded values
    # Generate base64: echo -n "your-value" | base64
@@ -89,11 +95,13 @@ HelpChain consists of the following components:
 ### Deployment
 
 1. **Make the deployment script executable:**
+
    ```bash
    chmod +x deploy.sh
    ```
 
 2. **Run the deployment:**
+
    ```bash
    ./deploy.sh
    ```
@@ -151,24 +159,24 @@ kubectl exec -n helpchain $POD_NAME -- flask db upgrade
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `SECRET_KEY` | Flask secret key | Required |
-| `DATABASE_URL` | PostgreSQL connection URL | Required |
-| `CELERY_BROKER_URL` | Redis broker URL | redis://redis:6379/0 |
-| `MAIL_SERVER` | SMTP server | smtp.zoho.eu |
-| `MAIL_USERNAME` | SMTP username | Required |
-| `MAIL_PASSWORD` | SMTP password | Required |
-| `ADMIN_USER_PASSWORD` | Admin password | Admin123 |
+| Variable              | Description               | Default              |
+| --------------------- | ------------------------- | -------------------- |
+| `SECRET_KEY`          | Flask secret key          | Required             |
+| `DATABASE_URL`        | PostgreSQL connection URL | Required             |
+| `CELERY_BROKER_URL`   | Redis broker URL          | redis://redis:6379/0 |
+| `MAIL_SERVER`         | SMTP server               | smtp.zoho.eu         |
+| `MAIL_USERNAME`       | SMTP username             | Required             |
+| `MAIL_PASSWORD`       | SMTP password             | Required             |
+| `ADMIN_USER_PASSWORD` | Admin password            | Admin123             |
 
 ### Resource Requirements
 
-| Component | CPU Request | CPU Limit | Memory Request | Memory Limit |
-|-----------|-------------|-----------|----------------|--------------|
-| Web App | 250m | 500m | 512Mi | 1Gi |
-| PostgreSQL | 250m | 500m | 256Mi | 512Mi |
-| Redis | 100m | 200m | 128Mi | 256Mi |
-| Celery Worker | 100m | 200m | 256Mi | 512Mi |
+| Component     | CPU Request | CPU Limit | Memory Request | Memory Limit |
+| ------------- | ----------- | --------- | -------------- | ------------ |
+| Web App       | 250m        | 500m      | 512Mi          | 1Gi          |
+| PostgreSQL    | 250m        | 500m      | 256Mi          | 512Mi        |
+| Redis         | 100m        | 200m      | 128Mi          | 256Mi        |
+| Celery Worker | 100m        | 200m      | 256Mi          | 512Mi        |
 
 ## 📊 Monitoring & Maintenance
 
@@ -204,6 +212,7 @@ kubectl scale deployment celery-worker -n helpchain --replicas=3
 ### Backups
 
 Set up regular backups for:
+
 - PostgreSQL database
 - Uploaded files (`/app/uploads`)
 - ML models (`/app/models`)
@@ -222,6 +231,7 @@ Set up regular backups for:
 ### Common Issues
 
 1. **Pods not starting:**
+
    ```bash
    kubectl describe pod <pod-name> -n helpchain
    kubectl logs <pod-name> -n helpchain

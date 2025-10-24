@@ -4,7 +4,13 @@ Test script to check analytics model imports
 """
 
 try:
-    from models_with_analytics import AnalyticsEvent, UserBehavior, PerformanceMetrics, ChatbotConversation
+    from models_with_analytics import (
+        AnalyticsEvent,
+        ChatbotConversation,
+        PerformanceMetrics,
+        UserBehavior,
+    )
+
     print("✅ Analytics models imported successfully")
     print(f"AnalyticsEvent: {AnalyticsEvent}")
     print(f"UserBehavior: {UserBehavior}")

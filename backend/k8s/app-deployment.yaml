@@ -19,106 +19,106 @@ spec:
         component: web
     spec:
       containers:
-      - name: helpchain
-        image: helpchain:latest  # Replace with your actual image
-        ports:
-        - containerPort: 5000
-        env:
-        - name: DATABASE_URL
-          value: "postgresql://helpchain:$(POSTGRES_PASSWORD)@postgres-service:5432/helpchain"
-        - name: SECRET_KEY
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: SECRET_KEY
-        - name: FLASK_ENV
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: FLASK_ENV
-        - name: CELERY_BROKER_URL
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: CELERY_BROKER_URL
-        - name: CELERY_RESULT_BACKEND
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: CELERY_RESULT_BACKEND
-        - name: MAIL_SERVER
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: MAIL_SERVER
-        - name: MAIL_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: MAIL_PORT
-        - name: MAIL_USE_SSL
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: MAIL_USE_SSL
-        - name: MAIL_USE_TLS
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: MAIL_USE_TLS
-        - name: MAIL_DEFAULT_SENDER
-          valueFrom:
-            configMapKeyRef:
-              name: helpchain-config
-              key: MAIL_DEFAULT_SENDER
-        - name: MAIL_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: helpchain-secret
-              key: MAIL_USERNAME
-        - name: MAIL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: helpchain-secret
-              key: MAIL_PASSWORD
-        - name: ADMIN_USER_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: helpchain-secret
-              key: ADMIN_USER_PASSWORD
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: helpchain-secret
-              key: POSTGRES_PASSWORD
-        volumeMounts:
-        - name: uploads-storage
-          mountPath: /app/uploads
-        - name: models-storage
-          mountPath: /app/models
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /api
-            port: 5000
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api
-            port: 5000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
+        - name: helpchain
+          image: helpchain:latest # Replace with your actual image
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://helpchain:$(POSTGRES_PASSWORD)@postgres-service:5432/helpchain"
+            - name: SECRET_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: SECRET_KEY
+            - name: FLASK_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: FLASK_ENV
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: CELERY_BROKER_URL
+            - name: CELERY_RESULT_BACKEND
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: CELERY_RESULT_BACKEND
+            - name: MAIL_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: MAIL_SERVER
+            - name: MAIL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: MAIL_PORT
+            - name: MAIL_USE_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: MAIL_USE_SSL
+            - name: MAIL_USE_TLS
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: MAIL_USE_TLS
+            - name: MAIL_DEFAULT_SENDER
+              valueFrom:
+                configMapKeyRef:
+                  name: helpchain-config
+                  key: MAIL_DEFAULT_SENDER
+            - name: MAIL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: helpchain-secret
+                  key: MAIL_USERNAME
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: helpchain-secret
+                  key: MAIL_PASSWORD
+            - name: ADMIN_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: helpchain-secret
+                  key: ADMIN_USER_PASSWORD
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: helpchain-secret
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: uploads-storage
+              mountPath: /app/uploads
+            - name: models-storage
+              mountPath: /app/models
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /api
+              port: 5000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
       volumes:
-      - name: uploads-storage
-        emptyDir: {}  # Use PVC in production
-      - name: models-storage
-        emptyDir: {}  # Use PVC in production
+        - name: uploads-storage
+          emptyDir: {} # Use PVC in production
+        - name: models-storage
+          emptyDir: {} # Use PVC in production

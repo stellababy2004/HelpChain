@@ -37,9 +37,13 @@ from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import BadRequest
 from werkzeug.utils import secure_filename
 
+from admin_roles import admin_roles_bp
+
+# Import smart matching engine
+from ai_service import ai_service
+
 # Import extensions and models using absolute imports since backend dir is in sys.path
 from extensions import db
-
 from models import (
     AdminUser,
     ChatMessage,
@@ -52,14 +56,15 @@ from models import (
     Volunteer,
 )
 
+# Import Task models globally for use in routes
 from models_with_analytics import (
+    AnalyticsEvent,
+    ChatbotConversation,
+    PerformanceMetrics,
     Task,
     TaskAssignment,
     TaskPerformance,
-    AnalyticsEvent,
     UserBehavior,
-    PerformanceMetrics,
-    ChatbotConversation,
 )
 
 # Import permissions module
@@ -68,24 +73,7 @@ from permissions import (
     require_admin_login,
     require_permission,
 )
-
-# Import Task models globally for use in routes
-from models_with_analytics import (
-    Task,
-    TaskAssignment,
-    TaskPerformance,
-    AnalyticsEvent,
-    UserBehavior,
-    PerformanceMetrics,
-    ChatbotConversation,
-)
-
-from admin_roles import admin_roles_bp
-
 from routes.notifications import notification_bp
-
-# Import smart matching engine
-from ai_service import ai_service
 
 # Import Celery tasks
 from tasks import send_email_task
@@ -308,10 +296,10 @@ def send_email_2fa_code(code, ip_address, user_agent):
     """Send 2FA code via email"""
     try:
         logger.info(f"Attempting to send 2FA code to {EMAIL_2FA_RECIPIENT}")
-        
+
         # Use Celery task for reliable email delivery with retry
         from tasks import send_email_with_retry
-        
+
         body = f"""Здравейте,
 
 Получен е опит за вход в администраторския панел на HelpChain.
@@ -328,14 +316,14 @@ def send_email_2fa_code(code, ip_address, user_agent):
 С уважение,
 HelpChain системата
 """
-        
+
         send_email_task.delay(
             recipient=EMAIL_2FA_RECIPIENT,
             subject="HelpChain - Код за верификация на администратор",
             template=None,  # Direct body content
-            context={"body": body}
+            context={"body": body},
         )
-        
+
         logger.info(f"Email 2FA code queued for delivery to {EMAIL_2FA_RECIPIENT}")
         return True
 
@@ -381,10 +369,10 @@ _static = os.path.join(os.path.dirname(__file__), "static")
 # from flask_session import Session
 
 # Import shared Flask app and mail instances
-from app_init import app, mail
-
 # Initialize Flask-SocketIO for real-time features
 from flask_socketio import SocketIO
+
+from app_init import app, mail
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
@@ -415,8 +403,13 @@ def make_celery(app):
     try:
         celery = Celery(
             app.import_name,
-            backend=os.getenv("CELERY_RESULT_BACKEND", os.getenv("REDIS_URL", "redis://localhost:6379/0")),
-            broker_url=os.getenv("CELERY_BROKER_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0")),
+            backend=os.getenv(
+                "CELERY_RESULT_BACKEND",
+                os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+            ),
+            broker_url=os.getenv(
+                "CELERY_BROKER_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0")
+            ),
         )
         celery.conf.update(app.config)
 
@@ -708,9 +701,14 @@ app.config["COMPRESS_MIMETYPES"] = [
 app.config["COMPRESS_LEVEL"] = 6  # Compression level (1-9)
 app.config["COMPRESS_MIN_SIZE"] = 500  # Minimum size to compress (bytes)
 
-# Initialize Flask-Compress for API response compression
-compress = Compress()
-compress.init_app(app)
+# Initialize Flask-Compress for API response compression (optional)
+try:
+    compress = Compress()
+    compress.init_app(app)
+    app.logger.info("Flask-Compress initialized successfully")
+except ImportError:
+    app.logger.warning("Flask-Compress not available, compression disabled")
+    compress = None
 
 # Security configurations
 app.config["SESSION_COOKIE_SECURE"] = False  # Disabled for development
@@ -746,6 +744,7 @@ app.register_blueprint(analytics_bp, url_prefix="/analytics")
 # Initialize analytics cache with app
 try:
     from analytics_routes import cache
+
     cache.init_app(app)
     app.logger.info("Analytics cache initialized successfully")
 except Exception as e:
@@ -805,7 +804,10 @@ def email_healthz():
         password = app.config.get("MAIL_PASSWORD")
 
         if not server:
-            return jsonify({"status": "error", "message": "MAIL_SERVER not configured"}), 500
+            return (
+                jsonify({"status": "error", "message": "MAIL_SERVER not configured"}),
+                500,
+            )
 
         # Test SMTP connection
         try:
@@ -830,38 +832,55 @@ def email_healthz():
             # Close connection
             smtp.quit()
 
-            return jsonify({
-                "status": "ok",
-                "server": server,
-                "port": port,
-                "secure": use_ssl or use_tls,
-                "auth": bool(username and password),
-                "timestamp": datetime.now().isoformat()
-            })
+            return jsonify(
+                {
+                    "status": "ok",
+                    "server": server,
+                    "port": port,
+                    "secure": use_ssl or use_tls,
+                    "auth": bool(username and password),
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
         except smtplib.SMTPException as e:
-            return jsonify({
-                "status": "error",
-                "server": server,
-                "port": port,
-                "error": str(e),
-                "timestamp": datetime.now().isoformat()
-            }), 503
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "server": server,
+                        "port": port,
+                        "error": str(e),
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                ),
+                503,
+            )
         except Exception as e:
-            return jsonify({
-                "status": "error",
-                "server": server,
-                "port": port,
-                "error": f"Connection failed: {str(e)}",
-                "timestamp": datetime.now().isoformat()
-            }), 503
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "server": server,
+                        "port": port,
+                        "error": f"Connection failed: {str(e)}",
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                ),
+                503,
+            )
 
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "error": f"Health check failed: {str(e)}",
-            "timestamp": datetime.now().isoformat()
-        }), 500
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "error": f"Health check failed: {str(e)}",
+                    "timestamp": datetime.now().isoformat(),
+                }
+            ),
+            500,
+        )
 
 
 app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
@@ -2321,6 +2340,7 @@ def volunteer_register():
             )
             # Use Celery task for email sending with retry
             from tasks import send_email_task
+
             send_email_task.delay(
                 subject="Нов доброволец в HelpChain",
                 recipients=["contact@helpchain.live"],
@@ -2334,7 +2354,7 @@ def volunteer_register():
 Моля, свържете се с доброволеца за допълнителна информация.
 """,
                 template=None,
-                sender=app.config["MAIL_DEFAULT_SENDER"]
+                sender=app.config["MAIL_DEFAULT_SENDER"],
             )
             logger.info("Volunteer registration email sent successfully")
         except Exception as e:
@@ -2495,7 +2515,7 @@ HelpChain системата
 С уважение,
 HelpChain системата
 """,
-                        template=None
+                        template=None,
                     )
                     app.logger.info(f"Access code sent to {email}")
                 except Exception as e:
@@ -2706,7 +2726,7 @@ HelpChain системата
 С уважение,
 HelpChain системата
 """,
-                template=None
+                template=None,
             )
             app.logger.info(f"New access code sent to {volunteer.email}")
         except Exception as e:
@@ -3544,7 +3564,9 @@ def admin_delete_volunteer(volunteer_id):
         db.session.rollback()
         app.logger.error(f"Error deleting volunteer {volunteer_id}: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при изтриване на доброволеца"}),
+            jsonify(
+                {"success": False, "message": "Грешка при изтриване на доброволеца"}
+            ),
             500,
         )
 
@@ -5007,19 +5029,26 @@ def readiness_check():
     try:
         # Check database connectivity
         db.session.execute(db.text("SELECT 1"))
-        return jsonify({
-            "status": "ready",
-            "database": "connected",
-            "timestamp": datetime.utcnow().isoformat()
-        })
+        return jsonify(
+            {
+                "status": "ready",
+                "database": "connected",
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        )
     except Exception as e:
         app.logger.error(f"Readiness check failed: {e}")
-        return jsonify({
-            "status": "not ready",
-            "database": "disconnected",
-            "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
-        }), 503
+        return (
+            jsonify(
+                {
+                    "status": "not ready",
+                    "database": "disconnected",
+                    "error": str(e),
+                    "timestamp": datetime.utcnow().isoformat(),
+                }
+            ),
+            503,
+        )
 
 
 if __name__ == "__main__":

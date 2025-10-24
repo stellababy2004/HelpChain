@@ -34,9 +34,9 @@ class VolunteerUser(HttpUser):
     @task(3)  # Higher weight - most common action
     def view_dashboard(self):
         """View volunteer dashboard"""
-        with self.client.get("/api/volunteer/dashboard",
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            "/api/volunteer/dashboard", headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code == 200:
                 response.success()
             elif response.status_code == 401:
@@ -48,9 +48,9 @@ class VolunteerUser(HttpUser):
     @task(2)
     def browse_tasks(self):
         """Browse available tasks"""
-        with self.client.get("/api/volunteer/tasks",
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            "/api/volunteer/tasks", headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code in [200, 404]:
                 response.success()
             else:
@@ -60,15 +60,17 @@ class VolunteerUser(HttpUser):
     def update_profile(self):
         """Update volunteer profile"""
         profile_data = {
-            "skills": ["medical", "transport", "support"][:random.randint(1, 3)],
+            "skills": ["medical", "transport", "support"][: random.randint(1, 3)],
             "availability": random.choice(["available", "busy", "offline"]),
-            "location": f"Test Location {random.randint(1, 100)}"
+            "location": f"Test Location {random.randint(1, 100)}",
         }
 
-        with self.client.put("/api/user/profile",
-                           json=profile_data,
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.put(
+            "/api/user/profile",
+            json=profile_data,
+            headers=self.headers,
+            catch_response=True,
+        ) as response:
             if response.status_code == 200:
                 response.success()
             else:
@@ -77,9 +79,9 @@ class VolunteerUser(HttpUser):
     @task(1)
     def check_notifications(self):
         """Check for new notifications"""
-        with self.client.get("/api/notifications",
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            "/api/notifications", headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code in [200, 404]:
                 response.success()
             else:
@@ -105,9 +107,9 @@ class AdminUser(HttpUser):
     @task(4)  # Most common admin action
     def view_admin_dashboard(self):
         """View admin dashboard with analytics"""
-        with self.client.get("/api/admin/dashboard",
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            "/api/admin/dashboard", headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code == 200:
                 response.success()
             elif response.status_code == 401:
@@ -118,9 +120,9 @@ class AdminUser(HttpUser):
     @task(2)
     def view_analytics(self):
         """View detailed analytics"""
-        with self.client.get("/api/analytics/dashboard",
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            "/api/analytics/dashboard", headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code in [200, 404]:
                 response.success()
             else:
@@ -129,9 +131,9 @@ class AdminUser(HttpUser):
     @task(1)
     def manage_volunteers(self):
         """View volunteer management interface"""
-        with self.client.get("/api/admin/volunteers",
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            "/api/admin/volunteers", headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code in [200, 404]:
                 response.success()
             else:
@@ -140,9 +142,9 @@ class AdminUser(HttpUser):
     @task(1)
     def check_system_status(self):
         """Check system health and AI status"""
-        with self.client.get("/api/ai/status",
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            "/api/ai/status", headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code in [200, 404]:
                 response.success()
             else:
@@ -173,9 +175,9 @@ class MixedUser(HttpUser):
         else:
             endpoint = "/api/admin/dashboard"
 
-        with self.client.get(endpoint,
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            endpoint, headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code == 200:
                 response.success()
             else:
@@ -184,16 +186,12 @@ class MixedUser(HttpUser):
     @task(1)
     def general_browsing(self):
         """General browsing behavior"""
-        endpoints = [
-            "/api/user/profile",
-            "/api/notifications",
-            "/api/ai/status"
-        ]
+        endpoints = ["/api/user/profile", "/api/notifications", "/api/ai/status"]
 
         endpoint = random.choice(endpoints)
-        with self.client.get(endpoint,
-                           headers=self.headers,
-                           catch_response=True) as response:
+        with self.client.get(
+            endpoint, headers=self.headers, catch_response=True
+        ) as response:
             if response.status_code in [200, 404]:
                 response.success()
             else:
@@ -208,8 +206,7 @@ class PublicUser(HttpUser):
     @task(5)
     def view_homepage(self):
         """View public homepage"""
-        with self.client.get("/",
-                           catch_response=True) as response:
+        with self.client.get("/", catch_response=True) as response:
             if response.status_code == 200:
                 response.success()
             else:
@@ -221,13 +218,15 @@ class PublicUser(HttpUser):
         assets = [
             "/static/styles.css",
             "/static/bootstrap.min.css",
-            "/static/jquery.min.js"
+            "/static/jquery.min.js",
         ]
 
         asset = random.choice(assets)
-        with self.client.get(asset,
-                           catch_response=True) as response:
-            if response.status_code in [200, 404]:  # 404 is acceptable for missing assets
+        with self.client.get(asset, catch_response=True) as response:
+            if response.status_code in [
+                200,
+                404,
+            ]:  # 404 is acceptable for missing assets
                 response.success()
             else:
                 response.failure(f"Static asset failed: {response.status_code}")
@@ -235,15 +234,10 @@ class PublicUser(HttpUser):
     @task(1)
     def test_error_pages(self):
         """Test error handling"""
-        error_endpoints = [
-            "/nonexistent",
-            "/api/invalid",
-            "/admin/unauthorized"
-        ]
+        error_endpoints = ["/nonexistent", "/api/invalid", "/admin/unauthorized"]
 
         endpoint = random.choice(error_endpoints)
-        with self.client.get(endpoint,
-                           catch_response=True) as response:
+        with self.client.get(endpoint, catch_response=True) as response:
             if response.status_code in [404, 401, 403]:  # Expected error codes
                 response.success()
             else:
@@ -269,7 +263,18 @@ def on_test_stop(environment: Environment, **kwargs):
 
 
 @events.request.add_listener
-def on_request(request_type, name, response_time, response_length, response, context, exception, start_time, url, **kwargs):
+def on_request(
+    request_type,
+    name,
+    response_time,
+    response_length,
+    response,
+    context,
+    exception,
+    start_time,
+    url,
+    **kwargs,
+):
     """Monitor individual requests"""
     if exception:
         print(f"❌ Request failed: {name} - {exception}")
@@ -283,26 +288,26 @@ TEST_CONFIGS = {
         "users": 10,
         "spawn_rate": 2,
         "run_time": "1m",
-        "description": "Light load test (10 users)"
+        "description": "Light load test (10 users)",
     },
     "medium_load": {
         "users": 50,
         "spawn_rate": 5,
         "run_time": "2m",
-        "description": "Medium load test (50 users)"
+        "description": "Medium load test (50 users)",
     },
     "heavy_load": {
         "users": 100,
         "spawn_rate": 10,
         "run_time": "3m",
-        "description": "Heavy load test (100 users)"
+        "description": "Heavy load test (100 users)",
     },
     "stress_test": {
         "users": 200,
         "spawn_rate": 20,
         "run_time": "5m",
-        "description": "Stress test (200 users)"
-    }
+        "description": "Stress test (200 users)",
+    },
 }
 
 
@@ -325,22 +330,28 @@ def run_scenario(scenario_name: str):
     # Create environment with mixed user types
     env = Environment(
         user_classes=[VolunteerUser, AdminUser, MixedUser, PublicUser],
-        host="http://localhost:5000"
+        host="http://localhost:5000",
     )
 
     # Configure test parameters
-    env.parsed_options = type('Options', (), {
-        'num_users': config['users'],
-        'spawn_rate': config['spawn_rate'],
-        'run_time': config['run_time']
-    })()
+    env.parsed_options = type(
+        "Options",
+        (),
+        {
+            "num_users": config["users"],
+            "spawn_rate": config["spawn_rate"],
+            "run_time": config["run_time"],
+        },
+    )()
 
     # Run the test
     env.create_local_runner()
-    env.runner.start(env.parsed_options.num_users, spawn_rate=env.parsed_options.spawn_rate)
+    env.runner.start(
+        env.parsed_options.num_users, spawn_rate=env.parsed_options.spawn_rate
+    )
 
     # Wait for specified time
-    time.sleep(parse_time(config['run_time']))
+    time.sleep(parse_time(config["run_time"]))
 
     # Stop the test
     env.runner.stop()
@@ -351,11 +362,11 @@ def run_scenario(scenario_name: str):
 
 def parse_time(time_str: str) -> int:
     """Parse time string like '1m', '30s', '2h' to seconds"""
-    if time_str.endswith('s'):
+    if time_str.endswith("s"):
         return int(time_str[:-1])
-    elif time_str.endswith('m'):
+    elif time_str.endswith("m"):
         return int(time_str[:-1]) * 60
-    elif time_str.endswith('h'):
+    elif time_str.endswith("h"):
         return int(time_str[:-1]) * 3600
     else:
         return int(time_str)

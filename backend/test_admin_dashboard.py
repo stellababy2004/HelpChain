@@ -2,11 +2,13 @@
 """
 Comprehensive test script for admin dashboard functionality
 """
-import requests
 import json
 import time
 
+import requests
+
 BASE_URL = "http://127.0.0.1:5000"
+
 
 def test_admin_dashboard():
     """Test the admin dashboard and related functionality"""
@@ -28,11 +30,10 @@ def test_admin_dashboard():
 
         # 2. Test admin login
         print("\n2. Testing admin login...")
-        login_data = {
-            'username': 'admin',
-            'password': 'Admin123'
-        }
-        response = session.post(f"{BASE_URL}/admin_login", data=login_data, allow_redirects=False)
+        login_data = {"username": "admin", "password": "Admin123"}
+        response = session.post(
+            f"{BASE_URL}/admin_login", data=login_data, allow_redirects=False
+        )
         print(f"   Status: {response.status_code}")
 
         # Check for successful login
@@ -54,13 +55,23 @@ def test_admin_dashboard():
             content_checks = [
                 ("Dashboard title", "Админ панел" in response.text),
                 ("Navigation", "admin_volunteers" in response.text),
-                ("Statistics", "Общо заявки" in response.text or "статистика" in response.text.lower()),
-                ("Charts/graphs", "chart" in response.text.lower() or "графика" in response.text.lower()),
+                (
+                    "Statistics",
+                    "Общо заявки" in response.text
+                    or "статистика" in response.text.lower(),
+                ),
+                (
+                    "Charts/graphs",
+                    "chart" in response.text.lower()
+                    or "графика" in response.text.lower(),
+                ),
             ]
 
             for check_name, check_result in content_checks:
                 status = "✓" if check_result else "✗"
-                print(f"   {status} {check_name}: {'Found' if check_result else 'Missing'}")
+                print(
+                    f"   {status} {check_name}: {'Found' if check_result else 'Missing'}"
+                )
 
         else:
             print("   ✗ Admin dashboard not accessible")
@@ -114,20 +125,26 @@ def test_admin_dashboard():
 
         # Check if analytics data loads
         try:
-            response = session.get(f"{BASE_URL}/analytics/api/analytics/data?simple=true")
+            response = session.get(
+                f"{BASE_URL}/analytics/api/analytics/data?simple=true"
+            )
             if response.status_code == 200:
                 data = response.json()
                 print("   ✓ Analytics data API working")
 
                 # Check data structure
-                expected_keys = ['total_requests', 'total_volunteers', 'active_tasks']
+                expected_keys = ["total_requests", "total_volunteers", "active_tasks"]
                 missing_keys = [key for key in expected_keys if key not in data]
                 if missing_keys:
                     print(f"   ⚠️  Missing analytics keys: {missing_keys}")
                 else:
                     print("   ✓ Analytics data structure looks good")
-                    print(f"      - Total requests: {data.get('total_requests', 'N/A')}")
-                    print(f"      - Total volunteers: {data.get('total_volunteers', 'N/A')}")
+                    print(
+                        f"      - Total requests: {data.get('total_requests', 'N/A')}"
+                    )
+                    print(
+                        f"      - Total volunteers: {data.get('total_volunteers', 'N/A')}"
+                    )
                     print(f"      - Active tasks: {data.get('active_tasks', 'N/A')}")
             else:
                 print(f"   ✗ Analytics data API failed: {response.status_code}")
@@ -144,6 +161,7 @@ def test_admin_dashboard():
     except Exception as e:
         print(f"❌ Test failed with error: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = test_admin_dashboard()

@@ -9,31 +9,31 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any
 
+import joblib
 import numpy as np
 import pandas as pd
-import joblib
 
 logger = logging.getLogger(__name__)
 
 # Enhanced ML imports
 from sklearn.ensemble import (
-    RandomForestRegressor,
-    GradientBoostingRegressor,
     ExtraTreesRegressor,
+    GradientBoostingRegressor,
+    RandomForestRegressor,
 )
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.svm import SVR
-from sklearn.neural_network import MLPRegressor
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.linear_model import Lasso, LinearRegression, Ridge
 from sklearn.metrics import (
     mean_absolute_error,
+    mean_absolute_percentage_error,
     mean_squared_error,
     r2_score,
-    mean_absolute_percentage_error,
 )
-from sklearn.model_selection import TimeSeriesSplit, GridSearchCV, cross_val_score
-from sklearn.preprocessing import StandardScaler, RobustScaler
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit, cross_val_score
+from sklearn.neural_network import MLPRegressor
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import RobustScaler, StandardScaler
+from sklearn.svm import SVR
 
 # Optional advanced ML libraries
 try:

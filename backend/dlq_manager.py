@@ -32,7 +32,9 @@ def show_dlq_stats():
             if sample:
                 try:
                     payload = json.loads(sample)
-                    print(f"   Sample email: {payload.get('subject', 'N/A')} -> {payload.get('recipients', [])}")
+                    print(
+                        f"   Sample email: {payload.get('subject', 'N/A')} -> {payload.get('recipients', [])}"
+                    )
                     print(f"   Failed at: {payload.get('failed_at', 'N/A')}")
                 except json.JSONDecodeError:
                     print("   Sample email: <invalid JSON>")
@@ -48,16 +50,24 @@ def requeue_dlq_manually(limit=100):
     """Manually trigger DLQ requeue"""
     print("🔄 To manually requeue DLQ emails, run:")
     print(f"   celery -A celery_app call tasks.requeue_dlq_emails --args='[{limit}]'")
-    print("   or from Python: from tasks import requeue_dlq_emails; requeue_dlq_emails.delay({limit})")
-    print("Note: This requires the full Flask/Celery application context to be running.")
+    print(
+        "   or from Python: from tasks import requeue_dlq_emails; requeue_dlq_emails.delay({limit})"
+    )
+    print(
+        "Note: This requires the full Flask/Celery application context to be running."
+    )
     print("Note: The scheduled task runs every 15 minutes with limit=100.")
-    print("Note: Email sending is rate-limited to 30 emails per minute to comply with Zoho limits.")
+    print(
+        "Note: Email sending is rate-limited to 30 emails per minute to comply with Zoho limits."
+    )
 
 
 def clear_dlq():
     """Clear all emails from DLQ (use with caution!)"""
-    confirm = input("⚠️  This will permanently delete all emails from DLQ. Continue? (yes/no): ")
-    if confirm.lower() != 'yes':
+    confirm = input(
+        "⚠️  This will permanently delete all emails from DLQ. Continue? (yes/no): "
+    )
+    if confirm.lower() != "yes":
         print("Operation cancelled.")
         return
 
@@ -100,7 +110,9 @@ def main():
         print("")
         print("Commands:")
         print("  stats              Show DLQ statistics")
-        print("  requeue [limit]    Manually requeue emails from DLQ (default limit: 10)")
+        print(
+            "  requeue [limit]    Manually requeue emails from DLQ (default limit: 10)"
+        )
         print("  inspect [limit]    Inspect emails in DLQ (default limit: 5)")
         print("  clear              Clear all emails from DLQ (dangerous!)")
         print("")

@@ -6,7 +6,7 @@ Flask-Babel==3.1.0
 Flask-Login==0.6.3
 Flask-SocketIO==5.3.6
 Flask-Session==0.5.0
-Flask-Compress==1.14
+Flask-Compress==1.20
 Flask-Limiter==3.5.1
 Flask-Talisman==1.1.0
 python-socketio==5.8.0

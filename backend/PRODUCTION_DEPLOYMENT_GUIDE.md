@@ -1,11 +1,13 @@
 # HelpChain Production Deployment - Implementation Guide
 
 ## Overview
+
 This guide provides step-by-step instructions for deploying HelpChain to production using the comprehensive deployment plan and automation scripts.
 
 ## 📋 Prerequisites
 
 ### System Requirements
+
 - Ubuntu 20.04+ or CentOS 7+
 - Docker 20.10+
 - Docker Compose 2.0+
@@ -14,9 +16,11 @@ This guide provides step-by-step instructions for deploying HelpChain to product
 - Domain name with DNS access
 
 ### Cloud Provider Setup
+
 Choose one of the following cloud providers:
 
 #### DigitalOcean (Recommended)
+
 ```bash
 # Install doctl CLI
 snap install doctl
@@ -31,6 +35,7 @@ doctl compute droplet create helpchain-prod \
 ```
 
 #### AWS EC2
+
 ```bash
 # Using AWS CLI
 aws ec2 run-instances \
@@ -41,6 +46,7 @@ aws ec2 run-instances \
 ```
 
 #### Azure VM
+
 ```bash
 # Using Azure CLI
 az vm create \
@@ -54,6 +60,7 @@ az vm create \
 ## 🚀 Deployment Steps
 
 ### Step 1: Server Preparation
+
 ```bash
 # Connect to your server
 ssh root@your-server-ip
@@ -78,6 +85,7 @@ sudo reboot
 ```
 
 ### Step 2: Clone Repository
+
 ```bash
 # Clone the repository
 git clone https://github.com/your-org/helpchain.git
@@ -88,6 +96,7 @@ chmod +x *.sh scripts/*.sh
 ```
 
 ### Step 3: Environment Configuration
+
 ```bash
 # Copy environment template
 cp .env.example .env.production
@@ -97,6 +106,7 @@ nano .env.production
 ```
 
 **Required Environment Variables:**
+
 ```bash
 # Application
 SECRET_KEY=your-super-secret-key-here
@@ -122,6 +132,7 @@ S3_REGION=us-east-1
 ```
 
 ### Step 4: SSL Certificate Setup
+
 ```bash
 # Install Certbot
 sudo apt install -y certbot
@@ -136,6 +147,7 @@ sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem /opt/helpchain/ssl/
 ```
 
 ### Step 5: Initial Deployment
+
 ```bash
 # Run initial deployment to staging
 ./deploy-docker-compose.sh staging
@@ -146,6 +158,7 @@ docker-compose -f docker-compose.staging.yml logs
 ```
 
 ### Step 6: Setup Monitoring
+
 ```bash
 # Setup monitoring stack
 ./setup-monitoring.sh
@@ -157,6 +170,7 @@ echo "AlertManager: http://your-domain.com:9093"
 ```
 
 ### Step 7: Setup Automated Backups
+
 ```bash
 # Create backup directory
 sudo mkdir -p /opt/helpchain/backups
@@ -170,6 +184,7 @@ crontab -e
 ```
 
 ### Step 8: Production Deployment
+
 ```bash
 # Deploy to production with blue-green strategy
 ./deploy-docker-compose.sh production
@@ -181,6 +196,7 @@ curl -I https://your-domain.com/health
 ## 🔧 Operational Scripts
 
 ### Health Monitoring
+
 ```bash
 # Quick health check
 ./health-check.sh
@@ -193,6 +209,7 @@ watch -n 30 ./health-check.sh
 ```
 
 ### Backup Operations
+
 ```bash
 # Manual backup
 ./backup.sh
@@ -212,6 +229,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ### Blue-Green Deployment
+
 ```bash
 # Deploy new version
 ./scripts/blue-green-deploy.sh registry.digitalocean.com/helpchain:production-v1.2.0
@@ -223,11 +241,13 @@ docker-compose -f docker-compose.prod.yml up -d
 ## 📊 Monitoring & Alerting
 
 ### Accessing Dashboards
+
 - **Grafana**: https://your-domain.com/grafana (admin/admin - change password!)
 - **Prometheus**: https://your-domain.com/prometheus
 - **AlertManager**: https://your-domain.com/alertmanager
 
 ### Key Metrics to Monitor
+
 - Application response time (< 2 seconds)
 - Error rate (< 5%)
 - Database connection pool usage
@@ -236,7 +256,9 @@ docker-compose -f docker-compose.prod.yml up -d
 - SSL certificate expiry (> 30 days)
 
 ### Alert Configuration
+
 Alerts are pre-configured for:
+
 - Application downtime
 - High error rates
 - Slow response times
@@ -247,6 +269,7 @@ Alerts are pre-configured for:
 ## 🔒 Security Checklist
 
 ### Pre-Deployment
+
 - [ ] Changed default passwords
 - [ ] Configured firewall (UFW/iptables)
 - [ ] SSL certificates installed
@@ -254,6 +277,7 @@ Alerts are pre-configured for:
 - [ ] Database credentials rotated
 
 ### Post-Deployment
+
 - [ ] Security headers verified
 - [ ] HTTPS redirect configured
 - [ ] SSH key authentication only
@@ -263,6 +287,7 @@ Alerts are pre-configured for:
 ## 🚨 Incident Response
 
 ### Application Issues
+
 ```bash
 # Check application logs
 docker-compose -f docker-compose.prod.yml logs web
@@ -275,6 +300,7 @@ docker-compose -f docker-compose.prod.yml restart web
 ```
 
 ### Database Issues
+
 ```bash
 # Check database logs
 docker-compose -f docker-compose.prod.yml logs postgres
@@ -287,6 +313,7 @@ docker-compose -f docker-compose.prod.yml restart postgres
 ```
 
 ### Infrastructure Issues
+
 ```bash
 # Check system resources
 htop
@@ -305,6 +332,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ## 📈 Scaling & Performance
 
 ### Horizontal Scaling
+
 ```bash
 # Add more web replicas
 docker-compose -f docker-compose.prod.yml up -d --scale web=3
@@ -314,6 +342,7 @@ docker-compose -f docker-compose.prod.yml up -d nginx-lb
 ```
 
 ### Database Optimization
+
 ```bash
 # Run optimization script
 docker-compose -f docker-compose.prod.yml exec web flask db optimize
@@ -323,6 +352,7 @@ docker-compose -f docker-compose.prod.yml exec postgres psql -c "SELECT * FROM p
 ```
 
 ### Caching Optimization
+
 ```bash
 # Clear application cache
 docker-compose -f docker-compose.prod.yml exec web flask cache clear
@@ -334,6 +364,7 @@ docker-compose -f docker-compose.prod.yml exec redis redis-cli info
 ## 🔄 Updates & Maintenance
 
 ### Application Updates
+
 ```bash
 # Pull latest changes
 git pull origin main
@@ -343,6 +374,7 @@ git pull origin main
 ```
 
 ### System Updates
+
 ```bash
 # Update system packages
 sudo apt update && sudo apt upgrade -y
@@ -355,6 +387,7 @@ docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ### Database Maintenance
+
 ```bash
 # Vacuum and analyze
 docker-compose -f docker-compose.prod.yml exec postgres psql -d helpchain -c "VACUUM ANALYZE;"
@@ -368,6 +401,7 @@ docker-compose -f docker-compose.prod.yml exec postgres psql -d helpchain -c "RE
 ### Common Issues
 
 **Application won't start:**
+
 ```bash
 # Check logs
 docker-compose -f docker-compose.prod.yml logs web
@@ -380,6 +414,7 @@ docker-compose -f docker-compose.prod.yml exec web flask db check
 ```
 
 **Database connection errors:**
+
 ```bash
 # Check database status
 docker-compose -f docker-compose.prod.yml ps postgres
@@ -392,6 +427,7 @@ docker-compose -f docker-compose.prod.yml exec postgres psql -c "SHOW max_connec
 ```
 
 **SSL certificate issues:**
+
 ```bash
 # Renew certificate
 sudo certbot renew
@@ -401,6 +437,7 @@ docker-compose -f docker-compose.prod.yml exec nginx nginx -s reload
 ```
 
 ### Getting Help
+
 1. Check the logs: `docker-compose logs`
 2. Run health checks: `./health-check.sh`
 3. Review monitoring dashboards
