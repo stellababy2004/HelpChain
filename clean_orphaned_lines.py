@@ -3,7 +3,7 @@ import re
 
 
 def clean_orphaned_sorting_lines():
-    with open("backend/appy.py", "r", encoding="utf-8") as f:
+    with open("backend/appy.py", encoding="utf-8") as f:
         content = f.read()
 
     # Find and remove the orphaned sorting lines that are outside any function

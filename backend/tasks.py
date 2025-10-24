@@ -65,9 +65,8 @@ except ImportError:
     from backend.smart_matching import smart_matching_service
 
 try:
-    from flask_mail import Message
-
     from app_init import app, mail
+    from flask_mail import Message
 except ImportError:
     from flask_mail import Message
 

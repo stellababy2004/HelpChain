@@ -1,4 +1,5 @@
 import os
+
 from backend.appy import app
 
 print("App created successfully")

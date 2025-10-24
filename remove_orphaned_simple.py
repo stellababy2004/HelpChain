@@ -3,7 +3,7 @@ import re
 
 
 def remove_orphaned_code():
-    with open("backend/appy.py", "r", encoding="utf-8") as f:
+    with open("backend/appy.py", encoding="utf-8") as f:
         content = f.read()
 
     # Find the first admin_dashboard function and its return statement

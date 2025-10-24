@@ -5,13 +5,14 @@ Tests all major functionality including server startup, admin authentication, an
 """
 
 import os
-import sys
-import time
-import requests
-import subprocess
 import signal
+import subprocess
+import sys
 import threading
+import time
 from pathlib import Path
+
+import requests
 
 # Add backend directory to path
 backend_dir = Path(__file__).parent / "backend"

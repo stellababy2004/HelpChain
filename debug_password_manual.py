@@ -1,13 +1,13 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, "backend")
 
 # Import both model files to resolve dependencies
+from flask import Flask
 from models import AdminUser, db
 from models_with_analytics import Task  # Import Task to resolve Volunteer relationship
-from flask import Flask
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = (

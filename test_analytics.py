@@ -3,8 +3,8 @@ import sys
 sys.path.append("backend")
 
 from analytics_service import analytics_service
-from flask import Flask
 from extensions import db
+from flask import Flask
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = (

@@ -1,14 +1,13 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, "backend")
 
 # Import models to resolve relationships
-from models import db
-from models_with_analytics import AnalyticsEvent, UserBehavior, ChatbotConversation
-
 # Create Flask app for database access
 from flask import Flask
+from models import db
+from models_with_analytics import AnalyticsEvent, ChatbotConversation, UserBehavior
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = (

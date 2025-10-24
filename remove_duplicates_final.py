@@ -3,7 +3,6 @@
 # Read the file
 with open(
     "c:\\Users\\Stella Barbarella\\OneDrive\\Documents\\chatGPT\\Projet BG\\HelpChain\\backend\\appy.py",
-    "r",
     encoding="utf-8",
 ) as f:
     content = f.read()

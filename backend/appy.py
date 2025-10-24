@@ -370,9 +370,8 @@ _static = os.path.join(os.path.dirname(__file__), "static")
 
 # Import shared Flask app and mail instances
 # Initialize Flask-SocketIO for real-time features
-from flask_socketio import SocketIO
-
 from app_init import app, mail
+from flask_socketio import SocketIO
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
