@@ -7,7 +7,7 @@ from appy import app
 # Test admin login
 with app.test_client() as client:
     response = client.post(
-        "/admin_login",
+        "/admin/login",
         data={
             "username": "admin",
             "password": os.getenv("ADMIN_USER_PASSWORD", "admin123"),

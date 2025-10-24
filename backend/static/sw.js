@@ -1,23 +1,23 @@
 // HelpChain Service Worker for PWA functionality
-const CACHE_NAME = "helpchain-v1.0.0";
-const STATIC_CACHE = "helpchain-static-v1.0.0";
-const DYNAMIC_CACHE = "helpchain-dynamic-v1.0.0";
+const CACHE_NAME = "helpchain-v1.0.2";
+const STATIC_CACHE = "helpchain-static-v1.0.2";
+const DYNAMIC_CACHE = "helpchain-dynamic-v1.0.2";
 
 // Resources to cache immediately
 const STATIC_ASSETS = [
-  "/",
   "/static/manifest.json",
-  "/static/css/bootstrap.min.css",
-  "/static/css/design-system.css",
-  "/static/css/performance-optimizations.css",
-  "/static/css/accessibility.css",
-  "/static/css/mobile-responsiveness.css",
-  "/static/css/user-feedback.css",
-  "/static/js/bootstrap.bundle.min.js",
+  "/static/css/styles.css",
+  "/static/css/custom.css",
+  "/static/css/admin_volunteers.css",
+  "/static/css/chatbot.css",
+  "/static/css/facebook.css",
   "/static/icons/icon-192x192.png",
   "/static/icons/icon-512x512.png",
+  "/static/icons/icon-144x144.png",
+  "/static/icons/icon-96x96.png",
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css",
   "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css",
+  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css",
   "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js",
 ];
 
@@ -29,10 +29,27 @@ self.addEventListener("install", (event) => {
       .open(STATIC_CACHE)
       .then((cache) => {
         console.log("[SW] Caching static assets");
-        return cache.addAll(STATIC_ASSETS);
+        // Cache assets one by one to prevent installation failure if one fails
+        return Promise.allSettled(
+          STATIC_ASSETS.map(url => {
+            return fetch(url, { mode: 'no-cors' })
+              .then(response => {
+                if (response.ok || response.type === 'opaque') {
+                  return cache.put(url, response);
+                } else {
+                  console.warn(`[SW] Failed to cache ${url}: ${response.status}`);
+                  return Promise.resolve(); // Don't fail the installation
+                }
+              })
+              .catch(error => {
+                console.warn(`[SW] Error caching ${url}:`, error);
+                return Promise.resolve(); // Don't fail the installation
+              });
+          })
+        );
       })
       .catch((error) => {
-        console.error("[SW] Error caching static assets:", error);
+        console.error("[SW] Error opening cache:", error);
       }),
   );
   // Force activation of new service worker

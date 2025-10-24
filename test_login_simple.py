@@ -22,7 +22,7 @@ def test_admin_login():
         # Try to login
         print("Attempting admin login...")
         req = urllib.request.Request(
-            "http://127.0.0.1:5000/admin_login", data=login_data
+            "http://127.0.0.1:5000/admin/login", data=login_data
         )
         response = opener.open(req)
 

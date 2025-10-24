@@ -19,7 +19,7 @@ def test_admin_login():
 
         # Test login
         response = client.post(
-            "/admin_login",
+            "/admin/login",
             data={
                 "username": "admin",
                 "password": "Admin123",  # pragma: allowlist secret

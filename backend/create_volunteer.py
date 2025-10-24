@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 from werkzeug.security import generate_password_hash
 
 from appy import app
-from extensions import db
-from models import User, Volunteer
+from backend.extensions import db
+from backend.models import User, Volunteer
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
             # Create volunteer user
             volunteer_user = User(
                 username="volunteer1",
-                email="ivan@example.com",
+                email="stiliana.stoyanova@orange.fr",
                 password_hash=generate_password_hash("volunteer123"),
                 role="volunteer",
                 is_active=True,
@@ -35,20 +35,20 @@ def main():
 
             # Also create Volunteer record
             volunteer = Volunteer(
-                name="Иван Петров",
-                email="ivan@example.com",
-                phone="+359 88 123 4567",
+                name="Test Volunteer",
+                email="stiliana.stoyanova@orange.fr",
+                phone="000000000",
                 skills="Помощ при пазаруване, придружаване до лекар",
-                location="София",
+                location="Sofia, Bulgaria",
             )
 
             db.session.add(volunteer)
             db.session.commit()
 
             print("✅ Доброволец е успешно създаден!")
-            print("👤 Email: ivan@example.com")
+            print("👤 Email: stiliana.stoyanova@orange.fr")
             print("🔑 Парола: volunteer123")
-            print("📍 Име: Иван Петров")
+            print("📍 Име: Test Volunteer")
 
         except Exception as e:
             print(f"❌ Грешка при създаване: {e}")

@@ -15,7 +15,7 @@ print("=== Testing Admin Login Session Persistence ===")
 
 # 1. Get admin login page
 print("1. Getting admin login page...")
-response = session.get("http://127.0.0.1:5000/admin_login")
+response = session.get("http://127.0.0.1:5000/admin/login")
 print(f"Status: {response.status_code}")
 print("Login page loaded successfully")
 
@@ -24,7 +24,7 @@ print("2. Attempting admin login...")
 # IMPORTANT: No real secrets! Use a placeholder if needed.
 login_data = {"username": "admin", "password": "REPLACE_ME"}  # pragma: allowlist secret
 response = session.post(
-    "http://127.0.0.1:5000/admin_login", data=login_data, allow_redirects=False
+    "http://127.0.0.1:5000/admin/login", data=login_data, allow_redirects=False
 )
 print(f"Login POST status: {response.status_code}")
 print(f"Session cookies after login POST: {dict(session.cookies)}")

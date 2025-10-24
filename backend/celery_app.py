@@ -7,9 +7,9 @@ from flask import current_app
 # Celery configuration with Redis
 celery = Celery(
     "helpchain",
-    broker=os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0"),
-    backend=os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0"),
-    include=["backend.tasks"],
+    broker=os.getenv("CELERY_BROKER_URL", os.getenv("REDIS_URL", "redis://localhost:6379/0")),
+    backend=os.getenv("CELERY_RESULT_BACKEND", os.getenv("REDIS_URL", "redis://localhost:6379/0")),
+    include=["tasks"],
 )
 
 # Enhanced Celery configuration
@@ -29,40 +29,52 @@ celery.conf.update(
     worker_disable_rate_limits=False,
     # Task routing
     task_routes={
-        "backend.tasks.send_notification": {"queue": "notifications"},
-        "backend.tasks.auto_match_requests": {"queue": "matching"},
-        "backend.tasks.generate_daily_reports": {"queue": "reports"},
-        "backend.tasks.process_ml_analysis": {"queue": "ml"},
-        "backend.tasks.update_realtime_stats": {"queue": "stats"},
+        "tasks.send_notification": {"queue": "notifications"},
+        "tasks.send_email_with_retry": {"queue": "emails"},
+        "tasks.retry_failed_emails": {"queue": "emails"},
+        "tasks.requeue_dlq_emails": {"queue": "emails"},
+        "tasks.auto_match_requests": {"queue": "matching"},
+        "tasks.generate_daily_reports": {"queue": "reports"},
+        "tasks.process_ml_analysis": {"queue": "ml"},
+        "tasks.update_realtime_stats": {"queue": "stats"},
     },
     # Task time limits
     task_time_limit=300,  # 5 minutes
     task_soft_time_limit=240,  # 4 minutes
     # Beat scheduler settings
     beat_schedule={
+        # "send-reminders": {
+        #     "task": "tasks.send_reminders",
+        #     "schedule": crontab(hour="9,14,19"),  # 3 times a day
+        # },
         "auto-match-requests": {
-            "task": "backend.tasks.auto_match_requests",
+            "task": "tasks.auto_match_requests",
             "schedule": crontab(minute="*/30"),  # Every 30 minutes
         },
-        "send-reminders": {
-            "task": "backend.tasks.send_reminders",
-            "schedule": crontab(hour="9,14,19"),  # 3 times a day
-        },
         "generate-daily-reports": {
-            "task": "backend.tasks.generate_daily_reports",
+            "task": "tasks.generate_daily_reports",
             "schedule": crontab(hour=6, minute=0),  # Daily at 6 AM
         },
         "cleanup-old-data": {
-            "task": "backend.tasks.cleanup_old_data",
+            "task": "tasks.cleanup_old_data",
             "schedule": crontab(hour=2, minute=0, day_of_week=0),  # Weekly on Sunday
         },
         "monitor-system-health": {
-            "task": "backend.tasks.monitor_system_health",
+            "task": "tasks.monitor_system_health",
             "schedule": crontab(minute="*/15"),  # Every 15 minutes
         },
         "update-realtime-stats": {
-            "task": "backend.tasks.update_realtime_stats",
+            "task": "tasks.update_realtime_stats",
             "schedule": crontab(minute="*/5"),  # Every 5 minutes
+        },
+        "retry-failed-emails": {
+            "task": "tasks.retry_failed_emails",
+            "schedule": crontab(minute="*/30"),  # Every 30 minutes
+        },
+        "requeue-dlq-emails": {
+            "task": "tasks.requeue_dlq_emails",
+            "schedule": crontab(minute="*/15"),  # Every 15 minutes
+            "args": (100,),  # до 100 съобщения на цикъл
         },
     },
 )

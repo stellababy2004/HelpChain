@@ -11,12 +11,46 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+import joblib
 
 logger = logging.getLogger(__name__)
 
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import TimeSeriesSplit
+# Enhanced ML imports
+from sklearn.ensemble import (
+    RandomForestRegressor,
+    GradientBoostingRegressor,
+    ExtraTreesRegressor,
+)
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.svm import SVR
+from sklearn.neural_network import MLPRegressor
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_squared_error,
+    r2_score,
+    mean_absolute_percentage_error,
+)
+from sklearn.model_selection import TimeSeriesSplit, GridSearchCV, cross_val_score
+from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.pipeline import Pipeline
+
+# Optional advanced ML libraries
+try:
+    import xgboost as xgb
+
+    HAS_XGBOOST = True
+except ImportError:
+    HAS_XGBOOST = False
+    xgb = None
+
+try:
+    import lightgbm as lgb
+
+    HAS_LIGHTGBM = True
+except ImportError:
+    HAS_LIGHTGBM = False
+    lgb = None
 
 logger = logging.getLogger(__name__)
 
@@ -34,16 +68,44 @@ def _get_models():
 
 
 class PredictiveAnalytics:
-    """Predictive Analytics Service using ML models for workload forecasting"""
+    """Advanced Predictive Analytics Service using multiple ML models for workload forecasting"""
 
     def __init__(self):
         self.models_dir = os.path.join(os.path.dirname(__file__), "models")
         os.makedirs(self.models_dir, exist_ok=True)
 
-        # Model configurations
+        # Enhanced model configurations with multiple algorithms
         self.model_configs = {
             "regional_demand": {
-                "model_type": "random_forest",
+                "models": {
+                    "random_forest": {
+                        "class": RandomForestRegressor,
+                        "params": {
+                            "n_estimators": [50, 100, 200],
+                            "max_depth": [10, 20, None],
+                            "min_samples_split": [2, 5, 10],
+                            "random_state": [42],
+                        },
+                    },
+                    "gradient_boosting": {
+                        "class": GradientBoostingRegressor,
+                        "params": {
+                            "n_estimators": [50, 100, 200],
+                            "learning_rate": [0.01, 0.1, 0.2],
+                            "max_depth": [3, 5, 7],
+                            "random_state": [42],
+                        },
+                    },
+                    "extra_trees": {
+                        "class": ExtraTreesRegressor,
+                        "params": {
+                            "n_estimators": [50, 100, 200],
+                            "max_depth": [10, 20, None],
+                            "min_samples_split": [2, 5, 10],
+                            "random_state": [42],
+                        },
+                    },
+                },
                 "features": [
                     "day_of_week",
                     "month",
@@ -52,11 +114,38 @@ class PredictiveAnalytics:
                     "trend_factor",
                     "volunteer_density",
                     "population_density",
+                    "hour_sin",
+                    "hour_cos",
+                    "month_sin",
+                    "month_cos",
                 ],
                 "target": "requests_count",
+                "best_model": None,
             },
             "workload_prediction": {
-                "model_type": "gradient_boosting",
+                "models": {
+                    "ridge": {
+                        "class": Ridge,
+                        "params": {"alpha": [0.1, 1.0, 10.0, 100.0]},
+                    },
+                    "svr": {
+                        "class": SVR,
+                        "params": {
+                            "kernel": ["rbf", "linear"],
+                            "C": [0.1, 1.0, 10.0],
+                            "gamma": ["scale", "auto"],
+                        },
+                    },
+                    "mlp": {
+                        "class": MLPRegressor,
+                        "params": {
+                            "hidden_layer_sizes": [(50,), (100,), (50, 50)],
+                            "activation": ["relu", "tanh"],
+                            "max_iter": [500],
+                            "random_state": [42],
+                        },
+                    },
+                },
                 "features": [
                     "current_requests",
                     "active_volunteers",
@@ -64,14 +153,428 @@ class PredictiveAnalytics:
                     "day_of_week",
                     "hour_of_day",
                     "season",
+                    "is_weekend",
+                    "hour_sin",
+                    "hour_cos",
                 ],
                 "target": "predicted_workload",
+                "best_model": None,
             },
         }
+
+        # Add XGBoost and LightGBM if available
+        if HAS_XGBOOST:
+            self.model_configs["regional_demand"]["models"]["xgboost"] = {
+                "class": xgb.XGBRegressor,
+                "params": {
+                    "n_estimators": [50, 100, 200],
+                    "learning_rate": [0.01, 0.1, 0.2],
+                    "max_depth": [3, 5, 7],
+                    "random_state": [42],
+                },
+            }
+
+        if HAS_LIGHTGBM:
+            self.model_configs["regional_demand"]["models"]["lightgbm"] = {
+                "class": lgb.LGBMRegressor,
+                "params": {
+                    "n_estimators": [50, 100, 200],
+                    "learning_rate": [0.01, 0.1, 0.2],
+                    "max_depth": [3, 5, 7],
+                    "random_state": [42],
+                },
+            }
+
+        # Model performance tracking
+        self.model_performance = {}
+        self.feature_importance_cache = {}
 
         # Cache for predictions
         self.prediction_cache = {}
         self.cache_timeout = 3600  # 1 hour
+
+        # Scalers for feature normalization
+        self.scalers = {
+            "regional_demand": StandardScaler(),
+            "workload_prediction": RobustScaler(),
+        }
+
+        # Feature selectors
+        self.feature_selectors = {}
+
+        logger.info(
+            f"Initialized PredictiveAnalytics with {len(self.model_configs['regional_demand']['models'])} regional models and {len(self.model_configs['workload_prediction']['models'])} workload models"
+        )
+
+    def train_models(
+        self, model_type: str = "all", force_retrain: bool = False
+    ) -> dict[str, Any]:
+        """
+        Train and optimize ML models for predictive analytics
+
+        Args:
+            model_type: Type of models to train ("regional_demand", "workload_prediction", or "all")
+            force_retrain: Whether to retrain existing models
+
+        Returns:
+            Dictionary with training results and performance metrics
+        """
+        results = {"trained_models": {}, "performance": {}, "errors": []}
+
+        try:
+            model_types = (
+                [model_type]
+                if model_type != "all"
+                else ["regional_demand", "workload_prediction"]
+            )
+
+            for mtype in model_types:
+                if mtype not in self.model_configs:
+                    results["errors"].append(f"Unknown model type: {mtype}")
+                    continue
+
+                logger.info(f"Training models for {mtype}...")
+                config = self.model_configs[mtype]
+
+                # Get training data
+                if mtype == "regional_demand":
+                    training_data = self._prepare_regional_training_data()
+                else:
+                    training_data = self._prepare_workload_training_data()
+
+                if not training_data or len(training_data) < 10:
+                    results["errors"].append(f"Insufficient training data for {mtype}")
+                    continue
+
+                # Train each model type
+                model_results = {}
+                for model_name, model_config in config["models"].items():
+                    try:
+                        model_key = f"{mtype}_{model_name}"
+                        model_path = os.path.join(
+                            self.models_dir, f"{model_key}.joblib"
+                        )
+
+                        # Skip if model exists and not forcing retrain
+                        if os.path.exists(model_path) and not force_retrain:
+                            logger.info(
+                                f"Model {model_key} already exists, skipping training"
+                            )
+                            continue
+
+                        # Train model with hyperparameter tuning
+                        best_model, performance = self._train_single_model(
+                            model_config,
+                            training_data,
+                            config["features"],
+                            config["target"],
+                        )
+
+                        # Save model
+                        joblib.dump(best_model, model_path)
+
+                        # Store performance
+                        self.model_performance[model_key] = performance
+                        model_results[model_name] = {
+                            "performance": performance,
+                            "model_path": model_path,
+                            "trained_at": datetime.utcnow().isoformat(),
+                        }
+
+                        logger.info(f"Trained {model_name} for {mtype}: {performance}")
+
+                    except Exception as e:
+                        error_msg = (
+                            f"Failed to train {model_name} for {mtype}: {str(e)}"
+                        )
+                        logger.error(error_msg)
+                        results["errors"].append(error_msg)
+
+                results["trained_models"][mtype] = model_results
+
+                # Select best model for this type
+                if model_results:
+                    best_model_name = min(
+                        model_results.keys(),
+                        key=lambda x: model_results[x]["performance"]["mae"],
+                    )
+                    config["best_model"] = best_model_name
+                    logger.info(f"Selected {best_model_name} as best model for {mtype}")
+
+            results["performance"] = self.model_performance
+            return results
+
+        except Exception as e:
+            logger.error(f"Error in model training: {e}")
+            results["errors"].append(f"Training failed: {str(e)}")
+            return results
+
+    def _train_single_model(
+        self, model_config: dict, data: pd.DataFrame, features: list, target: str
+    ) -> tuple:
+        """
+        Train a single model with hyperparameter tuning
+
+        Returns:
+            Tuple of (best_model, performance_metrics)
+        """
+        try:
+            # Prepare data
+            X = data[features].fillna(0)
+            y = data[target]
+
+            # Remove any remaining NaN values
+            valid_idx = ~(X.isnull().any(axis=1) | y.isnull())
+            X = X[valid_idx]
+            y = y[valid_idx]
+
+            if len(X) < 10:
+                raise ValueError("Insufficient valid training data")
+
+            # Create pipeline with scaling and feature selection
+            pipeline = Pipeline(
+                [
+                    ("scaler", StandardScaler()),
+                    ("selector", SelectKBest(score_func=f_regression, k="all")),
+                    ("regressor", model_config["class"]()),
+                ]
+            )
+
+            # Hyperparameter tuning
+            param_grid = {}
+            for param, values in model_config["params"].items():
+                param_grid[f"regressor__{param}"] = values
+
+            # Use time series split for validation
+            tscv = TimeSeriesSplit(n_splits=min(3, len(X) - 7))
+
+            grid_search = GridSearchCV(
+                pipeline,
+                param_grid,
+                cv=tscv,
+                scoring="neg_mean_absolute_error",
+                n_jobs=-1,
+            )
+
+            grid_search.fit(X, y)
+
+            # Get best model
+            best_model = grid_search.best_estimator_
+
+            # Evaluate performance
+            cv_scores = cross_val_score(
+                best_model, X, y, cv=tscv, scoring="neg_mean_absolute_error"
+            )
+            mae_scores = -cv_scores
+
+            # Additional metrics
+            y_pred = best_model.predict(X)
+            performance = {
+                "mae": float(np.mean(mae_scores)),
+                "mae_std": float(np.std(mae_scores)),
+                "rmse": float(np.sqrt(mean_squared_error(y, y_pred))),
+                "r2": float(r2_score(y, y_pred)),
+                "mape": float(mean_absolute_percentage_error(y, y_pred)),
+                "best_params": grid_search.best_params_,
+                "cv_folds": len(mae_scores),
+            }
+
+            return best_model, performance
+
+        except Exception as e:
+            logger.error(f"Error training single model: {e}")
+            raise
+
+    def load_trained_model(self, model_type: str, model_name: str = None):
+        """Load a trained model from disk"""
+        try:
+            if model_name is None:
+                model_name = self.model_configs[model_type]["best_model"]
+
+            if not model_name:
+                return None
+
+            model_path = os.path.join(
+                self.models_dir, f"{model_type}_{model_name}.joblib"
+            )
+
+            if os.path.exists(model_path):
+                return joblib.load(model_path)
+            else:
+                logger.warning(f"Model file not found: {model_path}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Error loading model {model_type}_{model_name}: {e}")
+            return None
+
+    def get_model_performance_report(self) -> dict[str, Any]:
+        """Generate a comprehensive model performance report"""
+        report = {
+            "model_performance": self.model_performance,
+            "best_models": {},
+            "feature_importance": {},
+            "recommendations": [],
+        }
+
+        for model_type, config in self.model_configs.items():
+            if config["best_model"]:
+                report["best_models"][model_type] = config["best_model"]
+
+                # Get feature importance if available
+                model = self.load_trained_model(model_type)
+                if model and hasattr(model, "feature_importances_"):
+                    features = config["features"]
+                    importance = model.feature_importances_
+                    report["feature_importance"][model_type] = dict(
+                        zip(features, importance, strict=False)
+                    )
+
+        # Generate recommendations
+        report["recommendations"] = self._generate_model_recommendations(report)
+
+        return report
+
+    def _generate_model_recommendations(self, report: dict) -> list[str]:
+        """Generate recommendations based on model performance"""
+        recommendations = []
+
+        # Check if models are trained
+        if not report["best_models"]:
+            recommendations.append("No trained models found. Run model training first.")
+
+        # Check performance thresholds
+        for model_type, performance in report["model_performance"].items():
+            if performance["mae"] > 5.0:
+                recommendations.append(
+                    f"High prediction error for {model_type}. Consider collecting more training data."
+                )
+            if performance["r2"] < 0.3:
+                recommendations.append(
+                    f"Poor model fit for {model_type}. Try different algorithms or features."
+                )
+
+        # Feature importance insights
+        for model_type, importance in report["feature_importance"].items():
+            if importance:
+                top_features = sorted(
+                    importance.items(), key=lambda x: x[1], reverse=True
+                )[:3]
+                recommendations.append(
+                    f"Top features for {model_type}: {', '.join([f[0] for f in top_features])}"
+                )
+
+        return recommendations
+
+    def _prepare_regional_training_data(self) -> pd.DataFrame:
+        """Prepare training data for regional demand forecasting"""
+        try:
+            # Get historical data
+            historical_data = self._get_historical_request_data(
+                days_back=180
+            )  # 6 months
+
+            if not historical_data:
+                return pd.DataFrame()
+
+            # Convert to DataFrame
+            df = pd.DataFrame(historical_data)
+
+            # Aggregate by date and region
+            regional_daily = (
+                df.groupby(["date", "region"]).size().reset_index(name="requests_count")
+            )
+
+            # Add features
+            regional_daily["date"] = pd.to_datetime(regional_daily["date"])
+            regional_daily["day_of_week"] = regional_daily["date"].dt.dayofweek
+            regional_daily["month"] = regional_daily["date"].dt.month
+            regional_daily["season"] = regional_daily["month"].apply(self._get_season)
+
+            # Cyclic features for time
+            regional_daily["hour_sin"] = np.sin(
+                2 * np.pi * regional_daily["day_of_week"] / 7
+            )
+            regional_daily["hour_cos"] = np.cos(
+                2 * np.pi * regional_daily["day_of_week"] / 7
+            )
+            regional_daily["month_sin"] = np.sin(
+                2 * np.pi * regional_daily["month"] / 12
+            )
+            regional_daily["month_cos"] = np.cos(
+                2 * np.pi * regional_daily["month"] / 12
+            )
+
+            # Rolling statistics
+            regional_daily = regional_daily.sort_values(["region", "date"])
+            regional_daily["historical_avg"] = regional_daily.groupby("region")[
+                "requests_count"
+            ].transform(lambda x: x.rolling(window=7, min_periods=1).mean())
+            regional_daily["trend_factor"] = regional_daily.groupby("region")[
+                "requests_count"
+            ].transform(lambda x: x.pct_change(periods=7).fillna(0))
+
+            # Placeholder features
+            regional_daily["volunteer_density"] = 1.0
+            regional_daily["population_density"] = 1.0
+
+            return regional_daily.dropna()
+
+        except Exception as e:
+            logger.error(f"Error preparing regional training data: {e}")
+            return pd.DataFrame()
+
+    def _prepare_workload_training_data(self) -> pd.DataFrame:
+        """Prepare training data for workload prediction"""
+        try:
+            # Get historical workload data
+            workload_data = self._get_historical_workload_data(
+                hours_back=720
+            )  # 30 days
+
+            if not workload_data:
+                return pd.DataFrame()
+
+            # Convert to DataFrame
+            df = pd.DataFrame(workload_data)
+
+            # Add features
+            df["timestamp"] = pd.to_datetime(df["timestamp"])
+            df["day_of_week"] = df["timestamp"].dt.dayofweek
+            df["hour_of_day"] = df["timestamp"].dt.hour
+            df["season"] = df["timestamp"].dt.month.apply(self._get_season)
+            df["is_weekend"] = df["day_of_week"] >= 5
+
+            # Cyclic features
+            df["hour_sin"] = np.sin(2 * np.pi * df["hour_of_day"] / 24)
+            df["hour_cos"] = np.cos(2 * np.pi * df["hour_of_day"] / 24)
+
+            # Lag features (previous hours)
+            df = df.sort_values("timestamp")
+            for lag in [1, 2, 3, 6, 12, 24]:
+                df[f"requests_lag_{lag}h"] = df["requests_count"].shift(lag)
+
+            # Rolling statistics
+            df["requests_rolling_mean_6h"] = (
+                df["requests_count"].rolling(window=6, min_periods=1).mean()
+            )
+            df["requests_rolling_std_6h"] = (
+                df["requests_count"].rolling(window=6, min_periods=1).std()
+            )
+
+            # Rename target column
+            df["predicted_workload"] = df["requests_count"]
+
+            # Add current system state features (simplified)
+            df["current_requests"] = df["requests_count"]  # Approximation
+            df["active_volunteers"] = 10  # Placeholder
+            df["avg_response_time"] = 2.0  # Placeholder
+
+            return df.dropna()
+
+        except Exception as e:
+            logger.error(f"Error preparing workload training data: {e}")
+            return pd.DataFrame()
 
     def get_regional_demand_forecast(
         self, region: str | None = None, days_ahead: int = 7
@@ -345,67 +848,51 @@ class PredictiveAnalytics:
                 "population_density",
             ]
 
-            # Train model if we have enough data
-            if len(daily_counts) >= 14:
-                X = daily_counts[feature_cols].fillna(0)
-                y = daily_counts["requests_count"]
+            # Try to use trained model first
+            config = self.model_configs["regional_demand"]
+            model = self.load_trained_model("regional_demand")
 
-                # Use time series split for validation
-                TimeSeriesSplit(n_splits=min(3, len(daily_counts) - 7))
-
-                model = RandomForestRegressor(
-                    n_estimators=100, random_state=42, max_depth=10
+            if model and len(daily_counts) >= 14:
+                # Generate forecast using trained model
+                forecast_dates = pd.date_range(
+                    start=daily_counts["date"].max() + timedelta(days=1),
+                    periods=days_ahead,
                 )
 
-                # Simple train/validation split for now
-                split_idx = int(len(daily_counts) * 0.8)
-                X_train, X_test = X[:split_idx], X[split_idx:]
-                y_train, y_test = y[:split_idx], y[split_idx:]
+                forecast_data = []
+                for forecast_date in forecast_dates:
+                    features = self._prepare_forecast_features(
+                        forecast_date, daily_counts
+                    )
+                    prediction = model.predict([features])[0]
 
-                if len(X_train) > 0:
-                    model.fit(X_train, y_train)
-
-                    # Generate forecast
-                    forecast_dates = pd.date_range(
-                        start=daily_counts["date"].max() + timedelta(days=1),
-                        periods=days_ahead,
+                    forecast_data.append(
+                        {
+                            "date": forecast_date.strftime("%Y-%m-%d"),
+                            "predicted_requests": max(0, round(prediction, 1)),
+                            "confidence_interval": {
+                                "lower": max(0, round(prediction * 0.8, 1)),
+                                "upper": round(prediction * 1.2, 1),
+                            },
+                        }
                     )
 
-                    forecast_data = []
-                    for forecast_date in forecast_dates:
-                        features = self._prepare_forecast_features(
-                            forecast_date, daily_counts
+                return {
+                    "forecast": forecast_data,
+                    "historical_avg": round(daily_counts["requests_count"].mean(), 1),
+                    "peak_day": daily_counts.loc[
+                        daily_counts["requests_count"].idxmax()
+                    ]["day_of_week"],
+                    "seasonal_pattern": self._analyze_seasonal_pattern(daily_counts),
+                    "model_accuracy": (
+                        self.model_performance.get(
+                            "regional_demand_" + config["best_model"], {}
                         )
-                        prediction = model.predict([features])[0]
-
-                        forecast_data.append(
-                            {
-                                "date": forecast_date.strftime("%Y-%m-%d"),
-                                "predicted_requests": max(0, round(prediction, 1)),
-                                "confidence_interval": {
-                                    "lower": max(0, round(prediction * 0.7, 1)),
-                                    "upper": round(prediction * 1.3, 1),
-                                },
-                            }
-                        )
-
-                    return {
-                        "forecast": forecast_data,
-                        "historical_avg": round(
-                            daily_counts["requests_count"].mean(), 1
-                        ),
-                        "peak_day": daily_counts.loc[
-                            daily_counts["requests_count"].idxmax()
-                        ]["day_of_week"],
-                        "seasonal_pattern": self._analyze_seasonal_pattern(
-                            daily_counts
-                        ),
-                        "model_accuracy": (
-                            self._evaluate_model_accuracy(model, X_test, y_test)
-                            if len(X_test) > 0
-                            else None
-                        ),
-                    }
+                        if config["best_model"]
+                        else None
+                    ),
+                    "model_used": config["best_model"] or "rule_based_fallback",
+                }
 
             # Fallback to simple forecasting
             return self._get_simple_forecast_from_data(daily_counts, days_ahead)
@@ -565,11 +1052,15 @@ class PredictiveAnalytics:
         ]
 
     def _predict_workload(self, features: list[float]) -> float:
-        """Predict workload using ML model"""
+        """Predict workload using trained ML model"""
         try:
-            # Simple rule-based prediction for now
-            # In production, this would use a trained ML model
+            # Try to use trained model first
+            model = self.load_trained_model("workload_prediction")
+            if model:
+                prediction = model.predict([features])[0]
+                return max(0, prediction)
 
+            # Fallback to rule-based prediction
             base_prediction = features[0] * 0.8  # 80% of current requests
 
             # Adjust for day of week (weekends have less activity)

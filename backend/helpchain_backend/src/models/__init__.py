@@ -41,7 +41,7 @@ class AdminUser(UserMixin, db.Model):
     locked_until = db.Column(db.DateTime, nullable=True)
 
     # Връзки
-    logs = db.relationship("AdminLog", backref="admin_user", lazy=True)
+    # logs relationship removed - AdminLog is defined in models_with_analytics.py
 
     def __repr__(self):
         return f"<AdminUser {self.username}>"
@@ -103,20 +103,7 @@ class AdminUser(UserMixin, db.Model):
         return False
 
 
-class AdminLog(db.Model):
-    """Модел за лог на административни действия"""
-
-    __tablename__ = "admin_logs"
-
-    id = db.Column(db.Integer, primary_key=True)
-    admin_user_id = db.Column(
-        db.Integer, db.ForeignKey("admin_users.id"), nullable=False
-    )
-    action = db.Column(db.String(100), nullable=False)
-    details = db.Column(db.Text, nullable=True)
-    ip_address = db.Column(db.String(45), nullable=True)
-    user_agent = db.Column(db.Text, nullable=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+# AdminLog is now defined in models_with_analytics.py
 
 
 class Request(db.Model):
@@ -173,5 +160,5 @@ __all__ = [
     "Volunteer",
     "Feedback",
     "AdminUser",
-    "AdminLog",
+    # "AdminLog",  # Now defined in models_with_analytics.py
 ]

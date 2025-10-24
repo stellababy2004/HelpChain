@@ -1,0 +1,5 @@
+FLASK_APP=appy.py
+FLASK_ENV=development
+FLASK_DEBUG=1
+HOST=127.0.0.1
+PORT=8000

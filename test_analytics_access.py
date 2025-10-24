@@ -29,7 +29,7 @@ def test_analytics_access():
     login_data = {"username": "admin", "password": "Admin123"}
 
     login_response = session.post(
-        f"{base_url}/admin_login", data=login_data, allow_redirects=False
+        f"{base_url}/admin/login", data=login_data, allow_redirects=False
     )
     print(f"Login status: {login_response.status_code}")
     print(f"Login location: {login_response.headers.get('Location', 'No redirect')}")

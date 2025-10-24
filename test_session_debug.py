@@ -18,7 +18,7 @@ def test_admin_login_session():
     # Step 1: Get login page to check CSRF token if any
     print("\n1. Getting admin login page...")
     try:
-        response = session.get(f"{base_url}/admin_login")
+        response = session.get(f"{base_url}/admin/login")
         print(f"Status: {response.status_code}")
         if response.status_code == 200:
             print("Login page loaded successfully")
@@ -38,7 +38,7 @@ def test_admin_login_session():
 
     try:
         response = session.post(
-            f"{base_url}/admin_login", data=login_data, allow_redirects=False
+            f"{base_url}/admin/login", data=login_data, allow_redirects=False
         )
         print(f"Login POST status: {response.status_code}")
         print(f"Login POST headers: {dict(response.headers)}")
@@ -65,7 +65,7 @@ def test_admin_login_session():
                 print(f"Second redirect to: {redirect_url2}")
 
                 # Step 4: Check if redirected back to login
-                if "/admin_login" in redirect_url2:
+                if "/admin/login" in redirect_url2:
                     print("ERROR: Redirected back to login - session not persistent!")
                     return False
                 else:
@@ -104,7 +104,7 @@ def test_direct_dashboard_access():
         if response.status_code == 302:
             redirect_url = response.headers.get("Location")
             print(f"Redirected to: {redirect_url}")
-            if "/admin_login" in redirect_url:
+            if "/admin/login" in redirect_url:
                 print("As expected: redirected to login when not authenticated")
                 return True
             else:

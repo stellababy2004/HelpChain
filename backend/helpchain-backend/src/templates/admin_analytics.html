@@ -388,7 +388,7 @@
             <li class="nav-item">
               <a
                 class="nav-link active"
-                href="{{ url_for('admin_analytics') }}"
+                href="{{ url_for('analytics_main.admin_analytics') }}"
               >
                 <i class="fas fa-chart-line me-1"></i>Analytics
               </a>
@@ -990,7 +990,7 @@
       }
 
       function updateLiveStats() {
-        fetch("/api/analytics/live")
+        fetch("/analytics/api/analytics/live")
           .then((response) => response.json())
           .then((data) => {
             // Update KPI values
@@ -1023,7 +1023,7 @@
           '<div class="loading-overlay"><div class="spinner"></div></div>' +
           chartContainer.innerHTML;
 
-        fetch(`/api/analytics/trends?months=${months}`)
+        fetch(`/analytics/api/analytics/trends?months=${months}`)
           .then((response) => response.json())
           .then((data) => {
             // Update chart data
@@ -1058,7 +1058,7 @@
       }
 
       function exportData(format) {
-        const url = `/api/analytics/export?format=${format}&type=dashboard`;
+        const url = `/analytics/api/analytics/export?format=${format}&type=dashboard`;
         window.open(url, "_blank");
       }
 

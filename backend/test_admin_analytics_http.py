@@ -23,11 +23,11 @@ def test_admin_analytics_http():
         print("\n1. Testing admin login...")
         login_data = {
             "username": "admin",
-            "password": os.getenv("ADMIN_USER_PASSWORD", "Admin123"),
+            "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
         }
 
         response = session.post(
-            f"{base_url}/admin_login", data=login_data, allow_redirects=True
+            f"{base_url}/admin/login", data=login_data, allow_redirects=True
         )
         print(f"Login response status: {response.status_code}")
         print(f"Final URL after login: {response.url}")

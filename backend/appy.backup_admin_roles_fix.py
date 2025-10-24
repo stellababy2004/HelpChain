@@ -536,7 +536,7 @@ def admin_login():
         ):
             logger.info(f"Admin login successful for {username}")
             # Check if 2FA is enabled
-            if admin_user.twofa_enabled:
+            if admin_user.two_factor_enabled:
                 logger.info("2FA is enabled, redirecting to 2FA verification")
                 session["pending_2fa"] = True
                 session["pending_admin_id"] = admin_user.id

@@ -11,20 +11,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 try:
     from .extensions import db
 except ImportError:
-    try:
-        from extensions import db
-    except ImportError:
-        # Last resort - create a new db instance (for testing)
-        from flask_sqlalchemy import SQLAlchemy
-
-        db = SQLAlchemy()
+    from extensions import db
 
 # Import Task model for relationships (defined in models_with_analytics)
-try:
-    from .models_with_analytics import Task
-except ImportError:
-    # For testing environments where models_with_analytics might not be available
-    Task = None
+# Removed circular import - Task relationship uses string reference
 
 # Използваме db инстанцията от extensions (няма да създаваме нова SQLAlchemy())
 
@@ -35,6 +25,12 @@ class RoleEnum(str, enum.Enum):
     moderator = "moderator"
     admin = "admin"
     superadmin = "superadmin"
+
+
+class AdminRole(str, enum.Enum):
+    SUPER_ADMIN = "super_admin"  # Пълен достъп до всичко
+    ADMIN = "admin"  # Стандартен админ достъп
+    MODERATOR = "moderator"  # Ограничен достъп само за модерация
 
 
 class PermissionEnum(str, enum.Enum):
@@ -130,12 +126,18 @@ class AdminUser(db.Model, UserMixin):
     username = db.Column(db.String(64), unique=True)
     email = db.Column(db.String(120), unique=True)
     password_hash = db.Column(db.String(128))
+    role = db.Column(db.Enum(AdminRole), nullable=False, default=AdminRole.MODERATOR)
     twofa_secret = db.Column(db.String(32))
-    twofa_enabled = db.Column(db.Boolean, default=False)
+    backup_codes = db.Column(db.Text, nullable=True)  # JSON масив с backup кодове
+    two_factor_enabled = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+    last_login = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    failed_login_attempts = db.Column(db.Integer, default=0)
+    locked_until = db.Column(db.DateTime, nullable=True)
 
     @property
     def is_admin(self):
@@ -160,15 +162,15 @@ class AdminUser(db.Model, UserMixin):
     def enable_2fa(self):
         if not self.twofa_secret:
             self.twofa_secret = pyotp.random_base32()
-        self.twofa_enabled = True
+        self.two_factor_enabled = True
 
     def disable_2fa(self):
-        self.twofa_enabled = False
+        self.two_factor_enabled = False
         self.twofa_secret = None
 
     def verify_totp(self, token):
         """Проверява TOTP токен"""
-        if not self.twofa_secret or not self.twofa_enabled:
+        if not self.twofa_secret or not self.two_factor_enabled:
             return False
 
         try:
@@ -277,6 +279,7 @@ class Volunteer(db.Model):
     location = db.Column(db.String(100), nullable=True, index=True)
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -300,7 +303,6 @@ class Volunteer(db.Model):
 
     # Relationships
     # assigned_tasks relationship defined in models_with_analytics.py when Task model is available
-    assigned_tasks = db.relationship("Task", back_populates="volunteer", lazy=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -630,11 +632,7 @@ class Notification(db.Model):
     template = db.relationship("NotificationTemplate", backref="notifications")
 
     def __repr__(self):
-        return (
-            f"<Notification {self.id}: {self.title} -> "
-            f"{self.recipient_type}:{self.recipient_id} "
-            f"({self.notification_type})>"
-        )
+        return f"<Notification {self.id}: {self.title} -> {self.recipient_type}:{self.recipient_id} ({self.notification_type})>"
 
     @property
     def is_sent(self):
@@ -1034,11 +1032,7 @@ class UserActivity(db.Model):
     )
 
     def __repr__(self):
-        return (
-            f"<UserActivity {self.activity_type.value} by "
-            f"{self.user_type}:{self.user_id or 'guest'} "
-            f"at {self.timestamp}>"
-        )
+        return f"<UserActivity {self.activity_type.value} by {self.user_type}:{self.user_id or 'guest'} at {self.timestamp}>"
 
     @classmethod
     def log_activity(
@@ -1421,4 +1415,37 @@ class PushSubscription(db.Model):
             "notifications_sent": self.notifications_sent,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "last_used": self.last_used.isoformat() if self.last_used else None,
+        }
+
+
+class FailedEmail(db.Model):
+    """Model for storing failed emails in dead letter queue"""
+
+    __tablename__ = "failed_emails"
+
+    id = db.Column(db.Integer, primary_key=True)
+    recipient = db.Column(db.String(255), nullable=False, index=True)
+    subject = db.Column(db.String(500), nullable=False)
+    template = db.Column(db.String(255), nullable=False)
+    context = db.Column(db.Text, nullable=True)  # JSON string of template context
+    error_message = db.Column(db.Text, nullable=False)
+    retry_count = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    last_attempt_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<FailedEmail id={self.id} recipient={self.recipient} subject={self.subject[:50]}...>"
+
+    def to_dict(self):
+        """Convert to dictionary for API responses"""
+        return {
+            "id": self.id,
+            "recipient": self.recipient,
+            "subject": self.subject,
+            "template": self.template,
+            "context": self.context,
+            "error_message": self.error_message,
+            "retry_count": self.retry_count,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "last_attempt_at": self.last_attempt_at.isoformat() if self.last_attempt_at else None,
         }

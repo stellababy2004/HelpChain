@@ -1,0 +1,148 @@
+services:
+  # Main Flask application
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      FLASK_ENV: development
+      SECRET_KEY: dev-secret-key-change-in-production
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      USE_POSTGRES: ${USE_POSTGRES}
+      MAIL_SERVER: smtp.mailtrap.io
+      MAIL_PORT: "2525"
+      MAIL_USE_TLS: "true"
+      MAIL_USE_SSL: "false"
+      MAIL_USERNAME: ${MAIL_USERNAME:-test}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-test}
+      MAIL_DEFAULT_SENDER: noreply@helpchain.local
+      ADMIN_USER_PASSWORD: Admin123
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    networks:
+      - helpchain-network
+    restart: unless-stopped
+
+  # PostgreSQL database
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=helpchain
+      - POSTGRES_USER=helpchain
+      - POSTGRES_PASSWORD=helpchain_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - helpchain-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U helpchain"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Celery and caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - helpchain-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Celery worker
+  celery-worker:
+    build: .
+    command: celery -A celery_app.celery worker --loglevel=info
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DATABASE_URL=postgresql://helpchain:helpchain_password@db:5432/helpchain
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./uploads:/app/uploads
+      - ./instance:/app/instance
+      - ./models:/app/models
+    depends_on:
+      - db
+      - redis
+    networks:
+      - helpchain-network
+    restart: unless-stopped
+
+  # Celery beat (scheduler)
+  celery-beat:
+    build: .
+    command: celery -A celery_app.celery beat --loglevel=info
+    environment:
+      - FLASK_ENV=development
+      - SECRET_KEY=dev-secret-key-change-in-production
+      - DATABASE_URL=postgresql://helpchain:helpchain_password@db:5432/helpchain
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    volumes:
+      - ./uploads:/app/uploads
+      - ./instance:/app/instance
+      - ./models:/app/models
+    depends_on:
+      - db
+      - redis
+    networks:
+      - helpchain-network
+    restart: unless-stopped
+
+  # PgAdmin for database management (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - helpchain-network
+    restart: unless-stopped
+
+  # Redis Commander for Redis management (optional)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - helpchain-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  helpchain-network:
+    driver: bridge

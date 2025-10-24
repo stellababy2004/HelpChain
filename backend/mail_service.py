@@ -3,6 +3,10 @@ HelpChain Mail Service
 Handles sending notification emails using Flask-Mail
 """
 
+import logging
+import time
+from datetime import datetime
+
 from flask import current_app, render_template
 from flask_mail import Message
 
@@ -13,8 +17,6 @@ try:
 except ImportError:
     analytics_service = None
     analytics_available = False
-import logging
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -30,17 +32,11 @@ def send_notification_email(recipient, subject, template, context=None):
         context (dict): Template context variables
 
     Returns:
-        bool: True if sent successfully, False otherwise
+        bool: True if queued successfully, False otherwise
     """
     try:
         if not recipient:
             logger.warning("No recipient specified for email")
-            return False
-
-        # Get mail instance from app
-        mail = current_app.extensions.get("mail")
-        if not mail:
-            logger.error("Flask-Mail not initialized")
             return False
 
         # Prepare context
@@ -62,34 +58,43 @@ def send_notification_email(recipient, subject, template, context=None):
         # Render HTML content
         html_content = render_template(template, **context)
 
-        # Create message
-        msg = Message(subject=subject, recipients=[recipient], html=html_content)
+        # Generate unique message ID
+        message_id = f"notification_{recipient}_{template}_{int(time.time())}"
 
-        # Send email
-        mail.send(msg)
+        # Import here to avoid circular imports
+        from .tasks import send_email_task
 
-        # Track analytics
+        # Queue email task with retry
+        send_email_task.delay(
+            subject=subject,
+            recipients=[recipient],
+            html=html_content,
+            message_id=message_id
+        )
+
+        # Track analytics for queued email
         if analytics_available and analytics_service:
             analytics_service.track_event(
-                event_type="email_sent",
+                event_type="email_queued",
                 event_category="notification",
                 context={
                     "recipient": recipient,
                     "template": template,
                     "subject": subject,
+                    "message_id": message_id,
                 },
             )
 
-        logger.info(f"Email sent successfully to {recipient}: {subject}")
+        logger.info(f"Email queued successfully to {recipient}: {subject}")
         return True
 
     except Exception as e:
-        logger.error(f"Failed to send email to {recipient}: {e}")
+        logger.error(f"Failed to queue email to {recipient}: {e}")
 
-        # Track failed email
+        # Track failed email queuing
         if analytics_available and analytics_service:
             analytics_service.track_event(
-                event_type="email_failed",
+                event_type="email_queue_failed",
                 event_category="notification",
                 context={"recipient": recipient, "template": template, "error": str(e)},
             )
@@ -108,14 +113,14 @@ def send_bulk_notification_email(recipients, subject, template, context=None):
         context (dict): Template context variables
 
     Returns:
-        dict: Results with success count and failures
+        dict: Results with queued count and failures
     """
-    results = {"total": len(recipients), "successful": 0, "failed": 0, "failures": []}
+    results = {"total": len(recipients), "queued": 0, "failed": 0, "failures": []}
 
     for recipient in recipients:
         success = send_notification_email(recipient, subject, template, context)
         if success:
-            results["successful"] += 1
+            results["queued"] += 1
         else:
             results["failed"] += 1
             results["failures"].append(recipient)
@@ -123,17 +128,17 @@ def send_bulk_notification_email(recipients, subject, template, context=None):
     # Track bulk email analytics
     if analytics_available and analytics_service:
         analytics_service.track_event(
-            event_type="bulk_email_sent",
+            event_type="bulk_email_queued",
             event_category="notification",
             context={
                 "total_recipients": results["total"],
-                "successful": results["successful"],
+                "queued": results["queued"],
                 "failed": results["failed"],
             },
         )
 
     logger.info(
-        f"Bulk email sent: {results['successful']}/{results['total']} successful"
+        f"Bulk email queued: {results['queued']}/{results['total']} successful"
     )
     return results
 

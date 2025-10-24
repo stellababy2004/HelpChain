@@ -6,7 +6,7 @@ import pyotp
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from ..extensions import db
+from extensions import db
 
 
 class AdminRole(Enum):
@@ -44,7 +44,7 @@ class AdminUser(UserMixin, db.Model):
     locked_until = db.Column(db.DateTime, nullable=True)
 
     # Връзки
-    logs = db.relationship("AdminLog", backref="admin_user", lazy=True)
+    # logs relationship removed - AdminLog is defined in models_with_analytics.py
 
     def __repr__(self):
         return f"<AdminUser {self.username}>"
@@ -106,60 +106,28 @@ class AdminUser(UserMixin, db.Model):
         return False
 
 
-class AdminLog(db.Model):
-    """Модел за лог на административни действия"""
+# AdminLog is now defined in models_with_analytics.py
 
-    __tablename__ = "admin_logs"
 
-    id = db.Column(db.Integer, primary_key=True)
-    admin_user_id = db.Column(
-        db.Integer, db.ForeignKey("admin_users.id"), nullable=False
+# Import comprehensive models from backend.models
+try:
+    from backend.models import (
+        HelpRequest,
+        NotificationChannelEnum,
+        NotificationStatusEnum,
+        NotificationTypeEnum,
+        Permission,
+        PermissionEnum,
+        PriorityEnum,
+        PushSubscription,
+        Role,
+        RolePermission,
+        User,
+        UserRole,
     )
-    action = db.Column(db.String(100), nullable=False)
-    details = db.Column(db.Text, nullable=True)
-    ip_address = db.Column(db.String(45), nullable=True)
-    user_agent = db.Column(db.Text, nullable=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-class Request(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    phone = db.Column(db.String(20))
-    email = db.Column(db.String(100))
-    location = db.Column(db.String(100))
-    category = db.Column(db.String(50))
-    description = db.Column(db.Text)
-    urgency = db.Column(db.String(20))
-    status = db.Column(db.String(20), default="pending")
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    updated_at = db.Column(
-        db.DateTime,
-        default=db.func.current_timestamp(),
-        onupdate=db.func.current_timestamp(),
-    )
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    phone = db.Column(db.String(20))
-    email = db.Column(db.String(100))
-    location = db.Column(db.String(100))
-    category = db.Column(db.String(50))
-    description = db.Column(db.Text)
-    urgency = db.Column(db.String(20))
-    status = db.Column(db.String(20), default="pending")
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-
-
-class RequestLog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    request_id = db.Column(db.Integer, db.ForeignKey("request.id"))
-    status = db.Column(db.String(20))
-    changed_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    updated_at = db.Column(
-        db.DateTime,
-        default=db.func.current_timestamp(),
-        onupdate=db.func.current_timestamp(),
-    )
+except ImportError:
+    # Fallback definitions if backend.models is not available
+    from backend.models import HelpRequest, Role, User, UserRole
 
 
 class Volunteer(db.Model):
@@ -190,46 +158,51 @@ class Feedback(db.Model):
     )
 
 
-class VideoChatSession(db.Model):
-    """Модел за видео чат сесии между потребители"""
+# class VideoChatSession(db.Model):
+#     """Модел за видео чат сесии между потребители"""
 
-    __tablename__ = "video_chat_sessions"
+#     __tablename__ = "video_chat_sessions"
 
-    id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(
-        db.String(128), unique=True, nullable=False
-    )  # WebRTC session ID
-    initiator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    participant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    status = db.Column(
-        db.String(50), default="pending"
-    )  # pending, active, completed, cancelled
-    started_at = db.Column(db.DateTime, nullable=True)
-    ended_at = db.Column(db.DateTime, nullable=True)
-    duration = db.Column(db.Integer, nullable=True)  # в секунди
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+#     id = db.Column(db.Integer, primary_key=True)
+#     session_id = db.Column(
+#         db.String(128), unique=True, nullable=False
+#     )  # WebRTC session ID
+#     initiator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+#     participant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+#     status = db.Column(
+#         db.String(50), default="pending"
+#     )  # pending, active, completed, cancelled
+#     started_at = db.Column(db.DateTime, nullable=True)
+#     ended_at = db.Column(db.DateTime, nullable=True)
+#     duration = db.Column(db.Integer, nullable=True)  # в секунди
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+#     updated_at = db.Column(
+#         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+#     )
 
-    # Relationships
-    initiator = db.relationship(
-        "User", foreign_keys=[initiator_id], backref="initiated_video_chats"
-    )
-    participant = db.relationship(
-        "User", foreign_keys=[participant_id], backref="participated_video_chats"
-    )
+#     # Relationships
+#     initiator = db.relationship(
+#         "User", foreign_keys=[initiator_id], backref="initiated_video_chats"
+#     )
+#     participant = db.relationship(
+#         "User", foreign_keys=[participant_id], backref="participated_video_chats"
+#     )
 
-    def __repr__(self):
-        return f"<VideoChatSession {self.session_id}>"
+#     def __repr__(self):
+#         return f"<VideoChatSession {self.session_id}>"
 
 
 __all__ = [
-    "Request",
-    "RequestLog",
     "Volunteer",
     "Feedback",
     "AdminUser",
-    "AdminLog",
-    "VideoChatSession",
+    # "AdminLog",  # Now defined in models_with_analytics.py
+    # "VideoChatSession",  # Temporarily commented out due to circular dependency
+    "HelpRequest",
+    "Role",
+    "User",
+    "UserRole",
+    "Permission",
+    "RolePermission",
+    "PushSubscription",
 ]

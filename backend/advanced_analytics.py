@@ -8,9 +8,12 @@ from datetime import datetime, timedelta
 
 # Try absolute imports first, fall back to relative imports for standalone execution
 try:
-    from backend.extensions import db
+    from extensions import db
 except ImportError:
-    from .extensions import db
+    try:
+        from .extensions import db
+    except ImportError:
+        db = None
 
 from models_with_analytics import (
     AnalyticsEvent,
@@ -25,6 +28,16 @@ class AdvancedAnalytics:
 
     def detect_anomalies(self, timeframe_days=7):
         """Detect unusual patterns в analytics data"""
+
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
 
         # Вземи данните за последните дни
         end_date = datetime.now()
@@ -246,6 +259,32 @@ class AdvancedAnalytics:
     def generate_insights_report(self):
         """Generate comprehensive insights report"""
 
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return {
+                    "generated_at": datetime.now().isoformat(),
+                    "error": "No application context available",
+                    "anomalies": [],
+                    "predictions": {},
+                    "kpi_trends": {},
+                    "user_segments": {},
+                    "recommendations": [],
+                }
+        except RuntimeError:
+            # Working outside of application context
+            return {
+                "generated_at": datetime.now().isoformat(),
+                "error": "Working outside of application context",
+                "anomalies": [],
+                "predictions": {},
+                "kpi_trends": {},
+                "user_segments": {},
+                "recommendations": [],
+            }
+
         report = {
             "generated_at": datetime.now().isoformat(),
             "anomalies": self.detect_anomalies(),
@@ -380,6 +419,16 @@ class AdvancedAnalytics:
     # Helper methods
     def get_events_by_hour(self, start_date, end_date):
         """Get events grouped by hour"""
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
+
         try:
             events = AnalyticsEvent.query.filter(
                 AnalyticsEvent.created_at >= start_date,
@@ -407,6 +456,16 @@ class AdvancedAnalytics:
 
     def get_user_events(self, user_id):
         """Get all events για specific user"""
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
+
         try:
             events = (
                 AnalyticsEvent.query.filter(AnalyticsEvent.user_session == str(user_id))
@@ -431,6 +490,16 @@ class AdvancedAnalytics:
 
     def get_recent_events(self, days=7):
         """Get recent events"""
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
+
         try:
             start_date = datetime.now() - timedelta(days=days)
             events = (
@@ -457,6 +526,16 @@ class AdvancedAnalytics:
 
     def get_events_in_range(self, start_date, end_date):
         """Get events in date range"""
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
+
         try:
             events = (
                 AnalyticsEvent.query.filter(

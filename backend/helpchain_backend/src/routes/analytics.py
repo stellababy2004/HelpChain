@@ -36,70 +36,17 @@ def analytics_data():
     if not session.get("admin_logged_in"):
         return jsonify({"error": "Unauthorized"}), 403
 
-    from collections import Counter
+    try:
+        from ....analytics_service import analytics_service
 
-    from ..models import Request, Volunteer
+        # Get dashboard analytics from analytics service
+        dashboard_data = analytics_service.get_dashboard_analytics(days=30)
 
-    # Get requests data
-    requests = Request.query.all()
+        return jsonify(dashboard_data)
 
-    # Status distribution
-    status_counts = Counter(r.status for r in requests)
-    status_labels = list(status_counts.keys())
-    status_data = list(status_counts.values())
-
-    # Category distribution
-    category_counts = Counter(r.category for r in requests if r.category)
-    category_labels = list(category_counts.keys())
-    category_data = list(category_counts.values())
-
-    # Urgency distribution
-    urgency_counts = Counter(r.urgency for r in requests if r.urgency)
-    urgency_labels = list(urgency_counts.keys())
-    urgency_data = list(urgency_counts.values())
-
-    # Location distribution
-    location_counts = Counter(r.location for r in requests if r.location)
-    location_labels = list(location_counts.keys())
-    location_data = list(location_counts.values())
-
-    # Volunteer data
-    volunteers = Volunteer.query.all()
-
-    # Volunteer location distribution
-    volunteer_location_counts = Counter(v.location for v in volunteers if v.location)
-    volunteer_location_labels = list(volunteer_location_counts.keys())
-    volunteer_location_data = list(volunteer_location_counts.values())
-
-    # Volunteer skills distribution (simplified - count volunteers with skills)
-    volunteers_with_skills = [v for v in volunteers if v.skills]
-    skills_counts = {}
-    for v in volunteers_with_skills:
-        skills = v.skills.split(",") if v.skills else []
-        for skill in skills:
-            skill = skill.strip()
-            if skill:
-                skills_counts[skill] = skills_counts.get(skill, 0) + 1
-
-    volunteer_skills_labels = list(skills_counts.keys())[:10]  # Top 10 skills
-    volunteer_skills_data = [skills_counts[label] for label in volunteer_skills_labels]
-
-    return jsonify(
-        {
-            "status_labels": status_labels,
-            "status_data": status_data,
-            "category_labels": category_labels,
-            "category_data": category_data,
-            "urgency_labels": urgency_labels,
-            "urgency_data": urgency_data,
-            "location_labels": location_labels,
-            "location_data": location_data,
-            "volunteer_location_labels": volunteer_location_labels,
-            "volunteer_location_data": volunteer_location_data,
-            "volunteer_skills_labels": volunteer_skills_labels,
-            "volunteer_skills_data": volunteer_skills_data,
-        }
-    )
+    except Exception as e:
+        current_app.logger.error(f"Error getting analytics data: {e}")
+        return jsonify({"error": "Failed to load analytics data"}), 500
 
 
 def _bookmarks_path():

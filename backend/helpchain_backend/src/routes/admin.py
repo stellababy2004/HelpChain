@@ -23,7 +23,7 @@ def admin_login():
         password = request.form.get("password")
         admin_user = AdminUser.query.filter_by(username=username).first()
         if admin_user and admin_user.check_password(password):
-            if admin_user.twofa_enabled:
+            if admin_user.two_factor_enabled:
                 session["pending_admin_user_id"] = admin_user.id
                 return redirect(url_for("admin.admin_2fa"))
             else:

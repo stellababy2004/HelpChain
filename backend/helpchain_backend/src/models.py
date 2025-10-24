@@ -54,7 +54,7 @@ class AdminUser(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True)
     password_hash = db.Column(db.String(128))
     twofa_secret = db.Column(db.String(32))
-    twofa_enabled = db.Column(db.Boolean, default=False)
+    two_factor_enabled = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
@@ -66,10 +66,10 @@ class AdminUser(db.Model, UserMixin):
     def enable_2fa(self):
         if not self.twofa_secret:
             self.twofa_secret = pyotp.random_base32()
-        self.twofa_enabled = True
+        self.two_factor_enabled = True
 
     def disable_2fa(self):
-        self.twofa_enabled = False
+        self.two_factor_enabled = False
         self.twofa_secret = None
 
     def verify_totp(self, token):

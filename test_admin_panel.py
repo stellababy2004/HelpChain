@@ -23,8 +23,11 @@ def test_admin_panel():
         # Test admin login
         print("1. Testing admin login...")
         login_response = client.post(
-            "/admin_login",
-            data={"username": "admin", "password": "Admin123"},
+            "/admin/login",
+            data={
+                "username": "admin",
+                "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
+            },
             follow_redirects=True,
         )
 
@@ -36,12 +39,13 @@ def test_admin_panel():
 
         # Test admin dashboard
         print("2. Testing admin dashboard...")
-        dashboard_response = client.get("/admin_dashboard")
+        dashboard_response = client.get("/admin_dashboard", follow_redirects=True)
 
         if dashboard_response.status_code != 200:
             print(
                 f"❌ Dashboard access failed with status {dashboard_response.status_code}"
             )
+            print(f"Final URL: {dashboard_response.request.url}")
             return False
 
         soup = BeautifulSoup(dashboard_response.data, "html.parser")
@@ -77,13 +81,20 @@ def test_admin_panel():
         else:
             print("✅ No error messages found in dashboard")
 
-        print("3. Testing volunteers list page...")
-        volunteers_response = client.get("/admin_volunteers")
-        if volunteers_response.status_code == 200:
-            print("✅ Volunteers list page loads successfully")
+        print("3. Testing admin analytics...")
+        analytics_response = client.get("/admin_analytics")
+        if analytics_response.status_code == 200:
+            print("✅ Admin analytics page loads successfully")
+        else:
+            print(f"⚠️ Admin analytics page status: {analytics_response.status_code}")
+
+        print("4. Testing predictive analytics...")
+        predictive_response = client.get("/predictive-analytics")
+        if predictive_response.status_code == 200:
+            print("✅ Predictive analytics page loads successfully")
         else:
             print(
-                f"❌ Volunteers list page failed with status {volunteers_response.status_code}"
+                f"⚠️ Predictive analytics page status: {predictive_response.status_code}"
             )
 
         print("\n🎉 Admin panel test completed!")

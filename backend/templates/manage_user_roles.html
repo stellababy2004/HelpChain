@@ -96,7 +96,7 @@
 {% if role.id in current_roles %}
 {% for rp in role.role_permissions %}
 {% if rp.permission.codename not in user_permissions %}
-{% do user_permissions.append(rp.permission.codename) %}
+{% set _ = user_permissions.append(rp.permission.codename) %}
 {% endif %}
 {% endfor %}
 {% endif %}

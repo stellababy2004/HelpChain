@@ -7,15 +7,53 @@ try:
 except ImportError:
     from extensions import db
 
-# Import AdminUser for relationship resolution
+# Import AdminUser and other models - try multiple import strategies
+AdminUser = None
+User = None
+Volunteer = None
+
 try:
-    from .models import AdminUser
+    # First try relative imports
+    from .models import AdminUser, User, Volunteer
 except ImportError:
     try:
-        from models import AdminUser
+        # Try absolute imports
+        from backend.models import AdminUser, User, Volunteer
     except ImportError:
-        # Define a placeholder if models.py is not available
-        AdminUser = None
+        try:
+            # Try importing from current directory
+            from models import AdminUser, User, Volunteer
+        except ImportError:
+            # If all imports fail, define minimal placeholder classes
+            # This prevents mapper initialization errors
+            class AdminUser:
+                pass
+
+            class User:
+                pass
+
+            class Volunteer:
+                pass
+
+
+# Ensure AdminUser is properly imported for relationships
+if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
+    try:
+        # Force import the real AdminUser class
+        import sys
+        import os
+
+        # Add backend directory to path if not already there
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        if backend_dir not in sys.path:
+            sys.path.insert(0, backend_dir)
+
+        # Try to import the real models
+        from models import AdminUser as RealAdminUser
+
+        AdminUser = RealAdminUser
+    except ImportError:
+        pass
 
 
 class AdminRole(Enum):
@@ -48,6 +86,9 @@ class AdminLog(db.Model):
     user_agent = db.Column(db.String(500), nullable=True)  # Browser info
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Use string reference for AdminUser relationship
+    admin_user = db.relationship("AdminUser", backref="admin_logs")
+
     def __repr__(self):
         return f"<AdminLog {self.action} by {self.admin_user_id}>"
 
@@ -70,6 +111,7 @@ class TwoFactorAuth(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
+    # Use string reference for AdminUser relationship
     admin_user = db.relationship("AdminUser", backref="auth_sessions")
 
     def is_expired(self):
@@ -96,6 +138,7 @@ class AdminSession(db.Model):
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
 
+    # Use string reference for AdminUser relationship
     admin_user = db.relationship("AdminUser", backref="sessions")
 
     def update_activity(self):
@@ -144,39 +187,39 @@ class SuccessStory(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-class VideoChatSession(db.Model):
-    """Модел за видео чат сесии между потребители"""
+# class VideoChatSession(db.Model):
+#     """Модел за видео чат сесии между потребители"""
 
-    __tablename__ = "video_chat_sessions"
-    __table_args__ = {"extend_existing": True}
+#     __tablename__ = "video_chat_sessions"
+#     __table_args__ = {"extend_existing": True}
 
-    id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(
-        db.String(128), unique=True, nullable=False
-    )  # WebRTC session ID
-    initiator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    participant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    status = db.Column(
-        db.String(50), default="pending"
-    )  # pending, active, completed, cancelled
-    started_at = db.Column(db.DateTime, nullable=True)
-    ended_at = db.Column(db.DateTime, nullable=True)
-    duration = db.Column(db.Integer, nullable=True)  # в секунди
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+#     id = db.Column(db.Integer, primary_key=True)
+#     session_id = db.Column(
+#         db.String(128), unique=True, nullable=False
+#     )  # WebRTC session ID
+#     initiator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+#     participant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+#     status = db.Column(
+#         db.String(50), default="pending"
+#     )  # pending, active, completed, cancelled
+#     started_at = db.Column(db.DateTime, nullable=True)
+#     ended_at = db.Column(db.DateTime, nullable=True)
+#     duration = db.Column(db.Integer, nullable=True)  # в секунди
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+#     updated_at = db.Column(
+#         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+#     )
 
-    # Relationships
-    initiator = db.relationship(
-        "User", foreign_keys=[initiator_id], backref="initiated_video_chats"
-    )
-    participant = db.relationship(
-        "User", foreign_keys=[participant_id], backref="participated_video_chats"
-    )
+#     # Relationships
+#     initiator = db.relationship(
+#         "User", foreign_keys=[initiator_id], backref="initiated_video_chats"
+#     )
+#     participant = db.relationship(
+#         "User", foreign_keys=[participant_id], backref="participated_video_chats"
+#     )
 
-    def __repr__(self):
-        return f"<VideoChatSession {self.session_id}>"
+#     def __repr__(self):
+#         return f"<VideoChatSession {self.session_id}>"
 
 
 class AnalyticsEvent(db.Model):
@@ -380,7 +423,7 @@ class Task(db.Model):
     )
 
     # Relationships
-    volunteer = db.relationship("Volunteer", back_populates="assigned_tasks")
+    # volunteer = db.relationship(Volunteer, backref="assigned_tasks")
     creator = db.relationship("AdminUser", backref="created_tasks")
 
     def __repr__(self):
@@ -425,13 +468,10 @@ class TaskAssignment(db.Model):
 
     # Relationships
     task = db.relationship("Task", backref="assignments")
-    volunteer = db.relationship("Volunteer", backref="task_assignments")
+    # volunteer = db.relationship(Volunteer, backref="task_assignments")
 
     def __repr__(self):
-        return (
-            f"<TaskAssignment Task:{self.task_id} -> "
-            f"Volunteer:{self.volunteer_id} Score:{self.overall_match_score}>"
-        )
+        return f"<TaskAssignment Task:{self.task_id} -> Volunteer:{self.volunteer_id} Score:{self.overall_match_score}>"
 
 
 class TaskPerformance(db.Model):
@@ -462,10 +502,7 @@ class TaskPerformance(db.Model):
 
     # Relationships
     task = db.relationship("Task", backref="performance_records")
-    volunteer = db.relationship("Volunteer", backref="performance_records")
+    # volunteer = db.relationship(Volunteer, backref="performance_records")
 
     def __repr__(self):
-        return (
-            f"<TaskPerformance Task:{self.task_id} "
-            f"Volunteer:{self.volunteer_id} Completed:{self.task_completed}>"
-        )
+        return f"<TaskPerformance Task:{self.task_id} Volunteer:{self.volunteer_id} Completed:{self.task_completed}>"

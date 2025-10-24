@@ -58,26 +58,47 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
       rel="stylesheet"
     />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- HelpChain Design System -->
+    <link href="/static/css/design-system.css" rel="stylesheet" />
+    <!-- HelpChain Animations -->
+    <link href="/static/css/animations.css" rel="stylesheet" />
+    <!-- HelpChain Typography -->
+    <link href="/static/css/typography.css" rel="stylesheet" />
+    <!-- HelpChain Forms -->
+    <link href="/static/css/forms.css" rel="stylesheet" />
+    <!-- HelpChain Dashboard -->
+    <link href="/static/css/dashboard.css" rel="stylesheet" />
+    <!-- HelpChain Themes -->
+    <link href="/static/css/themes.css" rel="stylesheet" />
+    <!-- HelpChain Navigation -->
+    <link href="/static/css/navigation.css" rel="stylesheet" />
+    <!-- HelpChain Loading States -->
+    <link href="/static/css/loading.css" rel="stylesheet" />
     <style>
       body {
-        background: linear-gradient(120deg, #e3f2fd 0%, #fff 100%);
+        background: var(--gradient-subtle);
         min-height: 100vh;
       }
 
       .glass {
-        background: rgba(255, 255, 255, 0.82);
-        border-radius: 22px;
-        box-shadow: 0 8px 40px 0 rgba(31, 38, 135, 0.18);
+        background: var(--gradient-card);
         -webkit-backdrop-filter: blur(10px);
         backdrop-filter: blur(10px);
-        padding: 3rem 2.5rem 2.5rem 2.5rem;
-        margin-top: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--shadow-lg);
+        padding: var(--space-8) var(--space-6) var(--space-6) var(--space-6);
+        margin-top: var(--space-6);
         opacity: 0;
-        transition: opacity 1.2s;
+        transition: var(--transition-slow);
         transform: translateZ(0);
-        /* Хардуерно ускорение за по-добра производителност */
+        -webkit-will-change: opacity, transform;
         will-change: opacity, transform;
-        /* Оптимизация за анимация с opacity и transform */
       }
 
       .glass.visible {
@@ -111,6 +132,9 @@
         font-weight: 600;
         font-size: 1.2rem;
         box-shadow: 0 2px 12px #1976d233;
+        -webkit-transition: background 0.3s;
+        -moz-transition: background 0.3s;
+        -o-transition: background 0.3s;
         transition: background 0.3s;
       }
 
@@ -121,6 +145,15 @@
       .btn-primary,
       .btn-outline-primary,
       .btn-outline-secondary {
+        -webkit-transition:
+          -webkit-transform 0.2s,
+          box-shadow 0.2s;
+        -moz-transition:
+          -moz-transform 0.2s,
+          box-shadow 0.2s;
+        -o-transition:
+          -o-transform 0.2s,
+          box-shadow 0.2s;
         transition:
           transform 0.2s,
           box-shadow 0.2s;
@@ -129,6 +162,9 @@
       .btn-primary:hover,
       .btn-outline-primary:hover,
       .btn-outline-secondary:hover {
+        -webkit-transform: scale(1.08);
+        -moz-transform: scale(1.08);
+        -ms-transform: scale(1.08);
         transform: scale(1.08);
         box-shadow: 0 4px 24px #1976d244;
       }
@@ -276,6 +312,47 @@
           font-size: 13px;
         }
       }
+
+      /* Mobile responsiveness improvements */
+      @media (max-width: 768px) {
+        .container {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+
+        .glass {
+          margin-top: 1rem;
+          padding: 2rem 1.5rem;
+        }
+
+        .btn-group-sm .btn {
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+        }
+
+        h1 {
+          font-size: 1.75rem;
+        }
+
+        .platform-desc {
+          font-size: 1rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .welcome-section {
+          padding: 1rem;
+        }
+
+        .stats-card {
+          padding: 1.5rem 1rem;
+        }
+
+        .btn-primary {
+          font-size: 1rem;
+          padding: 0.75rem 1.5rem;
+        }
+      }
     </style>
   </head>
 
@@ -295,6 +372,17 @@
       Инсталирай приложението
     </button>
 
+    <!-- Theme Toggle Button -->
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      onclick="toggleTheme()"
+      aria-label="Превключи темата"
+      title="Превключи между светла и тъмна тема"
+    >
+      <i id="theme-icon" class="bi bi-moon theme-toggle-icon"></i>
+    </button>
+
     <div class="container">
       {% with messages = get_flashed_messages() %} {% if messages %} {% for
       message in messages %}
@@ -303,32 +391,38 @@
       <!-- ...текст... -->
       {% endblock %}
       <footer class="text-center mt-5">
-        © 2025 HelpChain.live |
-        <a href="mailto:contact@helpchain.live">Email</a> |
-        <a href="https://facebook.com">Facebook</a> |
-        <a href="/terms" target="_blank">условията за ползване</a> |
-        <a href="/privacy" target="_blank">Политика за поверителност</a> |
-        <a href="/faq">FAQ</a> |
-        <a href="/success_stories">Истории на успеха</a> |
-        <a href="/feedback">Обратна връзка</a>
-        <form
-          method="post"
-          action="{{ url_for('set_language', language='bg') }}"
-          class="d-inline mx-2"
-        >
-          <button type="submit" class="btn btn-sm btn-outline-primary">
-            BG
-          </button>
-        </form>
-        <form
-          method="post"
-          action="{{ url_for('set_language', language='en') }}"
-          class="d-inline mx-2"
-        >
-          <button type="submit" class="btn btn-sm btn-outline-secondary">
-            EN
-          </button>
-        </form>
+        <div class="footer-links mb-4">
+          <a href="mailto:contact@helpchain.live">Email</a>
+          <a href="https://facebook.com">Facebook</a>
+          <a href="/terms" target="_blank">условията за ползване</a>
+          <a href="/privacy" target="_blank">Политика за поверителност</a>
+          <a href="/faq">FAQ</a>
+          <a href="/success_stories">Истории на успеха</a>
+          <a href="/feedback">Обратна връзка</a>
+        </div>
+        <div class="d-flex justify-content-center align-items-center gap-2">
+          <span class="text-muted">© 2025 HelpChain.live</span>
+          <div class="language-switcher">
+            <form
+              method="post"
+              action="{{ url_for('set_language', language='bg') }}"
+              class="d-inline"
+            >
+              <button type="submit" class="btn btn-sm btn-outline-primary">
+                BG
+              </button>
+            </form>
+            <form
+              method="post"
+              action="{{ url_for('set_language', language='en') }}"
+              class="d-inline"
+            >
+              <button type="submit" class="btn btn-sm btn-outline-secondary">
+                EN
+              </button>
+            </form>
+          </div>
+        </div>
       </footer>
     </div>
     <!-- Bootstrap JS -->
@@ -336,37 +430,80 @@
 
     <!-- PWA Service Worker Registration -->
     <script>
+      // Cross-browser compatibility helpers
+      (function() {
+        // Add class for older browsers
+        var docEl = document.documentElement;
+        if (!docEl.classList) {
+          docEl.className += ' no-classlist';
+        }
+
+        // Polyfill for matches() method
+        if (!Element.prototype.matches) {
+          Element.prototype.matches = Element.prototype.msMatchesSelector ||
+                                      Element.prototype.webkitMatchesSelector;
+        }
+
+        // Polyfill for closest() method
+        if (!Element.prototype.closest) {
+          Element.prototype.closest = function(s) {
+            var el = this;
+            do {
+              if (el.matches(s)) return el;
+              el = el.parentElement || el.parentNode;
+            } while (el !== null && el.nodeType === 1);
+            return null;
+          };
+        }
+      })();
+
       // Register service worker for PWA functionality
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", function () {
-          navigator.serviceWorker
-            .register("/sw.js", { scope: "/" })
-            .then(function (registration) {
-              console.log(
-                "[PWA] Service Worker registered successfully:",
-                registration.scope,
-              );
+          // Check if we're in a secure context (required for SW)
+          if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            console.warn("[PWA] Service Worker requires HTTPS or localhost");
+            return;
+          }
 
-              // Check for updates
-              registration.addEventListener("updatefound", function () {
-                const newWorker = registration.installing;
-                if (newWorker) {
-                  newWorker.addEventListener("statechange", function () {
-                    if (
-                      newWorker.state === "installed" &&
-                      navigator.serviceWorker.controller
-                    ) {
-                      // New version available
-                      showUpdateNotification();
-                    }
-                  });
-                }
-              });
-            })
-            .catch(function (error) {
-              console.log("[PWA] Service Worker registration failed:", error);
+          // First unregister any existing service workers to avoid conflicts
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+              console.log("[PWA] Unregistering existing SW:", registration.scope);
+              registration.unregister();
+            }
+          }).then(function() {
+            // Now register the new service worker
+            return navigator.serviceWorker.register("/static/sw.js", { scope: "/static/" });
+          }).then(function (registration) {
+            console.log(
+              "[PWA] Service Worker registered successfully:",
+              registration.scope,
+            );
+
+            // Check for updates
+            registration.addEventListener("updatefound", function () {
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener("statechange", function () {
+                  if (
+                    newWorker.state === "installed" &&
+                    navigator.serviceWorker.controller
+                  ) {
+                    // New version available
+                    showUpdateNotification();
+                  }
+                });
+              }
             });
+          })
+          .catch(function (error) {
+            console.error("[PWA] Service Worker registration failed:", error);
+            // Don't show error to user, just log it
+          });
         });
+      } else {
+        console.warn("[PWA] Service Worker not supported in this browser");
       }
 
       // Function to show update notification
@@ -534,15 +671,38 @@
         });
       });
 
-      // Global search keyboard shortcut (Ctrl+K or Cmd+K)
-      document.addEventListener("keydown", function (e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-          e.preventDefault();
-          if (typeof openGlobalSearch === "function") {
-            openGlobalSearch();
-          }
+      // Function to toggle theme
+      function toggleTheme() {
+        const html = document.documentElement;
+        const themeIcon = document.getElementById('theme-icon');
+        const currentTheme = html.getAttribute('data-theme');
+
+        if (currentTheme === 'dark') {
+          html.removeAttribute('data-theme');
+          themeIcon.className = 'bi bi-moon theme-toggle-icon';
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.setAttribute('data-theme', 'dark');
+          themeIcon.className = 'bi bi-sun theme-toggle-icon';
+          localStorage.setItem('theme', 'dark');
         }
-      });
+      }
+
+      // Initialize theme on page load
+      function initializeTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const themeIcon = document.getElementById('theme-icon');
+
+        if (savedTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          themeIcon.className = 'bi bi-sun theme-toggle-icon';
+        } else {
+          themeIcon.className = 'bi bi-moon theme-toggle-icon';
+        }
+      }
+
+      // Initialize theme when DOM is loaded
+      document.addEventListener('DOMContentLoaded', initializeTheme);
     </script>
   </body>
 </html>

@@ -5,13 +5,45 @@ Flask-Mail==0.9.1
 Flask-Babel==3.1.0
 Flask-Login==0.6.3
 Flask-SocketIO==5.3.6
+Flask-Session==0.5.0
+Flask-Compress==1.14
+Flask-Limiter==3.5.1
+Flask-Talisman==1.1.0
 python-socketio==5.8.0
+eventlet==0.33.3
 gunicorn==21.2.0
 python-dotenv==1.0.0
-MAIL_SERVER=smtp.mailtrap.io
-MAIL_PORT=2525
-MAIL_USE_TLS=True
-MAIL_USE_SSL=False
-MAIL_USERNAME=вашия_mailtrap_username
-MAIL_PASSWORD=вашия_mailtrap_password
-MAIL_DEFAULT_SENDER=contact@helpchain.live
+# Machine Learning dependencies
+scikit-learn==1.7.2
+pandas==2.2.0
+numpy==1.26.3
+joblib==1.3.2
+# Additional ML libraries for advanced features
+xgboost==2.0.3
+lightgbm==4.3.0
+# Data visualization
+matplotlib==3.8.2
+seaborn==0.13.2
+plotly==5.18.0
+# Testing dependencies
+pytest==7.4.3
+beautifulsoup4==4.12.2
+pytest-flask==1.3.0
+# Database and caching
+psycopg2-binary==2.9.9
+redis==5.0.1
+celery==5.3.4
+Flask-Caching==2.1.0
+# Additional utilities
+Werkzeug==2.3.7
+Jinja2==3.1.2
+click==8.1.7
+itsdangerous==2.1.2
+blinker==1.7.0
+python-dateutil==2.8.2
+pytz==2023.3.post1
+requests==2.31.0
+# Security
+bcrypt==4.0.1
+PyJWT==2.8.0
+pyotp==2.9.0
