@@ -408,7 +408,7 @@ class MobileResponsiveTester:
                 else:
                     error_tests += 1
 
-        print(f"\nSummary:")
+        print("\nSummary:")
         print(f"   Devices tested: {total_devices}")
         print(f"   Pages tested: {total_pages}")
         print(f"   Total tests: {total_tests}")

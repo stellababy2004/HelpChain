@@ -5,9 +5,10 @@ Tests various error conditions to ensure proper error responses
 """
 
 import json
-import requests
 import time
 from typing import Any
+
+import requests
 
 
 class ErrorHandlerTester:

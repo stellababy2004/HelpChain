@@ -1,10 +1,11 @@
+import asyncio
 import json
 import os
 import time
-import asyncio
-import aiofiles
 from datetime import datetime, timedelta
 
+import aiofiles
+import httpx
 from flask import (
     Blueprint,
     Response,
@@ -17,12 +18,10 @@ from flask import (
     session,
     url_for,
 )
-
-import httpx
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.future import select
+from sqlalchemy.orm import sessionmaker
 
 from extensions import db
 
@@ -120,9 +119,10 @@ async def analytics_data():
         if simple:
             # Return simple dashboard stats using async database queries
             try:
-                from appy import async_session
                 from flask import current_app
-                from sqlalchemy import select, func
+                from sqlalchemy import func, select
+
+                from appy import async_session
 
                 async with async_session() as session:
 
@@ -238,9 +238,10 @@ async def analytics_simple_data():
             print(f"Cache error: {cache_error}")
 
         # Get basic counts from database using async session
-        from appy import async_session
         from flask import current_app
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
+
+        from appy import async_session
 
         async with async_session() as session:
 
@@ -433,6 +434,7 @@ async def analytics_live():
     """Get live analytics data for real-time updates"""
     try:
         import asyncio
+
         from analytics_service import analytics_service
 
         # Run analytics_service in thread executor since it may not be async
@@ -795,6 +797,7 @@ async def get_anomalies():
     """Get detected anomalies in analytics data"""
     try:
         import asyncio
+
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
@@ -826,6 +829,7 @@ async def get_predictions():
     """Get predictive analytics for user behavior"""
     try:
         import asyncio
+
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
@@ -856,6 +860,7 @@ async def get_insights():
     """Get comprehensive analytics insights report"""
     try:
         import asyncio
+
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
@@ -877,6 +882,7 @@ async def get_user_behavior():
     """Get user behavior analysis"""
     try:
         import asyncio
+
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
@@ -1122,6 +1128,7 @@ async def check_alerts():
     """Check for triggered alerts"""
     try:
         import asyncio
+
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()

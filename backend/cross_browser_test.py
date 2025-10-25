@@ -13,15 +13,15 @@ from pathlib import Path
 import pytest
 from selenium import webdriver
 from selenium.common.exceptions import (
+    SessionNotCreatedException,
     TimeoutException,
     WebDriverException,
-    SessionNotCreatedException,
 )
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.edge.options import Options as EdgeOptions
-from selenium.webdriver.safari.options import Options as SafariOptions
 from selenium.webdriver.common.by import By
+from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.safari.options import Options as SafariOptions
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
