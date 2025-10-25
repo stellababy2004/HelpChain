@@ -2,10 +2,11 @@
 """
 Test script to trigger real-time analytics updates via WebSocket
 """
-import requests
-import time
 import json
+import time
 from datetime import datetime
+
+import requests
 
 
 def test_websocket_analytics():

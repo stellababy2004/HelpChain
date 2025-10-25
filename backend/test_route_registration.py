@@ -2,8 +2,8 @@
 """
 Test script to check if test routes are registered and working
 """
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
