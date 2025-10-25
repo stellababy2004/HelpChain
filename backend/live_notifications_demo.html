@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HelpChain Live Notifications Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      .container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+      }
+      .header {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+      }
+      .status {
+        padding: 15px;
+        border-radius: 10px;
+        margin: 15px 0;
+        font-weight: bold;
+        text-align: center;
+      }
+      .status.connected {
+        background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+        color: white;
+      }
+      .status.disconnected {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        color: white;
+      }
+      .status.connecting {
+        background: linear-gradient(45deg, #f093fb, #f5576c);
+        color: white;
+      }
+      .notification {
+        padding: 15px;
+        border-radius: 10px;
+        margin: 10px 0;
+        border-left: 5px solid;
+        animation: slideIn 0.5s ease-out;
+      }
+      .notification.chat {
+        background: #e3f2fd;
+        border-left-color: #2196f3;
+      }
+      .notification.analytics {
+        background: #f3e5f5;
+        border-left-color: #9c27b0;
+      }
+      .notification.request {
+        background: #e8f5e8;
+        border-left-color: #4caf50;
+      }
+      .notification.volunteer {
+        background: #fff3e0;
+        border-left-color: #ff9800;
+      }
+      .notification.presence {
+        background: #fce4ec;
+        border-left-color: #e91e63;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(-100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+      }
+      .stat-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid #e9ecef;
+      }
+      .stat-number {
+        font-size: 2em;
+        font-weight: bold;
+        color: #495057;
+      }
+      .stat-label {
+        color: #6c757d;
+        margin-top: 5px;
+      }
+      .btn {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        cursor: pointer;
+        margin: 10px 5px;
+        font-weight: bold;
+        transition: transform 0.2s;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+      .btn:active {
+        transform: scale(0.95);
+      }
+      .demo-section {
+        margin: 30px 0;
+        padding: 20px;
+        border-radius: 10px;
+        background: #f8f9fa;
+      }
+      .demo-section h3 {
+        color: #495057;
+        margin-top: 0;
+      }
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎉 HelpChain Live Notifications</h1>
+        <p>Real-time communication system for HelpChain platform</p>
+      </div>
+
+      <div id="connection-status" class="status disconnected">
+        🔌 Connecting to Live Notifications...
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="messages-count">0</div>
+          <div class="stat-label">Messages Sent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="users-online">0</div>
+          <div class="stat-label">Users Online</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="requests-active">0</div>
+          <div class="stat-label">Active Requests</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="volunteers-available">0</div>
+          <div class="stat-label">Volunteers Available</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <h2>📡 Live Activity Feed</h2>
+      <div id="notifications" style="max-height: 400px; overflow-y: auto">
+        <div class="notification chat">
+          <strong>System:</strong> Live notifications initialized
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="demo-section">
+        <h3>🚀 Quick Demo Actions</h3>
+        <p>Click these buttons to see live notifications in action:</p>
+        <button class="btn" onclick="simulateChatMessage()">
+          💬 Send Chat Message
+        </button>
+        <button class="btn" onclick="simulateAnalyticsUpdate()">
+          📊 Trigger Analytics Update
+        </button>
+        <button class="btn" onclick="simulateRequestUpdate()">
+          🚨 Update Request Status
+        </button>
+        <button class="btn" onclick="simulateVolunteerUpdate()">
+          👥 Update Volunteer Status
+        </button>
+        <button class="btn" onclick="simulatePresenceChange()">
+          🔴 Change Presence
+        </button>
+      </div>
+
+      <div class="demo-section">
+        <h3>🔧 Connection Details</h3>
+        <p><strong>WebSocket URL:</strong> ws://localhost:5000</p>
+        <p>
+          <strong>Status:</strong> <span id="ws-status">Connecting...</span>
+        </p>
+        <p>
+          <strong>Features Active:</strong> Chat, Analytics, Requests,
+          Volunteers, Presence
+        </p>
+      </div>
+    </div>
+
+    <script>
+      let socket = null;
+      let messageCount = 0;
+      let usersOnline = 0;
+
+      // Initialize WebSocket connection
+      function initWebSocket() {
+        updateStatus("connecting");
+
+        socket = io("http://localhost:5000", {
+          cors: {
+            origin: "*",
+            methods: ["GET", "POST"],
+          },
+        });
+
+        socket.on("connect", function () {
+          updateStatus("connected");
+          addNotification(
+            "success",
+            "🔗 Connected to HelpChain Live Notifications!",
+          );
+          console.log("Connected to WebSocket server");
+
+          // Join analytics room
+          socket.emit("join_analytics", { room: "analytics" });
+          addNotification(
+            "analytics",
+            "📊 Joined analytics room for live updates",
+          );
+
+          // Join requests room
+          socket.emit("join_requests", { user_type: "requester" });
+          addNotification(
+            "request",
+            "🚨 Joined requests room for live updates",
+          );
+        });
+
+        socket.on("disconnect", function () {
+          updateStatus("disconnected");
+          addNotification("error", "🔌 Disconnected from Live Notifications");
+          console.log("Disconnected from WebSocket server");
+        });
+
+        // Chat events
+        socket.on("new_message", function (data) {
+          messageCount++;
+          updateCounter("messages-count", messageCount);
+          addNotification("chat", `💬 ${data.sender_name}: ${data.message}`);
+        });
+
+        socket.on("user_joined", function (data) {
+          usersOnline++;
+          updateCounter("users-online", usersOnline);
+          addNotification("presence", `➡️ ${data.user_name} joined the chat`);
+        });
+
+        socket.on("user_left", function (data) {
+          usersOnline = Math.max(0, usersOnline - 1);
+          updateCounter("users-online", usersOnline);
+          addNotification("presence", `⬅️ ${data.user_name} left the chat`);
+        });
+
+        // Analytics events
+        socket.on("analytics_update", function (data) {
+          addNotification(
+            "analytics",
+            `📊 Analytics updated: ${Object.keys(data).length} metrics refreshed`,
+          );
+        });
+
+        // Request events
+        socket.on("request_updated", function (data) {
+          addNotification(
+            "request",
+            `🚨 Request ${data.request_id} status: ${data.new_status}`,
+          );
+        });
+
+        socket.on("volunteer_assigned", function (data) {
+          addNotification(
+            "volunteer",
+            `👥 ${data.volunteer_name} assigned to request ${data.request_id}`,
+          );
+        });
+
+        // Volunteer events
+        socket.on("volunteer_status_changed", function (data) {
+          addNotification(
+            "volunteer",
+            `👥 ${data.volunteer_name} is now ${data.status}`,
+          );
+        });
+
+        // Presence events
+        socket.on("user_presence_changed", function (data) {
+          addNotification(
+            "presence",
+            `🔴 ${data.user_name} presence: ${data.status}`,
+          );
+        });
+
+        socket.on("online_users_list", function (data) {
+          usersOnline = data.count;
+          updateCounter("users-online", usersOnline);
+          addNotification(
+            "presence",
+            `👥 ${data.count} users currently online`,
+          );
+        });
+      }
+
+      // Demo functions
+      function simulateChatMessage() {
+        if (!socket || !socket.connected) {
+          addNotification("error", "❌ Not connected to WebSocket server");
+          return;
+        }
+
+        // Join a chat room first
+        socket.emit("join_chat_room", {
+          room_id: "demo-room",
+          user_id: "demo-user",
+          user_name: "Demo User",
+        });
+
+        // Send a message
+        setTimeout(() => {
+          socket.emit("send_message", {
+            room_id: "demo-room",
+            user_id: "demo-user",
+            user_name: "Demo User",
+            message: "Hello! This is a live notification demo! 🎉",
+            message_type: "text",
+          });
+        }, 500);
+      }
+
+      function simulateAnalyticsUpdate() {
+        if (!socket || !socket.connected) {
+          addNotification("error", "❌ Not connected to WebSocket server");
+          return;
+        }
+
+        socket.emit("request_analytics_update");
+        addNotification("analytics", "📊 Requested analytics update...");
+      }
+
+      function simulateRequestUpdate() {
+        if (!socket || !socket.connected) {
+          addNotification("error", "❌ Not connected to WebSocket server");
+          return;
+        }
+
+        socket.emit("request_status_update", {
+          request_id: "demo-request-1",
+          status: "approved",
+        });
+        addNotification("request", "🚨 Simulated request status update");
+      }
+
+      function simulateVolunteerUpdate() {
+        if (!socket || !socket.connected) {
+          addNotification("error", "❌ Not connected to WebSocket server");
+          return;
+        }
+
+        socket.emit("volunteer_status_update", {
+          volunteer_id: "demo-volunteer",
+          status: "available",
+          location: { lat: 42.6977, lng: 23.3219 },
+        });
+        addNotification("volunteer", "👥 Simulated volunteer status update");
+      }
+
+      function simulatePresenceChange() {
+        if (!socket || !socket.connected) {
+          addNotification("error", "❌ Not connected to WebSocket server");
+          return;
+        }
+
+        socket.emit("user_presence_update", {
+          user_id: "demo-user",
+          status: "online",
+          user_name: "Demo User",
+        });
+        addNotification("presence", "🔴 Simulated presence change");
+      }
+
+      // Utility functions
+      function updateStatus(status) {
+        const statusEl = document.getElementById("connection-status");
+        const wsStatusEl = document.getElementById("ws-status");
+
+        statusEl.className = `status ${status}`;
+        wsStatusEl.textContent =
+          status.charAt(0).toUpperCase() + status.slice(1);
+
+        switch (status) {
+          case "connected":
+            statusEl.innerHTML = "🟢 Connected to Live Notifications!";
+            break;
+          case "connecting":
+            statusEl.innerHTML = "🟡 Connecting to Live Notifications...";
+            break;
+          case "disconnected":
+            statusEl.innerHTML = "🔴 Disconnected from Live Notifications";
+            break;
+        }
+      }
+
+      function addNotification(type, message) {
+        const notificationsEl = document.getElementById("notifications");
+        const notificationEl = document.createElement("div");
+        notificationEl.className = `notification ${type}`;
+        notificationEl.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+        notificationsEl.insertBefore(
+          notificationEl,
+          notificationsEl.firstChild,
+        );
+
+        // Keep only last 20 notifications
+        while (notificationsEl.children.length > 20) {
+          notificationsEl.removeChild(notificationsEl.lastChild);
+        }
+      }
+
+      function updateCounter(counterId, value) {
+        document.getElementById(counterId).textContent = value;
+      }
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("🚀 Initializing HelpChain Live Notifications Demo...");
+        initWebSocket();
+
+        // Auto-refresh counters every 30 seconds
+        setInterval(() => {
+          if (socket && socket.connected) {
+            socket.emit("get_online_users");
+          }
+        }, 30000);
+      });
+
+      // Handle page unload
+      window.addEventListener("beforeunload", function () {
+        if (socket) {
+          socket.disconnect();
+        }
+      });
+    </script>
+  </body>
+</html>

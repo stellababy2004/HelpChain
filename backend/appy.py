@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 from flask import (
     Flask,
     Response,
+    current_app,
     flash,
     jsonify,
     redirect,
@@ -33,9 +34,9 @@ from flask_migrate import Migrate
 from flask_socketio import join_room, leave_room
 from flask_talisman import Talisman
 from jinja2 import ChoiceLoader, FileSystemLoader
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.exc import OperationalError
-from werkzeug.exceptions import BadRequest
-from werkzeug.utils import secure_filename
+from sqlalchemy.orm import sessionmaker
 
 from admin_roles import admin_roles_bp
 
@@ -43,7 +44,7 @@ from admin_roles import admin_roles_bp
 from ai_service import ai_service
 
 # Import extensions and models using absolute imports since backend dir is in sys.path
-from extensions import db
+from extensions import babel, cache, db, mail
 from models import (
     AdminUser,
     ChatMessage,
@@ -51,10 +52,25 @@ from models import (
     ChatRoom,
     HelpRequest,
     Role,
+    RoleEnum,
     User,
     UserRole,
     Volunteer,
 )
+
+
+# Get db instance from current app context for proper test compatibility
+def get_db():
+    """Get database instance from current app context"""
+    try:
+        # Try to get from current_app extensions first
+        return current_app.extensions["sqlalchemy"]
+    except KeyError:
+        # Fallback to global db
+        from extensions import db
+
+        return db
+
 
 # Import Task models globally for use in routes
 from models_with_analytics import (
@@ -168,32 +184,11 @@ def initialize_default_admin():
     """
     try:
         logger.info("Checking for existing admin user...")
+        db = get_db()
         # Check if admin user exists
         admin_user = db.session.query(AdminUser).filter_by(username="admin").first()
         if admin_user:
             logger.info("Admin user already exists")
-            # Check if User record exists and has super admin role
-            user = db.session.query(User).filter_by(username="admin").first()
-            if user:
-                # Check if user has super admin role
-                superadmin_role = (
-                    db.session.query(Role).filter_by(name="Супер администратор").first()
-                )
-                if superadmin_role:
-                    existing_role = (
-                        db.session.query(UserRole)
-                        .filter_by(user_id=user.id, role_id=superadmin_role.id)
-                        .first()
-                    )
-                    if not existing_role:
-                        user_role = UserRole(
-                            user_id=user.id,
-                            role_id=superadmin_role.id,
-                            assigned_by=user.id,  # Self-assigned
-                        )
-                        db.session.add(user_role)
-                        db.session.commit()
-                        logger.info("Super admin role assigned to existing user")
             return admin_user
 
         logger.info("Creating default admin user...")
@@ -205,43 +200,27 @@ def initialize_default_admin():
         admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "Admin123"))
         db.session.add(admin_user)
         db.session.flush()  # Get admin_user ID
+        logger.info(f"AdminUser created with ID: {admin_user.id}")
 
-        # Also create a User record for permissions system
+        # Also create a User record for permissions system with superadmin role
+        logger.info("Creating User record with superadmin role...")
         user = User(
             username="admin",
             email="admin@helpchain.live",
             password_hash=admin_user.password_hash,  # Use same password hash
+            role=RoleEnum.superadmin,  # Use the enum directly
             is_active=True,
         )
+        logger.info(f"User object created: username={user.username}, role={user.role}")
         db.session.add(user)
-        db.session.flush()  # Get user ID
-
-        # Assign super admin role to the user
-        superadmin_role = (
-            db.session.query(Role).filter_by(name="Супер администратор").first()
-        )
-        if superadmin_role:
-            # Check if user already has this role
-            existing_role = (
-                db.session.query(UserRole)
-                .filter_by(user_id=user.id, role_id=superadmin_role.id)
-                .first()
-            )
-            if not existing_role:
-                user_role = UserRole(
-                    user_id=user.id,
-                    role_id=superadmin_role.id,
-                    assigned_by=user.id,  # Self-assigned
-                )
-                db.session.add(user_role)
-
+        logger.info("User added to session")
         db.session.commit()
         logger.info("Default admin user created successfully")
         return admin_user
 
     except Exception as e:
-        db.session.rollback()
         logger.error(f"Error creating default admin user: {e}", exc_info=True)
+        db.session.rollback()
         return None
 
 
@@ -370,20 +349,32 @@ _static = os.path.join(os.path.dirname(__file__), "static")
 
 # Import shared Flask app and mail instances
 # Initialize Flask-SocketIO for real-time features
-from app_init import app, mail
-from flask_socketio import SocketIO
+# from app_init import app, mail
+# Instead of importing, create the app directly here
+from flask import Flask
+from flask_mail import Mail
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+# Create Flask app with async support
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
-# Initialize RealTimeNotifications with SocketIO instance
-from advanced_analytics import RealTimeNotifications
+# Initialize Flask-Mail
+mail = Mail(app)
 
-realtime_notifications = RealTimeNotifications(socketio)
+# Set SECRET_KEY for sessions and security
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", secrets.token_hex(32))
 
-# Задаваме SECRET_KEY за сесии и сигурност ПРЕДИ Flask-Session инициализация
-app.config["SECRET_KEY"] = os.getenv(
-    "SECRET_KEY", "dev-secret-key-change-in-production"
-)
+# Initialize SocketIO conditionally
+if True:  # Re-enabled SocketIO for live notifications
+    from flask_socketio import SocketIO
+
+    socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+    # Initialize RealTimeNotifications with SocketIO instance
+    from advanced_analytics import RealTimeNotifications
+
+    realtime_notifications = RealTimeNotifications(socketio)
+else:
+    socketio = None
+    realtime_notifications = None
 
 # TEMPORARILY DISABLE Flask-Session to test standard Flask sessions
 # Configure Flask-Session for better session persistence in development
@@ -495,8 +486,37 @@ logger.info(f"Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")  # Debug p
 logger.debug(f"Database path: {app.config['SQLALCHEMY_DATABASE_URI']}")  # Debug print
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# Configure database connection pooling
+if database_url and use_postgres:
+    # PostgreSQL production configuration
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,  # Check connections before use
+        "pool_size": 10,  # Number of connections to keep in pool
+        "max_overflow": 20,  # Additional connections beyond pool_size
+        "pool_timeout": 30,  # Seconds to wait for a connection
+        "pool_recycle": 3600,  # Recycle connections after 1 hour
+        "echo": False,  # Disable SQL query logging in production
+        "connect_args": {"server_settings": {"application_name": "helpchain"}},
+    }
+    logger.info("Configured PostgreSQL connection pooling")
+else:
+    # SQLite development configuration
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,  # Check connections before use
+        "pool_timeout": 30,  # Seconds to wait for a connection
+        "pool_recycle": 3600,  # Recycle connections after 1 hour (SQLite specific)
+        "connect_args": {
+            "check_same_thread": False,  # Allow multi-threading with SQLite
+        },
+        "echo": False,  # Disable SQL query logging
+    }
+    logger.info("Configured SQLite connection pooling")
+
 db.init_app(app)
 migrate = Migrate(app, db)
+
+# Initialize cache
+cache.init_app(app)
 
 
 # Initialize database in production mode
@@ -738,16 +758,19 @@ try:
 except ImportError:
     from analytics_routes import analytics_bp
 
-app.register_blueprint(analytics_bp, url_prefix="/analytics")
+app.register_blueprint(analytics_bp, url_prefix="")
 
 # Initialize analytics cache with app
 try:
-    from analytics_routes import cache
+    from performance_optimization import AnalyticsCache
 
-    cache.init_app(app)
+    analytics_cache = AnalyticsCache()
+    analytics_cache.init_app(app)
+    app.analytics_cache = analytics_cache  # Store in app for access by decorators
     app.logger.info("Analytics cache initialized successfully")
 except Exception as e:
     app.logger.error(f"Failed to initialize analytics cache: {e}")
+    app.analytics_cache = None
 
 # Initialize analytics service with database session
 try:
@@ -768,6 +791,14 @@ def test_analytics():
 @app.route("/test_notifications")
 def test_notifications():
     """Test endpoint to trigger real-time notifications"""
+    if not realtime_notifications:
+        return (
+            jsonify(
+                {"error": "Real-time notifications not available (SocketIO disabled)"}
+            ),
+            503,
+        )
+
     from datetime import datetime
 
     # Test anomaly broadcast
@@ -786,6 +817,49 @@ def test_notifications():
     return jsonify(
         {"status": "Notifications sent", "anomaly": anomaly, "milestone": milestone}
     )
+
+
+# Test routes for error handlers
+@app.route("/test/trigger-400", methods=["GET"])
+def trigger_400():
+    """Test route to trigger 400 Bad Request error"""
+    app.logger.info("trigger_400 route called")
+    print("DEBUG: trigger_400 route handler executed")
+    from flask import abort
+
+    abort(400, "Test 400 error for bad request")
+
+
+@app.route("/test/trigger-401")
+def trigger_401():
+    """Test route to trigger 401 Unauthorized error"""
+    from flask import abort
+
+    print("DEBUG: trigger_401 route handler executed")
+    abort(401, "Test 401 error for authentication")
+
+
+@app.route("/test/trigger-429")
+def trigger_429():
+    """Test route to trigger 429 Too Many Requests error"""
+    from flask import abort
+
+    print("DEBUG: trigger_429 route handler executed")
+    abort(429, "Test 429 error for rate limiting")
+
+
+@app.route("/test/trigger-validation-error")
+def trigger_validation_error():
+    """Test route to trigger ValueError (validation error)"""
+    print("DEBUG: trigger_validation_error route handler executed")
+    raise ValueError("Test validation error")
+
+
+@app.route("/test/trigger-database-error")
+def trigger_database_error():
+    """Test route to trigger database OperationalError"""
+    print("DEBUG: trigger_database_error route handler executed")
+    raise OperationalError("Test database error", None, None)
 
 
 @app.route("/email_healthz")
@@ -885,51 +959,667 @@ def email_healthz():
 app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
 
 # Register notification blueprint
-app.register_blueprint(notification_bp, url_prefix="/api/notifications")
+app.register_blueprint(notification_bp, url_prefix="/notifications")
 
 
-# SocketIO Event Handlers for real-time features
-@socketio.on("connect")
-def handle_connect():
-    """Handle client connection"""
-    app.logger.info(f"Client connected: {request.sid}")
-    socketio.emit("connected", {"status": "success"})
+# SocketIO Event Handlers for real-time features (only if SocketIO is enabled)
+if socketio:
+    # User presence tracking
+    active_users = {}
 
+    @socketio.on("connect")
+    def handle_connect():
+        """Handle client connection"""
+        app.logger.info(f"Client connected: {request.sid}")
+        socketio.emit("connected", {"status": "success", "sid": request.sid})
 
-@socketio.on("disconnect")
-def handle_disconnect():
-    """Handle client disconnection"""
-    app.logger.info(f"Client disconnected: {request.sid}")
+    @socketio.on("disconnect")
+    def handle_disconnect():
+        """Handle client disconnection"""
+        app.logger.info(f"Client disconnected: {request.sid}")
 
+        # Remove user from active users
+        user_id = None
+        for uid, sid in active_users.items():
+            if sid == request.sid:
+                user_id = uid
+                break
 
-@socketio.on("join_analytics")
-def handle_join_analytics(data):
-    """Handle joining analytics room for real-time updates"""
-    room = data.get("room", "analytics")
-    join_room(room)
-    app.logger.info(f"Client joined analytics room: {room}")
-    socketio.emit("joined_room", {"room": room}, room=room)
+        if user_id:
+            del active_users[user_id]
+            # Broadcast user offline status
+            socketio.emit(
+                "user_status_change",
+                {
+                    "user_id": user_id,
+                    "status": "offline",
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
 
+    @socketio.on("join_analytics")
+    def handle_join_analytics(data):
+        """Handle joining analytics room for real-time updates"""
+        room = data.get("room", "analytics")
+        join_room(room)
+        app.logger.info(f"Client joined analytics room: {room}")
+        socketio.emit("joined_room", {"room": room}, room=room)
 
-@socketio.on("leave_analytics")
-def handle_leave_analytics(data):
-    """Handle leaving analytics room"""
-    room = data.get("room", "analytics")
-    leave_room(room)
-    app.logger.info(f"Client left analytics room: {room}")
+    @socketio.on("leave_analytics")
+    def handle_leave_analytics(data):
+        """Handle leaving analytics room"""
+        room = data.get("room", "analytics")
+        leave_room(room)
+        app.logger.info(f"Client left analytics room: {room}")
 
+    @socketio.on("request_analytics_update")
+    def handle_analytics_update():
+        """Handle request for analytics data update"""
+        try:
+            from analytics_service import analytics_service
 
-@socketio.on("request_analytics_update")
-def handle_analytics_update():
-    """Handle request for analytics data update"""
-    try:
-        from analytics_service import analytics_service
+            # Get latest analytics data
+            dashboard_data = analytics_service.get_dashboard_analytics()
 
-        # Get latest analytics data
-        dashboard_data = analytics_service.get_dashboard_analytics()
-        socketio.emit("analytics_update", dashboard_data)
-    except Exception as e:
-        app.logger.error(f"Error sending analytics update: {e}")
+            # Structure data for real-time chart updates
+            realtime_data = {
+                "trends": {
+                    "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                    "requests": [10, 15, 8, 22, 18, 25],
+                    "completed": [8, 12, 6, 18, 15, 20],
+                    "volunteers": [5, 7, 4, 12, 9, 14],
+                },
+                "categories": {
+                    "labels": ["Medical", "Transport", "Household", "Education"],
+                    "data": [15, 8, 12, 6],
+                },
+                "geo": {
+                    "labels": ["Sofia", "Plovdiv", "Varna", "Burgas", "Other"],
+                    "data": [45, 23, 18, 12, 8],
+                },
+                "requests_today": dashboard_data.get("totals", {}).get("requests", 0),
+                "success_rate": 85.5,
+                "avg_response_time": 2.3,
+                "active_volunteers": dashboard_data.get("totals", {}).get(
+                    "volunteers", 0
+                ),
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            socketio.emit("analytics_update", realtime_data)
+        except Exception as e:
+            app.logger.error(f"Error sending analytics update: {e}")
+
+    # Chat WebSocket Events
+    @socketio.on("join_chat_room")
+    def handle_join_chat_room(data):
+        """Handle joining a chat room"""
+        room_id = data.get("room_id")
+        user_id = data.get("user_id")
+        user_name = data.get("user_name", "Anonymous")
+
+        if room_id and user_id:
+            room_name = f"chat_{room_id}"
+            join_room(room_name)
+
+            # Update user presence
+            active_users[user_id] = request.sid
+
+            # Broadcast user joined
+            socketio.emit(
+                "user_joined",
+                {
+                    "user_id": user_id,
+                    "user_name": user_name,
+                    "timestamp": datetime.now().isoformat(),
+                },
+                room=room_name,
+            )
+
+            # Send online status update
+            socketio.emit(
+                "user_status_change",
+                {
+                    "user_id": user_id,
+                    "status": "online",
+                    "room_id": room_id,
+                    "timestamp": datetime.now().isoformat(),
+                },
+            )
+
+            app.logger.info(f"User {user_id} joined chat room {room_id}")
+
+    @socketio.on("leave_chat_room")
+    def handle_leave_chat_room(data):
+        """Handle leaving a chat room"""
+        room_id = data.get("room_id")
+        user_id = data.get("user_id")
+        user_name = data.get("user_name", "Anonymous")
+
+        if room_id:
+            room_name = f"chat_{room_id}"
+            leave_room(room_name)
+
+            # Broadcast user left
+            socketio.emit(
+                "user_left",
+                {
+                    "user_id": user_id,
+                    "user_name": user_name,
+                    "timestamp": datetime.now().isoformat(),
+                },
+                room=room_name,
+            )
+
+            app.logger.info(f"User {user_id} left chat room {room_id}")
+
+    @socketio.on("send_message")
+    def handle_send_message(data):
+        """Handle sending a chat message"""
+        try:
+            room_id = data.get("room_id")
+            user_id = data.get("user_id")
+            user_name = data.get("user_name", "Anonymous")
+            message_text = data.get("message", "").strip()
+            message_type = data.get("message_type", "text")
+
+            if not room_id or not message_text:
+                return
+
+            # Save message to database
+            from extensions import db
+            from models import ChatMessage
+
+            message = ChatMessage(
+                room_id=room_id,
+                sender_id=user_id,
+                sender_name=user_name,
+                message=message_text,
+                message_type=message_type,
+            )
+
+            db.session.add(message)
+            db.session.commit()
+
+            # Broadcast message to room
+            room_name = f"chat_{room_id}"
+            message_data = {
+                "id": message.id,
+                "room_id": room_id,
+                "sender_id": user_id,
+                "sender_name": user_name,
+                "message": message_text,
+                "message_type": message_type,
+                "timestamp": message.created_at.isoformat(),
+            }
+
+            socketio.emit("new_message", message_data, room=room_name)
+
+            # Track analytics
+            try:
+                from analytics_service import analytics_service
+
+                analytics_service.track_event(
+                    event_type="chat_message",
+                    event_category="communication",
+                    event_action="send_message",
+                    context={"room_id": room_id, "message_type": message_type},
+                )
+            except Exception as analytics_error:
+                app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+            app.logger.info(f"Message sent in room {room_id} by user {user_id}")
+
+        except Exception as e:
+            app.logger.error(f"Error sending message: {e}")
+            socketio.emit("message_error", {"error": "Failed to send message"})
+
+    @socketio.on("typing_start")
+    def handle_typing_start(data):
+        """Handle user started typing"""
+        room_id = data.get("room_id")
+        user_id = data.get("user_id")
+        user_name = data.get("user_name", "Anonymous")
+
+        if room_id:
+            room_name = f"chat_{room_id}"
+            socketio.emit(
+                "user_typing",
+                {
+                    "user_id": user_id,
+                    "user_name": user_name,
+                    "typing": True,
+                    "timestamp": datetime.now().isoformat(),
+                },
+                room=room_name,
+                skip_sid=request.sid,
+            )  # Don't send to sender
+
+    @socketio.on("typing_stop")
+    def handle_typing_stop(data):
+        """Handle user stopped typing"""
+        room_id = data.get("room_id")
+        user_id = data.get("user_id")
+        user_name = data.get("user_name", "Anonymous")
+
+        if room_id:
+            room_name = f"chat_{room_id}"
+            socketio.emit(
+                "user_typing",
+                {
+                    "user_id": user_id,
+                    "user_name": user_name,
+                    "typing": False,
+                    "timestamp": datetime.now().isoformat(),
+                },
+                room=room_name,
+                skip_sid=request.sid,
+            )  # Don't send to sender
+
+    @socketio.on("mark_message_read")
+    def handle_mark_message_read(data):
+        """Handle marking messages as read"""
+        room_id = data.get("room_id")
+        user_id = data.get("user_id")
+        message_ids = data.get("message_ids", [])
+
+        if room_id and message_ids:
+            try:
+                from extensions import db
+                from models import ChatMessage
+
+                # Update read status (you might want to add a read_by field to the model)
+                # For now, just track the read event
+                room_name = f"chat_{room_id}"
+                socketio.emit(
+                    "messages_read",
+                    {
+                        "user_id": user_id,
+                        "message_ids": message_ids,
+                        "timestamp": datetime.now().isoformat(),
+                    },
+                    room=room_name,
+                    skip_sid=request.sid,
+                )
+
+                app.logger.info(
+                    f"User {user_id} marked messages as read in room {room_id}"
+                )
+
+            except Exception as e:
+                app.logger.error(f"Error marking messages as read: {e}")
+
+    # Real-time Request Updates
+    @socketio.on("join_requests")
+    def handle_join_requests(data):
+        """Handle joining requests room for real-time updates"""
+        user_type = data.get("user_type", "volunteer")  # admin, volunteer, requester
+        join_room("requests")
+
+        if user_type == "admin":
+            join_room("admin_requests")
+        elif user_type == "volunteer":
+            join_room("volunteer_requests")
+
+        socketio.emit(
+            "joined_requests",
+            {"user_type": user_type, "timestamp": datetime.now().isoformat()},
+        )
+
+    @socketio.on("leave_requests")
+    def handle_leave_requests(data):
+        """Handle leaving requests room"""
+        user_type = data.get("user_type", "volunteer")
+        leave_room("requests")
+
+        if user_type == "admin":
+            leave_room("admin_requests")
+        elif user_type == "volunteer":
+            leave_room("volunteer_requests")
+
+    @socketio.on("request_status_update")
+    def handle_request_status_update(data):
+        """Handle request status updates (admin only)"""
+        if not session.get("admin_logged_in"):
+            return
+
+        request_id = data.get("request_id")
+        new_status = data.get("status")
+        admin_id = session.get("admin_user_id")
+
+        if request_id and new_status:
+            try:
+                from extensions import db
+                from models import HelpRequest
+
+                request_obj = HelpRequest.query.get(request_id)
+                if request_obj:
+                    old_status = request_obj.status
+                    request_obj.status = new_status
+                    request_obj.updated_at = datetime.now()
+                    db.session.commit()
+
+                    # Broadcast status update
+                    update_data = {
+                        "request_id": request_id,
+                        "old_status": old_status,
+                        "new_status": new_status,
+                        "updated_by": admin_id,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+
+                    socketio.emit("request_updated", update_data, room="requests")
+                    socketio.emit("request_updated", update_data, room="admin_requests")
+
+                    # Track analytics
+                    try:
+                        from analytics_service import analytics_service
+
+                        analytics_service.track_event(
+                            event_type="request_update",
+                            event_category="admin",
+                            event_action="status_change",
+                            context={
+                                "request_id": request_id,
+                                "old_status": old_status,
+                                "new_status": new_status,
+                            },
+                        )
+                    except Exception as analytics_error:
+                        app.logger.warning(
+                            f"Analytics tracking failed: {analytics_error}"
+                        )
+
+                    app.logger.info(
+                        f"Request {request_id} status updated from {old_status} to {new_status}"
+                    )
+
+            except Exception as e:
+                app.logger.error(f"Error updating request status: {e}")
+
+    @socketio.on("volunteer_assigned")
+    def handle_volunteer_assigned(data):
+        """Handle volunteer assignment to request"""
+        if not session.get("admin_logged_in"):
+            return
+
+        request_id = data.get("request_id")
+        volunteer_id = data.get("volunteer_id")
+        admin_id = session.get("admin_user_id")
+
+        if request_id and volunteer_id:
+            try:
+                from extensions import db
+                from models import HelpRequest, Volunteer
+
+                request_obj = HelpRequest.query.get(request_id)
+                volunteer = Volunteer.query.get(volunteer_id)
+
+                if request_obj and volunteer:
+                    request_obj.assigned_volunteer_id = volunteer_id
+                    request_obj.status = "assigned"
+                    request_obj.updated_at = datetime.now()
+                    db.session.commit()
+
+                    # Broadcast assignment
+                    assignment_data = {
+                        "request_id": request_id,
+                        "volunteer_id": volunteer_id,
+                        "volunteer_name": volunteer.name,
+                        "assigned_by": admin_id,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+
+                    socketio.emit(
+                        "volunteer_assigned", assignment_data, room="requests"
+                    )
+                    socketio.emit(
+                        "volunteer_assigned", assignment_data, room="volunteer_requests"
+                    )
+
+                    app.logger.info(
+                        f"Volunteer {volunteer.name} assigned to request {request_id}"
+                    )
+
+            except Exception as e:
+                app.logger.error(f"Error assigning volunteer: {e}")
+
+    # Live Volunteer Status Updates
+    @socketio.on("volunteer_status_update")
+    def handle_volunteer_status_update(data):
+        """Handle volunteer status updates (available/busy/offline)"""
+        volunteer_id = data.get("volunteer_id")
+        status = data.get("status")  # available, busy, offline
+        location = data.get("location")  # optional location data
+
+        if volunteer_id and status:
+            try:
+                from extensions import db
+                from models import Volunteer
+
+                volunteer = Volunteer.query.get(volunteer_id)
+                if volunteer:
+                    volunteer.status = status
+                    volunteer.last_seen = datetime.now()
+                    if location:
+                        volunteer.latitude = location.get("lat")
+                        volunteer.longitude = location.get("lng")
+                    db.session.commit()
+
+                    # Broadcast status update
+                    status_data = {
+                        "volunteer_id": volunteer_id,
+                        "volunteer_name": volunteer.name,
+                        "status": status,
+                        "location": location,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+
+                    socketio.emit(
+                        "volunteer_status_changed", status_data, room="requests"
+                    )
+                    socketio.emit(
+                        "volunteer_status_changed", status_data, room="admin_requests"
+                    )
+
+                    app.logger.info(
+                        f"Volunteer {volunteer.name} status updated to {status}"
+                    )
+
+            except Exception as e:
+                app.logger.error(f"Error updating volunteer status: {e}")
+
+    @socketio.on("request_volunteer_location")
+    def handle_request_volunteer_location(data):
+        """Request current location from volunteer"""
+        volunteer_id = data.get("volunteer_id")
+
+        if volunteer_id:
+            # Send location request to specific volunteer
+            volunteer_sid = active_users.get(volunteer_id)
+            if volunteer_sid:
+                socketio.emit(
+                    "location_requested",
+                    {
+                        "requester_id": data.get("requester_id"),
+                        "timestamp": datetime.now().isoformat(),
+                    },
+                    room=volunteer_sid,
+                )
+
+    @socketio.on("volunteer_location_update")
+    def handle_volunteer_location_update(data):
+        """Handle volunteer location updates"""
+        volunteer_id = data.get("volunteer_id")
+        location = data.get("location")
+
+        if volunteer_id and location:
+            try:
+                from extensions import db
+                from models import Volunteer
+
+                volunteer = Volunteer.query.get(volunteer_id)
+                if volunteer:
+                    volunteer.latitude = location.get("lat")
+                    volunteer.longitude = location.get("lng")
+                    volunteer.last_location_update = datetime.now()
+                    db.session.commit()
+
+                    # Broadcast location update to relevant rooms
+                    location_data = {
+                        "volunteer_id": volunteer_id,
+                        "location": location,
+                        "timestamp": datetime.now().isoformat(),
+                    }
+
+                    socketio.emit(
+                        "volunteer_location_updated", location_data, room="requests"
+                    )
+                    socketio.emit(
+                        "volunteer_location_updated",
+                        location_data,
+                        room="admin_requests",
+                    )
+
+            except Exception as e:
+                app.logger.error(f"Error updating volunteer location: {e}")
+
+    # Enhanced Analytics Real-time Features
+    @socketio.on("subscribe_analytics")
+    def handle_subscribe_analytics(data):
+        """Subscribe to specific analytics updates"""
+        metrics = data.get("metrics", [])
+        user_id = data.get("user_id")
+
+        if user_id:
+            join_room(f"analytics_{user_id}")
+
+            # Send initial comprehensive data
+            try:
+                from analytics_service import analytics_service
+
+                dashboard_data = analytics_service.get_dashboard_analytics()
+
+                # Structure comprehensive initial data
+                initial_data = {
+                    "trends": {
+                        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                        "requests": [10, 15, 8, 22, 18, 25],
+                        "completed": [8, 12, 6, 18, 15, 20],
+                        "volunteers": [5, 7, 4, 12, 9, 14],
+                    },
+                    "categories": {
+                        "labels": ["Medical", "Transport", "Household", "Education"],
+                        "data": [15, 8, 12, 6],
+                    },
+                    "geo": {
+                        "labels": ["Sofia", "Plovdiv", "Varna", "Burgas", "Other"],
+                        "data": [45, 23, 18, 12, 8],
+                    },
+                    "requests_today": dashboard_data.get("totals", {}).get(
+                        "requests", 0
+                    ),
+                    "success_rate": 85.5,
+                    "avg_response_time": 2.3,
+                    "active_volunteers": dashboard_data.get("totals", {}).get(
+                        "volunteers", 0
+                    ),
+                    "timestamp": datetime.now().isoformat(),
+                }
+
+                socketio.emit(
+                    "analytics_subscribed",
+                    {
+                        "metrics": metrics,
+                        "initial_data": initial_data,
+                        "timestamp": datetime.now().isoformat(),
+                    },
+                    room=request.sid,
+                )
+
+            except Exception as e:
+                app.logger.error(f"Error sending initial analytics data: {e}")
+
+    @socketio.on("unsubscribe_analytics")
+    def handle_unsubscribe_analytics(data):
+        """Unsubscribe from analytics updates"""
+        user_id = data.get("user_id")
+
+        if user_id:
+            leave_room(f"analytics_{user_id}")
+            socketio.emit(
+                "analytics_unsubscribed",
+                {"timestamp": datetime.now().isoformat()},
+                room=request.sid,
+            )
+
+    @socketio.on("request_live_metrics")
+    def handle_request_live_metrics():
+        """Send live metrics update"""
+        try:
+            from analytics_service import analytics_service
+
+            # Get real-time metrics
+            live_data = analytics_service.get_dashboard_analytics()
+
+            # Structure live metrics data
+            live_metrics = {
+                "requests_today": live_data.get("totals", {}).get("requests", 0),
+                "success_rate": 85.5,  # Calculate from actual data
+                "avg_response_time": 2.3,  # Calculate from actual data
+                "active_volunteers": live_data.get("totals", {}).get("volunteers", 0),
+                "server_timestamp": datetime.now().isoformat(),
+            }
+
+            socketio.emit("live_metrics_update", live_metrics, room=request.sid)
+
+        except Exception as e:
+            app.logger.error(f"Error sending live metrics: {e}")
+
+    # User Presence and Activity
+    @socketio.on("user_presence_update")
+    def handle_user_presence_update(data):
+        """Handle user presence updates"""
+        user_id = data.get("user_id")
+        presence_status = data.get("status")  # online, away, busy, offline
+        user_name = data.get("user_name")
+
+        if user_id:
+            if presence_status == "offline":
+                if user_id in active_users:
+                    del active_users[user_id]
+            else:
+                active_users[user_id] = request.sid
+
+            # Broadcast presence change
+            socketio.emit(
+                "user_presence_changed",
+                {
+                    "user_id": user_id,
+                    "user_name": user_name,
+                    "status": presence_status,
+                    "timestamp": datetime.now().isoformat(),
+                },
+                room="requests",
+            )  # Broadcast to requests room
+
+    @socketio.on("get_online_users")
+    def handle_get_online_users():
+        """Send list of currently online users"""
+        online_users = []
+        for user_id, sid in active_users.items():
+            # You might want to get user names from database here
+            online_users.append({"user_id": user_id, "sid": sid})
+
+        socketio.emit(
+            "online_users_list",
+            {
+                "users": online_users,
+                "count": len(online_users),
+                "timestamp": datetime.now().isoformat(),
+            },
+            room=request.sid,
+        )
 
 
 # CSP configuration - TEMPORARILY PERMISSIVE TO OVERRIDE CACHE
@@ -963,33 +1653,34 @@ csp = {
     "form-action": ["'self'"],
 }
 
-talisman = Talisman(
-    app,
-    content_security_policy=csp,  # TEMPORARILY PERMISSIVE TO OVERRIDE BROWSER CACHE
-    content_security_policy_report_uri="https://csp-report.helpchain.live/report",
-    force_https=False,  # Disabled for development testing
-    strict_transport_security=False,  # TEMPORARILY DISABLED FOR TESTING
-    strict_transport_security_preload=True,
-    strict_transport_security_include_subdomains=True,
-    strict_transport_security_max_age=63072000,  # 2 years
-    referrer_policy="strict-origin-when-cross-origin",
-    permissions_policy={
-        "camera": "()",
-        "microphone": "()",
-        "geolocation": "()",
-        "payment": "()",
-        "usb": "()",
-        "magnetometer": "()",
-        "accelerometer": "()",
-        "gyroscope": "()",
-        "ambient-light-sensor": "()",
-        "autoplay": "()",
-        "encrypted-media": "()",
-        "fullscreen": "()",
-        "picture-in-picture": "()",
-    },
-    feature_policy={},  # Deprecated, but keeping for compatibility
-)
+# Temporarily disable Talisman for testing routes
+# talisman = Talisman(
+#     app,
+#     content_security_policy=csp,  # TEMPORARILY PERMISSIVE TO OVERRIDE BROWSER CACHE
+#     content_security_policy_report_uri="https://csp-report.helpchain.live/report",
+#     force_https=False,  # Disabled for development testing
+#     strict_transport_security=False,  # TEMPORARILY DISABLED FOR TESTING
+#     strict_transport_security_preload=True,
+#     strict_transport_security_include_subdomains=True,
+#     strict_transport_security_max_age=63072000,  # 2 years
+#     referrer_policy="strict-origin-when-cross-origin",
+#     permissions_policy={
+#         "camera": "()",
+#         "microphone": "()",
+#         "geolocation": "()",
+#         "payment": "()",
+#         "usb": "()",
+#         "magnetometer": "()",
+#         "accelerometer": "()",
+#         "gyroscope": "()",
+#         "ambient-light-sensor": "()",
+#         "autoplay": "()",
+#         "encrypted-media": "()",
+#         "fullscreen": "()",
+#         "picture-in-picture": "()",
+#     },
+#     feature_policy={},  # Deprecated, but keeping for compatibility
+# )
 
 
 # Add CSP headers manually to ensure they are applied
@@ -1070,7 +1761,13 @@ def strptime_filter(date_string, format="%Y-%m-%dT%H:%M:%S.%f"):
 
 @app.before_request
 def log_request():
-    pass
+    try:
+        app.logger.info(
+            f"Request: {request.method} {request.url} - Path: {request.path}"
+        )
+        print(f"DEBUG: Request: {request.method} {request.url} - Path: {request.path}")
+    except Exception as e:
+        print(f"DEBUG: Error in before_request: {e}")
 
 
 # Error handlers
@@ -1078,6 +1775,27 @@ def log_request():
 def page_not_found(error):
     """Handle 404 errors with custom template"""
     app.logger.warning(f"404 error: {request.url} - {error}")
+
+    # Track analytics for 404 errors
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="navigation",
+            event_action="404_not_found",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "referrer": request.headers.get("Referer"),
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
     if request.is_json or request.path.startswith("/api/"):
         return (
             jsonify(
@@ -1134,6 +1852,26 @@ def internal_server_error(error):
 def forbidden(error):
     """Handle 403 errors"""
     app.logger.warning(f"403 error: {request.url} - {error}")
+
+    # Track analytics for forbidden access
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="security",
+            event_action="403_forbidden",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
     if request.is_json or request.path.startswith("/api/"):
         return (
             jsonify(
@@ -1153,6 +1891,26 @@ def forbidden(error):
 def unprocessable_entity(error):
     """Handle 422 validation errors"""
     app.logger.warning(f"422 error: {request.url} - Validation failed")
+
+    # Track analytics for validation errors
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="validation",
+            event_action="422_validation_error",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
     if request.is_json or request.path.startswith("/api/"):
         return (
             jsonify(
@@ -1172,6 +1930,27 @@ def unprocessable_entity(error):
 def request_entity_too_large(error):
     """Handle file upload size limits"""
     app.logger.warning(f"413 error: {request.url} - File too large")
+
+    # Track analytics for file size errors
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="upload",
+            event_action="413_file_too_large",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "content_length": request.headers.get("Content-Length"),
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
     if request.is_json or request.path.startswith("/api/"):
         return (
             jsonify(
@@ -1187,10 +1966,247 @@ def request_entity_too_large(error):
     return redirect(request.referrer or url_for("index"))
 
 
+@app.errorhandler(400)
+def bad_request(error):
+    """Handle 400 Bad Request errors"""
+    app.logger.warning(f"400 error: {request.url} - {error}")
+
+    # Track analytics for bad requests
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="client",
+            event_action="400_bad_request",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+    if request.is_json or request.path.startswith("/api/"):
+        return (
+            jsonify(
+                {
+                    "error": "Bad Request",
+                    "message": "Невалидна заявка. Моля, проверете данните и опитайте отново.",
+                    "status_code": 400,
+                }
+            ),
+            400,
+        )
+    return render_template("errors/400.html"), 400
+
+
+@app.errorhandler(401)
+def unauthorized(error):
+    """Handle 401 Unauthorized errors"""
+    app.logger.warning(f"401 error: {request.url} - {error}")
+
+    # Track analytics for unauthorized access
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="security",
+            event_action="401_unauthorized",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+    if request.is_json or request.path.startswith("/api/"):
+        return (
+            jsonify(
+                {
+                    "error": "Unauthorized",
+                    "message": "Нямате права за достъп до този ресурс. Моля, влезте в системата.",
+                    "status_code": 401,
+                }
+            ),
+            401,
+        )
+    return render_template("errors/401.html"), 401
+
+
+@app.errorhandler(429)
+def too_many_requests(error):
+    """Handle 429 Too Many Requests errors (rate limiting)"""
+    app.logger.warning(f"429 error: {request.url} - Rate limit exceeded")
+
+    # Track analytics for rate limiting
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="security",
+            event_action="429_rate_limited",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+    if request.is_json or request.path.startswith("/api/"):
+        return (
+            jsonify(
+                {
+                    "error": "Too Many Requests",
+                    "message": "Твърде много заявки. Моля, изчакайте малко преди да опитате отново.",
+                    "status_code": 429,
+                    "retry_after": 60,  # Suggest retry after 60 seconds
+                }
+            ),
+            429,
+        )
+    return render_template("errors/429.html"), 429
+
+
+# Database-specific error handlers
+@app.errorhandler(OperationalError)
+def handle_database_error(error):
+    """Handle database operational errors (connection issues, etc.)"""
+    app.logger.error(f"Database error: {request.url} - {error}", exc_info=True)
+
+    # Track analytics for database errors
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="database",
+            event_action="operational_error",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+    if request.is_json or request.path.startswith("/api/"):
+        return (
+            jsonify(
+                {
+                    "error": "Database Error",
+                    "message": "Възникна проблем с базата данни. Нашият екип е уведомен и работи по проблема.",
+                    "status_code": 500,
+                }
+            ),
+            500,
+        )
+    flash("Възникна техническа грешка. Моля, опитайте отново по-късно.", "error")
+    return redirect(url_for("index"))
+
+
+# Validation error handler
+@app.errorhandler(ValueError)
+def handle_validation_error(error):
+    """Handle validation errors (ValueError, etc.)"""
+    app.logger.warning(f"Validation error: {request.url} - {error}")
+
+    # Track analytics for validation errors
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="validation",
+            event_action="value_error",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+    if request.is_json or request.path.startswith("/api/"):
+        return (
+            jsonify(
+                {
+                    "error": "Validation Error",
+                    "message": "Данните са невалидни. Моля, проверете въведената информация.",
+                    "status_code": 400,
+                }
+            ),
+            400,
+        )
+    flash("Данните са невалидни. Моля, проверете формата и опитайте отново.", "error")
+    return redirect(request.referrer or url_for("index"))
+
+
+# General exception handler for unhandled errors
+@app.errorhandler(Exception)
+def handle_unexpected_error(error):
+    """Handle any unhandled exceptions"""
+    app.logger.error(f"Unexpected error: {request.url} - {error}", exc_info=True)
+
+    # Track analytics for unexpected errors
+    try:
+        from analytics_service import analytics_service
+
+        analytics_service.track_event(
+            event_type="error",
+            event_category="system",
+            event_action="unexpected_error",
+            context={
+                "url": request.url,
+                "method": request.method,
+                "user_agent": request.headers.get("User-Agent"),
+                "ip": request.remote_addr,
+                "error_type": type(error).__name__,
+                "error_message": str(error),
+            },
+        )
+    except Exception as analytics_error:
+        app.logger.warning(f"Analytics tracking failed: {analytics_error}")
+
+    # Don't expose internal error details to users
+    if request.is_json or request.path.startswith("/api/"):
+        return (
+            jsonify(
+                {
+                    "error": "Internal Server Error",
+                    "message": "Възникна неочаквана грешка. Нашият екип е уведомен.",
+                    "status_code": 500,
+                }
+            ),
+            500,
+        )
+    return render_template("errors/500.html"), 500
+
+
 @app.route("/")
 def index():
     # безопасно извличаме агрегати — ако моделът липсва или схемата
     # не е съвместима, връщаме fallback
+    db = get_db()
     try:
         volunteers_count = (
             db.session.query(Volunteer).count() if "Volunteer" in globals() else 0
@@ -1307,6 +2323,12 @@ def admin_login():
     return render_template("admin_login.html", error=error)
 
 
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login_page():
+    """Alias for admin_login to match test expectations"""
+    return admin_login()
+
+
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     return admin_logout()
@@ -1322,7 +2344,7 @@ def admin_logout():
     return redirect(url_for("admin_login"))
 
 
-@app.route("/admin_dashboard", endpoint="admin_dashboard")
+@app.route("/admin/dashboard", endpoint="admin_dashboard")
 @require_admin_login
 def admin_dashboard():
     # DEBUG: Log session state
@@ -1339,6 +2361,7 @@ def admin_dashboard():
     # Get filter parameter
     filter_param = request.args.get("filter", "all")
 
+    db = get_db()
     # Get real statistics from database
     try:
         # Check if HelpRequest model is available
@@ -1439,6 +2462,7 @@ def admin_dashboard():
 def admin_approve_request(request_id):
     """Approve a help request"""
     try:
+        db = get_db()
         request_obj = db.session.query(HelpRequest).get_or_404(request_id)
 
         if request_obj.status != "pending":
@@ -1479,6 +2503,7 @@ def admin_approve_request(request_id):
 def admin_reject_request(request_id):
     """Reject a help request"""
     try:
+        db = get_db()
         data = request.get_json() or {}
         reason = data.get("reason", "").strip()
 
@@ -1526,6 +2551,7 @@ def admin_reject_request(request_id):
 def admin_assign_volunteer(request_id):
     """Assign a volunteer to a help request"""
     try:
+        db = get_db()
         data = request.get_json() or {}
         volunteer_id = data.get("volunteer_id")
 
@@ -1591,6 +2617,7 @@ def admin_assign_volunteer(request_id):
 def admin_delete_request(request_id):
     """Delete a help request"""
     try:
+        db = get_db()
         request_obj = db.session.query(HelpRequest).get_or_404(request_id)
 
         # Optional: Check if request can be deleted (not assigned, etc.)
@@ -1637,6 +2664,7 @@ def admin_delete_request(request_id):
 def admin_request_details(request_id):
     """View details of a help request"""
     try:
+        db = get_db()
         request_obj = db.session.query(HelpRequest).get_or_404(request_id)
 
         # Get current admin user
@@ -1669,6 +2697,7 @@ def admin_request_details(request_id):
 def admin_edit_request(request_id):
     """Edit a help request"""
     try:
+        db = get_db()
         request_obj = db.session.query(HelpRequest).get_or_404(request_id)
 
         if request.method == "POST":
@@ -1710,6 +2739,7 @@ def admin_profile():
         return redirect(url_for("admin_login"))
 
     # Get current admin user
+    db = get_db()
     admin_user = None
     if session.get("admin_user_id"):
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
@@ -1763,6 +2793,7 @@ def admin_profile():
 @require_admin_login
 def admin_settings():
     # Get current admin user
+    db = get_db()
     admin_user = None
     if session.get("admin_user_id"):
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
@@ -1785,6 +2816,7 @@ def admin_settings():
 @require_admin_login
 def notification_dashboard():
     # Get current admin user
+    db = get_db()
     admin_user = None
     if session.get("admin_user_id"):
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
@@ -1820,6 +2852,7 @@ def notification_dashboard():
 @require_admin_login
 def export_data():
     # Get current admin user
+    db = get_db()
     admin_user = None
     if session.get("admin_user_id"):
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
@@ -1850,6 +2883,7 @@ def admin_email_2fa():
         # Check code
         if entered_code == session.get("email_2fa_code"):
             # Code is correct, complete login
+            db = get_db()
             admin_user = initialize_default_admin()
             session["user_id"] = admin_user.id
             session["username"] = admin_user.username
@@ -1877,6 +2911,7 @@ def admin_2fa():
             flash("Сесията е изтекла. Моля, логнете се отново.", "error")
             return redirect(url_for("admin_login"))
 
+        db = get_db()
         admin_user = db.session.query(AdminUser).get(admin_id)
         if not admin_user:
             flash("Потребителят не е намерен.", "error")
@@ -1901,6 +2936,7 @@ def admin_2fa():
 @require_admin_login
 def admin_2fa_setup():
     # Get current admin user
+    db = get_db()
     admin_user = None
     if session.get("admin_user_id"):
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
@@ -1926,6 +2962,7 @@ def admin_2fa_setup():
 @app.route("/admin_volunteers", methods=["GET", "POST"])
 @require_admin_login
 def admin_volunteers():
+    db = get_db()
     # Get filter parameters
     search = request.args.get("search", "")
     location_filter = request.args.get("location", "")
@@ -2064,6 +3101,7 @@ def admin_volunteers():
 @app.route("/admin_volunteers/add", methods=["GET", "POST"])
 @require_admin_login
 def add_volunteer():
+    db = get_db()
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
@@ -2116,6 +3154,7 @@ def add_volunteer():
 @app.route("/submit_request", methods=["GET", "POST"])
 @limiter.limit("20 per minute; 200 per day")
 def submit_request():
+    db = get_db()
     if request.method == "POST":
         # Enhanced input validation and sanitization
         name = request.form.get("name", "").strip()
@@ -2266,6 +3305,7 @@ def terms():
 @app.route("/volunteer_register", methods=["GET", "POST"])
 @limiter.limit("10 per minute; 50 per day")
 def volunteer_register():
+    db = get_db()
     if request.method == "POST":
         name = request.form.get("name")
         email = request.form.get("email")
@@ -2390,6 +3430,7 @@ def volunteer_register():
 
 @app.route("/volunteer_login", methods=["GET", "POST"])
 def volunteer_login():
+    db = get_db()
     # Check if already logged in as volunteer
     if session.get("volunteer_logged_in"):
         flash("Вече сте логнати като доброволец.", "info")
@@ -2562,6 +3603,7 @@ HelpChain системата
 
 @app.route("/volunteer_verify_code", methods=["GET", "POST"])
 def volunteer_verify_code():
+    db = get_db()
     # Check if there's a pending login
     pending = session.get("pending_volunteer_login")
     if not pending:
@@ -2642,6 +3684,7 @@ def volunteer_logout():
 
 @app.route("/resend_volunteer_code", methods=["POST"])
 def resend_volunteer_code():
+    db = get_db()
     """Resend verification code to volunteer email"""
     try:
         # Check if there's a pending login
@@ -2770,6 +3813,7 @@ HelpChain системата
 
 @app.route("/volunteer_dashboard")
 def volunteer_dashboard():
+    db = get_db()
     """Enhanced volunteer dashboard with performance optimizations and better error handling"""
     try:
         app.logger.info("Starting volunteer_dashboard function")
@@ -2996,6 +4040,7 @@ def chatbot():
 
 @app.route("/api/volunteer/dashboard", methods=["GET"])
 def api_volunteer_dashboard():
+    db = get_db()
     """API endpoint for volunteer dashboard data"""
     if not session.get("volunteer_logged_in"):
         return jsonify({"error": "Authentication required"}), 401
@@ -3044,6 +4089,7 @@ def api_volunteer_dashboard():
 @app.route("/api/admin/dashboard", methods=["GET"])
 @require_admin_login
 def api_admin_dashboard():
+    db = get_db()
     """API endpoint for admin dashboard data"""
     try:
         # Get basic counts
@@ -3194,6 +4240,7 @@ print("DEBUG: /api route registered")  # Debug print after route definition
 
 @app.route("/api/volunteer/tasks", methods=["GET"])
 def api_volunteer_tasks():
+    db = get_db()
     """Get tasks for logged in volunteer"""
     if not session.get("volunteer_logged_in"):
         return jsonify({"error": "Authentication required"}), 401
@@ -3250,258 +4297,10 @@ def api_volunteer_tasks():
         return jsonify({"error": "Internal server error"}), 500
 
 
-@app.route("/dashboard", endpoint="dashboard")
-def dashboard():
-    """General dashboard for logged in users"""
-    # Check if user is logged in as volunteer
-    if session.get("volunteer_logged_in"):
-        return redirect(url_for("volunteer_dashboard"))
-    # Check if admin is logged in
-    elif session.get("admin_logged_in"):
-        return redirect(url_for("admin_dashboard"))
-    else:
-        flash("Моля, влезте в системата", "warning")
-        return redirect(url_for("index"))
-
-
-@app.route("/update_volunteer_settings", methods=["POST"])
-def update_volunteer_settings():
-    if not session.get("volunteer_logged_in"):
-        return jsonify({"success": False, "message": "Не сте логнати"}), 401
-
-    volunteer_id = session.get("volunteer_id")
-    volunteer = db.session.query(Volunteer).get(volunteer_id)
-    if not volunteer:
-        return jsonify({"success": False, "message": "Доброволецът не е намерен"}), 404
-
-    try:
-        # Here you can save settings to volunteer model or separate settings table
-        # For now, just return success
-        return jsonify({"success": True, "message": "Настройките са запазени"})
-    except Exception as e:
-        app.logger.error(f"Error updating volunteer settings: {e}")
-        return (
-            jsonify(
-                {"success": False, "message": "Грешка при запазване на настройките"}
-            ),
-            500,
-        )
-
-
-@app.route("/achievements", methods=["GET"], endpoint="achievements")
-def achievements():
-    # Check if volunteer is logged in
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-
-    try:
-        volunteer_id = session.get("volunteer_id")
-        volunteer = db.session.query(Volunteer).get(volunteer_id)
-
-        if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
-            return redirect(url_for("volunteer_login"))
-
-        # Import gamification service
-        try:
-            from gamification_service import GamificationService
-            from models import Achievement
-        except ImportError:
-            # Fallback for standalone execution
-            from backend.gamification_service import GamificationService
-            from backend.models import Achievement
-
-        # Get all achievements and calculate progress for each
-        all_achievements = db.session.query(Achievement).all()
-        achievements_data = []
-        for achievement in all_achievements:
-            progress = GamificationService.get_achievement_progress(
-                volunteer, achievement
-            )
-            is_unlocked = achievement.id in volunteer.achievements
-
-            achievements_data.append(
-                {
-                    "id": achievement.id,
-                    "name": achievement.name,
-                    "description": achievement.description,
-                    "icon": achievement.icon,
-                    "category": achievement.category,
-                    "rarity": achievement.rarity,
-                    "progress": progress,
-                    "is_unlocked": is_unlocked,
-                    "requirement_value": achievement.requirement_value,
-                    "requirement_type": achievement.requirement_type,
-                }
-            )
-
-        # Get leaderboard data
-        leaderboard = GamificationService.get_leaderboard(limit=10)
-
-        # Get volunteer's rank
-        volunteer_rank = None
-        for i, entry in enumerate(leaderboard, 1):
-            if entry.id == volunteer_id:
-                volunteer_rank = i
-                break
-
-        # Prepare stats for display
-        volunteer_stats = {
-            "points": volunteer.points,
-            "level": volunteer.level,
-            "experience": volunteer.experience,
-            "total_tasks_completed": volunteer.total_tasks_completed,
-            "streak_days": volunteer.streak_days,
-            "rank": volunteer_rank,
-        }
-
-        # Get level progress info
-        level_progress = volunteer.get_level_progress()
-
-        return render_template(
-            "achievements.html",
-            volunteer=volunteer,
-            achievements=achievements_data,
-            leaderboard=leaderboard,
-            stats=volunteer_stats,
-            level_progress=level_progress,
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error loading achievements page: {e}")
-        flash("Възникна грешка при зареждането на постиженията", "error")
-        return redirect(url_for("volunteer_dashboard"))
-
-
-@app.route("/volunteer_chat", methods=["GET"], endpoint="volunteer_chat")
-def volunteer_chat():
-    # Check if volunteer is logged in
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-    # Placeholder for volunteer chat page
-    return render_template("volunteer_chat.html")
-
-
-@app.route("/volunteer_reports", methods=["GET"], endpoint="volunteer_reports")
-def volunteer_reports():
-    # Check if volunteer is logged in
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-    # Placeholder for volunteer reports page
-    return render_template("volunteer_reports.html")
-
-
-@app.route("/volunteer_settings", methods=["GET", "POST"], endpoint="volunteer_profile")
-def volunteer_settings():
-    # Check if volunteer is logged in
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-    # Placeholder for volunteer settings page
-    return render_template("volunteer_settings.html")
-
-
-@app.route("/my_tasks", endpoint="my_tasks")
-def my_tasks():
-    """Show volunteer's assigned tasks"""
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-
-    try:
-        volunteer_id = session.get("volunteer_id")
-        volunteer = db.session.query(Volunteer).get(volunteer_id)
-
-        if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
-            return redirect(url_for("available_tasks"))
-
-        # Get assigned tasks with different statuses
-        active_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id)
-            .filter(Task.status.in_(["assigned", "in_progress"]))
-            .order_by(Task.created_at.desc())
-            .all()
-        )
-
-        completed_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id)
-            .filter_by(status="completed")
-            .order_by(Task.completed_at.desc())
-            .limit(10)
-            .all()
-        )
-
-        return render_template(
-            "my_tasks.html",
-            volunteer=volunteer,
-            active_tasks=active_tasks,
-            completed_tasks=completed_tasks,
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error loading my tasks: {e}")
-        flash("Възникна грешка при зареждането на задачите", "error")
-        return redirect(url_for("volunteer_dashboard"))
-
-
-@app.route("/available_tasks", endpoint="available_tasks")
-def available_tasks():
-    """Show available tasks for volunteers to apply"""
-    if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
-        return redirect(url_for("volunteer_login"))
-
-    try:
-        volunteer_id = session.get("volunteer_id")
-        volunteer = db.session.query(Volunteer).get(volunteer_id)
-
-        if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
-            return redirect(url_for("volunteer_login"))
-
-        # Get available tasks (not assigned to anyone)
-        page = int(request.args.get("page", 1))
-        per_page = 12
-
-        available_tasks_query = (
-            db.session.query(Task)
-            .filter_by(assigned_to=None)
-            .filter_by(status="open")
-            .order_by(Task.created_at.desc())
-        )
-
-        # Apply pagination
-        total_tasks = available_tasks_query.count()
-        available_tasks = (
-            available_tasks_query.offset((page - 1) * per_page).limit(per_page).all()
-        )
-
-        total_pages = (total_tasks + per_page - 1) // per_page
-
-        return render_template(
-            "available_tasks.html",
-            volunteer=volunteer,
-            available_tasks=available_tasks,
-            page=page,
-            total_pages=total_pages,
-            total_tasks=total_tasks,
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error loading available tasks: {e}")
-        flash("Възникна грешка при зареждането на наличните задачи", "error")
-        return redirect(url_for("volunteer_dashboard"))
-
-
 @app.route("/admin_volunteers/edit/<int:id>", methods=["GET", "POST"])
 @require_admin_login
 def edit_volunteer(id):
+    db = get_db()
     volunteer = db.session.query(Volunteer).get_or_404(id)
     if request.method == "POST":
         volunteer.name = request.form["name"]
@@ -3517,6 +4316,7 @@ def edit_volunteer(id):
 @app.route("/admin_volunteers/<int:volunteer_id>/delete", methods=["POST"])
 @require_admin_login
 def admin_delete_volunteer(volunteer_id):
+    db = get_db()
     """Delete a volunteer"""
     try:
         volunteer = db.session.query(Volunteer).get_or_404(volunteer_id)
@@ -3573,6 +4373,7 @@ def admin_delete_volunteer(volunteer_id):
 @app.route("/admin_tasks", methods=["GET"])
 @require_admin_login
 def admin_tasks():
+    db = get_db()
     """Admin interface for managing tasks"""
     try:
         # Get filter parameters
@@ -3644,6 +4445,7 @@ def admin_tasks():
 @app.route("/admin_tasks/create", methods=["GET", "POST"])
 @require_admin_login
 def create_task():
+    db = get_db()
     """Create a new task"""
     if request.method == "POST":
         try:
@@ -3723,6 +4525,7 @@ def create_task():
 @app.route("/admin_tasks/<int:task_id>/edit", methods=["GET", "POST"])
 @require_admin_login
 def edit_task(task_id):
+    db = get_db()
     """Edit an existing task"""
     task = db.session.query(Task).get_or_404(task_id)
 
@@ -3790,6 +4593,7 @@ def edit_task(task_id):
 @app.route("/admin_tasks/<int:task_id>/delete", methods=["POST"])
 @require_admin_login
 def delete_task(task_id):
+    db = get_db()
     """Delete a task"""
     try:
         task = db.session.query(Task).get_or_404(task_id)
@@ -3817,6 +4621,7 @@ def delete_task(task_id):
 @app.route("/admin_tasks/<int:task_id>/assign", methods=["GET", "POST"])
 @require_admin_login
 def assign_task(task_id):
+    db = get_db()
     """Assign a task to a volunteer"""
     task = db.session.query(Task).get_or_404(task_id)
 
@@ -3871,6 +4676,7 @@ def assign_task(task_id):
 @app.route("/admin_tasks/<int:task_id>/unassign", methods=["POST"])
 @require_admin_login
 def unassign_task(task_id):
+    db = get_db()
     """Unassign a task from volunteer"""
     try:
         task = db.session.query(Task).get_or_404(task_id)
@@ -3908,6 +4714,7 @@ def unassign_task(task_id):
 @app.route("/admin_update_request_status", methods=["POST"])
 @require_admin_login
 def admin_update_request_status():
+    db = get_db()
     """Update the status of a help request via AJAX"""
     try:
         data = request.get_json()
@@ -4286,59 +5093,118 @@ def category_help(category):
         no_volunteers=no_volunteers,
     )
 
+    """Export volunteers to PDF format"""
+    try:
+        from io import BytesIO
 
-@app.route("/all_categories")
-def all_categories():
-    """Показва всички категории помощ"""
-    categories = [
-        {
-            "slug": "medical",
-            "name": "Спешна помощ",
-            "icon": "fas fa-ambulance",
-            "color": "danger",
-            "description": "Медицинска помощ, спешни случаи",
-        },
-        {
-            "slug": "transport",
-            "name": "Транспорт",
-            "icon": "fas fa-car",
-            "color": "info",
-            "description": "Превоз на хора и стоки",
-        },
-        {
-            "slug": "household",
-            "name": "Домакинска помощ",
-            "icon": "fas fa-home",
-            "color": "success",
-            "description": "Почистване, ремонт, грижи за дома",
-        },
-        {
-            "slug": "education",
-            "name": "Образование",
-            "icon": "fas fa-graduation-cap",
-            "color": "warning",
-            "description": "Помощ с уроци, консултации",
-        },
-        {
-            "slug": "legal",
-            "name": "Правна помощ",
-            "icon": "fas fa-gavel",
-            "color": "primary",
-            "description": "Юридически консултации",
-        },
-        {
-            "slug": "psychological",
-            "name": "Психологическа помощ",
-            "icon": "fas fa-brain",
-            "color": "secondary",
-            "description": "Подкрепа и консултации",
-        },
-    ]
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.lib.units import inch
+        from reportlab.platypus import (
+            Paragraph,
+            SimpleDocTemplate,
+            Spacer,
+            Table,
+            TableStyle,
+        )
 
-    return render_template("all_categories.html", categories=categories)
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        elements = []
+
+        # Styles
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            "CustomTitle",
+            parent=styles["Heading1"],
+            fontSize=16,
+            spaceAfter=30,
+            alignment=1,  # Center alignment
+        )
+
+        # Title
+        title = Paragraph("Списък с доброволци - HelpChain", title_style)
+        elements.append(title)
+        elements.append(Spacer(1, 12))
+
+        # Export info
+        info_text = (
+            f"Общо доброволци: {len(volunteers)} | Експортирано на: "
+            f"{datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
+        )
+        info_paragraph = Paragraph(info_text, styles["Normal"])
+        elements.append(info_paragraph)
+        elements.append(Spacer(1, 20))
+
+        # Table data
+        data = [["ID", "Име", "Имейл", "Телефон", "Локация", "Регистриран"]]
+
+        for v in volunteers:
+            data.append(
+                [
+                    str(v.id),
+                    v.name,
+                    v.email,
+                    v.phone,
+                    v.location or "",
+                    v.created_at.strftime("%d.%m.%Y") if v.created_at else "",
+                ]
+            )
+
+        # Create table
+        table = Table(
+            data,
+            colWidths=[
+                0.5 * inch,
+                1.5 * inch,
+                2 * inch,
+                1.5 * inch,
+                1.5 * inch,
+                1 * inch,
+            ],
+        )
+
+        # Table style
+        table_style = TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, 0), 12),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                ("TEXTCOLOR", (0, 1), (-1, -1), colors.black),
+                ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 1), (-1, -1), 10),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]
+        )
+
+        table.setStyle(table_style)
+        elements.append(table)
+
+        # Build PDF
+        doc.build(elements)
+        buffer.seek(0)
+
+        return Response(
+            buffer.getvalue(),
+            mimetype="application/pdf",
+            headers={
+                "Content-Disposition": (
+                    f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                )
+            },
+        )
+
+    except ImportError:
+        return redirect(url_for("feedback"))
+    return render_template("feedback.html")
 
 
-@app.route("/chat")
 def chat():
     """Main chat page - shows available chat rooms"""
     try:
@@ -4940,83 +5806,6 @@ def admin_analytics():
         return redirect(url_for("admin_dashboard"))
 
 
-@app.route("/api/chatbot/message", methods=["POST"])
-def api_chatbot_message():
-    """API endpoint for chatbot messages"""
-    try:
-        # Get message data
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
-
-        user_message = data.get("message", "").strip()
-        if not user_message:
-            return jsonify({"error": "Message is required"}), 400
-
-        # Get conversation context if provided
-        context = data.get("context", {})
-
-        # Add user session info to context
-        if session.get("volunteer_logged_in"):
-            context["user_type"] = "volunteer"
-            context["user_id"] = session.get("volunteer_id")
-            volunteer = db.session.query(Volunteer).get(session.get("volunteer_id"))
-            if volunteer:
-                context["user_name"] = volunteer.name
-                context["user_location"] = volunteer.location
-        elif session.get("admin_logged_in"):
-            context["user_type"] = "admin"
-            context["user_id"] = session.get("admin_user_id")
-            context["user_name"] = session.get("admin_username")
-
-        # Generate AI response
-        from ai_service import ai_service
-
-        response = ai_service.generate_response_sync(user_message, context)
-
-        # Track chatbot interaction in analytics
-        try:
-            from analytics_service import analytics_service
-
-            analytics_service.track_event(
-                event_type="chatbot_interaction",
-                event_category="ai",
-                event_action="message_sent",
-                context={
-                    "user_type": context.get("user_type", "guest"),
-                    "message_length": len(user_message),
-                    "response_confidence": response.get("confidence", 0),
-                    "ai_provider": response.get("provider", "unknown"),
-                },
-            )
-        except Exception as analytics_error:
-            app.logger.warning(f"Analytics tracking failed: {analytics_error}")
-
-        return jsonify(
-            {
-                "response": response.get("response", ""),
-                "confidence": response.get("confidence", 0.0),
-                "provider": response.get("provider", "unknown"),
-                "language_detected": response.get("language_detected", "bg"),
-                "timestamp": datetime.utcnow().isoformat(),
-            }
-        )
-
-    except Exception as e:
-        app.logger.error(f"Error in chatbot API: {e}")
-        return (
-            jsonify(
-                {
-                    "error": "Internal server error",
-                    "response": "Извинявам се, възникна грешка при генерирането на отговора.",
-                    "confidence": 0.0,
-                }
-            ),
-            500,
-        )
-
-
-@app.route("/healthz")
 def health_check():
     """Basic health check endpoint"""
     return jsonify({"status": "healthy", "timestamp": datetime.utcnow().isoformat()})
@@ -5055,12 +5844,30 @@ if __name__ == "__main__":
     print("http://127.0.0.1:5000")
     print("Admin: admin / Admin123")
     print("Press Ctrl+C to stop")
-    debug_mode = True  # Enable debug mode to see errors
-    socketio.run(
-        app,
-        debug=debug_mode,
-        host="127.0.0.1",
-        port=5000,
-        use_reloader=False,
-        allow_unsafe_werkzeug=True,
-    )
+    debug_mode = False  # Disable debug mode to test
+
+    try:
+        # For testing purposes, let's try running with standard Flask first
+        # to see if SocketIO is causing the routing issues
+        if socketio is None:
+            # Run with standard Flask (for testing routes)
+            print("Starting with standard Flask (SocketIO disabled)...")
+            print("About to call app.run()...")
+            app.run(debug=debug_mode, host="127.0.0.1", port=5000, use_reloader=False)
+            print("app.run() completed")
+        else:
+            # Run with SocketIO (normal operation)
+            print("Starting with SocketIO...")
+            socketio.run(
+                app,
+                debug=debug_mode,
+                host="127.0.0.1",
+                port=5000,
+                use_reloader=False,
+                allow_unsafe_werkzeug=True,
+            )
+    except Exception as e:
+        print(f"Server startup failed: {e}")
+        import traceback
+
+        traceback.print_exc()

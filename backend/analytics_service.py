@@ -8,6 +8,7 @@ import time
 from collections import Counter
 from datetime import datetime, timedelta
 from typing import Any
+from functools import wraps
 
 from sqlalchemy import and_, func, text
 
@@ -70,6 +71,37 @@ class AdvancedAnalytics:
         self._cache = {}
         self.db = db  # Database session passed during initialization
 
+    def cached_analytics_method(self, cache_key_prefix: str, duration: int = None):
+        """Decorator for caching analytics method results"""
+
+        def decorator(func):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                if duration is None:
+                    cache_duration = self.cache_duration
+                else:
+                    cache_duration = duration
+
+                # Generate cache key from method name and arguments
+                cache_key = f"{cache_key_prefix}_{hash(str(args) + str(kwargs))}"
+
+                # Check cache
+                if self._is_cached(cache_key, cache_duration):
+                    return self._cache[cache_key]
+
+                # Execute method
+                result = func(*args, **kwargs)
+
+                # Cache result
+                self._cache[cache_key] = result
+                self._cache[f"{cache_key}_timestamp"] = time.time()
+
+                return result
+
+            return wrapper
+
+        return decorator
+
     def track_event(
         self,
         event_type: str,
@@ -126,8 +158,8 @@ class AdvancedAnalytics:
                 device_type=context.get("device_type", "unknown"),
             )
 
-            self.db.session.add(event)
-            self.db.session.commit()
+            self.db.add(event)
+            self.db.commit()
 
             # Обновяваме user behavior
             self._update_user_behavior_impl(context)
@@ -136,7 +168,10 @@ class AdvancedAnalytics:
 
         except Exception as e:
             logger.error(f"Error tracking event: {e}")
-            self.db.session.rollback()
+            try:
+                self.db.rollback()
+            except:
+                pass
             return False
 
     def track_performance(
@@ -200,14 +235,14 @@ class AdvancedAnalytics:
                 context_data=json.dumps(context.get("metadata", {})),
             )
 
-            self.db.session.add(metric)
-            self.db.session.commit()
+            self.db.add(metric)
+            self.db.commit()
 
             return True
 
         except Exception as e:
             logger.error(f"Error tracking performance: {e}")
-            self.db.session.rollback()
+            self.db.rollback()
             return False
 
     def update_user_behavior(self, context: dict[str, Any]):
@@ -225,9 +260,7 @@ class AdvancedAnalytics:
                 return
 
             behavior = (
-                self.db.session.query(UserBehavior)
-                .filter_by(session_id=session_id)
-                .first()
+                self.db.query(UserBehavior).filter_by(session_id=session_id).first()
             )
 
             if not behavior:
@@ -240,7 +273,7 @@ class AdvancedAnalytics:
                     device_info=context.get("device_type"),
                     location=context.get("location"),
                 )
-                self.db.session.add(behavior)
+                self.db.add(behavior)
 
             # Обновяваме метриките
             behavior.pages_visited = (behavior.pages_visited or 0) + 1
@@ -263,11 +296,11 @@ class AdvancedAnalytics:
                 pages_sequence[-20:]
             )  # Последните 20 страници
 
-            self.db.session.commit()
+            self.db.commit()
 
         except Exception as e:
             logger.error(f"Error updating user behavior: {e}")
-            self.db.session.rollback()
+            self.db.rollback()
 
     def get_dashboard_analytics(self, days: int = 30) -> dict[str, Any]:
         """Получава подробна аналитика за dashboard"""
@@ -329,7 +362,7 @@ class AdvancedAnalytics:
     def _get_overview_metrics(
         self, start_date: datetime, end_date: datetime
     ) -> dict[str, Any]:
-        """Общи метрики за периода - optimized with indexes"""
+        """Общи метрики за периода - optimized with indexes and caching"""
         try:
             from flask import current_app
 
@@ -342,13 +375,16 @@ class AdvancedAnalytics:
                     "conversion_rate": 0,
                 }
 
+            # Check cache first (longer cache duration for overview metrics)
+            cache_key = f"overview_{start_date}_{end_date}"
+            if self._is_cached(cache_key, 600):  # 10 minute cache
+                return self._cache[cache_key]
+
             # Optimized queries using new indexes
 
             # Уникални посетители (по session_id) - uses idx_user_behaviors_session_start
             unique_visitors = (
-                self.db.session.query(
-                    func.count(func.distinct(UserBehavior.session_id))
-                )
+                self.db.query(func.count(func.distinct(UserBehavior.session_id)))
                 .filter(UserBehavior.session_start.between(start_date, end_date))
                 .scalar()
                 or 0
@@ -356,7 +392,7 @@ class AdvancedAnalytics:
 
             # Общо page views - uses idx_analytics_timestamp and idx_analytics_event_type
             total_page_views = (
-                self.db.session.query(func.count(AnalyticsEvent.id))
+                self.db.query(func.count(AnalyticsEvent.id))
                 .filter(
                     and_(
                         AnalyticsEvent.event_type == "page_view",
@@ -369,7 +405,7 @@ class AdvancedAnalytics:
 
             # Средно време на сесия - uses idx_user_behaviors_session_start
             avg_session_time = (
-                self.db.session.query(func.avg(UserBehavior.total_time_spent))
+                self.db.query(func.avg(UserBehavior.total_time_spent))
                 .filter(UserBehavior.session_start.between(start_date, end_date))
                 .scalar()
                 or 0
@@ -377,7 +413,7 @@ class AdvancedAnalytics:
 
             # Bounce rate calculation - optimized with single query
             session_stats = (
-                self.db.session.query(
+                self.db.query(
                     func.count(UserBehavior.id).label("total_sessions"),
                     func.sum(func.case((UserBehavior.bounce_rate, 1), else_=0)).label(
                         "bounced_sessions"
@@ -403,7 +439,7 @@ class AdvancedAnalytics:
                 (conversions / total_sessions * 100) if total_sessions > 0 else 0
             )
 
-            return {
+            result = {
                 "unique_visitors": unique_visitors,
                 "total_page_views": total_page_views,
                 "avg_session_time": (
@@ -414,6 +450,11 @@ class AdvancedAnalytics:
                 "conversions": conversions,
                 "conversion_rate": round(conversion_rate, 2),
             }
+
+            # Cache the result
+            self._cache[cache_key] = result
+            self._cache[f"{cache_key}_timestamp"] = time.time()
+            return result
         except Exception as e:
             logger.error(f"Error in _get_overview_metrics: {e}")
             return {
@@ -437,7 +478,7 @@ class AdvancedAnalytics:
             # Най-посещавани страници - uses optimized query with index
             top_pages_query = optimized_queries["top_pages"]
             # Execute the optimized query with proper parameterization
-            top_pages_result = self.db.session.execute(
+            top_pages_result = self.db.execute(
                 f"""
                 SELECT page_url as page,
                        COUNT(*) as visits
@@ -455,7 +496,7 @@ class AdvancedAnalytics:
 
             # Device breakdown - uses idx_user_behaviors_session_start
             device_stats = (
-                self.db.session.query(
+                self.db.query(
                     UserBehavior.device_info,
                     func.count(UserBehavior.id).label("sessions"),
                 )
@@ -466,23 +507,31 @@ class AdvancedAnalytics:
                 .all()
             )
 
-            # Hourly activity pattern - optimized with single query per hour
-            hourly_activity = []
-            for hour in range(24):
-                # Use EXTRACT function with index on created_at
-                count = (
-                    self.db.session.query(func.count(AnalyticsEvent.id))
-                    .filter(
-                        and_(
-                            AnalyticsEvent.event_type == "page_view",
-                            AnalyticsEvent.created_at.between(start_date, end_date),
-                            func.extract("hour", AnalyticsEvent.created_at) == hour,
-                        )
-                    )
-                    .scalar()
-                    or 0
+            # Hourly activity pattern - optimized with single query instead of 24 separate queries
+            hourly_activity_result = (
+                self.db.query(
+                    func.extract("hour", AnalyticsEvent.created_at).label("hour"),
+                    func.count(AnalyticsEvent.id).label("activity"),
                 )
-                hourly_activity.append({"hour": hour, "activity": count})
+                .filter(
+                    and_(
+                        AnalyticsEvent.event_type == "page_view",
+                        AnalyticsEvent.created_at.between(start_date, end_date),
+                    )
+                )
+                .group_by(func.extract("hour", AnalyticsEvent.created_at))
+                .order_by(func.extract("hour", AnalyticsEvent.created_at))
+                .all()
+            )
+
+            # Convert to dict for easy lookup, then fill in missing hours with 0
+            hourly_dict = {
+                int(row.hour): row.activity for row in hourly_activity_result
+            }
+            hourly_activity = [
+                {"hour": hour, "activity": hourly_dict.get(hour, 0)}
+                for hour in range(24)
+            ]
 
             return {
                 "top_pages": top_pages,
@@ -496,7 +545,7 @@ class AdvancedAnalytics:
             logger.error(f"Error in _get_user_engagement: {e}")
             # Fallback to basic queries
             top_pages = (
-                self.db.session.query(
+                self.db.query(
                     AnalyticsEvent.page_url,
                     func.count(AnalyticsEvent.id).label("views"),
                 )
@@ -514,7 +563,7 @@ class AdvancedAnalytics:
             )
 
             device_stats = (
-                self.db.session.query(
+                self.db.query(
                     UserBehavior.device_info,
                     func.count(UserBehavior.id).label("sessions"),
                 )
@@ -542,14 +591,14 @@ class AdvancedAnalytics:
 
             # Общо разговори - optimized count query
             total_conversations = (
-                self.db.session.query(ChatbotConversation)
+                self.db.query(ChatbotConversation)
                 .filter(ChatbotConversation.created_at.between(start_date, end_date))
                 .count()
             )
 
             # По тип отговор - uses optimized query with index
             response_types_query = optimized_queries["chatbot_conversations_summary"]
-            response_types_result = self.db.session.execute(
+            response_types_result = self.db.execute(
                 text(response_types_query),
                 {"start_date": start_date, "end_date": end_date},
             ).fetchall()
@@ -557,7 +606,7 @@ class AdvancedAnalytics:
 
             # AI статистики - uses optimized query with index
             ai_stats_query = optimized_queries["chatbot_ai_stats"]
-            ai_stats_result = self.db.session.execute(
+            ai_stats_result = self.db.execute(
                 text(ai_stats_query), {"start_date": start_date, "end_date": end_date}
             ).fetchone()
 
@@ -570,7 +619,7 @@ class AdvancedAnalytics:
 
             # User ratings - uses optimized query with index
             ratings_query = optimized_queries["chatbot_ratings"]
-            ratings_result = self.db.session.execute(
+            ratings_result = self.db.execute(
                 text(ratings_query), {"start_date": start_date, "end_date": end_date}
             ).fetchone()
 
@@ -596,14 +645,14 @@ class AdvancedAnalytics:
 
         # Общо разговори
         total_conversations = (
-            self.db.session.query(ChatbotConversation)
+            self.db.query(ChatbotConversation)
             .filter(ChatbotConversation.created_at.between(start_date, end_date))
             .count()
         )
 
         # По тип отговор
         response_types = (
-            self.db.session.query(
+            self.db.query(
                 ChatbotConversation.response_type,
                 func.count(ChatbotConversation.id).label("count"),
             )
@@ -614,7 +663,7 @@ class AdvancedAnalytics:
 
         # AI статистики
         ai_conversations = (
-            self.db.session.query(ChatbotConversation)
+            self.db.query(ChatbotConversation)
             .filter(
                 and_(
                     ChatbotConversation.response_type == "ai",
@@ -643,7 +692,7 @@ class AdvancedAnalytics:
 
         # User ratings
         rated_conversations = (
-            self.db.session.query(ChatbotConversation)
+            self.db.query(ChatbotConversation)
             .filter(
                 and_(
                     ChatbotConversation.user_rating.isnot(None),
@@ -677,7 +726,7 @@ class AdvancedAnalytics:
 
             # Average response times by endpoint - uses optimized query with index
             performance_query = optimized_queries["performance_by_endpoint"]
-            endpoint_performance_result = self.db.session.execute(
+            endpoint_performance_result = self.db.execute(
                 text(performance_query),
                 {"start_date": start_date, "end_date": end_date},
             ).fetchall()
@@ -691,35 +740,33 @@ class AdvancedAnalytics:
                 for row in endpoint_performance_result
             ]
 
-            # System load over time - optimized daily aggregation
-            daily_performance = []
-            current_date = start_date
-            while current_date <= end_date:
-                next_date = current_date + timedelta(days=1)
-
-                # Use single optimized query per day instead of multiple queries
-                daily_avg = (
-                    self.db.session.query(func.avg(PerformanceMetrics.metric_value))
-                    .filter(
-                        and_(
-                            PerformanceMetrics.metric_type == "response_time",
-                            PerformanceMetrics.created_at.between(
-                                current_date, next_date
-                            ),
-                        )
+            # System load over time - optimized single query for all days instead of loop
+            daily_performance_result = (
+                self.db.query(
+                    func.date(PerformanceMetrics.created_at).label("date"),
+                    func.avg(PerformanceMetrics.metric_value).label(
+                        "avg_response_time"
+                    ),
+                )
+                .filter(
+                    and_(
+                        PerformanceMetrics.metric_type == "response_time",
+                        PerformanceMetrics.created_at.between(start_date, end_date),
                     )
-                    .scalar()
-                    or 0
                 )
+                .group_by(func.date(PerformanceMetrics.created_at))
+                .order_by(func.date(PerformanceMetrics.created_at))
+                .all()
+            )
 
-                daily_performance.append(
-                    {
-                        "date": current_date.strftime("%Y-%m-%d"),
-                        "avg_response_time": round(daily_avg, 3),
-                    }
-                )
-
-                current_date = next_date
+            # Convert to the expected format
+            daily_performance = [
+                {
+                    "date": row.date.strftime("%Y-%m-%d"),
+                    "avg_response_time": round(row.avg_response_time or 0, 3),
+                }
+                for row in daily_performance_result
+            ]
 
             return {
                 "endpoint_performance": endpoint_performance,
@@ -737,7 +784,7 @@ class AdvancedAnalytics:
 
         # Average response times by endpoint
         response_times = (
-            self.db.session.query(
+            self.db.query(
                 PerformanceMetrics.endpoint,
                 func.avg(PerformanceMetrics.metric_value).label("avg_time"),
             )
@@ -761,7 +808,7 @@ class AdvancedAnalytics:
             next_date = current_date + timedelta(days=1)
 
             avg_response = (
-                self.db.session.query(func.avg(PerformanceMetrics.metric_value))
+                self.db.query(func.avg(PerformanceMetrics.metric_value))
                 .filter(
                     and_(
                         PerformanceMetrics.metric_type == "response_time",
@@ -800,7 +847,7 @@ class AdvancedAnalytics:
             # Get all funnel metrics with single optimized queries
             visitors_query = optimized_queries["conversion_funnel_visitors"]
             total_visitors = (
-                self.db.session.execute(
+                self.db.execute(
                     text(visitors_query),
                     {"start_date": start_date, "end_date": end_date},
                 ).scalar()
@@ -811,7 +858,7 @@ class AdvancedAnalytics:
                 "conversion_funnel_register_visits"
             ]
             visited_register = (
-                self.db.session.execute(
+                self.db.execute(
                     text(register_visits_query),
                     {"start_date": start_date, "end_date": end_date},
                 ).scalar()
@@ -820,7 +867,7 @@ class AdvancedAnalytics:
 
             registrations_query = optimized_queries["conversion_funnel_registrations"]
             started_registration = (
-                self.db.session.execute(
+                self.db.execute(
                     text(registrations_query),
                     {"start_date": start_date, "end_date": end_date},
                 ).scalar()
@@ -829,7 +876,7 @@ class AdvancedAnalytics:
 
             completions_query = optimized_queries["conversion_funnel_completions"]
             completed_registration = (
-                self.db.session.execute(
+                self.db.execute(
                     text(completions_query),
                     {"start_date": start_date, "end_date": end_date},
                 ).scalar()
@@ -838,7 +885,7 @@ class AdvancedAnalytics:
 
             chatbot_users_query = optimized_queries["conversion_funnel_chatbot_users"]
             chatbot_users = (
-                self.db.session.execute(
+                self.db.execute(
                     text(chatbot_users_query),
                     {"start_date": start_date, "end_date": end_date},
                 ).scalar()
@@ -886,7 +933,7 @@ class AdvancedAnalytics:
 
         # Основни стъпки във funnel-а
         total_visitors = (
-            self.db.session.query(func.count(func.distinct(UserBehavior.session_id)))
+            self.db.query(func.count(func.distinct(UserBehavior.session_id)))
             .filter(UserBehavior.session_start.between(start_date, end_date))
             .scalar()
             or 0
@@ -894,9 +941,7 @@ class AdvancedAnalytics:
 
         # Посетили форма за регистрация
         visited_register = (
-            self.db.session.query(
-                func.count(func.distinct(AnalyticsEvent.user_session))
-            )
+            self.db.query(func.count(func.distinct(AnalyticsEvent.user_session)))
             .filter(
                 and_(
                     AnalyticsEvent.page_url.like("%register%"),
@@ -909,9 +954,7 @@ class AdvancedAnalytics:
 
         # Започнали регистрация
         started_registration = (
-            self.db.session.query(
-                func.count(func.distinct(AnalyticsEvent.user_session))
-            )
+            self.db.query(func.count(func.distinct(AnalyticsEvent.user_session)))
             .filter(
                 and_(
                     AnalyticsEvent.event_action == "form_start",
@@ -925,7 +968,7 @@ class AdvancedAnalytics:
 
         # Завършили регистрация - използваме conversion_action в UserBehavior
         completed_registration = (
-            self.db.session.query(func.count(UserBehavior.id))
+            self.db.query(func.count(UserBehavior.id))
             .filter(
                 and_(
                     UserBehavior.conversion_action == "registration",
@@ -938,9 +981,7 @@ class AdvancedAnalytics:
 
         # Използвали чатбота
         chatbot_users = (
-            self.db.session.query(
-                func.count(func.distinct(ChatbotConversation.session_id))
-            )
+            self.db.query(func.count(func.distinct(ChatbotConversation.session_id)))
             .filter(ChatbotConversation.created_at.between(start_date, end_date))
             .scalar()
             or 0
@@ -986,7 +1027,7 @@ class AdvancedAnalytics:
 
             # Най-чести entry points - uses optimized query with index
             entry_pages_query = optimized_queries["user_journey_entry_pages"]
-            entry_pages_result = self.db.session.execute(
+            entry_pages_result = self.db.execute(
                 text(entry_pages_query),
                 {"start_date": start_date, "end_date": end_date},
             ).fetchall()
@@ -996,39 +1037,44 @@ class AdvancedAnalytics:
 
             # Най-чести exit points - uses optimized query with index
             exit_pages_query = optimized_queries["user_journey_exit_pages"]
-            exit_pages_result = self.db.session.execute(
+            exit_pages_result = self.db.execute(
                 text(exit_pages_query), {"start_date": start_date, "end_date": end_date}
             ).fetchall()
             exit_pages = [
                 {"page": row[0], "exits": row[1]} for row in exit_pages_result
             ]
 
-            # Най-чести page sequences - complex processing, keep optimized but with limits
+            # Най-чести page sequences - optimized with reduced memory usage
+            # Use a more efficient approach by limiting records and processing in batches
             common_paths = []
             sessions_with_sequences = (
-                self.db.session.query(UserBehavior)
+                self.db.query(UserBehavior.pages_sequence)
                 .filter(
                     and_(
                         UserBehavior.session_start.between(start_date, end_date),
                         UserBehavior.pages_sequence.isnot(None),
                     )
                 )
-                .limit(1000)
+                .limit(500)  # Reduced limit for better performance
                 .all()
-            )  # Limit to prevent memory issues
+            )
 
             path_counter = Counter()
-            for session in sessions_with_sequences:
+            for (pages_sequence,) in sessions_with_sequences:
                 try:
-                    sequence = json.loads(session.pages_sequence or "[]")
+                    sequence = json.loads(pages_sequence or "[]")
                     if len(sequence) >= 2:
-                        path = " → ".join(
-                            [
-                                page["url"].split("/")[-1] or "home"
-                                for page in sequence[:3]
-                            ]
-                        )
-                        path_counter[path] += 1
+                        # Simplify path extraction to reduce processing
+                        path_parts = []
+                        for page in sequence[:2]:  # Only first 2 pages for simplicity
+                            url = page.get("url", "")
+                            # Extract last part of URL or use "home"
+                            path_part = url.split("/")[-1] or "home"
+                            if path_part:
+                                path_parts.append(path_part[:20])  # Limit length
+                        if path_parts:
+                            path = " → ".join(path_parts)
+                            path_counter[path] += 1
                 except Exception:
                     continue
 
@@ -1054,7 +1100,7 @@ class AdvancedAnalytics:
 
         # Най-чести entry points
         entry_pages = (
-            self.db.session.query(
+            self.db.query(
                 UserBehavior.entry_page, func.count(UserBehavior.id).label("entries")
             )
             .filter(
@@ -1071,7 +1117,7 @@ class AdvancedAnalytics:
 
         # Най-чести exit points
         exit_pages = (
-            self.db.session.query(
+            self.db.query(
                 UserBehavior.exit_page, func.count(UserBehavior.id).label("exits")
             )
             .filter(
@@ -1089,7 +1135,7 @@ class AdvancedAnalytics:
         # Най-чести page sequences
         common_paths = []
         sessions_with_sequences = (
-            self.db.session.query(UserBehavior)
+            self.db.query(UserBehavior)
             .filter(
                 and_(
                     UserBehavior.session_start.between(start_date, end_date),
@@ -1134,7 +1180,7 @@ class AdvancedAnalytics:
         # Активни потребители (последните 30 минути)
         thirty_min_ago = datetime.utcnow() - timedelta(minutes=30)
         active_users = (
-            self.db.session.query(func.count(func.distinct(UserBehavior.session_id)))
+            self.db.query(func.count(func.distinct(UserBehavior.session_id)))
             .filter(UserBehavior.last_activity >= thirty_min_ago)
             .scalar()
             or 0
@@ -1142,7 +1188,7 @@ class AdvancedAnalytics:
 
         # Page views последният час
         recent_page_views = (
-            self.db.session.query(AnalyticsEvent)
+            self.db.query(AnalyticsEvent)
             .filter(
                 and_(
                     AnalyticsEvent.event_type == "page_view",
@@ -1154,7 +1200,7 @@ class AdvancedAnalytics:
 
         # Чатбот съобщения последният час
         recent_chatbot = (
-            self.db.session.query(ChatbotConversation)
+            self.db.query(ChatbotConversation)
             .filter(ChatbotConversation.created_at >= one_hour_ago)
             .count()
         )
@@ -1166,13 +1212,16 @@ class AdvancedAnalytics:
             "timestamp": datetime.utcnow().isoformat(),
         }
 
-    def _is_cached(self, key: str) -> bool:
+    def _is_cached(self, key: str, duration: int = None) -> bool:
         """Проверява дали данните са в кеша"""
+        if duration is None:
+            duration = self.cache_duration
+
         if key not in self._cache:
             return False
 
         cache_time = self._cache.get(f"{key}_timestamp", 0)
-        return (time.time() - cache_time) < self.cache_duration
+        return (time.time() - cache_time) < duration
 
     def _get_sample_analytics(self) -> dict[str, Any]:
         """Provide sample analytics data when database is empty"""

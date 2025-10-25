@@ -1,6 +1,8 @@
 import json
 import os
 import time
+import asyncio
+import aiofiles
 from datetime import datetime, timedelta
 
 from flask import (
@@ -16,6 +18,14 @@ from flask import (
     url_for,
 )
 
+import httpx
+from sqlalchemy import func
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.future import select
+
+from extensions import db
+
 try:
     from permissions import require_admin_login
 except ImportError:
@@ -28,20 +38,17 @@ try:
     from models import HelpRequest, Volunteer
 except ImportError:
     # Fallback for standalone execution
-    try:
-        from backend.models import HelpRequest, Volunteer
-    except ImportError:
-        HelpRequest = None
-        Volunteer = None
+    HelpRequest = None
+    Volunteer = None
 
 # Import caching decorators from performance optimization
 try:
     from performance_optimization import AnalyticsCache
 
-    cache = AnalyticsCache()
-    cached_analytics_data = cache.cached_analytics_data()
-    cached_analytics_data_1min = cache.cached_analytics_data(60)  # 1 minute cache
-    cached_analytics_data_5min = cache.cached_analytics_data(300)  # 5 minute cache
+    # Don't create cache instance here - get it from app context
+    cached_analytics_data = None
+    cached_analytics_data_1min = None
+    cached_analytics_data_5min = None
 except ImportError:
     # Fallback if caching not available
     def cached_analytics_data(f):
@@ -54,6 +61,37 @@ except ImportError:
         return f
 
     cache = None
+
+
+def get_cached_decorator(timeout=None):
+    """Get cached decorator from app context"""
+    try:
+        from flask import current_app
+
+        if hasattr(current_app, "analytics_cache"):
+            cache = current_app.analytics_cache
+            return cache.cached_analytics_data(timeout)
+        else:
+            # Fallback - return identity function
+            def identity(f):
+                return f
+
+            return identity
+    except Exception:
+        # Fallback - return identity function
+        def identity(f):
+            return f
+
+        return identity
+
+
+# Create decorators that will use app context
+def cached_analytics_data_5min_decorator(f):
+    return get_cached_decorator(300)(f)
+
+
+def cached_analytics_data_1min_decorator(f):
+    return get_cached_decorator(60)(f)
 
 
 @analytics_bp.route("/")
@@ -73,43 +111,47 @@ def analytics_page():
 
 @analytics_bp.route("/api/analytics/data")
 # @require_admin_login  # Temporarily disabled for testing
-@cached_analytics_data_5min  # Cache for 5 minutes
-def analytics_data():
+@cached_analytics_data_5min_decorator  # Cache for 5 minutes
+async def analytics_data():
     try:
         # Check if simple data is requested
         simple = request.args.get("simple", "false").lower() == "true"
 
         if simple:
-            # Return simple dashboard stats
+            # Return simple dashboard stats using async database queries
             try:
+                from appy import async_session
                 from flask import current_app
+                from sqlalchemy import select, func
 
-                db = current_app.extensions["sqlalchemy"].db
+                async with async_session() as session:
 
-                if HelpRequest and Volunteer:
-                    total_requests = db.session.query(HelpRequest).count()
-                    total_volunteers = db.session.query(Volunteer).count()
+                    # Count HelpRequest
+                    result = await session.execute(select(func.count(HelpRequest.id)))
+                    total_requests = result.scalar()
 
-                    # Count active tasks (requests that are assigned or in progress)
+                    # Count Volunteer
+                    result = await session.execute(select(func.count(Volunteer.id)))
+                    total_volunteers = result.scalar()
+
+                    # Count active tasks
                     try:
                         from models_with_analytics import Task
 
-                        active_tasks = (
-                            db.session.query(Task)
-                            .filter(Task.status.in_(["assigned", "in_progress"]))
-                            .count()
+                        result = await session.execute(
+                            select(func.count(Task.id)).where(
+                                Task.status.in_(["assigned", "in_progress"])
+                            )
                         )
+                        active_tasks = result.scalar()
                     except (ImportError, AttributeError):
                         # If Task model not available, count from HelpRequest status
-                        active_tasks = (
-                            db.session.query(HelpRequest)
-                            .filter(HelpRequest.status.in_(["assigned", "in_progress"]))
-                            .count()
+                        result = await session.execute(
+                            select(func.count(HelpRequest.id)).where(
+                                HelpRequest.status.in_(["assigned", "in_progress"])
+                            )
                         )
-                else:
-                    total_requests = 0
-                    total_volunteers = 0
-                    active_tasks = 0
+                        active_tasks = result.scalar()
 
                 return jsonify(
                     {
@@ -130,7 +172,13 @@ def analytics_data():
         except ImportError:
             from analytics_service import analytics_service
 
-        data = analytics_service.get_dashboard_analytics()
+        # Run analytics_service in thread executor since it may not be async
+        import asyncio
+
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(
+            None, analytics_service.get_dashboard_analytics
+        )
 
         # Check if response should be compressed
         accept_encoding = request.headers.get("Accept-Encoding", "")
@@ -157,7 +205,11 @@ def analytics_data():
             except ImportError:
                 from admin_analytics import AnalyticsEngine
 
-            data = AnalyticsEngine.get_dashboard_stats()
+            # Run in thread executor
+            import asyncio
+
+            loop = asyncio.get_event_loop()
+            data = await loop.run_in_executor(None, AnalyticsEngine.get_dashboard_stats)
             return jsonify(data)
         except Exception as fallback_e:
             print(f"Fallback analytics also failed: {type(fallback_e).__name__}")
@@ -166,41 +218,77 @@ def analytics_data():
 
 @analytics_bp.route("/api/analytics/simple")
 # @require_admin_login  # Temporarily disabled for testing
-def analytics_simple_data():
+async def analytics_simple_data():
     """Simple analytics endpoint returning basic stats for dashboard"""
+    print("DEBUG: analytics_simple_data function called")
     try:
-        # Get basic counts from database
-        from flask import current_app
-
-        db = current_app.extensions["sqlalchemy"].db
-
-        total_requests = db.session.query(HelpRequest).count()
-        total_volunteers = db.session.query(Volunteer).count()
-
-        # Count active tasks (requests that are assigned or in progress)
+        # Check cache first
         try:
-            from models_with_analytics import Task
+            from flask import current_app
 
-            active_tasks = (
-                db.session.query(Task)
-                .filter(Task.status.in_(["assigned", "in_progress"]))
-                .count()
-            )
-        except (ImportError, AttributeError):
-            # If Task model not available, count from HelpRequest status
-            active_tasks = (
-                db.session.query(HelpRequest)
-                .filter(HelpRequest.status.in_(["assigned", "in_progress"]))
-                .count()
-            )
+            if hasattr(current_app, "analytics_cache") and current_app.analytics_cache:
+                cache = current_app.analytics_cache
+                cache_key = "analytics_simple_data"
+                cached_result = cache.cache.get(cache_key)
+                if cached_result is not None:
+                    print(f"Cache HIT for {cache_key}")
+                    return cached_result
+                print(f"Cache MISS for {cache_key}")
+        except Exception as cache_error:
+            print(f"Cache error: {cache_error}")
 
-        return jsonify(
+        # Get basic counts from database using async session
+        from appy import async_session
+        from flask import current_app
+        from sqlalchemy import select, func
+
+        async with async_session() as session:
+
+            # Count HelpRequest
+            result = await session.execute(select(func.count(HelpRequest.id)))
+            total_requests = result.scalar()
+
+            # Count Volunteer
+            result = await session.execute(select(func.count(Volunteer.id)))
+            total_volunteers = result.scalar()
+
+            # Count active tasks
+            try:
+                from models_with_analytics import Task
+
+                result = await session.execute(
+                    select(func.count(Task.id)).where(
+                        Task.status.in_(["assigned", "in_progress"])
+                    )
+                )
+                active_tasks = result.scalar()
+            except (ImportError, AttributeError):
+                # If Task model not available, count from HelpRequest status
+                result = await session.execute(
+                    select(func.count(HelpRequest.id)).where(
+                        HelpRequest.status.in_(["assigned", "in_progress"])
+                    )
+                )
+                active_tasks = result.scalar()
+
+        result = jsonify(
             {
                 "total_requests": total_requests,
                 "total_volunteers": total_volunteers,
                 "active_tasks": active_tasks,
             }
         )
+
+        # Cache the result
+        try:
+            if hasattr(current_app, "analytics_cache") and current_app.analytics_cache:
+                cache = current_app.analytics_cache
+                cache.cache.set(cache_key, result, timeout=300)  # 5 minutes
+                print(f"Cached result for {cache_key}")
+        except Exception as cache_error:
+            print(f"Cache write error: {cache_error}")
+
+        return result
 
     except Exception as e:
         print(f"Error getting simple analytics data: {e}")
@@ -340,16 +428,18 @@ def analytics_stream():
 
 @analytics_bp.route("/api/analytics/live")
 @require_admin_login
-@cached_analytics_data_1min  # Cache for 1 minute for live data
-def analytics_live():
+@cached_analytics_data_1min_decorator  # Cache for 1 minute for live data
+async def analytics_live():
     """Get live analytics data for real-time updates"""
     try:
-        try:
-            from analytics_service import analytics_service
-        except ImportError:
-            from analytics_service import analytics_service
+        import asyncio
+        from analytics_service import analytics_service
 
-        data = analytics_service.get_dashboard_analytics()
+        # Run analytics_service in thread executor since it may not be async
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(
+            None, analytics_service.get_dashboard_analytics
+        )
 
         # Extract live stats from overview
         overview = data.get("overview", {})
@@ -368,7 +458,7 @@ def analytics_live():
 
 @analytics_bp.route("/api/analytics/trends")
 @require_admin_login
-def analytics_trends():
+async def analytics_trends():
     """Get trend data for charts"""
     try:
         months = int(request.args.get("months", 6))
@@ -529,9 +619,11 @@ def predictive_analytics_page():
 
 @analytics_bp.route("/api/predictive/regional-demand")
 @require_admin_login
-def predictive_regional_demand():
+async def predictive_regional_demand():
     """Get regional demand forecast"""
     try:
+        import asyncio
+
         region = request.args.get("region")
         days_ahead = int(request.args.get("days", 7))
 
@@ -545,8 +637,10 @@ def predictive_regional_demand():
                 }
             )
 
-        data = predictive_analytics.get_regional_demand_forecast(
-            region=region, days_ahead=days_ahead
+        # Run predictive analytics in thread executor
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(
+            None, predictive_analytics.get_regional_demand_forecast, region, days_ahead
         )
         return jsonify(data)
 
@@ -557,9 +651,11 @@ def predictive_regional_demand():
 
 @analytics_bp.route("/api/predictive/workload")
 @require_admin_login
-def predictive_workload():
+async def predictive_workload():
     """Get workload prediction"""
     try:
+        import asyncio
+
         hours_ahead = int(request.args.get("hours", 24))
 
         try:
@@ -572,7 +668,11 @@ def predictive_workload():
                 }
             )
 
-        data = predictive_analytics.get_workload_prediction(hours_ahead=hours_ahead)
+        # Run predictive analytics in thread executor
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(
+            None, predictive_analytics.get_workload_prediction, hours_ahead
+        )
         return jsonify(data)
 
     except Exception as e:
@@ -582,9 +682,11 @@ def predictive_workload():
 
 @analytics_bp.route("/api/predictive/insights")
 @require_admin_login
-def predictive_insights():
+async def predictive_insights():
     """Get predictive insights and recommendations"""
     try:
+        import asyncio
+
         try:
             from predictive_analytics import predictive_analytics
         except ImportError:
@@ -595,7 +697,11 @@ def predictive_insights():
                 }
             )
 
-        data = predictive_analytics.get_predictive_insights()
+        # Run predictive analytics in thread executor
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(
+            None, predictive_analytics.get_predictive_insights
+        )
         return jsonify(data)
 
     except Exception as e:
@@ -605,9 +711,11 @@ def predictive_insights():
 
 @analytics_bp.route("/api/predictive/model-info")
 @require_admin_login
-def predictive_model_info():
+async def predictive_model_info():
     """Get information about predictive models"""
     try:
+        import asyncio
+
         try:
             from predictive_analytics import predictive_analytics
         except ImportError:
@@ -619,10 +727,13 @@ def predictive_model_info():
             )
 
         # Get sample predictions to show model capabilities
-        regional_sample = predictive_analytics.get_regional_demand_forecast(
-            days_ahead=1
+        loop = asyncio.get_event_loop()
+        regional_sample = await loop.run_in_executor(
+            None, predictive_analytics.get_regional_demand_forecast, None, 1
         )
-        workload_sample = predictive_analytics.get_workload_prediction(hours_ahead=1)
+        workload_sample = await loop.run_in_executor(
+            None, predictive_analytics.get_workload_prediction, 1
+        )
 
         model_info = {
             "regional_demand_model": {
@@ -680,15 +791,20 @@ def predictive_model_info():
 
 @analytics_bp.route("/api/advanced/anomalies")
 @require_admin_login
-def get_anomalies():
+async def get_anomalies():
     """Get detected anomalies in analytics data"""
     try:
+        import asyncio
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
         timeframe_days = int(request.args.get("days", 7))
 
-        anomalies = analytics.detect_anomalies(timeframe_days=timeframe_days)
+        # Run anomaly detection in thread executor
+        loop = asyncio.get_event_loop()
+        anomalies = await loop.run_in_executor(
+            None, analytics.detect_anomalies, timeframe_days
+        )
 
         return jsonify(
             {
@@ -706,16 +822,19 @@ def get_anomalies():
 
 @analytics_bp.route("/api/advanced/predictions")
 @require_admin_login
-def get_predictions():
+async def get_predictions():
     """Get predictive analytics for user behavior"""
     try:
+        import asyncio
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
         user_id = request.args.get("user_id")
 
-        predictions = analytics.predict_user_behavior(
-            user_id=user_id if user_id else None
+        # Run prediction in thread executor
+        loop = asyncio.get_event_loop()
+        predictions = await loop.run_in_executor(
+            None, analytics.predict_user_behavior, user_id or None
         )
 
         return jsonify(
@@ -733,13 +852,17 @@ def get_predictions():
 
 @analytics_bp.route("/api/advanced/insights")
 @require_admin_login
-def get_insights():
+async def get_insights():
     """Get comprehensive analytics insights report"""
     try:
+        import asyncio
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
-        report = analytics.generate_insights_report()
+
+        # Run insights generation in thread executor
+        loop = asyncio.get_event_loop()
+        report = await loop.run_in_executor(None, analytics.generate_insights_report)
 
         return jsonify(report)
 
@@ -750,20 +873,23 @@ def get_insights():
 
 @analytics_bp.route("/api/advanced/user-behavior")
 # @require_admin_login  # Disabled since called from authenticated admin dashboard
-def get_user_behavior():
+async def get_user_behavior():
     """Get user behavior analysis"""
     try:
+        import asyncio
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
         days = int(request.args.get("days", 30)) if request else 30
 
-        # Get user segments and behavior patterns
-        segments = analytics._segment_users()
-        trends = analytics._analyze_kpi_trends()
+        # Run user analysis operations in thread executor
+        loop = asyncio.get_event_loop()
+        segments = await loop.run_in_executor(None, analytics._segment_users)
+        trends = await loop.run_in_executor(None, analytics._analyze_kpi_trends)
+        recent_events = await loop.run_in_executor(
+            None, analytics.get_recent_events, days
+        )
 
-        # Get recent user activity
-        recent_events = analytics.get_recent_events(days=days)
         user_activity = {}
 
         for event in recent_events:
@@ -957,7 +1083,7 @@ alert_system = AlertSystem()
 
 @analytics_bp.route("/api/alerts/config", methods=["GET"])
 @require_admin_login
-def get_alerts_config():
+async def get_alerts_config():
     """Get alerts configuration"""
     try:
         return jsonify(
@@ -974,7 +1100,7 @@ def get_alerts_config():
 
 @analytics_bp.route("/api/alerts/config/<alert_id>", methods=["PUT"])
 @require_admin_login
-def update_alert_config(alert_id):
+async def update_alert_config(alert_id):
     """Update alert configuration"""
     try:
         data = request.get_json()
@@ -992,16 +1118,18 @@ def update_alert_config(alert_id):
 
 @analytics_bp.route("/api/alerts/check", methods=["GET"])
 @require_admin_login
-def check_alerts():
+async def check_alerts():
     """Check for triggered alerts"""
     try:
+        import asyncio
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
 
         # Get current analytics data
-        anomalies = analytics.detect_anomalies(timeframe_days=1)
-        insights = analytics.generate_insights_report()
+        loop = asyncio.get_event_loop()
+        anomalies = await loop.run_in_executor(None, analytics.detect_anomalies, 1)
+        insights = await loop.run_in_executor(None, analytics.generate_insights_report)
 
         analytics_data = {
             "anomalies": anomalies,
@@ -1029,7 +1157,7 @@ def check_alerts():
 
 @analytics_bp.route("/api/alerts/history", methods=["GET"])
 @require_admin_login
-def get_alerts_history():
+async def get_alerts_history():
     """Get alerts history (placeholder for now)"""
     try:
         # In a real implementation, this would query a database table
@@ -1071,9 +1199,11 @@ def get_alerts_history():
 
 @analytics_bp.route("/api/analytics/export")
 @require_admin_login
-def export_analytics():
+async def export_analytics():
     """Export analytics data in various formats"""
     try:
+        import asyncio
+
         format_type = request.args.get("format", "json")
         export_type = request.args.get("type", "dashboard")
 
@@ -1081,11 +1211,17 @@ def export_analytics():
         try:
             from analytics_service import analytics_service
 
-            data = analytics_service.get_dashboard_analytics()
+            # Run analytics_service in thread executor
+            loop = asyncio.get_event_loop()
+            data = await loop.run_in_executor(
+                None, analytics_service.get_dashboard_analytics
+            )
         except ImportError:
             from admin_analytics import AnalyticsEngine
 
-            data = AnalyticsEngine.get_dashboard_stats()
+            # Run in thread executor
+            loop = asyncio.get_event_loop()
+            data = await loop.run_in_executor(None, AnalyticsEngine.get_dashboard_stats)
 
         # Add export metadata
         data["export_info"] = {

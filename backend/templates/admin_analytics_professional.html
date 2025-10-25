@@ -24,6 +24,12 @@
     <!-- ApexCharts for advanced charts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <!-- HelpChain WebSocket Client -->
+    <script src="{{ url_for('static', filename='js/helpchain-websocket.js') }}"></script>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -810,6 +816,7 @@
       // Global variables
       let trendsChart, categoryChart, geoChart, predictionChart;
       let liveUpdateInterval;
+      let websocketClient;
 
       // Load data from JSON scripts
       const trendsData = JSON.parse(
@@ -825,8 +832,148 @@
       // Initialize charts when page loads
       document.addEventListener("DOMContentLoaded", function () {
         initializeCharts();
+        initializeWebSocket();
         startLiveUpdates();
       });
+
+      function initializeWebSocket() {
+        // Initialize WebSocket connection for real-time analytics
+        websocketClient = new HelpChainWebSocket(window.location.protocol + '//' + window.location.host);
+
+        // Get user info from session (passed from server)
+        const userId = '{{ session.get("admin_user_id", "admin") }}';
+        const userName = '{{ session.get("admin_username", "Admin") }}';
+
+        websocketClient.connect({
+          userId: userId,
+          userName: userName,
+          userType: 'admin'
+        }).then(() => {
+          console.log('Connected to WebSocket for analytics');
+
+          // Join analytics room
+          websocketClient.joinAnalyticsRoom('analytics');
+
+          // Subscribe to personalized analytics updates
+          websocketClient.subscribeAnalytics(['requests', 'volunteers', 'performance']);
+
+          // Set up event listeners for real-time updates
+          setupWebSocketListeners();
+
+        }).catch((error) => {
+          console.error('Failed to connect to WebSocket:', error);
+          // Fallback to polling if WebSocket fails
+          console.log('Falling back to polling for analytics updates');
+        });
+      }
+
+      function setupWebSocketListeners() {
+        // Listen for analytics updates
+        websocketClient.on('analytics_update', (data) => {
+          console.log('Received analytics update:', data);
+          updateChartsWithRealtimeData(data);
+        });
+
+        // Listen for live metrics updates
+        websocketClient.on('live_metrics_update', (data) => {
+          console.log('Received live metrics update:', data);
+          updateKPIsWithRealtimeData(data);
+        });
+
+        // Listen for analytics subscription confirmation
+        websocketClient.on('analytics_subscribed', (data) => {
+          console.log('Analytics subscription confirmed:', data);
+        });
+
+        // Handle connection status
+        websocketClient.on('connected', (data) => {
+          console.log('WebSocket connected:', data);
+          updateConnectionStatus(true);
+        });
+
+        websocketClient.on('disconnect', () => {
+          console.log('WebSocket disconnected');
+          updateConnectionStatus(false);
+        });
+      }
+
+      function updateConnectionStatus(connected) {
+        const liveIndicator = document.querySelector('.live-indicator');
+        if (liveIndicator) {
+          const dot = liveIndicator.querySelector('.live-dot');
+          const text = liveIndicator.querySelector('span:not(.live-dot)');
+
+          if (connected) {
+            dot.style.background = '#28a745';
+            if (text) text.textContent = 'Live (WebSocket)';
+          } else {
+            dot.style.background = '#ffc107';
+            if (text) text.textContent = 'Live (Polling)';
+          }
+        }
+      }
+
+      function updateChartsWithRealtimeData(data) {
+        // Update trends chart if new data available
+        if (data.trends) {
+          if (trendsChart && data.trends.labels && data.trends.requests) {
+            trendsChart.data.labels = data.trends.labels;
+            trendsChart.data.datasets[0].data = data.trends.requests;
+            trendsChart.data.datasets[1].data = data.trends.completed || [];
+            trendsChart.data.datasets[2].data = data.trends.volunteers || [];
+            trendsChart.update('none'); // Update without animation for smoother real-time updates
+          }
+        }
+
+        // Update category chart if new data available
+        if (data.categories) {
+          if (categoryChart && data.categories.labels && data.categories.data) {
+            categoryChart.data.labels = data.categories.labels;
+            categoryChart.data.datasets[0].data = data.categories.data;
+            categoryChart.update('none');
+          }
+        }
+
+        // Update geo chart if new data available
+        if (data.geo) {
+          if (geoChart && data.geo.labels && data.geo.data) {
+            geoChart.data.labels = data.geo.labels;
+            geoChart.data.datasets[0].data = data.geo.data;
+            geoChart.update('none');
+          }
+        }
+      }
+
+      function updateKPIsWithRealtimeData(data) {
+        // Update KPI values with real-time data
+        if (data.requests_today !== undefined) {
+          const totalRequestsEl = document.getElementById('totalRequests');
+          if (totalRequestsEl) {
+            totalRequestsEl.textContent = data.requests_today;
+          }
+        }
+
+        if (data.success_rate !== undefined) {
+          const successRateEl = document.getElementById('successRate');
+          if (successRateEl) {
+            successRateEl.textContent = data.success_rate.toFixed(1) + '%';
+          }
+        }
+
+        if (data.avg_response_time !== undefined) {
+          const avgResponseTimeEl = document.getElementById('avgResponseTime');
+          if (avgResponseTimeEl) {
+            avgResponseTimeEl.textContent = data.avg_response_time.toFixed(1);
+          }
+        }
+
+        if (data.active_volunteers !== undefined) {
+          const activeVolunteersEl = document.getElementById('activeVolunteers');
+          if (activeVolunteersEl) {
+            activeVolunteersEl.textContent = data.active_volunteers;
+          }
+        }
+      }
 
       function initializeCharts() {
         // Trends Chart
@@ -1066,6 +1213,9 @@
       window.addEventListener("beforeunload", function () {
         if (liveUpdateInterval) {
           clearInterval(liveUpdateInterval);
+        }
+        if (websocketClient) {
+          websocketClient.disconnect();
         }
       });
     </script>

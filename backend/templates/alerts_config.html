@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Alert Configuration - HelpChain{% endblock %}
+{% block title %}Конфигурация на аларми - HelpChain{% endblock %}
 
 {% block extra_head %}
 <link
@@ -341,10 +341,10 @@
       <div>
         <h1 class="config-title">
           <i class="bi bi-gear"></i>
-          Alert Configuration
+          Конфигурация на аларми
         </h1>
         <p class="config-subtitle">
-          Configure alert thresholds and notification settings for your analytics dashboard
+          Конфигурирайте прагове на аларми и настройки за известия за вашия аналитичен табло
         </p>
       </div>
       <div>
@@ -366,7 +366,7 @@
 <div id="notification" class="notification">
   <div class="d-flex align-items-center gap-2">
     <i class="bi bi-check-circle text-success"></i>
-    <span id="notificationMessage">Configuration saved successfully</span>
+    <span id="notificationMessage">Конфигурацията е запазена успешно</span>
   </div>
 </div>
 
@@ -383,7 +383,7 @@
         alertsData = data.alerts;
         renderAlerts();
       } else {
-        showNotification('Failed to load alerts configuration', 'error');
+        showNotification('Неуспешно зареждане на конфигурацията на алармите', 'error');
       }
     } catch (error) {
       console.error('Error loading alerts config:', error);
@@ -399,7 +399,7 @@
       container.innerHTML = `
         <div class="alert alert-info">
           <i class="bi bi-info-circle"></i>
-          No alerts configured
+          Няма конфигурирани аларми
         </div>
       `;
       return;
@@ -414,7 +414,7 @@
           </h3>
           <div class="alert-status">
             <span class="status-badge ${alert.enabled ? 'status-enabled' : 'status-disabled'}">
-              ${alert.enabled ? 'Enabled' : 'Disabled'}
+              ${alert.enabled ? 'Активен' : 'Неактивен'}
             </span>
           </div>
         </div>
@@ -424,7 +424,7 @@
 
           <div class="alert-config">
             <div class="config-item">
-              <label class="config-label">Threshold</label>
+              <label class="config-label">Праг</label>
               <input
                 type="number"
                 class="config-input"
@@ -435,7 +435,7 @@
             </div>
 
             <div class="config-item">
-              <label class="config-label">Cooldown (minutes)</label>
+              <label class="config-label">Период на изчакване (минути)</label>
               <input
                 type="number"
                 class="config-input"
@@ -446,20 +446,20 @@
             </div>
 
             <div class="config-item">
-              <label class="config-label">Enabled</label>
+              <label class="config-label">Активен</label>
               <div class="config-checkbox">
                 <input
                   type="checkbox"
                   data-field="enabled"
                   ${alert.enabled ? 'checked' : ''}
                 >
-                <span>Enable this alert</span>
+                <span>Активирай този аларм</span>
               </div>
             </div>
           </div>
 
           <div class="config-item">
-            <label class="config-label">Notification Channels</label>
+            <label class="config-label">Канали за известия</label>
             <div class="channels-grid">
               ${['dashboard', 'email', 'sms'].map(channel => `
                 <div
@@ -468,7 +468,7 @@
                   data-channel="${channel}"
                 >
                   <i class="bi ${getChannelIcon(channel)}"></i>
-                  ${channel.charAt(0).toUpperCase() + channel.slice(1)}
+                  ${channel === 'dashboard' ? 'Табло' : channel === 'email' ? 'Имейл' : channel === 'sms' ? 'SMS' : channel.charAt(0).toUpperCase() + channel.slice(1)}
                 </div>
               `).join('')}
             </div>
@@ -478,15 +478,15 @@
         <div class="alert-actions">
           <button class="btn-modern btn-primary" onclick="saveAlert('${alert.id}')">
             <i class="bi bi-check"></i>
-            Save Changes
+            Запази промените
           </button>
           <button class="btn-modern btn-secondary" onclick="testAlert('${alert.id}')">
             <i class="bi bi-play"></i>
-            Test Alert
+            Тестов аларм
           </button>
           <button class="btn-modern btn-danger" onclick="resetAlert('${alert.id}')">
             <i class="bi bi-arrow-counterclockwise"></i>
-            Reset
+            Нулирай
           </button>
         </div>
       </div>
@@ -566,7 +566,7 @@
       });
 
       if (response.ok) {
-        showNotification('Alert configuration saved successfully', 'success');
+        showNotification('Конфигурацията на аларма е запазена успешно', 'success');
 
         // Update local data
         Object.assign(alert, updates);
@@ -575,14 +575,14 @@
         const statusBadge = alertCard.querySelector('.status-badge');
         if (statusBadge) {
           statusBadge.className = `status-badge ${enabled ? 'status-enabled' : 'status-disabled'}`;
-          statusBadge.textContent = enabled ? 'Enabled' : 'Disabled';
+          statusBadge.textContent = enabled ? 'Активен' : 'Неактивен';
         }
       } else {
-        showNotification('Failed to save configuration', 'error');
+        showNotification('Неуспешно запазване на конфигурацията', 'error');
       }
     } catch (error) {
       console.error('Error saving alert:', error);
-      showNotification('Error saving configuration', 'error');
+      showNotification('Грешка при запазване на конфигурацията', 'error');
     }
   }
 
@@ -592,8 +592,8 @@
       // Create a test alert payload
       const testAlert = {
         alert_id: alertId,
-        name: `Test ${alertId.replace('_', ' ').toUpperCase()}`,
-        description: 'This is a test alert to verify notification channels',
+        name: `Тест ${alertId.replace('_', ' ').toUpperCase()}`,
+        description: 'Това е тестов аларм за проверка на каналите за известия',
         severity: 'medium',
         triggered_at: new Date().toISOString(),
         data: { test: true }
@@ -602,19 +602,19 @@
       // Send test alert through SSE (this would normally come from the server)
       console.log('Test alert:', testAlert);
 
-      showNotification(`Test alert sent for ${alertId}`, 'info');
+      showNotification(`Тестовият аларм е изпратен за ${alertId}`, 'info');
     } catch (error) {
       console.error('Error testing alert:', error);
-      showNotification('Error testing alert', 'error');
+      showNotification('Грешка при тестване на аларм', 'error');
     }
   }
 
   // Reset alert to defaults
   function resetAlert(alertId) {
-    if (confirm('Are you sure you want to reset this alert to default settings?')) {
+    if (confirm('Сигурни ли сте, че искате да нулирате този аларм към настройките по подразбиране?')) {
       // Reload configuration from server
       loadAlertsConfig();
-      showNotification('Alert reset to defaults', 'info');
+      showNotification('Алармът е нулиран към настройките по подразбиране', 'info');
     }
   }
 

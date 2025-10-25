@@ -1,12 +1,6 @@
 from datetime import datetime
 from enum import Enum
 
-# Try relative imports first, fall back to absolute imports for standalone execution
-try:
-    from .extensions import db
-except ImportError:
-    from extensions import db
-
 # Import AdminUser and other models - try multiple import strategies
 AdminUser = None
 User = None
@@ -24,16 +18,17 @@ except ImportError:
             # Try importing from current directory
             from models import AdminUser, User, Volunteer
         except ImportError:
-            # If all imports fail, define minimal placeholder classes
-            # This prevents mapper initialization errors
-            class AdminUser:
-                pass
+            # If all imports fail, raise clear error
+            raise ImportError(
+                "Неуспех при импортиране на AdminUser/User/Volunteer. Проверете пътищата за импортиране."
+            )
 
-            class User:
-                pass
 
-            class Volunteer:
-                pass
+# Try relative imports first, fall back to absolute imports for standalone execution
+try:
+    from .extensions import db
+except ImportError:
+    from extensions import db
 
 
 # Ensure AdminUser is properly imported for relationships

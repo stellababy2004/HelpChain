@@ -10,6 +10,7 @@ print("NOTIFICATIONS MODULE LOADED")
 from datetime import datetime
 
 from flask import Blueprint, current_app, jsonify, render_template, request
+from flask_login import current_user
 
 from extensions import db
 
@@ -96,7 +97,7 @@ def subscribe_push():
         existing_subscription = (
             db_instance.session.query(PushSubscription)
             .filter_by(
-                volunteer_id=1,  # Temporary test user ID
+                volunteer_id=current_user.id,
                 endpoint=data.get("endpoint"),
                 is_active=True,
             )
@@ -115,7 +116,7 @@ def subscribe_push():
 
         # Create new subscription
         subscription = PushSubscription(
-            volunteer_id=1,  # Temporary test user ID
+            volunteer_id=current_user.id,
             endpoint=data.get("endpoint"),
             p256dh_key=data.get("p256dh"),
             auth_key=data.get("auth"),
@@ -200,7 +201,7 @@ def unsubscribe_push():
             subscription = (
                 db_instance.session.query(PushSubscription)
                 .filter_by(
-                    volunteer_id=1,  # Temporary test user ID
+                    volunteer_id=current_user.id,
                     endpoint=endpoint,
                     is_active=True,
                 )
@@ -223,7 +224,7 @@ def unsubscribe_push():
             subscriptions = (
                 db_instance.session.query(PushSubscription)
                 .filter_by(
-                    volunteer_id=1,  # Temporary test user ID
+                    volunteer_id=current_user.id,
                     is_active=True,
                 )
                 .all()
