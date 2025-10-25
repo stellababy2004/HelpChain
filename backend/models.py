@@ -1,6 +1,7 @@
 import enum
 from datetime import UTC, datetime
 
+import logging
 import pyotp
 from flask_login import UserMixin
 from sqlalchemy import func
@@ -1067,8 +1068,8 @@ class UserActivity(db.Model):
 
                 parsed = urlparse(referrer)
                 referrer_domain = parsed.netloc
-            except Exception:
-                pass
+            except Exception as e:
+                logging.warning("Could not parse referrer domain from value '%s': %s", referrer, e)
 
         activity = cls(
             user_id=user_id,
