@@ -64,13 +64,43 @@ try:
 except ImportError:
     from backend.smart_matching import smart_matching_service
 
+
+# Import app and mail lazily to avoid circular imports
+def _get_app():
+    """Get Flask app instance lazily"""
+    try:
+        from appy import app
+
+        return app
+    except ImportError:
+        # Fallback for different import paths
+        import sys
+
+        if "appy" in sys.modules:
+            return sys.modules["appy"].app
+        raise
+
+
+def _get_mail():
+    """Get Flask-Mail instance lazily"""
+    try:
+        from appy import mail
+
+        return mail
+    except ImportError:
+        # Fallback for different import paths
+        import sys
+
+        if "appy" in sys.modules:
+            return sys.modules["appy"].mail
+        raise
+
+
+# Try to import Message
 try:
-    from app_init import app, mail
     from flask_mail import Message
 except ImportError:
-    from flask_mail import Message
-
-    from backend.app_init import app, mail
+    Message = None
 
 try:
     import os
@@ -472,6 +502,8 @@ def send_email_task(
     }
 
     try:
+        app = _get_app()
+        mail = _get_mail()
         with app.app_context():
             msg = Message(
                 subject=subject,
@@ -497,6 +529,7 @@ def send_email_task(
 
     except Exception as e:
         # Ако ще има още опити — Celery ще ги планира автоматично (autoretry_for)
+        app = _get_app()
         if self.request.retries + 1 >= MAX_RETRIES:
             # Последен fail → DLQ
             _save_to_dlq(payload, reason=str(e))

@@ -30,11 +30,11 @@ class AnalyticsCache:
             cache_config = PERFORMANCE_CONFIG.copy()
             app.config.update(cache_config)
             self.cache = Cache(app)
-            print("✅ Cache initialized successfully")
+            print("Cache initialized successfully")
 
         except Exception as e:
             # If anything fails, fallback to simple cache
-            print(f"⚠️  Cache initialization failed ({e}), using simple fallback")
+            print(f"Cache initialization failed ({e}), using simple fallback")
             app.config["CACHE_TYPE"] = "simple"
             app.config["CACHE_DEFAULT_TIMEOUT"] = 300
             self.cache = Cache(app)
@@ -47,22 +47,44 @@ class AnalyticsCache:
             def decorated_function(*args, **kwargs):
                 # Check if cache is initialized
                 if self.cache is None:
-                    print("⚠️  Cache not initialized, calling function directly")
+                    print("Cache not initialized, calling function directly")
                     return f(*args, **kwargs)
 
                 # Създай unique cache key от параметрите
-                cache_key = (
-                    f"analytics_{f.__name__}_{hash(str(sorted(kwargs.items())))}"
-                )
+                try:
+                    cache_key = (
+                        f"analytics_{f.__name__}_{hash(str(sorted(kwargs.items())))}"
+                    )
+                except Exception as key_error:
+                    # Fallback cache key if hashing fails
+                    cache_key = f"analytics_{f.__name__}_fallback_{id(f)}"
 
                 # Провери дали има cached версия
-                result = self.cache.get(cache_key)
-                if result is None:
-                    result = f(*args, **kwargs)
+                try:
+                    result = self.cache.get(cache_key)
+                    if result is not None:
+                        print(f"Cache HIT for {cache_key}")
+                        return result
+                    else:
+                        print(f"Cache MISS for {cache_key}")
+                except Exception as cache_error:
+                    print(f"Cache read error: {cache_error}")
+                    # Continue without cache
+
+                # Call the function
+                print(f"Calling function {f.__name__} (cache miss)")
+                result = f(*args, **kwargs)
+
+                # Try to cache the result
+                try:
                     cache_timeout = (
                         timeout if timeout is not None else self.cache.default_timeout
                     )
                     self.cache.set(cache_key, result, timeout=cache_timeout)
+                    print(f"Cached result for {cache_key} (timeout: {cache_timeout}s)")
+                except Exception as cache_error:
+                    print(f"Cache write error: {cache_error}")
+                    # Continue without caching
 
                 return result
 
@@ -155,8 +177,240 @@ class DatabaseOptimizer:
                 )
             )
 
+            # Indexes for core application tables
+
+            # User table indexes
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_users_role
+                ON users(role)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_users_created_at
+                ON users(created_at DESC)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_users_is_active
+                ON users(is_active)
+            """
+                )
+            )
+
+            # AdminUser table indexes
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_admin_users_username
+                ON admin_users(username)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_admin_users_email
+                ON admin_users(email)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_admin_users_role
+                ON admin_users(role)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_admin_users_created_at
+                ON admin_users(created_at DESC)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_admin_users_is_active
+                ON admin_users(is_active)
+            """
+                )
+            )
+
+            # Volunteer table indexes
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_volunteers_location
+                ON volunteers(location)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_volunteers_is_active
+                ON volunteers(is_active)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_volunteers_created_at
+                ON volunteers(created_at DESC)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_volunteers_points
+                ON volunteers(points DESC)
+            """
+                )
+            )
+
+            # HelpRequest table indexes
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_help_requests_status
+                ON help_requests(status)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_help_requests_created_at
+                ON help_requests(created_at DESC)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_help_requests_priority
+                ON help_requests(priority)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_help_requests_user_id
+                ON help_requests(user_id)
+            """
+                )
+            )
+
+            # Task table indexes
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_tasks_status
+                ON tasks(status)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_tasks_assigned_to
+                ON tasks(assigned_to)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_tasks_created_at
+                ON tasks(created_at DESC)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_tasks_category
+                ON tasks(category)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_tasks_priority
+                ON tasks(priority)
+            """
+                )
+            )
+
+            # ChatMessage table indexes
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_chat_messages_room_id
+                ON chat_messages(room_id)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at
+                ON chat_messages(created_at DESC)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_type
+                ON chat_messages(sender_type)
+            """
+                )
+            )
+
+            # Notification table indexes (already defined in model, but ensure they exist)
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_notifications_recipient
+                ON notifications(recipient_id, recipient_type)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_notifications_type
+                ON notifications(notification_type)
+            """
+                )
+            )
+            db.session.execute(
+                text(
+                    """
+                CREATE INDEX IF NOT EXISTS idx_notifications_created
+                ON notifications(created_at DESC)
+            """
+                )
+            )
+
             db.session.commit()
-            print("✅ Analytics database indexes created successfully")
+            print("✅ All database indexes created successfully")
             return True
 
         except Exception as e:
@@ -323,6 +577,13 @@ class APIOptimizer:
 # Usage Example
 def setup_performance_optimizations(app, db):
     """Setup всички performance optimizations"""
+
+    # Apply database connection pooling settings
+    if "SQLALCHEMY_ENGINE_OPTIONS" not in app.config:
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = PERFORMANCE_CONFIG[
+            "SQLALCHEMY_ENGINE_OPTIONS"
+        ]
+        print("✅ Database connection pooling configured")
 
     # Initialize caching with Redis fallback
     try:

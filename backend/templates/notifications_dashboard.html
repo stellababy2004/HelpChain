@@ -4,7 +4,7 @@ endblock %} {% block content %}
   <!-- Header -->
   <div class="row mb-4">
     <div class="col">
-      <h1 class="display-5 mb-0">🔔 Notifications Management</h1>
+      <h1 class="display-5 mb-0">🔔 Управление на известия</h1>
       <p class="lead text-muted">
         Управление на нотификации, шаблони и статистики
       </p>
@@ -75,7 +75,7 @@ endblock %} {% block content %}
             data-bs-target="#queue"
             type="button"
           >
-            📬 Queue Management
+            📬 Управление на опашката
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -114,7 +114,7 @@ endblock %} {% block content %}
       </ul>
 
       <div class="tab-content" id="notificationTabsContent">
-        <!-- Queue Management Tab -->
+        <!-- Управление на опашката -->
         <div class="tab-pane fade show active" id="queue" role="tabpanel">
           <div class="card mt-3">
             <div class="card-header">
@@ -137,7 +137,7 @@ endblock %} {% block content %}
                   </thead>
                   <tbody id="queueTable">
                     <tr>
-                      <td colspan="8" class="text-center">Loading...</td>
+                      <td colspan="8" class="text-center">Зареждане...</td>
                     </tr>
                   </tbody>
                 </table>
@@ -162,7 +162,7 @@ endblock %} {% block content %}
             </div>
             <div class="card-body">
               <div class="row" id="templatesGrid">
-                <div class="col-12 text-center">Loading templates...</div>
+                <div class="col-12 text-center">Зареждане на шаблони...</div>
               </div>
             </div>
           </div>
@@ -431,7 +431,7 @@ endblock %} {% block content %}
 
       if (!items || items.length === 0) {
         tbody.innerHTML =
-          '<tr><td colspan="8" class="text-center text-muted">No items in queue</td></tr>';
+          '<tr><td colspan="8" class="text-center text-muted">Няма елементи в опашката</td></tr>';
         return;
       }
 
@@ -466,7 +466,7 @@ endblock %} {% block content %}
 
       if (!templates || templates.length === 0) {
         grid.innerHTML =
-          '<div class="col-12 text-center text-muted">No templates found</div>';
+          '<div class="col-12 text-center text-muted">Няма намерени шаблони</div>';
         return;
       }
 
@@ -629,10 +629,10 @@ endblock %} {% block content %}
           document.getElementById("personalizationData").value = "{}";
           await this.loadQueueStatus();
         } else {
-          alert("Error: " + result.error);
+          alert("Грешка: " + result.error);
         }
       } catch (error) {
-        alert("Error sending notification: " + error.message);
+        alert("Грешка при изпращане на известие: " + error.message);
       }
     }
 
@@ -647,14 +647,14 @@ endblock %} {% block content %}
         const result = await response.json();
 
         if (result.success) {
-          alert("Queue processing started!");
+          alert("Обработката на опашката започна!");
           // Refresh after a few seconds
           setTimeout(() => this.loadQueueStatus(), 3000);
         } else {
-          alert("Error: " + result.error);
+          alert("Грешка: " + result.error);
         }
       } catch (error) {
-        alert("Error processing queue: " + error.message);
+        alert("Грешка при обработка на опашката: " + error.message);
       }
     }
 
@@ -731,10 +731,10 @@ endblock %} {% block content %}
 
         const result = await response.json();
         alert(
-          result.success ? "Test notification sent!" : "Error: " + result.error,
+          result.success ? "Тестовото известие е изпратено!" : "Грешка: " + result.error,
         );
       } catch (error) {
-        alert("Error: " + error.message);
+        alert("Грешка: " + error.message);
       }
     }
   }
