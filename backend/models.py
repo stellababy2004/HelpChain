@@ -1,4 +1,5 @@
 import enum
+import logging
 from datetime import UTC, datetime
 
 import pyotp
