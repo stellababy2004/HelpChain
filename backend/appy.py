@@ -4234,7 +4234,7 @@ def api_health_check():
         return response
     except Exception as e:
         print(f"DEBUG: Exception in api_health_check: {e}")  # Debug print
-        return str(e), 500
+        return "Internal server error", 500
 
 
 print("DEBUG: /api route registered")  # Debug print after route definition
@@ -5372,7 +5372,7 @@ def api_get_chat_rooms():
         return jsonify({"rooms": rooms_data})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/api/chat/room/<int:room_id>/messages", methods=["GET"])
@@ -5432,7 +5432,7 @@ def api_get_room_messages(room_id):
         return jsonify({"messages": messages_data})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/api/chat/create_room", methods=["POST"])
@@ -5481,7 +5481,7 @@ def api_create_chat_room():
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/api/chat/leave_room", methods=["POST"])

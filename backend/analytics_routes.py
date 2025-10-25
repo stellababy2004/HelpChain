@@ -579,7 +579,7 @@ def admin_analytics():
 
     except Exception as e:
         print(f"Error loading analytics dashboard: {type(e).__name__}: {e}")
-        return f"Error loading analytics: {e}", 500
+        return "Error loading analytics dashboard", 500
 
 
 @analytics_bp.route("/test_analytics", methods=["GET"])
@@ -820,7 +820,7 @@ async def get_anomalies():
 
     except Exception as e:
         print(f"Error getting anomalies: {type(e).__name__}")
-        return jsonify({"error": "Failed to detect anomalies", "details": str(e)})
+        return jsonify({"error": "Failed to detect anomalies"})
 
 
 @analytics_bp.route("/api/advanced/predictions")
@@ -851,7 +851,7 @@ async def get_predictions():
 
     except Exception as e:
         print(f"Error getting predictions: {type(e).__name__}")
-        return jsonify({"error": "Failed to generate predictions", "details": str(e)})
+        return jsonify({"error": "Failed to generate predictions"})
 
 
 @analytics_bp.route("/api/advanced/insights")
@@ -873,7 +873,7 @@ async def get_insights():
 
     except Exception as e:
         print(f"Error getting insights: {type(e).__name__}")
-        return jsonify({"error": "Failed to generate insights", "details": str(e)})
+        return jsonify({"error": "Failed to generate insights"})
 
 
 @analytics_bp.route("/api/advanced/user-behavior")
@@ -943,7 +943,7 @@ async def get_user_behavior():
 
     except Exception as e:
         print(f"Error getting user behavior: {type(e).__name__}")
-        return jsonify({"error": "Failed to analyze user behavior", "details": str(e)})
+        return jsonify({"error": "Failed to analyze user behavior"})
 
 
 # Custom Alerts System
@@ -1159,7 +1159,7 @@ async def check_alerts():
 
     except Exception as e:
         print(f"Error checking alerts: {type(e).__name__}")
-        return jsonify({"error": "Failed to check alerts", "details": str(e)})
+        return jsonify({"error": "Failed to check alerts"})
 
 
 @analytics_bp.route("/api/alerts/history", methods=["GET"])

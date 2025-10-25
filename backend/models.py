@@ -1061,14 +1061,35 @@ class UserActivity(db.Model):
 
         # Извличане на domain от referrer
         referrer_domain = None
-        if referrer:
+        if referrer and referrer.strip():
             try:
                 from urllib.parse import urlparse
 
-                parsed = urlparse(referrer)
-                referrer_domain = parsed.netloc
-            except Exception:
-                pass
+                parsed = urlparse(referrer.strip())
+                referrer_domain = parsed.netloc or None
+            except (TypeError, ValueError, AttributeError) as e:
+                # Логване на грешка при неуспешно парсване на referrer
+                try:
+                    from flask import current_app
+
+                    current_app.logger.warning(
+                        "Could not parse referrer domain from value %r: %s",
+                        referrer,
+                        e,
+                        exc_info=True,
+                    )
+                except (ImportError, RuntimeError):
+                    # Fallback to module logger if Flask context not available
+                    import logging
+
+                    logger = logging.getLogger(__name__)
+                    logger.warning(
+                        "Could not parse referrer domain from value %r: %s",
+                        referrer,
+                        e,
+                        exc_info=True,
+                    )
+                referrer_domain = None
 
         activity = cls(
             user_id=user_id,
