@@ -526,7 +526,8 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 # Initialize cache
-cache.init_app(app)
+if cache is not None:
+    cache.init_app(app)
 
 
 # Initialize database in production mode
