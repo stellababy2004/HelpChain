@@ -326,6 +326,33 @@ mail = Mail(app)
 # Import database and other extensions
 from extensions import db, babel, mail as mail_ext, cache
 
+# Import models
+from models import (
+    AdminUser,
+    ChatMessage,
+    ChatParticipant,
+    ChatRoom,
+    HelpRequest,
+    Notification,
+    Role,
+    RoleEnum,
+    RolePermission,
+    User,
+    UserRole,
+    Volunteer,
+)
+from models_with_analytics import Task, TaskAssignment, TaskPerformance
+
+# Import permissions decorator
+from permissions import require_admin_login
+
+# Import additional functions
+from analytics_service import get_db
+from permissions import initialize_default_roles_and_permissions
+
+# Import blueprints
+from routes.notifications import notification_bp
+
 # Set SECRET_KEY for sessions and security
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", secrets.token_hex(32))
 
