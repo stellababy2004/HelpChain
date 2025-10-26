@@ -48,7 +48,14 @@ except ImportError:
     FLASK_COMPRESS_AVAILABLE = False
     Compress = None
 
-from admin_roles import admin_roles_bp
+# Import admin_roles blueprint with fallback
+try:
+    from admin_roles import admin_roles_bp
+except ImportError:
+    # Fallback for production environments
+    import admin_roles
+
+    admin_roles_bp = admin_roles.admin_roles_bp
 
 # Import smart matching engine
 from ai_service import ai_service
