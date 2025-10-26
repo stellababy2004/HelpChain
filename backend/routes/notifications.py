@@ -9,15 +9,9 @@ from datetime import datetime
 from flask import Blueprint, current_app, jsonify, render_template, request
 from flask_login import current_user, login_required
 
-try:
-    from backend.extensions import db
-except ImportError:
-    from extensions import db
+from backend.extensions import db
 
-try:
-    from backend.models import User
-except ImportError:
-    from models import User
+from backend.models import User
 
 notification_bp = Blueprint("notification", __name__, url_prefix="/api/notification")
 

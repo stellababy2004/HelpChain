@@ -4,15 +4,10 @@ Admin routes for role and user management
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 
-# Try relative imports first, fall back to absolute imports for standalone execution
-try:
-    from .models import User, Role, Permission, UserRole, RolePermission
-    from .extensions import db
-    from .permissions import require_permission
-except ImportError:
-    from models import User, Role, Permission, UserRole, RolePermission
-    from extensions import db
-    from permissions import require_permission
+# Use absolute imports for production
+from backend.models import User, Role, Permission, UserRole, RolePermission
+from backend.extensions import db
+from backend.permissions import require_permission
 
 from werkzeug.security import generate_password_hash
 
