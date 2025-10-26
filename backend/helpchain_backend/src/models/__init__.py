@@ -6,7 +6,14 @@ import pyotp
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from ..extensions import db
+# Try multiple import strategies for extensions
+try:
+    from ...extensions import db
+except ImportError:
+    try:
+        from ..extensions import db
+    except ImportError:
+        from extensions import db
 
 
 class AdminRole(Enum):
