@@ -793,21 +793,16 @@ async def predictive_model_info():
 
 @analytics_bp.route("/api/advanced/anomalies")
 @require_admin_login
-async def get_anomalies():
+def get_anomalies():
     """Get detected anomalies in analytics data"""
     try:
-        import asyncio
-
         from advanced_analytics import AdvancedAnalytics
 
         analytics = AdvancedAnalytics()
         timeframe_days = int(request.args.get("days", 7))
 
-        # Run anomaly detection in thread executor
-        loop = asyncio.get_event_loop()
-        anomalies = await loop.run_in_executor(
-            None, analytics.detect_anomalies, timeframe_days
-        )
+        # Run anomaly detection synchronously
+        anomalies = analytics.detect_anomalies(timeframe_days)
 
         return jsonify(
             {

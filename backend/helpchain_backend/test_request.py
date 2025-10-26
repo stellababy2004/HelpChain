@@ -24,6 +24,10 @@ def test_request_submission():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # Set up test database
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    app.config["TESTING"] = True
+
     # Initialize extensions
     db.init_app(app)
     mail = Mail(app)

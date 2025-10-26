@@ -17,10 +17,37 @@ class AdminRole(Enum):
     MODERATOR = "moderator"  # Ограничен достъп само за модерация
 
 
+class User(UserMixin, db.Model):
+    """Модел за потребители"""
+
+    __tablename__ = "users"
+    __table_args__ = {"extend_existing": True}
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(200), nullable=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    is_volunteer = db.Column(db.Boolean, default=False)
+    is_organization = db.Column(db.Boolean, default=False)
+    citizen_id = db.Column(db.String(20), nullable=True)
+    skills = db.Column(db.Text, nullable=True)
+    location = db.Column(db.String(100), nullable=True)
+    available_time = db.Column(db.String(100), nullable=True)
+    profile_picture = db.Column(db.String(200), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+
 class AdminUser(UserMixin, db.Model):
     """Модел за административни потребители с роли и 2FA"""
 
     __tablename__ = "admin_users"
+    __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -107,16 +134,9 @@ class AdminUser(UserMixin, db.Model):
 
 
 class Request(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    phone = db.Column(db.String(20))
-    email = db.Column(db.String(100))
-    location = db.Column(db.String(100))
-    category = db.Column(db.String(50))
-    description = db.Column(db.Text)
-    urgency = db.Column(db.String(20))
-    status = db.Column(db.String(20), default="pending")
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    __tablename__ = "requests"
+    __table_args__ = {"extend_existing": True}
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
@@ -130,13 +150,19 @@ class Request(db.Model):
 
 
 class RequestLog(db.Model):
+    __tablename__ = "request_logs"
+    __table_args__ = {"extend_existing": True}
+
     id = db.Column(db.Integer, primary_key=True)
-    request_id = db.Column(db.Integer, db.ForeignKey("request.id"))
+    request_id = db.Column(db.Integer, db.ForeignKey("requests.id"))
     status = db.Column(db.String(20))
     changed_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 
 class Volunteer(db.Model):
+    __tablename__ = "volunteers"
+    __table_args__ = {"extend_existing": True}
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), nullable=False)
@@ -147,6 +173,9 @@ class Volunteer(db.Model):
 
 
 class Feedback(db.Model):
+    __tablename__ = "feedbacks"
+    __table_args__ = {"extend_existing": True}
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), nullable=False)
@@ -160,5 +189,6 @@ __all__ = [
     "Volunteer",
     "Feedback",
     "AdminUser",
+    "User",
     # "AdminLog",  # Now defined in models_with_analytics.py
 ]
