@@ -27,10 +27,17 @@ from flask_mail import Message
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.utils import secure_filename
 
-# from backend.models_with_analytics import VideoChatSession
-from backend.models import ChatMessage, ChatRoom, User
-
-from ...analytics_service import analytics_service
+# Import models from main backend directory - commented out due to import conflicts
+# import sys
+# import os
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+# from models import ChatMessage, ChatRoom, User
+# Temporary: comment out chat-related imports until models are properly set up
+# ChatMessage, ChatRoom, User will be imported when needed in routes
+# import sys
+# import os
+# sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+# from analytics_service import analytics_service
 from .config import Config
 from .controllers.helpchain_controller import HelpChainController
 from .extensions import babel, db, mail, migrate
@@ -48,11 +55,13 @@ print(f"MAILTRAP_PASSWORD from env: {os.environ.get('MAILTRAP_PASSWORD')}")
 controller = HelpChainController()  # Add this
 
 login_manager = LoginManager()
-socketio = SocketIO()
+socketio = SocketIO(async_mode="threading")
 
 
 @login_manager.user_loader
 def load_user(user_id):
+    from .models import User
+
     return User.query.get(int(user_id))
 
 
@@ -93,7 +102,7 @@ def create_app(config_object=None):
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     # Import models before creating tables
-    from backend.models import (
+    from .models import (
         User,
     )
 
@@ -103,102 +112,102 @@ def create_app(config_object=None):
     with app.app_context():
         db.create_all()
 
-        # Check if users table is empty
-        # if User.query.count() == 0:
-        #     # Create a sample user
-        #     sample_user = User(
-        #         username="testuser",
-        #         email="test@example.com",
-        #         is_volunteer=True,
-        #         is_organization=False,
-        #     )
-        #     sample_user.set_password(os.getenv("SAMPLE_USER_PASSWORD", "password123"))
-        #     db.session.add(sample_user)
-        #     # Create admin user
-        #     admin_user = User(
+        # # Check if users table is empty
+        # # if User.query.count() == 0:
+        # #     # Create a sample user
+        # #     sample_user = User(
+        # #         username="testuser",
+        # #         email="test@example.com",
+        # #         is_volunteer=True,
+        # #         is_organization=False,
+        # #     )
+        # #     sample_user.set_password(os.getenv("SAMPLE_USER_PASSWORD", "password123"))
+        # #     db.session.add(sample_user)
+        # #     # Create admin user
+        # #     admin_user = User(
+        # #         username="admin",
+        # #         email="admin@example.com",
+        # #         is_volunteer=True,
+        # #         is_organization=False,
+        # #         is_admin=True,
+        # #     )
+        # #     admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "admin123"))
+        # #     db.session.add(admin_user)
+        # #     db.session.commit()
+        # #     print("Sample user created: email=test@example.com, password=password123")
+        # #     print("Admin user created: email=admin@example.com, password=admin123")
+
+        # # Check if AdminUser table is empty and create default admin
+        # if AdminUser.query.count() == 0:
+        #     admin_user = AdminUser(
         #         username="admin",
-        #         email="admin@example.com",
-        #         is_volunteer=True,
-        #         is_organization=False,
-        #         is_admin=True,
+        #         email="admin@helpchain.live",
         #     )
         #     admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "admin123"))
         #     db.session.add(admin_user)
         #     db.session.commit()
-        #     print("Sample user created: email=test@example.com, password=password123")
-        #     print("Admin user created: email=admin@example.com, password=admin123")
+        #     print("AdminUser created: username=admin, password=admin123")
 
-        # Check if AdminUser table is empty and create default admin
-        if AdminUser.query.count() == 0:
-            admin_user = AdminUser(
-                username="admin",
-                email="admin@helpchain.live",
-            )
-            admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "admin123"))
-            db.session.add(admin_user)
-            db.session.commit()
-            print("AdminUser created: username=admin, password=admin123")
+        # # Add sample data if empty
+        # if Request.query.count() == 0:
+        #     sample_requests = [
+        #         Request(
+        #             name="Иван Иванов",
+        #             phone="+359 88 123 4567",
+        #             location="sofia",
+        #             category="food",
+        #             description="Нуждая се от храна",
+        #             status="pending",
+        #         ),
+        #         Request(
+        #             name="Мария Петрова",
+        #             phone="+359 87 654 3210",
+        #             location="plovdiv",
+        #             category="medical",
+        #             description="Медицинска помощ",
+        #             status="in_progress",
+        #         ),
+        #         Request(
+        #             name="Георги Димитров",
+        #             phone="+359 89 987 6543",
+        #             location="varna",
+        #             category="transport",
+        #             description="Транспорт до болница",
+        #             status="completed",
+        #         ),
+        #     ]
+        #     db.session.add_all(sample_requests)
+        #     db.session.commit()
 
-        # Add sample data if empty
-        if Request.query.count() == 0:
-            sample_requests = [
-                Request(
-                    name="Иван Иванов",
-                    phone="+359 88 123 4567",
-                    location="sofia",
-                    category="food",
-                    description="Нуждая се от храна",
-                    status="pending",
-                ),
-                Request(
-                    name="Мария Петрова",
-                    phone="+359 87 654 3210",
-                    location="plovdiv",
-                    category="medical",
-                    description="Медицинска помощ",
-                    status="in_progress",
-                ),
-                Request(
-                    name="Георги Димитров",
-                    phone="+359 89 987 6543",
-                    location="varna",
-                    category="transport",
-                    description="Транспорт до болница",
-                    status="completed",
-                ),
-            ]
-            db.session.add_all(sample_requests)
-            db.session.commit()
-
-            sample_logs = [
-                RequestLog(
-                    request_id=1,
-                    status="pending",
-                    changed_at=datetime.datetime(2025, 10, 1, 10, 0, 0),
-                ),
-                RequestLog(
-                    request_id=1,
-                    status="in_progress",
-                    changed_at=datetime.datetime(2025, 10, 1, 11, 0, 0),
-                ),
-                RequestLog(
-                    request_id=2,
-                    status="pending",
-                    changed_at=datetime.datetime(2025, 10, 1, 9, 0, 0),
-                ),
-                RequestLog(
-                    request_id=3,
-                    status="pending",
-                    changed_at=datetime.datetime(2025, 10, 1, 8, 0, 0),
-                ),
-                RequestLog(
-                    request_id=3,
-                    status="completed",
-                    changed_at=datetime.datetime(2025, 10, 1, 12, 0, 0),
-                ),
-            ]
-            db.session.add_all(sample_logs)
-            db.session.commit()
+        #     sample_logs = [
+        #         RequestLog(
+        #             request_id=1,
+        #             status="pending",
+        #             changed_at=datetime.datetime(2025, 10, 1, 10, 0, 0),
+        #         ),
+        #         RequestLog(
+        #             request_id=1,
+        #             status="in_progress",
+        #             changed_at=datetime.datetime(2025, 10, 1, 11, 0, 0),
+        #         ),
+        #         RequestLog(
+        #             request_id=2,
+        #             status="pending",
+        #             changed_at=datetime.datetime(2025, 10, 1, 9, 0, 0),
+        #         ),
+        #         RequestLog(
+        #             request_id=3,
+        #             status="pending",
+        #             changed_at=datetime.datetime(2025, 10, 1, 8, 0, 0),
+        #         ),
+        #         RequestLog(
+        #             request_id=3,
+        #             status="completed",
+        #             changed_at=datetime.datetime(2025, 10, 1, 12, 0, 0),
+        #         ),
+        #     ]
+        #     db.session.add_all(sample_logs)
+        #     db.session.commit()
 
     # expose safe get_locale to Jinja templates so base.html can call get_locale()
     def _safe_get_locale():
@@ -565,204 +574,204 @@ ID: {volunteer.id}
             return redirect(url_for("profile"))
         return render_template("profile.html")
 
-    # Video Chat Routes
-    @app.route("/video_chat")
-    @login_required
-    def video_chat():
-        """Показва списък с активни видео чат сесии"""
-        from .models import User, VideoChatSession
+    # Video Chat Routes - Commented out due to missing VideoChatSession model
+    # @app.route("/video_chat")
+    # @login_required
+    # def video_chat():
+    #     """Показва списък с активни видео чат сесии"""
+    #     from .models import User, VideoChatSession
+    #
+    #     # Показваме активни сесии където текущият потребител участва
+    #     active_sessions = VideoChatSession.query.filter(
+    #         (
+    #             (VideoChatSession.initiator_id == current_user.id)
+    #             | (VideoChatSession.participant_id == current_user.id)
+    #         )
+    #         & (VideoChatSession.status.in_(["pending", "active"]))
+    #     ).all()
+    #
+    #     # Показваме онлайн потребители (опростена версия - всички регистрирани)
+    #     online_users = User.query.filter(User.id != current_user.id).all()
+    #
+    #     return render_template(
+    #         "video_chat.html",
+    #         active_sessions=active_sessions,
+    #         online_users=online_users,
+    #     )
 
-        # Показваме активни сесии където текущият потребител участва
-        active_sessions = VideoChatSession.query.filter(
-            (
-                (VideoChatSession.initiator_id == current_user.id)
-                | (VideoChatSession.participant_id == current_user.id)
-            )
-            & (VideoChatSession.status.in_(["pending", "active"]))
-        ).all()
+    # @app.route("/video_chat/start/<int:user_id>", methods=["POST"])
+    # @login_required
+    # def start_video_chat(user_id):
+    #     """Започва нова видео чат сесия с даден потребител"""
+    #     from .models import User, VideoChatSession
+    #
+    #     participant = User.query.get_or_404(user_id)
+    #
+    #     # Проверяваме дали вече има активна сесия между тези потребители
+    #     existing_session = VideoChatSession.query.filter(
+    #         (
+    #             (VideoChatSession.initiator_id == current_user.id)
+    #             & (VideoChatSession.participant_id == user_id)
+    #         )
+    #         | (
+    #             (VideoChatSession.initiator_id == user_id)
+    #             & (VideoChatSession.participant_id == current_user.id)
+    #         ),
+    #         VideoChatSession.status.in_(["pending", "active"]),
+    #     ).first()
+    #
+    #     if existing_session:
+    #         flash("Вече има активна видео чат сесия с този потребител.", "warning")
+    #         return redirect(url_for("video_chat"))
+    #
+    #     # Създаваме нова сесия
+    #     session_id = str(uuid.uuid4())
+    #     video_session = VideoChatSession(
+    #         session_id=session_id,
+    #         initiator_id=current_user.id,
+    #         participant_id=user_id,
+    #         status="pending",
+    #     )
+    #
+    #     db.session.add(video_session)
+    #     db.session.commit()
+    #
+    #     # Track video chat event for analytics
+    #     try:
+    #         from analytics_service import analytics_service
+    #
+    #         analytics_service.track_event(
+    #             event_type="video_chat_started",
+    #             event_category="communication",
+    #             event_action="start_session",
+    #             context={
+    #                 "participant_id": user_id,
+    #                 "session_id": session_id,
+    #                 "user_agent": request.headers.get("User-Agent"),
+    #                 "ip_address": request.remote_addr,
+    #             },
+    #         )
+    #     except Exception as analytics_error:
+    #         print(f"Analytics tracking failed: {analytics_error}")
+    #
+    #     flash(f"Видео чат сесия е започната с {participant.username}.", "success")
+    #     return redirect(url_for("join_video_chat", session_id=session_id))
 
-        # Показваме онлайн потребители (опростена версия - всички регистрирани)
-        online_users = User.query.filter(User.id != current_user.id).all()
+    # @app.route("/video_chat/join/<session_id>")
+    # @login_required
+    # def join_video_chat(session_id):
+    #     """Присъединява се към видео чат сесия"""
+    #     from .models import VideoChatSession
+    #
+    #     session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
+    #
+    #     # Проверяваме дали текущият потребител има право да се присъедини
+    #     if (
+    #         session.initiator_id != current_user.id
+    #         and session.participant_id != current_user.id
+    #     ):
+    #         flash("Нямате право да се присъедините към тази сесия.", "error")
+    #         return redirect(url_for("video_chat"))
+    #
+    #     # Ако сесията е pending и текущият потребител е participant, я активираме
+    #     if session.status == "pending" and session.participant_id == current_user.id:
+    #         session.status = "active"
+    #         session.started_at = datetime.datetime.utcnow()
+    #         db.session.commit()
+    #
+    #     return render_template(
+    #         "video_chat_room.html", session=session, current_user=current_user
+    #     )
 
-        return render_template(
-            "video_chat.html",
-            active_sessions=active_sessions,
-            online_users=online_users,
-        )
+    # @app.route("/video_chat/end/<session_id>", methods=["POST"])
+    # @login_required
+    # def end_video_chat(session_id):
+    #     """Завършва видео чат сесия"""
+    #     from .models import VideoChatSession
+    #
+    #     session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
+    #
+    #     # Проверяваме дали текущият потребител участва в сесията
+    #     if (
+    #         session.initiator_id != current_user.id
+    #         and session.participant_id != current_user.id
+    #     ):
+    #         flash("Нямате право да завършите тази сесия.", "error")
+    #         return redirect(url_for("video_chat"))
+    #
+    #     # Изчисляваме продължителността
+    #     if session.started_at and not session.ended_at:
+    #         session.ended_at = datetime.datetime.utcnow()
+    #         duration = (session.ended_at - session.started_at).total_seconds()
+    #         session.duration = int(duration)
+    #
+    #     session.status = "completed"
+    #     db.session.commit()
+    #
+    #     # Track video chat end event for analytics
+    #     try:
+    #         from analytics_service import analytics_service
+    #
+    #         analytics_service.track_event(
+    #             event_type="video_chat_ended",
+    #             event_category="communication",
+    #             event_action="end_session",
+    #             context={
+    #                 "session_id": session_id,
+    #                 "duration": session.duration,
+    #                 "user_agent": request.headers.get("User-Agent"),
+    #                 "ip_address": request.remote_addr,
+    #             },
+    #         )
+    #     except Exception as analytics_error:
+    #         print(f"Analytics tracking failed: {analytics_error}")
+    #
+    #     flash("Видео чат сесията е завършена.", "success")
+    #     return redirect(url_for("video_chat"))
 
-    @app.route("/video_chat/start/<int:user_id>", methods=["POST"])
-    @login_required
-    def start_video_chat(user_id):
-        """Започва нова видео чат сесия с даден потребител"""
-        from .models import User, VideoChatSession
-
-        participant = User.query.get_or_404(user_id)
-
-        # Проверяваме дали вече има активна сесия между тези потребители
-        existing_session = VideoChatSession.query.filter(
-            (
-                (VideoChatSession.initiator_id == current_user.id)
-                & (VideoChatSession.participant_id == user_id)
-            )
-            | (
-                (VideoChatSession.initiator_id == user_id)
-                & (VideoChatSession.participant_id == current_user.id)
-            ),
-            VideoChatSession.status.in_(["pending", "active"]),
-        ).first()
-
-        if existing_session:
-            flash("Вече има активна видео чат сесия с този потребител.", "warning")
-            return redirect(url_for("video_chat"))
-
-        # Създаваме нова сесия
-        session_id = str(uuid.uuid4())
-        video_session = VideoChatSession(
-            session_id=session_id,
-            initiator_id=current_user.id,
-            participant_id=user_id,
-            status="pending",
-        )
-
-        db.session.add(video_session)
-        db.session.commit()
-
-        # Track video chat event for analytics
-        try:
-            from ...analytics_service import analytics_service
-
-            analytics_service.track_event(
-                event_type="video_chat_started",
-                event_category="communication",
-                event_action="start_session",
-                context={
-                    "participant_id": user_id,
-                    "session_id": session_id,
-                    "user_agent": request.headers.get("User-Agent"),
-                    "ip_address": request.remote_addr,
-                },
-            )
-        except Exception as analytics_error:
-            print(f"Analytics tracking failed: {analytics_error}")
-
-        flash(f"Видео чат сесия е започната с {participant.username}.", "success")
-        return redirect(url_for("join_video_chat", session_id=session_id))
-
-    @app.route("/video_chat/join/<session_id>")
-    @login_required
-    def join_video_chat(session_id):
-        """Присъединява се към видео чат сесия"""
-        from .models import VideoChatSession
-
-        session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
-
-        # Проверяваме дали текущият потребител има право да се присъедини
-        if (
-            session.initiator_id != current_user.id
-            and session.participant_id != current_user.id
-        ):
-            flash("Нямате право да се присъедините към тази сесия.", "error")
-            return redirect(url_for("video_chat"))
-
-        # Ако сесията е pending и текущият потребител е participant, я активираме
-        if session.status == "pending" and session.participant_id == current_user.id:
-            session.status = "active"
-            session.started_at = datetime.datetime.utcnow()
-            db.session.commit()
-
-        return render_template(
-            "video_chat_room.html", session=session, current_user=current_user
-        )
-
-    @app.route("/video_chat/end/<session_id>", methods=["POST"])
-    @login_required
-    def end_video_chat(session_id):
-        """Завършва видео чат сесия"""
-        from .models import VideoChatSession
-
-        session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
-
-        # Проверяваме дали текущият потребител участва в сесията
-        if (
-            session.initiator_id != current_user.id
-            and session.participant_id != current_user.id
-        ):
-            flash("Нямате право да завършите тази сесия.", "error")
-            return redirect(url_for("video_chat"))
-
-        # Изчисляваме продължителността
-        if session.started_at and not session.ended_at:
-            session.ended_at = datetime.datetime.utcnow()
-            duration = (session.ended_at - session.started_at).total_seconds()
-            session.duration = int(duration)
-
-        session.status = "completed"
-        db.session.commit()
-
-        # Track video chat end event for analytics
-        try:
-            from ...analytics_service import analytics_service
-
-            analytics_service.track_event(
-                event_type="video_chat_ended",
-                event_category="communication",
-                event_action="end_session",
-                context={
-                    "session_id": session_id,
-                    "duration": session.duration,
-                    "user_agent": request.headers.get("User-Agent"),
-                    "ip_address": request.remote_addr,
-                },
-            )
-        except Exception as analytics_error:
-            print(f"Analytics tracking failed: {analytics_error}")
-
-        flash("Видео чат сесията е завършена.", "success")
-        return redirect(url_for("video_chat"))
-
-    # WebRTC Signaling API
-    @app.route("/api/video_chat/signal/<session_id>", methods=["POST"])
-    @login_required
-    def video_chat_signal(session_id):
-        """WebRTC signaling endpoint за обмен на сигнали между участниците"""
-        from .models import VideoChatSession
-
-        session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
-
-        # Проверяваме дали текущият потребител участва в сесията
-        if (
-            session.initiator_id != current_user.id
-            and session.participant_id != current_user.id
-        ):
-            return {"error": "Unauthorized"}, 403
-
-        data = request.get_json()
-        if not data:
-            return {"error": "No data provided"}, 400
-
-        # Тук можем да съхраняваме сигнали в база данни или да ги предаваме чрез WebSocket
-        # За опростеност връщаме success - в реално приложение ще има WebSocket сървър
-        signal_type = data.get("type")
-
-        # Track signaling event for analytics
-        try:
-            from ...analytics_service import analytics_service
-
-            analytics_service.track_event(
-                event_type="video_chat_signal",
-                event_category="communication",
-                event_action=signal_type,
-                context={
-                    "session_id": session_id,
-                    "signal_type": signal_type,
-                    "user_agent": request.headers.get("User-Agent"),
-                    "ip_address": request.remote_addr,
-                },
-            )
-        except Exception as analytics_error:
-            print(f"Analytics tracking failed: {analytics_error}")
-
-        return {"status": "signal_received", "type": signal_type}
+    # WebRTC Signaling API - Commented out due to missing VideoChatSession model
+    # @app.route("/api/video_chat/signal/<session_id>", methods=["POST"])
+    # @login_required
+    # def video_chat_signal(session_id):
+    #     """WebRTC signaling endpoint за обмен на сигнали между участниците"""
+    #     from .models import VideoChatSession
+    #
+    #     session = VideoChatSession.query.filter_by(session_id=session_id).first_or_404()
+    #
+    #     # Проверяваме дали текущият потребител участва в сесията
+    #     if (
+    #         session.initiator_id != current_user.id
+    #         and session.participant_id != current_user.id
+    #     ):
+    #         return {"error": "Unauthorized"}, 403
+    #
+    #     data = request.get_json()
+    #     if not data:
+    #         return {"error": "No data provided"}, 400
+    #
+    #     # Тук можем да съхраняваме сигнали в база данни или да ги предаваме чрез WebSocket
+    #     # За опростеност връщаме success - в реално приложение ще има WebSocket сървър
+    #     signal_type = data.get("type")
+    #
+    #     # Track signaling event for analytics
+    #     try:
+    #         from analytics_service import analytics_service
+    #
+    #         analytics_service.track_event(
+    #             event_type="video_chat_signal",
+    #             event_category="communication",
+    #             event_action=signal_type,
+    #             context={
+    #                 "session_id": session_id,
+    #                 "signal_type": signal_type,
+    #                 "user_agent": request.headers.get("User-Agent"),
+    #                 "ip_address": request.remote_addr,
+    #             },
+    #         )
+    #     except Exception as analytics_error:
+    #         print(f"Analytics tracking failed: {analytics_error}")
+    #
+    #     return {"status": "signal_received", "type": signal_type}
 
     socketio.init_app(app, cors_allowed_origins="*")
 
@@ -776,9 +785,9 @@ ID: {volunteer.id}
             {"msg": f'{data["username"]} се присъедини към {room}'},
             room=room,
         )
-        analytics_service.track_event(
-            "chat_join", "engagement", "join_room", {"room": room}
-        )
+        # analytics_service.track_event(
+        #     "chat_join", "engagement", "join_room", {"room": room}
+        # )
 
     @socketio.on("leave")
     def on_leave(data):
@@ -786,46 +795,46 @@ ID: {volunteer.id}
         leave_room(room)
         emit("status", {"msg": f'{data["username"]} напусна {room}'}, room=room)
 
-    @socketio.on("message")
-    def handle_message(data):
-        room = data["room"]
-        username = data["username"]
-        message = data["message"]
-        file_path = data.get("file_path")
+    # @socketio.on("message")
+    # def handle_message(data):
+    #     room = data["room"]
+    #     username = data["username"]
+    #     message = data["message"]
+    #     file_path = data.get("file_path")
 
-        # Запази в DB
-        user = User.query.filter_by(username=username).first()
-        chat_room = ChatRoom.query.filter_by(name=room).first()
-        if not chat_room:
-            chat_room = ChatRoom(name=room)
-            db.session.add(chat_room)
-            db.session.commit()
+    #     # Запази в DB
+    #     user = User.query.filter_by(username=username).first()
+    #     chat_room = ChatRoom.query.filter_by(name=room).first()
+    #     if not chat_room:
+    #         chat_room = ChatRoom(name=room)
+    #         db.session.add(chat_room)
+    #         db.session.commit()
 
-        msg = ChatMessage(
-            room_id=chat_room.id,
-            user_id=user.id,
-            content=message,
-            file_path=file_path,
-        )
-        db.session.add(msg)
-        db.session.commit()
+    #     msg = ChatMessage(
+    #         room_id=chat_room.id,
+    #         user_id=user.id,
+    #         content=message,
+    #         file_path=file_path,
+    #     )
+    #     db.session.add(msg)
+    #     db.session.commit()
 
-        emit(
-            "message",
-            {
-                "username": username,
-                "message": message,
-                "file_path": file_path,
-                "timestamp": str(msg.timestamp),
-            },
-            room=room,
-        )
-        analytics_service.track_event(
-            "chat_message",
-            "engagement",
-            "send_message",
-            {"room": room, "has_file": bool(file_path)},
-        )
+    #     emit(
+    #         "message",
+    #         {
+    #             "username": username,
+    #             "message": message,
+    #             "file_path": file_path,
+    #             "timestamp": str(msg.timestamp),
+    #         },
+    #         room=room,
+    #     )
+    #     analytics_service.track_event(
+    #         "chat_message",
+    #         "engagement",
+    #         "send_message",
+    #         {"room": room, "has_file": bool(file_path)},
+    #     )
 
     @socketio.on("typing")
     def handle_typing(data):
@@ -850,7 +859,7 @@ app = create_app(Config)
 
 def init_sample_data():
     with app.app_context():
-        from .models import Request, RequestLog, User
+        from models import Request, RequestLog, User
 
         db.create_all()  # Create tables if they exist
 
