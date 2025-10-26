@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import os
+import random
 import secrets
 import sys
 from datetime import datetime
@@ -113,8 +114,8 @@ if backend_dir not in sys.path:
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Sentry for error monitoring
-# import sentry_sdk
-# from sentry_sdk.integrations.flask import FlaskIntegration import random
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 # Add the backend directory to Python path for imports
 backend_dir = os.path.dirname(__file__)
