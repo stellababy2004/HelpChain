@@ -48,6 +48,11 @@ except ImportError:
     FLASK_COMPRESS_AVAILABLE = False
     Compress = None
 
+# Add the backend directory to Python path so we can import models and extensions
+backend_dir = os.path.dirname(__file__)
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 # Import admin_roles blueprint with fallback
 try:
     from admin_roles import admin_roles_bp
@@ -56,65 +61,6 @@ except ImportError:
     import admin_roles
 
     admin_roles_bp = admin_roles.admin_roles_bp
-
-# Import smart matching engine
-from ai_service import ai_service
-
-# Import extensions and models using absolute imports since backend dir is in sys.path
-from extensions import babel, cache, db, mail
-from models import (
-    AdminUser,
-    ChatMessage,
-    ChatParticipant,
-    ChatRoom,
-    HelpRequest,
-    Role,
-    RoleEnum,
-    User,
-    UserRole,
-    Volunteer,
-)
-
-
-# Get db instance from current app context for proper test compatibility
-def get_db():
-    """Get database instance from current app context"""
-    try:
-        # Try to get from current_app extensions first
-        return current_app.extensions["sqlalchemy"]
-    except KeyError:
-        # Fallback to global db
-        from extensions import db
-
-        return db
-
-
-# Import Task models globally for use in routes
-from models_with_analytics import (
-    AnalyticsEvent,
-    ChatbotConversation,
-    PerformanceMetrics,
-    Task,
-    TaskAssignment,
-    TaskPerformance,
-    UserBehavior,
-)
-
-# Import permissions module
-from permissions import (
-    initialize_default_roles_and_permissions,
-    require_admin_login,
-    require_permission,
-)
-from routes.notifications import notification_bp
-
-# Import Celery tasks
-from tasks import send_email_task
-
-# Add the backend directory to Python path so we can import models and extensions
-backend_dir = os.path.dirname(__file__)
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
 
 # Зареди environment variables от .env файла (от корена на проекта)
 # load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
