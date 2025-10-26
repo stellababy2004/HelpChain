@@ -323,6 +323,9 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 # Initialize Flask-Mail
 mail = Mail(app)
 
+# Import database and other extensions
+from extensions import db, babel, mail as mail_ext, cache
+
 # Set SECRET_KEY for sessions and security
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", secrets.token_hex(32))
 
