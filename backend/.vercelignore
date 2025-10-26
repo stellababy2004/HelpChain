@@ -63,12 +63,12 @@ start_*.py
 # Exclude duplicate directories
 helpchain_backend
 
-# Exclude uploads and assets
-uploads
-logo
-static
-templates
-email_templates
+# IMPORTANT: Keep these Flask-required directories
+# uploads - keep for file uploads
+# logo - keep for branding
+# static - REQUIRED for Flask static files (CSS, JS, images)
+# templates - REQUIRED for Flask templates (HTML)
+# email_templates - keep for email functionality
 
 # Exclude temporary files
 tmp_*.py
