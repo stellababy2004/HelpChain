@@ -142,6 +142,8 @@ def test_help_request(db_session, test_volunteer):
     from models import HelpRequest
 
     request = HelpRequest(
+        title="Тестова заявка за помощ",
+        description="Нуждая се от помощ с тестване",
         name="Тестов Потребител",
         email="user@test.com",
         message="Нуждая се от помощ с тестване",
@@ -172,3 +174,15 @@ def authenticated_volunteer_client(client, test_volunteer, app):
             sess["volunteer_id"] = test_volunteer.id
             sess["volunteer_name"] = test_volunteer.name
     return client
+
+
+@pytest.fixture
+def init_test_data(db_session, test_admin_user, test_volunteer, test_help_request):
+    """Initialize test data for integration tests."""
+    # Test data is already set up by the individual fixtures
+    # This fixture ensures all test data is available
+    return {
+        "admin": test_admin_user,
+        "volunteer": test_volunteer,
+        "help_request": test_help_request,
+    }

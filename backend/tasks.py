@@ -42,7 +42,10 @@ except ImportError:
 try:
     from sentiment_analysis import sentiment_analysis_service
 except ImportError:
-    from backend.sentiment_analysis import sentiment_analysis_service
+    try:
+        from backend.sentiment_analysis import sentiment_analysis_service
+    except ImportError:
+        sentiment_analysis_service = None
 
 try:
     from mail_service import send_notification_email
@@ -1035,6 +1038,12 @@ def process_feedback_sentiment(self, feedback_id):
     """Process sentiment analysis for user feedback"""
     try:
         logger.info(f"Processing sentiment analysis for feedback {feedback_id}")
+
+        if sentiment_analysis_service is None:
+            logger.warning(
+                f"Sentiment analysis service not available, skipping feedback {feedback_id}"
+            )
+            return {"error": "sentiment_analysis_service_not_available"}
 
         result = sentiment_analysis_service.analyze_feedback(feedback_id)
 

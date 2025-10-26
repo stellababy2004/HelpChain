@@ -5827,6 +5827,48 @@ def readiness_check():
         )
 
 
+@app.route("/achievements")
+def achievements():
+    """Volunteer achievements page"""
+    if not session.get("volunteer_logged_in"):
+        flash("Моля, влезте като доброволец.", "warning")
+        return redirect(url_for("volunteer_login"))
+
+    try:
+        volunteer_id = session.get("volunteer_id")
+        volunteer = db.session.query(Volunteer).get(volunteer_id)
+
+        if not volunteer:
+            flash("Доброволецът не е намерен.", "error")
+            return redirect(url_for("volunteer_login"))
+
+        # Get achievements data
+        achievements_data = {
+            "points": volunteer.points,
+            "level": volunteer.level,
+            "experience": volunteer.experience,
+            "total_tasks_completed": volunteer.total_tasks_completed,
+            "streak_days": volunteer.streak_days,
+            "rating": volunteer.rating,
+            "rating_count": volunteer.rating_count,
+        }
+
+        # Get recent achievements (placeholder for now)
+        recent_achievements = []
+
+        return render_template(
+            "achievements.html",
+            volunteer=volunteer,
+            achievements=achievements_data,
+            recent_achievements=recent_achievements,
+        )
+
+    except Exception as e:
+        app.logger.error(f"Error loading achievements page: {e}")
+        flash("Възникна грешка при зареждането на постиженията.", "error")
+        return redirect(url_for("volunteer_dashboard"))
+
+
 if __name__ == "__main__":
     print("HelpChain server starting...")
     print("http://127.0.0.1:5000")
