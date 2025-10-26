@@ -1,90 +1,96 @@
-# Exclude virtual environments
-venv/
-.venv/
-venv_old/
+# CRITICAL: Exclude entire virtual environment directories
+venv
+.venv
+venv_old
 
-# Exclude Python cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Exclude the duplicate project directory
+HelpChain.bg
 
-# Exclude Git
-.git/
+# Exclude all Python compiled files and cache
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/__pycache__/
+**/*.egg-info
+**/*.dist-info
+
+# Exclude Git and version control
+.git
 .gitignore
 .gitattributes.txt
 
-# Exclude development and testing files
-.pytest_cache/
-.ruff_cache/
-htmlcov/
+# Exclude development tools and cache
+.pytest_cache
+.ruff_cache
+htmlcov
 .coverage
-tests/
-test_*.py
-conftest.py
-pytest.ini
 
-# Exclude logs and temporary files
+# Exclude logs (including large log files)
 *.log
 helpchain*.log
 sent_emails.txt
 cookies.txt
-server.log
 
 # Exclude database files
-instance/
+instance
 *.db
-notifications.db
+*.sqlite
+*.sqlite3
 
 # Exclude backups and old files
-backups/
-alembic.backup*/
-old_db/
-migrations/
+backups
+alembic.backup*
+old_db
+migrations
 
-# Exclude configuration and environment files
+# Exclude environment files
 .env*
-.env.example
-.env.prod
-.env.prod.template
-.env.gmail_test
 
-# Exclude documentation and development files
+# Exclude documentation
 *.md
-.github/
+.github
 .pre-commit-config.yaml
 ruff.toml
 babel.cfg
 
-# Exclude scripts and batch files
+# Exclude scripts
 *.bat
-scripts/
+scripts
 run.helpchain.bat
 start_*.bat
 start_*.py
 
-# Exclude duplicate project directories
-HelpChain.bg/
-helpchain_backend/
+# Exclude duplicate directories
+helpchain_backend
 
-# Exclude uploads and temporary directories
-uploads/
+# Exclude uploads and assets
+uploads
+logo
+static
+templates
+email_templates
+
+# Exclude temporary files
 tmp_*.py
 temp_app.py
 
-# Exclude email templates and static assets that might be large
-email_templates/
-logo/
-static/
-templates/
-
-# Exclude performance and analytics files that might contain large data
+# Exclude analytics files that might be large
 performance_*.py
-performance_*.md
 analytics_*.py
 advanced_analytics.py
 ai_service.py
 
-# Exclude specific large files
-backend.zip
-.git.zip
+# Exclude compressed files
+*.zip
+*.tar.gz
+*.7z
+
+# Exclude IDE files
+.vscode
+.idea
+*.swp
+*~
+
+# Exclude OS files
+.DS_Store
+Thumbs.db
