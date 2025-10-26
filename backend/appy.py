@@ -26,7 +26,6 @@ from flask import (
     url_for,
 )
 from flask_babel import Babel, refresh
-from flask_compress import Compress
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_mail import Mail
@@ -39,6 +38,15 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import sessionmaker
 from werkzeug.exceptions import BadRequest
 from werkzeug.utils import secure_filename
+
+# Optional imports - handle gracefully if not available
+try:
+    from flask_compress import Compress
+
+    FLASK_COMPRESS_AVAILABLE = True
+except ImportError:
+    FLASK_COMPRESS_AVAILABLE = False
+    Compress = None
 
 from admin_roles import admin_roles_bp
 
@@ -723,11 +731,15 @@ app.config["COMPRESS_LEVEL"] = 6  # Compression level (1-9)
 app.config["COMPRESS_MIN_SIZE"] = 500  # Minimum size to compress (bytes)
 
 # Initialize Flask-Compress for API response compression (optional)
-try:
-    compress = Compress()
-    compress.init_app(app)
-    app.logger.info("Flask-Compress initialized successfully")
-except ImportError:
+if FLASK_COMPRESS_AVAILABLE:
+    try:
+        compress = Compress()
+        compress.init_app(app)
+        app.logger.info("Flask-Compress initialized successfully")
+    except Exception as e:
+        app.logger.warning(f"Flask-Compress initialization failed: {e}")
+        compress = None
+else:
     app.logger.warning("Flask-Compress not available, compression disabled")
     compress = None
 
