@@ -1,7 +1,10 @@
+import importlib
 import os
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+from sqlalchemy.pool import StaticPool
 
 # CRITICAL: Import models_with_analytics FIRST to ensure Task model is registered
 # before Volunteer model tries to reference it
@@ -52,9 +55,11 @@ def app():
 
         app.config["TESTING"] = True
         app.config["WTF_CSRF_ENABLED"] = False  # Disable CSRF for testing
-        app.config["SQLALCHEMY_DATABASE_URI"] = (
-            "sqlite:///:memory:"  # In-memory database for tests
-        )
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "poolclass": StaticPool,
+            "connect_args": {"check_same_thread": False},
+        }
         return app
     except ImportError:
         # Fallback if appy import fails
@@ -75,13 +80,35 @@ def client(app):
 @pytest.fixture
 def db_session(app):
     """Create a database session for testing."""
-    from appy import db
+    from appy import _ensure_db_engine_registration, db
+
+    # Import models to ensure SQLAlchemy is aware of all tables before create_all()
+    try:
+        importlib.import_module("backend.models")
+    except ModuleNotFoundError:  # pragma: no cover - fallback when package path differs
+        importlib.import_module("models")
+
+    try:
+        GamificationService = getattr(
+            importlib.import_module("backend.gamification_service"),
+            "GamificationService",
+        )
+    except ModuleNotFoundError:  # pragma: no cover - fallback
+        GamificationService = getattr(
+            importlib.import_module("gamification_service"),
+            "GamificationService",
+        )
 
     with app.app_context():
+        _ensure_db_engine_registration()
         db.create_all()
-        yield db.session
-        db.session.remove()
-        db.drop_all()
+        # Ensure default achievements exist for gamification tests
+        GamificationService.initialize_achievements()
+        try:
+            yield db.session
+        finally:
+            db.session.remove()
+            db.drop_all()
 
 
 @pytest.fixture
@@ -128,7 +155,10 @@ def mock_ai_service():
 @pytest.fixture
 def test_admin_user(db_session):
     """Create a test admin user."""
-    from backend.models import AdminUser
+    try:
+        from backend.models import AdminUser
+    except ImportError:  # pragma: no cover - fallback when package path differs
+        from models import AdminUser  # type: ignore
 
     admin = AdminUser(username="test_admin", email="admin@test.com")
     admin.set_password("TestPass123")
@@ -140,7 +170,10 @@ def test_admin_user(db_session):
 @pytest.fixture
 def test_volunteer(db_session):
     """Create a test volunteer."""
-    from backend.models import Volunteer
+    try:
+        from backend.models import Volunteer
+    except ImportError:  # pragma: no cover - fallback when package path differs
+        from models import Volunteer  # type: ignore
 
     volunteer = Volunteer(
         name="Тестов Доброволец",
@@ -156,7 +189,10 @@ def test_volunteer(db_session):
 @pytest.fixture
 def test_help_request(db_session, test_volunteer):
     """Create a test help request."""
-    from backend.models import HelpRequest
+    try:
+        from backend.models import HelpRequest
+    except ImportError:  # pragma: no cover - fallback when package path differs
+        from models import HelpRequest  # type: ignore
 
     request = HelpRequest(
         title="Тестова заявка за помощ",
@@ -172,25 +208,27 @@ def test_help_request(db_session, test_volunteer):
 
 
 @pytest.fixture
-def authenticated_admin_client(client, test_admin_user, app):
+def authenticated_admin_client(app, test_admin_user):
     """Create a test client with authenticated admin user."""
+    admin_client = app.test_client()
     with app.test_request_context():
-        with client.session_transaction() as sess:
+        with admin_client.session_transaction() as sess:
             sess["admin_logged_in"] = True
             sess["admin_user_id"] = test_admin_user.id
             sess["admin_username"] = test_admin_user.username
-    return client
+    return admin_client
 
 
 @pytest.fixture
-def authenticated_volunteer_client(client, test_volunteer, app):
+def authenticated_volunteer_client(app, test_volunteer):
     """Create a test client with authenticated volunteer user."""
+    volunteer_client = app.test_client()
     with app.test_request_context():
-        with client.session_transaction() as sess:
+        with volunteer_client.session_transaction() as sess:
             sess["volunteer_logged_in"] = True
             sess["volunteer_id"] = test_volunteer.id
             sess["volunteer_name"] = test_volunteer.name
-    return client
+    return volunteer_client
 
 
 @pytest.fixture
@@ -230,3 +268,42 @@ def login_admin(client, admin_credentials):
     )
     assert response.status_code == 200
     return client
+
+
+@pytest.fixture
+def init_test_data(db_session, test_admin_user, test_volunteer, test_help_request):
+    """Ensure commonly used objects exist for integration-style tests."""
+    try:
+        from backend.models import AdminUser, Volunteer
+    except ImportError:  # pragma: no cover - fallback when package path differs
+        from models import AdminUser, Volunteer  # type: ignore
+
+    # Create an admin account with enabled 2FA so tests can exercise that flow
+    admin_with_2fa = AdminUser(
+        username="test_admin_2fa",
+        email="admin2fa@test.com",
+    )
+    admin_with_2fa.set_password("TestPass123")
+    admin_with_2fa.enable_2fa()
+    db_session.add(admin_with_2fa)
+
+    # Extra volunteer with richer gamification stats for leaderboard-style checks
+    extra_volunteer = Volunteer(
+        name="Активен Доброволец",
+        email="active_volunteer@test.com",
+        phone="+359888654321",
+        location="Пловдив",
+        points=150,
+        total_tasks_completed=3,
+    )
+    db_session.add(extra_volunteer)
+
+    db_session.commit()
+
+    return {
+        "admin": test_admin_user,
+        "admin_with_2fa": admin_with_2fa,
+        "volunteer": test_volunteer,
+        "extra_volunteer": extra_volunteer,
+        "help_request": test_help_request,
+    }

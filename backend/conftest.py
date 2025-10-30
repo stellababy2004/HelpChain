@@ -1,9 +1,12 @@
+import logging
 import os
 import sys
+import warnings
 from pathlib import Path
 from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
+from sqlalchemy.pool import StaticPool
 
 # Добавяме helpchain-backend (родител на папката src) в началото на sys.path,
 # за да може `import src` да работи
@@ -24,6 +27,13 @@ except ImportError:
     pass
 
 
+def pytest_configure(config):
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+    logging.getLogger("helpchain").setLevel(logging.ERROR)
+    logging.getLogger("appy").setLevel(logging.ERROR)
+    warnings.filterwarnings("ignore", category=UserWarning, module="sqlalchemy")
+
+
 @pytest.fixture(scope="session", autouse=True)
 def setup_models():
     """Setup models before any tests run"""
@@ -33,7 +43,18 @@ def setup_models():
         pass
 
 
-@pytest.fixture
+@pytest.fixture(scope="session", autouse=True)
+def _db_setup(app):
+    from appy import db
+
+    with app.app_context():
+        db.create_all()
+        yield
+        db.session.remove()
+        db.drop_all()
+
+
+@pytest.fixture(scope="session")
 def app():
     """Create and configure a test app instance."""
     try:
@@ -44,6 +65,10 @@ def app():
         app.config["SQLALCHEMY_DATABASE_URI"] = (
             "sqlite:///:memory:"  # In-memory database for tests
         )
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "connect_args": {"check_same_thread": False},
+            "poolclass": StaticPool,
+        }
         return app
     except ImportError:
         # Fallback if appy import fails
@@ -52,6 +77,10 @@ def app():
         app = Flask(__name__)
         app.config["TESTING"] = True
         app.config["SECRET_KEY"] = "test_key"
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "connect_args": {"check_same_thread": False},
+            "poolclass": StaticPool,
+        }
         return app
 
 
@@ -67,10 +96,12 @@ def db_session(app):
     from appy import db
 
     with app.app_context():
-        db.create_all()
         yield db.session
+        db.session.rollback()
+        for table in reversed(db.metadata.sorted_tables):
+            db.session.execute(table.delete())
+        db.session.commit()
         db.session.remove()
-        db.drop_all()
 
 
 @pytest.fixture

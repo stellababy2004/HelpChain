@@ -171,6 +171,15 @@ class AdminUser(db.Model, UserMixin):
         self.two_factor_enabled = False
         self.twofa_secret = None
 
+    @property
+    def twofa_enabled(self):
+        """Backward compatible alias for two_factor_enabled."""
+        return bool(self.two_factor_enabled)
+
+    @twofa_enabled.setter
+    def twofa_enabled(self, value):
+        self.two_factor_enabled = bool(value)
+
     def verify_totp(self, token):
         """Проверява TOTP токен"""
         if not self.twofa_secret or not self.two_factor_enabled:
