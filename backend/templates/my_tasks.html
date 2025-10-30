@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Моите задачи - HelpChain{% endblock %}
 
+<!-- my_tasks template identifier -->
+
 {% block head %}
 <style>
 .task-card {
@@ -50,6 +52,8 @@
 {% endblock %}
 
 {% block content %}
+
+<span class="visually-hidden" data-template-id="my_tasks">my_tasks</span>
 
 <!-- Include Dashboard Navigation -->
 {% include 'dashboard_nav.html' %}

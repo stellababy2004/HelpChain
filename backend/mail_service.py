@@ -5,7 +5,7 @@ Handles sending notification emails using Flask-Mail
 
 import logging
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 
 from flask import current_app, render_template
 from flask_mail import Message
@@ -19,6 +19,11 @@ except ImportError:
     analytics_available = False
 
 logger = logging.getLogger(__name__)
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 def send_notification_email(recipient, subject, template, context=None):
@@ -47,7 +52,7 @@ def send_notification_email(recipient, subject, template, context=None):
         context.update(
             {
                 "recipient_email": recipient,
-                "sent_at": datetime.utcnow(),
+                "sent_at": utc_now(),
                 "unsubscribe_url": f"{current_app.config['FRONTEND_URL']}/api/notification/unsubscribe/{{token}}",
                 "preferences_url": f"{current_app.config['FRONTEND_URL']}/notification_preferences",
                 "privacy_url": f"{current_app.config['FRONTEND_URL']}/privacy",
@@ -261,7 +266,7 @@ def send_task_completed_email(task):
                 "completed_at": (
                     task.completed_at.strftime("%d.%m.%Y %H:%M")
                     if task.completed_at
-                    else datetime.utcnow().strftime("%d.%m.%Y %H:%M")
+                    else utc_now().strftime("%d.%m.%Y %H:%M")
                 ),
             },
             "feedback_url": f"{current_app.config['FRONTEND_URL']}/feedback/{task.id}",
@@ -292,7 +297,7 @@ def send_feedback_request_email(task):
                 "completed_at": (
                     task.completed_at.strftime("%d.%m.%Y %H:%M")
                     if task.completed_at
-                    else datetime.utcnow().strftime("%d.%m.%Y %H:%M")
+                    else utc_now().strftime("%d.%m.%Y %H:%M")
                 ),
             },
             "feedback_url": f"{current_app.config['FRONTEND_URL']}/feedback/{task.id}",

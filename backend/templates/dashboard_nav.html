@@ -36,40 +36,40 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'my_tasks' else 'text-gray-700 hover-primary' }}" href="{{ url_for('my_tasks') }}" aria-label="My tasks - view assigned tasks">
-            <i class="fas fa-tasks me-2" aria-hidden="true"></i>Моите задачи
+          <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast text-gray-700 hover-primary" href="{{ url_for('volunteer_dashboard') }}#active-tasks" aria-label="My tasks - view assigned tasks">
+            <i class="fas fa-tasks me-2" aria-hidden="true"></i>{{ _('Моите задачи') }}
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'available_tasks' else 'text-gray-700 hover-primary' }}" href="{{ url_for('available_tasks') }}" aria-label="Available tasks - browse tasks to accept">
-            <i class="fas fa-list me-2" aria-hidden="true"></i>Налични задачи
+          <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast text-gray-700 hover-primary" href="{{ url_for('volunteer_dashboard') }}#available-tasks" aria-label="Available tasks - browse tasks to accept">
+            <i class="fas fa-list me-2" aria-hidden="true"></i>{{ _('Налични задачи') }}
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'volunteer_profile' else 'text-gray-700 hover-primary' }}" href="{{ url_for('volunteer_profile') }}" aria-label="Profile - manage your account">
-            <i class="fas fa-user me-2" aria-hidden="true"></i>Профил
+          <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast text-gray-700 hover-primary" href="{{ url_for('volunteer_dashboard') }}#location-update" aria-label="Profile - manage your account">
+            <i class="fas fa-user me-2" aria-hidden="true"></i>{{ _('Профил') }}
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'achievements' else 'text-gray-700 hover-primary' }}" href="{{ url_for('achievements') }}" aria-label="Achievements - view earned badges">
-            <i class="fas fa-trophy me-2" aria-hidden="true"></i>Постижения
+          <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast text-gray-700 hover-primary" href="{{ url_for('volunteer_dashboard') }}#achievements-section" aria-label="Achievements - view earned badges">
+            <i class="fas fa-trophy me-2" aria-hidden="true"></i>{{ _('Постижения') }}
           </a>
         </li>
         {% elif session.get('admin_logged_in') %}
         <!-- Admin Navigation -->
         <li class="nav-item">
           <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'admin_dashboard' else 'text-gray-700 hover-primary' }}" href="{{ url_for('admin_dashboard') }}">
-            <i class="fas fa-tachometer-alt me-2"></i>Табло
+            <i class="fas fa-tachometer-alt me-2"></i>{{ _('Табло') }}
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'admin_volunteers' else 'text-gray-700 hover-primary' }}" href="#">
-            <i class="fas fa-users me-2"></i>Доброволци
+            <i class="fas fa-users me-2"></i>{{ _('Доброволци') }}
           </a>
         </li>
         <li class="nav-item">
           <a class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'analytics_main.analytics_page' else 'text-gray-700 hover-primary' }}" href="{{ url_for('analytics_main.analytics_page') }}">
-            <i class="fas fa-chart-bar me-2"></i>Аналитика
+            <i class="fas fa-chart-bar me-2"></i>{{ _('Аналитика') }}
           </a>
         </li>
         {% endif %}
@@ -77,13 +77,47 @@
 
       <!-- Right Side - Search and User Menu -->
       <ul class="navbar-nav ms-auto d-flex align-items-center">
+        <!-- Language Switcher -->
+        <li class="nav-item dropdown me-2">
+          <button
+            class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center px-3 py-2 rounded-pill btn-hover-lift focus-ring"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            aria-label="{{ _('Избор на език') }}"
+            title="{{ _('Избор на език') }}"
+          >
+            <i class="fas fa-globe me-2"></i>
+            <span class="d-none d-md-inline">
+              {% if session.get('language') == 'en' %}EN{% elif session.get('language') == 'fr' %}FR{% else %}BG{% endif %}
+            </span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-lg mt-2">
+            <li>
+              <a href="{{ url_for('set_language', language='bg', next=request.url) }}" class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if not session.get('language') or session.get('language') == 'bg' %}active{% endif %}">
+                <span class="flag-icon flag-icon-bg me-3"></span>{{ _('Български') }}
+              </a>
+            </li>
+            <li>
+              <a href="{{ url_for('set_language', language='en', next=request.url) }}" class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if session.get('language') == 'en' %}active{% endif %}">
+                <span class="flag-icon flag-icon-us me-3"></span>English
+              </a>
+            </li>
+            <li>
+              <a href="{{ url_for('set_language', language='fr', next=request.url) }}" class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if session.get('language') == 'fr' %}active{% endif %}">
+                <span class="flag-icon flag-icon-fr me-3"></span>Français
+              </a>
+            </li>
+          </ul>
+        </li>
+
         <!-- Global Search -->
         <li class="nav-item">
           <button
             class="btn btn-outline-secondary me-2 rounded-pill d-flex align-items-center justify-content-center search-btn btn-hover-lift focus-ring"
             onclick="openGlobalSearch()"
-            title="Глобално търсене"
-            aria-label="Open global search"
+            title="{{ _('Глобално търсене') }}"
+            aria-label="{{ _('Глобално търсене') }}"
           >
             <i class="fas fa-search icon-pulse" aria-hidden="true"></i>
           </button>
@@ -114,27 +148,27 @@
             <i class="fas fa-chevron-down ms-2 text-muted chevron-icon"></i>
           </button>
           <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-lg mt-2 user-dropdown">
-            {% if session.get('volunteer_logged_in') %}
+            {%- if session.get('volunteer_logged_in') %}
             <li>
               <a class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50" href="{{ url_for('volunteer_profile') }}">
-                <i class="fas fa-user me-3 text-primary"></i>Профил
+                <i class="fas fa-user me-3 text-primary"></i>{{ _('Профил') }}
               </a>
             </li>
             <li>
               <a class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50" href="{{ url_for('volunteer_profile') }}">
-                <i class="fas fa-cog me-3 text-secondary"></i>Настройки
+                <i class="fas fa-cog me-3 text-secondary"></i>{{ _('Настройки') }}
               </a>
             </li>
             <li><hr class="dropdown-divider my-2"></li>
             <li>
               <a class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast text-danger hover-bg-danger-50" href="{{ url_for('volunteer_logout') }}">
-                <i class="fas fa-sign-out-alt me-3"></i>Изход
+                <i class="fas fa-sign-out-alt me-3"></i>{{ _('Изход') }}
               </a>
             </li>
-            {% elif session.get('admin_logged_in') %}
+            {%- elif session.get('admin_logged_in') %}
             <li>
               <a class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50" href="{{ url_for('admin_dashboard') }}">
-                <i class="fas fa-tachometer-alt me-3 text-primary"></i>Админ панел
+                <i class="fas fa-tachometer-alt me-3 text-primary"></i>{{ _('Админ панел') }}
               </a>
             </li>
             <li><hr class="dropdown-divider my-2"></li>
@@ -143,7 +177,7 @@
                 <i class="fas fa-sign-out-alt me-3"></i>Изход
               </a>
             </li>
-            {% endif %}
+            {%- endif %}
           </ul>
         </li>
       </ul>

@@ -3,6 +3,7 @@ Permission-based access control decorators and utilities for HelpChain
 """
 
 from functools import wraps
+from inspect import iscoroutinefunction
 
 from flask import current_app, flash, redirect, session, url_for
 
@@ -37,7 +38,7 @@ def has_permission(permission_codename):
         return False
 
     try:
-        user = User.query.get(session["user_id"])
+        user = db.session.get(User, session["user_id"])
         if not user or not user.is_active:
             return False
 
@@ -200,12 +201,23 @@ def require_admin_login(redirect_url="admin_login"):
     """
 
     def decorator(f):
-        @wraps(f)
-        def wrapped_function(*args, **kwargs):
-            if not session.get("admin_logged_in"):
-                flash("Моля, влезте като администратор.", "warning")
-                return redirect(url_for(redirect_url))
-            return f(*args, **kwargs)
+        if iscoroutinefunction(f):
+
+            @wraps(f)
+            async def wrapped_function(*args, **kwargs):
+                if not session.get("admin_logged_in"):
+                    flash("Моля, влезте като администратор.", "warning")
+                    return redirect(url_for(redirect_url))
+                return await f(*args, **kwargs)
+
+        else:
+
+            @wraps(f)
+            def wrapped_function(*args, **kwargs):
+                if not session.get("admin_logged_in"):
+                    flash("Моля, влезте като администратор.", "warning")
+                    return redirect(url_for(redirect_url))
+                return f(*args, **kwargs)
 
         return wrapped_function
 

@@ -10,6 +10,8 @@ class HelpChainNotificationService {
     this.swRegistration = null;
     this.settings = this.loadSettings();
     this.eventListeners = {};
+    this.pushAvailable = true; // Tracks whether server-side push configuration is ready
+    this.hasShownPushFallbackAlert = false;
   }
 
   /**
@@ -46,12 +48,14 @@ class HelpChainNotificationService {
     if ("serviceWorker" in navigator) {
       try {
         this.swRegistration = await navigator.serviceWorker.register(
-          "/static/js/sw.js",
+          "/sw.js",
         );
         console.log("Service Worker registered successfully");
 
         // Handle push subscription
-        await this.subscribeToPush();
+        if (this.pushAvailable) {
+          await this.subscribeToPush();
+        }
       } catch (error) {
         console.error("Service Worker registration failed:", error);
       }
@@ -73,10 +77,21 @@ class HelpChainNotificationService {
     try {
       // Get VAPID public key from server
       const vapidResponse = await fetch("/api/notification/vapid-public-key");
+
+      if (!vapidResponse.ok) {
+        console.warn(
+          "Push notifications disabled: VAPID endpoint returned",
+          vapidResponse.status,
+        );
+        this.handlePushUnavailable("missing-vapid-endpoint");
+        return;
+      }
+
       const vapidData = await vapidResponse.json();
 
-      if (!vapidData.success) {
-        console.error("Failed to get VAPID public key");
+      if (!vapidData.success || !vapidData.publicKey) {
+        console.warn("Push notifications disabled: VAPID key not configured");
+        this.handlePushUnavailable("missing-vapid-key");
         return;
       }
 
@@ -116,9 +131,11 @@ class HelpChainNotificationService {
         );
       } else {
         console.error("Push subscription failed:", response.statusText);
+        this.handlePushUnavailable("subscription-response-error");
       }
     } catch (error) {
       console.error("Push subscription failed:", error);
+      this.handlePushUnavailable("subscription-exception");
     }
   }
 
@@ -457,7 +474,12 @@ class HelpChainNotificationService {
     const pushCheckbox = document.getElementById("pushNotifications");
 
     if (pushBadge && pushCheckbox) {
-      if (this.pushPermission === "granted") {
+      if (!this.pushAvailable) {
+        pushBadge.className = "badge badge-denied";
+        pushBadge.textContent = "Недостъпно";
+        pushCheckbox.disabled = true;
+        pushCheckbox.checked = false;
+      } else if (this.pushPermission === "granted") {
         pushBadge.className = "badge badge-permission";
         pushBadge.textContent = "Разрешени";
         pushCheckbox.disabled = false;
@@ -500,6 +522,39 @@ class HelpChainNotificationService {
         checkbox.checked = this.settings[id];
       }
     });
+  }
+
+  /**
+   * Gracefully disable push features when server configuration is missing
+   */
+  handlePushUnavailable(reason) {
+    this.pushAvailable = false;
+    this.settings.pushEnabled = false;
+    try {
+      localStorage.setItem(
+        "helpchain_notifications",
+        JSON.stringify(this.settings),
+      );
+    } catch (storageError) {
+      console.warn("Unable to persist notification settings:", storageError);
+    }
+
+    this.updateUI();
+
+    if (!this.hasShownPushFallbackAlert) {
+      const messageMap = {
+        "missing-vapid-endpoint":
+          "Push нотификациите са временно изключени (липсва сървърна конфигурация).",
+        "missing-vapid-key":
+          "Push нотификациите са временно изключени, защото VAPID ключът не е настроен.",
+        "subscription-response-error":
+          "Push нотификациите са временно изключени поради грешка при абониране.",
+        "subscription-exception":
+          "Push нотификациите са временно изключени. Проверете конфигурацията и опитайте отново.",
+      };
+      this.showAlert(messageMap[reason] || "Push нотификациите не са налични в момента.", "warning");
+      this.hasShownPushFallbackAlert = true;
+    }
   }
 
   /**

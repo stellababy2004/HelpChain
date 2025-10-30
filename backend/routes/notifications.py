@@ -7,7 +7,7 @@ Handles notification preferences, push subscriptions, and sending notifications
 print("NOTIFICATIONS MODULE LOADED")
 
 # from analytics_service import analytics_service  # Temporarily disabled for testing
-from datetime import datetime
+from datetime import UTC, datetime
 
 from flask import Blueprint, current_app, jsonify, render_template, request
 from flask_login import current_user
@@ -38,6 +38,11 @@ except ImportError:
     from models import PushSubscription, User
 
 notification_bp = Blueprint("notification", __name__)
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 @notification_bp.route("/settings", methods=["GET", "POST"])
@@ -109,7 +114,7 @@ def subscribe_push():
             existing_subscription.p256dh_key = data.get("p256dh")
             existing_subscription.auth_key = data.get("auth")
             existing_subscription.user_agent = data.get("userAgent")
-            existing_subscription.last_used = datetime.utcnow()
+            existing_subscription.last_used = utc_now()
             db_instance.session.commit()
 
             return jsonify({"success": True, "message": "Subscription updated"})
@@ -165,11 +170,14 @@ def vapid_public_key():
     try:
         public_key = current_app.config.get("VAPID_PUBLIC_KEY")
         if not public_key:
+            current_app.logger.info(
+                "VAPID public key not configured; push API returning disabled flag"
+            )
             return (
                 jsonify(
                     {"success": False, "message": "VAPID public key not configured"}
                 ),
-                500,
+                200,
             )
 
         return jsonify({"success": True, "publicKey": public_key})
@@ -361,9 +369,10 @@ def send_notification():
         context = data.get("context", {})
 
         sent_count = 0
+        db_instance = get_db()
 
         for recipient_id in recipients:
-            recipient = User.query.get(recipient_id)
+            recipient = db_instance.session.get(User, recipient_id)
             if not recipient:
                 continue
 

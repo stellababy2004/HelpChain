@@ -10,10 +10,17 @@ HelpChain Translation Service
 """
 
 import threading
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from backend.ai_service import ai_service
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
 from backend.models import (
     ContentTranslation,
     SupportedLanguage,
@@ -126,10 +133,10 @@ class TranslationService:
             if existing:
                 # Обновяваме usage_count
                 existing.usage_count += 1
-                existing.last_used = datetime.utcnow()
+                existing.last_used = utc_now()
                 if existing.source_text != source_text:
                     existing.source_text = source_text
-                    existing.updated_at = datetime.utcnow()
+                    existing.updated_at = utc_now()
                 db.session.commit()
                 return existing
 
@@ -143,7 +150,7 @@ class TranslationService:
                 requires_html=requires_html,
                 max_length=max_length,
                 usage_count=1,
-                last_used=datetime.utcnow(),
+                last_used=utc_now(),
             )
 
             db.session.add(translation_key)
@@ -214,7 +221,7 @@ class TranslationService:
         cache_key = f"{key}:{language_code}"
         with self.cache_lock:
             cached = self.cache.get(cache_key)
-            if cached and cached["timestamp"] > datetime.utcnow() - timedelta(
+            if cached and cached["timestamp"] > utc_now() - timedelta(
                 seconds=self.cache_timeout
             ):
                 text = cached["text"]
@@ -222,7 +229,7 @@ class TranslationService:
                 text = self._fetch_translation_from_db(
                     key, language_code, fallback_to_source
                 )
-                self.cache[cache_key] = {"text": text, "timestamp": datetime.utcnow()}
+                self.cache[cache_key] = {"text": text, "timestamp": utc_now()}
 
         # Обработваме променливите
         if variables and text:
@@ -245,7 +252,7 @@ class TranslationService:
             for key in keys:
                 cache_key = f"{key}:{language_code}"
                 cached = self.cache.get(cache_key)
-                if cached and cached["timestamp"] > datetime.utcnow() - timedelta(
+                if cached and cached["timestamp"] > utc_now() - timedelta(
                     seconds=self.cache_timeout
                 ):
                     results[key] = cached["text"]
@@ -263,7 +270,7 @@ class TranslationService:
                     cache_key = f"{key}:{language_code}"
                     self.cache[cache_key] = {
                         "text": text,
-                        "timestamp": datetime.utcnow(),
+                        "timestamp": utc_now(),
                     }
                     results[key] = text
 
@@ -412,7 +419,7 @@ class TranslationService:
             )
 
             if status == "approved":
-                translation.approved_at = datetime.utcnow()
+                translation.approved_at = utc_now()
 
             db.session.add(translation)
             db.session.commit()
@@ -635,7 +642,7 @@ class TranslationService:
                     if field in kwargs:
                         setattr(existing, field, kwargs[field])
 
-                existing.updated_at = datetime.utcnow()
+                existing.updated_at = utc_now()
                 result = existing
             else:
                 # Създаваме нов

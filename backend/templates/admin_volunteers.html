@@ -199,7 +199,7 @@ HelpChain.live{% endblock %} {% block content %}
               <td>
                 <div class="btn-group" role="group">
                   <a
-                    href="{{ url_for('admin_edit_volunteer', volunteer_id=volunteer.id) }}"
+                    href="{{ url_for('edit_volunteer', id=volunteer.id) }}"
                     class="btn btn-sm btn-outline-primary"
                     title="Редактирай"
                   >

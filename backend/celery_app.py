@@ -39,6 +39,7 @@ celery.conf.update(
         "tasks.requeue_dlq_emails": {"queue": "emails"},
         "tasks.auto_match_requests": {"queue": "matching"},
         "tasks.generate_daily_reports": {"queue": "reports"},
+        "tasks.generate_sample_analytics": {"queue": "analytics"},
         "tasks.process_ml_analysis": {"queue": "ml"},
         "tasks.update_realtime_stats": {"queue": "stats"},
     },
@@ -58,6 +59,10 @@ celery.conf.update(
         "generate-daily-reports": {
             "task": "tasks.generate_daily_reports",
             "schedule": crontab(hour=6, minute=0),  # Daily at 6 AM
+        },
+        "generate-sample-analytics": {
+            "task": "tasks.generate_sample_analytics",
+            "schedule": crontab(minute=15, hour="*/2"),  # Every 2 hours
         },
         "cleanup-old-data": {
             "task": "tasks.cleanup_old_data",

@@ -16,7 +16,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -56,10 +55,6 @@
         --border-radius: 15px;
       }
 
-      * {
-        transition: all 0.3s ease;
-      }
-
       body {
         font-family: "Inter", sans-serif;
         background: var(--light-bg);
@@ -85,6 +80,18 @@
         background-clip: text;
       }
 
+      .dashboard-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 3rem;
+      }
+
+      @media (max-width: 576px) {
+        .dashboard-container {
+          padding-bottom: 2.5rem;
+        }
+      }
+
       /* Stats Cards */
       .stats-card {
         background: white;
@@ -93,7 +100,7 @@
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         border: none;
-        transition: all 0.3s ease;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
         position: relative;
         overflow: hidden;
       }
@@ -154,15 +161,24 @@
         background: white;
         border-radius: var(--border-radius);
         box-shadow: var(--shadow);
-        padding: 2rem;
+        padding: 1.75rem;
         margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        height: 100%;
+        min-height: 360px;
+      }
+
+      .chart-container canvas {
+        width: 100% !important;
       }
 
       .chart-header {
         display: flex;
-        justify-content: between;
+        justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
+        gap: 1rem;
       }
 
       .chart-title {
@@ -175,6 +191,10 @@
         display: flex;
         gap: 1rem;
         align-items: center;
+      }
+
+      .chart-controls .form-select {
+        max-width: 160px;
       }
 
       /* KPI Cards */
@@ -191,6 +211,7 @@
         box-shadow: var(--shadow);
         padding: 1.5rem;
         text-align: center;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
       }
 
       .kpi-value {
@@ -368,10 +389,10 @@
 
   <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
-      <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-light navbar-modern fixed-top">
+      <div class="container-xxl px-3 px-lg-4">
         <a class="navbar-brand navbar-brand-modern" href="/">
-          <i class="fas fa-chart-line me-2"></i>HelpChain Analytics
+          <i class="fas fa-chart-line me-2"></i>{{ _('HelpChain Analytics') }}
         </a>
 
         <button
@@ -388,7 +409,7 @@
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
-                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                <i class="fas fa-tachometer-alt me-1"></i>{{ _('Dashboard') }}
               </a>
             </li>
             <li class="nav-item">
@@ -396,12 +417,12 @@
                 class="nav-link active"
                 href="{{ url_for('analytics_main.admin_analytics') }}"
               >
-                <i class="fas fa-chart-line me-1"></i>Analytics
+                <i class="fas fa-chart-line me-1"></i>{{ _('Analytics') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
-                <i class="fas fa-users me-1"></i>Доброволци
+                <i class="fas fa-users me-1"></i>{{ _('Доброволци') }}
               </a>
             </li>
             <li class="nav-item">
@@ -409,7 +430,7 @@
                 class="nav-link"
                 href="{{ url_for('admin_roles.roles_dashboard') }}"
               >
-                <i class="fas fa-user-shield me-1"></i>Роли
+                <i class="fas fa-user-shield me-1"></i>{{ _('Роли') }}
               </a>
             </li>
           </ul>
@@ -417,7 +438,7 @@
           <ul class="navbar-nav">
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('logout') }}">
-                <i class="fas fa-sign-out-alt me-1"></i>Изход
+                <i class="fas fa-sign-out-alt me-1"></i>{{ _('Изход') }}
               </a>
             </li>
           </ul>
@@ -428,17 +449,17 @@
     <!-- Spacer for fixed navbar -->
     <div class="navbar-spacer"></div>
 
-    <div class="container-fluid">
+    <div class="container-xxl dashboard-container">
       <!-- Breadcrumbs -->
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
             <a href="{{ url_for('admin_dashboard') }}">
-              <i class="fas fa-home me-1"></i>Админ панел
+              <i class="fas fa-home me-1"></i>{{ _('Админ панел') }}
             </a>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
-            <i class="fas fa-chart-line me-1"></i>Аналитика
+            <i class="fas fa-chart-line me-1"></i>{{ _('Аналитика') }}
           </li>
         </ol>
       </nav>
@@ -449,23 +470,22 @@
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h1 class="h2 mb-1">
-                <i class="fas fa-chart-line text-primary me-2"></i>Advanced
-                Analytics
+                <i class="fas fa-chart-line text-primary me-2"></i>{{ _('Advanced Analytics') }}
               </h1>
               <p class="text-muted mb-0">
-                Real-time аналитика и прогнози за HelpChain
+                {{ _('Real-time аналитика и прогнози за HelpChain') }}
                 <span class="live-indicator ms-3">
                   <span class="live-dot"></span>
-                  Live
+                  {{ _('Live') }}
                 </span>
               </p>
             </div>
             <div class="d-flex gap-2">
               <button class="export-btn" onclick="exportData('json')">
-                <i class="fas fa-download me-1"></i>Export JSON
+                <i class="fas fa-download me-1"></i>{{ _('Export JSON') }}
               </button>
               <button class="export-btn" onclick="exportData('csv')">
-                <i class="fas fa-file-csv me-1"></i>Export CSV
+                <i class="fas fa-file-csv me-1"></i>{{ _('Export CSV') }}
               </button>
             </div>
           </div>
@@ -474,58 +494,58 @@
 
       <!-- Filters -->
       <div class="filters-section">
-        <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Филтри</h5>
+  <h5 class="mb-3"><i class="fas fa-filter me-2"></i>{{ _('Филтри') }}</h5>
         <div class="filter-row">
           <div class="form-group">
-            <label class="form-label">Период</label>
+            <label class="form-label">{{ _('Период') }}</label>
             <select
               class="form-select"
               id="timeRange"
               onchange="updateTimeRange()"
               title="Select time range for analytics"
             >
-              <option value="7">Последните 7 дни</option>
-              <option value="30" selected>Последните 30 дни</option>
-              <option value="90">Последните 3 месеца</option>
-              <option value="365">Последната година</option>
+              <option value="7">{{ _('Последните 7 дни') }}</option>
+              <option value="30" selected>{{ _('Последните 30 дни') }}</option>
+              <option value="90">{{ _('Последните 3 месеца') }}</option>
+              <option value="365">{{ _('Последната година') }}</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Категория</label>
+            <label class="form-label">{{ _('Категория') }}</label>
             <select
               class="form-select"
               id="categoryFilter"
               onchange="updateFilters()"
               title="Filter by help category"
             >
-              <option value="all" selected>Всички категории</option>
-              <option value="medical">Медицинска помощ</option>
-              <option value="transport">Транспорт</option>
-              <option value="household">Домакинска помощ</option>
-              <option value="education">Образование</option>
+              <option value="all" selected>{{ _('Всички категории') }}</option>
+              <option value="medical">{{ _('Медицинска помощ') }}</option>
+              <option value="transport">{{ _('Транспорт') }}</option>
+              <option value="household">{{ _('Домакинска помощ') }}</option>
+              <option value="education">{{ _('Образование') }}</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Регион</label>
+            <label class="form-label">{{ _('Регион') }}</label>
             <select
               class="form-select"
               id="regionFilter"
               onchange="updateFilters()"
               title="Filter by region"
             >
-              <option value="all" selected>Всички региони</option>
-              <option value="sofia">София</option>
-              <option value="plovdiv">Пловдив</option>
-              <option value="varna">Варна</option>
-              <option value="burgas">Бургас</option>
+              <option value="all" selected>{{ _('Всички региони') }}</option>
+              <option value="sofia">{{ _('София') }}</option>
+              <option value="plovdiv">{{ _('Пловдив') }}</option>
+              <option value="varna">{{ _('Варна') }}</option>
+              <option value="burgas">{{ _('Бургас') }}</option>
             </select>
           </div>
 
           <div class="form-group d-flex align-items-end">
             <button class="btn btn-primary" onclick="refreshData()">
-              <i class="fas fa-sync-alt me-1"></i>Обнови
+              <i class="fas fa-sync-alt me-1"></i>{{ _('Обнови') }}
             </button>
           </div>
         </div>
@@ -537,7 +557,7 @@
           <div class="kpi-value text-primary" id="totalRequests">
             {{ dashboard_stats.totals.requests|default(0) }}
           </div>
-          <div class="kpi-label">Общо заявки</div>
+          <div class="kpi-label">{{ _('Общо заявки') }}</div>
           <div class="kpi-trend text-success">
             <i class="fas fa-arrow-up"></i>
             <span>+12.5%</span>
@@ -548,7 +568,7 @@
           <div class="kpi-value text-success" id="successRate">
             {{ "%.1f"|format(performance_metrics.success_rate|default(0)) }}%
           </div>
-          <div class="kpi-label">Успеваемост</div>
+          <div class="kpi-label">{{ _('Успеваемост') }}</div>
           <div class="kpi-trend text-success">
             <i class="fas fa-arrow-up"></i>
             <span>+2.1%</span>
@@ -557,11 +577,9 @@
 
         <div class="kpi-card">
           <div class="kpi-value text-info" id="avgResponseTime">
-            {{
-            "%.1f"|format(performance_metrics.avg_response_time_days|default(0))
-            }}
+    {{ "%.1f"|format(performance_metrics.avg_response_time|default(0)) }}
           </div>
-          <div class="kpi-label">Средно време за отговор (дни)</div>
+          <div class="kpi-label">{{ _('Средно време за отговор (дни)') }}</div>
           <div class="kpi-trend text-danger">
             <i class="fas fa-arrow-down"></i>
             <span>-0.5</span>
@@ -572,7 +590,7 @@
           <div class="kpi-value text-warning" id="activeVolunteers">
             {{ dashboard_stats.totals.volunteers|default(0) }}
           </div>
-          <div class="kpi-label">Активни доброволци</div>
+          <div class="kpi-label">{{ _('Активни доброволци') }}</div>
           <div class="kpi-trend text-success">
             <i class="fas fa-arrow-up"></i>
             <span>+8.3%</span>
@@ -586,18 +604,18 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-chart-line me-2"></i>Трендове през времето
+                <i class="fas fa-chart-line me-2"></i>{{ _('Трендове през времето') }}
               </h3>
               <div class="chart-controls">
                 <select
                   class="form-select form-select-sm"
                   id="trendPeriod"
                   onchange="updateTrendChart()"
-                  title="Select trend period"
+                  title="{{ _('Select trend period') }}"
                 >
-                  <option value="6">6 месеца</option>
-                  <option value="12" selected>12 месеца</option>
-                  <option value="24">24 месеца</option>
+                  <option value="6">{{ _('6 месеца') }}</option>
+                  <option value="12" selected>{{ _('12 месеца') }}</option>
+                  <option value="24">{{ _('24 месеца') }}</option>
                 </select>
               </div>
             </div>
@@ -609,7 +627,7 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-chart-pie me-2"></i>Разпределение по категории
+                <i class="fas fa-chart-pie me-2"></i>{{ _('Разпределение по категории') }}
               </h3>
             </div>
             <canvas id="categoryChart" class="chart-canvas"></canvas>
@@ -623,8 +641,7 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-map-marked-alt me-2"></i>Географско
-                разпределение
+                <i class="fas fa-map-marked-alt me-2"></i>{{ _('Географско разпределение') }}
               </h3>
             </div>
             <canvas id="geoChart" class="chart-canvas-small"></canvas>
@@ -635,8 +652,7 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-crystal-ball me-2"></i>Прогнози за следващите 3
-                месеца
+                <i class="fas fa-crystal-ball me-2"></i>{{ _('Прогнози за следващите 3 месеца') }}
               </h3>
             </div>
             <canvas id="predictionChart" class="chart-canvas-small"></canvas>
@@ -648,7 +664,7 @@
       <div class="chart-container">
         <div class="chart-header">
           <h3 class="chart-title">
-            <i class="fas fa-tachometer-alt me-2"></i>Performance Metrics
+            <i class="fas fa-tachometer-alt me-2"></i>{{ _('Performance Metrics') }}
           </h3>
         </div>
 
@@ -658,7 +674,7 @@
               <div class="display-4 text-primary mb-2">
                 {{ performance_metrics.utilization_rate|default(0) }}%
               </div>
-              <div class="text-muted">Utilization Rate</div>
+              <div class="text-muted">{{ _('Utilization Rate') }}</div>
             </div>
           </div>
 
@@ -667,7 +683,7 @@
               <div class="display-4 text-success mb-2">
                 {{ performance_metrics.completed_requests|default(0) }}
               </div>
-              <div class="text-muted">Завършени заявки</div>
+              <div class="text-muted">{{ _('Завършени заявки') }}</div>
             </div>
           </div>
 
@@ -676,7 +692,7 @@
               <div class="display-4 text-warning mb-2">
                 {{ performance_metrics.active_requests|default(0) }}
               </div>
-              <div class="text-muted">Активни заявки</div>
+              <div class="text-muted">{{ _('Активни заявки') }}</div>
             </div>
           </div>
 
@@ -685,7 +701,7 @@
               <div class="display-4 text-info mb-2">
                 {{ performance_metrics.active_volunteers|default(0) }}
               </div>
-              <div class="text-muted">Активни доброволци</div>
+              <div class="text-muted">{{ _('Активни доброволци') }}</div>
             </div>
           </div>
         </div>
@@ -697,14 +713,14 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-brain me-2"></i>AI/ML Insights
+                <i class="fas fa-brain me-2"></i>{{ _('AI/ML Insights') }}
               </h3>
             </div>
             <div class="p-3">
               {% if predictions.ml_insights %} {% if
               predictions.ml_insights.anomalies %}
               <h5 class="text-warning mb-3">
-                <i class="fas fa-exclamation-triangle me-2"></i>Открити аномалии
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ _('Открити аномалии') }}
               </h5>
               {% for anomaly in predictions.ml_insights.anomalies %}
               <div
@@ -719,41 +735,39 @@
               </div>
               {% endfor %} {% else %}
               <div class="alert alert-success">
-                <i class="fas fa-check-circle me-2"></i>Няма открити аномалии в
-                данните
+                <i class="fas fa-check-circle me-2"></i>{{ _('Няма открити аномалии в данните') }}
               </div>
               {% endif %} {% if predictions.ml_insights.predictions %}
               <h5 class="text-info mb-3 mt-4">
-                <i class="fas fa-users me-2"></i>User Behavior Predictions
+                <i class="fas fa-users me-2"></i>{{ _('User Behavior Predictions') }}
               </h5>
-              {% if predictions.ml_insights.predictions.optimal_engagement_time
-              %}
+              {% if predictions.ml_insights.predictions.optimal_engagement_time %}
               <div class="mb-3">
-                <strong>Оптимално време за ангажиране:</strong>
+                <strong>{{ _('Оптимално време за ангажиране:') }}</strong>
                 {{
                 predictions.ml_insights.predictions.optimal_engagement_time.hour
-                }}:00 ({{
-                predictions.ml_insights.predictions.optimal_engagement_time.engagement_score
-                }} взаимодействия)
+                }}:00 ({{ _(
+                  '%(count)s взаимодействия',
+                  count=predictions.ml_insights.predictions.optimal_engagement_time.engagement_score,
+                ) }})
               </div>
-              {% endif %} {% if predictions.ml_insights.predictions.churn_risk
-              %}
+              {% endif %} {% if predictions.ml_insights.predictions.churn_risk %}
               <div class="mb-3">
-                <strong>Риск от churn:</strong>
+                <strong>{{ _('Риск от churn:') }}</strong>
                 <span
                   class="badge bg-{{ 'danger' if predictions.ml_insights.predictions.churn_risk.risk == 'high' else 'warning' if predictions.ml_insights.predictions.churn_risk.risk == 'medium' else 'success' }}"
                 >
                   {{ predictions.ml_insights.predictions.churn_risk.risk|title
                   }}
                 </span>
-                ({{
-                predictions.ml_insights.predictions.churn_risk.days_since_activity
-                }} дни без активност)
+                {{ _(
+                  '(%(days)s дни без активност)',
+                  days=predictions.ml_insights.predictions.churn_risk.days_since_activity,
+                ) }}
               </div>
               {% endif %} {% endif %} {% else %}
               <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>ML insights не са налични
-                в момента
+                <i class="fas fa-info-circle me-2"></i>{{ _('ML insights не са налични в момента') }}
               </div>
               {% endif %}
             </div>
@@ -764,7 +778,7 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-lightbulb me-2"></i>Препоръки за оптимизация
+                <i class="fas fa-lightbulb me-2"></i>{{ _('Препоръки за оптимизация') }}
               </h3>
             </div>
             <div class="p-3">
@@ -788,7 +802,7 @@
               {% endfor %} {% else %}
               <div class="text-center text-muted py-4">
                 <i class="fas fa-lightbulb fa-3x mb-3 opacity-50"></i>
-                <p>Няма налични препоръки в момента</p>
+                <p>{{ _('Няма налични препоръки в момента') }}</p>
               </div>
               {% endif %}
             </div>
@@ -813,10 +827,12 @@
 
     <!-- Custom JavaScript -->
     <script>
-      // Global variables
-      let trendsChart, categoryChart, geoChart, predictionChart;
-      let liveUpdateInterval;
-      let websocketClient;
+    // Global variables
+    let trendsChart, categoryChart, geoChart, predictionChart;
+    let liveUpdateInterval;
+    let websocketClient;
+    const LIVE_WEBSOCKET_LABEL = "{{ _('Live (WebSocket)') }}";
+    const LIVE_POLLING_LABEL = "{{ _('Live (Polling)') }}";
 
       // Load data from JSON scripts
       const trendsData = JSON.parse(
@@ -905,10 +921,10 @@
 
           if (connected) {
             dot.style.background = '#28a745';
-            if (text) text.textContent = 'Live (WebSocket)';
+            if (text) text.textContent = LIVE_WEBSOCKET_LABEL;
           } else {
             dot.style.background = '#ffc107';
-            if (text) text.textContent = 'Live (Polling)';
+            if (text) text.textContent = LIVE_POLLING_LABEL;
           }
         }
       }

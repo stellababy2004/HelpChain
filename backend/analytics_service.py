@@ -6,11 +6,11 @@ Provides comprehensive analytics and user behavior tracking
 import json
 import time
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from functools import wraps
 from typing import Any
 
-from sqlalchemy import and_, func, text
+from sqlalchemy import and_, case, func, text
 
 # Remove direct db import - we'll get it from current_app
 try:
@@ -29,6 +29,12 @@ except ImportError:
         UserBehavior,
     )
 import logging
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without using datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
 
 logger = logging.getLogger(__name__)
 
@@ -277,7 +283,7 @@ class AdvancedAnalytics:
 
             # Обновяваме метриките
             behavior.pages_visited = (behavior.pages_visited or 0) + 1
-            behavior.last_activity = datetime.utcnow()
+            behavior.last_activity = utc_now()
             behavior.exit_page = context.get("page_url")
 
             if behavior.pages_visited > 1:
@@ -288,7 +294,7 @@ class AdvancedAnalytics:
             pages_sequence.append(
                 {
                     "url": context.get("page_url"),
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": utc_now().isoformat(),
                     "title": context.get("page_title"),
                 }
             )
@@ -302,7 +308,39 @@ class AdvancedAnalytics:
             logger.error(f"Error updating user behavior: {e}")
             self.db.rollback()
 
-    def get_dashboard_analytics(self, days: int = 30) -> dict[str, Any]:
+    def _normalize_period(
+        self,
+        *,
+        days: int = 30,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> tuple[datetime, datetime, int]:
+        """Normalize period boundaries similar to admin analytics engine."""
+        end = end_date or utc_now()
+        start = start_date or end - timedelta(days=max(days - 1, 0))
+
+        if start > end:
+            start, end = end, start
+
+        if not isinstance(start, datetime):
+            start = datetime.combine(start, datetime.min.time())
+        else:
+            start = start.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        if not isinstance(end, datetime):
+            end = datetime.combine(end, datetime.max.time())
+        else:
+            end = end.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        period_days = max(1, (end.date() - start.date()).days + 1)
+        return start, end, period_days
+
+    def get_dashboard_analytics(
+        self,
+        days: int = 30,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """Получава подробна аналитика за dashboard"""
         try:
             from flask import current_app
@@ -310,23 +348,33 @@ class AdvancedAnalytics:
             if not current_app:
                 return self._get_sample_analytics()
 
-            cache_key = f"dashboard_analytics_{days}"
+            start_dt, end_dt, period_days = self._normalize_period(
+                days=days, start_date=start_date, end_date=end_date
+            )
+
+            cache_key = "_".join(
+                [
+                    "dashboard_analytics",
+                    start_dt.strftime("%Y%m%d"),
+                    end_dt.strftime("%Y%m%d"),
+                ]
+            )
             if self._is_cached(cache_key):
                 return self._cache[cache_key]
 
-            end_date = datetime.utcnow()
-            start_date = end_date - timedelta(days=days)
-
             analytics = {
-                "overview": self._get_overview_metrics(start_date, end_date),
-                "user_engagement": self._get_user_engagement(start_date, end_date),
-                "chatbot_analytics": self._get_chatbot_analytics(start_date, end_date),
-                "performance_metrics": self._get_performance_metrics(
-                    start_date, end_date
-                ),
-                "conversion_funnel": self._get_conversion_funnel(start_date, end_date),
-                "user_journey": self._get_user_journey_analytics(start_date, end_date),
+                "overview": self._get_overview_metrics(start_dt, end_dt),
+                "user_engagement": self._get_user_engagement(start_dt, end_dt),
+                "chatbot_analytics": self._get_chatbot_analytics(start_dt, end_dt),
+                "performance_metrics": self._get_performance_metrics(start_dt, end_dt),
+                "conversion_funnel": self._get_conversion_funnel(start_dt, end_dt),
+                "user_journey": self._get_user_journey_analytics(start_dt, end_dt),
                 "real_time": self._get_real_time_metrics(),
+                "period": {
+                    "start": start_dt.isoformat(),
+                    "end": end_dt.isoformat(),
+                    "days": period_days,
+                },
             }
 
             # Check if we have any meaningful data, if not provide sample data
@@ -415,12 +463,13 @@ class AdvancedAnalytics:
             session_stats = (
                 self.db.query(
                     func.count(UserBehavior.id).label("total_sessions"),
-                    func.sum(func.case((UserBehavior.bounce_rate, 1), else_=0)).label(
-                        "bounced_sessions"
-                    ),
                     func.sum(
-                        func.case(
-                            (UserBehavior.conversion_action.isnot(None), 1), else_=0
+                        case((UserBehavior.bounce_rate.is_(True), 1), else_=0)
+                    ).label("bounced_sessions"),
+                    func.sum(
+                        case(
+                            (UserBehavior.conversion_action.isnot(None), 1),
+                            else_=0,
                         )
                     ).label("conversions"),
                 )
@@ -476,20 +525,22 @@ class AdvancedAnalytics:
             optimized_queries = DatabaseOptimizer.get_optimized_analytics_queries()
 
             # Най-посещавани страници - uses optimized query with index
-            top_pages_query = optimized_queries["top_pages"]
-            # Execute the optimized query with proper parameterization
-            top_pages_result = self.db.execute(
-                f"""
-                SELECT page_url as page,
-                       COUNT(*) as visits
+            _ = optimized_queries.get("top_pages")  # retained for compatibility
+            top_pages_sql = text(
+                """
+                SELECT page_url AS page,
+                       COUNT(*) AS visits
                 FROM analytics_events
                 WHERE event_type = 'page_view'
-                  AND created_at >= '{start_date}'
-                  AND created_at <= '{end_date}'
+                  AND created_at BETWEEN :start_date AND :end_date
                 GROUP BY page_url
                 ORDER BY visits DESC
                 LIMIT 10
                 """
+            )
+            top_pages_result = self.db.execute(
+                top_pages_sql,
+                {"start_date": start_date, "end_date": end_date},
             ).fetchall()
 
             top_pages = [{"url": row[0], "views": row[1]} for row in top_pages_result]
@@ -1174,11 +1225,10 @@ class AdvancedAnalytics:
 
     def _get_real_time_metrics(self) -> dict[str, Any]:
         """Real-time метрики (последният час)"""
-
-        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+        one_hour_ago = utc_now() - timedelta(hours=1)
 
         # Активни потребители (последните 30 минути)
-        thirty_min_ago = datetime.utcnow() - timedelta(minutes=30)
+        thirty_min_ago = utc_now() - timedelta(minutes=30)
         active_users = (
             self.db.query(func.count(func.distinct(UserBehavior.session_id)))
             .filter(UserBehavior.last_activity >= thirty_min_ago)
@@ -1209,7 +1259,7 @@ class AdvancedAnalytics:
             "active_users_now": active_users,
             "page_views_last_hour": recent_page_views,
             "chatbot_messages_last_hour": recent_chatbot,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": utc_now().isoformat(),
         }
 
     def _is_cached(self, key: str, duration: int = None) -> bool:
@@ -1277,9 +1327,7 @@ class AdvancedAnalytics:
                 ],
                 "daily_performance": [
                     {
-                        "date": (datetime.utcnow() - timedelta(days=i)).strftime(
-                            "%Y-%m-%d"
-                        ),
+                        "date": (utc_now() - timedelta(days=i)).strftime("%Y-%m-%d"),
                         "avg_response_time": 1.0 + 0.1 * (i % 3),
                     }
                     for i in range(7)
@@ -1322,7 +1370,7 @@ class AdvancedAnalytics:
                 "active_users_now": 12,
                 "page_views_last_hour": 45,
                 "chatbot_messages_last_hour": 8,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": utc_now().isoformat(),
             },
             "is_sample_data": True,  # Flag to indicate this is sample data
         }

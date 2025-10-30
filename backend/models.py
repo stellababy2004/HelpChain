@@ -8,6 +8,12 @@ from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without using deprecated datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
 # Try multiple import strategies for extensions
 try:
     from .extensions import db
@@ -110,10 +116,8 @@ class User(db.Model):
         db.Enum(RoleEnum), default=RoleEnum.user, nullable=False, index=True
     )
     twofa_secret_encrypted = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     # Relationships
@@ -131,10 +135,8 @@ class AdminUser(db.Model, UserMixin):
     twofa_secret = db.Column(db.String(32))
     backup_codes = db.Column(db.Text, nullable=True)  # JSON масив с backup кодове
     two_factor_enabled = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     last_login = db.Column(db.DateTime, nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     failed_login_attempts = db.Column(db.Integer, default=0)
@@ -200,10 +202,8 @@ class Role(db.Model):
     is_system_role = db.Column(
         db.Boolean, default=False, nullable=False
     )  # Cannot be deleted
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     role_permissions = relationship(
@@ -224,10 +224,8 @@ class Permission(db.Model):
     is_system_permission = db.Column(
         db.Boolean, default=False, nullable=False
     )  # Cannot be deleted
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     role_permissions = relationship(
@@ -242,7 +240,7 @@ class UserRole(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"), nullable=False)
     assigned_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
-    assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
+    assigned_at = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     user = relationship("User", backref="user_roles", foreign_keys=[user_id])
@@ -261,7 +259,7 @@ class RolePermission(db.Model):
         db.Integer, db.ForeignKey("permissions.id"), nullable=False
     )
     granted_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
-    granted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    granted_at = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     role = relationship("Role", back_populates="role_permissions")
@@ -281,10 +279,8 @@ class Volunteer(db.Model):
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Геймификация полета
     points = db.Column(db.Integer, default=0, nullable=False)
@@ -299,7 +295,7 @@ class Volunteer(db.Model):
     )  # List of achievement IDs
     badges = db.Column(db.JSON, default=list, nullable=False)  # List of badge IDs
     streak_days = db.Column(db.Integer, default=0, nullable=False)
-    last_activity = db.Column(db.DateTime, default=datetime.utcnow)
+    last_activity = db.Column(db.DateTime, default=utc_now)
     rank = db.Column(db.Integer, default=0, nullable=False)  # Leaderboard rank
 
     # Relationships
@@ -431,10 +427,8 @@ class Achievement(db.Model):
     rarity = db.Column(
         db.String(20), default="common", nullable=False
     )  # common, rare, epic, legendary
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
 
 class AuditLog(db.Model):
@@ -458,14 +452,12 @@ class HelpRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(50), default="Pending", index=True)
+    status = db.Column(db.String(50), default="pending", index=True)
     priority = db.Column(
         db.Enum(PriorityEnum), default=PriorityEnum.normal, nullable=False
     )
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
@@ -473,6 +465,54 @@ class HelpRequest(db.Model):
     message = db.Column(db.Text, nullable=False)
     latitude = db.Column(db.Float, nullable=True)
     longitude = db.Column(db.Float, nullable=True)
+    location_text = db.Column(db.String(255), nullable=True, index=True)
+    city = db.Column(db.String(100), nullable=True, index=True)
+    region = db.Column(db.String(100), nullable=True, index=True)
+    assigned_volunteer_id = db.Column(
+        db.Integer, db.ForeignKey("volunteers.id"), nullable=True, index=True
+    )
+    completed_at = db.Column(db.DateTime, nullable=True, index=True)
+    source_channel = db.Column(db.String(50), nullable=True, index=True)
+
+    # Relationships
+    assigned_volunteer = relationship(
+        "Volunteer",
+        backref=db.backref("assigned_help_requests", lazy="dynamic"),
+        foreign_keys=[assigned_volunteer_id],
+    )
+
+    @property
+    def request_type(self):
+        """Alias for legacy code using title as request type."""
+        return self.title
+
+    @request_type.setter
+    def request_type(self, value):
+        self.title = value
+
+    @property
+    def problem(self):
+        """Provide compatibility with code expecting a problem field."""
+        return self.message or self.description
+
+    @problem.setter
+    def problem(self, value):
+        self.message = value
+        self.description = value
+
+    @property
+    def location(self):
+        """Alias used by legacy code pathways."""
+        return self.location_text
+
+    @location.setter
+    def location(self, value):
+        self.location_text = value
+
+    def mark_completed(self, when=None):
+        """Mark request as completed and track completion time."""
+        self.status = "completed"
+        self.completed_at = when or utc_now()
 
 
 class ChatRoom(db.Model):
@@ -480,10 +520,8 @@ class ChatRoom(db.Model):
     __table_args__ = {"extend_existing": True}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, default="Обща стая")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     messages = db.relationship("ChatMessage", back_populates="room", lazy=True)
     participants = db.relationship("ChatParticipant", back_populates="room", lazy=True)
 
@@ -499,12 +537,10 @@ class ChatParticipant(db.Model):
         db.String(20), nullable=False
     )  # user, volunteer, admin
     participant_name = db.Column(db.String(100), nullable=False)
-    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    joined_at = db.Column(db.DateTime, default=utc_now)
+    last_seen = db.Column(db.DateTime, default=utc_now)
     is_online = db.Column(db.Boolean, default=True)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     room = relationship("ChatRoom", back_populates="participants")
@@ -530,12 +566,10 @@ class ChatMessage(db.Model):
     reply_to_id = db.Column(
         db.Integer, db.ForeignKey("chat_messages.id"), nullable=True
     )
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
     edited_at = db.Column(db.DateTime, nullable=True)
     is_deleted = db.Column(db.Boolean, default=False)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     room = relationship("ChatRoom", back_populates="messages")
@@ -613,10 +647,8 @@ class Notification(db.Model):
     # Технически полета
     scheduled_at = db.Column(db.DateTime, nullable=True)  # За планирани нотификации
     sent_at = db.Column(db.DateTime, nullable=True)  # Кога е изпратена
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Индекси за производителност
     __table_args__ = (
@@ -674,7 +706,7 @@ class Notification(db.Model):
     def mark_as_read(self):
         """Отбелязва нотификацията като прочетена"""
         self.is_read = True
-        self.read_at = datetime.utcnow()
+        self.read_at = utc_now()
         db.session.commit()
 
     def update_channel_status(self, channel, status):
@@ -688,7 +720,7 @@ class Notification(db.Model):
 
         # Ако всички канали са изпратени, задаваме sent_at
         if self.is_sent and not self.sent_at:
-            self.sent_at = datetime.utcnow()
+            self.sent_at = utc_now()
 
         db.session.commit()
 
@@ -756,7 +788,7 @@ class Notification(db.Model):
         """Отбелязва всички нотификации като прочетени"""
         cls.query.filter_by(
             recipient_id=recipient_id, recipient_type=recipient_type, is_read=False
-        ).update({"is_read": True, "read_at": datetime.utcnow()})
+        ).update({"is_read": True, "read_at": utc_now()})
         db.session.commit()
 
 
@@ -791,10 +823,8 @@ class NotificationTemplate(db.Model):
     variables = db.Column(db.JSON, default=list)
 
     # Метаданни
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<NotificationTemplate {self.name} ({self.category}:{self.type})>"
@@ -839,13 +869,11 @@ class NotificationQueue(db.Model):
     error_message = db.Column(db.Text, nullable=True)
 
     # Време
-    scheduled_for = db.Column(db.DateTime, default=datetime.utcnow)
+    scheduled_for = db.Column(db.DateTime, default=utc_now)
 
     # Метаданни
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     template = db.relationship("NotificationTemplate", backref="queue_items")
@@ -890,10 +918,8 @@ class NotificationPreference(db.Model):
     quiet_hours_end = db.Column(db.Time, nullable=True)  # 08:00
 
     # Метаданни
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     user = db.relationship("User", backref="notification_preferences")
@@ -992,7 +1018,7 @@ class UserActivity(db.Model):
     referrer_domain = db.Column(db.String(255), nullable=True)
 
     # Време и продължителност
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    timestamp = db.Column(db.DateTime, default=utc_now, index=True)
     duration_ms = db.Column(db.Integer, nullable=True)  # Продължителност в милисекунди
     time_on_page = db.Column(db.Integer, nullable=True)  # Време на страницата в секунди
 
@@ -1361,7 +1387,7 @@ class UserActivity(db.Model):
         """Изчислява engagement score за потребител"""
         from datetime import timedelta
 
-        start_date = datetime.utcnow() - timedelta(days=days)
+        start_date = utc_now() - timedelta(days=days)
 
         activities = cls.query.filter(
             cls.user_id == user_id, cls.timestamp >= start_date
@@ -1385,7 +1411,7 @@ class UserActivity(db.Model):
         for activity in activities:
             weight = weights.get(activity.activity_type, 1)
             # По-висока тежест за скорошни активности
-            days_since = (datetime.utcnow() - activity.timestamp).days
+            days_since = (utc_now() - activity.timestamp).days
             recency_multiplier = max(0.1, 1 - (days_since / days))
             score += weight * recency_multiplier
 
@@ -1416,8 +1442,8 @@ class PushSubscription(db.Model):
     user_agent = db.Column(db.String(500))
     is_active = db.Column(db.Boolean, default=True)
     notifications_sent = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_used = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    last_used = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     volunteer = db.relationship(
@@ -1452,10 +1478,8 @@ class FailedEmail(db.Model):
     context = db.Column(db.Text, nullable=True)  # JSON string of template context
     error_message = db.Column(db.Text, nullable=False)
     retry_count = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    last_attempt_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
+    last_attempt_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<FailedEmail id={self.id} recipient={self.recipient} subject={self.subject[:50]}...>"

@@ -3,14 +3,27 @@ HelpChain Multilingual Database Initialization
 Инициализира базата данни с основни езици и начални преводи
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 
-from .models import (
-    SupportedLanguage,
-    Translation,
-    TranslationKey,
-    db,
-)
+try:
+    from models import (
+        SupportedLanguage,
+        Translation,
+        TranslationKey,
+        db,
+    )
+except ImportError:
+    from .models import (
+        SupportedLanguage,
+        Translation,
+        TranslationKey,
+        db,
+    )
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 def initialize_supported_languages():
@@ -434,7 +447,7 @@ def initialize_default_translations():
             translator_name="system",
             version=1,
             is_current=True,
-            approved_at=datetime.utcnow(),
+            approved_at=utc_now(),
         )
 
         db.session.add(translation)
@@ -534,7 +547,7 @@ def initialize_sample_english_translations():
             translator_name="system",
             version=1,
             is_current=True,
-            approved_at=datetime.utcnow(),
+            approved_at=utc_now(),
         )
 
         db.session.add(translation)
@@ -550,6 +563,106 @@ def initialize_sample_english_translations():
     except Exception as e:
         db.session.rollback()
         print(f"❌ Error initializing English translations: {str(e)}")
+        return 0
+
+
+def initialize_sample_french_translations():
+    """Инициализира примерни преводи на френски"""
+
+    french_translations = {
+        "nav.home": "Accueil",
+        "nav.volunteers": "Bénévoles",
+        "nav.about": "À propos",
+        "nav.contact": "Contact",
+        "nav.admin": "Administration",
+        "common.save": "Enregistrer",
+        "common.cancel": "Annuler",
+        "common.delete": "Supprimer",
+        "common.edit": "Modifier",
+        "common.view": "Voir",
+        "common.search": "Rechercher",
+        "common.loading": "Chargement...",
+        "common.error": "Erreur",
+        "common.success": "Succès",
+        "common.warning": "Avertissement",
+        "form.name": "Nom",
+        "form.email": "Email",
+        "form.phone": "Téléphone",
+        "form.message": "Message",
+        "form.submit": "Envoyer",
+        "form.required": "Champ obligatoire",
+        "form.invalid_email": "Adresse email invalide",
+        "form.invalid_phone": "Numéro de téléphone invalide",
+        "volunteer.title": "Bénévoles",
+        "volunteer.add": "Ajouter un bénévole",
+        "volunteer.edit": "Modifier le bénévole",
+        "volunteer.status": "Statut",
+        "volunteer.skills": "Compétences",
+        "volunteer.availability": "Disponibilité",
+        "admin.dashboard": "Administration",
+        "admin.statistics": "Statistiques",
+        "admin.analytics": "Analytique",
+        "admin.notifications": "Notifications",
+        "admin.translations": "Traductions",
+        "welcome.title": "Bienvenue sur HelpChain",
+        "welcome.subtitle": "Plateforme reliant les personnes dans le besoin aux bénévoles",
+        "welcome.get_started": "Commencer maintenant",
+        "notification.new_volunteer": "Nouveau bénévole inscrit",
+        "notification.help_request": "Nouvelle demande d'aide",
+        "notification.volunteer_assigned": "Bénévole assigné",
+    }
+
+    print("🇫🇷 Initializing French translations...")
+
+    # Получаваме френския език
+    fr_language = SupportedLanguage.query.filter_by(code="fr").first()
+    if not fr_language:
+        print("❌ French language not found")
+        return 0
+
+    added_count = 0
+    for key_name, translated_text in french_translations.items():
+        # Намираме ключа
+        translation_key = TranslationKey.query.filter_by(key=key_name).first()
+        if not translation_key:
+            print(f"   ⚠️  Key not found: {key_name}")
+            continue
+
+        # Проверяваме дали вече има превод
+        existing_translation = Translation.query.filter_by(
+            key_id=translation_key.id, language_id=fr_language.id, is_current=True
+        ).first()
+
+        if existing_translation:
+            print(f"   ⏭️  Skipped: {key_name} (already has translation)")
+            continue
+
+        # Създаваме превод
+        translation = Translation(
+            key_id=translation_key.id,
+            language_id=fr_language.id,
+            translated_text=translated_text,
+            status="approved",
+            translation_method="manual",
+            translator_name="system",
+            version=1,
+            is_current=True,
+            approved_at=utc_now(),
+        )
+
+        db.session.add(translation)
+        added_count += 1
+        print(f"   ✅ Added FR translation: {key_name}")
+
+    try:
+        db.session.commit()
+        print(
+            f"✅ French translations initialized successfully ({added_count} translations)"
+        )
+        return added_count
+    except Exception as e:
+        db.session.rollback()
+        print(f"❌ Error initializing French translations: {str(e)}")
         return 0
 
 
@@ -584,6 +697,10 @@ def full_multilingual_initialization():
     # 5. Инициализираме английските преводи
     if initialize_sample_english_translations() == 0:
         print("⚠️  No new English translations added")
+
+    # 6. Инициализираме френските преводи
+    if initialize_sample_french_translations() == 0:
+        print("⚠️  No new French translations added")
 
     print("\n" + "=" * 60)
     print("✅ MULTILINGUAL SYSTEM INITIALIZATION COMPLETE")

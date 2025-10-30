@@ -84,6 +84,59 @@ def get_cached_decorator(timeout=None):
         return identity
 
 
+def _parse_period_args():
+    """Extract and normalize date filters from the incoming request."""
+
+    def _safe_parse(value):
+        if not value:
+            return None
+        try:
+            return datetime.strptime(value, "%Y-%m-%d")
+        except (ValueError, TypeError):
+            return None
+
+    start_param = request.args.get("start_date")
+    end_param = request.args.get("end_date")
+    days_param = request.args.get("days")
+
+    start_dt = _safe_parse(start_param)
+    end_dt = _safe_parse(end_param)
+
+    if start_dt and end_dt and start_dt > end_dt:
+        start_dt, end_dt = end_dt, start_dt
+
+    try:
+        days = int(days_param) if days_param and days_param.isdigit() else None
+    except (TypeError, ValueError):
+        days = None
+
+    if start_dt and end_dt:
+        computed_days = max(1, (end_dt.date() - start_dt.date()).days + 1)
+        days = computed_days
+
+    if days is None:
+        days = 30
+
+    days = max(1, min(days, 365))
+    return days, start_dt, end_dt
+
+
+def _format_filter_summary(
+    days: int, start_dt: datetime | None, end_dt: datetime | None
+) -> str:
+    """Create a localized summary for the currently active date filters."""
+
+    if start_dt and end_dt:
+        start_label = start_dt.strftime("%d.%m.%Y")
+        end_label = end_dt.strftime("%d.%m.%Y")
+        return f"Показваме данни от {start_label} до {end_label} ({days} дни)"
+
+    if days == 1:
+        return "Показваме данни за последния ден"
+
+    return f"Показваме данни за последните {days} дни"
+
+
 # Create decorators that will use app context
 def cached_analytics_data_5min_decorator(f):
     return get_cached_decorator(300)(f)
@@ -176,8 +229,13 @@ async def analytics_data():
         import asyncio
 
         loop = asyncio.get_event_loop()
+        days, start_dt, end_dt = _parse_period_args()
+
         data = await loop.run_in_executor(
-            None, analytics_service.get_dashboard_analytics
+            None,
+            lambda: analytics_service.get_dashboard_analytics(
+                days=days, start_date=start_dt, end_date=end_dt
+            ),
         )
 
         # Check if response should be compressed
@@ -209,7 +267,13 @@ async def analytics_data():
             import asyncio
 
             loop = asyncio.get_event_loop()
-            data = await loop.run_in_executor(None, AnalyticsEngine.get_dashboard_stats)
+            days, start_dt, end_dt = _parse_period_args()
+            data = await loop.run_in_executor(
+                None,
+                lambda: AnalyticsEngine.get_dashboard_stats(
+                    days=days, start_date=start_dt, end_date=end_dt
+                ),
+            )
             return jsonify(data)
         except Exception as fallback_e:
             print(f"Fallback analytics also failed: {type(fallback_e).__name__}")
@@ -498,27 +562,21 @@ async def analytics_trends():
 def admin_analytics():
     """Analytics dashboard - professional template"""
     try:
-        # Use simple mock data to avoid serialization issues
-        dashboard_stats = {
+        # Sample fallbacks to keep the dashboard functional when data is unavailable
+        sample_dashboard_stats = {
             "totals": {
                 "requests": 1250,
                 "volunteers": 89,
             }
         }
-
-        performance_metrics = {
+        sample_performance_metrics = {
             "success_rate": 85.5,
             "utilization_rate": 72.3,
             "completed_requests": 1087,
             "active_requests": 15,
             "active_volunteers": 67,
         }
-
-        # Simple mock data for anomalies and predictions
-        anomalies = []
-        predictions = {
-            "ml_insights": {"predictions": {"churn_risk": {"risk": "low"}}},
-            # Chart data for JavaScript
+        sample_predictions = {
             "labels": [
                 "Днес",
                 "Утре",
@@ -531,8 +589,7 @@ def admin_analytics():
             "requests_predicted": [1250, 1320, 1280, 1410, 1350, 1380, 1420],
             "volunteers_predicted": [89, 92, 88, 95, 91, 93, 97],
         }
-
-        recommendations = [
+        sample_recommendations = [
             {
                 "priority": "high",
                 "title": "Оптимизирай разпределението на доброволците",
@@ -542,20 +599,17 @@ def admin_analytics():
             {
                 "priority": "medium",
                 "title": "Подобри отзивчивостта",
-                "description": "Средното време за отговор е се увеличило с 15%",
+                "description": "Средното време за отговор се е увеличило с 15%",
                 "action": "Обучи екипа за по-бързи отговори",
             },
         ]
-
-        # Mock data for charts
-        trends_data = {
+        sample_trends_data = {
             "labels": ["Януари", "Февруари", "Март", "Април", "Май", "Юни"],
             "requests": [850, 920, 1050, 1180, 1220, 1250],
             "completed": [780, 880, 980, 1050, 1100, 1087],
             "volunteers": [65, 72, 78, 82, 85, 89],
         }
-
-        category_stats = {
+        sample_category_stats = {
             "categories": [
                 "Медицинска помощ",
                 "Транспорт",
@@ -566,6 +620,104 @@ def admin_analytics():
             "counts": [450, 320, 280, 150, 50],
         }
 
+        try:
+            from admin_analytics import AnalyticsEngine
+        except ImportError:  # pragma: no cover - fallback for modular imports
+            AnalyticsEngine = None
+
+        try:
+            from analytics_service import analytics_service
+        except ImportError:
+            analytics_service = None
+
+        days, start_dt, end_dt = _parse_period_args()
+        logger = current_app.logger if current_app else None
+
+        dashboard_stats = sample_dashboard_stats
+        performance_metrics = sample_performance_metrics
+        predictions = sample_predictions
+        recommendations = sample_recommendations
+        category_stats = sample_category_stats
+        trends_data = sample_trends_data
+        geo_data = {"requests": [], "volunteers": []}
+        live_stats = {}
+        advanced_analytics = {}
+        anomalies = []
+
+        if AnalyticsEngine:
+            try:
+                dashboard_stats = AnalyticsEngine.get_dashboard_stats(
+                    days=days, start_date=start_dt, end_date=end_dt
+                )
+            except Exception as analytics_error:
+                if logger:
+                    logger.warning(
+                        "Falling back to sample analytics data: %s", analytics_error
+                    )
+            else:
+                live_stats = dashboard_stats.get("real_time", {}) or {}
+
+                raw_category_stats = dashboard_stats.get("category_stats", {}) or {}
+                if raw_category_stats:
+                    category_stats = {
+                        "categories": list(raw_category_stats.keys()),
+                        "counts": list(raw_category_stats.values()),
+                    }
+
+                perf_metrics = dashboard_stats.get("performance_metrics")
+                if perf_metrics:
+                    performance_metrics = perf_metrics
+
+                daily_stats = dashboard_stats.get("daily_stats") or []
+                if daily_stats:
+                    trends_data = {
+                        "labels": [item.get("date", "") for item in daily_stats],
+                        "requests": [item.get("requests", 0) for item in daily_stats],
+                        "completed": [
+                            item.get("completed", item.get("requests", 0))
+                            for item in daily_stats
+                        ],
+                        "volunteers": [
+                            item.get("volunteers", 0) for item in daily_stats
+                        ],
+                    }
+
+                if not any(trends_data.get("requests", [])):
+                    try:
+                        trends_data = AnalyticsEngine.get_trends_data(months=12)
+                    except Exception as trend_error:
+                        if logger:
+                            logger.debug("Trend data fallback failed: %s", trend_error)
+
+                try:
+                    predictions = AnalyticsEngine.get_predictions(months=3)
+                except Exception as prediction_error:
+                    if logger:
+                        logger.debug(
+                            "Prediction generation failed: %s", prediction_error
+                        )
+
+                try:
+                    geo_data = AnalyticsEngine.get_geo_data()
+                except Exception as geo_error:
+                    if logger:
+                        logger.debug("Geo data generation failed: %s", geo_error)
+
+        if analytics_service:
+            try:
+                advanced_analytics = analytics_service.get_dashboard_analytics(
+                    days=days, start_date=start_dt, end_date=end_dt
+                )
+            except Exception as advanced_error:
+                if logger:
+                    logger.debug("Advanced analytics unavailable: %s", advanced_error)
+                advanced_analytics = {}
+            else:
+                if isinstance(advanced_analytics, dict):
+                    anomalies = advanced_analytics.get("anomalies", []) or []
+
+        filter_summary = _format_filter_summary(days, start_dt, end_dt)
+
         return render_template(
             "admin_analytics_professional.html",
             dashboard_stats=dashboard_stats,
@@ -575,10 +727,24 @@ def admin_analytics():
             recommendations=recommendations,
             trends_data=trends_data,
             category_stats=category_stats,
+            geo_data=geo_data,
+            live_stats=live_stats,
+            advanced_analytics=advanced_analytics,
+            filter_summary=filter_summary,
+            filters_context={
+                "days": days,
+                "start_date": start_dt.isoformat() if start_dt else None,
+                "end_date": end_dt.isoformat() if end_dt else None,
+            },
         )
 
-    except Exception as e:
-        print(f"Error loading analytics dashboard: {type(e).__name__}: {e}")
+    except Exception as e:  # pragma: no cover - safeguard
+        if current_app:
+            current_app.logger.error(
+                "Error loading analytics dashboard: %s", e, exc_info=True
+            )
+        else:
+            print(f"Error loading analytics dashboard: {type(e).__name__}: {e}")
         return "Error loading analytics dashboard", 500
 
 

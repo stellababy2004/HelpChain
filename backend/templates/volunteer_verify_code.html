@@ -4,15 +4,27 @@ content %}
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-4">
             <h2 class="mb-4 text-primary text-center">Верификация на код</h2>
-            <p class="text-muted mb-4 text-center">Въведете 6-цифрения код за достъп, който получихте на вашия имейл.</p>
+            <p class="text-muted mb-4 text-center">Въведете 6-цифрения код за достъп (или тестов код, ако сте в демо режим).</p>
             {% if error %}
             <div class="alert alert-danger">{{ error }}</div>
             {% endif %}
             <form method="POST">
                 <div class="mb-3">
                     <label for="code" class="form-label">Код за достъп:</label>
-                    <input type="text" class="form-control text-center" id="code" name="code" required autofocus
-                        placeholder="123456" maxlength="6" pattern="[0-9]{6}" style="font-size: 1.5rem; letter-spacing: 0.5rem;" />
+                    <input
+                        type="text"
+                        class="form-control text-center"
+                        id="code"
+                        name="code"
+                        required
+                        autofocus
+                        placeholder="123456 или test123"
+                        maxlength="12"
+                        style="font-size: 1.5rem; letter-spacing: 0.35rem;"
+                        inputmode="text"
+                        aria-describedby="codeHelp"
+                    />
+                    <div id="codeHelp" class="form-text text-center">Може да въведете 6-цифрен код или тестов код.</div>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Влез</button>
             </form>
@@ -51,8 +63,8 @@ function resendCode() {
 
 // Auto-format the code input
 document.getElementById('code').addEventListener('input', function(e) {
-    // Remove non-numeric characters
-    this.value = this.value.replace(/[^0-9]/g, '');
+    // Allow digits and letters to support test codes like "test123"
+    this.value = this.value.replace(/[^0-9a-zA-Z]/g, '').toLowerCase();
 });
 </script>
 {% endblock %}

@@ -1,6 +1,11 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from ..extensions import db
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class AuditLog(db.Model):
@@ -16,4 +21,4 @@ class AuditLog(db.Model):
     target_type = db.Column(db.String(64), nullable=True)  # e.g. "help_request"
     target_id = db.Column(db.Integer, nullable=True)
     details = db.Column(db.JSON, nullable=True)  # extra context (note, payload)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    timestamp = db.Column(db.DateTime, default=utc_now, index=True)

@@ -5,7 +5,7 @@ Automated tasks for HelpChain platform
 import json
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import and_
 
@@ -63,6 +63,11 @@ except ImportError:
     from backend.analytics_service import analytics_service
 
 try:
+    from analytics_sample_data import generate_sample_analytics_events
+except ImportError:
+    from backend.analytics_sample_data import generate_sample_analytics_events
+
+try:
     from smart_matching import smart_matching_service
 except ImportError:
     from backend.smart_matching import smart_matching_service
@@ -114,6 +119,12 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
 # Email retry configuration
 MAX_RETRIES = int(os.getenv("EMAIL_MAX_RETRIES", "6"))
 BASE = int(os.getenv("EMAIL_RETRY_BASE_SECONDS", "10"))  # 10s, 20s, 40s, ...
@@ -122,7 +133,7 @@ BASE = int(os.getenv("EMAIL_RETRY_BASE_SECONDS", "10"))  # 10s, 20s, 40s, ...
 def _save_to_dlq(payload: dict, reason: str):
     """Запиши в DLQ (Redis списък) за по-късно обработване."""
     r = Redis.from_url(os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0"))
-    payload["failed_at"] = datetime.utcnow().isoformat()
+    payload["failed_at"] = utc_now().isoformat()
     payload["reason"] = reason
     r.lpush("dlq:emails", json.dumps(payload))
 
@@ -139,7 +150,7 @@ def auto_match_requests(self):
             .filter(
                 and_(
                     HelpRequest.status == "pending",
-                    HelpRequest.created_at < datetime.utcnow() - timedelta(minutes=30),
+                    HelpRequest.created_at < utc_now() - timedelta(minutes=30),
                 )
             )
             .all()
@@ -212,7 +223,7 @@ def send_reminders(self):
             .filter(
                 and_(
                     Task.status.in_(["assigned", "in_progress"]),
-                    Task.created_at < datetime.utcnow() - timedelta(days=2),
+                    Task.created_at < utc_now() - timedelta(days=2),
                 )
             )
             .all()
@@ -233,7 +244,7 @@ def send_reminders(self):
             .filter(
                 and_(
                     HelpRequest.status == "pending",
-                    HelpRequest.created_at < datetime.utcnow() - timedelta(hours=24),
+                    HelpRequest.created_at < utc_now() - timedelta(hours=24),
                 )
             )
             .count()
@@ -270,7 +281,7 @@ def auto_evaluate_tasks(self):
                 and_(
                     Task.status == "completed",
                     Task.completed_at.isnot(None),
-                    Task.completed_at > datetime.utcnow() - timedelta(hours=24),
+                    Task.completed_at > utc_now() - timedelta(hours=24),
                 )
             )
             .all()
@@ -329,7 +340,7 @@ def auto_evaluate_tasks(self):
                     overall_rating=4.0,
                     ai_feedback="Автоматично оценена задача",
                     evaluated_by=1,  # System user
-                    evaluated_at=datetime.utcnow(),
+                    evaluated_at=utc_now(),
                 )
                 db.session.add(performance)
                 evaluated_count += 1
@@ -353,7 +364,7 @@ def generate_daily_reports(self):
     try:
         logger.info("Generating daily reports...")
 
-        yesterday = datetime.utcnow() - timedelta(days=1)
+        yesterday = utc_now() - timedelta(days=1)
         today_start = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)
         today_end = today_start + timedelta(days=1)
 
@@ -419,13 +430,42 @@ def generate_daily_reports(self):
 
 
 @celery.task(bind=True)
+def generate_sample_analytics(self, days=5, events_per_day=48, force=False):
+    """Populate analytics tables with deterministic sample data when needed."""
+
+    try:
+        app = _get_app()
+        with app.app_context():
+            created = generate_sample_analytics_events(
+                db.session,
+                days=days,
+                events_per_day=events_per_day,
+                force=force,
+            )
+
+            if created:
+                logger.info("Generated %s sample analytics events", created)
+            else:
+                logger.debug(
+                    "Sample analytics data already present; skipping generation"
+                )
+
+            return {"created": created}
+
+    except Exception as exc:
+        logger.error(f"Error generating sample analytics data: {exc}")
+        db.session.rollback()
+        raise self.retry(countdown=300, max_retries=3) from exc
+
+
+@celery.task(bind=True)
 def cleanup_old_data(self):
     """Clean up old logs and temporary data"""
     try:
         logger.info("Starting data cleanup...")
 
         # Delete old analytics events (older than 90 days)
-        cutoff_date = datetime.utcnow() - timedelta(days=90)
+        cutoff_date = utc_now() - timedelta(days=90)
         deleted_events = (
             db.session.query(AnalyticsEvent)
             .filter(AnalyticsEvent.timestamp < cutoff_date)
@@ -433,7 +473,7 @@ def cleanup_old_data(self):
         )
 
         # Delete old chat messages (older than 180 days)
-        cutoff_date = datetime.utcnow() - timedelta(days=180)
+        cutoff_date = utc_now() - timedelta(days=180)
         deleted_messages = (
             db.session.query(ChatMessage)
             .filter(ChatMessage.timestamp < cutoff_date)
@@ -568,7 +608,7 @@ def retry_failed_emails(self):
 
         # Get failed emails older than retry interval (configurable)
         retry_interval_hours = int(os.getenv("EMAIL_RETRY_INTERVAL_HOURS", "24"))
-        cutoff_time = datetime.utcnow() - timedelta(hours=retry_interval_hours)
+        cutoff_time = utc_now() - timedelta(hours=retry_interval_hours)
 
         failed_emails = (
             db.session.query(FailedEmail)
@@ -748,7 +788,7 @@ def update_realtime_stats(self):
             "active_volunteers": db.session.query(Volunteer)
             .filter_by(is_active=True)
             .count(),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": utc_now().isoformat(),
         }
 
         # Cache in Redis (if available)
@@ -890,11 +930,11 @@ def generate_performance_report(self, volunteer_id=None, period="weekly"):
 
         # Calculate date range
         if period == "weekly":
-            start_date = datetime.utcnow() - timedelta(days=7)
+            start_date = utc_now() - timedelta(days=7)
         elif period == "monthly":
-            start_date = datetime.utcnow() - timedelta(days=30)
+            start_date = utc_now() - timedelta(days=30)
         else:  # daily
-            start_date = datetime.utcnow() - timedelta(days=1)
+            start_date = utc_now() - timedelta(days=1)
 
         # Get performance data
         if volunteer_id:
