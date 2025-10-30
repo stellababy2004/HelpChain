@@ -105,312 +105,299 @@ class DatabaseOptimizer:
     def create_analytics_indexes(db):
         """Създай indexes за по-бърз analytics access"""
         try:
-            from sqlalchemy import text
+            from sqlalchemy import inspect, text
 
-            # Index за timestamp queries - use created_at column
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_analytics_timestamp
-                ON analytics_events(created_at DESC)
-            """
-                )
-            )
+            inspector = inspect(db.engine)
+            existing_tables = set(inspector.get_table_names())
 
-            # Index за event_type filtering
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_analytics_event_type
-                ON analytics_events(event_type)
-            """
-                )
-            )
+            index_statements = {
+                "analytics_events": [
+                    (
+                        "idx_analytics_timestamp",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_analytics_timestamp
+                            ON analytics_events(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_analytics_event_type",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_analytics_event_type
+                            ON analytics_events(event_type)
+                        """,
+                    ),
+                    (
+                        "idx_analytics_category",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_analytics_category
+                            ON analytics_events(event_category)
+                        """,
+                    ),
+                    (
+                        "idx_analytics_composite",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_analytics_composite
+                            ON analytics_events(created_at DESC, event_type, event_category)
+                        """,
+                    ),
+                ],
+                "user_behaviors": [
+                    (
+                        "idx_user_behaviors_session_start",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_user_behaviors_session_start
+                            ON user_behaviors(session_start DESC)
+                        """,
+                    )
+                ],
+                "performance_metrics": [
+                    (
+                        "idx_performance_metrics_timestamp",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_performance_metrics_timestamp
+                            ON performance_metrics(created_at DESC)
+                        """,
+                    )
+                ],
+                "chatbot_conversations": [
+                    (
+                        "idx_chatbot_conversations_timestamp",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_chatbot_conversations_timestamp
+                            ON chatbot_conversations(created_at DESC)
+                        """,
+                    )
+                ],
+                "users": [
+                    (
+                        "idx_users_role",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_users_role
+                            ON users(role)
+                        """,
+                    ),
+                    (
+                        "idx_users_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_users_created_at
+                            ON users(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_users_is_active",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_users_is_active
+                            ON users(is_active)
+                        """,
+                    ),
+                ],
+                "admin_users": [
+                    (
+                        "idx_admin_users_username",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_username
+                            ON admin_users(username)
+                        """,
+                    ),
+                    (
+                        "idx_admin_users_email",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_email
+                            ON admin_users(email)
+                        """,
+                    ),
+                    (
+                        "idx_admin_users_role",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_role
+                            ON admin_users(role)
+                        """,
+                    ),
+                    (
+                        "idx_admin_users_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_created_at
+                            ON admin_users(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_admin_users_is_active",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_is_active
+                            ON admin_users(is_active)
+                        """,
+                    ),
+                ],
+                "volunteers": [
+                    (
+                        "idx_volunteers_location",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_volunteers_location
+                            ON volunteers(location)
+                        """,
+                    ),
+                    (
+                        "idx_volunteers_is_active",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_volunteers_is_active
+                            ON volunteers(is_active)
+                        """,
+                    ),
+                    (
+                        "idx_volunteers_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_volunteers_created_at
+                            ON volunteers(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_volunteers_points",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_volunteers_points
+                            ON volunteers(points DESC)
+                        """,
+                    ),
+                ],
+                "help_requests": [
+                    (
+                        "idx_help_requests_status",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_help_requests_status
+                            ON help_requests(status)
+                        """,
+                    ),
+                    (
+                        "idx_help_requests_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_help_requests_created_at
+                            ON help_requests(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_help_requests_priority",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_help_requests_priority
+                            ON help_requests(priority)
+                        """,
+                    ),
+                    (
+                        "idx_help_requests_user_id",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_help_requests_user_id
+                            ON help_requests(user_id)
+                        """,
+                    ),
+                ],
+                "tasks": [
+                    (
+                        "idx_tasks_status",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_status
+                            ON tasks(status)
+                        """,
+                    ),
+                    (
+                        "idx_tasks_assigned_to",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_assigned_to
+                            ON tasks(assigned_to)
+                        """,
+                    ),
+                    (
+                        "idx_tasks_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_created_at
+                            ON tasks(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_tasks_category",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_category
+                            ON tasks(category)
+                        """,
+                    ),
+                    (
+                        "idx_tasks_priority",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_priority
+                            ON tasks(priority)
+                        """,
+                    ),
+                ],
+                "chat_messages": [
+                    (
+                        "idx_chat_messages_room_id",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_chat_messages_room_id
+                            ON chat_messages(room_id)
+                        """,
+                    ),
+                    (
+                        "idx_chat_messages_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at
+                            ON chat_messages(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_chat_messages_sender_type",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_type
+                            ON chat_messages(sender_type)
+                        """,
+                    ),
+                ],
+                "notifications": [
+                    (
+                        "idx_notifications_recipient",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_notifications_recipient
+                            ON notifications(recipient_id, recipient_type)
+                        """,
+                    ),
+                    (
+                        "idx_notifications_type",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_notifications_type
+                            ON notifications(notification_type)
+                        """,
+                    ),
+                    (
+                        "idx_notifications_created",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_notifications_created
+                            ON notifications(created_at DESC)
+                        """,
+                    ),
+                ],
+            }
 
-            # Index за category filtering
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_analytics_category
-                ON analytics_events(event_category)
-            """
-                )
-            )
+            created_indexes = []
+            skipped_tables = []
 
-            # Composite index за common filters
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_analytics_composite
-                ON analytics_events(created_at DESC, event_type, event_category)
-            """
-                )
-            )
+            for table_name, statements in index_statements.items():
+                if table_name not in existing_tables:
+                    skipped_tables.append(table_name)
+                    continue
 
-            # Additional indexes for user_behaviors table
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_user_behaviors_session_start
-                ON user_behaviors(session_start DESC)
-            """
-                )
-            )
-
-            # Index for performance_metrics table
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_performance_metrics_timestamp
-                ON performance_metrics(created_at DESC)
-            """
-                )
-            )
-
-            # Index for chatbot_conversations table
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_chatbot_conversations_timestamp
-                ON chatbot_conversations(created_at DESC)
-            """
-                )
-            )
-
-            # Indexes for core application tables
-
-            # User table indexes
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_users_role
-                ON users(role)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_users_created_at
-                ON users(created_at DESC)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_users_is_active
-                ON users(is_active)
-            """
-                )
-            )
-
-            # AdminUser table indexes
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_admin_users_username
-                ON admin_users(username)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_admin_users_email
-                ON admin_users(email)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_admin_users_role
-                ON admin_users(role)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_admin_users_created_at
-                ON admin_users(created_at DESC)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_admin_users_is_active
-                ON admin_users(is_active)
-            """
-                )
-            )
-
-            # Volunteer table indexes
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_volunteers_location
-                ON volunteers(location)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_volunteers_is_active
-                ON volunteers(is_active)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_volunteers_created_at
-                ON volunteers(created_at DESC)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_volunteers_points
-                ON volunteers(points DESC)
-            """
-                )
-            )
-
-            # HelpRequest table indexes
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_help_requests_status
-                ON help_requests(status)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_help_requests_created_at
-                ON help_requests(created_at DESC)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_help_requests_priority
-                ON help_requests(priority)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_help_requests_user_id
-                ON help_requests(user_id)
-            """
-                )
-            )
-
-            # Task table indexes
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_tasks_status
-                ON tasks(status)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_tasks_assigned_to
-                ON tasks(assigned_to)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_tasks_created_at
-                ON tasks(created_at DESC)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_tasks_category
-                ON tasks(category)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_tasks_priority
-                ON tasks(priority)
-            """
-                )
-            )
-
-            # ChatMessage table indexes
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_chat_messages_room_id
-                ON chat_messages(room_id)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at
-                ON chat_messages(created_at DESC)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_type
-                ON chat_messages(sender_type)
-            """
-                )
-            )
-
-            # Notification table indexes (already defined in model, but ensure they exist)
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_notifications_recipient
-                ON notifications(recipient_id, recipient_type)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_notifications_type
-                ON notifications(notification_type)
-            """
-                )
-            )
-            db.session.execute(
-                text(
-                    """
-                CREATE INDEX IF NOT EXISTS idx_notifications_created
-                ON notifications(created_at DESC)
-            """
-                )
-            )
+                for index_name, ddl in statements:
+                    db.session.execute(text(ddl))
+                    created_indexes.append(index_name)
 
             db.session.commit()
-            print("✅ All database indexes created successfully")
+
+            if created_indexes:
+                print(
+                    "✅ Database indexes verified or created: "
+                    + ", ".join(sorted(created_indexes))
+                )
+            if skipped_tables:
+                print(
+                    "ℹ️  Skipped index creation for missing tables: "
+                    + ", ".join(sorted(skipped_tables))
+                )
+
             return True
 
         except Exception as e:
