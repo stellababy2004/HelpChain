@@ -14,6 +14,15 @@ from io import BytesIO, StringIO
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+# Ensure backend modules are importable regardless of working directory
+BACKEND_DIR = os.path.dirname(__file__)
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
+
+PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 # Import Celery for background tasks
 from celery import Celery
 from flask import (
@@ -53,7 +62,10 @@ from werkzeug.exceptions import BadRequest
 from werkzeug.utils import secure_filename
 
 # First-party imports
-from analytics_service import get_db
+try:
+    from analytics_service import get_db
+except ImportError:  # pragma: no cover - deployment fallback
+    from backend.analytics_service import get_db  # type: ignore[import-not-found]
 from extensions import babel, cache, db, mail as mail_ext
 from models import (
     AdminUser,
@@ -169,11 +181,6 @@ except ImportError:
     FLASK_COMPRESS_AVAILABLE = False
     Compress = None
 
-# Add the backend directory to Python path so we can import models and extensions
-backend_dir = os.path.dirname(__file__)
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-
 # Ensure the module is addressable both as 'appy' and 'backend.appy' for tests.
 sys.modules.setdefault("backend.appy", sys.modules[__name__])
 
@@ -195,11 +202,6 @@ except ImportError:
 # load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Sentry for error monitoring
-
-# Add the backend directory to Python path for imports
-backend_dir = os.path.dirname(__file__)
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
 
 # Настройка на logging преди всичко друго
 logging.basicConfig(
@@ -338,19 +340,14 @@ def initialize_default_admin():
         return None
 
 
-# Add the backend directory to Python path so we can import models
-backend_dir = os.path.dirname(__file__)
-
-sys.path.insert(0, backend_dir)
-
-# Also add parent directory in case we need it
-parent_dir = os.path.dirname(backend_dir)
-sys.path.insert(0, parent_dir)
-
 # Add helpchain_backend/src directory to Python path
-helpchain_backend_dir = os.path.join(backend_dir, "helpchain-backend")
-src_dir = os.path.join(helpchain_backend_dir, "src")
-sys.path.insert(0, src_dir)
+HELPCHAIN_BACKEND_DIR = os.path.join(BACKEND_DIR, "helpchain-backend")
+if HELPCHAIN_BACKEND_DIR not in sys.path:
+    sys.path.insert(0, HELPCHAIN_BACKEND_DIR)
+
+SRC_DIR = os.path.join(HELPCHAIN_BACKEND_DIR, "src")
+if SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
 
 logger.debug(f"Python path: {sys.path[:3]}...")  # Debug print
 logger.debug(f"Current directory: {os.getcwd()}")
