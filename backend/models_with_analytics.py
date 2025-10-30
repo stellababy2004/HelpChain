@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 
 # Import AdminUser and other models - try multiple import strategies
@@ -51,6 +51,11 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
         pass
 
 
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
 class AdminRole(Enum):
     """Роли в административната система"""
 
@@ -79,7 +84,7 @@ class AdminLog(db.Model):
     entity_id = db.Column(db.Integer, nullable=True)  # ID на обекта
     ip_address = db.Column(db.String(45), nullable=True)  # IP адрес
     user_agent = db.Column(db.String(500), nullable=True)  # Browser info
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=utc_now)
 
     # Use string reference for AdminUser relationship
     admin_user = db.relationship("AdminUser", backref="admin_logs")
@@ -101,16 +106,14 @@ class TwoFactorAuth(db.Model):
     session_token = db.Column(db.String(128), unique=True, nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     expires_at = db.Column(db.DateTime, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Use string reference for AdminUser relationship
     admin_user = db.relationship("AdminUser", backref="auth_sessions")
 
     def is_expired(self):
-        return datetime.utcnow() > self.expires_at
+        return utc_now() > self.expires_at
 
 
 class AdminSession(db.Model):
@@ -126,18 +129,16 @@ class AdminSession(db.Model):
     session_id = db.Column(db.String(128), unique=True, nullable=False)
     ip_address = db.Column(db.String(45), nullable=True)
     user_agent = db.Column(db.String(500), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_activity = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    last_activity = db.Column(db.DateTime, default=utc_now)
     is_active = db.Column(db.Boolean, default=True)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Use string reference for AdminUser relationship
     admin_user = db.relationship("AdminUser", backref="sessions")
 
     def update_activity(self):
-        self.last_activity = datetime.utcnow()
+        self.last_activity = utc_now()
         db.session.commit()
 
 
@@ -148,7 +149,7 @@ class Feedback(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=utc_now)
 
     # Sentiment analysis fields
     sentiment_score = db.Column(
@@ -179,7 +180,7 @@ class SuccessStory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=utc_now)
 
 
 # class VideoChatSession(db.Model):
@@ -251,10 +252,8 @@ class AnalyticsEvent(db.Model):
     device_type = db.Column(db.String(50), nullable=True)  # desktop, mobile, tablet
 
     # Timestamp
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<AnalyticsEvent {self.event_type}>"
@@ -277,8 +276,8 @@ class UserBehavior(db.Model):
     location = db.Column(db.String(100), nullable=True)  # city, country
 
     # Session data
-    session_start = db.Column(db.DateTime, default=datetime.utcnow)
-    last_activity = db.Column(db.DateTime, default=datetime.utcnow)
+    session_start = db.Column(db.DateTime, default=utc_now)
+    last_activity = db.Column(db.DateTime, default=utc_now)
     total_time_spent = db.Column(db.Integer, default=0)  # in seconds
     pages_visited = db.Column(db.Integer, default=1)
 
@@ -323,10 +322,8 @@ class PerformanceMetrics(db.Model):
     context_data = db.Column(db.Text, nullable=True)  # JSON string with extra data
 
     # Timestamp
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<PerformanceMetrics {self.metric_name}: {self.metric_value}>"
@@ -362,10 +359,8 @@ class ChatbotConversation(db.Model):
     user_type = db.Column(db.String(50), default="guest")
 
     # Timestamp
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<ChatbotConversation {self.session_id}>"
@@ -412,10 +407,8 @@ class Task(db.Model):
 
     # Metadata
     created_by = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     # volunteer = db.relationship(Volunteer, backref="assigned_tasks")
@@ -456,10 +449,8 @@ class TaskAssignment(db.Model):
     admin_feedback = db.Column(db.Text, nullable=True)
 
     # Metadata
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     task = db.relationship("Task", backref="assignments")
@@ -490,10 +481,8 @@ class TaskPerformance(db.Model):
     completion_notes = db.Column(db.Text, nullable=True)
 
     # Analytics data
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     task = db.relationship("Task", backref="performance_records")

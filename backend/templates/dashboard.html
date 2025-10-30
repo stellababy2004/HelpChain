@@ -1,102 +1,306 @@
-{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block
-content %}
-<h1>📋 Volunteer Dashboard</h1>
+{% extends "base.html" %}
+{% block title %}Доброволческо табло{% endblock %}
 
-<!-- Филтриране по статус -->
-<form method="GET" action="{{ url_for('dashboard') }}">
-  <label for="status">Filter by status:</label>
-  <select
-    name="status"
-    id="status"
-    title="Filter help requests by status"
-    onchange="this.form.submit()"
-  >
-    <option value="All" {% if filter_status="" ="All" %}selected{% endif %}>
-      All
-    </option>
-    <option
-      value="In Progress"
-      {%
-      if
-      filter_status=""
-      ="In Progress"
-      %}selected{%
-      endif
-      %}
-    >
-      In Progress
-    </option>
-    <option
-      value="Resolved"
-      {%
-      if
-      filter_status=""
-      ="Resolved"
-      %}selected{%
-      endif
-      %}
-    >
-      Resolved
-    </option>
-  </select>
-</form>
+{% block head %}
+<style>
+.dashboard-wrapper {
+  background: linear-gradient(135deg, #f7f9fc 0%, #e0e7ff 100%);
+  min-height: 100vh;
+}
+
+.dashboard-card {
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+}
+
+.dashboard-card .card-header {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(14, 165, 233, 0.08));
+  border-radius: 18px 18px 0 0;
+}
+
+.filter-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.filter-toolbar .form-control {
+  min-width: 240px;
+}
+
+.status-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.status-pill {
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid rgba(99, 102, 241, 0.24);
+  background: rgba(255, 255, 255, 0.78);
+  color: #312e81;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.status-pill:hover,
+.status-pill.active {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.18);
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.12), rgba(79, 70, 229, 0.12));
+}
+
+.table thead {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.table thead th {
+  border-bottom-width: 0;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.badge-status {
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+}
+
+.badge-status.pending { background: #fbbf24; color: #1f2937; }
+.badge-status.in-progress { background: #38bdf8; color: #0f172a; }
+.badge-status.resolved { background: #22c55e; color: #052e16; }
+.badge-status.cancelled { background: #ef4444; color: #fff; }
+.badge-status.default { background: #cbd5f5; color: #1e3a8a; }
+
+.dashboard-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+.dashboard-empty i {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .filter-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-toolbar .form-control {
+    min-width: 100%;
+  }
+
+  .status-filter-pills {
+    justify-content: flex-start;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper py-5">
+  <div class="container">
+    <div class="mb-4 text-center text-md-start">
+      <h1 class="fw-semibold text-primary mb-1">📋 Доброволческо табло</h1>
+      <p class="text-muted mb-0">Управлявайте заявките и следете напредъка си без презареждане на страницата.</p>
+    </div>
+
+    <div class="card dashboard-card">
+      <div class="card-header py-4 px-4">
+        <div class="filter-toolbar" role="search">
+          <div class="input-group flex-grow-1 flex-md-grow-0">
+            <span class="input-group-text" id="request-search-label">
+              <i class="fas fa-search"></i>
+            </span>
+            <input
+              type="search"
+              id="requestSearch"
+              class="form-control"
+              placeholder="Търси по име, имейл или описание..."
+              aria-describedby="request-search-label"
+            />
+          </div>
+
+          <div class="status-filter-pills" role="group" aria-label="Филтър по статус">
+            <button type="button" class="status-pill active" data-status-filter="all">
+              Всички
+              <span class="badge bg-primary" data-status-count="all">0</span>
+            </button>
+            <button type="button" class="status-pill" data-status-filter="pending">
+              Чакащи
+              <span class="badge bg-warning text-dark" data-status-count="pending">0</span>
+            </button>
+            <button type="button" class="status-pill" data-status-filter="in-progress">
+              В процес
+              <span class="badge bg-info text-dark" data-status-count="in-progress">0</span>
+            </button>
+            <button type="button" class="status-pill" data-status-filter="resolved">
+              Завършени
+              <span class="badge bg-success" data-status-count="resolved">0</span>
+            </button>
+            <button type="button" class="status-pill" data-status-filter="cancelled">
+              Отказани
+              <span class="badge bg-danger" data-status-count="cancelled">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        {% if requests %}
+        <div class="table-responsive">
+          <table class="table align-middle mb-0" id="volunteerRequestsTable">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Име</th>
+                <th scope="col">Имейл</th>
+                <th scope="col">Описание</th>
+                <th scope="col">Статус</th>
+                <th scope="col" class="text-end">Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% set badge_map = {
+                'pending': 'pending',
+                'in progress': 'in-progress',
+                'in_progress': 'in-progress',
+                'in-progress': 'in-progress',
+                'resolved': 'resolved',
+                'completed': 'resolved',
+                'cancelled': 'cancelled',
+                'rejected': 'cancelled'
+              } %}
+              {% for request in requests %}
+              {% set status_key = (request.status or '').lower() %}
+              {% set badge_class = badge_map.get(status_key, 'default') %}
+              <tr
+                data-status="{{ badge_class }}"
+                data-search="{{ (request.name ~ ' ' ~ request.email ~ ' ' ~ request.description ~ ' ' ~ request.status)|lower }}"
+              >
+                <td class="fw-semibold">{{ request.id }}</td>
+                <td>{{ request.name }}</td>
+                <td><a href="mailto:{{ request.email }}" class="text-decoration-none">{{ request.email }}</a></td>
+                <td class="text-muted">{{ request.description }}</td>
+                <td>
+                  <span class="badge-status {{ badge_class }}">
+                    {% if badge_class == 'pending' %}Чакаща{% elif badge_class == 'in-progress' %}В процес{% elif badge_class == 'resolved' %}Завършена{% elif badge_class == 'cancelled' %}Отказана{% else %}{{ request.status or 'Непознат' }}{% endif %}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <div class="d-flex gap-2 justify-content-end flex-wrap">
+                    {% if badge_class != 'resolved' %}
+                    <form method="POST" action="/resolve/{{ request.id }}" class="d-inline">
+                      <button type="submit" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-check me-1"></i>Завърши
+                      </button>
+                    </form>
+                    {% endif %}
+                    <form method="POST" action="/delete/{{ request.id }}" class="d-inline" onsubmit="return confirm('Сигурни ли сте?');">
+                      <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-trash me-1"></i>Изтрий
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="dashboard-empty d-none" id="requestsEmptyState">
+          <i class="fas fa-inbox"></i>
+          <p class="mb-0">Няма намерени заявки. Променете филтрите и опитайте отново.</p>
+        </div>
+        {% else %}
+        <div class="dashboard-empty">
+          <i class="fas fa-clipboard-list"></i>
+          <p class="mb-0">Няма заявки за показване.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex flex-wrap gap-3 justify-content-between align-items-center">
+      <div class="small text-muted">Използвайте филтрите, за да работите по-бързо със заявките.</div>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">Обнови таблото</a>
+        <a href="{{ url_for('submit_request') }}" class="btn btn-primary">Нова заявка</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% if requests %}
-<table class="vol-table">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Description</th>
-      <th>Status</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for request in requests %}
-    <tr>
-      <td>{{ request.id }}</td>
-      <td>{{ request.name }}</td>
-      <td>{{ request.email }}</td>
-      <td>{{ request.description }}</td>
-      <td>{{ request.status }}</td>
-      <td>
-        {% if request.status != "Resolved" %}
-        <form
-          method="POST"
-          action="/resolve/{{ request.id }}"
-          class="inline-form"
-        >
-          <button type="submit">✅</button>
-        </form>
-        {% endif %}
-        <form
-          method="POST"
-          action="/delete/{{ request.id }}"
-          class="inline-form"
-        >
-          <button type="submit" onclick="return confirm('Сигурни ли сте?')">
-            🗑️
-          </button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p>No help requests found.</p>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const rows = Array.from(document.querySelectorAll('#volunteerRequestsTable tbody tr'));
+  const searchInput = document.getElementById('requestSearch');
+  const statusButtons = Array.from(document.querySelectorAll('[data-status-filter]'));
+  const emptyState = document.getElementById('requestsEmptyState');
+  let activeStatus = 'all';
+
+  function updateCounts() {
+    const counts = rows.reduce((acc, row) => {
+      const status = row.dataset.status || 'default';
+      acc.all += 1;
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, { all: 0 });
+
+    document.querySelectorAll('[data-status-count]').forEach((badge) => {
+      const key = badge.dataset.statusCount;
+      const value = counts[key] || 0;
+      badge.textContent = value;
+    });
+  }
+
+  function applyFilters() {
+    const term = (searchInput.value || '').trim().toLowerCase();
+    let visible = 0;
+
+    rows.forEach((row) => {
+      const matchesStatus = activeStatus === 'all' || row.dataset.status === activeStatus;
+      const matchesTerm = !term || (row.dataset.search || '').includes(term);
+      const shouldShow = matchesStatus && matchesTerm;
+      row.classList.toggle('d-none', !shouldShow);
+      if (shouldShow) {
+        visible += 1;
+      }
+    });
+
+    if (emptyState) {
+      emptyState.classList.toggle('d-none', visible > 0);
+    }
+  }
+
+  statusButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      activeStatus = button.dataset.statusFilter || 'all';
+      statusButtons.forEach((btn) => btn.classList.toggle('active', btn === button));
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener('input', () => {
+    applyFilters();
+  });
+
+  updateCounts();
+  applyFilters();
+});
+</script>
 {% endif %}
-
-<!-- Линк към конкретен сигнал -->
-<a href="{{ url_for('show_signal', signal_id=7) }}">Виж сигнал 7</a>
-
-<!-- Линк към таблото -->
-<a href="{{ url_for('dashboard') }}">Табло</a>
-
-<!-- Линк към доброволците -->
-<a href="{{ url_for('volunteers') }}">Доброволци</a>
-
-<a href="{{ url_for('submit_request') }}">← Back to Help Form</a>
 {% endblock %}

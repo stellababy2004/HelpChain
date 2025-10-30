@@ -2,6 +2,7 @@ import sys
 
 sys.path.insert(0, ".")
 from appy import app
+from extensions import db
 from permissions import has_permission
 
 from .models import Role, RolePermission, User, UserRole
@@ -14,7 +15,7 @@ with app.app_context():
         user_roles = UserRole.query.filter_by(user_id=admin.id).all()
         print(f"User roles count: {len(user_roles)}")
         for ur in user_roles:
-            role = Role.query.get(ur.role_id)
+            role = db.session.get(Role, ur.role_id)
             print(f"Role: {role.name}")
 
             role_perms = RolePermission.query.filter_by(role_id=role.id).all()

@@ -1,10 +1,15 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pyotp
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .extensions import db
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class Request(db.Model):
@@ -17,7 +22,7 @@ class Request(db.Model):
     description = db.Column(db.Text)
     urgency = db.Column(db.String(20), default="normal")
     status = db.Column(db.String(20), default="pending")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
 
 class RequestLog(db.Model):
@@ -27,7 +32,7 @@ class RequestLog(db.Model):
     old_status = db.Column(db.String(20))
     new_status = db.Column(db.String(20))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
 
 class Volunteer(db.Model):
@@ -45,7 +50,7 @@ class Feedback(db.Model):
     name = db.Column(db.String(100))
     email = db.Column(db.String(120))
     message = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
 
 class AdminUser(db.Model, UserMixin):
@@ -55,7 +60,7 @@ class AdminUser(db.Model, UserMixin):
     password_hash = db.Column(db.String(128))
     twofa_secret = db.Column(db.String(32))
     two_factor_enabled = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

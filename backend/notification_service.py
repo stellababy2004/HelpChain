@@ -17,13 +17,19 @@ import smtplib
 import ssl
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Any
 
 from jinja2 import Template
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
 
 # Try different import strategies for models
 try:
@@ -212,7 +218,7 @@ class NotificationService:
                 recipient_email=recipient_email,
                 personalization_data=json.dumps(personalization_data or {}),
                 priority=priority,
-                scheduled_for=scheduled_for or datetime.utcnow(),
+                scheduled_for=scheduled_for or utc_now(),
             )
 
             db.session.add(queue_item)
@@ -239,7 +245,7 @@ class NotificationService:
             pending_items = (
                 NotificationQueue.query.filter(
                     NotificationQueue.status == "pending",
-                    NotificationQueue.scheduled_for <= datetime.utcnow(),
+                    NotificationQueue.scheduled_for <= utc_now(),
                     NotificationQueue.attempts < NotificationQueue.max_attempts,
                 )
                 .order_by(
@@ -255,7 +261,7 @@ class NotificationService:
                     # Обновяваме статуса
                     item.status = "processing"
                     item.attempts += 1
-                    item.last_attempt = datetime.utcnow()
+                    item.last_attempt = utc_now()
                     db.session.commit()
 
                     # Опитваме се да изпратим
@@ -263,7 +269,7 @@ class NotificationService:
 
                     if success:
                         item.status = "sent"
-                        item.sent_at = datetime.utcnow()
+                        item.sent_at = utc_now()
                         stats["sent"] += 1
                     else:
                         if item.attempts >= item.max_attempts:
@@ -271,7 +277,7 @@ class NotificationService:
                             stats["failed"] += 1
                         else:
                             item.status = "pending"
-                            item.next_retry = datetime.utcnow() + timedelta(
+                            item.next_retry = utc_now() + timedelta(
                                 minutes=item.attempts * 5
                             )
                             stats["skipped"] += 1
@@ -301,7 +307,7 @@ class NotificationService:
     def _send_notification(self, queue_item: NotificationQueue) -> bool:
         """Изпраща конкретна нотификация"""
         try:
-            template = NotificationTemplate.query.get(queue_item.template_id)
+            template = db.session.get(NotificationTemplate, queue_item.template_id)
             if not template:
                 raise ValueError("Шаблон не е намерен")
 
@@ -434,7 +440,7 @@ class NotificationService:
                             "data": {
                                 "template_id": template.id,
                                 "category": template.category,
-                                "timestamp": datetime.utcnow().isoformat(),
+                                "timestamp": utc_now().isoformat(),
                             },
                         }
                     )
@@ -455,7 +461,7 @@ class NotificationService:
 
                     # Обновяваме статистиките
                     subscription.notifications_sent += 1
-                    subscription.last_used = datetime.utcnow()
+                    subscription.last_used = utc_now()
                     success_count += 1
 
                 except WebPushException as e:
@@ -555,7 +561,7 @@ class NotificationService:
 
             # Проверяваме quiet hours
             if template.type in ["push", "sms"]:
-                now_time = datetime.utcnow().time()
+                now_time = utc_now().time()
                 if prefs.quiet_hours_start <= prefs.quiet_hours_end:
                     # Обикновени часове (напр. 22:00 - 08:00)
                     if prefs.quiet_hours_start <= now_time <= prefs.quiet_hours_end:
@@ -608,7 +614,7 @@ class NotificationService:
     def get_notification_stats(self, days: int = 30) -> dict[str, Any]:
         """Получава статистики за нотификациите"""
         try:
-            start_date = datetime.utcnow() - timedelta(days=days)
+            start_date = utc_now() - timedelta(days=days)
 
             stats = {
                 "total_sent": 0,

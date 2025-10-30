@@ -66,7 +66,7 @@ make k8s-deploy
   - [ x] Инсталиране на Redis за caching
   - [ ] Database indexing implementation
   - [ x] Инсталиране на Redis за caching
-  - [ ] API response compression
+  - [x] API response compression
   - [ ] Query optimization
 
 - [ ] **Bug Fixes & Improvements**
@@ -106,16 +106,16 @@ make k8s-deploy
   - [x] Custom alerts system
 
 - [ ] **Real-time Features**
-  - [ ] WebSocket integration
-  - [ ] Live notifications
+  - [x] WebSocket integration
+  - [x] Live notifications
   - [ ] Real-time charts updates
   - [ ] Background data processing
 
 - [ ] **Enhanced UI/UX**
-  - [ ] Dark mode toggle
-  - [ ] Custom date range picker
+  - [x] Dark mode toggle
+  - [x] Custom date range picker
   - [ ] Drag & drop widgets
-  - [ ] Advanced filtering
+  - [x] Advanced filtering
 
 **Success Criteria:**
 

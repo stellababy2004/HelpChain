@@ -244,7 +244,7 @@ def create_user():
 
         # Assign roles
         for role_id in role_ids:
-            role = Role.query.get(int(role_id))
+            role = db.session.get(Role, int(role_id))
             if role:
                 user_role = UserRole(
                     user_id=user.id, role_id=role.id, assigned_by=session.get("user_id")

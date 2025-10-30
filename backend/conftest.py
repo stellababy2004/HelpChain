@@ -1,7 +1,7 @@
 import os
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
 
@@ -186,3 +186,35 @@ def init_test_data(db_session, test_admin_user, test_volunteer, test_help_reques
         "volunteer": test_volunteer,
         "help_request": test_help_request,
     }
+
+
+@pytest.fixture
+def mocker(monkeypatch):
+    """Lightweight substitute for pytest-mock's mocker fixture."""
+
+    class _Mocker:
+        MagicMock = MagicMock
+        call = call
+        ANY = ANY
+
+        def __init__(self):
+            self._patchers = []
+
+        def _start(self, patcher):
+            mocked = patcher.start()
+            self._patchers.append(patcher)
+            return mocked
+
+        def patch(self, target, *args, **kwargs):
+            return self._start(patch(target, *args, **kwargs))
+
+        def mock_open(self, *args, **kwargs):
+            return mock_open(*args, **kwargs)
+
+        def stopall(self):
+            while self._patchers:
+                self._patchers.pop().stop()
+
+    helper = _Mocker()
+    yield helper
+    helper.stopall()

@@ -4,7 +4,7 @@ AI система за интелигентно съпоставяне на Help
 """
 
 import math
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 # Try relative imports first, fall back to absolute imports for standalone execution
@@ -26,6 +26,11 @@ except ImportError:
         ai_service = None
 
 
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
 class SmartMatchingService:
     """AI-базиран engine за съпоставяне на HelpRequests с Volunteers"""
 
@@ -42,6 +47,21 @@ class SmartMatchingService:
         # AI service for intelligent matching
         self.ai_service = ai_service
 
+    def _load_help_request(self, request_id: int):
+        """Return help request using SQLAlchemy 2.x session API when available."""
+        help_request = None
+
+        if db is not None:
+            try:
+                help_request = db.session.get(HelpRequest, request_id)
+            except Exception:  # pragma: no cover - defensive for legacy setups
+                help_request = None
+
+        if help_request is None and hasattr(HelpRequest, "query"):
+            help_request = HelpRequest.query.filter_by(id=request_id).first()
+
+        return help_request
+
     def find_best_matches(
         self, request_id: int, limit: int = 5
     ) -> list[dict[str, Any]]:
@@ -55,7 +75,7 @@ class SmartMatchingService:
         Returns:
             List с предложения за доброволци
         """
-        help_request = HelpRequest.query.get(request_id)
+        help_request = self._load_help_request(request_id)
         if not help_request:
             return []
 
@@ -353,12 +373,12 @@ class SmartMatchingService:
         if not matches or matches[0]["scores"]["overall"] < 60:
             return None  # Няма достатъчно добър match
 
-        help_request = HelpRequest.query.get(request_id)
+        help_request = self._load_help_request(request_id)
         volunteer = matches[0]["volunteer"]
 
         # Update request status and assignment
         help_request.status = "assigned"
-        help_request.updated_at = datetime.utcnow()
+        help_request.updated_at = utc_now()
 
         # Create assignment record (if TaskAssignment model exists)
         try:
@@ -372,7 +392,7 @@ class SmartMatchingService:
                 availability_match_score=matches[0]["scores"]["availability_match"],
                 performance_match_score=matches[0]["scores"]["performance_match"],
                 overall_match_score=matches[0]["scores"]["overall"],
-                assigned_at=datetime.utcnow(),
+                assigned_at=utc_now(),
                 status="assigned",
                 assigned_by="auto",
             )
@@ -395,7 +415,7 @@ class SmartMatchingService:
         if not self.ai_service:
             return {"insights": [], "confidence": 0.0}
 
-        help_request = HelpRequest.query.get(request_id)
+        help_request = self._load_help_request(request_id)
         if not help_request:
             return {"insights": [], "confidence": 0.0}
 

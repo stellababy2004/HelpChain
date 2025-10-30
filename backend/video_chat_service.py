@@ -5,10 +5,16 @@ WebRTC-based video chat functionality
 
 import logging
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from .models import User, VideoChatSession, db
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +32,8 @@ class VideoChatService:
         """Create a new video chat session"""
         try:
             # Check if users exist
-            initiator = User.query.get(initiator_id)
-            participant = User.query.get(participant_id)
+            initiator = db.session.get(User, initiator_id)
+            participant = db.session.get(User, participant_id)
 
             if not initiator or not participant:
                 logger.error(
@@ -80,7 +86,7 @@ class VideoChatService:
                 return False
 
             session.status = "active"
-            session.started_at = datetime.utcnow()
+            session.started_at = utc_now()
             db.session.commit()
 
             if session_id in active_sessions:
@@ -106,7 +112,7 @@ class VideoChatService:
                 return False
 
             session.status = "completed"
-            session.ended_at = datetime.utcnow()
+            session.ended_at = utc_now()
             if session.started_at:
                 session.duration = int(
                     (session.ended_at - session.started_at).total_seconds()

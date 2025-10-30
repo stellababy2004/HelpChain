@@ -1,10 +1,16 @@
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 
 import pyotp
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
 
 # Try multiple import strategies for extensions
 try:
@@ -41,7 +47,7 @@ class User(UserMixin, db.Model):
     location = db.Column(db.String(100), nullable=True)
     available_time = db.Column(db.String(100), nullable=True)
     profile_picture = db.Column(db.String(200), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -68,7 +74,7 @@ class AdminUser(UserMixin, db.Model):
     two_factor_enabled = db.Column(db.Boolean, default=False)
 
     # Метаданни
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
     last_login = db.Column(db.DateTime, nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     failed_login_attempts = db.Column(db.Integer, default=0)
