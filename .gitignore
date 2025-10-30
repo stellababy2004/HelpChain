@@ -56,6 +56,8 @@ cert.pem
 # Cookies and session files
 cookies.txt
 backend/cookies.txt
+sent_emails.txt
+backend/sent_emails.txt
 
 # editor temp
 .vscode/

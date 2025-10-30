@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class TestRoutes:
     """Тестове за основните Flask routes"""
 
@@ -42,7 +45,22 @@ class TestRoutes:
         )
 
         assert response.status_code == 200
-        # Трябва да остане на login страницата или да покаже грешка
+        page = response.get_data(as_text=True)
+        assert "Грешно потребителско име или парола" in page
+
+    def test_admin_email_2fa_page_contains_verification_field(self, client):
+        """Email 2FA страницата показва поле за код на български."""
+        with client.session_transaction() as sess:
+            sess["pending_email_2fa"] = True
+            sess["email_2fa_code"] = "123456"
+            sess["email_2fa_expires"] = datetime.now().timestamp() + 600
+
+        response = client.get("/admin/email_2fa")
+
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert "Код за верификация" in html
+        assert 'name="code"' in html
 
     def test_volunteer_register_get(self, client):
         """Тест за volunteer register страница"""
@@ -223,9 +241,11 @@ class TestProtectedRoutes:
 
     def test_admin_dashboard_requires_auth(self, client):
         """Тест че admin dashboard изисква authentication"""
-        response = client.get("/admin_dashboard")
+        response = client.get("/admin_dashboard", follow_redirects=True)
 
-        assert response.status_code == 302  # Redirect to login
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert "Моля, влезте като администратор." in html
 
     def test_admin_dashboard_authenticated(self, authenticated_admin_client):
         """Тест за admin dashboard като логнат admin"""

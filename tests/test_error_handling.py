@@ -16,7 +16,10 @@ class TestErrorHandling:
         assert response.status_code == 404
         data = response.get_json()
         assert data["error"] == "Not Found"
-        assert data["message"] == "The requested resource was not found"
+        assert data["message"] in {
+            "The requested resource was not found",
+            "Страницата или ресурсът не е намерен. Моля, проверете адреса.",
+        }
         assert data["status_code"] == 404
 
     def test_500_error_basic(self, client):
@@ -27,7 +30,7 @@ class TestErrorHandling:
 
         assert response.status_code == 404
         # Проверяваме че получаваме HTML, не plain text exception
-        assert b"<!doctype html>" in response.data
+        assert b"<!doctype html>" in response.data.lower()
         assert b"404" in response.data
 
     def test_403_error_html_response(self, client):

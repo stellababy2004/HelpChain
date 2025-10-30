@@ -95,13 +95,15 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.includes("/static/js/helpchain-websocket.js")) {
     event.respondWith(
       fetch(request).catch(() =>
-        caches
-          .match(request)
-          .then(
-            (fallback) =>
-              fallback ||
-              new Response("", { status: 503, statusText: "Offline" }),
-          ),
+        caches.match(request).then(
+          (fallback) =>
+            fallback ||
+            new Response("", {
+              status: 503,
+              statusText: "Offline",
+              headers: { "Retry-After": "30" },
+            }),
+        ),
       ),
     );
     return;
@@ -138,7 +140,10 @@ self.addEventListener("fetch", (event) => {
                 {
                   status: 503,
                   statusText: "Offline",
-                  headers: { "Content-Type": "application/json" },
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Retry-After": "30",
+                  },
                 },
               ),
           ),
@@ -183,6 +188,7 @@ self.addEventListener("fetch", (event) => {
               new Response("", {
                 status: 503,
                 statusText: "Offline",
+                headers: { "Retry-After": "30" },
               })
             );
           }
@@ -197,6 +203,7 @@ self.addEventListener("fetch", (event) => {
             return new Response("", {
               status: 503,
               statusText: "Offline",
+              headers: { "Retry-After": "30" },
             });
           });
         });
