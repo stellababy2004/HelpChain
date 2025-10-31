@@ -5,21 +5,9 @@ Permission-based access control decorators and utilities for HelpChain
 from functools import wraps
 from flask import session, flash, redirect, url_for, current_app
 
-# Try relative imports first, fall back to absolute imports for standalone execution
-try:
-    from .models import User, Role, Permission, UserRole, RolePermission, PermissionEnum
-    from .extensions import db
-except ImportError:
-    # Fallback for standalone execution
-    import sys
-    import os
-
-    backend_dir = os.path.dirname(__file__)
-    if backend_dir not in sys.path:
-        sys.path.insert(0, backend_dir)
-
-    from models import User, Role, Permission, UserRole, RolePermission, PermissionEnum
-    from extensions import db
+# Use absolute imports for production
+from backend.models import User, Role, Permission, UserRole, RolePermission, PermissionEnum
+from backend.extensions import db
 
 
 def has_permission(permission_codename):

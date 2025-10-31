@@ -34,75 +34,35 @@ from jinja2 import ChoiceLoader, FileSystemLoader
 from sqlalchemy.exc import OperationalError
 from werkzeug.utils import secure_filename
 
-# Try relative imports first, fall back to absolute imports for standalone execution
-try:
-    from backend.extensions import db
-except ImportError:
-    # Fallback for standalone execution
-    try:
-        from extensions import db
-    except ImportError:
-        from extensions import db
+# Use absolute imports for production
+from backend.extensions import db
 
-try:
-    from backend.models import (
-        AdminUser,
-        ChatMessage,
-        ChatParticipant,
-        ChatRoom,
-        HelpRequest,
-        Role,
-        RoleEnum,
-        User,
-        UserRole,
-        Volunteer,
-    )
-except ImportError:
-    from models import (
-        AdminUser,
-        ChatMessage,
-        ChatParticipant,
-        ChatRoom,
-        HelpRequest,
-        Role,
-        RoleEnum,
-        User,
-        UserRole,
-        Volunteer,
-    )
-try:
-    from backend.models_with_analytics import Task
-except ImportError:
-    from models_with_analytics import Task
+from backend.models import (
+    AdminUser,
+    ChatMessage,
+    ChatParticipant,
+    ChatRoom,
+    HelpRequest,
+    Role,
+    RoleEnum,
+    User,
+    UserRole,
+    Volunteer,
+)
+from backend.models_with_analytics import Task
 
-try:
-    from backend.permissions import (
-        initialize_default_roles_and_permissions,
-        require_admin_login,
-        require_permission,
-    )
-except ImportError:
-    from permissions import (
-        initialize_default_roles_and_permissions,
-        require_admin_login,
-        require_permission,
-    )
+from backend.permissions import (
+    initialize_default_roles_and_permissions,
+    require_admin_login,
+    require_permission,
+)
 
-try:
-    from backend.admin_roles import admin_roles_bp
-except ImportError:
-    from admin_roles import admin_roles_bp
+from backend.admin_roles import admin_roles_bp
 
-try:
-    from backend.routes.notifications import notification_bp
-except ImportError:
-    from routes.notifications import notification_bp
+from backend.routes.notifications import notification_bp
 
 # Import smart matching engine
-try:
-    from backend.ai_service import ai_service
-except ImportError:
-    from ai_service import ai_service
+from backend.ai_service import ai_service
 
 # Add the backend directory to Python path so we can import models and extensions
 backend_dir = os.path.dirname(__file__)
@@ -525,10 +485,7 @@ limiter = Limiter(
 # Register blueprints after app is created
 
 # Register analytics blueprint first to avoid import issues
-try:
-    from backend.analytics_routes import analytics_bp
-except ImportError:
-    from analytics_routes import analytics_bp
+from backend.analytics_routes import analytics_bp
 
 app.register_blueprint(analytics_bp)
 

@@ -13,10 +13,7 @@ from flask import (
     url_for,
 )
 
-try:
-    from .permissions import require_admin_login
-except ImportError:
-    from permissions import require_admin_login
+from backend.permissions import require_admin_login
 
 analytics_bp = Blueprint("analytics_main", __name__)
 
@@ -35,10 +32,7 @@ def analytics_page():
 @require_admin_login
 def analytics_data():
     try:
-        try:
-            from .analytics_service import analytics_service
-        except ImportError:
-            from analytics_service import analytics_service
+        from backend.analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
         return jsonify(data)
@@ -46,10 +40,7 @@ def analytics_data():
         print(f"Error getting analytics data: {e}")
         # Fallback to basic stats
         try:
-            try:
-                from .admin_analytics import AnalyticsEngine
-            except ImportError:
-                from admin_analytics import AnalyticsEngine
+            from backend.admin_analytics import AnalyticsEngine
 
             data = AnalyticsEngine.get_dashboard_stats()
             return jsonify(data)
@@ -109,10 +100,7 @@ def analytics_stream():
 def analytics_live():
     """Get live analytics data for real-time updates"""
     try:
-        try:
-            from .analytics_service import analytics_service
-        except ImportError:
-            from analytics_service import analytics_service
+        from backend.analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
 
@@ -173,10 +161,7 @@ def analytics_export():
     try:
         export_format = request.args.get("format", "json")
 
-        try:
-            from .analytics_service import analytics_service
-        except ImportError:
-            from analytics_service import analytics_service
+        from backend.analytics_service import analytics_service
 
         data = analytics_service.get_dashboard_analytics()
 
