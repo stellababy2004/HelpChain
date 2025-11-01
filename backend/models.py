@@ -1,5 +1,4 @@
 import enum
-import logging
 from datetime import UTC, datetime
 
 import pyotp
@@ -20,10 +19,22 @@ try:
 except ImportError:
     from extensions import db
 
+
+# --- Achievements Model ---
+
+
 # Import Task model for relationships (defined in models_with_analytics)
 # Removed circular import - Task relationship uses string reference
 
 # Използваме db инстанцията от extensions (няма да създаваме нова SQLAlchemy())
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without using deprecated datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
+# --- Achievements Model ---
 
 
 class RoleEnum(str, enum.Enum):
@@ -422,20 +433,18 @@ class Volunteer(db.Model):
         )
 
 
+# --- Achievements Model ---
 class Achievement(db.Model):
     __tablename__ = "achievements"
-    __table_args__ = {"extend_existing": True}
-    id = db.Column(db.String(50), primary_key=True)  # Unique achievement ID
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(200), nullable=False)
-    icon = db.Column(db.String(50), nullable=False)  # FontAwesome icon class
-    category = db.Column(db.String(50), nullable=False)  # tasks, rating, streak, etc.
-    points_reward = db.Column(db.Integer, default=100, nullable=False)
-    requirement_type = db.Column(db.String(50), nullable=False)  # count, value, streak
-    requirement_value = db.Column(db.Integer, nullable=False)
-    rarity = db.Column(
-        db.String(20), default="common", nullable=False
-    )  # common, rare, epic, legendary
+    id = db.Column(db.String(64), primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    icon = db.Column(db.String(255), nullable=True)
+    category = db.Column(db.String(64), nullable=True)
+    points_reward = db.Column(db.Integer, default=0)
+    requirement_type = db.Column(db.String(64), nullable=True)
+    requirement_value = db.Column(db.String(255), nullable=True)
+    rarity = db.Column(db.String(32), nullable=True)
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
