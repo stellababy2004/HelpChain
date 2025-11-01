@@ -3,6 +3,8 @@ from enum import Enum
 
 # Import db from extensions instead of creating a new instance
 from .extensions import db
+
+
 def utc_now() -> datetime:
     """Return naive UTC timestamp without using datetime.utcnow."""
     return datetime.now(UTC).replace(tzinfo=None)
