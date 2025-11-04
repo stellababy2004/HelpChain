@@ -157,7 +157,7 @@ https://github.com/koushik80/Finfotek_Flask_App/blob/85e1805a0e3cdbb1f613fcffb25
 
 ```
 'MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 
+app.config['MAIL_PORT'] =
 ```
 
 
@@ -636,7 +636,7 @@ https://github.com/meelkmeelk/EfficiStudy1.1/blob/5eae9d637109eefd1bb58771c7a061
 ```
 ('/feedback', methods=['GET', 'POST'])
 def feedback():
-   
+
 ```
 
 
@@ -718,7 +718,7 @@ https://github.com/meelkmeelk/EfficiStudy1.1/blob/5eae9d637109eefd1bb58771c7a061
 ('/feedback', methods=['GET', 'POST'])
 def feedback():
     if request.method == 'POST':
-       
+
 ```
 
 
@@ -808,7 +808,7 @@ https://github.com/meelkmeelk/EfficiStudy1.1/blob/5eae9d637109eefd1bb58771c7a061
 def feedback():
     if request.method == 'POST':
         name = request.form['name']
-       
+
 ```
 
 
@@ -906,7 +906,7 @@ def feedback():
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
-       
+
 ```
 
 

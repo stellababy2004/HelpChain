@@ -1,3 +1,30 @@
+from datetime import datetime
+
+
+# Request model (moved from helpchain_backend/src/models.py)
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    from datetime import UTC
+    from datetime import datetime as dt
+    return dt.now(UTC).replace(tzinfo=None)
+
+from extensions import db
+
+
+class Request(db.Model):
+    __tablename__ = 'requests'
+    __table_args__ = {"extend_existing": True}
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(120))
+    location = db.Column(db.String(100))
+    category = db.Column(db.String(50))
+    description = db.Column(db.Text)
+    urgency = db.Column(db.String(20), default="normal")
+    status = db.Column(db.String(20), default="pending")
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 import enum
 from datetime import UTC, datetime
 
@@ -13,11 +40,7 @@ def utc_now() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-# Try multiple import strategies for extensions
-try:
-    from .extensions import db
-except ImportError:
-    from extensions import db
+
 
 
 # --- Achievements Model ---
@@ -347,6 +370,31 @@ class Volunteer(db.Model):
         if self.rank is None:
             self.rank = 0
 
+
+class RequestLog(db.Model):
+    __tablename__ = "request_logs"
+    __table_args__ = {"extend_existing": True}
+    id = db.Column(db.Integer, primary_key=True)
+    # request foreign key may point to help_requests or requests depending on
+    # legacy schema; use help_requests as canonical table name used elsewhere.
+    request_id = db.Column(db.Integer, db.ForeignKey("help_requests.id"))
+    action = db.Column(db.String(50))
+    old_status = db.Column(db.String(50), nullable=True)
+    new_status = db.Column(db.String(50), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+
+class Feedback(db.Model):
+    __tablename__ = "feedbacks"
+    __table_args__ = {"extend_existing": True}
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(150), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
     # Геймификация методи
     def add_points(self, points):
         """Добавя точки и проверява за level up"""
@@ -436,6 +484,7 @@ class Volunteer(db.Model):
 # --- Achievements Model ---
 class Achievement(db.Model):
     __tablename__ = "achievements"
+    __table_args__ = {"extend_existing": True}
     id = db.Column(db.String(64), primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -1449,8 +1498,8 @@ class UserActivity(db.Model):
 
 class PushSubscription(db.Model):
     """Push notification subscriptions for volunteers"""
-
     __tablename__ = "push_subscriptions"
+    __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
     volunteer_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
@@ -1486,8 +1535,8 @@ class PushSubscription(db.Model):
 
 class FailedEmail(db.Model):
     """Model for storing failed emails in dead letter queue"""
-
     __tablename__ = "failed_emails"
+    __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
     recipient = db.Column(db.String(255), nullable=False, index=True)

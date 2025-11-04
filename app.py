@@ -16,3 +16,12 @@ except Exception:
 if __name__ == "__main__":
     # Local dev run
     app.run(host="0.0.0.0", port=8000, debug=True)
+
+    # Or, for production with gevent and Flask-SocketIO
+    from gevent import monkey
+
+    monkey.patch_all()
+    from flask_socketio import SocketIO
+
+    socketio = SocketIO(app, async_mode="gevent")
+    socketio.run(app, host="0.0.0.0", port=5000)

@@ -21,7 +21,11 @@
 
       socket.on("message", (data) => {
         const msgDiv = document.createElement("div");
-        msgDiv.innerHTML = `<strong>${data.username}:</strong> ${data.message} ${data.file_path ? `<a href="${data.file_path}">Файл</a>` : ""} (${data.timestamp})`;
+        msgDiv.innerHTML = `<strong>${data.username}:</strong> ${
+          data.message
+        } ${data.file_path ? `<a href="${data.file_path}">Файл</a>` : ""} (${
+          data.timestamp
+        })`;
         document.getElementById("messages").appendChild(msgDiv);
       });
 
@@ -69,7 +73,11 @@
         .then((history) =>
           history.forEach((msg) => {
             const msgDiv = document.createElement("div");
-            msgDiv.innerHTML = `<strong>${msg.username}:</strong> ${msg.message} ${msg.file_path ? `<a href="${msg.file_path}">Файл</a>` : ""} (${msg.timestamp})`;
+            msgDiv.innerHTML = `<strong>${msg.username}:</strong> ${
+              msg.message
+            } ${msg.file_path ? `<a href="${msg.file_path}">Файл</a>` : ""} (${
+              msg.timestamp
+            })`;
             document.getElementById("messages").appendChild(msgDiv);
           }),
         );

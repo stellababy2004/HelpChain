@@ -44,6 +44,7 @@ helpchain-backend
    ```
 
 3. Activate the virtual environment:
+
    - On Windows:
      ```
      venv\Scripts\activate

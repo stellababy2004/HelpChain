@@ -16,15 +16,26 @@
     </div>
     <div class="mb-3">
       <label>Локация</label>
-      <input type="text" name="location" class="form-control" placeholder="Град или регион" />
+      <input
+        type="text"
+        name="location"
+        class="form-control"
+        placeholder="Град или регион"
+      />
     </div>
     <div class="mb-3">
       <label>Умения</label>
-      <input type="text" name="skills" class="form-control"
-        placeholder="Например: медицинска помощ, транспорт, образование" />
+      <input
+        type="text"
+        name="skills"
+        class="form-control"
+        placeholder="Например: медицинска помощ, транспорт, образование"
+      />
     </div>
     <button type="submit" class="btn btn-success">Добави</button>
-    <a href="{{ url_for('admin_volunteers') }}" class="btn btn-primary mb-3">Доброволци</a>
+    <a href="{{ url_for('admin_volunteers') }}" class="btn btn-primary mb-3"
+      >Доброволци</a
+    >
   </form>
 </div>
 {% endblock %}

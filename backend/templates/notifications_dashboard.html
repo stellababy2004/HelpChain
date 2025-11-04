@@ -441,17 +441,25 @@ endblock %} {% block content %}
             <tr>
                 <td>#${item.id}</td>
                 <td>${item.recipient_email}</td>
-                <td><span class="badge bg-secondary">Template ${item.template_id || "N/A"}</span></td>
+                <td><span class="badge bg-secondary">Template ${
+                  item.template_id || "N/A"
+                }</span></td>
                 <td>
-                    <span class="badge ${this.getStatusColor(item.status)}">${item.status}</span>
+                    <span class="badge ${this.getStatusColor(item.status)}">${
+                      item.status
+                    }</span>
                 </td>
                 <td>
-                    <span class="badge ${this.getPriorityColor(item.priority)}">${item.priority}</span>
+                    <span class="badge ${this.getPriorityColor(
+                      item.priority,
+                    )}">${item.priority}</span>
                 </td>
                 <td>${item.attempts}/${item.max_attempts || 3}</td>
                 <td>${this.formatDate(item.scheduled_for)}</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="dashboard.retryNotification(${item.id})">
+                    <button class="btn btn-sm btn-outline-primary" onclick="dashboard.retryNotification(${
+                      item.id
+                    })">
                         Retry
                     </button>
                 </td>
@@ -478,21 +486,33 @@ endblock %} {% block content %}
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="card-title">${template.name}</h6>
-                            <span class="badge ${this.getTypeColor(template.type)}">${template.type}</span>
+                            <span class="badge ${this.getTypeColor(
+                              template.type,
+                            )}">${template.type}</span>
                         </div>
                         <p class="card-text">
-                            <small class="text-muted">Category: ${template.category}</small><br>
-                            <small class="text-muted">Priority: ${template.priority}</small>
+                            <small class="text-muted">Category: ${
+                              template.category
+                            }</small><br>
+                            <small class="text-muted">Priority: ${
+                              template.priority
+                            }</small>
                         </p>
                         <p class="card-text">
-                            ${template.subject || template.title || "No preview"}
+                            ${
+                              template.subject || template.title || "No preview"
+                            }
                         </p>
                     </div>
                     <div class="card-footer">
-                        <button class="btn btn-sm btn-outline-primary" onclick="dashboard.editTemplate(${template.id})">
+                        <button class="btn btn-sm btn-outline-primary" onclick="dashboard.editTemplate(${
+                          template.id
+                        })">
                             Edit
                         </button>
-                        <button class="btn btn-sm btn-outline-success" onclick="dashboard.testTemplate('${template.name}')">
+                        <button class="btn btn-sm btn-outline-success" onclick="dashboard.testTemplate('${
+                          template.name
+                        }')">
                             Test
                         </button>
                     </div>
@@ -731,7 +751,9 @@ endblock %} {% block content %}
 
         const result = await response.json();
         alert(
-          result.success ? "Тестовото известие е изпратено!" : "Грешка: " + result.error,
+          result.success
+            ? "Тестовото известие е изпратено!"
+            : "Грешка: " + result.error,
         );
       } catch (error) {
         alert("Грешка: " + error.message);

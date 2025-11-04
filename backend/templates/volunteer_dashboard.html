@@ -1,7 +1,5 @@
-{% extends "base.html" %}
-{% block title %}{{ _('Доброволчески панел - HelpChain') }}{% endblock %}
-
-{% block head %}
+{% extends "base.html" %} {% block title %}{{ _('Доброволчески панел -
+HelpChain') }}{% endblock %} {% block head %}
 <style>
   :root {
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -18,7 +16,7 @@
 
   body {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
   }
 
@@ -39,13 +37,17 @@
   }
 
   .welcome-section::before {
-    content: '';
+    content: "";
     position: absolute;
     top: -50%;
     right: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    );
     animation: float 6s ease-in-out infinite;
   }
 
@@ -78,7 +80,7 @@
   }
 
   .stats-card::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -293,7 +295,9 @@
     font-weight: 500;
     background: rgba(255, 255, 255, 0.92);
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   .task-priority-pill:hover,
@@ -547,17 +551,13 @@
     }
   }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <!-- Include Dashboard Navigation -->
 {% include 'dashboard_nav.html' %}
 
 <!-- Breadcrumbs -->
-{% set breadcrumbs = [
-  {'title': _('Доброволчески панел'), 'url': None}
-] %}
-{% include 'breadcrumbs.html' %}
+{% set breadcrumbs = [ {'title': _('Доброволчески панел'), 'url': None} ] %} {%
+include 'breadcrumbs.html' %}
 
 <div class="dashboard-container">
   <!-- Welcome Section -->
@@ -565,9 +565,15 @@
     <div class="welcome-content">
       <div class="d-flex justify-content-between align-items-center flex-wrap">
         <div>
-          {% set volunteer_name = current_user.name if current_user else _('Доброволец') %}
-          <h1 class="mb-2">{{ _('Добре дошли, %(name)s! 👋', name=volunteer_name) }}</h1>
-          <p class="mb-0 opacity-75">{{ _('Благодарим ви за доброволчеството! Днес можете да помогнете на още %(count)s души.', count=available_tasks) }}</p>
+          {% set volunteer_name = current_user.name if current_user else
+          _('Доброволец') %}
+          <h1 class="mb-2">
+            {{ _('Добре дошли, %(name)s! 👋', name=volunteer_name) }}
+          </h1>
+          <p class="mb-0 opacity-75">
+            {{ _('Благодарим ви за доброволчеството! Днес можете да помогнете на
+            още %(count)s души.', count=available_tasks) }}
+          </p>
         </div>
         <div class="d-flex gap-2">
           <a href="{{ url_for('volunteer_logout') }}" class="btn btn-light">
@@ -596,7 +602,9 @@
         </div>
         <div class="stats-number">{{ stats.active_tasks }}</div>
         <div class="stats-label">{{ _('Активни задачи') }}</div>
-        <p class="text-muted mb-0 small">{{ _('В момента работите по тези задачи') }}</p>
+        <p class="text-muted mb-0 small">
+          {{ _('В момента работите по тези задачи') }}
+        </p>
       </div>
     </div>
     <div class="col-lg-3 col-md-6 mb-4">
@@ -628,7 +636,8 @@
       <div class="stats-card fade-in-up">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">
-            <i class="fas fa-trophy text-warning me-2"></i>{{ _('Ниво %(level)s', level=gamification.level) }}
+            <i class="fas fa-trophy text-warning me-2"></i>{{ _('Ниво
+            %(level)s', level=gamification.level) }}
           </h5>
           <div class="text-end">
             <div class="stats-number">{{ gamification.experience }}</div>
@@ -640,11 +649,16 @@
           <span>{{ gamification.level_progress }}%</span>
         </div>
         <div class="progress progress-thick mb-3">
-          <div class="progress-bar bg-warning progress-value" data-progress-value="{{ gamification.level_progress }}"></div>
+          <div
+            class="progress-bar bg-warning progress-value"
+            data-progress-value="{{ gamification.level_progress }}"
+          ></div>
         </div>
         <div class="text-center">
           <small class="text-muted">
-            {{ _('Още %(xp)s опит до ниво %(next_level)s', xp=gamification.next_level_exp - gamification.experience, next_level=gamification.level + 1) }}
+            {{ _('Още %(xp)s опит до ниво %(next_level)s',
+            xp=gamification.next_level_exp - gamification.experience,
+            next_level=gamification.level + 1) }}
           </small>
         </div>
       </div>
@@ -668,58 +682,75 @@
   <div class="tasks-section fade-in-up" id="active-tasks">
     <div class="section-header">
       <h2 class="section-title">
-        <i class="fas fa-tasks text-primary me-2"></i>{{ _('Вашите активни задачи') }}
+        <i class="fas fa-tasks text-primary me-2"></i>{{ _('Вашите активни
+        задачи') }}
       </h2>
-      <p class="section-subtitle">{{ _('Задачи, по които работите в момента') }}</p>
+      <p class="section-subtitle">
+        {{ _('Задачи, по които работите в момента') }}
+      </p>
     </div>
 
-    {% if active_tasks %}
-      {% for task in active_tasks %}
-      <div class="task-card">
-        <div class="task-header">
-          <div class="flex-grow-1">
-            <h5 class="task-title">{{ task.title }}</h5>
-            <div class="task-meta">
-              <span><i class="fas fa-map-marker-alt"></i>{{ task.location }}</span>
-              <span><i class="fas fa-calendar"></i>{{ task.date }}</span>
-              <span><i class="fas fa-clock"></i>{{ task.time_remaining }}</span>
-            </div>
-          </div>
-          <span class="priority-badge priority-{{ task.priority }}">
-            {{ task.priority }}
-          </span>
-        </div>
-
-        <p class="task-description">{{ task.description }}</p>
-
-        <div class="task-progress">
-          <div class="task-progress-header">
-            <span>{{ _('Прогрес') }}</span>
-            <span>{{ task.progress }}%</span>
-          </div>
-          <div class="progress">
-            <div class="progress-bar progress-bar-custom progress-value" data-progress-value="{{ task.progress }}"></div>
+    {% if active_tasks %} {% for task in active_tasks %}
+    <div class="task-card">
+      <div class="task-header">
+        <div class="flex-grow-1">
+          <h5 class="task-title">{{ task.title }}</h5>
+          <div class="task-meta">
+            <span
+              ><i class="fas fa-map-marker-alt"></i>{{ task.location }}</span
+            >
+            <span><i class="fas fa-calendar"></i>{{ task.date }}</span>
+            <span><i class="fas fa-clock"></i>{{ task.time_remaining }}</span>
           </div>
         </div>
+        <span class="priority-badge priority-{{ task.priority }}">
+          {{ task.priority }}
+        </span>
+      </div>
 
-        <div class="task-actions">
-          <button class="btn btn-outline-primary btn-task js-update-progress" data-task-id="{{ task.id }}" data-progress-next="{{ task.progress + 10 }}" title="{{ _('Обнови прогреса') }}">
-            <i class="fas fa-plus me-1"></i>{{ _('Обнови') }}
-          </button>
-          <button class="btn btn-success btn-task js-complete-task" data-task-id="{{ task.id }}" title="{{ _('Завърши задачата') }}">
-            <i class="fas fa-check me-1"></i>{{ _('Завърши') }}
-          </button>
+      <p class="task-description">{{ task.description }}</p>
+
+      <div class="task-progress">
+        <div class="task-progress-header">
+          <span>{{ _('Прогрес') }}</span>
+          <span>{{ task.progress }}%</span>
+        </div>
+        <div class="progress">
+          <div
+            class="progress-bar progress-bar-custom progress-value"
+            data-progress-value="{{ task.progress }}"
+          ></div>
         </div>
       </div>
-      {% endfor %}
-    {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">
-          <i class="fas fa-clipboard-list"></i>
-        </div>
-        <h5 class="empty-title">{{ _('Нямате активни задачи') }}</h5>
-        <p class="empty-description">{{ _('Приемете нова задача от секцията „Налични задачи“ по-долу.') }}</p>
+
+      <div class="task-actions">
+        <button
+          class="btn btn-outline-primary btn-task js-update-progress"
+          data-task-id="{{ task.id }}"
+          data-progress-next="{{ task.progress + 10 }}"
+          title="{{ _('Обнови прогреса') }}"
+        >
+          <i class="fas fa-plus me-1"></i>{{ _('Обнови') }}
+        </button>
+        <button
+          class="btn btn-success btn-task js-complete-task"
+          data-task-id="{{ task.id }}"
+          title="{{ _('Завърши задачата') }}"
+        >
+          <i class="fas fa-check me-1"></i>{{ _('Завърши') }}
+        </button>
       </div>
+    </div>
+    {% endfor %} {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-clipboard-list"></i>
+      </div>
+      <h5 class="empty-title">{{ _('Нямате активни задачи') }}</h5>
+      <p class="empty-description">
+        {{ _('Приемете нова задача от секцията „Налични задачи“ по-долу.') }}
+      </p>
+    </div>
     {% endif %}
   </div>
 
@@ -730,7 +761,9 @@
         <i class="fas fa-plus-circle"></i>
       </div>
       <div class="action-title">{{ _('Налични задачи') }}</div>
-      <div class="action-description">{{ _('%(count)s задачи чакат помощ', count=available_tasks) }}</div>
+      <div class="action-description">
+        {{ _('%(count)s задачи чакат помощ', count=available_tasks) }}
+      </div>
     </a>
 
     <a href="#active-tasks" class="action-card action-active fade-in-up">
@@ -738,7 +771,9 @@
         <i class="fas fa-tasks"></i>
       </div>
       <div class="action-title">{{ _('Активни задачи') }}</div>
-      <div class="action-description">{{ _('Прегледай текущите си ангажименти') }}</div>
+      <div class="action-description">
+        {{ _('Прегледай текущите си ангажименти') }}
+      </div>
     </a>
 
     <a href="#location-update" class="action-card action-location fade-in-up">
@@ -746,10 +781,15 @@
         <i class="fas fa-map-marker-alt"></i>
       </div>
       <div class="action-title">{{ _('Актуализирай локация') }}</div>
-      <div class="action-description">{{ _('Намери близки заявки за помощ') }}</div>
+      <div class="action-description">
+        {{ _('Намери близки заявки за помощ') }}
+      </div>
     </a>
 
-  <a href="{{ url_for('volunteer_profile') }}" class="action-card action-profile fade-in-up">
+    <a
+      href="{{ url_for('volunteer_profile') }}"
+      class="action-card action-profile fade-in-up"
+    >
       <div class="action-icon">
         <i class="fas fa-user-edit"></i>
       </div>
@@ -757,7 +797,10 @@
       <div class="action-description">{{ _('Обнови информацията си') }}</div>
     </a>
 
-    <a href="#achievements-section" class="action-card action-achievements fade-in-up">
+    <a
+      href="#achievements-section"
+      class="action-card action-achievements fade-in-up"
+    >
       <div class="action-icon">
         <i class="fas fa-trophy"></i>
       </div>
@@ -765,7 +808,10 @@
       <div class="action-description">{{ _('Виж своите значки и XP') }}</div>
     </a>
 
-    <a href="mailto:contact@helpchain.live" class="action-card action-support fade-in-up">
+    <a
+      href="mailto:contact@helpchain.live"
+      class="action-card action-support fade-in-up"
+    >
       <div class="action-icon">
         <i class="fas fa-headset"></i>
       </div>
@@ -780,9 +826,12 @@
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <h2 class="section-title">
-            <i class="fas fa-search text-success me-2"></i>{{ _('Налични задачи') }}
+            <i class="fas fa-search text-success me-2"></i>{{ _('Налични
+            задачи') }}
           </h2>
-          <p class="section-subtitle mb-2">{{ _('Задачи, които се нуждаят от доброволци') }}</p>
+          <p class="section-subtitle mb-2">
+            {{ _('Задачи, които се нуждаят от доброволци') }}
+          </p>
           <div class="tasks-summary-badges">
             <span class="tasks-summary-badge">
               <i class="fas fa-clipboard-check text-primary"></i>
@@ -811,41 +860,88 @@
             <span class="input-group-text" id="task-search-label">
               <i class="fas fa-search"></i>
             </span>
-            <input type="text" id="taskSearch" class="form-control task-search-input" placeholder="{{ _('Търси задачи...') }}" aria-describedby="task-search-label">
+            <input
+              type="text"
+              id="taskSearch"
+              class="form-control task-search-input"
+              placeholder="{{ _('Търси задачи...') }}"
+              aria-describedby="task-search-label"
+            />
           </div>
-          <select id="taskFilter" class="form-select task-filter-select" title="{{ _('Филтрирай по приоритет') }}">
+          <select
+            id="taskFilter"
+            class="form-select task-filter-select"
+            title="{{ _('Филтрирай по приоритет') }}"
+          >
             <option value="">{{ _('Всички приоритети') }}</option>
             <option value="urgent">{{ _('Само спешни') }}</option>
             <option value="high">{{ _('Висок приоритет') }}</option>
             <option value="medium">{{ _('Среден приоритет') }}</option>
             <option value="low">{{ _('Нисък приоритет') }}</option>
           </select>
-          <select id="taskSort" class="form-select task-filter-select" title="{{ _('Подреди наличните задачи') }}">
+          <select
+            id="taskSort"
+            class="form-select task-filter-select"
+            title="{{ _('Подреди наличните задачи') }}"
+          >
             <option value="recent">{{ _('Най-нови') }}</option>
             <option value="oldest">{{ _('Най-стари') }}</option>
-            <option value="shortest">{{ _('Най-кратка продължителност') }}</option>
-            <option value="longest">{{ _('Най-дълга продължителност') }}</option>
+            <option value="shortest">
+              {{ _('Най-кратка продължителност') }}
+            </option>
+            <option value="longest">
+              {{ _('Най-дълга продължителност') }}
+            </option>
           </select>
         </div>
       </div>
-      <div class="task-priority-pills" id="taskPriorityPills" role="group" aria-label="{{ _('Бързи филтри по приоритет') }}">
-        <button type="button" class="task-priority-pill active" data-priority-pill="">
+      <div
+        class="task-priority-pills"
+        id="taskPriorityPills"
+        role="group"
+        aria-label="{{ _('Бързи филтри по приоритет') }}"
+      >
+        <button
+          type="button"
+          class="task-priority-pill active"
+          data-priority-pill=""
+        >
           {{ _('Всички') }}
           <span class="badge bg-primary" data-priority-count="all">0</span>
         </button>
-        <button type="button" class="task-priority-pill" data-priority-pill="urgent">
+        <button
+          type="button"
+          class="task-priority-pill"
+          data-priority-pill="urgent"
+        >
           {{ _('Спешни') }}
           <span class="badge bg-danger" data-priority-count="urgent">0</span>
         </button>
-        <button type="button" class="task-priority-pill" data-priority-pill="high">
+        <button
+          type="button"
+          class="task-priority-pill"
+          data-priority-pill="high"
+        >
           {{ _('Високи') }}
-          <span class="badge bg-warning text-dark" data-priority-count="high">0</span>
+          <span class="badge bg-warning text-dark" data-priority-count="high"
+            >0</span
+          >
         </button>
-        <button type="button" class="task-priority-pill" data-priority-pill="medium">
+        <button
+          type="button"
+          class="task-priority-pill"
+          data-priority-pill="medium"
+        >
           {{ _('Средни') }}
-          <span class="badge bg-info text-dark" data-priority-count="medium">0</span>
+          <span class="badge bg-info text-dark" data-priority-count="medium"
+            >0</span
+          >
         </button>
-        <button type="button" class="task-priority-pill" data-priority-pill="low">
+        <button
+          type="button"
+          class="task-priority-pill"
+          data-priority-pill="low"
+        >
           {{ _('Ниски') }}
           <span class="badge bg-success" data-priority-count="low">0</span>
         </button>
@@ -868,7 +964,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
         <h3 class="mb-1">
-          <i class="fas fa-map-marker-alt text-info me-2"></i>Актуализирайте вашата локация
+          <i class="fas fa-map-marker-alt text-info me-2"></i>Актуализирайте
+          вашата локация
         </h3>
         <p class="text-muted mb-0">За да намирате близки заявки за помощ</p>
       </div>
@@ -886,15 +983,27 @@
           <label for="latitude" class="form-label fw-semibold">
             <i class="fas fa-globe me-1"></i>Ширина (Latitude)
           </label>
-          <input type="number" step="0.000001" class="form-control" id="latitude"
-                 placeholder="42.6977" value="{{ current_user.latitude or '' }}">
+          <input
+            type="number"
+            step="0.000001"
+            class="form-control"
+            id="latitude"
+            placeholder="42.6977"
+            value="{{ current_user.latitude or '' }}"
+          />
         </div>
         <div class="col-md-6 mb-3">
           <label for="longitude" class="form-label fw-semibold">
             <i class="fas fa-globe me-1"></i>Дължина (Longitude)
           </label>
-          <input type="number" step="0.000001" class="form-control" id="longitude"
-                 placeholder="23.3219" value="{{ current_user.longitude or '' }}">
+          <input
+            type="number"
+            step="0.000001"
+            class="form-control"
+            id="longitude"
+            placeholder="23.3219"
+            value="{{ current_user.longitude or '' }}"
+          />
         </div>
       </div>
       <div class="row">
@@ -902,14 +1011,27 @@
           <label for="locationText" class="form-label fw-semibold">
             <i class="fas fa-city me-1"></i>Град/Населено място
           </label>
-          <input type="text" class="form-control" id="locationText"
-                 placeholder="София" value="{{ current_user.location or '' }}">
+          <input
+            type="text"
+            class="form-control"
+            id="locationText"
+            placeholder="София"
+            value="{{ current_user.location or '' }}"
+          />
         </div>
         <div class="col-md-6 mb-3 d-flex align-items-end gap-2">
-          <button type="button" class="btn btn-outline-primary btn-location flex-fill" onclick="getCurrentLocation()">
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-location flex-fill"
+            onclick="getCurrentLocation()"
+          >
             <i class="fas fa-crosshairs me-1"></i>GPS
           </button>
-          <button type="button" class="btn btn-success btn-location flex-fill" onclick="updateLocation()">
+          <button
+            type="button"
+            class="btn btn-success btn-location flex-fill"
+            onclick="updateLocation()"
+          >
             <i class="fas fa-save me-1"></i>Запази
           </button>
         </div>
@@ -922,99 +1044,102 @@
 <div id="notificationContainer" class="notification"></div>
 
 <script>
-// Global variables
-let availableTasks = [];
-let filteredTasks = [];
-let activePriorityFilter = "";
-let activeSort = "recent";
-const userLocale = "{{ current_locale or 'bg' }}";
-const priorityLabels = {
-  urgent: "{{ _('Спешна') }}",
-  high: "{{ _('Висока') }}",
-  medium: "{{ _('Средна') }}",
-  low: "{{ _('Ниска') }}",
-};
+  // Global variables
+  let availableTasks = [];
+  let filteredTasks = [];
+  let activePriorityFilter = "";
+  let activeSort = "recent";
+  const userLocale = "{{ current_locale or 'bg' }}";
+  const priorityLabels = {
+    urgent: "{{ _('Спешна') }}",
+    high: "{{ _('Висока') }}",
+    medium: "{{ _('Средна') }}",
+    low: "{{ _('Ниска') }}",
+  };
 
-// Initialize dashboard
-document.addEventListener("DOMContentLoaded", () => {
-  initializeDashboard();
-});
+  // Initialize dashboard
+  document.addEventListener("DOMContentLoaded", () => {
+    initializeDashboard();
+  });
 
-function initializeDashboard() {
-  loadAvailableTasks();
-  setupSearchAndFilter();
-  setupAvailableTaskActions();
-  setupActiveTaskActions();
-  initializeProgressIndicators();
-}
+  function initializeDashboard() {
+    loadAvailableTasks();
+    setupSearchAndFilter();
+    setupAvailableTaskActions();
+    setupActiveTaskActions();
+    initializeProgressIndicators();
+  }
 
-// Load available tasks via API
-async function loadAvailableTasks() {
-  try {
-    const response = await fetch("/api/tasks?status=open&limit=10");
-    const data = await response.json();
+  // Load available tasks via API
+  async function loadAvailableTasks() {
+    try {
+      const response = await fetch("/api/tasks?status=open&limit=10");
+      const data = await response.json();
 
-    if (!data.success) {
-      showNotification("{{ _('Грешка при зареждане на задачите') }}", "danger");
+      if (!data.success) {
+        showNotification(
+          "{{ _('Грешка при зареждане на задачите') }}",
+          "danger",
+        );
+        return;
+      }
+
+      availableTasks = Array.isArray(data.tasks) ? data.tasks : [];
+      filteredTasks = sortTasks([...availableTasks], activeSort);
+      updateTaskSummary(filteredTasks);
+      updatePriorityCounts(availableTasks);
+      renderAvailableTasks(filteredTasks);
+    } catch (error) {
+      console.error("Error loading tasks:", error);
+      showNotification("{{ _('Грешка при свързване със сървъра') }}", "danger");
+    }
+  }
+
+  function updateTaskSummary(tasks) {
+    const summary = tasks.reduce(
+      (acc, task) => {
+        const priority = (task.priority || "low").toLowerCase();
+        acc.all += 1;
+        acc[priority] = (acc[priority] || 0) + 1;
+        return acc;
+      },
+      { all: 0, urgent: 0, high: 0, medium: 0, low: 0 },
+    );
+
+    document.querySelectorAll("[data-task-summary]").forEach((node) => {
+      const key = node.dataset.taskSummary;
+      node.textContent = summary[key] || 0;
+    });
+  }
+
+  function updatePriorityCounts(tasks) {
+    const counts = tasks.reduce(
+      (acc, task) => {
+        const priority = (task.priority || "").toLowerCase();
+        acc.all += 1;
+        if (priority) {
+          acc[priority] = (acc[priority] || 0) + 1;
+        }
+        return acc;
+      },
+      { all: 0 },
+    );
+
+    document.querySelectorAll("[data-priority-count]").forEach((badge) => {
+      const key = badge.dataset.priorityCount;
+      const value = key === "all" ? counts.all : counts[key] || 0;
+      badge.textContent = value;
+    });
+  }
+
+  function renderAvailableTasks(tasks) {
+    const container = document.getElementById("availableTasksContainer");
+    if (!container) {
       return;
     }
 
-    availableTasks = Array.isArray(data.tasks) ? data.tasks : [];
-    filteredTasks = sortTasks([...availableTasks], activeSort);
-    updateTaskSummary(filteredTasks);
-    updatePriorityCounts(availableTasks);
-    renderAvailableTasks(filteredTasks);
-  } catch (error) {
-    console.error("Error loading tasks:", error);
-  showNotification("{{ _('Грешка при свързване със сървъра') }}", "danger");
-  }
-}
-
-function updateTaskSummary(tasks) {
-  const summary = tasks.reduce(
-    (acc, task) => {
-      const priority = (task.priority || "low").toLowerCase();
-      acc.all += 1;
-      acc[priority] = (acc[priority] || 0) + 1;
-      return acc;
-    },
-    { all: 0, urgent: 0, high: 0, medium: 0, low: 0 },
-  );
-
-  document.querySelectorAll("[data-task-summary]").forEach((node) => {
-    const key = node.dataset.taskSummary;
-    node.textContent = summary[key] || 0;
-  });
-}
-
-function updatePriorityCounts(tasks) {
-  const counts = tasks.reduce(
-    (acc, task) => {
-      const priority = (task.priority || "").toLowerCase();
-      acc.all += 1;
-      if (priority) {
-        acc[priority] = (acc[priority] || 0) + 1;
-      }
-      return acc;
-    },
-    { all: 0 },
-  );
-
-  document.querySelectorAll("[data-priority-count]").forEach((badge) => {
-    const key = badge.dataset.priorityCount;
-    const value = key === "all" ? counts.all : counts[key] || 0;
-    badge.textContent = value;
-  });
-}
-
-function renderAvailableTasks(tasks) {
-  const container = document.getElementById("availableTasksContainer");
-  if (!container) {
-    return;
-  }
-
-  if (!tasks.length) {
-    container.innerHTML = `
+    if (!tasks.length) {
+      container.innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">
           <i class="fas fa-search"></i>
@@ -1023,22 +1148,22 @@ function renderAvailableTasks(tasks) {
         <p class="empty-description">{{ _('Опитайте с други критерии за търсене.') }}</p>
       </div>
     `;
-    return;
-  }
+      return;
+    }
 
-  const cards = tasks
-    .map((task) => {
-      const createdAt = task.created_at
-        ? new Date(task.created_at).toLocaleDateString(userLocale || "bg-BG")
-        : "";
-      const duration = task.estimated_hours
-        ? `${task.estimated_hours}{{ _('ч') }}`
-        : "{{ _('Няма') }}";
-      const location = task.location_text || "{{ _('Не е посочена') }}";
-      const description = task.description || "{{ _('Няма описание') }}";
-      const priority = (task.priority || "low").toLowerCase();
+    const cards = tasks
+      .map((task) => {
+        const createdAt = task.created_at
+          ? new Date(task.created_at).toLocaleDateString(userLocale || "bg-BG")
+          : "";
+        const duration = task.estimated_hours
+          ? `${task.estimated_hours}{{ _('ч') }}`
+          : "{{ _('Няма') }}";
+        const location = task.location_text || "{{ _('Не е посочена') }}";
+        const description = task.description || "{{ _('Няма описание') }}";
+        const priority = (task.priority || "low").toLowerCase();
 
-      return `
+        return `
       <div class="task-card">
         <div class="task-header">
           <div class="flex-grow-1">
@@ -1057,383 +1182,430 @@ function renderAvailableTasks(tasks) {
         <p class="task-description">${description}</p>
 
         <div class="task-actions">
-          <button class="btn btn-outline-info btn-task js-view-task" data-task-id="${task.id}" title="{{ _('Преглед на детайлите') }}">
+          <button class="btn btn-outline-info btn-task js-view-task" data-task-id="${
+            task.id
+          }" title="{{ _('Преглед на детайлите') }}">
             <i class="fas fa-eye me-1"></i>{{ _('Детайли') }}
           </button>
-          <button class="btn btn-primary btn-task js-accept-task" data-task-id="${task.id}" title="{{ _('Приеми задачата') }}">
+          <button class="btn btn-primary btn-task js-accept-task" data-task-id="${
+            task.id
+          }" title="{{ _('Приеми задачата') }}">
             <i class="fas fa-hand-paper me-1"></i>{{ _('Приеми') }}
           </button>
         </div>
       </div>
     `;
-    })
-    .join("");
+      })
+      .join("");
 
-  container.innerHTML = cards;
-}
+    container.innerHTML = cards;
+  }
 
-function setupSearchAndFilter() {
-  const searchInput = document.getElementById("taskSearch");
-  const filterSelect = document.getElementById("taskFilter");
-  const sortSelect = document.getElementById("taskSort");
-  const priorityPills = Array.from(
-    document.querySelectorAll("[data-priority-pill]"),
-  );
+  function setupSearchAndFilter() {
+    const searchInput = document.getElementById("taskSearch");
+    const filterSelect = document.getElementById("taskFilter");
+    const sortSelect = document.getElementById("taskSort");
+    const priorityPills = Array.from(
+      document.querySelectorAll("[data-priority-pill]"),
+    );
 
-  const applyFilters = () => {
-    const term = (searchInput?.value || "").toLowerCase();
-    const priority = activePriorityFilter || filterSelect?.value || "";
+    const applyFilters = () => {
+      const term = (searchInput?.value || "").toLowerCase();
+      const priority = activePriorityFilter || filterSelect?.value || "";
 
-    filteredTasks = availableTasks.filter((task) => {
-      const titleMatch = task.title
-        ? task.title.toLowerCase().includes(term)
-        : false;
-      const descriptionMatch = task.description
-        ? task.description.toLowerCase().includes(term)
-        : false;
-      const matchesSearch = term ? titleMatch || descriptionMatch : true;
-      const matchesPriority = priority
-        ? (task.priority || "").toLowerCase() === priority
-        : true;
-      return matchesSearch && matchesPriority;
-    });
+      filteredTasks = availableTasks.filter((task) => {
+        const titleMatch = task.title
+          ? task.title.toLowerCase().includes(term)
+          : false;
+        const descriptionMatch = task.description
+          ? task.description.toLowerCase().includes(term)
+          : false;
+        const matchesSearch = term ? titleMatch || descriptionMatch : true;
+        const matchesPriority = priority
+          ? (task.priority || "").toLowerCase() === priority
+          : true;
+        return matchesSearch && matchesPriority;
+      });
 
-    filteredTasks = sortTasks(filteredTasks, activeSort);
-    updateTaskSummary(filteredTasks);
-    renderAvailableTasks(filteredTasks);
-  };
+      filteredTasks = sortTasks(filteredTasks, activeSort);
+      updateTaskSummary(filteredTasks);
+      renderAvailableTasks(filteredTasks);
+    };
 
-  searchInput?.addEventListener("input", applyFilters);
+    searchInput?.addEventListener("input", applyFilters);
 
-  filterSelect?.addEventListener("change", (event) => {
-    activePriorityFilter = event.target.value;
-    priorityPills.forEach((pill) => {
-      const pillPriority = pill.dataset.priorityPill || "";
-      pill.classList.toggle(
-        "active",
-        pillPriority === activePriorityFilter,
-      );
-    });
-    applyFilters();
-  });
-
-  sortSelect?.addEventListener("change", (event) => {
-    activeSort = event.target.value;
-    filteredTasks = sortTasks(filteredTasks, activeSort);
-    updateTaskSummary(filteredTasks);
-    renderAvailableTasks(filteredTasks);
-  });
-
-  priorityPills.forEach((pill) => {
-    pill.addEventListener("click", () => {
-      activePriorityFilter = pill.dataset.priorityPill || "";
-      if (filterSelect) {
-        filterSelect.value = activePriorityFilter;
-      }
-      priorityPills.forEach((button) =>
-        button.classList.toggle("active", button === pill),
-      );
+    filterSelect?.addEventListener("change", (event) => {
+      activePriorityFilter = event.target.value;
+      priorityPills.forEach((pill) => {
+        const pillPriority = pill.dataset.priorityPill || "";
+        pill.classList.toggle("active", pillPriority === activePriorityFilter);
+      });
       applyFilters();
     });
-  });
 
-  applyFilters();
-}
+    sortSelect?.addEventListener("change", (event) => {
+      activeSort = event.target.value;
+      filteredTasks = sortTasks(filteredTasks, activeSort);
+      updateTaskSummary(filteredTasks);
+      renderAvailableTasks(filteredTasks);
+    });
 
-function sortTasks(tasks, sortValue) {
-  const sorted = [...tasks];
+    priorityPills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        activePriorityFilter = pill.dataset.priorityPill || "";
+        if (filterSelect) {
+          filterSelect.value = activePriorityFilter;
+        }
+        priorityPills.forEach((button) =>
+          button.classList.toggle("active", button === pill),
+        );
+        applyFilters();
+      });
+    });
 
-  switch (sortValue) {
-    case "oldest":
-      sorted.sort(
-        (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0),
-      );
-      break;
-    case "shortest":
-      sorted.sort(
-        (a, b) => (a.estimated_hours || Infinity) - (b.estimated_hours || Infinity),
-      );
-      break;
-    case "longest":
-      sorted.sort(
-        (a, b) => (b.estimated_hours || 0) - (a.estimated_hours || 0),
-      );
-      break;
-    default:
-      sorted.sort(
-        (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
-      );
-      break;
+    applyFilters();
   }
 
-  return sorted;
-}
+  function sortTasks(tasks, sortValue) {
+    const sorted = [...tasks];
 
-function setupAvailableTaskActions() {
-  const container = document.getElementById("availableTasksContainer");
-  if (!container) {
-    return;
+    switch (sortValue) {
+      case "oldest":
+        sorted.sort(
+          (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0),
+        );
+        break;
+      case "shortest":
+        sorted.sort(
+          (a, b) =>
+            (a.estimated_hours || Infinity) - (b.estimated_hours || Infinity),
+        );
+        break;
+      case "longest":
+        sorted.sort(
+          (a, b) => (b.estimated_hours || 0) - (a.estimated_hours || 0),
+        );
+        break;
+      default:
+        sorted.sort(
+          (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
+        );
+        break;
+    }
+
+    return sorted;
   }
 
-  container.addEventListener("click", (event) => {
-    const viewButton = event.target.closest(".js-view-task");
-    const acceptButton = event.target.closest(".js-accept-task");
-
-    if (viewButton) {
-      const taskId = parseInt(viewButton.dataset.taskId, 10);
-      if (!Number.isNaN(taskId)) {
-        viewTaskDetails(taskId);
-      }
+  function setupAvailableTaskActions() {
+    const container = document.getElementById("availableTasksContainer");
+    if (!container) {
       return;
     }
 
-    if (acceptButton) {
-      const taskId = parseInt(acceptButton.dataset.taskId, 10);
-      if (!Number.isNaN(taskId)) {
-        acceptTask(taskId);
+    container.addEventListener("click", (event) => {
+      const viewButton = event.target.closest(".js-view-task");
+      const acceptButton = event.target.closest(".js-accept-task");
+
+      if (viewButton) {
+        const taskId = parseInt(viewButton.dataset.taskId, 10);
+        if (!Number.isNaN(taskId)) {
+          viewTaskDetails(taskId);
+        }
+        return;
       }
-    }
-  });
-}
 
-function setupActiveTaskActions() {
-  const progressButtons = document.querySelectorAll(".js-update-progress");
-  const completeButtons = document.querySelectorAll(".js-complete-task");
-
-  progressButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const taskId = parseInt(button.dataset.taskId, 10);
-      const nextValue = parseFloat(button.dataset.progressNext);
-      if (!Number.isNaN(taskId)) {
-        updateProgress(taskId, nextValue);
+      if (acceptButton) {
+        const taskId = parseInt(acceptButton.dataset.taskId, 10);
+        if (!Number.isNaN(taskId)) {
+          acceptTask(taskId);
+        }
       }
     });
-  });
-
-  completeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const taskId = parseInt(button.dataset.taskId, 10);
-      if (!Number.isNaN(taskId)) {
-        completeTask(taskId);
-      }
-    });
-  });
-}
-
-function initializeProgressIndicators() {
-  document.querySelectorAll("[data-progress-value]").forEach((bar) => {
-    const value = parseFloat(bar.dataset.progressValue);
-    if (!Number.isNaN(value)) {
-      const bounded = Math.min(Math.max(value, 0), 100);
-      bar.style.width = `${bounded}%`;
-    }
-  });
-}
-
-async function acceptTask(taskId) {
-  if (!confirm("{{ _('Сигурни ли сте, че искате да приемете тази задача?') }}")) {
-    return;
   }
 
-  try {
-    const response = await fetch(`/api/tasks/${taskId}/assign/{{ current_user.id }}`, {
-      method: "POST",
-    });
-    const data = await response.json();
+  function setupActiveTaskActions() {
+    const progressButtons = document.querySelectorAll(".js-update-progress");
+    const completeButtons = document.querySelectorAll(".js-complete-task");
 
-    if (data.success) {
-      showNotification("{{ _('Задачата е приета успешно!') }}", "success");
-      setTimeout(() => location.reload(), 1500);
+    progressButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const taskId = parseInt(button.dataset.taskId, 10);
+        const nextValue = parseFloat(button.dataset.progressNext);
+        if (!Number.isNaN(taskId)) {
+          updateProgress(taskId, nextValue);
+        }
+      });
+    });
+
+    completeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const taskId = parseInt(button.dataset.taskId, 10);
+        if (!Number.isNaN(taskId)) {
+          completeTask(taskId);
+        }
+      });
+    });
+  }
+
+  function initializeProgressIndicators() {
+    document.querySelectorAll("[data-progress-value]").forEach((bar) => {
+      const value = parseFloat(bar.dataset.progressValue);
+      if (!Number.isNaN(value)) {
+        const bounded = Math.min(Math.max(value, 0), 100);
+        bar.style.width = `${bounded}%`;
+      }
+    });
+  }
+
+  async function acceptTask(taskId) {
+    if (
+      !confirm("{{ _('Сигурни ли сте, че искате да приемете тази задача?') }}")
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/tasks/${taskId}/assign/{{ current_user.id }}`,
+        {
+          method: "POST",
+        },
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification("{{ _('Задачата е приета успешно!') }}", "success");
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification(
+          "{{ _('Грешка при приемане на задачата: ') }}" + (data.error || ""),
+          "danger",
+        );
+      }
+    } catch (error) {
+      console.error("Error accepting task:", error);
+      showNotification("{{ _('Грешка при свързване със сървъра') }}", "danger");
+    }
+  }
+
+  function viewTaskDetails(taskId) {
+    showNotification(
+      "{{ _('Детайлите за задачата ще бъдат показани в модален прозорец') }}",
+      "info",
+    );
+  }
+
+  async function updateProgress(taskId, newProgress) {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ progress: Math.min(newProgress, 100) }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification("{{ _('Прогресът е обновен!') }}", "success");
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showNotification(
+          "{{ _('Грешка при обновяване на прогреса') }}",
+          "danger",
+        );
+      }
+    } catch (error) {
+      console.error("Error updating progress:", error);
+      showNotification("{{ _('Грешка при свързване със сървъра') }}", "danger");
+    }
+  }
+
+  async function completeTask(taskId) {
+    if (!confirm("{{ _('Сигурни ли сте, че задачата е завършена?') }}")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/complete`, {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification(
+          "{{ _('Задачата е отбелязана като завършена!') }}",
+          "success",
+        );
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification(
+          "{{ _('Грешка при завършване на задачата') }}",
+          "danger",
+        );
+      }
+    } catch (error) {
+      console.error("Error completing task:", error);
+      showNotification("{{ _('Грешка при свързване със сървъра') }}", "danger");
+    }
+  }
+
+  // Location functions
+  function getCurrentLocation() {
+    const btn = event.target.closest("button");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ _('Зареждане...') }}`;
+    btn.classList.add("loading");
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          document.getElementById("latitude").value =
+            position.coords.latitude.toFixed(6);
+          document.getElementById("longitude").value =
+            position.coords.longitude.toFixed(6);
+
+          // Reverse geocode to get city name
+          fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=bg`,
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.city) {
+                document.getElementById("locationText").value = data.city;
+              }
+            })
+            .catch((error) => console.log("Reverse geocoding failed:", error));
+
+          btn.innerHTML = originalText;
+          btn.classList.remove("loading");
+          showNotification(
+            "{{ _('Локацията е получена успешно!') }}",
+            "success",
+          );
+        },
+        function (error) {
+          btn.innerHTML = originalText;
+          btn.classList.remove("loading");
+          showNotification(
+            "{{ _('Не можахме да получим вашата локация. Моля, въведете я ръчно.') }}",
+            "warning",
+          );
+        },
+      );
     } else {
+      btn.innerHTML = originalText;
+      btn.classList.remove("loading");
       showNotification(
-        "{{ _('Грешка при приемане на задачата: ') }}" + (data.error || ""),
-        "danger",
+        "{{ _('Вашият браузър не поддържа геолокация.') }}",
+        "warning",
       );
     }
-  } catch (error) {
-    console.error("Error accepting task:", error);
-    showNotification("{{ _('Грешка при свързване със сървъра') }}", "danger");
   }
-}
 
-function viewTaskDetails(taskId) {
-  showNotification(
-    "{{ _('Детайлите за задачата ще бъдат показани в модален прозорец') }}",
-    "info",
-  );
-}
+  async function updateLocation() {
+    const latitude = document.getElementById("latitude").value;
+    const longitude = document.getElementById("longitude").value;
+    const locationText = document.getElementById("locationText").value;
 
-async function updateProgress(taskId, newProgress) {
-  try {
-    const response = await fetch(`/api/tasks/${taskId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ progress: Math.min(newProgress, 100) }),
-    });
-    const data = await response.json();
-
-    if (data.success) {
-      showNotification("{{ _('Прогресът е обновен!') }}", "success");
-      setTimeout(() => location.reload(), 1000);
-    } else {
-      showNotification("{{ _('Грешка при обновяване на прогреса') }}", "danger");
+    if (!latitude || !longitude) {
+      showNotification(
+        "{{ _('Моля, въведете валидни координати.') }}",
+        "warning",
+      );
+      return;
     }
-  } catch (error) {
-    console.error("Error updating progress:", error);
-    showNotification("{{ _('Грешка при свързване със сървъра') }}", "danger");
-  }
-}
 
-async function completeTask(taskId) {
-  if (!confirm("{{ _('Сигурни ли сте, че задачата е завършена?') }}")) {
-    return;
-  }
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ _('Запазване...') }}`;
+    btn.disabled = true;
 
-  try {
-    const response = await fetch(`/api/tasks/${taskId}/complete`, {
-      method: "POST",
-    });
-    const data = await response.json();
+    try {
+      const response = await fetch(
+        `/api/volunteers/{{ current_user.id }}/location`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            latitude: parseFloat(latitude),
+            longitude: parseFloat(longitude),
+            location: locationText,
+          }),
+        },
+      );
 
-    if (data.success) {
-      showNotification("{{ _('Задачата е отбелязана като завършена!') }}", "success");
-      setTimeout(() => location.reload(), 1500);
-    } else {
-      showNotification("{{ _('Грешка при завършване на задачата') }}", "danger");
-    }
-  } catch (error) {
-    console.error("Error completing task:", error);
-    showNotification("{{ _('Грешка при свързване със сървъра') }}", "danger");
-  }
-}
+      const data = await response.json();
 
-// Location functions
-function getCurrentLocation() {
-  const btn = event.target.closest('button');
-  const originalText = btn.innerHTML;
-  btn.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ _('Зареждане...') }}`;
-  btn.classList.add('loading');
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function(position) {
-        document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
-        document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
-
-        // Reverse geocode to get city name
-        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=bg`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.city) {
-              document.getElementById('locationText').value = data.city;
-            }
-          })
-          .catch(error => console.log('Reverse geocoding failed:', error));
-
-        btn.innerHTML = originalText;
-        btn.classList.remove('loading');
-  showNotification("{{ _('Локацията е получена успешно!') }}", "success");
-      },
-      function(error) {
-        btn.innerHTML = originalText;
-        btn.classList.remove('loading');
-  showNotification("{{ _('Не можахме да получим вашата локация. Моля, въведете я ръчно.') }}", "warning");
+      if (data.success) {
+        showNotification(
+          "{{ _('Локацията е актуализирана успешно!') }}",
+          "success",
+        );
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification(
+          "{{ _('Грешка при актуализиране на локацията: ') }}" +
+            (data.error || ""),
+          "danger",
+        );
       }
-    );
-  } else {
-    btn.innerHTML = originalText;
-    btn.classList.remove('loading');
-    showNotification("{{ _('Вашият браузър не поддържа геолокация.') }}", "warning");
-  }
-}
-
-async function updateLocation() {
-  const latitude = document.getElementById('latitude').value;
-  const longitude = document.getElementById('longitude').value;
-  const locationText = document.getElementById('locationText').value;
-
-  if (!latitude || !longitude) {
-    showNotification("{{ _('Моля, въведете валидни координати.') }}", "warning");
-    return;
-  }
-
-  const btn = event.target;
-  const originalText = btn.innerHTML;
-  btn.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>{{ _('Запазване...') }}`;
-  btn.disabled = true;
-
-  try {
-    const response = await fetch(`/api/volunteers/{{ current_user.id }}/location`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude),
-        location: locationText
-      })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      showNotification("{{ _('Локацията е актуализирана успешно!') }}", "success");
-      setTimeout(() => location.reload(), 1500);
-    } else {
-      showNotification("{{ _('Грешка при актуализиране на локацията: ') }}" + (data.error || ""), "danger");
+    } catch (error) {
+      console.error("Update location error:", error);
+      showNotification(
+        "{{ _('Грешка при свързване със сървъра.') }}",
+        "danger",
+      );
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
     }
-  } catch (error) {
-    console.error("Update location error:", error);
-    showNotification("{{ _('Грешка при свързване със сървъра.') }}", "danger");
-  } finally {
-    btn.innerHTML = originalText;
-    btn.disabled = false;
   }
-}
 
-// Notification system
-function showNotification(message, type = "info") {
-  const container = document.getElementById("notificationContainer");
-  const notificationId = "notification-" + Date.now();
+  // Notification system
+  function showNotification(message, type = "info") {
+    const container = document.getElementById("notificationContainer");
+    const notificationId = "notification-" + Date.now();
 
-  const notificationHtml = `
+    const notificationHtml = `
     <div id="${notificationId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
       ${message}
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
   `;
 
-  container.insertAdjacentHTML("beforeend", notificationHtml);
+    container.insertAdjacentHTML("beforeend", notificationHtml);
 
-  // Auto remove after 5 seconds
-  setTimeout(() => {
-  const notification = document.getElementById(notificationId);
-    if (notification) {
-      notification.remove();
-    }
-  }, 5000);
-}
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      const notification = document.getElementById(notificationId);
+      if (notification) {
+        notification.remove();
+      }
+    }, 5000);
+  }
 
-// Add loading animation to cards
-const observerOptions = {
-  threshold: 0.1,
-  rootMargin: "0px 0px -50px 0px",
-};
+  // Add loading animation to cards
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: "0px 0px -50px 0px",
+  };
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.style.opacity = "1";
-      entry.target.style.transform = "translateY(0)";
-    }
-  });
-}, observerOptions);
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = "1";
+        entry.target.style.transform = "translateY(0)";
+      }
+    });
+  }, observerOptions);
 
-// Observe all cards
-document.querySelectorAll('.stats-card, .action-card, .tasks-section').forEach(card => {
-  card.style.opacity = "0";
-  card.style.transform = "translateY(30px)";
-  card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-  observer.observe(card);
-});
+  // Observe all cards
+  document
+    .querySelectorAll(".stats-card, .action-card, .tasks-section")
+    .forEach((card) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(30px)";
+      card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+      observer.observe(card);
+    });
 </script>
 {% endblock %}

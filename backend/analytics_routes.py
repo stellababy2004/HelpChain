@@ -30,9 +30,9 @@ try:
 except ImportError:
     from permissions import require_admin_login
 
-analytics_bp = Blueprint("analytics_main", __name__)
+analytics_bp = Blueprint("analytics_bp", __name__)
 
-# Import models
+# Import models (use canonical top-level models module)
 try:
     from models import HelpRequest, Volunteer
 except ImportError:
@@ -155,7 +155,7 @@ def analytics_page():
     print(f"DEBUG analytics_page: current_app: {current_app}")
     # Redirect to admin analytics if user is admin, otherwise to login
     if session.get("admin_logged_in"):
-        return redirect(url_for("analytics_main.admin_analytics"))
+        return redirect(url_for("analytics_bp.admin_analytics"))
     else:
         flash("Аналитиката е достъпна само за администратори.", "info")
         return redirect(url_for("admin_login"))
@@ -796,7 +796,7 @@ async def predictive_regional_demand():
         days_ahead = int(request.args.get("days", 7))
 
         try:
-            from predictive_analytics import predictive_analytics
+            from .predictive_analytics import predictive_analytics
         except ImportError:
             return jsonify(
                 {
@@ -827,7 +827,7 @@ async def predictive_workload():
         hours_ahead = int(request.args.get("hours", 24))
 
         try:
-            from predictive_analytics import predictive_analytics
+            from .predictive_analytics import predictive_analytics
         except ImportError:
             return jsonify(
                 {
@@ -856,7 +856,7 @@ async def predictive_insights():
         import asyncio
 
         try:
-            from predictive_analytics import predictive_analytics
+            from .predictive_analytics import predictive_analytics
         except ImportError:
             return jsonify(
                 {
@@ -885,7 +885,7 @@ async def predictive_model_info():
         import asyncio
 
         try:
-            from predictive_analytics import predictive_analytics
+            from .predictive_analytics import predictive_analytics
         except ImportError:
             return jsonify(
                 {

@@ -34,8 +34,9 @@ def get_db():
 
 try:
     from models import PushSubscription, User
-except ImportError:
-    from models import PushSubscription, User
+except Exception:
+    # Fallback for environments that import via package path
+    from backend.models import PushSubscription, User
 
 notification_bp = Blueprint("notification", __name__)
 

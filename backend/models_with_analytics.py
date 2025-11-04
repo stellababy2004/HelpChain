@@ -1,35 +1,22 @@
 from datetime import UTC, datetime
 from enum import Enum
 
-# Import AdminUser and other models - try multiple import strategies
+# Import AdminUser and other models - try relative import first then top-level
 AdminUser = None
 User = None
 Volunteer = None
 
 try:
-    # First try relative imports
     from .models import AdminUser, User, Volunteer
-except ImportError:
+except Exception:
     try:
-        # Try absolute imports
-        from backend.models import AdminUser, User, Volunteer
-    except ImportError:
-        try:
-            # Try importing from current directory
-            from models import AdminUser, User, Volunteer
-        except ImportError:
-            # If all imports fail, raise clear error
-            raise ImportError(
-                "Неуспех при импортиране на AdminUser/User/Volunteer. Проверете пътищата за импортиране."
-            )
+        from models import AdminUser, User, Volunteer
+    except Exception:
+        AdminUser = User = Volunteer = None
 
 
 # Try relative imports first, fall back to absolute imports for standalone execution
-try:
-    from .extensions import db
-except ImportError:
-    from extensions import db
-
+from extensions import db
 
 # Ensure AdminUser is properly imported for relationships
 if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
@@ -43,10 +30,10 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
         if backend_dir not in sys.path:
             sys.path.insert(0, backend_dir)
 
-        # Try to import the real models
-        from models import AdminUser as RealAdminUser
+            # Try to import the real models
+            from models import AdminUser as RealAdminUser
 
-        AdminUser = RealAdminUser
+            AdminUser = RealAdminUser
     except ImportError:
         pass
 

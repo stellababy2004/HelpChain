@@ -5,7 +5,14 @@
   <form method="POST" action="{{ url_for('volunteer_register') }}">
     <div class="mb-3">
       <label for="name" class="form-label">Име:</label>
-      <input type="text" class="form-control" id="name" name="name" required autocomplete="name" />
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        name="name"
+        required
+        autocomplete="name"
+      />
     </div>
     <div class="mb-3">
       <label for="email" class="form-label">Имейл:</label>
@@ -20,11 +27,23 @@
     </div>
     <div class="mb-3">
       <label for="phone" class="form-label">Телефон:</label>
-      <input type="text" class="form-control" id="phone" name="phone" autocomplete="tel" />
+      <input
+        type="text"
+        class="form-control"
+        id="phone"
+        name="phone"
+        autocomplete="tel"
+      />
     </div>
     <div class="mb-3">
       <label for="location" class="form-label">Град/регион:</label>
-      <input type="text" class="form-control" id="location" name="location" autocomplete="address-level2" />
+      <input
+        type="text"
+        class="form-control"
+        id="location"
+        name="location"
+        autocomplete="address-level2"
+      />
     </div>
     <button type="submit" class="btn btn-success">Регистрирай се</button>
   </form>

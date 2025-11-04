@@ -1,9 +1,9 @@
 # 🧩 HelpChain System Architecture Document
 
-> **Version:** 1.0  
-> **Last Updated:** October 2025  
-> **Author:** Stella Barbarella  
-> **Project:** HelpChain – Social & Healthcare Assistance Platform  
+> **Version:** 1.0
+> **Last Updated:** October 2025
+> **Author:** Stella Barbarella
+> **Project:** HelpChain – Social & Healthcare Assistance Platform
 > **Status:** Draft for Internal Technical Review
 
 ---
@@ -20,7 +20,7 @@
 
 ## ⚙️ Scalability & Performance Optimization
 
-Building a resilient platform requires components that can **grow seamlessly** with user demand.  
+Building a resilient platform requires components that can **grow seamlessly** with user demand.
 This checklist ensures the infrastructure remains **efficient, distributed, and fault-tolerant** under load.
 
 | Area                              | Description                                                                                                | Status |
@@ -43,7 +43,7 @@ This checklist ensures the infrastructure remains **efficient, distributed, and 
 
 ## 🔒 Security & Compliance
 
-Ensuring trust and data protection is at the **core of system integrity**.  
+Ensuring trust and data protection is at the **core of system integrity**.
 This checklist defines the foundation for a **secure, compliant, and resilient** architecture aligned with international standards.
 
 | Area                                   | Description                                                                                    | Status |
@@ -68,7 +68,7 @@ This checklist defines the foundation for a **secure, compliant, and resilient**
 
 ## 🧰 Reliability & Monitoring
 
-Reliability ensures that the platform remains **stable, responsive, and recoverable** under any condition.  
+Reliability ensures that the platform remains **stable, responsive, and recoverable** under any condition.
 A robust monitoring setup guarantees **early detection, rapid recovery, and continuous uptime visibility**.
 
 | Area                              | Description                                                                                        | Status |
@@ -94,7 +94,7 @@ A robust monitoring setup guarantees **early detection, rapid recovery, and cont
 
 ## 📈 Performance & Optimization
 
-Performance is the backbone of user experience.  
+Performance is the backbone of user experience.
 An optimized system guarantees **fast response times**, **efficient resource usage**, and **scalable throughput** — even under high demand.
 
 | Area                            | Description                                                                                              | Status |
@@ -120,7 +120,7 @@ An optimized system guarantees **fast response times**, **efficient resource usa
 
 ## 🧩 Architecture Overview & Deployment Model
 
-A well-defined architecture ensures **modularity, scalability, and resilience**.  
+A well-defined architecture ensures **modularity, scalability, and resilience**.
 Each layer communicates through secure APIs and automated pipelines — forming a robust foundation for continuous growth.
 
 | Layer                             | Description                                                        | Technologies                              | Status |

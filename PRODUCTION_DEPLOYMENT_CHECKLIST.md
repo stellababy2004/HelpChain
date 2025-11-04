@@ -31,11 +31,13 @@
 ### Phase 1: Infrastructure
 
 1. **Domain Setup**
+
    - [ ] DNS configured for helpchain.live
    - [ ] SSL certificate auto-renewal enabled
    - [ ] CDN/Proxy headers configured (if applicable)
 
 2. **Application Deployment**
+
    - [ ] Render service created
    - [ ] Environment variables set
    - [ ] Database initialized
@@ -49,11 +51,13 @@
 ### Phase 2: Security Validation
 
 1. **Automated Scans**
+
    - [ ] All GitHub Actions workflows passing
    - [ ] Security scans clean (no critical findings)
    - [ ] Dependency vulnerabilities patched
 
 2. **Manual Testing**
+
    - [ ] Admin login working with 2FA
    - [ ] File uploads with validation
    - [ ] Email notifications sending
@@ -67,11 +71,13 @@
 ### Phase 3: Monitoring Setup
 
 1. **Error Monitoring**
+
    - [ ] Sentry configured with alerts
    - [ ] Log aggregation set up
    - [ ] Performance monitoring enabled
 
 2. **Security Monitoring**
+
    - [ ] CSP violation alerts configured
    - [ ] Failed login attempt monitoring
    - [ ] File upload anomaly detection

@@ -7,9 +7,16 @@ HelpChain.live{% endblock %} {% block content %}
       <div class="mb-3">
         <strong>Примерни ситуации:</strong>
         <ul class="list-unstyled">
-          <li class="mb-2"><i class="fas fa-heartbeat text-danger me-2"></i>Нужда от медицинска помощ</li>
-          <li class="mb-2"><i class="fas fa-users text-info me-2"></i>Социална подкрепа</li>
-          <li class="mb-2"><i class="fas fa-tools text-warning me-2"></i>Технически проблем</li>
+          <li class="mb-2">
+            <i class="fas fa-heartbeat text-danger me-2"></i>Нужда от медицинска
+            помощ
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-users text-info me-2"></i>Социална подкрепа
+          </li>
+          <li class="mb-2">
+            <i class="fas fa-tools text-warning me-2"></i>Технически проблем
+          </li>
         </ul>
       </div>
       <div class="glass p-4">
@@ -21,7 +28,13 @@ HelpChain.live{% endblock %} {% block content %}
           <div class="row">
             <div class="col-md-6 mb-3">
               <label for="name" class="form-label">Вашето име:</label>
-              <input type="text" class="form-control" id="name" name="name" required />
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                required
+              />
             </div>
             <div class="col-md-6 mb-3">
               <label for="email" class="form-label">Имейл адрес:</label>
@@ -36,8 +49,15 @@ HelpChain.live{% endblock %} {% block content %}
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="category" class="form-label">Категория на проблема:</label>
-              <select class="form-select" id="category" name="category" required>
+              <label for="category" class="form-label"
+                >Категория на проблема:</label
+              >
+              <select
+                class="form-select"
+                id="category"
+                name="category"
+                required
+              >
                 <option value="">Изберете...</option>
                 <option value="health">Здраве</option>
                 <option value="social">Социална помощ</option>
@@ -46,11 +66,18 @@ HelpChain.live{% endblock %} {% block content %}
             </div>
             <div class="col-md-6 mb-3">
               <label for="location" class="form-label">Локация/адрес:</label>
-              <input type="text" class="form-control" id="location" name="location" />
+              <input
+                type="text"
+                class="form-control"
+                id="location"
+                name="location"
+              />
             </div>
           </div>
           <div class="mb-3">
-            <label for="problem" class="form-label">Описание на проблема:</label>
+            <label for="problem" class="form-label"
+              >Описание на проблема:</label
+            >
             <textarea
               class="form-control"
               id="problem"
@@ -76,7 +103,8 @@ HelpChain.live{% endblock %} {% block content %}
             <label class="form-check-label" for="terms">
               Съгласен съм с
               <a href="/terms" target="_blank">условията за ползване</a> и
-              <a href="/privacy" target="_blank">политиката за поверителност</a>.
+              <a href="/privacy" target="_blank">политиката за поверителност</a
+              >.
             </label>
           </div>
           <div class="mb-3">
@@ -93,7 +121,9 @@ HelpChain.live{% endblock %} {% block content %}
             />
           </div>
           <div class="d-grid">
-            <button type="submit" class="btn btn-primary btn-lg">Изпрати</button>
+            <button type="submit" class="btn btn-primary btn-lg">
+              Изпрати
+            </button>
           </div>
         </form>
       </div>

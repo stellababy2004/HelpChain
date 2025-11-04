@@ -1,0 +1,8 @@
+@app.route("/contact", methods=["GET", "POST"]) def contact(): if request.method
+== "POST": name = request.form.get("name") email = request.form.get("email")
+message = request.form.get("message") # Разпознаване на езика на съобщението
+detected_lang = detect_supported_language(message or "") # Тук можете да
+запишете, изпратите или обработите съобщението app.logger.info( "[CONTACT]
+Message from %s <%s> [%s]: %s", name, email, detected_lang, message )
+flash("Благодарим за вашето съобщение!") return redirect(url_for("contact"))
+return render_template("contact.html")

@@ -1,256 +1,350 @@
 <!-- Global Search Modal -->
-<div class="modal fade" id="globalSearchModal" tabindex="-1" aria-labelledby="globalSearchModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="globalSearchModalLabel">
-                    <i class="fas fa-search me-2"></i>Глобално търсене
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="globalSearchInput"
-                        placeholder="Търсете доброволци, заявки, категории...">
-                    <button class="btn btn-primary" type="button" id="globalSearchBtn" aria-label="Търси">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                <div id="searchResults" class="search-results">
-                    <!-- Search results will be populated here -->
-                </div>
-            </div>
+<div
+  class="modal fade"
+  id="globalSearchModal"
+  tabindex="-1"
+  aria-labelledby="globalSearchModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="globalSearchModalLabel">
+          <i class="fas fa-search me-2"></i>Глобално търсене
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group mb-3">
+          <input
+            type="text"
+            class="form-control"
+            id="globalSearchInput"
+            placeholder="Търсете доброволци, заявки, категории..."
+          />
+          <button
+            class="btn btn-primary"
+            type="button"
+            id="globalSearchBtn"
+            aria-label="Търси"
+          >
+            <i class="fas fa-search"></i>
+          </button>
         </div>
+        <div id="searchResults" class="search-results">
+          <!-- Search results will be populated here -->
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Global Search Styles -->
 <style>
-    .search-results {
-        max-height: 400px;
-        overflow-y: auto;
+  .search-results {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .search-result-item {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .search-result-item:hover {
+    background-color: #f8f9fa;
+  }
+
+  .search-result-item:last-child {
+    border-bottom: none;
+  }
+
+  .search-result-title {
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 4px;
+  }
+
+  .search-result-meta {
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+
+  .search-result-category {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #e9ecef;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-top: 4px;
+  }
+
+  .search-no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+  }
+
+  .search-loading {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .search-loading i {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
     }
 
-    .search-result-item {
-        padding: 12px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-        transition: background-color 0.2s;
+    100% {
+      transform: rotate(360deg);
     }
-
-    .search-result-item:hover {
-        background-color: #f8f9fa;
-    }
-
-    .search-result-item:last-child {
-        border-bottom: none;
-    }
-
-    .search-result-title {
-        font-weight: 600;
-        color: #1976d2;
-        margin-bottom: 4px;
-    }
-
-    .search-result-meta {
-        font-size: 0.875rem;
-        color: #6c757d;
-    }
-
-    .search-result-category {
-        display: inline-block;
-        padding: 2px 8px;
-        background-color: #e9ecef;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        margin-top: 4px;
-    }
-
-    .search-no-results {
-        text-align: center;
-        padding: 40px 20px;
-        color: #6c757d;
-    }
-
-    .search-loading {
-        text-align: center;
-        padding: 40px 20px;
-    }
-
-    .search-loading i {
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
-    }
+  }
 </style>
 
 <!-- Global Search JavaScript -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const searchModal = new bootstrap.Modal(document.getElementById('globalSearchModal'));
-        const searchInput = document.getElementById('globalSearchInput');
-        const searchBtn = document.getElementById('globalSearchBtn');
-        const searchResults = document.getElementById('searchResults');
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchModal = new bootstrap.Modal(
+      document.getElementById("globalSearchModal"),
+    );
+    const searchInput = document.getElementById("globalSearchInput");
+    const searchBtn = document.getElementById("globalSearchBtn");
+    const searchResults = document.getElementById("searchResults");
 
-        // Search data - in a real app, this would come from an API
-        const searchData = {
-            volunteers: [
-                { id: 1, name: 'Иван Петров', location: 'София', skills: 'Транспорт, Домакинска помощ', category: 'volunteer' },
-                { id: 2, name: 'Мария Димитрова', location: 'Пловдив', skills: 'Медицинска помощ', category: 'volunteer' },
-                { id: 3, name: 'Георги Стоянов', location: 'Варна', skills: 'Образование, Правна помощ', category: 'volunteer' }
-            ],
-            requests: [
-                { id: 1, title: 'Помощ с пазаруване', location: 'София', category: 'Домакинска помощ', requester: 'Анонимен', category_type: 'request' },
-                { id: 2, title: 'Съпровод до лекар', location: 'Пловдив', category: 'Медицинска помощ', requester: 'Анонимен', category_type: 'request' }
-            ],
-            categories: [
-                { name: 'Медицинска помощ', slug: 'medical', description: 'Медицинска помощ, спешни случаи' },
-                { name: 'Транспорт', slug: 'transport', description: 'Превоз на хора и стоки' },
-                { name: 'Домакинска помощ', slug: 'household', description: 'Почистване, ремонт, грижи за дома' }
-            ]
-        };
+    // Search data - in a real app, this would come from an API
+    const searchData = {
+      volunteers: [
+        {
+          id: 1,
+          name: "Иван Петров",
+          location: "София",
+          skills: "Транспорт, Домакинска помощ",
+          category: "volunteer",
+        },
+        {
+          id: 2,
+          name: "Мария Димитрова",
+          location: "Пловдив",
+          skills: "Медицинска помощ",
+          category: "volunteer",
+        },
+        {
+          id: 3,
+          name: "Георги Стоянов",
+          location: "Варна",
+          skills: "Образование, Правна помощ",
+          category: "volunteer",
+        },
+      ],
+      requests: [
+        {
+          id: 1,
+          title: "Помощ с пазаруване",
+          location: "София",
+          category: "Домакинска помощ",
+          requester: "Анонимен",
+          category_type: "request",
+        },
+        {
+          id: 2,
+          title: "Съпровод до лекар",
+          location: "Пловдив",
+          category: "Медицинска помощ",
+          requester: "Анонимен",
+          category_type: "request",
+        },
+      ],
+      categories: [
+        {
+          name: "Медицинска помощ",
+          slug: "medical",
+          description: "Медицинска помощ, спешни случаи",
+        },
+        {
+          name: "Транспорт",
+          slug: "transport",
+          description: "Превоз на хора и стоки",
+        },
+        {
+          name: "Домакинска помощ",
+          slug: "household",
+          description: "Почистване, ремонт, грижи за дома",
+        },
+      ],
+    };
 
-        function performSearch(query) {
-            if (!query.trim()) {
-                searchResults.innerHTML = '<div class="search-no-results"><i class="fas fa-search fa-2x mb-3"></i><p>Въведете дума за търсене</p></div>';
-                return;
-            }
+    function performSearch(query) {
+      if (!query.trim()) {
+        searchResults.innerHTML =
+          '<div class="search-no-results"><i class="fas fa-search fa-2x mb-3"></i><p>Въведете дума за търсене</p></div>';
+        return;
+      }
 
-            searchResults.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-2x"></i><p>Търсене...</p></div>';
+      searchResults.innerHTML =
+        '<div class="search-loading"><i class="fas fa-spinner fa-2x"></i><p>Търсене...</p></div>';
 
-            setTimeout(() => {
-                const results = [];
-                const lowerQuery = query.toLowerCase();
+      setTimeout(() => {
+        const results = [];
+        const lowerQuery = query.toLowerCase();
 
-                // Search volunteers
-                searchData.volunteers.forEach(vol => {
-                    if (vol.name.toLowerCase().includes(lowerQuery) ||
-                        vol.location.toLowerCase().includes(lowerQuery) ||
-                        vol.skills.toLowerCase().includes(lowerQuery)) {
-                        results.push({
-                            ...vol,
-                            type: 'volunteer',
-                            title: vol.name,
-                            subtitle: `${vol.location} • ${vol.skills}`,
-                            url: `/volunteer/${vol.id}`
-                        });
-                    }
-                });
+        // Search volunteers
+        searchData.volunteers.forEach((vol) => {
+          if (
+            vol.name.toLowerCase().includes(lowerQuery) ||
+            vol.location.toLowerCase().includes(lowerQuery) ||
+            vol.skills.toLowerCase().includes(lowerQuery)
+          ) {
+            results.push({
+              ...vol,
+              type: "volunteer",
+              title: vol.name,
+              subtitle: `${vol.location} • ${vol.skills}`,
+              url: `/volunteer/${vol.id}`,
+            });
+          }
+        });
 
-                // Search requests
-                searchData.requests.forEach(req => {
-                    if (req.title.toLowerCase().includes(lowerQuery) ||
-                        req.location.toLowerCase().includes(lowerQuery) ||
-                        req.category.toLowerCase().includes(lowerQuery)) {
-                        results.push({
-                            ...req,
-                            type: 'request',
-                            title: req.title,
-                            subtitle: `${req.location} • ${req.category}`,
-                            url: `/request/${req.id}`
-                        });
-                    }
-                });
+        // Search requests
+        searchData.requests.forEach((req) => {
+          if (
+            req.title.toLowerCase().includes(lowerQuery) ||
+            req.location.toLowerCase().includes(lowerQuery) ||
+            req.category.toLowerCase().includes(lowerQuery)
+          ) {
+            results.push({
+              ...req,
+              type: "request",
+              title: req.title,
+              subtitle: `${req.location} • ${req.category}`,
+              url: `/request/${req.id}`,
+            });
+          }
+        });
 
-                // Search categories
-                searchData.categories.forEach(cat => {
-                    if (cat.name.toLowerCase().includes(lowerQuery) ||
-                        cat.description.toLowerCase().includes(lowerQuery)) {
-                        results.push({
-                            ...cat,
-                            type: 'category',
-                            title: cat.name,
-                            subtitle: cat.description,
-                            url: `/category/${cat.slug}`
-                        });
-                    }
-                });
+        // Search categories
+        searchData.categories.forEach((cat) => {
+          if (
+            cat.name.toLowerCase().includes(lowerQuery) ||
+            cat.description.toLowerCase().includes(lowerQuery)
+          ) {
+            results.push({
+              ...cat,
+              type: "category",
+              title: cat.name,
+              subtitle: cat.description,
+              url: `/category/${cat.slug}`,
+            });
+          }
+        });
 
-                displayResults(results, query);
-            }, 300); // Simulate API delay
-        }
+        displayResults(results, query);
+      }, 300); // Simulate API delay
+    }
 
-        function displayResults(results, query) {
-            if (results.length === 0) {
-                searchResults.innerHTML = '<div class="search-no-results"><i class="fas fa-search fa-2x mb-3"></i><p>Няма намерени резултати</p></div>';
-                return;
-            }
+    function displayResults(results, query) {
+      if (results.length === 0) {
+        searchResults.innerHTML =
+          '<div class="search-no-results"><i class="fas fa-search fa-2x mb-3"></i><p>Няма намерени резултати</p></div>';
+        return;
+      }
 
-            const html = results.map(result => `
-      <div class="search-result-item" onclick="window.location.href='${result.url}'">
-        <div class="search-result-title">${highlightText(result.title, query)}</div>
-        <div class="search-result-meta">${highlightText(result.subtitle, query)}</div>
-        <span class="search-result-category">${getCategoryLabel(result.type)}</span>
+      const html = results
+        .map(
+          (result) => `
+      <div class="search-result-item" onclick="window.location.href='${
+        result.url
+      }'">
+        <div class="search-result-title">${highlightText(
+          result.title,
+          query,
+        )}</div>
+        <div class="search-result-meta">${highlightText(
+          result.subtitle,
+          query,
+        )}</div>
+        <span class="search-result-category">${getCategoryLabel(
+          result.type,
+        )}</span>
       </div>
-    `).join('');
+    `,
+        )
+        .join("");
 
-            searchResults.innerHTML = html;
-        }
+      searchResults.innerHTML = html;
+    }
 
-        function highlightText(text, query) {
-            if (!query) return text;
-            const regex = new RegExp(`(${query})`, 'gi');
-            return text.replace(regex, '<mark>$1</mark>');
-        }
+    function highlightText(text, query) {
+      if (!query) return text;
+      const regex = new RegExp(`(${query})`, "gi");
+      return text.replace(regex, "<mark>$1</mark>");
+    }
 
-        function getCategoryLabel(type) {
-            const labels = {
-                volunteer: 'Доброволец',
-                request: 'Заявка',
-                category: 'Категория'
-            };
-            return labels[type] || type;
-        }
+    function getCategoryLabel(type) {
+      const labels = {
+        volunteer: "Доброволец",
+        request: "Заявка",
+        category: "Категория",
+      };
+      return labels[type] || type;
+    }
 
-        // Event listeners
-        searchBtn.addEventListener('click', () => {
-            performSearch(searchInput.value);
-        });
-
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch(searchInput.value);
-            }
-        });
-
-        searchInput.addEventListener('input', (e) => {
-            if (e.target.value.length > 2) {
-                performSearch(e.target.value);
-            } else if (e.target.value.length === 0) {
-                searchResults.innerHTML = '<div class="search-no-results"><i class="fas fa-search fa-2x mb-3"></i><p>Въведете дума за търсене</p></div>';
-            }
-        });
-
-        // Clear search when modal is closed
-        document.getElementById('globalSearchModal').addEventListener('hidden.bs.modal', () => {
-            searchInput.value = '';
-            searchResults.innerHTML = '<div class="search-no-results"><i class="fas fa-search fa-2x mb-3"></i><p>Въведете дума за търсене</p></div>';
-        });
-
-        // Keyboard shortcut (Ctrl+K or Cmd+K)
-        document.addEventListener('keydown', function (e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                openGlobalSearch();
-            }
-        });
+    // Event listeners
+    searchBtn.addEventListener("click", () => {
+      performSearch(searchInput.value);
     });
 
-    // Function to open global search (can be called from anywhere)
-    function openGlobalSearch() {
-        const modal = new bootstrap.Modal(document.getElementById('globalSearchModal'));
-        modal.show();
-        setTimeout(() => {
-            document.getElementById('globalSearchInput').focus();
-        }, 500);
-    }
+    searchInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        performSearch(searchInput.value);
+      }
+    });
+
+    searchInput.addEventListener("input", (e) => {
+      if (e.target.value.length > 2) {
+        performSearch(e.target.value);
+      } else if (e.target.value.length === 0) {
+        searchResults.innerHTML =
+          '<div class="search-no-results"><i class="fas fa-search fa-2x mb-3"></i><p>Въведете дума за търсене</p></div>';
+      }
+    });
+
+    // Clear search when modal is closed
+    document
+      .getElementById("globalSearchModal")
+      .addEventListener("hidden.bs.modal", () => {
+        searchInput.value = "";
+        searchResults.innerHTML =
+          '<div class="search-no-results"><i class="fas fa-search fa-2x mb-3"></i><p>Въведете дума за търсене</p></div>';
+      });
+
+    // Keyboard shortcut (Ctrl+K or Cmd+K)
+    document.addEventListener("keydown", function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        openGlobalSearch();
+      }
+    });
+  });
+
+  // Function to open global search (can be called from anywhere)
+  function openGlobalSearch() {
+    const modal = new bootstrap.Modal(
+      document.getElementById("globalSearchModal"),
+    );
+    modal.show();
+    setTimeout(() => {
+      document.getElementById("globalSearchInput").focus();
+    }, 500);
+  }
 </script>
