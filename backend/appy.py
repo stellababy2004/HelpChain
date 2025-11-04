@@ -2,17 +2,16 @@
 from _dispatch_email import _dispatch_email
 
 
-
-
-
 # --- Flask app и публични заявки ---
 from flask import Flask, request, jsonify, Response, render_template
 import traceback
 from sqlalchemy import func
+
 # Импортирай всички модели, за да се регистрират таблиците при db.create_all()
 
 # Явен импорт на всички модели за коректна регистрация на таблиците
 from models import Request, HelpRequest, AdminUser, Volunteer
+
 # Use the canonical top-level models module to avoid duplicate model definitions
 from models import RequestLog, Feedback
 from models_with_analytics import AnalyticsEvent, TaskPerformance
@@ -23,6 +22,7 @@ from models_with_analytics import AnalyticsEvent, TaskPerformance
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["PROPAGATE_EXCEPTIONS"] = True
 import os as _appy_os
+
 # Allow tests to force TESTING mode before importing this module by setting
 # the HELPCHAIN_TESTING environment variable (e.g. HELPCHAIN_TESTING=1).
 if str(_appy_os.environ.get("HELPCHAIN_TESTING", "")).lower() in ("1", "true", "yes"):
@@ -48,7 +48,12 @@ def public_dashboard():
     db = get_db()
     session = db.session
     # Вземаме последните 30 заявки (може да се коригира)
-    requests = session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).limit(30).all()
+    requests = (
+        session.query(HelpRequest)
+        .order_by(HelpRequest.created_at.desc())
+        .limit(30)
+        .all()
+    )
     # Подготвяме данните за шаблона
     return render_template(
         "dashboard.html",
@@ -60,21 +65,24 @@ def public_dashboard():
 def print_all_routes():
     print("\n=== ВСИЧКИ РЕГИСТРИРАНИ МАРШРУТИ В APP ===")
     for rule in app.url_map.iter_rules():
-        methods = ','.join(sorted(rule.methods))
+        methods = ",".join(sorted(rule.methods))
         print(f"{rule.rule:30}  [{methods}]  -> {rule.endpoint}")
     print("=== КРАЙ НА СПИСЪКА ===\n")
 
 
 print_all_routes()
 
+
 # === СТАТИЧЕН ФАЙЛ ЗА CHROME DEVTOOLS ===
-@app.route('/.well-known/appspecific/com.chrome.devtools.json')
+@app.route("/.well-known/appspecific/com.chrome.devtools.json")
 def chrome_devtools_json():
     from flask import send_from_directory
     import os
+
     # Абсолютен път до файла
-    file_path = os.path.join(os.path.dirname(__file__), '.well-known', 'appspecific')
-    return send_from_directory(file_path, 'com.chrome.devtools.json')
+    file_path = os.path.join(os.path.dirname(__file__), ".well-known", "appspecific")
+    return send_from_directory(file_path, "com.chrome.devtools.json")
+
 
 # === PUBLIC REQUESTS API ===
 @app.route("/requests", methods=["GET"])
@@ -109,28 +117,31 @@ def public_requests_list():
     if keyword:
         kw = f"%{keyword.strip().lower()}%"
         query = query.filter(
-            func.lower(HelpRequest.title).like(kw) |
-            func.lower(HelpRequest.description).like(kw) |
-            func.lower(HelpRequest.message).like(kw)
+            func.lower(HelpRequest.title).like(kw)
+            | func.lower(HelpRequest.description).like(kw)
+            | func.lower(HelpRequest.message).like(kw)
         )
 
     # Може да добавим пагинация в бъдеще
     requests = query.order_by(HelpRequest.created_at.desc()).all()
     result = []
     for req in requests:
-        result.append({
-            "id": req.id,
-            "title": req.title,
-            "description": req.description,
-            "status": req.status,
-            "created_at": req.created_at.isoformat() if req.created_at else None,
-            "city": req.city,
-            "region": req.region,
-            "location_text": req.location_text,
-            "name": req.name,
-            # Не връщаме email/phone за privacy
-        })
+        result.append(
+            {
+                "id": req.id,
+                "title": req.title,
+                "description": req.description,
+                "status": req.status,
+                "created_at": req.created_at.isoformat() if req.created_at else None,
+                "city": req.city,
+                "region": req.region,
+                "location_text": req.location_text,
+                "name": req.name,
+                # Не връщаме email/phone за privacy
+            }
+        )
     return jsonify(result)
+
 
 @app.route("/requests", methods=["POST"])
 def public_create_request():
@@ -171,21 +182,32 @@ def public_create_request():
         )
         session.add(req)
         session.commit()
-        return jsonify({"success": True, "id": req.id, "request": {
-            "id": req.id,
-            "name": req.name,
-            "email": req.email,
-            "title": req.title,
-            "city": req.city,
-            "description": req.description,
-            "phone": req.phone,
-            "status": req.status,
-        }}), 201
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "id": req.id,
+                    "request": {
+                        "id": req.id,
+                        "name": req.name,
+                        "email": req.email,
+                        "title": req.title,
+                        "city": req.city,
+                        "description": req.description,
+                        "phone": req.phone,
+                        "status": req.status,
+                    },
+                }
+            ),
+            201,
+        )
     except Exception as e:
         import traceback
+
         traceback.print_exc()
         session.rollback()
         return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route("/request/<int:request_id>", methods=["GET"])
 def public_request_detail(request_id):
@@ -210,7 +232,9 @@ def public_request_detail(request_id):
         "email": req.email,
         "phone": req.phone,
         "completed_at": req.completed_at.isoformat() if req.completed_at else None,
-        "priority": req.priority.name if hasattr(req.priority, 'name') else str(req.priority),
+        "priority": (
+            req.priority.name if hasattr(req.priority, "name") else str(req.priority)
+        ),
         "source_channel": req.source_channel,
         "assigned_volunteer_id": req.assigned_volunteer_id,
     }
@@ -235,6 +259,7 @@ from math import atan2, cos, radians, sin, sqrt
 from io import BytesIO, StringIO
 from types import SimpleNamespace
 from unittest.mock import Mock
+import re
 
 # Ensure backend modules are importable regardless of working directory
 BACKEND_DIR = os.path.dirname(__file__)
@@ -576,7 +601,9 @@ def initialize_default_admin():
     # test startup where db.create_all() may run later in fixtures.
     try:
         if not _has_table("admin_users"):
-            logger.debug("initialize_default_admin: admin_users table not present, skipping")
+            logger.debug(
+                "initialize_default_admin: admin_users table not present, skipping"
+            )
             return None
     except Exception:
         # If the table check itself fails, continue and attempt the regular flow.
@@ -1251,7 +1278,9 @@ def _run_migrations_with_fallback():
 def initialize_database():
     """Initialize database tables and default data for production"""
     if app.config.get("TESTING"):
-        app.logger.info("TESTING mode: skipping automatic db.create_all() and migrations.")
+        app.logger.info(
+            "TESTING mode: skipping automatic db.create_all() and migrations."
+        )
         return
     try:
         with app.app_context():
@@ -1340,6 +1369,24 @@ def get_locale():
     # Default to Bulgarian
     app.logger.debug("Locale defaulted to 'bg'")
     return "bg"
+
+
+_CYRILLIC_RE = re.compile(r"[\u0400-\u04FF]")
+
+
+def detect_supported_language(text: str) -> str:
+    """Lightweight heuristic to detect Bulgarian (Cyrillic) vs other languages.
+
+    This is intentionally simple and used as a fallback when no advanced
+    language-detection service is configured. It returns 'bg' if Cyrillic
+    characters are present, otherwise 'en'.
+    """
+    if not text:
+        return "bg"
+    try:
+        return "bg" if _CYRILLIC_RE.search(text) else "en"
+    except Exception:
+        return "bg"
 
 
 babel = Babel(app, locale_selector=get_locale)
@@ -1774,12 +1821,12 @@ def service_worker():
     return send_file(sw_path, mimetype="application/javascript")
 
 
-
 # Register admin blueprint (for admin API and dashboard)
 try:
     from helpchain_backend.src.routes.admin import admin_bp
 except ImportError:
     import importlib
+
     admin_module = importlib.import_module("helpchain_backend.src.routes.admin")
     admin_bp = admin_module.admin_bp
 app.register_blueprint(admin_bp, url_prefix="/admin")
@@ -2070,6 +2117,7 @@ if socketio:
         if room_id and message_ids:
             try:
                 from backend.extensions import db
+
                 try:
                     from models import ChatMessage
                 except Exception:
@@ -2611,8 +2659,6 @@ if app.config.get("ENV") == "production" and not app.config.get("TESTING", False
 else:
     app.config.setdefault("TEMPLATES_AUTO_RELOAD", True)
     app.jinja_env.auto_reload = True
-
-
 
 
 # Добавяме strftime филтър за Jinja2
@@ -3169,13 +3215,13 @@ def admin_login():
             except Exception:
                 pw_ok = False
             # Print to stdout so pytest -s will show the diagnostic reliably
-            print("DIAGNOSTIC_ADMIN_LOGIN:", getattr(admin_user, "username", None), pw_ok)
-            logger.info(f"Diagnostic: admin_user.username={getattr(admin_user, 'username', None)}, pw_ok={pw_ok}")
-            if (
-                admin_user
-                and username == admin_user.username
-                and pw_ok
-            ):
+            print(
+                "DIAGNOSTIC_ADMIN_LOGIN:", getattr(admin_user, "username", None), pw_ok
+            )
+            logger.info(
+                f"Diagnostic: admin_user.username={getattr(admin_user, 'username', None)}, pw_ok={pw_ok}"
+            )
+            if admin_user and username == admin_user.username and pw_ok:
                 logger.info(f"Admin login successful for {username}")
                 # Clear any volunteer session to prevent conflicts
                 session.pop("volunteer_logged_in", None)
@@ -3185,7 +3231,9 @@ def admin_login():
                 # During tests it's helpful to force the email-2FA path so
                 # fixtures that expect generation/verification are exercised.
                 # We treat TESTING as an opt-in to enable 2FA flow in CI/dev tests.
-                if app.config.get("EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED) or app.config.get("TESTING"):
+                if app.config.get(
+                    "EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED
+                ) or app.config.get("TESTING"):
                     logger.info("Email 2FA enabled; sending verification code")
                     code = generate_email_2fa_code()
                     session["pending_email_2fa"] = True
@@ -3270,7 +3318,6 @@ def admin_logout():
     return redirect(url_for("admin_login"))
 
 
-
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     # Clear all admin-related session keys for generic logout
@@ -3338,38 +3385,67 @@ def admin_requests_api():
     # Combine results into unified items list
     combined = []
     for req in help_results:
-        combined.append((req.created_at or _utcnow(), {
-            "id": req.id,
-            "name": getattr(req, "name", None),
-            "status": req.status,
-            "priority": (
-                req.priority.name if hasattr(req, "priority") and req.priority is not None else None
-            ),
-            "request_type": getattr(req, "request_type", None),
-            "city": getattr(req, "city", None),
-            "location": getattr(req, "location_text", None),
-            "volunteer": {
-                "id": getattr(req.assigned_volunteer, "id", None) if hasattr(req, "assigned_volunteer") else None,
-                "name": getattr(req.assigned_volunteer, "name", None) if hasattr(req, "assigned_volunteer") else None,
-                "email": getattr(req.assigned_volunteer, "email", None) if hasattr(req, "assigned_volunteer") else None,
-            },
-            "created_at": _format_datetime_for_response(req.created_at),
-            "completed_at": _format_datetime_for_response(getattr(req, "completed_at", None)),
-        }))
+        combined.append(
+            (
+                req.created_at or _utcnow(),
+                {
+                    "id": req.id,
+                    "name": getattr(req, "name", None),
+                    "status": req.status,
+                    "priority": (
+                        req.priority.name
+                        if hasattr(req, "priority") and req.priority is not None
+                        else None
+                    ),
+                    "request_type": getattr(req, "request_type", None),
+                    "city": getattr(req, "city", None),
+                    "location": getattr(req, "location_text", None),
+                    "volunteer": {
+                        "id": (
+                            getattr(req.assigned_volunteer, "id", None)
+                            if hasattr(req, "assigned_volunteer")
+                            else None
+                        ),
+                        "name": (
+                            getattr(req.assigned_volunteer, "name", None)
+                            if hasattr(req, "assigned_volunteer")
+                            else None
+                        ),
+                        "email": (
+                            getattr(req.assigned_volunteer, "email", None)
+                            if hasattr(req, "assigned_volunteer")
+                            else None
+                        ),
+                    },
+                    "created_at": _format_datetime_for_response(req.created_at),
+                    "completed_at": _format_datetime_for_response(
+                        getattr(req, "completed_at", None)
+                    ),
+                },
+            )
+        )
 
     for r in req_results:
-        combined.append((r.created_at or _utcnow(), {
-            "id": r.id,
-            "name": getattr(r, "name", None),
-            "status": r.status,
-            "priority": getattr(r, "urgency", None) or getattr(r, "priority", None),
-            "request_type": getattr(r, "category", None),
-            "city": None,
-            "location": getattr(r, "location", None),
-            "volunteer": {"id": None, "name": None, "email": None},
-            "created_at": _format_datetime_for_response(r.created_at),
-            "completed_at": _format_datetime_for_response(getattr(r, "completed_at", None)),
-        }))
+        combined.append(
+            (
+                r.created_at or _utcnow(),
+                {
+                    "id": r.id,
+                    "name": getattr(r, "name", None),
+                    "status": r.status,
+                    "priority": getattr(r, "urgency", None)
+                    or getattr(r, "priority", None),
+                    "request_type": getattr(r, "category", None),
+                    "city": None,
+                    "location": getattr(r, "location", None),
+                    "volunteer": {"id": None, "name": None, "email": None},
+                    "created_at": _format_datetime_for_response(r.created_at),
+                    "completed_at": _format_datetime_for_response(
+                        getattr(r, "completed_at", None)
+                    ),
+                },
+            )
+        )
 
     # Sort combined results by created_at desc
     combined.sort(key=lambda t: (t[0] or _utcnow()), reverse=True)
@@ -3396,11 +3472,18 @@ def admin_requests_api():
         status_counts[st] = status_counts.get(st, 0) + 1
     status_counts["total"] = total_count
 
-    return jsonify({
-        "pagination": {"page": page, "per_page": per_page, "total": total_count, "pages": (total_count + per_page - 1) // per_page},
-        "counts": status_counts,
-        "items": paged_items,
-    })
+    return jsonify(
+        {
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total_count,
+                "pages": (total_count + per_page - 1) // per_page,
+            },
+            "counts": status_counts,
+            "items": paged_items,
+        }
+    )
 
 
 @app.route("/admin/dashboard", endpoint="admin_dashboard")
@@ -3796,8 +3879,10 @@ def admin_assign_volunteer(request_id):
 def admin_delete_request(request_id):
     """Delete a help request"""
     import traceback
+
     try:
         from backend.extensions import db
+
         request_obj = db.session.query(HelpRequest).get_or_404(request_id)
 
         # Optional: Check if request can be deleted (not assigned, etc.)
@@ -3818,6 +3903,7 @@ def admin_delete_request(request_id):
         # Track analytics
         try:
             from analytics_service import analytics_service
+
             analytics_service.track_event(
                 event_type="request_action",
                 event_category="admin",
@@ -3832,12 +3918,17 @@ def admin_delete_request(request_id):
     except Exception as e:
         try:
             from backend.extensions import db
+
             db.session.rollback()
         except Exception:
             pass
-        app.logger.error(f"Error deleting request {request_id}: {e}\n{traceback.format_exc()}")
+        app.logger.error(
+            f"Error deleting request {request_id}: {e}\n{traceback.format_exc()}"
+        )
         return (
-            jsonify({"success": False, "message": f"Грешка при изтриване на заявката: {e}"}),
+            jsonify(
+                {"success": False, "message": f"Грешка при изтриване на заявката: {e}"}
+            ),
             500,
         )
 
@@ -4063,6 +4154,7 @@ def admin_email_2fa():
 
     if request.method == "POST":
         import traceback
+
         try:
             entered_code = request.form.get("code", "").strip()
 
@@ -4594,6 +4686,7 @@ def volunteer_register():
             )
 
             from _dispatch_email import _dispatch_email
+
             _dispatch_email(
                 subject="Нов доброволец в HelpChain",
                 recipients=["contact@helpchain.live"],
