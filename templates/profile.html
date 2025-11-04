@@ -122,8 +122,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background:
-          radial-gradient(
+        background: radial-gradient(
             circle at 30% 70%,
             rgba(120, 119, 198, 0.4) 0%,
             transparent 50%
@@ -915,7 +914,9 @@
               <i class="fas fa-check-circle text-success"></i>
             </div>
             <div class="file-upload-text">${file.name}</div>
-            <div class="file-upload-hint">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+            <div class="file-upload-hint">${(file.size / 1024 / 1024).toFixed(
+              2,
+            )} MB</div>
           `;
         }
       }
@@ -986,7 +987,11 @@
           position: fixed;
           top: 20px;
           right: 20px;
-          background: ${type === "success" ? "var(--success-gradient)" : "var(--danger-gradient)"};
+          background: ${
+            type === "success"
+              ? "var(--success-gradient)"
+              : "var(--danger-gradient)"
+          };
           color: white;
           padding: 1rem 1.5rem;
           border-radius: 8px;
@@ -994,7 +999,9 @@
           z-index: 1000;
           animation: slideInRight 0.3s ease-out;
         `;
-        toast.innerHTML = `<i class="fas fa-${type === "success" ? "check" : "exclamation"}-circle me-2"></i>${message}`;
+        toast.innerHTML = `<i class="fas fa-${
+          type === "success" ? "check" : "exclamation"
+        }-circle me-2"></i>${message}`;
 
         document.body.appendChild(toast);
 

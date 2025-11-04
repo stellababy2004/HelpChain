@@ -2,19 +2,21 @@
 * {
   margin: 0;
   padding: 0;
-  font-family: Comic Sans MS, cursive;
+  font-family:
+    Comic Sans MS,
+    cursive;
 }
 
 body {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
 }
 .custom-max-width {
-    max-width: 800px;
+  max-width: 800px;
 }
 footer {
-    font-size: 0.9rem;
-    padding: 15px 10px;
-    text-align: center;
+  font-size: 0.9rem;
+  padding: 15px 10px;
+  text-align: center;
 }
 /* Добави още твои стилове тук */
 

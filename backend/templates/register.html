@@ -5,7 +5,14 @@
   <form method="POST" action="{{ url_for('send_registration') }}">
     <div class="mb-3">
       <label for="name" class="form-label">Име:</label>
-      <input type="text" class="form-control" id="name" name="name" required autocomplete="name" />
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        name="name"
+        required
+        autocomplete="name"
+      />
     </div>
     <div class="mb-3">
       <label for="email" class="form-label">Имейл:</label>

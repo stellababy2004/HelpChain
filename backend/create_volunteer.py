@@ -13,12 +13,14 @@ from werkzeug.security import generate_password_hash
 
 from appy import app
 
-try:  # Prefer package-style imports when available
-    from backend.extensions import db
-    from backend.models import User, Volunteer
-except ModuleNotFoundError:  # Fallback for direct script execution
+try:
+    # Prefer canonical top-level imports
     from extensions import db
     from models import User, Volunteer
+except Exception:
+    # Fallback for package/script execution styles
+    from backend.extensions import db
+    from backend.models import User, Volunteer
 
 
 DEFAULT_EMAIL = "ivan@example.com"

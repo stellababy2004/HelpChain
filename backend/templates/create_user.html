@@ -1,95 +1,51 @@
-&lt;!DOCTYPE html&gt;
-&lt;html lang="bg"&gt;
-&lt;head&gt;
-&lt;meta charset="UTF-8"&gt;
-&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-&lt;title&gt;Създаване на потребител - HelpChain&lt;/title&gt;
-&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
-&lt;link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"&gt;
-&lt;/head&gt;
-&lt;body&gt;
-&lt;nav class="navbar navbar-expand-lg navbar-dark bg-primary"&gt;
-&lt;div class="container"&gt;
-&lt;a class="navbar-brand" href="#"&gt;
-&lt;i class="fas fa-user-plus"&gt;&lt;/i&gt; Създаване на потребител
-&lt;/a&gt;
-&lt;div class="navbar-nav ms-auto"&gt;
-&lt;a class="nav-link" href="{{ url_for('admin_roles.roles_dashboard') }}"&gt;
-&lt;i class="fas fa-arrow-left"&gt;&lt;/i&gt; Обратно
-&lt;/a&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/nav&gt;
-
-&lt;div class="container mt-4"&gt;
-&lt;div class="row justify-content-center"&gt;
-&lt;div class="col-md-8"&gt;
-&lt;div class="card"&gt;
-&lt;div class="card-header"&gt;
-&lt;h4&gt;&lt;i class="fas fa-user"&gt;&lt;/i&gt; Нов потребител&lt;/h4&gt;
-&lt;/div&gt;
-&lt;div class="card-body"&gt;
-&lt;form method="post"&gt;
-&lt;div class="mb-3"&gt;
+&lt;!DOCTYPE html&gt; &lt;html lang="bg"&gt; &lt;head&gt; &lt;meta
+charset="UTF-8"&gt; &lt;meta name="viewport" content="width=device-width,
+initial-scale=1.0"&gt; &lt;title&gt;Създаване на потребител -
+HelpChain&lt;/title&gt; &lt;link
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+rel="stylesheet"&gt; &lt;link
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+rel="stylesheet"&gt; &lt;/head&gt; &lt;body&gt; &lt;nav class="navbar
+navbar-expand-lg navbar-dark bg-primary"&gt; &lt;div class="container"&gt; &lt;a
+class="navbar-brand" href="#"&gt; &lt;i class="fas fa-user-plus"&gt;&lt;/i&gt;
+Създаване на потребител &lt;/a&gt; &lt;div class="navbar-nav ms-auto"&gt; &lt;a
+class="nav-link" href="{{ url_for('admin_roles.roles_dashboard') }}"&gt; &lt;i
+class="fas fa-arrow-left"&gt;&lt;/i&gt; Обратно &lt;/a&gt; &lt;/div&gt;
+&lt;/div&gt; &lt;/nav&gt; &lt;div class="container mt-4"&gt; &lt;div class="row
+justify-content-center"&gt; &lt;div class="col-md-8"&gt; &lt;div
+class="card"&gt; &lt;div class="card-header"&gt; &lt;h4&gt;&lt;i class="fas
+fa-user"&gt;&lt;/i&gt; Нов потребител&lt;/h4&gt; &lt;/div&gt; &lt;div
+class="card-body"&gt; &lt;form method="post"&gt; &lt;div class="mb-3"&gt;
 &lt;label for="username" class="form-label"&gt;Потребителско име *&lt;/label&gt;
-&lt;input type="text" class="form-control" id="username" name="username" required&gt;
-&lt;div class="form-text"&gt;Уникално потребителско име&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="mb-3"&gt;
-&lt;label for="email" class="form-label"&gt;Имейл *&lt;/label&gt;
-&lt;input type="email" class="form-control" id="email" name="email" required&gt;
-&lt;div class="form-text"&gt;Валиден имейл адрес&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="mb-3"&gt;
-&lt;label for="password" class="form-label"&gt;Парола *&lt;/label&gt;
-&lt;input type="password" class="form-control" id="password" name="password" required&gt;
-&lt;div class="form-text"&gt;Силна парола с минимум 8 символа&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="mb-3"&gt;
-&lt;label class="form-label"&gt;Роли&lt;/label&gt;
-&lt;div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;"&gt;
-{% for role in roles %}
-&lt;div class="form-check"&gt;
-&lt;input class="form-check-input" type="checkbox" id="role_{{ role.id }}" name="roles" value="{{ role.id }}"&gt;
-&lt;label class="form-check-label" for="role_{{ role.id }}"&gt;
-&lt;strong&gt;{{ role.name }}&lt;/strong&gt;
-{% if role.description %}
-&lt;br&gt;&lt;small class="text-muted"&gt;{{ role.description }}&lt;/small&gt;
-{% endif %}
-{% if role.is_system_role %}
-&lt;span class="badge bg-secondary ms-2"&gt;Системна&lt;/span&gt;
-{% endif %}
-&lt;/label&gt;
-&lt;/div&gt;
-{% endfor %}
-&lt;/div&gt;
-&lt;div class="form-text"&gt;Изберете ролите, които този потребител ще има&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="alert alert-info"&gt;
+&lt;input type="text" class="form-control" id="username" name="username"
+required&gt; &lt;div class="form-text"&gt;Уникално потребителско име&lt;/div&gt;
+&lt;/div&gt; &lt;div class="mb-3"&gt; &lt;label for="email"
+class="form-label"&gt;Имейл *&lt;/label&gt; &lt;input type="email"
+class="form-control" id="email" name="email" required&gt; &lt;div
+class="form-text"&gt;Валиден имейл адрес&lt;/div&gt; &lt;/div&gt; &lt;div
+class="mb-3"&gt; &lt;label for="password" class="form-label"&gt;Парола
+*&lt;/label&gt; &lt;input type="password" class="form-control" id="password"
+name="password" required&gt; &lt;div class="form-text"&gt;Силна парола с минимум
+8 символа&lt;/div&gt; &lt;/div&gt; &lt;div class="mb-3"&gt; &lt;label
+class="form-label"&gt;Роли&lt;/label&gt; &lt;div class="border rounded p-3"
+style="max-height: 300px; overflow-y: auto;"&gt; {% for role in roles %} &lt;div
+class="form-check"&gt; &lt;input class="form-check-input" type="checkbox"
+id="role_{{ role.id }}" name="roles" value="{{ role.id }}"&gt; &lt;label
+class="form-check-label" for="role_{{ role.id }}"&gt; &lt;strong&gt;{{ role.name
+}}&lt;/strong&gt; {% if role.description %} &lt;br&gt;&lt;small
+class="text-muted"&gt;{{ role.description }}&lt;/small&gt; {% endif %} {% if
+role.is_system_role %} &lt;span class="badge bg-secondary
+ms-2"&gt;Системна&lt;/span&gt; {% endif %} &lt;/label&gt; &lt;/div&gt; {% endfor
+%} &lt;/div&gt; &lt;div class="form-text"&gt;Изберете ролите, които този
+потребител ще има&lt;/div&gt; &lt;/div&gt; &lt;div class="alert alert-info"&gt;
 &lt;i class="fas fa-info-circle"&gt;&lt;/i&gt;
-&lt;strong&gt;Забележка:&lt;/strong&gt; Новият потребител ще бъде активен веднага след създаването. Можете да промените
-статуса му по-късно.
-&lt;/div&gt;
-
-&lt;div class="d-grid gap-2 d-md-flex justify-content-md-end"&gt;
-&lt;a href="{{ url_for('admin_roles.roles_dashboard') }}" class="btn btn-secondary"&gt;
-&lt;i class="fas fa-times"&gt;&lt;/i&gt; Отказ
-&lt;/a&gt;
-&lt;button type="submit" class="btn btn-success"&gt;
-&lt;i class="fas fa-save"&gt;&lt;/i&gt; Създай потребител
-&lt;/button&gt;
-&lt;/div&gt;
-&lt;/form&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
+&lt;strong&gt;Забележка:&lt;/strong&gt; Новият потребител ще бъде активен
+веднага след създаването. Можете да промените статуса му по-късно. &lt;/div&gt;
+&lt;div class="d-grid gap-2 d-md-flex justify-content-md-end"&gt; &lt;a href="{{
+url_for('admin_roles.roles_dashboard') }}" class="btn btn-secondary"&gt; &lt;i
+class="fas fa-times"&gt;&lt;/i&gt; Отказ &lt;/a&gt; &lt;button type="submit"
+class="btn btn-success"&gt; &lt;i class="fas fa-save"&gt;&lt;/i&gt; Създай
+потребител &lt;/button&gt; &lt;/div&gt; &lt;/form&gt; &lt;/div&gt; &lt;/div&gt;
+&lt;/div&gt; &lt;/div&gt; &lt;/div&gt; &lt;script
+src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+&lt;/body&gt; &lt;/html&gt;

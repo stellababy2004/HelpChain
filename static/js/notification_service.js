@@ -42,8 +42,9 @@ class NotificationService {
       }
 
       // Register service worker
-      this.registration =
-        await navigator.serviceWorker.register("/static/js/sw.js");
+      this.registration = await navigator.serviceWorker.register(
+        "/static/js/sw.js",
+      );
       console.log("Service Worker registered successfully");
 
       // Get VAPID public key

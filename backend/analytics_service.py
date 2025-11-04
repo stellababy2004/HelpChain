@@ -14,15 +14,14 @@ from sqlalchemy import and_, case, func, text
 
 # Remove direct db import - we'll get it from current_app
 try:
-    from models_with_analytics import (
+    from .models_with_analytics import (
         AnalyticsEvent,
         ChatbotConversation,
         PerformanceMetrics,
         UserBehavior,
     )
 except ImportError:
-    # Fallback for when imported as a module
-    from backend.models_with_analytics import (
+    from models_with_analytics import (
         AnalyticsEvent,
         ChatbotConversation,
         PerformanceMetrics,
@@ -39,11 +38,10 @@ def utc_now() -> datetime:
 logger = logging.getLogger(__name__)
 
 try:
-    from performance_optimization import DatabaseOptimizer
+    from .performance_optimization import DatabaseOptimizer
 except ImportError:
-    # Fallback for when imported as a module
     try:
-        from backend.performance_optimization import DatabaseOptimizer
+        from performance_optimization import DatabaseOptimizer
     except ImportError:
         DatabaseOptimizer = None
 
@@ -57,12 +55,12 @@ def get_db():
     else:
         # Fallback - try to import from extensions
         try:
-            from extensions import db
+            from .extensions import db
 
             return db
         except ImportError:
             try:
-                from backend.extensions import db
+                from extensions import db
 
                 return db
             except ImportError:

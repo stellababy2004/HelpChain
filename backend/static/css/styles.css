@@ -1,3 +1,56 @@
+/* Responsive подобрения за таблици и форми */
+@media (max-width: 768px) {
+  .table thead th,
+  .table tbody td {
+    font-size: 0.95em;
+    padding: 6px 4px;
+  }
+  .table thead th:nth-child(4),
+  .table tbody td:nth-child(4),
+  .table thead th:nth-child(5),
+  .table tbody td:nth-child(5),
+  .table thead th:nth-child(6),
+  .table tbody td:nth-child(6),
+  .table thead th:nth-child(7),
+  .table tbody td:nth-child(7) {
+    display: none;
+  }
+  .form-control,
+  .form-select {
+    font-size: 1em;
+    padding: 8px 6px;
+  }
+  .btn,
+  button {
+    font-size: 1em;
+    padding: 10px 8px;
+  }
+  .dashboard-section h4 {
+    font-size: 1.1em;
+    margin-bottom: 0.7em;
+  }
+}
+
+@media (max-width: 480px) {
+  .table thead th,
+  .table tbody td {
+    font-size: 0.88em;
+    padding: 4px 2px;
+  }
+  .dashboard-section h4 {
+    font-size: 1em;
+  }
+  .form-control,
+  .form-select {
+    font-size: 0.98em;
+    padding: 7px 4px;
+  }
+  .btn,
+  button {
+    font-size: 0.98em;
+    padding: 8px 6px;
+  }
+}
 .feedback-container {
   max-width: 500px;
 }

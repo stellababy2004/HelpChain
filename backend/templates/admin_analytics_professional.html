@@ -100,7 +100,9 @@
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         border: none;
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease;
         position: relative;
         overflow: hidden;
       }
@@ -211,7 +213,9 @@
         box-shadow: var(--shadow);
         padding: 1.5rem;
         text-align: center;
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease;
       }
 
       .kpi-value {
@@ -415,7 +419,7 @@
             <li class="nav-item">
               <a
                 class="nav-link active"
-                href="{{ url_for('analytics_main.admin_analytics') }}"
+                href="{{ url_for('analytics_bp.admin_analytics') }}"
               >
                 <i class="fas fa-chart-line me-1"></i>{{ _('Analytics') }}
               </a>
@@ -470,7 +474,8 @@
           <div class="d-flex justify-content-between align-items-center">
             <div>
               <h1 class="h2 mb-1">
-                <i class="fas fa-chart-line text-primary me-2"></i>{{ _('Advanced Analytics') }}
+                <i class="fas fa-chart-line text-primary me-2"></i>{{
+                _('Advanced Analytics') }}
               </h1>
               <p class="text-muted mb-0">
                 {{ _('Real-time аналитика и прогнози за HelpChain') }}
@@ -494,7 +499,9 @@
 
       <!-- Filters -->
       <div class="filters-section">
-  <h5 class="mb-3"><i class="fas fa-filter me-2"></i>{{ _('Филтри') }}</h5>
+        <h5 class="mb-3">
+          <i class="fas fa-filter me-2"></i>{{ _('Филтри') }}
+        </h5>
         <div class="filter-row">
           <div class="form-group">
             <label class="form-label">{{ _('Период') }}</label>
@@ -577,7 +584,8 @@
 
         <div class="kpi-card">
           <div class="kpi-value text-info" id="avgResponseTime">
-    {{ "%.1f"|format(performance_metrics.avg_response_time|default(0)) }}
+            {{ "%.1f"|format(performance_metrics.avg_response_time|default(0))
+            }}
           </div>
           <div class="kpi-label">{{ _('Средно време за отговор (дни)') }}</div>
           <div class="kpi-trend text-danger">
@@ -604,7 +612,8 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-chart-line me-2"></i>{{ _('Трендове през времето') }}
+                <i class="fas fa-chart-line me-2"></i>{{ _('Трендове през
+                времето') }}
               </h3>
               <div class="chart-controls">
                 <select
@@ -627,7 +636,8 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-chart-pie me-2"></i>{{ _('Разпределение по категории') }}
+                <i class="fas fa-chart-pie me-2"></i>{{ _('Разпределение по
+                категории') }}
               </h3>
             </div>
             <canvas id="categoryChart" class="chart-canvas"></canvas>
@@ -641,7 +651,8 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-map-marked-alt me-2"></i>{{ _('Географско разпределение') }}
+                <i class="fas fa-map-marked-alt me-2"></i>{{ _('Географско
+                разпределение') }}
               </h3>
             </div>
             <canvas id="geoChart" class="chart-canvas-small"></canvas>
@@ -652,7 +663,8 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-crystal-ball me-2"></i>{{ _('Прогнози за следващите 3 месеца') }}
+                <i class="fas fa-crystal-ball me-2"></i>{{ _('Прогнози за
+                следващите 3 месеца') }}
               </h3>
             </div>
             <canvas id="predictionChart" class="chart-canvas-small"></canvas>
@@ -664,7 +676,8 @@
       <div class="chart-container">
         <div class="chart-header">
           <h3 class="chart-title">
-            <i class="fas fa-tachometer-alt me-2"></i>{{ _('Performance Metrics') }}
+            <i class="fas fa-tachometer-alt me-2"></i>{{ _('Performance
+            Metrics') }}
           </h3>
         </div>
 
@@ -720,7 +733,8 @@
               {% if predictions.ml_insights %} {% if
               predictions.ml_insights.anomalies %}
               <h5 class="text-warning mb-3">
-                <i class="fas fa-exclamation-triangle me-2"></i>{{ _('Открити аномалии') }}
+                <i class="fas fa-exclamation-triangle me-2"></i>{{ _('Открити
+                аномалии') }}
               </h5>
               {% for anomaly in predictions.ml_insights.anomalies %}
               <div
@@ -735,23 +749,26 @@
               </div>
               {% endfor %} {% else %}
               <div class="alert alert-success">
-                <i class="fas fa-check-circle me-2"></i>{{ _('Няма открити аномалии в данните') }}
+                <i class="fas fa-check-circle me-2"></i>{{ _('Няма открити
+                аномалии в данните') }}
               </div>
               {% endif %} {% if predictions.ml_insights.predictions %}
               <h5 class="text-info mb-3 mt-4">
-                <i class="fas fa-users me-2"></i>{{ _('User Behavior Predictions') }}
+                <i class="fas fa-users me-2"></i>{{ _('User Behavior
+                Predictions') }}
               </h5>
-              {% if predictions.ml_insights.predictions.optimal_engagement_time %}
+              {% if predictions.ml_insights.predictions.optimal_engagement_time
+              %}
               <div class="mb-3">
                 <strong>{{ _('Оптимално време за ангажиране:') }}</strong>
                 {{
                 predictions.ml_insights.predictions.optimal_engagement_time.hour
-                }}:00 ({{ _(
-                  '%(count)s взаимодействия',
-                  count=predictions.ml_insights.predictions.optimal_engagement_time.engagement_score,
+                }}:00 ({{ _( '%(count)s взаимодействия',
+                count=predictions.ml_insights.predictions.optimal_engagement_time.engagement_score,
                 ) }})
               </div>
-              {% endif %} {% if predictions.ml_insights.predictions.churn_risk %}
+              {% endif %} {% if predictions.ml_insights.predictions.churn_risk
+              %}
               <div class="mb-3">
                 <strong>{{ _('Риск от churn:') }}</strong>
                 <span
@@ -760,14 +777,14 @@
                   {{ predictions.ml_insights.predictions.churn_risk.risk|title
                   }}
                 </span>
-                {{ _(
-                  '(%(days)s дни без активност)',
-                  days=predictions.ml_insights.predictions.churn_risk.days_since_activity,
+                {{ _( '(%(days)s дни без активност)',
+                days=predictions.ml_insights.predictions.churn_risk.days_since_activity,
                 ) }}
               </div>
               {% endif %} {% endif %} {% else %}
               <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>{{ _('ML insights не са налични в момента') }}
+                <i class="fas fa-info-circle me-2"></i>{{ _('ML insights не са
+                налични в момента') }}
               </div>
               {% endif %}
             </div>
@@ -778,7 +795,8 @@
           <div class="chart-container">
             <div class="chart-header">
               <h3 class="chart-title">
-                <i class="fas fa-lightbulb me-2"></i>{{ _('Препоръки за оптимизация') }}
+                <i class="fas fa-lightbulb me-2"></i>{{ _('Препоръки за
+                оптимизация') }}
               </h3>
             </div>
             <div class="p-3">
@@ -827,12 +845,12 @@
 
     <!-- Custom JavaScript -->
     <script>
-    // Global variables
-    let trendsChart, categoryChart, geoChart, predictionChart;
-    let liveUpdateInterval;
-    let websocketClient;
-    const LIVE_WEBSOCKET_LABEL = "{{ _('Live (WebSocket)') }}";
-    const LIVE_POLLING_LABEL = "{{ _('Live (Polling)') }}";
+      // Global variables
+      let trendsChart, categoryChart, geoChart, predictionChart;
+      let liveUpdateInterval;
+      let websocketClient;
+      const LIVE_WEBSOCKET_LABEL = "{{ _('Live (WebSocket)') }}";
+      const LIVE_POLLING_LABEL = "{{ _('Live (Polling)') }}";
 
       // Load data from JSON scripts
       const trendsData = JSON.parse(
@@ -854,76 +872,84 @@
 
       function initializeWebSocket() {
         // Initialize WebSocket connection for real-time analytics
-        websocketClient = new HelpChainWebSocket(window.location.protocol + '//' + window.location.host);
+        websocketClient = new HelpChainWebSocket(
+          window.location.protocol + "//" + window.location.host,
+        );
 
         // Get user info from session (passed from server)
         const userId = '{{ session.get("admin_user_id", "admin") }}';
         const userName = '{{ session.get("admin_username", "Admin") }}';
 
-        websocketClient.connect({
-          userId: userId,
-          userName: userName,
-          userType: 'admin'
-        }).then(() => {
-          console.log('Connected to WebSocket for analytics');
+        websocketClient
+          .connect({
+            userId: userId,
+            userName: userName,
+            userType: "admin",
+          })
+          .then(() => {
+            console.log("Connected to WebSocket for analytics");
 
-          // Join analytics room
-          websocketClient.joinAnalyticsRoom('analytics');
+            // Join analytics room
+            websocketClient.joinAnalyticsRoom("analytics");
 
-          // Subscribe to personalized analytics updates
-          websocketClient.subscribeAnalytics(['requests', 'volunteers', 'performance']);
+            // Subscribe to personalized analytics updates
+            websocketClient.subscribeAnalytics([
+              "requests",
+              "volunteers",
+              "performance",
+            ]);
 
-          // Set up event listeners for real-time updates
-          setupWebSocketListeners();
-
-        }).catch((error) => {
-          console.error('Failed to connect to WebSocket:', error);
-          // Fallback to polling if WebSocket fails
-          console.log('Falling back to polling for analytics updates');
-        });
+            // Set up event listeners for real-time updates
+            setupWebSocketListeners();
+          })
+          .catch((error) => {
+            console.error("Failed to connect to WebSocket:", error);
+            // Fallback to polling if WebSocket fails
+            console.log("Falling back to polling for analytics updates");
+          });
       }
 
       function setupWebSocketListeners() {
         // Listen for analytics updates
-        websocketClient.on('analytics_update', (data) => {
-          console.log('Received analytics update:', data);
+        websocketClient.on("analytics_update", (data) => {
+          console.log("Received analytics update:", data);
           updateChartsWithRealtimeData(data);
         });
 
         // Listen for live metrics updates
-        websocketClient.on('live_metrics_update', (data) => {
-          console.log('Received live metrics update:', data);
+        websocketClient.on("live_metrics_update", (data) => {
+          console.log("Received live metrics update:", data);
           updateKPIsWithRealtimeData(data);
         });
 
         // Listen for analytics subscription confirmation
-        websocketClient.on('analytics_subscribed', (data) => {
-          console.log('Analytics subscription confirmed:', data);
+        websocketClient.on("analytics_subscribed", (data) => {
+          console.log("Analytics subscription confirmed:", data);
         });
 
         // Handle connection status
-        websocketClient.on('connected', (data) => {
-          console.log('WebSocket connected:', data);
+        websocketClient.on("connected", (data) => {
+          console.log("WebSocket connected:", data);
           updateConnectionStatus(true);
         });
 
-        websocketClient.on('disconnect', () => {
-          console.log('WebSocket disconnected');
+        websocketClient.on("disconnect", () => {
+          console.log("WebSocket disconnected");
           updateConnectionStatus(false);
         });
       }
 
       function updateConnectionStatus(connected) {
-        const liveIndicator = document.querySelector('.live-indicator');
+        const liveIndicator = document.querySelector(".live-indicator");
         if (liveIndicator) {
-          const dot = liveIndicator.querySelector('.live-dot');
-          const text = liveIndicator.querySelector('span:not(.live-dot)');
+          const dot = liveIndicator.querySelector(".live-dot");
+          const text = liveIndicator.querySelector("span:not(.live-dot)");
 
           if (connected) {
-            dot.style.background = '#28a745';
+            dot.style.background = "#28a745";
             if (text) text.textContent = LIVE_WEBSOCKET_LABEL;
           } else {
-            dot.style.background = '#ffc107';
+            dot.style.background = "#ffc107";
             if (text) text.textContent = LIVE_POLLING_LABEL;
           }
         }
@@ -937,7 +963,7 @@
             trendsChart.data.datasets[0].data = data.trends.requests;
             trendsChart.data.datasets[1].data = data.trends.completed || [];
             trendsChart.data.datasets[2].data = data.trends.volunteers || [];
-            trendsChart.update('none'); // Update without animation for smoother real-time updates
+            trendsChart.update("none"); // Update without animation for smoother real-time updates
           }
         }
 
@@ -946,7 +972,7 @@
           if (categoryChart && data.categories.labels && data.categories.data) {
             categoryChart.data.labels = data.categories.labels;
             categoryChart.data.datasets[0].data = data.categories.data;
-            categoryChart.update('none');
+            categoryChart.update("none");
           }
         }
 
@@ -955,7 +981,7 @@
           if (geoChart && data.geo.labels && data.geo.data) {
             geoChart.data.labels = data.geo.labels;
             geoChart.data.datasets[0].data = data.geo.data;
-            geoChart.update('none');
+            geoChart.update("none");
           }
         }
       }
@@ -963,28 +989,29 @@
       function updateKPIsWithRealtimeData(data) {
         // Update KPI values with real-time data
         if (data.requests_today !== undefined) {
-          const totalRequestsEl = document.getElementById('totalRequests');
+          const totalRequestsEl = document.getElementById("totalRequests");
           if (totalRequestsEl) {
             totalRequestsEl.textContent = data.requests_today;
           }
         }
 
         if (data.success_rate !== undefined) {
-          const successRateEl = document.getElementById('successRate');
+          const successRateEl = document.getElementById("successRate");
           if (successRateEl) {
-            successRateEl.textContent = data.success_rate.toFixed(1) + '%';
+            successRateEl.textContent = data.success_rate.toFixed(1) + "%";
           }
         }
 
         if (data.avg_response_time !== undefined) {
-          const avgResponseTimeEl = document.getElementById('avgResponseTime');
+          const avgResponseTimeEl = document.getElementById("avgResponseTime");
           if (avgResponseTimeEl) {
             avgResponseTimeEl.textContent = data.avg_response_time.toFixed(1);
           }
         }
 
         if (data.active_volunteers !== undefined) {
-          const activeVolunteersEl = document.getElementById('activeVolunteers');
+          const activeVolunteersEl =
+            document.getElementById("activeVolunteers");
           if (activeVolunteersEl) {
             activeVolunteersEl.textContent = data.active_volunteers;
           }

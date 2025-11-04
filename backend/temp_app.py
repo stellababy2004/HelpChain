@@ -25,7 +25,11 @@ from sqlalchemy.exc import OperationalError
 from werkzeug.utils import secure_filename
 
 # Поправи всички relative imports на absolute
-from backend.models import Volunteer, db  # Вместо 'from .models import'
+try:
+    from models import Volunteer, db
+except Exception:
+    # Fallback for package import path
+    from backend.models import Volunteer, db  # Вместо 'from .models import'
 
 # Import for 2FA testing
 # try:

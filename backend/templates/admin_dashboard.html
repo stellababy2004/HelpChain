@@ -1,1114 +1,440 @@
-{% extends "base.html" %} {% block title %}Админ панел | HelpChain.live{%
-endblock %} {% block content %}
+{% extends "base.html" %}
+{% block title %}Админ панел | HelpChain.live{% endblock %}
 
-<style>
-  .dashboard-filters-card {
-    border: none;
-    box-shadow: var(--surface-shadow, 0 8px 24px rgba(15, 23, 42, 0.08));
-  }
-
-  .dashboard-filters-card .card-body {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .filter-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-  }
-
-  .filter-toolbar .form-control,
-  .filter-toolbar .form-select {
-    min-width: 220px;
-  }
-
-  .status-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    border-radius: 999px;
-    border: 1px solid var(--border-muted, rgba(148, 163, 184, 0.4));
-    padding: 0.35rem 0.9rem;
-    background-color: var(--surface-elevated, rgba(148, 163, 184, 0.08));
-    color: var(--text-primary, #1f2933);
-    cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .status-pill:hover,
-  .status-pill.status-pill-active {
-    background-color: var(--pill-active-bg, rgba(37, 99, 235, 0.12));
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
-  }
-
-  .status-pill .badge {
-    font-size: 0.75rem;
-  }
-
-  .requests-empty-state {
-    padding: 2rem;
-    text-align: center;
-    color: var(--text-muted, #64748b);
-  }
-
-  @media (max-width: 768px) {
-    .filter-toolbar {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .filter-toolbar .form-control,
-    .filter-toolbar .form-select {
-      min-width: 100%;
-    }
-
-    .status-pills {
-      justify-content: flex-start;
-    }
-  }
-</style>
-
-<!-- Include Dashboard Navigation -->
-{% include 'dashboard_nav.html' %}
-
-<!-- Breadcrumbs -->
-{% set breadcrumbs = [ {'title': 'Админ панел', 'url': None} ] %} {% include
-'breadcrumbs.html' %}
+{% block content %}
+{% macro status_badge(status) -%}
+  {%- set s = (status or '').lower() -%}
+  {%- if s == 'pending' -%}
+    <span class="badge bg-secondary"><i class="bi bi-hourglass-split me-1"></i>Очаква</span>
+  {%- elif s == 'in_progress' -%}
+    <span class="badge bg-warning text-dark"><i class="bi bi-tools me-1"></i>В процес</span>
+  {%- elif s == 'completed' -%}
+    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Завършена</span>
+  {%- elif s == 'cancelled' -%}
+    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Отказана</span>
+  {%- else -%}
+    <span class="badge bg-light text-dark"><i class="bi bi-question-circle me-1"></i>Неизвестен</span>
+  {%- endif -%}
+{%- endmacro %}
 
 <div class="container mt-5">
-  <h2 class="mb-4">Админ панел</h2>
-
-  <!-- Statistics Cards -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="card bg-primary text-white">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="fas fa-clipboard-list"></i> Общо заявки
-          </h5>
-          <h3 class="card-text">{{ stats.total_requests|default(0) }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card bg-warning text-dark">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="fas fa-clock"></i> Чакащи заявки
-          </h5>
-          <h3 class="card-text">{{ stats.pending_requests|default(0) }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card bg-success text-white">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="fas fa-check-circle"></i> Завършени заявки
-          <h3 class="card-text">{{ stats.completed_requests|default(0) }}</h3>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card bg-info text-white">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="fas fa-users"></i> Доброволци
-          </h5>
-          <h3 class="card-text">{{ stats.total_volunteers|default(0) }}</h3>
-        </div>
-      </div>
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Админ панел</h2>
+    <div class="small text-muted">
+      <i class="bi bi-shield-lock me-1"></i> HelpChain Admin
     </div>
   </div>
 
-  <div class="row mb-4">
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Real-time функции</h5>
-          <p class="text-muted mb-3">
-            Изберете кои компоненти на живо да бъдат активни за администратора. Настройките се запазват автоматично.
-          </p>
-
-          <form
-            id="realtime-features-form"
-            class="d-flex flex-column gap-2"
-            role="group"
-            aria-labelledby="realtime-features-label"
-          >
-            <span id="realtime-features-label" class="visually-hidden"
-              >Опции за Real-time функции</span
-            >
-            <div class="form-check">
-              <input
-                class="form-check-input real-time-feature"
-                type="checkbox"
-                id="feature_websocket"
-                data-feature="websocket"
-                {% if realtime_settings.websocket %}checked{% endif %}
-              />
-              <label class="form-check-label" for="feature_websocket"
-                >WebSocket интеграция</label
-              >
-            </div>
-            <div class="form-check">
-              <input
-                class="form-check-input real-time-feature"
-                type="checkbox"
-                id="feature_notifications"
-                data-feature="notifications"
-                {% if realtime_settings.notifications %}checked{% endif %}
-              />
-              <label class="form-check-label" for="feature_notifications"
-                >Live известия</label
-              >
-            </div>
-            <div class="form-check">
-              <input
-                class="form-check-input real-time-feature"
-                type="checkbox"
-                id="feature_charts"
-                data-feature="charts"
-                {% if realtime_settings.charts %}checked{% endif %}
-              />
-              <label class="form-check-label" for="feature_charts"
-                >Актуализации на графики в реално време</label
-              >
-            </div>
-            <div class="form-check">
-              <input
-                class="form-check-input real-time-feature"
-                type="checkbox"
-                id="feature_background"
-                data-feature="background"
-                {% if realtime_settings.background %}checked{% endif %}
-              />
-              <label class="form-check-label" for="feature_background"
-                >Фоново обработване на данни</label
-              >
-            </div>
-          </form>
-          <div
-            id="realtime-settings-feedback"
-            class="small text-muted mt-2"
-            role="status"
-          ></div>
-        </div>
+  <!-- 2FA Settings -->
+  <div class="mb-4">
+    <h4 class="h5">Настройки за сигурност</h4>
+    {% if current_user and (current_user.is_authenticated if current_user.is_authenticated is not none else true) and current_user.two_factor_enabled %}
+      <div class="alert alert-success d-flex align-items-center" role="alert">
+        <i class="bi bi-shield-check me-2"></i> 2FA е активиран.
       </div>
-    </div>
-  </div>
-
-  <div class="row mb-4">
-    <div class="col-md-12">
-      <div class="d-flex flex-wrap gap-2">
-        <a
-          href="{{ url_for('admin_roles.roles_dashboard') }}"
-          class="btn btn-warning"
-        >
-          <i class="fas fa-shield-alt"></i> Управление на роли
-        </a>
-        <a
-          href="{{ url_for('admin_volunteers') }}"
-          class="btn btn-primary"
-        >
-          <i class="fas fa-users"></i> Доброволци
-        </a>
-        <a
-          href="{{ url_for('add_volunteer') }}"
-          class="btn btn-success"
-        >
-          <i class="fas fa-user-plus"></i> Добави доброволец
-        </a>
-        <a
-          href="{{ url_for('analytics_main.admin_analytics') }}"
-          class="btn btn-info"
-        >
-          <i class="fas fa-chart-bar"></i> Аналитика
-        </a>
-      </div>
-    </div>
-  </div>
-  <div class="card dashboard-filters-card mb-4">
-    <div class="card-body" aria-label="Филтри за заявки">
-      <form id="advancedFiltersForm" class="filter-toolbar" autocomplete="off">
-        <div class="input-group flex-grow-1 flex-md-grow-0" role="search">
-          <span class="input-group-text" id="request-search-label">
-            <i class="fas fa-search"></i>
-          </span>
-          <input
-            type="search"
-            class="form-control"
-            id="requestSearch"
-            placeholder="Търси по заявка, име или статус..."
-            aria-describedby="request-search-label"
-          />
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <label for="requestSort" class="form-label mb-0 visually-hidden">
-            Подреди по
-          </label>
-          <select class="form-select" id="requestSort">
-            <option value="created_desc">Най-нови първо</option>
-            <option value="created_asc">Най-стари първо</option>
-            <option value="name_asc">По име (А-Я)</option>
-            <option value="name_desc">По име (Я-А)</option>
-            <option value="completed_desc">Завършени (най-нови)</option>
-            <option value="completed_asc">Завършени (най-стари)</option>
-          </select>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <label for="filterDateField" class="form-label mb-0 visually-hidden">
-            Поле за дата
-          </label>
-          <select class="form-select" id="filterDateField">
-            <option value="created">По дата на създаване</option>
-            <option value="completed">По дата на завършване</option>
-          </select>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <label for="filterStartDate" class="form-label mb-0 visually-hidden">
-            Начална дата
-          </label>
-          <input
-            type="date"
-            class="form-control"
-            id="filterStartDate"
-            placeholder="От дата"
-          />
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <label for="filterEndDate" class="form-label mb-0 visually-hidden">
-            Крайна дата
-          </label>
-          <input
-            type="date"
-            class="form-control"
-            id="filterEndDate"
-            placeholder="До дата"
-          />
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <label for="filterCity" class="form-label mb-0 visually-hidden">
-            Град
-          </label>
-          <input
-            type="text"
-            class="form-control"
-            id="filterCity"
-            placeholder="Град (напр. София)"
-          />
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <label for="filterRequestType" class="form-label mb-0 visually-hidden">
-            Тип заявка
-          </label>
-          <input
-            type="text"
-            class="form-control"
-            id="filterRequestType"
-            placeholder="Тип/категория"
-          />
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <label for="filterVolunteer" class="form-label mb-0 visually-hidden">
-            Доброволец
-          </label>
-          <input
-            type="text"
-            class="form-control"
-            id="filterVolunteer"
-            placeholder="Доброволец (име или имейл)"
-          />
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <button type="submit" class="btn btn-outline-primary">
-            Приложи филтрите
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            id="resetAdvancedFilters"
-          >
-            Изчисти
-          </button>
-        </div>
+      <form action="/admin/2fa/disable" method="post" class="d-inline">
+        {% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+        <button type="submit" class="btn btn-warning btn-sm">
+          <i class="bi bi-shield-x me-1"></i> Деактивирай 2FA
+        </button>
       </form>
+    {% else %}
+      <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i> 2FA не е активиран.
+      </div>
+      <a href="{{ url_for('admin_2fa_setup') }}" class="btn btn-success btn-sm">
+        <i class="bi bi-shield-plus me-1"></i> Настрой 2FA
+      </a>
+    {% endif %}
+  </div>
 
-      <div class="status-pills" role="group" aria-label="Филтър по статус">
-        <button type="button" class="status-pill status-pill-active" data-status-filter="all">
-          Всички
-          <span class="badge bg-secondary" data-filter-count="all">0</span>
-        </button>
-        <button type="button" class="status-pill" data-status-filter="pending">
-          Чакащи
-          <span class="badge bg-warning text-dark" data-filter-count="pending">0</span>
-        </button>
-        <button type="button" class="status-pill" data-status-filter="approved">
-          Одобрени
-          <span class="badge bg-success" data-filter-count="approved">0</span>
-        </button>
-        <button type="button" class="status-pill" data-status-filter="completed">
-          Завършени
-          <span class="badge bg-info" data-filter-count="completed">0</span>
-        </button>
-        <button type="button" class="status-pill" data-status-filter="rejected">
-          Отхвърлени
-          <span class="badge bg-danger" data-filter-count="rejected">0</span>
-        </button>
+  <div class="mb-4">
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body py-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-collection me-2"></i>
+              Общо заявки
+              <span class="badge bg-primary ms-auto">{{ stats.total_requests|default(0) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body py-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-hourglass-split me-2"></i>
+              Чакащи
+              <span class="badge bg-secondary ms-auto">{{ stats.pending_requests|default(0) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body py-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-tools me-2"></i>
+              В процес
+              <span class="badge bg-warning text-dark ms-auto">{{ stats.in_progress|default(0) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body py-3">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-check2-circle me-2"></i>
+              Завършени
+              <span class="badge bg-success ms-auto">{{ stats.completed_requests|default(0) }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="table-responsive">
-  <table class="table table-bordered mb-0" id="adminRequestsTable">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Име</th>
-        <th>Тип</th>
-        <th>Статус</th>
-        <th>Локация</th>
-        <th>Град</th>
-        <th>Доброволец</th>
-        <th>Създадена</th>
-        <th>Завършена</th>
-        <th>История</th>
-        <th>Действия</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for req in requests['items'] %}
-      <tr
-  data-status="{{ req.status or '' }}"
-  data-updated="{{ req.completed_at or req.created_at or '' }}"
-  data-created="{{ req.created_at or '' }}"
-        data-request-id="{{ req.id }}"
-      >
-        <td>{{ req.id }}</td>
-        <td>{{ req.name or 'Без име' }}</td>
-        <td>{{ req.request_type or '—' }}</td>
-        <td>
-          <span
-            class="badge {% if req.status == 'pending' %}bg-warning text-dark {% elif req.status == 'approved' %}bg-success {% elif req.status == 'rejected' %}bg-danger {% elif req.status == 'completed' %}bg-info {% else %}bg-secondary{% endif %}"
-          >
-            {% if req.status == 'pending' %}Чака одобрение {% elif req.status ==
-            'approved' %}Одобрена {% elif req.status == 'rejected' %}Отхвърлена
-            {% elif req.status == 'completed' %}Завършена {% else %}{
-            req.status or 'Неизвестен' %}{% endif %}
-          </span>
-        </td>
-        <td>{{ req.location or '—' }}</td>
-        <td>{{ req.city or '—' }}</td>
-        <td>{{ req.volunteer_name or '—' }}</td>
-        <td>{{ req.created_at or '—' }}</td>
-        <td>{{ req.completed_at or '—' }}</td>
-        <td>
-          {% if logs_dict.get(req.id) %}
-          <ul class="mb-0 ps-3 list-unstyled">{%- for log in logs_dict[req.id] %}
-            <li>
-              {{ log.status or 'Неизвестен' }}{% if log.changed_at %} – {{
-              log.changed_at }}{% endif %}
-            </li>
-          {%- endfor %}</ul>
-          {% else %}
-          <em>Няма история</em>
-          {% endif %}
-        </td>
-        <td>
-          <div class="btn-group btn-group-sm flex-wrap" role="group">
-            <!-- Прегледай детайли -->
-            <button
-              class="btn btn-outline-primary mb-1 js-view-request"
-              data-request-id="{{ req.id }}"
-              title="Прегледай детайли"
-            >
-              <i class="fas fa-eye"></i>
-            </button>
+    <div class="mt-3 d-flex flex-wrap align-items-center gap-2">
+      <button id="refresh-btn" class="btn btn-outline-secondary" onclick="location.reload()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Обнови
+      </button>
+  <a href="{{ url_for('analytics_bp.analytics_page') }}" class="btn btn-outline-info">
+        <i class="bi bi-graph-up me-1"></i> Аналитика
+      </a>
+      <div class="vr d-none d-md-block"></div>
+      <div class="btn-group" role="group" aria-label="Експорт заявки">
+        <button class="btn btn-primary" onclick="exportData()">
+          <i class="bi bi-download me-1"></i> Експорт заявки (CSV)
+        </button>
+        <button class="btn btn-outline-primary" onclick="copyRequestsCsv()">
+          <i class="bi bi-clipboard-check me-1"></i> Копирай CSV
+        </button>
+      </div>
+      <div class="btn-group" role="group" aria-label="Експорт доброволци">
+        <button class="btn btn-primary" onclick="exportVolunteers()">
+          <i class="bi bi-download me-1"></i> Експорт доброволци (CSV)
+        </button>
+        <button class="btn btn-outline-primary" onclick="copyVolunteersCsv()">
+          <i class="bi bi-clipboard-check me-1"></i> Копирай CSV
+        </button>
+      </div>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <div class="input-group input-group-sm search-width">
+          <span class="input-group-text" aria-hidden="true"><i class="bi bi-search"></i></span>
+          <input type="text" id="searchInput" class="form-control" placeholder="Търси по име..." aria-label="Търси по име" title="Търси по име"/>
+        </div>
+        <select id="statusFilter" class="form-select form-select-sm w-auto" aria-label="Филтър по статус" title="Филтър по статус">
+          <option value="">Всички статуси</option>
+          <option value="pending">Очаква</option>
+          <option value="in_progress">В процес</option>
+          <option value="completed">Завършена</option>
+          <option value="cancelled">Отказана</option>
+        </select>
+        </div> <!-- .ms-auto / controls wrapper -->
+        </div>
+        </div>
 
-            {% if req.status == 'pending' %}
-            <!-- Одобри заявка -->
-            <button
-              class="btn btn-outline-success mb-1 js-approve-request"
-              data-request-id="{{ req.id }}"
-              title="Одобри заявка"
-            >
-              <i class="fas fa-check"></i>
-            </button>
+        <h3 class="h5 mb-2">Заявки</h3>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Име</th>
+                <th>Описание</th>
+                <th>Статус</th>
+                <th>История</th>
+                <th class="actions-col">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-requests">
+              {% if requests and requests.get('items') %}
+                {% for req in requests.get('items') %}
+                <tr data-id="{{ req.id }}">
+                  <td>{{ req.id }}</td>
+                  <td>{{ req.name or 'Без име' }}</td>
+                  <td class="text-truncate truncate-desc">{{ req.description or 'Без описание' }}</td>
+                  <td class="status-cell">{{ status_badge(req.status) | safe }}</td>
+                  <td>
+                    {% set req_logs = logs_dict.get(req.id) if logs_dict is defined and logs_dict else [] %}
+                    {% if req_logs %}
+                    <ul class="mb-0 ps-3 small">
+                    {%- for log in req_logs %}
+                      <li>
+                        <span class="log-badge">{{ status_badge(log.status) | safe }}</span>{% if log.changed_at %}<span class="text-muted"> – {{ log.changed_at }}</span>{% endif %}
+                      </li>
+                    {%- endfor %}
+                    </ul>
+                    {% else %}
+                    <em class="text-muted">Няма история</em>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Действия за заявка {{ req.id }}">
+                      <button type="button" class="btn btn-info" onclick="viewDetails('{{ req.id }}')" title="Преглед на заявка" aria-label="Преглед">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                        <span class="visually-hidden">Преглед</span>
+                      </button>
+                      <button type="button" class="btn btn-warning" onclick="changeStatus('{{ req.id }}')" title="Промяна на статус" aria-label="Промяна на статус">
+                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                        <span class="visually-hidden">Промяна на статус</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="6" class="text-center text-muted">Няма налични заявки</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
 
-            <!-- Отхвърли заявка -->
-            <button
-              class="btn btn-outline-danger mb-1 js-reject-request"
-              data-request-id="{{ req.id }}"
-              title="Отхвърли заявка"
-            >
-              <i class="fas fa-times"></i>
-            </button>
-            {% endif %}
-
-            <!-- Присвои доброволец -->
-            <button
-              class="btn btn-outline-info mb-1 js-assign-volunteer"
-              data-request-id="{{ req.id }}"
-              title="Присвои доброволец"
-            >
-              <i class="fas fa-user-plus"></i>
-            </button>
-
-            <!-- Редактирай -->
-            <button
-              class="btn btn-outline-warning mb-1 js-edit-request"
-              data-request-id="{{ req.id }}"
-              title="Редактирай"
-            >
-              <i class="fas fa-edit"></i>
-            </button>
-
-            <!-- Изтрий -->
-            <button
-              class="btn btn-outline-danger mb-1 js-delete-request"
-              data-request-id="{{ req.id }}"
-              title="Изтрий"
-            >
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  </div>
-  <div class="requests-empty-state d-none" id="requestsEmptyState">
-    <i class="fas fa-inbox mb-2"></i>
-    <p class="mb-0">Няма резултати, отговарящи на избраните филтри.</p>
-  </div>
-</div>
+        <h3 class="h5 mt-4 mb-2">Доброволци</h3>
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Име</th>
+                <th>Имейл</th>
+                <th>Телефон</th>
+                <th>Локация</th>
+                <th>Умения</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-volunteers">
+              {% if volunteers %}
+                {% for vol in volunteers %}
+                <tr>
+                  <td>{{ vol.id }}</td>
+                  <td>{{ vol.name }}</td>
+                  <td><i class="bi bi-envelope-at me-1" aria-hidden="true"></i><span class="visually-hidden">Имейл: </span>{{ vol.email }}</td>
+                  <td><i class="bi bi-telephone me-1" aria-hidden="true"></i><span class="visually-hidden">Телефон: </span>{{ vol.phone }}</td>
+                  <td><i class="bi bi-geo-alt me-1" aria-hidden="true"></i><span class="visually-hidden">Локация: </span>{{ vol.location }}</td>
+                  <td>
+                    {% if vol.skills %}
+                      {% for sk in (vol.skills.split(',') if vol.skills is string else vol.skills) %}
+                        <span class="badge bg-light text-dark me-1 mb-1"><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ sk|trim }}</span>
+                      {% endfor %}
+                    {% else %}
+                      <span class="text-muted">Няма</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="6" class="text-center text-muted">Няма налични доброволци</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+        </div>
 
 <script>
-  // Функции за управление на заявките
-  function viewRequestDetails(requestId) {
-    window.location.href = `/admin/request/${requestId}`;
-  }
+// --- AJAX loading for volunteers and requests ---
 
-  function approveRequest(requestId) {
-    if (confirm("Сигурни ли сте, че искате да одобрите тази заявка?")) {
-      fetch(`/admin/request/${requestId}/approve`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert("Заявката е одобрена успешно!");
-            location.reload();
-          } else {
-            alert(
-              "Грешка при одобряване: " + (data.message || "Неизвестна грешка"),
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("Грешка при одобряване на заявката");
-        });
+document.addEventListener('DOMContentLoaded', function() {
+  // Само ако има таблица за заявки
+  if (document.getElementById('tbody-requests')) {
+    loadRequests();
+    // Филтриране само ако има нужните елементи
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    if (searchInput && statusFilter) {
+      const debouncedFilter = debounce(filterRequestsTable, 120);
+      searchInput.addEventListener('input', debouncedFilter);
+      statusFilter.addEventListener('change', filterRequestsTable);
     }
   }
-
-  function rejectRequest(requestId) {
-    const reason = prompt("Причина за отхвърляне (по избор):");
-    fetch(`/admin/request/${requestId}/reject`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ reason: reason }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          alert("Заявката е отхвърлена успешно!");
-          location.reload();
-        } else {
-          alert(
-            "Грешка при отхвърляне: " + (data.message || "Неизвестна грешка"),
-          );
-        }
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        alert("Грешка при отхвърляне на заявката");
-      });
+  // Само ако има таблица за доброволци
+  if (document.getElementById('tbody-volunteers')) {
+    loadVolunteers();
   }
+});
 
-  function assignVolunteer(requestId) {
-    const volunteerId = prompt("Въведете ID на доброволеца:");
-    if (volunteerId) {
-      fetch(`/admin/request/${requestId}/assign`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ volunteer_id: parseInt(volunteerId) }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert("Доброволецът е присвоен успешно!");
-            location.reload();
-          } else {
-            alert(
-              "Грешка при присвояване: " +
-                (data.message || "Неизвестна грешка"),
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("Грешка при присвояване на доброволец");
-        });
-    }
-  }
-
-  function editRequest(requestId) {
-    window.location.href = `/admin/request/${requestId}/edit`;
-  }
-
-  function deleteRequest(requestId) {
-    if (
-      confirm(
-        "Сигурни ли сте, че искате да изтриете тази заявка? Това действие е необратимо!",
-      )
-    ) {
-      fetch(`/admin/request/${requestId}/delete`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.success) {
-            alert("Заявката е изтрита успешно!");
-            location.reload();
-          } else {
-            alert(
-              "Грешка при изтриване: " + (data.message || "Неизвестна грешка"),
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("Грешка при изтриване на заявката");
-        });
-    }
-  }
-
-    function attachRequestActionHandlers() {
-      const actionMap = [
-        { selector: ".js-view-request", handler: viewRequestDetails },
-        { selector: ".js-approve-request", handler: approveRequest },
-        { selector: ".js-reject-request", handler: rejectRequest },
-        { selector: ".js-assign-volunteer", handler: assignVolunteer },
-        { selector: ".js-edit-request", handler: editRequest },
-        { selector: ".js-delete-request", handler: deleteRequest },
-      ];
-
-      actionMap.forEach(({ selector, handler }) => {
-        document.querySelectorAll(selector).forEach((button) => {
-          button.addEventListener("click", () => {
-            const requestId = parseInt(button.dataset.requestId, 10);
-            if (!Number.isNaN(requestId)) {
-              handler(requestId);
-            }
-          });
-        });
-      });
-    }
-
-    const realtimeFeatureDefaults = JSON.parse('{{ realtime_settings|tojson|safe }}');
-    let realtimeFeedbackTimeout;
-
-    function getRealtimeCheckboxes() {
-      return Array.from(document.querySelectorAll(".real-time-feature"));
-    }
-
-    function updateRealtimeCheckboxes(settings) {
-      const checkboxSettings = settings || realtimeFeatureDefaults || {};
-      getRealtimeCheckboxes().forEach((checkbox) => {
-        const feature = checkbox.dataset.feature;
-        checkbox.checked = Boolean(checkboxSettings[feature]);
-      });
-    }
-
-    async function loadRealtimeSettings() {
-      try {
-        const response = await fetch("/admin/settings/realtime", {
-          headers: { "Accept": "application/json" },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const payload = await response.json();
-        updateRealtimeCheckboxes(payload.settings);
-        showRealtimeFeedback("Настройките са заредени.");
-      } catch (error) {
-        console.error("Неуспешно зареждане на Real-time настройките:", error);
-        updateRealtimeCheckboxes(realtimeFeatureDefaults);
-        showRealtimeFeedback(
-          "Неуспешно зареждане на настройките. Проверете връзката.",
-          true,
-        );
-      }
-    }
-
-    async function persistRealtimeSettings() {
-      const payload = {};
-      getRealtimeCheckboxes().forEach((checkbox) => {
-        payload[checkbox.dataset.feature] = checkbox.checked;
-      });
-
-      try {
-        const response = await fetch("/admin/settings/realtime", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const result = await response.json();
-        updateRealtimeCheckboxes(result.settings);
-        showRealtimeFeedback("Настройките са записани.");
-      } catch (error) {
-        console.error("Неуспешно записване на Real-time настройките:", error);
-        showRealtimeFeedback(
-          "Грешка при записване на настройките. Опитайте отново.",
-          true,
-        );
-      }
-    }
-
-    function showRealtimeFeedback(message, isError = false) {
-      const feedbackElement = document.getElementById(
-        "realtime-settings-feedback",
-      );
-      if (!feedbackElement) {
+function loadRequests() {
+  const tbody = document.getElementById('tbody-requests');
+  if (!tbody) return;
+  fetch('/admin/api/requests')
+    .then(r => r.json())
+    .then(data => {
+      if (!tbody) return;
+      if (!data.items || data.items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Няма налични заявки</td></tr>';
         return;
       }
+      tbody.innerHTML = data.items.map(req => `
+        <tr data-id="${req.id}">
+          <td>${req.id}</td>
+          <td>${req.name || 'Без име'}</td>
+          <td class="text-truncate truncate-desc">${req.description || 'Без описание'}</td>
+          <td class="status-cell">${statusBadge(req.status)}</td>
+          <td><em class="text-muted">Историята е достъпна само при сървърно рендиране</em></td>
+          <td>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Действия за заявка ${req.id}">
+              <button type="button" class="btn btn-info" onclick="viewDetails('${req.id}')" title="Преглед на заявка" aria-label="Преглед">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+                <span class="visually-hidden">Преглед</span>
+              </button>
+              <button type="button" class="btn btn-warning" onclick="changeStatus('${req.id}')" title="Промяна на статус" aria-label="Промяна на статус">
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                <span class="visually-hidden">Промяна на статус</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+      filterRequestsTable();
+    })
+    .catch(() => {
+      toast('Грешка при зареждане на заявки', 'danger');
+    });
+}
 
-      feedbackElement.textContent = message;
-      feedbackElement.classList.toggle("text-danger", Boolean(isError));
-      feedbackElement.classList.toggle("text-muted", !isError);
-
-      if (realtimeFeedbackTimeout) {
-        clearTimeout(realtimeFeedbackTimeout);
+function loadVolunteers() {
+  const tbody = document.getElementById('tbody-volunteers');
+  if (!tbody) return;
+  fetch('/admin/api/volunteers')
+    .then(r => r.json())
+    .then(data => {
+      if (!tbody) return;
+      if (!data.items || data.items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Няма налични доброволци</td></tr>';
+        return;
       }
+      tbody.innerHTML = data.items.map(vol => `
+        <tr>
+          <td>${vol.id}</td>
+          <td>${vol.name}</td>
+          <td><i class="bi bi-envelope-at me-1" aria-hidden="true"></i><span class="visually-hidden">Имейл: </span>${vol.email}</td>
+          <td><i class="bi bi-telephone me-1" aria-hidden="true"></i><span class="visually-hidden">Телефон: </span>${vol.phone}</td>
+          <td><i class="bi bi-geo-alt me-1" aria-hidden="true"></i><span class="visually-hidden">Локация: </span>${vol.location}</td>
+          <td>${(vol.skills ? vol.skills.split(',').map(sk => `<span class='badge bg-light text-dark me-1 mb-1'><i class='bi bi-tag me-1' aria-hidden='true'></i>${sk.trim()}</span>`).join('') : '<span class="text-muted">Няма</span>')}</td>
+        </tr>
+      `).join('');
+    })
+    .catch(() => {
+      toast('Грешка при зареждане на доброволци', 'danger');
+    });
+}
 
-      realtimeFeedbackTimeout = setTimeout(() => {
-        feedbackElement.textContent = "";
-      }, 4000);
-    }
+function statusBadge(status) {
+  const s = (status || '').toLowerCase();
+  if (s === 'pending') return '<span class="badge bg-secondary"><i class="bi bi-hourglass-split me-1"></i>Очаква</span>';
+  if (s === 'in_progress') return '<span class="badge bg-warning text-dark"><i class="bi bi-tools me-1"></i>В процес</span>';
+  if (s === 'completed') return '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Завършена</span>';
+  if (s === 'cancelled') return '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Отказана</span>';
+  return '<span class="badge bg-light text-dark"><i class="bi bi-question-circle me-1"></i>Неизвестен</span>';
+}
 
-    function initializeRealtimeSettingsUI() {
-      updateRealtimeCheckboxes(realtimeFeatureDefaults);
-      loadRealtimeSettings();
+function filterRequestsTable() {
+  const searchFilter = document.getElementById('searchInput').value.toLowerCase();
+  const statusFilter = document.getElementById('statusFilter').value;
+  const rows = document.querySelectorAll('#tbody-requests tr');
+  rows.forEach(row => {
+    const name = row.cells[1]?.textContent.toLowerCase() || '';
+    const statusText = row.cells[3]?.textContent.toLowerCase() || '';
+    const matchesSearch = name.includes(searchFilter);
+    const matchesStatus = !statusFilter || statusText.includes(statusFilter.replace('_', ' '));
+    row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+  });
+}
 
-      getRealtimeCheckboxes().forEach((checkbox) => {
-        checkbox.addEventListener("change", () => {
-          persistRealtimeSettings();
-        });
-      });
-    }
+function debounce(fn, delay) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
 
-    function initializeRequestFilters() {
-      const state = {
-        activeStatus: "all",
-        currentPage: 1,
-        isLoading: false,
-      };
+// Малък toast (използва Bootstrap 5 Toast ако имаш, иначе fallback alert)
+function toast(message, type='info') {
+  // Fallback
+  if (!window.bootstrap) { alert(message); return; }
+  let wrap = document.getElementById('toasts-wrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.id = 'toasts-wrap';
+    wrap.className = 'position-fixed top-0 end-0 p-3';
+    wrap.style.zIndex = 1080;
+    document.body.appendChild(wrap);
+  }
+  const toastEl = document.createElement('div');
+  toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+  toastEl.role = 'status';
+  toastEl.ariaLive = 'polite';
+  toastEl.ariaAtomic = 'true';
+  toastEl.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">${message}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>`;
+  wrap.appendChild(toastEl);
+  const t = new bootstrap.Toast(toastEl, { delay: 1800 });
+  t.show();
+  toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+}
 
-      const searchInput = document.getElementById("requestSearch");
-      const sortSelect = document.getElementById("requestSort");
-      const dateFieldSelect = document.getElementById("filterDateField");
-      const startDateInput = document.getElementById("filterStartDate");
-      const endDateInput = document.getElementById("filterEndDate");
-      const cityInput = document.getElementById("filterCity");
-      const requestTypeInput = document.getElementById("filterRequestType");
-      const volunteerInput = document.getElementById("filterVolunteer");
-      const statusPills = Array.from(
-        document.querySelectorAll(".status-pill"),
-      );
-      const tableBody = document.querySelector(
-        "#adminRequestsTable tbody",
-      );
-      const emptyState = document.getElementById("requestsEmptyState");
-      const filtersForm = document.getElementById("advancedFiltersForm");
-      const resetButton = document.getElementById("resetAdvancedFilters");
-      const emptyStateDefault = emptyState ? emptyState.textContent : "";
-
-      let searchTimeout;
-
-      function updateStatusCounts(counts) {
-        const allCount = counts.total || 0;
-        const mapped = {
-          all: allCount,
-          pending: counts.pending || 0,
-          approved: counts.approved || 0,
-          completed: counts.completed || 0,
-          rejected: counts.rejected || 0,
-        };
-
-        document
-          .querySelectorAll("[data-filter-count]")
-          .forEach((badge) => {
-            const key = badge.dataset.filterCount;
-            badge.textContent = mapped[key] || 0;
-          });
-      }
-
-      function resolveStatusBadge(status) {
-        const normalized = (status || "").toLowerCase();
-        switch (normalized) {
-          case "pending":
-            return { label: "Чака одобрение", cls: "bg-warning text-dark" };
-          case "approved":
-            return { label: "Одобрена", cls: "bg-success" };
-          case "rejected":
-            return { label: "Отхвърлена", cls: "bg-danger" };
-          case "completed":
-            return { label: "Завършена", cls: "bg-info" };
-          case "assigned":
-            return { label: "Присвоена", cls: "bg-primary" };
-          case "in_progress":
-            return { label: "В изпълнение", cls: "bg-primary" };
-          default:
-            return { label: status || "Неизвестен", cls: "bg-secondary" };
-        }
-      }
-
-      function renderRequests(items) {
-        tableBody.innerHTML = "";
-
-        if (!items.length) {
-          emptyState.textContent = emptyStateDefault;
-          emptyState.classList.remove("d-none");
-          return;
-        }
-
-        emptyState.classList.add("d-none");
-
-        items.forEach((item) => {
-          const row = document.createElement("tr");
-          const status = item.status || "";
-          const statusMeta = resolveStatusBadge(status);
-          const createdDisplay = item.created_at?.display || "—";
-          const completedDisplay = item.completed_at?.display || "—";
-          const createdIso = item.created_at?.iso || "";
-          const completedIso = item.completed_at?.iso || "";
-
-          row.dataset.status = status;
-          row.dataset.created = createdIso;
-          row.dataset.updated = completedIso || createdIso;
-          row.dataset.requestId = item.id;
-
-          row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.name || "Без име"}</td>
-            <td>${item.request_type || "—"}</td>
-            <td>
-              <span class="badge ${statusMeta.cls}">${statusMeta.label}</span>
-            </td>
-            <td>${item.location || "—"}</td>
-            <td>${item.city || "—"}</td>
-            <td>${item.volunteer?.name || "—"}</td>
-            <td>${createdDisplay}</td>
-            <td>${completedDisplay}</td>
-            <td><em>Историята е достъпна при детайлен преглед</em></td>
-            <td>
-              <div class="btn-group btn-group-sm flex-wrap" role="group">
-                <button class="btn btn-outline-primary mb-1 js-view-request" data-request-id="${item.id}" title="Прегледай детайли">
-                  <i class="fas fa-eye"></i>
-                </button>
-                ${status === "pending" ? `
-                  <button class="btn btn-outline-success mb-1 js-approve-request" data-request-id="${item.id}" title="Одобри заявка">
-                    <i class="fas fa-check"></i>
-                  </button>
-                  <button class="btn btn-outline-danger mb-1 js-reject-request" data-request-id="${item.id}" title="Отхвърли заявка">
-                    <i class="fas fa-times"></i>
-                  </button>
-                ` : ""}
-                <button class="btn btn-outline-info mb-1 js-assign-volunteer" data-request-id="${item.id}" title="Присвои доброволец">
-                  <i class="fas fa-user-plus"></i>
-                </button>
-                <button class="btn btn-outline-warning mb-1 js-edit-request" data-request-id="${item.id}" title="Редактирай">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-outline-danger mb-1 js-delete-request" data-request-id="${item.id}" title="Изтрий">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          `;
-
-          tableBody.appendChild(row);
-        });
-
-        attachRequestActionHandlers();
-      }
-
-      function buildQueryParams() {
-        const params = new URLSearchParams();
-
-        if (state.activeStatus && state.activeStatus !== "all") {
-          params.append("status", state.activeStatus);
-        }
-
-        const sortValue = sortSelect.value;
-        if (sortValue) {
-          params.append("sort", sortValue);
-        }
-
-        const dateField = dateFieldSelect.value;
-        if (dateField) {
-          params.append("date_field", dateField);
-        }
-
-        if (searchInput.value.trim()) {
-          params.append("search", searchInput.value.trim());
-        }
-
-        if (startDateInput.value) {
-          params.append("start_date", startDateInput.value);
-        }
-
-        if (endDateInput.value) {
-          params.append("end_date", endDateInput.value);
-        }
-
-        if (cityInput.value.trim()) {
-          params.append("city", cityInput.value.trim());
-        }
-
-        if (requestTypeInput.value.trim()) {
-          params.append("request_type", requestTypeInput.value.trim());
-        }
-
-        if (volunteerInput.value.trim()) {
-          params.append("volunteer_name", volunteerInput.value.trim());
-        }
-
-        params.append("page", String(state.currentPage));
-
-        return params;
-      }
-
-      async function loadRequests({ resetPage = false } = {}) {
-        if (state.isLoading) {
-          return;
-        }
-
-        if (resetPage) {
-          state.currentPage = 1;
-        }
-
-        state.isLoading = true;
-        tableBody.classList.add("opacity-50");
-        emptyState.classList.add("d-none");
-
-        try {
-          const params = buildQueryParams();
-          const response = await fetch(`/admin/api/requests?${params.toString()}`, {
-            headers: { Accept: "application/json" },
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-
-          const payload = await response.json();
-          renderRequests(payload.items || []);
-          updateStatusCounts(payload.counts || {});
-        } catch (error) {
-          console.error("Неуспешно зареждане на заявките:", error);
-          tableBody.innerHTML = "";
-          emptyState.classList.remove("d-none");
-          emptyState.textContent = "Неуспешно зареждане на заявките. Опитайте отново.";
-        } finally {
-          tableBody.classList.remove("opacity-50");
-          state.isLoading = false;
-        }
-      }
-
-      statusPills.forEach((pill) => {
-        pill.addEventListener("click", () => {
-          state.activeStatus = pill.dataset.statusFilter || "all";
-          statusPills.forEach((el) =>
-            el.classList.toggle("status-pill-active", el === pill),
-          );
-          loadRequests({ resetPage: true });
-        });
-      });
-
-      searchInput.addEventListener("input", () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => loadRequests({ resetPage: true }), 300);
-      });
-
-      sortSelect.addEventListener("change", () => {
-        loadRequests({ resetPage: false });
-      });
-
-      dateFieldSelect.addEventListener("change", () => {
-        loadRequests({ resetPage: false });
-      });
-
-      filtersForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-        loadRequests({ resetPage: true });
-      });
-
-      resetButton.addEventListener("click", () => {
-        searchInput.value = "";
-        sortSelect.value = "created_desc";
-        dateFieldSelect.value = "created";
-        startDateInput.value = "";
-        endDateInput.value = "";
-        cityInput.value = "";
-        requestTypeInput.value = "";
-        volunteerInput.value = "";
-        state.activeStatus = "all";
-        statusPills.forEach((pill) =>
-          pill.classList.toggle(
-            "status-pill-active",
-            (pill.dataset.statusFilter || "all") === "all",
-          ),
-        );
-        loadRequests({ resetPage: true });
-      });
-
-      loadRequests({ resetPage: true });
-    }
+function copyRequestsCsv() {
+  const table = document.getElementById('tbody-requests');
+  if (!table) return toast('Няма заявки за копиране', 'warning');
+  let csv = '';
+  const rows = table.querySelectorAll('tr');
+  rows.forEach(row => {
+    const cols = Array.from(row.querySelectorAll('td')).map(td => td.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim());
+    csv += cols.join(',') + '\n';
+  });
+  if (!csv.trim()) return toast('Няма заявки за копиране', 'warning');
+  navigator.clipboard.writeText(csv).then(() => {
+    toast('CSV копирано успешно!', 'success');
+  }, () => {
+    toast('Грешка при копиране на CSV', 'danger');
+  });
+}
+function copyVolunteersCsv() {
+  const table = document.getElementById('tbody-volunteers');
+  if (!table) return toast('Няма доброволци за копиране', 'warning');
+  let csv = '';
+  const rows = table.querySelectorAll('tr');
+  rows.forEach(row => {
+    const cols = Array.from(row.querySelectorAll('td')).map(td => td.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim());
+    csv += cols.join(',') + '\n';
+  });
+  if (!csv.trim()) return toast('Няма доброволци за копиране', 'warning');
+  navigator.clipboard.writeText(csv).then(() => {
+    toast('CSV копирано успешно!', 'success');
+  }, () => {
+    toast('Грешка при копиране на CSV', 'danger');
+  });
+}
+function exportVolunteers() {
+  const table = document.getElementById('tbody-volunteers');
+  if (!table) return toast('Няма доброволци за експортиране', 'warning');
+  let csv = '';
+  const rows = table.querySelectorAll('tr');
+  rows.forEach(row => {
+    const cols = Array.from(row.querySelectorAll('td')).map(td => '"' + td.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim() + '"');
+    csv += cols.join(',') + '\n';
+  });
+  if (!csv.trim()) return toast('Няма доброволци за експортиране', 'warning');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'volunteers.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('CSV експортиран успешно!', 'success');
+}
 </script>
-
-<!-- SocketIO Client for Real-time Updates -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
-<script>
-  // Initialize SocketIO connection
-  const socket = io();
-
-  // Handle connection
-  socket.on('connect', function() {
-    console.log('Connected to WebSocket server');
-    // Join analytics room for real-time updates
-    socket.emit('join_analytics', {room: 'analytics'});
-  });
-
-  // Handle disconnection
-  socket.on('disconnect', function() {
-    console.log('Disconnected from WebSocket server');
-  });
-
-  // Handle analytics notifications
-  socket.on('analytics_notification', function(notification) {
-    console.log('Received analytics notification:', notification);
-
-    // Show notification to user
-    showNotification(notification);
-
-    // If it's a critical anomaly, refresh the dashboard
-    if (notification.action_required) {
-      setTimeout(function() {
-        location.reload();
-      }, 2000); // Refresh after 2 seconds
-    }
-  });
-
-  // Handle analytics data updates
-  socket.on('analytics_update', function(data) {
-    console.log('Received analytics update:', data);
-    // Update dashboard stats if available
-    updateDashboardStats(data);
-  });
-
-  // Function to show notifications
-  function showNotification(notification) {
-    // Create notification element
-    const notificationDiv = document.createElement('div');
-    notificationDiv.className = `alert alert-${getAlertClass(notification.severity)} alert-dismissible fade show position-fixed`;
-    notificationDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    notificationDiv.innerHTML = `
-      <strong>${notification.title}</strong><br>
-      ${notification.message}
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-
-    // Add to page
-    document.body.appendChild(notificationDiv);
-
-    // Auto-remove after 10 seconds
-    setTimeout(function() {
-      if (notificationDiv.parentNode) {
-        notificationDiv.remove();
-      }
-    }, 10000);
-  }
-
-  // Helper function to get Bootstrap alert class
-  function getAlertClass(severity) {
-    switch(severity) {
-      case 'critical': return 'danger';
-      case 'high': return 'warning';
-      case 'medium': return 'info';
-      case 'low': return 'secondary';
-      case 'info': return 'info';
-      default: return 'info';
-    }
-  }
-
-  // Function to update dashboard stats (placeholder)
-  function updateDashboardStats(data) {
-    // This would update the dashboard statistics in real-time
-    // For now, just log the data
-    console.log('Dashboard stats update:', data);
-  }
-
-  // Request analytics update on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    // Request initial analytics update
-    socket.emit('request_analytics_update');
-    attachRequestActionHandlers();
-    initializeRealtimeSettingsUI();
-    initializeRequestFilters();
-  });
-</script>
-
-<!-- Add this link in the footer section -->
-<a href="{{ url_for('privacy') }}">Поверителност</a>
-
 {% endblock %}

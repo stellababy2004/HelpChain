@@ -611,7 +611,7 @@ def setup_performance_optimizations(app, db):
 # Configuration за production
 PERFORMANCE_CONFIG = {
     "CACHE_TYPE": "redis",  # Use Redis в production
-    "CACHE_REDIS_URL": os.getenv("REDIS_URL", "redis://redis:6379/0"),
+    "CACHE_REDIS_URL": os.getenv("REDIS_URL", "redis://localhost:6379/0"),
     "CACHE_DEFAULT_TIMEOUT": 300,
     "CACHE_KEY_PREFIX": "helpchain_analytics_",
     # Database connection pooling
@@ -622,7 +622,7 @@ PERFORMANCE_CONFIG = {
         "max_overflow": 20,
     },
     # API Rate limiting
-    "RATELIMIT_STORAGE_URL": os.getenv("REDIS_URL", "redis://redis:6379/1"),
+    "RATELIMIT_STORAGE_URL": os.getenv("REDIS_URL", "redis://localhost:6379/1"),
     "RATELIMIT_DEFAULT": "100 per hour",
 }
 

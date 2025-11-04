@@ -5,7 +5,7 @@ Admin routes for role and user management
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from werkzeug.security import generate_password_hash
 
-from extensions import db
+from backend.extensions import db
 from models import (
     Permission,
     Role,

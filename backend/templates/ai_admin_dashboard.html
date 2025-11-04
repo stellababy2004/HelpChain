@@ -266,7 +266,9 @@ Admin{% endblock %} {% block content %}
                         <small class="text-muted">${provider.model}</small>
                     </div>
                     <span class="badge bg-${status}">
-                        <i class="${icon}"></i> ${provider.enabled ? "Активен" : "Неактивен"}
+                        <i class="${icon}"></i> ${
+                          provider.enabled ? "Активен" : "Неактивен"
+                        }
                     </span>
                 </div>
             `;

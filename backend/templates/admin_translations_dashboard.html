@@ -695,10 +695,16 @@
             addLogEntry("📊 Statistics refreshed", "info");
             showToast("Статистиката е обновена успешно", "success");
           } else {
-            addLogEntry(`❌ Неуспешно обновяване на статистиката: ${result.error}`, "error");
+            addLogEntry(
+              `❌ Неуспешно обновяване на статистиката: ${result.error}`,
+              "error",
+            );
           }
         } catch (error) {
-          addLogEntry(`❌ Грешка при обновяване на статистиката: ${error.message}`, "error");
+          addLogEntry(
+            `❌ Грешка при обновяване на статистиката: ${error.message}`,
+            "error",
+          );
         }
       }
 
@@ -713,7 +719,9 @@
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `translations_${languageCode}_${new Date().toISOString().slice(0, 10)}.json`;
+          a.download = `translations_${languageCode}_${new Date()
+            .toISOString()
+            .slice(0, 10)}.json`;
           a.click();
 
           window.URL.revokeObjectURL(url);
@@ -812,7 +820,10 @@
       // Language details modal
       function viewLanguageDetails(languageCode) {
         // Implementation for viewing language details
-        showToast("Функционалността за детайли за езика предстои скоро", "info");
+        showToast(
+          "Функционалността за детайли за езика предстои скоро",
+          "info",
+        );
       }
 
       // Initialize

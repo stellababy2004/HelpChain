@@ -1,3 +1,18 @@
+
+# AJAX endpoint for admin dashboard: all requests as JSON
+@app.route("/admin/api/requests", methods=["GET"])
+@require_admin_login
+def admin_api_requests():
+    requests = HelpRequest.query.all()
+    items = []
+    for r in requests:
+        items.append({
+            "id": r.id,
+            "name": r.name,
+            "description": r.description,
+            "status": r.status,
+        })
+    return jsonify({"items": items})
 import csv
 import json
 import logging
@@ -2987,6 +3002,23 @@ def admin_panel():
             "</head><body><h1>Admin panel (placeholder)</h1><p>Шаблонът admin.html не е намерен.</p></body></html>",
             200,
         )
+
+
+@app.route("/admin/api/volunteers", methods=["GET"])
+@require_admin_login
+def admin_api_volunteers():
+    volunteers = Volunteer.query.all()
+    items = []
+    for v in volunteers:
+        items.append({
+            "id": v.id,
+            "name": v.name,
+            "email": v.email,
+            "phone": v.phone,
+            "location": getattr(v, "location", ""),
+            "skills": v.skills if hasattr(v, "skills") else "",
+        })
+    return jsonify({"items": items})
 
 
 # Добави mock за mail.send за тестване (симулира изпращане без реални SMTP заявки)

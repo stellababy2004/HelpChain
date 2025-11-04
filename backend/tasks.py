@@ -132,7 +132,7 @@ BASE = int(os.getenv("EMAIL_RETRY_BASE_SECONDS", "10"))  # 10s, 20s, 40s, ...
 
 def _save_to_dlq(payload: dict, reason: str):
     """Запиши в DLQ (Redis списък) за по-късно обработване."""
-    r = Redis.from_url(os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0"))
+    r = Redis.from_url(os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0"))
     payload["failed_at"] = utc_now().isoformat()
     payload["reason"] = reason
     r.lpush("dlq:emails", json.dumps(payload))
@@ -665,8 +665,7 @@ def requeue_dlq_emails(self, limit: int = 50):
     """
     try:
         logger.info(f"Starting DLQ requeue process, limit: {limit}")
-
-        r = Redis.from_url(os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0"))
+        r = Redis.from_url(os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0"))
         requeued_count = 0
 
         for _ in range(limit):

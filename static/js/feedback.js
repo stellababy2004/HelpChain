@@ -223,7 +223,9 @@ class HelpChainFeedback {
           <div id="confirm-message" class="confirm-dialog-message">${message}</div>
           <div class="confirm-dialog-actions">
             <button class="btn btn-secondary" data-action="cancel">${cancelText}</button>
-            <button class="btn btn-${type === "danger" ? "danger" : "primary"}" data-action="confirm">${confirmText}</button>
+            <button class="btn btn-${
+              type === "danger" ? "danger" : "primary"
+            }" data-action="confirm">${confirmText}</button>
           </div>
         </div>
       `;
@@ -377,13 +379,25 @@ class HelpChainFeedback {
 
     alert.innerHTML = `
       <div class="alert-banner-icon">
-        <i class="fas fa-${type === "success" ? "check-circle" : type === "error" ? "exclamation-circle" : type === "warning" ? "exclamation-triangle" : "info-circle"}" aria-hidden="true"></i>
+        <i class="fas fa-${
+          type === "success"
+            ? "check-circle"
+            : type === "error"
+            ? "exclamation-circle"
+            : type === "warning"
+            ? "exclamation-triangle"
+            : "info-circle"
+        }" aria-hidden="true"></i>
       </div>
       <div class="alert-banner-content">
         ${title ? `<div class="alert-banner-title">${title}</div>` : ""}
         <div class="alert-banner-message">${message}</div>
       </div>
-      ${dismissible ? '<button class="alert-banner-close" aria-label="Затвори"><i class="fas fa-times" aria-hidden="true"></i></button>' : ""}
+      ${
+        dismissible
+          ? '<button class="alert-banner-close" aria-label="Затвори"><i class="fas fa-times" aria-hidden="true"></i></button>'
+          : ""
+      }
     `;
 
     // Insert at the top of the main content

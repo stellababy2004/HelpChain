@@ -3,13 +3,15 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
-  color: #333;
+  background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+  color: #e0eaff;
+  min-height: 100vh;
 }
 
 header {
-  background-color: #007bff;
-  color: white;
+  background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
+  color: #fff;
+  box-shadow: 0 2px 16px 0 rgba(0, 198, 255, 0.2);
   padding: 10px 0;
 }
 
@@ -26,7 +28,8 @@ header {
   font-size: 24px;
   font-weight: bold;
   text-decoration: none;
-  color: white;
+  color: #00eaff;
+  text-shadow: 0 0 8px #00eaff, 0 0 2px #fff;
 }
 
 .nav-menu {
@@ -41,55 +44,63 @@ header {
 }
 
 .nav-menu a {
-  color: white;
+  color: #e0eaff;
   text-decoration: none;
   padding: 10px;
-  transition: background-color 0.3s;
+  border-radius: 5px;
+  transition: background 0.3s, color 0.3s, box-shadow 0.3s;
 }
 
 .nav-menu a:hover {
-  background-color: #0056b3;
-  border-radius: 5px;
+  background: rgba(0, 198, 255, 0.15);
+  color: #00eaff;
+  box-shadow: 0 0 8px #00eaff;
 }
 
 main {
   max-width: 1200px;
   margin: 20px auto;
   padding: 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: rgba(20, 30, 48, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 4px 32px 0 rgba(0, 198, 255, 0.08);
 }
 
 h1,
 h2,
 h3 {
-  color: #333;
+  color: #00eaff;
+  text-shadow: 0 0 6px #00eaff44;
 }
 
 button,
 .action-btn {
-  background-color: #28a745;
-  color: white;
+  background: linear-gradient(90deg, #00eaff 0%, #0072ff 100%);
+  color: #fff;
   border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  padding: 10px 24px;
+  border-radius: 8px;
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
-  transition: background-color 0.3s;
+  box-shadow: 0 0 8px #00eaff99;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: background 0.3s, box-shadow 0.3s;
 }
 
 button:hover,
 .action-btn:hover {
-  background-color: #218838;
+  background: linear-gradient(90deg, #00eaff 0%, #00c6ff 100%);
+  box-shadow: 0 0 16px #00eaffcc;
 }
 
 footer {
   text-align: center;
   padding: 20px;
-  background-color: #007bff;
-  color: white;
+  background: linear-gradient(90deg, #232526 0%, #414345 100%);
+  color: #e0eaff;
+  box-shadow: 0 -2px 16px 0 rgba(0, 198, 255, 0.12);
   margin-top: 20px;
 }
 
@@ -115,17 +126,20 @@ textarea {
 /* За dashboard карти */
 .stat-card,
 .request-card {
-  background-color: white;
+  background: rgba(20, 30, 48, 0.98);
   padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 15px;
+  border-radius: 16px;
+  box-shadow: 0 4px 32px 0 rgba(0, 198, 255, 0.08);
+  margin-bottom: 18px;
 }
 
 .status {
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: white;
+  padding: 5px 12px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 8px #00eaff44;
 }
 
 .status.pending {

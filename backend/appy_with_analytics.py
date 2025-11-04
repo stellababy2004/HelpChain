@@ -1492,6 +1492,12 @@ def admin_analytics():
     )
 
 
+# Добавяме маршрут /analytics, който пренасочва към /admin/analytics
+@app.route("/analytics")
+def analytics_redirect():
+    return redirect(url_for("admin_analytics"))
+
+
 @app.route("/admin/export")
 def admin_export():
     """Export data in various formats"""

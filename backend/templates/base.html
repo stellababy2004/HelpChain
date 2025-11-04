@@ -69,8 +69,8 @@
         --glass-border: rgba(255, 255, 255, 0.24);
         --radius-2xl: 32px;
         --shadow-lg: 0 24px 50px rgba(15, 23, 42, 0.12);
-  --shadow-button-base: 0 2px 12px rgba(25, 118, 210, 0.2);
-  --shadow-button-hover: 0 4px 24px rgba(25, 118, 210, 0.27);
+        --shadow-button-base: 0 2px 12px rgba(25, 118, 210, 0.2);
+        --shadow-button-hover: 0 4px 24px rgba(25, 118, 210, 0.27);
         --space-8: 3rem;
         --space-6: 1.5rem;
         --transition-slow: all 0.6s ease;
@@ -87,8 +87,8 @@
         --toggle-bg: rgba(255, 255, 255, 0.92);
         --toggle-color: #0f172a;
         --toggle-border: rgba(15, 23, 42, 0.08);
-  --toggle-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
-  --toggle-shadow-hover: 0 20px 40px rgba(15, 23, 42, 0.18);
+        --toggle-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+        --toggle-shadow-hover: 0 20px 40px rgba(15, 23, 42, 0.18);
       }
 
       :root[data-theme="dark"] {
@@ -97,8 +97,8 @@
         --gradient-card: rgba(17, 24, 39, 0.88);
         --glass-border: rgba(148, 163, 184, 0.28);
         --shadow-lg: 0 28px 52px rgba(2, 6, 23, 0.6);
-  --shadow-button-base: 0 2px 12px rgba(14, 165, 233, 0.3);
-  --shadow-button-hover: 0 4px 24px rgba(56, 189, 248, 0.38);
+        --shadow-button-base: 0 2px 12px rgba(14, 165, 233, 0.3);
+        --shadow-button-hover: 0 4px 24px rgba(56, 189, 248, 0.38);
         --text-primary: #e2e8f0;
         --text-muted: #94a3b8;
         --heading-color: #38bdf8;
@@ -112,15 +112,17 @@
         --toggle-bg: rgba(15, 23, 42, 0.94);
         --toggle-color: #f8fafc;
         --toggle-border: rgba(148, 163, 184, 0.36);
-  --toggle-shadow: 0 20px 40px rgba(2, 6, 23, 0.55);
-  --toggle-shadow-hover: 0 22px 44px rgba(2, 6, 23, 0.6);
+        --toggle-shadow: 0 20px 40px rgba(2, 6, 23, 0.55);
+        --toggle-shadow-hover: 0 22px 44px rgba(2, 6, 23, 0.6);
       }
 
       body {
         background: var(--gradient-subtle);
         color: var(--text-primary);
         min-height: 100vh;
-        transition: background 0.45s ease, color 0.45s ease;
+        transition:
+          background 0.45s ease,
+          color 0.45s ease;
       }
 
       .glass {
@@ -204,8 +206,8 @@
         -webkit-transform: scale(1.08);
         -moz-transform: scale(1.08);
         -ms-transform: scale(1.08);
-  transform: scale(1.08);
-  box-shadow: var(--shadow-button-hover);
+        transform: scale(1.08);
+        box-shadow: var(--shadow-button-hover);
       }
 
       .slogan {
@@ -289,8 +291,11 @@
         box-shadow: var(--toggle-shadow);
         -webkit-backdrop-filter: blur(12px);
         backdrop-filter: blur(12px);
-        transition: transform 0.25s ease, box-shadow 0.25s ease,
-          background 0.25s ease, color 0.25s ease;
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease,
+          background 0.25s ease,
+          color 0.25s ease;
         z-index: 1200;
       }
 
@@ -475,7 +480,9 @@
           <a href="mailto:contact@helpchain.live">{{ _('Email') }}</a>
           <a href="https://facebook.com">{{ _('Facebook') }}</a>
           <a href="/terms" target="_blank">{{ _('Условия за ползване') }}</a>
-          <a href="/privacy" target="_blank">{{ _('Политика за поверителност') }}</a>
+          <a href="/privacy" target="_blank"
+            >{{ _('Политика за поверителност') }}</a
+          >
           <a href="/faq">FAQ</a>
           <a href="/success_stories">{{ _('Истории на успеха') }}</a>
           <a href="/feedback">{{ _('Обратна връзка') }}</a>
@@ -514,22 +521,23 @@
     <!-- PWA Service Worker Registration -->
     <script>
       // Cross-browser compatibility helpers
-      (function() {
+      (function () {
         // Add class for older browsers
         var docEl = document.documentElement;
         if (!docEl.classList) {
-          docEl.className += ' no-classlist';
+          docEl.className += " no-classlist";
         }
 
         // Polyfill for matches() method
         if (!Element.prototype.matches) {
-          Element.prototype.matches = Element.prototype.msMatchesSelector ||
-                                      Element.prototype.webkitMatchesSelector;
+          Element.prototype.matches =
+            Element.prototype.msMatchesSelector ||
+            Element.prototype.webkitMatchesSelector;
         }
 
         // Polyfill for closest() method
         if (!Element.prototype.closest) {
-          Element.prototype.closest = function(s) {
+          Element.prototype.closest = function (s) {
             var el = this;
             do {
               if (el.matches(s)) return el;
@@ -544,39 +552,44 @@
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", function () {
           // Check if we're in a secure context (required for SW)
-          if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+          if (
+            location.protocol !== "https:" &&
+            location.hostname !== "localhost" &&
+            location.hostname !== "127.0.0.1"
+          ) {
             console.warn("[PWA] Service Worker requires HTTPS or localhost");
             return;
           }
 
           // Register the service worker
-          navigator.serviceWorker.register("/sw.js", { scope: "/" })
-          .then(function (registration) {
-            console.log(
-              "[PWA] Service Worker registered successfully:",
-              registration.scope,
-            );
+          navigator.serviceWorker
+            .register("/sw.js", { scope: "/" })
+            .then(function (registration) {
+              console.log(
+                "[PWA] Service Worker registered successfully:",
+                registration.scope,
+              );
 
-            // Check for updates
-            registration.addEventListener("updatefound", function () {
-              const newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener("statechange", function () {
-                  if (
-                    newWorker.state === "installed" &&
-                    navigator.serviceWorker.controller
-                  ) {
-                    // New version available
-                    showUpdateNotification();
-                  }
-                });
-              }
+              // Check for updates
+              registration.addEventListener("updatefound", function () {
+                const newWorker = registration.installing;
+                if (newWorker) {
+                  newWorker.addEventListener("statechange", function () {
+                    if (
+                      newWorker.state === "installed" &&
+                      navigator.serviceWorker.controller
+                    ) {
+                      // New version available
+                      showUpdateNotification();
+                    }
+                  });
+                }
+              });
+            })
+            .catch(function (error) {
+              console.error("[PWA] Service Worker registration failed:", error);
+              // Don't show error to user, just log it
             });
-          })
-          .catch(function (error) {
-            console.error("[PWA] Service Worker registration failed:", error);
-            // Don't show error to user, just log it
-          });
         });
       } else {
         console.warn("[PWA] Service Worker not supported in this browser");
@@ -756,7 +769,8 @@
 
       function setTheme(theme, options) {
         const settings = options || {};
-        const persist = settings.persist !== undefined ? settings.persist : true;
+        const persist =
+          settings.persist !== undefined ? settings.persist : true;
         const html = document.documentElement;
         const toggleButton = document.getElementById("theme-toggle");
         const themeIcon = document.getElementById("theme-icon");

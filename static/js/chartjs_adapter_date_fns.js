@@ -8,10 +8,8 @@
   "object" == typeof exports && "undefined" != typeof module
     ? e(require("chart.js"))
     : "function" == typeof define && define.amd
-      ? define(["chart.js"], e)
-      : e(
-          (t = "undefined" != typeof globalThis ? globalThis : t || self).Chart,
-        );
+    ? define(["chart.js"], e)
+    : e((t = "undefined" != typeof globalThis ? globalThis : t || self).Chart);
 })(this, function (t) {
   "use strict";
   function e(t) {
@@ -36,14 +34,14 @@
     return t instanceof Date || ("object" == typeof t && "[object Date]" === e)
       ? new Date(t.getTime())
       : "number" == typeof t || "[object Number]" === e
-        ? new Date(t)
-        : (("string" != typeof t && "[object String]" !== e) ||
-            "undefined" == typeof console ||
-            (console.warn(
-              "Starting with v2.0.0-beta.1 date-fns doesn't accept strings as date arguments. Please use `parseISO` to parse strings. See: https://git.io/fjule",
-            ),
-            console.warn(new Error().stack)),
-          new Date(NaN));
+      ? new Date(t)
+      : (("string" != typeof t && "[object String]" !== e) ||
+          "undefined" == typeof console ||
+          (console.warn(
+            "Starting with v2.0.0-beta.1 date-fns doesn't accept strings as date arguments. Please use `parseISO` to parse strings. See: https://git.io/fjule",
+          ),
+          console.warn(new Error().stack)),
+        new Date(NaN));
   }
   function a(t, a) {
     r(2, arguments);
@@ -82,7 +80,7 @@
     var d = n(t),
       l = d.getDay(),
       f = (l < c ? 7 : 0) + l - c;
-    return (d.setDate(d.getDate() - f), d.setHours(0, 0, 0, 0), d);
+    return d.setDate(d.getDate() - f), d.setHours(0, 0, 0, 0), d;
   }
   function c(t) {
     var e = new Date(
@@ -96,12 +94,12 @@
         t.getMilliseconds(),
       ),
     );
-    return (e.setUTCFullYear(t.getFullYear()), t.getTime() - e.getTime());
+    return e.setUTCFullYear(t.getFullYear()), t.getTime() - e.getTime();
   }
   function d(t) {
     r(1, arguments);
     var e = n(t);
-    return (e.setHours(0, 0, 0, 0), e);
+    return e.setHours(0, 0, 0, 0), e;
   }
   var l = 864e5;
   function f(t, e) {
@@ -170,16 +168,14 @@
   function p(t) {
     r(1, arguments);
     var e = n(t);
-    return (e.setHours(23, 59, 59, 999), e);
+    return e.setHours(23, 59, 59, 999), e;
   }
   function C(t) {
     r(1, arguments);
     var e = n(t),
       a = e.getMonth();
     return (
-      e.setFullYear(e.getFullYear(), a + 1, 0),
-      e.setHours(23, 59, 59, 999),
-      e
+      e.setFullYear(e.getFullYear(), a + 1, 0), e.setHours(23, 59, 59, 999), e
     );
   }
   function M(t) {
@@ -196,10 +192,10 @@
       s = Math.abs(w(i, o));
     if (s < 1) a = 0;
     else {
-      (1 === i.getMonth() && i.getDate() > 27 && i.setDate(30),
-        i.setMonth(i.getMonth() - u * s));
+      1 === i.getMonth() && i.getDate() > 27 && i.setDate(30),
+        i.setMonth(i.getMonth() - u * s);
       var c = h(i, o) === -u;
-      (M(n(t)) && 1 === s && 1 === h(t, o) && (c = !1), (a = u * (s - c)));
+      M(n(t)) && 1 === s && 1 === h(t, o) && (c = !1), (a = u * (s - c));
     }
     return 0 === a ? 0 : a;
   }
@@ -333,8 +329,8 @@
             "string" == typeof x[t]
               ? x[t]
               : 1 === e
-                ? x[t].one
-                : x[t].other.replace("{{count}}", e)),
+              ? x[t].one
+              : x[t].other.replace("{{count}}", e)),
           r.addSuffix ? (r.comparison > 0 ? "in " + n : n + " ago") : n
         );
       },
@@ -695,29 +691,29 @@
       a = n(t),
       i = a.getUTCDay(),
       o = (i < e ? 7 : 0) + i - e;
-    return (a.setUTCDate(a.getUTCDate() - o), a.setUTCHours(0, 0, 0, 0), a);
+    return a.setUTCDate(a.getUTCDate() - o), a.setUTCHours(0, 0, 0, 0), a;
   }
   function L(t) {
     r(1, arguments);
     var e = n(t),
       a = e.getUTCFullYear(),
       i = new Date(0);
-    (i.setUTCFullYear(a + 1, 0, 4), i.setUTCHours(0, 0, 0, 0));
+    i.setUTCFullYear(a + 1, 0, 4), i.setUTCHours(0, 0, 0, 0);
     var o = W(i),
       u = new Date(0);
-    (u.setUTCFullYear(a, 0, 4), u.setUTCHours(0, 0, 0, 0));
+    u.setUTCFullYear(a, 0, 4), u.setUTCHours(0, 0, 0, 0);
     var s = W(u);
     return e.getTime() >= o.getTime()
       ? a + 1
       : e.getTime() >= s.getTime()
-        ? a
-        : a - 1;
+      ? a
+      : a - 1;
   }
   function Q(t) {
     r(1, arguments);
     var e = L(t),
       n = new Date(0);
-    (n.setUTCFullYear(e, 0, 4), n.setUTCHours(0, 0, 0, 0));
+    n.setUTCFullYear(e, 0, 4), n.setUTCHours(0, 0, 0, 0);
     var a = W(n);
     return a;
   }
@@ -740,7 +736,7 @@
     var d = n(t),
       l = d.getUTCDay(),
       f = (l < c ? 7 : 0) + l - c;
-    return (d.setUTCDate(d.getUTCDate() - f), d.setUTCHours(0, 0, 0, 0), d);
+    return d.setUTCDate(d.getUTCDate() - f), d.setUTCHours(0, 0, 0, 0), d;
   }
   function X(t, a) {
     r(1, arguments);
@@ -756,16 +752,16 @@
         "firstWeekContainsDate must be between 1 and 7 inclusively",
       );
     var f = new Date(0);
-    (f.setUTCFullYear(o + 1, 0, l), f.setUTCHours(0, 0, 0, 0));
+    f.setUTCFullYear(o + 1, 0, l), f.setUTCHours(0, 0, 0, 0);
     var h = G(f, a),
       m = new Date(0);
-    (m.setUTCFullYear(o, 0, l), m.setUTCHours(0, 0, 0, 0));
+    m.setUTCFullYear(o, 0, l), m.setUTCHours(0, 0, 0, 0);
     var w = G(m, a);
     return i.getTime() >= h.getTime()
       ? o + 1
       : i.getTime() >= w.getTime()
-        ? o
-        : o - 1;
+      ? o
+      : o - 1;
   }
   function j(t, n) {
     r(1, arguments);
@@ -776,7 +772,7 @@
       s = null == a.firstWeekContainsDate ? u : e(a.firstWeekContainsDate),
       c = X(t, n),
       d = new Date(0);
-    (d.setUTCFullYear(c, 0, s), d.setUTCHours(0, 0, 0, 0));
+    d.setUTCFullYear(c, 0, s), d.setUTCHours(0, 0, 0, 0);
     var l = G(d, n);
     return l;
   }
@@ -821,8 +817,8 @@
         return "YY" === e
           ? E(i % 100, 2)
           : "Yo" === e
-            ? r.ordinalNumber(i, { unit: "year" })
-            : E(i, e.length);
+          ? r.ordinalNumber(i, { unit: "year" })
+          : E(i, e.length);
       },
       R: function (t, e) {
         return E(L(t), e.length);
@@ -925,7 +921,7 @@
           r(1, arguments);
           var e = n(t),
             a = e.getTime();
-          (e.setUTCMonth(0, 1), e.setUTCHours(0, 0, 0, 0));
+          e.setUTCMonth(0, 1), e.setUTCHours(0, 0, 0, 0);
           var i = e.getTime(),
             o = a - i;
           return Math.floor(o / F) + 1;
@@ -1070,7 +1066,7 @@
       h: function (t, e, r) {
         if ("ho" === e) {
           var n = t.getUTCHours() % 12;
-          return (0 === n && (n = 12), r.ordinalNumber(n, { unit: "hour" }));
+          return 0 === n && (n = 12), r.ordinalNumber(n, { unit: "hour" });
         }
         return O.h(t, e);
       },
@@ -1295,7 +1291,7 @@
       m = f % 7,
       w = (m + 7) % 7,
       g = (w < d ? 7 : 0) + f - h;
-    return (l.setUTCDate(l.getUTCDate() + g), l);
+    return l.setUTCDate(l.getUTCDate() + g), l;
   }
   var pt = /^(1[0-2]|0?\d)/,
     Ct = /^(3[0-1]|[0-2]?\d)/,
@@ -1427,10 +1423,7 @@
         },
         set: function (t, e, r, n) {
           return (
-            (e.era = r),
-            t.setUTCFullYear(r, 0, 1),
-            t.setUTCHours(0, 0, 0, 0),
-            t
+            (e.era = r), t.setUTCFullYear(r, 0, 1), t.setUTCHours(0, 0, 0, 0), t
           );
         },
         incompatibleTokens: ["R", "u", "t", "T"],
@@ -1457,10 +1450,10 @@
           var a = t.getUTCFullYear();
           if (r.isTwoDigitYear) {
             var i = _t(r.year, a);
-            return (t.setUTCFullYear(i, 0, 1), t.setUTCHours(0, 0, 0, 0), t);
+            return t.setUTCFullYear(i, 0, 1), t.setUTCHours(0, 0, 0, 0), t;
           }
           var o = "era" in e && 1 !== e.era ? 1 - r.year : r.year;
-          return (t.setUTCFullYear(o, 0, 1), t.setUTCHours(0, 0, 0, 0), t);
+          return t.setUTCFullYear(o, 0, 1), t.setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: ["Y", "R", "u", "w", "I", "i", "e", "c", "t", "T"],
       },
@@ -1522,7 +1515,7 @@
         },
         set: function (t, e, r, n) {
           var a = new Date(0);
-          return (a.setUTCFullYear(r, 0, 4), a.setUTCHours(0, 0, 0, 0), W(a));
+          return a.setUTCFullYear(r, 0, 4), a.setUTCHours(0, 0, 0, 0), W(a);
         },
         incompatibleTokens: [
           "G",
@@ -1548,7 +1541,7 @@
           return Kt("u" === e ? 4 : e.length, t);
         },
         set: function (t, e, r, n) {
-          return (t.setUTCFullYear(r, 0, 1), t.setUTCHours(0, 0, 0, 0), t);
+          return t.setUTCFullYear(r, 0, 1), t.setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "G",
@@ -1592,7 +1585,7 @@
           return e >= 1 && e <= 4;
         },
         set: function (t, e, r, n) {
-          return (t.setUTCMonth(3 * (r - 1), 1), t.setUTCHours(0, 0, 0, 0), t);
+          return t.setUTCMonth(3 * (r - 1), 1), t.setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "Y",
@@ -1639,7 +1632,7 @@
           return e >= 1 && e <= 4;
         },
         set: function (t, e, r, n) {
-          return (t.setUTCMonth(3 * (r - 1), 1), t.setUTCHours(0, 0, 0, 0), t);
+          return t.setUTCMonth(3 * (r - 1), 1), t.setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "Y",
@@ -1690,7 +1683,7 @@
           return e >= 0 && e <= 11;
         },
         set: function (t, e, r, n) {
-          return (t.setUTCMonth(r, 1), t.setUTCHours(0, 0, 0, 0), t);
+          return t.setUTCMonth(r, 1), t.setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "Y",
@@ -1740,7 +1733,7 @@
           return e >= 0 && e <= 11;
         },
         set: function (t, e, r, n) {
-          return (t.setUTCMonth(r, 1), t.setUTCHours(0, 0, 0, 0), t);
+          return t.setUTCMonth(r, 1), t.setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "Y",
@@ -1780,7 +1773,7 @@
               var o = n(t),
                 u = e(a),
                 s = z(o, i) - u;
-              return (o.setUTCDate(o.getUTCDate() - 7 * s), o);
+              return o.setUTCDate(o.getUTCDate() - 7 * s), o;
             })(t, i, o),
             o,
           );
@@ -1823,7 +1816,7 @@
               var i = n(t),
                 o = e(a),
                 u = I(i) - o;
-              return (i.setUTCDate(i.getUTCDate() - 7 * u), i);
+              return i.setUTCDate(i.getUTCDate() - 7 * u), i;
             })(t, i, o),
             o,
           );
@@ -1864,7 +1857,7 @@
           return n ? e >= 1 && e <= Vt[a] : e >= 1 && e <= Jt[a];
         },
         set: function (t, e, r, n) {
-          return (t.setUTCDate(r), t.setUTCHours(0, 0, 0, 0), t);
+          return t.setUTCDate(r), t.setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "Y",
@@ -1901,7 +1894,7 @@
             : e >= 1 && e <= 365;
         },
         set: function (t, e, r, n) {
-          return (t.setUTCMonth(0, r), t.setUTCHours(0, 0, 0, 0), t);
+          return t.setUTCMonth(0, r), t.setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "Y",
@@ -1953,7 +1946,7 @@
           return e >= 0 && e <= 6;
         },
         set: function (t, e, r, n) {
-          return ((t = Tt(t, r, n)).setUTCHours(0, 0, 0, 0), t);
+          return (t = Tt(t, r, n)).setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: ["D", "i", "e", "c", "t", "T"],
       },
@@ -1996,7 +1989,7 @@
           return e >= 0 && e <= 6;
         },
         set: function (t, e, r, n) {
-          return ((t = Tt(t, r, n)).setUTCHours(0, 0, 0, 0), t);
+          return (t = Tt(t, r, n)).setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "y",
@@ -2055,7 +2048,7 @@
           return e >= 0 && e <= 6;
         },
         set: function (t, e, r, n) {
-          return ((t = Tt(t, r, n)).setUTCHours(0, 0, 0, 0), t);
+          return (t = Tt(t, r, n)).setUTCHours(0, 0, 0, 0), t;
         },
         incompatibleTokens: [
           "y",
@@ -2162,7 +2155,7 @@
                 u = n(t),
                 s = u.getUTCDay(),
                 c = (((i % 7) + 7) % 7 < o ? 7 : 0) + i - s;
-              return (u.setUTCDate(u.getUTCDate() + c), u);
+              return u.setUTCDate(u.getUTCDate() + c), u;
             })(t, i, o)),
             t.setUTCHours(0, 0, 0, 0),
             t
@@ -2213,7 +2206,7 @@
           }
         },
         set: function (t, e, r, n) {
-          return (t.setUTCHours($t(r), 0, 0, 0), t);
+          return t.setUTCHours($t(r), 0, 0, 0), t;
         },
         incompatibleTokens: ["b", "B", "H", "K", "k", "t", "T"],
       },
@@ -2244,7 +2237,7 @@
           }
         },
         set: function (t, e, r, n) {
-          return (t.setUTCHours($t(r), 0, 0, 0), t);
+          return t.setUTCHours($t(r), 0, 0, 0), t;
         },
         incompatibleTokens: ["a", "B", "H", "K", "k", "t", "T"],
       },
@@ -2275,7 +2268,7 @@
           }
         },
         set: function (t, e, r, n) {
-          return (t.setUTCHours($t(r), 0, 0, 0), t);
+          return t.setUTCHours($t(r), 0, 0, 0), t;
         },
         incompatibleTokens: ["a", "b", "t", "T"],
       },
@@ -2300,8 +2293,8 @@
             a && r < 12
               ? t.setUTCHours(r + 12, 0, 0, 0)
               : a || 12 !== r
-                ? t.setUTCHours(r, 0, 0, 0)
-                : t.setUTCHours(0, 0, 0, 0),
+              ? t.setUTCHours(r, 0, 0, 0)
+              : t.setUTCHours(0, 0, 0, 0),
             t
           );
         },
@@ -2323,7 +2316,7 @@
           return e >= 0 && e <= 23;
         },
         set: function (t, e, r, n) {
-          return (t.setUTCHours(r, 0, 0, 0), t);
+          return t.setUTCHours(r, 0, 0, 0), t;
         },
         incompatibleTokens: ["a", "b", "h", "K", "k", "t", "T"],
       },
@@ -2369,7 +2362,7 @@
         },
         set: function (t, e, r, n) {
           var a = r <= 24 ? r % 24 : r;
-          return (t.setUTCHours(a, 0, 0, 0), t);
+          return t.setUTCHours(a, 0, 0, 0), t;
         },
         incompatibleTokens: ["a", "b", "h", "H", "K", "t", "T"],
       },
@@ -2389,7 +2382,7 @@
           return e >= 0 && e <= 59;
         },
         set: function (t, e, r, n) {
-          return (t.setUTCMinutes(r, 0, 0), t);
+          return t.setUTCMinutes(r, 0, 0), t;
         },
         incompatibleTokens: ["t", "T"],
       },
@@ -2409,7 +2402,7 @@
           return e >= 0 && e <= 59;
         },
         set: function (t, e, r, n) {
-          return (t.setUTCSeconds(r, 0), t);
+          return t.setUTCSeconds(r, 0), t;
         },
         incompatibleTokens: ["t", "T"],
       },
@@ -2421,7 +2414,7 @@
           });
         },
         set: function (t, e, r, n) {
-          return (t.setUTCMilliseconds(r), t);
+          return t.setUTCMilliseconds(r), t;
         },
         incompatibleTokens: ["t", "T"],
       },
@@ -2578,7 +2571,7 @@
             n.setUTCFullYear(t, 0, 4);
             var a = n.getUTCDay() || 7,
               i = 7 * (e - 1) + r + 1 - a;
-            return (n.setUTCDate(n.getUTCDate() + i), n);
+            return n.setUTCDate(n.getUTCDate() + i), n;
           })(e, u, s)
         : new Date(NaN);
     var c = new Date(0);
@@ -2703,10 +2696,8 @@
                       C = [];
                     for (y = 0; y < p.length; y++) {
                       var M = p[y];
-                      (!d.useAdditionalWeekYearTokens && lt(M) && ft(M, s, t),
-                        !d.useAdditionalDayOfYearTokens &&
-                          dt(M) &&
-                          ft(M, s, t));
+                      !d.useAdditionalWeekYearTokens && lt(M) && ft(M, s, t),
+                        !d.useAdditionalDayOfYearTokens && dt(M) && ft(M, s, t);
                       var D = M[0],
                         x = re[D];
                       if (x) {
@@ -2735,7 +2726,7 @@
                         C.push({ token: D, fullToken: M });
                         var S = x.parse(u, M, l.match, b);
                         if (!S) return new Date(NaN);
-                        (T.push({
+                        T.push({
                           priority: x.priority,
                           subPriority: x.subPriority || 0,
                           set: x.set,
@@ -2743,7 +2734,7 @@
                           value: S.value,
                           index: T.length,
                         }),
-                          (u = S.rest));
+                          (u = S.rest);
                       } else {
                         if (D.match(se))
                           throw new RangeError(
@@ -3006,7 +2997,7 @@
               i = n(e),
               o = h(a, i),
               u = Math.abs(g(a, i));
-            (a.setFullYear("1584"), i.setFullYear("1584"));
+            a.setFullYear("1584"), i.setFullYear("1584");
             var s = h(a, i) === -o,
               c = o * (u - s);
             return 0 === c ? 0 : c;
@@ -3021,19 +3012,19 @@
           return (function (t) {
             r(1, arguments);
             var e = n(t);
-            return (e.setMilliseconds(0), e);
+            return e.setMilliseconds(0), e;
           })(t);
         case "minute":
           return (function (t) {
             r(1, arguments);
             var e = n(t);
-            return (e.setSeconds(0, 0), e);
+            return e.setSeconds(0, 0), e;
           })(t);
         case "hour":
           return (function (t) {
             r(1, arguments);
             var e = n(t);
-            return (e.setMinutes(0, 0, 0), e);
+            return e.setMinutes(0, 0, 0), e;
           })(t);
         case "day":
           return d(t);
@@ -3045,7 +3036,7 @@
           return (function (t) {
             r(1, arguments);
             var e = n(t);
-            return (e.setDate(1), e.setHours(0, 0, 0, 0), e);
+            return e.setDate(1), e.setHours(0, 0, 0, 0), e;
           })(t);
         case "quarter":
           return (function (t) {
@@ -3053,7 +3044,7 @@
             var e = n(t),
               a = e.getMonth(),
               i = a - (a % 3);
-            return (e.setMonth(i, 1), e.setHours(0, 0, 0, 0), e);
+            return e.setMonth(i, 1), e.setHours(0, 0, 0, 0), e;
           })(t);
         case "year":
           return (function (t) {
@@ -3061,9 +3052,7 @@
             var e = n(t),
               a = new Date(0);
             return (
-              a.setFullYear(e.getFullYear(), 0, 1),
-              a.setHours(0, 0, 0, 0),
-              a
+              a.setFullYear(e.getFullYear(), 0, 1), a.setHours(0, 0, 0, 0), a
             );
           })(t);
         default:
@@ -3076,19 +3065,19 @@
           return (function (t) {
             r(1, arguments);
             var e = n(t);
-            return (e.setMilliseconds(999), e);
+            return e.setMilliseconds(999), e;
           })(t);
         case "minute":
           return (function (t) {
             r(1, arguments);
             var e = n(t);
-            return (e.setSeconds(59, 999), e);
+            return e.setSeconds(59, 999), e;
           })(t);
         case "hour":
           return (function (t) {
             r(1, arguments);
             var e = n(t);
-            return (e.setMinutes(59, 59, 999), e);
+            return e.setMinutes(59, 59, 999), e;
           })(t);
         case "day":
           return p(t);
@@ -3107,7 +3096,7 @@
             var d = n(t),
               l = d.getDay(),
               f = 6 + (l < c ? -7 : 0) - (l - c);
-            return (d.setDate(d.getDate() + f), d.setHours(23, 59, 59, 999), d);
+            return d.setDate(d.getDate() + f), d.setHours(23, 59, 59, 999), d;
           })(t);
         case "month":
           return C(t);
@@ -3117,14 +3106,14 @@
             var e = n(t),
               a = e.getMonth(),
               i = a - (a % 3) + 3;
-            return (e.setMonth(i, 0), e.setHours(23, 59, 59, 999), e);
+            return e.setMonth(i, 0), e.setHours(23, 59, 59, 999), e;
           })(t);
         case "year":
           return (function (t) {
             r(1, arguments);
             var e = n(t),
               a = e.getFullYear();
-            return (e.setFullYear(a + 1, 0, 0), e.setHours(23, 59, 59, 999), e);
+            return e.setFullYear(a + 1, 0, 0), e.setHours(23, 59, 59, 999), e;
           })(t);
         default:
           return t;

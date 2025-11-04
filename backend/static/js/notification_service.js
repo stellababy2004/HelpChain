@@ -47,9 +47,7 @@ class HelpChainNotificationService {
   async registerServiceWorker() {
     if ("serviceWorker" in navigator) {
       try {
-        this.swRegistration = await navigator.serviceWorker.register(
-          "/sw.js",
-        );
+        this.swRegistration = await navigator.serviceWorker.register("/sw.js");
         console.log("Service Worker registered successfully");
 
         // Handle push subscription
@@ -552,7 +550,10 @@ class HelpChainNotificationService {
         "subscription-exception":
           "Push нотификациите са временно изключени. Проверете конфигурацията и опитайте отново.",
       };
-      this.showAlert(messageMap[reason] || "Push нотификациите не са налични в момента.", "warning");
+      this.showAlert(
+        messageMap[reason] || "Push нотификациите не са налични в момента.",
+        "warning",
+      );
       this.hasShownPushFallbackAlert = true;
     }
   }
