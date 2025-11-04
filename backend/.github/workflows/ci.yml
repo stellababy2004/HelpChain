@@ -13,14 +13,22 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           pip install -r backend/requirements.txt
           pip install black ruff pytest
+          # Ensure pytest runs quickly for fast-fail step
+          pip install -r backend/requirements.txt || true
+          pip install pytest || true
       - name: Lint
         run: ruff check backend/
       - name: Format
         run: black --check backend/
+      - name: "Fast-fail: db singleton regression test"
+        run: |
+          echo "Running fast-fail singleton DB test"
+          pytest -q backend/tests/test_db_singleton.py -q
+
       - name: Test
         run: pytest backend/
