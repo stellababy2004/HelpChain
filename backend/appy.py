@@ -723,7 +723,7 @@ def _has_table_uncached(table_name: str) -> bool:
 
 
 # Process-local TTL cache to reduce repeated Inspector/Connection allocations.
-# We prefer a short TTL (default 5s) so rapid, repeated checks avoid DBAPI
+# We prefer a short TTL (default 30s) so rapid, repeated checks avoid DBAPI
 # connect churn during tests while still allowing changes to be observed
 # within a reasonable time window. The TTL can be overridden via
 # HELPCHAIN_HAS_TABLE_TTL seconds in the environment for experimentation.
@@ -742,11 +742,11 @@ def _has_table(table_name: str) -> bool:
         import os
         import time
 
-        ttl = float(os.environ.get("HELPCHAIN_HAS_TABLE_TTL", "5"))
+        ttl = float(os.environ.get("HELPCHAIN_HAS_TABLE_TTL", "30"))
     except Exception:
         import time
 
-        ttl = 5.0
+        ttl = 30.0
 
     now = time.time()
     entry = _has_table_ttl_cache.get(table_name)
@@ -824,22 +824,36 @@ def _seed_once() -> None:
 
 def initialize_default_admin():
     global _admin_init_attempted
+    # Prefer an early, environment-driven guard during pytest runs so that
+    # repeated calls (including those executed outside an app context) do
+    # not repeatedly attempt DB access. This is safe for tests because
+    # HELPCHAIN_TESTING is set in the test environment by conftest.py.
     try:
-        # If running tests and we've already attempted initialization once,
-        # skip subsequent attempts to avoid repeated DB connections.
-        from flask import current_app
+        import os
 
-        if getattr(current_app, "config", {}).get("TESTING"):
+        if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
             if _admin_init_attempted:
                 logger.debug(
                     "initialize_default_admin: already attempted during tests; skipping"
                 )
                 return None
-            # Mark attempted early to avoid re-entrancy
+            # Mark attempted early to avoid re-entrancy and repeated DB access
             _admin_init_attempted = True
     except Exception:
-        # If we can't access current_app for any reason, continue normally.
-        pass
+        # If env isn't available for some reason, fall back to app-context check
+        try:
+            from flask import current_app
+
+            if getattr(current_app, "config", {}).get("TESTING"):
+                if _admin_init_attempted:
+                    logger.debug(
+                        "initialize_default_admin: already attempted during tests; skipping"
+                    )
+                    return None
+                _admin_init_attempted = True
+        except Exception:
+            # If we can't access current_app either, continue normally.
+            pass
     # If the admin_users table is not yet present (early import / boot),
     # avoid querying it — return None so callers can retry later after
     # the schema has been created. This prevents OperationalError during
