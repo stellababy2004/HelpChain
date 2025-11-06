@@ -722,21 +722,65 @@ def _has_table_uncached(table_name: str) -> bool:
         return False
 
 
-# Public cached wrapper: reduce repeated engine.connect() calls during tests.
-@functools.cache
-def _has_table(table_name: str) -> bool:
-    """Cached table-existence check.
+# Process-local TTL cache to reduce repeated Inspector/Connection allocations.
+# We prefer a short TTL (default 5s) so rapid, repeated checks avoid DBAPI
+# connect churn during tests while still allowing changes to be observed
+# within a reasonable time window. The TTL can be overridden via
+# HELPCHAIN_HAS_TABLE_TTL seconds in the environment for experimentation.
+_has_table_ttl_cache: dict = {}
 
-    Uses an in-memory LRU cache (unbounded) for the lifetime of the
-    process. Tests can clear the cache using `_has_table_cache_clear()`.
+
+def _has_table(table_name: str) -> bool:
+    """TTL-backed table-existence check.
+
+    Returns cached result if present and not expired; otherwise delegates
+    to `_has_table_uncached()` and stores the result with a short TTL.
+    This reduces repeated engine.connect() allocations when the same
+    table is checked multiple times quickly (common in pytest runs).
     """
-    return _has_table_uncached(table_name)
+    try:
+        import os
+        import time
+
+        ttl = float(os.environ.get("HELPCHAIN_HAS_TABLE_TTL", "5"))
+    except Exception:
+        import time
+
+        ttl = 5.0
+
+    now = time.time()
+    entry = _has_table_ttl_cache.get(table_name)
+    if entry is not None:
+        try:
+            val, expires_at = entry
+            if now < expires_at:
+                return bool(val)
+        except Exception:
+            # Fall through to recompute on any cache entry error
+            pass
+
+    # Miss or expired: compute and store
+    try:
+        val = bool(_has_table_uncached(table_name))
+    except Exception:
+        val = False
+
+    try:
+        _has_table_ttl_cache[table_name] = (val, now + float(ttl))
+    except Exception:
+        pass
+
+    return val
 
 
 def _has_table_cache_clear() -> None:
     """Clear the `_has_table` LRU cache (for tests/fixtures)."""
     try:
-        _has_table.cache_clear()
+        # Clear the TTL-backed cache if present
+        try:
+            _has_table_ttl_cache.clear()
+        except Exception:
+            pass
     except Exception:
         # Fallback to clearing the module-level dict if present
         try:
