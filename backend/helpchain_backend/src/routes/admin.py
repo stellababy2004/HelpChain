@@ -189,25 +189,63 @@ def admin_login():
                     # churn while providing the same information.
                     from sqlalchemy import text as _text
 
+                    # Write a lightweight trace marker before executing via
+                    # the session. This won't raise on failure.
                     try:
-                        _res = _db.session.execute(
-                            _text("SELECT count(*) FROM admin_users")
+                        from datetime import datetime
+                        import os
+
+                        marker_path = os.path.join(
+                            os.path.dirname(__file__), "..", "..", "tools", "connection_markers.txt"
                         )
+                        marker_path = os.path.normpath(marker_path)
+                        try:
+                            with open(marker_path, "a", encoding="utf-8") as _mf:
+                                _mf.write(
+                                    f"{datetime.utcnow().isoformat()} MARKER admin_login before session.execute\n"
+                                )
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
+
+                    try:
+                        _res = _db.session.execute(_text("SELECT count(*) FROM admin_users"))
                         try:
                             _count = _res.scalar()
                         finally:
                             try:
-                                # ResultProxy/Result may not always expose close;
-                                # close if available.
                                 if hasattr(_res, "close"):
                                     _res.close()
                             except Exception:
                                 pass
+
                         _log.info(
                             "admin_login diagnostic: raw session count(admin_users) = %s",
                             _count,
                         )
                     except Exception:
+                        # Trace marker: session.execute failed and the
+                        # fallback path will run. Record this so tests can
+                        # correlate which path opened DB connections.
+                        try:
+                            from datetime import datetime
+                            import os
+
+                            marker_path = os.path.join(
+                                os.path.dirname(__file__), "..", "..", "tools", "connection_markers.txt"
+                            )
+                            marker_path = os.path.normpath(marker_path)
+                            try:
+                                with open(marker_path, "a", encoding="utf-8") as _mf:
+                                    _mf.write(
+                                        f"{datetime.utcnow().isoformat()} MARKER admin_login session.execute failed - before ORM fallback\n"
+                                    )
+                            except Exception:
+                                pass
+                        except Exception:
+                            pass
+
                         # If session execute fails, fall back to the ORM count
                         try:
                             _count = _db.session.query(AdminUser).count()

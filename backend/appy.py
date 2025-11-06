@@ -603,6 +603,23 @@ def _has_table_uncached(table_name: str) -> bool:
         pass
 
     try:
+        # Trace marker: record that we are about to open (or use) a connection
+        # from this code path. Tests will read `backend/tools/connection_markers.txt`
+        # to correlate which helper opened DB connections.
+        try:
+            from datetime import datetime
+            import os
+
+            marker_path = os.path.join(os.path.dirname(__file__), "tools", "connection_markers.txt")
+            marker_path = os.path.normpath(marker_path)
+            try:
+                with open(marker_path, "a", encoding="utf-8") as _mf:
+                    _mf.write(f"{datetime.utcnow().isoformat()} MARKER _has_table_uncached before engine.connect table={table_name}\n")
+            except Exception:
+                pass
+        except Exception:
+            pass
+
         # Use an explicit connection to ensure any DBAPI connection is closed
         # promptly. Passing a Connection to inspect() avoids leaving raw
         # sqlite3.Connection objects open in certain SQLAlchemy versions.
