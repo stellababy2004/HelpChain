@@ -1,5 +1,5 @@
-import pytest
 from appy import app, db
+
 from .models import Volunteer
 
 
@@ -147,14 +147,14 @@ class TestVolunteerAPI:
             assert response.status_code == 200
 
             data = response.get_json()
-            assert data["success"] == True
+            assert data["success"]
             assert data["volunteer_id"] == vol_id
             assert data["location"]["lat"] == 42.6977
             assert data["location"]["lng"] == 23.3219
             assert data["location"]["text"] == "София"
 
             # Verify in database
-            updated_vol = Volunteer.query.get(vol_id)
+            updated_vol = db.session.get(Volunteer, vol_id)
             assert updated_vol.latitude == 42.6977
             assert updated_vol.longitude == 23.3219
             assert updated_vol.location == "София"
@@ -180,7 +180,7 @@ class TestVolunteerAPI:
             assert response.status_code == 200
 
             # Verify location string is preserved
-            updated_vol = Volunteer.query.get(vol_id)
+            updated_vol = db.session.get(Volunteer, vol_id)
             assert updated_vol.latitude == 42.5
             assert updated_vol.longitude == 25.6
             assert updated_vol.location == "Стара Загора"  # Should be unchanged

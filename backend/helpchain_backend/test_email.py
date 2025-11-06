@@ -4,6 +4,7 @@ Test script for email functionality in HelpChain
 """
 import os
 import sys
+
 from dotenv import load_dotenv
 
 # Add the src directory to the path

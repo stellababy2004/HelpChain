@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from ..models import Volunteer, Request, db
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+
+from ..models import Request, Volunteer, db
 
 main_bp = Blueprint("main", __name__)
 

@@ -1,5 +1,9 @@
-{% extends "base.html" %} {% block title %}Админ панел | HelpChain.live{%
-endblock %} {% block content %}
+
+{% extends "base.html" %}
+
+{% block title %}Админ панел | HelpChain.live{% endblock %}
+
+{% block content %}
 <div class="container mt-5">
   <h2 class="mb-4">Админ панел</h2>
 
@@ -13,363 +17,63 @@ endblock %} {% block content %}
         Деактивирай 2FA
       </button>
     </form>
-    {% else %}
-    <p>2FA не е активиран.</p>
-    <a href="{{ url_for('admin_2fa_setup') }}" class="btn btn-success btn-sm"
-      >Настрой 2FA</a
-    >
-    {% endif %}
+  {% endif %}
   </div>
 
-  <div class="mb-3">
-    <p>Общо заявки: {{ stats.total_requests|default(0) }}</p>
-    <p>Чакащи заявки: {{ stats.pending_requests|default(0) }}</p>
-    <p>Завършени заявки: {{ stats.completed_requests|default(0) }}</p>
-    <p>Общо доброволци: {{ stats.total_volunteers|default(0) }}</p>
-    <button
-      id="refresh-btn"
-      class="btn btn-secondary"
-      onclick="location.reload()"
-    >
-      Обнови данни
-    </button>
-    <a href="{{ url_for('analytics.analytics_page') }}" class="btn btn-info"
-      >Аналитика</a
-    >
-    <button class="btn btn-primary" onclick="exportData()">
-      Експорт заявки
-    </button>
-    <button class="btn btn-primary" onclick="exportVolunteers()">
-      Експорт доброволци
-    </button>
-    <input
-      type="text"
-      id="searchInput"
-      class="form-control d-inline-block w-auto ms-2"
-      placeholder="Търси по име..."
-    />
-    <select id="statusFilter" class="form-select d-inline-block w-auto ms-2">
-      <option value="">Всички статуси</option>
-      <option value="pending">Очаква</option>
-      <option value="in_progress">В процес</option>
-      <option value="completed">Завършена</option>
-      <option value="cancelled">Отказана</option>
-    </select>
+  <!-- Requests Table -->
+  <div class="table-responsive mt-5">
+    <h4>Заявки</h4>
+    <table class="table table-bordered table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Име</th>
+          <th>Телефон</th>
+          <th>Имейл</th>
+          <th>Локация</th>
+          <th>Категория</th>
+          <th>Описание</th>
+          <th>Статус</th>
+          <th>Спешност</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for req in requests.items %}
+        <tr>
+          <td>{{ req.id }}</td>
+          <td>{{ req.name }}</td>
+          <td>{{ req.phone }}</td>
+          <td>{{ req.email }}</td>
+          <td>{{ req.location }}</td>
+          <td>{{ req.category }}</td>
+          <td>{{ req.description }}</td>
+          <td>
+            {% if req.status == 'pending' %}
+              <span class="badge bg-warning text-dark">В изчакване</span>
+            {% elif req.status == 'approved' %}
+              <span class="badge bg-success">Одобрена</span>
+            {% elif req.status == 'rejected' %}
+              <span class="badge bg-danger">Отхвърлена</span>
+            {% elif req.status == 'completed' %}
+              <span class="badge bg-primary">Завършена</span>
+            {% else %}
+              <span class="badge bg-secondary">{{ req.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if req.urgency == 'high' %}
+              <span class="badge bg-danger">Висока</span>
+            {% elif req.urgency == 'medium' %}
+              <span class="badge bg-warning text-dark">Средна</span>
+            {% elif req.urgency == 'low' %}
+              <span class="badge bg-success">Ниска</span>
+            {% else %}
+              <span class="badge bg-secondary">{{ req.urgency }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-  <h3>Заявки</h3>
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Име</th>
-        <th>Описание</th>
-        <th>Статус</th>
-        <th>История</th>
-        <th>Действия</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% if requests and requests['items'] %} {% for req in requests['items'] %}
-      <tr data-id="{{ req.id }}">
-        <td>{{ req.id }}</td>
-        <td>{{ req.name or 'Без име' }}</td>
-        <td>{{ req.description or 'Без описание' }}</td>
-        <td>{{ req.status or 'Неизвестен статус' }}</td>
-        <td>
-          {% if logs_dict and logs_dict[req.id] %}
-          <ul class="mb-0 pl-3">
-            {% for log in logs_dict[req.id] %}
-            <li>
-              {{ log.status or 'Неизвестен' }}{% if log.changed_at %} – {{
-              log.changed_at }}{% endif %}
-            </li>
-            {% endfor %}
-          </ul>
-          {% else %}
-          <em>Няма история</em>
-          {% endif %}
-        </td>
-        <td>
-          <button
-            class="btn btn-sm btn-info"
-            onclick="viewDetails({{ req.id }})"
-          >
-            Детайли
-          </button>
-          <button
-            class="btn btn-sm btn-warning"
-            onclick="changeStatus({{ req.id }})"
-          >
-            Промени статус
-          </button>
-        </td>
-      </tr>
-      {% endfor %} {% else %}
-      <tr>
-        <td colspan="6" class="text-center">Няма налични заявки</td>
-      </tr>
-      {% endif %}
-    </tbody>
-  </table>
-  <h3>Доброволци</h3>
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Име</th>
-        <th>Имейл</th>
-        <th>Телефон</th>
-        <th>Локация</th>
-        <th>Умения</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% if volunteers %} {% for vol in volunteers %}
-      <tr>
-        <td>{{ vol.id }}</td>
-        <td>{{ vol.name }}</td>
-        <td>{{ vol.email }}</td>
-        <td>{{ vol.phone }}</td>
-        <td>{{ vol.location }}</td>
-        <td>{{ vol.skills or 'Няма' }}</td>
-      </tr>
-      {% endfor %} {% else %}
-      <tr>
-        <td colspan="6" class="text-center">Няма налични доброволци</td>
-      </tr>
-      {% endif %}
-    </tbody>
-  </table>
-</div>
 
-<!-- Modal for Details -->
-<div
-  class="modal fade"
-  id="detailsModal"
-  tabindex="-1"
-  aria-labelledby="detailsModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="detailsModalLabel">Детайли на заявка</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body" id="detailsContent">
-        <!-- Details will be loaded here -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Затвори
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal for Change Status -->
-<div
-  class="modal fade"
-  id="statusModal"
-  tabindex="-1"
-  aria-labelledby="statusModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="statusModalLabel">Промени статус</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <form id="statusForm">
-          <input type="hidden" id="requestId" name="request_id" />
-          <div class="mb-3">
-            <label for="newStatus" class="form-label">Нов статус</label>
-            <select class="form-select" id="newStatus" name="status" required>
-              <option value="pending">Очаква</option>
-              <option value="in_progress">В процес</option>
-              <option value="completed">Завършена</option>
-              <option value="cancelled">Отказана</option>
-            </select>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Отказ
-        </button>
-        <button type="button" class="btn btn-danger" onclick="deleteRequest()">
-          Изтрий
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          onclick="submitStatusChange()"
-        >
-          Запази
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %} {% block scripts %}
-<script>
-  function viewDetails(id) {
-    // Fetch details via AJAX or use static data
-    // For now, use static data from the table
-    const row = document.querySelector(`tr[data-id="${id}"]`);
-    if (row) {
-      const cells = row.querySelectorAll('td');
-      const details = `
-              <p><strong>ID:</strong> ${cells[0].textContent}</p>
-              <p><strong>Име:</strong> ${cells[1].textContent}</p>
-              <p><strong>Статус:</strong> ${cells[2].textContent}</p>
-              <p><strong>История:</strong> ${cells[3].innerHTML}</p>
-          `;
-      document.getElementById('detailsContent').innerHTML = details;
-      const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
-      modal.show();
-    }
-  }
-
-  function changeStatus(id) {
-    document.getElementById('requestId').value = id;
-    const modal = new bootstrap.Modal(document.getElementById('statusModal'));
-    modal.show();
-  }
-
-  function submitStatusChange() {
-    const form = document.getElementById('statusForm');
-    const formData = new FormData(form);
-    const data = {
-      request_id: formData.get('request_id'),
-      status: formData.get('status')
-    };
-
-    fetch('/api/admin/change_status', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          location.reload();
-        } else {
-          alert('Грешка при промяна на статуса');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert('Грешка при промяна на статуса');
-      });
-  }
-
-  function deleteRequest() {
-    const requestId = document.getElementById('requestId').value;
-    if (confirm('Сигурни ли сте, че искате да изтриете тази заявка?')) {
-      fetch('/api/admin/delete_request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ request_id: requestId }),
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            location.reload();
-          } else {
-            alert('Грешка при изтриване на заявката');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Грешка при изтриване на заявката');
-        });
-    }
-  }
-
-  function exportData() {
-    const data = {{ requests_json | tojson
-  }};
-  const csvContent = "data:text/csv;charset=utf-8,"
-    + "ID,Име,Телефон,Имейл,Локация,Категория,Описание,Статус,Спешност\n"
-    + data.map(row => `"${row.id}","${row.name}","${row.phone}","${row.email}","${row.location}","${row.category}","${row.description}","${row.status}","${row.urgency}"`).join("\n");
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "requests.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  }
-
-  function exportVolunteers() {
-    const data = {{ volunteers_json | tojson
-  }};
-  const csvContent = "data:text/csv;charset=utf-8,"
-    + "ID,Име,Имейл,Телефон,Локация,Умения\n"
-    + data.map(row => `"${row.id}","${row.name}","${row.email}","${row.phone}","${row.location}","${row.skills}"`).join("\n");
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "volunteers.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  }
-
-  // Search functionality
-  document.getElementById('searchInput').addEventListener('input', filterTable);
-  document.getElementById('statusFilter').addEventListener('change', filterTable);
-
-  function filterTable() {
-    const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    const rows = document.querySelectorAll('tbody tr');
-    rows.forEach(row => {
-      const name = row.cells[1].textContent.toLowerCase();
-      const status = row.cells[3].textContent.toLowerCase();
-      const matchesSearch = name.includes(searchFilter);
-      const matchesStatus = !statusFilter || status.includes(statusFilter);
-      if (matchesSearch && matchesStatus) {
-        row.style.display = '';
-      } else {
-        row.style.display = 'none';
-      }
-    });
-  }
-</script>
-{% endblock %} # Script to add sample data to the database for testing admin
-dashboard import sqlite3 import os # Assuming the database is in the project
-directory db_path = r"C:\Users\Stella
-Barbarella\OneDrive\Documents\chatGPT\Projet
-BG\HelpChain\backend\helpchain-backend\src\helpchain.db" if
-os.path.exists(db_path): conn = sqlite3.connect(db_path) cursor = conn.cursor()
-# Insert sample requests sample_requests = [ ('Иван Иванов', '+359 88 123 4567',
-'sofia', 'food', 'Нуждая се от храна', 'pending'), ('Мария Петрова', '+359 87
-654 3210', 'plovdiv', 'medical', 'Медицинска помощ', 'in_progress'), ('Георги
-Димитров', '+359 89 987 6543', 'varna', 'transport', 'Транспорт до болница',
-'completed'), ] cursor.executemany('INSERT INTO request (name, phone, location,
-category, description, status) VALUES (?, ?, ?, ?, ?, ?)', sample_requests) #
-Insert sample logs sample_logs = [ (1, 'pending', '2025-10-01 10:00:00'), (1,
-'in_progress', '2025-10-01 11:00:00'), (2, 'pending', '2025-10-01 09:00:00'),
-(3, 'pending', '2025-10-01 08:00:00'), (3, 'completed', '2025-10-01 12:00:00'),
-] cursor.executemany('INSERT INTO request_log (request_id, status, changed_at)
-VALUES (?, ?, ?)', sample_logs) conn.commit() conn.close() print("Sample data
-added successfully.") else: print("Database not found.")

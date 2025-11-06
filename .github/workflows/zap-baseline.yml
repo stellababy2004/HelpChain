@@ -16,25 +16,44 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set target URL
+        id: set-target
         run: |
           TARGET_URL="${{ vars.ZAP_TARGET_URL }}"
-          if [ -z "$TARGET_URL" ]; then
-            # Default to production URL if variable not set
-            TARGET_URL="https://helpchain.live"
-            echo "Using default TARGET_URL: $TARGET_URL"
-          fi
-          echo "TARGET_URL=$TARGET_URL" >> $GITHUB_ENV
+          SKIP_SCAN="false"
 
-      - name: Validate target
-        run: |
           if [ -z "$TARGET_URL" ]; then
-            echo "Error: TARGET_URL is not set"
-            exit 1
+            # For PRs, skip ZAP scan as preview deployments may not be accessible
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "Skipping ZAP scan for PR - preview deployment may not be accessible"
+              SKIP_SCAN="true"
+            else
+              # Default to production URL for main branch/scheduled runs
+              TARGET_URL="https://helpchain.live"
+              echo "Using default TARGET_URL: $TARGET_URL"
+            fi
           fi
-          echo "Scanning target: $TARGET_URL"
+
+          echo "TARGET_URL=$TARGET_URL" >> $GITHUB_ENV
+          echo "SKIP_SCAN=$SKIP_SCAN" >> $GITHUB_ENV
+
+          # Set step outputs
+          echo "skip-scan=$SKIP_SCAN" >> $GITHUB_OUTPUT
+          echo "target-url=$TARGET_URL" >> $GITHUB_OUTPUT
+
+      - name: Validate target accessibility
+        if: steps.set-target.outputs.skip-scan == 'false'
+        run: |
+          echo "Testing accessibility of: ${{ env.TARGET_URL }}"
+          if ! curl -f --max-time 30 --retry 3 --retry-delay 5 "${{ env.TARGET_URL }}" > /dev/null 2>&1; then
+            echo "Target URL is not accessible, skipping ZAP scan"
+            echo "SKIP_SCAN=true" >> $GITHUB_ENV
+            exit 0
+          fi
+          echo "Target URL is accessible, proceeding with scan"
 
       - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.14.0
+        if: steps.set-target.outputs.skip-scan == 'false' && env.SKIP_SCAN != 'true'
+        uses: zaproxy/action-baseline@2b5fc7f98d837319798ab7f128ea50b7d40563b6
         with:
           target: ${{ env.TARGET_URL }}
           rules_file_name: .zap/rules.tsv
@@ -51,7 +70,7 @@ jobs:
           cp -r report.* zap/ || true
 
       - name: Upload ZAP artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
         with:
           name: zap-baseline-report
           path: zap/

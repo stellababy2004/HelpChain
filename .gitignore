@@ -48,8 +48,27 @@ build/
 instance/
 uploads/
 
+# SSL certificates and keys
+*.pem
+key.pem
+cert.pem
+
+# Cookies and session files
+cookies.txt
+backend/cookies.txt
+sent_emails.txt
+backend/sent_emails.txt
+
 # editor temp
 .vscode/
 
 # ignore prettier cache
 node_modules/.cache/prettier/
+.git_clean_backup/
+.git_clean_backup/
+instance/*.db
+*.sqlite*
+.env
+
+# local backups
+backend/backups/*

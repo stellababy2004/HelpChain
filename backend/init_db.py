@@ -4,17 +4,25 @@ Database initialization script for HelpChain
 Creates default roles, permissions, and admin user
 """
 
-import sys
 import os
+import sys
 
-# Add current directory to path
-sys.path.insert(0, ".")
+# Ensure backend package is importable whether script is run as module or standalone
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, CURRENT_DIR)
+sys.path.insert(0, os.path.dirname(CURRENT_DIR))
+
+from werkzeug.security import generate_password_hash
 
 from appy import app
-from .extensions import db
-from .models import User, RoleEnum
-from werkzeug.security import generate_password_hash
 from permissions import initialize_default_roles_and_permissions
+
+try:  # Prefer relative import when available
+    from .extensions import db
+    from .models import RoleEnum, User, Volunteer
+except ImportError:  # Fallback for direct script execution
+    from extensions import db
+    from models import RoleEnum, User, Volunteer
 
 
 def main():
@@ -46,10 +54,25 @@ def main():
             db.session.add(admin_user)
             db.session.commit()
 
+            print("🔄 Добавяне на тестов доброволец ivan@example.com...")
+
+            volunteer = Volunteer(
+                name="Ivan Tester",
+                email="ivan@example.com",
+                phone="0000000000",
+                skills="Обща помощ, пазаруване",
+                location="Varna, Bulgaria",
+            )
+
+            db.session.add(volunteer)
+            db.session.commit()
+
             print("✅ Базата данни е успешно инициализирана!")
             print("✅ Администраторски потребител е създаден!")
             print("👤 Потребителско име: admin")
             print("🔑 Парола: admin123")
+            print("✅ Тестов доброволец е добавен!")
+            print("📧 Email: ivan@example.com")
             print("")
             print("🚀 Можете да стартирате приложението с: python appy.py")
 

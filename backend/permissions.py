@@ -3,23 +3,25 @@ Permission-based access control decorators and utilities for HelpChain
 """
 
 from functools import wraps
-from flask import session, flash, redirect, url_for, current_app
+from inspect import iscoroutinefunction
+
+from flask import current_app, flash, redirect, session, url_for
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
-    from .models import User, Role, Permission, UserRole, RolePermission, PermissionEnum
     from .extensions import db
+    from .models import Permission, PermissionEnum, Role, RolePermission, User, UserRole
 except ImportError:
     # Fallback for standalone execution
-    import sys
     import os
+    import sys
 
     backend_dir = os.path.dirname(__file__)
     if backend_dir not in sys.path:
         sys.path.insert(0, backend_dir)
 
-    from models import User, Role, Permission, UserRole, RolePermission, PermissionEnum
     from extensions import db
+    from models import Permission, PermissionEnum, Role, RolePermission, User, UserRole
 
 
 def has_permission(permission_codename):
@@ -36,7 +38,7 @@ def has_permission(permission_codename):
         return False
 
     try:
-        user = User.query.get(session["user_id"])
+        user = db.session.get(User, session["user_id"])
         if not user or not user.is_active:
             return False
 
@@ -199,12 +201,23 @@ def require_admin_login(redirect_url="admin_login"):
     """
 
     def decorator(f):
-        @wraps(f)
-        def wrapped_function(*args, **kwargs):
-            if not session.get("admin_logged_in"):
-                flash("Моля, влезте като администратор.", "warning")
-                return redirect(url_for(redirect_url))
-            return f(*args, **kwargs)
+        if iscoroutinefunction(f):
+
+            @wraps(f)
+            async def wrapped_function(*args, **kwargs):
+                if not session.get("admin_logged_in"):
+                    flash("Моля, влезте като администратор.", "warning")
+                    return redirect(url_for(redirect_url))
+                return await f(*args, **kwargs)
+
+        else:
+
+            @wraps(f)
+            def wrapped_function(*args, **kwargs):
+                if not session.get("admin_logged_in"):
+                    flash("Моля, влезте като администратор.", "warning")
+                    return redirect(url_for(redirect_url))
+                return f(*args, **kwargs)
 
         return wrapped_function
 

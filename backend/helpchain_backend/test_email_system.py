@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Test script for HelpChain email notifications
 Tests both file saving and SMTP sending functionality

@@ -5,7 +5,14 @@
   <form method="POST" action="{{ url_for('send_registration') }}">
     <div class="mb-3">
       <label for="name" class="form-label">Име:</label>
-      <input type="text" class="form-control" id="name" name="name" required />
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        name="name"
+        required
+        autocomplete="name"
+      />
     </div>
     <div class="mb-3">
       <label for="email" class="form-label">Имейл:</label>
@@ -15,6 +22,7 @@
         id="email"
         name="email"
         required
+        autocomplete="email"
       />
     </div>
     <div class="mb-3">
@@ -25,6 +33,7 @@
         id="password"
         name="password"
         required
+        autocomplete="new-password"
       />
     </div>
     <button type="submit" class="btn btn-success">Регистрация</button>

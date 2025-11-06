@@ -9,24 +9,41 @@ HelpChain Translation Service
 - Quality control
 """
 
-from typing import Dict, List, Optional, Any
-from functools import lru_cache
-from datetime import datetime, timedelta
 import threading
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
-from .models import (
-    db,
-    SupportedLanguage,
-    TranslationKey,
-    Translation,
-    UserLanguagePreference,
-    ContentTranslation,
-)
+from backend.ai_service import ai_service
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
+try:
+    from models import (
+        ContentTranslation,
+        SupportedLanguage,
+        Translation,
+        TranslationKey,
+        UserLanguagePreference,
+        db,
+    )
+except Exception:
+    # Fallback for package import paths
+    from backend.models import (
+        ContentTranslation,
+        SupportedLanguage,
+        Translation,
+        TranslationKey,
+        UserLanguagePreference,
+        db,
+    )
 
 # AI Translation dependencies
 try:
-    from ai_service import ai_service
-
+    # ai_service вече е импортиран по-горе
     AI_TRANSLATION_AVAILABLE = True
 except ImportError:
     AI_TRANSLATION_AVAILABLE = False
@@ -48,7 +65,7 @@ class TranslationService:
     # LANGUAGE MANAGEMENT
     # ========================================================================
 
-    def get_supported_languages(self) -> List[SupportedLanguage]:
+    def get_supported_languages(self) -> list[SupportedLanguage]:
         """Получава всички поддържани езици"""
         return (
             SupportedLanguage.query.filter_by(is_active=True)
@@ -56,7 +73,7 @@ class TranslationService:
             .all()
         )
 
-    def get_language_by_code(self, code: str) -> Optional[SupportedLanguage]:
+    def get_language_by_code(self, code: str) -> SupportedLanguage | None:
         """Получава език по код"""
         return SupportedLanguage.query.filter_by(code=code, is_active=True).first()
 
@@ -95,7 +112,7 @@ class TranslationService:
         # 3. Fallback към default
         return self.default_language
 
-    def _parse_accept_language(self, accept_lang: str) -> List[str]:
+    def _parse_accept_language(self, accept_lang: str) -> list[str]:
         """Парсира Accept-Language header"""
         languages = []
         for item in accept_lang.split(","):
@@ -127,10 +144,10 @@ class TranslationService:
             if existing:
                 # Обновяваме usage_count
                 existing.usage_count += 1
-                existing.last_used = datetime.utcnow()
+                existing.last_used = utc_now()
                 if existing.source_text != source_text:
                     existing.source_text = source_text
-                    existing.updated_at = datetime.utcnow()
+                    existing.updated_at = utc_now()
                 db.session.commit()
                 return existing
 
@@ -144,7 +161,7 @@ class TranslationService:
                 requires_html=requires_html,
                 max_length=max_length,
                 usage_count=1,
-                last_used=datetime.utcnow(),
+                last_used=utc_now(),
             )
 
             db.session.add(translation_key)
@@ -161,7 +178,7 @@ class TranslationService:
             print(f"❌ Error registering translation key: {str(e)}")
             raise
 
-    def bulk_register_keys(self, keys_data: List[Dict[str, Any]]) -> int:
+    def bulk_register_keys(self, keys_data: list[dict[str, Any]]) -> int:
         """Bulk регистрация на ключове"""
         registered_count = 0
 
@@ -204,7 +221,7 @@ class TranslationService:
         self,
         key: str,
         language_code: str = None,
-        variables: Dict[str, Any] = None,
+        variables: dict[str, Any] = None,
         fallback_to_source: bool = True,
     ) -> str:
         """Получава превод за ключ"""
@@ -215,7 +232,7 @@ class TranslationService:
         cache_key = f"{key}:{language_code}"
         with self.cache_lock:
             cached = self.cache.get(cache_key)
-            if cached and cached["timestamp"] > datetime.utcnow() - timedelta(
+            if cached and cached["timestamp"] > utc_now() - timedelta(
                 seconds=self.cache_timeout
             ):
                 text = cached["text"]
@@ -223,7 +240,7 @@ class TranslationService:
                 text = self._fetch_translation_from_db(
                     key, language_code, fallback_to_source
                 )
-                self.cache[cache_key] = {"text": text, "timestamp": datetime.utcnow()}
+                self.cache[cache_key] = {"text": text, "timestamp": utc_now()}
 
         # Обработваме променливите
         if variables and text:
@@ -232,8 +249,8 @@ class TranslationService:
         return text or key  # Fallback към ключа ако няма превод
 
     def get_translations_batch(
-        self, keys: List[str], language_code: str = None
-    ) -> Dict[str, str]:
+        self, keys: list[str], language_code: str = None
+    ) -> dict[str, str]:
         """Получава batch от преводи"""
         if not language_code:
             language_code = self.default_language
@@ -246,7 +263,7 @@ class TranslationService:
             for key in keys:
                 cache_key = f"{key}:{language_code}"
                 cached = self.cache.get(cache_key)
-                if cached and cached["timestamp"] > datetime.utcnow() - timedelta(
+                if cached and cached["timestamp"] > utc_now() - timedelta(
                     seconds=self.cache_timeout
                 ):
                     results[key] = cached["text"]
@@ -264,7 +281,7 @@ class TranslationService:
                     cache_key = f"{key}:{language_code}"
                     self.cache[cache_key] = {
                         "text": text,
-                        "timestamp": datetime.utcnow(),
+                        "timestamp": utc_now(),
                     }
                     results[key] = text
 
@@ -322,8 +339,8 @@ class TranslationService:
             return None
 
     def _fetch_translations_batch_from_db(
-        self, keys: List[str], language_code: str
-    ) -> Dict[str, str]:
+        self, keys: list[str], language_code: str
+    ) -> dict[str, str]:
         """Batch вземане на преводи от DB"""
         try:
             language = self.get_language_by_code(language_code)
@@ -349,7 +366,7 @@ class TranslationService:
             print(f"❌ Error fetching batch translations: {str(e)}")
             return {}
 
-    def _process_variables(self, text: str, variables: Dict[str, Any]) -> str:
+    def _process_variables(self, text: str, variables: dict[str, Any]) -> str:
         """Обработва променливи в текста"""
         try:
             # Поддържаме както {{ var }} така и {var} формати
@@ -377,7 +394,7 @@ class TranslationService:
         translator_name: str = None,
         status: str = "draft",
         translation_method: str = "manual",
-    ) -> Optional[Translation]:
+    ) -> Translation | None:
         """Добавя нов превод"""
         try:
             # Намираме ключа
@@ -413,7 +430,7 @@ class TranslationService:
             )
 
             if status == "approved":
-                translation.approved_at = datetime.utcnow()
+                translation.approved_at = utc_now()
 
             db.session.add(translation)
             db.session.commit()
@@ -429,7 +446,7 @@ class TranslationService:
             print(f"❌ Error adding translation: {str(e)}")
             return None
 
-    def bulk_add_translations(self, translations_data: List[Dict[str, Any]]) -> int:
+    def bulk_add_translations(self, translations_data: list[dict[str, Any]]) -> int:
         """Bulk добавяне на преводи"""
         added_count = 0
 
@@ -550,7 +567,7 @@ class TranslationService:
 
     def _translate_with_ai(
         self, text: str, target_language: str, source_language: str = "bg"
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         """Превежда текст с AI"""
         if not AI_TRANSLATION_AVAILABLE:
             return None
@@ -611,7 +628,7 @@ class TranslationService:
         title: str = None,
         content: str = None,
         **kwargs,
-    ) -> Optional[ContentTranslation]:
+    ) -> ContentTranslation | None:
         """Превежда динамично съдържание"""
         try:
             language = self.get_language_by_code(language_code)
@@ -636,7 +653,7 @@ class TranslationService:
                     if field in kwargs:
                         setattr(existing, field, kwargs[field])
 
-                existing.updated_at = datetime.utcnow()
+                existing.updated_at = utc_now()
                 result = existing
             else:
                 # Създаваме нов
@@ -669,7 +686,7 @@ class TranslationService:
 
     def get_content_translation(
         self, content_type: str, content_id: int, language_code: str
-    ) -> Optional[ContentTranslation]:
+    ) -> ContentTranslation | None:
         """Получава превод на съдържание"""
         language = self.get_language_by_code(language_code)
         if not language:
@@ -698,7 +715,7 @@ class TranslationService:
             for k in keys_to_remove:
                 del self.cache[k]
 
-    def get_translation_stats(self) -> Dict[str, Any]:
+    def get_translation_stats(self) -> dict[str, Any]:
         """Получава статистики за преводите"""
         try:
             languages = self.get_supported_languages()
@@ -738,7 +755,6 @@ class TranslationService:
             print(f"❌ Error getting translation stats: {str(e)}")
             return {}
 
-    @lru_cache(maxsize=1000)
     def format_date(self, date_obj, language_code: str = None) -> str:
         """Форматира дата според езиковите настройки"""
         if not language_code:
@@ -751,7 +767,6 @@ class TranslationService:
         # Default format
         return date_obj.strftime("%d.%m.%Y")
 
-    @lru_cache(maxsize=1000)
     def format_time(self, time_obj, language_code: str = None) -> str:
         """Форматира време според езиковите настройки"""
         if not language_code:
@@ -775,7 +790,7 @@ def t(key: str, language_code: str = None, **variables) -> str:
     return translation_service.get_translation(key, language_code, variables)
 
 
-def get_supported_languages() -> List[SupportedLanguage]:
+def get_supported_languages() -> list[SupportedLanguage]:
     """Бърз helper за поддържани езици"""
     return translation_service.get_supported_languages()
 

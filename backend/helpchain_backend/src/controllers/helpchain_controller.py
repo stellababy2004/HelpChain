@@ -1,8 +1,15 @@
-import tempfile
 import os
-from datetime import datetime, timedelta
+import tempfile
+from datetime import UTC, datetime, timedelta
+
 from ..extensions import db
 from ..models import Request
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
 
 # опитваме се да намерим моделите; ако липсват - не вдигаме ImportError при зареждане
 MODELS_AVAILABLE = True
@@ -137,7 +144,7 @@ class HelpChainController:
 
         # time series active vs completed (simple last 30 days)
         series = []
-        today = datetime.utcnow().date()
+        today = utc_now().date()
         for i in range(30):
             day = today - timedelta(days=29 - i)
             start = datetime.combine(day, datetime.min.time())
@@ -199,7 +206,7 @@ class HelpChainController:
         tmpdir = tempfile.gettempdir()
         if fmt == "excel":
             path = os.path.join(
-                tmpdir, f"help_requests_{int(datetime.utcnow().timestamp())}.xlsx"
+                tmpdir, f"help_requests_{int(utc_now().timestamp())}.xlsx"
             )
             df.to_excel(path, index=False, engine="openpyxl")
             return (
@@ -229,7 +236,7 @@ class HelpChainController:
                 cols=list(df.columns), rows=df.fillna("").to_dict(orient="records")
             )
             path = os.path.join(
-                tmpdir, f"help_requests_{int(datetime.utcnow().timestamp())}.pdf"
+                tmpdir, f"help_requests_{int(utc_now().timestamp())}.pdf"
             )
             HTML(string=html).write_pdf(path)
             return path, "application/pdf", os.path.basename(path)

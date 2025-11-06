@@ -1,4 +1,9 @@
-from backend.models import db, Volunteer, Achievement
+try:
+    from .extensions import db
+    from .models import Achievement, Volunteer
+except ImportError:  # pragma: no cover - fallback for standalone scripts
+    from extensions import db
+    from models import Achievement, Volunteer
 
 
 class GamificationService:
@@ -105,7 +110,7 @@ class GamificationService:
         ]
 
         for achievement in achievements:
-            if not Achievement.query.get(achievement.id):
+            if not db.session.get(Achievement, achievement.id):
                 db.session.add(achievement)
 
         db.session.commit()

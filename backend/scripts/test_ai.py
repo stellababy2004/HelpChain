@@ -19,8 +19,8 @@ if __name__ == "__main__":
     sys.path.insert(0, PROJECT_ROOT)
 
     # third-party / local imports after sys.path adjustment
-    import ai_service
     import ai_config
+    import ai_service
 
     print("\nHelpChain AI diagnostic\n" + "=" * 30 + "\n")
 
@@ -45,11 +45,17 @@ if __name__ == "__main__":
         # кратко резюме от ai_config (ако има методи/атрибути за провайдъри)
         if hasattr(ai_config, "get_providers"):
             try:
-                print("\nai_config providers:", ai_config.get_providers())
+                print(
+                    "\nai_config.providers:",
+                    getattr(ai_config, "providers", "No providers attribute"),
+                )
             except Exception:
                 print("\nai_config: get_providers() raised an exception")
         elif hasattr(ai_config, "providers"):
-            print("\nai_config.providers:", getattr(ai_config, "providers"))
+            print(
+                "\nai_config.providers:",
+                getattr(ai_config, "providers", "No providers attribute"),
+            )
         else:
             print("\nai_config summary: (no explicit providers attribute)")
 

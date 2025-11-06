@@ -3,10 +3,10 @@ Simple Manual Cache System за HelpChain Analytics
 Прост, ефективен caching механизъм без dependencies
 """
 
+import hashlib
+import json
 import time
 from functools import wraps
-import json
-import hashlib
 
 
 class SimpleCache:
@@ -145,7 +145,7 @@ def cache_request_data(timeout=300, key_prefix="request"):
         @wraps(func)
         def wrapper(*args, **kwargs):
             try:
-                from flask import request, g
+                from flask import g, request
 
                 # Генерирай cache key с request параметри
                 request_params = dict(request.args)

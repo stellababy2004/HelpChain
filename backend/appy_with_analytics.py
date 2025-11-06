@@ -1,45 +1,44 @@
 # backend/appy.py
 from __future__ import annotations
 
-import os
 import csv
 import json
+import os
 import secrets
-from io import StringIO, BytesIO
-from datetime import datetime, timezone, timedelta
 from collections import Counter
-from pathlib import Path
+from datetime import UTC, datetime, timedelta
 from functools import wraps
-
-from dotenv import load_dotenv
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    session,
-    make_response,
-    jsonify,
-    Response,
-)
-from flask_babel import Babel, _
-from flask_mail import Mail, Message
-from flask_migrate import Migrate
-from flask_login import (
-    LoginManager,
-    login_user,
-    logout_user,
-    login_required,
-    current_user,
-)
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.exceptions import BadRequest
+from io import BytesIO, StringIO
+from pathlib import Path
 
 # 2FA библиотеки
 import pyotp  # За TOTP (Time-based One-Time Password)
 import qrcode  # За QR кодове
+from dotenv import load_dotenv
+from flask import (
+    Flask,
+    Response,
+    flash,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_babel import Babel, _
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
+from flask_mail import Mail, Message
+from flask_migrate import Migrate
+from werkzeug.exceptions import BadRequest
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # -----------------------------------------------------------------------------
 # .env (зарежда се от backend директорията)
@@ -74,29 +73,29 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 try:
     from .models import (
-        db,
-        User,
-        Volunteer,
-        HelpRequest,
-        Feedback,
-        SuccessStory,
-        AdminUser,
         AdminLog,
         AdminRole,
         # TwoFactorAuth,  # unused — премахнато
         # AdminSession,   # unused — премахнато
+        AdminUser,
+        Feedback,
+        HelpRequest,
+        SuccessStory,
+        User,
+        Volunteer,
+        db,
     )  # type: ignore
 except ImportError:
     from .models import (
-        db,
-        User,
-        Volunteer,
-        HelpRequest,
-        Feedback,
-        SuccessStory,
-        AdminUser,
         AdminLog,
         AdminRole,
+        AdminUser,
+        Feedback,
+        HelpRequest,
+        SuccessStory,
+        User,
+        Volunteer,
+        db,
     )  # type: ignore
 
 db.init_app(app)
@@ -306,7 +305,7 @@ def generate_totp_secret():
 def generate_backup_codes(count=10):
     """Генерира backup кодове за 2FA"""
     codes = []
-    for i in range(count):
+    for _i in range(count):
         code = "".join(secrets.choice("0123456789") for j in range(8))
         codes.append(f"{code[:4]}-{code[4:]}")
     return codes
@@ -876,7 +875,7 @@ def register():
             email=email,
             password=hashed,
             role="volunteer",
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
         try:
             db.session.add(user)
@@ -1372,7 +1371,7 @@ def admin_analytics():
 
     try:
         # Импортираме analytics функционалностите
-        from admin_analytics import AnalyticsEngine, RequestFilter, RealtimeUpdates
+        from admin_analytics import AnalyticsEngine, RealtimeUpdates, RequestFilter
 
         # Получаваме параметри от URL
         page = request.args.get("page", 1, type=int)
@@ -1493,15 +1492,22 @@ def admin_analytics():
     )
 
 
+# Добавяме маршрут /analytics, който пренасочва към /admin/analytics
+@app.route("/analytics")
+def analytics_redirect():
+    return redirect(url_for("admin_analytics"))
+
+
 @app.route("/admin/export")
 def admin_export():
     """Export data in various formats"""
     if not session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
 
-    from admin_analytics import RequestFilter
     import csv
     from io import StringIO
+
+    from admin_analytics import RequestFilter
 
     # Получаваме параметри
     export_format = request.args.get("export", "csv")

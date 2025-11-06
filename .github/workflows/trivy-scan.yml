@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Run Trivy IaC Scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
         with:
           scan-type: "config"
           scan-ref: "."
@@ -30,7 +30,7 @@ jobs:
           output: "trivy-iac-results.sarif"
 
       - name: Upload Trivy IaC SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0
         if: always()
         with:
           sarif_file: "trivy-iac-results.sarif"
@@ -40,10 +40,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Run Trivy Repository Scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
         with:
           scan-type: "fs"
           scan-ref: "."
@@ -52,7 +52,7 @@ jobs:
           skip-dirs: "node_modules,.git,.venv,venv,__pycache__,.pytest_cache"
 
       - name: Upload Trivy Repo SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0
         if: always()
         with:
           sarif_file: "trivy-repo-results.sarif"

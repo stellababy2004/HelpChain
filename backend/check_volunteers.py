@@ -1,11 +1,12 @@
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from .models import Volunteer
-from .extensions import db
 from flask import Flask
+
+from .extensions import db
+from .models import Volunteer
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = (

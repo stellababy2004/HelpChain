@@ -9,3 +9,37 @@ body {
 .alert {
   margin-top: 1rem;
 }
+
+.table-modern {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  background: #fff;
+}
+
+.table-modern th,
+.table-modern td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.table-modern tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.table-modern tr:hover {
+  background: #e6f0fa;
+  transition: background 0.2s;
+}
+
+.table-modern th {
+  background: #f1f5fa;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.table-modern th.sortable:hover {
+  background: #dde8f7;
+}

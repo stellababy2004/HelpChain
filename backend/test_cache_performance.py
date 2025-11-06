@@ -5,9 +5,10 @@ Test Cache Performance - Comprehensive Cache System Testing
 Този скрипт тества новата Simple Cache система за performance подобрения.
 """
 
-import requests
 import time
 from datetime import datetime
+
+import requests
 
 
 class CachePerformanceTester:

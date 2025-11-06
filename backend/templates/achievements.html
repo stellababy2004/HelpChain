@@ -1,410 +1,449 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bg">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Постижения - HelpChain</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
-            --info-color: #17a2b8;
-            --light-bg: #f8f9fa;
-            --dark-text: #212529;
-            --gold: #ffd700;
-            --silver: #c0c0c0;
-            --bronze: #cd7f32;
-        }
+      :root {
+        --primary-color: #007bff;
+        --secondary-color: #6c757d;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --info-color: #17a2b8;
+        --light-bg: #f8f9fa;
+        --dark-text: #212529;
+        --gold: #ffd700;
+        --silver: #c0c0c0;
+        --bronze: #cd7f32;
+      }
 
-        body {
-            background-color: var(--light-bg);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+      body {
+        background-color: var(--light-bg);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
 
-        .navbar {
-            background: linear-gradient(135deg, var(--primary-color), #0056b3);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+      .navbar {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
 
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
+      .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
+      .card:hover {
+        transform: translateY(-5px);
+      }
 
-        .achievement-card {
-            text-align: center;
-            padding: 30px 20px;
-            position: relative;
-            overflow: hidden;
-        }
+      .achievement-card {
+        text-align: center;
+        padding: 30px 20px;
+        position: relative;
+        overflow: hidden;
+      }
 
-        .achievement-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
+      .achievement-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+      }
 
-        .achievement-unlocked .achievement-icon {
-            color: var(--gold);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
+      .achievement-unlocked .achievement-icon {
+        color: var(--gold);
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      }
 
-        .achievement-locked .achievement-icon {
-            color: var(--secondary-color);
-            opacity: 0.5;
-        }
+      .achievement-locked .achievement-icon {
+        color: var(--secondary-color);
+        opacity: 0.5;
+      }
 
-        .achievement-locked {
-            opacity: 0.7;
-        }
+      .achievement-locked {
+        opacity: 0.7;
+      }
 
-        .progress-circle {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: conic-gradient(var(--primary-color) 75%, var(--light-bg) 75%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            position: relative;
-        }
+      .progress-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: conic-gradient(
+          var(--primary-color) 75%,
+          var(--light-bg) 75%
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        position: relative;
+      }
 
-        .progress-circle::before {
-            content: '';
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: white;
-            position: absolute;
-        }
+      .progress-circle::before {
+        content: "";
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: white;
+        position: absolute;
+      }
 
-        .progress-text {
-            position: relative;
-            z-index: 1;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
+      .progress-text {
+        position: relative;
+        z-index: 1;
+        font-weight: bold;
+        color: var(--primary-color);
+      }
 
-        .badge-tier {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
+      .badge-tier {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+      }
 
-        .tier-gold {
-            background: var(--gold);
-            color: var(--dark-text);
-        }
+      .tier-gold {
+        background: var(--gold);
+        color: var(--dark-text);
+      }
 
-        .tier-silver {
-            background: var(--silver);
-            color: var(--dark-text);
-        }
+      .tier-silver {
+        background: var(--silver);
+        color: var(--dark-text);
+      }
 
-        .tier-bronze {
-            background: var(--bronze);
-            color: white;
-        }
+      .tier-bronze {
+        background: var(--bronze);
+        color: white;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-hands-helping me-2"></i>
-                HelpChain
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/volunteer_dashboard">
-                            <i class="fas fa-tachometer-alt me-1"></i>Табло
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/my_tasks">
-                            <i class="fas fa-tasks me-1"></i>Моите задачи
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/achievements">
-                            <i class="fas fa-trophy me-1"></i>Постижения
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/volunteer_logout">
-                            <i class="fas fa-sign-out-alt me-1"></i>Изход
-                        </a>
-                    </li>
-                </ul>
-            </div>
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-hands-helping me-2"></i>
+          HelpChain
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/volunteer_dashboard">
+                <i class="fas fa-tachometer-alt me-1"></i>Табло
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/my_tasks">
+                <i class="fas fa-tasks me-1"></i>Моите задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/achievements">
+                <i class="fas fa-trophy me-1"></i>Постижения
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/volunteer_logout">
+                <i class="fas fa-sign-out-alt me-1"></i>Изход
+              </a>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
     <div class="container mt-4">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="mb-4 text-center">
-                    <i class="fas fa-trophy text-warning me-2"></i>
-                    Моите постижения
-                </h1>
+      <div class="row">
+        <div class="col-12">
+          <h1 class="mb-4 text-center">
+            <i class="fas fa-trophy text-warning me-2"></i>
+            Моите постижения
+          </h1>
 
-                <!-- Achievement Stats -->
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <div class="achievement-icon text-warning">
-                                    <i class="fas fa-trophy"></i>
-                                </div>
-                                <h3 class="text-warning mb-1" id="totalAchievements">8</h3>
-                                <p class="text-muted mb-0">Общо постижения</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <div class="achievement-icon text-warning">
-                                    <i class="fas fa-star"></i>
-                                </div>
-                                <h3 class="text-warning mb-1" id="goldAchievements">3</h3>
-                                <p class="text-muted mb-0">Златни</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <div class="achievement-icon text-secondary">
-                                    <i class="fas fa-medal"></i>
-                                </div>
-                                <h3 class="text-secondary mb-1" id="silverAchievements">4</h3>
-                                <p class="text-muted mb-0">Сребърни</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body">
-                                <div class="achievement-icon text-warning" style="color: var(--bronze) !important;">
-                                    <i class="fas fa-award"></i>
-                                </div>
-                                <h3 style="color: var(--bronze);" class="mb-1" id="bronzeAchievements">1</h3>
-                                <p class="text-muted mb-0">Бронзови</p>
-                            </div>
-                        </div>
-                    </div>
+          <!-- Achievement Stats -->
+          <div class="row mb-4">
+            <div class="col-md-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <div class="achievement-icon text-warning">
+                    <i class="fas fa-trophy"></i>
+                  </div>
+                  <h3 class="text-warning mb-1" id="totalAchievements">8</h3>
+                  <p class="text-muted mb-0">Общо постижения</p>
                 </div>
-
-                <!-- Achievement Categories -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">Категории постижения</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-2">
-                                <button class="btn btn-outline-primary w-100 mb-2" onclick="filterAchievements('all')">
-                                    <i class="fas fa-list me-1"></i>Всички
-                                </button>
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-outline-success w-100 mb-2"
-                                    onclick="filterAchievements('tasks')">
-                                    <i class="fas fa-tasks me-1"></i>Задачи
-                                </button>
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-outline-info w-100 mb-2" onclick="filterAchievements('social')">
-                                    <i class="fas fa-users me-1"></i>Социални
-                                </button>
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-outline-warning w-100 mb-2"
-                                    onclick="filterAchievements('special')">
-                                    <i class="fas fa-star me-1"></i>Специални
-                                </button>
-                            </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-outline-secondary w-100 mb-2"
-                                    onclick="filterAchievements('locked')">
-                                    <i class="fas fa-lock me-1"></i>Заключени
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Achievements Grid -->
-                <div id="achievementsContainer">
-                    <!-- Achievements will be loaded here -->
-                    <div class="text-center py-5">
-                        <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
-                        <p class="text-muted">Зареждане на постиженията...</p>
-                    </div>
-                </div>
+              </div>
             </div>
+            <div class="col-md-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <div class="achievement-icon text-warning">
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <h3 class="text-warning mb-1" id="goldAchievements">3</h3>
+                  <p class="text-muted mb-0">Златни</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <div class="achievement-icon text-secondary">
+                    <i class="fas fa-medal"></i>
+                  </div>
+                  <h3 class="text-secondary mb-1" id="silverAchievements">4</h3>
+                  <p class="text-muted mb-0">Сребърни</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <div
+                    class="achievement-icon text-warning"
+                    style="color: var(--bronze) !important"
+                  >
+                    <i class="fas fa-award"></i>
+                  </div>
+                  <h3
+                    style="color: var(--bronze)"
+                    class="mb-1"
+                    id="bronzeAchievements"
+                  >
+                    1
+                  </h3>
+                  <p class="text-muted mb-0">Бронзови</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Achievement Categories -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Категории постижения</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-2">
+                  <button
+                    class="btn btn-outline-primary w-100 mb-2"
+                    onclick="filterAchievements('all')"
+                  >
+                    <i class="fas fa-list me-1"></i>Всички
+                  </button>
+                </div>
+                <div class="col-md-2">
+                  <button
+                    class="btn btn-outline-success w-100 mb-2"
+                    onclick="filterAchievements('tasks')"
+                  >
+                    <i class="fas fa-tasks me-1"></i>Задачи
+                  </button>
+                </div>
+                <div class="col-md-2">
+                  <button
+                    class="btn btn-outline-info w-100 mb-2"
+                    onclick="filterAchievements('social')"
+                  >
+                    <i class="fas fa-users me-1"></i>Социални
+                  </button>
+                </div>
+                <div class="col-md-2">
+                  <button
+                    class="btn btn-outline-warning w-100 mb-2"
+                    onclick="filterAchievements('special')"
+                  >
+                    <i class="fas fa-star me-1"></i>Специални
+                  </button>
+                </div>
+                <div class="col-md-2">
+                  <button
+                    class="btn btn-outline-secondary w-100 mb-2"
+                    onclick="filterAchievements('locked')"
+                  >
+                    <i class="fas fa-lock me-1"></i>Заключени
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Achievements Grid -->
+          <div id="achievementsContainer">
+            <!-- Achievements will be loaded here -->
+            <div class="text-center py-5">
+              <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+              <p class="text-muted">Зареждане на постиженията...</p>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Mock achievements data
-        const mockAchievements = [
-            {
-                id: 1,
-                title: "Първа помощ",
-                description: "Завърши първата си задача",
-                icon: "fas fa-hand-holding-heart",
-                category: "tasks",
-                tier: "bronze",
-                unlocked: true,
-                unlockedDate: "2024-01-10",
-                progress: 100,
-                maxProgress: 1,
-                requirement: "Завърши 1 задача"
-            },
-            {
-                id: 2,
-                title: "Доброволец на седмицата",
-                description: "Бъди най-активният доброволец за седмица",
-                icon: "fas fa-calendar-week",
-                category: "special",
-                tier: "gold",
-                unlocked: true,
-                unlockedDate: "2024-01-15",
-                progress: 100,
-                maxProgress: 1,
-                requirement: "Бъди №1 за седмица"
-            },
-            {
-                id: 3,
-                title: "Спасител",
-                description: "Помогни в спешна ситуация",
-                icon: "fas fa-ambulance",
-                category: "tasks",
-                tier: "gold",
-                unlocked: true,
-                unlockedDate: "2024-01-12",
-                progress: 100,
-                maxProgress: 1,
-                requirement: "Завърши спешна задача"
-            },
-            {
-                id: 4,
-                title: "Екипна работа",
-                description: "Работи в екип с други доброволци",
-                icon: "fas fa-users",
-                category: "social",
-                tier: "silver",
-                unlocked: true,
-                unlockedDate: "2024-01-08",
-                progress: 100,
-                maxProgress: 1,
-                requirement: "Участвай в групова задача"
-            },
-            {
-                id: 5,
-                title: "Надежден партньор",
-                description: "Завърши 10 задачи успешно",
-                icon: "fas fa-shield-alt",
-                category: "tasks",
-                tier: "silver",
-                unlocked: true,
-                unlockedDate: "2024-01-20",
-                progress: 100,
-                maxProgress: 10,
-                requirement: "Завърши 10 задачи"
-            },
-            {
-                id: 6,
-                title: "Ментор",
-                description: "Помогни на нов доброволец",
-                icon: "fas fa-graduation-cap",
-                category: "social",
-                tier: "silver",
-                unlocked: false,
-                progress: 0,
-                maxProgress: 1,
-                requirement: "Обучи нов доброволец"
-            },
-            {
-                id: 7,
-                title: "Герой на месеца",
-                description: "Бъди доброволец на месеца",
-                icon: "fas fa-crown",
-                category: "special",
-                tier: "gold",
-                unlocked: false,
-                progress: 0,
-                maxProgress: 1,
-                requirement: "Спечели награда за месеца"
-            },
-            {
-                id: 8,
-                title: "Легенда",
-                description: "Завърши 50 задачи",
-                icon: "fas fa-star",
-                category: "tasks",
-                tier: "gold",
-                unlocked: false,
-                progress: 15,
-                maxProgress: 50,
-                requirement: "Завърши 50 задачи"
-            }
-        ];
+      // Mock achievements data
+      const mockAchievements = [
+        {
+          id: 1,
+          title: "Първа помощ",
+          description: "Завърши първата си задача",
+          icon: "fas fa-hand-holding-heart",
+          category: "tasks",
+          tier: "bronze",
+          unlocked: true,
+          unlockedDate: "2024-01-10",
+          progress: 100,
+          maxProgress: 1,
+          requirement: "Завърши 1 задача",
+        },
+        {
+          id: 2,
+          title: "Доброволец на седмицата",
+          description: "Бъди най-активният доброволец за седмица",
+          icon: "fas fa-calendar-week",
+          category: "special",
+          tier: "gold",
+          unlocked: true,
+          unlockedDate: "2024-01-15",
+          progress: 100,
+          maxProgress: 1,
+          requirement: "Бъди №1 за седмица",
+        },
+        {
+          id: 3,
+          title: "Спасител",
+          description: "Помогни в спешна ситуация",
+          icon: "fas fa-ambulance",
+          category: "tasks",
+          tier: "gold",
+          unlocked: true,
+          unlockedDate: "2024-01-12",
+          progress: 100,
+          maxProgress: 1,
+          requirement: "Завърши спешна задача",
+        },
+        {
+          id: 4,
+          title: "Екипна работа",
+          description: "Работи в екип с други доброволци",
+          icon: "fas fa-users",
+          category: "social",
+          tier: "silver",
+          unlocked: true,
+          unlockedDate: "2024-01-08",
+          progress: 100,
+          maxProgress: 1,
+          requirement: "Участвай в групова задача",
+        },
+        {
+          id: 5,
+          title: "Надежден партньор",
+          description: "Завърши 10 задачи успешно",
+          icon: "fas fa-shield-alt",
+          category: "tasks",
+          tier: "silver",
+          unlocked: true,
+          unlockedDate: "2024-01-20",
+          progress: 100,
+          maxProgress: 10,
+          requirement: "Завърши 10 задачи",
+        },
+        {
+          id: 6,
+          title: "Ментор",
+          description: "Помогни на нов доброволец",
+          icon: "fas fa-graduation-cap",
+          category: "social",
+          tier: "silver",
+          unlocked: false,
+          progress: 0,
+          maxProgress: 1,
+          requirement: "Обучи нов доброволец",
+        },
+        {
+          id: 7,
+          title: "Герой на месеца",
+          description: "Бъди доброволец на месеца",
+          icon: "fas fa-crown",
+          category: "special",
+          tier: "gold",
+          unlocked: false,
+          progress: 0,
+          maxProgress: 1,
+          requirement: "Спечели награда за месеца",
+        },
+        {
+          id: 8,
+          title: "Легенда",
+          description: "Завърши 50 задачи",
+          icon: "fas fa-star",
+          category: "tasks",
+          tier: "gold",
+          unlocked: false,
+          progress: 15,
+          maxProgress: 50,
+          requirement: "Завърши 50 задачи",
+        },
+      ];
 
-        // Load achievements on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            loadAchievements();
-            updateStats();
-        });
+      // Load achievements on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadAchievements();
+        updateStats();
+      });
 
-        function loadAchievements(filter = 'all') {
-            const container = document.getElementById('achievementsContainer');
+      function loadAchievements(filter = "all") {
+        const container = document.getElementById("achievementsContainer");
 
-            let filteredAchievements = mockAchievements;
+        let filteredAchievements = mockAchievements;
 
-            if (filter !== 'all') {
-                if (filter === 'locked') {
-                    filteredAchievements = mockAchievements.filter(a => !a.unlocked);
-                } else {
-                    filteredAchievements = mockAchievements.filter(a => a.category === filter);
-                }
-            }
+        if (filter !== "all") {
+          if (filter === "locked") {
+            filteredAchievements = mockAchievements.filter((a) => !a.unlocked);
+          } else {
+            filteredAchievements = mockAchievements.filter(
+              (a) => a.category === filter,
+            );
+          }
+        }
 
-            let html = '<div class="row">';
+        let html = '<div class="row">';
 
-            filteredAchievements.forEach(achievement => {
-                const unlockedClass = achievement.unlocked ? 'achievement-unlocked' : 'achievement-locked';
-                const tierClass = `tier-${achievement.tier}`;
-                const progressPercent = (achievement.progress / achievement.maxProgress) * 100;
+        filteredAchievements.forEach((achievement) => {
+          const unlockedClass = achievement.unlocked
+            ? "achievement-unlocked"
+            : "achievement-locked";
+          const tierClass = `tier-${achievement.tier}`;
+          const progressPercent =
+            (achievement.progress / achievement.maxProgress) * 100;
 
-                html += `
+          html += `
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card achievement-card ${unlockedClass}">
                             <span class="badge ${tierClass} badge-tier">${achievement.tier.toUpperCase()}</span>
@@ -412,39 +451,42 @@
                                 <i class="${achievement.icon}"></i>
                             </div>
                             <h5 class="card-title">${achievement.title}</h5>
-                            <p class="card-text text-muted">${achievement.description}</p>
-                            ${achievement.unlocked ?
-                        `<small class="text-success"><i class="fas fa-check-circle me-1"></i>Отключено на ${achievement.unlockedDate}</small>` :
-                        `<div class="progress-circle" style="background: conic-gradient(var(--primary-color) ${progressPercent}%, var(--light-bg) ${progressPercent}%)">
+                            <p class="card-text text-muted">${
+                              achievement.description
+                            }</p>
+                            ${
+                              achievement.unlocked
+                                ? `<small class="text-success"><i class="fas fa-check-circle me-1"></i>Отключено на ${achievement.unlockedDate}</small>`
+                                : `<div class="progress-circle" style="background: conic-gradient(var(--primary-color) ${progressPercent}%, var(--light-bg) ${progressPercent}%)">
                                     <span class="progress-text">${achievement.progress}/${achievement.maxProgress}</span>
                                 </div>
                                 <small class="text-muted">${achievement.requirement}</small>`
-                    }
+                            }
                         </div>
                     </div>
                 `;
-            });
+        });
 
-            html += '</div>';
-            container.innerHTML = html;
-        }
+        html += "</div>";
+        container.innerHTML = html;
+      }
 
-        function updateStats() {
-            const unlocked = mockAchievements.filter(a => a.unlocked);
-            const gold = unlocked.filter(a => a.tier === 'gold').length;
-            const silver = unlocked.filter(a => a.tier === 'silver').length;
-            const bronze = unlocked.filter(a => a.tier === 'bronze').length;
+      function updateStats() {
+        const unlocked = mockAchievements.filter((a) => a.unlocked);
+        const gold = unlocked.filter((a) => a.tier === "gold").length;
+        const silver = unlocked.filter((a) => a.tier === "silver").length;
+        const bronze = unlocked.filter((a) => a.tier === "bronze").length;
 
-            document.getElementById('totalAchievements').textContent = unlocked.length;
-            document.getElementById('goldAchievements').textContent = gold;
-            document.getElementById('silverAchievements').textContent = silver;
-            document.getElementById('bronzeAchievements').textContent = bronze;
-        }
+        document.getElementById("totalAchievements").textContent =
+          unlocked.length;
+        document.getElementById("goldAchievements").textContent = gold;
+        document.getElementById("silverAchievements").textContent = silver;
+        document.getElementById("bronzeAchievements").textContent = bronze;
+      }
 
-        function filterAchievements(category) {
-            loadAchievements(category);
-        }
+      function filterAchievements(category) {
+        loadAchievements(category);
+      }
     </script>
-</body>
-
+  </body>
 </html>

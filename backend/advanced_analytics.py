@@ -3,23 +3,33 @@ Advanced Analytics Features
 Real-time notifications, predictive analytics, και advanced visualizations
 """
 
-from datetime import datetime, timedelta
+import copy
+import os
+import time
 from collections import defaultdict
+from datetime import datetime, timedelta
 
-# Try relative imports first, fall back to absolute imports for standalone execution
+from sqlalchemy.orm import load_only
+
+# Try absolute imports first, fall back to relative imports for standalone execution
 try:
-    from .extensions import db
-    from .models import User, Volunteer, HelpRequest
-except ImportError:
     from extensions import db
-    from models import User, Volunteer, HelpRequest
+except ImportError:
+    try:
+        from .extensions import db
+    except ImportError:
+        db = None
 
-from models_with_analytics import (
-    AnalyticsEvent,
-    UserBehavior,
-    PerformanceMetrics,
-    ChatbotConversation,
-)
+try:
+    from models_with_analytics import AnalyticsEvent
+except ImportError:
+    from .models_with_analytics import AnalyticsEvent
+
+
+MAX_ANALYTICS_EVENTS = int(os.getenv("ANALYTICS_MAX_EVENTS", 5000))
+MAX_USER_EVENTS = int(os.getenv("ANALYTICS_MAX_USER_EVENTS", 500))
+INSIGHTS_CACHE_TTL = int(os.getenv("ANALYTICS_INSIGHTS_CACHE_TTL", 120))
+_INSIGHTS_CACHE = {"timestamp": 0.0, "data": None}
 
 
 class AdvancedAnalytics:
@@ -30,6 +40,16 @@ class AdvancedAnalytics:
 
     def detect_anomalies(self, timeframe_days=7):
         """Detect unusual patterns в analytics data"""
+
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
 
         # Вземи данните за последните дни
         end_date = datetime.now()
@@ -251,6 +271,45 @@ class AdvancedAnalytics:
     def generate_insights_report(self):
         """Generate comprehensive insights report"""
 
+        now_ts = time.time()
+        cached_snapshot = _INSIGHTS_CACHE.get("data")
+        if (
+            cached_snapshot is not None
+            and now_ts - _INSIGHTS_CACHE.get("timestamp", 0.0) < INSIGHTS_CACHE_TTL
+        ):
+            cached_copy = copy.deepcopy(cached_snapshot)
+            metadata = cached_copy.setdefault("metadata", {})
+            metadata["cached"] = True
+            metadata.setdefault("cache_ttl", INSIGHTS_CACHE_TTL)
+            metadata.setdefault("generated_at", cached_copy.get("generated_at"))
+            return cached_copy
+
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return {
+                    "generated_at": datetime.now().isoformat(),
+                    "error": "No application context available",
+                    "anomalies": [],
+                    "predictions": {},
+                    "kpi_trends": {},
+                    "user_segments": {},
+                    "recommendations": [],
+                }
+        except RuntimeError:
+            # Working outside of application context
+            return {
+                "generated_at": datetime.now().isoformat(),
+                "error": "Working outside of application context",
+                "anomalies": [],
+                "predictions": {},
+                "kpi_trends": {},
+                "user_segments": {},
+                "recommendations": [],
+            }
+
         report = {
             "generated_at": datetime.now().isoformat(),
             "anomalies": self.detect_anomalies(),
@@ -259,6 +318,15 @@ class AdvancedAnalytics:
             "user_segments": self._segment_users(),
             "recommendations": self._generate_recommendations(),
         }
+
+        report["metadata"] = {
+            "cached": False,
+            "cache_ttl": INSIGHTS_CACHE_TTL,
+            "generated_at": report["generated_at"],
+        }
+
+        _INSIGHTS_CACHE["data"] = copy.deepcopy(report)
+        _INSIGHTS_CACHE["timestamp"] = now_ts
 
         return report
 
@@ -338,7 +406,7 @@ class AdvancedAnalytics:
                     user_activity[event["user_id"]]["features"].add(event["category"])
 
         # Classify users
-        for user_id, activity in user_activity.items():
+        for _user_id, activity in user_activity.items():
             events_count = activity["events"]
             features_count = len(activity["features"])
 
@@ -385,11 +453,39 @@ class AdvancedAnalytics:
     # Helper methods
     def get_events_by_hour(self, start_date, end_date):
         """Get events grouped by hour"""
+        # Check if we have Flask application context
         try:
-            events = AnalyticsEvent.query.filter(
-                AnalyticsEvent.created_at >= start_date,
-                AnalyticsEvent.created_at <= end_date,
-            ).all()
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
+
+        try:
+            query = (
+                AnalyticsEvent.query.options(
+                    load_only(
+                        AnalyticsEvent.created_at,
+                        AnalyticsEvent.event_type,
+                        AnalyticsEvent.event_label,
+                        AnalyticsEvent.event_action,
+                        AnalyticsEvent.user_type,
+                        AnalyticsEvent.page_url,
+                    )
+                )
+                .filter(
+                    AnalyticsEvent.created_at >= start_date,
+                    AnalyticsEvent.created_at <= end_date,
+                )
+                .order_by(AnalyticsEvent.created_at.desc())
+            )
+
+            if MAX_ANALYTICS_EVENTS:
+                query = query.limit(MAX_ANALYTICS_EVENTS)
+
+            events = query.all()
 
             # Group by hour
             events_by_hour = defaultdict(list)
@@ -412,12 +508,36 @@ class AdvancedAnalytics:
 
     def get_user_events(self, user_id):
         """Get all events για specific user"""
+        # Check if we have Flask application context
         try:
-            events = (
-                AnalyticsEvent.query.filter(AnalyticsEvent.user_session == str(user_id))
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
+
+        try:
+            query = (
+                AnalyticsEvent.query.options(
+                    load_only(
+                        AnalyticsEvent.created_at,
+                        AnalyticsEvent.event_type,
+                        AnalyticsEvent.event_category,
+                        AnalyticsEvent.event_action,
+                        AnalyticsEvent.event_label,
+                        AnalyticsEvent.page_url,
+                    )
+                )
+                .filter(AnalyticsEvent.user_session == str(user_id))
                 .order_by(AnalyticsEvent.created_at.desc())
-                .all()
             )
+
+            if MAX_USER_EVENTS:
+                query = query.limit(MAX_USER_EVENTS)
+
+            events = query.all()
 
             return [
                 {
@@ -436,13 +556,38 @@ class AdvancedAnalytics:
 
     def get_recent_events(self, days=7):
         """Get recent events"""
+        # Check if we have Flask application context
+        try:
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
+
         try:
             start_date = datetime.now() - timedelta(days=days)
-            events = (
-                AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= start_date)
+            query = (
+                AnalyticsEvent.query.options(
+                    load_only(
+                        AnalyticsEvent.created_at,
+                        AnalyticsEvent.event_type,
+                        AnalyticsEvent.event_category,
+                        AnalyticsEvent.event_action,
+                        AnalyticsEvent.user_session,
+                        AnalyticsEvent.user_type,
+                        AnalyticsEvent.page_url,
+                    )
+                )
+                .filter(AnalyticsEvent.created_at >= start_date)
                 .order_by(AnalyticsEvent.created_at.desc())
-                .all()
             )
+
+            if MAX_ANALYTICS_EVENTS:
+                query = query.limit(MAX_ANALYTICS_EVENTS)
+
+            events = query.all()
 
             return [
                 {
@@ -462,15 +607,40 @@ class AdvancedAnalytics:
 
     def get_events_in_range(self, start_date, end_date):
         """Get events in date range"""
+        # Check if we have Flask application context
         try:
-            events = (
-                AnalyticsEvent.query.filter(
+            from flask import current_app
+
+            if not current_app:
+                return []
+        except RuntimeError:
+            # Working outside of application context
+            return []
+
+        try:
+            query = (
+                AnalyticsEvent.query.options(
+                    load_only(
+                        AnalyticsEvent.created_at,
+                        AnalyticsEvent.event_type,
+                        AnalyticsEvent.event_category,
+                        AnalyticsEvent.event_action,
+                        AnalyticsEvent.user_session,
+                        AnalyticsEvent.user_type,
+                        AnalyticsEvent.page_url,
+                    )
+                )
+                .filter(
                     AnalyticsEvent.created_at >= start_date,
                     AnalyticsEvent.created_at <= end_date,
                 )
                 .order_by(AnalyticsEvent.created_at.desc())
-                .all()
             )
+
+            if MAX_ANALYTICS_EVENTS:
+                query = query.limit(MAX_ANALYTICS_EVENTS)
+
+            events = query.all()
 
             return [
                 {
@@ -493,9 +663,10 @@ class AdvancedAnalytics:
 class RealTimeNotifications:
     """Real-time notifications system"""
 
-    def __init__(self, socketio):
+    def __init__(self, socketio, feature_checker=None):
         self.socketio = socketio
         self.subscribers = set()
+        self._feature_enabled = feature_checker or (lambda feature: True)
 
     def subscribe(self, session_id):
         """Subscribe session για notifications"""
@@ -507,6 +678,9 @@ class RealTimeNotifications:
 
     def broadcast_anomaly(self, anomaly):
         """Broadcast anomaly detection"""
+        if not self.socketio or not self._feature_enabled("notifications"):
+            return
+
         notification = {
             "type": "anomaly",
             "severity": anomaly.get("severity", "medium"),
@@ -520,6 +694,9 @@ class RealTimeNotifications:
 
     def broadcast_milestone(self, milestone):
         """Broadcast milestone achievements"""
+        if not self.socketio or not self._feature_enabled("notifications"):
+            return
+
         notification = {
             "type": "milestone",
             "severity": "info",

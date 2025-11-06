@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Simple Flask app for testing HelpChain email notifications
 """
 
-import os
-from flask import Flask, render_template_string, request, redirect, url_for, flash
-from flask_mail import Mail, Message
-from dotenv import load_dotenv
 import datetime
+import os
+
+from dotenv import load_dotenv
+from flask import Flask, flash, redirect, render_template_string, request, url_for
+from flask_mail import Mail, Message
 
 # Load environment variables
 load_dotenv()

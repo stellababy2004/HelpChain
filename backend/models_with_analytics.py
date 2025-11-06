@@ -1,15 +1,46 @@
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from flask_login import UserMixin
+from datetime import UTC, datetime
 from enum import Enum
-import pyotp
-import json
+
+# Import AdminUser and other models - try relative import first then top-level
+AdminUser = None
+User = None
+Volunteer = None
+
+try:
+    from .models import AdminUser, User, Volunteer
+except Exception:
+    try:
+        from models import AdminUser, User, Volunteer
+    except Exception:
+        AdminUser = User = Volunteer = None
+
 
 # Try relative imports first, fall back to absolute imports for standalone execution
-try:
-    from .extensions import db
-except ImportError:
-    from extensions import db
+from extensions import db
+
+# Ensure AdminUser is properly imported for relationships
+if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
+    try:
+        # Force import the real AdminUser class
+        import os
+        import sys
+
+        # Add backend directory to path if not already there
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        if backend_dir not in sys.path:
+            sys.path.insert(0, backend_dir)
+
+            # Try to import the real models
+            from models import AdminUser as RealAdminUser
+
+            AdminUser = RealAdminUser
+    except ImportError:
+        pass
+
+
+def utc_now() -> datetime:
+    """Return naive UTC timestamp without relying on datetime.utcnow."""
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class AdminRole(Enum):
@@ -40,7 +71,10 @@ class AdminLog(db.Model):
     entity_id = db.Column(db.Integer, nullable=True)  # ID на обекта
     ip_address = db.Column(db.String(45), nullable=True)  # IP адрес
     user_agent = db.Column(db.String(500), nullable=True)  # Browser info
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=utc_now)
+
+    # Use string reference for AdminUser relationship
+    admin_user = db.relationship("AdminUser", backref="admin_logs")
 
     def __repr__(self):
         return f"<AdminLog {self.action} by {self.admin_user_id}>"
@@ -59,12 +93,14 @@ class TwoFactorAuth(db.Model):
     session_token = db.Column(db.String(128), unique=True, nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     expires_at = db.Column(db.DateTime, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
+    # Use string reference for AdminUser relationship
     admin_user = db.relationship("AdminUser", backref="auth_sessions")
 
     def is_expired(self):
-        return datetime.utcnow() > self.expires_at
+        return utc_now() > self.expires_at
 
 
 class AdminSession(db.Model):
@@ -80,14 +116,16 @@ class AdminSession(db.Model):
     session_id = db.Column(db.String(128), unique=True, nullable=False)
     ip_address = db.Column(db.String(45), nullable=True)
     user_agent = db.Column(db.String(500), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_activity = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    last_activity = db.Column(db.DateTime, default=utc_now)
     is_active = db.Column(db.Boolean, default=True)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
+    # Use string reference for AdminUser relationship
     admin_user = db.relationship("AdminUser", backref="sessions")
 
     def update_activity(self):
-        self.last_activity = datetime.utcnow()
+        self.last_activity = utc_now()
         db.session.commit()
 
 
@@ -98,7 +136,29 @@ class Feedback(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=utc_now)
+
+    # Sentiment analysis fields
+    sentiment_score = db.Column(
+        db.Float, nullable=True
+    )  # -1.0 to 1.0 (negative to positive)
+    sentiment_label = db.Column(
+        db.String(20), nullable=True
+    )  # positive, negative, neutral
+    sentiment_confidence = db.Column(db.Float, nullable=True)  # 0.0 to 1.0
+    ai_processed = db.Column(db.Boolean, default=False)
+    ai_processing_time = db.Column(db.Float, nullable=True)  # in seconds
+    ai_provider = db.Column(db.String(20), nullable=True)  # openai, gemini
+
+    # Additional metadata
+    user_type = db.Column(db.String(20), default="guest")  # guest, volunteer, admin
+    user_id = db.Column(db.Integer, nullable=True)  # if logged in
+    page_url = db.Column(db.String(500), nullable=True)  # page where feedback was given
+    user_agent = db.Column(db.String(500), nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+
+    def __repr__(self):
+        return f"<Feedback {self.id} - {self.sentiment_label} ({self.sentiment_score})>"
 
 
 class SuccessStory(db.Model):
@@ -107,39 +167,42 @@ class SuccessStory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=utc_now)
 
 
-class VideoChatSession(db.Model):
-    """Модел за видео чат сесии между потребители"""
+# class VideoChatSession(db.Model):
+#     """Модел за видео чат сесии между потребители"""
 
-    __tablename__ = "video_chat_sessions"
-    __table_args__ = {"extend_existing": True}
+#     __tablename__ = "video_chat_sessions"
+#     __table_args__ = {"extend_existing": True}
 
-    id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(
-        db.String(128), unique=True, nullable=False
-    )  # WebRTC session ID
-    initiator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    participant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    status = db.Column(
-        db.String(50), default="pending"
-    )  # pending, active, completed, cancelled
-    started_at = db.Column(db.DateTime, nullable=True)
-    ended_at = db.Column(db.DateTime, nullable=True)
-    duration = db.Column(db.Integer, nullable=True)  # в секунди
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+#     id = db.Column(db.Integer, primary_key=True)
+#     session_id = db.Column(
+#         db.String(128), unique=True, nullable=False
+#     )  # WebRTC session ID
+#     initiator_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+#     participant_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+#     status = db.Column(
+#         db.String(50), default="pending"
+#     )  # pending, active, completed, cancelled
+#     started_at = db.Column(db.DateTime, nullable=True)
+#     ended_at = db.Column(db.DateTime, nullable=True)
+#     duration = db.Column(db.Integer, nullable=True)  # в секунди
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+#     updated_at = db.Column(
+#         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+#     )
 
-    # Relationships
-    initiator = db.relationship(
-        "User", foreign_keys=[initiator_id], backref="initiated_video_chats"
-    )
-    participant = db.relationship(
-        "User", foreign_keys=[participant_id], backref="participated_video_chats"
-    )
+#     # Relationships
+#     initiator = db.relationship(
+#         "User", foreign_keys=[initiator_id], backref="initiated_video_chats"
+#     )
+#     participant = db.relationship(
+#         "User", foreign_keys=[participant_id], backref="participated_video_chats"
+#     )
 
-    def __repr__(self):
-        return f"<VideoChatSession {self.session_id}>"
+#     def __repr__(self):
+#         return f"<VideoChatSession {self.session_id}>"
 
 
 class AnalyticsEvent(db.Model):
@@ -176,7 +239,8 @@ class AnalyticsEvent(db.Model):
     device_type = db.Column(db.String(50), nullable=True)  # desktop, mobile, tablet
 
     # Timestamp
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<AnalyticsEvent {self.event_type}>"
@@ -199,8 +263,8 @@ class UserBehavior(db.Model):
     location = db.Column(db.String(100), nullable=True)  # city, country
 
     # Session data
-    session_start = db.Column(db.DateTime, default=datetime.utcnow)
-    last_activity = db.Column(db.DateTime, default=datetime.utcnow)
+    session_start = db.Column(db.DateTime, default=utc_now)
+    last_activity = db.Column(db.DateTime, default=utc_now)
     total_time_spent = db.Column(db.Integer, default=0)  # in seconds
     pages_visited = db.Column(db.Integer, default=1)
 
@@ -245,7 +309,8 @@ class PerformanceMetrics(db.Model):
     context_data = db.Column(db.Text, nullable=True)  # JSON string with extra data
 
     # Timestamp
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<PerformanceMetrics {self.metric_name}: {self.metric_value}>"
@@ -281,7 +346,8 @@ class ChatbotConversation(db.Model):
     user_type = db.Column(db.String(50), default="guest")
 
     # Timestamp
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     def __repr__(self):
         return f"<ChatbotConversation {self.session_id}>"
@@ -328,13 +394,11 @@ class Task(db.Model):
 
     # Metadata
     created_by = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
-    volunteer = db.relationship("Volunteer", back_populates="assigned_tasks")
+    # volunteer = db.relationship(Volunteer, backref="assigned_tasks")
     creator = db.relationship("AdminUser", backref="created_tasks")
 
     def __repr__(self):
@@ -372,14 +436,12 @@ class TaskAssignment(db.Model):
     admin_feedback = db.Column(db.Text, nullable=True)
 
     # Metadata
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     task = db.relationship("Task", backref="assignments")
-    volunteer = db.relationship("Volunteer", backref="task_assignments")
+    # volunteer = db.relationship(Volunteer, backref="task_assignments")
 
     def __repr__(self):
         return f"<TaskAssignment Task:{self.task_id} -> Volunteer:{self.volunteer_id} Score:{self.overall_match_score}>"
@@ -406,11 +468,12 @@ class TaskPerformance(db.Model):
     completion_notes = db.Column(db.Text, nullable=True)
 
     # Analytics data
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     task = db.relationship("Task", backref="performance_records")
-    volunteer = db.relationship("Volunteer", backref="performance_records")
+    # volunteer = db.relationship(Volunteer, backref="performance_records")
 
     def __repr__(self):
         return f"<TaskPerformance Task:{self.task_id} Volunteer:{self.volunteer_id} Completed:{self.task_completed}>"

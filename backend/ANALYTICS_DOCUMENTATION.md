@@ -222,22 +222,26 @@ Export на данни (планиран).
 ### Функционалности
 
 1. **KPI Cards**
+
    - Общо заявки
    - Активни заявки
    - Успешно завършени
    - Нови днес
 
 2. **Графики**
+
    - Дневни статистики (Line Chart)
    - Статуси на заявки (Pie Chart)
    - Категории заявки (Bar Chart)
 
 3. **Карта**
+
    - Географско разпределение на заявки
    - Локации на доброволци
    - Градски центрове
 
 4. **Филтри и Търсене**
+
    - Филтър по статус
    - Филтър по дати
    - Филтър по локация
@@ -375,16 +379,19 @@ function filterRequests() {
 ## 📈 Бъдещо Развитие
 
 1. **Export Функционалност**
+
    - CSV/Excel export
    - PDF reports
    - Scheduled reports
 
 2. **Разширени Филтри**
+
    - Multi-select филтри
    - Date range picker
    - Advanced search
 
 3. **Machine Learning**
+
    - Predictive analytics
    - Automated categorization
    - Trend analysis

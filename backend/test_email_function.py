@@ -5,9 +5,10 @@ This module contains comprehensive tests for email functionality in the HelpChai
 including volunteer registration notifications and access code emails.
 """
 
-from unittest.mock import MagicMock
-from flask_mail import Message
 from datetime import datetime
+from unittest.mock import MagicMock
+
+from flask_mail import Message
 
 
 class TestEmailFunctionality:
@@ -473,7 +474,7 @@ HelpChain системата
             mock_query.filter_by.return_value.first.return_value = mock_volunteer
 
             # Test multiple rapid email sends
-            for i in range(5):
+            for _i in range(5):
                 with client.session_transaction() as sess:
                     sess.clear()
 

@@ -1,4 +1,3 @@
-import os
 import sys
 
 # Add backend to path

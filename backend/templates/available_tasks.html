@@ -1,261 +1,307 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bg">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Налични задачи - HelpChain</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
-            --info-color: #17a2b8;
-            --light-bg: #f8f9fa;
-            --dark-text: #212529;
-        }
+      :root {
+        --primary-color: #007bff;
+        --secondary-color: #6c757d;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --warning-color: #ffc107;
+        --info-color: #17a2b8;
+        --light-bg: #f8f9fa;
+        --dark-text: #212529;
+      }
 
-        body {
-            background-color: var(--light-bg);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+      body {
+        background-color: var(--light-bg);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
 
-        .navbar {
-            background: linear-gradient(135deg, var(--primary-color), #0056b3);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+      .navbar {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
 
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
+      .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
+      .card:hover {
+        transform: translateY(-5px);
+      }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), #0056b3);
-            border: none;
-            border-radius: 25px;
-            padding: 10px 30px;
-        }
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), #0056b3);
+        border: none;
+        border-radius: 25px;
+        padding: 10px 30px;
+      }
 
-        .task-card {
-            margin-bottom: 20px;
-        }
+      .task-card {
+        margin-bottom: 20px;
+      }
 
-        .task-priority {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: bold;
-        }
+      .task-priority {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: bold;
+      }
 
-        .priority-urgent {
-            background-color: var(--danger-color);
-            color: white;
-        }
+      .priority-urgent {
+        background-color: var(--danger-color);
+        color: white;
+      }
 
-        .priority-high {
-            background-color: var(--warning-color);
-            color: var(--dark-text);
-        }
+      .priority-high {
+        background-color: var(--warning-color);
+        color: var(--dark-text);
+      }
 
-        .priority-medium {
-            background-color: var(--info-color);
-            color: white;
-        }
+      .priority-medium {
+        background-color: var(--info-color);
+        color: white;
+      }
 
-        .priority-low {
-            background-color: var(--secondary-color);
-            color: white;
-        }
+      .priority-low {
+        background-color: var(--secondary-color);
+        color: white;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-hands-helping me-2"></i>
-                HelpChain
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/volunteer_dashboard">
-                            <i class="fas fa-tachometer-alt me-1"></i>Табло
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/my_tasks">
-                            <i class="fas fa-tasks me-1"></i>Моите задачи
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/available_tasks">
-                            <i class="fas fa-list me-1"></i>Налични задачи
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/volunteer_logout">
-                            <i class="fas fa-sign-out-alt me-1"></i>Изход
-                        </a>
-                    </li>
-                </ul>
-            </div>
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-hands-helping me-2"></i>
+          HelpChain
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/volunteer_dashboard">
+                <i class="fas fa-tachometer-alt me-1"></i>Табло
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/my_tasks">
+                <i class="fas fa-tasks me-1"></i>Моите задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/available_tasks">
+                <i class="fas fa-list me-1"></i>Налични задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/volunteer_logout">
+                <i class="fas fa-sign-out-alt me-1"></i>Изход
+              </a>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
     <div class="container mt-4">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="mb-4">
-                    <i class="fas fa-list text-primary me-2"></i>
-                    Налични задачи
-                </h1>
+      <div class="row">
+        <div class="col-12">
+          <h1 class="mb-4">
+            <i class="fas fa-list text-primary me-2"></i>
+            Налични задачи
+          </h1>
 
-                <!-- Tasks Filter -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <select class="form-select" id="categoryFilter">
-                                    <option value="">Всички категории</option>
-                                    <option value="medical">Медицинска помощ</option>
-                                    <option value="transport">Транспорт</option>
-                                    <option value="household">Домакинска помощ</option>
-                                    <option value="education">Образование</option>
-                                    <option value="other">Друго</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select" id="locationFilter">
-                                    <option value="">Всички локации</option>
-                                    <option value="sofia">София</option>
-                                    <option value="plovdiv">Пловдив</option>
-                                    <option value="varna">Варна</option>
-                                    <option value="burgas">Бургас</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-select" id="priorityFilter">
-                                    <option value="">Всички приоритети</option>
-                                    <option value="urgent">Спешни</option>
-                                    <option value="high">Високи</option>
-                                    <option value="medium">Средни</option>
-                                    <option value="low">Ниски</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <input type="text" class="form-control" id="searchInput" placeholder="Търсене...">
-                            </div>
-                        </div>
-                    </div>
+          <!-- Tasks Filter -->
+          <div class="card mb-4">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3">
+                  <select class="form-select" id="categoryFilter">
+                    <option value="">Всички категории</option>
+                    <option value="medical">Медицинска помощ</option>
+                    <option value="transport">Транспорт</option>
+                    <option value="household">Домакинска помощ</option>
+                    <option value="education">Образование</option>
+                    <option value="other">Друго</option>
+                  </select>
                 </div>
-
-                <!-- Tasks List -->
-                <div id="tasksContainer">
-                    <!-- Tasks will be loaded here -->
-                    <div class="text-center py-5">
-                        <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
-                        <p class="text-muted">Зареждане на задачите...</p>
-                    </div>
+                <div class="col-md-3">
+                  <select class="form-select" id="locationFilter">
+                    <option value="">Всички локации</option>
+                    <option value="sofia">София</option>
+                    <option value="plovdiv">Пловдив</option>
+                    <option value="varna">Варна</option>
+                    <option value="burgas">Бургас</option>
+                  </select>
                 </div>
-
-                <!-- No Tasks Message -->
-                <div id="noTasksMessage" class="text-center py-5" style="display: none;">
-                    <i class="fas fa-search fa-4x text-muted mb-3"></i>
-                    <h4 class="text-muted">Няма намерени задачи</h4>
-                    <p class="text-muted">Опитайте да промените филтрите или проверете по-късно.</p>
+                <div class="col-md-3">
+                  <select class="form-select" id="priorityFilter">
+                    <option value="">Всички приоритети</option>
+                    <option value="urgent">Спешни</option>
+                    <option value="high">Високи</option>
+                    <option value="medium">Средни</option>
+                    <option value="low">Ниски</option>
+                  </select>
                 </div>
+                <div class="col-md-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="searchInput"
+                    placeholder="Търсене..."
+                  />
+                </div>
+              </div>
             </div>
+          </div>
+
+          <!-- Tasks List -->
+          <div id="tasksContainer">
+            <!-- Tasks will be loaded here -->
+            <div class="text-center py-5">
+              <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+              <p class="text-muted">Зареждане на задачите...</p>
+            </div>
+          </div>
+
+          <!-- No Tasks Message -->
+          <div
+            id="noTasksMessage"
+            class="text-center py-5"
+            style="display: none"
+          >
+            <i class="fas fa-search fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Няма намерени задачи</h4>
+            <p class="text-muted">
+              Опитайте да промените филтрите или проверете по-късно.
+            </p>
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- Task data from server -->
+    <script>
+      window.taskData = {{ tasks|default([])|tojson|safe }};
+    </script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Mock data for demonstration
-        const mockTasks = [
-            {
-                id: 4,
-                title: "Помощ с лекарства",
-                category: "medical",
-                location: "София, кв. Център",
-                date: "2024-01-18",
-                description: "Нуждая се от помощ за закупуване и доставка на лекарства от аптеката.",
-                priority: "high",
-                requester: "Мария Петрова"
-            },
-            {
-                id: 5,
-                title: "Транспорт до болница",
-                category: "transport",
-                location: "Пловдив, кв. Тракия",
-                date: "2024-01-19",
-                description: "Трябва да стигна до болница за преглед. Нуждая се от придружител и транспорт.",
-                priority: "urgent",
-                requester: "Иван Иванов"
-            },
-            {
-                id: 6,
-                title: "Помощ с уроци",
-                category: "education",
-                location: "Варна, кв. Владиславово",
-                date: "2024-01-20",
-                description: "Търся доброволец за помощ с домашни по математика за ученик от 5 клас.",
-                priority: "medium",
-                requester: "Анна Димитрова"
-            },
-            {
-                id: 7,
-                title: "Почистване на дома",
-                category: "household",
-                location: "Бургас, кв. Сарафово",
-                date: "2024-01-21",
-                description: "Нуждая се от помощ с основно почистване на апартамент - прах, миене на подове.",
-                priority: "low",
-                requester: "Георги Стоянов"
-            }
-        ];
+      // Mock data for demonstration
+      const mockTasks = [
+        {
+          id: 4,
+          title: "Помощ с лекарства",
+          category: "medical",
+          location: "София, кв. Център",
+          date: "2024-01-18",
+          description:
+            "Нуждая се от помощ за закупуване и доставка на лекарства от аптеката.",
+          priority: "high",
+          requester: "Мария Петрова",
+        },
+        {
+          id: 5,
+          title: "Транспорт до болница",
+          category: "transport",
+          location: "Пловдив, кв. Тракия",
+          date: "2024-01-19",
+          description:
+            "Трябва да стигна до болница за преглед. Нуждая се от придружител и транспорт.",
+          priority: "urgent",
+          requester: "Иван Иванов",
+        },
+        {
+          id: 6,
+          title: "Помощ с уроци",
+          category: "education",
+          location: "Варна, кв. Владиславово",
+          date: "2024-01-20",
+          description:
+            "Търся доброволец за помощ с домашни по математика за ученик от 5 клас.",
+          priority: "medium",
+          requester: "Анна Димитрова",
+        },
+        {
+          id: 7,
+          title: "Почистване на дома",
+          category: "household",
+          location: "Бургас, кв. Сарафово",
+          date: "2024-01-21",
+          description:
+            "Нуждая се от помощ с основно почистване на апартамент - прах, миене на подове.",
+          priority: "low",
+          requester: "Георги Стоянов",
+        },
+      ];
 
-        // Load tasks on page load
-        document.addEventListener('DOMContentLoaded', function () {
-            loadTasks();
-        });
+      // Load tasks on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadTasks();
+      });
 
-        function loadTasks() {
-            const container = document.getElementById('tasksContainer');
-            const noTasksMessage = document.getElementById('noTasksMessage');
+      function loadTasks() {
+        const container = document.getElementById("tasksContainer");
+        const noTasksMessage = document.getElementById("noTasksMessage");
 
-            if (mockTasks.length === 0) {
-                container.innerHTML = '';
-                noTasksMessage.style.display = 'block';
-                return;
-            }
+        // Use real data if available, otherwise fall back to mock data
+        const tasks =
+          window.taskData && window.taskData.length > 0
+            ? window.taskData
+            : mockTasks;
 
-            noTasksMessage.style.display = 'none';
+        if (tasks.length === 0) {
+          container.innerHTML = "";
+          noTasksMessage.style.display = "block";
+          return;
+        }
 
-            let html = '';
-            mockTasks.forEach(task => {
-                const priorityClass = getPriorityClass(task.priority);
-                const categoryIcon = getCategoryIcon(task.category);
-                const categoryName = getCategoryName(task.category);
+        noTasksMessage.style.display = "none";
 
-                html += `
+        let html = "";
+        tasks.forEach((task) => {
+          const priorityClass = getPriorityClass(task.priority);
+          const categoryIcon = getCategoryIcon(task.category || "other");
+          const categoryName = getCategoryName(task.category || "other");
+
+          // Format date - handle both real data and mock data
+          let displayDate = task.date;
+          if (task.created_at) {
+            displayDate = new Date(task.created_at).toLocaleDateString("bg-BG");
+          }
+
+          // Handle location - use location_text for real data, location for mock
+          const location =
+            task.location_text || task.location || "Не е посочена локация";
+
+          html += `
                     <div class="card task-card">
                         <div class="card-body">
                             <div class="row">
@@ -267,27 +313,45 @@
                                     <p class="card-text text-muted mb-2">
                                         <i class="${categoryIcon} me-1"></i>${categoryName}
                                         <span class="ms-3">
-                                            <i class="fas fa-map-marker-alt me-1"></i>${task.location}
+                                            <i class="fas fa-map-marker-alt me-1"></i>${location}
                                         </span>
                                         <span class="ms-3">
-                                            <i class="fas fa-calendar me-1"></i>${task.date}
+                                            <i class="fas fa-calendar me-1"></i>${displayDate}
                                         </span>
                                     </p>
-                                    <p class="card-text">${task.description}</p>
+                                    <p class="card-text">${
+                                      task.description || "Няма описание"
+                                    }</p>
                                     <p class="card-text">
                                         <small class="text-muted">
-                                            <i class="fas fa-user me-1"></i>Заявител: ${task.requester}
+                                            ${
+                                              task.requester
+                                                ? '<i class="fas fa-user me-1"></i>Заявител: ' +
+                                                  task.requester
+                                                : ""
+                                            }
+                                            ${
+                                              task.estimated_hours
+                                                ? '<i class="fas fa-clock me-1"></i>Очаквано време: ' +
+                                                  task.estimated_hours +
+                                                  " часа"
+                                                : ""
+                                            }
                                         </small>
                                     </p>
                                 </div>
                                 <div class="col-md-4 text-end">
                                     <div class="mb-3">
-                                        <button class="btn btn-success btn-lg" onclick="acceptTask(${task.id})">
+                                        <button class="btn btn-success btn-lg" onclick="acceptTask(${
+                                          task.id
+                                        })">
                                             <i class="fas fa-hand-paper me-2"></i>Поема задачата
                                         </button>
                                     </div>
                                     <div class="mb-3">
-                                        <button class="btn btn-outline-primary" onclick="viewTaskDetails(${task.id})">
+                                        <button class="btn btn-outline-primary" onclick="viewTaskDetails(${
+                                          task.id
+                                        })">
                                             <i class="fas fa-info-circle me-1"></i>Подробности
                                         </button>
                                     </div>
@@ -296,77 +360,85 @@
                         </div>
                     </div>
                 `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function getPriorityClass(priority) {
-            const classes = {
-                'urgent': 'bg-danger',
-                'high': 'bg-warning text-dark',
-                'medium': 'bg-info',
-                'low': 'bg-secondary'
-            };
-            return classes[priority] || 'bg-secondary';
-        }
-
-        function getCategoryIcon(category) {
-            const icons = {
-                'medical': 'fas fa-medkit',
-                'transport': 'fas fa-car',
-                'household': 'fas fa-home',
-                'education': 'fas fa-graduation-cap',
-                'other': 'fas fa-hands-helping'
-            };
-            return icons[category] || 'fas fa-hands-helping';
-        }
-
-        function getCategoryName(category) {
-            const names = {
-                'medical': 'Медицинска помощ',
-                'transport': 'Транспорт',
-                'household': 'Домакинска помощ',
-                'education': 'Образование',
-                'other': 'Друго'
-            };
-            return names[category] || 'Друго';
-        }
-
-        function acceptTask(taskId) {
-            if (confirm('Сигурни ли сте, че искате да поемете тази задача?')) {
-                // Placeholder for task acceptance logic
-                alert(`Задача ${taskId} е приета успешно!`);
-                // Remove task from list or update status
-                loadTasks();
-            }
-        }
-
-        function viewTaskDetails(taskId) {
-            // Placeholder for task details modal or page navigation
-            alert(`Показване на подробности за задача ${taskId}`);
-        }
-
-        // Filter functionality
-        document.getElementById('categoryFilter').addEventListener('change', loadTasks);
-        document.getElementById('locationFilter').addEventListener('change', loadTasks);
-        document.getElementById('priorityFilter').addEventListener('change', loadTasks);
-        document.getElementById('searchInput').addEventListener('input', function () {
-            // Simple search implementation
-            const searchTerm = this.value.toLowerCase();
-            const filteredTasks = mockTasks.filter(task =>
-                task.title.toLowerCase().includes(searchTerm) ||
-                task.description.toLowerCase().includes(searchTerm) ||
-                task.requester.toLowerCase().includes(searchTerm)
-            );
-            displayFilteredTasks(filteredTasks);
         });
 
-        function displayFilteredTasks(tasks) {
-            // This would filter the displayed tasks based on search criteria
-            loadTasks(); // For now, just reload all tasks
-        }
-    </script>
-</body>
+        container.innerHTML = html;
+      }
 
+      function getPriorityClass(priority) {
+        const classes = {
+          urgent: "bg-danger",
+          high: "bg-warning text-dark",
+          medium: "bg-info",
+          low: "bg-secondary",
+        };
+        return classes[priority] || "bg-secondary";
+      }
+
+      function getCategoryIcon(category) {
+        const icons = {
+          medical: "fas fa-medkit",
+          transport: "fas fa-car",
+          household: "fas fa-home",
+          education: "fas fa-graduation-cap",
+          other: "fas fa-hands-helping",
+        };
+        return icons[category] || "fas fa-hands-helping";
+      }
+
+      function getCategoryName(category) {
+        const names = {
+          medical: "Медицинска помощ",
+          transport: "Транспорт",
+          household: "Домакинска помощ",
+          education: "Образование",
+          other: "Друго",
+        };
+        return names[category] || "Друго";
+      }
+
+      function acceptTask(taskId) {
+        if (confirm("Сигурни ли сте, че искате да поемете тази задача?")) {
+          // Placeholder for task acceptance logic
+          alert(`Задача ${taskId} е приета успешно!`);
+          // Remove task from list or update status
+          loadTasks();
+        }
+      }
+
+      function viewTaskDetails(taskId) {
+        // Placeholder for task details modal or page navigation
+        alert(`Показване на подробности за задача ${taskId}`);
+      }
+
+      // Filter functionality
+      document
+        .getElementById("categoryFilter")
+        .addEventListener("change", loadTasks);
+      document
+        .getElementById("locationFilter")
+        .addEventListener("change", loadTasks);
+      document
+        .getElementById("priorityFilter")
+        .addEventListener("change", loadTasks);
+      document
+        .getElementById("searchInput")
+        .addEventListener("input", function () {
+          // Simple search implementation
+          const searchTerm = this.value.toLowerCase();
+          const filteredTasks = mockTasks.filter(
+            (task) =>
+              task.title.toLowerCase().includes(searchTerm) ||
+              task.description.toLowerCase().includes(searchTerm) ||
+              task.requester.toLowerCase().includes(searchTerm),
+          );
+          displayFilteredTasks(filteredTasks);
+        });
+
+      function displayFilteredTasks(tasks) {
+        // This would filter the displayed tasks based on search criteria
+        loadTasks(); // For now, just reload all tasks
+      }
+    </script>
+  </body>
 </html>

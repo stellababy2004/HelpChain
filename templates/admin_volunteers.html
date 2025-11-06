@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Управление на доброволци - HelpChain</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+        --border-radius: 15px;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+        --shadow: var(--shadow-dark);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+      }
+
+      /* Modern Navigation */
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow);
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      /* Stats Cards */
+      .stats-card {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .stats-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--success-gradient);
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      /* Tables */
+      .table-modern {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .table-modern thead th {
+        background: var(--success-gradient);
+        color: white;
+        border: none;
+        padding: 1rem;
+        font-weight: 600;
+      }
+
+      .table-modern tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #e1e5e9;
+        vertical-align: middle;
+      }
+
+      [data-theme="dark"] .table-modern tbody td {
+        border-bottom-color: #495057;
+      }
+
+      /* Search and Filters */
+      .filters-section {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .search-input {
+        border: 2px solid #e1e5e9;
+        border-radius: 25px;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+      }
+
+      [data-theme="dark"] .search-input {
+        border-color: #495057;
+        background: var(--dark-card);
+        color: var(--text-light);
+      }
+
+      .search-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+      }
+
+      /* Action Buttons */
+      .btn-modern {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0.125rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+      }
+
+      .btn-primary-modern {
+        background: var(--primary-gradient);
+        color: white;
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-success-modern {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .btn-warning-modern {
+        background: var(--warning-gradient);
+        color: white;
+      }
+
+      .btn-danger-modern {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      .btn-info-modern {
+        background: var(--info-gradient);
+        color: white;
+      }
+
+      /* Pagination */
+      .pagination-modern {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+      }
+
+      .pagination-modern .page-link {
+        color: #667eea;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+
+      .pagination-modern .page-link:hover,
+      .pagination-modern .page-item.active .page-link {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+      }
+
+      /* Status Badges */
+      .status-badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-active {
+        background: var(--success-gradient);
+        color: white;
+      }
+
+      .status-inactive {
+        background: var(--danger-gradient);
+        color: white;
+      }
+
+      /* Loading States */
+      .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .table-responsive {
+          font-size: 0.85rem;
+        }
+
+        .filters-section {
+          padding: 1rem;
+        }
+
+        .stats-card {
+          padding: 1rem;
+          margin-bottom: 1rem;
+        }
+
+        .stats-value {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body data-theme="light">
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand navbar-brand-modern" href="/">
+          <i class="fas fa-hand-holding-heart me-2"></i>HelpChain Admin
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                href="{{ url_for('admin_volunteers') }}"
+              >
+                <i class="fas fa-users me-1"></i>Доброволци
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('admin_roles.roles_dashboard') }}"
+              >
+                <i class="fas fa-users-cog me-1"></i>Роли и права
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('analytics_main.admin_analytics') }}"
+              >
+                <i class="fas fa-chart-line me-1"></i>Аналитика
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="{{ url_for('notification_dashboard') }}"
+              >
+                <i class="fas fa-bell me-1"></i>Нотификации
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i>Админ
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('profile') }}">
+                    <i class="fas fa-user me-2"></i>Профил
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin_settings') }}"
+                  >
+                    <i class="fas fa-cog me-2"></i>Настройки
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>Изход
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <button
+                class="theme-toggle"
+                id="themeToggle"
+                title="Превключи тема"
+              >
+                <i class="fas fa-moon"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Spacer for fixed navbar -->
+    <div style="height: 80px"></div>
+
+    <div class="container-fluid">
+      <!-- Header -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="h2 mb-1">
+                <i class="fas fa-users text-success me-2"></i>Управление на
+                доброволци
+              </h1>
+              <p class="text-muted mb-0">
+                Добавяне, редактиране и управление на доброволци в системата
+              </p>
+            </div>
+            <div class="d-flex gap-2">
+              <a
+                href="{{ url_for('add_volunteer') }}"
+                class="btn btn-success-modern btn-modern"
+              >
+                <i class="fas fa-plus me-1"></i>Добави доброволец
+              </a>
+              <button
+                class="btn btn-info-modern btn-modern"
+                onclick="exportVolunteers()"
+              >
+                <i class="fas fa-download me-1"></i>Експорт
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--success-gradient)">
+              <i class="fas fa-users text-white"></i>
+            </div>
+            <div class="stats-value">{{ total_volunteers }}</div>
+            <p class="stats-label">Общо доброволци</p>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--primary-gradient)">
+              <i class="fas fa-user-check text-white"></i>
+            </div>
+            <div class="stats-value">{{ total_volunteers }}</div>
+            <p class="stats-label">Активни доброволци</p>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--info-gradient)">
+              <i class="fas fa-map-marker-alt text-white"></i>
+            </div>
+            <div class="stats-value">{{ total_volunteers }}</div>
+            <p class="stats-label">Различни локации</p>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+          <div class="stats-card fade-in">
+            <div class="stats-icon" style="background: var(--warning-gradient)">
+              <i class="fas fa-clock text-white"></i>
+            </div>
+            <div class="stats-value">{{ total_volunteers }}</div>
+            <p class="stats-label">Нови тази седмица</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search and Filters -->
+      <div class="filters-section fade-in">
+        <form method="GET" class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label for="search" class="form-label">
+              <i class="fas fa-search me-1"></i>Търсене
+            </label>
+            <input
+              type="text"
+              class="form-control search-input"
+              id="search"
+              name="search"
+              value="{{ search }}"
+              placeholder="Име, имейл или телефон..."
+            />
+          </div>
+
+          <div class="col-md-3">
+            <label for="location" class="form-label">
+              <i class="fas fa-map-marker-alt me-1"></i>Локация
+            </label>
+            <input
+              type="text"
+              class="form-control search-input"
+              id="location"
+              name="location"
+              value="{{ location_filter }}"
+              placeholder="Град или район..."
+            />
+          </div>
+
+          <div class="col-md-2">
+            <label for="sort" class="form-label">
+              <i class="fas fa-sort me-1"></i>Сортиране
+            </label>
+            <select class="form-select" id="sort" name="sort">
+              <option
+                value="name"
+                {%
+                if
+                sort_by=""
+                ="name"
+                %}selected{%
+                endif
+                %}
+              >
+                Име
+              </option>
+              <option
+                value="location"
+                {%
+                if
+                sort_by=""
+                ="location"
+                %}selected{%
+                endif
+                %}
+              >
+                Локация
+              </option>
+              <option
+                value="created_at"
+                {%
+                if
+                sort_by=""
+                ="created_at"
+                %}selected{%
+                endif
+                %}
+              >
+                Дата
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary-modern btn-modern">
+                <i class="fas fa-filter me-1"></i>Филтрирай
+              </button>
+              <a
+                href="{{ url_for('admin_volunteers') }}"
+                class="btn btn-secondary btn-modern"
+              >
+                <i class="fas fa-times me-1"></i>Изчисти
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Volunteers Table -->
+      <div class="table-responsive fade-in">
+        <table class="table table-modern">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Име</th>
+              <th>Имейл</th>
+              <th>Телефон</th>
+              <th>Локация</th>
+              <th>Регистриран</th>
+              <th>Статус</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if volunteers %} {% for volunteer in volunteers %}
+            <tr>
+              <td>{{ volunteer.id }}</td>
+              <td>
+                <strong>{{ volunteer.name }}</strong>
+              </td>
+              <td>{{ volunteer.email }}</td>
+              <td>{{ volunteer.phone or 'Няма' }}</td>
+              <td>{{ volunteer.location or 'Няма' }}</td>
+              <td>
+                {% if volunteer.created_at %} {{
+                volunteer.created_at.strftime('%d.%m.%Y') }} {% else %} Няма
+                дата {% endif %}
+              </td>
+              <td>
+                <span class="status-badge status-active">Активен</span>
+              </td>
+              <td>
+                <div class="btn-group" role="group">
+                  <button
+                    class="btn btn-info-modern btn-modern btn-sm"
+                    onclick="viewVolunteer({{ volunteer.id }})"
+                    title="Виж детайли"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    class="btn btn-warning-modern btn-modern btn-sm"
+                    onclick="editVolunteer({{ volunteer.id }})"
+                    title="Редактирай"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button
+                    class="btn btn-danger-modern btn-modern btn-sm"
+                    onclick="deleteVolunteer({{ volunteer.id }}, '{{ volunteer.name }}')"
+                    title="Изтрий"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %} {% else %}
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Няма намерени доброволци</h4>
+                <p class="text-muted">
+                  {% if search or location_filter %} Няма доброволци, отговарящи
+                  на зададените критерии за търсене. {% else %} Все още няма
+                  регистрирани доброволци в системата. {% endif %}
+                </p>
+                <a
+                  href="{{ url_for('add_volunteer') }}"
+                  class="btn btn-success-modern btn-modern"
+                >
+                  <i class="fas fa-plus me-1"></i>Добави първия доброволец
+                </a>
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if total_pages > 1 %}
+      <div class="pagination-modern">
+        {% set start_page = [1, page - 2]|max %} {% set end_page = [total_pages,
+        page + 2]|min %} {% if page > 1 %}
+        <a
+          href="{{ url_for('admin_volunteers', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          class="page-link"
+        >
+          <i class="fas fa-chevron-left"></i>
+        </a>
+        {% endif %} {% for page_num in range(start_page, end_page + 1) %}
+        <a
+          href="{{ url_for('admin_volunteers', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          class="page-link {% if page_num == page %}active{% endif %}"
+        >
+          {{ page_num }}
+        </a>
+        {% endfor %} {% if page < total_pages %}
+        <a
+          href="{{ url_for('admin_volunteers', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          class="page-link"
+        >
+          <i class="fas fa-chevron-right"></i>
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <!-- Results Info -->
+      <div class="text-center text-muted mt-3">
+        {% if volunteers %} Показани са {{ volunteers|length }} от общо {{
+        total_volunteers }} доброволци {% if search or location_filter %}
+        (филтрирани резултати) {% endif %} {% endif %}
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      // Theme Toggle Functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const html = document.documentElement;
+      const themeIcon = themeToggle.querySelector("i");
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "light";
+      html.setAttribute("data-theme", savedTheme);
+      updateThemeIcon(savedTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        html.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
+      }
+
+      // Volunteer Actions
+      function viewVolunteer(id) {
+        window.location.href = `/admin/volunteer/${id}`;
+      }
+
+      function editVolunteer(id) {
+        window.location.href = `/admin/volunteer/${id}/edit`;
+      }
+
+      function deleteVolunteer(id, name) {
+        if (
+          confirm(
+            `Сигурни ли сте, че искате да изтриете доброволеца "${name}"? Това действие е необратимо.`,
+          )
+        ) {
+          fetch(`/admin/volunteer/${id}/delete`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                location.reload();
+              } else {
+                alert("Грешка при изтриване: " + data.message);
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("Възникна грешка при изтриване на доброволеца");
+            });
+        }
+      }
+
+      function exportVolunteers() {
+        const format = prompt(
+          "Изберете формат за експорт (csv/json/pdf):",
+          "csv",
+        );
+        if (format) {
+          window.location.href = `/export_volunteers?format=${format}`;
+        }
+      }
+
+      // Logout function
+      function logout() {
+        if (
+          confirm(
+            "Сигурни ли сте, че искате да излезете от администраторския панел?",
+          )
+        ) {
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = "/admin_logout";
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
+
+      // Initialize animations
+      document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(
+          ".stats-card, .filters-section, .table-modern",
+        );
+        cards.forEach((card, index) => {
+          card.style.animationDelay = `${index * 0.1}s`;
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -2,8 +2,9 @@
 """
 Test API endpoints
 """
-import requests
 import json
+
+import requests
 
 
 def test_api_endpoints():

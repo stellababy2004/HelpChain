@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
 """
 AI Configuration for HelpChain Chatbot
 Supports OpenAI GPT and Google Gemini integration
 """
 
-import os
 import logging
-from typing import Dict, Any, Optional
+import os
 from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -16,7 +15,7 @@ class AIProvider:
 
     name: str
     enabled: bool
-    api_key: Optional[str]
+    api_key: str | None
     model: str
     max_tokens: int
     temperature: float
@@ -94,14 +93,14 @@ class AIConfig:
 - Бъди оптимистичен и насърчаващ
 """
 
-    def get_active_provider(self) -> Optional[AIProvider]:
+    def get_active_provider(self) -> AIProvider | None:
         """Get the highest priority active AI provider"""
         active_providers = [p for p in self.providers.values() if p.enabled]
         if not active_providers:
             return None
         return min(active_providers, key=lambda p: p.priority)
 
-    def get_provider(self, name: str) -> Optional[AIProvider]:
+    def get_provider(self, name: str) -> AIProvider | None:
         """Get specific AI provider"""
         return self.providers.get(name)
 
@@ -109,7 +108,7 @@ class AIConfig:
         """Check if any AI provider is enabled"""
         return any(p.enabled for p in self.providers.values())
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get AI configuration status"""
         return {
             "ai_enabled": self.is_ai_enabled(),

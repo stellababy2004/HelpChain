@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Пресъздаване на базата данни от нулата
 """
 
-from appy import app, db
 import os
+
+from appy import app, db
 
 
 def recreate_database():

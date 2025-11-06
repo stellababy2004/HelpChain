@@ -602,7 +602,10 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_analytics') }}">
+              <a
+                class="nav-link"
+                href="{{ url_for('analytics_main.admin_analytics') }}"
+              >
                 <i class="fas fa-chart-line me-1"></i>Аналитика
               </a>
             </li>
@@ -646,7 +649,7 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ url_for('logout') }}">
+                  <a class="dropdown-item" href="#" onclick="logout()">
                     <i class="fas fa-sign-out-alt me-2"></i>Изход
                   </a>
                 </li>
@@ -817,7 +820,10 @@
             </div>
           </a>
 
-          <a href="{{ url_for('admin_analytics') }}" class="action-card">
+          <a
+            href="{{ url_for('analytics_main.admin_analytics') }}"
+            class="action-card"
+          >
             <div class="action-icon">
               <i class="fas fa-chart-bar"></i>
             </div>
@@ -1256,6 +1262,24 @@
 
       // Also, handle the initial connection when the page loads normally
       // ... establish initial extension connection ...
+    </script>
+
+    <script>
+      // Logout function
+      function logout() {
+        if (
+          confirm(
+            "Сигурни ли сте, че искате да излезете от администраторския панел?",
+          )
+        ) {
+          // Create and submit logout form
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = "/admin_logout";
+          document.body.appendChild(form);
+          form.submit();
+        }
+      }
     </script>
   </body>
 </html>

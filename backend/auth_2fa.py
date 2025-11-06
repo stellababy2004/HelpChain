@@ -1,9 +1,9 @@
 import os
-from typing import Tuple
 
 import pyotp
 from cryptography.fernet import Fernet
-from .models import User
+
+from models import User
 
 
 def _get_fernet() -> Fernet:
@@ -15,7 +15,7 @@ def _get_fernet() -> Fernet:
     return Fernet(key.encode() if isinstance(key, str) else key)
 
 
-def generate_2fa_secret_for_user(user: User) -> Tuple[str, str]:
+def generate_2fa_secret_for_user(user: User) -> tuple[str, str]:
     """
     Генерира TOTP secret, шифрова го и го записва в user.twofa_secret_encrypted.
     Caller трябва да запише/комитне промяната в DB.
