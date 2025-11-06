@@ -12,6 +12,7 @@ def db_session(app):
     a rollback + cleanup after the test. If `db.session` exposes `remove()` we
     call it to properly clear the scoped session; otherwise we close/expunge.
     """
+
     from appy import db
 
     with app.app_context():
@@ -49,7 +50,7 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import StaticPool, NullPool
 
 # Ensure appy.py sees we're running tests when it's imported.
 # This must be set before importing `appy` in fixtures so the module
@@ -69,6 +70,407 @@ try:
 except Exception:
     # If tempfile creation fails for any reason, continue without setting
     # the env var; appy will fall back to in-memory DB for tests.
+    pass
+
+# Optional: start tracemalloc early when requested so we can later
+# obtain exact allocation tracebacks for live DBAPI objects. Enable by
+# setting HELPCHAIN_TEST_TRACEMALLOC=1 in the environment before running
+# pytest. We keep a module-level flag `_TRACEMALLOC_ACTIVE` for checks.
+try:
+    if os.environ.get("HELPCHAIN_TEST_TRACEMALLOC") == "1":
+        try:
+            import tracemalloc as _tracemalloc
+
+            # Record a deeper stack (25 frames) to make sure we capture
+            # application-level callsites such as lines inside appy.py.
+            _tracemalloc.start(25)
+            _TRACEMALLOC_ACTIVE = True
+        except Exception:
+            _TRACEMALLOC_ACTIVE = False
+    else:
+        _TRACEMALLOC_ACTIVE = False
+except Exception:
+    _TRACEMALLOC_ACTIVE = False
+
+
+# Early, module-level network and SMTP blocking to prevent import-time
+# connections during pytest collection. Some modules may perform network
+# I/O at import time; fixture-level patches run too late to stop those and
+# can lead to unclosed SSL sockets. Apply only when running tests.
+try:
+    if os.environ.get("HELPCHAIN_TESTING") == "1":
+        try:
+            import socket as _socket
+
+            # Replace create_connection early so imports can't open sockets.
+            _CONFTST_ORIG_CREATE_CONN = getattr(_socket, "create_connection", None)
+
+            def _blocked_create(addr, timeout=None, source_address=None):
+                raise OSError("Network calls are blocked during tests (early patch)")
+
+            try:
+                _socket.create_connection = _blocked_create
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+        try:
+            import smtplib as _smtplib
+
+            class _DummySMTP:
+                def __init__(self, *args, **kwargs):
+                    self.args = args
+
+                def sendmail(self, *args, **kwargs):
+                    return {}
+
+                def ehlo(self):
+                    return
+
+                def login(self, *args, **kwargs):
+                    return
+
+                def starttls(self, *args, **kwargs):
+                    return
+
+                def quit(self):
+                    return
+
+                def close(self):
+                    return
+
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, exc_type, exc, tb):
+                    return False
+
+            try:
+                _smtplib.SMTP = _DummySMTP
+                _smtplib.SMTP_SSL = _DummySMTP
+            except Exception:
+                pass
+        except Exception:
+            pass
+except Exception:
+    # Best-effort early patch; don't fail test collection if anything goes wrong.
+    pass
+
+
+# Optional: debug helper that wraps sqlite3.connect to print a Python stack
+# at allocation time. This is only imported when HELPCHAIN_TEST_DEBUG=1 so
+# it won't affect normal test runs. For focused, clean diagnostic runs we
+# allow suppressing this helper by setting
+# HELPCHAIN_TEST_DEBUG_SUPPRESS_DEBUG_SQLITE=1 in the environment.
+try:
+    if (
+        os.environ.get("HELPCHAIN_TEST_DEBUG") == "1"
+        and os.environ.get("HELPCHAIN_TEST_DEBUG_SUPPRESS_DEBUG_SQLITE") != "1"
+    ):
+        try:
+            import debug_sqlite_connect  # noqa: F401
+        except Exception:
+            # Best-effort; don't fail collection if debug helper cannot be imported
+            pass
+except Exception:
+    pass
+
+# Test-only: wrap sqlite3.connect in the test process to record allocation
+# frames for any DBAPI connection that is opened. This is a best-effort
+# diagnostic helper that writes candidate application frames to
+# backend/tools/traced_candidates.txt when HELPCHAIN_TEST_DEBUG=1.
+# The wrapper can be suppressed by setting HELPCHAIN_TEST_DEBUG_SUPPRESS_SQLITE_WRAP=1
+# so we can run cleaner diagnostic passes when needed.
+try:
+    if (
+        os.environ.get("HELPCHAIN_TEST_DEBUG") == "1"
+        and os.environ.get("HELPCHAIN_TEST_DEBUG_SUPPRESS_SQLITE_WRAP") != "1"
+    ):
+        try:
+            import sqlite3 as _sqlite
+            import traceback as _traceback
+            from pathlib import Path as _Path
+
+            _tools_fn = (
+                _Path(__file__).resolve().parent / "tools" / "traced_candidates.txt"
+            )
+
+            _orig_sqlite_connect = getattr(_sqlite, "connect", None)
+            _orig_dbapi2_connect = None
+            try:
+                _orig_dbapi2_connect = getattr(_sqlite, "dbapi2", None)
+                if _orig_dbapi2_connect is not None and hasattr(
+                    _orig_dbapi2_connect, "connect"
+                ):
+                    _orig_dbapi2_connect = _orig_dbapi2_connect.connect
+                else:
+                    _orig_dbapi2_connect = None
+            except Exception:
+                _orig_dbapi2_connect = None
+
+            def _dbg_connect(*a, **kw):
+                try:
+                    # Capture current stack and try to find first frame inside repo
+                    stack = _traceback.extract_stack(limit=30)
+                    repo_root = _Path(__file__).resolve().parent
+                    candidate = None
+                    for fr in reversed(stack):
+                        try:
+                            fpath = _Path(fr.filename).resolve()
+                            # Skip frames originating from this conftest/debug helpers
+                            # or the tools/ folder so we capture the first application
+                            # frame instead of the wrapper itself.
+                            try:
+                                if fpath.samefile(_Path(__file__).resolve()):
+                                    continue
+                            except Exception:
+                                pass
+                            # Skip any frame whose path mentions conftest.py explicitly
+                            try:
+                                if "conftest.py" in str(fpath):
+                                    continue
+                            except Exception:
+                                pass
+                            # Skip debug helper modules and anything inside tools/
+                            parts = list(fpath.parts)
+                            name = fpath.name
+                            if name.startswith("debug_") or "tools" in parts:
+                                continue
+                            if str(fpath).startswith(str(repo_root)):
+                                candidate = (str(fpath), fr.lineno)
+                                break
+                        except Exception:
+                            continue
+                    if candidate:
+                        try:
+                            _tools_fn.parent.mkdir(parents=True, exist_ok=True)
+                            # Write candidate but avoid duplicate consecutive entries
+                            try:
+                                last = None
+                                if _tools_fn.exists():
+                                    with _tools_fn.open("r", encoding="utf-8") as _r:
+                                        lines = _r.readlines()
+                                        if lines:
+                                            last = lines[-1].rstrip("\n")
+                                entry = f"{candidate[0]}:{candidate[1]}"
+                                if last != entry:
+                                    with _tools_fn.open("a", encoding="utf-8") as _f:
+                                        _f.write(entry + "\n")
+                            except Exception:
+                                # Best-effort append on any failure
+                                try:
+                                    with _tools_fn.open("a", encoding="utf-8") as _f:
+                                        _f.write(f"{candidate[0]}:{candidate[1]}\n")
+                                except Exception:
+                                    pass
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+                # Delegate to original connect(s)
+                if _orig_sqlite_connect is not None:
+                    return _orig_sqlite_connect(*a, **kw)
+                if _orig_dbapi2_connect is not None:
+                    return _orig_dbapi2_connect(*a, **kw)
+                # Fallback: raise
+                raise RuntimeError("no sqlite connect function to delegate to")
+
+            try:
+                if _orig_sqlite_connect is not None:
+                    _sqlite.connect = _dbg_connect
+                try:
+                    dbapi2 = getattr(_sqlite, "dbapi2", None)
+                    if dbapi2 is not None and hasattr(dbapi2, "connect"):
+                        dbapi2.connect = _dbg_connect
+                except Exception:
+                    pass
+            except Exception:
+                pass
+        except Exception:
+            pass
+except Exception:
+    pass
+
+# Test-only: wrap SQLAlchemy dialect connect to capture allocation frames
+# The dialect wrapper can be suppressed by setting
+# HELPCHAIN_TEST_DEBUG_SUPPRESS_DIALECT_WRAP=1 to reduce diagnostic noise.
+try:
+    if (
+        os.environ.get("HELPCHAIN_TEST_DEBUG") == "1"
+        and os.environ.get("HELPCHAIN_TEST_DEBUG_SUPPRESS_DIALECT_WRAP") != "1"
+    ):
+        try:
+            import sqlalchemy.engine.default as _sqldef
+            import traceback as _traceback
+            from pathlib import Path as _Path
+
+            _tools_fn2 = (
+                _Path(__file__).resolve().parent / "tools" / "traced_candidates.txt"
+            )
+            _orig_dialect_connect = getattr(_sqldef.DefaultDialect, "connect", None)
+
+            def _wrapped_dialect_connect(self, *args, **kwargs):
+                try:
+                    stack = _traceback.extract_stack(limit=40)
+                    repo_root = _Path(__file__).resolve().parent
+                    candidate = None
+                    for fr in reversed(stack):
+                        try:
+                            fpath = _Path(fr.filename).resolve()
+                            # Do not record frames that belong to this conftest or
+                            # diagnostic/debug modules. Prefer the first user
+                            # application frame inside the repo directory.
+                            try:
+                                if fpath.samefile(_Path(__file__).resolve()):
+                                    continue
+                            except Exception:
+                                pass
+                            try:
+                                if "conftest.py" in str(fpath):
+                                    continue
+                            except Exception:
+                                pass
+                            parts = list(fpath.parts)
+                            name = fpath.name
+                            if name.startswith("debug_") or "tools" in parts:
+                                continue
+                            if str(fpath).startswith(str(repo_root)):
+                                candidate = (str(fpath), fr.lineno)
+                                break
+                        except Exception:
+                            continue
+                    if candidate:
+                        try:
+                            _tools_fn2.parent.mkdir(parents=True, exist_ok=True)
+                            try:
+                                last = None
+                                if _tools_fn2.exists():
+                                    with _tools_fn2.open("r", encoding="utf-8") as _r:
+                                        lines = _r.readlines()
+                                        if lines:
+                                            last = lines[-1].rstrip("\n")
+                                entry = f"{candidate[0]}:{candidate[1]}"
+                                if last != entry:
+                                    with _tools_fn2.open("a", encoding="utf-8") as _f:
+                                        _f.write(entry + "\n")
+                            except Exception:
+                                try:
+                                    with _tools_fn2.open("a", encoding="utf-8") as _f:
+                                        _f.write(f"{candidate[0]}:{candidate[1]}\n")
+                                except Exception:
+                                    pass
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+                if _orig_dialect_connect is not None:
+                    return _orig_dialect_connect(self, *args, **kwargs)
+                raise RuntimeError("no dialect connect available")
+
+            try:
+                if _orig_dialect_connect is not None:
+                    _sqldef.DefaultDialect.connect = _wrapped_dialect_connect
+            except Exception:
+                pass
+        except Exception:
+            pass
+except Exception:
+    pass
+
+# Test-only: wrap Engine.connect to capture allocation frames at the
+# SQLAlchemy Engine boundary. This helps find the application frame that
+# triggered SQLAlchemy to open a DBAPI connection.
+#
+# The wrapper can be suppressed for a focused test run by setting
+# HELPCHAIN_TEST_DEBUG_SUPPRESS_ENGINE_WRAP=1 in the environment. This
+# allows us to reduce diagnostic noise from our own wrapper when
+# measuring app-level allocation hotspots.
+try:
+    if (
+        os.environ.get("HELPCHAIN_TEST_DEBUG") == "1"
+        and os.environ.get("HELPCHAIN_TEST_DEBUG_SUPPRESS_ENGINE_WRAP") != "1"
+    ):
+        try:
+            import sqlalchemy.engine.base as _sqbase
+            import traceback as _traceback
+            from pathlib import Path as _Path
+
+            _tools_fn3 = (
+                _Path(__file__).resolve().parent / "tools" / "traced_candidates.txt"
+            )
+            _orig_engine_connect = getattr(_sqbase.Engine, "connect", None)
+
+            def _wrapped_engine_connect(self, *args, **kwargs):
+                try:
+                    stack = _traceback.extract_stack(limit=60)
+                    repo_root = _Path(__file__).resolve().parent
+                    candidate = None
+                    for fr in reversed(stack):
+                        try:
+                            fpath = _Path(fr.filename).resolve()
+                            # skip conftest, debug helpers, tools and virtualenv/site-packages
+                            try:
+                                if fpath.samefile(_Path(__file__).resolve()):
+                                    continue
+                            except Exception:
+                                pass
+                            try:
+                                if "conftest.py" in str(fpath):
+                                    continue
+                            except Exception:
+                                pass
+                            parts = list(fpath.parts)
+                            name = fpath.name
+                            if name.startswith("debug_") or "tools" in parts:
+                                continue
+                            # skip installed packages
+                            if any(
+                                p in str(fpath)
+                                for p in ("site-packages", ".venv", "dist-packages")
+                            ):
+                                continue
+                            if str(fpath).startswith(str(repo_root)):
+                                candidate = (str(fpath), fr.lineno)
+                                break
+                        except Exception:
+                            continue
+                    if candidate:
+                        try:
+                            _tools_fn3.parent.mkdir(parents=True, exist_ok=True)
+                            try:
+                                last = None
+                                if _tools_fn3.exists():
+                                    with _tools_fn3.open("r", encoding="utf-8") as _r:
+                                        lines = _r.readlines()
+                                        if lines:
+                                            last = lines[-1].rstrip("\n")
+                                entry = f"{candidate[0]}:{candidate[1]}"
+                                if last != entry:
+                                    with _tools_fn3.open("a", encoding="utf-8") as _f:
+                                        _f.write(entry + "\n")
+                            except Exception:
+                                try:
+                                    with _tools_fn3.open("a", encoding="utf-8") as _f:
+                                        _f.write(f"{candidate[0]}:{candidate[1]}\n")
+                                except Exception:
+                                    pass
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+                if _orig_engine_connect is not None:
+                    return _orig_engine_connect(self, *args, **kwargs)
+                raise RuntimeError("no Engine.connect available")
+
+            try:
+                if _orig_engine_connect is not None:
+                    _sqbase.Engine.connect = _wrapped_engine_connect
+            except Exception:
+                pass
+        except Exception:
+            pass
+except Exception:
     pass
 
 
@@ -103,6 +505,32 @@ def setup_schema_and_admin(app):
                         )
                     except Exception:
                         pass
+                # Test-only optimization: prime the appy._table_exists_cache so that
+                # subsequent calls to _has_table() during the test session do not
+                # repeatedly create Inspector/Connection objects. This is a
+                # best-effort, low-risk optimization and only runs when the Flask
+                # app is in TESTING mode.
+                try:
+                    try:
+                        from flask import current_app
+
+                        if getattr(current_app, "config", {}).get("TESTING"):
+                            try:
+                                if getattr(_appy, "_table_exists_cache", None) is None:
+                                    _appy._table_exists_cache = {}
+                                # We know we've just created the schema above; mark
+                                # the admin_users table as present to avoid forcing
+                                # additional inspector calls during tests.
+                                try:
+                                    _appy._table_exists_cache["admin_users"] = True
+                                except Exception:
+                                    pass
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
             except Exception:
                 # If appy cannot be imported for some reason, skip auto-seeding for this test.
                 pass
@@ -318,13 +746,49 @@ def app():
     if "admin" not in real_app.blueprints:
         real_app.register_blueprint(admin_bp, url_prefix="/admin")
     if not hasattr(real_app, "login_manager"):
-        login_manager.init_app(real_app)
-        real_app.login_manager = login_manager
+        try:
+            # Only call init_app if the application has not yet handled a request.
+            # Calling init_app after the first request raises an AssertionError
+            # in newer Flask versions (setup phase is finished). In that case
+            # skip init_app but still attach the login_manager object so tests
+            # that reference `app.login_manager` or decorate user_loader will
+            # continue to work.
+            if not getattr(real_app, "_got_first_request", False):
+                login_manager.init_app(real_app)
+            else:
+                logging.getLogger(__name__).warning(
+                    "Skipping login_manager.init_app() because app already handled a request"
+                )
+        except AssertionError:
+            # Flask reported that setup is finished; skip initialization.
+            logging.getLogger(__name__).warning(
+                "login_manager.init_app() raised AssertionError; skipping initialization"
+            )
+        finally:
+            # Ensure the app has a reference to the login manager instance.
+            try:
+                real_app.login_manager = login_manager
+            except Exception:
+                pass
     from models import AdminUser
 
     @login_manager.user_loader
     def load_user(user_id):
-        return AdminUser.query.get(int(user_id))
+        # Use Session.get when available to avoid SQLAlchemy LegacyAPIWarning
+        try:
+            from appy import db as _db
+
+            return _db.session.get(AdminUser, int(user_id))
+        except Exception:
+            try:
+                # Fallback to session.get using the canonical db if possible
+                from appy import db as _db_fallback
+
+                return _db_fallback.session.get(AdminUser, int(user_id))
+            except Exception:
+                # If we cannot resolve the canonical db, return None rather than
+                # falling back to the legacy Query.get API which emits warnings.
+                return None
 
     real_app.config["TESTING"] = True
     real_app.config["WTF_CSRF_ENABLED"] = False
@@ -341,13 +805,52 @@ def app():
     if not db_path:
         db_fd, db_path = tempfile.mkstemp(suffix="_test.db")
         os.environ.setdefault("HELPCHAIN_TEST_DB_PATH", db_path)
+    else:
+        # Ensure the directory for the configured test DB path exists
+        try:
+            db_dir = os.path.dirname(db_path)
+            if db_dir and not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
+        except Exception:
+            # If we cannot create the directory, let SQLAlchemy report the error
+            pass
     real_app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
     real_app.config["_TEST_DB_FD"] = db_fd
     real_app.config["_TEST_DB_PATH"] = db_path
+    # Prefer a test-friendly pool configuration. Use NullPool in TESTING to
+    # avoid long-lived DBAPI connections being retained by a pool, which
+    # reduces ResourceWarning noise during per-test teardown. StaticPool is
+    # still acceptable for some SQLite test setups (single-file DB); choose
+    # NullPool in tests unless overridden by environment.
+    try:
+        if os.environ.get("HELPCHAIN_TESTING") == "1":
+            _poolclass = NullPool
+        else:
+            _poolclass = StaticPool
+    except Exception:
+        _poolclass = StaticPool
+
     real_app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "connect_args": {"check_same_thread": False},
-        "poolclass": StaticPool,
+        "poolclass": _poolclass,
     }
+    # Ensure the app-level SQLAlchemy engine is (re)registered using the
+    # test-time engine options we just configured. Importing `appy` above
+    # may have caused an engine to be created with the module defaults;
+    # call the internal helper to re-register the engine so the
+    # NullPool test setting takes effect immediately.
+    try:
+        import appy as _appy
+
+        try:
+            _appy._ensure_db_engine_registration()
+        except Exception:
+            # Best-effort: if the helper is not present or fails, continue
+            # and let SQLAlchemy use whatever engine is currently registered.
+            pass
+    except Exception:
+        pass
+
     from appy import db
 
     with real_app.app_context():
@@ -608,7 +1111,172 @@ def app():
         except Exception:
             # If importing appy fails for any reason, continue; tests may seed per-fixture
             pass
-    return real_app
+    # Yield the app so we can perform session-scoped cleanup after the
+    # entire test session finishes (dispose engines, remove sessions and
+    # optionally delete temporary test DB file).
+    try:
+        yield real_app
+    finally:
+        try:
+            from appy import db as _db
+
+            try:
+                if hasattr(_db.session, "remove"):
+                    _db.session.remove()
+                else:
+                    try:
+                        _db.session.close()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            try:
+                if getattr(_db, "engine", None) is not None:
+                    _db.engine.dispose()
+                    # Best-effort: some SQLAlchemy versions expose the Pool
+                    # object at engine.pool. Calling its dispose() can more
+                    # aggressively close DBAPI connections held by the pool
+                    # and reduce ResourceWarning noise during test teardown.
+                    try:
+                        pool = getattr(_db.engine, "pool", None)
+                        if pool is not None and hasattr(pool, "dispose"):
+                            try:
+                                pool.dispose()
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+                    try:
+                        import gc as _gc
+
+                        _gc.collect()
+                    except Exception:
+                        pass
+                    # Run garbage collection to force DBAPI finalizers to run
+                    # promptly during teardown. This helps prevent ResourceWarning
+                    # messages about unclosed sqlite3.Connection objects that may
+                    # only appear when finalizers run at process exit.
+                    try:
+                        import gc as _gc
+
+                        _gc.collect()
+                    except Exception:
+                        pass
+                    # Defensive: after disposing the engine, attempt to close any
+                    # lingering sqlite3.Connection objects found by the GC. This
+                    # is a best-effort measure to reduce ResourceWarning noise in
+                    # test runs where DBAPI connections remain reachable to the
+                    # Python runtime (for example, held by library internals).
+                    try:
+                        import gc as _gc2
+                        import sqlite3 as _sqlite
+
+                        conns = [
+                            o
+                            for o in _gc2.get_objects()
+                            if isinstance(o, _sqlite.Connection)
+                        ]
+                        for c in conns:
+                            try:
+                                c.close()
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+                    # Best-effort: close any lingering SQLAlchemy Connection objects
+                    try:
+                        import gc as _gc3
+
+                        _sqlalchemy_conns = []
+                        for o in _gc3.get_objects():
+                            try:
+                                tname = getattr(type(o), "__name__", "")
+                                tmod = getattr(type(o), "__module__", "")
+                                # Detect SQLAlchemy Connection objects conservatively
+                                if tname == "Connection" and tmod.startswith(
+                                    "sqlalchemy."
+                                ):
+                                    _sqlalchemy_conns.append(o)
+                            except Exception:
+                                continue
+                        for _c in _sqlalchemy_conns:
+                            try:
+                                # Connection.close() will return DBAPI connection to pool
+                                _c.close()
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        except Exception:
+            # If appy/db cannot be imported at teardown, ignore and continue
+            pass
+
+        # Clear any process-local table-existence caches from appy so state
+        # does not leak between separate pytest runs. This clears the
+        # preferred `_has_table` LRU cache via `_has_table_cache_clear()` if
+        # present, and falls back to clearing the legacy `_table_exists_cache`
+        # dict when necessary. This is defensive and swallows all errors.
+        try:
+            try:
+                import appy as _appy_clear
+
+                try:
+                    clear_fn = getattr(_appy_clear, "_has_table_cache_clear", None)
+                    if callable(clear_fn):
+                        try:
+                            clear_fn()
+                        except Exception:
+                            pass
+                    else:
+                        try:
+                            if (
+                                getattr(_appy_clear, "_table_exists_cache", None)
+                                is not None
+                            ):
+                                try:
+                                    _appy_clear._table_exists_cache.clear()
+                                except Exception:
+                                    pass
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+        # If a temporary test DB file was created by fixtures, attempt to
+        # close its file descriptor and remove the file to avoid leaving
+        # artifacts on the filesystem between runs.
+        try:
+            db_path = real_app.config.get("_TEST_DB_PATH")
+            db_fd = real_app.config.get("_TEST_DB_FD")
+            if db_fd:
+                try:
+                    import os as _os
+
+                    try:
+                        _os.close(int(db_fd))
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
+            if db_path and db_path.endswith("_test.db"):
+                try:
+                    import os as _os
+
+                    if _os.path.exists(db_path):
+                        try:
+                            _os.remove(db_path)
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
 
 @pytest.fixture
@@ -686,11 +1354,16 @@ def set_pending_admin_session(app):
             # try a direct SQL lookup for an admin id to avoid relying on the model class.
             if admin_id is None:
                 try:
-                    row = db.session.execute(
-                        "SELECT id FROM admin_users LIMIT 1"
-                    ).fetchone()
-                    if row:
-                        admin_id = int(row[0])
+                    _result = db.session.execute("SELECT id FROM admin_users LIMIT 1")
+                    try:
+                        row = _result.fetchone()
+                        if row:
+                            admin_id = int(row[0])
+                    finally:
+                        try:
+                            _result.close()
+                        except Exception:
+                            pass
                 except Exception:
                     # ignore and leave admin_id as None
                     pass
@@ -724,4 +1397,394 @@ def set_pending_admin_session(app):
 
     return _set
 
+
+@pytest.fixture
+def authenticated_admin_client(client, set_pending_admin_session):
+    """Return a test client with an admin pending/active session set.
+
+    Uses the `set_pending_admin_session` helper to ensure the client has
+    the session keys expected by admin routes/tests.
+    """
+    info = set_pending_admin_session(client)
+
+    # Also mark the test client as logged-in for Flask-Login protected routes.
+    # Flask-Login stores the user id under the session key '_user_id'. We set
+    # it here so decorators like @login_required will treat the client as
+    # authenticated during tests. We also set '_fresh' to True for completeness.
+    admin_id = info.get("admin_id") if isinstance(info, dict) else None
+    if admin_id is not None:
+        with client.session_transaction() as sess:
+            try:
+                sess["_user_id"] = str(admin_id)
+                sess["_fresh"] = True
+                # Some legacy checks inspect 'admin_logged_in' in session
+                sess["admin_logged_in"] = True
+            except Exception:
+                pass
+
+    return client
+
+
+@pytest.fixture(autouse=True)
+def _ensure_db_cleanup_after_test():
+    """Autouse fixture: ensure SQLAlchemy sessions are removed and engine
+    disposed after each test to avoid ResourceWarning about unclosed DB
+    connections in pytest runs.
+
+    This is defensive and best-effort: if the test does not import `appy`
+    or `db` is not available we silently continue.
+    """
+    yield
+    try:
+        # Import canonical app module and db if available
+        try:
+            import appy as _appy
+
+            _db = getattr(_appy, "db", None)
+        except Exception:
+            try:
+                from extensions import db as _db  # type: ignore
+            except Exception:
+                try:
+                    from helpchain_backend.src.extensions import db as _db  # type: ignore
+                except Exception:
+                    _db = None
+
+        if _db is not None:
+            try:
+                if hasattr(_db.session, "remove"):
+                    _db.session.remove()
+                else:
+                    try:
+                        _db.session.close()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+            try:
+                if getattr(_db, "engine", None) is not None:
+                    _db.engine.dispose()
+                    # Run GC to prompt DBAPI finalizers to run during test teardown
+                    try:
+                        import gc as _gc
+
+                        _gc.collect()
+                    except Exception:
+                        pass
+                    # Best-effort: close any lingering sqlite3.Connection objects
+                    # found by the GC so ResourceWarning noise is reduced during
+                    # pytest runs. This is a test-only, defensive measure and
+                    # intentionally swallows exceptions.
+                    try:
+                        import gc as _gc2
+                        import sqlite3 as _sqlite
+
+                        conns = [
+                            o
+                            for o in _gc2.get_objects()
+                            if isinstance(o, _sqlite.Connection)
+                        ]
+                        for c in conns:
+                            try:
+                                c.close()
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+                    # Optional debug: if enabled, scan for live sqlite3.Connection
+                    # objects and print allocation tracebacks to help locate leaks.
+                    try:
+                        import os as _os
+
+                        if _os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                            try:
+                                import gc as _gc2
+                                import sqlite3 as _sqlite
+
+                                # tracemalloc import/use is guarded by the module-level
+                                # _TRACEMALLOC_ACTIVE flag which is set if HELPCHAIN_TEST_TRACEMALLOC=1
+
+                                conns = [
+                                    o
+                                    for o in _gc2.get_objects()
+                                    if isinstance(o, _sqlite.Connection)
+                                ]
+                                if conns:
+                                    try:
+                                        tools_dir = (
+                                            Path(__file__).resolve().parent / "tools"
+                                        )
+                                        tools_dir.mkdir(parents=True, exist_ok=True)
+                                        out_fn = (
+                                            tools_dir
+                                            / "tracemalloc_sqlite_connections.txt"
+                                        )
+                                    except Exception:
+                                        out_fn = None
+
+                                for c in conns:
+                                    try:
+                                        # Attempt to get a tracemalloc traceback for the object
+                                        tb = None
+                                        if globals().get("_TRACEMALLOC_ACTIVE"):
+                                            try:
+                                                import tracemalloc as _tracemalloc
+
+                                                tb = _tracemalloc.get_object_traceback(
+                                                    c
+                                                )
+                                            except Exception:
+                                                tb = None
+
+                                        # Write a durable record for post-mortem analysis
+                                        try:
+                                            if out_fn is not None:
+                                                with out_fn.open(
+                                                    "a", encoding="utf-8"
+                                                ) as _out:
+                                                    _out.write(
+                                                        "--- sqlite3.Connection allocation ---\n"
+                                                    )
+                                                    _out.write(
+                                                        f"object_id: {hex(id(c))}\n"
+                                                    )
+                                                    try:
+                                                        _out.write(f"repr: {repr(c)}\n")
+                                                    except Exception:
+                                                        _out.write(
+                                                            "repr: <unavailable>\n"
+                                                        )
+                                                    if tb:
+                                                        try:
+                                                            for line in tb.format():
+                                                                _out.write(line + "\n")
+                                                        except Exception:
+                                                            _out.write(
+                                                                "<failed to format tracemalloc trace>\n"
+                                                            )
+                                                    else:
+                                                        _out.write(
+                                                            "<no tracemalloc traceback available>\n"
+                                                        )
+                                                    _out.write("\n")
+                                        except Exception:
+                                            pass
+
+                                        # Also emit to stdout for immediate visibility when running tests
+                                        try:
+                                            print(
+                                                f"[TEST DEBUG] live sqlite3.Connection {hex(id(c))}"
+                                            )
+                                            if tb:
+                                                try:
+                                                    for frame in tb.format():
+                                                        print(frame)
+                                                except Exception:
+                                                    pass
+                                            else:
+                                                print(
+                                                    "[TEST DEBUG] no tracemalloc traceback available for this object"
+                                                )
+                                        except Exception:
+                                            pass
+
+                                        # Defensive: attempt to close lingering connections seen during tests
+                                        try:
+                                            c.close()
+                                            print(
+                                                f"[TEST DEBUG] closed sqlite3.Connection {hex(id(c))}"
+                                            )
+                                        except Exception:
+                                            pass
+                                    except Exception:
+                                        pass
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+    except Exception:
+        # Best-effort cleanup; do not raise during teardown
+        pass
+
+
+@pytest.fixture(autouse=True)
+def _patch_flask_mail(mocker):
+    """Patch flask_mail.Mail to a lightweight test-friendly class.
+
+    Many code paths (including _dispatch_email) construct a local
+    ``Mail(current_app)`` and call ``mail.send(msg)``. Tests historically
+    patched `backend.appy.mail.send`, which doesn't catch the local Mail
+    instance created inside _dispatch_email. To make mail behavior
+    deterministic in tests we patch the `flask_mail.Mail` class so that
+    its `send` records messages into `current_app.config['_sent_emails']`.
+
+    This is a low-risk test-time shim that avoids touching production code
+    and makes mail activity observable to tests.
+    """
+
+    class _TestMail:
+        def __init__(self, app=None):
+            self.app = app
+
+        def send(self, msg):
+            try:
+                # If the main app exposes a mail instance, delegate to it so
+                # tests that patch `backend.appy.mail.send` will trigger the
+                # same behavior (including raised exceptions) and allow the
+                # caller to exercise fallback paths.
+                try:
+                    import appy
+
+                    appy_mail = getattr(appy, "mail", None)
+                except Exception:
+                    appy_mail = None
+
+                if appy_mail is not None and hasattr(appy_mail, "send"):
+                    # Delegate to the app's mail.send (may be patched by tests)
+                    return appy_mail.send(msg)
+
+                from flask import current_app
+
+                lst = current_app.config.setdefault("_sent_emails", [])
+                lst.append(msg)
+            except Exception:
+                # If current_app isn't available for some reason, swallow
+                # the exception to avoid breaking tests that don't assert
+                # on email behavior.
+                pass
+
+    # Patch the Mail class so imports like `from flask_mail import Mail`
+    # will receive our test-friendly _TestMail.
+    try:
+        mocker.patch("flask_mail.Mail", _TestMail)
+    except Exception:
+        # If pytest-mock isn't available or patching fails, continue
+        # without breaking test collection; some tests will still pass.
+        pass
+
+    yield
+
     # (премахнато: дефиниция без тяло)
+
+
+@pytest.fixture(autouse=True)
+def _safe_smtp_monkeypatch(mocker):
+    """Autouse fixture: ensure tests don't open real SMTP/SSL sockets.
+
+    Many code paths create `smtplib.SMTP` or `smtplib.SMTP_SSL` directly. To
+    avoid intermittent ResourceWarning for unclosed SSL sockets during test
+    runs, patch those classes to a lightweight dummy that implements the
+    minimal API used by the code. Tests that need to assert SMTP behavior can
+    still monkeypatch/override this fixture.
+    """
+
+    try:
+        import smtplib as _smtplib
+
+        class _DummySMTP:
+            def __init__(self, *args, **kwargs):
+                self.args = args
+
+            def sendmail(self, *args, **kwargs):
+                return {}
+
+            def ehlo(self):
+                return
+
+            def login(self, *args, **kwargs):
+                return
+
+            def starttls(self, *args, **kwargs):
+                return
+
+            def quit(self):
+                return
+
+            def close(self):
+                return
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return False
+
+        try:
+            mocker.patch("smtplib.SMTP", _DummySMTP)
+            mocker.patch("smtplib.SMTP_SSL", _DummySMTP)
+        except Exception:
+            # If pytest-mock isn't available or patching fails, continue.
+            pass
+        # Additionally, replace any module-level references to SMTP/SMTP_SSL
+        # (for modules that did `from smtplib import SMTP_SSL`) by scanning
+        # loaded modules and swapping attributes that come from smtplib.
+        try:
+            import sys as _sys
+            import smtplib as _smtplib
+
+            for _mod in list(_sys.modules.values()):
+                try:
+                    if _mod is None:
+                        continue
+                    for _attr in ("SMTP", "SMTP_SSL"):
+                        if hasattr(_mod, _attr):
+                            obj = getattr(_mod, _attr)
+                            # If the object originates from smtplib, replace it
+                            if getattr(obj, "__module__", None) == _smtplib.__name__:
+                                try:
+                                    setattr(_mod, _attr, _DummySMTP)
+                                except Exception:
+                                    pass
+                except Exception:
+                    continue
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    yield
+
+
+@pytest.fixture(autouse=True)
+def _block_network_calls():
+    """Defensive fixture: block outgoing TCP connections during tests.
+
+    This prevents accidental network I/O (SMTP, external APIs) from being
+    performed by tests or library code. It's a last-resort safety net to avoid
+    intermittent ResourceWarning about unclosed network sockets in CI.
+
+    The implementation is best-effort and may be relaxed for tests that need
+    network access (they can monkeypatch this fixture or set up explicit
+    allowances).
+    """
+
+    try:
+        import socket as _socket
+
+        _orig_create = getattr(_socket, "create_connection", None)
+
+        def _blocked_create(addr, timeout=None, source_address=None):
+            raise OSError("Network calls are blocked during tests")
+
+        try:
+            _socket.create_connection = _blocked_create
+        except Exception:
+            pass
+    except Exception:
+        _orig_create = None
+
+    yield
+
+    # Restore original create_connection
+    try:
+        import socket as _socket
+
+        if _orig_create is not None:
+            try:
+                _socket.create_connection = _orig_create
+            except Exception:
+                pass
+    except Exception:
+        pass

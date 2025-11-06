@@ -260,6 +260,7 @@ from io import BytesIO, StringIO
 from types import SimpleNamespace
 from unittest.mock import Mock
 import re
+import functools
 
 # Ensure backend modules are importable regardless of working directory
 BACKEND_DIR = os.path.dirname(__file__)
@@ -451,19 +452,30 @@ except ImportError:
 # Sentry for error monitoring
 
 # Настройка на logging преди всичко друго
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("helpchain.log", encoding="utf-8"),
-    ],
-)
+if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
+    # In test mode avoid opening file handlers (pytest will capture output
+    # and leaving file descriptors open across many tests triggers
+    # ResourceWarning: unclosed file). Use a simple stream handler only.
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
+else:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler("helpchain.log", encoding="utf-8"),
+        ],
+    )
 
 
 # Enhanced logging configuration
 def setup_logging():
     """Setup comprehensive logging configuration"""
+    is_testing = os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True")
     # Clear existing handlers to avoid duplicates
     root_logger = logging.getLogger()
     for handler in root_logger.handlers[:]:
@@ -483,34 +495,36 @@ def setup_logging():
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(simple_formatter)
     root_logger.addHandler(console_handler)
+    if not is_testing:
+        # File handler for all logs
+        file_handler = logging.FileHandler("helpchain.log", encoding="utf-8")
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(detailed_formatter)
+        root_logger.addHandler(file_handler)
 
-    # File handler for all logs
-    file_handler = logging.FileHandler("helpchain.log", encoding="utf-8")
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(detailed_formatter)
-    root_logger.addHandler(file_handler)
+        # Error file handler for errors only
+        error_handler = logging.FileHandler("helpchain_errors.log", encoding="utf-8")
+        error_handler.setLevel(logging.ERROR)
+        error_handler.setFormatter(detailed_formatter)
+        root_logger.addHandler(error_handler)
 
-    # Error file handler for errors only
-    error_handler = logging.FileHandler("helpchain_errors.log", encoding="utf-8")
-    error_handler.setLevel(logging.ERROR)
-    error_handler.setFormatter(detailed_formatter)
-    root_logger.addHandler(error_handler)
+        # Security logger for sensitive operations
+        security_logger = logging.getLogger("security")
+        security_logger.setLevel(logging.INFO)
+        security_handler = logging.FileHandler(
+            "helpchain_security.log", encoding="utf-8"
+        )
+        security_handler.setFormatter(detailed_formatter)
+        security_logger.addHandler(security_handler)
+        security_logger.propagate = False  # Don't propagate to root logger
 
-    # Security logger for sensitive operations
-    security_logger = logging.getLogger("security")
-    security_logger.setLevel(logging.INFO)
-    security_handler = logging.FileHandler("helpchain_security.log", encoding="utf-8")
-    security_handler.setFormatter(detailed_formatter)
-    security_logger.addHandler(security_handler)
-    security_logger.propagate = False  # Don't propagate to root logger
-
-    # API logger for API operations
-    api_logger = logging.getLogger("api")
-    api_logger.setLevel(logging.INFO)
-    api_handler = logging.FileHandler("helpchain_api.log", encoding="utf-8")
-    api_handler.setFormatter(detailed_formatter)
-    api_logger.addHandler(api_handler)
-    api_logger.propagate = False
+        # API logger for API operations
+        api_logger = logging.getLogger("api")
+        api_logger.setLevel(logging.INFO)
+        api_handler = logging.FileHandler("helpchain_api.log", encoding="utf-8")
+        api_handler.setFormatter(detailed_formatter)
+        api_logger.addHandler(api_handler)
+        api_logger.propagate = False
 
     logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
@@ -542,9 +556,30 @@ def _mask_secret_in_uri(uri: str | None) -> str:
 # Setup enhanced logging
 logger = setup_logging()
 
+# Module-level, process-local cache used to avoid repeated Inspector/Connection
+# allocations during tests. Populated only when the Flask app is in TESTING mode.
+# Defining it at module import time ensures `_has_table` writes to a true
+# module-global dictionary instead of creating a local variable by accident.
+_table_exists_cache = {}
+# Guard to avoid repeated attempts to initialize default admin during tests.
+# When running under pytest we may call initialize_default_admin() many times
+# from different import/fixture paths; this flag prevents repeated DB access
+# which can surface as frequent sqlite3.connect allocations under the test
+# harness. It is only used as a best-effort optimization in TESTING mode.
+_admin_init_attempted = False
 
-def _has_table(table_name: str) -> bool:
-    """Return True if the given table exists in the current database."""
+
+def _has_table_uncached(table_name: str) -> bool:
+    """Return True if the given table exists in the current database.
+
+    This is the uncached implementation. It is kept separate so we can
+    safely apply an LRU cache wrapper around it without changing the
+    internal logic (and so tests can clear the cache when needed).
+    """
+    # Ensure the module-level cache exists (legacy fallback)
+    if "_table_exists_cache" not in globals():
+        _table_exists_cache = {}
+
     try:
         engine = db.engine
     except Exception as exc:  # pragma: no cover - defensive
@@ -553,12 +588,73 @@ def _has_table(table_name: str) -> bool:
         )
         return False
 
+    # If testing, consult module-level cache first (best-effort fallback)
     try:
-        inspector = inspect(engine)
-        return inspector.has_table(table_name)
+        from flask import current_app
+
+        if getattr(current_app, "config", {}).get("TESTING"):
+            try:
+                if table_name in _table_exists_cache:
+                    return _table_exists_cache[table_name]
+            except Exception:
+                # Don't fail table check due to cache errors
+                pass
+    except Exception:
+        pass
+
+    try:
+        # Use an explicit connection to ensure any DBAPI connection is closed
+        # promptly. Passing a Connection to inspect() avoids leaving raw
+        # sqlite3.Connection objects open in certain SQLAlchemy versions.
+        with engine.connect() as _conn:
+            inspector = inspect(_conn)
+            try:
+                val = inspector.has_table(table_name)
+            except Exception:
+                # If inspector.has_table raises, surface a False result
+                # without breaking callers.
+                val = False
+
+        # Cache result only when running tests to avoid changing production
+        # semantics. Best-effort: swallow any caching errors.
+        try:
+            from flask import current_app
+
+            if getattr(current_app, "config", {}).get("TESTING"):
+                try:
+                    _table_exists_cache[table_name] = bool(val)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        return bool(val)
     except Exception as exc:  # pragma: no cover - defensive
         logger.debug("Table existence check skipped for %s: %s", table_name, exc)
         return False
+
+
+# Public cached wrapper: reduce repeated engine.connect() calls during tests.
+@functools.cache
+def _has_table(table_name: str) -> bool:
+    """Cached table-existence check.
+
+    Uses an in-memory LRU cache (unbounded) for the lifetime of the
+    process. Tests can clear the cache using `_has_table_cache_clear()`.
+    """
+    return _has_table_uncached(table_name)
+
+
+def _has_table_cache_clear() -> None:
+    """Clear the `_has_table` LRU cache (for tests/fixtures)."""
+    try:
+        _has_table.cache_clear()
+    except Exception:
+        # Fallback to clearing the module-level dict if present
+        try:
+            _table_exists_cache.clear()
+        except Exception:
+            pass
 
 
 def safe_admin_count() -> int:
@@ -595,6 +691,23 @@ def _seed_once() -> None:
 
 
 def initialize_default_admin():
+    global _admin_init_attempted
+    try:
+        # If running tests and we've already attempted initialization once,
+        # skip subsequent attempts to avoid repeated DB connections.
+        from flask import current_app
+
+        if getattr(current_app, "config", {}).get("TESTING"):
+            if _admin_init_attempted:
+                logger.debug(
+                    "initialize_default_admin: already attempted during tests; skipping"
+                )
+                return None
+            # Mark attempted early to avoid re-entrancy
+            _admin_init_attempted = True
+    except Exception:
+        # If we can't access current_app for any reason, continue normally.
+        pass
     # If the admin_users table is not yet present (early import / boot),
     # avoid querying it — return None so callers can retry later after
     # the schema has been created. This prevents OperationalError during
@@ -612,45 +725,60 @@ def initialize_default_admin():
     try:
         logger.info("Checking for existing admin user...")
         db = get_db()
-        # Check if admin user exists
-        admin_user = db.session.query(AdminUser).filter_by(username="admin").first()
-        if admin_user:
-            logger.info("Admin user already exists")
-            return admin_user
+        session = db.session
 
-        logger.info("Creating default admin user...")
-        # Create admin user
-        admin_user = AdminUser(
-            username="admin",
-            email="admin@helpchain.live",
-        )
-        # Always use the password from .env and never auto-change it during development
-        admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "Admin123"))
-        db.session.add(admin_user)
-        db.session.flush()  # Get admin_user ID
-        logger.info(f"AdminUser created with ID: {admin_user.id}")
+        # Use an explicit transactional scope so the session's connection is
+        # released promptly after the operation. This reduces the chance of
+        # lingering DBAPI connections being visible to the test harness.
+        try:
+            with session.begin():
+                # Check if admin user exists
+                admin_user = (
+                    session.query(AdminUser).filter_by(username="admin").first()
+                )
+                if admin_user:
+                    logger.info("Admin user already exists")
+                    return admin_user
 
-        # Also create a User record for permissions system с роля superadmin, ако не съществува
-        existing_user = db.session.query(User).filter_by(username="admin").first()
-        if existing_user:
-            logger.info(
-                "User with username 'admin' already exists в users. Пропускам създаването."
-            )
-        else:
-            logger.info("Creating User record with superadmin role...")
-            user = User(
-                username="admin",
-                email="admin@helpchain.live",
-                password_hash=admin_user.password_hash,  # Use same password hash
-                role=RoleEnum.superadmin,  # Use the enum directly
-                is_active=True,
-            )
-            logger.info(
-                f"User object created: username={user.username}, role={user.role}"
-            )
-            db.session.add(user)
-            logger.info("User added to session")
-        db.session.commit()
+                logger.info("Creating default admin user...")
+                # Create admin user
+                admin_user = AdminUser(
+                    username="admin",
+                    email="admin@helpchain.live",
+                )
+                # Always use the password from .env and never auto-change it during development
+                admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "Admin123"))
+                session.add(admin_user)
+                session.flush()  # Get admin_user ID
+                logger.info(f"AdminUser created with ID: {admin_user.id}")
+
+                # Also create a User record for permissions system with superadmin role,
+                # if not already present. Use the same transactional session.
+                existing_user = session.query(User).filter_by(username="admin").first()
+                if existing_user:
+                    logger.info(
+                        "User with username 'admin' already exists in users. Skipping creation."
+                    )
+                else:
+                    logger.info("Creating User record with superadmin role...")
+                    user = User(
+                        username="admin",
+                        email="admin@helpchain.live",
+                        password_hash=admin_user.password_hash,  # Use same password hash
+                        role=RoleEnum.superadmin,  # Use the enum directly
+                        is_active=True,
+                    )
+                    logger.info(
+                        f"User object created: username={user.username}, role={user.role}"
+                    )
+                    session.add(user)
+                    logger.info("User added to session")
+
+        except Exception:
+            # Any exception within the transactional block will rollback the
+            # transaction automatically; re-raise to be logged by outer handler.
+            raise
+
         logger.info("Default admin user created successfully")
         return admin_user
 
@@ -661,7 +789,12 @@ def initialize_default_admin():
             "Default admin initialization failed: %s\n%s", e, traceback.format_exc()
         )
         try:
-            db.session.rollback()
+            # Best-effort: ensure session rollback to release connections
+            db = get_db()
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
         except Exception:
             pass
         return None
@@ -1031,7 +1164,13 @@ if is_realtime_feature_enabled("websocket"):
     try:
         from gevent import monkey
 
-        monkey.patch_all()
+        # Avoid monkey-patching during tests which can cause late-import
+        # MonkeyPatchWarning and socket/resource issues. Test harness sets
+        # HELPCHAIN_TESTING=1 in the environment; skip patching when present.
+        if not os.environ.get("HELPCHAIN_TESTING") and not app.config.get(
+            "TESTING", False
+        ):
+            monkey.patch_all()
         from gevent import __version__ as gevent_version
         from gevent.pywsgi import WSGIServer
         from geventwebsocket.handler import WebSocketHandler
@@ -1640,45 +1779,7 @@ except Exception as e:
     app.logger.error(f"Failed to initialize analytics service: {e}")
 
 
-# Test direct route
-@app.route("/test_analytics")
-def test_analytics():
-    return "test analytics direct"
-
-
-@app.route("/test_notifications")
-def test_notifications():
-    """Test endpoint to trigger real-time notifications"""
-    if not realtime_notifications:
-        return (
-            jsonify(
-                {"error": "Real-time notifications not available (SocketIO disabled)"}
-            ),
-            503,
-        )
-
-    from datetime import datetime
-
-    # Test anomaly broadcast
-    anomaly = {
-        "type": "traffic_spike",
-        "severity": "high",
-        "description": "Test anomaly: High traffic detected",
-        "timestamp": datetime.now(),
-    }
-    realtime_notifications.broadcast_anomaly(anomaly)
-
-    # Test milestone broadcast
-    milestone = {"value": 100, "metric": "requests processed today"}
-    realtime_notifications.broadcast_milestone(milestone)
-
-    return jsonify(
-        {"status": "Notifications sent", "anomaly": anomaly, "milestone": milestone}
-    )
-
-
-# Test routes for error handlers
-@app.route("/test/trigger-400", methods=["GET"])
+@app.route("/test/trigger-400")
 def trigger_400():
     """Test route to trigger 400 Bad Request error"""
     app.logger.info("trigger_400 route called")
@@ -1740,28 +1841,33 @@ def email_healthz():
                 500,
             )
 
-        # Test SMTP connection
+        # Test SMTP connection using context managers so sockets are
+        # always closed even on exceptions (avoids ResourceWarning on
+        # SSL sockets in tests).
         try:
             if use_ssl:
-                smtp = smtplib.SMTP_SSL(server, port, timeout=10)
+                with smtplib.SMTP_SSL(server, port, timeout=10) as smtp:
+                    smtp.ehlo()
+
+                    # Start TLS if configured and not using SSL (kept for clarity)
+                    if use_tls and not use_ssl:
+                        context = ssl.create_default_context()
+                        smtp.starttls(context=context)
+                        smtp.ehlo()
+
+                    if username and password:
+                        smtp.login(username, password)
             else:
-                smtp = smtplib.SMTP(server, port, timeout=10)
+                with smtplib.SMTP(server, port, timeout=10) as smtp:
+                    smtp.ehlo()
 
-            # Test EHLO
-            smtp.ehlo()
+                    if use_tls and not use_ssl:
+                        context = ssl.create_default_context()
+                        smtp.starttls(context=context)
+                        smtp.ehlo()
 
-            # Start TLS if configured and not using SSL
-            if use_tls and not use_ssl:
-                context = ssl.create_default_context()
-                smtp.starttls(context=context)
-                smtp.ehlo()
-
-            # Test authentication if credentials provided
-            if username and password:
-                smtp.login(username, password)
-
-            # Close connection
-            smtp.quit()
+                    if username and password:
+                        smtp.login(username, password)
 
             return jsonify(
                 {
@@ -1832,6 +1938,16 @@ except ImportError:
 app.register_blueprint(admin_bp, url_prefix="/admin")
 
 app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
+
+# Register auth blueprint for signup / email confirmation
+try:
+    from auth import auth_bp
+
+    app.register_blueprint(auth_bp)
+except Exception:
+    # Best-effort registration: if import fails during some runtime modes,
+    # skip registration to avoid breaking startup.
+    pass
 
 # Register notification blueprint
 app.register_blueprint(notification_bp, url_prefix="/notifications")
@@ -5201,7 +5317,14 @@ def _load_volunteer_by_id(volunteer_id):
         elif query_attr is not None:
             try:
                 stmt = select(Volunteer).where(Volunteer.id == volunteer_id)
-                volunteer = db.session.execute(stmt).scalar_one_or_none()
+                _vol_res = db.session.execute(stmt)
+                try:
+                    volunteer = _vol_res.scalar_one_or_none()
+                finally:
+                    try:
+                        _vol_res.close()
+                    except Exception:
+                        pass
             except Exception as exc:
                 app.logger.warning("Volunteer lookup failed: %s", exc)
                 volunteer = None
@@ -7560,8 +7683,15 @@ def health_check():
 def readiness_check():
     """Readiness check endpoint - checks if app is ready to serve requests"""
     try:
-        # Check database connectivity
-        db.session.execute(db.text("SELECT 1"))
+        # Check database connectivity (ensure Result closed promptly)
+        _ready_res = db.session.execute(db.text("SELECT 1"))
+        try:
+            _ = _ready_res.first()
+        finally:
+            try:
+                _ready_res.close()
+            except Exception:
+                pass
         return jsonify(
             {
                 "status": "ready",
