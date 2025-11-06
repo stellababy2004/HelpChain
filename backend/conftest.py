@@ -494,19 +494,19 @@ def setup_schema_and_admin(app):
         # `app` is the Flask app instance returned by the session-scoped fixture.
         with app.app_context():
             try:
-                # Import the application module and seed the default admin if needed.
-                import appy as _appy
-
+                # Import the application module. Seeding the default admin is
+                # handled centrally by the session-scoped `app` fixture; avoid
+                # running per-test seeding which can trigger repeated DB connects.
+                # Avoid importing `appy` here. Importing it per-test can
+                # trigger module-level initialization (including
+                # initialize_default_admin) which we want to run only once
+                # in the session-scoped `app` fixture. If `appy` is already
+                # loaded by the session fixture, reference it from sys.modules
+                # so we can prime its caches without re-importing it.
                 try:
-                    _appy.initialize_default_admin()
+                    _appy = sys.modules.get("appy")
                 except Exception:
-                    # If seeding fails, tests may create an admin explicitly; do not raise.
-                    try:
-                        logging.getLogger(__name__).exception(
-                            "initialize_default_admin() failed in setup_schema_and_admin"
-                        )
-                    except Exception:
-                        pass
+                    _appy = None
                 # Test-only optimization: prime the appy._table_exists_cache so that
                 # subsequent calls to _has_table() during the test session do not
                 # repeatedly create Inspector/Connection objects. This is a
@@ -685,20 +685,14 @@ def pytest_configure(config):
         warnings.filterwarnings("ignore", category=_sqlalchemy.exc.SAWarning)
     except Exception:
         pass
-
-
-@pytest.fixture(scope="session", autouse=True)
-def setup_models():
-    """Setup models before any tests run"""
+    # Default TTL for _has_table checks during tests to 30s. Tests can override
+    # via the HELPCHAIN_HAS_TABLE_TTL environment variable if needed.
     try:
-        import models_with_analytics  # noqa: F401
-    except ImportError:
+        import os
+
+        os.environ.setdefault("HELPCHAIN_HAS_TABLE_TTL", "30")
+    except Exception:
         pass
-
-
-@pytest.fixture(scope="session", autouse=True)
-def app():
-    """Create and configure a test app instance. Sets up schema."""
     # Ensure canonical extensions module is available under common names
     # before importing `appy` which imports models at module-import time.
     try:
@@ -737,6 +731,9 @@ def app():
     except Exception:
         pass
 
+@pytest.fixture(scope="session", autouse=True)
+def app():
+    """Create and configure a test app instance. Sets up schema."""
     from appy import app as real_app
 
     try:
