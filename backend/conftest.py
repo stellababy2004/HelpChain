@@ -50,7 +50,7 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
-from sqlalchemy.pool import StaticPool, NullPool
+from sqlalchemy.pool import NullPool, StaticPool
 
 # Ensure appy.py sees we're running tests when it's imported.
 # This must be set before importing `appy` in fixtures so the module
@@ -301,9 +301,10 @@ try:
         and os.environ.get("HELPCHAIN_TEST_DEBUG_SUPPRESS_DIALECT_WRAP") != "1"
     ):
         try:
-            import sqlalchemy.engine.default as _sqldef
             import traceback as _traceback
             from pathlib import Path as _Path
+
+            import sqlalchemy.engine.default as _sqldef
 
             _tools_fn2 = (
                 _Path(__file__).resolve().parent / "tools" / "traced_candidates.txt"
@@ -392,9 +393,10 @@ try:
         and os.environ.get("HELPCHAIN_TEST_DEBUG_SUPPRESS_ENGINE_WRAP") != "1"
     ):
         try:
-            import sqlalchemy.engine.base as _sqbase
             import traceback as _traceback
             from pathlib import Path as _Path
+
+            import sqlalchemy.engine.base as _sqbase
 
             _tools_fn3 = (
                 _Path(__file__).resolve().parent / "tools" / "traced_candidates.txt"
@@ -1095,6 +1097,70 @@ def app():
             # Diagnostics must not break test setup
             pass
 
+        # Ensure the application's model modules are imported and bound to the
+        # canonical `extensions.db` instance before we create the schema. In
+        # some test collection environments model modules may not have been
+        # imported (or were imported against a different SQLAlchemy instance),
+        # which leads to missing tables in `db.metadata` and subsequent
+        # OperationalError during tests. Import and alias common module names
+        # here as a best-effort fix.
+        try:
+            import importlib
+
+            for modname in (
+                "backend.models",
+                "models",
+                "helpchain_backend.src.models",
+            ):
+                try:
+                    m = importlib.import_module(modname)
+                    # Alias the loaded module under common names so subsequent
+                    # imports resolve to the same module object.
+                    for alias in (
+                        "models",
+                        "backend.models",
+                        "helpchain_backend.src.models",
+                    ):
+                        if alias not in sys.modules:
+                            sys.modules[alias] = m
+                except Exception:
+                    # Continue; some import paths are optional in different
+                    # dev/test layouts.
+                    pass
+
+            for modname in (
+                "backend.models_with_analytics",
+                "models_with_analytics",
+                "helpchain_backend.src.models_with_analytics",
+            ):
+                try:
+                    m = importlib.import_module(modname)
+                    for alias in (
+                        "models_with_analytics",
+                        "backend.models_with_analytics",
+                        "helpchain_backend.src.models_with_analytics",
+                    ):
+                        if alias not in sys.modules:
+                            sys.modules[alias] = m
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # Diagnostic: show what tables SQLAlchemy thinks are present before
+        # attempting create_all(). Helpful when debugging missing-table issues.
+        try:
+            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                try:
+                    metadata_tables = sorted(list(db.metadata.tables.keys()))
+                except Exception:
+                    metadata_tables = None
+                print(
+                    f"[TEST DEBUG] SQLAlchemy metadata tables before create_all (post-import): {metadata_tables}"
+                )
+        except Exception:
+            pass
+
         db.drop_all()
         db.create_all()
         # Ensure default admin is created immediately after schema creation
@@ -1721,8 +1787,8 @@ def _safe_smtp_monkeypatch(mocker):
         # (for modules that did `from smtplib import SMTP_SSL`) by scanning
         # loaded modules and swapping attributes that come from smtplib.
         try:
-            import sys as _sys
             import smtplib as _smtplib
+            import sys as _sys
 
             for _mod in list(_sys.modules.values()):
                 try:
