@@ -4,6 +4,11 @@ repos:
     hooks:
       - id: black
         language_version: python3
+        exclude: |
+          (?x)^(
+            backend/backups/.*|
+            .*\.backup_.*\.py
+          )$
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.13.2

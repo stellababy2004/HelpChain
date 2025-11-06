@@ -9,11 +9,11 @@ sys.path.insert(
     r"c:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\backend",
 )
 
-import appy
-from simple_cache import cache_instance
-
 import hashlib
 import json
+
+import appy
+from simple_cache import cache_instance
 
 print("🧐 DEBUG: Cache Investigation")
 print("=" * 40)

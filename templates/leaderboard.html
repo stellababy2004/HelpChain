@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Класация - HelpChain</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+      }
+
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      .leaderboard-section {
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .leaderboard-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      .leaderboard-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
+      .leaderboard-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+      }
+
+      .leaderboard-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        background: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .leaderboard-item::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.05) 100%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .leaderboard-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .leaderboard-item:hover::before {
+        opacity: 1;
+      }
+
+      .leaderboard-item.current-user {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-left-color: #667eea;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .leaderboard-item.current-user::before {
+        background: linear-gradient(
+          135deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.1) 100%
+        );
+      }
+
+      .leaderboard-rank {
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-right: 1.5rem;
+        min-width: 50px;
+        text-align: center;
+        position: relative;
+      }
+
+      .leaderboard-rank.top-3 {
+        color: #ffd700;
+      }
+
+      .leaderboard-rank.top-3::after {
+        content: "👑";
+        position: absolute;
+        top: -5px;
+        right: -15px;
+        font-size: 1rem;
+      }
+
+      .leaderboard-avatar {
+        margin-right: 1rem;
+        position: relative;
+      }
+
+      .avatar-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .leaderboard-item.current-user .avatar-circle {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid white;
+      }
+
+      .leaderboard-info {
+        flex: 1;
+      }
+
+      .leaderboard-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .leaderboard-stats {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .leaderboard-item.current-user .leaderboard-stats {
+        opacity: 1;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .stat-item i {
+        width: 12px;
+      }
+
+      .podium-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .podium-item {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .podium-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+      }
+
+      .podium-item.first {
+        background: linear-gradient(135deg, #ffd700, #ffb347);
+        color: white;
+        grid-row: 1;
+        margin-top: -2rem;
+        padding-top: 3rem;
+      }
+
+      .podium-item.second {
+        background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+        color: white;
+        grid-row: 1;
+        margin-top: -1rem;
+        padding-top: 2rem;
+      }
+
+      .podium-item.third {
+        background: linear-gradient(135deg, #cd7f32, #a0522d);
+        color: white;
+        grid-row: 1;
+        margin-top: 0;
+        padding-top: 1.5rem;
+      }
+
+      .podium-rank {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        opacity: 0.8;
+      }
+
+      .podium-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .podium-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .podium-points {
+        font-size: 1.2rem;
+        font-weight: bold;
+        opacity: 0.9;
+      }
+
+      .filter-section {
+        background: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .filter-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        border: 2px solid #e1e5e9;
+        background: white;
+        color: #6c757d;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      [data-theme="dark"] .filter-btn {
+        background: var(--dark-card);
+        border-color: #495057;
+        color: #adb5bd;
+      }
+
+      .filter-btn.active {
+        background: var(--primary-gradient);
+        border-color: transparent;
+        color: white;
+        transform: scale(1.05);
+      }
+
+      .filter-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateY(-2px);
+      }
+
+      .stats-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      .fade-in {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s ease-out forwards;
+      }
+
+      @keyframes fadeInUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .podium-section {
+          grid-template-columns: 1fr;
+          gap: 0.5rem;
+        }
+
+        .podium-item {
+          margin-top: 0 !important;
+          padding-top: 1.5rem !important;
+        }
+
+        .leaderboard-title {
+          font-size: 2rem;
+        }
+
+        .filter-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .stats-overview {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+
+  <body data-theme="light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand navbar-brand-modern" href="/">
+          <i class="fas fa-heart me-2"></i>HelpChain Volunteer
+        </a>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          title="Отвори меню"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('volunteer_dashboard') }}">
+                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('my_tasks') }}">
+                <i class="fas fa-tasks me-1"></i>Моите задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('available_tasks') }}">
+                <i class="fas fa-search me-1"></i>Налични задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('achievements') }}">
+                <i class="fas fa-trophy me-1"></i>Постижения
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ url_for('leaderboard') }}">
+                <i class="fas fa-crown me-1"></i>Класация
+              </a>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="navbarDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <i class="fas fa-user-circle me-1"></i>{{ current_user.name if
+                current_user else 'Доброволец' }}
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_profile') }}"
+                  >
+                    <i class="fas fa-user me-2"></i>Моят профил
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_settings') }}"
+                  >
+                    <i class="fas fa-cog me-2"></i>Настройки
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('volunteer_logout') }}"
+                  >
+                    <i class="fas fa-sign-out-alt me-2"></i>Изход
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <button
+                class="theme-toggle"
+                id="themeToggle"
+                title="Превключи тема"
+              >
+                <i class="fas fa-moon"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Spacer for fixed navbar -->
+    <div style="height: 80px"></div>
+
+    <div class="container-fluid">
+      <!-- Header -->
+      <div class="leaderboard-header">
+        <div class="leaderboard-title">
+          <i class="fas fa-crown me-2"></i>Класация на доброволците
+        </div>
+        <div class="leaderboard-subtitle">
+          Виж къде се намираш сред най-добрите доброволци
+        </div>
+      </div>
+
+      <!-- Stats Overview -->
+      <div class="stats-overview">
+        <div class="stat-card fade-in">
+          <div class="stat-value" id="totalVolunteers">
+            {{ total_volunteers|default(0) }}
+          </div>
+          <p class="stat-label">Общо доброволци</p>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-value" id="yourRank">
+            {{ current_user_rank|default('-') }}
+          </div>
+          <p class="stat-label">Твоята позиция</p>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-value" id="yourPoints">
+            {{ current_user_points|default(0) }}
+          </div>
+          <p class="stat-label">Твоите точки</p>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="stat-value" id="topScore">{{ top_score|default(0) }}</div>
+          <p class="stat-label">Най-висок резултат</p>
+        </div>
+      </div>
+
+      <!-- Podium Section -->
+      {% if leaderboard and leaderboard|length >= 3 %}
+      <div class="podium-section">
+        <!-- Second Place -->
+        <div class="podium-item second fade-in">
+          <div class="podium-rank">2</div>
+          <div class="podium-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="podium-name">{{ leaderboard[1].name }}</div>
+          <div class="podium-points">{{ leaderboard[1].points }} точки</div>
+        </div>
+
+        <!-- First Place -->
+        <div class="podium-item first fade-in">
+          <div class="podium-rank">1</div>
+          <div class="podium-avatar">
+            <i class="fas fa-crown"></i>
+          </div>
+          <div class="podium-name">{{ leaderboard[0].name }}</div>
+          <div class="podium-points">{{ leaderboard[0].points }} точки</div>
+        </div>
+
+        <!-- Third Place -->
+        <div class="podium-item third fade-in">
+          <div class="podium-rank">3</div>
+          <div class="podium-avatar">
+            <i class="fas fa-medal"></i>
+          </div>
+          <div class="podium-name">{{ leaderboard[2].name }}</div>
+          <div class="podium-points">{{ leaderboard[2].points }} точки</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Filter Section -->
+      <div class="filter-section">
+        <div class="filter-buttons">
+          <button class="filter-btn active" onclick="filterLeaderboard('all')">
+            <i class="fas fa-users me-1"></i>Всички доброволци
+          </button>
+          <button class="filter-btn" onclick="filterLeaderboard('monthly')">
+            <i class="fas fa-calendar-alt me-1"></i>Този месец
+          </button>
+          <button class="filter-btn" onclick="filterLeaderboard('weekly')">
+            <i class="fas fa-calendar-week me-1"></i>Тази седмица
+          </button>
+          <button class="filter-btn" onclick="filterLeaderboard('friends')">
+            <i class="fas fa-user-friends me-1"></i>Приятели
+          </button>
+        </div>
+      </div>
+
+      <!-- Full Leaderboard -->
+      <div class="leaderboard-section">
+        <div id="leaderboardContainer">
+          {% if leaderboard %} {% for volunteer in leaderboard %}
+          <div
+            class="leaderboard-item fade-in {{ 'current-user' if volunteer.is_current_user else '' }}"
+            data-delay="{{ loop.index * 0.1 }}s"
+          >
+            <div
+              class="leaderboard-rank {{ 'top-3' if volunteer.rank <= 3 else '' }}"
+            >
+              #{{ volunteer.rank }}
+            </div>
+            <div class="leaderboard-avatar">
+              <div class="avatar-circle">{{ volunteer.name[0]|upper }}</div>
+            </div>
+            <div class="leaderboard-info">
+              <div class="leaderboard-name">
+                {{ volunteer.name }} {% if volunteer.is_current_user %}
+                <small class="text-warning ms-2">(Ти)</small>
+                {% endif %}
+              </div>
+              <div class="leaderboard-stats">
+                <span class="stat-item">
+                  <i class="fas fa-star"></i>
+                  {{ volunteer.points }} точки
+                </span>
+                <span class="stat-item">
+                  <i class="fas fa-level-up-alt"></i>
+                  Ниво {{ volunteer.level }}
+                </span>
+                <span class="stat-item">
+                  <i class="fas fa-tasks"></i>
+                  {{ volunteer.tasks_completed }} задачи
+                </span>
+                {% if volunteer.streak_days %}
+                <span class="stat-item">
+                  <i class="fas fa-fire"></i>
+                  {{ volunteer.streak_days }} дни
+                </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Няма достатъчно данни за класация</h5>
+            <p class="text-muted">
+              Класацията ще се появи след като повече доброволци се включат в
+              системата.
+            </p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+      // Theme toggle functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const currentTheme = localStorage.getItem("theme") || "light";
+
+      // Set initial theme
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      updateThemeIcon(currentTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        const icon = themeToggle.querySelector("i");
+        if (theme === "dark") {
+          icon.className = "fas fa-sun";
+          themeToggle.title = "Превключи на светла тема";
+        } else {
+          icon.className = "fas fa-moon";
+          themeToggle.title = "Превключи на тъмна тема";
+        }
+      }
+
+      // Leaderboard filtering
+      function filterLeaderboard(filter) {
+        // Update active filter button
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+
+        // Here you would typically make an AJAX call to filter the leaderboard
+        // For now, we'll just show a loading state
+        const container = document.getElementById("leaderboardContainer");
+        container.style.opacity = "0.5";
+
+        setTimeout(() => {
+          container.style.opacity = "1";
+          // In a real implementation, you would update the leaderboard data here
+          console.log("Filtering leaderboard by:", filter);
+        }, 500);
+      }
+
+      // Add animation delays
+      document.addEventListener("DOMContentLoaded", function () {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="tooltip"]'),
+        );
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Animate leaderboard items
+        const leaderboardItems = document.querySelectorAll(".leaderboard-item");
+        leaderboardItems.forEach((item) => {
+          const delay = item.dataset.delay;
+          if (delay) {
+            item.style.animationDelay = delay;
+          }
+        });
+      });
+
+      // Real-time updates simulation
+      setInterval(() => {
+        // Simulate real-time rank updates
+        const rankElement = document.getElementById("yourRank");
+        if (
+          rankElement &&
+          rankElement.textContent !== "-" &&
+          Math.random() > 0.98
+        ) {
+          rankElement.classList.add("pulse");
+          setTimeout(() => rankElement.classList.remove("pulse"), 1000);
+        }
+      }, 30000);
+    </script>
+  </body>
+</html>

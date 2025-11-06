@@ -35,7 +35,7 @@ def test_admin_analytics():
             admin = AdminUser.query.filter_by(username="admin").first()
             if not admin:
                 admin = AdminUser(username="admin", email="admin@helpchain.live")
-                admin.set_password(os.getenv("ADMIN_USER_PASSWORD", "Admin123"))
+                admin.set_password(os.getenv("ADMIN_PASSWORD", "Admin123"))
                 db.session.add(admin)
                 db.session.commit()
                 print("Admin user created successfully")
@@ -46,10 +46,10 @@ def test_admin_analytics():
             with app.test_client() as client:
                 # Login
                 response = client.post(
-                    "/admin_login",
+                    "/admin/login",
                     data={
                         "username": "admin",
-                        "password": os.getenv("ADMIN_USER_PASSWORD", "Admin123"),
+                        "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
                     },
                     follow_redirects=True,
                 )
@@ -110,6 +110,26 @@ def test_admin_analytics():
                             f"PARTIAL: Only found {len(found_elements)} chart elements: {elements_str}"
                         )
                         print("Response preview:", data[:1000])
+
+                    # Verify the analytics blueprint respects custom date range filters
+                    custom_response = client.get(
+                        "/analytics/admin_analytics?start_date=2025-10-01&end_date=2025-10-07"
+                    )
+                    print(
+                        f"Analytics blueprint (custom range) status: {custom_response.status_code}"
+                    )
+                    if custom_response.status_code == 200:
+                        html = custom_response.get_data(as_text=True)
+                        if "filterSummaryText" in html:
+                            print("SUCCESS: Custom date range summary rendered")
+                        else:
+                            print("WARNING: Custom date range summary missing")
+                        assert "01.10.2025" in html and "07.10.2025" in html
+                    else:
+                        print(
+                            "FAILED: Blueprint analytics route with custom range did not load"
+                        )
+                        print(custom_response.get_data(as_text=True)[:500])
                 else:
                     print("FAILED: Analytics page failed to load")
                     print("Response data:", response.get_data(as_text=True)[:1000])

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Initialize gamification database"""
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
 from backend.appy import app
-from backend.models import db
 from backend.gamification_service import GamificationService
+from backend.models import db
 
 
 def init_db():

@@ -1,0 +1,46 @@
+# Ignore database, cache, logs, and other large or sensitive files for Vercel deploy
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.zip
+*.tar
+*.tar.gz
+*.bak
+*.tmp
+*.pyc
+__pycache__/
+.DS_Store
+.env
+node_modules/
+# Ignore test data and local artifacts
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.sav
+*.h5
+*.pkl
+*.pickle
+*.mp4
+*.mp3
+*.wav
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.pdf
+*.docx
+*.pptx
+*.exe
+*.dll
+*.so
+*.bin
+*.7z
+*.rar
+*.gz
+*.tgz
+*.ipynb_checkpoints/
+# Ignore VSCode and OS files
+.vscode/
+Thumbs.db

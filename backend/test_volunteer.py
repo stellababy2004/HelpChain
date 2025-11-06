@@ -13,8 +13,8 @@ This module contains extensive tests for all volunteer dashboard features includ
 - Logout functionality
 """
 
-from unittest.mock import patch
 from datetime import datetime
+from unittest.mock import patch
 
 
 class TestVolunteerDashboard:
@@ -706,7 +706,7 @@ class TestVolunteerDashboardIntegration:
                 mock_get.return_value = test_volunteer
 
                 # Make multiple requests
-                for i in range(3):
+                for _i in range(3):
                     response = client.get("/volunteer_dashboard")
                     assert response.status_code == 200
                     # Just check that dashboard loads successfully

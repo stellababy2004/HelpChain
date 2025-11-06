@@ -1,5 +1,5 @@
-import sqlite3
 import os
+import sqlite3
 
 db_path = os.path.join("..", "instance", "volunteers.db")
 print("DB path:", db_path)

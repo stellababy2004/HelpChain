@@ -1,29 +1,28 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Script to populate HelpChain database with test analytics data
 """
 
-import sys
 import os
-from datetime import datetime, timedelta
 import random
-import json
+import sys
+from datetime import datetime, timedelta
+
 from werkzeug.security import generate_password_hash
 
 # Add backend to path
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
 sys.path.insert(0, backend_dir)
 
+from analytics_service import analytics_service
 from appy import app, db
-from models import User, Volunteer, HelpRequest, AdminUser
+from models import HelpRequest, User, Volunteer
 from models_with_analytics import (
     AnalyticsEvent,
-    UserBehavior,
     ChatbotConversation,
     PerformanceMetrics,
+    UserBehavior,
 )
-from analytics_service import analytics_service
 
 
 def create_test_data():
@@ -222,11 +221,10 @@ def create_test_data():
 
         # Create chatbot conversations
         print("🤖 Creating chatbot conversations...")
-        conversation_types = ["greeting", "help_request", "information", "complaint"]
         response_types = ["static", "ai", "fallback"]
 
         for i in range(200):
-            conv_date = datetime.now() - timedelta(days=random.randint(0, 30))
+            datetime.now() - timedelta(days=random.randint(0, 30))
 
             conversation = ChatbotConversation(
                 session_id=f"chat_session_{i:04d}",
@@ -299,7 +297,7 @@ def create_test_data():
         # Create some feedback events
         print("💬 Creating feedback events...")
         for i in range(20):
-            feedback_date = datetime.now() - timedelta(days=random.randint(0, 30))
+            datetime.now() - timedelta(days=random.randint(0, 30))
 
             analytics_service.track_event(
                 event_type="user_feedback",

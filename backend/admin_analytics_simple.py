@@ -1,13 +1,14 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Опростена версия на административен анализ и статистики
 Работи с текущия Volunteer модел
 """
 
 from datetime import datetime, timedelta
+
 from sqlalchemy import func
-from .models import db, Volunteer
+
+from .models import Volunteer, db
 
 
 class AnalyticsEngine:

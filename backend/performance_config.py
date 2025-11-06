@@ -5,8 +5,8 @@ Performance Configuration за HelpChain Analytics
 
 # from flask_caching import Cache  # Преместен за избягване на circular import
 # from flask_compress import Compress  # Преместен за избягване на circular import
-import os
 import logging
+import os
 
 
 # Performance Configuration
@@ -67,20 +67,43 @@ def init_performance_optimizations(app):
 
     print("🚀 Initializing Performance Optimizations...")
 
-    # Initialize Caching - използваме app.config вместо отделна config
-    # from flask_caching import Cache  # Локален import - commented out
-    # cache = Cache()
-    # cache.init_app(app)
-    print("✅ Caching system initialized (mock)")
+    # --- Initialize Flask-Caching ---
+    from flask_caching import Cache
 
-    # Initialize Compression
-    # from flask_compress import Compress  # Локален import - commented out
-    # compress = Compress()
-    # compress.init_app(app)
-    print("✅ Response compression initialized (mock)")
+    # Set default config if not already set
+    app.config.setdefault("CACHE_TYPE", PerformanceConfig.CACHE_TYPE)
+    app.config.setdefault(
+        "CACHE_DEFAULT_TIMEOUT", PerformanceConfig.CACHE_DEFAULT_TIMEOUT
+    )
+    # For production, you may want to use Redis:
+    # app.config["CACHE_TYPE"] = "redis"
+    # app.config["CACHE_REDIS_HOST"] = PerformanceConfig.CACHE_REDIS_HOST
+    # app.config["CACHE_REDIS_PORT"] = PerformanceConfig.CACHE_REDIS_PORT
+    # app.config["CACHE_REDIS_DB"] = PerformanceConfig.CACHE_REDIS_DB
+    # app.config["CACHE_KEY_PREFIX"] = PerformanceConfig.CACHE_KEY_PREFIX
+    cache = Cache()
+    cache.init_app(app)
+    # Register cache in extensions for global access
+    if not hasattr(app, "extensions"):
+        app.extensions = {}
+    app.extensions["cache"] = cache
+    print("✅ Caching system initialized (Flask-Caching)")
 
-    cache = None
+    # --- Initialize Compression (optional, if flask_compress is installed) ---
     compress = None
+    try:
+        from flask_compress import Compress
+
+        app.config.setdefault(
+            "COMPRESS_MIMETYPES", PerformanceConfig.COMPRESS_MIMETYPES
+        )
+        app.config.setdefault("COMPRESS_LEVEL", PerformanceConfig.COMPRESS_LEVEL)
+        app.config.setdefault("COMPRESS_MIN_SIZE", PerformanceConfig.COMPRESS_MIN_SIZE)
+        compress = Compress()
+        compress.init_app(app)
+        print("✅ Response compression initialized (Flask-Compress)")
+    except ImportError:
+        print("⚠️  Flask-Compress not installed, skipping compression setup.")
 
     # Configure logging for performance monitoring
     logging.basicConfig(level=logging.INFO)
@@ -91,6 +114,7 @@ def init_performance_optimizations(app):
     def before_request():
         """Record request start time за performance monitoring"""
         import time
+
         from flask import g
 
         g.start_time = time.time()
@@ -99,19 +123,17 @@ def init_performance_optimizations(app):
     def after_request(response):
         """Log request performance metrics"""
         import time
+
         from flask import g, request
 
         if hasattr(g, "start_time"):
             duration = time.time() - g.start_time
-
             # Log slow requests (>1 second)
             if duration > 1.0:
                 logger.warning(f"Slow request: {request.path} took {duration:.2f}s")
-
             # Add performance headers
             response.headers["X-Response-Time"] = f"{duration:.3f}"
             response.headers["X-Cache-Status"] = getattr(g, "cache_status", "miss")
-
         return response
 
     print("✅ Performance monitoring middleware added")
@@ -129,13 +151,12 @@ def cache_analytics_data(timeout=None, key_prefix="analytics"):
         key_prefix: Prefix за cache key
     """
     from functools import wraps
-    from flask import request
+
+    from flask import current_app, g, request
 
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            from flask import current_app
-
             # Опитай да намериш cache инстанцията
             cache = None
             if hasattr(current_app, "extensions") and "cache" in current_app.extensions:
@@ -144,39 +165,26 @@ def cache_analytics_data(timeout=None, key_prefix="analytics"):
                 cache = current_app.cache
 
             if not cache or not hasattr(cache, "get"):
-                # Ако няма cache или не е правилният обект, изпълни директно функцията
                 print("⚠️  Cache not available, executing without caching")
                 return f(*args, **kwargs)
 
             # Създай уникален cache key
             cache_key = f"{key_prefix}_{f.__name__}"
-
-            # Добави request параметри към key
             if request.args:
                 params = sorted(request.args.items())
                 cache_key += f"_{'_'.join([f'{k}_{v}' for k, v in params])}"
 
+            cache_timeout = timeout or PerformanceConfig.CACHE_TIMEOUTS.get(
+                "stats_overview", 300
+            )
             # Опитай да вземеш от cache
             result = cache.get(cache_key)
-
             if result is None:
-                # Изчисли резултата и запази в cache
                 result = f(*args, **kwargs)
-                cache_timeout = timeout or PerformanceConfig.CACHE_TIMEOUTS.get(
-                    "stats_overview", 300
-                )
                 cache.set(cache_key, result, timeout=cache_timeout)
-
-                # Mark as cache miss
-                from flask import g
-
                 g.cache_status = "miss"
             else:
-                # Mark as cache hit
-                from flask import g
-
                 g.cache_status = "hit"
-
             return result
 
         return decorated_function
@@ -358,6 +366,7 @@ class PerformanceMonitor:
         @app.before_request
         def start_timer():
             import time
+
             from flask import g
 
             g.start_time = time.time()
@@ -365,6 +374,7 @@ class PerformanceMonitor:
         @app.after_request
         def record_metrics(response):
             import time
+
             from flask import g, request
 
             if hasattr(g, "start_time"):

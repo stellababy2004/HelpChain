@@ -14,6 +14,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+    <!-- Neon/Soft Blue Theme CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     {% block head %}{% endblock %}
   </head>
 
@@ -21,7 +23,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
       <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+        <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
           <i class="fas fa-hand-holding-heart me-2"></i>HelpChain
         </a>
         <button
@@ -35,12 +37,12 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('index') }}"
+              <a class="nav-link" href="{{ url_for('main.index') }}"
                 ><i class="fas fa-home me-1"></i>Начало</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('about') }}"
+              <a class="nav-link" href="{{ url_for('main.about') }}"
                 ><i class="fas fa-info-circle me-1"></i>За нас</a
               >
             </li>
@@ -51,13 +53,13 @@
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('video_chat') }}"
+              <a class="nav-link" href="#"
                 ><i class="fas fa-video me-1"></i>Видео чат</a
               >
             </li>
             {% if current_user.is_admin %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_panel') }}"
+              <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}"
                 ><i class="fas fa-cog me-1"></i>Админ</a
               >
             </li>
@@ -112,7 +114,7 @@
       <div class="container">
         <p>
           &copy; 2025 HelpChain. Разработено от Stella Barbarella.
-          <a href="{{ url_for('about') }}" class="text-light">За нас</a>
+          <a href="{{ url_for('main.about') }}" class="text-light">За нас</a>
         </p>
       </div>
     </footer>

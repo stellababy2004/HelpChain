@@ -19,7 +19,7 @@ python appy.py
 ### 2. Достъп до Analytics
 
 ```
-http://localhost:5000/admin/analytics
+http://localhost:5000/admin_analytics
 ```
 
 > **Забележка:** Нужна е admin аутентификация

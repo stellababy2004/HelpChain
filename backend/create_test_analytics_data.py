@@ -2,17 +2,22 @@
 Създаване на тестова база данни с разнообразни потребители и заявки за analytics тестване
 """
 
-import sys
 import os
-from datetime import timedelta
 import random
+import sys
+from datetime import timedelta
+
 from faker import Faker
 
-# Add the project root to the path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add backend directory to path
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
+# Import Flask app and models
 from appy import app, db
-from .models import Volunteer, HelpRequest, AnalyticsEvent
+from models import HelpRequest, Volunteer
+from models_with_analytics import AnalyticsEvent
 
 fake = Faker("bg_BG")  # Bulgarian locale
 
@@ -111,13 +116,7 @@ def create_test_database():
                 phone=fake.phone_number()[:15],
                 location=random.choice(bulgarian_cities),
                 skills=", ".join(random.sample(skills_list, random.randint(2, 5))),
-                availability=random.choice(
-                    ["Седмични дни", "Уикенди", "Всеки ден", "По договаряне"]
-                ),
-                bio=f"Тестов доброволец с опит в {random.choice(help_categories).lower()}. {fake.text(max_nb_chars=100)}",
-                verified=random.choice([True, False]),
-                active=random.choice([True, True, True, False]),  # 75% активни
-                created_at=fake.date_time_between(start_date="-6M", end_date="now"),
+                is_active=random.choice([True, True, True, False]),  # 75% активни
             )
             volunteers.append(volunteer)
             db.session.add(volunteer)
@@ -206,17 +205,10 @@ def create_test_database():
                 phone=fake.phone_number()[:15],
                 title=title,
                 description=f"[TEST] {fake.text(max_nb_chars=200)}",
-                location=random.choice(bulgarian_cities),
-                category=category,
-                urgency=random.choice(["Нисък", "Среден", "Висок", "Спешен"]),
+                message=f"[TEST] {fake.text(max_nb_chars=200)}",
+                priority=random.choice(["low", "normal", "urgent"]),
                 status=random.choice(request_statuses),
-                created_at=created_at,
-                updated_at=created_at + timedelta(days=random.randint(0, 30)),
             )
-
-            # Добавяне на assigned_volunteer_id за част от заявките
-            if help_request.status in ["В процес", "Завършена"] and volunteers:
-                help_request.assigned_volunteer_id = random.choice(volunteers).id
 
             help_requests.append(help_request)
             db.session.add(help_request)
@@ -338,25 +330,14 @@ def create_test_database():
         print(f"  📝 Заявки за помощ: {len(help_requests)}")
         print(f"  📊 Analytics събития: {len(analytics_events)}")
 
-        # Разпределение по категории
-        category_count = {}
+        # Разпределение по приоритети (тъй като няма category поле)
+        priority_count = {}
         for req in help_requests:
-            category_count[req.category] = category_count.get(req.category, 0) + 1
+            priority_count[req.priority] = priority_count.get(req.priority, 0) + 1
 
-        print("\n🏷️ Разпределение по категории:")
-        for category, count in sorted(category_count.items()):
-            print(f"  • {category}: {count} заявки")
-
-        # Разпределение по градове
-        city_count = {}
-        for req in help_requests:
-            city_count[req.location] = city_count.get(req.location, 0) + 1
-
-        print("\n🏙️ Топ 10 градове по брой заявки:")
-        for city, count in sorted(city_count.items(), key=lambda x: x[1], reverse=True)[
-            :10
-        ]:
-            print(f"  • {city}: {count} заявки")
+        print("\n�️ Разпределение по приоритети:")
+        for priority, count in sorted(priority_count.items()):
+            print(f"  • {priority}: {count} заявки")
 
         # Разпределение по статуси
         status_count = {}

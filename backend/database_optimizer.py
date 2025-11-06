@@ -7,8 +7,8 @@ Performance Test - Database Indexing Implementation
 ИНДЕКСИРАНЕ НА БАЗАТА ДАННИ за 60-90% подобрение на SQL заявките.
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(
     0,
@@ -16,8 +16,8 @@ sys.path.insert(
 )
 
 import sqlite3
-from datetime import datetime
 import time
+from datetime import datetime
 
 
 class DatabaseIndexOptimizer:

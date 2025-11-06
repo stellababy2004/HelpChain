@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>500 - Вътрешна грешка на сървъра</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: white;
+      }
+      .error-container {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2rem;
+        border-radius: 15px;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+      }
+      .error-code {
+        font-size: 6rem;
+        font-weight: bold;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .error-message {
+        font-size: 1.5rem;
+        margin: 1rem 0;
+      }
+      .error-description {
+        font-size: 1rem;
+        margin: 1rem 0 2rem 0;
+        opacity: 0.9;
+      }
+      .back-button {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #ff4757;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        transition: background 0.3s ease;
+      }
+      .back-button:hover {
+        background: #ff3838;
+      }
+      .contact-info {
+        margin-top: 2rem;
+        font-size: 0.9rem;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="error-container">
+      <h1 class="error-code">500</h1>
+      <h2 class="error-message">Вътрешна грешка на сървъра</h2>
+      <p class="error-description">
+        Възникна неочаквана грешка. Нашият екип е уведомен и работи по проблема.
+      </p>
+      <a href="/" class="back-button">Към началната страница</a>
+      <div class="contact-info">
+        <p>Ако проблемът продължава, свържете се с администратора.</p>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,17 +1,68 @@
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
+Subject: HelpChain - Код за достъп
+To: integration@test.com
 From: contact@helpchain.live
 
-Здравейте,
+Здравейте Integration Test Volunteer,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Получен е опит за вход в доброволческия панел на HelpChain.
 
-Код за верификация: 749236
+Вашият код за достъп: 229965
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 11:50:37
+Кодът е валиден за 15 минути.
+
+Ако това не сте вие, моля игнорирайте това съобщение.
+
+С уважение,
+HelpChain системата
+
+==================================================
+Subject: HelpChain - Код за достъп
+To: integration@test.com
+From: contact@helpchain.live
+
+Здравейте Integration Test Volunteer,
+
+Получен е опит за вход в доброволческия панел на HelpChain.
+
+Вашият код за достъп: 123886
+
+Кодът е валиден за 15 минути.
+
+Ако това не сте вие, моля игнорирайте това съобщение.
+
+С уважение,
+HelpChain системата
+
+==================================================
+Subject: HelpChain - Код за достъп
+To: integration@test.com
+From: noreply@helpchain.test
+
+Здравейте Integration Test Volunteer,
+
+Получен е опит за вход в доброволческия панел на HelpChain.
+
+Вашият код за достъп: 322600
+
+Кодът е валиден за 15 минути.
+
+Ако това не сте вие, моля игнорирайте това съобщение.
+
+С уважение,
+HelpChain системата
+
+==================================================
+Subject: HelpChain - Код за достъп
+To: integration@test.com
+From: noreply@helpchain.test
+
+Здравейте Integration Test Volunteer,
+
+Получен е опит за вход в доброволческия панел на HelpChain.
+
+Вашият код за достъп: 710644
+
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -21,18 +72,18 @@ HelpChain системата
 ==================================================
 Subject: HelpChain - Код за верификация на администратор
 To: contact@helpchain.live
-From: contact@helpchain.live
+From: noreply@helpchain.test
 
 Здравейте,
 
 Получен е опит за вход в администраторския панел на HelpChain.
 
-Код за верификация: 442367
+Код за верификация: 733090
 
 Детайли за достъпа:
 - IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 11:50:39
+- Браузър: Werkzeug/2.3.7
+- Време: 2025-10-30 17:07:41
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -42,18 +93,18 @@ HelpChain системата
 ==================================================
 Subject: HelpChain - Код за верификация на администратор
 To: contact@helpchain.live
-From: contact@helpchain.live
+From: noreply@helpchain.test
 
 Здравейте,
 
 Получен е опит за вход в администраторския панел на HelpChain.
 
-Код за верификация: 303486
+Код за верификация: 530279
 
 Детайли за достъпа:
 - IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 11:50:40
+- Браузър: Werkzeug/2.3.7
+- Време: 2025-10-30 17:11:34
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -61,20 +112,45 @@ From: contact@helpchain.live
 HelpChain системата
 
 ==================================================
-Subject: HelpChain - Код за верификация на администратор
+Subject: Нов доброволец в HelpChain
 To: contact@helpchain.live
-From: contact@helpchain.live
+From: noreply@helpchain.test
 
-Здравейте,
+Нов доброволец се е регистрирал:
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Име: Stella Barbarella
+Имейл: san4o_baby@hotmail.com
+Телефон: +33600000000
+Локация: Boulogne-Billancourt
 
-Код за верификация: 928660
+Моля, свържете се с доброволеца за допълнителна информация.
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 11:50:41
+==================================================
+Subject: Нов доброволец в HelpChain
+To: ['contact@helpchain.live']
+From: noreply@helpchain.test
+
+Нов доброволец се е регистрирал:
+
+Име: Test Volunteer
+Имейл: test@example.com
+Телефон: 123456789
+Локация: Sofia
+
+Моля, свържете се с доброволеца за допълнителна информация.
+
+==================================================
+Subject: HelpChain - Код за достъп
+To: ['test@example.com']
+From: noreply@helpchain.bg
+
+Здравейте Test Volunteer,
+
+Получен е опит за вход в доброволческия панел на HelpChain.
+
+Код за достъп: 617024
+
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -82,20 +158,17 @@ From: contact@helpchain.live
 HelpChain системата
 
 ==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
+Subject: HelpChain - Код за достъп
+To: ['test@example.com']
+From: noreply@helpchain.bg
 
-Здравейте,
+Здравейте Test Volunteer,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Получен е опит за вход в доброволческия панел на HelpChain.
 
-Код за верификация: 619959
+Код за достъп: 264474
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 11:51:37
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -103,20 +176,17 @@ From: contact@helpchain.live
 HelpChain системата
 
 ==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
+Subject: HelpChain - Код за достъп
+To: ['test@example.com']
+From: noreply@helpchain.bg
 
-Здравейте,
+Здравейте Test Volunteer,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Получен е опит за вход в доброволческия панел на HelpChain.
 
-Код за верификация: 421564
+Код за достъп: 218804
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 11:51:39
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -124,20 +194,17 @@ From: contact@helpchain.live
 HelpChain системата
 
 ==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
+Subject: HelpChain - Код за достъп
+To: ['test@example.com']
+From: noreply@helpchain.bg
 
-Здравейте,
+Здравейте Test Volunteer,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Получен е опит за вход в доброволческия панел на HelpChain.
 
-Код за верификация: 533809
+Код за достъп: 218316
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 11:51:40
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -145,20 +212,17 @@ From: contact@helpchain.live
 HelpChain системата
 
 ==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
+Subject: HelpChain - Код за достъп
+To: ['test@example.com']
+From: noreply@helpchain.bg
 
-Здравейте,
+Здравейте Test Volunteer,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Получен е опит за вход в доброволческия панел на HelpChain.
 
-Код за верификация: 725606
+Код за достъп: 859389
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 12:01:25
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -166,20 +230,17 @@ From: contact@helpchain.live
 HelpChain системата
 
 ==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
+Subject: HelpChain - Код за достъп
+To: ['test@example.com']
+From: noreply@helpchain.bg
 
-Здравейте,
+Здравейте Test Volunteer,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Получен е опит за вход в доброволческия панел на HelpChain.
 
-Код за верификация: 373160
+Код за достъп: 630801
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 12:01:27
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -187,20 +248,17 @@ From: contact@helpchain.live
 HelpChain системата
 
 ==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
+Subject: HelpChain - Код за достъп
+To: ['test@example.com']
+From: noreply@helpchain.bg
 
-Здравейте,
+Здравейте Test Volunteer,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Получен е опит за вход в доброволческия панел на HelpChain.
 
-Код за верификация: 883790
+Код за достъп: 677721
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Test Browser
-- Време: 2025-10-09 12:22:34
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 
@@ -208,83 +266,17 @@ From: contact@helpchain.live
 HelpChain системата
 
 ==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
+Subject: HelpChain - Код за достъп
+To: ['integration@test.com']
+From: noreply@helpchain.bg
 
-Здравейте,
+Здравейте Integration Test Volunteer,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+Получен е опит за вход в доброволческия панел на HelpChain.
 
-Код за верификация: 106053
+Код за достъп: 286736
 
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Test Browser
-- Време: 2025-10-09 12:23:16
-
-Ако това не сте вие, моля игнорирайте това съобщение.
-
-С уважение,
-HelpChain системата
-
-==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
-
-Здравейте,
-
-Получен е опит за вход в администраторския панел на HelpChain.
-
-Код за верификация: 576373
-
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 12:24:15
-
-Ако това не сте вие, моля игнорирайте това съобщение.
-
-С уважение,
-HelpChain системата
-
-==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
-
-Здравейте,
-
-Получен е опит за вход в администраторския панел на HelpChain.
-
-Код за верификация: 880561
-
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 12:24:16
-
-Ако това не сте вие, моля игнорирайте това съобщение.
-
-С уважение,
-HelpChain системата
-
-==================================================
-Subject: HelpChain - Код за верификация на администратор
-To: contact@helpchain.live
-From: contact@helpchain.live
-
-Здравейте,
-
-Получен е опит за вход в администраторския панел на HelpChain.
-
-Код за верификация: 366740
-
-Детайли за достъпа:
-- IP адрес: 127.0.0.1
-- Браузър: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-- Време: 2025-10-09 12:24:56
+Кодът е валиден за 15 минути.
 
 Ако това не сте вие, моля игнорирайте това съобщение.
 

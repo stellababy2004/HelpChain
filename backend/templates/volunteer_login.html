@@ -1,28 +1,40 @@
-{% extends "base.html" %} {% block title %}Вход за доброволци{% endblock %} {% block
-content %}
+{% extends "base.html" %} {% block title %}Вход за доброволци{% endblock %} {%
+block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-            <h2 class="mb-4 text-primary text-center">Вход за доброволци</h2>
-            <p class="text-muted mb-4 text-center">Влезте с вашия имейл адрес, с който сте се регистрирали като
-                доброволец.</p>
-            {% if error %}
-            <div class="alert alert-danger">{{ error }}</div>
-            {% endif %}
-            <form method="POST">
-                <div class="mb-3">
-                    <label for="email" class="form-label">Имейл адрес:</label>
-                    <input type="email" class="form-control" id="email" name="email" required autofocus
-                        placeholder="your.email@example.com" />
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Вход</button>
-            </form>
-            <div class="mt-3 text-center">
-                <p class="mb-1">Нямате регистрация като доброволец?</p>
-                <a href="{{ url_for('volunteer_register') }}" class="btn btn-outline-primary btn-sm">Регистрирайте
-                    се</a>
-            </div>
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <h2 class="mb-4 text-primary text-center">Вход за доброволци</h2>
+      <p class="text-muted mb-4 text-center">
+        Влезте с вашия имейл адрес, с който сте се регистрирали като доброволец.
+      </p>
+      {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+      <form method="POST">
+        <div class="mb-3">
+          <label for="email" class="form-label">Имейл адрес:</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            name="email"
+            required
+            autofocus
+            placeholder="your.email@example.com"
+            autocomplete="email"
+          />
         </div>
+        <button type="submit" class="btn btn-primary w-100">Вход</button>
+      </form>
+      <div class="mt-3 text-center">
+        <p class="mb-1">Нямате регистрация като доброволец?</p>
+        <a
+          href="{{ url_for('volunteer_register') }}"
+          class="btn btn-outline-primary btn-sm"
+          >Регистрирайте се</a
+        >
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}

@@ -67,7 +67,9 @@ class GlobalSearch {
           <div class="card mb-2">
             <div class="card-body">
               <h6 class="card-title">${volunteer.name}</h6>
-              <p class="card-text text-truncate-2">${volunteer.skills || "Няма описани умения"}</p>
+              <p class="card-text text-truncate-2">${
+                volunteer.skills || "Няма описани умения"
+              }</p>
               <small class="text-muted">${volunteer.location}</small>
             </div>
           </div>

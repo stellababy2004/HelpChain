@@ -1,0 +1,17 @@
+from _dispatch_email import _dispatch_email
+
+# Данни за шаблона
+context = {
+    "recipient_name": "Иван Иванов",
+    "custom_message": "Благодарим ви, че се регистрирахте в HelpChain!",
+    "action_url": "https://helpchain.bg/activate/abc123",
+}
+
+# Изпращане на имейл с шаблон
+_dispatch_email(
+    subject="Добре дошли в HelpChain!",
+    recipients=["ivan.ivanov@example.com"],
+    body="Това е fallback текст, ако HTML не се зареди.",
+    template="welcome_email.html",  # шаблонът трябва да е в templates/
+    context=context,
+)

@@ -2,25 +2,24 @@
 Admin routes for role and user management
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-
-# Try relative imports first, fall back to absolute imports for standalone execution
-try:
-    from .models import User, Role, Permission, UserRole, RolePermission
-    from .extensions import db
-    from .permissions import require_permission
-except ImportError:
-    from models import User, Role, Permission, UserRole, RolePermission
-    from extensions import db
-    from permissions import require_permission
-
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from werkzeug.security import generate_password_hash
+
+from backend.extensions import db
+from models import (
+    Permission,
+    Role,
+    RolePermission,
+    User,
+    UserRole,
+)  # Import from main models.py
+from permissions import require_admin_login
 
 admin_roles_bp = Blueprint("admin_roles", __name__)
 
 
 @admin_roles_bp.route("/")
-@require_permission("manage_roles")
+@require_admin_login
 def roles_dashboard():
     """Main roles and permissions dashboard"""
     roles = Role.query.all()
@@ -50,7 +49,7 @@ def roles_dashboard():
 
 
 @admin_roles_bp.route("/roles/create", methods=["GET", "POST"])
-@require_permission("manage_roles")
+@require_admin_login
 def create_role():
     """Create a new role"""
     if request.method == "POST":
@@ -91,7 +90,7 @@ def create_role():
 
 
 @admin_roles_bp.route("/roles/<int:role_id>/edit", methods=["GET", "POST"])
-@require_permission("manage_roles")
+@require_admin_login
 def edit_role(role_id):
     """Edit an existing role"""
     role = Role.query.get_or_404(role_id)
@@ -147,7 +146,7 @@ def edit_role(role_id):
 
 
 @admin_roles_bp.route("/roles/<int:role_id>/delete", methods=["POST"])
-@require_permission("manage_roles")
+@require_admin_login
 def delete_role(role_id):
     """Delete a role"""
     role = Role.query.get_or_404(role_id)
@@ -176,7 +175,7 @@ def delete_role(role_id):
 
 
 @admin_roles_bp.route("/users/<int:user_id>/roles", methods=["GET", "POST"])
-@require_permission("manage_users")
+@require_admin_login
 def manage_user_roles(user_id):
     """Manage roles for a specific user"""
     user = User.query.get_or_404(user_id)
@@ -209,7 +208,7 @@ def manage_user_roles(user_id):
 
 
 @admin_roles_bp.route("/users/create", methods=["GET", "POST"])
-@require_permission("manage_users")
+@require_admin_login
 def create_user():
     """Create a new user"""
     if request.method == "POST":
@@ -245,7 +244,7 @@ def create_user():
 
         # Assign roles
         for role_id in role_ids:
-            role = Role.query.get(int(role_id))
+            role = db.session.get(Role, int(role_id))
             if role:
                 user_role = UserRole(
                     user_id=user.id, role_id=role.id, assigned_by=session.get("user_id")
@@ -261,7 +260,7 @@ def create_user():
 
 
 @admin_roles_bp.route("/users/<int:user_id>/toggle", methods=["POST"])
-@require_permission("manage_users")
+@require_admin_login
 def toggle_user_status(user_id):
     """Toggle user active status"""
     user = User.query.get_or_404(user_id)
@@ -280,7 +279,7 @@ def toggle_user_status(user_id):
 
 
 @admin_roles_bp.route("/permissions/create", methods=["GET", "POST"])
-@require_permission("manage_roles")
+@require_admin_login
 def create_permission():
     """Create a new permission"""
     if request.method == "POST":

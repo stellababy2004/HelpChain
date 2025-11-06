@@ -1,58 +1,77 @@
+
+# AJAX endpoint for admin dashboard: all requests as JSON
+@app.route("/admin/api/requests", methods=["GET"])
+@require_admin_login
+def admin_api_requests():
+    requests = HelpRequest.query.all()
+    items = []
+    for r in requests:
+        items.append({
+            "id": r.id,
+            "name": r.name,
+            "description": r.description,
+            "status": r.status,
+        })
+    return jsonify({"items": items})
+import csv
+import json
+import logging
+import math
 import os
 import sys
-import logging
+from datetime import datetime
+from io import StringIO
+
 from dotenv import load_dotenv
+from flask import (
+    Flask,
+    Response,
+    # current_app,  # Премахнат за избягване на circular import
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from flask_babel import Babel, refresh
+from flask_babel import gettext as _
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_socketio import emit, join_room, leave_room
+from flask_talisman import Talisman
+from jinja2 import ChoiceLoader, FileSystemLoader
+from sqlalchemy.exc import OperationalError
 
 # All imports at the top
 from werkzeug.utils import secure_filename
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    session,
-    jsonify,
-    Response,
-    # current_app,  # Премахнат за избягване на circular import
-)
-from flask_babel import Babel, gettext as _, refresh
-from io import StringIO
-import csv
-from jinja2 import ChoiceLoader, FileSystemLoader
-import math
-from datetime import datetime
-import json
-from .extensions import db
-from .models import (
-    User,
-    Volunteer,
-    RoleEnum,
-    ChatRoom,
-    ChatParticipant,
-    ChatMessage,
-    AdminUser,
-    HelpRequest,
-)
-from .models_with_analytics import Task
-from flask_mail import Mail
-from flask_migrate import Migrate
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from sqlalchemy.exc import OperationalError
-from flask_socketio import SocketIO, emit, join_room, leave_room
-from flask_talisman import Talisman
-from .permissions import (
-    require_permission,
-    require_admin_login,
-    # initialize_default_roles_and_permissions,
-)
+
 from admin_roles import admin_roles_bp
 from routes.notifications import notification_bp
 
 # Import smart matching engine
 from smart_matching import smart_matching_engine
+
+from .extensions import db
+from .models import (
+    AdminUser,
+    ChatMessage,
+    ChatParticipant,
+    ChatRoom,
+    HelpRequest,
+    RoleEnum,
+    User,
+    Volunteer,
+)
+from .models_with_analytics import Task
+from .permissions import (
+    require_admin_login,
+    # initialize_default_roles_and_permissions,
+    require_permission,
+)
 
 # Sentry for error monitoring
 # import sentry_sdk
@@ -532,7 +551,7 @@ def admin_login():
         ):
             logger.info(f"Admin login successful for {username}")
             # Check if 2FA is enabled
-            if admin_user.twofa_enabled:
+            if admin_user.two_factor_enabled:
                 logger.info("2FA is enabled, redirecting to 2FA verification")
                 session["pending_2fa"] = True
                 session["pending_admin_id"] = admin_user.id
@@ -1673,7 +1692,7 @@ def update_volunteer_settings():
         return jsonify({"success": False, "message": "Доброволецът не е намерен"}), 404
 
     try:
-        data = request.get_json()
+        request.get_json()
         # Here you can save settings to volunteer model or separate settings table
         # For now, just return success
         return jsonify({"success": True, "message": "Настройките са запазени"})
@@ -1874,18 +1893,19 @@ def export_volunteers_json(volunteers):
 def export_volunteers_pdf(volunteers):
     """Export volunteers to PDF format"""
     try:
+        from io import BytesIO
+
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+        from reportlab.lib.units import inch
         from reportlab.platypus import (
+            Paragraph,
             SimpleDocTemplate,
+            Spacer,
             Table,
             TableStyle,
-            Paragraph,
-            Spacer,
         )
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import inch
-        from io import BytesIO
 
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4)
@@ -2825,6 +2845,7 @@ def handle_file_upload(data):
     try:
         import base64
         import os
+
         from werkzeug.utils import secure_filename
 
         # Decode base64 file
@@ -2981,6 +3002,23 @@ def admin_panel():
             "</head><body><h1>Admin panel (placeholder)</h1><p>Шаблонът admin.html не е намерен.</p></body></html>",
             200,
         )
+
+
+@app.route("/admin/api/volunteers", methods=["GET"])
+@require_admin_login
+def admin_api_volunteers():
+    volunteers = Volunteer.query.all()
+    items = []
+    for v in volunteers:
+        items.append({
+            "id": v.id,
+            "name": v.name,
+            "email": v.email,
+            "phone": v.phone,
+            "location": getattr(v, "location", ""),
+            "skills": v.skills if hasattr(v, "skills") else "",
+        })
+    return jsonify({"items": items})
 
 
 # Добави mock за mail.send за тестване (симулира изпращане без реални SMTP заявки)
@@ -3635,6 +3673,7 @@ def api_volunteer_task_recommendations(volunteer_id):
     """Препоръчва задачи за конкретен доброволец"""
     try:
         from smart_matching import smart_matching_engine
+
         from .models_with_analytics import Task
 
         # Вземи отворени задачи

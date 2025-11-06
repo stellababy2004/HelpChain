@@ -1,34 +1,59 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Модул за административен анализ и статистики
 Съдържа функции за изчисляване на статистики в реално време,
 филтриране, търсене и геолокационна аналитика
 """
 
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from datetime import datetime, timedelta
-from sqlalchemy import func, or_
-from models import User, Volunteer, HelpRequest
-from models import AuditLog
 from collections import defaultdict
+from datetime import datetime, timedelta
 
-# Import db from extensions
+from sqlalchemy import func, or_
+
+from models import AuditLog, HelpRequest, User, Volunteer
+
+# Import db/cache from extensions with fallback
 try:
-    from .extensions import db
-except ImportError:
-    from extensions import db
+    from . import extensions as _extensions
+except ImportError:  # pragma: no cover - fallback for standalone execution
+    import extensions as _extensions  # type: ignore
+
+db = _extensions.db
+cache = getattr(_extensions, "cache", None)
 
 
 class AnalyticsEngine:
     """Клас за анализ на данни и статистики"""
 
     @staticmethod
-    def get_dashboard_stats(days=30):
+    def _normalize_period(days=30, start_date=None, end_date=None):
+        """Нормализира периода и връща (start_datetime, end_datetime, дни)."""
+        end = end_date or datetime.now()
+        start = start_date or end - timedelta(days=max(days - 1, 0))
+
+        if start > end:
+            start, end = end, start
+
+        if isinstance(start, datetime):
+            start_dt = start.replace(hour=0, minute=0, second=0, microsecond=0)
+        else:
+            start_dt = datetime.combine(start, datetime.min.time())
+
+        if isinstance(end, datetime):
+            end_dt = end.replace(hour=23, minute=59, second=59, microsecond=999999)
+        else:
+            end_dt = datetime.combine(end, datetime.max.time())
+
+        period_days = max(1, (end_dt.date() - start_dt.date()).days + 1)
+        return start_dt, end_dt, period_days
+
+    @staticmethod
+    def get_dashboard_stats(days=30, start_date=None, end_date=None):
         """
         Получава основни статистики за dashboard
 
@@ -38,23 +63,44 @@ class AnalyticsEngine:
         Returns:
             dict: Речник със статистики
         """
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=days)
+        start_date, end_date, period_days = AnalyticsEngine._normalize_period(
+            days=days, start_date=start_date, end_date=end_date
+        )
 
-        # Основни числа
-        total_requests = db.session.query(HelpRequest).count()
+        cache_key = "admin_dashboard_stats"
+        if cache:
+            cache_key = "_".join(
+                [
+                    cache_key,
+                    start_date.strftime("%Y%m%d"),
+                    end_date.strftime("%Y%m%d"),
+                ]
+            )
+            cached_stats = cache.get(cache_key)
+            if cached_stats is not None:
+                return cached_stats
         total_volunteers = db.session.query(Volunteer).count()
         total_users = db.session.query(User).count()
 
-        # Заявки за периода
-        period_requests = (
-            db.session.query(HelpRequest)
-            .filter(HelpRequest.created_at >= start_date)
-            .count()
+        total_requests = (
+            db.session.query(func.count(HelpRequest.id))
+            .filter(
+                HelpRequest.created_at >= start_date,
+                HelpRequest.created_at <= end_date,
+            )
+            .scalar()
+            or 0
         )
+
+        period_requests = total_requests
+
         status_counts = (
             db.session.query(
                 HelpRequest.status, func.count(HelpRequest.id).label("count")
+            )
+            .filter(
+                HelpRequest.created_at >= start_date,
+                HelpRequest.created_at <= end_date,
             )
             .group_by(HelpRequest.status)
             .all()
@@ -63,15 +109,19 @@ class AnalyticsEngine:
         status_stats = {status: count for status, count in status_counts}
 
         # Дневни статистики за графики
-        daily_stats = AnalyticsEngine.get_daily_stats(days)
+        daily_stats = AnalyticsEngine.get_daily_stats(
+            days=period_days, start_date=start_date, end_date=end_date
+        )
 
         # Геолокационни данни
         location_stats = AnalyticsEngine.get_location_stats()
 
         # Категории заявка (ако имаме поле category)
-        category_stats = AnalyticsEngine.get_category_stats()
+        category_stats = AnalyticsEngine.get_category_stats(
+            start_date=start_date, end_date=end_date
+        )
 
-        return {
+        stats = {
             "totals": {
                 "requests": total_requests,
                 "volunteers": total_volunteers,
@@ -82,30 +132,47 @@ class AnalyticsEngine:
             "daily_stats": daily_stats,
             "location_stats": location_stats,
             "category_stats": category_stats,
-            "period_days": days,
+            "period_days": period_days,
+            "period": {
+                "start": start_date.isoformat(),
+                "end": end_date.isoformat(),
+                "days": period_days,
+            },
         }
 
-    @staticmethod
-    def get_daily_stats(days=30):
-        """Получава дневни статистики за последните N дни"""
-        end_date = datetime.now().date()
-        start_date = end_date - timedelta(days=days)
+        stats["performance_metrics"] = AnalyticsEngine.get_performance_metrics()
+        stats["real_time"] = AnalyticsEngine.get_live_stats()
 
-        # Заявки по дни
+        if cache:
+            cache.set(cache_key, stats, timeout=60)
+
+        return stats
+
+    @staticmethod
+    def get_daily_stats(days=30, start_date=None, end_date=None):
+        """Получава дневни статистики за избрания период."""
+        start_dt, end_dt, _ = AnalyticsEngine._normalize_period(
+            days=days, start_date=start_date, end_date=end_date
+        )
+        start_date_only = start_dt.date()
+        end_date_only = end_dt.date()
+
         daily_requests = (
             db.session.query(
                 func.date(HelpRequest.created_at).label("date"),
                 func.count(HelpRequest.id).label("count"),
             )
-            .filter(func.date(HelpRequest.created_at) >= start_date)
+            .filter(
+                func.date(HelpRequest.created_at) >= start_date_only,
+                func.date(HelpRequest.created_at) <= end_date_only,
+            )
             .group_by(func.date(HelpRequest.created_at))
             .all()
         )
 
-        # Създаваме списък за всички дни
         daily_data = {}
-        current_date = start_date
-        while current_date <= end_date:
+        current_date = start_date_only
+        while current_date <= end_date_only:
             daily_data[current_date.strftime("%Y-%m-%d")] = {
                 "date": current_date.strftime("%d.%m"),
                 "requests": 0,
@@ -126,6 +193,42 @@ class AnalyticsEngine:
                 daily_data[date_str]["requests"] = count
 
         return list(daily_data.values())
+
+    @staticmethod
+    def _add_months(dt: datetime, months: int):
+        """Връща нов datetime обект, изместен с указан брой месеци."""
+        year = dt.year + (dt.month - 1 + months) // 12
+        month = (dt.month - 1 + months) % 12 + 1
+        return datetime(year, month, 1)
+
+    @staticmethod
+    def _generate_month_series(end_date: datetime, months: int):
+        """Генерира списък с първия ден на всеки месец (най-стар -> най-нов)."""
+        if months <= 0:
+            return []
+
+        end_month = datetime(end_date.year, end_date.month, 1)
+        start_month = AnalyticsEngine._add_months(end_month, -(months - 1))
+
+        series = []
+        current = start_month
+        for _ in range(months):
+            series.append(current)
+            current = AnalyticsEngine._add_months(current, 1)
+        return series
+
+    @staticmethod
+    def _month_group_expression(column):
+        """Връща SQLAlchemy израз за групиране по месец в зависимост от СУБД."""
+        bind = db.session.get_bind() if db.session else None
+        dialect_name = getattr(getattr(bind, "dialect", None), "name", "sqlite")
+
+        if dialect_name == "postgresql":
+            return func.to_char(column, "YYYY-MM")
+        if dialect_name in {"mysql", "mariadb"}:
+            return func.date_format(column, "%Y-%m")
+        # SQLite и останалите използват strftime
+        return func.strftime("%Y-%m", column)
 
     @staticmethod
     def get_location_stats():
@@ -149,7 +252,7 @@ class AnalyticsEngine:
         return location_data
 
     @staticmethod
-    def get_category_stats():
+    def get_category_stats(start_date=None, end_date=None):
         """Получава статистики по категории"""
         # Симулираме категории базирано на ключови думи в описанието
         categories = {
@@ -161,14 +264,25 @@ class AnalyticsEngine:
             "друго": [],
         }
 
-        # Получаваме всички заявки
-        requests = db.session.query(HelpRequest).all()
+        query = db.session.query(
+            HelpRequest.description,
+            HelpRequest.message,
+            HelpRequest.title,
+            HelpRequest.created_at,
+        )
+
+        if start_date:
+            query = query.filter(HelpRequest.created_at >= start_date)
+        if end_date:
+            query = query.filter(HelpRequest.created_at <= end_date)
+
+        requests = query.all()
         category_counts = defaultdict(int)
 
-        for req in requests:
-            description = (req.description or "").lower()
-            message = (req.message or "").lower()
-            title = (req.title or "").lower()
+        for description, message, title, _ in requests:
+            description = (description or "").lower()
+            message = (message or "").lower()
+            title = (title or "").lower()
 
             text = f"{description} {message} {title}"
 
@@ -194,50 +308,129 @@ class AnalyticsEngine:
     @staticmethod
     def get_trends_data(months=12):
         """Получава трендове за определен период"""
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=months * 30)
+        if months <= 0:
+            return {"labels": [], "requests": [], "volunteers": [], "completed": []}
 
-        trends = {"labels": [], "requests": [], "volunteers": [], "completed": []}
+        try:
+            end_date = datetime.now()
+            month_series = AnalyticsEngine._generate_month_series(end_date, months)
+            if not month_series:
+                return {"labels": [], "requests": [], "volunteers": [], "completed": []}
 
-        # Групиране по месеци
-        for i in range(months):
-            month_start = start_date + timedelta(days=i * 30)
-            month_end = month_start + timedelta(days=30)
+            start_period = month_series[0]
+            end_period = AnalyticsEngine._add_months(month_series[-1], 1)
 
-            month_requests = (
-                db.session.query(HelpRequest)
-                .filter(
-                    HelpRequest.created_at >= month_start,
-                    HelpRequest.created_at < month_end,
+            month_expr = AnalyticsEngine._month_group_expression(HelpRequest.created_at)
+
+            request_rows = (
+                db.session.query(
+                    month_expr.label("month"), func.count(HelpRequest.id).label("count")
                 )
-                .count()
+                .filter(
+                    HelpRequest.created_at >= start_period,
+                    HelpRequest.created_at < end_period,
+                )
+                .group_by("month")
+                .all()
             )
 
-            month_completed = (
-                db.session.query(HelpRequest)
+            completed_rows = (
+                db.session.query(
+                    month_expr.label("month"), func.count(HelpRequest.id).label("count")
+                )
                 .filter(
-                    HelpRequest.created_at >= month_start,
-                    HelpRequest.created_at < month_end,
+                    HelpRequest.created_at >= start_period,
+                    HelpRequest.created_at < end_period,
                     HelpRequest.status == "completed",
                 )
-                .count()
+                .group_by("month")
+                .all()
             )
 
-            month_volunteers = (
-                db.session.query(Volunteer)
-                .filter(
-                    Volunteer.created_at >= month_start,
-                    Volunteer.created_at < month_end,
+            volunteer_expr = AnalyticsEngine._month_group_expression(
+                Volunteer.created_at
+            )
+            volunteer_rows = (
+                db.session.query(
+                    volunteer_expr.label("month"),
+                    func.count(Volunteer.id).label("count"),
                 )
-                .count()
+                .filter(
+                    Volunteer.created_at >= start_period,
+                    Volunteer.created_at < end_period,
+                )
+                .group_by("month")
+                .all()
             )
 
-            trends["labels"].append(month_start.strftime("%Y-%m"))
-            trends["requests"].append(month_requests)
-            trends["completed"].append(month_completed)
-            trends["volunteers"].append(month_volunteers)
+            request_counts = {row.month: row.count for row in request_rows if row.month}
+            completed_counts = {
+                row.month: row.count for row in completed_rows if row.month
+            }
+            volunteer_counts = {
+                row.month: row.count for row in volunteer_rows if row.month
+            }
 
-        return trends
+            labels = [month.strftime("%Y-%m") for month in month_series]
+
+            return {
+                "labels": labels,
+                "requests": [request_counts.get(label, 0) for label in labels],
+                "completed": [completed_counts.get(label, 0) for label in labels],
+                "volunteers": [volunteer_counts.get(label, 0) for label in labels],
+            }
+
+        except Exception as exc:  # pragma: no cover - safety fallback
+            print(f"Trend aggregation failed, falling back to legacy approach: {exc}")
+
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=months * 30)
+
+            trends = {
+                "labels": [],
+                "requests": [],
+                "volunteers": [],
+                "completed": [],
+            }
+
+            for i in range(months):
+                month_start = start_date + timedelta(days=i * 30)
+                month_end = month_start + timedelta(days=30)
+
+                month_requests = (
+                    db.session.query(HelpRequest)
+                    .filter(
+                        HelpRequest.created_at >= month_start,
+                        HelpRequest.created_at < month_end,
+                    )
+                    .count()
+                )
+
+                month_completed = (
+                    db.session.query(HelpRequest)
+                    .filter(
+                        HelpRequest.created_at >= month_start,
+                        HelpRequest.created_at < month_end,
+                        HelpRequest.status == "completed",
+                    )
+                    .count()
+                )
+
+                month_volunteers = (
+                    db.session.query(Volunteer)
+                    .filter(
+                        Volunteer.created_at >= month_start,
+                        Volunteer.created_at < month_end,
+                    )
+                    .count()
+                )
+
+                trends["labels"].append(month_start.strftime("%Y-%m"))
+                trends["requests"].append(month_requests)
+                trends["completed"].append(month_completed)
+                trends["volunteers"].append(month_volunteers)
+
+            return trends
 
     @staticmethod
     def get_predictions(months=3):

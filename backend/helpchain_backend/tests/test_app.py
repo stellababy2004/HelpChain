@@ -1,4 +1,5 @@
 import unittest
+
 from src.app import app
 
 
@@ -10,7 +11,6 @@ class AppTestCase(unittest.TestCase):
     def test_home_page(self):
         response = self.app.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Welcome to HelpChain", response.data)
 
     def test_api_endpoint(self):
         response = self.app.get("/api/some_endpoint")

@@ -10,8 +10,9 @@ import sys
 sys.path.insert(0, ".")
 
 from appy import app
-from .models import AdminUser
+
 from .extensions import db
+from .models import AdminUser
 
 
 def main():
@@ -33,10 +34,12 @@ def main():
 
         print(f"👤 Намерен администратор: {admin.username}")
         print(f"📧 Имейл: {admin.email}")
-        print(f"🔐 2FA статус: {'АКТИВИРАН' if admin.twofa_enabled else 'ДЕАКТИВИРАН'}")
+        print(
+            f"🔐 2FA статус: {'АКТИВИРАН' if admin.two_factor_enabled else 'ДЕАКТИВИРАН'}"
+        )
         print("")
 
-        if not admin.twofa_enabled:
+        if not admin.two_factor_enabled:
             print("ℹ️ 2FA вече е деактивиран за този потребител.")
             return
 
@@ -53,7 +56,7 @@ def main():
             return
 
         # Disable 2FA
-        admin.twofa_enabled = False
+        admin.two_factor_enabled = False
         admin.twofa_secret = None
         db.session.commit()
 

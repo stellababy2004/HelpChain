@@ -4,13 +4,13 @@ Secrets Rotation Script for HelpChain
 Handles periodic rotation of SECRET_KEY and API keys
 """
 
+import argparse
+import json
 import os
 import secrets
 import string
-import json
-from datetime import datetime
-import argparse
 import sys
+from datetime import datetime
 
 
 def generate_secret_key(length=64):
@@ -35,13 +35,13 @@ def rotate_secrets(env_file=".env", backup=True):
     # Backup current file
     if backup:
         backup_file = f"{env_file}.backup.{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        with open(env_file, "r") as src, open(backup_file, "w") as dst:
+        with open(env_file) as src, open(backup_file, "w") as dst:
             dst.write(src.read())
         print(f"✅ Backup created: {backup_file}")
 
     # Read current environment
     env_vars = {}
-    with open(env_file, "r") as f:
+    with open(env_file) as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#"):
@@ -105,7 +105,7 @@ def check_rotation_schedule(last_rotation_file=".last_rotation"):
     """Check if rotation is due (recommended: every 90 days)"""
 
     if os.path.exists(last_rotation_file):
-        with open(last_rotation_file, "r") as f:
+        with open(last_rotation_file) as f:
             last_rotation = datetime.fromisoformat(f.read().strip())
 
         days_since_rotation = (datetime.now() - last_rotation).days

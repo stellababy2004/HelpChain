@@ -7,11 +7,11 @@
 """
 
 import os
-import ssl
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import ssl
 from email.header import Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # Зареждаме environment променливи
 from dotenv import load_dotenv
@@ -24,7 +24,7 @@ def _build_email(
 ):
     if not os.path.exists(template_path):
         raise FileNotFoundError(template_path)
-    with open(template_path, "r", encoding="utf-8") as f:
+    with open(template_path, encoding="utf-8") as f:
         html_body = f.read()
     html_body = html_body.replace("{{volunteer_name}}", volunteer_name)
     html_body = html_body.replace("{{volunteer_email}}", volunteer_email)

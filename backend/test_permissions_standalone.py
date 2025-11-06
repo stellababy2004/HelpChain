@@ -1,60 +1,91 @@
-import sys
-
-sys.path.insert(0, ".")
-
-from flask import Flask
-from .models import db, User, Role, UserRole
-from permissions import initialize_default_roles_and_permissions
+import pytest
+from flask import Flask, session
 from werkzeug.security import generate_password_hash
 
-# Create a simple Flask app for testing
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-app.config["SECRET_KEY"] = "test"
-db.init_app(app)
+from extensions import db
+from models import Permission, PermissionEnum, Role, User, UserRole
+from permissions import has_permission, initialize_default_roles_and_permissions
 
-with app.app_context():
-    db.create_all()
-    initialize_default_roles_and_permissions()
 
-    # Create a test admin user
-    admin_role = Role.query.filter_by(name="Администратор").first()
-    if not admin_role:
-        print("Admin role not found")
-        exit(1)
-
-    # Create test user
-    test_user = User(
-        username="testadmin",
-        email="test@example.com",
-        password_hash=generate_password_hash("password"),
-        role="admin",  # Use English enum value
+@pytest.fixture
+def standalone_app():
+    app = Flask("permissions_standalone")
+    app.config.update(
+        TESTING=True,
+        SECRET_KEY="standalone-secret",
+        SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
-    db.session.add(test_user)
-    db.session.flush()  # Get the user ID before committing
+    db.init_app(app)
 
-    # Assign admin role via UserRole
-    user_role = UserRole(user_id=test_user.id, role_id=admin_role.id)
-    db.session.add(user_role)
+    with app.app_context():
+        db.create_all()
 
-    db.session.commit()
-    print(f"Created test admin user: {test_user.username}")
-    print(f"User has role: {admin_role.name}")
-    print(f"Role has {len(admin_role.role_permissions)} permissions")
+    yield app
 
-    # Test permission checking - create a mock session
-    import flask
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
 
-    # Create a mock session
-    with app.test_request_context():
-        flask.session["user_id"] = test_user.id
 
-        # Test with user that has admin role
-        admin_permissions = ["admin_access", "manage_users", "view_volunteers"]
-        for perm in admin_permissions:
-            from permissions import has_permission
+@pytest.fixture
+def app_with_defaults(standalone_app):
+    with standalone_app.app_context():
+        initialize_default_roles_and_permissions()
+    return standalone_app
 
-            has_perm = has_permission(perm)
-            print(f'User has permission "{perm}": {has_perm}')
 
-    print("Permission testing completed successfully!")
+@pytest.fixture
+def standalone_admin_user_id(app_with_defaults):
+    with app_with_defaults.app_context():
+        admin_role = Role.query.filter_by(name="Администратор").first()
+        assert admin_role is not None, "Expected default admin role to be created"
+
+        user = User(
+            username="standalone_admin",
+            email="standalone@example.com",
+            password_hash=generate_password_hash("password123"),
+        )
+        db.session.add(user)
+        db.session.flush()
+        db.session.add(UserRole(user_id=user.id, role_id=admin_role.id))
+        db.session.commit()
+
+        return user.id
+
+
+def test_initialize_default_roles_is_idempotent(standalone_app):
+    with standalone_app.app_context():
+        initialize_default_roles_and_permissions()
+        initial_role_count = Role.query.count()
+        initial_permission_count = Permission.query.count()
+
+        initialize_default_roles_and_permissions()
+
+        assert Role.query.count() == initial_role_count
+        assert Permission.query.count() == initial_permission_count
+
+
+def test_has_permission_with_session_context(
+    app_with_defaults, standalone_admin_user_id
+):
+    with app_with_defaults.test_request_context():
+        session["user_id"] = standalone_admin_user_id
+        assert has_permission(PermissionEnum.ADMIN_ACCESS.value)
+        assert has_permission(PermissionEnum.MANAGE_USERS.value)
+
+
+def test_has_permission_denies_missing_role(app_with_defaults):
+    with app_with_defaults.app_context():
+        user = User(
+            username="no_role_user",
+            email="norole@example.com",
+            password_hash=generate_password_hash("password123"),
+        )
+        db.session.add(user)
+        db.session.commit()
+        user_id = user.id
+
+    with app_with_defaults.test_request_context():
+        session["user_id"] = user_id
+        assert not has_permission(PermissionEnum.ADMIN_ACCESS.value)

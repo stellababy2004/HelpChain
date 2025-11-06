@@ -4,12 +4,12 @@ HelpChain Server Launcher
 Simple script to start the HelpChain Flask application
 """
 
-import sys
 import os
-import subprocess
-import time
-import signal
 import platform
+import signal
+import subprocess
+import sys
+import time
 
 
 def signal_handler(signum, frame):
@@ -54,7 +54,7 @@ def main():
     print("🌟 [3/3] Starting server...")
     print("=" * 50)
     print("📍 Server URL: http://127.0.0.1:5000")
-    print("👨‍💼 Admin login: http://127.0.0.1:5000/admin_login")
+    print("👨‍💼 Admin login: http://127.0.0.1:5000/admin/login")
     print("   Username: admin")
     print("   Password: Admin123")
     print("👥 Volunteer login: http://127.0.0.1:5000/volunteer_login")

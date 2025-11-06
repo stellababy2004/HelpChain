@@ -4,9 +4,11 @@ Caching, Database optimization и API improvements
 """
 
 # from flask_caching import Cache  # Преместен вътре в класа за избягване на circular import
-from functools import wraps
 import json
+import os
+import socket
 from datetime import datetime
+from functools import wraps
 
 
 class AnalyticsCache:
@@ -15,31 +17,74 @@ class AnalyticsCache:
             Cache,
         )  # Локален import за избягване на circular import
 
-        self.cache = Cache()
+        self.cache = None
         if app:
             self.init_app(app)
 
     def init_app(self, app):
-        app.config.setdefault("CACHE_TYPE", "simple")
-        app.config.setdefault("CACHE_DEFAULT_TIMEOUT", 300)  # 5 minutes
-        self.cache.init_app(app)
+        """Initialize the cache with the Flask app"""
+        from flask_caching import Cache  # Import here for init_app method
 
-    def cached_analytics_data(self, timeout=300):
+        try:
+            # Configure cache with Redis URL
+            cache_config = PERFORMANCE_CONFIG.copy()
+            app.config.update(cache_config)
+            self.cache = Cache(app)
+            print("Cache initialized successfully")
+
+        except Exception as e:
+            # If anything fails, fallback to simple cache
+            print(f"Cache initialization failed ({e}), using simple fallback")
+            app.config["CACHE_TYPE"] = "simple"
+            app.config["CACHE_DEFAULT_TIMEOUT"] = 300
+            self.cache = Cache(app)
+
+    def cached_analytics_data(self, timeout=None):
         """Decorator за caching на analytics данни"""
 
         def decorator(f):
             @wraps(f)
             def decorated_function(*args, **kwargs):
+                # Check if cache is initialized
+                if self.cache is None:
+                    print("Cache not initialized, calling function directly")
+                    return f(*args, **kwargs)
+
                 # Създай unique cache key от параметрите
-                cache_key = (
-                    f"analytics_{f.__name__}_{hash(str(sorted(kwargs.items())))}"
-                )
+                try:
+                    cache_key = (
+                        f"analytics_{f.__name__}_{hash(str(sorted(kwargs.items())))}"
+                    )
+                except Exception as key_error:
+                    # Fallback cache key if hashing fails
+                    cache_key = f"analytics_{f.__name__}_fallback_{id(f)}"
 
                 # Провери дали има cached версия
-                result = self.cache.get(cache_key)
-                if result is None:
-                    result = f(*args, **kwargs)
-                    self.cache.set(cache_key, result, timeout=timeout)
+                try:
+                    result = self.cache.get(cache_key)
+                    if result is not None:
+                        print(f"Cache HIT for {cache_key}")
+                        return result
+                    else:
+                        print(f"Cache MISS for {cache_key}")
+                except Exception as cache_error:
+                    print(f"Cache read error: {cache_error}")
+                    # Continue without cache
+
+                # Call the function
+                print(f"Calling function {f.__name__} (cache miss)")
+                result = f(*args, **kwargs)
+
+                # Try to cache the result
+                try:
+                    cache_timeout = (
+                        timeout if timeout is not None else self.cache.default_timeout
+                    )
+                    self.cache.set(cache_key, result, timeout=cache_timeout)
+                    print(f"Cached result for {cache_key} (timeout: {cache_timeout}s)")
+                except Exception as cache_error:
+                    print(f"Cache write error: {cache_error}")
+                    # Continue without caching
 
                 return result
 
@@ -60,78 +105,422 @@ class DatabaseOptimizer:
     def create_analytics_indexes(db):
         """Създай indexes за по-бърз analytics access"""
         try:
-            # Index за timestamp queries
-            db.engine.execute(
-                """
-                CREATE INDEX IF NOT EXISTS idx_analytics_timestamp
-                ON analytics_event(timestamp DESC)
-            """
-            )
+            from sqlalchemy import inspect, text
 
-            # Index за event_type filtering
-            db.engine.execute(
-                """
-                CREATE INDEX IF NOT EXISTS idx_analytics_event_type
-                ON analytics_event(event_type)
-            """
-            )
+            inspector = inspect(db.engine)
+            existing_tables = set(inspector.get_table_names())
 
-            # Index за category filtering
-            db.engine.execute(
-                """
-                CREATE INDEX IF NOT EXISTS idx_analytics_category
-                ON analytics_event(category)
-            """
-            )
+            index_statements = {
+                "analytics_events": [
+                    (
+                        "idx_analytics_timestamp",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_analytics_timestamp
+                            ON analytics_events(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_analytics_event_type",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_analytics_event_type
+                            ON analytics_events(event_type)
+                        """,
+                    ),
+                    (
+                        "idx_analytics_category",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_analytics_category
+                            ON analytics_events(event_category)
+                        """,
+                    ),
+                    (
+                        "idx_analytics_composite",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_analytics_composite
+                            ON analytics_events(created_at DESC, event_type, event_category)
+                        """,
+                    ),
+                ],
+                "user_behaviors": [
+                    (
+                        "idx_user_behaviors_session_start",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_user_behaviors_session_start
+                            ON user_behaviors(session_start DESC)
+                        """,
+                    )
+                ],
+                "performance_metrics": [
+                    (
+                        "idx_performance_metrics_timestamp",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_performance_metrics_timestamp
+                            ON performance_metrics(created_at DESC)
+                        """,
+                    )
+                ],
+                "chatbot_conversations": [
+                    (
+                        "idx_chatbot_conversations_timestamp",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_chatbot_conversations_timestamp
+                            ON chatbot_conversations(created_at DESC)
+                        """,
+                    )
+                ],
+                "users": [
+                    (
+                        "idx_users_role",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_users_role
+                            ON users(role)
+                        """,
+                    ),
+                    (
+                        "idx_users_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_users_created_at
+                            ON users(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_users_is_active",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_users_is_active
+                            ON users(is_active)
+                        """,
+                    ),
+                ],
+                "admin_users": [
+                    (
+                        "idx_admin_users_username",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_username
+                            ON admin_users(username)
+                        """,
+                    ),
+                    (
+                        "idx_admin_users_email",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_email
+                            ON admin_users(email)
+                        """,
+                    ),
+                    (
+                        "idx_admin_users_role",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_role
+                            ON admin_users(role)
+                        """,
+                    ),
+                    (
+                        "idx_admin_users_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_created_at
+                            ON admin_users(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_admin_users_is_active",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_admin_users_is_active
+                            ON admin_users(is_active)
+                        """,
+                    ),
+                ],
+                "volunteers": [
+                    (
+                        "idx_volunteers_location",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_volunteers_location
+                            ON volunteers(location)
+                        """,
+                    ),
+                    (
+                        "idx_volunteers_is_active",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_volunteers_is_active
+                            ON volunteers(is_active)
+                        """,
+                    ),
+                    (
+                        "idx_volunteers_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_volunteers_created_at
+                            ON volunteers(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_volunteers_points",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_volunteers_points
+                            ON volunteers(points DESC)
+                        """,
+                    ),
+                ],
+                "help_requests": [
+                    (
+                        "idx_help_requests_status",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_help_requests_status
+                            ON help_requests(status)
+                        """,
+                    ),
+                    (
+                        "idx_help_requests_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_help_requests_created_at
+                            ON help_requests(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_help_requests_priority",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_help_requests_priority
+                            ON help_requests(priority)
+                        """,
+                    ),
+                    (
+                        "idx_help_requests_user_id",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_help_requests_user_id
+                            ON help_requests(user_id)
+                        """,
+                    ),
+                ],
+                "tasks": [
+                    (
+                        "idx_tasks_status",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_status
+                            ON tasks(status)
+                        """,
+                    ),
+                    (
+                        "idx_tasks_assigned_to",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_assigned_to
+                            ON tasks(assigned_to)
+                        """,
+                    ),
+                    (
+                        "idx_tasks_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_created_at
+                            ON tasks(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_tasks_category",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_category
+                            ON tasks(category)
+                        """,
+                    ),
+                    (
+                        "idx_tasks_priority",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_tasks_priority
+                            ON tasks(priority)
+                        """,
+                    ),
+                ],
+                "chat_messages": [
+                    (
+                        "idx_chat_messages_room_id",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_chat_messages_room_id
+                            ON chat_messages(room_id)
+                        """,
+                    ),
+                    (
+                        "idx_chat_messages_created_at",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at
+                            ON chat_messages(created_at DESC)
+                        """,
+                    ),
+                    (
+                        "idx_chat_messages_sender_type",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_type
+                            ON chat_messages(sender_type)
+                        """,
+                    ),
+                ],
+                "notifications": [
+                    (
+                        "idx_notifications_recipient",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_notifications_recipient
+                            ON notifications(recipient_id, recipient_type)
+                        """,
+                    ),
+                    (
+                        "idx_notifications_type",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_notifications_type
+                            ON notifications(notification_type)
+                        """,
+                    ),
+                    (
+                        "idx_notifications_created",
+                        """
+                            CREATE INDEX IF NOT EXISTS idx_notifications_created
+                            ON notifications(created_at DESC)
+                        """,
+                    ),
+                ],
+            }
 
-            # Composite index за common filters
-            db.engine.execute(
-                """
-                CREATE INDEX IF NOT EXISTS idx_analytics_composite
-                ON analytics_event(timestamp DESC, event_type, category)
-            """
-            )
+            created_indexes = []
+            skipped_tables = []
 
-            print("✅ Analytics database indexes created successfully")
+            for table_name, statements in index_statements.items():
+                if table_name not in existing_tables:
+                    skipped_tables.append(table_name)
+                    continue
+
+                for index_name, ddl in statements:
+                    db.session.execute(text(ddl))
+                    created_indexes.append(index_name)
+
+            db.session.commit()
+
+            if created_indexes:
+                print(
+                    "✅ Database indexes verified or created: "
+                    + ", ".join(sorted(created_indexes))
+                )
+            if skipped_tables:
+                print(
+                    "ℹ️  Skipped index creation for missing tables: "
+                    + ", ".join(sorted(skipped_tables))
+                )
+
             return True
 
         except Exception as e:
+            db.session.rollback()
             print(f"❌ Error creating indexes: {e}")
             return False
 
     @staticmethod
-    def optimize_queries():
-        """Оптимизирани SQL queries за analytics"""
+    def get_optimized_analytics_queries():
+        """Get optimized analytics queries using proper SQLAlchemy syntax"""
         return {
             "events_by_day": """
-                SELECT DATE(timestamp) as date,
+                SELECT DATE(created_at) as date,
                        COUNT(*) as count,
                        event_type
-                FROM analytics_event
-                WHERE timestamp >= ?
-                GROUP BY DATE(timestamp), event_type
+                FROM analytics_events
+                WHERE created_at >= :start_date AND created_at <= :end_date
+                GROUP BY DATE(created_at), event_type
                 ORDER BY date DESC
             """,
             "top_pages": """
-                SELECT details->>'$.page' as page,
+                SELECT page_url as page,
                        COUNT(*) as visits
-                FROM analytics_event
+                FROM analytics_events
                 WHERE event_type = 'page_view'
-                  AND timestamp >= ?
-                GROUP BY details->>'$.page'
+                  AND created_at >= :start_date AND created_at <= :end_date
+                GROUP BY page_url
                 ORDER BY visits DESC
                 LIMIT 10
             """,
-            "user_behavior": """
+            "user_behavior_summary": """
                 SELECT session_id,
                        COUNT(*) as actions,
-                       MIN(timestamp) as session_start,
-                       MAX(timestamp) as session_end
-                FROM analytics_event
-                WHERE timestamp >= ?
+                       MIN(created_at) as session_start,
+                       MAX(created_at) as session_end
+                FROM analytics_events
+                WHERE created_at >= :start_date AND created_at <= :end_date
                 GROUP BY session_id
                 HAVING actions > 1
                 ORDER BY actions DESC
+                LIMIT 100
+            """,
+            "performance_by_endpoint": """
+                SELECT endpoint,
+                       AVG(metric_value) as avg_time,
+                       COUNT(*) as request_count
+                FROM performance_metrics
+                WHERE metric_type = 'response_time'
+                  AND created_at >= :start_date AND created_at <= :end_date
+                  AND endpoint IS NOT NULL
+                GROUP BY endpoint
+                ORDER BY avg_time DESC
+                LIMIT 10
+            """,
+            "chatbot_conversations_summary": """
+                SELECT response_type,
+                       COUNT(*) as count
+                FROM chatbot_conversations
+                WHERE created_at >= :start_date AND created_at <= :end_date
+                GROUP BY response_type
+            """,
+            "chatbot_ai_stats": """
+                SELECT COUNT(*) as total_ai_responses,
+                       AVG(ai_confidence) as avg_confidence,
+                       AVG(processing_time) as avg_processing_time,
+                       SUM(ai_tokens_used) as total_tokens
+                FROM chatbot_conversations
+                WHERE response_type = 'ai'
+                  AND created_at >= :start_date AND created_at <= :end_date
+            """,
+            "chatbot_ratings": """
+                SELECT COUNT(*) as rated_conversations,
+                       AVG(user_rating) as avg_rating
+                FROM chatbot_conversations
+                WHERE user_rating IS NOT NULL
+                  AND created_at >= :start_date AND created_at <= :end_date
+            """,
+            "conversion_funnel_visitors": """
+                SELECT COUNT(DISTINCT session_id) as total_visitors
+                FROM user_behaviors
+                WHERE session_start >= :start_date AND session_start <= :end_date
+            """,
+            "conversion_funnel_register_visits": """
+                SELECT COUNT(DISTINCT user_session) as visited_register
+                FROM analytics_events
+                WHERE page_url LIKE '%register%'
+                  AND created_at >= :start_date AND created_at <= :end_date
+            """,
+            "conversion_funnel_registrations": """
+                SELECT COUNT(DISTINCT user_session) as started_registration
+                FROM analytics_events
+                WHERE event_action = 'form_start'
+                  AND event_category = 'registration'
+                  AND created_at >= :start_date AND created_at <= :end_date
+            """,
+            "conversion_funnel_completions": """
+                SELECT COUNT(*) as completed_registration
+                FROM user_behaviors
+                WHERE conversion_action = 'registration'
+                  AND session_start >= :start_date AND session_start <= :end_date
+            """,
+            "conversion_funnel_chatbot_users": """
+                SELECT COUNT(DISTINCT session_id) as chatbot_users
+                FROM chatbot_conversations
+                WHERE created_at >= :start_date AND created_at <= :end_date
+            """,
+            "user_journey_entry_pages": """
+                SELECT entry_page, COUNT(*) as entries
+                FROM user_behaviors
+                WHERE session_start >= :start_date AND session_start <= :end_date
+                  AND entry_page IS NOT NULL
+                GROUP BY entry_page
+                ORDER BY entries DESC
+                LIMIT 10
+            """,
+            "user_journey_exit_pages": """
+                SELECT exit_page, COUNT(*) as exits
+                FROM user_behaviors
+                WHERE session_start >= :start_date AND session_start <= :end_date
+                  AND exit_page IS NOT NULL
+                GROUP BY exit_page
+                ORDER BY exits DESC
+                LIMIT 10
             """,
         }
 
@@ -143,6 +532,7 @@ class APIOptimizer:
     def compress_response(data):
         """Compress large JSON responses"""
         import gzip
+        import json
 
         json_str = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
         return gzip.compress(json_str.encode("utf-8"))
@@ -175,8 +565,22 @@ class APIOptimizer:
 def setup_performance_optimizations(app, db):
     """Setup всички performance optimizations"""
 
-    # Initialize caching
-    # cache = AnalyticsCache(app)  # Коментирано за избягване на circular import
+    # Apply database connection pooling settings
+    if "SQLALCHEMY_ENGINE_OPTIONS" not in app.config:
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = PERFORMANCE_CONFIG[
+            "SQLALCHEMY_ENGINE_OPTIONS"
+        ]
+        print("✅ Database connection pooling configured")
+
+    # Initialize caching with Redis fallback
+    try:
+        cache = AnalyticsCache(app)
+        print("✅ Analytics cache initialized successfully")
+    except Exception as cache_error:
+        print(f"⚠️  Cache initialization failed, using simple cache: {cache_error}")
+        # Fallback to simple cache
+        app.config["CACHE_TYPE"] = "simple"
+        cache = AnalyticsCache(app)
 
     # Create database indexes
     DatabaseOptimizer.create_analytics_indexes(db)
@@ -192,7 +596,7 @@ def setup_performance_optimizations(app, db):
                 import time
 
                 time.sleep(600)  # Every 10 minutes
-                # cache.invalidate_analytics_cache()
+                cache.invalidate_analytics_cache()
                 # Reload fresh data
             except Exception as e:
                 print(f"Cache warming error: {e}")
@@ -201,15 +605,13 @@ def setup_performance_optimizations(app, db):
     cache_thread = threading.Thread(target=warm_cache, daemon=True)
     cache_thread.start()
 
-    # return cache  # Коментирано за избягване на circular import
+    return cache
 
 
 # Configuration за production
 PERFORMANCE_CONFIG = {
     "CACHE_TYPE": "redis",  # Use Redis в production
-    "CACHE_REDIS_HOST": "localhost",
-    "CACHE_REDIS_PORT": 6379,
-    "CACHE_REDIS_DB": 0,
+    "CACHE_REDIS_URL": os.getenv("REDIS_URL", "redis://localhost:6379/0"),
     "CACHE_DEFAULT_TIMEOUT": 300,
     "CACHE_KEY_PREFIX": "helpchain_analytics_",
     # Database connection pooling
@@ -220,7 +622,7 @@ PERFORMANCE_CONFIG = {
         "max_overflow": 20,
     },
     # API Rate limiting
-    "RATELIMIT_STORAGE_URL": "redis://localhost:6379/1",
+    "RATELIMIT_STORAGE_URL": os.getenv("REDIS_URL", "redis://localhost:6379/1"),
     "RATELIMIT_DEFAULT": "100 per hour",
 }
 

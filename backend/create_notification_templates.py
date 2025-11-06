@@ -2,7 +2,19 @@
 Създаване на default notification templates за HelpChain
 """
 
-from notification_service import notification_service
+# Try different import strategies
+try:
+    from notification_service import notification_service
+except ImportError:
+    try:
+        from .notification_service import notification_service
+    except ImportError:
+        # For standalone execution
+        import os
+        import sys
+
+        sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+        from notification_service import notification_service
 
 
 def create_default_templates():

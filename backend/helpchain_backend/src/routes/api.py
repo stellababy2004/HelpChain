@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, jsonify, request, send_file
+
 from ..controllers.helpchain_controller import HelpChainController
 from ..models import Request, RequestLog, db
 
@@ -17,7 +18,7 @@ def some_endpoint():
     if callable(fn):
         try:
             out = fn()
-            if isinstance(out, (dict, list)):
+            if isinstance(out, dict | list):
                 return jsonify(out), 200
             return jsonify({"ok": True, "result": out}), 200
         except Exception as e:
@@ -204,7 +205,7 @@ def get_nearby_volunteers():
 
         # Simple distance calculation using Haversine formula
         # For production, consider using PostGIS or similar
-        from math import radians, sin, cos, sqrt, atan2
+        from math import atan2, cos, radians, sin, sqrt
 
         def haversine_distance(lat1, lon1, lat2, lon2):
             R = 6371  # Earth radius in km

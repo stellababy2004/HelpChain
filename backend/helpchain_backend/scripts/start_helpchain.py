@@ -1,9 +1,10 @@
+import os
 import subprocess
 import time
-import requests
 import webbrowser
-import os
+
 import qrcode
+import requests
 
 # Стартирай Flask приложението в нова конзола
 print("🚀 Стартиране на Flask сървъра...")

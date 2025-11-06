@@ -1,801 +1,983 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bg">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Чат - HelpChain</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&displa    <!-- Bootstrap JS -->
-    <script src=" https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
-    </script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap JS -->
+    <script src=" https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Socket.IO -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --primary-color: #667eea;
-            --primary-hover: #5a67d8;
-            --secondary-color: #718096;
-            --success-color: #48bb78;
-            --danger-color: #f56565;
-            --warning-color: #ed8936;
-            --info-color: #4299e1;
-            --light-bg: #f7fafc;
-            --dark-text: #2d3748;
-            --border-color: #e2e8f0;
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-            --border-radius: 12px;
-            --border-radius-lg: 16px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --primary-color: #667eea;
+        --primary-hover: #5a67d8;
+        --secondary-color: #718096;
+        --success-color: #48bb78;
+        --danger-color: #f56565;
+        --warning-color: #ed8936;
+        --info-color: #4299e1;
+        --light-bg: #f7fafc;
+        --dark-text: #2d3748;
+        --border-color: #e2e8f0;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12),
+          0 1px 2px rgba(0, 0, 0, 0.24);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1),
+          0 4px 6px rgba(0, 0, 0, 0.05);
+        --border-radius: 12px;
+        --border-radius-lg: 16px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--light-bg);
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        line-height: 1.6;
+        color: var(--dark-text);
+      }
+
+      .navbar {
+        background: var(--primary-gradient);
+        box-shadow: var(--shadow-md);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: none;
+      }
+
+      .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+      }
+
+      .card {
+        border: none;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+      }
+
+      .card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+      }
+
+      .chat-container {
+        height: calc(100vh - 200px);
+        display: flex;
+        flex-direction: column;
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        scroll-behavior: smooth;
+      }
+
+      .chat-messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .chat-messages::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+      }
+
+      .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: var(--secondary-color);
+      }
+
+      .chat-input-area {
+        padding: 24px;
+        background: white;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .message {
+        margin-bottom: 16px;
+        padding: 16px 20px;
+        border-radius: var(--border-radius);
+        max-width: 75%;
+        position: relative;
+        animation: messageSlideIn 0.3s ease-out;
+        word-wrap: break-word;
+      }
+
+      @keyframes messageSlideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
 
-        * {
-            box-sizing: border-box;
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.sent {
+        background: var(--primary-gradient);
+        color: white;
+        margin-left: auto;
+        text-align: right;
+        border-bottom-right-radius: 4px;
+      }
+
+      .message.sent::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: -8px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid #667eea;
+        border-bottom: 8px solid transparent;
+      }
+
+      .message.received {
+        background: white;
+        color: var(--dark-text);
+        border: 1px solid var(--border-color);
+        border-bottom-left-radius: 4px;
+      }
+
+      .message.received::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: -8px;
+        width: 0;
+        height: 0;
+        border-right: 8px solid white;
+        border-bottom: 8px solid transparent;
+      }
+
+      .message-header {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .chat-list {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+      }
+
+      .chat-list::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .chat-list::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .chat-list::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 2px;
+      }
+
+      .chat-item {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: var(--transition);
+        position: relative;
+      }
+
+      .chat-item:hover {
+        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        transform: translateX(4px);
+      }
+
+      .chat-item.active {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: var(--border-radius);
+        margin: 8px 12px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .chat-item.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 60%;
+        background: white;
+        border-radius: 2px;
+      }
+
+      .unread-badge {
+        background: var(--danger-color);
+        color: white;
+        border-radius: 50%;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        min-width: 20px;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .typing-indicator {
+        display: none;
+        padding: 12px 20px;
+        font-style: italic;
+        color: var(--secondary-color);
+        animation: typingPulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes typingPulse {
+        0%,
+        100% {
+          opacity: 0.6;
         }
 
-        body {
-            background-color: var(--light-bg);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            color: var(--dark-text);
+        50% {
+          opacity: 1;
         }
+      }
 
-        .navbar {
-            background: var(--primary-gradient);
-            box-shadow: var(--shadow-md);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            border: none;
+      .file-attachment {
+        background: var(--light-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 12px;
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: var(--transition);
+      }
+
+      .file-attachment:hover {
+        background: #edf2f7;
+      }
+
+      .file-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+      }
+
+      .file-info {
+        flex: 1;
+      }
+
+      .file-name {
+        font-weight: 500;
+        margin-bottom: 2px;
+      }
+
+      .file-size {
+        font-size: 0.75rem;
+        color: var(--secondary-color);
+      }
+
+      .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        transition: var(--transition);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-gradient);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .form-control {
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: var(--transition);
+      }
+
+      .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid var(--border-color);
+        border-radius: 50%;
+        border-top-color: var(--primary-color);
+        animation: spin 1s ease-in-out infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
+      }
 
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-
-        .card {
-            border: none;
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-md);
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-2px);
-        }
-
+      /* Responsive Design */
+      @media (max-width: 768px) {
         .chat-container {
-            height: calc(100vh - 200px);
-            display: flex;
-            flex-direction: column;
-            border-radius: var(--border-radius-lg);
-            overflow: hidden;
+          height: calc(100vh - 160px);
         }
 
         .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            scroll-behavior: smooth;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 3px;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb:hover {
-            background: var(--secondary-color);
+          padding: 16px;
         }
 
         .chat-input-area {
-            padding: 24px;
-            background: white;
-            border-top: 1px solid var(--border-color);
+          padding: 16px;
         }
 
         .message {
-            margin-bottom: 16px;
-            padding: 16px 20px;
-            border-radius: var(--border-radius);
-            max-width: 75%;
-            position: relative;
-            animation: messageSlideIn 0.3s ease-out;
-            word-wrap: break-word;
-        }
-
-        @keyframes messageSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message.sent {
-            background: var(--primary-gradient);
-            color: white;
-            margin-left: auto;
-            text-align: right;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.sent::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: -8px;
-            width: 0;
-            height: 0;
-            border-left: 8px solid #667eea;
-            border-bottom: 8px solid transparent;
-        }
-
-        .message.received {
-            background: white;
-            color: var(--dark-text);
-            border: 1px solid var(--border-color);
-            border-bottom-left-radius: 4px;
-        }
-
-        .message.received::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: -8px;
-            width: 0;
-            height: 0;
-            border-right: 8px solid white;
-            border-bottom: 8px solid transparent;
-        }
-
-        .message-header {
-            font-size: 0.75rem;
-            opacity: 0.8;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .chat-list {
-            max-height: calc(100vh - 200px);
-            overflow-y: auto;
-        }
-
-        .chat-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .chat-list::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-list::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 2px;
+          max-width: 85%;
+          padding: 12px 16px;
         }
 
         .chat-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .chat-item:hover {
-            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-            transform: translateX(4px);
+          padding: 12px 16px;
         }
 
         .chat-item.active {
-            background: var(--primary-gradient);
-            color: white;
-            border-radius: var(--border-radius);
-            margin: 8px 12px;
-            box-shadow: var(--shadow-sm);
+          margin: 4px 8px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .navbar-brand {
+          font-size: 1.25rem;
         }
 
-        .chat-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 60%;
-            background: white;
-            border-radius: 2px;
+        .chat-container {
+          border-radius: var(--border-radius);
         }
 
-        .unread-badge {
-            background: var(--danger-color);
-            color: white;
-            border-radius: 50%;
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            min-width: 20px;
-            text-align: center;
-            box-shadow: var(--shadow-sm);
+        .message {
+          max-width: 90%;
         }
+      }
 
-        .typing-indicator {
-            display: none;
-            padding: 12px 20px;
-            font-style: italic;
-            color: var(--secondary-color);
-            animation: typingPulse 1.5s ease-in-out infinite;
-        }
+      /* Accessibility */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
 
-        @keyframes typingPulse {
+      .chat-item:focus,
+      .btn:focus,
+      .form-control:focus {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+      }
 
-            0%,
-            100% {
-                opacity: 0.6;
-            }
-
-            50% {
-                opacity: 1;
-            }
-        }
-
-        .file-attachment {
-            background: var(--light-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 12px;
-            margin: 8px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: var(--transition);
-        }
-
-        .file-attachment:hover {
-            background: #edf2f7;
-        }
-
-        .file-icon {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .file-info {
-            flex: 1;
-        }
-
-        .file-name {
-            font-weight: 500;
-            margin-bottom: 2px;
-        }
-
-        .file-size {
-            font-size: 0.75rem;
-            color: var(--secondary-color);
-        }
-
-        .btn-primary {
-            background: var(--primary-gradient);
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-gradient);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .form-control {
-            border: 2px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 12px 16px;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .chat-container {
-                height: calc(100vh - 160px);
-            }
-
-            .chat-messages {
-                padding: 16px;
-            }
-
-            .chat-input-area {
-                padding: 16px;
-            }
-
-            .message {
-                max-width: 85%;
-                padding: 12px 16px;
-            }
-
-            .chat-item {
-                padding: 12px 16px;
-            }
-
-            .chat-item.active {
-                margin: 4px 8px;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .navbar-brand {
-                font-size: 1.25rem;
-            }
-
-            .chat-container {
-                border-radius: var(--border-radius);
-            }
-
-            .message {
-                max-width: 90%;
-            }
-        }
-
-        /* Accessibility */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        .chat-item:focus,
-        .btn:focus,
-        .form-control:focus {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
-        }
-
-        .chat-area-hidden {
-            display: none;
-        }
+      .chat-area-hidden {
+        display: none;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-hands-helping me-2"></i>
-                HelpChain
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/volunteer_dashboard">
-                            <i class="fas fa-tachometer-alt me-1"></i>Табло
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/my_tasks">
-                            <i class="fas fa-tasks me-1"></i>Моите задачи
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/volunteer_chat">
-                            <i class="fas fa-comments me-1"></i>Чат
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/volunteer_logout">
-                            <i class="fas fa-sign-out-alt me-1"></i>Изход
-                        </a>
-                    </li>
-                </ul>
-            </div>
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-hands-helping me-2"></i>
+          HelpChain
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/volunteer_dashboard">
+                <i class="fas fa-tachometer-alt me-1"></i>Табло
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/my_tasks">
+                <i class="fas fa-tasks me-1"></i>Моите задачи
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/volunteer_chat">
+                <i class="fas fa-comments me-1"></i>Чат
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/volunteer_logout">
+                <i class="fas fa-sign-out-alt me-1"></i>Изход
+              </a>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
     <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-4">
-                <!-- Chat List -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-comments text-primary me-2"></i>
-                            Моите разговори
-                        </h5>
-                    </div>
-                    <div class="card-body chat-list" id="chatList">
-                        <!-- Chat items will be loaded here -->
-                        <div class="text-center py-3">
-                            <i class="fas fa-spinner fa-spin text-primary"></i>
-                            <span class="ms-2">Зареждане...</span>
-                        </div>
-                    </div>
-                </div>
+      <div class="row">
+        <div class="col-md-4">
+          <!-- Chat List -->
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">
+                <i class="fas fa-comments text-primary me-2"></i>
+                Моите разговори
+              </h5>
             </div>
-
-            <div class="col-md-8">
-                <!-- Chat Area -->
-                <div class="card chat-container chat-area-hidden" id="chatArea">
-                    <div class="card-header">
-                        <h5 class="mb-0" id="chatTitle">
-                            <i class="fas fa-user me-2"></i>
-                            Изберете разговор
-                        </h5>
-                    </div>
-
-                    <div class="chat-messages" id="chatMessages">
-                        <!-- Messages will be loaded here -->
-                        <div class="typing-indicator" id="typingIndicator">
-                            <i class="fas fa-circle-notch fa-spin me-2"></i>
-                            Някой пише...
-                        </div>
-                    </div>
-
-                    <div class="chat-input-area">
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="messageInput"
-                                placeholder="Напишете съобщение..." maxlength="500" aria-label="Напишете съобщение">
-                            <input type="file" class="d-none" id="fileInput"
-                                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt">
-                            <button class="btn btn-outline-secondary" type="button"
-                                onclick="document.getElementById('fileInput').click()" aria-label="Прикачи файл">
-                                <i class="fas fa-paperclip"></i>
-                            </button>
-                            <button class="btn btn-primary" type="button" onclick="sendMessage()"
-                                aria-label="Изпрати съобщение">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                        <small class="text-muted mt-1 d-block">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Enter за изпращане • Ctrl+Enter за нов ред • Плъзнете файл тук
-                        </small>
-                    </div>
-                </div>
-
-                <!-- No Chat Selected -->
-                <div class="text-center py-5" id="noChatSelected">
-                    <i class="fas fa-comments fa-4x text-muted mb-3"></i>
-                    <h4 class="text-muted">Изберете разговор</h4>
-                    <p class="text-muted">Изберете разговор от списъка, за да започнете чат</p>
-                </div>
+            <div class="card-body chat-list" id="chatList">
+              <!-- Chat items will be loaded here -->
+              <div class="text-center py-3">
+                <i class="fas fa-spinner fa-spin text-primary"></i>
+                <span class="ms-2">Зареждане...</span>
+              </div>
             </div>
+          </div>
         </div>
+
+        <div class="col-md-8">
+          <!-- Chat Area -->
+          <div class="card chat-container chat-area-hidden" id="chatArea">
+            <div class="card-header">
+              <h5 class="mb-0" id="chatTitle">
+                <i class="fas fa-user me-2"></i>
+                Изберете разговор
+              </h5>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+              <!-- Messages will be loaded here -->
+              <div class="typing-indicator" id="typingIndicator">
+                <i class="fas fa-circle-notch fa-spin me-2"></i>
+                Някой пише...
+              </div>
+            </div>
+
+            <div class="chat-input-area">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="messageInput"
+                  placeholder="Напишете съобщение..."
+                  maxlength="500"
+                  aria-label="Напишете съобщение"
+                />
+                <input
+                  type="file"
+                  class="d-none"
+                  id="fileInput"
+                  accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt"
+                />
+                <button
+                  class="btn btn-outline-secondary"
+                  type="button"
+                  onclick="document.getElementById('fileInput').click()"
+                  aria-label="Прикачи файл"
+                >
+                  <i class="fas fa-paperclip"></i>
+                </button>
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  onclick="sendMessage()"
+                  aria-label="Изпрати съобщение"
+                >
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+              <small class="text-muted mt-1 d-block">
+                <i class="fas fa-info-circle me-1"></i>
+                Enter за изпращане • Ctrl+Enter за нов ред • Плъзнете файл тук
+              </small>
+            </div>
+          </div>
+
+          <!-- No Chat Selected -->
+          <div class="text-center py-5" id="noChatSelected">
+            <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Изберете разговор</h4>
+            <p class="text-muted">
+              Изберете разговор от списъка, за да започнете чат
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Socket.IO setup
-        const socket = io();
+      // Socket.IO setup
+      const socket = io();
 
-        // Global state
-        let currentChatId = null;
-        let currentUser = {
-            id: 1,
-            name: 'Иван Иванов',
-            avatar: null
-        };
-        let typingTimeout = null;
-        let isTyping = false;
+      // Global state
+      let currentChatId = null;
+      let currentUser = {
+        id: 1,
+        name: "Иван Иванов",
+        avatar: null,
+      };
+      let typingTimeout = null;
+      let isTyping = false;
 
-        // Mock chat data with enhanced structure
-        const mockChats = [
+      // Mock chat data with enhanced structure
+      const mockChats = [
+        {
+          id: 1,
+          title: "Помощ с пазаруване - Мария П.",
+          lastMessage: "Благодаря за помощта!",
+          lastMessageTime: "2024-01-15 14:30",
+          unreadCount: 0,
+          participants: [{ id: 2, name: "Мария Петрова", avatar: null }],
+          messages: [
             {
-                id: 1,
-                title: "Помощ с пазаруване - Мария П.",
-                lastMessage: "Благодаря за помощта!",
-                lastMessageTime: "2024-01-15 14:30",
-                unreadCount: 0,
-                participants: [{ id: 2, name: "Мария Петрова", avatar: null }],
-                messages: [
-                    { id: 1, sender: { id: 2, name: "Мария Петрова" }, content: "Здравейте, имам нужда от помощ с пазаруване.", time: "2024-01-15 10:00", sent: false, type: 'text' },
-                    { id: 2, sender: { id: 1, name: "Иван Иванов" }, content: "Здравейте! Разбира се, мога да помогна. Кога е удобно?", time: "2024-01-15 10:15", sent: true, type: 'text' },
-                    { id: 3, sender: { id: 2, name: "Мария Петрова" }, content: "Удобно ми е утре следобед към 15:00 ч.", time: "2024-01-15 10:20", sent: false, type: 'text' },
-                    { id: 4, sender: { id: 1, name: "Иван Иванов" }, content: "Чудесно! Ще дойда в 15:00. Какво трябва да купя?", time: "2024-01-15 10:25", sent: true, type: 'text' },
-                    { id: 5, sender: { id: 2, name: "Мария Петрова" }, content: "Хляб, мляко, плодове и зеленчуци. Имам списък.", time: "2024-01-15 10:30", sent: false, type: 'text' },
-                    { id: 6, sender: { id: 1, name: "Иван Иванов" }, content: "Разбрано! Ще се видим утре.", time: "2024-01-15 10:35", sent: true, type: 'text' },
-                    { id: 7, sender: { id: 2, name: "Мария Петрова" }, content: "Благодаря за помощта!", time: "2024-01-15 14:30", sent: false, type: 'text' }
-                ],
-                isOnline: true,
-                lastSeen: null
+              id: 1,
+              sender: { id: 2, name: "Мария Петрова" },
+              content: "Здравейте, имам нужда от помощ с пазаруване.",
+              time: "2024-01-15 10:00",
+              sent: false,
+              type: "text",
             },
             {
-                id: 2,
-                title: "Съпровод до лекар - Георги С.",
-                lastMessage: "Прегледът мина добре, благодаря!",
-                lastMessageTime: "2024-01-14 16:45",
-                unreadCount: 2,
-                participants: [{ id: 3, name: "Георги Стоянов", avatar: null }],
-                messages: [
-                    { id: 8, sender: { id: 3, name: "Георги Стоянов" }, content: "Здравейте, трябва да отида на преглед в болница Св. Анна.", time: "2024-01-14 08:00", sent: false, type: 'text' },
-                    { id: 9, sender: { id: 1, name: "Иван Иванов" }, content: "Добро утро! В колко часа е прегледът?", time: "2024-01-14 08:15", sent: true, type: 'text' },
-                    { id: 10, sender: { id: 3, name: "Георги Стоянов" }, content: "В 11:00 часа. Можете ли да ме закарате?", time: "2024-01-14 08:20", sent: false, type: 'text' },
-                    { id: 11, sender: { id: 1, name: "Иван Иванов" }, content: "Да, ще дойда в 10:30 да ви взема.", time: "2024-01-14 08:25", sent: true, type: 'text' },
-                    { id: 12, sender: { id: 3, name: "Георги Стоянов" }, content: "Прегледът мина добре, благодаря!", time: "2024-01-14 16:45", sent: false, type: 'text' }
-                ],
-                isOnline: false,
-                lastSeen: "2024-01-14 17:00"
+              id: 2,
+              sender: { id: 1, name: "Иван Иванов" },
+              content: "Здравейте! Разбира се, мога да помогна. Кога е удобно?",
+              time: "2024-01-15 10:15",
+              sent: true,
+              type: "text",
             },
             {
-                id: 3,
-                title: "Домакинска помощ - Анна Д.",
-                lastMessage: "Всичко е готово, благодаря!",
-                lastMessageTime: "2024-01-13 12:20",
-                unreadCount: 0,
-                participants: [{ id: 4, name: "Анна Димитрова", avatar: null }],
-                messages: [
-                    { id: 13, sender: { id: 4, name: "Анна Димитрова" }, content: "Здравейте, имам нужда от помощ с почистване.", time: "2024-01-13 09:00", sent: false, type: 'text' },
-                    { id: 14, sender: { id: 1, name: "Иван Иванов" }, content: "Добро утро! Какво трябва да се почисти?", time: "2024-01-13 09:15", sent: true, type: 'text' },
-                    { id: 15, sender: { id: 4, name: "Анна Димитрова" }, content: "Кухнята и банята. Имам препарати.", time: "2024-01-13 09:20", sent: false, type: 'text' },
-                    { id: 16, sender: { id: 1, name: "Иван Иванов" }, content: "Ще дойда след час.", time: "2024-01-13 09:25", sent: true, type: 'text' },
-                    { id: 17, sender: { id: 4, name: "Анна Димитрова" }, content: "Всичко е готово, благодаря!", time: "2024-01-13 12:20", sent: false, type: 'text' }
-                ],
-                isOnline: true,
-                lastSeen: null
-            }
-        ];
+              id: 3,
+              sender: { id: 2, name: "Мария Петрова" },
+              content: "Удобно ми е утре следобед към 15:00 ч.",
+              time: "2024-01-15 10:20",
+              sent: false,
+              type: "text",
+            },
+            {
+              id: 4,
+              sender: { id: 1, name: "Иван Иванов" },
+              content: "Чудесно! Ще дойда в 15:00. Какво трябва да купя?",
+              time: "2024-01-15 10:25",
+              sent: true,
+              type: "text",
+            },
+            {
+              id: 5,
+              sender: { id: 2, name: "Мария Петрова" },
+              content: "Хляб, мляко, плодове и зеленчуци. Имам списък.",
+              time: "2024-01-15 10:30",
+              sent: false,
+              type: "text",
+            },
+            {
+              id: 6,
+              sender: { id: 1, name: "Иван Иванов" },
+              content: "Разбрано! Ще се видим утре.",
+              time: "2024-01-15 10:35",
+              sent: true,
+              type: "text",
+            },
+            {
+              id: 7,
+              sender: { id: 2, name: "Мария Петрова" },
+              content: "Благодаря за помощта!",
+              time: "2024-01-15 14:30",
+              sent: false,
+              type: "text",
+            },
+          ],
+          isOnline: true,
+          lastSeen: null,
+        },
+        {
+          id: 2,
+          title: "Съпровод до лекар - Георги С.",
+          lastMessage: "Прегледът мина добре, благодаря!",
+          lastMessageTime: "2024-01-14 16:45",
+          unreadCount: 2,
+          participants: [{ id: 3, name: "Георги Стоянов", avatar: null }],
+          messages: [
+            {
+              id: 8,
+              sender: { id: 3, name: "Георги Стоянов" },
+              content:
+                "Здравейте, трябва да отида на преглед в болница Св. Анна.",
+              time: "2024-01-14 08:00",
+              sent: false,
+              type: "text",
+            },
+            {
+              id: 9,
+              sender: { id: 1, name: "Иван Иванов" },
+              content: "Добро утро! В колко часа е прегледът?",
+              time: "2024-01-14 08:15",
+              sent: true,
+              type: "text",
+            },
+            {
+              id: 10,
+              sender: { id: 3, name: "Георги Стоянов" },
+              content: "В 11:00 часа. Можете ли да ме закарате?",
+              time: "2024-01-14 08:20",
+              sent: false,
+              type: "text",
+            },
+            {
+              id: 11,
+              sender: { id: 1, name: "Иван Иванов" },
+              content: "Да, ще дойда в 10:30 да ви взема.",
+              time: "2024-01-14 08:25",
+              sent: true,
+              type: "text",
+            },
+            {
+              id: 12,
+              sender: { id: 3, name: "Георги Стоянов" },
+              content: "Прегледът мина добре, благодаря!",
+              time: "2024-01-14 16:45",
+              sent: false,
+              type: "text",
+            },
+          ],
+          isOnline: false,
+          lastSeen: "2024-01-14 17:00",
+        },
+        {
+          id: 3,
+          title: "Домакинска помощ - Анна Д.",
+          lastMessage: "Всичко е готово, благодаря!",
+          lastMessageTime: "2024-01-13 12:20",
+          unreadCount: 0,
+          participants: [{ id: 4, name: "Анна Димитрова", avatar: null }],
+          messages: [
+            {
+              id: 13,
+              sender: { id: 4, name: "Анна Димитрова" },
+              content: "Здравейте, имам нужда от помощ с почистване.",
+              time: "2024-01-13 09:00",
+              sent: false,
+              type: "text",
+            },
+            {
+              id: 14,
+              sender: { id: 1, name: "Иван Иванов" },
+              content: "Добро утро! Какво трябва да се почисти?",
+              time: "2024-01-13 09:15",
+              sent: true,
+              type: "text",
+            },
+            {
+              id: 15,
+              sender: { id: 4, name: "Анна Димитрова" },
+              content: "Кухнята и банята. Имам препарати.",
+              time: "2024-01-13 09:20",
+              sent: false,
+              type: "text",
+            },
+            {
+              id: 16,
+              sender: { id: 1, name: "Иван Иванов" },
+              content: "Ще дойда след час.",
+              time: "2024-01-13 09:25",
+              sent: true,
+              type: "text",
+            },
+            {
+              id: 17,
+              sender: { id: 4, name: "Анна Димитрова" },
+              content: "Всичко е готово, благодаря!",
+              time: "2024-01-13 12:20",
+              sent: false,
+              type: "text",
+            },
+          ],
+          isOnline: true,
+          lastSeen: null,
+        },
+      ];
 
-        // DOM elements
-        const chatList = document.getElementById('chatList');
-        const chatArea = document.getElementById('chatArea');
-        const chatMessages = document.getElementById('chatMessages');
-        const messageInput = document.getElementById('messageInput');
-        const fileInput = document.getElementById('fileInput');
-        const typingIndicator = document.getElementById('typingIndicator');
+      // DOM elements
+      const chatList = document.getElementById("chatList");
+      const chatArea = document.getElementById("chatArea");
+      const chatMessages = document.getElementById("chatMessages");
+      const messageInput = document.getElementById("messageInput");
+      const fileInput = document.getElementById("fileInput");
+      const typingIndicator = document.getElementById("typingIndicator");
 
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function () {
-            initializeSocket();
-            loadChatList();
-            setupEventListeners();
-            setupKeyboardShortcuts();
+      // Initialize app
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeSocket();
+        loadChatList();
+        setupEventListeners();
+        setupKeyboardShortcuts();
+      });
+
+      // Socket.IO event handlers
+      function initializeSocket() {
+        // Join user's room
+        socket.emit("join", { userId: currentUser.id });
+
+        // Listen for new messages
+        socket.on("new_message", function (data) {
+          handleNewMessage(data);
         });
 
-        // Socket.IO event handlers
-        function initializeSocket() {
-            // Join user's room
-            socket.emit('join', { userId: currentUser.id });
+        // Listen for typing indicators
+        socket.on("user_typing", function (data) {
+          showTypingIndicator(data);
+        });
 
-            // Listen for new messages
-            socket.on('new_message', function (data) {
-                handleNewMessage(data);
+        socket.on("user_stopped_typing", function (data) {
+          hideTypingIndicator(data);
+        });
+
+        // Listen for user status updates
+        socket.on("user_online", function (data) {
+          updateUserStatus(data.userId, true);
+        });
+
+        socket.on("user_offline", function (data) {
+          updateUserStatus(data.userId, false, data.lastSeen);
+        });
+
+        // Listen for file uploads
+        socket.on("file_uploaded", function (data) {
+          handleFileMessage(data);
+        });
+      }
+
+      // Setup event listeners
+      function setupEventListeners() {
+        // Send message on Enter
+        messageInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+        // Typing indicator
+        messageInput.addEventListener("input", function () {
+          handleTyping();
+        });
+
+        // File upload
+        fileInput.addEventListener("change", function (e) {
+          handleFileUpload(e.target.files[0]);
+        });
+
+        // Drag and drop for files
+        const chatContainer = document.querySelector(".chat-container");
+        chatContainer.addEventListener("dragover", function (e) {
+          e.preventDefault();
+          chatContainer.style.backgroundColor = "rgba(102, 126, 234, 0.1)";
+        });
+
+        chatContainer.addEventListener("dragleave", function (e) {
+          e.preventDefault();
+          chatContainer.style.backgroundColor = "";
+        });
+
+        chatContainer.addEventListener("drop", function (e) {
+          e.preventDefault();
+          chatContainer.style.backgroundColor = "";
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            handleFileUpload(files[0]);
+          }
+        });
+      }
+
+      // Keyboard shortcuts
+      function setupKeyboardShortcuts() {
+        document.addEventListener("keydown", function (e) {
+          // Ctrl+Enter to send message
+          if (e.ctrlKey && e.key === "Enter") {
+            e.preventDefault();
+            sendMessage();
+          }
+
+          // Escape to clear input
+          if (e.key === "Escape" && document.activeElement === messageInput) {
+            messageInput.value = "";
+            socket.emit("stop_typing", {
+              chatId: currentChatId,
+              userId: currentUser.id,
             });
+          }
+        });
+      }
 
-            // Listen for typing indicators
-            socket.on('user_typing', function (data) {
-                showTypingIndicator(data);
-            });
+      // Load chat list
+      function loadChatList() {
+        chatList.innerHTML = "";
 
-            socket.on('user_stopped_typing', function (data) {
-                hideTypingIndicator(data);
-            });
+        mockChats.forEach((chat) => {
+          const activeClass = currentChatId === chat.id ? "active" : "";
+          const unreadBadge =
+            chat.unreadCount > 0
+              ? `<span class="badge unread-badge ms-auto">${chat.unreadCount}</span>`
+              : "";
 
-            // Listen for user status updates
-            socket.on('user_online', function (data) {
-                updateUserStatus(data.userId, true);
-            });
+          const onlineStatus = chat.isOnline
+            ? '<i class="fas fa-circle text-success" style="font-size: 8px;"></i>'
+            : '<i class="fas fa-circle text-secondary" style="font-size: 8px;"></i>';
 
-            socket.on('user_offline', function (data) {
-                updateUserStatus(data.userId, false, data.lastSeen);
-            });
-
-            // Listen for file uploads
-            socket.on('file_uploaded', function (data) {
-                handleFileMessage(data);
-            });
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Send message on Enter
-            messageInput.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-
-            // Typing indicator
-            messageInput.addEventListener('input', function () {
-                handleTyping();
-            });
-
-            // File upload
-            fileInput.addEventListener('change', function (e) {
-                handleFileUpload(e.target.files[0]);
-            });
-
-            // Drag and drop for files
-            const chatContainer = document.querySelector('.chat-container');
-            chatContainer.addEventListener('dragover', function (e) {
-                e.preventDefault();
-                chatContainer.style.backgroundColor = 'rgba(102, 126, 234, 0.1)';
-            });
-
-            chatContainer.addEventListener('dragleave', function (e) {
-                e.preventDefault();
-                chatContainer.style.backgroundColor = '';
-            });
-
-            chatContainer.addEventListener('drop', function (e) {
-                e.preventDefault();
-                chatContainer.style.backgroundColor = '';
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleFileUpload(files[0]);
-                }
-            });
-        }
-
-        // Keyboard shortcuts
-        function setupKeyboardShortcuts() {
-            document.addEventListener('keydown', function (e) {
-                // Ctrl+Enter to send message
-                if (e.ctrlKey && e.key === 'Enter') {
-                    e.preventDefault();
-                    sendMessage();
-                }
-
-                // Escape to clear input
-                if (e.key === 'Escape' && document.activeElement === messageInput) {
-                    messageInput.value = '';
-                    socket.emit('stop_typing', { chatId: currentChatId, userId: currentUser.id });
-                }
-            });
-        }
-
-        // Load chat list
-        function loadChatList() {
-            chatList.innerHTML = '';
-
-            mockChats.forEach(chat => {
-                const activeClass = currentChatId === chat.id ? 'active' : '';
-                const unreadBadge = chat.unreadCount > 0 ?
-                    `<span class="badge unread-badge ms-auto">${chat.unreadCount}</span>` : '';
-
-                const onlineStatus = chat.isOnline ?
-                    '<i class="fas fa-circle text-success" style="font-size: 8px;"></i>' :
-                    '<i class="fas fa-circle text-secondary" style="font-size: 8px;"></i>';
-
-                chatList.innerHTML += `
-                    <div class="chat-item ${activeClass}" onclick="selectChat(${chat.id})">
+          chatList.innerHTML += `
+                    <div class="chat-item ${activeClass}" onclick="selectChat(${
+                      chat.id
+                    })">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="flex-grow-1">
                                 <div class="d-flex align-items-center gap-2 mb-1">
                                     <h6 class="mb-0">${chat.title}</h6>
                                     ${onlineStatus}
                                 </div>
-                                <p class="mb-1 text-truncate">${chat.lastMessage}</p>
-                                <small class="text-muted">${formatTime(chat.lastMessageTime)}</small>
+                                <p class="mb-1 text-truncate">${
+                                  chat.lastMessage
+                                }</p>
+                                <small class="text-muted">${formatTime(
+                                  chat.lastMessageTime,
+                                )}</small>
                             </div>
                             ${unreadBadge}
                         </div>
                     </div>
                 `;
-            });
-        }
+        });
+      }
 
-        // Select chat
-        function selectChat(chatId) {
-            currentChatId = chatId;
-            const chat = mockChats.find(c => c.id === chatId);
+      // Select chat
+      function selectChat(chatId) {
+        currentChatId = chatId;
+        const chat = mockChats.find((c) => c.id === chatId);
 
-            if (chat) {
-                // Update UI
-                document.getElementById('chatTitle').innerHTML = `
+        if (chat) {
+          // Update UI
+          document.getElementById("chatTitle").innerHTML = `
                     <i class="fas fa-user me-2"></i>
                     ${chat.title}
-                    ${chat.isOnline ? '<i class="fas fa-circle text-success ms-2" style="font-size: 8px;"></i>' : ''}
+                    ${
+                      chat.isOnline
+                        ? '<i class="fas fa-circle text-success ms-2" style="font-size: 8px;"></i>'
+                        : ""
+                    }
                 `;
 
-                chatArea.classList.remove('chat-area-hidden');
-                document.getElementById('noChatSelected').classList.add('d-none');
+          chatArea.classList.remove("chat-area-hidden");
+          document.getElementById("noChatSelected").classList.add("d-none");
 
-                // Load messages
-                loadMessages(chat);
+          // Load messages
+          loadMessages(chat);
 
-                // Mark as read
-                chat.unreadCount = 0;
-                loadChatList();
+          // Mark as read
+          chat.unreadCount = 0;
+          loadChatList();
 
-                // Join chat room
-                socket.emit('join_chat', { chatId: chatId, userId: currentUser.id });
+          // Join chat room
+          socket.emit("join_chat", { chatId: chatId, userId: currentUser.id });
 
-                // Focus input
-                messageInput.focus();
-            }
+          // Focus input
+          messageInput.focus();
         }
+      }
 
-        // Load messages
-        function loadMessages(chat) {
-            chatMessages.innerHTML = '';
+      // Load messages
+      function loadMessages(chat) {
+        chatMessages.innerHTML = "";
 
-            chat.messages.forEach(message => {
-                appendMessage(message);
-            });
+        chat.messages.forEach((message) => {
+          appendMessage(message);
+        });
 
-            // Scroll to bottom
-            scrollToBottom();
-        }
+        // Scroll to bottom
+        scrollToBottom();
+      }
 
-        // Append message to chat
-        function appendMessage(message) {
-            const messageClass = message.sender.id === currentUser.id ? 'sent' : 'received';
-            const time = formatTime(message.time);
+      // Append message to chat
+      function appendMessage(message) {
+        const messageClass =
+          message.sender.id === currentUser.id ? "sent" : "received";
+        const time = formatTime(message.time);
 
-            let messageContent = '';
+        let messageContent = "";
 
-            if (message.type === 'file') {
-                messageContent = `
+        if (message.type === "file") {
+          messageContent = `
                     <div class="file-attachment">
-                        <i class="fas fa-file-${getFileIcon(message.file.type)} file-icon"></i>
+                        <i class="fas fa-file-${getFileIcon(
+                          message.file.type,
+                        )} file-icon"></i>
                         <div class="file-info">
                             <div class="file-name">${message.file.name}</div>
-                            <div class="file-size">${formatFileSize(message.file.size)}</div>
+                            <div class="file-size">${formatFileSize(
+                              message.file.size,
+                            )}</div>
                         </div>
-                        <a href="${message.file.url}" class="btn btn-sm btn-outline-primary" download>
+                        <a href="${
+                          message.file.url
+                        }" class="btn btn-sm btn-outline-primary" download>
                             <i class="fas fa-download"></i>
                         </a>
                     </div>
-                    ${message.content ? `<div>${message.content}</div>` : ''}
+                    ${message.content ? `<div>${message.content}</div>` : ""}
                 `;
-            } else {
-                messageContent = message.content;
-            }
+        } else {
+          messageContent = message.content;
+        }
 
-            chatMessages.innerHTML += `
+        chatMessages.innerHTML += `
                 <div class="message ${messageClass}" data-message-id="${message.id}">
                     <div class="message-header">
                         ${message.sender.name} • ${time}
@@ -804,210 +986,224 @@
                 </div>
             `;
 
-            scrollToBottom();
+        scrollToBottom();
+      }
+
+      // Send message
+      function sendMessage() {
+        const content = messageInput.value.trim();
+
+        if (!content || !currentChatId) return;
+
+        const message = {
+          id: Date.now(),
+          chatId: currentChatId,
+          sender: currentUser,
+          content: content,
+          time: new Date().toISOString(),
+          type: "text",
+        };
+
+        // Add to local chat
+        const chat = mockChats.find((c) => c.id === currentChatId);
+        if (chat) {
+          chat.messages.push(message);
+          chat.lastMessage = content;
+          chat.lastMessageTime = message.time;
+          appendMessage(message);
+          loadChatList();
         }
 
-        // Send message
-        function sendMessage() {
-            const content = messageInput.value.trim();
+        // Send via Socket.IO
+        socket.emit("send_message", message);
 
-            if (!content || !currentChatId) return;
+        // Clear input and stop typing
+        messageInput.value = "";
+        socket.emit("stop_typing", {
+          chatId: currentChatId,
+          userId: currentUser.id,
+        });
+      }
 
-            const message = {
-                id: Date.now(),
-                chatId: currentChatId,
-                sender: currentUser,
-                content: content,
-                time: new Date().toISOString(),
-                type: 'text'
-            };
-
-            // Add to local chat
-            const chat = mockChats.find(c => c.id === currentChatId);
-            if (chat) {
-                chat.messages.push(message);
-                chat.lastMessage = content;
-                chat.lastMessageTime = message.time;
-                appendMessage(message);
-                loadChatList();
-            }
-
-            // Send via Socket.IO
-            socket.emit('send_message', message);
-
-            // Clear input and stop typing
-            messageInput.value = '';
-            socket.emit('stop_typing', { chatId: currentChatId, userId: currentUser.id });
+      // Handle new message from Socket.IO
+      function handleNewMessage(data) {
+        if (data.chatId === currentChatId) {
+          appendMessage(data);
         }
 
-        // Handle new message from Socket.IO
-        function handleNewMessage(data) {
-            if (data.chatId === currentChatId) {
-                appendMessage(data);
-            }
-
-            // Update chat list
-            const chat = mockChats.find(c => c.id === data.chatId);
-            if (chat) {
-                chat.messages.push(data);
-                chat.lastMessage = data.content;
-                chat.lastMessageTime = data.time;
-                if (data.chatId !== currentChatId) {
-                    chat.unreadCount++;
-                }
-                loadChatList();
-            }
+        // Update chat list
+        const chat = mockChats.find((c) => c.id === data.chatId);
+        if (chat) {
+          chat.messages.push(data);
+          chat.lastMessage = data.content;
+          chat.lastMessageTime = data.time;
+          if (data.chatId !== currentChatId) {
+            chat.unreadCount++;
+          }
+          loadChatList();
         }
+      }
 
-        // Handle file upload
-        function handleFileUpload(file) {
-            if (!file || !currentChatId) return;
+      // Handle file upload
+      function handleFileUpload(file) {
+        if (!file || !currentChatId) return;
 
-            // Show loading
-            const loadingMessage = {
-                id: Date.now(),
-                sender: currentUser,
-                content: 'Качва се файл...',
-                time: new Date().toISOString(),
-                type: 'text'
-            };
-            appendMessage(loadingMessage);
+        // Show loading
+        const loadingMessage = {
+          id: Date.now(),
+          sender: currentUser,
+          content: "Качва се файл...",
+          time: new Date().toISOString(),
+          type: "text",
+        };
+        appendMessage(loadingMessage);
 
-            // Simulate file upload
-            setTimeout(() => {
-                // Remove loading message
-                const loadingElement = document.querySelector(`[data-message-id="${loadingMessage.id}"]`);
-                if (loadingElement) loadingElement.remove();
+        // Simulate file upload
+        setTimeout(() => {
+          // Remove loading message
+          const loadingElement = document.querySelector(
+            `[data-message-id="${loadingMessage.id}"]`,
+          );
+          if (loadingElement) loadingElement.remove();
 
-                // Create file message
-                const fileMessage = {
-                    id: Date.now(),
-                    chatId: currentChatId,
-                    sender: currentUser,
-                    content: '',
-                    time: new Date().toISOString(),
-                    type: 'file',
-                    file: {
-                        name: file.name,
-                        type: file.type,
-                        size: file.size,
-                        url: URL.createObjectURL(file) // In real app, this would be server URL
-                    }
-                };
+          // Create file message
+          const fileMessage = {
+            id: Date.now(),
+            chatId: currentChatId,
+            sender: currentUser,
+            content: "",
+            time: new Date().toISOString(),
+            type: "file",
+            file: {
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              url: URL.createObjectURL(file), // In real app, this would be server URL
+            },
+          };
 
-                // Add to local chat
-                const chat = mockChats.find(c => c.id === currentChatId);
-                if (chat) {
-                    chat.messages.push(fileMessage);
-                    chat.lastMessage = `Файл: ${file.name}`;
-                    chat.lastMessageTime = fileMessage.time;
-                    appendMessage(fileMessage);
-                    loadChatList();
-                }
-
-                // Send via Socket.IO
-                socket.emit('send_file', fileMessage);
-            }, 2000);
-        }
-
-        // Handle file message from Socket.IO
-        function handleFileMessage(data) {
-            if (data.chatId === currentChatId) {
-                appendMessage(data);
-            }
-
-            const chat = mockChats.find(c => c.id === data.chatId);
-            if (chat) {
-                chat.messages.push(data);
-                chat.lastMessage = `Файл: ${data.file.name}`;
-                chat.lastMessageTime = data.time;
-                if (data.chatId !== currentChatId) {
-                    chat.unreadCount++;
-                }
-                loadChatList();
-            }
-        }
-
-        // Typing indicator functions
-        function handleTyping() {
-            if (!isTyping) {
-                isTyping = true;
-                socket.emit('typing', { chatId: currentChatId, userId: currentUser.id });
-            }
-
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                isTyping = false;
-                socket.emit('stop_typing', { chatId: currentChatId, userId: currentUser.id });
-            }, 1000);
-        }
-
-        function showTypingIndicator(data) {
-            if (data.chatId === currentChatId && data.userId !== currentUser.id) {
-                typingIndicator.style.display = 'block';
-                typingIndicator.innerHTML = `
-                    <i class="fas fa-circle-notch fa-spin me-2"></i>
-                    ${data.userName || 'Някой'} пише...
-                `;
-                scrollToBottom();
-            }
-        }
-
-        function hideTypingIndicator(data) {
-            if (data.chatId === currentChatId) {
-                typingIndicator.style.display = 'none';
-            }
-        }
-
-        // Update user status
-        function updateUserStatus(userId, isOnline, lastSeen = null) {
-            mockChats.forEach(chat => {
-                if (chat.participants.some(p => p.id === userId)) {
-                    chat.isOnline = isOnline;
-                    chat.lastSeen = lastSeen;
-                }
-            });
+          // Add to local chat
+          const chat = mockChats.find((c) => c.id === currentChatId);
+          if (chat) {
+            chat.messages.push(fileMessage);
+            chat.lastMessage = `Файл: ${file.name}`;
+            chat.lastMessageTime = fileMessage.time;
+            appendMessage(fileMessage);
             loadChatList();
+          }
+
+          // Send via Socket.IO
+          socket.emit("send_file", fileMessage);
+        }, 2000);
+      }
+
+      // Handle file message from Socket.IO
+      function handleFileMessage(data) {
+        if (data.chatId === currentChatId) {
+          appendMessage(data);
         }
 
-        // Utility functions
-        function scrollToBottom() {
-            setTimeout(() => {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }, 100);
+        const chat = mockChats.find((c) => c.id === data.chatId);
+        if (chat) {
+          chat.messages.push(data);
+          chat.lastMessage = `Файл: ${data.file.name}`;
+          chat.lastMessageTime = data.time;
+          if (data.chatId !== currentChatId) {
+            chat.unreadCount++;
+          }
+          loadChatList();
+        }
+      }
+
+      // Typing indicator functions
+      function handleTyping() {
+        if (!isTyping) {
+          isTyping = true;
+          socket.emit("typing", {
+            chatId: currentChatId,
+            userId: currentUser.id,
+          });
         }
 
-        function formatTime(timeString) {
-            const date = new Date(timeString);
-            const now = new Date();
-            const diff = now - date;
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+          isTyping = false;
+          socket.emit("stop_typing", {
+            chatId: currentChatId,
+            userId: currentUser.id,
+          });
+        }, 1000);
+      }
 
-            if (diff < 60000) return 'току що';
-            if (diff < 3600000) return `${Math.floor(diff / 60000)} мин`;
-            if (diff < 86400000) return date.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' });
-            return date.toLocaleDateString('bg-BG');
+      function showTypingIndicator(data) {
+        if (data.chatId === currentChatId && data.userId !== currentUser.id) {
+          typingIndicator.style.display = "block";
+          typingIndicator.innerHTML = `
+                    <i class="fas fa-circle-notch fa-spin me-2"></i>
+                    ${data.userName || "Някой"} пише...
+                `;
+          scrollToBottom();
         }
+      }
 
-        function getFileIcon(mimeType) {
-            if (mimeType.startsWith('image/')) return 'image';
-            if (mimeType.startsWith('video/')) return 'video';
-            if (mimeType.startsWith('audio/')) return 'audio';
-            if (mimeType === 'application/pdf') return 'pdf';
-            return 'alt';
+      function hideTypingIndicator(data) {
+        if (data.chatId === currentChatId) {
+          typingIndicator.style.display = "none";
         }
+      }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+      // Update user status
+      function updateUserStatus(userId, isOnline, lastSeen = null) {
+        mockChats.forEach((chat) => {
+          if (chat.participants.some((p) => p.id === userId)) {
+            chat.isOnline = isOnline;
+            chat.lastSeen = lastSeen;
+          }
+        });
+        loadChatList();
+      }
 
-        // Global functions for onclick handlers
-        window.selectChat = selectChat;
-        window.sendMessage = sendMessage;
+      // Utility functions
+      function scrollToBottom() {
+        setTimeout(() => {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+      }
+
+      function formatTime(timeString) {
+        const date = new Date(timeString);
+        const now = new Date();
+        const diff = now - date;
+
+        if (diff < 60000) return "току що";
+        if (diff < 3600000) return `${Math.floor(diff / 60000)} мин`;
+        if (diff < 86400000)
+          return date.toLocaleTimeString("bg-BG", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        return date.toLocaleDateString("bg-BG");
+      }
+
+      function getFileIcon(mimeType) {
+        if (mimeType.startsWith("image/")) return "image";
+        if (mimeType.startsWith("video/")) return "video";
+        if (mimeType.startsWith("audio/")) return "audio";
+        if (mimeType === "application/pdf") return "pdf";
+        return "alt";
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
+      // Global functions for onclick handlers
+      window.selectChat = selectChat;
+      window.sendMessage = sendMessage;
     </script>
-</body>
-
+  </body>
 </html>
