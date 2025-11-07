@@ -12,7 +12,10 @@ from datetime import UTC, datetime
 from flask import Blueprint, current_app, jsonify, render_template, request
 from flask_login import current_user
 
-from extensions import db
+try:
+    from .extensions import db
+except Exception:
+    from extensions import db
 
 
 # Get db instance from current app context for proper test compatibility
@@ -33,10 +36,12 @@ def get_db():
 
 
 try:
-    from models import PushSubscription, User
+    from .models import PushSubscription, User
 except Exception:
-    # Fallback for environments that import via package path
-    from backend.models import PushSubscription, User
+    try:
+        from models import PushSubscription, User
+    except Exception:
+        from backend.models import PushSubscription, User
 
 notification_bp = Blueprint("notification", __name__)
 

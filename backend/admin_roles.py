@@ -5,15 +5,32 @@ Admin routes for role and user management
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from werkzeug.security import generate_password_hash
 
-from backend.extensions import db
-from models import (
-    Permission,
-    Role,
-    RolePermission,
-    User,
-    UserRole,
-)  # Import from main models.py
-from permissions import require_admin_login
+try:
+    from .extensions import db
+except Exception:
+    from backend.extensions import db
+
+try:
+    from .models import (
+        Permission,
+        Role,
+        RolePermission,
+        User,
+        UserRole,
+    )
+except Exception:
+    from models import (
+        Permission,
+        Role,
+        RolePermission,
+        User,
+        UserRole,
+    )  # Import from main models.py
+
+try:
+    from .permissions import require_admin_login
+except Exception:
+    from permissions import require_admin_login
 
 admin_roles_bp = Blueprint("admin_roles", __name__)
 
@@ -233,12 +250,15 @@ def create_user():
             return redirect(url_for("admin_roles.create_user"))
 
         # Create user
-        user = User(
-            username=username,
-            email=email,
-            password_hash=generate_password_hash(password),
-            is_active=True,
-        )
+        user = User(username=username, email=email, is_active=True)
+        try:
+            user.set_password(password)
+        except Exception:
+            # Fallback if set_password is not available or validation fails
+            from werkzeug.security import generate_password_hash
+
+            user.password_hash = generate_password_hash(password)
+
         db.session.add(user)
         db.session.flush()  # Get user ID
 

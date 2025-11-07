@@ -29,16 +29,16 @@ class DatabaseIndexOptimizer:
         print("🔍 АНАЛИЗ НА БАЗАТА ДАННИ")
         print("=" * 50)
 
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        # Use a context manager to ensure connections are closed promptly
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        try:
-            # 1. Броя записи в analytics_events таблицата
+            # 1. Count rows in analytics_events table
             cursor.execute("SELECT COUNT(*) FROM analytics_events")
             event_count = cursor.fetchone()[0]
             print(f"📊 Analytics events: {event_count:,}")
 
-            # 2. Тест на заявка без индекси
+            # 2. Query benchmark without indexes
             print("\n⏱️  Тестване на заявки БЕЗ индекси:")
 
             start_time = time.time()
@@ -57,7 +57,7 @@ class DatabaseIndexOptimizer:
             print(f"   ⚡ Заявка за събития за 30 дни: {query_time_no_index:.3f}s")
             print(f"   📋 Резултати: {len(results)} типа събития")
 
-            # 3. Проверка на съществуващи индекси
+            # 3. Check existing indexes
             cursor.execute(
                 "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='analytics_events'"
             )
@@ -68,69 +68,65 @@ class DatabaseIndexOptimizer:
 
             return query_time_no_index, event_count
 
-        finally:
-            conn.close()
+        # with-context closes the connection automatically
 
     def create_performance_indexes(self):
         """Създава оптимизирани индекси за analytics заявки"""
         print("\n🔨 СЪЗДАВАНЕ НА PERFORMANCE ИНДЕКСИ")
         print("=" * 50)
 
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        indexes_to_create = [
-            {
-                "name": "idx_analytics_timestamp",
-                "sql": "CREATE INDEX IF NOT EXISTS idx_analytics_timestamp ON analytics_events(created_at)",
-                "purpose": "Ускорява date range филтри",
-            },
-            {
-                "name": "idx_analytics_event_type",
-                "sql": "CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON analytics_events(event_type)",
-                "purpose": "Ускорява филтри по тип събитие",
-            },
-            {
-                "name": "idx_analytics_composite",
-                "sql": "CREATE INDEX IF NOT EXISTS idx_analytics_composite ON analytics_events(created_at, event_type)",
-                "purpose": "Комбинирани заявки по дата и тип",
-            },
-            {
-                "name": "idx_analytics_user_timestamp",
-                "sql": "CREATE INDEX IF NOT EXISTS idx_analytics_user_timestamp ON analytics_events(user_session, created_at)",
-                "purpose": "Потребителски analytics по време",
-            },
-        ]
+            indexes_to_create = [
+                {
+                    "name": "idx_analytics_timestamp",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_analytics_timestamp ON analytics_events(created_at)",
+                    "purpose": "Ускорява date range филтри",
+                },
+                {
+                    "name": "idx_analytics_event_type",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON analytics_events(event_type)",
+                    "purpose": "Ускорява филтри по тип събитие",
+                },
+                {
+                    "name": "idx_analytics_composite",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_analytics_composite ON analytics_events(created_at, event_type)",
+                    "purpose": "Комбинирани заявки по дата и тип",
+                },
+                {
+                    "name": "idx_analytics_user_timestamp",
+                    "sql": "CREATE INDEX IF NOT EXISTS idx_analytics_user_timestamp ON analytics_events(user_session, created_at)",
+                    "purpose": "Потребителски analytics по време",
+                },
+            ]
 
-        try:
-            for index in indexes_to_create:
-                print(f"\n📍 Създаване на {index['name']}...")
-                print(f"   💡 Цел: {index['purpose']}")
+            try:
+                for index in indexes_to_create:
+                    print(f"\n📍 Създаване на {index['name']}...")
+                    print(f"   💡 Цел: {index['purpose']}")
 
-                start_time = time.time()
-                cursor.execute(index["sql"])
-                creation_time = time.time() - start_time
+                    start_time = time.time()
+                    cursor.execute(index["sql"])
+                    creation_time = time.time() - start_time
 
-                print(f"   ✅ Създаден за {creation_time:.3f}s")
+                    print(f"   ✅ Създаден за {creation_time:.3f}s")
 
-            conn.commit()
-            print("\n✅ Всички индекси са създадени успешно!")
+                conn.commit()
+                print("\n✅ Всички индекси са създадени успешно!")
 
-        except Exception as e:
-            print(f"❌ Грешка при създаване на индекси: {e}")
-            conn.rollback()
-        finally:
-            conn.close()
+            except Exception as e:
+                print(f"❌ Грешка при създаване на индекси: {e}")
+                conn.rollback()
 
     def test_indexed_performance(self):
         """Тестване на performance след добавяне на индекси"""
         print("\n⚡ ТЕСТВАНЕ НА PERFORMANCE С ИНДЕКСИ")
         print("=" * 50)
 
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
 
-        try:
             # Същата заявка като преди, но сега с индекси
             start_time = time.time()
             cursor.execute(
@@ -149,9 +145,6 @@ class DatabaseIndexOptimizer:
             print(f"   📋 Резултати: {len(results)} типа събития")
 
             return query_time_with_index
-
-        finally:
-            conn.close()
 
     def run_comprehensive_optimization(self):
         """Пълна оптимизация на базата данни"""

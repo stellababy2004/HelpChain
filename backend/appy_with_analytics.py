@@ -187,7 +187,11 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    try:
+        return db.session.get(User, int(user_id))
+    except Exception:
+        # Avoid falling back to the legacy Query.get which emits warnings.
+        return None
 
 
 # -----------------------------------------------------------------------------
@@ -272,10 +276,16 @@ def create_admin_user(username, email, password, role=AdminRole.MODERATOR):
     admin_user = AdminUser(
         username=username,
         email=email,
-        password_hash=generate_password_hash(password),
         role=role,
         created_at=datetime.utcnow(),
     )
+
+    try:
+        admin_user.set_password(password)
+    except Exception:
+        from werkzeug.security import generate_password_hash
+
+        admin_user.password_hash = generate_password_hash(password)
 
     db.session.add(admin_user)
     try:
@@ -869,15 +879,20 @@ def register():
             flash("Имейлът вече е регистриран", "warning")
             return redirect(url_for("register"))
 
-        hashed = generate_password_hash(password)
         user = User(
             username=username,
             email=email,
-            password=hashed,
             role="volunteer",
             created_at=datetime.now(UTC),
         )
         try:
+            try:
+                user.set_password(password)
+            except Exception:
+                from werkzeug.security import generate_password_hash
+
+                user.password_hash = generate_password_hash(password)
+
             db.session.add(user)
             db.session.commit()
             flash("Регистрацията е успешна. Влез с данните си.", "success")
@@ -897,7 +912,11 @@ def login():
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
         user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
+        if (
+            user
+            and getattr(user, "check_password", None)
+            and user.check_password(password)
+        ):
             login_user(user)
             flash("Влязохте успешно", "success")
             return redirect(url_for("index"))

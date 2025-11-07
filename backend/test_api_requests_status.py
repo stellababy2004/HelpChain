@@ -26,6 +26,7 @@ def test_update_status_sends_email(monkeypatch, authenticated_admin_client, db_s
     db_session.commit()
 
     sent = {}
+
     def fake_send_notification_email(recipient, subject, template, context):
         sent["recipient"] = recipient
         sent["subject"] = subject

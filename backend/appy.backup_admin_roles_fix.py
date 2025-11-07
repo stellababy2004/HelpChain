@@ -1,4 +1,3 @@
-
 # AJAX endpoint for admin dashboard: all requests as JSON
 @app.route("/admin/api/requests", methods=["GET"])
 @require_admin_login
@@ -6,13 +5,17 @@ def admin_api_requests():
     requests = HelpRequest.query.all()
     items = []
     for r in requests:
-        items.append({
-            "id": r.id,
-            "name": r.name,
-            "description": r.description,
-            "status": r.status,
-        })
+        items.append(
+            {
+                "id": r.id,
+                "name": r.name,
+                "description": r.description,
+                "status": r.status,
+            }
+        )
     return jsonify({"items": items})
+
+
 import csv
 import json
 import logging
@@ -861,7 +864,7 @@ def admin_2fa():
             flash("Сесията е изтекла. Моля, логнете се отново.", "error")
             return redirect(url_for("admin_login"))
 
-        admin_user = AdminUser.query.get(admin_id)
+        admin_user = db.session.get(AdminUser, admin_id)
         if not admin_user:
             flash("Потребителят не е намерен.", "error")
             return redirect(url_for("admin_login"))
@@ -1297,7 +1300,7 @@ def volunteer_verify_code():
 
         if entered_code == pending.get("access_code"):
             # Code is correct, complete login
-            volunteer = Volunteer.query.get(pending["volunteer_id"])
+            volunteer = db.session.get(Volunteer, pending["volunteer_id"])
             if volunteer:
                 # Clear any admin session to prevent conflicts
                 session.pop("admin_logged_in", None)
@@ -1353,7 +1356,7 @@ def resend_volunteer_code():
             )
 
         # Get volunteer
-        volunteer = Volunteer.query.get(pending["volunteer_id"])
+        volunteer = db.session.get(Volunteer, pending["volunteer_id"])
         if not volunteer:
             return (
                 jsonify({"success": False, "message": "Доброволецът не е намерен."}),
@@ -1659,7 +1662,7 @@ def update_volunteer_profile():
         return jsonify({"success": False, "message": "Не сте логнати"}), 401
 
     volunteer_id = session.get("volunteer_id")
-    volunteer = Volunteer.query.get(volunteer_id)
+    volunteer = db.session.get(Volunteer, volunteer_id)
     if not volunteer:
         return jsonify({"success": False, "message": "Доброволецът не е намерен"}), 404
 
@@ -1687,7 +1690,7 @@ def update_volunteer_settings():
         return jsonify({"success": False, "message": "Не сте логнати"}), 401
 
     volunteer_id = session.get("volunteer_id")
-    volunteer = Volunteer.query.get(volunteer_id)
+    volunteer = db.session.get(Volunteer, volunteer_id)
     if not volunteer:
         return jsonify({"success": False, "message": "Доброволецът не е намерен"}), 404
 
@@ -2155,7 +2158,7 @@ def chat():
 
         # Check if user is logged in (volunteer or admin)
         if session.get("volunteer_logged_in"):
-            volunteer = Volunteer.query.get(session.get("volunteer_id"))
+            volunteer = db.session.get(Volunteer, session.get("volunteer_id"))
             if volunteer:
                 user_info = {
                     "type": "volunteer",
@@ -2173,7 +2176,7 @@ def chat():
                     .all()
                 )
         elif session.get("user_id"):
-            user = User.query.get(session.get("user_id"))
+            user = db.session.get(User, session.get("user_id"))
             if user:
                 user_info = {"type": "admin", "id": user.id, "name": user.username}
 
@@ -2217,7 +2220,7 @@ def chat_room(room_id):
         # Get user info
         user_info = {}
         if session.get("volunteer_logged_in"):
-            volunteer = Volunteer.query.get(session.get("volunteer_id"))
+            volunteer = db.session.get(Volunteer, session.get("volunteer_id"))
             if volunteer:
                 user_info = {
                     "type": "volunteer",
@@ -2225,7 +2228,7 @@ def chat_room(room_id):
                     "name": volunteer.name,
                 }
         elif session.get("user_id"):
-            user = User.query.get(session.get("user_id"))
+            user = db.session.get(User, session.get("user_id"))
             if user:
                 user_info = {"type": "admin", "id": user.id, "name": user.username}
         else:
@@ -2303,7 +2306,7 @@ def api_get_room_messages(room_id):
     """API endpoint to get room messages"""
     try:
         # Check permissions
-        room = ChatRoom.query.get(room_id)
+        room = db.session.get(ChatRoom, room_id)
         if not room:
             return jsonify({"error": "Room not found"}), 404
 
@@ -3010,14 +3013,16 @@ def admin_api_volunteers():
     volunteers = Volunteer.query.all()
     items = []
     for v in volunteers:
-        items.append({
-            "id": v.id,
-            "name": v.name,
-            "email": v.email,
-            "phone": v.phone,
-            "location": getattr(v, "location", ""),
-            "skills": v.skills if hasattr(v, "skills") else "",
-        })
+        items.append(
+            {
+                "id": v.id,
+                "name": v.name,
+                "email": v.email,
+                "phone": v.phone,
+                "location": getattr(v, "location", ""),
+                "skills": v.skills if hasattr(v, "skills") else "",
+            }
+        )
     return jsonify({"items": items})
 
 
@@ -3107,7 +3112,7 @@ def update_volunteer_location(volunteer_id):
         if lat is None or lng is None:
             return jsonify({"error": "latitude and longitude required"}), 400
 
-        vol = Volunteer.query.get(volunteer_id)
+        vol = db.session.get(Volunteer, volunteer_id)
         if not vol:
             return jsonify({"error": "Volunteer not found"}), 404
 
@@ -3682,7 +3687,7 @@ def api_volunteer_task_recommendations(volunteer_id):
         recommendations = []
         for task in open_tasks:
             match_score = smart_matching_engine._calculate_match_score(
-                task, Volunteer.query.get(volunteer_id)
+                task, db.session.get(Volunteer, volunteer_id)
             )
             if match_score["overall"] > 40:  # Минимален threshold
                 recommendations.append(
