@@ -1,0 +1,1697 @@
+# French translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-10-28 12:23+0100\n"
+"PO-Revision-Date: 2025-10-28 09:45+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: appy_with_analytics.py:557
+msgid "Доброволецът е добавен успешно!"
+msgstr "Le bénévole a été ajouté avec succès !"
+
+#: .venv/Lib/site-packages/_pytest/config/argparsing.py:474
+#, python-format
+msgid "ambiguous option: %(option)s could match %(matches)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/_termui_impl.py:518
+#: venv/Lib/site-packages/click/_termui_impl.py:608
+#, python-brace-format
+msgid "{editor}: Editing failed"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/_termui_impl.py:522
+#: venv/Lib/site-packages/click/_termui_impl.py:612
+#, python-brace-format
+msgid "{editor}: Editing failed: {e}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:1120
+#: venv/Lib/site-packages/click/core.py:1425
+#: venv/Lib/site-packages/typer/core.py:249
+msgid "Aborted!"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:1309
+#: .venv/Lib/site-packages/click/decorators.py:559
+#: venv/Lib/site-packages/click/decorators.py:548
+msgid "Show this message and exit."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:1340
+#: .venv/Lib/site-packages/click/core.py:1370
+#, python-brace-format
+msgid "(Deprecated) {text}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:1387
+#: venv/Lib/site-packages/click/core.py:1160
+#: venv/Lib/site-packages/typer/core.py:633
+#: venv/Lib/site-packages/typer/rich_utils.py:96
+msgid "Options"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:1413
+#: venv/Lib/site-packages/click/core.py:1222
+#, python-brace-format
+msgid "Got unexpected extra argument ({args})"
+msgid_plural "Got unexpected extra arguments ({args})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/click/core.py:1429
+#, python-brace-format
+msgid "DeprecationWarning: The command {name!r} is deprecated."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:1636
+#: venv/Lib/site-packages/click/core.py:1799
+#: venv/Lib/site-packages/typer/rich_utils.py:97
+msgid "Commands"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:1668
+#: venv/Lib/site-packages/click/core.py:1830
+msgid "Missing command."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:1746
+#: venv/Lib/site-packages/click/core.py:1908
+#, python-brace-format
+msgid "No such command {name!r}."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:2310
+#: venv/Lib/site-packages/click/core.py:2332
+msgid "Value must be an iterable."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:2331
+#: venv/Lib/site-packages/click/core.py:2355
+#, python-brace-format
+msgid "Takes {nargs} values but 1 was given."
+msgid_plural "Takes {nargs} values but {len} were given."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/click/core.py:2778
+#: venv/Lib/site-packages/click/core.py:2956
+#: venv/Lib/site-packages/typer/core.py:553
+#, python-brace-format
+msgid "env var: {var}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:2808
+#: venv/Lib/site-packages/click/core.py:3023
+#: venv/Lib/site-packages/typer/core.py:114
+msgid "(dynamic)"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:2821
+#: venv/Lib/site-packages/click/core.py:2959
+#: venv/Lib/site-packages/typer/core.py:366
+#: venv/Lib/site-packages/typer/core.py:574
+#, python-brace-format
+msgid "default: {default}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/core.py:2834
+#: venv/Lib/site-packages/click/core.py:2963
+#: venv/Lib/site-packages/typer/core.py:368
+#: venv/Lib/site-packages/typer/core.py:583
+msgid "required"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/decorators.py:465
+#: venv/Lib/site-packages/click/decorators.py:465
+#, python-format
+msgid "%(prog)s, version %(version)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/decorators.py:528
+#: venv/Lib/site-packages/click/decorators.py:522
+msgid "Show the version and exit."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:44
+#: .venv/Lib/site-packages/click/exceptions.py:80
+#: venv/Lib/site-packages/click/exceptions.py:50
+#: venv/Lib/site-packages/click/exceptions.py:89
+#, python-brace-format
+msgid "Error: {message}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:72
+#: venv/Lib/site-packages/click/exceptions.py:81
+#, python-brace-format
+msgid "Try '{command} {option}' for help."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:121
+#: venv/Lib/site-packages/click/exceptions.py:130
+#, python-brace-format
+msgid "Invalid value: {message}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:123
+#: venv/Lib/site-packages/click/exceptions.py:132
+#, python-brace-format
+msgid "Invalid value for {param_hint}: {message}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:179
+#: venv/Lib/site-packages/click/exceptions.py:190
+msgid "Missing argument"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:181
+#: venv/Lib/site-packages/click/exceptions.py:192
+msgid "Missing option"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:183
+#: venv/Lib/site-packages/click/exceptions.py:194
+msgid "Missing parameter"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:185
+#: venv/Lib/site-packages/click/exceptions.py:196
+#, python-brace-format
+msgid "Missing {param_type}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:192
+#: venv/Lib/site-packages/click/exceptions.py:203
+#, python-brace-format
+msgid "Missing parameter: {param_name}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:212
+#: venv/Lib/site-packages/click/exceptions.py:223
+#, python-brace-format
+msgid "No such option: {name}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:224
+#: venv/Lib/site-packages/click/exceptions.py:235
+#, python-brace-format
+msgid "Did you mean {possibility}?"
+msgid_plural "(Possible options: {possibilities})"
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:262
+#: venv/Lib/site-packages/click/exceptions.py:282
+msgid "unknown error"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/exceptions.py:269
+#: venv/Lib/site-packages/click/exceptions.py:289
+#, python-brace-format
+msgid "Could not open file {filename!r}: {message}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/formatting.py:156
+#: venv/Lib/site-packages/click/formatting.py:156
+msgid "Usage:"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/parser.py:231
+#: venv/Lib/site-packages/click/parser.py:199
+#, python-brace-format
+msgid "Argument {name!r} takes {nargs} values."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/parser.py:413
+#: venv/Lib/site-packages/click/parser.py:381
+#, python-brace-format
+msgid "Option {name!r} does not take a value."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/parser.py:474
+#: venv/Lib/site-packages/click/parser.py:444
+#, python-brace-format
+msgid "Option {name!r} requires an argument."
+msgid_plural "Option {name!r} requires {nargs} arguments."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/click/shell_completion.py:319
+#: venv/Lib/site-packages/click/shell_completion.py:332
+msgid "Shell completion is not supported for Bash versions older than 4.4."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/shell_completion.py:326
+#: venv/Lib/site-packages/click/shell_completion.py:339
+msgid "Couldn't detect Bash version, shell completion is not supported."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/termui.py:158
+#: venv/Lib/site-packages/click/termui.py:162
+msgid "Repeat for confirmation"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/termui.py:174
+#: venv/Lib/site-packages/click/termui.py:178
+msgid "Error: The value you entered was invalid."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/termui.py:176
+#: venv/Lib/site-packages/click/termui.py:180
+#, python-brace-format
+msgid "Error: {e.message}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/termui.py:187
+#: venv/Lib/site-packages/click/termui.py:191
+msgid "Error: The two entered values do not match."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/termui.py:243
+#: venv/Lib/site-packages/click/termui.py:247
+msgid "Error: invalid input"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/termui.py:773
+#: venv/Lib/site-packages/click/termui.py:866
+msgid "Press any key to continue..."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:266
+#: venv/Lib/site-packages/click/types.py:332
+#, python-brace-format
+msgid ""
+"Choose from:\n"
+"\t{choices}"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:298
+#: venv/Lib/site-packages/click/types.py:369
+#, python-brace-format
+msgid "{value!r} is not {choice}."
+msgid_plural "{value!r} is not one of {choices}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/click/types.py:392
+#: venv/Lib/site-packages/click/types.py:460
+#, python-brace-format
+msgid "{value!r} does not match the format {format}."
+msgid_plural "{value!r} does not match the formats {formats}."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/click/types.py:414
+#: venv/Lib/site-packages/click/types.py:482
+#, python-brace-format
+msgid "{value!r} is not a valid {number_type}."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:470
+#: venv/Lib/site-packages/click/types.py:538
+#, python-brace-format
+msgid "{value} is not in the range {range}."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:611
+#, fuzzy, python-brace-format
+msgid "{value!r} is not a valid boolean."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:635
+#: venv/Lib/site-packages/click/types.py:747
+#, python-brace-format
+msgid "{value!r} is not a valid UUID."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:822
+#: venv/Lib/site-packages/click/types.py:937
+msgid "file"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:824
+#: venv/Lib/site-packages/click/types.py:939
+msgid "directory"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:826
+#: venv/Lib/site-packages/click/types.py:941
+msgid "path"
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:877
+#: venv/Lib/site-packages/click/types.py:988
+#, python-brace-format
+msgid "{name} {filename!r} does not exist."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:886
+#: venv/Lib/site-packages/click/types.py:997
+#, python-brace-format
+msgid "{name} {filename!r} is a file."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:894
+#, python-brace-format
+msgid "{name} '{filename}' is a directory."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:903
+#: venv/Lib/site-packages/click/types.py:1014
+#, python-brace-format
+msgid "{name} {filename!r} is not readable."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:912
+#: venv/Lib/site-packages/click/types.py:1023
+#, python-brace-format
+msgid "{name} {filename!r} is not writable."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:921
+#: venv/Lib/site-packages/click/types.py:1032
+#, python-brace-format
+msgid "{name} {filename!r} is not executable."
+msgstr ""
+
+#: .venv/Lib/site-packages/click/types.py:988
+#: venv/Lib/site-packages/click/types.py:1099
+#, python-brace-format
+msgid "{len_type} values are required, but {len_value} was given."
+msgid_plural "{len_type} values are required, but {len_value} were given."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/rediscli.py:113
+#: venv/Lib/site-packages/flask_admin/contrib/rediscli.py:113
+msgid "Cli: Invalid command."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:374
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:374
+msgid "File required."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:379
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:379
+msgid "Invalid file type."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:404
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:404
+msgid "Invalid name"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:774
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:774
+#, python-format
+msgid "File \"%(name)s\" already exists."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:819
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:916
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:978
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1031
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1078
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1130
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2290
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:819
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:916
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:978
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1031
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1078
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1130
+#: venv/Lib/site-packages/flask_admin/model/base.py:2290
+msgid "Permission denied."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:912
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:912
+msgid "File uploading is disabled."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:923
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:923
+#, python-format
+msgid "Successfully saved file: %(name)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:927
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:927
+#, python-format
+msgid "Failed to save file: %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:935
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:935
+msgid "Upload File"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:974
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:974
+msgid "Directory creation is disabled."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:987
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:987
+#, python-format
+msgid "Successfully created directory: %(directory)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:991
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:991
+#, python-format
+msgid "Failed to create directory: %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1001
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1001
+msgid "Create Directory"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1027
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1027
+msgid "Deletion is disabled."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1036
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1036
+msgid "Directory deletion is disabled."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1042
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1042
+#, python-format
+msgid "Directory \"%(path)s\" was successfully deleted."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1044
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1044
+#, python-format
+msgid "Failed to delete directory: %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1050
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1205
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1050
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1205
+#, python-format
+msgid "File \"%(name)s\" was successfully deleted."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1052
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1207
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1052
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1207
+#, python-format
+msgid "Failed to delete file: %(name)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1074
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1074
+msgid "Renaming is disabled."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1082
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1082
+msgid "Path does not exist."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1091
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1091
+#, python-format
+msgid "Successfully renamed \"%(src)s\" to \"%(dst)s\""
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1095
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1095
+#, python-format
+msgid "Failed to rename: %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1108
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1108
+#, python-format
+msgid "Rename %(name)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1145
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1145
+#, python-format
+msgid "Error saving changes to %(name)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1149
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1149
+#, python-format
+msgid "Changes to %(name)s saved successfully."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1157
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1157
+#, python-format
+msgid "Error reading %(name)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1160
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1169
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1160
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1169
+#, python-format
+msgid "Unexpected error while reading from %(name)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1166
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1166
+#, python-format
+msgid "Cannot edit %(name)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1184
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1184
+#, python-format
+msgid "Editing %(path)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1196
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1196
+msgid "File deletion is disabled."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/fileadmin/s3.py:156
+#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/s3.py:156
+msgid "Cannot operate on non empty directories"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:558
+#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:558
+#, python-format
+msgid "Failed to get model. %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:577
+#: .venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:462
+#: .venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:317
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1166
+#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:577
+#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:462
+#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:317
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1166
+#, python-format
+msgid "Failed to create record. %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:603
+#: .venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:481
+#: .venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:342
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1192
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2427
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2434
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2437
+#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:603
+#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:481
+#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:342
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1192
+#: venv/Lib/site-packages/flask_admin/model/base.py:2427
+#: venv/Lib/site-packages/flask_admin/model/base.py:2434
+#: venv/Lib/site-packages/flask_admin/model/base.py:2437
+#, python-format
+msgid "Failed to update record. %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:626
+#: .venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:496
+#: .venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:367
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1217
+#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:626
+#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:496
+#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:367
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1217
+#, python-format
+msgid "Failed to delete record. %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:676
+#: .venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:532
+#: .venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:396
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1254
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2238
+#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:676
+#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:532
+#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:396
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1254
+#: venv/Lib/site-packages/flask_admin/model/base.py:2238
+#, python-format
+msgid "Record was successfully deleted."
+msgid_plural "%(count)s records were successfully deleted."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:682
+#: .venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:538
+#: .venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:401
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1262
+#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:682
+#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:538
+#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:401
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1262
+#, python-format
+msgid "Failed to delete records. %(error)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:127
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:177
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:182
+#: .venv/Lib/site-packages/flask_admin/model/fields.py:178
+#: .venv/Lib/site-packages/flask_admin/model/fields.py:227
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:127
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:177
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:182
+#: venv/Lib/site-packages/flask_admin/model/fields.py:178
+#: venv/Lib/site-packages/flask_admin/model/fields.py:227
+msgid "Not a valid choice"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:44
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:44
+msgid "Already exists."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:64
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:64
+#, python-format
+msgid "At least %(num)d item is required"
+msgid_plural "At least %(num)d items are required"
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:79
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:79
+msgid "Not a valid ISO currency code (e.g. USD, EUR, CNY)."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:87
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:87
+msgid "Not a valid color (e.g. \"red\", \"#f00\", \"#ff0000\")."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1130
+#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1130
+#, python-format
+msgid "Integrity error. %(message)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/form/fields.py:98
+#: venv/Lib/site-packages/flask_admin/form/fields.py:98
+msgid "Invalid time format"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/form/fields.py:147
+#: venv/Lib/site-packages/flask_admin/form/fields.py:147
+msgid "Invalid Choice: could not coerce"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/form/fields.py:221
+#: venv/Lib/site-packages/flask_admin/form/fields.py:221
+msgid "Invalid JSON"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/form/upload.py:213
+#: venv/Lib/site-packages/flask_admin/form/upload.py:213
+msgid "Invalid file extension"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/form/upload.py:220
+#: .venv/Lib/site-packages/flask_admin/form/upload.py:290
+#: venv/Lib/site-packages/flask_admin/form/upload.py:220
+#: venv/Lib/site-packages/flask_admin/form/upload.py:290
+#, python-format
+msgid "File \"%s\" already exists."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/form/validators.py:16
+#: venv/Lib/site-packages/flask_admin/form/validators.py:16
+msgid "This field requires at least one item."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/base.py:1702
+#: venv/Lib/site-packages/flask_admin/model/base.py:1702
+msgid "There are no items in the table."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/base.py:1711
+#: venv/Lib/site-packages/flask_admin/model/base.py:1711
+#, python-format
+msgid "Invalid Filter Value: %(value)s"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2102
+#: venv/Lib/site-packages/flask_admin/model/base.py:2102
+msgid "Record was successfully created."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2146
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2198
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2231
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2419
+#: venv/Lib/site-packages/flask_admin/model/base.py:2146
+#: venv/Lib/site-packages/flask_admin/model/base.py:2198
+#: venv/Lib/site-packages/flask_admin/model/base.py:2231
+#: venv/Lib/site-packages/flask_admin/model/base.py:2419
+msgid "Record does not exist."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2155
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2423
+#: venv/Lib/site-packages/flask_admin/model/base.py:2155
+#: venv/Lib/site-packages/flask_admin/model/base.py:2423
+msgid "Record was successfully saved."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2344
+#: venv/Lib/site-packages/flask_admin/model/base.py:2344
+msgid "Tablib dependency not installed."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/base.py:2371
+#: venv/Lib/site-packages/flask_admin/model/base.py:2371
+#, python-format
+msgid "Export type \"%(type)s not supported."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/template.py:79
+#: .venv/Lib/site-packages/flask_admin/model/template.py:86
+#: venv/Lib/site-packages/flask_admin/model/template.py:79
+#: venv/Lib/site-packages/flask_admin/model/template.py:86
+msgid "View Record"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/template.py:93
+#: .venv/Lib/site-packages/flask_admin/model/template.py:100
+#: venv/Lib/site-packages/flask_admin/model/template.py:93
+#: venv/Lib/site-packages/flask_admin/model/template.py:100
+msgid "Edit Record"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/template.py:107
+#: venv/Lib/site-packages/flask_admin/model/template.py:107
+msgid "Delete Record"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/widgets.py:62
+#: venv/Lib/site-packages/flask_admin/model/widgets.py:62
+msgid "Please select model"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/widgets.py:116
+#: venv/Lib/site-packages/flask_admin/model/widgets.py:116
+msgid "No"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_admin/model/widgets.py:117
+#: venv/Lib/site-packages/flask_admin/model/widgets.py:117
+msgid "Yes"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_wtf/file.py:55
+#: .venv/Lib/site-packages/wtforms/validators.py:293
+#: .venv/Lib/site-packages/wtforms/validators.py:323
+#: venv/Lib/site-packages/flask_wtf/file.py:55
+#: venv/Lib/site-packages/wtforms/validators.py:293
+#: venv/Lib/site-packages/wtforms/validators.py:323
+msgid "This field is required."
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_wtf/file.py:94
+#: venv/Lib/site-packages/flask_wtf/file.py:94
+#, python-brace-format
+msgid "File does not have an approved extension: {extensions}"
+msgstr ""
+
+#: .venv/Lib/site-packages/flask_wtf/file.py:101
+#: venv/Lib/site-packages/flask_wtf/file.py:101
+msgid "File does not have an approved extension."
+msgstr ""
+
+#: .venv/Lib/site-packages/kombu/transport/qpid.py:1311
+#: venv/Lib/site-packages/kombu/transport/qpid.py:1311
+#, python-format
+msgid "Attempting to connect to qpid with SASL mechanism %s"
+msgstr ""
+
+#: .venv/Lib/site-packages/kombu/transport/qpid.py:1316
+#: venv/Lib/site-packages/kombu/transport/qpid.py:1316
+#, python-format
+msgid "Connected to qpid with SASL mechanism %s"
+msgstr ""
+
+#: .venv/Lib/site-packages/kombu/transport/qpid.py:1334
+#: venv/Lib/site-packages/kombu/transport/qpid.py:1334
+#, python-format
+msgid "Unable to connect to qpid with SASL mechanism %s"
+msgstr ""
+
+#: .venv/Lib/site-packages/passlib/ext/django/utils.py:1000
+msgid "algorithm"
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:86
+#: venv/Lib/site-packages/wtforms/validators.py:86
+#, python-format
+msgid "Invalid field name '%s'."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:99
+#: venv/Lib/site-packages/wtforms/validators.py:99
+#, python-format
+msgid "Field must be equal to %(other_name)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:146
+#: venv/Lib/site-packages/wtforms/validators.py:146
+#, python-format
+msgid "Field must be at least %(min)d character long."
+msgid_plural "Field must be at least %(min)d characters long."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:152
+#: venv/Lib/site-packages/wtforms/validators.py:152
+#, python-format
+msgid "Field cannot be longer than %(max)d character."
+msgid_plural "Field cannot be longer than %(max)d characters."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:158
+#: venv/Lib/site-packages/wtforms/validators.py:158
+#, python-format
+msgid "Field must be exactly %(max)d character long."
+msgid_plural "Field must be exactly %(max)d characters long."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:164
+#: venv/Lib/site-packages/wtforms/validators.py:164
+#, python-format
+msgid "Field must be between %(min)d and %(max)d characters long."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:216
+#: venv/Lib/site-packages/wtforms/validators.py:216
+#, python-format
+msgid "Number must be at least %(min)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:219
+#: venv/Lib/site-packages/wtforms/validators.py:219
+#, python-format
+msgid "Number must be at most %(max)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:222
+#: venv/Lib/site-packages/wtforms/validators.py:222
+#, python-format
+msgid "Number must be between %(min)s and %(max)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:358
+#: venv/Lib/site-packages/wtforms/validators.py:358
+msgid "Invalid input."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:422
+#: venv/Lib/site-packages/wtforms/validators.py:422
+msgid "Invalid email address."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:460
+#: venv/Lib/site-packages/wtforms/validators.py:460
+msgid "Invalid IP address."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:503
+#: venv/Lib/site-packages/wtforms/validators.py:503
+msgid "Invalid Mac address."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:540
+#: venv/Lib/site-packages/wtforms/validators.py:540
+msgid "Invalid URL."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:561
+#: venv/Lib/site-packages/wtforms/validators.py:561
+msgid "Invalid UUID."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:595
+#: venv/Lib/site-packages/wtforms/validators.py:595
+#, python-format
+msgid "Invalid value, must be one of: %(values)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:631
+#: venv/Lib/site-packages/wtforms/validators.py:631
+#, python-format
+msgid "Invalid value, can't be any of: %(values)s."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:700
+#: venv/Lib/site-packages/wtforms/validators.py:700
+msgid "This field cannot be edited."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/validators.py:716
+#: venv/Lib/site-packages/wtforms/validators.py:716
+msgid "This field is disabled and cannot have a value."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/csrf/core.py:96
+#: venv/Lib/site-packages/wtforms/csrf/core.py:96
+msgid "Invalid CSRF Token."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/csrf/session.py:64
+#: venv/Lib/site-packages/wtforms/csrf/session.py:64
+msgid "CSRF token missing."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/csrf/session.py:72
+#: venv/Lib/site-packages/wtforms/csrf/session.py:72
+msgid "CSRF failed."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/csrf/session.py:77
+#: venv/Lib/site-packages/wtforms/csrf/session.py:77
+msgid "CSRF token expired."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/choices.py:142
+#: venv/Lib/site-packages/wtforms/fields/choices.py:142
+msgid "Invalid Choice: could not coerce."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/choices.py:149
+#: .venv/Lib/site-packages/wtforms/fields/choices.py:203
+#: venv/Lib/site-packages/wtforms/fields/choices.py:149
+#: venv/Lib/site-packages/wtforms/fields/choices.py:203
+msgid "Choices cannot be None."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/choices.py:155
+#: venv/Lib/site-packages/wtforms/fields/choices.py:155
+msgid "Not a valid choice."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/choices.py:194
+#: venv/Lib/site-packages/wtforms/fields/choices.py:194
+msgid "Invalid choice(s): one or more data inputs could not be coerced."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/choices.py:212
+#: venv/Lib/site-packages/wtforms/fields/choices.py:212
+#, python-format
+msgid "'%(value)s' is not a valid choice for this field."
+msgid_plural "'%(value)s' are not valid choices for this field."
+msgstr[0] ""
+msgstr[1] ""
+
+#: .venv/Lib/site-packages/wtforms/fields/datetime.py:52
+#: venv/Lib/site-packages/wtforms/fields/datetime.py:52
+msgid "Not a valid datetime value."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/datetime.py:78
+#: venv/Lib/site-packages/wtforms/fields/datetime.py:78
+msgid "Not a valid date value."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/datetime.py:104
+#: venv/Lib/site-packages/wtforms/fields/datetime.py:104
+msgid "Not a valid time value."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/datetime.py:149
+#: venv/Lib/site-packages/wtforms/fields/datetime.py:149
+msgid "Not a valid week value."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/numeric.py:82
+#: .venv/Lib/site-packages/wtforms/fields/numeric.py:92
+#: venv/Lib/site-packages/wtforms/fields/numeric.py:82
+#: venv/Lib/site-packages/wtforms/fields/numeric.py:92
+msgid "Not a valid integer value."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/numeric.py:168
+#: venv/Lib/site-packages/wtforms/fields/numeric.py:168
+msgid "Not a valid decimal value."
+msgstr ""
+
+#: .venv/Lib/site-packages/wtforms/fields/numeric.py:197
+#: venv/Lib/site-packages/wtforms/fields/numeric.py:197
+msgid "Not a valid float value."
+msgstr ""
+
+#: templates/admin_analytics_professional.html:6
+msgid "Advanced Analytics - HelpChain"
+msgstr "Analyses Avancées - HelpChain"
+
+#: templates/admin_analytics_professional.html:274
+msgid "HelpChain Analytics"
+msgstr "Analyses HelpChain"
+
+#: templates/admin_analytics_professional.html:289
+msgid "Advanced Analytics"
+msgstr "Analyses Avancées"
+
+#: templates/admin_analytics_professional.html:292
+msgid "Real-time analytics and forecasts for HelpChain"
+msgstr "Analyses et prévisions en temps réel pour HelpChain"
+
+#: templates/admin_analytics_professional.html:295
+msgid "Live"
+msgstr "En direct"
+
+#: templates/admin_analytics_professional.html:301
+msgid "Export JSON"
+msgstr "Exporter en JSON"
+
+#: templates/admin_analytics_professional.html:304
+msgid "Export CSV"
+msgstr "Exporter en CSV"
+
+#: templates/admin_analytics_professional.html:313
+msgid "Filters"
+msgstr "Filtres"
+
+#: templates/admin_analytics_professional.html:316
+msgid "Period"
+msgstr "Période"
+
+#: templates/admin_analytics_professional.html:321
+msgid "Select time range for analytics"
+msgstr "Sélectionnez la période d'analyse"
+
+#: templates/admin_analytics_professional.html:323
+msgid "Last 7 days"
+msgstr "7 derniers jours"
+
+#: templates/admin_analytics_professional.html:324
+msgid "Last 30 days"
+msgstr "30 derniers jours"
+
+#: templates/admin_analytics_professional.html:325
+msgid "Last 3 months"
+msgstr "3 derniers mois"
+
+#: templates/admin_analytics_professional.html:326
+msgid "Last year"
+msgstr "12 derniers mois"
+
+#: templates/admin_analytics_professional.html:331
+msgid "Category"
+msgstr "Catégorie"
+
+#: templates/admin_analytics_professional.html:336
+msgid "Filter by help category"
+msgstr "Filtrer par type d'aide"
+
+#: templates/admin_analytics_professional.html:338
+msgid "All categories"
+msgstr "Toutes les catégories"
+
+#: templates/admin_analytics_professional.html:339
+msgid "Medical assistance"
+msgstr "Assistance médicale"
+
+#: templates/admin_analytics_professional.html:340
+msgid "Transportation"
+msgstr "Transport"
+
+#: templates/admin_analytics_professional.html:341
+msgid "Household help"
+msgstr "Aide ménagère"
+
+#: templates/admin_analytics_professional.html:342
+msgid "Education"
+msgstr "Éducation"
+
+#: templates/admin_analytics_professional.html:347
+msgid "Region"
+msgstr "Région"
+
+#: templates/admin_analytics_professional.html:352
+msgid "Filter by region"
+msgstr "Filtrer par région"
+
+#: templates/admin_analytics_professional.html:354
+msgid "All regions"
+msgstr "Toutes les régions"
+
+#: templates/admin_analytics_professional.html:355
+msgid "Sofia"
+msgstr "Sofia"
+
+#: templates/admin_analytics_professional.html:356
+msgid "Plovdiv"
+msgstr "Plovdiv"
+
+#: templates/admin_analytics_professional.html:357
+msgid "Varna"
+msgstr "Varna"
+
+#: templates/admin_analytics_professional.html:358
+msgid "Burgas"
+msgstr "Burgas"
+
+#: templates/admin_analytics_professional.html:364
+msgid "Refresh"
+msgstr "Actualiser"
+
+#: templates/admin_analytics_professional.html:376
+msgid "Total requests"
+msgstr "Total des demandes"
+
+#: templates/admin_analytics_professional.html:387
+msgid "Success rate"
+msgstr "Taux de réussite"
+
+#: templates/admin_analytics_professional.html:400
+msgid "Average response time (days)"
+msgstr "Temps de réponse moyen (jours)"
+
+#: templates/admin_analytics_professional.html:411
+#: templates/admin_analytics_professional.html:522
+msgid "Active volunteers"
+msgstr "Bénévoles actifs"
+
+#: templates/admin_analytics_professional.html:425
+msgid "Trends over time"
+msgstr "Tendances dans le temps"
+
+#: templates/admin_analytics_professional.html:432
+msgid "Select trend period"
+msgstr "Sélectionner la période de tendance"
+
+#: templates/admin_analytics_professional.html:434
+msgid "6 months"
+msgstr "6 mois"
+
+#: templates/admin_analytics_professional.html:435
+msgid "12 months"
+msgstr "12 mois"
+
+#: templates/admin_analytics_professional.html:436
+msgid "24 months"
+msgstr "24 mois"
+
+#: templates/admin_analytics_professional.html:448
+msgid "Distribution by category"
+msgstr "Répartition par catégorie"
+
+#: templates/admin_analytics_professional.html:462
+msgid "Geographic distribution"
+msgstr "Répartition géographique"
+
+#: templates/admin_analytics_professional.html:473
+msgid "Forecasts for the next 3 months"
+msgstr "Prévisions pour les 3 prochains mois"
+
+#: templates/admin_analytics_professional.html:485
+msgid "Performance Metrics"
+msgstr "Indicateurs de performance"
+
+#: templates/admin_analytics_professional.html:495
+msgid "Utilization Rate"
+msgstr "Taux d'utilisation"
+
+#: templates/admin_analytics_professional.html:504
+msgid "Completed requests"
+msgstr "Demandes terminées"
+
+#: templates/admin_analytics_professional.html:513
+msgid "Active requests"
+msgstr "Demandes actives"
+
+#: templates/admin_analytics_professional.html:537
+msgid "AI/ML Insights"
+msgstr "Analyses IA/ML"
+
+#: templates/admin_analytics_professional.html:547
+msgid "Detected anomalies"
+msgstr "Anomalies détectées"
+
+#: templates/admin_analytics_professional.html:555
+msgid "No anomalies detected in the data"
+msgstr "Aucune anomalie détectée dans les données"
+
+#: templates/admin_analytics_professional.html:559
+msgid "User Behavior Predictions"
+msgstr "Prédictions du comportement des utilisateurs"
+
+#: templates/admin_analytics_professional.html:568
+#, fuzzy
+msgid "ML insights are not available without JavaScript"
+msgstr "Les analyses ML ne sont pas disponibles pour le moment"
+
+#: templates/admin_analytics_professional.html:585
+msgid "Optimization recommendations"
+msgstr "Recommandations d'optimisation"
+
+#: templates/admin_analytics_professional.html:597
+msgid "No recommendations available at the moment"
+msgstr "Aucune recommandation disponible pour le moment"
+
+#: templates/admin_analytics_professional.html:602
+msgid "Enable JavaScript to see dynamic recommendations."
+msgstr ""
+
+#: templates/admin_analytics_professional.html:801
+msgid "Requests"
+msgstr "Demandes"
+
+#: templates/admin_analytics_professional.html:809
+msgid "Completed"
+msgstr "Terminées"
+
+#: templates/admin_analytics_professional.html:817
+msgid "Volunteers"
+msgstr "Bénévoles"
+
+#: templates/admin_analytics_professional.html:883
+msgid "Requests by region"
+msgstr "Demandes par région"
+
+#: templates/admin_analytics_professional.html:910
+msgid "Request forecast"
+msgstr "Prévision des demandes"
+
+#: templates/admin_analytics_professional.html:919
+msgid "Volunteer forecast"
+msgstr "Prévision des bénévoles"
+
+#: templates/base.html:350
+msgid "Инсталирай HelpChain като мобилно приложение"
+msgstr "Installez HelpChain comme application mobile"
+
+#: templates/base.html:351
+msgid "Инсталирай приложението за по-добро изживяване"
+msgstr "Installez l'application pour une meilleure expérience"
+
+#: templates/base.html:354
+msgid "Инсталирай приложението"
+msgstr "Installez l'application"
+
+#: templates/base.html:362
+msgid "Превключи темата"
+msgstr "Changer de thème"
+
+#: templates/base.html:363
+msgid "Превключи между светла и тъмна тема"
+msgstr "Basculer entre le thème clair et le thème sombre"
+
+#: templates/base.html:377
+msgid "Email"
+msgstr "Email"
+
+#: templates/base.html:378
+msgid "Facebook"
+msgstr "Facebook"
+
+#: templates/base.html:379
+msgid "Условия за ползване"
+msgstr "Conditions d'utilisation"
+
+#: templates/base.html:380
+msgid "Политика за поверителност"
+msgstr "Politique de confidentialité"
+
+#: templates/base.html:382
+msgid "Истории на успеха"
+msgstr "Histoires de réussite"
+
+#: templates/base.html:383 templates/index.html:238
+msgid "Обратна връзка"
+msgstr "Retour d'expérience"
+
+#: templates/base.html:506
+msgid "Нова версия на HelpChain е налична!"
+msgstr "Une nouvelle version de HelpChain est disponible !"
+
+#: templates/base.html:512
+msgid "Обнови сега"
+msgstr "Mettez à jour maintenant"
+
+#: templates/base.html:515
+msgid "По-късно"
+msgstr "Plus tard"
+
+#: templates/dashboard_nav.html:40
+msgid "Моите задачи"
+msgstr "Mes tâches"
+
+#: templates/dashboard_nav.html:45
+msgid "Налични задачи"
+msgstr "Tâches disponibles"
+
+#: templates/dashboard_nav.html:50 templates/dashboard_nav.html:160
+msgid "Профил"
+msgstr "Profil"
+
+#: templates/dashboard_nav.html:55
+msgid "Постижения"
+msgstr "Réalisations"
+
+#: templates/dashboard_nav.html:62
+msgid "Табло"
+msgstr "Tableau de bord"
+
+#: templates/dashboard_nav.html:67 templates/index.html:134
+#: templates/index.html:155
+msgid "Доброволци"
+msgstr "Bénévoles"
+
+#: templates/dashboard_nav.html:72
+msgid "Аналитика"
+msgstr "Analyses"
+
+#: templates/dashboard_nav.html:87 templates/dashboard_nav.html:88
+msgid "Избор на език"
+msgstr "Sélection de la langue"
+
+#: templates/dashboard_nav.html:99
+msgid "Български"
+msgstr "Bulgare"
+
+#: templates/dashboard_nav.html:125 templates/dashboard_nav.html:126
+msgid "Глобално търсене"
+msgstr "Recherche globale"
+
+#: templates/dashboard_nav.html:165
+msgid "Настройки"
+msgstr "Paramètres"
+
+#: templates/dashboard_nav.html:171
+msgid "Изход"
+msgstr "Déconnexion"
+
+#: templates/dashboard_nav.html:177 templates/index.html:103
+msgid "Админ панел"
+msgstr "Panneau d'administration"
+
+#: templates/index.html:68
+msgid "Сърце с ръце"
+msgstr "Mains tenant un cœur"
+
+#: templates/index.html:86
+msgid "Добре дошли!"
+msgstr "Bienvenue !"
+
+#: templates/index.html:90
+msgid "свързва хора в нужда с доброволци, готови да помогнат."
+msgstr "relie les personnes dans le besoin à des bénévoles prêts à aider."
+
+#: templates/index.html:91
+msgid "Заедно изграждаме общество, в което всеки има значение."
+msgstr "Ensemble, nous construisons une communauté où chacun compte."
+
+#: templates/index.html:96
+msgid "Подай сигнал за помощ"
+msgstr "Soumettre une demande d'aide"
+
+#: templates/index.html:103
+msgid "Вход за доброволци"
+msgstr "Connexion bénévole"
+
+#: templates/index.html:106
+msgid "Регистрация на доброволец"
+msgstr "Inscription bénévole"
+
+#: templates/index.html:98
+msgid "NEW"
+msgstr "NOUVEAU"
+
+#: templates/index.html:109
+msgid "Подай сигнал"
+msgstr "Signaler un besoin"
+
+#: templates/index.html:110
+msgid "Сподели проблема си лесно и бързо."
+msgstr "Partage ton problème facilement et rapidement."
+
+#: templates/index.html:118
+msgid "Доброволец откликва"
+msgstr "Un bénévole répond"
+
+#: templates/index.html:119
+msgid "Нашите доброволци са винаги готови да помогнат."
+msgstr "Nos bénévoles sont toujours prêts à aider."
+
+#: templates/index.html:127
+msgid "Получаваш помощ"
+msgstr "Vous recevez de l'aide"
+
+#: templates/index.html:128
+msgid "Реална подкрепа за теб и твоите близки."
+msgstr "Un soutien concret pour vous et vos proches."
+
+#: templates/index.html:145
+msgid "Защо да се включа?"
+msgstr "Pourquoi participer ?"
+
+#: templates/index.html:161
+msgid "Подадени сигнали"
+msgstr "Demandes envoyées"
+
+#: templates/index.html:168 templates/index.html:202
+msgid "Мария"
+msgstr "Maria"
+
+#: templates/index.html:169 templates/index.html:196 templates/index.html:203
+msgid "„Благодарение на helpchain.live най-много имах нужда!“"
+msgstr ""
+"« Grâce à helpchain.live j'ai obtenu l'aide dont j'avais le plus besoin !"
+" »"
+
+#: templates/index.html:170 templates/index.html:196 templates/index.html:204
+msgid "Мария, София"
+msgstr "Maria, Sofia"
+
+#: templates/index.html:176
+msgid "Стани доброволец днес и промени нечий живот!"
+msgstr "Devenez bénévole dès aujourd'hui et changez la vie de quelqu'un !"
+
+#: templates/index.html:179
+msgid "Заедно можем повече!"
+msgstr "Ensemble, nous pouvons plus !"
+
+#: templates/index.html:182
+msgid "Имате идея или проблем?"
+msgstr "Vous avez une idée ou un problème ?"
+
+#: templates/index.html:183
+msgid "Пишете ни"
+msgstr "Écrivez-nous"
+
+#: templates/index.html:197
+msgid "„Екипът реагира бързо и професионално!“"
+msgstr "« L'équipe a réagi rapidement et avec professionnalisme ! »"
+
+#: templates/index.html:197
+msgid "Георги, Пловдив"
+msgstr "Georgi, Plovdiv"
+
+#: templates/index.html:198
+msgid "„Чувствам се подкрепен и разбран!“"
+msgstr "« Je me sens soutenu et compris ! »"
+
+#: templates/index.html:198
+msgid "Иван, Варна"
+msgstr "Ivan, Varna"
+
+#: templates/index.html:218
+msgid "Меню"
+msgstr "Menu"
+
+#: templates/index.html:222 templates/index.html:245 templates/index.html:270
+msgid "Новини"
+msgstr "Actualités"
+
+#: templates/index.html:227 templates/index.html:249
+msgid "Стани доброволец"
+msgstr "Devenir bénévole"
+
+#: templates/index.html:231 templates/index.html:254
+msgid "Полезни връзки"
+msgstr "Liens utiles"
+
+#: templates/index.html:234 templates/index.html:261
+msgid "Контакти"
+msgstr "Contacts"
+
+#: templates/index.html:246 templates/index.html:274
+msgid "HelpChain стартира нова кампания за подкрепа на възрастни хора!"
+msgstr "HelpChain lance une nouvelle campagne de soutien aux personnes âgées !"
+
+#: templates/index.html:250
+msgid "Регистрирай се и помогни на хора в нужда – всеки може да бъде герой!"
+msgstr ""
+"Inscris-toi et aide les personnes dans le besoin – chacun peut être un "
+"héros !"
+
+#: templates/index.html:251
+msgid "Регистрирай се като доброволец"
+msgstr "Inscris-toi comme bénévole"
+
+#: templates/index.html:256
+msgid "БЧК"
+msgstr "Croix-Rouge bulgare"
+
+#: templates/index.html:257
+msgid "Държавни услуги"
+msgstr "Services publics"
+
+#: templates/index.html:262
+msgid "Пиши ни на"
+msgstr "Écris-nous à"
+
+#: templates/index.html:271
+msgid "Затвори"
+msgstr "Fermer"
+
+#: templates/index.html:275
+msgid ""
+"От 1 август 2025 г. доброволците ни ще посещават домове на възрастни хора"
+" и ще оказват помощ с пазаруване, лекарства и социална подкрепа."
+msgstr ""
+"À partir du 1er août 2025, nos bénévoles rendront visite aux personnes "
+"âgées à domicile et les aideront pour les courses, les médicaments et le "
+"soutien social."
+
+#: templates/index.html:276
+msgid "Публикувано на: 23 юли 2025 г."
+msgstr "Publié le : 23 juillet 2025"
+
+#: venv/Lib/site-packages/click/core.py:1104
+#: venv/Lib/site-packages/click/core.py:1141
+#, python-brace-format
+msgid "{text} {deprecated_message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:1241
+#, python-brace-format
+msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/core.py:2505
+#, python-brace-format
+msgid ""
+"DeprecationWarning: The {param_type} {name!r} is "
+"deprecated.{extra_message}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:719
+#, python-brace-format
+msgid "{value!r} is not a valid boolean. Recognized values: {states}"
+msgstr ""
+
+#: venv/Lib/site-packages/click/types.py:1005
+#, python-brace-format
+msgid "{name} {filename!r} is a directory."
+msgstr ""
+
+#: venv/Lib/site-packages/httplib2/__init__.py:407
+#, python-format
+msgid "Content purported to be compressed with %s but failed to decompress."
+msgstr ""
+
+#: venv/Lib/site-packages/httplib2/__init__.py:571
+#, python-format
+msgid "Unsupported value for qop: %s."
+msgstr ""
+
+#: venv/Lib/site-packages/httplib2/__init__.py:575
+#: venv/Lib/site-packages/httplib2/__init__.py:653
+#, python-format
+msgid "Unsupported value for algorithm: %s.algorithm"
+msgstr ""
+
+#: venv/Lib/site-packages/httplib2/__init__.py:648
+msgid "The challenge doesn't contain a server nonce, or this one is empty."
+msgstr ""
+
+#: venv/Lib/site-packages/httplib2/__init__.py:658
+#, python-format
+msgid "Unsupported value for pw-algorithm: %s.pw-algorithm"
+msgstr ""
+
+#: venv/Lib/site-packages/httplib2/__init__.py:1471
+msgid "Redirected but the response is missing a Location: header."
+msgstr ""
+
+#: venv/Lib/site-packages/semantic_version/django_fields.py:50
+msgid "Enter a valid version number in X.Y.Z format."
+msgstr ""
+
+#: venv/Lib/site-packages/semantic_version/django_fields.py:52
+msgid "Version"
+msgstr ""
+
+#: venv/Lib/site-packages/semantic_version/django_fields.py:86
+msgid "Enter a valid version number spec list in ==X.Y.Z,>=A.B.C format."
+msgstr ""
+
+#: venv/Lib/site-packages/semantic_version/django_fields.py:88
+msgid "Version specification list"
+msgstr ""
+
+#: venv/Lib/site-packages/typer/core.py:630
+#: venv/Lib/site-packages/typer/rich_utils.py:95
+msgid "Arguments"
+msgstr ""
+
+#: venv/Lib/site-packages/typer/rich_utils.py:89
+msgid "(deprecated) "
+msgstr ""
+
+#: venv/Lib/site-packages/typer/rich_utils.py:90
+#, python-brace-format
+msgid "[default: {}]"
+msgstr ""
+
+#: venv/Lib/site-packages/typer/rich_utils.py:91
+#, python-brace-format
+msgid "[env var: {}]"
+msgstr ""
+
+#: venv/Lib/site-packages/typer/rich_utils.py:93
+msgid "[required]"
+msgstr ""
+
+#: venv/Lib/site-packages/typer/rich_utils.py:98
+msgid "Error"
+msgstr ""
+
+#: venv/Lib/site-packages/typer/rich_utils.py:99
+msgid "Aborted."
+msgstr ""
+
+#: venv/Lib/site-packages/typer/rich_utils.py:100
+#, python-brace-format
+msgid "Try [blue]'{command_path} {help_option}'[/] for help."
+msgstr ""

@@ -2835,3 +2835,10 @@ From: noreply@helpchain.bg
 HelpChain системата
 
 ==================================================
+Subject: HelpChain: Потвърдете имейла си
+To: ['testuser@example.com']
+From: noreply@helpchain.test
+
+Моля потвърдете имейла си като посетите следния адрес: http://localhost/auth/confirm/InRlc3R1c2VyQGV4YW1wbGUuY29tIg.aQ4a8A.OaGzOAY93UXcGxO-9qVYGXsg_r8
+
+==================================================
