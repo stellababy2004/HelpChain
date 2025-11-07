@@ -1,8 +1,0 @@
-[tool.poetry]
-name = "helpchain-backend"
-version = "0.1.0"
-description = "HelpChain backend deployment config"
-
-[tool.poetry.dependencies]
-python = "^3.12"
-# Добави тук и другите си зависимости, ако ползваш poetry
