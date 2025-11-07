@@ -72,6 +72,3 @@ instance/*.db
 
 # local backups
 backend/backups/*
-
-# ignore virtualenv
-venv/

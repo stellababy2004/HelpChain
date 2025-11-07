@@ -17,9 +17,3 @@
 2025-11-07T16:14:37.337304 MARKER admin_login before session.execute
 2025-11-07T16:14:38.921430 MARKER admin_login before session.execute
 2025-11-07T16:14:39.579647 MARKER admin_login before session.execute
-2025-11-07T16:39:14.056410 MARKER admin_login before session.execute
-2025-11-07T16:39:15.679840 MARKER admin_login before session.execute
-2025-11-07T16:39:16.330478 MARKER admin_login before session.execute
-2025-11-07T16:43:29.706810 MARKER admin_login before session.execute
-2025-11-07T16:43:31.223446 MARKER admin_login before session.execute
-2025-11-07T16:43:31.836296 MARKER admin_login before session.execute
