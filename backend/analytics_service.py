@@ -536,12 +536,19 @@ class AdvancedAnalytics:
                 LIMIT 10
                 """
             )
-            top_pages_result = self.db.execute(
+            _top_res = self.db.execute(
                 top_pages_sql,
                 {"start_date": start_date, "end_date": end_date},
-            ).fetchall()
+            )
+            try:
+                top_pages_rows = _top_res.fetchall()
+            finally:
+                try:
+                    _top_res.close()
+                except Exception:
+                    pass
 
-            top_pages = [{"url": row[0], "views": row[1]} for row in top_pages_result]
+            top_pages = [{"url": row[0], "views": row[1]} for row in top_pages_rows]
 
             # Device breakdown - uses idx_user_behaviors_session_start
             device_stats = (
@@ -647,17 +654,32 @@ class AdvancedAnalytics:
 
             # По тип отговор - uses optimized query with index
             response_types_query = optimized_queries["chatbot_conversations_summary"]
-            response_types_result = self.db.execute(
+            _resp_res = self.db.execute(
                 text(response_types_query),
                 {"start_date": start_date, "end_date": end_date},
-            ).fetchall()
-            response_types = {row[0]: row[1] for row in response_types_result}
+            )
+            try:
+                response_types_rows = _resp_res.fetchall()
+            finally:
+                try:
+                    _resp_res.close()
+                except Exception:
+                    pass
+
+            response_types = {row[0]: row[1] for row in response_types_rows}
 
             # AI статистики - uses optimized query with index
             ai_stats_query = optimized_queries["chatbot_ai_stats"]
-            ai_stats_result = self.db.execute(
+            _ai_res = self.db.execute(
                 text(ai_stats_query), {"start_date": start_date, "end_date": end_date}
-            ).fetchone()
+            )
+            try:
+                ai_stats_result = _ai_res.fetchone()
+            finally:
+                try:
+                    _ai_res.close()
+                except Exception:
+                    pass
 
             ai_stats = {
                 "total_ai_responses": ai_stats_result[0] or 0,
@@ -668,9 +690,16 @@ class AdvancedAnalytics:
 
             # User ratings - uses optimized query with index
             ratings_query = optimized_queries["chatbot_ratings"]
-            ratings_result = self.db.execute(
+            _ratings_res = self.db.execute(
                 text(ratings_query), {"start_date": start_date, "end_date": end_date}
-            ).fetchone()
+            )
+            try:
+                ratings_result = _ratings_res.fetchone()
+            finally:
+                try:
+                    _ratings_res.close()
+                except Exception:
+                    pass
 
             avg_rating = round(ratings_result[1] or 0, 2)
             rated_conversations = ratings_result[0] or 0
@@ -775,10 +804,17 @@ class AdvancedAnalytics:
 
             # Average response times by endpoint - uses optimized query with index
             performance_query = optimized_queries["performance_by_endpoint"]
-            endpoint_performance_result = self.db.execute(
+            _ep_res = self.db.execute(
                 text(performance_query),
                 {"start_date": start_date, "end_date": end_date},
-            ).fetchall()
+            )
+            try:
+                endpoint_performance_rows = _ep_res.fetchall()
+            finally:
+                try:
+                    _ep_res.close()
+                except Exception:
+                    pass
 
             endpoint_performance = [
                 {
@@ -786,7 +822,7 @@ class AdvancedAnalytics:
                     "avg_time": round(row[1], 3),
                     "request_count": row[2],
                 }
-                for row in endpoint_performance_result
+                for row in endpoint_performance_rows
             ]
 
             # System load over time - optimized single query for all days instead of loop
@@ -895,51 +931,71 @@ class AdvancedAnalytics:
 
             # Get all funnel metrics with single optimized queries
             visitors_query = optimized_queries["conversion_funnel_visitors"]
-            total_visitors = (
-                self.db.execute(
-                    text(visitors_query),
-                    {"start_date": start_date, "end_date": end_date},
-                ).scalar()
-                or 0
+            _tv_res = self.db.execute(
+                text(visitors_query),
+                {"start_date": start_date, "end_date": end_date},
             )
+            try:
+                total_visitors = _tv_res.scalar() or 0
+            finally:
+                try:
+                    _tv_res.close()
+                except Exception:
+                    pass
 
             register_visits_query = optimized_queries[
                 "conversion_funnel_register_visits"
             ]
-            visited_register = (
-                self.db.execute(
-                    text(register_visits_query),
-                    {"start_date": start_date, "end_date": end_date},
-                ).scalar()
-                or 0
+            _vr_res = self.db.execute(
+                text(register_visits_query),
+                {"start_date": start_date, "end_date": end_date},
             )
+            try:
+                visited_register = _vr_res.scalar() or 0
+            finally:
+                try:
+                    _vr_res.close()
+                except Exception:
+                    pass
 
             registrations_query = optimized_queries["conversion_funnel_registrations"]
-            started_registration = (
-                self.db.execute(
-                    text(registrations_query),
-                    {"start_date": start_date, "end_date": end_date},
-                ).scalar()
-                or 0
+            _sr_res = self.db.execute(
+                text(registrations_query),
+                {"start_date": start_date, "end_date": end_date},
             )
+            try:
+                started_registration = _sr_res.scalar() or 0
+            finally:
+                try:
+                    _sr_res.close()
+                except Exception:
+                    pass
 
             completions_query = optimized_queries["conversion_funnel_completions"]
-            completed_registration = (
-                self.db.execute(
-                    text(completions_query),
-                    {"start_date": start_date, "end_date": end_date},
-                ).scalar()
-                or 0
+            _cr_res = self.db.execute(
+                text(completions_query),
+                {"start_date": start_date, "end_date": end_date},
             )
+            try:
+                completed_registration = _cr_res.scalar() or 0
+            finally:
+                try:
+                    _cr_res.close()
+                except Exception:
+                    pass
 
             chatbot_users_query = optimized_queries["conversion_funnel_chatbot_users"]
-            chatbot_users = (
-                self.db.execute(
-                    text(chatbot_users_query),
-                    {"start_date": start_date, "end_date": end_date},
-                ).scalar()
-                or 0
+            _cu_res = self.db.execute(
+                text(chatbot_users_query),
+                {"start_date": start_date, "end_date": end_date},
             )
+            try:
+                chatbot_users = _cu_res.scalar() or 0
+            finally:
+                try:
+                    _cu_res.close()
+                except Exception:
+                    pass
 
             return {
                 "total_visitors": total_visitors,
@@ -1076,22 +1132,36 @@ class AdvancedAnalytics:
 
             # Най-чести entry points - uses optimized query with index
             entry_pages_query = optimized_queries["user_journey_entry_pages"]
-            entry_pages_result = self.db.execute(
+            _entry_res = self.db.execute(
                 text(entry_pages_query),
                 {"start_date": start_date, "end_date": end_date},
-            ).fetchall()
+            )
+            try:
+                entry_pages_rows = _entry_res.fetchall()
+            finally:
+                try:
+                    _entry_res.close()
+                except Exception:
+                    pass
+
             entry_pages = [
-                {"page": row[0], "entries": row[1]} for row in entry_pages_result
+                {"page": row[0], "entries": row[1]} for row in entry_pages_rows
             ]
 
             # Най-чести exit points - uses optimized query with index
             exit_pages_query = optimized_queries["user_journey_exit_pages"]
-            exit_pages_result = self.db.execute(
+            _exit_res = self.db.execute(
                 text(exit_pages_query), {"start_date": start_date, "end_date": end_date}
-            ).fetchall()
-            exit_pages = [
-                {"page": row[0], "exits": row[1]} for row in exit_pages_result
-            ]
+            )
+            try:
+                exit_pages_rows = _exit_res.fetchall()
+            finally:
+                try:
+                    _exit_res.close()
+                except Exception:
+                    pass
+
+            exit_pages = [{"page": row[0], "exits": row[1]} for row in exit_pages_rows]
 
             # Най-чести page sequences - optimized with reduced memory usage
             # Use a more efficient approach by limiting records and processing in batches

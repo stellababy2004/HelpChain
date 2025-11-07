@@ -107,8 +107,13 @@ class DatabaseOptimizer:
         try:
             from sqlalchemy import inspect, text
 
-            inspector = inspect(db.engine)
-            existing_tables = set(inspector.get_table_names())
+            # Use an explicit connection when creating an inspector so the
+            # underlying DBAPI connection is closed promptly. Passing a
+            # Connection to inspect() avoids leaving raw sqlite3.Connection
+            # objects open in some SQLAlchemy versions.
+            with db.engine.connect() as _conn:
+                inspector = inspect(_conn)
+                existing_tables = set(inspector.get_table_names())
 
             index_statements = {
                 "analytics_events": [
@@ -382,7 +387,15 @@ class DatabaseOptimizer:
                     continue
 
                 for index_name, ddl in statements:
-                    db.session.execute(text(ddl))
+                    _res = db.session.execute(text(ddl))
+                    try:
+                        # Close the Result to ensure DBAPI resources are released promptly
+                        try:
+                            _res.close()
+                        except Exception:
+                            pass
+                    except Exception:
+                        pass
                     created_indexes.append(index_name)
 
             db.session.commit()

@@ -29,7 +29,9 @@ header {
   font-weight: bold;
   text-decoration: none;
   color: #00eaff;
-  text-shadow: 0 0 8px #00eaff, 0 0 2px #fff;
+  text-shadow:
+    0 0 8px #00eaff,
+    0 0 2px #fff;
 }
 
 .nav-menu {
@@ -48,7 +50,10 @@ header {
   text-decoration: none;
   padding: 10px;
   border-radius: 5px;
-  transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+  transition:
+    background 0.3s,
+    color 0.3s,
+    box-shadow 0.3s;
 }
 
 .nav-menu a:hover {
@@ -86,7 +91,9 @@ button,
   box-shadow: 0 0 8px #00eaff99;
   font-weight: 600;
   letter-spacing: 0.5px;
-  transition: background 0.3s, box-shadow 0.3s;
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
 }
 
 button:hover,

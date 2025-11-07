@@ -43,33 +43,10 @@ def _login_with_credentials(client):
 
 @pytest.fixture
 def admin_login(client, enable_email_2fa, db_session, set_pending_admin_session):
-    # Ensure admin user exists in the same app context / DB session the client will use.
-    try:
-        from appy import db
-        try:
-            # Prefer canonical models import
-            from models import AdminUser, User
-        except Exception:
-            from helpchain_backend.src.models import AdminUser, User  # type: ignore
-        with client.application.app_context():
-            try:
-                if db.session.query(AdminUser).filter_by(username="admin").count() == 0:
-                    # create minimal admin user matching tests expectations
-                    admin = AdminUser(username="admin", email="admin@helpchain.live")
-                    # set password via whatever helper exists; fallback to plaintext field
-                    try:
-                        admin.set_password("Admin123")
-                    except Exception:
-                        # if set_password not available, set a compatible hash directly
-                        from werkzeug.security import generate_password_hash
-                        admin.password_hash = generate_password_hash("Admin123")
-                    db.session.add(admin)
-                    db.session.commit()
-            except Exception:
-                # If seeding fails, continue; login attempt will reveal the issue
-                pass
-    except Exception:
-        pass
+    # Rely on session-scoped seeding / helper fixtures for admin existence.
+    # The `set_pending_admin_session` fixture and the session-level seed
+    # will ensure an AdminUser exists for tests; avoid creating one per-test
+    # here to reduce duplication and race conditions.
     response = _login_with_credentials(client)
     assert response.status_code == 200
     # Some test runs may not reach the redirect reliably due to timing; ensure
@@ -89,6 +66,7 @@ def admin_login(client, enable_email_2fa, db_session, set_pending_admin_session)
     admin_id = None
     try:
         from appy import db
+
         try:
             from models import AdminUser
         except Exception:
@@ -102,7 +80,9 @@ def admin_login(client, enable_email_2fa, db_session, set_pending_admin_session)
     # Use central helper to set the pending admin session keys
     result = set_pending_admin_session(client, code=code, expires_seconds=300)
     # Fast-fail if helper could not set an admin id — clearer error message than a redirect
-    assert result.get("admin_id") is not None, "Failed to set pending_admin_id via helper"
+    assert (
+        result.get("admin_id") is not None
+    ), "Failed to set pending_admin_id via helper"
     return response
 
 

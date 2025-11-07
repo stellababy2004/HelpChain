@@ -1,9 +1,5 @@
-
-{% extends "base.html" %}
-
-{% block title %}Админ панел | HelpChain.live{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Админ панел | HelpChain.live{%
+endblock %} {% block content %}
 <div class="container mt-5">
   <h2 class="mb-4">Админ панел</h2>
 
@@ -17,7 +13,7 @@
         Деактивирай 2FA
       </button>
     </form>
-  {% endif %}
+    {% endif %}
   </div>
 
   <!-- Requests Table -->
@@ -49,26 +45,26 @@
           <td>{{ req.description }}</td>
           <td>
             {% if req.status == 'pending' %}
-              <span class="badge bg-warning text-dark">В изчакване</span>
+            <span class="badge bg-warning text-dark">В изчакване</span>
             {% elif req.status == 'approved' %}
-              <span class="badge bg-success">Одобрена</span>
+            <span class="badge bg-success">Одобрена</span>
             {% elif req.status == 'rejected' %}
-              <span class="badge bg-danger">Отхвърлена</span>
+            <span class="badge bg-danger">Отхвърлена</span>
             {% elif req.status == 'completed' %}
-              <span class="badge bg-primary">Завършена</span>
+            <span class="badge bg-primary">Завършена</span>
             {% else %}
-              <span class="badge bg-secondary">{{ req.status }}</span>
+            <span class="badge bg-secondary">{{ req.status }}</span>
             {% endif %}
           </td>
           <td>
             {% if req.urgency == 'high' %}
-              <span class="badge bg-danger">Висока</span>
+            <span class="badge bg-danger">Висока</span>
             {% elif req.urgency == 'medium' %}
-              <span class="badge bg-warning text-dark">Средна</span>
+            <span class="badge bg-warning text-dark">Средна</span>
             {% elif req.urgency == 'low' %}
-              <span class="badge bg-success">Ниска</span>
+            <span class="badge bg-success">Ниска</span>
             {% else %}
-              <span class="badge bg-secondary">{{ req.urgency }}</span>
+            <span class="badge bg-secondary">{{ req.urgency }}</span>
             {% endif %}
           </td>
         </tr>
@@ -76,4 +72,4 @@
       </tbody>
     </table>
   </div>
-
+</div>

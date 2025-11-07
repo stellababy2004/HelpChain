@@ -62,7 +62,12 @@ socketio = SocketIO(async_mode="threading")
 def load_user(user_id):
     from .models import User
 
-    return User.query.get(int(user_id))
+    try:
+        return db.session.get(User, int(user_id))
+    except Exception:
+        # If session.get fails (very unlikely), return None to avoid using
+        # the legacy Query.get API which produces deprecation warnings.
+        return None
 
 
 def create_app(config_object=None):
@@ -308,32 +313,31 @@ def create_app(config_object=None):
             recipient, subject, content, status="saved", smtp_error=None
         ):
             """Save notification to database"""
-            conn = sqlite3.connect(DB_PATH)
-            c = conn.cursor()
-            c.execute(
-                """CREATE TABLE IF NOT EXISTS notifications
-                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                          timestamp TEXT,
-                          recipient TEXT,
-                          subject TEXT,
-                          content TEXT,
-                          status TEXT,
-                          smtp_error TEXT)"""
-            )
-            c.execute(
-                """INSERT INTO notifications (timestamp, recipient, subject, content, status, smtp_error)
-                         VALUES (?, ?, ?, ?, ?, ?)""",
-                (
-                    datetime.datetime.now().isoformat(),
-                    recipient,
-                    subject,
-                    content,
-                    status,
-                    smtp_error,
-                ),
-            )
-            conn.commit()
-            conn.close()
+            with sqlite3.connect(DB_PATH) as conn:
+                c = conn.cursor()
+                c.execute(
+                    """CREATE TABLE IF NOT EXISTS notifications
+                             (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                              timestamp TEXT,
+                              recipient TEXT,
+                              subject TEXT,
+                              content TEXT,
+                              status TEXT,
+                              smtp_error TEXT)"""
+                )
+                c.execute(
+                    """INSERT INTO notifications (timestamp, recipient, subject, content, status, smtp_error)
+                             VALUES (?, ?, ?, ?, ?, ?)""",
+                    (
+                        datetime.datetime.now().isoformat(),
+                        recipient,
+                        subject,
+                        content,
+                        status,
+                        smtp_error,
+                    ),
+                )
+                conn.commit()
 
         content = f"""Нова заявка за помощ:
 ID: {req.id}
@@ -411,32 +415,31 @@ ID: {req.id}
             recipient, subject, content, status="saved", smtp_error=None
         ):
             """Save notification to database"""
-            conn = sqlite3.connect(DB_PATH)
-            c = conn.cursor()
-            c.execute(
-                """CREATE TABLE IF NOT EXISTS notifications
-                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                          timestamp TEXT,
-                          recipient TEXT,
-                          subject TEXT,
-                          content TEXT,
-                          status TEXT,
-                          smtp_error TEXT)"""
-            )
-            c.execute(
-                """INSERT INTO notifications (timestamp, recipient, subject, content, status, smtp_error)
-                         VALUES (?, ?, ?, ?, ?, ?)""",
-                (
-                    datetime.datetime.now().isoformat(),
-                    recipient,
-                    subject,
-                    content,
-                    status,
-                    smtp_error,
-                ),
-            )
-            conn.commit()
-            conn.close()
+            with sqlite3.connect(DB_PATH) as conn:
+                c = conn.cursor()
+                c.execute(
+                    """CREATE TABLE IF NOT EXISTS notifications
+                             (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                              timestamp TEXT,
+                              recipient TEXT,
+                              subject TEXT,
+                              content TEXT,
+                              status TEXT,
+                              smtp_error TEXT)"""
+                )
+                c.execute(
+                    """INSERT INTO notifications (timestamp, recipient, subject, content, status, smtp_error)
+                             VALUES (?, ?, ?, ?, ?, ?)""",
+                    (
+                        datetime.datetime.now().isoformat(),
+                        recipient,
+                        subject,
+                        content,
+                        status,
+                        smtp_error,
+                    ),
+                )
+                conn.commit()
 
         content = f"""Нов доброволец се е регистрирал:
 ID: {volunteer.id}

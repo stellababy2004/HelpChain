@@ -213,7 +213,7 @@ class DatabaseOptimizer:
 
             # Index за timestamp queries (най-често използван)
             with db.engine.connect() as conn:
-                conn.execute(
+                _res = conn.execute(
                     text(
                         """
                     CREATE INDEX IF NOT EXISTS idx_analytics_timestamp
@@ -221,12 +221,19 @@ class DatabaseOptimizer:
                 """
                     )
                 )
+                try:
+                    pass
+                finally:
+                    try:
+                        _res.close()
+                    except Exception:
+                        pass
                 conn.commit()
             print("✅ Created timestamp index")
 
             # Index за event_type filtering
             with db.engine.connect() as conn:
-                conn.execute(
+                _res = conn.execute(
                     text(
                         """
                     CREATE INDEX IF NOT EXISTS idx_analytics_event_type
@@ -234,12 +241,19 @@ class DatabaseOptimizer:
                 """
                     )
                 )
+                try:
+                    pass
+                finally:
+                    try:
+                        _res.close()
+                    except Exception:
+                        pass
                 conn.commit()
             print("✅ Created event_type index")
 
             # Index за category filtering
             with db.engine.connect() as conn:
-                conn.execute(
+                _res = conn.execute(
                     text(
                         """
                     CREATE INDEX IF NOT EXISTS idx_analytics_category
@@ -247,12 +261,19 @@ class DatabaseOptimizer:
                 """
                     )
                 )
+                try:
+                    pass
+                finally:
+                    try:
+                        _res.close()
+                    except Exception:
+                        pass
                 conn.commit()
             print("✅ Created category index")
 
             # Composite index за common filter combinations
             with db.engine.connect() as conn:
-                conn.execute(
+                _res = conn.execute(
                     text(
                         """
                     CREATE INDEX IF NOT EXISTS idx_analytics_composite
@@ -260,12 +281,19 @@ class DatabaseOptimizer:
                 """
                     )
                 )
+                try:
+                    pass
+                finally:
+                    try:
+                        _res.close()
+                    except Exception:
+                        pass
                 conn.commit()
             print("✅ Created composite index")
 
             # Index за user_id queries
             with db.engine.connect() as conn:
-                conn.execute(
+                _res = conn.execute(
                     text(
                         """
                     CREATE INDEX IF NOT EXISTS idx_analytics_user_id
@@ -273,6 +301,13 @@ class DatabaseOptimizer:
                 """
                     )
                 )
+                try:
+                    pass
+                finally:
+                    try:
+                        _res.close()
+                    except Exception:
+                        pass
                 conn.commit()
             print("✅ Created user_id index")
 

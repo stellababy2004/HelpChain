@@ -55,11 +55,23 @@ def app():
 
         app.config["TESTING"] = True
         app.config["WTF_CSRF_ENABLED"] = False  # Disable CSRF for testing
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-            "poolclass": StaticPool,
-            "connect_args": {"check_same_thread": False},
-        }
+        # Allow overriding the test DB path via HELPCHAIN_TEST_DB_PATH so
+        # CI or local workflows can point tests at a file-backed DB where
+        # migrations have already been applied. If not set, fall back to
+        # an in-memory SQLite DB which is the default for fast test runs.
+        _test_db_path = os.environ.get("HELPCHAIN_TEST_DB_PATH")
+        if _test_db_path:
+            app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{_test_db_path}"
+            app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+                "poolclass": StaticPool,
+                "connect_args": {"check_same_thread": False},
+            }
+        else:
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+            app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+                "poolclass": StaticPool,
+                "connect_args": {"check_same_thread": False},
+            }
         return app
     except ImportError:
         # Fallback if appy import fails
@@ -101,7 +113,36 @@ def db_session(app):
 
     with app.app_context():
         _ensure_db_engine_registration()
-        db.create_all()
+        # Try to apply Alembic migrations programmatically so the test DB
+        # exactly matches migrations (CI-friendly). If Alembic or the
+        # migrations folder is not available, fall back to db.create_all().
+        try:
+            from alembic.config import Config
+            from alembic import command
+
+            # migrations are stored in backend/migrations relative to repo root
+            migrations_path = (
+                Path(__file__).parent.parent.resolve() / "backend" / "migrations"
+            )
+            if migrations_path.exists():
+                alembic_cfg = Config()
+                # Point alembic to the migrations script location
+                alembic_cfg.set_main_option("script_location", str(migrations_path))
+                # Ensure Alembic uses the same SQLAlchemy URL as the app
+                alembic_cfg.set_main_option(
+                    "sqlalchemy.url", app.config.get("SQLALCHEMY_DATABASE_URI", "")
+                )
+                command.upgrade(alembic_cfg, "head")
+            else:
+                db.create_all()
+        except Exception:
+            # If Alembic isn't installed or migration fails, fall back to create_all
+            try:
+                db.create_all()
+            except Exception:
+                # If even create_all fails, re-raise to surface the error to pytest
+                raise
+
         # Ensure default achievements exist for gamification tests
         GamificationService.initialize_achievements()
         try:
@@ -163,8 +204,26 @@ def test_admin_user(db_session):
     admin = AdminUser(username="test_admin", email="admin@test.com")
     admin.set_password("TestPass123")
     db_session.add(admin)
-    db_session.commit()
-    return admin
+    try:
+        db_session.commit()
+        return admin
+    except Exception:
+        # If a conflicting admin already exists in a shared DB (file-backed),
+        # rollback and return the existing record to keep tests idempotent.
+        try:
+            db_session.rollback()
+        except Exception:
+            pass
+        try:
+            existing = (
+                db_session.query(AdminUser).filter_by(email="admin@test.com").first()
+            )
+            if existing:
+                return existing
+        except Exception:
+            pass
+        # As a last resort, re-raise the original exception so the test fails
+        raise
 
 
 @pytest.fixture
@@ -297,8 +356,31 @@ def init_test_data(db_session, test_admin_user, test_volunteer, test_help_reques
         total_tasks_completed=3,
     )
     db_session.add(extra_volunteer)
+    try:
+        db_session.commit()
+    except Exception:
+        try:
+            db_session.rollback()
+        except Exception:
+            pass
+        # If rows already exist in a shared DB, try to lookup and reuse them
+        try:
+            admin_with_2fa = (
+                db_session.query(AdminUser).filter_by(email="admin2fa@test.com").first()
+                or admin_with_2fa
+            )
+        except Exception:
+            pass
 
-    db_session.commit()
+        try:
+            extra_volunteer = (
+                db_session.query(Volunteer)
+                .filter_by(email="active_volunteer@test.com")
+                .first()
+                or extra_volunteer
+            )
+        except Exception:
+            pass
 
     return {
         "admin": test_admin_user,

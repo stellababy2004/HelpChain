@@ -49,5 +49,6 @@ def main():
         f.write(new_content)
     print(f"Обновено: {done}/{total} задачи изпълнени ({percent}%)")
 
+
 if __name__ == "__main__":
     main()

@@ -1,5 +1,16 @@
 # Импорт на _dispatch_email за изпращане на имейли
-from _dispatch_email import _dispatch_email
+# Use a package-relative import when this module is loaded as
+# `backend.appy` (recommended for Gunicorn), but fall back to a
+# top-level import when running from the project root (legacy).
+try:
+    from ._dispatch_email import _dispatch_email
+except Exception:
+    try:
+        from _dispatch_email import _dispatch_email
+    except Exception:
+        # Best-effort: keep name defined so code that expects the symbol
+        # can handle its absence gracefully during early startup.
+        _dispatch_email = None
 
 
 # --- Flask app и публични заявки ---
@@ -8,13 +19,24 @@ import traceback
 from sqlalchemy import func
 
 # Импортирай всички модели, за да се регистрират таблиците при db.create_all()
-
-# Явен импорт на всички модели за коректна регистрация на таблиците
-from models import Request, HelpRequest, AdminUser, Volunteer
+# Prefer package-relative imports when available (backend package). Fall
+# back to top-level imports for development runs that execute the module
+# as a script from the project root.
+try:
+    from .models import Request, HelpRequest, AdminUser, Volunteer
+except Exception:
+    from models import Request, HelpRequest, AdminUser, Volunteer
 
 # Use the canonical top-level models module to avoid duplicate model definitions
-from models import RequestLog, Feedback
-from models_with_analytics import AnalyticsEvent, TaskPerformance
+try:
+    from .models import RequestLog, Feedback
+except Exception:
+    from models import RequestLog, Feedback
+
+try:
+    from .models_with_analytics import AnalyticsEvent, TaskPerformance
+except Exception:
+    from models_with_analytics import AnalyticsEvent, TaskPerformance
 
 # Създаваме само една инстанция на app и всички маршрути се регистрират върху нея
 
@@ -38,7 +60,17 @@ if str(_appy_os.environ.get("HELPCHAIN_TESTING", "")).lower() in ("1", "true", "
             pass
 
 # === ПУБЛИЧНИ МАРШРУТИ ЗА ЗАЯВКИ ===
-from analytics_service import get_db
+try:
+    from .analytics_service import get_db
+except Exception:
+    try:
+        from analytics_service import get_db
+    except Exception:
+        # Leave a placeholder that will raise later if used; this keeps
+        # module import from failing at startup and allows more resilient
+        # error handling further down the initialization path.
+        def get_db():
+            raise ImportError("analytics_service.get_db not available")
 
 
 # === PUBLIC DASHBOARD ROUTE ===

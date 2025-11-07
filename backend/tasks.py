@@ -1036,8 +1036,15 @@ def monitor_system_health(self):
     try:
         logger.info("Monitoring system health...")
 
-        # Check database connectivity
-        db.session.execute("SELECT 1").first()
+        # Check database connectivity (ensure Result is closed promptly)
+        _conn_res = db.session.execute("SELECT 1")
+        try:
+            _ = _conn_res.first()
+        finally:
+            try:
+                _conn_res.close()
+            except Exception:
+                pass
 
         # Check pending requests count
         pending_count = (
