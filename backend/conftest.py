@@ -1162,8 +1162,56 @@ def app():
         except Exception:
             pass
 
+        # Defensive: ensure the core model module and the Achievement mapper
+        # are imported against the canonical `db` instance before creating
+        # the schema. Some CI/test layouts may import models under a different
+        # name or skip importing certain model files which results in tables
+        # missing from `db.metadata` at create_all() time.
+        try:
+            # Try explicit import paths and import the Achievement class
+            # directly so its mapper is registered.
+            try:
+                import importlib
+
+                importlib.import_module("backend.models")
+            except Exception:
+                try:
+                    importlib.import_module("models")
+                except Exception:
+                    pass
+
+            try:
+                # Importing the symbol ensures the mapped class is evaluated
+                # and bound to the canonical db.metadata.
+                from backend.models import Achievement  # type: ignore
+
+                _ = Achievement
+            except Exception:
+                try:
+                    from models import Achievement  # type: ignore
+
+                    _ = Achievement
+                except Exception:
+                    # Best-effort; do not fail test setup here.
+                    pass
+        except Exception:
+            pass
+
         db.drop_all()
         db.create_all()
+        # Debug: print SQLAlchemy metadata after create_all so CI logs show
+        # exactly which tables were created.
+        try:
+            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                try:
+                    metadata_tables_after = sorted(list(db.metadata.tables.keys()))
+                except Exception:
+                    metadata_tables_after = None
+                print(
+                    f"[TEST DEBUG] SQLAlchemy metadata tables after create_all: {metadata_tables_after}"
+                )
+        except Exception:
+            pass
         # Ensure default admin is created immediately after schema creation
         # so tests depending on admin login see the user.
         try:
