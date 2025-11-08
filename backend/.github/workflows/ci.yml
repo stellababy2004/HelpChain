@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HELPCHAIN_TEST_DEBUG: '0'
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
