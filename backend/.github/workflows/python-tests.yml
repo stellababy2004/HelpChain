@@ -17,7 +17,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      HELPCHAIN_TEST_DEBUG: '0'
+      HELPCHAIN_TEST_DEBUG: "0"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Set up Python
