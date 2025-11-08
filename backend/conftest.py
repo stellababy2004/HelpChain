@@ -1168,8 +1168,56 @@ def app():
         except Exception:
             pass
 
-        db.drop_all()
-        db.create_all()
+        # Drop any existing schema to start from a clean state for tests.
+        try:
+            db.drop_all()
+        except Exception:
+            # best-effort drop; continue even if it fails
+            pass
+
+        # Try programmatic Alembic upgrade first so tests use the real
+        # migration history. If Alembic isn't available or the upgrade
+        # fails, fall back to SQLAlchemy's create_all().
+        try:
+            try:
+                from alembic.config import Config as _AlembicConfig
+                from alembic import command as _alembic_command
+
+                # Use the repository-local migrations directory. `HERE` is
+                # the backend directory (defined earlier in this file).
+                script_loc = str(Path(__file__).resolve().parent / "migrations")
+
+                alembic_cfg = _AlembicConfig()
+                alembic_cfg.set_main_option("script_location", script_loc)
+                # Prefer the app-configured SQLAlchemy URL
+                sqlalchemy_url = real_app.config.get("SQLALCHEMY_DATABASE_URI")
+                if not sqlalchemy_url:
+                    sqlalchemy_url = real_app.config.get("DATABASE_URL")
+                if sqlalchemy_url:
+                    alembic_cfg.set_main_option("sqlalchemy.url", sqlalchemy_url)
+
+                # Perform an upgrade to head using the configured migrations
+                try:
+                    _alembic_command.upgrade(alembic_cfg, "head")
+                except Exception:
+                    # If alembic upgrade fails for any reason, fall back
+                    # to create_all() to ensure tests can proceed.
+                    logging.getLogger(__name__).exception(
+                        "Alembic upgrade failed during test setup; falling back to create_all()"
+                    )
+                    db.create_all()
+            except Exception:
+                # Alembic imports or config failed: fall back to create_all()
+                logging.getLogger(__name__).warning(
+                    "Alembic not available or misconfigured for tests; using db.create_all()"
+                )
+                db.create_all()
+        except Exception:
+            # Catch-all: ensure tests still have a schema
+            try:
+                db.create_all()
+            except Exception:
+                pass
         # Ensure default admin is created immediately after schema creation
         # so tests depending on admin login see the user.
         try:

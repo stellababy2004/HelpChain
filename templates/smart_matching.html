@@ -1,0 +1,652 @@
+{% extends "base.html" %} {% block title %}Smart Matching | HelpChain.live{%
+endblock %} {% block content %}
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-robot"></i> Smart Matching System</h2>
+    <div class="btn-group" role="group">
+      <button
+        type="button"
+        class="btn btn-outline-primary"
+        onclick="refreshAnalytics()"
+      >
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Analytics Overview -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fas fa-clipboard-list"></i> Total Requests
+          </h5>
+          <h3 id="total-requests">-</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="fas fa-check-circle"></i> Assigned
+          </h5>
+          <h3 id="assigned-requests">-</h3>
+          <small id="assignment-rate">-</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5 class="card-title"><i class="fas fa-users"></i> Volunteers</h5>
+          <h3 id="total-volunteers">-</h3>
+          <small id="active-volunteers">Active: -</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <h5 class="card-title"><i class="fas fa-star"></i> Avg Rating</h5>
+          <h3 id="avg-rating">-</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="row">
+    <!-- Pending Requests -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h5><i class="fas fa-clock"></i> Pending Requests</h5>
+        </div>
+        <div class="card-body">
+          <div id="pending-requests-list">
+            <div class="text-center text-muted">
+              <i class="fas fa-spinner fa-spin"></i> Loading requests...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Matching Results -->
+    <div class="col-md-6">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5><i class="fas fa-search"></i> Best Matches</h5>
+          <div class="btn-group btn-group-sm">
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              id="auto-assign-btn"
+              disabled
+            >
+              <i class="fas fa-magic"></i> Auto Assign
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="matching-results">
+            <div class="text-center text-muted">
+              Select a request to find matches
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Insights Modal -->
+  <div class="modal fade" id="aiInsightsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-brain"></i> AI Insights</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div id="ai-insights-content">
+            <div class="text-center">
+              <i class="fas fa-spinner fa-spin"></i> Analyzing request...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manual Assignment Modal -->
+  <div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user-check"></i> Assign Volunteer
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Assign <strong id="assign-volunteer-name"></strong> to request
+            <strong id="assign-request-title"></strong>?
+          </p>
+          <div class="alert alert-info">
+            <small
+              >This action cannot be undone. The volunteer will be notified of
+              the assignment.</small
+            >
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" id="confirm-assign-btn">
+            Assign
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Global variables
+  let selectedRequestId = null;
+  let selectedVolunteerId = null;
+
+  // Load analytics on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    loadAnalytics();
+    loadPendingRequests();
+  });
+
+  // Load matching analytics
+  async function loadAnalytics() {
+    try {
+      const response = await fetch("/api/matching/analytics");
+      const data = await response.json();
+
+      document.getElementById("total-requests").textContent =
+        data.total_requests || 0;
+      document.getElementById("assigned-requests").textContent =
+        data.assigned_requests || 0;
+      document.getElementById("assignment-rate").textContent = `${
+        data.assignment_rate || 0
+      }%`;
+      document.getElementById("total-volunteers").textContent =
+        data.total_volunteers || 0;
+      document.getElementById("active-volunteers").textContent = `Active: ${
+        data.active_volunteers || 0
+      }`;
+      document.getElementById("avg-rating").textContent =
+        data.avg_volunteer_rating
+          ? data.avg_volunteer_rating.toFixed(1)
+          : "0.0";
+    } catch (error) {
+      console.error("Error loading analytics:", error);
+    }
+  }
+
+  // Load pending requests
+  async function loadPendingRequests() {
+    try {
+      // For now, we'll simulate pending requests. In a real implementation,
+      // you'd have an API endpoint to get pending requests
+      const pendingRequests = [
+        {
+          id: 1,
+          title: "Need help with groceries",
+          description: "Elderly person needs assistance with grocery shopping",
+          priority: "normal",
+          location: "Sofia Center",
+          created_at: "2025-10-17T10:00:00Z",
+        },
+        {
+          id: 2,
+          title: "Medical transport needed",
+          description: "Patient needs transport to hospital appointment",
+          priority: "urgent",
+          location: "Plovdiv",
+          created_at: "2025-10-17T09:30:00Z",
+        },
+      ];
+
+      displayPendingRequests(pendingRequests);
+    } catch (error) {
+      console.error("Error loading pending requests:", error);
+      document.getElementById("pending-requests-list").innerHTML =
+        '<div class="alert alert-danger">Error loading requests</div>';
+    }
+  }
+
+  // Display pending requests
+  function displayPendingRequests(requests) {
+    const container = document.getElementById("pending-requests-list");
+
+    if (requests.length === 0) {
+      container.innerHTML =
+        '<div class="text-center text-muted">No pending requests</div>';
+      return;
+    }
+
+    const html = requests
+      .map(
+        (request) => `
+        <div class="card mb-2 request-card ${
+          selectedRequestId === request.id ? "border-primary" : ""
+        }"
+             onclick="selectRequest(${request.id})" style="cursor: pointer;">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-1">${request.title}</h6>
+                        <p class="card-text small text-muted mb-1">${
+                          request.description
+                        }</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-${getPriorityColor(
+                              request.priority,
+                            )}">${request.priority}</span>
+                            <small class="text-muted"><i class="fas fa-map-marker-alt"></i> ${
+                              request.location
+                            }</small>
+                        </div>
+                    </div>
+                    <small class="text-muted">${formatDate(
+                      request.created_at,
+                    )}</small>
+                </div>
+            </div>
+        </div>
+    `,
+      )
+      .join("");
+
+    container.innerHTML = html;
+  }
+
+  // Select a request and find matches
+  async function selectRequest(requestId) {
+    selectedRequestId = requestId;
+
+    // Update UI
+    document.querySelectorAll(".request-card").forEach((card) => {
+      card.classList.remove("border-primary");
+    });
+    event.currentTarget.classList.add("border-primary");
+
+    // Load matches
+    await loadMatches(requestId);
+  }
+
+  // Load matches for a request
+  async function loadMatches(requestId) {
+    const container = document.getElementById("matching-results");
+
+    try {
+      container.innerHTML =
+        '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Finding matches...</div>';
+
+      const response = await fetch(`/api/matching/find-matches/${requestId}`);
+      const data = await response.json();
+
+      if (data.matches && data.matches.length > 0) {
+        displayMatches(data.matches);
+        document.getElementById("auto-assign-btn").disabled = false;
+      } else {
+        container.innerHTML =
+          '<div class="alert alert-warning">No suitable matches found</div>';
+        document.getElementById("auto-assign-btn").disabled = true;
+      }
+    } catch (error) {
+      console.error("Error loading matches:", error);
+      container.innerHTML =
+        '<div class="alert alert-danger">Error finding matches</div>';
+      document.getElementById("auto-assign-btn").disabled = true;
+    }
+  }
+
+  // Display matches
+  function displayMatches(matches) {
+    const container = document.getElementById("matching-results");
+
+    const html = matches
+      .map(
+        (match, index) => `
+        <div class="card mb-2 match-card">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="flex-grow-1">
+                        <h6 class="card-title mb-1">
+                            ${match.name}
+                            ${
+                              index === 0
+                                ? '<span class="badge bg-success ms-2">Best Match</span>'
+                                : ""
+                            }
+                        </h6>
+                        <div class="d-flex gap-2 mb-2">
+                            <small class="text-muted"><i class="fas fa-star text-warning"></i> ${match.rating.toFixed(
+                              1,
+                            )}</small>
+                            <small class="text-muted"><i class="fas fa-tasks"></i> ${
+                              match.total_tasks_completed
+                            } tasks</small>
+                        </div>
+                        ${
+                          match.skills
+                            ? `<small class="text-muted"><i class="fas fa-tools"></i> ${match.skills}</small>`
+                            : ""
+                        }
+                    </div>
+                    <div class="text-end">
+                        <div class="h5 text-primary mb-0">${match.match_score.overall.toFixed(
+                          0,
+                        )}%</div>
+                        <small class="text-muted">Match Score</small>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <small class="text-muted">${
+                      match.recommendation_reason
+                    }</small>
+                </div>
+
+                <div class="d-flex gap-1 mb-2">
+                    <small class="badge bg-light text-dark">
+                        <i class="fas fa-tools"></i> Skills: ${match.match_score.skill_match.toFixed(
+                          0,
+                        )}%
+                    </small>
+                    <small class="badge bg-light text-dark">
+                        <i class="fas fa-map-marker-alt"></i> Location: ${match.match_score.location_match.toFixed(
+                          0,
+                        )}%
+                    </small>
+                    <small class="badge bg-light text-dark">
+                        <i class="fas fa-chart-line"></i> Performance: ${match.match_score.performance_match.toFixed(
+                          0,
+                        )}%
+                    </small>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="showAiInsights(${selectedRequestId})">
+                        <i class="fas fa-brain"></i> AI Insights
+                    </button>
+                    <button class="btn btn-sm btn-success" onclick="assignVolunteer(${
+                      match.volunteer_id
+                    }, '${match.name}')">
+                        <i class="fas fa-user-check"></i> Assign
+                    </button>
+                </div>
+            </div>
+        </div>
+    `,
+      )
+      .join("");
+
+    container.innerHTML = html;
+  }
+
+  // Auto assign best match
+  async function autoAssign() {
+    if (!selectedRequestId) return;
+
+    try {
+      document.getElementById("auto-assign-btn").innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+      document.getElementById("auto-assign-btn").disabled = true;
+
+      const response = await fetch(
+        `/api/matching/auto-assign/${selectedRequestId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        showToast("Success", "Request auto-assigned successfully!", "success");
+        loadAnalytics();
+        loadPendingRequests();
+        document.getElementById("matching-results").innerHTML =
+          '<div class="alert alert-success">Request assigned successfully!</div>';
+      } else {
+        showToast(
+          "Warning",
+          result.message || "Auto-assignment failed",
+          "warning",
+        );
+      }
+    } catch (error) {
+      console.error("Error auto-assigning:", error);
+      showToast("Error", "Failed to auto-assign request", "error");
+    } finally {
+      document.getElementById("auto-assign-btn").innerHTML =
+        '<i class="fas fa-magic"></i> Auto Assign';
+      document.getElementById("auto-assign-btn").disabled = false;
+    }
+  }
+
+  // Show AI insights
+  async function showAiInsights(requestId) {
+    const modal = new bootstrap.Modal(
+      document.getElementById("aiInsightsModal"),
+    );
+    modal.show();
+
+    try {
+      const response = await fetch(`/api/matching/ai-insights/${requestId}`);
+      const data = await response.json();
+
+      let html =
+        '<div class="alert alert-info"><i class="fas fa-brain"></i> AI Analysis</div>';
+
+      if (data.insights && data.insights.length > 0) {
+        html += '<ul class="list-group list-group-flush">';
+        data.insights.forEach((insight) => {
+          html += `<li class="list-group-item">${insight}</li>`;
+        });
+        html += "</ul>";
+      } else {
+        html +=
+          '<p class="text-muted">No AI insights available for this request.</p>';
+      }
+
+      if (data.confidence) {
+        html += `<div class="mt-3"><small class="text-muted">Confidence: ${(
+          data.confidence * 100
+        ).toFixed(1)}%</small></div>`;
+      }
+
+      document.getElementById("ai-insights-content").innerHTML = html;
+    } catch (error) {
+      console.error("Error loading AI insights:", error);
+      document.getElementById("ai-insights-content").innerHTML =
+        '<div class="alert alert-danger">Error loading AI insights</div>';
+    }
+  }
+
+  // Assign volunteer manually
+  function assignVolunteer(volunteerId, volunteerName) {
+    selectedVolunteerId = volunteerId;
+
+    document.getElementById("assign-volunteer-name").textContent =
+      volunteerName;
+    document.getElementById("assign-request-title").textContent =
+      document.querySelector(
+        ".request-card.border-primary .card-title",
+      ).textContent;
+
+    const modal = new bootstrap.Modal(document.getElementById("assignModal"));
+    modal.show();
+  }
+
+  // Confirm manual assignment
+  async function confirmAssignment() {
+    if (!selectedRequestId || !selectedVolunteerId) return;
+
+    try {
+      document.getElementById("confirm-assign-btn").innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+      document.getElementById("confirm-assign-btn").disabled = true;
+
+      const response = await fetch(
+        `/api/matching/assign/${selectedRequestId}/${selectedVolunteerId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        showToast("Success", "Volunteer assigned successfully!", "success");
+        bootstrap.Modal.getInstance(
+          document.getElementById("assignModal"),
+        ).hide();
+        loadAnalytics();
+        loadPendingRequests();
+        document.getElementById("matching-results").innerHTML =
+          '<div class="alert alert-success">Volunteer assigned successfully!</div>';
+      } else {
+        showToast("Error", "Failed to assign volunteer", "error");
+      }
+    } catch (error) {
+      console.error("Error assigning volunteer:", error);
+      showToast("Error", "Failed to assign volunteer", "error");
+    } finally {
+      document.getElementById("confirm-assign-btn").innerHTML = "Assign";
+      document.getElementById("confirm-assign-btn").disabled = false;
+    }
+  }
+
+  // Refresh analytics
+  function refreshAnalytics() {
+    loadAnalytics();
+    if (selectedRequestId) {
+      loadMatches(selectedRequestId);
+    }
+  }
+
+  // Utility functions
+  function getPriorityColor(priority) {
+    switch (priority) {
+      case "urgent":
+        return "danger";
+      case "high":
+        return "warning";
+      case "normal":
+        return "info";
+      case "low":
+        return "secondary";
+      default:
+        return "secondary";
+    }
+  }
+
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    if (diffHours < 1) {
+      return "Just now";
+    } else if (diffHours < 24) {
+      return `${Math.floor(diffHours)}h ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  }
+
+  function showToast(title, message, type) {
+    // Simple toast implementation - you might want to use a proper toast library
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-${
+          type === "success"
+            ? "success"
+            : type === "error"
+              ? "danger"
+              : "warning"
+        } border-0"
+             role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <strong>${title}:</strong> ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", toastHtml);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      const toast = document.querySelector(".toast:last-child");
+      if (toast) toast.remove();
+    }, 5000);
+  }
+
+  // Event listeners
+  document
+    .getElementById("auto-assign-btn")
+    .addEventListener("click", autoAssign);
+  document
+    .getElementById("confirm-assign-btn")
+    .addEventListener("click", confirmAssignment);
+</script>
+
+<style>
+  .match-card {
+    transition: all 0.2s ease;
+  }
+
+  .match-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .request-card {
+    transition: all 0.2s ease;
+  }
+
+  .request-card:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .badge {
+    font-size: 0.7em;
+  }
+</style>
+{% endblock %}
