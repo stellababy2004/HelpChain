@@ -52,3 +52,4 @@ PyJWT==2.8.0
 pyotp==2.9.0
 # Error monitoring
 sentry-sdk[flask]==2.13.0
+aiofiles==23.2.1
