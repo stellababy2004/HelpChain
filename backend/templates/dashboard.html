@@ -320,11 +320,15 @@ block head %}
         Използвайте филтрите, за да работите по-бързо със заявките.
       </div>
       <div class="d-flex gap-2">
-          <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">Обнови таблото</a>
-          <a href="{{ url_for('submit_request') }}" class="btn btn-primary">Нова заявка</a>
-          <button type="button" class="btn btn-success" id="exportVolunteersBtn">
-            <i class="fas fa-file-csv me-1"></i>Експортирай CSV
-          </button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary"
+          >Обнови таблото</a
+        >
+        <a href="{{ url_for('submit_request') }}" class="btn btn-primary"
+          >Нова заявка</a
+        >
+        <button type="button" class="btn btn-success" id="exportVolunteersBtn">
+          <i class="fas fa-file-csv me-1"></i>Експортирай CSV
+        </button>
       </div>
     </div>
   </div>
@@ -333,79 +337,99 @@ block head %}
 {% if requests %}
 <script>
   function copyRequestsCsv() {
-  const table = document.getElementById('tbody-requests');
-  if (!table) return alert('Няма заявки за копиране');
-  let csv = '';
-  const rows = table.querySelectorAll('tr');
-  rows.forEach(row => {
-    const cols = Array.from(row.querySelectorAll('td')).map(td => td.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim());
-    csv += cols.join(',') + '\n';
-  });
-  if (!csv.trim()) return alert('Няма заявки за копиране');
-  navigator.clipboard.writeText(csv).then(() => {
-    alert('CSV копирано успешно!');
-  }, () => {
-    alert('Грешка при копиране на CSV');
-  });
-}
-function copyVolunteersCsv() {
-  const table = document.getElementById('tbody-volunteers');
-  if (!table) return alert('Няма доброволци за копиране');
-  let csv = '';
-  const rows = table.querySelectorAll('tr');
-  rows.forEach(row => {
-    const cols = Array.from(row.querySelectorAll('td')).map(td => td.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim());
-    csv += cols.join(',') + '\n';
-  });
-  if (!csv.trim()) return alert('Няма доброволци за копиране');
-  navigator.clipboard.writeText(csv).then(() => {
-    alert('CSV копирано успешно!');
-  }, () => {
-    alert('Грешка при копиране на CSV');
-  });
-}
-function exportVolunteers() {
-  const table = document.getElementById('tbody-volunteers');
-  if (!table) return alert('Няма доброволци за експортиране');
-  let csv = '';
-  const rows = table.querySelectorAll('tr');
-  rows.forEach(row => {
-    const cols = Array.from(row.querySelectorAll('td')).map(td => '"' + td.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim() + '"');
-    csv += cols.join(',') + '\n';
-  });
-  if (!csv.trim()) return alert('Няма доброволци за експортиране');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'volunteers.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  alert('CSV експортиран успешно!');
-}
-function exportData() {
-  const table = document.getElementById('tbody-requests');
-  if (!table) return alert('Няма заявки за експортиране');
-  let csv = '';
-  const rows = table.querySelectorAll('tr');
-  rows.forEach(row => {
-    const cols = Array.from(row.querySelectorAll('td')).map(td => '"' + td.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim() + '"');
-    csv += cols.join(',') + '\n';
-  });
-  if (!csv.trim()) return alert('Няма заявки за експортиране');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'requests.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  alert('CSV експортиран успешно!');
-}
+    const table = document.getElementById("tbody-requests");
+    if (!table) return alert("Няма заявки за копиране");
+    let csv = "";
+    const rows = table.querySelectorAll("tr");
+    rows.forEach((row) => {
+      const cols = Array.from(row.querySelectorAll("td")).map((td) =>
+        td.innerText.replace(/\n/g, " ").replace(/\s+/g, " ").trim(),
+      );
+      csv += cols.join(",") + "\n";
+    });
+    if (!csv.trim()) return alert("Няма заявки за копиране");
+    navigator.clipboard.writeText(csv).then(
+      () => {
+        alert("CSV копирано успешно!");
+      },
+      () => {
+        alert("Грешка при копиране на CSV");
+      },
+    );
+  }
+  function copyVolunteersCsv() {
+    const table = document.getElementById("tbody-volunteers");
+    if (!table) return alert("Няма доброволци за копиране");
+    let csv = "";
+    const rows = table.querySelectorAll("tr");
+    rows.forEach((row) => {
+      const cols = Array.from(row.querySelectorAll("td")).map((td) =>
+        td.innerText.replace(/\n/g, " ").replace(/\s+/g, " ").trim(),
+      );
+      csv += cols.join(",") + "\n";
+    });
+    if (!csv.trim()) return alert("Няма доброволци за копиране");
+    navigator.clipboard.writeText(csv).then(
+      () => {
+        alert("CSV копирано успешно!");
+      },
+      () => {
+        alert("Грешка при копиране на CSV");
+      },
+    );
+  }
+  function exportVolunteers() {
+    const table = document.getElementById("tbody-volunteers");
+    if (!table) return alert("Няма доброволци за експортиране");
+    let csv = "";
+    const rows = table.querySelectorAll("tr");
+    rows.forEach((row) => {
+      const cols = Array.from(row.querySelectorAll("td")).map(
+        (td) =>
+          '"' +
+          td.innerText.replace(/\n/g, " ").replace(/\s+/g, " ").trim() +
+          '"',
+      );
+      csv += cols.join(",") + "\n";
+    });
+    if (!csv.trim()) return alert("Няма доброволци за експортиране");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "volunteers.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert("CSV експортиран успешно!");
+  }
+  function exportData() {
+    const table = document.getElementById("tbody-requests");
+    if (!table) return alert("Няма заявки за експортиране");
+    let csv = "";
+    const rows = table.querySelectorAll("tr");
+    rows.forEach((row) => {
+      const cols = Array.from(row.querySelectorAll("td")).map(
+        (td) =>
+          '"' +
+          td.innerText.replace(/\n/g, " ").replace(/\s+/g, " ").trim() +
+          '"',
+      );
+      csv += cols.join(",") + "\n";
+    });
+    if (!csv.trim()) return alert("Няма заявки за експортиране");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "requests.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert("CSV експортиран успешно!");
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     const rows = Array.from(

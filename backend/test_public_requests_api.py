@@ -71,11 +71,14 @@ def test_public_create_request(client):
         "location": "Варна",
         "problem": "Тестова заявка чрез API",
     }
-    resp = client.post("/requests", data=json.dumps(payload), content_type="application/json")
+    resp = client.post(
+        "/requests", data=json.dumps(payload), content_type="application/json"
+    )
     assert resp.status_code == 201
     data = resp.get_json()
     assert data["success"] is True
     assert data["request"]["title"] == "other"
+
 
 @pytest.fixture
 def client():
@@ -85,4 +88,14 @@ def client():
             db.create_all()
         yield client
         with app.app_context():
+            # Ensure session is removed and schema dropped
+            try:
+                db.session.remove()
+            except Exception:
+                pass
             db.drop_all()
+            # Best-effort: dispose engine so DBAPI connections are closed
+            try:
+                db.engine.dispose()
+            except Exception:
+                pass

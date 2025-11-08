@@ -133,7 +133,7 @@ def change_status():
         if not request_id or not new_status:
             return jsonify({"success": False, "message": "Invalid data"}), 400
 
-        req = Request.query.get(request_id)
+        req = db.session.get(Request, request_id)
         if not req:
             return jsonify({"success": False, "message": "Request not found"}), 404
 
@@ -175,7 +175,7 @@ def delete_request():
         if not request_id:
             return jsonify({"success": False, "message": "Invalid request ID"}), 400
 
-        req = Request.query.get(request_id)
+        req = db.session.get(Request, request_id)
         if not req:
             return jsonify({"success": False, "message": "Request not found"}), 404
 
@@ -277,7 +277,7 @@ def update_volunteer_location(volunteer_id):
 
         from ..models import Volunteer
 
-        vol = Volunteer.query.get(volunteer_id)
+        vol = db.session.get(Volunteer, volunteer_id)
         if not vol:
             return jsonify({"error": "Volunteer not found"}), 404
 

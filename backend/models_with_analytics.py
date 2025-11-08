@@ -1,4 +1,22 @@
+import sys
 from datetime import UTC, datetime
+
+# Ensure this module is available under a small set of canonical names so
+# SQLAlchemy doesn't end up with duplicate module objects defining the same
+# mapped classes during the test runs. If the module is imported under any
+# of these aliases later, they will point to the same module object.
+try:
+    _this_module = sys.modules.get(__name__)
+    for _alias in (
+        "models_with_analytics",
+        "backend.models_with_analytics",
+        "helpchain_backend.src.models_with_analytics",
+    ):
+        if _alias not in sys.modules:
+            sys.modules[_alias] = _this_module
+except Exception:
+    # Never fail import of the models file due to aliasing; aliasing is best-effort.
+    pass
 from enum import Enum
 
 # Import AdminUser and other models - try relative import first then top-level
@@ -16,7 +34,11 @@ except Exception:
 
 
 # Try relative imports first, fall back to absolute imports for standalone execution
-from extensions import db
+try:
+    # Prefer package-relative import when running as backend package
+    from .extensions import db
+except Exception:
+    from extensions import db
 
 # Ensure AdminUser is properly imported for relationships
 if AdminUser is None or not hasattr(AdminUser, "__tablename__"):

@@ -20,12 +20,28 @@ def standalone_app():
 
     with app.app_context():
         db.create_all()
+        # Only dispose the engine for file-backed databases. Disposing the
+        # engine for an in-memory SQLite database will drop the schema
+        # because the in-memory DB is connection-scoped.
+        uri = app.config.get("SQLALCHEMY_DATABASE_URI", "") or ""
+        if ":memory:" not in uri:
+            try:
+                db.engine.dispose()
+            except Exception:
+                pass
 
     yield app
 
     with app.app_context():
         db.session.remove()
         db.drop_all()
+        # Ensure engine disposes connections so sqlite3.Connection objects
+        # aren't left open by the SQLAlchemy engine/pool during tests.
+        try:
+            db.engine.dispose()
+        except Exception:
+            # Best-effort; don't fail teardown if dispose isn't available
+            pass
 
 
 @pytest.fixture
@@ -41,11 +57,11 @@ def standalone_admin_user_id(app_with_defaults):
         admin_role = Role.query.filter_by(name="Администратор").first()
         assert admin_role is not None, "Expected default admin role to be created"
 
-        user = User(
-            username="standalone_admin",
-            email="standalone@example.com",
-            password_hash=generate_password_hash("password123"),
-        )
+        user = User(username="standalone_admin", email="standalone@example.com")
+        try:
+            user.set_password("password123")
+        except Exception:
+            user.password_hash = generate_password_hash("password123")
         db.session.add(user)
         db.session.flush()
         db.session.add(UserRole(user_id=user.id, role_id=admin_role.id))
@@ -77,11 +93,11 @@ def test_has_permission_with_session_context(
 
 def test_has_permission_denies_missing_role(app_with_defaults):
     with app_with_defaults.app_context():
-        user = User(
-            username="no_role_user",
-            email="norole@example.com",
-            password_hash=generate_password_hash("password123"),
-        )
+        user = User(username="no_role_user", email="norole@example.com")
+        try:
+            user.set_password("password123")
+        except Exception:
+            user.password_hash = generate_password_hash("password123")
         db.session.add(user)
         db.session.commit()
         user_id = user.id

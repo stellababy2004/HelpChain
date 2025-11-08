@@ -21,30 +21,30 @@ available. The shim still creates lightweight helpers like `login_manager`.
 
 canonical = None
 try:
-	# Prefer the package-qualified canonical module
-	import backend.extensions as canonical
+    # Prefer the package-qualified canonical module
+    import backend.extensions as canonical
 except Exception:
-	try:
-		import extensions as canonical
-	except Exception:
-		canonical = None
+    try:
+        import extensions as canonical
+    except Exception:
+        canonical = None
 
 if canonical is not None:
-	# Re-export objects from the canonical module. Use getattr with a
-	# sensible default for optional features (cache may be None).
-	db = getattr(canonical, "db", None)
-	babel = getattr(canonical, "babel", None)
-	mail = getattr(canonical, "mail", None)
-	cache = getattr(canonical, "cache", None)
+    # Re-export objects from the canonical module. Use getattr with a
+    # sensible default for optional features (cache may be None).
+    db = getattr(canonical, "db", None)
+    babel = getattr(canonical, "babel", None)
+    mail = getattr(canonical, "mail", None)
+    cache = getattr(canonical, "cache", None)
 else:
-	# Do NOT instantiate SQLAlchemy() here. Leave db/babel/mail/cache as None
-	# so that importing modules are forced to use the canonical module when
-	# available (and tests that ensure canonical exists will work). This avoids
-	# creating a separate metadata registry which causes duplicate-table issues.
-	db = None
-	babel = None
-	mail = None
-	cache = None
+    # Do NOT instantiate SQLAlchemy() here. Leave db/babel/mail/cache as None
+    # so that importing modules are forced to use the canonical module when
+    # available (and tests that ensure canonical exists will work). This avoids
+    # creating a separate metadata registry which causes duplicate-table issues.
+    db = None
+    babel = None
+    mail = None
+    cache = None
 
 # Provide objects that some modules expect to exist here. These are
 # lightweight and safe to instantiate even if `db` is None. The shim does

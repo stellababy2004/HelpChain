@@ -7,14 +7,18 @@ def test_index_route(client):
     response = client.get("/")
     # Ако app е правилният, трябва да върне 200 или поне не 404
     assert response.status_code != 404
+
+
 import pytest
 from appy import app
+
 
 @pytest.fixture
 def client():
     app.config["TESTING"] = True
     with app.test_client() as client:
         yield client
+
 
 def test_public_requests_list(client):
     # Тест за GET /requests (публичен списък)
@@ -32,7 +36,9 @@ def test_public_request_detail_not_found(client):
 
 def test_public_create_request_invalid(client):
     # Тест за POST /requests с невалидни данни
-    response = client.post("/requests", json={"name": "", "email": "bad", "problem": "short"})
+    response = client.post(
+        "/requests", json={"name": "", "email": "bad", "problem": "short"}
+    )
     assert response.status_code == 400
     data = response.get_json()
     assert not data["success"]
@@ -48,7 +54,7 @@ def test_public_create_request_valid(client):
         "location": "София",
         "problem": "Нуждая се от помощ с пазаруване.",
         "phone": "0888123456",
-        "city": "София"
+        "city": "София",
     }
     response = client.post("/requests", json=payload)
     assert response.status_code in (200, 201)
