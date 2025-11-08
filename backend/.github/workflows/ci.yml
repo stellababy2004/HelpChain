@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main, analytics-fix]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Set up Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
+        with:
+          python-version: "3.12"
+      - name: "Fast-fail: db singleton regression test"
+        run: |
+          echo "Installing minimal deps for fast-fail step"
+          pip install -r backend/requirements.txt || true
+          pip install pytest || true
+          echo "Running fast-fail singleton DB test"
+          pytest -q backend/tests/test_db_singleton.py -q
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install black ruff pytest
+      - name: Lint
+        run: ruff check backend/
+      - name: Format
+        run: black --check backend/
+      - name: "Fast-fail: db singleton regression test"
+        run: |
+          echo "Running fast-fail singleton DB test"
+          pytest -q backend/tests/test_db_singleton.py -q
+
+      - name: Test
+        run: pytest backend/
