@@ -4,8 +4,15 @@ import os
 import time
 from datetime import datetime, timedelta
 
-import aiofiles
-import httpx
+try:
+    import aiofiles
+except Exception:
+    aiofiles = None
+
+try:
+    import httpx
+except Exception:
+    httpx = None
 from flask import (
     Blueprint,
     Response,
