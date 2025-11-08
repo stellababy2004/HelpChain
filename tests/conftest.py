@@ -82,6 +82,24 @@ def db_session(app):
     """Create a database session for testing."""
     from appy import _ensure_db_engine_registration, db
 
+    # Ensure the canonical extensions module is aliased so model imports use
+    # the same SQLAlchemy() instance that the app provides. This prevents
+    # models from being bound to a different `db` object and ensures
+    # `db.create_all()` will create the expected tables.
+    try:
+        try:
+            canonical_ext = importlib.import_module("backend.extensions")
+        except Exception:
+            canonical_ext = None
+        if canonical_ext is not None:
+            for alias in ("extensions", "backend.extensions"):
+                if alias not in sys.modules:
+                    sys.modules[alias] = canonical_ext
+
+    except Exception:
+        # best-effort; fall through to normal imports
+        pass
+
     # Import models to ensure SQLAlchemy is aware of all tables before create_all()
     try:
         importlib.import_module("backend.models")
