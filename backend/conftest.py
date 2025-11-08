@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 
@@ -41,16 +43,8 @@ def db_session(app):
             except Exception:
                 pass
 
+    # consolidated imports (keep a single import block later in file)
 
-import logging
-import os
-import sys
-import warnings
-from pathlib import Path
-from unittest.mock import ANY, MagicMock, call, mock_open, patch
-
-import pytest
-from sqlalchemy.pool import NullPool, StaticPool
 
 # Ensure appy.py sees we're running tests when it's imported.
 # This must be set before importing `appy` in fixtures so the module
@@ -549,7 +543,7 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock, call, mock_open, patch
 
 import pytest
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool, StaticPool
 
 # Добавяме helpchain-backend (родител на папката src) в началото на sys.path,
 # за да може `import src` да работи
