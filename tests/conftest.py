@@ -101,7 +101,25 @@ def db_session(app):
 
     with app.app_context():
         _ensure_db_engine_registration()
+        # Debug: print metadata before create_all to help CI diagnostics
+        try:
+            print(
+                "[TEST DEBUG] SQLAlchemy metadata tables before create_all:",
+                sorted(db.metadata.tables.keys()),
+            )
+        except Exception as _err:
+            print("[TEST DEBUG] Could not list metadata before create_all:", _err)
+
         db.create_all()
+
+        # Debug: print metadata after create_all so CI logs show which tables were created
+        try:
+            print(
+                "[TEST DEBUG] SQLAlchemy metadata tables after create_all:",
+                sorted(db.metadata.tables.keys()),
+            )
+        except Exception as _err:
+            print("[TEST DEBUG] Could not list metadata after create_all:", _err)
         # Ensure default achievements exist for gamification tests
         GamificationService.initialize_achievements()
         try:
