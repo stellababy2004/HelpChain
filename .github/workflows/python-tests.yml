@@ -17,11 +17,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      HELPCHAIN_TEST_DEBUG: '0'
+      HELPCHAIN_TEST_DEBUG: "0"
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install dependencies
