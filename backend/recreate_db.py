@@ -32,17 +32,18 @@ def recreate_database():
 
         print("✅ База данни пресъздадена успешно!")
 
-        # Проверяваме създадените таблици
+        # Проверяваме създадените таблици using a context-managed connection
         from sqlalchemy import inspect
 
-        inspector = inspect(db.engine)
-        tables = inspector.get_table_names()
-        print(f"📊 Създадени таблици: {tables}")
+        with db.engine.connect() as _conn:
+            inspector = inspect(_conn)
+            tables = inspector.get_table_names()
+            print(f"📊 Създадени таблици: {tables}")
 
-        # Проверяваме колони в volunteers таблицата
-        if "volunteers" in tables:
-            columns = [col["name"] for col in inspector.get_columns("volunteers")]
-            print(f"👥 Колони в volunteers: {columns}")
+            # Проверяваме колони в volunteers таблицата
+            if "volunteers" in tables:
+                columns = [col["name"] for col in inspector.get_columns("volunteers")]
+                print(f"👥 Колони в volunteers: {columns}")
 
 
 if __name__ == "__main__":

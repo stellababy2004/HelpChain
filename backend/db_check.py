@@ -1,6 +1,10 @@
 from backend.app import app
 from backend.extensions import db
-from models import HelpRequest
+
+try:
+    from .models import HelpRequest
+except Exception:
+    from models import HelpRequest
 
 with app.app_context():
     # Покажи всички таблици

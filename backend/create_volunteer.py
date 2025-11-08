@@ -49,17 +49,23 @@ def main():
             if user:
                 print("ℹ️ Наличие на потребител – актуализиране на данните...")
                 user.username = username
-                user.password_hash = generate_password_hash(password)
+                try:
+                    user.set_password(password)
+                except Exception:
+                    user.password_hash = generate_password_hash(password)
                 user.role = "volunteer"
                 user.is_active = True
             else:
                 user = User(
                     username=username,
                     email=email,
-                    password_hash=generate_password_hash(password),
                     role="volunteer",
                     is_active=True,
                 )
+                try:
+                    user.set_password(password)
+                except Exception:
+                    user.password_hash = generate_password_hash(password)
                 db.session.add(user)
 
             db.session.commit()

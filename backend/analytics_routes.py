@@ -23,22 +23,28 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.future import select
 from sqlalchemy.orm import sessionmaker
 
-from extensions import db
+try:
+    from .extensions import db
+except Exception:
+    from extensions import db
 
 try:
-    from permissions import require_admin_login
-except ImportError:
+    from .permissions import require_admin_login
+except Exception:
     from permissions import require_admin_login
 
 analytics_bp = Blueprint("analytics_bp", __name__)
 
 # Import models (use canonical top-level models module)
 try:
-    from models import HelpRequest, Volunteer
-except ImportError:
-    # Fallback for standalone execution
-    HelpRequest = None
-    Volunteer = None
+    from .models import HelpRequest, Volunteer
+except Exception:
+    try:
+        from models import HelpRequest, Volunteer
+    except Exception:
+        # Fallback for standalone execution
+        HelpRequest = None
+        Volunteer = None
 
 # Import caching decorators from performance optimization
 try:
@@ -180,31 +186,55 @@ async def analytics_data():
                 async with async_session() as session:
 
                     # Count HelpRequest
-                    result = await session.execute(select(func.count(HelpRequest.id)))
-                    total_requests = result.scalar()
+                    _res = await session.execute(select(func.count(HelpRequest.id)))
+                    try:
+                        total_requests = _res.scalar()
+                    finally:
+                        try:
+                            _res.close()
+                        except Exception:
+                            pass
 
                     # Count Volunteer
-                    result = await session.execute(select(func.count(Volunteer.id)))
-                    total_volunteers = result.scalar()
+                    _res = await session.execute(select(func.count(Volunteer.id)))
+                    try:
+                        total_volunteers = _res.scalar()
+                    finally:
+                        try:
+                            _res.close()
+                        except Exception:
+                            pass
 
                     # Count active tasks
                     try:
                         from models_with_analytics import Task
 
-                        result = await session.execute(
+                        _res = await session.execute(
                             select(func.count(Task.id)).where(
                                 Task.status.in_(["assigned", "in_progress"])
                             )
                         )
-                        active_tasks = result.scalar()
+                        try:
+                            active_tasks = _res.scalar()
+                        finally:
+                            try:
+                                _res.close()
+                            except Exception:
+                                pass
                     except (ImportError, AttributeError):
                         # If Task model not available, count from HelpRequest status
-                        result = await session.execute(
+                        _res = await session.execute(
                             select(func.count(HelpRequest.id)).where(
                                 HelpRequest.status.in_(["assigned", "in_progress"])
                             )
                         )
-                        active_tasks = result.scalar()
+                        try:
+                            active_tasks = _res.scalar()
+                        finally:
+                            try:
+                                _res.close()
+                            except Exception:
+                                pass
 
                 return jsonify(
                     {
@@ -310,31 +340,55 @@ async def analytics_simple_data():
         async with async_session() as session:
 
             # Count HelpRequest
-            result = await session.execute(select(func.count(HelpRequest.id)))
-            total_requests = result.scalar()
+            _res = await session.execute(select(func.count(HelpRequest.id)))
+            try:
+                total_requests = _res.scalar()
+            finally:
+                try:
+                    _res.close()
+                except Exception:
+                    pass
 
             # Count Volunteer
-            result = await session.execute(select(func.count(Volunteer.id)))
-            total_volunteers = result.scalar()
+            _res = await session.execute(select(func.count(Volunteer.id)))
+            try:
+                total_volunteers = _res.scalar()
+            finally:
+                try:
+                    _res.close()
+                except Exception:
+                    pass
 
             # Count active tasks
             try:
                 from models_with_analytics import Task
 
-                result = await session.execute(
+                _res = await session.execute(
                     select(func.count(Task.id)).where(
                         Task.status.in_(["assigned", "in_progress"])
                     )
                 )
-                active_tasks = result.scalar()
+                try:
+                    active_tasks = _res.scalar()
+                finally:
+                    try:
+                        _res.close()
+                    except Exception:
+                        pass
             except (ImportError, AttributeError):
                 # If Task model not available, count from HelpRequest status
-                result = await session.execute(
+                _res = await session.execute(
                     select(func.count(HelpRequest.id)).where(
                         HelpRequest.status.in_(["assigned", "in_progress"])
                     )
                 )
-                active_tasks = result.scalar()
+                try:
+                    active_tasks = _res.scalar()
+                finally:
+                    try:
+                        _res.close()
+                    except Exception:
+                        pass
 
         result = jsonify(
             {

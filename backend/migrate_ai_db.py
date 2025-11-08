@@ -17,11 +17,17 @@ def migrate_database():
 
     with app.app_context():
         try:
-            # Проверяваме дали полетата вече съществуват
-            inspector = db.inspect(db.engine)
-            columns = [
-                col["name"] for col in inspector.get_columns("chatbot_conversations")
-            ]
+            # Проверяваме дали полетата вече съществуват. Use an explicit
+            # connection for the inspector so DBAPI connections are closed
+            # promptly after the check.
+            from sqlalchemy import inspect
+
+            with db.engine.connect() as _conn:
+                inspector = inspect(_conn)
+                columns = [
+                    col["name"]
+                    for col in inspector.get_columns("chatbot_conversations")
+                ]
 
             ai_columns = [
                 "ai_provider",

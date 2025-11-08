@@ -731,13 +731,17 @@ def pytest_configure(config):
     except Exception:
         pass
 
+
 @pytest.fixture(scope="session", autouse=True)
 def app():
     """Create and configure a test app instance. Sets up schema."""
     from appy import app as real_app
 
     try:
-        from extensions import login_manager  # type: ignore[import-not-found]
+        try:
+            from .extensions import login_manager  # type: ignore[import-not-found]
+        except Exception:
+            from extensions import login_manager  # type: ignore[import-not-found]
     except Exception:
         from helpchain_backend.src.extensions import login_manager
     from helpchain_backend.src.routes.admin import admin_bp
@@ -769,7 +773,10 @@ def app():
                 real_app.login_manager = login_manager
             except Exception:
                 pass
-    from models import AdminUser
+    try:
+        from .models import AdminUser
+    except Exception:
+        from models import AdminUser
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -903,7 +910,10 @@ def app():
                 canonical_ext = importlib.import_module("backend.extensions")
             except Exception:
                 # Try top-level name as a fallback
-                canonical_ext = importlib.import_module("extensions")
+                try:
+                    canonical_ext = importlib.import_module("extensions")
+                except Exception:
+                    canonical_ext = None
 
             # Alias common import names to the canonical module object for
             # core names only; do not overwrite the shim module which
@@ -1338,6 +1348,113 @@ def app():
                             pass
                 except Exception:
                     pass
+        except Exception:
+            pass
+
+    @pytest.fixture(scope="session", autouse=True)
+    def session_seed_and_teardown(app):
+        """Seed minimal, deterministic data once per pytest session and remove it
+        at session teardown. This ensures tests can rely on a single seeded admin
+        while avoiding repeated per-test seed writes.
+
+        The fixture is intentionally conservative: it only creates a minimal
+        AdminUser when none exists and deletes rows from the `admin_users`
+        table on teardown. All operations are best-effort and swallow
+        exceptions to avoid interfering with test runs that manage their
+        own data.
+        """
+
+        try:
+            with app.app_context():
+                try:
+                    from appy import db as _db
+                except Exception:
+                    try:
+                        from extensions import db as _db  # type: ignore
+                    except Exception:
+                        try:
+                            from helpchain_backend.src.extensions import db as _db  # type: ignore
+                        except Exception:
+                            _db = None
+
+                AdminUser = None
+                try:
+                    try:
+                        from models import AdminUser
+                    except Exception:
+                        from helpchain_backend.src.models import AdminUser  # type: ignore
+                except Exception:
+                    AdminUser = None
+
+                if _db is not None and AdminUser is not None:
+                    try:
+                        # Only create admin if no admin exists to keep seeding idempotent
+                        if (
+                            _db.session.query(AdminUser)
+                            .filter_by(username="admin")
+                            .count()
+                            == 0
+                        ):
+                            admin = AdminUser(
+                                username="admin", email="admin@example.com"
+                            )
+                            try:
+                                admin.set_password("Admin123")
+                            except Exception:
+                                try:
+                                    from werkzeug.security import generate_password_hash
+
+                                    admin.password_hash = generate_password_hash(
+                                        "Admin123"
+                                    )
+                                except Exception:
+                                    pass
+                            try:
+                                _db.session.add(admin)
+                                _db.session.commit()
+                            except Exception:
+                                try:
+                                    _db.session.rollback()
+                                except Exception:
+                                    pass
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
+        # Tests run here
+        yield
+
+        # Teardown: best-effort clear of seeded admin rows so state does not leak
+        try:
+            with app.app_context():
+                try:
+                    from appy import db as _db2
+                except Exception:
+                    try:
+                        from extensions import db as _db2  # type: ignore
+                    except Exception:
+                        try:
+                            from helpchain_backend.src.extensions import db as _db2  # type: ignore
+                        except Exception:
+                            _db2 = None
+
+                if _db2 is not None:
+                    try:
+                        # Prefer raw SQL DELETE to avoid ORM mapper issues during teardown
+                        try:
+                            _db2.session.execute(
+                                "DELETE FROM admin_users WHERE username = :u",
+                                {"u": "admin"},
+                            )
+                            _db2.session.commit()
+                        except Exception:
+                            try:
+                                _db2.session.rollback()
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
         except Exception:
             pass
 

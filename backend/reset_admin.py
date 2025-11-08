@@ -9,7 +9,6 @@ def create_or_update_admin(username, password, email=None):
     print(f"Админ '{username}' е създаден/обновен успешно!")
 
 
-
 from flask import Flask
 
 from app import app

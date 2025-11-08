@@ -6,13 +6,20 @@ def utc_now() -> datetime:
     """Return naive UTC timestamp without relying on datetime.utcnow."""
     from datetime import UTC
     from datetime import datetime as dt
+
     return dt.now(UTC).replace(tzinfo=None)
 
-from extensions import db
+
+try:
+    # When the package is imported as `backend.*` prefer package-relative imports.
+    from .extensions import db
+except Exception:
+    # Fall back to top-level import to remain compatible with other import styles.
+    from extensions import db
 
 
 class Request(db.Model):
-    __tablename__ = 'requests'
+    __tablename__ = "requests"
     __table_args__ = {"extend_existing": True}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -25,6 +32,8 @@ class Request(db.Model):
     status = db.Column(db.String(20), default="pending")
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+
+
 import enum
 from datetime import UTC, datetime
 
@@ -38,9 +47,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 def utc_now() -> datetime:
     """Return naive UTC timestamp without using deprecated datetime.utcnow."""
     return datetime.now(UTC).replace(tzinfo=None)
-
-
-
 
 
 # --- Achievements Model ---
@@ -156,6 +162,24 @@ class User(db.Model):
 
     # Relationships
     audit_logs = relationship("AuditLog", back_populates="actor")
+
+    def set_password(self, password: str):
+        """Set a password hash on the user.
+
+        Minimal validation is applied to avoid creating trivially weak
+        passwords programmatically; callers that need stricter rules can
+        enforce them before calling this method.
+        """
+        if not password or len(password) < 8:
+            raise ValueError("Паролата трябва да бъде поне 8 символа")
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password: str) -> bool:
+        """Verify a plaintext password against the stored hash."""
+        try:
+            return check_password_hash(self.password_hash, password)
+        except Exception:
+            return False
 
 
 class AdminUser(db.Model, UserMixin):
@@ -1498,6 +1522,7 @@ class UserActivity(db.Model):
 
 class PushSubscription(db.Model):
     """Push notification subscriptions for volunteers"""
+
     __tablename__ = "push_subscriptions"
     __table_args__ = {"extend_existing": True}
 
@@ -1535,6 +1560,7 @@ class PushSubscription(db.Model):
 
 class FailedEmail(db.Model):
     """Model for storing failed emails in dead letter queue"""
+
     __tablename__ = "failed_emails"
     __table_args__ = {"extend_existing": True}
 

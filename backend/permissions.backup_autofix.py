@@ -24,7 +24,9 @@ def has_permission(permission_codename):
         return False
 
     try:
-        user = User.query.get(session["user_id"])
+        user = (
+            db.session.get(User, session["user_id"]) if session.get("user_id") else None
+        )
         if not user or not user.is_active:
             return False
 

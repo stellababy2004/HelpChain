@@ -17,11 +17,12 @@ def view_notifications(limit=10):
         print("❌ Database not found. Run notification_dashboard.py first.")
         return
 
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT * FROM notifications ORDER BY timestamp DESC LIMIT ?", (limit,))
-    notifications = c.fetchall()
-    conn.close()
+    with sqlite3.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(
+            "SELECT * FROM notifications ORDER BY timestamp DESC LIMIT ?", (limit,)
+        )
+        notifications = c.fetchall()
 
     if not notifications:
         print("📭 Няма нотификации.")
@@ -69,12 +70,11 @@ def clear_notifications():
         print("Отменено.")
         return
 
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("DELETE FROM notifications")
-    deleted_count = c.rowcount
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute("DELETE FROM notifications")
+        deleted_count = c.rowcount
+        conn.commit()
 
     print(f"✅ Изтрити {deleted_count} нотификации.")
 

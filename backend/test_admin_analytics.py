@@ -141,9 +141,46 @@ def test_admin_analytics():
         traceback.print_exc()
 
     finally:
-        # Clean up
-        os.close(db_fd)
-        os.unlink(db_path)
+        # Attempt to close and dispose DB resources before deleting the
+        # temporary database file. On Windows unlinking an open SQLite
+        # connection will fail, so remove sessions and dispose the engine
+        # as a best-effort guard.
+        try:
+            from extensions import db as _db
+
+            try:
+                with app.app_context():
+                    try:
+                        _db.session.remove()
+                    except Exception:
+                        pass
+                    try:
+                        _db.engine.dispose()
+                    except Exception:
+                        pass
+            except Exception:
+                # If app_context can't be entered for some reason, still
+                # attempt module-level cleanup where possible.
+                try:
+                    _db.session.remove()
+                except Exception:
+                    pass
+                try:
+                    _db.engine.dispose()
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        # Clean up filesystem artifacts
+        try:
+            os.close(db_fd)
+        except Exception:
+            pass
+        try:
+            os.unlink(db_path)
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

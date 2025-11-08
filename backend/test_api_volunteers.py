@@ -19,6 +19,14 @@ class TestVolunteerAPI:
         with self.app.app_context():
             db.session.remove()
             db.drop_all()
+            # Best-effort: dispose engine to close any DBAPI connections
+            # left open by SQLAlchemy internals so tests don't leak sqlite3
+            # Connection objects. Swallow errors to remain robust across
+            # different SQLAlchemy versions and DB backends.
+            try:
+                db.engine.dispose()
+            except Exception:
+                pass
 
     def test_get_nearby_volunteers_success(self):
         """Test successful retrieval of nearby volunteers."""

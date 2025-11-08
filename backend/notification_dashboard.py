@@ -46,49 +46,59 @@ DB_PATH = "notifications.db"
 
 def init_db():
     """Initialize the notifications database"""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute(
-        """CREATE TABLE IF NOT EXISTS notifications
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  timestamp TEXT,
-                  recipient TEXT,
-                  subject TEXT,
-                  content TEXT,
-                  status TEXT,
-                  smtp_error TEXT)"""
-    )
-    conn.commit()
-    conn.close()
+    # Use a context manager so the connection is closed promptly
+    with sqlite3.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(
+            """CREATE TABLE IF NOT EXISTS notifications
+                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      timestamp TEXT,
+                      recipient TEXT,
+                      subject TEXT,
+                      content TEXT,
+                      status TEXT,
+                      smtp_error TEXT)"""
+        )
+        conn.commit()
 
 
 def save_notification_to_db(
     recipient, subject, content, status="saved", smtp_error=None
 ):
     """Save notification to database"""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute(
-        """INSERT INTO notifications (timestamp, recipient, subject, content, status, smtp_error)
-                 VALUES (?, ?, ?, ?, ?, ?)""",
-        (datetime.now().isoformat(), recipient, subject, content, status, smtp_error),
-    )
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(
+            """INSERT INTO notifications (timestamp, recipient, subject, content, status, smtp_error)
+                     VALUES (?, ?, ?, ?, ?, ?)""",
+            (
+                datetime.now().isoformat(),
+                recipient,
+                subject,
+                content,
+                status,
+                smtp_error,
+            ),
+        )
+        conn.commit()
 
 
 def get_notifications(limit=50):
     """Get recent notifications from database"""
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("SELECT * FROM notifications ORDER BY timestamp DESC LIMIT ?", (limit,))
-    notifications = c.fetchall()
-    conn.close()
+    with sqlite3.connect(DB_PATH) as conn:
+        c = conn.cursor()
+        c.execute(
+            "SELECT * FROM notifications ORDER BY timestamp DESC LIMIT ?", (limit,)
+        )
+        notifications = c.fetchall()
     return notifications
 
 
-# Initialize database
-init_db()
+# Initialize database lazily when the app starts handling requests
+@app.before_first_request
+def _ensure_db_initialized():
+    init_db()
+
 
 # HTML Templates
 DASHBOARD_TEMPLATE = """
