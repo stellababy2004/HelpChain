@@ -53,3 +53,4 @@ pyotp==2.9.0
 # Error monitoring
 sentry-sdk[flask]==2.13.0
 aiofiles==23.2.1
+httpx==0.24.1
