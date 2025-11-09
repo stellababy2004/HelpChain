@@ -1,9 +1,5 @@
-try:
-    from .extensions import db
-    from .models import Achievement, Volunteer
-except ImportError:  # pragma: no cover - fallback for standalone scripts
-    from backend.extensions import db
-    from backend.models import Achievement, Volunteer
+from backend.extensions import db
+from backend.models import Achievement, Volunteer
 
 
 class GamificationService:

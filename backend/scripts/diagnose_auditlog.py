@@ -61,13 +61,13 @@ try:
     print("Imported backend.extensions.db")
 except Exception as e:
     print("Failed to import backend.extensions.db:", e)
-    # fallback to top-level
+    # fallback to package-qualified import
     try:
-        from extensions import db
+        from backend.extensions import db
 
-        print("Imported extensions.db (fallback)")
+        print("Imported backend.extensions.db (fallback)")
     except Exception as e2:
-        print("Failed to import fallback extensions.db:", e2)
+        print("Failed to import backend.extensions.db fallback:", e2)
         sys.exit(1)
 
 # Ensure we're in app context if possible
