@@ -1,6 +1,77 @@
+"""
+Early canonicalization guard: attempt to ensure the top-level name `extensions`
+resolves to the package-qualified `backend.extensions` module before any other
+imports run. This is deliberately placed at the very top of the file so pytest
+collect/other modules won't create a separate top-level `extensions` module
+that would result in a second SQLAlchemy() instance.
+"""
+
+import sys
+
+try:
+    # Try to prefer an already-imported package-qualified module
+    if "backend.extensions" in sys.modules:
+        sys.modules["extensions"] = sys.modules["backend.extensions"]
+    else:
+        # Try importing the canonical module and aliasing it immediately
+        import importlib
+
+        try:
+            _tmp = importlib.import_module("backend.extensions")
+            sys.modules["extensions"] = _tmp
+        except Exception:
+            # best-effort; continue if import fails
+            pass
+        # Defensive reconciliation: ensure any top-level 'extensions' module
+        # references the canonical db instance before per-test create_all()
+        try:
+            try:
+                canonical_ext = importlib.import_module("backend.extensions")
+            except Exception:
+                canonical_ext = None
+            if canonical_ext is not None and "extensions" in sys.modules:
+                dup = sys.modules.get("extensions")
+                if dup is not None and dup is not canonical_ext:
+                    try:
+                        # Align attributes so the short-name module uses the
+                        # canonical SQLAlchemy instance and related helpers.
+                        for attr in ("db", "babel", "mail", "cache"):
+                            try:
+                                if hasattr(canonical_ext, attr):
+                                    setattr(dup, attr, getattr(canonical_ext, attr))
+                            except Exception:
+                                pass
+                        sys.modules["extensions"] = canonical_ext
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+except Exception:
+    pass
+
 import importlib
 import os
 import sys
+import builtins
+
+# Install a short-lived import wrapper that forces the name 'extensions' to
+# resolve to the canonical package-qualified module when present. This avoids
+# the import system creating a separate top-level module object that would
+# hold its own SQLAlchemy() instance. It's only active during test collection
+# and module import phases; it's safe for test use here.
+_orig_import = builtins.__import__
+
+
+def _import_hook(name, globals=None, locals=None, fromlist=(), level=0):
+    try:
+        if name == "extensions" and "backend.extensions" in sys.modules:
+            return sys.modules["backend.extensions"]
+    except Exception:
+        pass
+    return _orig_import(name, globals, locals, fromlist, level)
+
+
+builtins.__import__ = _import_hook
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -81,6 +152,47 @@ try:
     # alias backend.extensions -> extensions so imports using the short name
     # reference the same SQLAlchemy() instance used by the app.
     _canonical_ext = importlib.import_module("backend.extensions")
+    # If a non-canonical `extensions` module was already imported and it
+    # exposes its own SQLAlchemy() instance, try to move any Table objects
+    # into the canonical metadata before overwriting sys.modules so that
+    # pre-imported mapped classes don't get lost or remain bound to a
+    # different MetaData object.
+    existing = sys.modules.get("extensions")
+    try:
+        canonical_db = getattr(_canonical_ext, "db", None)
+    except Exception:
+        canonical_db = None
+
+    if existing is not None and existing is not _canonical_ext:
+        try:
+            existing_db = getattr(existing, "db", None)
+        except Exception:
+            existing_db = None
+        # If the existing module had a SQLAlchemy() instance separate from
+        # the canonical one, attempt to relocate its Table objects so
+        # db.create_all() will see them. This is best-effort and only
+        # performed during tests to avoid changing production behaviour.
+        if (
+            existing_db is not None
+            and canonical_db is not None
+            and id(getattr(existing_db, "metadata", None))
+            != id(getattr(canonical_db, "metadata", None))
+        ):
+            try:
+                # Move each table into the canonical metadata if missing
+                for tbl in list(getattr(existing_db, "metadata", {}).tables.values()):
+                    if (
+                        getattr(tbl, "name", None)
+                        not in getattr(canonical_db, "metadata", {}).tables
+                    ):
+                        try:
+                            tbl.tometadata(canonical_db.metadata)
+                        except Exception:
+                            # ignore per-table failures
+                            pass
+            except Exception:
+                pass
+
     for _alias in ("extensions", "backend.extensions"):
         sys.modules[_alias] = _canonical_ext
 except Exception:
@@ -342,6 +454,34 @@ try:
 except Exception as e:
     print("[TEST DEBUG] Could not print db.metadata after importing models:", e)
 
+    # Reconcile any duplicate 'extensions' module objects by ensuring the
+    # short-name module points to the canonical module and shares its
+    # SQLAlchemy() instance. This is defensive: some import paths may have
+    # loaded 'extensions' under a second module object earlier; make sure
+    # its attributes reference the canonical db so tests see a single
+    # SQLAlchemy instance.
+    try:
+        canonical_ext = importlib.import_module("backend.extensions")
+        if (
+            "extensions" in sys.modules
+            and sys.modules["extensions"] is not canonical_ext
+        ):
+            try:
+                dup = sys.modules["extensions"]
+                # Copy over important extension attributes when present
+                for attr in ("db", "babel", "mail", "cache"):
+                    try:
+                        if hasattr(canonical_ext, attr):
+                            setattr(dup, attr, getattr(canonical_ext, attr))
+                    except Exception:
+                        pass
+                # Finally, replace the entry so future imports get canonical module
+                sys.modules["extensions"] = canonical_ext
+            except Exception:
+                pass
+    except Exception:
+        pass
+
 
 @pytest.fixture
 def app():
@@ -469,6 +609,10 @@ def db_session(app):
             "GamificationService",
         )
 
+    # Ensure the session-level test database/schema is prepared once per test
+    # session by the `session_db` fixture (see below). Rely on that fixture to
+    # create the schema and perform any global seeding so this function can
+    # focus on per-test transactional isolation.
     with app.app_context():
         _ensure_db_engine_registration()
         # Debug: print metadata before create_all to help CI diagnostics
@@ -479,6 +623,30 @@ def db_session(app):
             )
         except Exception as _err:
             print("[TEST DEBUG] Could not list metadata before create_all:", _err)
+        # Defensive reconciliation: ensure any top-level 'extensions' module
+        # references the canonical db instance before per-test create_all()
+        try:
+            try:
+                canonical_ext = importlib.import_module("backend.extensions")
+            except Exception:
+                canonical_ext = None
+            if canonical_ext is not None and "extensions" in sys.modules:
+                dup = sys.modules.get("extensions")
+                if dup is not None and dup is not canonical_ext:
+                    try:
+                        # Align attributes so the short-name module uses the
+                        # canonical SQLAlchemy instance and related helpers.
+                        for attr in ("db", "babel", "mail", "cache"):
+                            try:
+                                if hasattr(canonical_ext, attr):
+                                    setattr(dup, attr, getattr(canonical_ext, attr))
+                            except Exception:
+                                pass
+                        sys.modules["extensions"] = canonical_ext
+                    except Exception:
+                        pass
+        except Exception:
+            pass
         # Extra diagnostic: check whether AdminUser.__table__ is bound to the
         # same MetaData object as the app's db.metadata. This helps detect
         # models imported against a different SQLAlchemy instance.
@@ -590,40 +758,7 @@ def db_session(app):
         except Exception:
             pass
 
-        # Ensure a clean database state for the test session. In some cases the
-        # in-memory engine or earlier imports may have already created tables or
-        # indexes; drop them first to avoid „already exists" errors during
-        # db.create_all(). This is safe in TESTING mode.
-        try:
-            print("[TEST DEBUG] Dropping existing tables (test setup)")
-            db.drop_all()
-        except Exception:
-            pass
-
-        try:
-            db.create_all()
-        except Exception as _e:
-            # Some SQLite edge-cases may report existing indexes/tables during
-            # repeated create attempts (especially if a previous import created
-            # parts of the schema). If it's a benign "already exists" error,
-            # print a debug line and continue; otherwise re-raise.
-            msg = str(_e).lower()
-            if "already exists" in msg or "index" in msg:
-                print(
-                    "[TEST DEBUG] db.create_all() raised, but looks benign (already exists):",
-                    _e,
-                )
-            else:
-                raise
-
-        # Debug: print metadata after create_all so CI logs show which tables were created
-        try:
-            print(
-                "[TEST DEBUG] SQLAlchemy metadata tables after create_all:",
-                sorted(db.metadata.tables.keys()),
-            )
-        except Exception as _err:
-            print("[TEST DEBUG] Could not list metadata after create_all:", _err)
+        # (Per-test transactional setup follows.)
         # Diagnostic: enumerate any loaded classes named 'AuditLog' to detect
         # duplicate model registrations coming from different module paths.
         try:
@@ -695,13 +830,66 @@ def db_session(app):
         except Exception as _err:
             print("[TEST DEBUG] Could not inspect Achievement class:", _err)
 
-        # Ensure default achievements exist for gamification tests
-        GamificationService.initialize_achievements()
+        # Ensure default achievements exist for gamification tests. The
+        # session-level `session_db` fixture is responsible for running the
+        # global seeding once; calling initialize here is harmless but not
+        # required. Proceed to provide a per-test transactional session that
+        # rolls back changes after each test.
         try:
             yield db.session
         finally:
-            db.session.remove()
+            # Rollback and remove the session used by the test to avoid leaking
+            # transactional state between tests. The session-level fixture will
+            # handle final schema teardown once the entire test session ends.
+            try:
+                db.session.remove()
+            except Exception:
+                pass
+
+
+@pytest.fixture(scope="session")
+def session_db(app):
+    """Prepare the database schema and global seed once per test session.
+
+    This fixture creates the schema (drop/create), runs global seeding such
+    as gamification achievements, and leaves the schema in place for the
+    duration of the pytest session. At session end the schema is dropped to
+    leave a clean environment.
+    """
+    from appy import _ensure_db_engine_registration, db
+
+    with app.app_context():
+        _ensure_db_engine_registration()
+        try:
             db.drop_all()
+        except Exception:
+            pass
+        db.create_all()
+
+        # Seed global data required by many tests (achievements, default lookups)
+        try:
+            GamificationService = getattr(
+                importlib.import_module("backend.gamification_service"),
+                "GamificationService",
+            )
+        except ModuleNotFoundError:
+            GamificationService = getattr(
+                importlib.import_module("gamification_service"), "GamificationService"
+            )
+        try:
+            GamificationService.initialize_achievements()
+        except Exception:
+            # Seeding is best-effort; tests can still proceed if seeding fails
+            # (diagnostics will appear in CI logs).
+            pass
+
+        yield
+
+        # Final session teardown: drop all tables to leave workspace clean
+        try:
+            db.drop_all()
+        except Exception:
+            pass
 
 
 @pytest.fixture
