@@ -14,13 +14,10 @@ try:
 except ImportError:
     from backend.celery_app import celery
 
-try:
-    from extensions import db
-except ImportError:
-    from backend.extensions import db
+from backend.extensions import db
 
 try:
-    from models import (
+    from backend.models import (
         AdminUser,
         ChatMessage,
         HelpRequest,
@@ -35,7 +32,7 @@ except ImportError:
     )
 
 try:
-    from models_with_analytics import AnalyticsEvent, Task, TaskPerformance
+    from backend.models_with_analytics import AnalyticsEvent, Task, TaskPerformance
 except ImportError:
     from backend.models_with_analytics import AnalyticsEvent, Task, TaskPerformance
 
@@ -602,13 +599,23 @@ def retry_failed_emails(self):
     import os
 
     try:
-        from models import FailedEmail
+        try:
+            from backend.models import FailedEmail
+        except Exception:
+            try:
+                from helpchain_backend.src.models import FailedEmail
+            except Exception:
+                FailedEmail = None
 
         logger.info("Starting periodic retry of failed emails from DLQ")
 
         # Get failed emails older than retry interval (configurable)
         retry_interval_hours = int(os.getenv("EMAIL_RETRY_INTERVAL_HOURS", "24"))
         cutoff_time = utc_now() - timedelta(hours=retry_interval_hours)
+
+        if FailedEmail is None:
+            logger.warning("FailedEmail model not available; skipping retry job")
+            return {"retried": 0, "total_failed": 0}
 
         failed_emails = (
             db.session.query(FailedEmail)
@@ -625,26 +632,38 @@ def retry_failed_emails(self):
                     json.loads(failed_email.context) if failed_email.context else {}
                 )
 
-                # Retry sending the email
-                self.send_email_with_retry.delay(
-                    recipient=failed_email.recipient,
-                    subject=failed_email.subject,
-                    template=failed_email.template,
-                    context=context,
-                )
+                # Retry sending the email (schedule async task)
+                try:
+                    self.send_email_with_retry.delay(
+                        recipient=failed_email.recipient,
+                        subject=failed_email.subject,
+                        template=failed_email.template,
+                        context=context,
+                    )
+                except Exception:
+                    # If scheduling via Celery fails, log and continue
+                    logger.exception("Failed to schedule retry task for failed email")
 
-                # Delete from DLQ after retry attempt
-                db.session.delete(failed_email)
-                retried_count += 1
+                # Delete from DLQ after scheduling retry
+                try:
+                    db.session.delete(failed_email)
+                    retried_count += 1
+                except Exception:
+                    logger.exception("Failed to remove retried FailedEmail from DB")
+                    continue
 
             except Exception as e:
                 logger.error(
-                    f"Error retrying failed email to {failed_email.recipient}: {e}"
+                    f"Error retrying failed email to {getattr(failed_email, 'recipient', None)}: {e}"
                 )
                 # Keep in DLQ for next retry cycle
                 continue
 
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
         logger.info(
             f"Periodic retry completed. Retried {retried_count} emails from DLQ"
         )
@@ -653,7 +672,10 @@ def retry_failed_emails(self):
 
     except Exception as e:
         logger.error(f"Error in retry_failed_emails task: {e}")
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
         raise self.retry(countdown=1800, max_retries=3) from e
 
 

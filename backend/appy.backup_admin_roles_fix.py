@@ -53,7 +53,7 @@ from sqlalchemy.exc import OperationalError
 from werkzeug.utils import secure_filename
 
 from admin_roles import admin_roles_bp
-from routes.notifications import notification_bp
+from backend.routes.notifications import notification_bp
 
 # Import smart matching engine
 from smart_matching import smart_matching_engine

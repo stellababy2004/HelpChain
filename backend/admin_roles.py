@@ -19,13 +19,13 @@ try:
         UserRole,
     )
 except Exception:
-    from models import (
+    from backend.models import (
         Permission,
         Role,
         RolePermission,
         User,
         UserRole,
-    )  # Import from main models.py
+    )  # Import from canonical backend.models
 
 try:
     from .permissions import require_admin_login

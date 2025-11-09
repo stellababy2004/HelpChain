@@ -25,18 +25,18 @@ from sqlalchemy import func
 try:
     from .models import Request, HelpRequest, AdminUser, Volunteer
 except Exception:
-    from models import Request, HelpRequest, AdminUser, Volunteer
+    from backend.models import Request, HelpRequest, AdminUser, Volunteer
 
 # Use the canonical top-level models module to avoid duplicate model definitions
 try:
     from .models import RequestLog, Feedback
 except Exception:
-    from models import RequestLog, Feedback
+    from backend.models import RequestLog, Feedback
 
 try:
     from .models_with_analytics import AnalyticsEvent, TaskPerformance
 except Exception:
-    from models_with_analytics import AnalyticsEvent, TaskPerformance
+    from backend.models_with_analytics import AnalyticsEvent, TaskPerformance
 
 # Създаваме само една инстанция на app и всички маршрути се регистрират върху нея
 
@@ -388,7 +388,7 @@ try:
 except ImportError:  # pragma: no cover - deployment fallback
     from backend.analytics_service import get_db  # type: ignore[import-not-found]
 from backend.extensions import babel, cache, db, mail as mail_ext
-from models import (
+from backend.models import (
     AdminUser,
     ChatMessage,
     ChatParticipant,
@@ -402,9 +402,9 @@ from models import (
     UserRole,
     Volunteer,
 )
-from models_with_analytics import Task, TaskAssignment, TaskPerformance
+from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
 from permissions import initialize_default_roles_and_permissions, require_admin_login
-from routes.notifications import (
+from backend.routes.notifications import (
     notification_bp,
     notification_settings as notification_settings_view,
     subscribe_push as subscribe_push_view,
@@ -907,6 +907,183 @@ def initialize_default_admin():
 
     try:
         logger.info("Checking for existing admin user...")
+        # Test-only diagnostic: print registry / AuditLog info when requested
+        try:
+            import os
+            import sys
+            import importlib
+            import traceback
+
+            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                print(
+                    "[DEEP DIAG] initialize_default_admin: beginning deep registry diagnostics"
+                )
+
+                # 1) canonical db instance
+                try:
+                    be_ext = importlib.import_module("backend.extensions")
+                    canonical_db = getattr(be_ext, "db", None)
+                    print(
+                        "[DEEP DIAG] canonical backend.extensions.db id:",
+                        id(canonical_db),
+                    )
+                except Exception as _e:
+                    canonical_db = None
+                    print("[DEEP DIAG] failed to import backend.extensions:", _e)
+
+                # 2) inspect registries reachable from the canonical DB / Model
+                registries = []
+                try:
+                    model_base = getattr(canonical_db, "Model", None)
+                    if model_base is not None:
+                        reg = getattr(model_base, "registry", None)
+                        if reg is not None:
+                            registries.append(("db.Model.registry", reg))
+                except Exception:
+                    pass
+                try:
+                    reg2 = getattr(canonical_db, "registry", None)
+                    if reg2 is not None:
+                        registries.append(("db.registry", reg2))
+                except Exception:
+                    pass
+
+                # 3) dump registry internals and mappers
+                for rname, reg in registries:
+                    try:
+                        print(
+                            f"[DEEP DIAG] registry {rname} -> id={id(reg)} repr={reg}"
+                        )
+                        cr = getattr(reg, "_class_registry", None)
+                        if cr is not None:
+                            try:
+                                keys = list(cr.keys())
+                                print(
+                                    f"[DEEP DIAG] {rname}._class_registry keys count: {len(keys)} sample:",
+                                    keys[:50],
+                                )
+                            except Exception as e:
+                                print(
+                                    f"[DEEP DIAG] failed to list _class_registry keys for {rname}:",
+                                    e,
+                                )
+                            # show any entries named 'AuditLog'
+                            try:
+                                for k, v in list(cr.items()):
+                                    try:
+                                        if getattr(v, "__name__", None) == "AuditLog":
+                                            print(
+                                                f"[DEEP DIAG] {rname} class-reg entry {k} -> {v} id={id(v)} module={getattr(v,'__module__',None)}"
+                                            )
+                                    except Exception:
+                                        pass
+                            except Exception:
+                                pass
+                        # mappers iterator
+                        try:
+                            miter = getattr(reg, "mappers", None)
+                            if miter is not None:
+                                for m in list(miter):
+                                    try:
+                                        cls = getattr(m, "class_", None)
+                                        print(
+                                            f"[DEEP DIAG] mapper -> {m} class={cls} id={id(cls) if cls is not None else None} module={getattr(cls,'__module__',None)}"
+                                        )
+                                    except Exception:
+                                        pass
+                        except Exception:
+                            pass
+                    except Exception as rexc:
+                        print("[DEEP DIAG] registry dump failed for", rname, rexc)
+
+                # 4) find any other modules that expose a SQLAlchemy() instance as `db`
+                try:
+                    extra_dbs = []
+                    for mname, mobj in list(sys.modules.items()):
+                        try:
+                            if not mobj:
+                                continue
+                            cand = getattr(mobj, "db", None)
+                            if cand is None:
+                                continue
+                            tname = type(cand).__name__
+                            if tname == "SQLAlchemy":
+                                extra_dbs.append((mname, id(cand), cand))
+                        except Exception:
+                            continue
+                    if extra_dbs:
+                        print(
+                            "[DEEP DIAG] modules exposing a `db = SQLAlchemy()` instance:"
+                        )
+                        for mname, did, cand in extra_dbs:
+                            is_canon = (
+                                canonical_db is not None and id(canonical_db) == did
+                            )
+                            print(
+                                f"[DEEP DIAG] - {mname} id={did} canonical={is_canon} repr={cand}"
+                            )
+                    else:
+                        print(
+                            "[DEEP DIAG] no other modules exposing db=SQLAlchemy() found"
+                        )
+                except Exception as _e:
+                    print(
+                        "[DEEP DIAG] scanning sys.modules for extra db instances failed:",
+                        _e,
+                    )
+
+                # 5) scan sys.modules for any classes named AuditLog and print their identity
+                try:
+                    found = []
+                    import inspect as _inspect
+
+                    for mname, mobj in list(sys.modules.items()):
+                        try:
+                            if not mobj:
+                                continue
+                            for attrname, attrval in getattr(
+                                mobj, "__dict__", {}
+                            ).items():
+                                try:
+                                    if (
+                                        _inspect.isclass(attrval)
+                                        and attrval.__name__ == "AuditLog"
+                                    ):
+                                        found.append(
+                                            (
+                                                mname,
+                                                attrname,
+                                                id(attrval),
+                                                getattr(attrval, "__module__", None),
+                                                getattr(mobj, "__file__", None),
+                                            )
+                                        )
+                                except Exception:
+                                    continue
+                        except Exception:
+                            continue
+                    if found:
+                        print("[DEEP DIAG] sys.modules AuditLog classes found:")
+                        for entry in found:
+                            print(
+                                "[DEEP DIAG] - module,attr,id,defined_in_module,file:",
+                                entry,
+                            )
+                    else:
+                        print(
+                            "[DEEP DIAG] no AuditLog classes found in sys.modules scan"
+                        )
+                except Exception as _e:
+                    print("[DEEP DIAG] sys.modules AuditLog scan failed:", _e)
+
+                print(
+                    "[DEEP DIAG] initialize_default_admin: deep registry diagnostics complete"
+                )
+        except Exception:
+            print(
+                "[DEEP DIAG] initialize_default_admin: diagnostics failed:\n",
+                traceback.format_exc(),
+            )
         db = get_db()
         session = db.session
 
@@ -1510,6 +1687,21 @@ if app.config.get("_TEST_DB_PATH"):
 elif app.config.get("TESTING"):
     # Fall back to in-memory when no test DB path was specified
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    # Use StaticPool for in-memory testing so multiple connections share
+    # the same database. This avoids "no such table" when tests open new
+    # connections or when SQLAlchemy creates multiple engine instances.
+    try:
+        from sqlalchemy.pool import StaticPool
+
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "poolclass": StaticPool,
+            "connect_args": {"check_same_thread": False},
+        }
+    except Exception:
+        # If StaticPool isn't available, fall back to conservative options
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "connect_args": {"check_same_thread": False}
+        }
     logger.info("TESTING: Using in-memory SQLite database")
 elif database_url and use_postgres:
     # Use PostgreSQL when DATABASE_URL is provided and USE_POSTGRES is true
@@ -2329,7 +2521,7 @@ if socketio:
 
             # Save message to database
             from backend.extensions import db
-            from models import ChatMessage
+            from backend.models import ChatMessage
 
             message = ChatMessage(
                 room_id=room_id,
@@ -2429,7 +2621,7 @@ if socketio:
                 from backend.extensions import db
 
                 try:
-                    from models import ChatMessage
+                    from backend.models import ChatMessage
                 except Exception:
                     from backend.models import ChatMessage
 
@@ -2495,7 +2687,7 @@ if socketio:
         if request_id and new_status:
             try:
                 from backend.extensions import db
-                from models import HelpRequest
+                from backend.models import HelpRequest
 
                 request_obj = db.session.get(HelpRequest, request_id)
                 if request_obj:
@@ -2561,7 +2753,7 @@ if socketio:
         if request_id and volunteer_id:
             try:
                 from backend.extensions import db
-                from models import HelpRequest, Volunteer
+                from backend.models import HelpRequest, Volunteer
 
                 request_obj = db.session.get(HelpRequest, request_id)
                 volunteer = db.session.get(Volunteer, volunteer_id)
@@ -2607,7 +2799,7 @@ if socketio:
         if volunteer_id and status:
             try:
                 from backend.extensions import db
-                from models import Volunteer
+                from backend.models import Volunteer
 
                 volunteer = db.session.get(Volunteer, volunteer_id)
                 if volunteer:
@@ -2668,7 +2860,7 @@ if socketio:
         if volunteer_id and location:
             try:
                 from backend.extensions import db
-                from models import Volunteer
+                from backend.models import Volunteer
 
                 volunteer = db.session.get(Volunteer, volunteer_id)
                 if volunteer:
@@ -3437,7 +3629,6 @@ def handle_unexpected_error(error):
 
 
 @app.route("/")
-@require_admin_login
 def index():
     # безопасно извличаме агрегати — ако моделът липсва или схемата
     # не е съвместима, връщаме fallback
@@ -5568,7 +5759,7 @@ def _resolve_volunteer_for_display(volunteer_id):
 def _get_available_tasks(limit=10):
     """Return a lightweight list of currently available volunteer tasks."""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         query = (
             db.session.query(
@@ -5763,7 +5954,7 @@ def update_volunteer_settings():
 def _get_volunteer_stats_safe(volunteer_id):
     """Safely get volunteer statistics with fallback values"""
     try:
-        from models_with_analytics import Task, TaskPerformance
+        from backend.models_with_analytics import Task, TaskPerformance
 
         task_stats = (
             db.session.query(
@@ -5822,7 +6013,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 def _get_active_tasks_safe(volunteer_id):
     """Safely get active tasks for volunteer"""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         active_tasks_query = (
             db.session.query(

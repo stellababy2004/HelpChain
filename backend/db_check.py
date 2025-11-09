@@ -4,7 +4,7 @@ from backend.extensions import db
 try:
     from .models import HelpRequest
 except Exception:
-    from models import HelpRequest
+    from backend.models import HelpRequest
 
 with app.app_context():
     # Покажи всички таблици

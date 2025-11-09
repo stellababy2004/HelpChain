@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import func, or_
 
-from models import AuditLog, HelpRequest, User, Volunteer
+from backend.models import AuditLog, HelpRequest, User, Volunteer
 
 # Import db/cache from extensions with fallback
 try:

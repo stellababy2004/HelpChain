@@ -11,7 +11,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(__file__))
 
 from appy import app
-from models import AdminUser
+from backend.models import AdminUser
 
 
 def test_admin_analytics():
@@ -27,7 +27,7 @@ def test_admin_analytics():
 
         with app.app_context():
             # Import and initialize db
-            from extensions import db
+            from backend.extensions import db
 
             db.create_all()
 
@@ -146,7 +146,7 @@ def test_admin_analytics():
         # connection will fail, so remove sessions and dispose the engine
         # as a best-effort guard.
         try:
-            from extensions import db as _db
+            from backend.extensions import db as _db
 
             try:
                 with app.app_context():
