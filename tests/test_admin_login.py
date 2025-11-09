@@ -3,101 +3,37 @@
 Test admin login with email 2FA
 """
 
-import os
-import re
-import time
-
-import requests
+import pytest
 
 
-def test_admin_login():
-    """Test the complete admin login flow with email 2FA"""
-    base_url = "http://127.0.0.1:5000"
+def test_admin_login_using_client(client, init_test_data):
+    """Use the Flask test client and fixtures instead of an external HTTP call.
 
-    # Start a session to maintain cookies
-    session = requests.Session()
+    This keeps the test deterministic inside pytest: it uses the same
+    app, database and session fixtures as the rest of the suite.
+    """
+    # Ensure the app will use email 2FA flow for this test
+    client.application.config["EMAIL_2FA_ENABLED"] = True
 
-    print("Testing admin login with email 2FA...")
+    # Use the seeded admin_with_2fa from init_test_data
+    admin = init_test_data["admin_with_2fa"]
 
-    # Step 1: Get the login page to establish session
-    print("1. Getting login page...")
-    response = session.get(f"{base_url}/admin/login")
+    # GET the login page
+    resp = client.get("/admin/login")
+    assert resp.status_code == 200
+
+    # POST credentials for the admin that has 2FA enabled
+    login_data = {"username": admin.username, "password": "TestPass123"}
+    resp = client.post("/admin/login", data=login_data, follow_redirects=False)
     assert (
-        response.status_code == 200
-    ), f"Failed to get login page: {response.status_code}"
+        resp.status_code == 302
+    ), f"Expected redirect after POST, got {resp.status_code}"
 
-    print("2. Attempting login with credentials...")
-    # Step 2: Post login credentials
-    login_data = {
-        "username": "admin",
-        "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
-    }
+    location = resp.headers.get("Location", "")
+    # Should redirect into the email 2FA flow
+    assert "admin/email_2fa" in location
 
-    response = session.post(
-        f"{base_url}/admin/login", data=login_data, allow_redirects=False
-    )
-
-    if response.status_code == 302:  # Redirect to email 2FA
-        print("✓ Login successful, redirected to email 2FA")
-        redirect_url = response.headers.get("Location")
-        if "admin/email_2fa" in redirect_url:
-            print("✓ Redirected to email 2FA page as expected")
-
-            # Step 3: Check if email was sent (not saved to fallback file)
-            print("3. Checking if email was sent...")
-            time.sleep(2)  # Wait a bit for email processing
-
-            try:
-                with open("backend/sent_emails.txt", encoding="utf-8") as f:
-                    content = f.read()
-                    # Get the last email in the file
-                    emails = content.split("=" * 50)
-                    if emails:
-                        last_email = emails[-1].strip()
-                        if last_email:
-                            # Extract the verification code from the last email
-                            code_match = re.search(
-                                r"Код за верификация: (\d{6})", last_email
-                            )
-                            if code_match:
-                                code = code_match.group(1)
-                                print(
-                                    f"✓ Found verification code in fallback file: {code}"
-                                )
-                                print(
-                                    "⚠ Email was saved to fallback - SMTP may have failed"
-                                )
-                                assert (
-                                    False
-                                ), f"Verification code found in fallback file ({code}); SMTP may have failed"
-                            else:
-                                print(
-                                    "✓ No verification code found in recent emails - checking if sent via SMTP..."
-                                )
-                        else:
-                            print(
-                                "✓ No emails in fallback file - email likely sent via SMTP!"
-                            )
-                    else:
-                        print(
-                            "✓ No emails in fallback file - email likely sent via SMTP!"
-                        )
-
-            except FileNotFoundError:
-                print("✓ sent_emails.txt not found - email likely sent via SMTP!")
-
-            print("✓ Admin login with email 2FA appears to be working!")
-            # success - test functions must return None
-            return
-        else:
-            print(f"✗ Unexpected redirect: {redirect_url}")
-            assert False, f"Unexpected redirect: {redirect_url}"
-    else:
-        print(f"✗ Login failed with status: {response.status_code}")
-        print(f"Response: {response.text[:500]}")
-        assert False, f"Login failed with status: {response.status_code}"
-
-
-if __name__ == "__main__":
-    success = test_admin_login()
-    print(f"\nTest result: {'SUCCESS' if success else 'FAILED'}")
+    # Check that the session was populated for pending email 2FA
+    with client.session_transaction() as sess:
+        assert sess.get("pending_email_2fa") is True
+        assert sess.get("email_2fa_code") is not None

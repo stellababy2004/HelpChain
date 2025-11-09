@@ -13,7 +13,7 @@ def test_achievements_table_present(app):
     except Exception:
         try:
             # fallback to known alias
-            from extensions import db  # type: ignore
+            from backend.extensions import db  # type: ignore
         except Exception:
             from helpchain_backend.src.extensions import db as db  # type: ignore
 

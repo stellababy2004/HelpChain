@@ -11,17 +11,10 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import load_only
 
-# Try absolute imports first, fall back to relative imports for standalone execution
-try:
-    from extensions import db
-except ImportError:
-    try:
-        from .extensions import db
-    except ImportError:
-        db = None
+from backend.extensions import db
 
 try:
-    from models_with_analytics import AnalyticsEvent
+    from backend.models_with_analytics import AnalyticsEvent
 except ImportError:
     from .models_with_analytics import AnalyticsEvent
 

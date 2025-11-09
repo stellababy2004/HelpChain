@@ -15,8 +15,8 @@ try:
 except ImportError:
     try:
         from ai_service import ai_service
-        from extensions import db
-        from models import HelpRequest, UserActivity, Volunteer
+        from backend.extensions import db
+        from backend.models import HelpRequest, UserActivity, Volunteer
     except ImportError:
         # Fallback for Celery tasks - define minimal classes if analytics not available
         db = None
@@ -382,7 +382,7 @@ class SmartMatchingService:
 
         # Create assignment record (if TaskAssignment model exists)
         try:
-            from models_with_analytics import TaskAssignment
+            from backend.models_with_analytics import TaskAssignment
 
             assignment = TaskAssignment(
                 task_id=request_id,  # Using request_id as task_id for compatibility

@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash
 try:
     from .models import User
 except Exception:
-    from models import User
+    from backend.models import User
 
 try:
     from ._dispatch_email import _dispatch_email

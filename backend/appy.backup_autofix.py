@@ -35,19 +35,19 @@ from sqlalchemy.exc import OperationalError
 from werkzeug.utils import secure_filename
 
 from admin_roles import admin_roles_bp
-from models_with_analytics import Task
+from backend.models_with_analytics import Task
 from permissions import (
     require_admin_login,
     # initialize_default_roles_and_permissions,
     require_permission,
 )
-from routes.notifications import notification_bp
+from backend.routes.notifications import notification_bp
 
 # Import smart matching engine
 from smart_matching import smart_matching_engine
 
-from .extensions import db
-from .models import (
+from backend.extensions import db
+from backend.models import (
     AdminUser,
     ChatMessage,
     ChatParticipant,
@@ -1437,7 +1437,7 @@ def volunteer_dashboard():
 
         # Get real statistics from database
         try:
-            from models_with_analytics import Task, TaskPerformance
+            from backend.models_with_analytics import Task, TaskPerformance
 
             # Completed tasks count
             completed_tasks = Task.query.filter_by(
@@ -3232,7 +3232,7 @@ def api_analytics_anomalies():
 def api_get_tasks():
     """Получава списък със задачи"""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         page = int(request.args.get("page", 1))
         per_page = int(request.args.get("per_page", 20))
@@ -3291,7 +3291,7 @@ def api_get_tasks():
 def api_create_task():
     """Създава нова задача"""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         data = request.get_json()
 
@@ -3354,7 +3354,7 @@ def api_create_task():
 def api_get_task(task_id):
     """Получава детайли за конкретна задача"""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         task = Task.query.get_or_404(task_id)
 
@@ -3417,7 +3417,7 @@ def api_get_task(task_id):
 def api_update_task(task_id):
     """Обновява задача"""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         task = Task.query.get_or_404(task_id)
         data = request.get_json()
@@ -3469,7 +3469,7 @@ def api_update_task(task_id):
 def api_assign_task(task_id, volunteer_id):
     """Ръчно разпределя задача на доброволец"""
     try:
-        from models_with_analytics import Task, TaskAssignment
+        from backend.models_with_analytics import Task, TaskAssignment
 
         task = Task.query.get_or_404(task_id)
         volunteer = Volunteer.query.get_or_404(volunteer_id)
@@ -3511,7 +3511,7 @@ def api_assign_task(task_id, volunteer_id):
 def api_complete_task(task_id):
     """Отбелязва задача като завършена"""
     try:
-        from models_with_analytics import Task, TaskPerformance
+        from backend.models_with_analytics import Task, TaskPerformance
 
         task = Task.query.get_or_404(task_id)
         data = request.get_json() or {}
@@ -3640,7 +3640,7 @@ def api_matching_analytics():
 def api_volunteer_task_recommendations(volunteer_id):
     """Препоръчва задачи за конкретен доброволец"""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
         from smart_matching import smart_matching_engine
 
         # Вземи отворени задачи

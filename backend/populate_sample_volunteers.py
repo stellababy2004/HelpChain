@@ -15,8 +15,8 @@ sys.path.insert(0, os.path.dirname(CURRENT_DIR))
 
 # Delay heavy imports until paths are configured
 from appy import app  # noqa: E402
-from extensions import db  # noqa: E402
-from models import Volunteer  # noqa: E402
+from backend.extensions import db  # noqa: E402
+from backend.models import Volunteer  # noqa: E402
 
 SAMPLE_IDENTIFIER = "[SAMPLE]"
 SAMPLE_VOLUNTEERS: list[dict[str, object]] = [

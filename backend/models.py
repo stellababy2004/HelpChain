@@ -14,8 +14,9 @@ try:
     # When the package is imported as `backend.*` prefer package-relative imports.
     from .extensions import db
 except Exception:
-    # Fall back to top-level import to remain compatible with other import styles.
-    from extensions import db
+    # Fall back to canonical package-qualified import to remain compatible
+    # with environments that still import `extensions` at top-level.
+    from backend.extensions import db
 
 
 class Request(db.Model):
@@ -35,6 +36,8 @@ class Request(db.Model):
 
 
 import enum
+import os
+import sys
 from datetime import UTC, datetime
 
 import pyotp
@@ -394,6 +397,134 @@ class Volunteer(db.Model):
         if self.rank is None:
             self.rank = 0
 
+    # --- Gamification helper methods (minimal, safe implementations) ---
+    def add_points(self, points: int):
+        """Add points and experience; safe for use in tests without DB commit."""
+        try:
+            points = int(points)
+        except (TypeError, ValueError):
+            return False
+
+        if points <= 0:
+            return False
+
+        self.points = (self.points or 0) + points
+        # Also treat points as experience for leveling
+        self.experience = (self.experience or 0) + points
+        # Check for level up
+        try:
+            self._check_level_up()
+        except Exception:
+            # Never raise from model helper
+            pass
+        return True
+
+    def _check_level_up(self):
+        """Internal: level-up logic. 100 * level required per level (simple)."""
+        required_exp = (self.level or 1) * 100
+        while (self.experience or 0) >= required_exp:
+            self.level = (self.level or 1) + 1
+            self.experience = (self.experience or 0) - required_exp
+            required_exp = (self.level or 1) * 100
+
+    def complete_task(self, hours=1):
+        """Mark a task completed locally: add points, hours and increment counters."""
+        try:
+            hours = float(hours)
+        except (TypeError, ValueError):
+            return False
+        if hours <= 0 or hours > 24:
+            return False
+
+        self.total_tasks_completed = (self.total_tasks_completed or 0) + 1
+        self.total_hours_volunteered = (self.total_hours_volunteered or 0.0) + hours
+        # Reward a modest amount of points for completion
+        try:
+            self.add_points(50)
+        except Exception:
+            pass
+        try:
+            self.update_streak()
+        except Exception:
+            pass
+        return True
+
+    def update_streak(self):
+        """Update streak_days based on last_activity and utc_now()."""
+        try:
+            now = utc_now()
+        except Exception:
+            from datetime import datetime
+
+            now = datetime.utcnow()
+
+        if self.last_activity:
+            try:
+                last_date = self.last_activity.date()
+            except Exception:
+                last_date = None
+
+            if last_date is None:
+                self.streak_days = 1
+            else:
+                days_diff = (now.date() - last_date).days
+                if days_diff == 1:
+                    self.streak_days = (self.streak_days or 0) + 1
+                elif days_diff > 1:
+                    self.streak_days = 1
+                # days_diff == 0 -> nothing
+        else:
+            self.streak_days = 1
+
+        self.last_activity = now
+
+    def add_rating(self, rating):
+        """Add a rating (1-5). Returns True if accepted."""
+        try:
+            r = float(rating)
+        except (TypeError, ValueError):
+            return False
+        if not (1 <= r <= 5):
+            return False
+
+        total = (self.rating or 0.0) * (self.rating_count or 0)
+        self.rating_count = (self.rating_count or 0) + 1
+        self.rating = round((total + r) / (self.rating_count), 2)
+        return True
+
+    def unlock_achievement(self, achievement_id):
+        """Unlock an achievement locally and award points once."""
+        if not achievement_id:
+            return False
+        if self.achievements is None:
+            self.achievements = []
+        if achievement_id in self.achievements:
+            return False
+        self.achievements.append(achievement_id)
+        try:
+            self.add_points(100)
+        except Exception:
+            pass
+        return True
+
+    def get_level_progress(self):
+        """Return percent progress to next level (0-100)."""
+        lvl = self.level or 1
+        req = lvl * 100
+        exp = self.experience or 0
+        try:
+            return min(100, (exp / req) * 100)
+        except Exception:
+            return 0
+
+    def get_total_score(self):
+        """Simple leaderboard score formula used in tests."""
+        pts = self.points or 0
+        tasks = self.total_tasks_completed or 0
+        rating = self.rating or 0
+        lvl = self.level or 0
+        return pts * 0.4 + tasks * 10 + rating * 20 + lvl * 50
+
 
 class RequestLog(db.Model):
     __tablename__ = "request_logs"
@@ -535,6 +666,17 @@ class AuditLog(db.Model):
     metadata_json = db.Column(db.JSON, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     actor = relationship("User", back_populates="audit_logs")
+    # Diagnostic: when running tests with HELPCHAIN_TEST_DEBUG=1, print
+    # where/when this model class is defined so we can detect duplicate
+    # module executions that create multiple mapped classes.
+    try:
+        if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+            mod = sys.modules.get(__name__)
+            print(
+                f"[MODEL DEF] AuditLog defined in module={__name__} file={getattr(mod,'__file__',None)} module_id={id(mod) if mod is not None else None}"
+            )
+    except Exception:
+        pass
 
 
 class HelpRequest(db.Model):
@@ -676,6 +818,50 @@ class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # Основна информация
+
+
+# Test-time diagnostic: when HELPCHAIN_TEST_DEBUG=1, print a short stack
+# showing where this module was executed from. This helps identify cases
+# where the same file is executed under different import names/paths.
+try:
+    if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+        try:
+            import traceback as _traceback
+            from pathlib import Path as _Path
+
+            _mod = sys.modules.get(__name__)
+            _file = getattr(_mod, "__file__", None)
+            print(
+                f"[MODULE LOAD] backend.models loaded module={__name__} file={_file} module_id={id(_mod) if _mod is not None else None}"
+            )
+            # Print a few stack frames (skip the final frame inside this helper)
+            stack = _traceback.extract_stack(limit=16)
+            repo_root = _Path(__file__).resolve().parent
+            printed = 0
+            for fr in reversed(stack[:-1]):
+                try:
+                    fpath = _Path(fr.filename).resolve()
+                    if str(fpath).startswith(str(repo_root)):
+                        print(
+                            f"[MODULE LOAD TRACE] {fr.filename}:{fr.lineno} in {fr.name}"
+                        )
+                        printed += 1
+                        if printed >= 6:
+                            break
+                except Exception:
+                    continue
+            if printed == 0:
+                for fr in stack[-5:-1]:
+                    try:
+                        print(
+                            f"[MODULE LOAD TRACE] {fr.filename}:{fr.lineno} in {fr.name}"
+                        )
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+except Exception:
+    pass
     title = db.Column(db.String(200), nullable=False)
     message = db.Column(db.Text, nullable=False)
     notification_type = db.Column(

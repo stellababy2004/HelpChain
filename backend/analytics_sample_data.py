@@ -11,13 +11,10 @@ import json
 import random
 from datetime import UTC, datetime, timedelta
 
-try:  # Local import paths
-    from extensions import db
-except ImportError:  # pragma: no cover - fallback path for package execution
-    from backend.extensions import db  # type: ignore
+from backend.extensions import db  # canonical import
 
 try:
-    from models_with_analytics import AnalyticsEvent, UserBehavior
+    from backend.models_with_analytics import AnalyticsEvent, UserBehavior
 except ImportError:  # pragma: no cover
     from backend.models_with_analytics import AnalyticsEvent, UserBehavior  # type: ignore
 

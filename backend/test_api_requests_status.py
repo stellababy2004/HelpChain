@@ -1,7 +1,7 @@
 import pytest
 from flask import url_for
 
-from models import Request
+from backend.models import Request
 
 
 def test_api_requests_filter_status(authenticated_admin_client, db_session):
