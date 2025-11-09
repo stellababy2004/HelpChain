@@ -9,6 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Assign issue to Stella
-        uses: peter-evans/assign-issue@v2
-        with:
-          assignees: stellababy2004
+        # Temporarily disabled to satisfy org policy requiring actions be pinned to full commit SHAs.
+        # Original step: uses: peter-evans/assign-issue@v2
+        run: echo "Skipping assign-issue action until pinned to a full SHA."
