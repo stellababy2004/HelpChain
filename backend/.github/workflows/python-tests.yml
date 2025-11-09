@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HELPCHAIN_TEST_DEBUG: "0"
+      DATABASE_URL: "sqlite:///test.db"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Set up Python
@@ -26,16 +27,29 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -u -m pip install --upgrade pip
           if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
           pip install pre-commit
+      - name: Run database migrations
+        # Ensure the test database schema is created before running pytest
+        run: |
+          echo "Running migrations against: $DATABASE_URL"
+          python -u run_migrations.py
+      - name: CI diagnostics
+        run: |
+          echo "CI diagnostics:"
+          echo "DATABASE_URL=$DATABASE_URL"
+          python --version
+          pip --version
+          echo "PWD: $(pwd)"
+          ls -la
       - name: Run pre-commit
         run: |
           pre-commit run --all-files || true
       - name: Run tests
         run: |
           if [ -f backend/pytest.ini ] || [ -d backend/tests ]; then
-            pytest -q
+            pytest -q --maxfail=1
           else
             echo "No tests found"
           fi
