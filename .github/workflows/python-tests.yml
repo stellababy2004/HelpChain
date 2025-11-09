@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HELPCHAIN_TEST_DEBUG: "0"
+      DATABASE_URL: "sqlite:///test.db"
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
       - name: Set up Python
@@ -31,8 +32,7 @@ jobs:
           pip install pre-commit
       - name: Run database migrations
         # Ensure the test database schema is created before running pytest
-        run: |
-          python run_migrations.py || true
+        run: python run_migrations.py
       - name: Run pre-commit
         run: |
           pre-commit run --all-files || true
