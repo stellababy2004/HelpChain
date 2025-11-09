@@ -29,6 +29,10 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
           pip install pre-commit
+      - name: Run database migrations
+        # Ensure the test database schema is created before running pytest
+        run: |
+          python run_migrations.py || true
       - name: Run pre-commit
         run: |
           pre-commit run --all-files || true
