@@ -22,9 +22,9 @@ def test_admin_login():
     # Step 1: Get the login page to establish session
     print("1. Getting login page...")
     response = session.get(f"{base_url}/admin/login")
-    if response.status_code != 200:
-        print(f"Failed to get login page: {response.status_code}")
-        return False
+    assert (
+        response.status_code == 200
+    ), f"Failed to get login page: {response.status_code}"
 
     print("2. Attempting login with credentials...")
     # Step 2: Post login credentials
@@ -67,7 +67,9 @@ def test_admin_login():
                                 print(
                                     "⚠ Email was saved to fallback - SMTP may have failed"
                                 )
-                                return False
+                                assert (
+                                    False
+                                ), f"Verification code found in fallback file ({code}); SMTP may have failed"
                             else:
                                 print(
                                     "✓ No verification code found in recent emails - checking if sent via SMTP..."
@@ -85,14 +87,15 @@ def test_admin_login():
                 print("✓ sent_emails.txt not found - email likely sent via SMTP!")
 
             print("✓ Admin login with email 2FA appears to be working!")
-            return True
+            # success - test functions must return None
+            return
         else:
             print(f"✗ Unexpected redirect: {redirect_url}")
-            return False
+            assert False, f"Unexpected redirect: {redirect_url}"
     else:
         print(f"✗ Login failed with status: {response.status_code}")
         print(f"Response: {response.text[:500]}")
-        return False
+        assert False, f"Login failed with status: {response.status_code}"
 
 
 if __name__ == "__main__":
