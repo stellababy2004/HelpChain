@@ -82,6 +82,24 @@ def db_session(app):
     """Create a database session for testing."""
     from appy import _ensure_db_engine_registration, db
 
+    # Ensure the canonical extensions module is aliased so model imports use
+    # the same SQLAlchemy() instance that the app provides. This prevents
+    # models from being bound to a different `db` object and ensures
+    # `db.create_all()` will create the expected tables.
+    try:
+        try:
+            canonical_ext = importlib.import_module("backend.extensions")
+        except Exception:
+            canonical_ext = None
+        if canonical_ext is not None:
+            for alias in ("extensions", "backend.extensions"):
+                if alias not in sys.modules:
+                    sys.modules[alias] = canonical_ext
+
+    except Exception:
+        # best-effort; fall through to normal imports
+        pass
+
     # Import models to ensure SQLAlchemy is aware of all tables before create_all()
     try:
         importlib.import_module("backend.models")
@@ -101,7 +119,25 @@ def db_session(app):
 
     with app.app_context():
         _ensure_db_engine_registration()
+        # Debug: print metadata before create_all to help CI diagnostics
+        try:
+            print(
+                "[TEST DEBUG] SQLAlchemy metadata tables before create_all:",
+                sorted(db.metadata.tables.keys()),
+            )
+        except Exception as _err:
+            print("[TEST DEBUG] Could not list metadata before create_all:", _err)
+
         db.create_all()
+
+        # Debug: print metadata after create_all so CI logs show which tables were created
+        try:
+            print(
+                "[TEST DEBUG] SQLAlchemy metadata tables after create_all:",
+                sorted(db.metadata.tables.keys()),
+            )
+        except Exception as _err:
+            print("[TEST DEBUG] Could not list metadata after create_all:", _err)
         # Ensure default achievements exist for gamification tests
         GamificationService.initialize_achievements()
         try:

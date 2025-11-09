@@ -1,10 +1,8 @@
-name: Python CI
+name: Quick Python Tests (debug)
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: [ci/add-python-tests-only]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,9 +15,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      HELPCHAIN_TEST_DEBUG: "0"
+      HELPCHAIN_TEST_DEBUG: "1"
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Set up Python
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
         with:
@@ -28,13 +27,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
-          pip install pre-commit
-      - name: Run pre-commit
+      - name: Run pytest
         run: |
-          pre-commit run --all-files || true
-      - name: Run tests
-        run: |
-          if [ -f backend/pytest.ini ] || [ -d backend/tests ]; then
+          if [ -d backend/tests ] || [ -f backend/pytest.ini ]; then
             pytest -q
           else
             echo "No tests found"
