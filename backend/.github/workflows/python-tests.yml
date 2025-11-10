@@ -34,6 +34,9 @@ jobs:
         # Ensure the test database schema is created before running pytest
         run: |
           echo "Running migrations against: $DATABASE_URL"
+          echo '--- alembic.ini head ---'
+          if [ -f backend/migrations/alembic.ini ]; then head -n 20 backend/migrations/alembic.ini || true; else echo 'backend/migrations/alembic.ini not found'; fi
+          echo '--- end ---'
           python -u run_migrations.py
       - name: CI diagnostics
         run: |
