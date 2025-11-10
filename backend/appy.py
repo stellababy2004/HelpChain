@@ -43,6 +43,9 @@ except Exception:
 # Единствена инстанция на app
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["PROPAGATE_EXCEPTIONS"] = True
+# Note: Jinja builtin exposures were removed to keep template globals minimal.
+# Templates should be written to not depend on Python builtins being present
+# in the Jinja global namespace.
 import os as _appy_os
 
 # Allow tests to force TESTING mode before importing this module by setting
@@ -1742,7 +1745,73 @@ else:
         },
         "echo": False,  # Disable SQL query logging
     }
-    logger.info("Configured SQLite connection pooling")
+# Static asset caching: default TTL can be overridden with HELPCHAIN_STATIC_MAX_AGE (seconds)
+try:
+    _static_max_age = int(os.environ.get("HELPCHAIN_STATIC_MAX_AGE", "86400"))
+except Exception:
+    _static_max_age = 86400
+app.config.setdefault("SEND_FILE_MAX_AGE_DEFAULT", _static_max_age)
+
+
+# Install a lightweight after_request hook to ensure Cache-Control is present
+# for common static asset types. This is safe: it only sets headers when the
+# request path appears to target static assets and doesn't override existing
+# Cache-Control headers.
+@app.after_request
+def _apply_static_cache_headers(response):
+    try:
+        req_path = (request.path or "").lower()
+        static_prefix = app.static_url_path or "/static"
+
+        # Determine whether this looks like a static asset request
+        is_static = req_path.startswith(static_prefix) or req_path.endswith(
+            (
+                ".js",
+                ".css",
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".svg",
+                ".woff",
+                ".woff2",
+                ".ttf",
+                ".ico",
+                ".json",
+            )
+        )
+
+        if is_static:
+            # Respect a correct Cache-Control, but override explicit no-cache/private/0 to enable CDN/browser caching
+            existing_cc = response.headers.get("Cache-Control", "").lower()
+            should_override = (
+                not existing_cc
+                or "no-cache" in existing_cc
+                or "max-age=0" in existing_cc
+                or "private" in existing_cc
+            )
+
+            if should_override:
+                # Fingerprinted assets (with a short hash) should be immutable for a long TTL
+                if re.search(r"-[a-f0-9]{8,}\.[a-z0-9]+$", req_path):
+                    response.headers["Cache-Control"] = (
+                        "public, max-age=31536000, immutable"
+                    )
+                else:
+                    max_age = int(app.config.get("SEND_FILE_MAX_AGE_DEFAULT", 86400))
+                    response.headers["Cache-Control"] = f"public, max-age={max_age}"
+
+        # Protect admin routes explicitly: never allow public caching
+        if req_path.startswith("/admin"):
+            response.headers["Cache-Control"] = (
+                "no-store, no-cache, must-revalidate, max-age=0"
+            )
+
+    except Exception:
+        # Don't break responses on header-setting failures
+        pass
+
+    return response
+
 
 db.init_app(app)
 migrate = Migrate(app, db)
@@ -3174,13 +3243,25 @@ def strftime_filter(date, format="%Y-%m-%d %H:%M:%S"):
 # Добавяме strptime филтър за Jinja2
 @app.template_filter("strptime")
 def strptime_filter(date_string, format="%Y-%m-%dT%H:%M:%S.%f"):
+    """Jinja filter to parse a date/time string into a datetime.
+
+    Accepts either a string or a datetime object. If a datetime is passed
+    simply return it unchanged. Any parsing errors return an empty string to
+    keep templates robust.
+    """
     if date_string is None:
         return ""
+
     from datetime import datetime
 
+    # If the caller already passed a datetime, return as-is
+    if isinstance(date_string, datetime):
+        return date_string
+
     try:
-        return datetime.strptime(date_string, format)
-    except ValueError:
+        # Ensure we operate on a string representation
+        return datetime.strptime(str(date_string), format)
+    except (ValueError, TypeError):
         return ""
 
 

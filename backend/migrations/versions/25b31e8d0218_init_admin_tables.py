@@ -265,37 +265,41 @@ def upgrade():
     with op.batch_alter_table("users", schema=None) as batch_op:
         batch_op.create_index(batch_op.f("ix_users_role"), ["role"], unique=False)
 
-    op.create_table(
-        "volunteers",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("name", sa.String(length=200), nullable=False),
-        sa.Column("email", sa.String(length=200), nullable=True),
-        sa.Column("phone", sa.String(length=50), nullable=True),
-        sa.Column("skills", sa.String(length=500), nullable=True),
-        sa.Column("location", sa.String(length=100), nullable=True),
-        sa.Column("latitude", sa.Float(), nullable=True),
-        sa.Column("longitude", sa.Float(), nullable=True),
-        sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=True),
-        sa.Column("updated_at", sa.DateTime(), nullable=True),
-        sa.Column("points", sa.Integer(), nullable=False),
-        sa.Column("level", sa.Integer(), nullable=False),
-        sa.Column("experience", sa.Integer(), nullable=False),
-        sa.Column("total_tasks_completed", sa.Integer(), nullable=False),
-        sa.Column("total_hours_volunteered", sa.Float(), nullable=False),
-        sa.Column("rating", sa.Float(), nullable=False),
-        sa.Column("rating_count", sa.Integer(), nullable=False),
-        sa.Column("achievements", sa.JSON(), nullable=False),
-        sa.Column("badges", sa.JSON(), nullable=False),
-        sa.Column("streak_days", sa.Integer(), nullable=False),
-        sa.Column("last_activity", sa.DateTime(), nullable=True),
-        sa.Column("rank", sa.Integer(), nullable=False),
-        sa.PrimaryKeyConstraint("id"),
-    )
-    with op.batch_alter_table("volunteers", schema=None) as batch_op:
-        batch_op.create_index(
-            batch_op.f("ix_volunteers_location"), ["location"], unique=False
+    # Guard: some revision histories create `volunteers` earlier; skip if present
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    if "volunteers" not in inspector.get_table_names():
+        op.create_table(
+            "volunteers",
+            sa.Column("id", sa.Integer(), nullable=False),
+            sa.Column("name", sa.String(length=200), nullable=False),
+            sa.Column("email", sa.String(length=200), nullable=True),
+            sa.Column("phone", sa.String(length=50), nullable=True),
+            sa.Column("skills", sa.String(length=500), nullable=True),
+            sa.Column("location", sa.String(length=100), nullable=True),
+            sa.Column("latitude", sa.Float(), nullable=True),
+            sa.Column("longitude", sa.Float(), nullable=True),
+            sa.Column("is_active", sa.Boolean(), nullable=False),
+            sa.Column("created_at", sa.DateTime(), nullable=True),
+            sa.Column("updated_at", sa.DateTime(), nullable=True),
+            sa.Column("points", sa.Integer(), nullable=False),
+            sa.Column("level", sa.Integer(), nullable=False),
+            sa.Column("experience", sa.Integer(), nullable=False),
+            sa.Column("total_tasks_completed", sa.Integer(), nullable=False),
+            sa.Column("total_hours_volunteered", sa.Float(), nullable=False),
+            sa.Column("rating", sa.Float(), nullable=False),
+            sa.Column("rating_count", sa.Integer(), nullable=False),
+            sa.Column("achievements", sa.JSON(), nullable=False),
+            sa.Column("badges", sa.JSON(), nullable=False),
+            sa.Column("streak_days", sa.Integer(), nullable=False),
+            sa.Column("last_activity", sa.DateTime(), nullable=True),
+            sa.Column("rank", sa.Integer(), nullable=False),
+            sa.PrimaryKeyConstraint("id"),
         )
+        with op.batch_alter_table("volunteers", schema=None) as batch_op:
+            batch_op.create_index(
+                batch_op.f("ix_volunteers_location"), ["location"], unique=False
+            )
 
     op.create_table(
         "admin_logs",

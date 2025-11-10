@@ -249,8 +249,13 @@ HelpChain.live{% endblock %} {% block content %}
               <i class="fas fa-chevron-left"></i> Предишна
             </span>
           </li>
-          {% endif %} {% for page_num in range(max(1, pagination.page - 2),
-          min(pagination.pages + 1, pagination.page + 3)) %}
+          {% endif %}
+          {# Compute page range safely without relying on Python builtins like max/min #}
+          {% set cur = pagination.page|default(1) %}
+          {% set pages = pagination.pages|default(1) %}
+          {% set start_page = (cur - 2) if cur > 2 else 1 %}
+          {% set end_page = (cur + 3) if (cur + 3) <= (pages + 1) else (pages + 1) %}
+          {% for page_num in range(start_page, end_page) %}
           <li
             class="page-item {% if page_num == pagination.page %}active{% endif %}"
           >
@@ -263,7 +268,8 @@ HelpChain.live{% endblock %} {% block content %}
               {{ page_num }}
             </a>
           </li>
-          {% endfor %} {% if pagination.has_next %}
+          {% endfor %}
+          {% if pagination.has_next %}
           <li class="page-item">
             <a
               class="page-link"
@@ -379,7 +385,7 @@ HelpChain.live{% endblock %} {% block content %}
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           Отказ
         </button>
-        <form id="deleteForm" method="post" style="display: inline">
+        <form id="deleteForm" method="post" class="d-inline">
           <button type="submit" class="btn btn-danger">Изтрий</button>
         </form>
       </div>
