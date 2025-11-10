@@ -28,3 +28,23 @@ Initial test-stable release — 13 passing tests.
 - Вкарахме новия WebSocket клиент `helpchain-websocket.js` и service worker `sw.js` за стабилни real-time връзки и офлайн кеширане.
 - Разширихме локализацията: нов език (FR), обновени `messages.po/.pot`, езиков селектор в навигацията и обновен `init_multilingual.py`.
 - Утвърдихме конфигурацията – `.env.example` и `config.py` вече описват Postgres setup, а уеб push модулът показва ясни fallback-и при липсващ VAPID ключ.
+- Утвърдихме конфигурацията – `.env.example` и `config.py` вече описват Postgres setup, а уеб push модулът показва ясни fallback-и при липсващ VAPID ключ.
+
+## Deployment snippets
+
+### Nginx static cache
+
+A ready-to-use nginx snippet for serving static assets with sensible cache headers is provided at `deploy/nginx_static_cache.conf`.
+
+Include it in your site configuration (for example, inside your server block):
+
+```nginx
+include /path/to/your/repo/deploy/nginx_static_cache.conf;
+```
+
+The snippet configures:
+
+- Long-lived, `immutable` caching for fingerprinted assets (e.g. `app-abcdef12.js`).
+- A shorter default TTL for other `/static/` files.
+
+Adjust the regex in the snippet if your build artifacts use a different fingerprint naming convention.
