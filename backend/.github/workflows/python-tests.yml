@@ -30,6 +30,8 @@ jobs:
           python -u -m pip install --upgrade pip
           if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
           pip install pre-commit
+          # ensure coverage is available for generating reports and artifacts
+          pip install coverage
       - name: Run database migrations
         # Ensure the test database schema is created before running pytest
         # This step now includes a pre-check to validate that backend/migrations/alembic.ini
@@ -64,10 +66,30 @@ jobs:
       - name: Run pre-commit
         run: |
           pre-commit run --all-files || true
-      - name: Run tests
+      - name: Run tests and generate coverage
         run: |
           if [ -f backend/pytest.ini ] || [ -d backend/tests ]; then
-            pytest -q --maxfail=1
+            echo "Running tests under coverage"
+            python -m coverage run -m pytest -q --maxfail=1 || exit $?
+            echo "Generating coverage reports"
+            python -m coverage xml -o coverage.xml || true
+            python -m coverage html -d coverage_html || true
+            ls -la coverage.xml || true
+            ls -la coverage_html || true
           else
             echo "No tests found"
           fi
+
+      - name: Upload coverage xml artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+      - name: Upload coverage html artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage_html
