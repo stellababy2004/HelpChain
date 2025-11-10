@@ -32,11 +32,26 @@ jobs:
           pip install pre-commit
       - name: Run database migrations
         # Ensure the test database schema is created before running pytest
+        # This step now includes a pre-check to validate that backend/migrations/alembic.ini
+        # looks like an INI file (helps catch accidental overwrites with python files).
         run: |
           echo "Running migrations against: $DATABASE_URL"
           echo '--- alembic.ini head ---'
-          if [ -f backend/migrations/alembic.ini ]; then head -n 20 backend/migrations/alembic.ini || true; else echo 'backend/migrations/alembic.ini not found'; fi
-          echo '--- end ---'
+          if [ -f backend/migrations/alembic.ini ]; then
+            head -n 40 backend/migrations/alembic.ini || true
+            echo '--- end of head ---'
+            # Find first non-empty, non-comment line to sanity-check INI format
+            first=$(grep -v '^[[:space:]]*$' backend/migrations/alembic.ini | grep -v '^[[:space:]]*#' | head -n1 || true)
+            echo "First significant line: '$first'"
+            if ! echo "$first" | grep -q '^\['; then
+              echo "ERROR: backend/migrations/alembic.ini does not look like a valid INI (first line above)." >&2
+              echo "Failing early to avoid confusing Alembic errors; please ensure the file is not overwritten." >&2
+              exit 2
+            fi
+          else
+            echo 'backend/migrations/alembic.ini not found' >&2
+            exit 2
+          fi
           python -u run_migrations.py
       - name: CI diagnostics
         run: |
