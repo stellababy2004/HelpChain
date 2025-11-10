@@ -1,71 +1,53 @@
 #!/usr/bin/env python3
-"""
-Simple script to run database migrations
-"""
+"""Run Alembic migrations using backend/migrations/alembic.ini.
 
+This script is intentionally simple and safe for CI.
+It reads DATABASE_URL from the environment (falls back to sqlite:///test.db),
+overrides the sqlalchemy.url option in the Alembic config, and runs `upgrade head`.
+
+Placing this at the repo root matches how the CI workflow invokes
+`python -u run_migrations.py`.
+"""
+from __future__ import annotations
+
+import logging
 import os
 import sys
+from pathlib import Path
 
-# Add the backend directory to Python path
-backend_dir = os.path.join(os.path.dirname(__file__), "backend")
-sys.path.insert(0, backend_dir)
-
-# Set environment variables
-os.environ.setdefault("FLASK_ENV", "development")
-
-# Ensure stdout/stderr use UTF-8 so any module-level prints with
-# non-ASCII text don't raise UnicodeEncodeError on Windows runners
-# (some modules print localized strings at import time).
-try:
-    # Python 3.7+: reconfigure std streams to UTF-8
-    sys.stdout.reconfigure(encoding="utf-8")
-    sys.stderr.reconfigure(encoding="utf-8")
-except Exception:
-    # Fallback: set PYTHONIOENCODING for subprocesses/readers
-    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
-
-# Import and create app
-from backend.appy import app
+from alembic import command
+from alembic.config import Config
 
 
-def run_migrations():
-    """Run database migrations"""
-    with app.app_context():
-        try:
-            # Import the migrate command from alembic
-            from alembic.command import upgrade
-            from alembic.config import Config
+def main() -> int:
+    repo_root = Path(__file__).resolve().parent
+    alembic_ini = repo_root / "backend" / "migrations" / "alembic.ini"
 
-            # Create alembic config pointing to the project's alembic.ini so
-            # env.py can read logging configuration and script_location.
-            alembic_ini = os.path.join(
-                os.path.dirname(__file__), "backend", "migrations", "alembic.ini"
-            )
-            alembic_cfg = Config(alembic_ini)
+    if not alembic_ini.exists():
+        print(f"ERROR: alembic.ini not found at {alembic_ini}", file=sys.stderr)
+        return 2
 
-            # Ensure script_location points to the migrations directory (absolute)
-            script_loc = os.path.join(
-                os.path.dirname(__file__), "backend", "migrations"
-            )
-            alembic_cfg.set_main_option("script_location", script_loc)
+    database_url = os.environ.get("DATABASE_URL", "sqlite:///test.db")
 
-            # If CI/job provided DATABASE_URL, ensure alembic uses it.
-            db_url = os.environ.get("DATABASE_URL")
-            if db_url:
-                alembic_cfg.set_main_option("sqlalchemy.url", db_url)
+    logging.basicConfig(level=logging.INFO)
 
-            print("Running database migrations...")
-            upgrade(alembic_cfg, "head")
-            print("✅ Database migrations completed successfully!")
-        except Exception as e:
-            print(f"❌ Migration failed: {e}")
-            import traceback
+    cfg = Config(str(alembic_ini))
+    cfg.set_main_option("sqlalchemy.url", database_url)
 
-            traceback.print_exc()
-            return False
-    return True
+    print(
+        f"Running Alembic migrations (alembic.ini={alembic_ini}) against: {database_url}"
+    )
+
+    try:
+        command.upgrade(cfg, "head")
+    except Exception as exc:
+        print("ERROR: Alembic migration failed:", file=sys.stderr)
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    print("Migrations applied successfully.")
+    return 0
 
 
 if __name__ == "__main__":
-    success = run_migrations()
-    sys.exit(0 if success else 1)
+    raise SystemExit(main())
