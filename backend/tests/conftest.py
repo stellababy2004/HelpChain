@@ -203,8 +203,15 @@ def set_pending_admin_session(client):
     the admin_id and code so tests can assert helper effects.
     """
 
-    def _set(code: str = "123456", expires_seconds: int = 300):
+    def _set(*args, code: str = "123456", expires_seconds: int = 300):
+        # Accept either (client, code=..., expires_seconds=...) or (code=..., expires_seconds=...)
         admin_id = None
+        local_client = client
+        if args:
+            # If first arg looks like a FlaskClient, use it
+            maybe_client = args[0]
+            if hasattr(maybe_client, "session_transaction"):
+                local_client = maybe_client
         try:
             from backend.extensions import db as _db
 
@@ -222,7 +229,7 @@ def set_pending_admin_session(client):
         except Exception:
             admin_id = None
 
-        with client.session_transaction() as session:
+        with local_client.session_transaction() as session:
             session["pending_admin_id"] = admin_id
             session["pending_email_2fa"] = True
             session["email_2fa_code"] = code
