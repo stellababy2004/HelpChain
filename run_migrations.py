@@ -32,6 +32,8 @@ def main() -> int:
     logging.basicConfig(level=logging.INFO)
 
     cfg = Config(str(alembic_ini))
+    # Ensure Alembic uses the absolute migrations folder regardless of CWD
+    cfg.set_main_option("script_location", str(repo_root / "backend" / "migrations"))
     cfg.set_main_option("sqlalchemy.url", database_url)
 
     print(
