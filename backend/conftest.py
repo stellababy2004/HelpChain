@@ -32,3 +32,51 @@ except Exception:
     # app not available yet; the environment variable will be used when the app
     # is created/imported later.
     pass
+
+    import pytest
+
+    try:
+        # Import the canonical db object. Import inside the fixture to avoid
+        # triggering app creation at module import time in weird orders.
+        from backend.extensions import db as _db
+    except Exception:
+        _db = None
+
+    @pytest.fixture(scope="session", autouse=True)
+    def prepare_database():
+        """Ensure test database schema exists for the test session.
+
+        This runs early (session scope, autouse) and uses the Flask app's
+        application context to call SQLAlchemy create_all(). On teardown we drop
+        all tables to leave a clean state.
+        """
+        if _db is None:
+            # Nothing we can do; yield and let tests fail with clearer errors.
+            yield
+            return
+
+        # Import app lazily to ensure the test configuration (HELPCHAIN_TESTING)
+        # has already been processed by app factory/config code.
+        from backend.appy import app as _appy
+
+    @pytest.fixture
+    def app():
+        """Provide the Flask `app` fixture for pytest-flask.
+
+        Returns the application object from `backend.appy` so pytest-flask's
+        `client` and other fixtures can work.
+        """
+        from backend.appy import app as _appy
+
+        return _appy
+
+        with _appy.app_context():
+            _db.create_all()
+            try:
+                yield
+            finally:
+                # Best-effort cleanup
+                try:
+                    _db.drop_all()
+                except Exception:
+                    pass

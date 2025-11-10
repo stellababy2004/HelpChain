@@ -892,6 +892,62 @@ def session_db(app):
             pass
 
 
+@pytest.fixture(autouse=True)
+def clear_tables_per_test(app):
+    """Autouse fixture for top-level tests: clear rows before and after each test.
+
+    This mirrors the behavior in backend/tests/conftest.py so tests using the
+    top-level `tests/` directory run cleanly against the same file-backed DB.
+    """
+    try:
+        from backend.extensions import db as _db
+    except Exception:
+        # If backend.extensions isn't importable, allow the test to run and let
+        # the normal fixtures raise clearer errors later.
+        yield
+        return
+
+    try:
+        try:
+            engine = _db.get_engine(app)
+        except Exception:
+            engine = getattr(_db, "engine", None)
+
+        if engine is None:
+            yield
+            return
+
+        conn = engine.connect()
+        try:
+            for table in reversed(list(getattr(_db.metadata, "sorted_tables", []))):
+                conn.execute(table.delete())
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+        try:
+            yield
+        finally:
+            conn2 = engine.connect()
+            try:
+                for table in reversed(list(getattr(_db.metadata, "sorted_tables", []))):
+                    conn2.execute(table.delete())
+            finally:
+                try:
+                    conn2.close()
+                except Exception:
+                    pass
+            try:
+                _db.session.remove()
+            except Exception:
+                pass
+    except Exception:
+        # Best-effort: don't block tests if cleanup cannot run
+        yield
+
+
 @pytest.fixture
 def mock_smtp():
     """Mock SMTP server for email testing."""
@@ -941,7 +997,22 @@ def test_admin_user(db_session):
     except ImportError:  # pragma: no cover - fallback when package path differs
         from backend.models import AdminUser  # type: ignore
 
-    admin = AdminUser(username="test_admin", email="admin@test.com")
+    # Create a unique email per test run to avoid UNIQUE constraint issues
+    import uuid
+
+    unique_email = f"admin+{uuid.uuid4().hex[:8]}@test.com"
+
+    # Ensure idempotence for the canonical address if present (best-effort)
+    try:
+        existing = db_session.query(AdminUser).filter_by(email=unique_email).first()
+        if existing:
+            db_session.delete(existing)
+            db_session.commit()
+    except Exception:
+        pass
+
+    unique_username = f"test_admin_{uuid.uuid4().hex[:8]}"
+    admin = AdminUser(username=unique_username, email=unique_email)
     admin.set_password("TestPass123")
     db_session.add(admin)
     db_session.commit()
@@ -1060,9 +1131,17 @@ def init_test_data(db_session, test_admin_user, test_volunteer, test_help_reques
         from backend.models import AdminUser, Volunteer  # type: ignore
 
     # Create an admin account with enabled 2FA so tests can exercise that flow
+    # Use unique username and email for this seeded admin so repeated
+    # test runs against a persistent file DB don't collide on UNIQUE
+    # constraints. This matches the approach used for `test_admin_user`.
+    import uuid
+
+    unique_admin2fa_email = f"admin2fa+{uuid.uuid4().hex[:8]}@test.com"
+    unique_admin2fa_username = f"test_admin_2fa_{uuid.uuid4().hex[:8]}"
+
     admin_with_2fa = AdminUser(
-        username="test_admin_2fa",
-        email="admin2fa@test.com",
+        username=unique_admin2fa_username,
+        email=unique_admin2fa_email,
     )
     admin_with_2fa.set_password("TestPass123")
     admin_with_2fa.enable_2fa()
