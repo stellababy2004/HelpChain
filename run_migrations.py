@@ -41,7 +41,13 @@ def main() -> int:
     )
 
     try:
-        command.upgrade(cfg, "head")
+        # Alembic env.py expects `flask.current_app` (Flask-Migrate integration).
+        # Ensure we run inside the application's context so env.py can access
+        # the Flask-Migrate extension and DB engine.
+        from backend.appy import app
+
+        with app.app_context():
+            command.upgrade(cfg, "head")
     except Exception as exc:
         print("ERROR: Alembic migration failed:", file=sys.stderr)
         print(str(exc), file=sys.stderr)
