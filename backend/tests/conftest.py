@@ -7,6 +7,7 @@ import pytest
 import os
 import pathlib
 import pytest
+from datetime import datetime, timedelta
 
 # Ensure a file-backed SQLite DATABASE_URL is set before importing the app.
 # Import-time DATABASE_URL ensures the Flask app picks up the correct URI
@@ -192,3 +193,43 @@ def prepare_database():
                     _db.drop_all()
             except Exception:
                 pass
+
+
+@pytest.fixture
+def set_pending_admin_session(client):
+    """Helper fixture to set a pending admin 2FA session for tests.
+
+    Returns a callable that sets session keys and returns a small dict with
+    the admin_id and code so tests can assert helper effects.
+    """
+
+    def _set(code: str = "123456", expires_seconds: int = 300):
+        admin_id = None
+        try:
+            from backend.extensions import db as _db
+
+            try:
+                from backend.models import AdminUser
+            except Exception:
+                AdminUser = None
+
+            if AdminUser is not None:
+                admin_obj = (
+                    _db.session.query(AdminUser).filter_by(username="admin").first()
+                )
+                if admin_obj:
+                    admin_id = getattr(admin_obj, "id", None)
+        except Exception:
+            admin_id = None
+
+        with client.session_transaction() as session:
+            session["pending_admin_id"] = admin_id
+            session["pending_email_2fa"] = True
+            session["email_2fa_code"] = code
+            session["email_2fa_expires"] = (
+                datetime.now() + timedelta(seconds=expires_seconds)
+            ).timestamp()
+
+        return {"admin_id": admin_id, "code": code}
+
+    return _set
