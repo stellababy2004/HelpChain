@@ -20,6 +20,42 @@ if not os.environ.get("DATABASE_URL"):
 from backend.appy import app as _appy
 
 
+def pytest_configure(config):
+    """Run a minimal create_all before pytest begins collecting tests.
+
+    Some test modules execute DB queries at import/collection time which
+    happens before session-scoped fixtures run. Ensure the test DB tables
+    exist early so those import-time queries do not fail with "no such
+    table" errors in CI.
+    """
+    try:
+        from backend.extensions import db as _db
+
+        try:
+            engine = None
+            try:
+                engine = _db.get_engine(_appy)
+            except Exception:
+                engine = getattr(_db, "engine", None)
+
+            if engine is not None:
+                print(
+                    "[TEST DEBUG] pytest_configure: creating tables on engine:", engine
+                )
+                _db.metadata.create_all(bind=engine)
+            else:
+                print(
+                    "[TEST DEBUG] pytest_configure: creating tables via _db.create_all()"
+                )
+                _db.create_all()
+        except Exception as _e:
+            # Non-fatal: leave diagnostics in the output to help CI debugging
+            print("[TEST DEBUG] pytest_configure: create_all failed:", _e)
+    except Exception:
+        # Best-effort: if extensions can't be imported, don't block collection
+        pass
+
+
 @pytest.fixture
 def app():
     """Provide the Flask app for pytest-flask."""
@@ -189,7 +225,10 @@ def prepare_database():
                                 try:
                                     if _tbl.name not in _db.metadata.tables:
                                         _tbl.tometadata(_db.metadata)
-                                        if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                                        if (
+                                            os.environ.get("HELPCHAIN_TEST_DEBUG")
+                                            == "1"
+                                        ):
                                             print(
                                                 f"[TEST DEBUG] moved table {_tbl.name} from module={getattr(_mod,'__name__',None)} into canonical metadata"
                                             )
