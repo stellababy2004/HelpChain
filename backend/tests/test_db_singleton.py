@@ -4,9 +4,10 @@ import importlib
 def _get_db_id(mod_name):
     try:
         mod = importlib.import_module(mod_name)
-        return id(getattr(mod, "db", None))
+        m = getattr(mod, "db", None)
+        return id(m), getattr(mod, "__file__", None)
     except Exception:
-        return None
+        return None, None
 
 
 def test_single_sqlalchemy_instance():
@@ -24,9 +25,15 @@ def test_single_sqlalchemy_instance():
         "models",
     ]
     ids = set()
+    resolved = {}
     for name in candidates:
-        db_id = _get_db_id(name)
+        db_id, mfile = _get_db_id(name)
+        resolved[name] = (db_id, mfile)
         if db_id is not None:
             ids.add(db_id)
+    # Print diagnostic mapping to help debug import aliasing in CI/test runs
+    print("DB id mapping:")
+    for k, (v, mf) in resolved.items():
+        print(f"  {k}: id={v} file={mf}")
     # There should be at most one distinct non-None db id
     assert len(ids) <= 1, f"Multiple SQLAlchemy instances detected: {ids}"

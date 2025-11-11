@@ -6,7 +6,7 @@ HelpChain Multilingual Database Initialization
 from datetime import UTC, datetime
 
 try:
-    from models import (
+    from backend.models import (
         SupportedLanguage,
         Translation,
         TranslationKey,

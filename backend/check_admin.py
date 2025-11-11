@@ -2,10 +2,9 @@ import sys
 
 sys.path.insert(0, ".")
 from appy import app
-from extensions import db
+from backend.extensions import db
+from backend.models import Role, RolePermission, User, UserRole
 from permissions import has_permission
-
-from .models import Role, RolePermission, User, UserRole
 
 with app.app_context():
     admin = User.query.filter_by(username="admin").first()

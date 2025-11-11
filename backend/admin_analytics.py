@@ -15,13 +15,9 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import func, or_
 
-from models import AuditLog, HelpRequest, User, Volunteer
-
-# Import db/cache from extensions with fallback
-try:
-    from . import extensions as _extensions
-except ImportError:  # pragma: no cover - fallback for standalone execution
-    import extensions as _extensions  # type: ignore
+# Use package-qualified canonical extensions module to avoid duplicate imports
+import backend.extensions as _extensions
+from backend.models import AuditLog, HelpRequest, User, Volunteer
 
 db = _extensions.db
 cache = getattr(_extensions, "cache", None)

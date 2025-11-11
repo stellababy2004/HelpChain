@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HELPCHAIN_TEST_DEBUG: "0"
+      HELPCHAIN_TESTING: "1"
+      DATABASE_URL: "sqlite:///test.db"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Set up Python
@@ -26,16 +28,69 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -u -m pip install --upgrade pip
           if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
           pip install pre-commit
+          # ensure coverage is available for generating reports and artifacts
+          pip install coverage
+      - name: Run database migrations
+        # Ensure the test database schema is created before running pytest
+        # This step now includes a pre-check to validate that backend/migrations/alembic.ini
+        # looks like an INI file (helps catch accidental overwrites with python files).
+        run: |
+          echo "Running migrations against: $DATABASE_URL"
+          echo '--- alembic.ini head ---'
+          if [ -f backend/migrations/alembic.ini ]; then
+            head -n 40 backend/migrations/alembic.ini || true
+            echo '--- end of head ---'
+            # Find first non-empty, non-comment line to sanity-check INI format
+            first=$(grep -v '^[[:space:]]*$' backend/migrations/alembic.ini | grep -v '^[[:space:]]*#' | head -n1 || true)
+            echo "First significant line: '$first'"
+            if ! echo "$first" | grep -q '^\['; then
+              echo "ERROR: backend/migrations/alembic.ini does not look like a valid INI (first line above)." >&2
+              echo "Failing early to avoid confusing Alembic errors; please ensure the file is not overwritten." >&2
+              exit 2
+            fi
+          else
+            echo 'backend/migrations/alembic.ini not found' >&2
+            exit 2
+          fi
+          python -u run_migrations.py
+      - name: CI diagnostics
+        run: |
+          echo "CI diagnostics:"
+          echo "DATABASE_URL=$DATABASE_URL"
+          python --version
+          pip --version
+          echo "PWD: $(pwd)"
+          ls -la
       - name: Run pre-commit
         run: |
           pre-commit run --all-files || true
-      - name: Run tests
+      - name: Run tests and generate coverage
         run: |
           if [ -f backend/pytest.ini ] || [ -d backend/tests ]; then
-            pytest -q
+            echo "Running tests under coverage"
+            python -m coverage run -m pytest -q --maxfail=1 || exit $?
+            echo "Generating coverage reports"
+            python -m coverage xml -o coverage.xml || true
+            python -m coverage html -d coverage_html || true
+            ls -la coverage.xml || true
+            ls -la coverage_html || true
           else
             echo "No tests found"
           fi
+
+      - name: Upload coverage xml artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+      - name: Upload coverage html artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: coverage_html

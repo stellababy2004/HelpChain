@@ -43,7 +43,7 @@ try:
     )
 except ImportError:
     try:
-        from models import (
+        from backend.models import (
             Notification,
             NotificationPreference,
             NotificationQueue,
@@ -57,7 +57,7 @@ except ImportError:
         import sys
 
         sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-        from models import (
+        from backend.models import (
             Notification,
             NotificationPreference,
             NotificationQueue,

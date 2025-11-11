@@ -31,6 +31,17 @@ def upgrade():
     bind = op.get_bind()
     is_sqlite = bind.dialect.name == "sqlite"
     inspector = sa.inspect(bind)
+
+    # Defensive: if the help_requests table doesn't exist yet (some revision
+    # trees create it in a later migration), skip this migration. The original
+    # migration assumed the table existed which causes failures when the
+    # applied migration order differs. Making this migration a no-op when the
+    # table is absent preserves idempotence and avoids ordering fragility.
+    existing_table_names = {t.lower() for t in inspector.get_table_names()}
+    if "help_requests" not in existing_table_names:
+        # Nothing to do in this environment; bail out cleanly.
+        return
+
     existing_columns = {col["name"] for col in inspector.get_columns("help_requests")}
 
     def add_column_if_missing(name, column):
@@ -141,6 +152,11 @@ def downgrade():
 
     bind = op.get_bind()
     inspector = sa.inspect(bind)
+
+    # If the table doesn't exist, there's nothing to undo here.
+    existing_table_names = {t.lower() for t in inspector.get_table_names()}
+    if "help_requests" not in existing_table_names:
+        return
     existing_indexes = {
         idx["name"] for idx in inspector.get_indexes("help_requests") if idx.get("name")
     }

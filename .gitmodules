@@ -1,0 +1,5 @@
+# .gitmodules: add missing submodule URL for backend/welcome-to-docker
+# This file was added by an automated fix PR prepared by the assistant.
+[submodule "backend/welcome-to-docker"]
+    path = backend/welcome-to-docker
+    url = https://github.com/docker/welcome-to-docker.git

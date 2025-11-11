@@ -21,7 +21,7 @@ try:
         UserBehavior,
     )
 except ImportError:
-    from models_with_analytics import (
+    from backend.models_with_analytics import (
         AnalyticsEvent,
         ChatbotConversation,
         PerformanceMetrics,
@@ -52,19 +52,14 @@ def get_db():
 
     if current_app and "sqlalchemy" in current_app.extensions:
         return current_app.extensions["sqlalchemy"]
-    else:
-        # Fallback - try to import from extensions
-        try:
-            from .extensions import db
 
-            return db
-        except ImportError:
-            try:
-                from extensions import db
+    # Fallback - use canonical backend.extensions
+    try:
+        from backend.extensions import db
 
-                return db
-            except ImportError:
-                raise RuntimeError("Could not get database instance") from None
+        return db
+    except ImportError:
+        raise RuntimeError("Could not get database instance") from None
 
 
 class AdvancedAnalytics:

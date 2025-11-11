@@ -21,25 +21,14 @@ def utc_now() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-try:
-    from models import (
-        ContentTranslation,
-        SupportedLanguage,
-        Translation,
-        TranslationKey,
-        UserLanguagePreference,
-        db,
-    )
-except Exception:
-    # Fallback for package import paths
-    from backend.models import (
-        ContentTranslation,
-        SupportedLanguage,
-        Translation,
-        TranslationKey,
-        UserLanguagePreference,
-        db,
-    )
+from backend.extensions import db
+from backend.models import (
+    ContentTranslation,
+    SupportedLanguage,
+    Translation,
+    TranslationKey,
+    UserLanguagePreference,
+)
 
 # AI Translation dependencies
 try:

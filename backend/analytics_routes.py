@@ -33,7 +33,7 @@ from sqlalchemy.orm import sessionmaker
 try:
     from .extensions import db
 except Exception:
-    from extensions import db
+    from backend.extensions import db
 
 try:
     from .permissions import require_admin_login
@@ -47,7 +47,7 @@ try:
     from .models import HelpRequest, Volunteer
 except Exception:
     try:
-        from models import HelpRequest, Volunteer
+        from backend.models import HelpRequest, Volunteer
     except Exception:
         # Fallback for standalone execution
         HelpRequest = None
@@ -214,7 +214,7 @@ async def analytics_data():
 
                     # Count active tasks
                     try:
-                        from models_with_analytics import Task
+                        from backend.models_with_analytics import Task
 
                         _res = await session.execute(
                             select(func.count(Task.id)).where(
@@ -368,7 +368,7 @@ async def analytics_simple_data():
 
             # Count active tasks
             try:
-                from models_with_analytics import Task
+                from backend.models_with_analytics import Task
 
                 _res = await session.execute(
                     select(func.count(Task.id)).where(

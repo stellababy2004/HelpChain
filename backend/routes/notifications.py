@@ -12,10 +12,7 @@ from datetime import UTC, datetime
 from flask import Blueprint, current_app, jsonify, render_template, request
 from flask_login import current_user
 
-try:
-    from .extensions import db
-except Exception:
-    from extensions import db
+from backend.extensions import db
 
 
 # Get db instance from current app context for proper test compatibility
@@ -39,7 +36,7 @@ try:
     from .models import PushSubscription, User
 except Exception:
     try:
-        from models import PushSubscription, User
+        from backend.models import PushSubscription, User
     except Exception:
         from backend.models import PushSubscription, User
 

@@ -68,7 +68,7 @@ def admin_login(client, enable_email_2fa, db_session, set_pending_admin_session)
         from appy import db
 
         try:
-            from models import AdminUser
+            from backend.models import AdminUser
         except Exception:
             from helpchain_backend.src.models import AdminUser  # type: ignore
         admin_obj = db.session.query(AdminUser).filter_by(username="admin").first()
