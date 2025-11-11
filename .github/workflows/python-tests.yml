@@ -18,7 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HELPCHAIN_TEST_DEBUG: "0"
-      DATABASE_URL: "sqlite:///test.db"
+      # Use an absolute, workspace-scoped file-backed SQLite so migrations and
+      # pytest operate on the same file in CI. This avoids "no such table"
+      # flakiness caused by relative paths or differing working directories.
+      DATABASE_URL: "sqlite://${{ github.workspace }}/backend/test_local.sqlite"
     steps:
       - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
       - name: Set up Python
@@ -31,8 +34,11 @@ jobs:
           if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
           pip install pre-commit
       - name: Run database migrations
-        # Ensure the test database schema is created before running pytest
-        run: python run_migrations.py
+        # Ensure the test database schema is created before running pytest.
+        # Run from the `backend` working directory so scripts and alembic paths
+        # resolve consistently.
+        working-directory: backend
+        run: python -u run_migrations.py
       - name: Run pre-commit
         run: |
           pre-commit run --all-files || true
