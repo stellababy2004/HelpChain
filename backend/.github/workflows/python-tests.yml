@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HELPCHAIN_TEST_DEBUG: "0"
+      HELPCHAIN_TESTING: "1"
       DATABASE_URL: "sqlite:///test.db"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
