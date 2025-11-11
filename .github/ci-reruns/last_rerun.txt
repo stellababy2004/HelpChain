@@ -1,3 +1,0 @@
-Triggered CI rerun at 2025-11-08T00:00:00Z
-
-This file is a harmless marker to trigger CI checks on main; delete freely.

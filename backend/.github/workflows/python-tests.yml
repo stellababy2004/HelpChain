@@ -37,29 +37,30 @@ jobs:
           pip install coverage
       - name: Run database migrations
         # Run migrations from the backend directory so the script and relative
-        # paths resolve consistently in CI.
+        # paths resolve consistently in CI. Checks should use paths relative
+        # to the `backend` working directory (not prefixed with `backend/`).
         working-directory: backend
-        # Ensure the test database schema is created before running pytest
-        # This step now includes a pre-check to validate that backend/migrations/alembic.ini
-        # looks like an INI file (helps catch accidental overwrites with python files).
         run: |
           echo "Running migrations against: $DATABASE_URL"
           echo '--- alembic.ini head ---'
-          if [ -f backend/migrations/alembic.ini ]; then
-            head -n 40 backend/migrations/alembic.ini || true
+          if [ -f migrations/alembic.ini ]; then
+            head -n 40 migrations/alembic.ini || true
             echo '--- end of head ---'
             # Find first non-empty, non-comment line to sanity-check INI format
-            first=$(grep -v '^[[:space:]]*$' backend/migrations/alembic.ini | grep -v '^[[:space:]]*#' | head -n1 || true)
+            first=$(grep -v '^[[:space:]]*$' migrations/alembic.ini | grep -v '^[[:space:]]*#' | head -n1 || true)
             echo "First significant line: '$first'"
             if ! echo "$first" | grep -q '^\['; then
-              echo "ERROR: backend/migrations/alembic.ini does not look like a valid INI (first line above)." >&2
+              echo "ERROR: migrations/alembic.ini does not look like a valid INI (first line above)." >&2
               echo "Failing early to avoid confusing Alembic errors; please ensure the file is not overwritten." >&2
               exit 2
             fi
           else
-            echo 'backend/migrations/alembic.ini not found' >&2
+            echo 'migrations/alembic.ini not found' >&2
             exit 2
           fi
+          # Print current directory for troubleshooting
+          echo "Working dir: $(pwd)"
+          ls -la || true
           python -u run_migrations.py
       - name: CI diagnostics
         run: |
@@ -69,6 +70,30 @@ jobs:
           pip --version
           echo "PWD: $(pwd)"
           ls -la
+          echo "--- sqlite quick check ---"
+          # Try the sqlite3 CLI first (may not be installed on runner)
+          if command -v sqlite3 >/dev/null 2>&1; then
+            echo "sqlite3 CLI present; listing tables in backend/test_local.sqlite"
+            sqlite3 backend/test_local.sqlite ".tables" || true
+          else
+          echo "sqlite3 CLI not found; using Python sqlite3 module to list tables"
+          printf "%s\n" \
+            "import os,sqlite3" \
+            "db='backend/test_local.sqlite'" \
+            "print('db exists', os.path.exists(db))" \
+            "if os.path.exists(db):" \
+            "  try:" \
+            "    conn=sqlite3.connect(db)" \
+            "    cur=conn.execute(\"SELECT name FROM sqlite_master WHERE type='table'\")" \
+            "    tables=[r[0] for r in cur.fetchall()]" \
+            "    print('tables:', tables)" \
+            "    conn.close()" \
+            "  except Exception as e:" \
+            "    print('python sqlite3 check failed:', e)" \
+            "else:" \
+            "  print('db file not present')" \
+            > /tmp/check_sqlite.py
+          python /tmp/check_sqlite.py || true
       - name: Run pre-commit
         run: |
           pre-commit run --all-files || true

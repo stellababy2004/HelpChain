@@ -299,12 +299,39 @@ import functools
 
 # Ensure backend modules are importable regardless of working directory
 BACKEND_DIR = os.path.dirname(__file__)
-if BACKEND_DIR not in sys.path:
-    sys.path.insert(0, BACKEND_DIR)
+
+
+# Normalize and deduplicate sys.path entries to avoid importing modules
+# from logically equivalent but textually different paths (for example
+# '.../backend' vs '.../backend/../backend'). This prevents creating
+# multiple SQLAlchemy instances due to duplicate imports which can lead
+# to flaky test behavior (tables created on one metadata instance but
+# queried against another).
+def _norm(p: str) -> str:
+    try:
+        return os.path.normpath(os.path.abspath(p))
+    except Exception:
+        return p
+
+
+def _path_in_syspath(norm_path: str) -> bool:
+    for entry in list(sys.path):
+        try:
+            if _norm(entry) == norm_path:
+                return True
+        except Exception:
+            continue
+    return False
+
+
+_backend_dir_norm = _norm(BACKEND_DIR)
+if not _path_in_syspath(_backend_dir_norm):
+    sys.path.insert(0, _backend_dir_norm)
 
 PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+_project_root_norm = _norm(PROJECT_ROOT)
+if not _path_in_syspath(_project_root_norm):
+    sys.path.insert(0, _project_root_norm)
 
 # Import Celery for background tasks (optional)
 try:
