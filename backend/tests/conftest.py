@@ -28,31 +28,67 @@ def pytest_configure(config):
     exist early so those import-time queries do not fail with "no such
     table" errors in CI.
     """
+    # Perform early schema creation inside an application context. This
+    # reduces the chance of triggering functionality that requires
+    # `current_app` outside of a context and keeps this step best-effort
+    # (non-fatal) so test collection still proceeds when something goes
+    # wrong.
     try:
-        from backend.extensions import db as _db
+        with _appy.app_context():
+            from backend.extensions import db as _db
 
-        try:
-            engine = None
             try:
-                engine = _db.get_engine(_appy)
-            except Exception:
-                engine = getattr(_db, "engine", None)
+                engine = None
+                try:
+                    engine = _db.get_engine(_appy)
+                except Exception:
+                    engine = getattr(_db, "engine", None)
 
-            if engine is not None:
-                print(
-                    "[TEST DEBUG] pytest_configure: creating tables on engine:", engine
-                )
-                _db.metadata.create_all(bind=engine)
-            else:
-                print(
-                    "[TEST DEBUG] pytest_configure: creating tables via _db.create_all()"
-                )
-                _db.create_all()
-        except Exception as _e:
-            # Non-fatal: leave diagnostics in the output to help CI debugging
-            print("[TEST DEBUG] pytest_configure: create_all failed:", _e)
+                if engine is not None:
+                    print(
+                        "[TEST DEBUG] pytest_configure: creating tables on engine:",
+                        engine,
+                    )
+                    _db.metadata.create_all(bind=engine)
+                else:
+                    print(
+                        "[TEST DEBUG] pytest_configure: creating tables via _db.create_all()"
+                    )
+                    _db.create_all()
+
+                # Diagnostic: if this is a file-backed SQLite DB, print the
+                # file path and list existing tables to help CI debugging.
+                try:
+                    url = getattr(engine, "url", None)
+                    urlstr = str(url) if url is not None else None
+                    print("[TEST DEBUG] engine.url:", urlstr)
+                    if urlstr and urlstr.startswith("sqlite:///"):
+                        db_file = urlstr.replace("sqlite:///", "")
+                        try:
+                            import sqlite3 as _sqlite
+
+                            _conn = _sqlite.connect(db_file)
+                            cur = _conn.execute(
+                                "SELECT name FROM sqlite_master WHERE type='table'"
+                            )
+                            tables = [r[0] for r in cur.fetchall()]
+                            print("[TEST DEBUG] sqlite file exists:", db_file)
+                            print("[TEST DEBUG] sqlite tables:", tables)
+                            try:
+                                _conn.close()
+                            except Exception:
+                                pass
+                        except Exception as _e:
+                            print("[TEST DEBUG] sqlite listing failed:", _e)
+                except Exception:
+                    pass
+
+            except Exception as _e:
+                # Non-fatal: leave diagnostics in the output to help CI debugging
+                print("[TEST DEBUG] pytest_configure: create_all failed:", _e)
     except Exception:
-        # Best-effort: if extensions can't be imported, don't block collection
+        # Best-effort: if app context can't be entered (very unusual),
+        # don't block test collection.
         pass
 
 
@@ -240,10 +276,12 @@ def prepare_database():
                 pass
 
             if engine is not None:
-                _db.metadata.create_all(bind=engine)
+                with _appy.app_context():
+                    _db.metadata.create_all(bind=engine)
             else:
                 # last-resort: let Flask-SQLAlchemy create on its default
-                _db.create_all()
+                with _appy.app_context():
+                    _db.create_all()
 
             # Ensure SQLAlchemy registers the engine for the Flask app so
             # request-time code (which may lazily obtain binds) uses the same

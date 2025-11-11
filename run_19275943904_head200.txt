@@ -1,0 +1,200 @@
+test	Set up job	﻿2025-11-11T19:10:06.6089820Z Current runner version: '2.329.0'
+test	Set up job	2025-11-11T19:10:06.6113872Z ##[group]Runner Image Provisioner
+test	Set up job	2025-11-11T19:10:06.6114754Z Hosted Compute Agent
+test	Set up job	2025-11-11T19:10:06.6115308Z Version: 20251016.436
+test	Set up job	2025-11-11T19:10:06.6115873Z Commit: 8ab8ac8bfd662a3739dab9fe09456aba92132568
+test	Set up job	2025-11-11T19:10:06.6116628Z Build Date: 2025-10-15T20:44:12Z
+test	Set up job	2025-11-11T19:10:06.6117189Z ##[endgroup]
+test	Set up job	2025-11-11T19:10:06.6117750Z ##[group]Operating System
+test	Set up job	2025-11-11T19:10:06.6118350Z Ubuntu
+test	Set up job	2025-11-11T19:10:06.6118845Z 24.04.3
+test	Set up job	2025-11-11T19:10:06.6119306Z LTS
+test	Set up job	2025-11-11T19:10:06.6119761Z ##[endgroup]
+test	Set up job	2025-11-11T19:10:06.6120273Z ##[group]Runner Image
+test	Set up job	2025-11-11T19:10:06.6120808Z Image: ubuntu-24.04
+test	Set up job	2025-11-11T19:10:06.6121360Z Version: 20251102.99.1
+test	Set up job	2025-11-11T19:10:06.6122335Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251102.99/images/ubuntu/Ubuntu2404-Readme.md
+test	Set up job	2025-11-11T19:10:06.6123957Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251102.99
+test	Set up job	2025-11-11T19:10:06.6125172Z ##[endgroup]
+test	Set up job	2025-11-11T19:10:06.6126143Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2025-11-11T19:10:06.6128316Z Contents: read
+test	Set up job	2025-11-11T19:10:06.6128853Z Metadata: read
+test	Set up job	2025-11-11T19:10:06.6129360Z ##[endgroup]
+test	Set up job	2025-11-11T19:10:06.6131950Z Secret source: Actions
+test	Set up job	2025-11-11T19:10:06.6132953Z Prepare workflow directory
+test	Set up job	2025-11-11T19:10:06.7019691Z Prepare all required actions
+test	Set up job	2025-11-11T19:10:06.7077076Z Getting action download info
+test	Set up job	2025-11-11T19:10:07.0102874Z Download action repository 'actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955' (SHA:08eba0b27e820071cde6df949e0beb9ba4906955)
+test	Set up job	2025-11-11T19:10:07.1152307Z Download action repository 'actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+test	Set up job	2025-11-11T19:10:07.2647889Z Complete job name: test
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	﻿2025-11-11T19:10:07.3277975Z ##[group]Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3279069Z with:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3279526Z   repository: stellababy2004/HelpChain.bg
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3280285Z   token: ***
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3280705Z   ssh-strict: true
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3281240Z   ssh-user: git
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3281672Z   persist-credentials: true
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3282150Z   clean: true
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3282594Z   sparse-checkout-cone-mode: true
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3283419Z   fetch-depth: 1
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3283875Z   fetch-tags: false
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3284308Z   show-progress: true
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3284757Z   lfs: false
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3285150Z   submodules: false
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3285582Z   set-safe-directory: true
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3286345Z env:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3286777Z   HELPCHAIN_TEST_DEBUG: 0
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3287578Z   DATABASE_URL: sqlite:///home/runner/work/HelpChain.bg/HelpChain.bg/backend/test_local.sqlite
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.3288434Z ##[endgroup]
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4342482Z Syncing repository: stellababy2004/HelpChain.bg
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4344850Z ##[group]Getting Git version info
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4345858Z Working directory is '/home/runner/work/HelpChain.bg/HelpChain.bg'
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4347145Z [command]/usr/bin/git version
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4410163Z git version 2.51.2
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4436234Z ##[endgroup]
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4451903Z Temporarily overriding HOME='/home/runner/work/_temp/84b92c64-ae81-47e0-bf57-5d571b94f4b9' before making global git config changes
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4454922Z Adding repository directory to the temporary git global config as a safe directory
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4457895Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/HelpChain.bg/HelpChain.bg
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4493239Z Deleting the contents of '/home/runner/work/HelpChain.bg/HelpChain.bg'
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4496620Z ##[group]Initializing the repository
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4500545Z [command]/usr/bin/git init /home/runner/work/HelpChain.bg/HelpChain.bg
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4604685Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4606064Z hint: is subject to change. To configure the initial branch name to use in all
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4608047Z hint: of your new repositories, which will suppress this warning, call:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4608845Z hint:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4609797Z hint: 	git config --global init.defaultBranch <name>
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4611012Z hint:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4612181Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4614340Z hint: 'development'. The just-created branch can be renamed via this command:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4615859Z hint:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4616611Z hint: 	git branch -m <name>
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4617459Z hint:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4618623Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4620810Z Initialized empty Git repository in /home/runner/work/HelpChain.bg/HelpChain.bg/.git/
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4624405Z [command]/usr/bin/git remote add origin https://github.com/stellababy2004/HelpChain.bg
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4655869Z ##[endgroup]
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4657238Z ##[group]Disabling automatic garbage collection
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4660604Z [command]/usr/bin/git config --local gc.auto 0
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4689464Z ##[endgroup]
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4690362Z ##[group]Setting up auth
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4695527Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.4724862Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.5046295Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.5076453Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.5294814Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.5336438Z ##[endgroup]
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.5338033Z ##[group]Fetching the repository
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:07.5346582Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +da2074c490c79e709d0130f5b9b38976ce321ac7:refs/remotes/pull/46/merge
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5194117Z From https://github.com/stellababy2004/HelpChain.bg
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5197085Z  * [new ref]         da2074c490c79e709d0130f5b9b38976ce321ac7 -> pull/46/merge
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5224813Z ##[endgroup]
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5226495Z ##[group]Determining the checkout info
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5228311Z ##[endgroup]
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5230502Z [command]/usr/bin/git sparse-checkout disable
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5268201Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5298125Z ##[group]Checking out the ref
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5301788Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/46/merge
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0007561Z Note: switching to 'refs/remotes/pull/46/merge'.
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0008138Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0008490Z You are in 'detached HEAD' state. You can look around, make experimental
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0009311Z changes and commit them, and you can discard any commits you make in this
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0010118Z state without impacting any branches by switching back to a branch.
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0010647Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0011003Z If you want to create a new branch to retain commits you create, you may
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0011725Z do so (now or later) by using -c with the switch command. Example:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012162Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012350Z   git switch -c <new-branch-name>
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012662Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012848Z Or undo this operation with:
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0013486Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0013648Z   git switch -
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0013902Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0014312Z Turn off this advice by setting config variable advice.detachedHead to false
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0015212Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0015811Z HEAD is now at da2074c Merge ae85b03a0de9f43d262225b3c5c4f78cc960af17 into 0ac05caf7d32194fea39555790932902bff5f097
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0065440Z ##[endgroup]
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0105626Z [command]/usr/bin/git log -1 --format=%H
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0128466Z da2074c490c79e709d0130f5b9b38976ce321ac7
+test	Set up Python	﻿2025-11-11T19:10:11.0352851Z ##[group]Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+test	Set up Python	2025-11-11T19:10:11.0353606Z with:
+test	Set up Python	2025-11-11T19:10:11.0353826Z   python-version: 3.11
+test	Set up Python	2025-11-11T19:10:11.0354074Z   check-latest: false
+test	Set up Python	2025-11-11T19:10:11.0354462Z   token: ***
+test	Set up Python	2025-11-11T19:10:11.0354690Z   update-environment: true
+test	Set up Python	2025-11-11T19:10:11.0354945Z   allow-prereleases: false
+test	Set up Python	2025-11-11T19:10:11.0355214Z   freethreaded: false
+test	Set up Python	2025-11-11T19:10:11.0355435Z env:
+test	Set up Python	2025-11-11T19:10:11.0355628Z   HELPCHAIN_TEST_DEBUG: 0
+test	Set up Python	2025-11-11T19:10:11.0356055Z   DATABASE_URL: sqlite:///home/runner/work/HelpChain.bg/HelpChain.bg/backend/test_local.sqlite
+test	Set up Python	2025-11-11T19:10:11.0356510Z ##[endgroup]
+test	Set up Python	2025-11-11T19:10:11.1996494Z ##[group]Installed versions
+test	Set up Python	2025-11-11T19:10:11.2099749Z Successfully set up CPython (3.11.14)
+test	Set up Python	2025-11-11T19:10:11.2101271Z ##[endgroup]
+test	Install dependencies	﻿2025-11-11T19:10:11.2212257Z ##[group]Run python -m pip install --upgrade pip
+test	Install dependencies	2025-11-11T19:10:11.2212670Z [36;1mpython -m pip install --upgrade pip[0m
+test	Install dependencies	2025-11-11T19:10:11.2213503Z [36;1mif [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi[0m
+test	Install dependencies	2025-11-11T19:10:11.2214092Z [36;1mpip install pre-commit[0m
+test	Install dependencies	2025-11-11T19:10:11.2264288Z shell: /usr/bin/bash -e {0}
+test	Install dependencies	2025-11-11T19:10:11.2264548Z env:
+test	Install dependencies	2025-11-11T19:10:11.2264738Z   HELPCHAIN_TEST_DEBUG: 0
+test	Install dependencies	2025-11-11T19:10:11.2265140Z   DATABASE_URL: sqlite:///home/runner/work/HelpChain.bg/HelpChain.bg/backend/test_local.sqlite
+test	Install dependencies	2025-11-11T19:10:11.2265628Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.14/x64
+test	Install dependencies	2025-11-11T19:10:11.2266036Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.14/x64/lib/pkgconfig
+test	Install dependencies	2025-11-11T19:10:11.2266453Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
+test	Install dependencies	2025-11-11T19:10:11.2266807Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
+test	Install dependencies	2025-11-11T19:10:11.2267157Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
+test	Install dependencies	2025-11-11T19:10:11.2267542Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.14/x64/lib
+test	Install dependencies	2025-11-11T19:10:11.2267837Z ##[endgroup]
+test	Install dependencies	2025-11-11T19:10:13.1123513Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages (25.3)
+test	Install dependencies	2025-11-11T19:10:13.8462878Z Collecting Flask==2.3.3 (from -r backend/requirements.txt (line 1))
+test	Install dependencies	2025-11-11T19:10:13.9408989Z   Downloading flask-2.3.3-py3-none-any.whl.metadata (3.6 kB)
+test	Install dependencies	2025-11-11T19:10:13.9711041Z Collecting Flask-SQLAlchemy==3.0.5 (from -r backend/requirements.txt (line 2))
+test	Install dependencies	2025-11-11T19:10:13.9863658Z   Downloading flask_sqlalchemy-3.0.5-py3-none-any.whl.metadata (3.3 kB)
+test	Install dependencies	2025-11-11T19:10:14.0182539Z Collecting Flask-Migrate==4.0.5 (from -r backend/requirements.txt (line 3))
+test	Install dependencies	2025-11-11T19:10:14.0334629Z   Downloading Flask_Migrate-4.0.5-py3-none-any.whl.metadata (3.1 kB)
+test	Install dependencies	2025-11-11T19:10:14.0610399Z Collecting Flask-Mail==0.9.1 (from -r backend/requirements.txt (line 4))
+test	Install dependencies	2025-11-11T19:10:14.0767983Z   Downloading Flask-Mail-0.9.1.tar.gz (45 kB)
+test	Install dependencies	2025-11-11T19:10:14.1065595Z   Installing build dependencies: started
+test	Install dependencies	2025-11-11T19:10:15.1070622Z   Installing build dependencies: finished with status 'done'
+test	Install dependencies	2025-11-11T19:10:15.1076037Z   Getting requirements to build wheel: started
+test	Install dependencies	2025-11-11T19:10:15.4504072Z   Getting requirements to build wheel: finished with status 'done'
+test	Install dependencies	2025-11-11T19:10:15.4512157Z   Preparing metadata (pyproject.toml): started
+test	Install dependencies	2025-11-11T19:10:15.6201310Z   Preparing metadata (pyproject.toml): finished with status 'done'
+test	Install dependencies	2025-11-11T19:10:15.6440114Z Collecting Flask-Babel==3.1.0 (from -r backend/requirements.txt (line 5))
+test	Install dependencies	2025-11-11T19:10:15.6595022Z   Downloading flask_babel-3.1.0-py3-none-any.whl.metadata (2.2 kB)
+test	Install dependencies	2025-11-11T19:10:15.6840969Z Collecting Flask-Login==0.6.3 (from -r backend/requirements.txt (line 6))
+test	Install dependencies	2025-11-11T19:10:15.6984316Z   Downloading Flask_Login-0.6.3-py3-none-any.whl.metadata (5.8 kB)
+test	Install dependencies	2025-11-11T19:10:15.7341200Z Collecting Flask-SocketIO==5.3.6 (from -r backend/requirements.txt (line 7))
+test	Install dependencies	2025-11-11T19:10:15.7494476Z   Downloading Flask_SocketIO-5.3.6-py3-none-any.whl.metadata (2.6 kB)
+test	Install dependencies	2025-11-11T19:10:15.7743899Z Collecting Flask-Session==0.5.0 (from -r backend/requirements.txt (line 8))
+test	Install dependencies	2025-11-11T19:10:15.7880168Z   Downloading flask_session-0.5.0-py3-none-any.whl.metadata (1.4 kB)
+test	Install dependencies	2025-11-11T19:10:15.8145973Z Collecting Flask-Compress==1.20 (from -r backend/requirements.txt (line 9))
+test	Install dependencies	2025-11-11T19:10:15.8308657Z   Downloading flask_compress-1.20-py3-none-any.whl.metadata (9.3 kB)
+test	Install dependencies	2025-11-11T19:10:15.8812739Z Collecting Flask-Limiter==3.5.1 (from -r backend/requirements.txt (line 10))
+test	Install dependencies	2025-11-11T19:10:15.8967406Z   Downloading Flask_Limiter-3.5.1-py3-none-any.whl.metadata (6.1 kB)
+test	Install dependencies	2025-11-11T19:10:15.9237180Z Collecting Flask-Talisman==1.1.0 (from -r backend/requirements.txt (line 11))
+test	Install dependencies	2025-11-11T19:10:15.9386200Z   Downloading flask_talisman-1.1.0-py2.py3-none-any.whl.metadata (18 kB)
+test	Install dependencies	2025-11-11T19:10:15.9740966Z Collecting python-socketio==5.8.0 (from -r backend/requirements.txt (line 12))
+test	Install dependencies	2025-11-11T19:10:15.9893915Z   Downloading python_socketio-5.8.0-py3-none-any.whl.metadata (3.2 kB)
+test	Install dependencies	2025-11-11T19:10:16.1271146Z Collecting gevent>=24.2.1 (from -r backend/requirements.txt (line 13))
+test	Install dependencies	2025-11-11T19:10:16.1492745Z   Downloading gevent-25.9.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (14 kB)
+test	Install dependencies	2025-11-11T19:10:16.1755720Z Collecting gevent-websocket>=0.10.1 (from -r backend/requirements.txt (line 14))
+test	Install dependencies	2025-11-11T19:10:16.1909036Z   Downloading gevent_websocket-0.10.1-py3-none-any.whl.metadata (5.3 kB)
+test	Install dependencies	2025-11-11T19:10:16.2198809Z Collecting gunicorn==21.2.0 (from -r backend/requirements.txt (line 15))
+test	Install dependencies	2025-11-11T19:10:16.2342916Z   Downloading gunicorn-21.2.0-py3-none-any.whl.metadata (4.1 kB)
+test	Install dependencies	2025-11-11T19:10:16.2644504Z Collecting python-dotenv==1.0.0 (from -r backend/requirements.txt (line 16))
+test	Install dependencies	2025-11-11T19:10:16.2781787Z   Downloading python_dotenv-1.0.0-py3-none-any.whl.metadata (21 kB)
+test	Install dependencies	2025-11-11T19:10:16.3706689Z Collecting scikit-learn==1.7.2 (from -r backend/requirements.txt (line 18))
+test	Install dependencies	2025-11-11T19:10:16.3848888Z   Downloading scikit_learn-1.7.2-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (11 kB)
+test	Install dependencies	2025-11-11T19:10:16.5117925Z Collecting pandas>=2.0.3 (from -r backend/requirements.txt (line 19))
+test	Install dependencies	2025-11-11T19:10:16.5259031Z   Downloading pandas-2.3.3-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (91 kB)
+test	Install dependencies	2025-11-11T19:10:16.7640205Z Collecting numpy>=1.26.3 (from -r backend/requirements.txt (line 20))
+test	Install dependencies	2025-11-11T19:10:16.7784984Z   Downloading numpy-2.3.4-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (62 kB)
+test	Install dependencies	2025-11-11T19:10:16.8261454Z Collecting joblib==1.3.2 (from -r backend/requirements.txt (line 21))
+test	Install dependencies	2025-11-11T19:10:16.8398695Z   Downloading joblib-1.3.2-py3-none-any.whl.metadata (5.4 kB)
+test	Install dependencies	2025-11-11T19:10:16.8801674Z Collecting xgboost==2.0.3 (from -r backend/requirements.txt (line 23))
+test	Install dependencies	2025-11-11T19:10:16.8957853Z   Downloading xgboost-2.0.3-py3-none-manylinux2014_x86_64.whl.metadata (2.0 kB)
+test	Install dependencies	2025-11-11T19:10:16.9305229Z Collecting lightgbm==4.3.0 (from -r backend/requirements.txt (line 24))
+test	Install dependencies	2025-11-11T19:10:16.9458488Z   Downloading lightgbm-4.3.0-py3-none-manylinux_2_28_x86_64.whl.metadata (19 kB)
+test	Install dependencies	2025-11-11T19:10:17.0840009Z Collecting matplotlib==3.8.2 (from -r backend/requirements.txt (line 26))
+test	Install dependencies	2025-11-11T19:10:17.0994795Z   Downloading matplotlib-3.8.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.8 kB)
