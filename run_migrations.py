@@ -27,6 +27,30 @@ def main() -> int:
         print(f"ERROR: alembic.ini not found at {alembic_ini}", file=sys.stderr)
         return 2
 
+    # Sanity-check the alembic.ini to avoid cryptic configparser errors later.
+    # If the first meaningful (non-empty, non-comment) line doesn't start
+    # with '[' then it's not a valid INI file for Alembic — fail early with
+    # a helpful error message so CI logs are actionable.
+    try:
+        with alembic_ini.open("r", encoding="utf-8") as fh:
+            for raw in fh:
+                line = raw.strip()
+                if not line:
+                    continue
+                if line.startswith("#") or line.startswith(";"):
+                    continue
+                if not line.startswith("["):
+                    print(
+                        f"ERROR: malformed alembic.ini — first non-comment line does not start with '[': {line!r}",
+                        file=sys.stderr,
+                    )
+                    return 3
+                break
+    except Exception as exc:
+        print("ERROR: could not read alembic.ini:", file=sys.stderr)
+        print(str(exc), file=sys.stderr)
+        return 4
+
     database_url = os.environ.get("DATABASE_URL", "sqlite:///test.db")
 
     logging.basicConfig(level=logging.INFO)
