@@ -1835,8 +1835,28 @@ def _apply_static_cache_headers(response):
         # TESTING so CI can assert deterministically if log capture differs.
         if getattr(response, "status_code", None) == 404:
             try:
+                # Helper to sanitize user-controlled values before logging.
+                def _sanitize_log_value(val: object) -> str:
+                    try:
+                        s = val if isinstance(val, str) else str(val)
+                    except Exception:
+                        return "<unrepresentable>"
+                    # Remove carriage returns, newlines and null bytes to
+                    # prevent log injection and broken log entries.
+                    s = s.replace("\r", "").replace("\n", "").replace("\x00", "")
+                    # Truncate overly long values to keep logs readable.
+                    if len(s) > 1000:
+                        return s[:1000] + "..."
+                    return s
+
+                safe_method = _sanitize_log_value(request.method)
+                safe_path = _sanitize_log_value(request.path)
+
                 # Primary log emission: canonical app logger at WARNING level.
-                app.logger.warning("404 Not Found: %s %s", request.method, request.path)
+                try:
+                    app.logger.warning("404 Not Found: %s %s", safe_method, safe_path)
+                except Exception:
+                    app.logger.warning("404 Not Found (logging failed to sanitize)")
 
                 # Also emit to root logger as a best-effort fallback so other
                 # capture configurations that listen on the root logger still
@@ -1844,9 +1864,14 @@ def _apply_static_cache_headers(response):
                 try:
                     import logging as _logging
 
-                    _logging.getLogger().warning("404 Not Found: %s %s", request.method, request.path)
+                    _logging.getLogger().warning(
+                        "404 Not Found: %s %s", safe_method, safe_path
+                    )
                 except Exception:
-                    pass
+                    app.logger.debug(
+                        "Fallback root logger warning failed: %s",
+                        traceback.format_exc(),
+                    )
 
                 # Non-invasive, test-only signal: set header only when running
                 # in TESTING mode or when explicit test debug env var is present.
@@ -1869,16 +1894,35 @@ def _apply_static_cache_headers(response):
                         try:
                             response.headers["X-Error-Logged"] = "1"
                         except Exception:
-                            pass
+                            app.logger.debug(
+                                "Failed to set X-Error-Logged header: %s",
+                                traceback.format_exc(),
+                            )
                 except Exception:
-                    pass
+                    app.logger.debug(
+                        "Determining TESTING flag failed: %s", traceback.format_exc()
+                    )
             except Exception:
                 try:
-                    app.logger.warning("404 Not Found: %s", request.path)
+                    safe_path = (
+                        request.path
+                        if isinstance(request.path, str)
+                        else str(request.path)
+                    )
+                    safe_path = (
+                        safe_path.replace("\r", "")
+                        .replace("\n", "")
+                        .replace("\x00", "")
+                    )
+                    app.logger.warning("404 Not Found: %s", safe_path)
                 except Exception:
-                    pass
+                    app.logger.debug(
+                        "Fallback 404 logging failed: %s", traceback.format_exc()
+                    )
     except Exception:
-        pass
+        app.logger.warning(
+            "Unexpected exception in after_request hook: %s", traceback.format_exc()
+        )
 
     try:
         # Test-only diagnostic marker to confirm after_request 404 path runs
