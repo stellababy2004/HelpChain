@@ -1676,6 +1676,24 @@ except Exception as e:
 # Абсолютен път до базата за по-голяма сигурност
 basedir = os.path.abspath(os.path.dirname(__file__))
 # За production на Render, използвайме променлива от средата или persistent директория
+# If running under pytest, prefer a file-backed test DB so the engine is
+# created with the test path at import time. This avoids engines being
+# initialized against the instance DB before test fixtures can run.
+import sys
+
+# Heuristic to detect running under pytest: check env var or command-line
+# invocation. This helps ensure the app uses the test DB path early during
+# import when pytest is loading modules.
+if (
+    os.getenv("PYTEST_CURRENT_TEST")
+    or os.getenv("PYTEST_RUNNING")
+    or any("pytest" in str(a).lower() for a in sys.argv)
+):
+    test_file = os.path.join(basedir, "test_local.sqlite")
+    app.config["_TEST_DB_PATH"] = test_file
+    app.config["TESTING"] = True
+    logger.info("Detected pytest environment; forcing test DB path: %s", test_file)
+
 database_url = os.getenv("DATABASE_URL")
 use_postgres = os.getenv("USE_POSTGRES") == "true"
 
@@ -1816,9 +1834,11 @@ def _apply_static_cache_headers(response):
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# Ensure the SQLAlchemy engine is initialized for the primary app context.
-with app.app_context():
-    _ = db.engine
+# Do not eagerly create the SQLAlchemy engine here. Creating the engine at
+# import time can bind it to a default/instance DB before test code or
+# environment variables (like DATABASE_URL) are applied. Let the engine be
+# initialized lazily when first needed so test fixtures can configure the
+# app config and ensure the correct database URI is used.
 
 # Initialize cache
 if cache is not None:
@@ -2224,12 +2244,16 @@ except Exception as e:
     app.logger.error(f"Failed to initialize analytics cache: {e}")
     app.analytics_cache = None
 
-# Initialize analytics service with database session
+# Initialize analytics service with database session (skip during tests so
+# test fixtures can control DB setup and avoid early engine binding).
 try:
     from analytics_service import init_analytics_service
 
-    init_analytics_service(db.session)
-    app.logger.info("Analytics service initialized successfully")
+    if not app.config.get("TESTING", False):
+        init_analytics_service(db.session)
+        app.logger.info("Analytics service initialized successfully")
+    else:
+        app.logger.info("Skipping analytics initialization in TESTING mode")
 except Exception as e:
     app.logger.error(f"Failed to initialize analytics service: {e}")
 
@@ -2395,14 +2419,40 @@ app.register_blueprint(admin_bp, url_prefix="/admin")
 app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
 
 # Register auth blueprint for signup / email confirmation
+# Register auth blueprint for signup / email confirmation.
+# Try several import paths to be resilient across different import/layout modes
+# (package vs top-level execution). If all imports fail, log a warning so tests
+# surface the issue instead of silently skipping the registration.
+auth_bp = None
 try:
-    from auth import auth_bp
+    # Prefer top-level import when running as a simple module
+    from auth import auth_bp as _auth_bp
 
-    app.register_blueprint(auth_bp)
+    auth_bp = _auth_bp
 except Exception:
-    # Best-effort registration: if import fails during some runtime modes,
-    # skip registration to avoid breaking startup.
-    pass
+    try:
+        # Try importing as a backend package module
+        import importlib
+
+        mod = importlib.import_module("backend.auth")
+        auth_bp = getattr(mod, "auth_bp", None)
+    except Exception:
+        try:
+            # Try alternate src layout used in some forks
+            import importlib
+
+            mod = importlib.import_module("helpchain_backend.src.routes.auth")
+            auth_bp = getattr(mod, "auth_bp", None)
+        except Exception:
+            auth_bp = None
+
+if auth_bp is not None:
+    try:
+        app.register_blueprint(auth_bp)
+    except Exception as e:
+        app.logger.warning(f"Failed to register auth blueprint: {e}")
+else:
+    app.logger.warning("Auth blueprint not registered: auth module import failed")
 
 # Register notification blueprint
 app.register_blueprint(notification_bp, url_prefix="/notifications")

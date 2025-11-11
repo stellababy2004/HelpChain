@@ -169,6 +169,96 @@ def prepare_database():
                 # last-resort: let Flask-SQLAlchemy create on its default
                 _db.create_all()
 
+            # Ensure SQLAlchemy registers the engine for the Flask app so
+            # request-time code (which may lazily obtain binds) uses the same
+            # engine we just created tables on. This helps avoid cases where
+            # modules imported earlier hold a reference to an engine bound to
+            # the instance DB path.
+            try:
+                from backend import appy as _appy_mod
+
+                if hasattr(_appy_mod, "_ensure_db_engine_registration"):
+                    _appy_mod._ensure_db_engine_registration()
+            except Exception:
+                # Non-fatal: continue even if registration helper isn't present
+                pass
+            # Reinitialize analytics_service (and similar subsystems) that may
+            # have been initialized earlier with a session bound to the old
+            # engine. Rebinding them ensures they use the test DB session.
+            try:
+                from backend import analytics_service as _analytics_mod
+                from backend.extensions import db as _db
+
+                if hasattr(_analytics_mod, "init_analytics_service"):
+                    _analytics_mod.init_analytics_service(_db.session)
+            except Exception:
+                # Non-fatal: analytics reinit is a best-effort to remove stale
+                # session/engine references created at import time.
+                pass
+
+            # Attempt application-level seeding (create default admin user)
+            # Some app code provides a _seed_once helper that creates a default
+            # admin; call it here if available so tests relying on a seeded
+            # admin user start reliably.
+            try:
+                seed = getattr(_appy, "_seed_once", None)
+                if callable(seed):
+                    seed()
+            except Exception:
+                # Non-fatal; tests will create admin explicitly if necessary
+                pass
+
+            # If the app-level seeding did not populate an admin user (this can
+            # happen when different SQLAlchemy instances/engines are in play
+            # during test startup), create a default admin directly using the
+            # canonical backend.extensions.db session so request-time code can
+            # see it.
+            try:
+                from backend.extensions import db as _db
+
+                try:
+                    from backend.models import AdminUser, User, RoleEnum
+
+                    # Use transactional begin to ensure commit and release of connection
+                    with _db.session.begin():
+                        existing = (
+                            _db.session.query(AdminUser)
+                            .filter_by(username="admin")
+                            .first()
+                        )
+                        if not existing:
+                            admin_user = AdminUser(
+                                username="admin",
+                                email="admin@helpchain.live",
+                            )
+                            # Use test-friendly default password if not configured
+                            admin_user.set_password(
+                                os.getenv("ADMIN_USER_PASSWORD", "Admin123")
+                            )
+                            _db.session.add(admin_user)
+                            _db.session.flush()
+
+                            # Ensure User record exists for permissions
+                            existing_user = (
+                                _db.session.query(User)
+                                .filter_by(username="admin")
+                                .first()
+                            )
+                            if not existing_user:
+                                user = User(
+                                    username="admin",
+                                    email="admin@helpchain.live",
+                                    password_hash=admin_user.password_hash,
+                                    role=RoleEnum.superadmin,
+                                    is_active=True,
+                                )
+                                _db.session.add(user)
+                except Exception:
+                    # If models or extensions aren't importable, skip gracefully
+                    pass
+            except Exception:
+                pass
+
             meta_tables_after = list(getattr(_db, "metadata", {}).tables.keys())
             print(
                 "[TEST DEBUG] SQLAlchemy metadata tables after create_all:",

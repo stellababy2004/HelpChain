@@ -12,6 +12,7 @@ Exit codes:
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -75,10 +76,63 @@ def main() -> int:
         )
         return 2
 
-    # If the sanity check passed, run alembic using the found INI file.
-    cmd = ["alembic", "-c", str(ini), "upgrade", "head"]
+    # If the sanity check passed, prefer running Alembic programmatically
+    # inside this process. That allows us to push a Flask application
+    # context (if available) so env.py can access current_app.extensions.
     try:
-        print(f"Running: {' '.join(cmd)}")
+        import alembic
+
+        alembic_command = alembic.command
+        AlembicConfig = alembic.config.Config
+    except Exception:
+        AlembicConfig = None  # type: ignore
+
+    # Helper to attempt to create and push a Flask app context. Returns
+    # the context object if pushed (so we can pop it later), otherwise None.
+    app_ctx = None
+    try:
+        # Try common application factory location in this repository.
+        # This import is best-effort; if it fails we fall back to running
+        # alembic as a subprocess which will surface the same error.
+        try:
+            # Ensure repo root (parent of this backend/ dir) is on sys.path so
+            # imports like 'backend.models' resolve correctly when this script
+            # is executed from inside backend/ (as CI does).
+            repo_root = Path(__file__).resolve().parent.parent
+            if str(repo_root) not in sys.path:
+                sys.path.insert(0, str(repo_root))
+
+            from helpchain_backend.src.app import Config as AppConfig
+            from helpchain_backend.src.app import create_app  # type: ignore
+
+            # Use a lightweight config for migrations to avoid connecting to
+            # external DBs during app creation (create_app calls db.create_all()).
+            class _MigrateConfig(AppConfig):
+                SQLALCHEMY_DATABASE_URI = os.environ.get(
+                    "SQLALCHEMY_DATABASE_URI",
+                    os.environ.get("DATABASE_URL", "sqlite:///:memory:"),
+                )
+
+            app = create_app(_MigrateConfig)
+            app_ctx = app.app_context()
+            app_ctx.push()
+            print("Pushed Flask application context for migrations.")
+        except Exception as e:
+            # If creating the app fails, print the exception so diagnostics
+            # are visible in CI/local runs, then continue to fallback paths.
+            print(
+                f"Could not create Flask app (will try fallback): {e}", file=sys.stderr
+            )
+            app_ctx = None
+
+        if AlembicConfig is not None:
+            print(f"Running alembic programmatically with: {ini}")
+            alembic_cfg = AlembicConfig(str(ini))
+            alembic_command.upgrade(alembic_cfg, "head")
+            return 0
+        # Fall back to subprocess if alembic package isn't importable.
+        cmd = ["alembic", "-c", str(ini), "upgrade", "head"]
+        print(f"Running subprocess: {' '.join(cmd)}")
         subprocess.run(cmd, check=True)
         return 0
     except FileNotFoundError:
@@ -87,11 +141,15 @@ def main() -> int:
             file=sys.stderr,
         )
         return 3
-    except subprocess.CalledProcessError as exc:
-        print(
-            f"ERROR: alembic failed with return code {exc.returncode}", file=sys.stderr
-        )
-        return exc.returncode or 3
+    except Exception as exc:
+        print(f"ERROR: alembic failed: {exc}", file=sys.stderr)
+        return getattr(exc, "code", 3) or 3
+    finally:
+        if app_ctx is not None:
+            try:
+                app_ctx.pop()
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
