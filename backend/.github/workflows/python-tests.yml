@@ -19,7 +19,9 @@ jobs:
     env:
       HELPCHAIN_TEST_DEBUG: "0"
       HELPCHAIN_TESTING: "1"
-      DATABASE_URL: "sqlite:///test.db"
+      # Use an absolute path for the test SQLite DB so migrations and pytest
+      # operate on the same file regardless of the runner's working directory.
+      DATABASE_URL: "sqlite://${{ github.workspace }}/backend/test_local.sqlite"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Set up Python
@@ -34,6 +36,9 @@ jobs:
           # ensure coverage is available for generating reports and artifacts
           pip install coverage
       - name: Run database migrations
+        # Run migrations from the backend directory so the script and relative
+        # paths resolve consistently in CI.
+        working-directory: backend
         # Ensure the test database schema is created before running pytest
         # This step now includes a pre-check to validate that backend/migrations/alembic.ini
         # looks like an INI file (helps catch accidental overwrites with python files).

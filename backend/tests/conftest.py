@@ -163,6 +163,43 @@ def prepare_database():
             # Create all tables using the engine bound to the app so the
             # same SQLite file/connection is used for tests and request-time
             # DB access.
+            # If other modules created their own SQLAlchemy() instance and
+            # registered Table objects on a different MetaData, move those
+            # tables into the canonical _db.metadata so create_all will
+            # create them on the correct engine. This is defensive and
+            # helps CI where import path duplication sometimes creates
+            # multiple SQLAlchemy instances.
+            try:
+                import sys as _sys
+
+                if getattr(_db, "metadata", None) is not None:
+                    for _mod in list(_sys.modules.values()):
+                        try:
+                            _maybe_db = getattr(_mod, "db", None)
+                        except Exception:
+                            _maybe_db = None
+                        if _maybe_db is None or id(_maybe_db) == id(_db):
+                            continue
+                        try:
+                            _maybe_meta = getattr(_maybe_db, "metadata", None)
+                            if not getattr(_maybe_meta, "tables", None):
+                                continue
+                            # Move any unknown tables into the canonical metadata
+                            for _tbl in list(_maybe_meta.tables.values()):
+                                try:
+                                    if _tbl.name not in _db.metadata.tables:
+                                        _tbl.tometadata(_db.metadata)
+                                        if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                                            print(
+                                                f"[TEST DEBUG] moved table {_tbl.name} from module={getattr(_mod,'__name__',None)} into canonical metadata"
+                                            )
+                                except Exception:
+                                    pass
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
             if engine is not None:
                 _db.metadata.create_all(bind=engine)
             else:
