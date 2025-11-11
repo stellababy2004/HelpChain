@@ -5,8 +5,9 @@ HERE = os.path.dirname(os.path.dirname(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
-from appy import app, db
 from backend.models import Request
+
+from appy import app, db
 
 with app.app_context():
     # ensure fresh DB

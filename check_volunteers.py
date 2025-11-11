@@ -3,9 +3,10 @@ import sys
 
 sys.path.insert(0, "backend")
 
-from extensions import db
 from flask import Flask
 from models import Volunteer
+
+from extensions import db
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///instance/volunteers.db"

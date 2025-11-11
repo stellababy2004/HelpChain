@@ -1,9 +1,9 @@
+from backend.models import User
 from db import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from audit import log_admin_action
-from backend.models import User
 from dependencies import require_role
 
 router = APIRouter(prefix="/admin", tags=["admin"])

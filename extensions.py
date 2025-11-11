@@ -7,7 +7,7 @@ SQLAlchemy() here.
 """
 
 try:
-    from backend.extensions import db, babel, mail, cache  # type: ignore
+    from backend.extensions import babel, cache, db, mail  # type: ignore
 except Exception:
     # If the canonical package module isn't available (e.g. during
     # early import in some scripts), expose safe placeholders instead

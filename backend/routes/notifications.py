@@ -9,10 +9,9 @@ print("NOTIFICATIONS MODULE LOADED")
 # from analytics_service import analytics_service  # Temporarily disabled for testing
 from datetime import UTC, datetime
 
+from backend.extensions import db
 from flask import Blueprint, current_app, jsonify, render_template, request
 from flask_login import current_user
-
-from backend.extensions import db
 
 
 # Get db instance from current app context for proper test compatibility
