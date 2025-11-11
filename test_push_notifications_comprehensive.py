@@ -23,8 +23,9 @@ except ImportError:
     pass
 
 # Flask imports
-from extensions import db
 from flask import Flask
+
+from extensions import db
 
 # Model imports - moved to setUp to ensure proper db initialization
 # try:
