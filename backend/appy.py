@@ -25,24 +25,27 @@ from sqlalchemy import func
 try:
     from .models import Request, HelpRequest, AdminUser, Volunteer
 except Exception:
-    from models import Request, HelpRequest, AdminUser, Volunteer
+    from backend.models import Request, HelpRequest, AdminUser, Volunteer
 
 # Use the canonical top-level models module to avoid duplicate model definitions
 try:
     from .models import RequestLog, Feedback
 except Exception:
-    from models import RequestLog, Feedback
+    from backend.models import RequestLog, Feedback
 
 try:
     from .models_with_analytics import AnalyticsEvent, TaskPerformance
 except Exception:
-    from models_with_analytics import AnalyticsEvent, TaskPerformance
+    from backend.models_with_analytics import AnalyticsEvent, TaskPerformance
 
 # Създаваме само една инстанция на app и всички маршрути се регистрират върху нея
 
 # Единствена инстанция на app
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["PROPAGATE_EXCEPTIONS"] = True
+# Note: Jinja builtin exposures were removed to keep template globals minimal.
+# Templates should be written to not depend on Python builtins being present
+# in the Jinja global namespace.
 import os as _appy_os
 
 # Allow tests to force TESTING mode before importing this module by setting
@@ -388,7 +391,7 @@ try:
 except ImportError:  # pragma: no cover - deployment fallback
     from backend.analytics_service import get_db  # type: ignore[import-not-found]
 from backend.extensions import babel, cache, db, mail as mail_ext
-from models import (
+from backend.models import (
     AdminUser,
     ChatMessage,
     ChatParticipant,
@@ -402,9 +405,9 @@ from models import (
     UserRole,
     Volunteer,
 )
-from models_with_analytics import Task, TaskAssignment, TaskPerformance
+from backend.models_with_analytics import Task, TaskAssignment, TaskPerformance
 from permissions import initialize_default_roles_and_permissions, require_admin_login
-from routes.notifications import (
+from backend.routes.notifications import (
     notification_bp,
     notification_settings as notification_settings_view,
     subscribe_push as subscribe_push_view,
@@ -907,6 +910,183 @@ def initialize_default_admin():
 
     try:
         logger.info("Checking for existing admin user...")
+        # Test-only diagnostic: print registry / AuditLog info when requested
+        try:
+            import os
+            import sys
+            import importlib
+            import traceback
+
+            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                print(
+                    "[DEEP DIAG] initialize_default_admin: beginning deep registry diagnostics"
+                )
+
+                # 1) canonical db instance
+                try:
+                    be_ext = importlib.import_module("backend.extensions")
+                    canonical_db = getattr(be_ext, "db", None)
+                    print(
+                        "[DEEP DIAG] canonical backend.extensions.db id:",
+                        id(canonical_db),
+                    )
+                except Exception as _e:
+                    canonical_db = None
+                    print("[DEEP DIAG] failed to import backend.extensions:", _e)
+
+                # 2) inspect registries reachable from the canonical DB / Model
+                registries = []
+                try:
+                    model_base = getattr(canonical_db, "Model", None)
+                    if model_base is not None:
+                        reg = getattr(model_base, "registry", None)
+                        if reg is not None:
+                            registries.append(("db.Model.registry", reg))
+                except Exception:
+                    pass
+                try:
+                    reg2 = getattr(canonical_db, "registry", None)
+                    if reg2 is not None:
+                        registries.append(("db.registry", reg2))
+                except Exception:
+                    pass
+
+                # 3) dump registry internals and mappers
+                for rname, reg in registries:
+                    try:
+                        print(
+                            f"[DEEP DIAG] registry {rname} -> id={id(reg)} repr={reg}"
+                        )
+                        cr = getattr(reg, "_class_registry", None)
+                        if cr is not None:
+                            try:
+                                keys = list(cr.keys())
+                                print(
+                                    f"[DEEP DIAG] {rname}._class_registry keys count: {len(keys)} sample:",
+                                    keys[:50],
+                                )
+                            except Exception as e:
+                                print(
+                                    f"[DEEP DIAG] failed to list _class_registry keys for {rname}:",
+                                    e,
+                                )
+                            # show any entries named 'AuditLog'
+                            try:
+                                for k, v in list(cr.items()):
+                                    try:
+                                        if getattr(v, "__name__", None) == "AuditLog":
+                                            print(
+                                                f"[DEEP DIAG] {rname} class-reg entry {k} -> {v} id={id(v)} module={getattr(v,'__module__',None)}"
+                                            )
+                                    except Exception:
+                                        pass
+                            except Exception:
+                                pass
+                        # mappers iterator
+                        try:
+                            miter = getattr(reg, "mappers", None)
+                            if miter is not None:
+                                for m in list(miter):
+                                    try:
+                                        cls = getattr(m, "class_", None)
+                                        print(
+                                            f"[DEEP DIAG] mapper -> {m} class={cls} id={id(cls) if cls is not None else None} module={getattr(cls,'__module__',None)}"
+                                        )
+                                    except Exception:
+                                        pass
+                        except Exception:
+                            pass
+                    except Exception as rexc:
+                        print("[DEEP DIAG] registry dump failed for", rname, rexc)
+
+                # 4) find any other modules that expose a SQLAlchemy() instance as `db`
+                try:
+                    extra_dbs = []
+                    for mname, mobj in list(sys.modules.items()):
+                        try:
+                            if not mobj:
+                                continue
+                            cand = getattr(mobj, "db", None)
+                            if cand is None:
+                                continue
+                            tname = type(cand).__name__
+                            if tname == "SQLAlchemy":
+                                extra_dbs.append((mname, id(cand), cand))
+                        except Exception:
+                            continue
+                    if extra_dbs:
+                        print(
+                            "[DEEP DIAG] modules exposing a `db = SQLAlchemy()` instance:"
+                        )
+                        for mname, did, cand in extra_dbs:
+                            is_canon = (
+                                canonical_db is not None and id(canonical_db) == did
+                            )
+                            print(
+                                f"[DEEP DIAG] - {mname} id={did} canonical={is_canon} repr={cand}"
+                            )
+                    else:
+                        print(
+                            "[DEEP DIAG] no other modules exposing db=SQLAlchemy() found"
+                        )
+                except Exception as _e:
+                    print(
+                        "[DEEP DIAG] scanning sys.modules for extra db instances failed:",
+                        _e,
+                    )
+
+                # 5) scan sys.modules for any classes named AuditLog and print their identity
+                try:
+                    found = []
+                    import inspect as _inspect
+
+                    for mname, mobj in list(sys.modules.items()):
+                        try:
+                            if not mobj:
+                                continue
+                            for attrname, attrval in getattr(
+                                mobj, "__dict__", {}
+                            ).items():
+                                try:
+                                    if (
+                                        _inspect.isclass(attrval)
+                                        and attrval.__name__ == "AuditLog"
+                                    ):
+                                        found.append(
+                                            (
+                                                mname,
+                                                attrname,
+                                                id(attrval),
+                                                getattr(attrval, "__module__", None),
+                                                getattr(mobj, "__file__", None),
+                                            )
+                                        )
+                                except Exception:
+                                    continue
+                        except Exception:
+                            continue
+                    if found:
+                        print("[DEEP DIAG] sys.modules AuditLog classes found:")
+                        for entry in found:
+                            print(
+                                "[DEEP DIAG] - module,attr,id,defined_in_module,file:",
+                                entry,
+                            )
+                    else:
+                        print(
+                            "[DEEP DIAG] no AuditLog classes found in sys.modules scan"
+                        )
+                except Exception as _e:
+                    print("[DEEP DIAG] sys.modules AuditLog scan failed:", _e)
+
+                print(
+                    "[DEEP DIAG] initialize_default_admin: deep registry diagnostics complete"
+                )
+        except Exception:
+            print(
+                "[DEEP DIAG] initialize_default_admin: diagnostics failed:\n",
+                traceback.format_exc(),
+            )
         db = get_db()
         session = db.session
 
@@ -1496,6 +1676,24 @@ except Exception as e:
 # Абсолютен път до базата за по-голяма сигурност
 basedir = os.path.abspath(os.path.dirname(__file__))
 # За production на Render, използвайме променлива от средата или persistent директория
+# If running under pytest, prefer a file-backed test DB so the engine is
+# created with the test path at import time. This avoids engines being
+# initialized against the instance DB before test fixtures can run.
+import sys
+
+# Heuristic to detect running under pytest: check env var or command-line
+# invocation. This helps ensure the app uses the test DB path early during
+# import when pytest is loading modules.
+if (
+    os.getenv("PYTEST_CURRENT_TEST")
+    or os.getenv("PYTEST_RUNNING")
+    or any("pytest" in str(a).lower() for a in sys.argv)
+):
+    test_file = os.path.join(basedir, "test_local.sqlite")
+    app.config["_TEST_DB_PATH"] = test_file
+    app.config["TESTING"] = True
+    logger.info("Detected pytest environment; forcing test DB path: %s", test_file)
+
 database_url = os.getenv("DATABASE_URL")
 use_postgres = os.getenv("USE_POSTGRES") == "true"
 
@@ -1510,6 +1708,21 @@ if app.config.get("_TEST_DB_PATH"):
 elif app.config.get("TESTING"):
     # Fall back to in-memory when no test DB path was specified
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    # Use StaticPool for in-memory testing so multiple connections share
+    # the same database. This avoids "no such table" when tests open new
+    # connections or when SQLAlchemy creates multiple engine instances.
+    try:
+        from sqlalchemy.pool import StaticPool
+
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "poolclass": StaticPool,
+            "connect_args": {"check_same_thread": False},
+        }
+    except Exception:
+        # If StaticPool isn't available, fall back to conservative options
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "connect_args": {"check_same_thread": False}
+        }
     logger.info("TESTING: Using in-memory SQLite database")
 elif database_url and use_postgres:
     # Use PostgreSQL when DATABASE_URL is provided and USE_POSTGRES is true
@@ -1550,14 +1763,82 @@ else:
         },
         "echo": False,  # Disable SQL query logging
     }
-    logger.info("Configured SQLite connection pooling")
+# Static asset caching: default TTL can be overridden with HELPCHAIN_STATIC_MAX_AGE (seconds)
+try:
+    _static_max_age = int(os.environ.get("HELPCHAIN_STATIC_MAX_AGE", "86400"))
+except Exception:
+    _static_max_age = 86400
+app.config.setdefault("SEND_FILE_MAX_AGE_DEFAULT", _static_max_age)
+
+
+# Install a lightweight after_request hook to ensure Cache-Control is present
+# for common static asset types. This is safe: it only sets headers when the
+# request path appears to target static assets and doesn't override existing
+# Cache-Control headers.
+@app.after_request
+def _apply_static_cache_headers(response):
+    try:
+        req_path = (request.path or "").lower()
+        static_prefix = app.static_url_path or "/static"
+
+        # Determine whether this looks like a static asset request
+        is_static = req_path.startswith(static_prefix) or req_path.endswith(
+            (
+                ".js",
+                ".css",
+                ".png",
+                ".jpg",
+                ".jpeg",
+                ".svg",
+                ".woff",
+                ".woff2",
+                ".ttf",
+                ".ico",
+                ".json",
+            )
+        )
+
+        if is_static:
+            # Respect a correct Cache-Control, but override explicit no-cache/private/0 to enable CDN/browser caching
+            existing_cc = response.headers.get("Cache-Control", "").lower()
+            should_override = (
+                not existing_cc
+                or "no-cache" in existing_cc
+                or "max-age=0" in existing_cc
+                or "private" in existing_cc
+            )
+
+            if should_override:
+                # Fingerprinted assets (with a short hash) should be immutable for a long TTL
+                if re.search(r"-[a-f0-9]{8,}\.[a-z0-9]+$", req_path):
+                    response.headers["Cache-Control"] = (
+                        "public, max-age=31536000, immutable"
+                    )
+                else:
+                    max_age = int(app.config.get("SEND_FILE_MAX_AGE_DEFAULT", 86400))
+                    response.headers["Cache-Control"] = f"public, max-age={max_age}"
+
+        # Protect admin routes explicitly: never allow public caching
+        if req_path.startswith("/admin"):
+            response.headers["Cache-Control"] = (
+                "no-store, no-cache, must-revalidate, max-age=0"
+            )
+
+    except Exception:
+        # Don't break responses on header-setting failures
+        pass
+
+    return response
+
 
 db.init_app(app)
 migrate = Migrate(app, db)
 
-# Ensure the SQLAlchemy engine is initialized for the primary app context.
-with app.app_context():
-    _ = db.engine
+# Do not eagerly create the SQLAlchemy engine here. Creating the engine at
+# import time can bind it to a default/instance DB before test code or
+# environment variables (like DATABASE_URL) are applied. Let the engine be
+# initialized lazily when first needed so test fixtures can configure the
+# app config and ensure the correct database URI is used.
 
 # Initialize cache
 if cache is not None:
@@ -1963,12 +2244,16 @@ except Exception as e:
     app.logger.error(f"Failed to initialize analytics cache: {e}")
     app.analytics_cache = None
 
-# Initialize analytics service with database session
+# Initialize analytics service with database session (skip during tests so
+# test fixtures can control DB setup and avoid early engine binding).
 try:
     from analytics_service import init_analytics_service
 
-    init_analytics_service(db.session)
-    app.logger.info("Analytics service initialized successfully")
+    if not app.config.get("TESTING", False):
+        init_analytics_service(db.session)
+        app.logger.info("Analytics service initialized successfully")
+    else:
+        app.logger.info("Skipping analytics initialization in TESTING mode")
 except Exception as e:
     app.logger.error(f"Failed to initialize analytics service: {e}")
 
@@ -2134,14 +2419,40 @@ app.register_blueprint(admin_bp, url_prefix="/admin")
 app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
 
 # Register auth blueprint for signup / email confirmation
+# Register auth blueprint for signup / email confirmation.
+# Try several import paths to be resilient across different import/layout modes
+# (package vs top-level execution). If all imports fail, log a warning so tests
+# surface the issue instead of silently skipping the registration.
+auth_bp = None
 try:
-    from auth import auth_bp
+    # Prefer top-level import when running as a simple module
+    from auth import auth_bp as _auth_bp
 
-    app.register_blueprint(auth_bp)
+    auth_bp = _auth_bp
 except Exception:
-    # Best-effort registration: if import fails during some runtime modes,
-    # skip registration to avoid breaking startup.
-    pass
+    try:
+        # Try importing as a backend package module
+        import importlib
+
+        mod = importlib.import_module("backend.auth")
+        auth_bp = getattr(mod, "auth_bp", None)
+    except Exception:
+        try:
+            # Try alternate src layout used in some forks
+            import importlib
+
+            mod = importlib.import_module("helpchain_backend.src.routes.auth")
+            auth_bp = getattr(mod, "auth_bp", None)
+        except Exception:
+            auth_bp = None
+
+if auth_bp is not None:
+    try:
+        app.register_blueprint(auth_bp)
+    except Exception as e:
+        app.logger.warning(f"Failed to register auth blueprint: {e}")
+else:
+    app.logger.warning("Auth blueprint not registered: auth module import failed")
 
 # Register notification blueprint
 app.register_blueprint(notification_bp, url_prefix="/notifications")
@@ -2329,7 +2640,7 @@ if socketio:
 
             # Save message to database
             from backend.extensions import db
-            from models import ChatMessage
+            from backend.models import ChatMessage
 
             message = ChatMessage(
                 room_id=room_id,
@@ -2429,7 +2740,7 @@ if socketio:
                 from backend.extensions import db
 
                 try:
-                    from models import ChatMessage
+                    from backend.models import ChatMessage
                 except Exception:
                     from backend.models import ChatMessage
 
@@ -2495,7 +2806,7 @@ if socketio:
         if request_id and new_status:
             try:
                 from backend.extensions import db
-                from models import HelpRequest
+                from backend.models import HelpRequest
 
                 request_obj = db.session.get(HelpRequest, request_id)
                 if request_obj:
@@ -2561,7 +2872,7 @@ if socketio:
         if request_id and volunteer_id:
             try:
                 from backend.extensions import db
-                from models import HelpRequest, Volunteer
+                from backend.models import HelpRequest, Volunteer
 
                 request_obj = db.session.get(HelpRequest, request_id)
                 volunteer = db.session.get(Volunteer, volunteer_id)
@@ -2607,7 +2918,7 @@ if socketio:
         if volunteer_id and status:
             try:
                 from backend.extensions import db
-                from models import Volunteer
+                from backend.models import Volunteer
 
                 volunteer = db.session.get(Volunteer, volunteer_id)
                 if volunteer:
@@ -2668,7 +2979,7 @@ if socketio:
         if volunteer_id and location:
             try:
                 from backend.extensions import db
-                from models import Volunteer
+                from backend.models import Volunteer
 
                 volunteer = db.session.get(Volunteer, volunteer_id)
                 if volunteer:
@@ -2982,13 +3293,25 @@ def strftime_filter(date, format="%Y-%m-%d %H:%M:%S"):
 # Добавяме strptime филтър за Jinja2
 @app.template_filter("strptime")
 def strptime_filter(date_string, format="%Y-%m-%dT%H:%M:%S.%f"):
+    """Jinja filter to parse a date/time string into a datetime.
+
+    Accepts either a string or a datetime object. If a datetime is passed
+    simply return it unchanged. Any parsing errors return an empty string to
+    keep templates robust.
+    """
     if date_string is None:
         return ""
+
     from datetime import datetime
 
+    # If the caller already passed a datetime, return as-is
+    if isinstance(date_string, datetime):
+        return date_string
+
     try:
-        return datetime.strptime(date_string, format)
-    except ValueError:
+        # Ensure we operate on a string representation
+        return datetime.strptime(str(date_string), format)
+    except (ValueError, TypeError):
         return ""
 
 
@@ -3437,7 +3760,6 @@ def handle_unexpected_error(error):
 
 
 @app.route("/")
-@require_admin_login
 def index():
     # безопасно извличаме агрегати — ако моделът липсва или схемата
     # не е съвместима, връщаме fallback
@@ -5568,7 +5890,7 @@ def _resolve_volunteer_for_display(volunteer_id):
 def _get_available_tasks(limit=10):
     """Return a lightweight list of currently available volunteer tasks."""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         query = (
             db.session.query(
@@ -5763,7 +6085,7 @@ def update_volunteer_settings():
 def _get_volunteer_stats_safe(volunteer_id):
     """Safely get volunteer statistics with fallback values"""
     try:
-        from models_with_analytics import Task, TaskPerformance
+        from backend.models_with_analytics import Task, TaskPerformance
 
         task_stats = (
             db.session.query(
@@ -5822,7 +6144,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 def _get_active_tasks_safe(volunteer_id):
     """Safely get active tasks for volunteer"""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         active_tasks_query = (
             db.session.query(

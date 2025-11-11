@@ -6,7 +6,7 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
 from appy import app, db
-from models import Request
+from backend.models import Request
 
 with app.app_context():
     # ensure fresh DB

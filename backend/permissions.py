@@ -20,8 +20,15 @@ except ImportError:
     if backend_dir not in sys.path:
         sys.path.insert(0, backend_dir)
 
-    from extensions import db
-    from models import Permission, PermissionEnum, Role, RolePermission, User, UserRole
+    from backend.extensions import db
+    from backend.models import (
+        Permission,
+        PermissionEnum,
+        Role,
+        RolePermission,
+        User,
+        UserRole,
+    )
 
 
 def has_permission(permission_codename):

@@ -2,8 +2,8 @@ import pytest
 from flask import Flask, session
 from werkzeug.security import generate_password_hash
 
-from extensions import db
-from models import Permission, PermissionEnum, Role, User, UserRole
+from backend.extensions import db
+from backend.models import Permission, PermissionEnum, Role, User, UserRole
 from permissions import has_permission, initialize_default_roles_and_permissions
 
 

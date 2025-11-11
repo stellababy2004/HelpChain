@@ -3,7 +3,7 @@ import os
 import pyotp
 from cryptography.fernet import Fernet
 
-from models import User
+from backend.models import User
 
 
 def _get_fernet() -> Fernet:

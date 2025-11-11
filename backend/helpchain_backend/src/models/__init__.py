@@ -12,7 +12,14 @@ def utc_now() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-from extensions import db
+try:
+    # Prefer the canonical package-qualified extensions module so we reuse the
+    # same SQLAlchemy() instance used by the application.
+    from backend.extensions import db  # type: ignore
+except Exception:  # pragma: no cover - fallback for legacy layouts
+    # Fall back to the canonical package-qualified import to preserve
+    # compatibility with environments that rely on the old import layout.
+    from backend.extensions import db
 
 
 class AdminRole(Enum):
@@ -31,14 +38,24 @@ This keeps existing imports in the codebase working while ensuring SQLAlchemy
 only registers each mapped class once.
 """
 
-from models import (
-    AdminUser,
-    Feedback,
-    Request,
-    RequestLog,
-    User,
-    Volunteer,
-)
+try:
+    from backend.models import (
+        AdminUser,
+        Feedback,
+        Request,
+        RequestLog,
+        User,
+        Volunteer,
+    )
+except Exception:  # pragma: no cover - fallback for legacy layouts
+    from backend.models import (
+        AdminUser,
+        Feedback,
+        Request,
+        RequestLog,
+        User,
+        Volunteer,
+    )
 
 __all__ = [
     "Request",

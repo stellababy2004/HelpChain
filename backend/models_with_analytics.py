@@ -19,26 +19,37 @@ except Exception:
     pass
 from enum import Enum
 
-# Import AdminUser and other models - try relative import first then top-level
+# Import AdminUser and other models. Prefer the canonical package import
+# (`backend.models`) and fall back to other possible module paths. This
+# ensures the names AdminUser/Volunteer are present in this module's
+# globals so string-based relationships (e.g. "AdminUser") resolve when
+# mappers are configured.
 AdminUser = None
 User = None
 Volunteer = None
-
 try:
-    from .models import AdminUser, User, Volunteer
+    # canonical absolute import
+    from backend.models import AdminUser, User, Volunteer
 except Exception:
     try:
-        from models import AdminUser, User, Volunteer
+        # package-relative import when running as part of the package
+        from .models import AdminUser, User, Volunteer
     except Exception:
-        AdminUser = User = Volunteer = None
+        try:
+            # fallback to canonical package import for older layouts
+            from backend.models import AdminUser, User, Volunteer
+        except Exception:
+            AdminUser = User = Volunteer = None
 
 
-# Try relative imports first, fall back to absolute imports for standalone execution
+# Try relative imports first, fall back to canonical backend package import
 try:
     # Prefer package-relative import when running as backend package
     from .extensions import db
 except Exception:
-    from extensions import db
+    # Use the canonical package-qualified import to avoid creating a second
+    # SQLAlchemy() object when legacy top-level `extensions` is present.
+    from backend.extensions import db
 
 # Ensure AdminUser is properly imported for relationships
 if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
@@ -47,15 +58,26 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
         import os
         import sys
 
-        # Add backend directory to path if not already there
-        backend_dir = os.path.dirname(os.path.abspath(__file__))
-        if backend_dir not in sys.path:
-            sys.path.insert(0, backend_dir)
-
-            # Try to import the real models
-            from models import AdminUser as RealAdminUser
+        # Prefer importing the canonical backend.models module to ensure
+        # we reference the single shared AdminUser class object.
+        try:
+            from backend.models import AdminUser as RealAdminUser
 
             AdminUser = RealAdminUser
+        except Exception:
+            # As a fallback, attempt the helpchain shim before legacy top-level
+            try:
+                from helpchain_backend.src.models import AdminUser as RealAdminUser
+
+                AdminUser = RealAdminUser
+            except Exception:
+                # Final fallback: try old top-level layout if present
+                try:
+                    from backend.models import AdminUser as RealAdminUser
+
+                    AdminUser = RealAdminUser
+                except Exception:
+                    pass
     except ImportError:
         pass
 
@@ -95,8 +117,11 @@ class AdminLog(db.Model):
     user_agent = db.Column(db.String(500), nullable=True)  # Browser info
     timestamp = db.Column(db.DateTime, default=utc_now)
 
-    # Use string reference for AdminUser relationship
-    admin_user = db.relationship("AdminUser", backref="admin_logs")
+    # Use deferred reference for AdminUser relationship to avoid
+    # import-order resolution problems during mapper configuration.
+    # Using a lambda keeps the reference lazy and avoids evaluate-time
+    # string lookups that can fail in complex import scenarios.
+    admin_user = db.relationship(lambda: AdminUser, backref="admin_logs")
 
     def __repr__(self):
         return f"<AdminLog {self.action} by {self.admin_user_id}>"
@@ -118,8 +143,8 @@ class TwoFactorAuth(db.Model):
     created_at = db.Column(db.DateTime, default=utc_now)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
-    # Use string reference for AdminUser relationship
-    admin_user = db.relationship("AdminUser", backref="auth_sessions")
+    # Use deferred reference for AdminUser relationship
+    admin_user = db.relationship(lambda: AdminUser, backref="auth_sessions")
 
     def is_expired(self):
         return utc_now() > self.expires_at
@@ -143,8 +168,8 @@ class AdminSession(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
-    # Use string reference for AdminUser relationship
-    admin_user = db.relationship("AdminUser", backref="sessions")
+    # Use deferred reference for AdminUser relationship
+    admin_user = db.relationship(lambda: AdminUser, backref="sessions")
 
     def update_activity(self):
         self.last_activity = utc_now()
@@ -420,8 +445,10 @@ class Task(db.Model):
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
+    # volunteer relationship may be defined later to avoid circular imports
     # volunteer = db.relationship(Volunteer, backref="assigned_tasks")
-    creator = db.relationship("AdminUser", backref="created_tasks")
+    # Use deferred reference for creator (AdminUser)
+    creator = db.relationship(lambda: AdminUser, backref="created_tasks")
 
     def __repr__(self):
         return f"<Task {self.title} - {self.status}>"

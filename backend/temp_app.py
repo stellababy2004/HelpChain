@@ -24,12 +24,10 @@ from jinja2 import ChoiceLoader, FileSystemLoader
 from sqlalchemy.exc import OperationalError
 from werkzeug.utils import secure_filename
 
-# Поправи всички relative imports на absolute
-try:
-    from models import Volunteer, db
-except Exception:
-    # Fallback for package import path
-    from backend.models import Volunteer, db  # Вместо 'from .models import'
+from backend.extensions import db
+
+# Use canonical package-qualified imports for models and extensions
+from backend.models import Volunteer
 
 # Import for 2FA testing
 # try:
