@@ -38,7 +38,8 @@ def test_email():
                         "Email was NOT saved to fallback file - might have been sent successfully"
                     )
 
-        return result
+        # Convert script-like boolean return into an assertion for pytest
+        assert result, f"send_email_2fa_code returned falsy result: {result}"
 
 
 if __name__ == "__main__":

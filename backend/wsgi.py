@@ -14,7 +14,7 @@ print(f"Current directory: {os.getcwd()}")
 
 # Test imports before importing the app
 try:
-    from models import AdminUser, HelpRequest, User, Volunteer
+    from backend.models import AdminUser, HelpRequest, User, Volunteer
 
     print("Models import successful")
 except ImportError as e:
@@ -22,7 +22,7 @@ except ImportError as e:
     sys.exit(1)
 
 try:
-    from models_with_analytics import Task
+    from backend.models_with_analytics import Task
 
     print("Models with analytics import successful")
 except ImportError as e:

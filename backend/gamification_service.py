@@ -1,9 +1,5 @@
-try:
-    from .extensions import db
-    from .models import Achievement, Volunteer
-except ImportError:  # pragma: no cover - fallback for standalone scripts
-    from extensions import db
-    from models import Achievement, Volunteer
+from backend.extensions import db
+from backend.models import Achievement, Volunteer
 
 
 class GamificationService:
@@ -127,27 +123,26 @@ class GamificationService:
 
             unlocked_this = False
 
+            # Coerce stored requirement_value (which may be a string) to int
+            req_val = GamificationService._parse_requirement_value(achievement)
+
             if achievement.requirement_type == "count":
-                if (
-                    achievement.category == "tasks"
-                    and volunteer.total_tasks_completed >= achievement.requirement_value
+                if achievement.category == "tasks" and (
+                    volunteer.total_tasks_completed >= req_val
                 ):
                     unlocked_this = True
             elif achievement.requirement_type == "value":
                 if (
                     achievement.category == "rating"
-                    and int(volunteer.rating * 10) >= achievement.requirement_value
+                    and int(volunteer.rating * 10) >= req_val
                 ):
                     unlocked_this = True
-                elif (
-                    achievement.category == "level"
-                    and volunteer.level >= achievement.requirement_value
-                ):
+                elif achievement.category == "level" and volunteer.level >= req_val:
                     unlocked_this = True
             elif achievement.requirement_type == "streak":
                 if (
                     achievement.category == "streak"
-                    and volunteer.streak_days >= achievement.requirement_value
+                    and volunteer.streak_days >= req_val
                 ):
                     unlocked_this = True
 
@@ -169,6 +164,24 @@ class GamificationService:
             volunteer.rank = rank
 
         db.session.commit()
+
+    @staticmethod
+    def _parse_requirement_value(achievement):
+        """Safely parse achievement.requirement_value to an integer.
+
+        The DB column is a string historically; this helper makes numeric
+        comparisons robust by returning an int (or 0 on failure).
+        """
+        val = getattr(achievement, "requirement_value", None)
+        if val is None:
+            return 0
+        try:
+            return int(val)
+        except (TypeError, ValueError):
+            try:
+                return int(float(val))
+            except (TypeError, ValueError):
+                return 0
 
     @staticmethod
     def get_leaderboard(limit=10):
@@ -198,4 +211,8 @@ class GamificationService:
         else:
             return 0
 
-        return min(100, (current / achievement.requirement_value) * 100)
+        req_val = GamificationService._parse_requirement_value(achievement)
+        if req_val <= 0:
+            return 0
+
+        return min(100, (current / req_val) * 100)

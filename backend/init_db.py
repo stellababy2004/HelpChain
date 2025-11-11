@@ -21,8 +21,8 @@ try:  # Prefer relative import when available
     from .extensions import db
     from .models import RoleEnum, User, Volunteer
 except ImportError:  # Fallback for direct script execution
-    from extensions import db
-    from models import RoleEnum, User, Volunteer
+    from backend.extensions import db
+    from backend.models import RoleEnum, User, Volunteer
 
 
 def main():

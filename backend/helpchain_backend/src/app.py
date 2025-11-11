@@ -27,6 +27,12 @@ from flask_mail import Message
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.utils import secure_filename
 
+from backend.models import (
+    AdminUser,
+    Request,
+    RequestLog,
+)
+
 # Import models from main backend directory - commented out due to import conflicts
 # import sys
 # import os
@@ -41,11 +47,6 @@ from werkzeug.utils import secure_filename
 from .config import Config
 from .controllers.helpchain_controller import HelpChainController
 from .extensions import babel, db, mail, migrate
-from .models import (
-    AdminUser,
-    Request,
-    RequestLog,
-)
 from .routes.api import api_bp
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
@@ -862,7 +863,7 @@ app = create_app(Config)
 
 def init_sample_data():
     with app.app_context():
-        from models import Request, RequestLog, User
+        from backend.models import Request, RequestLog, User
 
         db.create_all()  # Create tables if they exist
 

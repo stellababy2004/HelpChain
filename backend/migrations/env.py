@@ -35,8 +35,28 @@ def get_engine_url():
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-config.set_main_option("sqlalchemy.url", get_engine_url())
-target_db = current_app.extensions["migrate"].db
+# Prefer an existing sqlalchemy.url from the INI if present. Otherwise try
+# to derive it from the Flask application. If a Flask app isn't available
+# (for example when running migrations from CI without creating the app),
+# avoid raising here so the script can fall back to creating an Engine
+# from the INI-provided URL.
+try:
+    existing_url = config.get_main_option("sqlalchemy.url")
+except Exception:
+    existing_url = None
+
+if not existing_url:
+    try:
+        config.set_main_option("sqlalchemy.url", get_engine_url())
+    except Exception:
+        # current_app isn't available; leave sqlalchemy.url unset so
+        # run_migrations_online can create an Engine from the INI URL.
+        pass
+
+try:
+    target_db = current_app.extensions["migrate"].db
+except Exception:
+    target_db = None
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -45,6 +65,8 @@ target_db = current_app.extensions["migrate"].db
 
 
 def get_metadata():
+    if target_db is None:
+        return None
     if hasattr(target_db, "metadatas"):
         return target_db.metadatas[None]
     return target_db.metadata
@@ -87,11 +109,22 @@ def run_migrations_online():
                 directives[:] = []
                 logger.info("No changes in schema detected.")
 
-    conf_args = current_app.extensions["migrate"].configure_args
-    if conf_args.get("process_revision_directives") is None:
-        conf_args["process_revision_directives"] = process_revision_directives
+    if target_db is not None:
+        conf_args = current_app.extensions["migrate"].configure_args
+        if conf_args.get("process_revision_directives") is None:
+            conf_args["process_revision_directives"] = process_revision_directives
 
-    connectable = get_engine()
+        connectable = get_engine()
+    else:
+        # No Flask app available; create an Engine from the INI-provided URL.
+        from sqlalchemy import engine_from_config, pool
+
+        conf_args = {}
+        connectable = engine_from_config(
+            config.get_section(config.config_ini_section),
+            prefix="sqlalchemy.",
+            poolclass=pool.NullPool,
+        )
 
     with connectable.connect() as connection:
         context.configure(

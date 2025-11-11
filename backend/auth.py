@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash
 try:
     from .models import User
 except Exception:
-    from models import User
+    from backend.models import User
 
 try:
     from ._dispatch_email import _dispatch_email
@@ -38,12 +38,18 @@ def signup():
     password = data.get("password") or ""
 
     if not username or not email or not password:
+        if current_app.config.get("TESTING"):
+            current_app.logger.info("auth.signup: missing fields payload=%s", data)
         return jsonify({"success": False, "error": "Missing fields"}), 400
 
     # Basic uniqueness checks
     if User.query.filter_by(username=username).first():
+        if current_app.config.get("TESTING"):
+            current_app.logger.info("auth.signup: username taken username=%s", username)
         return jsonify({"success": False, "error": "username_taken"}), 400
     if email and User.query.filter_by(email=email).first():
+        if current_app.config.get("TESTING"):
+            current_app.logger.info("auth.signup: email taken email=%s", email)
         return jsonify({"success": False, "error": "email_taken"}), 400
 
     # Create user as inactive until email confirmation

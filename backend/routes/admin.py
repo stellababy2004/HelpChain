@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from audit import log_admin_action
+from backend.models import User
 from dependencies import require_role
-from models import User
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

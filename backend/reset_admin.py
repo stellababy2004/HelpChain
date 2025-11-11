@@ -12,8 +12,8 @@ def create_or_update_admin(username, password, email=None):
 from flask import Flask
 
 from app import app
-from extensions import db
-from models import AdminUser
+from backend.extensions import db
+from backend.models import AdminUser
 
 if __name__ == "__main__":
     # Задай пътя към базата, ако не е конфигуриран
