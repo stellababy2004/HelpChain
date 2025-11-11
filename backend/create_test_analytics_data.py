@@ -16,8 +16,8 @@ if backend_dir not in sys.path:
 
 # Import Flask app and models
 from appy import app, db
-from models import HelpRequest, Volunteer
-from models_with_analytics import AnalyticsEvent
+from backend.models import HelpRequest, Volunteer
+from backend.models_with_analytics import AnalyticsEvent
 
 fake = Faker("bg_BG")  # Bulgarian locale
 

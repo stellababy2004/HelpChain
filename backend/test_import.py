@@ -5,12 +5,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 try:
     from appy import app
-    from extensions import db
+    from backend.extensions import db
 
     print("App imported successfully")
     with app.app_context():
         print("App context works")
-        from models import AdminUser
+        from backend.models import AdminUser
 
         admin = db.session.query(AdminUser).filter_by(username="admin").first()
         if admin:

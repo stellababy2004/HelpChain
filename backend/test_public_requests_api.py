@@ -3,7 +3,7 @@ import json
 import pytest
 
 from appy import app, db
-from models import HelpRequest
+from backend.models import HelpRequest
 
 
 def test_public_requests_list(client):

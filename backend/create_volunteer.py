@@ -12,16 +12,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 from werkzeug.security import generate_password_hash
 
 from appy import app
-
-try:
-    # Prefer canonical top-level imports
-    from extensions import db
-    from models import User, Volunteer
-except Exception:
-    # Fallback for package/script execution styles
-    from backend.extensions import db
-    from backend.models import User, Volunteer
-
+from backend.extensions import db
+from backend.models import User, Volunteer
 
 DEFAULT_EMAIL = "ivan@example.com"
 DEFAULT_PASSWORD = "volunteer123"
