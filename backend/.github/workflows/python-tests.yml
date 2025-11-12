@@ -35,6 +35,8 @@ jobs:
           pip install pre-commit
           # ensure coverage is available for generating reports and artifacts
           pip install coverage
+          # Ensure BeautifulSoup is available for HTML parsing tests
+          pip install beautifulsoup4
       - name: Run database migrations
         # Run migrations from the backend directory so the script and relative
         # paths resolve consistently in CI. Checks should use paths relative
