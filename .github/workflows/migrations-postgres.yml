@@ -67,8 +67,21 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: |
-          # Drop enum types that older/leftover DB instances may contain. This is safe in CI (test DB) and avoids DuplicateObject errors.
-          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "DROP TYPE IF EXISTS roleenum CASCADE; DROP TYPE IF EXISTS adminrole CASCADE; DROP TYPE IF EXISTS priorityenum CASCADE; DROP TYPE IF EXISTS notificationtypeenum CASCADE; DROP TYPE IF EXISTS notificationstatusenum CASCADE; DROP TYPE IF EXISTS useractivitytypeenum CASCADE;"
+          # Verbose diagnostic: list existing enum types, attempt drops, then list again.
+          set -euo pipefail
+          echo "-- Listing enum types BEFORE drop --"
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "SELECT n.nspname AS schema, t.typname AS type FROM pg_type t JOIN pg_namespace n ON t.typnamespace = n.oid WHERE t.typtype = 'e' ORDER BY schema, type;" || true
+
+          echo "-- Attempting to drop known enum types (if present) --"
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "DROP TYPE IF EXISTS roleenum CASCADE;" || true
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "DROP TYPE IF EXISTS adminrole CASCADE;" || true
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "DROP TYPE IF EXISTS priorityenum CASCADE;" || true
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "DROP TYPE IF EXISTS notificationtypeenum CASCADE;" || true
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "DROP TYPE IF EXISTS notificationstatusenum CASCADE;" || true
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "DROP TYPE IF EXISTS useractivitytypeenum CASCADE;" || true
+
+          echo "-- Listing enum types AFTER drop --"
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "SELECT n.nspname AS schema, t.typname AS type FROM pg_type t JOIN pg_namespace n ON t.typnamespace = n.oid WHERE t.typtype = 'e' ORDER BY schema, type;" || true
 
       - name: Изпълняване на Alembic миграции (използвай backend/run_migrations.py ако е наличен)
         env:
@@ -92,7 +105,7 @@ jobs:
             python -m pip install pytest pytest-cov || true
             # Run pytest from repository root but point explicitly to backend/pytest.ini
             # Write coverage XML to repository root
-            pytest -c backend/pytest.ini -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:coverage.xml
+            pytest -c backend/pytest.ini --rootdir=backend -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:coverage.xml
           else
             echo "Няма pytest конфигурация или tests/ директория; пропускане на тестовете"
           fi
