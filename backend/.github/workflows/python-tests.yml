@@ -65,6 +65,28 @@ jobs:
           echo "Removing any existing sqlite DB file (test_local.sqlite) to ensure clean migrations"
           rm -f test_local.sqlite || true
           python -u run_migrations.py
+      - name: Verify migrated schema
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          import os, sqlite3, sys
+          db = 'backend/test_local.sqlite'
+          print('db exists', os.path.exists(db))
+          if not os.path.exists(db):
+              sys.exit('DB file missing')
+          conn = sqlite3.connect(db)
+          cur = conn.cursor()
+          tables = [r[0] for r in cur.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
+          print('tables:', tables)
+          for t in ('admin_users','analytics_events'):
+              print(f'PRAGMA table_info({t}):')
+              try:
+                  for row in cur.execute(f"PRAGMA table_info({t})"):
+                      print(row)
+              except Exception as e:
+                  print('ERROR reading PRAGMA for', t, e)
+          conn.close()
+          PY
       - name: CI diagnostics
         run: |
           echo "CI diagnostics:"
