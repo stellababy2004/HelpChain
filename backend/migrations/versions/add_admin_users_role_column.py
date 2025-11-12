@@ -27,6 +27,21 @@ def upgrade():
             return _sa_Enum(*args, **kwargs)
 
         sa.Enum = _enum
+    else:
+        # Ensure the `adminrole` enum exists on PostgreSQL to avoid
+        # DuplicateObject errors when migrations run against a DB that
+        # may already have the type created by another run.
+        op.execute(
+            """
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'adminrole') THEN
+        CREATE TYPE adminrole AS ENUM ('SUPER_ADMIN','ADMIN','MODERATOR');
+    END IF;
+END
+$$;
+""",
+        )
     conn = op.get_bind()
     inspector = sa.inspect(conn)
     existing_tables = inspector.get_table_names()

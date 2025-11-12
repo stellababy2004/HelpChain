@@ -34,6 +34,39 @@ def upgrade():
             return _sa_Enum(*args, **kwargs)
 
         sa.Enum = _enum
+    else:
+        # Running on PostgreSQL: ensure native ENUM types exist before
+        # Alembic/SQLAlchemy attempts to create them. This protects CI
+        # runs where the DB instance may persist types across attempts
+        # and prevents DuplicateObject errors.
+        # Create the most commonly used enum types only if they are
+        # missing. We use a DO block to be compatible with older
+        # PostgreSQL versions that may not support CREATE TYPE IF NOT EXISTS.
+        op.execute(
+            """
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'roleenum') THEN
+        CREATE TYPE roleenum AS ENUM ('user','volunteer','moderator','admin','superadmin');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'priorityenum') THEN
+        CREATE TYPE priorityenum AS ENUM ('low','normal','urgent');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationtypeenum') THEN
+        CREATE TYPE notificationtypeenum AS ENUM ('system','request','task','message','achievement','reminder','alert');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationstatusenum') THEN
+        CREATE TYPE notificationstatusenum AS ENUM ('pending','sent','delivered','read','failed','cancelled');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'useractivitytypeenum') THEN
+        CREATE TYPE useractivitytypeenum AS ENUM (
+            'PAGE_VIEW','PAGE_EXIT','SCROLL','TIME_SPENT','BUTTON_CLICK','FORM_SUBMIT','FORM_START','LINK_CLICK','SEARCH_QUERY','HELP_REQUEST_CREATED','HELP_REQUEST_VIEWED','HELP_REQUEST_UPDATED','TASK_VIEWED','TASK_ACCEPTED','TASK_COMPLETED','VOLUNTEER_PROFILE_VIEWED','CHAT_MESSAGE_SENT','CHAT_ROOM_JOINED','VIDEO_CHAT_STARTED','LOGIN','LOGOUT','PASSWORD_RESET','ACHIEVEMENT_UNLOCKED','POINTS_EARNED','LEVEL_UP','ERROR_OCCURRED','PAGE_NOT_FOUND','FORM_VALIDATION_ERROR','REGISTRATION_COMPLETED','HELP_REQUEST_ASSIGNED','TASK_ASSIGNED'
+        );
+    END IF;
+END
+$$;
+""",
+        )
     op.create_table(
         "achievements",
         sa.Column("id", sa.String(length=64), nullable=False),
