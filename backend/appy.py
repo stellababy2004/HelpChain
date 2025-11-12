@@ -1557,8 +1557,9 @@ def send_email_now(*, subject, recipients, body, sender=None, html=None, templat
 # Set SECRET_KEY for sessions and security
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", secrets.token_hex(32))
 
-# Initialize SocketIO conditionally
-if is_realtime_feature_enabled("websocket"):
+# Initialize SocketIO conditionally. When running tests we avoid initializing
+# SocketIO to prevent async-mode / engineio issues in CI test runners.
+if is_realtime_feature_enabled("websocket") and not app.config.get("TESTING", False):
     from flask_socketio import SocketIO
 
     transports = ["polling", "websocket"]
