@@ -57,21 +57,11 @@ jobs:
             python -m alembic -c backend/migrations/alembic.ini upgrade head
           fi
 
-      - name: Опционален бърз тест за импорт (не спира при грешка)
-        run: |
-          # Минимален импорт за откриване на проблеми при import-time
-          python - <<PY
-          import importlib, sys
-          try:
-              importlib.import_module("backend")
-              print("импорт УСПЕШЕН")
-          except Exception as e:
-              sys.stderr.write("Грешка при импорт на приложението: " + repr(e))
-              raise
-          PY
+      # Optional import-time check removed to avoid pre-importing conflicting test modules
 
       - name: Стартиране на тестове с coverage (по избор)
         if: always()
+        working-directory: backend
         run: |
           # Стартираме pytest с coverage; ако има тестове ще подаваме coverage.xml
           if [ -f pytest.ini ] || [ -d tests ]; then
