@@ -101,7 +101,8 @@ jobs:
         run: |
           if [ -f backend/pytest.ini ] || [ -d backend/tests ]; then
             echo "Running tests under coverage"
-            python -m coverage run -m pytest -q --maxfail=1 || exit $?
+            # Force pytest to use the backend pytest.ini to avoid duplicate [pytest] from other files
+            python -m coverage run -m pytest -c backend/pytest.ini -q --maxfail=1 || exit $?
             echo "Generating coverage reports"
             python -m coverage xml -o coverage.xml || true
             python -m coverage html -d coverage_html || true

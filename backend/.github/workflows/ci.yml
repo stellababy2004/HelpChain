@@ -20,7 +20,7 @@ jobs:
           pip install -r backend/requirements.txt || true
           pip install pytest || true
           echo "Running fast-fail singleton DB test"
-          pytest -q backend/tests/test_db_singleton.py -q
+          pytest -c backend/pytest.ini -q backend/tests/test_db_singleton.py -q
       - name: Install dependencies
         run: |
           pip install -r backend/requirements.txt
@@ -32,7 +32,7 @@ jobs:
       - name: "Fast-fail: db singleton regression test"
         run: |
           echo "Running fast-fail singleton DB test"
-          pytest -q backend/tests/test_db_singleton.py -q
+          pytest -c backend/pytest.ini -q backend/tests/test_db_singleton.py -q
 
       - name: Test
-        run: pytest backend/
+        run: pytest -c backend/pytest.ini backend/
