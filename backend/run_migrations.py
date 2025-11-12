@@ -22,6 +22,15 @@ from alembic.config import Config
 
 from alembic import command
 
+# Optional helper (SQLAlchemy URL parsing)
+try:  # keep import optional for environments without SQLAlchemy v1.4+ helpers
+    from sqlalchemy.engine import make_url
+except Exception:  # pragma: no cover - best-effort import
+    try:
+        from sqlalchemy.engine.url import make_url  # type: ignore
+    except Exception:
+        make_url = None  # type: ignore
+
 
 def main() -> int:
     root = os.path.dirname(__file__)
@@ -45,6 +54,34 @@ def main() -> int:
     cfg = Config(migrations_ini)
     # Ensure alembic picks up the runtime DB URL provided by CI
     cfg.set_main_option("sqlalchemy.url", database_url)
+
+    # Defensive: if DATABASE_URL points to a sqlite file, ensure the parent
+    # directory exists and the file is touchable. In CI the path may be
+    # absolute (e.g. /home/runner/...) or relative; SQLite will fail with
+    # "unable to open database file" if the directory doesn't exist or
+    # permissions are wrong.
+    try:  # pragma: no cover - environment-specific
+        if make_url is not None:
+            url = make_url(database_url)
+            if getattr(url, "drivername", "") == "sqlite":
+                db_path = url.database
+                if db_path:
+                    # If relative path, make it relative to repository root
+                    if not os.path.isabs(db_path):
+                        db_path = os.path.join(root, db_path)
+                    parent = os.path.dirname(db_path) or "."
+                    os.makedirs(parent, exist_ok=True)
+                    # touch the file so sqlite can open it for connections
+                    try:
+                        open(db_path, "a").close()
+                        print(f"Ensured sqlite DB exists at: {db_path}")
+                    except Exception:
+                        # best-effort: creation may fail due to permissions in CI
+                        print(f"Warning: could not touch sqlite DB file: {db_path}")
+    except Exception:
+        # If URL parsing fails for any reason, continue and let alembic
+        # raise the original, more informative error.
+        pass
 
     try:
         command.upgrade(cfg, "head")

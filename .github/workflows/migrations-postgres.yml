@@ -57,6 +57,19 @@ jobs:
           # Installing psycopg2-binary is a low-risk, widely used approach for CI.
           python -m pip install psycopg2-binary
 
+      - name: Install psql client
+        run: |
+          # psql client may not be present on the runner by default; install it so we can run pre-migration housekeeping
+          sudo apt-get update -y
+          sudo apt-get install -y postgresql-client
+
+      - name: Drop existing Postgres enum types (if any)
+        env:
+          PGPASSWORD: postgres
+        run: |
+          # Drop enum types that older/leftover DB instances may contain. This is safe in CI (test DB) and avoids DuplicateObject errors.
+          psql -h localhost -U postgres -d helpchain_test -v ON_ERROR_STOP=1 -c "DROP TYPE IF EXISTS roleenum CASCADE; DROP TYPE IF EXISTS adminrole CASCADE; DROP TYPE IF EXISTS priorityenum CASCADE; DROP TYPE IF EXISTS notificationtypeenum CASCADE; DROP TYPE IF EXISTS notificationstatusenum CASCADE; DROP TYPE IF EXISTS useractivitytypeenum CASCADE;"
+
       - name: Изпълняване на Alembic миграции (използвай backend/run_migrations.py ако е наличен)
         env:
           DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/helpchain_test
