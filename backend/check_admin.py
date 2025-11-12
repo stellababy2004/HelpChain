@@ -24,7 +24,7 @@ with app.app_context():
 
         with app.test_request_context():
             session["user_id"] = admin.id
-            print(f'Has manage_roles: {has_permission("manage_roles")}')
-            print(f'Has admin_access: {has_permission("admin_access")}')
+            print(f"Has manage_roles: {has_permission('manage_roles')}")
+            print(f"Has admin_access: {has_permission('admin_access')}")
     else:
         print("Admin user not found")

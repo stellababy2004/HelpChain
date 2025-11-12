@@ -18,24 +18,33 @@ depends_on = None
 
 
 def upgrade():
-    # Create enum types for PostgreSQL
-    op.execute(
-        "CREATE TYPE roleenum AS ENUM ('user', 'volunteer', 'moderator', 'admin', 'superadmin')"
-    )
-    op.execute(
-        "CREATE TYPE permissionenum AS ENUM ('view_profile', 'edit_profile', 'view_volunteers', 'manage_volunteers', 'view_requests', 'manage_requests', 'use_video_chat', 'moderate_content', 'view_analytics', 'manage_categories', 'admin_access', 'manage_users', 'manage_roles', 'system_settings', 'view_audit_logs', 'super_admin')"
-    )
-    op.execute("CREATE TYPE priorityenum AS ENUM ('low', 'normal', 'urgent')")
-    op.execute(
-        "CREATE TYPE notificationtypeenum AS ENUM ('system', 'request', 'task', 'message', 'achievement', 'reminder', 'alert')"
-    )
-    op.execute("CREATE TYPE notificationchannelenum AS ENUM ('email', 'app', 'push')")
-    op.execute(
-        "CREATE TYPE notificationstatusenum AS ENUM ('pending', 'sent', 'delivered', 'read', 'failed', 'cancelled')"
-    )
-    op.execute(
-        "CREATE TYPE useractivitytypeenum AS ENUM ('page_view', 'page_exit', 'scroll', 'time_spent', 'button_click', 'form_submit', 'form_start', 'link_click', 'search_query', 'help_request_created', 'help_request_viewed', 'help_request_updated', 'task_viewed', 'task_accepted', 'task_completed', 'volunteer_profile_viewed', 'chat_message_sent', 'chat_room_joined', 'video_chat_started', 'login', 'logout', 'password_reset', 'achievement_unlocked', 'points_earned', 'level_up', 'error_occurred', 'page_not_found', 'form_validation_error', 'registration_completed', 'help_request_assigned', 'task_assigned')"
-    )
+    # Create enum types for PostgreSQL. Guard these so running migrations
+    # against SQLite (local dev/tests) doesn't attempt to execute
+    # Postgres-only DDL (which would raise sqlite3.OperationalError).
+    bind = op.get_bind()
+    if bind.dialect.name == "postgresql":
+        op.execute(
+            "CREATE TYPE roleenum AS ENUM ('user', 'volunteer', 'moderator', 'admin', 'superadmin')"
+        )
+        op.execute(
+            "CREATE TYPE permissionenum AS ENUM ('view_profile', 'edit_profile', 'view_volunteers', 'manage_volunteers', 'view_requests', 'manage_requests', 'use_video_chat', 'moderate_content', 'view_analytics', 'manage_categories', 'admin_access', 'manage_users', 'manage_roles', 'system_settings', 'view_audit_logs', 'super_admin')"
+        )
+        op.execute("CREATE TYPE priorityenum AS ENUM ('low', 'normal', 'urgent')")
+        op.execute(
+            "CREATE TYPE notificationtypeenum AS ENUM ('system', 'request', 'task', 'message', 'achievement', 'reminder', 'alert')"
+        )
+        op.execute(
+            "CREATE TYPE notificationchannelenum AS ENUM ('email', 'app', 'push')"
+        )
+        op.execute(
+            "CREATE TYPE notificationstatusenum AS ENUM ('pending', 'sent', 'delivered', 'read', 'failed', 'cancelled')"
+        )
+        op.execute(
+            "CREATE TYPE useractivitytypeenum AS ENUM ('page_view', 'page_exit', 'scroll', 'time_spent', 'button_click', 'form_submit', 'form_start', 'link_click', 'search_query', 'help_request_created', 'help_request_viewed', 'help_request_updated', 'task_viewed', 'task_accepted', 'task_completed', 'volunteer_profile_viewed', 'chat_message_sent', 'chat_room_joined', 'video_chat_started', 'login', 'logout', 'password_reset', 'achievement_unlocked', 'points_earned', 'level_up', 'error_occurred', 'page_not_found', 'form_validation_error', 'registration_completed', 'help_request_assigned', 'task_assigned')"
+        )
+    else:
+        # SQLite/local dev: skip native enum creation
+        pass
 
     # Create users table
     op.create_table(
@@ -533,10 +542,15 @@ def downgrade():
     op.drop_table("users")
 
     # Drop enum types
-    op.execute("DROP TYPE IF EXISTS useractivitytypeenum")
-    op.execute("DROP TYPE IF EXISTS notificationstatusenum")
-    op.execute("DROP TYPE IF EXISTS notificationchannelenum")
-    op.execute("DROP TYPE IF EXISTS notificationtypeenum")
-    op.execute("DROP TYPE IF EXISTS priorityenum")
-    op.execute("DROP TYPE IF EXISTS permissionenum")
-    op.execute("DROP TYPE IF EXISTS roleenum")
+    bind = op.get_bind()
+    if bind.dialect.name == "postgresql":
+        op.execute("DROP TYPE IF EXISTS useractivitytypeenum")
+        op.execute("DROP TYPE IF EXISTS notificationstatusenum")
+        op.execute("DROP TYPE IF EXISTS notificationchannelenum")
+        op.execute("DROP TYPE IF EXISTS notificationtypeenum")
+        op.execute("DROP TYPE IF EXISTS priorityenum")
+        op.execute("DROP TYPE IF EXISTS permissionenum")
+        op.execute("DROP TYPE IF EXISTS roleenum")
+    else:
+        # Nothing to drop on SQLite
+        pass

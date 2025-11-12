@@ -48,7 +48,7 @@ class PerformanceTester:
                     cache_hits += 1
 
                 print(
-                    f"  Request {i+1}: {duration:.3f}s (Status: {response.status_code}, Cache: {response.headers.get('X-Cache-Status', 'unknown')})"
+                    f"  Request {i + 1}: {duration:.3f}s (Status: {response.status_code}, Cache: {response.headers.get('X-Cache-Status', 'unknown')})"
                 )
 
                 # Small delay между requests
@@ -56,7 +56,7 @@ class PerformanceTester:
 
             except Exception as e:
                 errors += 1
-                print(f"  Request {i+1}: ERROR - {e}")
+                print(f"  Request {i + 1}: ERROR - {e}")
 
         if times:
             avg_time = statistics.mean(times)
@@ -77,8 +77,8 @@ class PerformanceTester:
             print(f"     Average: {avg_time:.3f}s")
             print(f"     Min: {min_time:.3f}s")
             print(f"     Max: {max_time:.3f}s")
-            print(f"     Cache hit rate: {(cache_hits/iterations)*100:.1f}%")
-            print(f"     Error rate: {(errors/iterations)*100:.1f}%")
+            print(f"     Cache hit rate: {(cache_hits / iterations) * 100:.1f}%")
+            print(f"     Error rate: {(errors / iterations) * 100:.1f}%")
 
             # Performance rating
             if avg_time < 0.2:
@@ -192,8 +192,8 @@ class PerformanceTester:
             print(f"  Average response time: {avg_duration:.3f}s")
             print(f"  Slowest response: {max_duration:.3f}s")
             print(f"  Successful requests: {len(durations)}/{concurrent_users}")
-            print(f"  Cache hit rate: {(cache_hits/len(durations))*100:.1f}%")
-            print(f"  Error rate: {(errors/concurrent_users)*100:.1f}%")
+            print(f"  Cache hit rate: {(cache_hits / len(durations)) * 100:.1f}%")
+            print(f"  Error rate: {(errors / concurrent_users) * 100:.1f}%")
 
             # Throughput calculation
             throughput = concurrent_users / total_time

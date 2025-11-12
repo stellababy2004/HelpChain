@@ -1,0 +1,92 @@
+name: Валидиране на миграции в Postgres
+
+on:
+  push:
+    branches: [main, recover-workflows]
+  pull_request:
+    branches: [main]
+
+jobs:
+  migrations-postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: helpchain_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval=5s --health-timeout=5s --health-retries=10
+
+    steps:
+      - name: Вземане на кода (checkout)
+        uses: actions/checkout@v4
+
+      - name: Настройка на Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Чакам Postgres да е готов
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 && break || sleep 1
+          done
+
+      - name: Кеширане на pip зависимости
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Инсталиране на зависимости
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Изпълняване на Alembic миграции (използвай backend/run_migrations.py ако е наличен)
+        env:
+          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/helpchain_test
+        run: |
+          set -euo pipefail
+          if [ -f backend/run_migrations.py ]; then
+            python backend/run_migrations.py
+          else
+            python -m alembic -c backend/migrations/alembic.ini upgrade head
+          fi
+
+      - name: Опционален бърз тест за импорт (не спира при грешка)
+        run: |
+          # Минимален импорт за откриване на проблеми при import-time
+          python - <<PY
+          import importlib, sys
+          try:
+              importlib.import_module("backend")
+              print("импорт УСПЕШЕН")
+          except Exception as e:
+              sys.stderr.write("Грешка при импорт на приложението: " + repr(e))
+              raise
+          PY
+
+      - name: Стартиране на тестове с coverage (по избор)
+        if: always()
+        run: |
+          # Стартираме pytest с coverage; ако има тестове ще подаваме coverage.xml
+          if [ -f pytest.ini ] || [ -d tests ]; then
+            python -m pip install pytest pytest-cov || true
+            pytest -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml
+          else
+            echo "Няма pytest конфигурация или tests/ директория; пропускане на тестовете"
+          fi
+
+      - name: Качване на артефакт coverage.xml
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml

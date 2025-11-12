@@ -390,18 +390,18 @@ HelpChain системата
 
             expected_content = f"""Subject: Нов доброволец в HelpChain
 To: contact@helpchain.live
-From: {app.config['MAIL_DEFAULT_SENDER']}
+From: {app.config["MAIL_DEFAULT_SENDER"]}
 
 Нов доброволец се е регистрирал:
 
-Име: {volunteer_data['name']}
-Имейл: {volunteer_data['email']}
-Телефон: {volunteer_data['phone']}
-Локация: {volunteer_data['location']}
+Име: {volunteer_data["name"]}
+Имейл: {volunteer_data["email"]}
+Телефон: {volunteer_data["phone"]}
+Локация: {volunteer_data["location"]}
 
 Моля, свържете се с доброволеца за допълнителна информация.
 
-{'='*50}
+{"=" * 50}
 """
 
             # Simulate writing to file (this would happen in the except block)
@@ -432,7 +432,7 @@ From: {app.config['MAIL_DEFAULT_SENDER']}
 
             expected_content = f"""Subject: HelpChain - Код за достъп
 To: {email}
-From: {app.config['MAIL_DEFAULT_SENDER']}
+From: {app.config["MAIL_DEFAULT_SENDER"]}
 
 Здравейте {volunteer_name},
 
@@ -447,7 +447,7 @@ From: {app.config['MAIL_DEFAULT_SENDER']}
 С уважение,
 HelpChain системата
 
-{'='*50}
+{"=" * 50}
 """
 
             # Simulate writing to file
@@ -550,10 +550,10 @@ HelpChain системата
 
             registration_body = f"""Нов доброволец се е регистрирал:
 
-Име: {volunteer_data['name']}
-Имейл: {volunteer_data['email']}
-Телефон: {volunteer_data['phone']}
-Локация: {volunteer_data['location']}
+Име: {volunteer_data["name"]}
+Имейл: {volunteer_data["email"]}
+Телефон: {volunteer_data["phone"]}
+Локация: {volunteer_data["location"]}
 
 Моля, свържете се с доброволеца за допълнителна информация."""
 

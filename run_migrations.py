@@ -8,6 +8,7 @@ overrides the sqlalchemy.url option in the Alembic config, and runs `upgrade hea
 Placing this at the repo root matches how the CI workflow invokes
 `python -u run_migrations.py`.
 """
+
 from __future__ import annotations
 
 import logging

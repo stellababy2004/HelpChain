@@ -209,8 +209,7 @@ class AIService:
             if gemini_provider and gemini_provider.enabled:
                 if genai is None:
                     logger.warning(
-                        "⚠️ Google Generative AI SDK not installed - "
-                        "Gemini provider disabled at runtime"
+                        "⚠️ Google Generative AI SDK not installed - Gemini provider disabled at runtime"
                     )
                 else:
                     genai.configure(api_key=gemini_provider.api_key)
@@ -248,44 +247,21 @@ class AIService:
                 if "здравей" in user_msg_lower or "здрасти" in user_msg_lower:
                     response_text = "Здравейте! Аз съм AI асистентът на HelpChain. Как мога да ви помогна днес?"
                 elif "helpchain" in user_msg_lower or "какво" in user_msg_lower:
-                    response_text = (
-                        "HelpChain е платформа за доброволчество в България. "
-                        "Свързваме хора нуждаещи се от помощ с проверени доброволци "
-                        "в София, Пловдив, Варна, Бургас и Стара Загора."
-                    )
+                    response_text = "HelpChain е платформа за доброволчество в България. Свързваме хора нуждаещи се от помощ с проверени доброволци в София, Пловдив, Варна, Бургас и Стара Загора."
                 elif "регистрация" in user_msg_lower or "регистрирам" in user_msg_lower:
-                    response_text = (
-                        "Регистрацията в HelpChain е безплатна! "
-                        "Можете да се регистрирате през нашето мобилно приложение "
-                        "или уеб сайта. За доброволци има процес на проверка и обучение."
-                    )
+                    response_text = "Регистрацията в HelpChain е безплатна! Можете да се регистрирате през нашето мобилно приложение или уеб сайта. За доброволци има процес на проверка и обучение."
                 elif (
                     "цена" in user_msg_lower
                     or "струва" in user_msg_lower
                     or "такса" in user_msg_lower
                 ):
-                    response_text = (
-                        "Цените зависят от вида на услугата. "
-                        "Свържете се с нашия екип за точна информация и консултация."
-                    )
+                    response_text = "Цените зависят от вида на услугата. Свържете се с нашия екип за точна информация и консултация."
                 elif "доброволец" in user_msg_lower or "стана" in user_msg_lower:
-                    response_text = (
-                        "За да станете доброволец в HelpChain, трябва да минете през "
-                        "процес на регистрация, проверка и кратко обучение. "
-                        "Ще се свържем с вас след регистрацията."
-                    )
+                    response_text = "За да станете доброволец в HelpChain, трябва да минете през процес на регистрация, проверка и кратко обучение. Ще се свържем с вас след регистрацията."
                 elif "услуги" in user_msg_lower or "помощ" in user_msg_lower:
-                    response_text = (
-                        "Предлагаме различни услуги: "
-                        "домашна грижа, придружаване, пазарски покупки, "
-                        "помощ в домакинството и градинарство."
-                    )
+                    response_text = "Предлагаме различни услуги: домашна грижа, придружаване, пазарски покупки, помощ в домакинството и градинарство."
                 else:
-                    response_text = (
-                        "Благодаря за въпроса! За повече информация или "
-                        "помощ с регистрацията, моля свържете се с нашия "
-                        "екип на contact@helpchain.live."
-                    )
+                    response_text = "Благодаря за въпроса! За повече информация или помощ с регистрацията, моля свържете се с нашия екип на contact@helpchain.live."
 
                 return {
                     "response": response_text,
@@ -343,8 +319,7 @@ class AIService:
             logger.error(traceback.format_exc())
             return {
                 "response": (
-                    "Извинявам се, възникна грешка при генерирането на отговора. "
-                    "Моля свържете се с нашия екип за помощ."
+                    "Извинявам се, възникна грешка при генерирането на отговора. Моля свържете се с нашия екип за помощ."
                 ),
                 "confidence": 0.0,
                 "provider": "error_fallback",
@@ -366,8 +341,7 @@ class AIService:
 
         if language != "bg":
             context_parts.append(
-                f"\nЗАБЕЛЕЖКА: Потребителят пише на {language}, но "
-                "Отговаряй ЗАДЪЛЖИТЕЛНО на български език."
+                f"\nЗАБЕЛЕЖКА: Потребителят пише на {language}, но Отговаряй ЗАДЪЛЖИТЕЛНО на български език."
             )
 
         context_parts.append(f"\nВЪПРОС НА ПОТРЕБИТЕЛЯ: {user_message}")
@@ -380,8 +354,7 @@ class AIService:
         try:
             if openai is None:
                 raise RuntimeError(
-                    "OpenAI SDK is not installed. Install with 'pip install openai' "
-                    "to enable this provider."
+                    "OpenAI SDK is not installed. Install with 'pip install openai' to enable this provider."
                 )
 
             # Use OpenAI >= 1.0 API (new client-based approach)
@@ -430,8 +403,7 @@ class AIService:
         try:
             if genai is None:
                 raise RuntimeError(
-                    "Google Generative AI SDK is not installed. Install the "
-                    "appropriate package to enable Gemini provider."
+                    "Google Generative AI SDK is not installed. Install the appropriate package to enable Gemini provider."
                 )
             model = genai.GenerativeModel(provider.model)
 

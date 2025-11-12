@@ -673,7 +673,7 @@ class AuditLog(db.Model):
         if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
             mod = sys.modules.get(__name__)
             print(
-                f"[MODEL DEF] AuditLog defined in module={__name__} file={getattr(mod,'__file__',None)} module_id={id(mod) if mod is not None else None}"
+                f"[MODEL DEF] AuditLog defined in module={__name__} file={getattr(mod, '__file__', None)} module_id={id(mod) if mod is not None else None}"
             )
     except Exception:
         pass

@@ -15,6 +15,7 @@ except ImportError:
 # This guards against the same file being loaded under both the package
 # name (`backend.extensions`) and the top-level name (`extensions`) which
 # would otherwise create two distinct SQLAlchemy() instances.
+import os
 import sys
 
 _existing = sys.modules.get("extensions")
@@ -70,7 +71,20 @@ try:
                             not in getattr(db, "metadata", {}).tables
                         ):
                             tbl.tometadata(db.metadata)
-                    except Exception:
+                    except Exception as _e:
+                        # Provide debug output when requested to help CI diagnostics
+                        if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                            try:
+                                import traceback as _tb
+
+                                print(
+                                    "[EXT DEBUG] failed to move table into canonical metadata:",
+                                    getattr(tbl, "name", None),
+                                )
+                                print(_tb.format_exc())
+                            except Exception:
+                                pass
+                        # otherwise ignore silently
                         pass
         except Exception:
             pass

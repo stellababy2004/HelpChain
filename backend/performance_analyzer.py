@@ -44,7 +44,7 @@ class PerformanceAnalysis:
                     "component": "API endpoints",
                     "current": f"{self.current_results['api_average_response']:.3f}s",
                     "target": f"{self.target_performance['api_response_target']:.3f}s",
-                    "slowdown_factor": f"{api_slowdown/100:.1f}x slower",
+                    "slowdown_factor": f"{api_slowdown / 100:.1f}x slower",
                     "likely_causes": [
                         "Database queries не са оптимизирани",
                         "Няма database indexes",
@@ -274,17 +274,17 @@ class PerformanceAnalysis:
 
         report = f"""
 # 📊 HELPCHAIN ANALYTICS PERFORMANCE ANALYSIS
-## Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+## Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
 ---
 
 ## 🔍 CURRENT PERFORMANCE STATUS
 
 ### 📈 Key Metrics:
-- **API Response Time**: {self.current_results['api_average_response']:.3f}s (Target: {self.target_performance['api_response_target']:.3f}s)
-- **Admin Response Time**: {self.current_results['admin_average_response']:.3f}s (Target: {self.target_performance['admin_response_target']:.3f}s)
-- **Cache Hit Rate**: {self.current_results['cache_hit_rate']}% (Target: {self.target_performance['cache_hit_rate_target']}%+)
-- **Throughput**: {self.current_results['throughput']} req/s (Target: {self.target_performance['throughput_target']}+ req/s)
+- **API Response Time**: {self.current_results["api_average_response"]:.3f}s (Target: {self.target_performance["api_response_target"]:.3f}s)
+- **Admin Response Time**: {self.current_results["admin_average_response"]:.3f}s (Target: {self.target_performance["admin_response_target"]:.3f}s)
+- **Cache Hit Rate**: {self.current_results["cache_hit_rate"]}% (Target: {self.target_performance["cache_hit_rate_target"]}%+)
+- **Throughput**: {self.current_results["throughput"]} req/s (Target: {self.target_performance["throughput_target"]}+ req/s)
 
 ### 🚨 Performance Rating: NEEDS IMMEDIATE ATTENTION
 
@@ -295,11 +295,11 @@ class PerformanceAnalysis:
 """
         for i, bottleneck in enumerate(__bottlenecks, 1):
             report += f"""
-### {i}. {bottleneck['component']} - {bottleneck['severity'].upper()} PRIORITY
-- **Current**: {bottleneck['current']}
-- **Target**: {bottleneck['target']}
-- **Main Issues**: {', '.join(bottleneck['likely_causes'][:2])}
-- **Solutions**: {', '.join(bottleneck['solutions'][:2])}
+### {i}. {bottleneck["component"]} - {bottleneck["severity"].upper()} PRIORITY
+- **Current**: {bottleneck["current"]}
+- **Target**: {bottleneck["target"]}
+- **Main Issues**: {", ".join(bottleneck["likely_causes"][:2])}
+- **Solutions**: {", ".join(bottleneck["solutions"][:2])}
 
 """
 
@@ -313,10 +313,10 @@ class PerformanceAnalysis:
 
         for action in action_plan["immediate_actions"]:
             report += f"""
-#### {action['task']} - {action['priority'].upper()}
-- **Impact**: {action['estimated_impact']}
-- **Effort**: {action['effort']}
-- **Key Steps**: {', '.join(action['steps'][:2])}
+#### {action["task"]} - {action["priority"].upper()}
+- **Impact**: {action["estimated_impact"]}
+- **Effort**: {action["effort"]}
+- **Key Steps**: {", ".join(action["steps"][:2])}
 
 """
 
@@ -326,9 +326,9 @@ class PerformanceAnalysis:
 
         for action in action_plan["short_term_actions"]:
             report += f"""
-#### {action['task']}
-- **Impact**: {action['estimated_impact']}
-- **Effort**: {action['effort']}
+#### {action["task"]}
+- **Impact**: {action["estimated_impact"]}
+- **Effort**: {action["effort"]}
 
 """
 

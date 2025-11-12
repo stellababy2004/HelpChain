@@ -1,12 +1,6 @@
-from appy import app
+"""
+This helper was moved to `backend/dev_scripts/debug_client.py`.
+Keep this file as a pointer for a short time before deleting it in the PR.
+"""
 
-app.config["TESTING"] = True
-client = app.test_client()
-with client.session_transaction() as sess:
-    sess["_user_id"] = "1"
-    sess["_fresh"] = True
-
-resp = client.get("/admin/api/requests?status=pending")
-print("status", resp.status_code)
-print("location", resp.headers.get("Location"))
-print("data", resp.get_data()[:500])
+print("This helper was moved to backend/dev_scripts/debug_client.py")
