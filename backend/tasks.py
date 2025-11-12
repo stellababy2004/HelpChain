@@ -517,11 +517,15 @@ def send_notification(self, email, subject, message):
 def send_email_task(
     self,
     subject: str,
-    recipients: list,
-    body: str,
+    recipients: list = None,
+    body: str = None,
     sender: str = None,
     html: str = None,
     message_id: str = None,
+    # Backwards-compatible aliases/kwargs used across the codebase
+    recipient: str = None,
+    template: str = None,
+    context: dict | None = None,
 ):
     """
     Надеждно изпращане с автоматичен retry.
@@ -531,12 +535,26 @@ def send_email_task(
     - max_retries: ограничение
     - rate_limit="30/m": лимит от 30 имейла в минута (за Zoho compliance)
     """
+    # Normalize recipients: accept either `recipients` (list) or legacy
+    # single `recipient` string used in some call sites.
+    if recipients is None and recipient:
+        recipients = [recipient]
+    recipients = recipients or []
+
+    # If caller supplied a template + context, allow simple extraction of
+    # a body string from context['body'] for compatibility with older
+    # call sites that pass template/context instead of body/html.
+    if not body and context and isinstance(context, dict):
+        body = context.get("body") or body
+
     payload = {
         "subject": subject,
         "recipients": recipients,
         "body": body,
         "sender": sender,
         "html": html,
+        "template": template,
+        "context": context,
         "message_id": message_id or f"mail-{int(time.time() * 1000)}",
     }
 
