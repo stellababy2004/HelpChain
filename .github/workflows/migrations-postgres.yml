@@ -77,7 +77,8 @@ jobs:
           # Стартираме pytest с coverage; ако има тестове ще подаваме coverage.xml
           if [ -f pytest.ini ] || [ -d tests ]; then
             python -m pip install pytest pytest-cov || true
-            pytest -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml
+            # Write coverage XML to repository root from backend working dir
+            pytest -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:../coverage.xml
           else
             echo "Няма pytest конфигурация или tests/ директория; пропускане на тестовете"
           fi
@@ -87,4 +88,5 @@ jobs:
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
         with:
           name: coverage-xml
+          # pytest now writes coverage XML to the repository root (../coverage.xml from backend)
           path: coverage.xml
