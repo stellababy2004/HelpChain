@@ -2,6 +2,7 @@
 """
 Test API endpoints
 """
+
 import json
 
 import requests

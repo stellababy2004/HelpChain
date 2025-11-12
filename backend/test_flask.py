@@ -2,6 +2,7 @@
 """
 Simple Flask test to check basic functionality
 """
+
 from flask import Flask, jsonify
 
 app = Flask(__name__)

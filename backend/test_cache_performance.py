@@ -39,13 +39,13 @@ class CachePerformanceTester:
                     cache_info = data.get("metadata", {}).get("cache_stats", {})
 
                     print(
-                        f"  Run {i+1}: {response_time:.3f}s - Cache hits: {cache_info.get('hits', 0)}"
+                        f"  Run {i + 1}: {response_time:.3f}s - Cache hits: {cache_info.get('hits', 0)}"
                     )
                 else:
-                    print(f"  Run {i+1}: ERROR - Status {response.status_code}")
+                    print(f"  Run {i + 1}: ERROR - Status {response.status_code}")
 
             except Exception as e:
-                print(f"  Run {i+1}: ERROR - {e}")
+                print(f"  Run {i + 1}: ERROR - {e}")
 
             time.sleep(0.1)  # Малка пауза
 
@@ -69,13 +69,13 @@ class CachePerformanceTester:
                     cache_info = data.get("metadata", {}).get("cache_stats", {})
 
                     print(
-                        f"  Run {i+1}: {response_time:.3f}s - Cache hits: {cache_info.get('hits', 0)}"
+                        f"  Run {i + 1}: {response_time:.3f}s - Cache hits: {cache_info.get('hits', 0)}"
                     )
                 else:
-                    print(f"  Run {i+1}: ERROR - Status {response.status_code}")
+                    print(f"  Run {i + 1}: ERROR - Status {response.status_code}")
 
             except Exception as e:
-                print(f"  Run {i+1}: ERROR - {e}")
+                print(f"  Run {i + 1}: ERROR - {e}")
 
             time.sleep(0.1)
 

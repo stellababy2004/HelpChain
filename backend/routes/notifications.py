@@ -3,16 +3,23 @@ HelpChain Notification Routes
 Handles notification preferences, push subscriptions, and sending notifications
 """
 
+# ruff: noqa
+
 # Debug: Module loaded
 print("NOTIFICATIONS MODULE LOADED")
 
-# from analytics_service import analytics_service  # Temporarily disabled for testing
+# Standard library
 from datetime import UTC, datetime
 
+# Third-party
 from flask import Blueprint, current_app, jsonify, render_template, request
 from flask_login import current_user
 
+# Local
 from backend.extensions import db
+
+# Temporarily disabled: analytics integration
+# from analytics_service import analytics_service  # Temporarily disabled for testing
 
 
 # Get db instance from current app context for proper test compatibility
@@ -459,8 +466,7 @@ def _send_new_request_email(recipient, context):
                 "recipient_name": recipient.name,
                 "request": context.get("request", {}),
                 "action_url": (
-                    f"{current_app.config['FRONTEND_URL']}/request/"
-                    f"{context.get('request', {}).get('id')}"
+                    f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"
                 ),
             },
         )
@@ -482,8 +488,7 @@ def _send_urgent_request_email(recipient, context):
                 "recipient_name": recipient.name,
                 "request": context.get("request", {}),
                 "action_url": (
-                    f"{current_app.config['FRONTEND_URL']}/request/"
-                    f"{context.get('request', {}).get('id')}"
+                    f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"
                 ),
                 "call_url": f"tel:{context.get('request', {}).get('emergency_phone', '')}",
             },
@@ -520,11 +525,7 @@ def _send_new_request_sms(recipient, context):
         from sms_service import send_notification_sms
 
         request = context.get("request", {})
-        message = (
-            f"HelpChain: Нова заявка - {request.get('category', '')} "
-            f"ул.{request.get('address', '')}. "
-            f"{request.get('distance', '')}km от вас."
-        )
+        message = f"HelpChain: Нова заявка - {request.get('category', '')} ул.{request.get('address', '')}. {request.get('distance', '')}km от вас."
 
         send_notification_sms(recipient.phone, message)
     except Exception as e:
@@ -537,11 +538,7 @@ def _send_urgent_request_sms(recipient, context):
         from sms_service import send_notification_sms
 
         request = context.get("request", {})
-        message = (
-            f"СПЕШНО HelpChain: {request.get('category', '')} "
-            f"ул.{request.get('address', '')}. "
-            f"Тел:{request.get('emergency_phone', '')}"
-        )
+        message = f"СПЕШНО HelpChain: {request.get('category', '')} ул.{request.get('address', '')}. Тел:{request.get('emergency_phone', '')}"
 
         send_notification_sms(recipient.phone, message)
     except Exception as e:
@@ -570,8 +567,7 @@ def _send_push_notification(recipient, notification_type, context):
                 {
                     "title": "Нова заявка за помощ",
                     "body": (
-                        f"{context.get('request', {}).get('category', '')} - "
-                        f"{context.get('request', {}).get('distance', '')}km от вас"
+                        f"{context.get('request', {}).get('category', '')} - {context.get('request', {}).get('distance', '')}km от вас"
                     ),
                 }
             )
@@ -580,8 +576,7 @@ def _send_push_notification(recipient, notification_type, context):
                 {
                     "title": "СПЕШНА заявка!",
                     "body": (
-                        f"{context.get('request', {}).get('category', '')} - "
-                        "Нужда от незабавна помощ!"
+                        f"{context.get('request', {}).get('category', '')} - Нужда от незабавна помощ!"
                     ),
                     "urgent": True,
                 }

@@ -418,6 +418,21 @@ try:
 except ImportError:  # pragma: no cover - deployment fallback
     from backend.analytics_service import get_db  # type: ignore[import-not-found]
 from backend.extensions import babel, cache, db, mail as mail_ext
+
+# Ensure short module alias `extensions` points to the canonical package module
+try:
+    import sys as _sys_alias
+
+    if _sys_alias.modules.get("backend.extensions") is not None:
+        # Prefer the package-qualified module object as canonical and
+        # alias the short name to it so imports like `import extensions`
+        # resolve to the same module object. This prevents duplicate
+        # SQLAlchemy instances when the same file is loaded under two
+        # different names.
+        _sys_alias.modules["extensions"] = _sys_alias.modules.get("backend.extensions")
+except Exception:
+    # Defensive: don't fail app import due to aliasing attempt
+    pass
 from backend.models import (
     AdminUser,
     ChatMessage,
@@ -1003,7 +1018,7 @@ def initialize_default_admin():
                                     try:
                                         if getattr(v, "__name__", None) == "AuditLog":
                                             print(
-                                                f"[DEEP DIAG] {rname} class-reg entry {k} -> {v} id={id(v)} module={getattr(v,'__module__',None)}"
+                                                f"[DEEP DIAG] {rname} class-reg entry {k} -> {v} id={id(v)} module={getattr(v, '__module__', None)}"
                                             )
                                     except Exception:
                                         pass
@@ -1017,7 +1032,7 @@ def initialize_default_admin():
                                     try:
                                         cls = getattr(m, "class_", None)
                                         print(
-                                            f"[DEEP DIAG] mapper -> {m} class={cls} id={id(cls) if cls is not None else None} module={getattr(cls,'__module__',None)}"
+                                            f"[DEEP DIAG] mapper -> {m} class={cls} id={id(cls) if cls is not None else None} module={getattr(cls, '__module__', None)}"
                                         )
                                     except Exception:
                                         pass
@@ -1603,7 +1618,7 @@ else:
     socketio = None
     realtime_notifications = None
     app.logger.info("WebSocket integration disabled via realtime settings")
-    app.config["SOCKE" "TIO_TRANSPORTS"] = ["polling"]
+    app.config["SOCKETIO_TRANSPORTS"] = ["polling"]
     app.config["SOCKETIO_ALLOW_UPGRADES"] = False
 
 # TEMPORARILY DISABLE Flask-Session to test standard Flask sessions
@@ -4037,8 +4052,7 @@ def admin_login():
                 )  # For permission system compatibility
                 session.permanent = True  # Make session persistent
                 logger.info(
-                    f"Session set: admin_logged_in={session.get('admin_logged_in')}, "
-                    f"admin_user_id={session.get('admin_user_id')}"
+                    f"Session set: admin_logged_in={session.get('admin_logged_in')}, admin_user_id={session.get('admin_user_id')}"
                 )
                 return redirect(url_for("admin_dashboard"))
             else:
@@ -5131,8 +5145,7 @@ def admin_volunteers():
             pagination = SimplePagination(page, per_page, total_volunteers, volunteers)
 
         app.logger.info(
-            f"Admin volunteers query successful: {len(volunteers)} volunteers "
-            f"returned, page {page}/{total_pages}"
+            f"Admin volunteers query successful: {len(volunteers)} volunteers returned, page {page}/{total_pages}"
         )
 
     except Exception as e:
@@ -5529,8 +5542,7 @@ def volunteer_login():
             app.logger.info(f"Volunteer found: {volunteer is not None}")
             if volunteer:
                 app.logger.info(
-                    f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, "
-                    f"Email={volunteer.email}"
+                    f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, Email={volunteer.email}"
                 )
 
                 otp_bypassed = (
@@ -6670,8 +6682,7 @@ def chatbot_message():
         return (
             jsonify(
                 {
-                    "response": "Извинявам се, възникна грешка. Моля, опитайте пак или "
-                    "се свържете с екипа ни.",
+                    "response": "Извинявам се, възникна грешка. Моля, опитайте пак или се свържете с екипа ни.",
                     "error": True,
                 }
             ),
@@ -7340,8 +7351,7 @@ def export_volunteers_csv(volunteers):
         output,
         mimetype="text/csv; charset=utf-8",
         headers={
-            "Content-Disposition": f"attachment;filename=volunteers_"
-            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            "Content-Disposition": f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
             "Content-Type": "text/csv; charset=utf-8",
         },
     )
@@ -7374,8 +7384,7 @@ def export_volunteers_json(volunteers):
         json.dumps(export_data, ensure_ascii=False, indent=2),
         mimetype="application/json; charset=utf-8",
         headers={
-            "Content-Disposition": f"attachment;filename=volunteers_"
-            f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+            "Content-Disposition": f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
             "Content-Type": "application/json; charset=utf-8",
         },
     )
@@ -7424,10 +7433,7 @@ def export_volunteers_pdf(volunteers):
     elements.append(Spacer(1, 12))
 
     # Export info
-    info_text = (
-        f"Общо доброволци: {len(volunteers)} | Експортирано на: "
-        f"{datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
-    )
+    info_text = f"Общо доброволци: {len(volunteers)} | Експортирано на: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
     info_paragraph = Paragraph(info_text, styles["Normal"])
     elements.append(info_paragraph)
     elements.append(Spacer(1, 20))
@@ -7628,10 +7634,7 @@ def category_help(category):
         elements.append(Spacer(1, 12))
 
         # Export info
-        info_text = (
-            f"Общо доброволци: {len(volunteers)} | Експортирано на: "
-            f"{datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
-        )
+        info_text = f"Общо доброволци: {len(volunteers)} | Експортирано на: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
         info_paragraph = Paragraph(info_text, styles["Normal"])
         elements.append(info_paragraph)
         elements.append(Spacer(1, 20))

@@ -2,6 +2,7 @@
 """
 Test script for email functionality in HelpChain
 """
+
 import os
 import sys
 

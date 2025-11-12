@@ -8,6 +8,7 @@ update_progress.py – Скрипт за автоматично обновява
 Използване:
     python update_progress.py <път_до_файла>
 """
+
 import re
 import sys
 

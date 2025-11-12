@@ -80,10 +80,10 @@ ID: {req.id}
 
         try:
             with open("sent_emails.txt", "a", encoding="utf-8") as f:
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
                 f.write(f"Email sent at: {datetime.now()}\n")
                 f.write(email_content)
-                f.write(f"{'='*50}\n")
+                f.write(f"{'=' * 50}\n")
             print("✅ Email saved to file successfully")
             print("📂 Check 'sent_emails.txt' for the email content")
         except Exception as e:

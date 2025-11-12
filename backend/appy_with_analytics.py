@@ -1595,7 +1595,7 @@ def admin_export():
         response = make_response(output.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"
         response.headers["Content-Disposition"] = (
-            f'attachment; filename=helpchain_requests_{datetime.now().strftime("%Y%m%d_%H%M")}.csv'
+            f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
         )
 
         return response
@@ -1633,7 +1633,7 @@ def admin_export():
         response = make_response(json.dumps(data, ensure_ascii=False, indent=2))
         response.headers["Content-Type"] = "application/json; charset=utf-8"
         response.headers["Content-Disposition"] = (
-            f'attachment; filename=helpchain_requests_{datetime.now().strftime("%Y%m%d_%H%M")}.json'
+            f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
         )
 
         return response

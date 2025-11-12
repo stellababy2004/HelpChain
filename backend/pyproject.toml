@@ -6,3 +6,6 @@ description = "HelpChain backend deployment config"
 [tool.poetry.dependencies]
 python = "^3.12"
 # Добави тук и другите си зависимости, ако ползваш poetry
+
+[tool.ruff]
+exclude = ["hc-merge-pr35", ".venv", "build", "dist"]

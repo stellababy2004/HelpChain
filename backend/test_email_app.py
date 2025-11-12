@@ -134,10 +134,10 @@ ID: {req.id}
 
     try:
         with open("sent_emails.txt", "a", encoding="utf-8") as f:
-            f.write(f"\n{'='*50}\n")
+            f.write(f"\n{'=' * 50}\n")
             f.write(f"Email sent at: {datetime.datetime.now()}\n")
             f.write(email_content)
-            f.write(f"{'='*50}\n")
+            f.write(f"{'=' * 50}\n")
         print(f"✅ Email saved to file for request ID {req.id}")
     except Exception as e:
         print(f"❌ Failed to save email to file: {e}")

@@ -361,14 +361,14 @@ ID: {req.id}
                 "a",
                 encoding="utf-8",
             ) as f:
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
                 f.write(f"Email sent at: {datetime.datetime.now()}\n")
                 f.write(f"Subject: {subject}\n")
                 f.write("To: contact@helpchain.live\n")
                 f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
                 f.write(f"Date: {datetime.datetime.now()}\n\n")
                 f.write(content)
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
             print(f"✅ Email saved to file for request ID {req.id}")
         except Exception as e:
             print(f"❌ Failed to save email to file: {e}")
@@ -461,14 +461,14 @@ ID: {volunteer.id}
                 "a",
                 encoding="utf-8",
             ) as f:
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
                 f.write(f"Email sent at: {datetime.datetime.now()}\n")
                 f.write(f"Subject: {subject}\n")
                 f.write("To: contact@helpchain.live\n")
                 f.write(f"From: {app.config['MAIL_DEFAULT_SENDER']}\n")
                 f.write(f"Date: {datetime.datetime.now()}\n\n")
                 f.write(content)
-                f.write(f"\n{'='*50}\n")
+                f.write(f"\n{'=' * 50}\n")
             print(f"✅ Email saved to file for volunteer ID {volunteer.id}")
         except Exception as e:
             print(f"❌ Failed to save email to file: {e}")
@@ -786,7 +786,7 @@ ID: {volunteer.id}
         join_room(room)
         emit(
             "status",
-            {"msg": f'{data["username"]} се присъедини към {room}'},
+            {"msg": f"{data['username']} се присъедини към {room}"},
             room=room,
         )
         # analytics_service.track_event(
@@ -797,7 +797,7 @@ ID: {volunteer.id}
     def on_leave(data):
         room = data["room"]
         leave_room(room)
-        emit("status", {"msg": f'{data["username"]} напусна {room}'}, room=room)
+        emit("status", {"msg": f"{data['username']} напусна {room}"}, room=room)
 
     # @socketio.on("message")
     # def handle_message(data):

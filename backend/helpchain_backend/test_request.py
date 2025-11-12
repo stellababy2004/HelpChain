@@ -2,6 +2,7 @@
 """
 Test script to simulate submitting a request and check email notification
 """
+
 import os
 import sys
 

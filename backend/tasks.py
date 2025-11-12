@@ -480,8 +480,7 @@ def cleanup_old_data(self):
         db.session.commit()
 
         logger.info(
-            f"Data cleanup completed. Deleted {deleted_events} events and "
-            f"{deleted_messages} messages"
+            f"Data cleanup completed. Deleted {deleted_events} events and {deleted_messages} messages"
         )
 
     except Exception as e:
@@ -538,7 +537,7 @@ def send_email_task(
         "body": body,
         "sender": sender,
         "html": html,
-        "message_id": message_id or f"mail-{int(time.time()*1000)}",
+        "message_id": message_id or f"mail-{int(time.time() * 1000)}",
     }
 
     try:
@@ -1040,8 +1039,7 @@ def generate_performance_report(self, volunteer_id=None, period="weekly"):
                 self.send_notification.delay(
                     admin.email,
                     f"Общ отчет за представянето - {period}",
-                    f"Отчетът за всички доброволци е готов. "
-                    f"Общо оценки: {report['total_performances']}",
+                    f"Отчетът за всички доброволци е готов. Общо оценки: {report['total_performances']}",
                 )
 
         logger.info(f"Performance report generated for period: {period}")

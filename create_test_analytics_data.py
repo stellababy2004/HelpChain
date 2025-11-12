@@ -48,9 +48,9 @@ def create_test_data():
         users = []
         for i in range(50):
             user = User(
-                username=f"user{i+1}",
-                email=f"user{i+1}@test.com",
-                password_hash=generate_password_hash(f"password{i+1}"),
+                username=f"user{i + 1}",
+                email=f"user{i + 1}@test.com",
+                password_hash=generate_password_hash(f"password{i + 1}"),
                 role=random.choice(["user", "volunteer"]),
             )
             users.append(user)
@@ -70,8 +70,8 @@ def create_test_data():
 
         for i in range(25):
             volunteer = Volunteer(
-                name=f"Volunteer {i+1}",
-                email=f"volunteer{i+1}@test.com",
+                name=f"Volunteer {i + 1}",
+                email=f"volunteer{i + 1}@test.com",
                 phone=f"0888987{i:03d}",
                 location=random.choice(["София", "Пловдив", "Варна", "Бургас", "Русе"]),
                 skills=", ".join(random.sample(skills_list, random.randint(1, 3))),
@@ -88,13 +88,13 @@ def create_test_data():
             request_date = datetime.now() - timedelta(days=random.randint(0, 30))
             hr = HelpRequest(
                 user_id=random.choice(users).id if random.random() > 0.3 else None,
-                title=f"Заявка за помощ {i+1}",
-                description=f"Описание на заявка {i+1}. Нуждая се от спешна помощ.",
+                title=f"Заявка за помощ {i + 1}",
+                description=f"Описание на заявка {i + 1}. Нуждая се от спешна помощ.",
                 status=random.choice(statuses),
-                name=f"Име {i+1}",
-                email=f"request{i+1}@test.com",
+                name=f"Име {i + 1}",
+                email=f"request{i + 1}@test.com",
                 phone=f"0888123{i:03d}",
-                message=f"Подробно съобщение за помощ {i+1}",
+                message=f"Подробно съобщение за помощ {i + 1}",
                 created_at=request_date,
                 updated_at=request_date + timedelta(hours=random.randint(1, 72)),
             )

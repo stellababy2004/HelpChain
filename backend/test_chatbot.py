@@ -2,6 +2,7 @@
 """
 Тест на чатбот функционалността (с mocked HTTP повиквания)
 """
+
 import os
 
 import pytest

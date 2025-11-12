@@ -34,6 +34,15 @@ def pytest_configure(config):
     # (non-fatal) so test collection still proceeds when something goes
     # wrong.
     try:
+        import logging
+
+        # Ensure pytest capture sees warnings by default in CI/test runs.
+        # This increases the chance caplog/capture will observe WARNING-level
+        # events that some environments might otherwise drop.
+        try:
+            logging.getLogger().setLevel(logging.WARNING)
+        except Exception:
+            pass
         with _appy.app_context():
             from backend.extensions import db as _db
 
@@ -268,9 +277,36 @@ def prepare_database():
                                             print(
                                                 f"[TEST DEBUG] moved table {_tbl.name} from module={getattr(_mod,'__name__',None)} into canonical metadata"
                                             )
-                                except Exception:
+                                except Exception as _e:
+                                    # Surface debugging information when requested
+                                    if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                                        try:
+                                            import traceback as _tb
+
+                                            print(
+                                                "[TEST DEBUG] failed to tometadata for table",
+                                                getattr(_tbl, "name", None),
+                                                "module=",
+                                                getattr(_mod, "__name__", None),
+                                            )
+                                            print(_tb.format_exc())
+                                        except Exception:
+                                            pass
+                                    # otherwise continue silently
                                     pass
                         except Exception:
+                            # If the module-level inspection fails, surface diagnostics
+                            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
+                                try:
+                                    import traceback as _tb
+
+                                    print(
+                                        "[TEST DEBUG] scanning module for db.metadata failed for module=",
+                                        getattr(_mod, "__name__", None),
+                                    )
+                                    print(_tb.format_exc())
+                                except Exception:
+                                    pass
                             pass
             except Exception:
                 pass

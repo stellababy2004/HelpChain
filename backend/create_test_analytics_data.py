@@ -112,7 +112,7 @@ def create_test_database():
         for i in range(50):
             volunteer = Volunteer(
                 name=f"[TEST] {fake.first_name()} {fake.last_name()}",
-                email=f"test.volunteer{i+1}@helpchain-test.bg",
+                email=f"test.volunteer{i + 1}@helpchain-test.bg",
                 phone=fake.phone_number()[:15],
                 location=random.choice(bulgarian_cities),
                 skills=", ".join(random.sample(skills_list, random.randint(2, 5))),
@@ -201,7 +201,7 @@ def create_test_database():
 
             help_request = HelpRequest(
                 name=f"[TEST] {fake.first_name()} {fake.last_name()}",
-                email=f"test.requester{i+1}@helpchain-test.bg",
+                email=f"test.requester{i + 1}@helpchain-test.bg",
                 phone=fake.phone_number()[:15],
                 title=title,
                 description=f"[TEST] {fake.text(max_nb_chars=200)}",

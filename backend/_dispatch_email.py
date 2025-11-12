@@ -111,7 +111,7 @@ def _dispatch_email(
     try:
         with open("sent_emails.txt", "a", encoding="utf-8") as f:
             f.write(
-                f"Subject: {subject}\nTo: {recipients}\nFrom: {sender or 'noreply@helpchain.bg'}\n\n{body}\n{'='*50}\n"
+                f"Subject: {subject}\nTo: {recipients}\nFrom: {sender or 'noreply@helpchain.bg'}\n\n{body}\n{'=' * 50}\n"
             )
         logger.info("Email saved to file as fallback: %s", subject)
         return True
