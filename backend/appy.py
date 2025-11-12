@@ -1792,10 +1792,12 @@ if database_url and use_postgres:
         "max_overflow": 20,  # Additional connections beyond pool_size
         "pool_recycle": 3600,  # Recycle connections after 1 hour
         "echo": False,  # Disable SQL query logging in production
-        # psycopg2 doesn't accept a `server_settings` DSN option. Provide
-        # a driver-compatible parameter. `application_name` can be passed
-        # directly and is supported by libpq/psycopg2.
-        "connect_args": {"application_name": "helpchain"},
+        # IMPORTANT: Avoid passing driver-specific connect_args here. Some
+        # SQLAlchemy/DBAPI call paths may forward these kwargs to internal
+        # Connection constructors resulting in errors like:
+        #   'application_name' is an invalid keyword argument for Connection()
+        # To set an application name, prefer adding it to the DATABASE_URL
+        # as a query parameter (e.g. postgresql+psycopg2://user:pass@host/db?application_name=helpchain)
     }
     logger.info("Configured PostgreSQL connection pooling")
 else:
