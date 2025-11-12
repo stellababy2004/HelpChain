@@ -85,14 +85,14 @@ jobs:
 
       - name: Стартиране на тестове с coverage (по избор)
         if: always()
-        working-directory: backend
         run: |
           # Стартираме pytest с coverage; ако има тестове ще подаваме coverage.xml
-          if [ -f pytest.ini ] || [ -d tests ]; then
+          # Use the backend pytest config explicitly to avoid loading a top-level pytest.ini
+          if [ -f backend/pytest.ini ] || [ -d backend/tests ]; then
             python -m pip install pytest pytest-cov || true
-            # Write coverage XML to repository root from backend working dir
-            # Use explicit pytest config in backend to avoid picking up other [pytest] sections
-            pytest -c pytest.ini -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:../coverage.xml
+            # Run pytest from repository root but point explicitly to backend/pytest.ini
+            # Write coverage XML to repository root
+            pytest -c backend/pytest.ini -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:coverage.xml
           else
             echo "Няма pytest конфигурация или tests/ директория; пропускане на тестовете"
           fi
