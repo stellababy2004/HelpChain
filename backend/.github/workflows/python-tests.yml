@@ -61,6 +61,9 @@ jobs:
           # Print current directory for troubleshooting
           echo "Working dir: $(pwd)"
           ls -la || true
+          # Ensure no leftover sqlite file remains from previous runs on the runner
+          echo "Removing any existing sqlite DB file (test_local.sqlite) to ensure clean migrations"
+          rm -f test_local.sqlite || true
           python -u run_migrations.py
       - name: CI diagnostics
         run: |
