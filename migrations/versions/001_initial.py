@@ -23,24 +23,40 @@ def upgrade():
     # Postgres-only DDL (which would raise sqlite3.OperationalError).
     bind = op.get_bind()
     if bind.dialect.name == "postgresql":
+        # Use a DO block with IF NOT EXISTS checks so repeated runs (or
+        # leftover types in a shared/test DB) do not cause DuplicateObject
+        # errors. This mirrors safeguards added in later migrations and the
+        # CI pre-clean step.
         op.execute(
-            "CREATE TYPE roleenum AS ENUM ('user', 'volunteer', 'moderator', 'admin', 'superadmin')"
-        )
-        op.execute(
-            "CREATE TYPE permissionenum AS ENUM ('view_profile', 'edit_profile', 'view_volunteers', 'manage_volunteers', 'view_requests', 'manage_requests', 'use_video_chat', 'moderate_content', 'view_analytics', 'manage_categories', 'admin_access', 'manage_users', 'manage_roles', 'system_settings', 'view_audit_logs', 'super_admin')"
-        )
-        op.execute("CREATE TYPE priorityenum AS ENUM ('low', 'normal', 'urgent')")
-        op.execute(
-            "CREATE TYPE notificationtypeenum AS ENUM ('system', 'request', 'task', 'message', 'achievement', 'reminder', 'alert')"
-        )
-        op.execute(
-            "CREATE TYPE notificationchannelenum AS ENUM ('email', 'app', 'push')"
-        )
-        op.execute(
-            "CREATE TYPE notificationstatusenum AS ENUM ('pending', 'sent', 'delivered', 'read', 'failed', 'cancelled')"
-        )
-        op.execute(
-            "CREATE TYPE useractivitytypeenum AS ENUM ('page_view', 'page_exit', 'scroll', 'time_spent', 'button_click', 'form_submit', 'form_start', 'link_click', 'search_query', 'help_request_created', 'help_request_viewed', 'help_request_updated', 'task_viewed', 'task_accepted', 'task_completed', 'volunteer_profile_viewed', 'chat_message_sent', 'chat_room_joined', 'video_chat_started', 'login', 'logout', 'password_reset', 'achievement_unlocked', 'points_earned', 'level_up', 'error_occurred', 'page_not_found', 'form_validation_error', 'registration_completed', 'help_request_assigned', 'task_assigned')"
+            """
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'roleenum') THEN
+        CREATE TYPE roleenum AS ENUM ('user', 'volunteer', 'moderator', 'admin', 'superadmin');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'permissionenum') THEN
+        CREATE TYPE permissionenum AS ENUM ('view_profile', 'edit_profile', 'view_volunteers', 'manage_volunteers', 'view_requests', 'manage_requests', 'use_video_chat', 'moderate_content', 'view_analytics', 'manage_categories', 'admin_access', 'manage_users', 'manage_roles', 'system_settings', 'view_audit_logs', 'super_admin');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'priorityenum') THEN
+        CREATE TYPE priorityenum AS ENUM ('low', 'normal', 'urgent');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationtypeenum') THEN
+        CREATE TYPE notificationtypeenum AS ENUM ('system', 'request', 'task', 'message', 'achievement', 'reminder', 'alert');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationchannelenum') THEN
+        CREATE TYPE notificationchannelenum AS ENUM ('email', 'app', 'push');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'notificationstatusenum') THEN
+        CREATE TYPE notificationstatusenum AS ENUM ('pending', 'sent', 'delivered', 'read', 'failed', 'cancelled');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'useractivitytypeenum') THEN
+        CREATE TYPE useractivitytypeenum AS ENUM (
+            'page_view','page_exit','scroll','time_spent','button_click','form_submit','form_start','link_click','search_query','help_request_created','help_request_viewed','help_request_updated','task_viewed','task_accepted','task_completed','volunteer_profile_viewed','chat_message_sent','chat_room_joined','video_chat_started','login','logout','password_reset','achievement_unlocked','points_earned','level_up','error_occurred','page_not_found','form_validation_error','registration_completed','help_request_assigned','task_assigned'
+        );
+    END IF;
+END
+$$;
+""",
         )
     else:
         # SQLite/local dev: skip native enum creation
