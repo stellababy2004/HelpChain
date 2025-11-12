@@ -1,0 +1,306 @@
+﻿[
+  {
+    "Id": "806d254b32e9a6e8b83a968bcec5c61babba75655bac957191b0688e92ae3b2d",
+    "Created": "2025-10-24T13:44:52.148437818Z",
+    "Path": "docker-entrypoint.sh",
+    "Args": ["postgres"],
+    "State": {
+      "Status": "running",
+      "Running": true,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 713,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2025-11-12T18:51:16.805513766Z",
+      "FinishedAt": "2025-11-12T18:51:14.833974298Z",
+      "Health": {
+        "Status": "healthy",
+        "FailingStreak": 0,
+        "Log": [
+          {
+            "Start": "2025-11-12T19:12:36.902418558Z",
+            "End": "2025-11-12T19:12:36.966744768Z",
+            "ExitCode": 0,
+            "Output": "/var/run/postgresql:5432 - accepting connections\n"
+          },
+          {
+            "Start": "2025-11-12T19:12:46.967566632Z",
+            "End": "2025-11-12T19:12:47.037164129Z",
+            "ExitCode": 0,
+            "Output": "/var/run/postgresql:5432 - accepting connections\n"
+          },
+          {
+            "Start": "2025-11-12T19:12:57.03838443Z",
+            "End": "2025-11-12T19:12:57.088783059Z",
+            "ExitCode": 0,
+            "Output": "/var/run/postgresql:5432 - accepting connections\n"
+          },
+          {
+            "Start": "2025-11-12T19:13:08.703718995Z",
+            "End": "2025-11-12T19:13:08.746308303Z",
+            "ExitCode": 0,
+            "Output": "/var/run/postgresql:5432 - accepting connections\n"
+          },
+          {
+            "Start": "2025-11-12T19:13:18.747330836Z",
+            "End": "2025-11-12T19:13:18.824475189Z",
+            "ExitCode": 0,
+            "Output": "/var/run/postgresql:5432 - accepting connections\n"
+          }
+        ]
+      }
+    },
+    "Image": "sha256:2e50ad404aead120409575d21758230cc295aec52dfa05ece9b4d0429bc38636",
+    "ResolvConfPath": "/var/lib/docker/containers/806d254b32e9a6e8b83a968bcec5c61babba75655bac957191b0688e92ae3b2d/resolv.conf",
+    "HostnamePath": "/var/lib/docker/containers/806d254b32e9a6e8b83a968bcec5c61babba75655bac957191b0688e92ae3b2d/hostname",
+    "HostsPath": "/var/lib/docker/containers/806d254b32e9a6e8b83a968bcec5c61babba75655bac957191b0688e92ae3b2d/hosts",
+    "LogPath": "/var/lib/docker/containers/806d254b32e9a6e8b83a968bcec5c61babba75655bac957191b0688e92ae3b2d/806d254b32e9a6e8b83a968bcec5c61babba75655bac957191b0688e92ae3b2d-json.log",
+    "Name": "/backend-db-1",
+    "RestartCount": 0,
+    "Driver": "overlayfs",
+    "Platform": "linux",
+    "MountLabel": "",
+    "ProcessLabel": "",
+    "AppArmorProfile": "",
+    "ExecIDs": null,
+    "HostConfig": {
+      "Binds": ["backend_pgdata:/var/lib/postgresql/data:rw"],
+      "ContainerIDFile": "",
+      "LogConfig": {
+        "Type": "json-file",
+        "Config": {}
+      },
+      "NetworkMode": "backend_default",
+      "PortBindings": {
+        "5432/tcp": [
+          {
+            "HostIp": "",
+            "HostPort": "5432"
+          }
+        ]
+      },
+      "RestartPolicy": {
+        "Name": "always",
+        "MaximumRetryCount": 0
+      },
+      "AutoRemove": false,
+      "VolumeDriver": "",
+      "VolumesFrom": null,
+      "ConsoleSize": [0, 0],
+      "CapAdd": null,
+      "CapDrop": null,
+      "CgroupnsMode": "private",
+      "Dns": [],
+      "DnsOptions": [],
+      "DnsSearch": [],
+      "ExtraHosts": [],
+      "GroupAdd": null,
+      "IpcMode": "private",
+      "Cgroup": "",
+      "Links": null,
+      "OomScoreAdj": 0,
+      "PidMode": "",
+      "Privileged": false,
+      "PublishAllPorts": false,
+      "ReadonlyRootfs": false,
+      "SecurityOpt": null,
+      "UTSMode": "",
+      "UsernsMode": "",
+      "ShmSize": 67108864,
+      "Runtime": "runc",
+      "Isolation": "",
+      "CpuShares": 0,
+      "Memory": 0,
+      "NanoCpus": 0,
+      "CgroupParent": "",
+      "BlkioWeight": 0,
+      "BlkioWeightDevice": null,
+      "BlkioDeviceReadBps": null,
+      "BlkioDeviceWriteBps": null,
+      "BlkioDeviceReadIOps": null,
+      "BlkioDeviceWriteIOps": null,
+      "CpuPeriod": 0,
+      "CpuQuota": 0,
+      "CpuRealtimePeriod": 0,
+      "CpuRealtimeRuntime": 0,
+      "CpusetCpus": "",
+      "CpusetMems": "",
+      "Devices": null,
+      "DeviceCgroupRules": null,
+      "DeviceRequests": null,
+      "MemoryReservation": 0,
+      "MemorySwap": 0,
+      "MemorySwappiness": null,
+      "OomKillDisable": null,
+      "PidsLimit": null,
+      "Ulimits": null,
+      "CpuCount": 0,
+      "CpuPercent": 0,
+      "IOMaximumIOps": 0,
+      "IOMaximumBandwidth": 0,
+      "MaskedPaths": [
+        "/proc/asound",
+        "/proc/acpi",
+        "/proc/interrupts",
+        "/proc/kcore",
+        "/proc/keys",
+        "/proc/latency_stats",
+        "/proc/timer_list",
+        "/proc/timer_stats",
+        "/proc/sched_debug",
+        "/proc/scsi",
+        "/sys/firmware",
+        "/sys/devices/virtual/powercap"
+      ],
+      "ReadonlyPaths": [
+        "/proc/bus",
+        "/proc/fs",
+        "/proc/irq",
+        "/proc/sys",
+        "/proc/sysrq-trigger"
+      ]
+    },
+    "GraphDriver": {
+      "Data": null,
+      "Name": "overlayfs"
+    },
+    "Mounts": [
+      {
+        "Type": "volume",
+        "Name": "backend_pgdata",
+        "Source": "/var/lib/docker/volumes/backend_pgdata/_data",
+        "Destination": "/var/lib/postgresql/data",
+        "Driver": "local",
+        "Mode": "rw",
+        "RW": true,
+        "Propagation": ""
+      }
+    ],
+    "Config": {
+      "Hostname": "806d254b32e9",
+      "Domainname": "",
+      "User": "",
+      "AttachStdin": false,
+      "AttachStdout": true,
+      "AttachStderr": true,
+      "ExposedPorts": {
+        "5432/tcp": {}
+      },
+      "Tty": false,
+      "OpenStdin": false,
+      "StdinOnce": false,
+      "Env": [
+        "POSTGRES_PASSWORD=helpchain_password",
+        "POSTGRES_DB=helpchain",
+        "POSTGRES_USER=helpchain",
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+        "GOSU_VERSION=1.19",
+        "LANG=en_US.utf8",
+        "PG_MAJOR=15",
+        "PG_VERSION=15.14",
+        "PG_SHA256=06dd75d305cd3870ee62b3932e661c624543eaf9ae2ba37cdec0a4f8edd051d2",
+        "DOCKER_PG_LLVM_DEPS=llvm19-dev \t\tclang19",
+        "PGDATA=/var/lib/postgresql/data"
+      ],
+      "Cmd": ["postgres"],
+      "Healthcheck": {
+        "Test": ["CMD-SHELL", "pg_isready -U helpchain -d helpchain"],
+        "Interval": 10000000000,
+        "Timeout": 5000000000,
+        "Retries": 5
+      },
+      "Image": "postgres:15-alpine",
+      "Volumes": {
+        "/var/lib/postgresql/data": {}
+      },
+      "WorkingDir": "/",
+      "Entrypoint": ["docker-entrypoint.sh"],
+      "OnBuild": null,
+      "Labels": {
+        "com.docker.compose.config-hash": "3ab678b2e5ebfe2e4633efe62619fe0dcb9794def0daead28bbd9fde93755ba1",
+        "com.docker.compose.container-number": "1",
+        "com.docker.compose.depends_on": "",
+        "com.docker.compose.image": "sha256:2e50ad404aead120409575d21758230cc295aec52dfa05ece9b4d0429bc38636",
+        "com.docker.compose.oneoff": "False",
+        "com.docker.compose.project": "backend",
+        "com.docker.compose.project.config_files": "C:\\Users\\Stella Barbarella\\OneDrive\\Documents\\chatGPT\\Projet BG\\HelpChain\\backend\\docker-compose.prod.yml",
+        "com.docker.compose.project.working_dir": "C:\\Users\\Stella Barbarella\\OneDrive\\Documents\\chatGPT\\Projet BG\\HelpChain\\backend",
+        "com.docker.compose.service": "db",
+        "com.docker.compose.version": "2.40.2"
+      },
+      "StopSignal": "SIGINT",
+      "StopTimeout": 1
+    },
+    "NetworkSettings": {
+      "Bridge": "",
+      "SandboxID": "d491e7b2cd912adf3ce85dd7f96f6d1e19bd87d18998f5936db33caf93edfe02",
+      "SandboxKey": "/var/run/docker/netns/d491e7b2cd91",
+      "Ports": {
+        "5432/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "5432"
+          },
+          {
+            "HostIp": "::",
+            "HostPort": "5432"
+          }
+        ]
+      },
+      "HairpinMode": false,
+      "LinkLocalIPv6Address": "",
+      "LinkLocalIPv6PrefixLen": 0,
+      "SecondaryIPAddresses": null,
+      "SecondaryIPv6Addresses": null,
+      "EndpointID": "",
+      "Gateway": "",
+      "GlobalIPv6Address": "",
+      "GlobalIPv6PrefixLen": 0,
+      "IPAddress": "",
+      "IPPrefixLen": 0,
+      "IPv6Gateway": "",
+      "MacAddress": "",
+      "Networks": {
+        "backend_default": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": ["backend-db-1", "db"],
+          "MacAddress": "06:a8:a3:3d:61:0a",
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "2d38b534e0cb6eb97494727ee3261ce309f36747647f56e3674495262f4b3822",
+          "EndpointID": "3756b8a566e41981a2bef603aa79698162d4babd1eca439c0052bba4851467f0",
+          "Gateway": "172.19.0.1",
+          "IPAddress": "172.19.0.3",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": ["backend-db-1", "db", "806d254b32e9"]
+        }
+      }
+    },
+    "ImageManifestDescriptor": {
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:ec0117ed6ed54a2eb01fcdbfcc2ab73e55d988cbf7f21cffb4920d5d7e104c48",
+      "size": 3054,
+      "annotations": {
+        "com.docker.official-images.bashbrew.arch": "amd64",
+        "org.opencontainers.image.base.digest": "sha256:85f2b723e106c34644cd5851d7e81ee87da98ac54672b29947c052a45d31dc2f",
+        "org.opencontainers.image.base.name": "alpine:3.22",
+        "org.opencontainers.image.created": "2025-10-22T17:42:08Z",
+        "org.opencontainers.image.revision": "5ec89312491bdaa2c42377a65ec0af2ecb774480",
+        "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#5ec89312491bdaa2c42377a65ec0af2ecb774480:15/alpine3.22",
+        "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+        "org.opencontainers.image.version": "15.14-alpine3.22"
+      },
+      "platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      }
+    }
+  }
+]
