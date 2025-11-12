@@ -78,7 +78,8 @@ jobs:
           if [ -f pytest.ini ] || [ -d tests ]; then
             python -m pip install pytest pytest-cov || true
             # Write coverage XML to repository root from backend working dir
-            pytest -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:../coverage.xml
+            # Use explicit pytest config in backend to avoid picking up other [pytest] sections
+            pytest -c pytest.ini -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:../coverage.xml
           else
             echo "Няма pytest конфигурация или tests/ директория; пропускане на тестовете"
           fi
