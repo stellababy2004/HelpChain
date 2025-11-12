@@ -72,7 +72,13 @@ $$;
         sa.Column(
             "role",
             postgresql.ENUM(
-                "user", "volunteer", "moderator", "admin", "superadmin", name="roleenum"
+                "user",
+                "volunteer",
+                "moderator",
+                "admin",
+                "superadmin",
+                name="roleenum",
+                create_type=False,
             ),
             nullable=False,
         ),
@@ -250,7 +256,9 @@ $$;
         sa.Column("status", sa.String(length=50), nullable=True),
         sa.Column(
             "priority",
-            postgresql.ENUM("low", "normal", "urgent", name="priorityenum"),
+            postgresql.ENUM(
+                "low", "normal", "urgent", name="priorityenum", create_type=False
+            ),
             nullable=False,
         ),
         sa.Column("created_at", sa.DateTime(), nullable=True),
@@ -356,6 +364,7 @@ $$;
                 "reminder",
                 "alert",
                 name="notificationtypeenum",
+                create_type=False,
             ),
             nullable=False,
         ),
@@ -372,6 +381,7 @@ $$;
                 "failed",
                 "cancelled",
                 name="notificationstatusenum",
+                create_type=False,
             ),
             nullable=True,
         ),
@@ -385,6 +395,7 @@ $$;
                 "failed",
                 "cancelled",
                 name="notificationstatusenum",
+                create_type=False,
             ),
             nullable=True,
         ),
@@ -398,12 +409,15 @@ $$;
                 "failed",
                 "cancelled",
                 name="notificationstatusenum",
+                create_type=False,
             ),
             nullable=True,
         ),
         sa.Column(
             "priority",
-            postgresql.ENUM("low", "normal", "urgent", name="priorityenum"),
+            postgresql.ENUM(
+                "low", "normal", "urgent", name="priorityenum", create_type=False
+            ),
             nullable=False,
         ),
         sa.Column("is_read", sa.Boolean(), nullable=True),
@@ -479,6 +493,7 @@ $$;
                 "help_request_assigned",
                 "task_assigned",
                 name="useractivitytypeenum",
+                create_type=False,
             ),
             nullable=False,
         ),

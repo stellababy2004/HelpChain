@@ -67,6 +67,19 @@ END
 $$;
 """,
         )
+        # Ensure SQLAlchemy does not attempt to CREATE TYPE for these enums
+        # even when connected to PostgreSQL. We already created the types
+        # above with the DO $$ block; prevent SQLAlchemy from emitting
+        # duplicate `CREATE TYPE` DDL by forcing enums to be rendered
+        # as non-native (VARCHAR + CHECK) and disabling type creation.
+        _sa_Enum = sa.Enum
+
+        def _enum(*args, **kwargs):
+            kwargs.setdefault("native_enum", False)
+            kwargs.setdefault("create_type", False)
+            return _sa_Enum(*args, **kwargs)
+
+        sa.Enum = _enum
     op.create_table(
         "achievements",
         sa.Column("id", sa.String(length=64), nullable=False),
@@ -208,7 +221,7 @@ $$;
         sa.Column("is_active", sa.Boolean(), nullable=True),
         sa.Column(
             "priority",
-            sa.Enum("low", "normal", "urgent", name="priorityenum"),
+            sa.Enum("low", "normal", "urgent", name="priorityenum", create_type=False),
             nullable=True,
         ),
         sa.Column("auto_send", sa.Boolean(), nullable=True),
@@ -299,7 +312,13 @@ $$;
         sa.Column(
             "role",
             sa.Enum(
-                "user", "volunteer", "moderator", "admin", "superadmin", name="roleenum"
+                "user",
+                "volunteer",
+                "moderator",
+                "admin",
+                "superadmin",
+                name="roleenum",
+                create_type=False,
             ),
             nullable=False,
         ),
@@ -466,7 +485,7 @@ $$;
         sa.Column("status", sa.String(length=50), nullable=True),
         sa.Column(
             "priority",
-            sa.Enum("low", "normal", "urgent", name="priorityenum"),
+            sa.Enum("low", "normal", "urgent", name="priorityenum", create_type=False),
             nullable=False,
         ),
         sa.Column("created_at", sa.DateTime(), nullable=True),
@@ -709,6 +728,7 @@ $$;
                 "HELP_REQUEST_ASSIGNED",
                 "TASK_ASSIGNED",
                 name="useractivitytypeenum",
+                create_type=False,
             ),
             nullable=False,
         ),
@@ -808,6 +828,7 @@ $$;
                 "reminder",
                 "alert",
                 name="notificationtypeenum",
+                create_type=False,
             ),
             nullable=False,
         ),
@@ -824,6 +845,7 @@ $$;
                 "failed",
                 "cancelled",
                 name="notificationstatusenum",
+                create_type=False,
             ),
             nullable=True,
         ),
@@ -837,6 +859,7 @@ $$;
                 "failed",
                 "cancelled",
                 name="notificationstatusenum",
+                create_type=False,
             ),
             nullable=True,
         ),
@@ -850,12 +873,13 @@ $$;
                 "failed",
                 "cancelled",
                 name="notificationstatusenum",
+                create_type=False,
             ),
             nullable=True,
         ),
         sa.Column(
             "priority",
-            sa.Enum("low", "normal", "urgent", name="priorityenum"),
+            sa.Enum("low", "normal", "urgent", name="priorityenum", create_type=False),
             nullable=False,
         ),
         sa.Column("is_read", sa.Boolean(), nullable=True),
