@@ -1792,7 +1792,10 @@ if database_url and use_postgres:
         "max_overflow": 20,  # Additional connections beyond pool_size
         "pool_recycle": 3600,  # Recycle connections after 1 hour
         "echo": False,  # Disable SQL query logging in production
-        "connect_args": {"server_settings": {"application_name": "helpchain"}},
+        # psycopg2 doesn't accept a `server_settings` DSN option. Provide
+        # a driver-compatible parameter. `application_name` can be passed
+        # directly and is supported by libpq/psycopg2.
+        "connect_args": {"application_name": "helpchain"},
     }
     logger.info("Configured PostgreSQL connection pooling")
 else:
