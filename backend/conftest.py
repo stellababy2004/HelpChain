@@ -1,82 +1,107 @@
 """
-Ensure tests use the same DATABASE_URL as CI by exporting the env var
-early, before any test-time imports that may read configuration at import-time.
+Root-level pytest configuration and database setup for backend tests.
 
-This file snippet intentionally runs before other imports in `conftest.py`.
-If `DATABASE_URL` is set in the environment (CI), we make sure it's available
-to code that reads environment variables at import time. If not set, we leave
-the environment untouched so local development is unaffected.
+This ensures that tests placed directly under `backend/` (not
+`backend/tests/`) initialize a consistent SQLite schema before any test
+code queries tables such as `admin_users`.
 """
 
+import pathlib
 import os
 
-# Propagate DATABASE_URL into os.environ as early as possible so modules that
-# read configuration during import will see the CI-provided test DB.
-_db_url = os.environ.get("DATABASE_URL")
-if _db_url:
-    os.environ["DATABASE_URL"] = _db_url
-else:
-    # Optional: uncomment to provide a local default when running tests
-    # locally without CI. We leave commented to avoid surprising behavior.
-    # os.environ.setdefault("DATABASE_URL", "sqlite:///test.db")
-    pass
+import pytest
 
-try:
-    # If the Flask app object is already importable, set its SQLALCHEMY_DATABASE_URI
-    # directly so code that reads app.config later will get the right value.
-    from backend.appy import app as _app
 
-    if _db_url:
-        _app.config["SQLALCHEMY_DATABASE_URI"] = _db_url
-except Exception:
-    # app not available yet; the environment variable will be used when the app
-    # is created/imported later.
-    pass
+# 1) Ensure a file-backed SQLite URI is available early so the Flask app
+#    binds its engine to a persistent test DB file (shared across connections).
+if not os.environ.get("DATABASE_URL"):
+    test_db_path = pathlib.Path(__file__).with_name("test_local.sqlite")
+    os.environ["DATABASE_URL"] = f"sqlite:///{test_db_path.as_posix()}"
 
-    import pytest
+# Mark we are running tests to activate test-specific paths in the app
+os.environ.setdefault("HELPCHAIN_TESTING", "1")
 
+
+def _ensure_app_uses_test_uri(app_obj):
+    """Force the Flask app to use the DATABASE_URL from the environment."""
     try:
-        # Import the canonical db object. Import inside the fixture to avoid
-        # triggering app creation at module import time in weird orders.
-        from backend.extensions import db as _db
+        db_url = os.environ.get("DATABASE_URL")
+        if db_url:
+            app_obj.config["SQLALCHEMY_DATABASE_URI"] = db_url
+            # Also register the test file path for helpers that consult it
+            if db_url.startswith("sqlite///"):
+                app_obj.config.setdefault(
+                    "_TEST_DB_PATH", db_url.replace("sqlite:///", "")
+                )
     except Exception:
-        _db = None
+        pass
 
-    @pytest.fixture(scope="session", autouse=True)
-    def prepare_database():
-        """Ensure test database schema exists for the test session.
 
-        This runs early (session scope, autouse) and uses the Flask app's
-        application context to call SQLAlchemy create_all(). On teardown we drop
-        all tables to leave a clean state.
-        """
-        if _db is None:
-            # Nothing we can do; yield and let tests fail with clearer errors.
-            yield
-            return
+@pytest.fixture(scope="session", autouse=True)
+def prepare_database():
+    """Create all tables once per test session and drop them at the end.
 
-        # Import app lazily to ensure the test configuration (HELPCHAIN_TESTING)
-        # has already been processed by app factory/config code.
-        from backend.appy import app as _appy
+    We import the Flask app and extensions lazily and perform create_all()
+    inside an application context to guarantee all mapped tables exist.
+    """
+    from backend.appy import app as _appy
+    from backend.extensions import db as _db
 
-    @pytest.fixture
-    def app():
-        """Provide the Flask `app` fixture for pytest-flask.
+    _ensure_app_uses_test_uri(_appy)
 
-        Returns the application object from `backend.appy` so pytest-flask's
-        `client` and other fixtures can work.
-        """
-        from backend.appy import app as _appy
+    with _appy.app_context():
+        # Create schema on the exact engine bound to the Flask app
+        try:
+            engine = getattr(_db, "engine", None)
+            if engine is not None:
+                _db.metadata.create_all(bind=engine)
+            else:
+                _db.create_all()
+        except Exception as e:
+            print("[TEST DEBUG] root prepare_database create_all failed:", e)
 
-        return _appy
+        # Best-effort: seed default admin if missing so admin-related
+        # tests don't fail on empty databases.
+        try:
+            from backend.models import AdminUser, RoleEnum, User
 
+            with _db.session.begin():
+                if not _db.session.query(AdminUser).filter_by(username="admin").first():
+                    admin = AdminUser(username="admin", email="admin@helpchain.live")
+                    admin.set_password(os.getenv("ADMIN_USER_PASSWORD", "Admin123"))
+                    _db.session.add(admin)
+                    if not _db.session.query(User).filter_by(username="admin").first():
+                        user = User(
+                            username="admin",
+                            email="admin@helpchain.live",
+                            password_hash=admin.password_hash,
+                            role=RoleEnum.superadmin,
+                            is_active=True,
+                        )
+                        _db.session.add(user)
+        except Exception:
+            pass
+
+    # Run tests
+    try:
+        yield
+    finally:
+        # Drop schema to leave a clean workspace
         with _appy.app_context():
-            _db.create_all()
             try:
-                yield
-            finally:
-                # Best-effort cleanup
-                try:
+                engine = getattr(_db, "engine", None)
+                if engine is not None:
+                    _db.metadata.drop_all(bind=engine)
+                else:
                     _db.drop_all()
-                except Exception:
-                    pass
+            except Exception:
+                pass
+
+
+@pytest.fixture
+def app():
+    """Expose the Flask app object for pytest-flask fixtures like `client`."""
+    from backend.appy import app as _appy
+
+    _ensure_app_uses_test_uri(_appy)
+    return _appy

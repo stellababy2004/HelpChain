@@ -43,6 +43,8 @@ jobs:
         # to the `backend` working directory (not prefixed with `backend/`).
         working-directory: backend
         run: |
+          # Ensure any developer SQLite DB isn't accidentally picked up
+          rm -f instance/volunteers.db || true
           echo "Running migrations against: $DATABASE_URL"
           echo '--- alembic.ini head ---'
           if [ -f migrations/alembic.ini ]; then
@@ -72,7 +74,7 @@ jobs:
         run: |
           python - <<'PY'
           import os, sqlite3, sys
-          db = 'backend/test_local.sqlite'
+          db = 'test_local.sqlite'
           print('db exists', os.path.exists(db))
           if not os.path.exists(db):
               sys.exit('DB file missing')

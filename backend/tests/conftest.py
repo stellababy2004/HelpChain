@@ -47,11 +47,7 @@ def pytest_configure(config):
             from backend.extensions import db as _db
 
             try:
-                engine = None
-                try:
-                    engine = _db.get_engine(_appy)
-                except Exception:
-                    engine = getattr(_db, "engine", None)
+                engine = getattr(_db, "engine", None)
 
                 if engine is not None:
                     print(
@@ -151,10 +147,7 @@ def clear_tables(app):
 
     # Try to get the engine associated with the Flask app, fall back to
     # the DB instance engine attribute for older Flask-SQLAlchemy.
-    try:
-        engine = _db.get_engine(app)
-    except Exception:
-        engine = getattr(_db, "engine", None)
+    engine = getattr(_db, "engine", None)
 
     # If no engine is available, just run the test normally.
     if engine is None:
@@ -242,11 +235,8 @@ def prepare_database():
         # tables on the exact engine the Flask app will use at request time.
         try:
             # Prefer the engine bound to the app (Flask-SQLAlchemy helper)
-            try:
-                engine = _db.get_engine(_appy)
-            except Exception:
-                # Fallback to attribute access if older Flask-SQLAlchemy
-                engine = getattr(_db, "engine", None)
+            # Prefer the engine property within the app context (Flask-SQLAlchemy 3.x)
+            engine = getattr(_db, "engine", None)
 
             print("[TEST DEBUG] engine (for create_all):", engine)
             print("[TEST DEBUG] db.session.bind:", getattr(_db.session, "bind", None))
@@ -437,10 +427,7 @@ def prepare_database():
         finally:
             try:
                 # Drop using the same engine if available to clean up the file DB
-                try:
-                    engine = _db.get_engine(_appy)
-                except Exception:
-                    engine = getattr(_db, "engine", None)
+                engine = getattr(_db, "engine", None)
 
                 if engine is not None:
                     _db.metadata.drop_all(bind=engine)
