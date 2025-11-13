@@ -1,26 +1,20 @@
 name: Database Backup
 
 on:
-  schedule:
-    - cron: "0 3 * * *" # Daily at 03:00 UTC
   workflow_dispatch:
+  schedule:
+    - cron: "5 2 * * *"
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          # Explicitly avoid submodule init/update in this backup workflow.
-          # The repo currently has a broken/missing submodule URL which causes
-          # `git submodule` operations to fail. This safe change prevents the
-          # job from failing while we fix `.gitmodules` in a separate PR.
-          submodules: "false"
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
       - name: Detect database file
         id: detect_db
@@ -53,56 +47,54 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install sqlalchemy
-
       - name: Create backup script
+        if: ${{ steps.detect_db.outputs.db_path != '' }}
+        shell: bash
         run: |
-          cat > backup_db.py << 'EOF'
-          import os
-          import gzip, shutil
-          from datetime import datetime
-
-          DB_PATH = os.getenv("DATABASE_URL", "instance/volunteers.db")
-          BACKUP_DIR = "backups"
-
-          # If DB is missing, exit 0 so scheduled job doesn't fail
-          if not os.path.exists(DB_PATH):
-              print(f"Database not found at {DB_PATH}; skipping backup.")
-              raise SystemExit(0)
-
-          os.makedirs(BACKUP_DIR, exist_ok=True)
-          ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-          backup_file = f"{BACKUP_DIR}/backup_{ts}.db"
-
-          shutil.copy2(DB_PATH, backup_file)
-          with open(backup_file, "rb") as fi, gzip.open(f"{backup_file}.gz", "wb") as fo:
-              shutil.copyfileobj(fi, fo)
-          os.remove(backup_file)
-
-          backups = sorted(f for f in os.listdir(BACKUP_DIR) if f.endswith(".gz"))
-          for old in backups[:-7]:
-              os.remove(os.path.join(BACKUP_DIR, old))
-
-          print(f"Backup created: {backup_file}.gz")
-          EOF
+          cat > backup_db.py <<'PY'
+          import os, sys, gzip, shutil, datetime, pathlib
+          db_path = os.environ.get("DB_PATH", "").strip()
+          if not db_path:
+              print("No DB_PATH provided; nothing to do.")
+              sys.exit(0)
+          if not os.path.exists(db_path):
+              print(f"Database not found at {db_path}; skipping.")
+              sys.exit(0)
+          base = pathlib.Path("backups")
+          base.mkdir(parents=True, exist_ok=True)
+          ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+          db_name = pathlib.Path(db_path).stem
+          out_name = f"{db_name}-{ts}.sqlite.gz"
+          out_path = base / out_name
+          with open(db_path, "rb") as src, gzip.open(out_path, "wb", compresslevel=6) as dst:
+              shutil.copyfileobj(src, dst)
+          print(f"Backup created: {out_path}")
+          keep = 7
+          files = sorted(base.glob(f"{db_name}-*.sqlite.gz"))
+          old = files[:-keep] if len(files) > keep else []
+          for f in old:
+              try:
+                  f.unlink()
+                  print(f"Pruned old backup: {f}")
+              except Exception as e:
+                  print(f"Warning: could not remove {f}: {e}")
+          PY
 
       - name: Run backup
         if: ${{ steps.detect_db.outputs.db_path != '' }}
         env:
-          DATABASE_URL: ${{ steps.detect_db.outputs.db_path }}
+          DB_PATH: ${{ steps.detect_db.outputs.db_path }}
         run: python backup_db.py
 
       - name: Upload backup artifact
         if: ${{ steps.detect_db.outputs.db_path != '' }}
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
+        uses: actions/upload-artifact@v4
         with:
           name: database-backup
-          path: backups/
-          retention-days: 7
+          path: backups/*.sqlite.gz
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Skipped (no DB found)
         if: ${{ steps.detect_db.outputs.db_path == '' }}
-        run: echo "No database file present in repo; skipping backup job gracefully."
+        run: echo "No database file found; backup job skipped."
