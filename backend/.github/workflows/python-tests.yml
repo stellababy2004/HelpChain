@@ -127,11 +127,12 @@ jobs:
         run: |
           pre-commit run --all-files || true
       - name: Run tests and generate coverage
+        working-directory: backend
         run: |
-          if [ -f backend/pytest.ini ] || [ -d backend/tests ]; then
-            echo "Running tests under coverage"
-            # Force pytest to use the backend pytest.ini to avoid duplicate [pytest] from other files
-            python -m coverage run -m pytest -c backend/pytest.ini --rootdir=backend -q --maxfail=1 || exit $?
+          if [ -f pytest.ini ] || [ -d tests ]; then
+            echo "Running tests under coverage from backend/"
+            # Use backend as CWD so imports like `import appy` resolve reliably
+            python -m coverage run -m pytest -c pytest.ini --rootdir=. -vv --maxfail=1 || exit $?
             echo "Generating coverage reports"
             python -m coverage xml -o coverage.xml || true
             python -m coverage html -d coverage_html || true
@@ -146,11 +147,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
-          path: coverage.xml
+          path: backend/coverage.xml
 
       - name: Upload coverage html artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-html
-          path: coverage_html
+          path: backend/coverage_html
