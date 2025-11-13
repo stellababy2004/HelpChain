@@ -19,6 +19,8 @@ jobs:
     env:
       HELPCHAIN_TEST_DEBUG: "0"
       HELPCHAIN_TESTING: "1"
+      # Avoid surprises from auto-loaded third-party pytest plugins on the runner
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
       # Use an absolute path for the test SQLite DB so migrations and pytest
       # operate on the same file regardless of the runner's working directory.
       DATABASE_URL: "sqlite://${{ github.workspace }}/backend/test_local.sqlite"
@@ -37,6 +39,8 @@ jobs:
           pip install coverage
           # Ensure BeautifulSoup is available for HTML parsing tests
           pip install beautifulsoup4
+          # Ensure pytest exists even if not in requirements
+          pip install pytest
       - name: Run database migrations
         # Run migrations from the backend directory so the script and relative
         # paths resolve consistently in CI. Checks should use paths relative
@@ -132,6 +136,7 @@ jobs:
           if [ -f pytest.ini ] || [ -d tests ]; then
             echo "Running tests under coverage from backend/"
             # Use backend as CWD so imports like `import appy` resolve reliably
+            python -c "import sys, pytest; print('pytest', pytest.__version__); print('python', sys.version)"
             python -m coverage run -m pytest -c pytest.ini --rootdir=. -vv --maxfail=1 || exit $?
             echo "Generating coverage reports"
             python -m coverage xml -o coverage.xml || true
