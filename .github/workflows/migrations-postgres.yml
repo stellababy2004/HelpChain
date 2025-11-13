@@ -14,7 +14,7 @@ jobs:
         image: postgres:15
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: ${{ secrets.MIGRATIONS_DB_PASSWORD }}
           POSTGRES_DB: helpchain_test
         ports:
           - 5432:5432
@@ -23,7 +23,7 @@ jobs:
 
     # Set DATABASE_URL at the job level so all steps (and scripts) inherit it
     env:
-      DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/helpchain_test
+      DATABASE_URL: postgresql+psycopg2://postgres:${{ secrets.MIGRATIONS_DB_PASSWORD }}@localhost:5432/helpchain_test
       USE_POSTGRES: "true"
 
     steps:
@@ -87,7 +87,7 @@ jobs:
 
       - name: Изпълняване на Alembic миграции (използвай backend/run_migrations.py ако е наличен)
         env:
-          DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/helpchain_test
+          DATABASE_URL: postgresql+psycopg2://postgres:${{ secrets.MIGRATIONS_DB_PASSWORD }}@localhost:5432/helpchain_test
         run: |
           set -euo pipefail
           if [ -f backend/run_migrations.py ]; then
