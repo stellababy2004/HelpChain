@@ -71,6 +71,21 @@ def pytest_configure(config):
                     url = getattr(engine, "url", None)
                     urlstr = str(url) if url is not None else None
                     print("[TEST DEBUG] engine.url:", urlstr)
+                    # Added explicit metadata + session bind diagnostics to catch mismatched engines.
+                    try:
+                        print(
+                            "[DEBUG CHECK] metadata tables now:",
+                            list(getattr(_db.metadata, "tables", {}).keys()),
+                        )
+                    except Exception:
+                        pass
+                    try:
+                        print(
+                            "[DEBUG CHECK] session bind:",
+                            getattr(_db.session, "bind", None),
+                        )
+                    except Exception:
+                        pass
                     if urlstr and urlstr.startswith("sqlite:///"):
                         db_file = urlstr.replace("sqlite:///", "")
                         try:
