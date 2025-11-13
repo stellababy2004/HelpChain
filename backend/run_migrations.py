@@ -71,6 +71,27 @@ def main() -> int:
                         db_path = os.path.join(root, db_path)
                     parent = os.path.dirname(db_path) or "."
                     os.makedirs(parent, exist_ok=True)
+
+                    # Optional reset: when HELPCHAIN_RESET_DB is set, delete any
+                    # existing sqlite file first to avoid conflicts between
+                    # previously created schema (e.g. via create_all) and Alembic.
+                    try:
+                        reset = os.environ.get("HELPCHAIN_RESET_DB", "").lower() in (
+                            "1",
+                            "true",
+                            "yes",
+                        )
+                    except Exception:
+                        reset = False
+                    if reset and os.path.exists(db_path):
+                        try:
+                            os.remove(db_path)
+                            print(f"Reset sqlite DB file: {db_path}")
+                        except Exception as _e:
+                            print(
+                                f"Warning: could not remove sqlite DB file: {db_path} -> {_e}"
+                            )
+
                     # touch the file so sqlite can open it for connections
                     try:
                         open(db_path, "a").close()
