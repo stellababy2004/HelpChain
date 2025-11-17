@@ -1,0 +1,1466 @@
+<!doctype html>
+<html lang="{{ current_locale or 'fr' }}">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HelpChain – Свързваме хората, които помагат</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Moved inline styles to external file for CSP compliance -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/home_new.css') }}"
+    />
+    <style>
+      :root {
+        --bg: #020817;
+        --bg-soft: #050b20;
+        --accent: #7c3aed;
+        --accent-soft: rgba(124, 58, 237, 0.16);
+        --accent-alt: #38bdf8;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --danger: #f97316;
+        --radius-xl: 22px;
+        --transition-fast: 0.2s ease;
+        --shadow-soft: 0 18px 55px rgba(15, 23, 42, 0.68);
+        --font: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          -system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font);
+        background: radial-gradient(
+          circle at top,
+          #0f172a 0,
+          #020817 40%,
+          #000 100%
+        );
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 18px 40px;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 26px;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 20px;
+        letter-spacing: 0.03em;
+      }
+      .logo-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 0, #38bdf8, #7c3aed);
+        box-shadow: 0 0 22px rgba(124, 58, 237, 0.9);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .nav-links a {
+        padding: 6px 10px;
+        border-radius: 999px;
+        transition:
+          background var(--transition-fast),
+          color var(--transition-fast),
+          transform var(--transition-fast);
+      }
+      .nav-links a:hover {
+        background: rgba(148, 163, 253, 0.08);
+        color: var(--accent-alt);
+        transform: translateY(-1px);
+      }
+
+      .nav-cta {
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: linear-gradient(to right, #38bdf8, #7c3aed);
+        color: #0f172a;
+        font-weight: 600;
+        box-shadow: var(--shadow-soft);
+        cursor: pointer;
+        border: none;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition:
+          transform var(--transition-fast),
+          box-shadow var(--transition-fast),
+          background var(--transition-fast);
+      }
+      .nav-cta span.icon {
+        font-size: 15px;
+      }
+      .nav-cta:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+        background: linear-gradient(to right, #7c3aed, #38bdf8);
+      }
+
+      .hero-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2.2fr) minmax(260px, 1fr);
+        gap: 24px;
+        align-items: stretch;
+        margin-bottom: 30px;
+      }
+      .hero {
+        background: radial-gradient(
+            circle at top left,
+            rgba(124, 58, 237, 0.14),
+            transparent
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(56, 189, 248, 0.09),
+            transparent
+          );
+        padding: 22px 20px 20px;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-soft);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 253, 0.1);
+      }
+      .label-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px 4px 5px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.8);
+        color: var(--accent-alt);
+        font-size: 11px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(56, 189, 248, 0.18);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+      }
+      .label-pill-icon {
+        width: 17px;
+        height: 17px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 0, #38bdf8, #22c55e);
+        display: inline-block;
+        box-shadow: 0 0 18px rgba(34, 197, 94, 0.9);
+      }
+      .hero h1 {
+        font-size: clamp(26px, 4vw, 34px);
+        font-weight: 700;
+        margin-bottom: 10px;
+        letter-spacing: 0.01em;
+      }
+      .hero h1 span {
+        background: linear-gradient(to right, #38bdf8, #a855f7);
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+      .hero-sub {
+        font-size: 14px;
+        color: var(--muted);
+        max-width: 500px;
+        margin-bottom: 16px;
+      }
+
+      .hero-cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .btn-primary,
+      .btn-ghost {
+        padding: 9px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        white-space: nowrap;
+      }
+      .btn-primary {
+        background: linear-gradient(to right, #38bdf8, #7c3aed);
+        color: #020817;
+        font-weight: 600;
+        box-shadow: var(--shadow-soft);
+      }
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+        background: linear-gradient(to right, #7c3aed, #38bdf8);
+      }
+      .btn-ghost {
+        background: rgba(15, 23, 42, 0.7);
+        color: var(--accent-alt);
+        border: 1px solid rgba(148, 163, 253, 0.24);
+      }
+      .btn-ghost:hover {
+        background: rgba(15, 23, 42, 0.98);
+        transform: translateY(-1px);
+      }
+
+      .hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 11px;
+        margin-bottom: 10px;
+        color: var(--muted);
+      }
+      .stat-pill {
+        padding: 8px 11px;
+        border-radius: 14px;
+        background: rgba(9, 9, 11, 0.9);
+        border: 1px solid rgba(75, 85, 99, 0.7);
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.7);
+        display: flex;
+        flex-direction: column;
+        min-width: 110px;
+      }
+      .stat-label {
+        font-size: 9px;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 3px;
+      }
+      .stat-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: #e5e7eb;
+      }
+      .stat-sub {
+        font-size: 9px;
+        color: var(--muted);
+      }
+      .live-ticker {
+        margin-top: 4px;
+        font-size: 10px;
+        color: var(--accent-alt);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.9;
+      }
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 12px #22c55e;
+        animation: pulse 1.4s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        60% {
+          transform: scale(1.7);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+        }
+      }
+
+      .side-card {
+        background: radial-gradient(
+            circle at top,
+            rgba(148, 163, 253, 0.22),
+            transparent
+          ),
+          var(--bg-soft);
+        border-radius: var(--radius-xl);
+        padding: 16px 14px 14px;
+        border: 1px solid rgba(148, 163, 253, 0.18);
+        box-shadow: var(--shadow-soft);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .side-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .side-sub {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .pill-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 4px 0 6px;
+        font-size: 10px;
+      }
+      .pill {
+        padding: 7px 9px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.98);
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        cursor: pointer;
+        color: var(--muted);
+        display: inline-flex;
+        gap: 5px;
+        align-items: center;
+        transition: all var(--transition-fast);
+      }
+      .pill span.icon {
+        font-size: 11px;
+      }
+      .pill:hover {
+        color: var(--accent-alt);
+        border-color: rgba(56, 189, 248, 0.7);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.9);
+        transform: translateY(-1px);
+      }
+
+      .side-input {
+        width: 100%;
+        padding: 8px 9px;
+        border-radius: 12px;
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        background: rgba(2, 6, 23, 0.98);
+        color: var(--text);
+        font-size: 11px;
+        margin: 2px 0 4px;
+        outline: none;
+        transition: all var(--transition-fast);
+      }
+      .side-input::placeholder {
+        color: #6b7280;
+      }
+      .side-input:focus {
+        border-color: var(--accent-alt);
+        box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+      }
+
+      .side-btn {
+        margin-top: 4px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: linear-gradient(to right, var(--accent), var(--accent-alt));
+        color: #020817;
+        font-size: 11px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: var(--shadow-soft);
+        transition: all var(--transition-fast);
+        width: 100%;
+      }
+      .side-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 22px 55px rgba(15, 23, 42, 0.9);
+      }
+      .side-note {
+        font-size: 9px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .section {
+        margin-bottom: 26px;
+      }
+      .section-title-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .section-title {
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .section-sub {
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      .map-card {
+        position: relative;
+        border-radius: var(--radius-xl);
+        padding: 14px 14px 12px;
+        background: radial-gradient(
+            circle at top,
+            rgba(124, 58, 237, 0.1),
+            transparent
+          ),
+          radial-gradient(
+            circle at bottom,
+            rgba(56, 189, 248, 0.04),
+            transparent
+          ),
+          #020817;
+        border: 1px solid rgba(75, 85, 99, 0.7);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .map-visual {
+        position: relative;
+        height: 220px;
+        margin-top: 6px;
+        border-radius: 18px;
+        background: radial-gradient(
+            circle at 20% 30%,
+            rgba(56, 189, 248, 0.18),
+            transparent
+          ),
+          radial-gradient(
+            circle at 70% 40%,
+            rgba(124, 58, 237, 0.22),
+            transparent
+          ),
+          radial-gradient(
+            circle at 45% 70%,
+            rgba(34, 197, 94, 0.16),
+            transparent
+          ),
+          #020817;
+        overflow: hidden;
+      }
+      .map-pulse {
+        position: absolute;
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: #38bdf8;
+        box-shadow: 0 0 18px rgba(56, 189, 248, 1);
+        animation: mapPulse 2.6s infinite;
+      }
+
+      .map-pulse.p-paris {
+        top: 38%;
+        left: 34%;
+        animation-delay: 0s;
+      }
+      .map-pulse.p-lyon {
+        top: 52%;
+        left: 36%;
+        animation-delay: 0.2s;
+      }
+      .map-pulse.p-marseille {
+        top: 62%;
+        left: 39%;
+        animation-delay: 0.4s;
+      }
+      .map-pulse.p-bordeaux {
+        top: 50%;
+        left: 28%;
+        animation-delay: 0.6s;
+      }
+      .map-pulse.p-lille {
+        top: 30%;
+        left: 34%;
+        animation-delay: 0.8s;
+      }
+      .map-pulse.p-toulouse {
+        top: 58%;
+        left: 31%;
+        animation-delay: 1s;
+      }
+      .map-pulse.p-nice {
+        top: 60%;
+        left: 41%;
+        animation-delay: 1.2s;
+      }
+      .map-pulse.p-nantes {
+        top: 46%;
+        left: 27%;
+        animation-delay: 1.4s;
+      }
+      .map-pulse.p-madrid {
+        top: 60%;
+        left: 23%;
+        animation-delay: 0.3s;
+      }
+      .map-pulse.p-barcelona {
+        top: 58%;
+        left: 29%;
+        animation-delay: 0.7s;
+      }
+      .map-pulse.p-lisbon {
+        top: 62%;
+        left: 16%;
+        animation-delay: 1.1s;
+      }
+      .map-pulse.p-london {
+        top: 34%;
+        left: 28%;
+        animation-delay: 0.5s;
+      }
+      .map-pulse.p-dublin {
+        top: 28%;
+        left: 20%;
+        animation-delay: 0.9s;
+      }
+      .map-pulse.p-brussels {
+        top: 35%;
+        left: 32%;
+        animation-delay: 1.3s;
+      }
+      .map-pulse.p-amsterdam {
+        top: 32%;
+        left: 34%;
+        animation-delay: 1.5s;
+      }
+      .map-pulse.p-berlin {
+        top: 34%;
+        left: 48%;
+        animation-delay: 0.1s;
+      }
+      .map-pulse.p-hamburg {
+        top: 30%;
+        left: 46%;
+        animation-delay: 0.6s;
+      }
+      .map-pulse.p-munich {
+        top: 45%;
+        left: 47%;
+        animation-delay: 1s;
+      }
+      .map-pulse.p-vienna {
+        top: 44%;
+        left: 54%;
+        animation-delay: 0.2s;
+      }
+      .map-pulse.p-prague {
+        top: 39%;
+        left: 52%;
+        animation-delay: 0.4s;
+      }
+      .map-pulse.p-budapest {
+        top: 49%;
+        left: 57%;
+        animation-delay: 0.8s;
+      }
+      .map-pulse.p-warsaw {
+        top: 33%;
+        left: 58%;
+        animation-delay: 1.2s;
+      }
+      .map-pulse.p-krakow {
+        top: 41%;
+        left: 56%;
+        animation-delay: 1.4s;
+      }
+      .map-pulse.p-rome {
+        top: 60%;
+        left: 49%;
+        animation-delay: 0.3s;
+      }
+      .map-pulse.p-milan {
+        top: 52%;
+        left: 45%;
+        animation-delay: 0.7s;
+      }
+      .map-pulse.p-naples {
+        top: 64%;
+        left: 50%;
+        animation-delay: 1.1s;
+      }
+      .map-pulse.p-zurich {
+        top: 49%;
+        left: 44%;
+        animation-delay: 0.5s;
+      }
+      .map-pulse.p-geneva {
+        top: 48%;
+        left: 41%;
+        animation-delay: 0.9s;
+      }
+      .map-pulse.p-athens {
+        top: 72%;
+        left: 63%;
+        animation-delay: 1.3s;
+      }
+      .map-pulse.p-sofia {
+        top: 61%;
+        left: 64%;
+        animation-delay: 1.5s;
+      }
+      .map-pulse.p-bucharest {
+        top: 52%;
+        left: 64%;
+        animation-delay: 0.1s;
+      }
+      .map-pulse.p-belgrade {
+        top: 53%;
+        left: 60%;
+        animation-delay: 0.6s;
+      }
+      .map-pulse.p-copenhagen {
+        top: 22%;
+        left: 44%;
+        animation-delay: 1s;
+      }
+      .map-pulse.p-stockholm {
+        top: 12%;
+        left: 52%;
+        animation-delay: 0.2s;
+      }
+      .map-pulse.p-oslo {
+        top: 10%;
+        left: 44%;
+        animation-delay: 0.4s;
+      }
+      .map-pulse.p-helsinki {
+        top: 10%;
+        left: 60%;
+        animation-delay: 0.8s;
+      }
+      .map-pulse.p-riga {
+        top: 20%;
+        left: 60%;
+        animation-delay: 1.2s;
+      }
+      .map-pulse.p-tallinn {
+        top: 18%;
+        left: 62%;
+        animation-delay: 1.4s;
+      }
+      .map-pulse.p-vilnius {
+        top: 26%;
+        left: 60%;
+        animation-delay: 1.6s;
+      }
+
+      @keyframes mapPulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        60% {
+          transform: scale(3);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+        }
+      }
+
+      .map-label {
+        position: absolute;
+        padding: 4px 7px;
+        font-size: 9px;
+        border-radius: 10px;
+        background: rgba(2, 6, 23, 0.96);
+        border: 1px solid rgba(148, 163, 253, 0.35);
+        color: var(--accent-alt);
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.9);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+      .map-label span.icon {
+        font-size: 10px;
+      }
+
+      .label-paris {
+        top: 32%;
+        left: 34%;
+      }
+      .label-lyon {
+        top: 47%;
+        left: 36%;
+      }
+      .label-marseille {
+        top: 67%;
+        left: 39%;
+      }
+      .label-bordeaux {
+        top: 45%;
+        left: 27%;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: minmax(0, 1.8fr) minmax(220px, 1fr);
+        gap: 18px;
+      }
+      .stories {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 3px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(148, 163, 253, 0.4) transparent;
+      }
+      .stories::-webkit-scrollbar {
+        height: 4px;
+      }
+      .stories::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .stories::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 253, 0.4);
+        border-radius: 999px;
+      }
+
+      .story-card {
+        min-width: 160px;
+        max-width: 200px;
+        padding: 9px 9px 8px;
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.98);
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.9);
+        font-size: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        transition: all var(--transition-fast);
+        cursor: pointer;
+      }
+      .story-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 1);
+        border-color: rgba(124, 58, 237, 0.7);
+      }
+      .story-tag {
+        font-size: 8px;
+        color: var(--accent-alt);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+      }
+      .story-quote {
+        font-size: 10px;
+        color: var(--text);
+      }
+      .story-author {
+        font-size: 9px;
+        color: var(--muted);
+      }
+
+      .how-card {
+        padding: 10px 9px 9px;
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.98);
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.95);
+        font-size: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .how-step {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+      }
+      .how-num {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        border: 1px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        color: var(--accent-alt);
+        flex-shrink: 0;
+      }
+      .how-label {
+        font-size: 10px;
+        color: var(--text);
+        font-weight: 500;
+      }
+      .how-text {
+        font-size: 9px;
+        color: var(--muted);
+      }
+
+      .footer {
+        margin-top: 26px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(31, 41, 55, 0.9);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: space-between;
+        font-size: 9px;
+        color: var(--muted);
+        opacity: 0.8;
+      }
+      .footer a {
+        color: var(--accent-alt);
+        transition: color var(--transition-fast);
+      }
+      .footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 840px) {
+        .hero-layout {
+          grid-template-columns: 1fr;
+        }
+        .side-card {
+          order: -1;
+        }
+      }
+      @media (max-width: 520px) {
+        .nav-links {
+          display: none;
+        }
+      }
+
+      .lang-switch {
+        display: inline-flex;
+        gap: 6px;
+        margin-left: 8px;
+        border-left: 1px solid rgba(148, 163, 253, 0.18);
+        padding-left: 8px;
+      }
+      .lang-switch button {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 253, 0.24);
+        background: rgba(15, 23, 42, 0.75);
+        color: var(--muted);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+      .lang-switch button:hover {
+        color: var(--accent-alt);
+        border-color: rgba(56, 189, 248, 0.4);
+      }
+      .lang-switch button.active {
+        color: #020817;
+        background: linear-gradient(to right, #38bdf8, #7c3aed);
+        border-color: transparent;
+        box-shadow: var(--shadow-soft);
+      }
+      /* Login panel styles */
+      .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .login-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .logout-form {
+        margin-top: 6px;
+      }
+      .requirements-note {
+        font-size: 9px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      /* Need-help form styles */
+      .need-flex {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .mb-6 {
+        margin-bottom: 6px;
+      }
+      .mw-260 {
+        max-width: 260px;
+      }
+      .mw-160 {
+        max-width: 160px;
+      }
+      .mw-180 {
+        max-width: 180px;
+      }
+      .mw-220 {
+        max-width: 220px;
+      }
+      /* Admin + QR onboarding additions */
+      .admin-fallback,
+      .qr-onboarding {
+        margin-top: 10px;
+        padding: 10px 10px 9px;
+        border: 1px solid rgba(75, 85, 99, 0.6);
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.92);
+        font-size: 10px;
+        color: var(--muted);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.85);
+      }
+      .admin-fallback h3,
+      .qr-onboarding h3 {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text);
+      }
+      .admin-fallback button.toggle,
+      .qr-onboarding button.toggle {
+        width: 100%;
+        margin-bottom: 6px;
+        padding: 7px 10px;
+        border-radius: 12px;
+        background: linear-gradient(to right, var(--accent), var(--accent-alt));
+        color: #020817;
+        font-size: 11px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        box-shadow: var(--shadow-soft);
+        transition: all var(--transition-fast);
+      }
+      .admin-fallback button.toggle:hover,
+      .qr-onboarding button.toggle:hover {
+        transform: translateY(-1px);
+      }
+      .admin-hidden,
+      .qr-hidden {
+        display: none;
+      }
+      .store-links {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 6px;
+      }
+      .store-link {
+        padding: 6px 9px;
+        border-radius: 10px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(75, 85, 99, 0.7);
+        color: var(--accent-alt);
+        font-size: 10px;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        transition: all var(--transition-fast);
+      }
+      .store-link:hover {
+        border-color: rgba(56, 189, 248, 0.6);
+        color: var(--text);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.9);
+      }
+      .qr-img {
+        width: 110px;
+        height: auto;
+        border-radius: 12px;
+        border: 1px solid rgba(75, 85, 99, 0.7);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.9);
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="nav">
+        <div class="logo">
+          <div class="logo-icon"></div>
+          <div>HelpChain</div>
+        </div>
+        <div class="nav-links">
+          <a href="#how" data-i18n="nav.how">Как работи</a>
+          <a href="#stories" data-i18n="nav.stories">Истории</a>
+          <a href="{{ url_for('volunteer_register') }}" data-i18n="nav.join"
+            >Стани доброволец</a
+          >
+          <a href="{{ url_for('submit_request') }}" data-i18n="nav.need"
+            >Имам нужда от помощ</a
+          >
+          <a class="nav-cta" href="{{ url_for('volunteer_register') }}">
+            <span class="icon">⚡</span
+            ><span data-i18n="nav.cta">Включи се във веригата</span>
+          </a>
+          <div class="lang-switch" aria-label="Language switch">
+            <button
+              type="button"
+              data-setlang="bg"
+              class="{% if current_locale == 'bg' %}active{% endif %}"
+            >
+              BG
+            </button>
+            <button
+              type="button"
+              data-setlang="fr"
+              class="{% if current_locale == 'fr' %}active{% endif %}"
+            >
+              FR
+            </button>
+            <button
+              type="button"
+              data-setlang="en"
+              class="{% if current_locale == 'en' %}active{% endif %}"
+            >
+              EN
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <section class="hero-layout">
+        <div class="hero">
+          <div class="label-pill">
+            <span class="label-pill-icon"></span>
+            <span data-i18n="label.realtime"
+              >В реално време свързваме помощ с нужда</span
+            >
+          </div>
+          <h1 id="hero-title">
+            Превръщаме <span>добротата</span> в организирана сила.
+          </h1>
+          <p class="hero-sub" data-i18n="hero.sub">
+            HelpChain свързва хора в нужда с проверени доброволци, психолози,
+            адвокати, ИТ специалисти и обикновени хора с голямо сърце. Включи се
+            с едно действие.
+          </p>
+
+          <div class="hero-cta-row">
+            <a
+              class="btn-primary"
+              href="{{ url_for('volunteer_register') }}"
+              data-i18n="btn.join"
+              >💜 Стани доброволец</a
+            >
+            <a
+              class="btn-ghost"
+              href="{{ url_for('submit_request') }}"
+              data-i18n="btn.need"
+              >🙋 Имам нужда от помощ</a
+            >
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-pill">
+              <div class="stat-label" data-i18n="stats.volunteers.label">
+                Активни доброволци
+              </div>
+              <div class="stat-value" data-count="327">0</div>
+              <div class="stat-sub" data-i18n="stats.volunteers.sub">
+                онлайн в момента
+              </div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-label" data-i18n="stats.hours.label">
+                Часа дарена помощ
+              </div>
+              <div class="stat-value" data-count="1284">0</div>
+              <div class="stat-sub" data-i18n="stats.hours.sub">
+                последните 30 дни
+              </div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-label" data-i18n="stats.requests.label">
+                Решени заявки
+              </div>
+              <div class="stat-value" data-count="412">0</div>
+              <div class="stat-sub" data-i18n="stats.requests.sub">
+                реални хора, реални истории
+              </div>
+            </div>
+          </div>
+          <div class="live-ticker">
+            <div class="live-dot"></div>
+            <div id="live-msg">
+              Току-що: доброволец от Варна помогна на самотна майка. 💙
+            </div>
+          </div>
+        </div>
+
+        <aside class="side-card" id="join">
+          <div class="side-title" data-i18n="side.title">
+            Включи се във веригата на помощта
+          </div>
+          <div class="side-sub" data-i18n="side.sub">
+            Избери как искаш да помагаш. Ще ти изпратим подбрани каузи и хора в
+            нужда.
+          </div>
+
+          <div class="pill-grid">
+            <div class="pill" data-role="health">
+              <span class="icon">🩺</span
+              ><span data-i18n="pill.health">Здравна подкрепа</span>
+            </div>
+            <div class="pill" data-role="legal">
+              <span class="icon">⚖️</span
+              ><span data-i18n="pill.legal">Правна помощ</span>
+            </div>
+            <div class="pill" data-role="edu">
+              <span class="icon">🎓</span
+              ><span data-i18n="pill.edu">Обучение</span>
+            </div>
+            <div class="pill" data-role="it">
+              <span class="icon">💻</span
+              ><span data-i18n="pill.it">Техническа помощ</span>
+            </div>
+            <div class="pill" data-role="listen">
+              <span class="icon">💬</span
+              ><span data-i18n="pill.listen">Емоционална подкрепа</span>
+            </div>
+          </div>
+
+          <input
+            class="side-input"
+            id="vol-email"
+            type="email"
+            placeholder="Имейл за контакт"
+            data-i18n-placeholder="placeholders.volEmail"
+          />
+          <input
+            class="side-input"
+            id="vol-city"
+            type="text"
+            placeholder="Град / държава"
+            data-i18n-placeholder="placeholders.volCity"
+          />
+
+          <button class="side-btn" onclick="joinChain()">
+            <span data-i18n="side.btn">Стани част от HelpChain</span
+            ><span>⚡</span>
+          </button>
+          <div class="side-note" data-i18n="side.note">
+            Никакъв спам. Само реални сигнали, които можеш да поемеш.
+          </div>
+        </aside>
+        <aside class="side-card" id="login-panel">
+          {% if user_logged_in or admin_logged_in %}
+          <div class="side-title">Вход изпълнен</div>
+          <div class="side-sub">
+            Добре дошли.
+            <strong
+              >{% if admin_logged_in %}Админ{% else %}Потребител{% endif
+              %}</strong
+            >
+          </div>
+          <form
+            method="POST"
+            action="{{ url_for('logout') }}"
+            class="logout-form"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button class="side-btn" type="submit">🚪 Изход</button>
+          </form>
+          {% else %}
+          <div class="side-title">Вход без парола</div>
+          <div class="side-sub">1. Имейл → 2. Microsoft потвърждение</div>
+          <form
+            method="POST"
+            action="{{ url_for('msauth.start') }}"
+            class="login-form"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input
+              class="side-input"
+              name="email"
+              type="email"
+              placeholder="Имейл"
+              required
+            />
+            <button class="side-btn" type="submit">
+              🔐 Продължи с Microsoft
+            </button>
+          </form>
+          <div class="requirements-note">
+            Нужен е валиден имейл. Влизането се потвърждава през Microsoft
+            Authenticator.
+          </div>
+
+          <div class="admin-fallback" id="admin-fallback">
+            <button type="button" class="toggle" data-target="admin-hidden">
+              🛡 Администраторски вход (2FA / Break‑glass)
+            </button>
+            <div class="admin-hidden" id="admin-hidden">
+              <p>
+                Администраторите също използват Microsoft. Ако имаш аварийна
+                (break‑glass) локална парола + 2FA, използвай формата:
+              </p>
+              <form
+                method="POST"
+                action="{{ url_for('admin_login') }}"
+                class="login-form"
+                autocomplete="off"
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+                <input
+                  class="side-input"
+                  name="username"
+                  type="text"
+                  placeholder="Админ потребител"
+                  required
+                />
+                <input
+                  class="side-input"
+                  name="password"
+                  type="password"
+                  placeholder="Локална аварийна парола"
+                  required
+                />
+                <input
+                  class="side-input"
+                  name="otp"
+                  type="text"
+                  placeholder="TOTP код"
+                  pattern="[0-9]{6}"
+                />
+                <button class="side-btn" type="submit">
+                  🧷 Вход (Break‑glass)
+                </button>
+              </form>
+              <div class="side-note">
+                Използвай само при проблем с Microsoft. Всички опити се логват.
+              </div>
+            </div>
+          </div>
+
+          <div class="qr-onboarding" id="qr-onboarding">
+            <button type="button" class="toggle" data-target="qr-hidden">
+              📱 Инсталирай Microsoft Authenticator
+            </button>
+            <div class="qr-hidden" id="qr-hidden">
+              <p>
+                Приложението осигурява допълнителна защита и потвърждение на
+                самоличността.
+              </p>
+              <img
+                src="{{ url_for('static', filename='helpchain_qr.png') }}"
+                alt="QR код за HelpChain"
+                class="qr-img"
+                loading="lazy"
+              />
+              <div class="store-links">
+                <a
+                  class="store-link"
+                  href="https://play.google.com/store/apps/details?id=com.azure.authenticator"
+                  target="_blank"
+                  rel="noopener"
+                  >🤖 Google Play</a
+                >
+                <a
+                  class="store-link"
+                  href="https://apps.apple.com/app/microsoft-authenticator/id983156458"
+                  target="_blank"
+                  rel="noopener"
+                  >🍎 App Store</a
+                >
+              </div>
+              <div class="side-note">
+                Скенерирай QR или отвори магазина. Няма да съхраняваме
+                допълнителни данни.
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </aside>
+      </section>
+
+      <section class="section">
+        <div class="section-title-row">
+          <div>
+            <div class="section-title" data-i18n="map.title">
+              Жива карта на доброто
+            </div>
+            <div class="section-sub" data-i18n="map.subLeft">
+              Виж къде HelpChain вече свързва хора. Данните могат да идват от
+              реален backend.
+            </div>
+          </div>
+          <div class="section-sub" data-i18n="map.subRight">
+            Ти също ще се появиш тук, когато се включиш. ✨
+          </div>
+        </div>
+        <div class="map-card">
+          <div>
+            <span data-i18n="map.activePointsLabel">Активни точки:</span> Париж,
+            Лион, Марсилия, Бордо, Берлин, Мадрид, Рим, Варшава, Лондон...
+          </div>
+          <div class="map-visual">
+            <div class="map-pulse p-paris"></div>
+            <div class="map-pulse p-lyon"></div>
+            <div class="map-pulse p-marseille"></div>
+            <div class="map-pulse p-bordeaux"></div>
+            <div class="map-pulse p-lille"></div>
+            <div class="map-pulse p-toulouse"></div>
+            <div class="map-pulse p-nice"></div>
+            <div class="map-pulse p-nantes"></div>
+            <div class="map-pulse p-madrid"></div>
+            <div class="map-pulse p-barcelona"></div>
+            <div class="map-pulse p-lisbon"></div>
+            <div class="map-pulse p-london"></div>
+            <div class="map-pulse p-dublin"></div>
+            <div class="map-pulse p-brussels"></div>
+            <div class="map-pulse p-amsterdam"></div>
+            <div class="map-pulse p-berlin"></div>
+            <div class="map-pulse p-hamburg"></div>
+            <div class="map-pulse p-munich"></div>
+            <div class="map-pulse p-vienna"></div>
+            <div class="map-pulse p-prague"></div>
+            <div class="map-pulse p-budapest"></div>
+            <div class="map-pulse p-warsaw"></div>
+            <div class="map-pulse p-krakow"></div>
+            <div class="map-pulse p-rome"></div>
+            <div class="map-pulse p-milan"></div>
+            <div class="map-pulse p-naples"></div>
+            <div class="map-pulse p-zurich"></div>
+            <div class="map-pulse p-geneva"></div>
+            <div class="map-pulse p-athens"></div>
+            <div class="map-pulse p-sofia"></div>
+            <div class="map-pulse p-bucharest"></div>
+            <div class="map-pulse p-belgrade"></div>
+            <div class="map-pulse p-copenhagen"></div>
+            <div class="map-pulse p-stockholm"></div>
+            <div class="map-pulse p-oslo"></div>
+            <div class="map-pulse p-helsinki"></div>
+            <div class="map-pulse p-riga"></div>
+            <div class="map-pulse p-tallinn"></div>
+            <div class="map-pulse p-vilnius"></div>
+            <div class="map-label label-paris">
+              <span class="icon">💜</span
+              ><span data-i18n="map.fr.paris">Париж</span>
+            </div>
+            <div class="map-label label-lyon">
+              <span class="icon">💜</span
+              ><span data-i18n="map.fr.lyon">Лион</span>
+            </div>
+            <div class="map-label label-marseille">
+              <span class="icon">💜</span
+              ><span data-i18n="map.fr.marseille">Марсилия</span>
+            </div>
+            <div class="map-label label-bordeaux">
+              <span class="icon">💜</span
+              ><span data-i18n="map.fr.bordeaux">Бордо</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div
+        style="
+          position: fixed;
+          top: 8px;
+          right: 8px;
+          font-size: 11px;
+          color: #9ca3af;
+          z-index: 1200;
+        "
+        aria-label="Current language"
+      >
+        <span
+          style="
+            padding: 4px 8px;
+            border: 1px solid rgba(148, 163, 253, 0.3);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.7);
+          "
+          >Locale: {{ current_locale|upper }}</span
+        >
+      </div>
+      <section class="section" id="need-help">
+        <div class="section-title-row">
+          <div class="section-title" data-i18n="need.title">
+            Имаш нужда от помощ?
+          </div>
+          <div class="section-sub" data-i18n="need.sub">
+            Напиши ни. Ще намерим подходящ човек от веригата HelpChain.
+          </div>
+        </div>
+        <div class="map-card mb-6">
+          <div class="need-flex">
+            <input
+              class="side-input mw-260"
+              placeholder="Кратко опиши нуждата си"
+              data-i18n-placeholder="need.desc"
+            />
+            <input
+              class="side-input mw-160"
+              placeholder="Град / държава"
+              data-i18n-placeholder="need.city"
+            />
+            <input
+              class="side-input mw-180"
+              placeholder="Имейл или телефон за връзка"
+              data-i18n-placeholder="need.contact"
+            />
+          </div>
+          <a class="side-btn mw-220" href="{{ url_for('submit_request') }}">
+            <span data-i18n="need.sendBtn">Изпрати сигнал за помощ</span>
+          </a>
+          <div class="side-note" data-i18n="need.note">
+            Спокойно. Данните ти са защитени. Първо се свързваме дискретно, без
+            публично показване.
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div data-i18n="footer.text">
+          © 2025 HelpChain. Движение за смислена, отговорна помощ.
+        </div>
+        <div>
+          <a href="{{ url_for('index') }}#how" data-i18n="footer.about"
+            >За проекта</a
+          >
+          ·
+          <a href="{{ url_for('privacy') }}" data-i18n="footer.privacy"
+            >Политика за поверителност</a
+          >
+          ·
+          <a
+            href="{{ url_for('volunteer_register') }}"
+            data-i18n="footer.partner"
+            >Стани партньор</a
+          >
+        </div>
+      </footer>
+    </div>
+
+    <!-- Externalized JS for CSP compliance -->
+    <script
+      src="{{ url_for('static', filename='js/home_new.js') }}"
+      defer
+    ></script>
+  </body>
+</html>

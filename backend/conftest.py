@@ -6,11 +6,10 @@ This ensures that tests placed directly under `backend/` (not
 code queries tables such as `admin_users`.
 """
 
-import pathlib
 import os
+import pathlib
 
 import pytest
-
 
 # 1) Ensure a file-backed SQLite URI is available early so the Flask app
 #    binds its engine to a persistent test DB file (shared across connections).

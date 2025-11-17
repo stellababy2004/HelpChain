@@ -3,8 +3,10 @@ block content %}
 <div class="container mt-5">
   <div class="row justify-content-center">
     <div class="col-md-6 col-lg-4">
-      <h2 class="mb-4 text-primary text-center">Вход за доброволци</h2>
-      <p class="text-muted mb-4 text-center">
+      <h2 class="mb-4 text-primary text-center" id="vl-title">
+        Вход за доброволци
+      </h2>
+      <p class="text-muted mb-4 text-center" id="vl-desc">
         Влезте с вашия имейл адрес, с който сте се регистрирали като доброволец.
       </p>
       {% if error %}
@@ -12,7 +14,9 @@ block content %}
       {% endif %}
       <form method="POST">
         <div class="mb-3">
-          <label for="email" class="form-label">Имейл адрес:</label>
+          <label for="email" class="form-label" id="vl-email-label"
+            >Имейл адрес:</label
+          >
           <input
             type="email"
             class="form-control"
@@ -24,17 +28,105 @@ block content %}
             autocomplete="email"
           />
         </div>
-        <button type="submit" class="btn btn-primary w-100">Вход</button>
+        <button type="submit" class="btn btn-primary w-100" id="vl-btn">
+          Вход
+        </button>
       </form>
       <div class="mt-3 text-center">
-        <p class="mb-1">Нямате регистрация като доброволец?</p>
+        <p class="mb-1" id="vl-noacc">Нямате регистрация като доброволец?</p>
         <a
           href="{{ url_for('volunteer_register') }}"
           class="btn btn-outline-primary btn-sm"
+          id="vl-register-link"
           >Регистрирайте се</a
+        >
+      </div>
+      <div class="mt-3 text-center">
+        <a
+          href="/static/previews/new-page.html"
+          class="text-muted small"
+          id="vl-back"
+          >← Обратно към демо началната страница</a
         >
       </div>
     </div>
   </div>
 </div>
+{% endblock %} {% block scripts %}
+<script>
+  (function () {
+    const T = {
+      bg: {
+        title: "Вход за доброволци",
+        desc: "Влезте с вашия имейл адрес, с който сте се регистрирали като доброволец.",
+        email: "Имейл адрес:",
+        placeholder: "your.email@example.com",
+        btn: "Вход",
+        noacc: "Нямате регистрация като доброволец?",
+        register: "Регистрирайте се",
+        back: "← Обратно към демо началната страница",
+      },
+      fr: {
+        title: "Connexion bénévole",
+        desc: "Connectez-vous avec l’e-mail utilisé lors de votre inscription.",
+        email: "Adresse e-mail:",
+        placeholder: "votre.email@example.com",
+        btn: "Se connecter",
+        noacc: "Pas encore inscrit comme bénévole ?",
+        register: "S’inscrire",
+        back: "← Retour à la page d’accueil démo",
+      },
+      en: {
+        title: "Volunteer login",
+        desc: "Log in with the email you used to register as a volunteer.",
+        email: "Email address:",
+        placeholder: "your.email@example.com",
+        btn: "Log in",
+        noacc: "No volunteer account yet?",
+        register: "Register",
+        back: "← Back to demo landing",
+      },
+    };
+
+    function pickLang() {
+      try {
+        var url = new URL(window.location.href);
+        var qp = url.searchParams.get("lang");
+        if (qp && ["bg", "fr", "en"].includes(qp)) return qp;
+      } catch (_) {}
+      var ls = localStorage.getItem("hc_lang");
+      return ls && ["bg", "fr", "en"].includes(ls) ? ls : "bg";
+    }
+
+    function applyI18n() {
+      var t = T[pickLang()] || T.bg;
+      var el = function (id) {
+        return document.getElementById(id);
+      };
+      if (el("vl-title")) el("vl-title").textContent = t.title;
+      if (el("vl-desc")) el("vl-desc").textContent = t.desc;
+      if (el("vl-email-label")) el("vl-email-label").textContent = t.email;
+      var email = document.getElementById("email");
+      if (email) email.placeholder = t.placeholder;
+      if (el("vl-btn")) el("vl-btn").textContent = t.btn;
+      if (el("vl-noacc")) el("vl-noacc").textContent = t.noacc;
+      if (el("vl-register-link"))
+        el("vl-register-link").textContent = t.register;
+      if (el("vl-back")) el("vl-back").textContent = t.back;
+      try {
+        document.documentElement.lang = pickLang();
+      } catch (_) {}
+    }
+
+    function init() {
+      applyI18n();
+      setTimeout(applyI18n, 0);
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
+  })();
+</script>
 {% endblock %}

@@ -32,6 +32,7 @@ endblock %} {% block content %}
           {% endfor %} {% endif %} {% endwith %}
 
           <form action="/admin/email_2fa" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <div class="mb-3">
               <label for="code" class="form-label">Код за верификация</label>
               <input

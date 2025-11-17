@@ -7,20 +7,33 @@ main_bp = Blueprint("main", __name__)
 
 @main_bp.route("/")
 def index():
-    """Начална страница"""
+    """Начална страница – unified към нов шаблон `home_new.html`."""
     try:
         volunteers_count = Volunteer.query.count()
         requests_count = Request.query.count()
+    except Exception:
+        volunteers_count = requests_count = 0
+
+    # Open requests count се пази ако решим да го покажем по-късно
+    try:
         open_requests = Request.query.filter(Request.status != "completed").count()
     except Exception:
-        volunteers_count = requests_count = open_requests = 0
+        open_requests = 0
 
-    return render_template(
-        "index.html",
-        volunteers_count=volunteers_count,
-        requests_count=requests_count,
-        open_requests=open_requests,
+    from flask import make_response, render_template
+
+    resp = make_response(
+        render_template(
+            "home_new.html",
+            volunteers_count=volunteers_count,
+            requests_count=requests_count,
+            open_requests=open_requests,
+        )
     )
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 
 @main_bp.route("/about")

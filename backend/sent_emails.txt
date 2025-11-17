@@ -3325,3 +3325,157 @@ From: noreply@helpchain.test
 Моля потвърдете имейла си като посетите следния адрес: http://localhost/auth/confirm/InRlc3R1c2VyQGV4YW1wbGUuY29tIg.aRT5vw.Gh2w9iffBswp1OGX5LbHFsXXisk
 
 ==================================================
+Subject: HelpChain - Код за верификация на администратор
+To: contact@helpchain.live
+From: noreply@helpchain.test
+
+Здравейте,
+
+Получен е опит за вход в администраторския панел на HelpChain.
+
+Код за верификация: 401979
+
+Детайли за достъпа:
+- IP адрес: 127.0.0.1
+- Браузър: Werkzeug/2.3.7
+- Време: 2025-11-13 18:39:23
+
+Ако това не сте вие, моля игнорирайте това съобщение.
+
+С уважение,
+HelpChain системата
+
+==================================================
+Subject: HelpChain: Потвърдете имейла си
+To: ['testuser@example.com']
+From: noreply@helpchain.test
+
+Моля потвърдете имейла си като посетите следния адрес: http://localhost/auth/confirm/InRlc3R1c2VyQGV4YW1wbGUuY29tIg.aRYXzA.x28DgpCmL77NtZ9Y4Vyg_X3CQEA
+
+==================================================
+Subject: HelpChain - Код за верификация на администратор
+To: contact@helpchain.live
+From: noreply@helpchain.test
+
+Здравейте,
+
+Получен е опит за вход в администраторския панел на HelpChain.
+
+Код за верификация: 210053
+
+Детайли за достъпа:
+- IP адрес: 127.0.0.1
+- Браузър: Werkzeug/2.3.7
+- Време: 2025-11-13 18:57:19
+
+Ако това не сте вие, моля игнорирайте това съобщение.
+
+С уважение,
+HelpChain системата
+
+==================================================
+Subject: HelpChain: Потвърдете имейла си
+To: ['testuser@example.com']
+From: noreply@helpchain.test
+
+Моля потвърдете имейла си като посетите следния адрес: http://localhost/auth/confirm/InRlc3R1c2VyQGV4YW1wbGUuY29tIg.aRYb_w.oW28AikZHfSnhFXrkOtZQWyps_k
+
+==================================================
+Subject: HelpChain - Код за верификация на администратор
+To: contact@helpchain.live
+From: noreply@helpchain.test
+
+Здравейте,
+
+Получен е опит за вход в администраторския панел на HelpChain.
+
+Код за верификация: 522528
+
+Детайли за достъпа:
+- IP адрес: 127.0.0.1
+- Браузър: Werkzeug/2.3.7
+- Време: 2025-11-13 18:59:43
+
+Ако това не сте вие, моля игнорирайте това съобщение.
+
+С уважение,
+HelpChain системата
+
+==================================================
+Subject: HelpChain: Потвърдете имейла си
+To: ['testuser@example.com']
+From: noreply@helpchain.test
+
+Моля потвърдете имейла си като посетите следния адрес: http://localhost/auth/confirm/InRlc3R1c2VyQGV4YW1wbGUuY29tIg.aRYckA.J_90Y1jEHML2fTMIjm20O17CSaY
+
+==================================================
+Subject: Нов доброволец в HelpChain
+To: ['contact@helpchain.live']
+From: noreply@helpchain.test
+
+Нов доброволец се е регистрирал:
+
+Име: Stella Barbarella
+Имейл: san4o_baby@hotmail.com
+Телефон: +33600000000
+Локация: Boulogne-Billancourt
+
+Моля, свържете се с доброволеца за допълнителна информация.
+
+==================================================
+Subject: HelpChain: Потвърдете имейла си
+To: ['testuser@example.com']
+From: noreply@helpchain.test
+
+Моля потвърдете имейла си като посетите следния адрес: http://localhost/auth/confirm/InRlc3R1c2VyQGV4YW1wbGUuY29tIg.aRj27A.1DzwPLCleG5VRe2gzzMtUTgWoLA
+
+==================================================
+Subject: HelpChain - Код за верификация на администратор
+To: contact@helpchain.live
+From: noreply@helpchain.test
+
+Здравейте,
+
+Получен е опит за вход в администраторския панел на HelpChain.
+
+Код за верификация: 356560
+
+Детайли за достъпа:
+- IP адрес: 127.0.0.1
+- Браузър: Werkzeug/3.1.3
+- Време: 2025-11-15 23:00:02
+
+Ако това не сте вие, моля игнорирайте това съобщение.
+
+С уважение,
+HelpChain системата
+
+==================================================
+Subject: HelpChain - Код за верификация на администратор
+To: contact@helpchain.live
+From: noreply@helpchain.test
+
+Здравейте,
+
+Получен е опит за вход в администраторския панел на HelpChain.
+
+Код за верификация: 222063
+
+Детайли за достъпа:
+- IP адрес: 127.0.0.1
+- Браузър: Werkzeug/3.1.3
+- Време: 2025-11-15 23:02:06
+
+Ако това не сте вие, моля игнорирайте това съобщение.
+
+С уважение,
+HelpChain системата
+
+==================================================
+Subject: HelpChain: Потвърдете имейла си
+To: ['testuser@example.com']
+From: noreply@helpchain.test
+
+Моля потвърдете имейла си като посетите следния адрес: http://localhost/auth/confirm/InRlc3R1c2VyQGV4YW1wbGUuY29tIg.aRj4Xw.asVqXv9XgOZ0HO0vbwV-tWrT6ek
+
+==================================================

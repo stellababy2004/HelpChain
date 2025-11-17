@@ -5,7 +5,33 @@ description = "HelpChain backend deployment config"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+# CSRF protection & form handling
+Flask-WTF = "^1.2.1"
+# Password hashing (Argon2id)
+argon2-cffi = "^23.1.0"
+# OpenID Connect / OAuth2 client
+authlib = "^1.3.0"
+# QR code generation for onboarding
+qrcode = "^7.4.2"
+# HTTP client
+requests = "^2.32.0"
+# Load environment variables from .env
+python-dotenv = "^1.0.0"
 # Добави тук и другите си зависимости, ако ползваш poetry
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.4"
 
 [tool.ruff]
 exclude = ["hc-merge-pr35", ".venv", "build", "dist"]
+line-length = 100
+target-version = "py312"
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E203", "E501"]
+fix = false
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

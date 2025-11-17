@@ -6,8 +6,11 @@ content %}
   <div class="alert alert-danger">{{ error }}</div>
   {% endif %}
   <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="mb-3">
-      <label for="username" class="form-label">Потребителско име:</label>
+      <label for="username" class="form-label"
+        >Потребителско име или имейл:</label
+      >
       <input
         type="text"
         class="form-control"
@@ -16,6 +19,7 @@ content %}
         required
         autofocus
         autocomplete="username"
+        placeholder="admin или admin@helpchain.live"
       />
     </div>
     <div class="mb-3">
@@ -27,6 +31,7 @@ content %}
         name="password"
         required
         autocomplete="current-password"
+        placeholder="Admin12345! (начална)"
       />
     </div>
     <button type="submit" class="btn btn-primary">Вход</button>

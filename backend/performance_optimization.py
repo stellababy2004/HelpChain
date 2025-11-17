@@ -10,20 +10,17 @@ import socket
 from datetime import datetime
 from functools import wraps
 
+from flask_caching import Cache
+
 
 class AnalyticsCache:
     def __init__(self, app=None):
-        from flask_caching import (
-            Cache,
-        )  # Локален import за избягване на circular import
-
         self.cache = None
         if app:
             self.init_app(app)
 
     def init_app(self, app):
         """Initialize the cache with the Flask app"""
-        from flask_caching import Cache  # Import here for init_app method
 
         try:
             # Configure cache with Redis URL

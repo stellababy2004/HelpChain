@@ -13,23 +13,16 @@ Exit codes:
  - other: exceptions bubbled up (printed to stderr)
 """
 
+
 from __future__ import annotations
 
 import os
 import sys
 
 from alembic.config import Config
+from sqlalchemy.engine import make_url
 
 from alembic import command
-
-# Optional helper (SQLAlchemy URL parsing)
-try:  # keep import optional for environments without SQLAlchemy v1.4+ helpers
-    from sqlalchemy.engine import make_url
-except Exception:  # pragma: no cover - best-effort import
-    try:
-        from sqlalchemy.engine.url import make_url  # type: ignore
-    except Exception:
-        make_url = None  # type: ignore
 
 
 def main() -> int:

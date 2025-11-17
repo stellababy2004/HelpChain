@@ -466,6 +466,28 @@ def set_pending_admin_session(client):
                 admin_obj = (
                     _db.session.query(AdminUser).filter_by(username="admin").first()
                 )
+                if not admin_obj:
+                    # Create a minimal admin user if seeding did not occur yet.
+                    admin_obj = AdminUser(
+                        username="admin", email="admin@helpchain.live"
+                    )
+                    try:
+                        admin_obj.set_password("Admin123")
+                    except Exception:
+                        pass
+                    try:
+                        _db.session.add(admin_obj)
+                        _db.session.commit()
+                    except Exception:
+                        try:
+                            _db.session.rollback()
+                        except Exception:
+                            pass
+                        admin_obj = (
+                            _db.session.query(AdminUser)
+                            .filter_by(username="admin")
+                            .first()
+                        )
                 if admin_obj:
                     admin_id = getattr(admin_obj, "id", None)
         except Exception:

@@ -1,3 +1,5 @@
+"""Deprecated temporary app. Do not run directly. Use app.py."""
+
 import csv
 import os
 from io import StringIO
@@ -163,12 +165,16 @@ def index():
         requests_count = 0
         open_requests = 0
 
+    current_locale = request.cookies.get("language", "fr")
+    socketio_transports = ["websocket", "polling"]
     if app.jinja_loader:
         return render_template(
             "index.html",
             volunteers_count=volunteers_count,
             requests_count=requests_count,
             open_requests=open_requests,
+            current_locale=current_locale,
+            socketio_transports=socketio_transports,
         )
     return (
         jsonify(
@@ -180,6 +186,18 @@ def index():
         ),
         200,
     )
+
+
+@app.route("/robots.txt")
+def robots_txt():
+    lines = [
+        "User-agent: *",
+        "Disallow: /admin",
+        "Disallow: /admin/",
+        "Disallow: /admin_login",
+        "Disallow: /admin/*",
+    ]
+    return ("\n".join(lines) + "\n", 200, {"Content-Type": "text/plain; charset=utf-8"})
 
 
 @app.route("/admin_login", methods=["GET", "POST"])
@@ -431,11 +449,17 @@ def feedback():
     return render_template("feedback.html")
 
 
-@app.route("/set_language", methods=["POST"])
+@app.route("/set_language", methods=["GET", "POST"])
 def set_language():
-    lang = request.form["language"]
-    resp = make_response(redirect(request.referrer or url_for("index")))
-    resp.set_cookie("language", lang)
+    if request.method == "POST":
+        lang = (request.form.get("language") or "bg").strip().lower()
+        nxt = request.referrer or url_for("index")
+    else:
+        lang = (request.args.get("language") or "bg").strip().lower()
+        nxt = request.args.get("next") or url_for("index")
+    resp = make_response(redirect(nxt))
+    # keep simple cookie here
+    resp.set_cookie("language", lang, max_age=60 * 60 * 24 * 180, samesite="Lax")
     return resp
 
 

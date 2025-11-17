@@ -1,9 +1,10 @@
 // Service Worker for HelpChain PWA
 // Handles caching, offline functionality, and background tasks
 
-const CACHE_NAME = "helpchain-v1.0.1";
-const STATIC_CACHE = "helpchain-static-v1.0.1";
-const DYNAMIC_CACHE = "helpchain-dynamic-v1.0.1";
+// Bump versions to invalidate old cached HTML (root page changed)
+const CACHE_NAME = "helpchain-v1.0.2";
+const STATIC_CACHE = "helpchain-static-v1.0.2";
+const DYNAMIC_CACHE = "helpchain-dynamic-v1.0.2";
 
 // Resources to cache immediately on install
 const STATIC_ASSETS = [
@@ -152,7 +153,20 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // For static assets and pages, try cache first, then network
+  // Special network-first strategy for root document to avoid stale landing page
+  if (url.pathname === "/") {
+    event.respondWith(
+      fetch(request)
+        .then((resp) => {
+          // Do not cache root HTML to ensure freshest template
+          return resp;
+        })
+        .catch(() => caches.match(request)),
+    );
+    return;
+  }
+
+  // For static assets and other pages, try cache first, then network
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {

@@ -1,10 +1,11 @@
 {% extends "base.html" %} {% block title %}Регистрация доброволец{% endblock %}
 {% block content %}
 <div class="container mt-5 volunteer-register-container">
-  <h2 class="mb-4 text-success">Стани доброволец</h2>
+  <h2 class="mb-4 text-success" id="vr-title">Стани доброволец</h2>
   <form method="POST" action="{{ url_for('volunteer_register') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="mb-3">
-      <label for="name" class="form-label">Име:</label>
+      <label for="name" class="form-label" id="lbl-name">Име:</label>
       <input
         type="text"
         class="form-control"
@@ -15,7 +16,7 @@
       />
     </div>
     <div class="mb-3">
-      <label for="email" class="form-label">Имейл:</label>
+      <label for="email" class="form-label" id="lbl-email">Имейл:</label>
       <input
         type="email"
         class="form-control"
@@ -26,7 +27,7 @@
       />
     </div>
     <div class="mb-3">
-      <label for="phone" class="form-label">Телефон:</label>
+      <label for="phone" class="form-label" id="lbl-phone">Телефон:</label>
       <input
         type="text"
         class="form-control"
@@ -36,7 +37,9 @@
       />
     </div>
     <div class="mb-3">
-      <label for="location" class="form-label">Град/регион:</label>
+      <label for="location" class="form-label" id="lbl-location"
+        >Град/регион:</label
+      >
       <input
         type="text"
         class="form-control"
@@ -45,7 +48,132 @@
         autocomplete="address-level2"
       />
     </div>
-    <button type="submit" class="btn btn-success">Регистрирай се</button>
+    <button type="submit" class="btn btn-success" id="btn-submit">
+      Регистрирай се
+    </button>
   </form>
+  <div class="mt-3">
+    <a
+      href="/static/previews/new-page.html"
+      class="text-muted small"
+      id="back-demo"
+      >← Обратно към демо началната страница</a
+    >
+  </div>
 </div>
+
+{% endblock %} {% block scripts %}
+<script>
+  (function () {
+    const translations = {
+      bg: {
+        title: "Стани доброволец",
+        name: "Име:",
+        email: "Имейл:",
+        phone: "Телефон:",
+        location: "Град/регион:",
+        p_name: "Вашето име",
+        p_email: "your.email@example.com",
+        p_phone: "Телефон (по желание)",
+        p_location: "Град / регион",
+        submit: "Регистрирай се",
+        back: "← Обратно към демо началната страница",
+      },
+      fr: {
+        title: "Devenir bénévole",
+        name: "Nom:",
+        email: "E-mail:",
+        phone: "Téléphone:",
+        location: "Ville/région:",
+        p_name: "Votre nom",
+        p_email: "votre.email@example.com",
+        p_phone: "Téléphone (facultatif)",
+        p_location: "Ville / région",
+        submit: "S’inscrire",
+        back: "← Retour à la page d’accueil démo",
+      },
+      en: {
+        title: "Become a volunteer",
+        name: "Name:",
+        email: "Email:",
+        phone: "Phone:",
+        location: "City/region:",
+        p_name: "Your name",
+        p_email: "your.email@example.com",
+        p_phone: "Phone (optional)",
+        p_location: "City / region",
+        submit: "Register",
+        back: "← Back to demo landing",
+      },
+    };
+
+    function getLang() {
+      var qp = null;
+      try {
+        var url = new URL(window.location.href);
+        qp = (url.searchParams.get("lang") || "").trim().toLowerCase();
+      } catch (_) {
+        qp = null;
+      }
+      if (qp && ["bg", "fr", "en"].indexOf(qp) !== -1) return qp;
+      try {
+        var stored = (localStorage.getItem("hc_lang") || "")
+          .trim()
+          .toLowerCase();
+        if (["bg", "fr", "en"].indexOf(stored) !== -1) return stored;
+      } catch (_) {}
+      return "bg";
+    }
+
+    function applyI18n(lang) {
+      const t = translations[lang] || translations.bg;
+      const el = (id) => document.getElementById(id);
+      if (el("vr-title")) el("vr-title").textContent = t.title;
+      if (el("lbl-name")) el("lbl-name").textContent = t.name;
+      if (el("lbl-email")) el("lbl-email").textContent = t.email;
+      if (el("lbl-phone")) el("lbl-phone").textContent = t.phone;
+      if (el("lbl-location")) el("lbl-location").textContent = t.location;
+      if (el("btn-submit")) el("btn-submit").textContent = t.submit;
+      if (el("back-demo")) el("back-demo").textContent = t.back;
+      const nameI = document.getElementById("name");
+      if (nameI) nameI.placeholder = t.p_name;
+      const emailI = document.getElementById("email");
+      if (emailI) emailI.placeholder = t.p_email;
+      const phoneI = document.getElementById("phone");
+      if (phoneI) phoneI.placeholder = t.p_phone;
+      const locI = document.getElementById("location");
+      if (locI) locI.placeholder = t.p_location;
+      localStorage.setItem("hc_lang", lang);
+      document.documentElement.lang = lang;
+    }
+
+    // Apply after DOM is ready; also re-apply with multiple fallbacks to avoid race conditions
+    function init() {
+      var lang = getLang();
+      applyI18n(lang);
+      // Microtask and frame callbacks to beat late DOM mutations
+      setTimeout(function () {
+        applyI18n(getLang());
+      }, 0);
+      if (window.requestAnimationFrame) {
+        requestAnimationFrame(function () {
+          applyI18n(getLang());
+        });
+      }
+      // Final pass on window load
+      window.addEventListener(
+        "load",
+        function () {
+          applyI18n(getLang());
+        },
+        { once: true },
+      );
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init, { once: true });
+    } else {
+      init();
+    }
+  })();
+</script>
 {% endblock %}

@@ -136,6 +136,11 @@
                     class="d-inline"
                     onsubmit="return confirm('Сигурни ли сте, че искате да изтриете тази роля?')"
                   >
+                    <input
+                      type="hidden"
+                      name="csrf_token"
+                      value="{{ csrf_token() }}"
+                    />
                     <button type="submit" class="btn btn-sm btn-outline-danger">
                       <i class="fas fa-trash"></i> Изтрий
                     </button>
@@ -201,6 +206,11 @@
                           action="{{ url_for('admin_roles.toggle_user_status', user_id=user.id) }}"
                           class="d-inline"
                         >
+                          <input
+                            type="hidden"
+                            name="csrf_token"
+                            value="{{ csrf_token() }}"
+                          />
                           <button
                             type="submit"
                             class="btn btn-sm {% if user.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}"

@@ -11,12 +11,15 @@ def utc_now() -> datetime:
 
 
 try:
-    # When the package is imported as `backend.*` prefer package-relative imports.
+    # Когато пакетът е импортиран като `backend.*` – относителен импорт.
     from .extensions import db
 except Exception:
-    # Fall back to canonical package-qualified import to remain compatible
-    # with environments that still import `extensions` at top-level.
-    from backend.extensions import db
+    try:
+        # Fallback към пакетно име ако скриптът се стартира от по-горна директория.
+        from backend.extensions import db
+    except Exception:
+        # Последен fallback: директен файл в същата папка (при `python models.py` или `python app.py`).
+        from extensions import db
 
 
 class Request(db.Model):
@@ -45,6 +48,25 @@ from flask_login import UserMixin
 from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
+
+try:
+    from argon2 import PasswordHasher
+except Exception:
+    PasswordHasher = None  # Fallback if argon2-cffi not installed yet
+
+# Argon2id configuration (chosen for balance of security & performance)
+_ARGON2 = None
+_ARGON2_PARAMS = dict(
+    time_cost=3,  # iterations
+    memory_cost=64 * 1024,  # 64 MB
+    parallelism=2,
+    hash_len=32,
+)
+if PasswordHasher:
+    try:
+        _ARGON2 = PasswordHasher(**_ARGON2_PARAMS)
+    except Exception:
+        _ARGON2 = None
 
 
 def utc_now() -> datetime:
@@ -148,12 +170,74 @@ class NotificationStatusEnum(str, enum.Enum):
     cancelled = "cancelled"  # Отменена
 
 
+MIN_PASSWORD_LENGTH = 10
+COMMON_PASSWORDS = None
+COMMON_PASSWORDS_PATH = os.path.join(
+    os.path.dirname(__file__), "security", "common_passwords_top10k.txt"
+)
+
+
+def _load_common_passwords():
+    """Lazy-load common password blacklist into a set (lowercased).
+
+    Returns an empty set if file missing so validator still works.
+    """
+    global COMMON_PASSWORDS
+    if COMMON_PASSWORDS is not None:
+        return COMMON_PASSWORDS
+    common = set()
+    try:
+        with open(COMMON_PASSWORDS_PATH, encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                common.add(line.lower())
+    except FileNotFoundError:
+        common = set()
+    COMMON_PASSWORDS = common
+    return COMMON_PASSWORDS
+
+
+def validate_password_strength(password: str):
+    """Validate password complexity rules.
+
+    Rules:
+    - At least MIN_PASSWORD_LENGTH characters
+    - At least one uppercase, one lowercase, one digit
+    Raises ValueError with Bulgarian message if invalid.
+    """
+    if not password or len(password) < MIN_PASSWORD_LENGTH:
+        raise ValueError(f"Паролата трябва да бъде поне {MIN_PASSWORD_LENGTH} символа")
+    if not any(c.isupper() for c in password):
+        raise ValueError("Паролата трябва да съдържа поне една главна буква")
+    if not any(c.islower() for c in password):
+        raise ValueError("Паролата трябва да съдържа поне една малка буква")
+    if not any(c.isdigit() for c in password):
+        raise ValueError("Паролата трябва да съдържа поне една цифра")
+    # Common password blacklist check (case-insensitive)
+    # Fail-open only if loading raises FileNotFoundError; do NOT swallow ValueError.
+    try:
+        blacklist = _load_common_passwords()
+    except Exception:
+        blacklist = set()
+    if password.lower() in blacklist:
+        raise ValueError("Паролата е твърде често използвана и не е позволена")
+    return True
+
+
 class User(db.Model):
     __tablename__ = "users"
     __table_args__ = {"extend_existing": True}
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=True, nullable=False)
-    email = db.Column(db.String(200), nullable=True)
+    # Email остава nullable за обратна съвместимост, но новата политика изисква да бъде попълнен;
+    # ще наложим това на ниво приложение при регистрация.
+    email = db.Column(db.String(200), nullable=True, index=True)
+    # Microsoft OIDC идентификатор (sub claim) – уникален; ако е зададен, паролата може да бъде деактивирана.
+    ms_oid = db.Column(db.String(128), unique=True, nullable=True, index=True)
+    # Флаг че локалната парола е деактивирана (passwordless режим) след успешно свързване.
+    password_disabled = db.Column(db.Boolean, default=False, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(
         db.Enum(RoleEnum), default=RoleEnum.user, nullable=False, index=True
@@ -167,21 +251,98 @@ class User(db.Model):
     audit_logs = relationship("AuditLog", back_populates="actor")
 
     def set_password(self, password: str):
-        """Set a password hash on the user.
-
-        Minimal validation is applied to avoid creating trivially weak
-        passwords programmatically; callers that need stricter rules can
-        enforce them before calling this method.
-        """
-        if not password or len(password) < 8:
-            raise ValueError("Паролата трябва да бъде поне 8 символа")
+        """Set a password hash using Argon2id (fallback PBKDF2) with unified policy."""
+        validate_password_strength(password)
+        if _ARGON2:
+            try:
+                self.password_hash = _ARGON2.hash(password)
+                return
+            except Exception:
+                pass  # Fallback below
         self.password_hash = generate_password_hash(password)
 
+    def _rehash_argon2_if_needed(self, password: str):
+        """Upgrade legacy PBKDF2 hash to Argon2id after successful check."""
+        if (
+            _ARGON2
+            and self.password_hash
+            and not self.password_hash.startswith("$argon2")
+        ):
+            try:
+                self.password_hash = _ARGON2.hash(password)
+                db.session.add(self)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
     def check_password(self, password: str) -> bool:
-        """Verify a plaintext password against the stored hash."""
+        """Verify password; support Argon2id & legacy PBKDF2; auto-upgrade."""
+        # Ако сме в passwordless режим (паролата е деактивирана) – винаги отказ.
+        if getattr(self, "password_disabled", False):
+            return False
+        if not password:
+            return False
+        phash = self.password_hash or ""
+        if phash.startswith("$argon2") and _ARGON2:
+            from argon2.exceptions import VerificationError, VerifyMismatchError
+
+            try:
+                _ARGON2.verify(phash, password)
+                # If parameters outdated, rehash (argon2 library provides needs_rehash)
+                try:
+                    if _ARGON2.check_needs_rehash(phash):
+                        self.password_hash = _ARGON2.hash(password)
+                        db.session.add(self)
+                        db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                return True
+            except (VerifyMismatchError, VerificationError):
+                return False
+            except Exception:
+                return False
+        # Legacy PBKDF2 path
         try:
-            return check_password_hash(self.password_hash, password)
+            ok = check_password_hash(phash, password)
         except Exception:
+            return False
+        if ok:
+            self._rehash_argon2_if_needed(password)
+        return ok
+
+    # --- Passwordless / Microsoft binding helpers ---
+    def bind_microsoft_oid(self, oid: str):
+        """Свързва потребителя с Microsoft (OIDC sub claim) и маркира паролата за деактивиране.
+
+        Не премахваме hash веднага (позволява контролирана миграция), но задаваме
+        password_disabled за да блокираме локален вход.
+        """
+        if not oid:
+            return False
+        self.ms_oid = oid
+        self.password_disabled = True
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception:
+            db.session.rollback()
+            return False
+
+    @property
+    def is_passwordless(self) -> bool:
+        return bool(self.ms_oid) and bool(self.password_disabled)
+
+    def enable_local_password(self, raw_password: str):
+        """Връща обратно към локална парола (fallback / break-glass)."""
+        try:
+            self.set_password(raw_password)
+            self.password_disabled = False
+            db.session.add(self)
+            db.session.commit()
+            return True
+        except Exception:
+            db.session.rollback()
             return False
 
 
@@ -208,20 +369,57 @@ class AdminUser(db.Model, UserMixin):
         return True
 
     def set_password(self, password):
-        """Задава парола с валидация"""
-        if not password or len(password) < 8:
-            raise ValueError("Паролата трябва да бъде поне 8 символа")
-        if not any(c.isupper() for c in password):
-            raise ValueError("Паролата трябва да съдържа поне една главна буква")
-        if not any(c.islower() for c in password):
-            raise ValueError("Паролата трябва да съдържа поне една малка буква")
-        if not any(c.isdigit() for c in password):
-            raise ValueError("Паролата трябва да съдържа поне една цифра")
-
+        """Задава парола според унифицираната политика и Argon2id."""
+        validate_password_strength(password)
+        if _ARGON2:
+            try:
+                self.password_hash = _ARGON2.hash(password)
+                return
+            except Exception:
+                pass
         self.password_hash = generate_password_hash(password)
 
+    def _rehash_argon2_if_needed(self, password: str):
+        if (
+            _ARGON2
+            and self.password_hash
+            and not self.password_hash.startswith("$argon2")
+        ):
+            try:
+                self.password_hash = _ARGON2.hash(password)
+                db.session.add(self)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        if not password:
+            return False
+        phash = self.password_hash or ""
+        if phash.startswith("$argon2") and _ARGON2:
+            from argon2.exceptions import VerificationError, VerifyMismatchError
+
+            try:
+                _ARGON2.verify(phash, password)
+                try:
+                    if _ARGON2.check_needs_rehash(phash):
+                        self.password_hash = _ARGON2.hash(password)
+                        db.session.add(self)
+                        db.session.commit()
+                except Exception:
+                    db.session.rollback()
+                return True
+            except (VerifyMismatchError, VerificationError):
+                return False
+            except Exception:
+                return False
+        try:
+            ok = check_password_hash(phash, password)
+        except Exception:
+            return False
+        if ok:
+            self._rehash_argon2_if_needed(password)
+        return ok
 
     def enable_2fa(self):
         if not self.twofa_secret:
@@ -689,7 +887,7 @@ class HelpRequest(db.Model):
     priority = db.Column(
         db.Enum(PriorityEnum), default=PriorityEnum.normal, nullable=False
     )
-    created_at = db.Column(db.DateTime, default=utc_now)
+    created_at = db.Column(db.DateTime, default=utc_now, index=True)
     updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     name = db.Column(db.String(100), nullable=False)

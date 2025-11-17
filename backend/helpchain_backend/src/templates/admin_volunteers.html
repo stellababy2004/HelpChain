@@ -265,6 +265,11 @@
                 class="d-inline"
                 onsubmit="return confirm('Сигурни ли сте, че искате да изтриете {{ volunteer.name }}?')"
               >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
                 <button
                   type="submit"
                   class="btn btn-outline-danger btn-sm"
