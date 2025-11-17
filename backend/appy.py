@@ -7,6 +7,8 @@ if __name__ == "__main__":
     raise SystemExit(1)
 
 # Импорт на _dispatch_email за изпращане на имейли
+from backend._dispatch_email import _dispatch_email
+
 # Ensure package/module paths are available before any robust imports
 import os as _early_os
 import sys as _early_sys
