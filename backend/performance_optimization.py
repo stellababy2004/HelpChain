@@ -10,7 +10,10 @@ import socket
 from datetime import datetime
 from functools import wraps
 
-from flask_caching import Cache
+try:
+    from flask_caching import Cache
+except ImportError:
+    Cache = None
 
 
 class AnalyticsCache:

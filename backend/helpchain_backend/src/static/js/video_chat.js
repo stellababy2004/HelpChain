@@ -26,7 +26,7 @@ class VideoChatManager {
 
   init() {
     this.setupEventListeners();
-    this.updateStatus("Готов за видео чат");
+    this.updateStatus("Prêt pour le chat vidéo");
   }
 
   setupEventListeners() {
@@ -46,7 +46,7 @@ class VideoChatManager {
 
   async startVideo() {
     try {
-      this.updateStatus("Започване на видео...");
+      this.updateStatus("Démarrage de la vidéo...");
 
       // Get user media
       this.localStream = await navigator.mediaDevices.getUserMedia({
@@ -62,10 +62,12 @@ class VideoChatManager {
       // Initialize peer connection
       this.initializePeerConnection();
 
-      this.updateStatus("Видео стартирано. Изчакване на връзка...");
+      this.updateStatus("Vidéo démarrée. En attente de connexion...");
     } catch (error) {
       console.error("Error starting video:", error);
-      this.updateStatus("Грешка при стартиране на видео: " + error.message);
+      this.updateStatus(
+        "Erreur lors du démarrage de la vidéo : " + error.message,
+      );
     }
   }
 
@@ -90,7 +92,7 @@ class VideoChatManager {
       if (this.remoteVideo && !this.remoteVideo.srcObject) {
         this.remoteVideo.srcObject = event.streams[0];
         this.remoteStream = event.streams[0];
-        this.updateStatus("Свързан! Видео чат активен.");
+        this.updateStatus("Connecté ! Chat vidéo actif.");
         this.isConnected = true;
       }
     };
@@ -110,13 +112,13 @@ class VideoChatManager {
       console.log("Connection state:", this.peerConnection.connectionState);
       if (this.peerConnection.connectionState === "connected") {
         this.isConnected = true;
-        this.updateStatus("Свързан! Видео чат активен.");
+        this.updateStatus("Connecté ! Chat vidéo actif.");
       } else if (
         this.peerConnection.connectionState === "disconnected" ||
         this.peerConnection.connectionState === "failed"
       ) {
         this.isConnected = false;
-        this.updateStatus("Връзката е прекъсната.");
+        this.updateStatus("Connexion interrompue.");
       }
     };
   }
@@ -134,7 +136,9 @@ class VideoChatManager {
       this.isInitiator = true;
     } catch (error) {
       console.error("Error creating offer:", error);
-      this.updateStatus("Грешка при създаване на оферта: " + error.message);
+      this.updateStatus(
+        "Erreur lors de la création de l'offre : " + error.message,
+      );
     }
   }
 
@@ -153,7 +157,9 @@ class VideoChatManager {
       });
     } catch (error) {
       console.error("Error handling offer:", error);
-      this.updateStatus("Грешка при обработка на оферта: " + error.message);
+      this.updateStatus(
+        "Erreur lors du traitement de l'offre : " + error.message,
+      );
     }
   }
 
@@ -164,7 +170,9 @@ class VideoChatManager {
       );
     } catch (error) {
       console.error("Error handling answer:", error);
-      this.updateStatus("Грешка при обработка на отговор: " + error.message);
+      this.updateStatus(
+        "Erreur lors du traitement de la réponse : " + error.message,
+      );
     }
   }
 

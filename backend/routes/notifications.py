@@ -16,7 +16,7 @@ from flask import Blueprint, current_app, jsonify, render_template, request
 from flask_login import current_user
 
 # Local
-from backend.extensions import db
+from extensions import db
 
 # Temporarily disabled: analytics integration
 # from analytics_service import analytics_service  # Temporarily disabled for testing
@@ -39,13 +39,7 @@ def get_db():
         return db
 
 
-try:
-    from .models import PushSubscription, User
-except Exception:
-    try:
-        from backend.models import PushSubscription, User
-    except Exception:
-        from backend.models import PushSubscription, User
+from models import PushSubscription, User
 
 notification_bp = Blueprint("notification", __name__)
 

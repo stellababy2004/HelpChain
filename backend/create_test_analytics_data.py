@@ -19,7 +19,7 @@ from appy import app, db
 from backend.models import HelpRequest, Volunteer
 from backend.models_with_analytics import AnalyticsEvent
 
-fake = Faker("bg_BG")  # Bulgarian locale
+fake = Faker("fr_FR")  # French locale
 
 
 def create_test_database():
@@ -29,49 +29,36 @@ def create_test_database():
         # Създаваме нови тестови данни без изтриване на стари
         print("📝 Създаване на нови тестови данни...")
 
-        # Категории помощ
+        # Catégories d'aide
         help_categories = [
-            "Транспорт",
-            "Домакински грижи",
-            "Медицинска помощ",
-            "Пазаруване",
-            "Техническа поддръжка",
-            "Преводи",
-            "Обучение",
-            "Психологическа подкрепа",
-            "Юридическа консултация",
-            "Грижа за възрастни",
-            "Грижа за деца",
-            "Социални дейности",
+            "Transport",
+            "Soins à domicile",
+            "Aide médicale",
+            "Courses",
+            "Assistance technique",
+            "Traductions",
+            "Formation",
+            "Soutien psychologique",
+            "Conseil juridique",
+            "Soins aux personnes âgées",
+            "Garde d'enfants",
+            "Activités sociales",
         ]
 
-        # Български градове
-        bulgarian_cities = [
-            "София",
-            "Пловдив",
-            "Варна",
-            "Бургас",
-            "Русе",
-            "Стара Загора",
-            "Плевен",
-            "Сливен",
-            "Добрич",
-            "Шумен",
-            "Перник",
-            "Хасково",
-            "Ямбол",
-            "Пазарджик",
-            "Благоевград",
-            "Велико Търново",
-            "Враца",
-            "Габрово",
-            "Асеновград",
-            "Видин",
-            "Казанлък",
-            "Кърджали",
-            "Кюстендил",
-            "Монтана",
-            "Димитровград",
+        # Villes françaises
+        french_cities = [
+            "Paris",
+            "Marseille",
+            "Lyon",
+            "Toulouse",
+            "Nice",
+            "Nantes",
+            "Strasbourg",
+            "Montpellier",
+            "Bordeaux",
+            "Lille",
+            "Rennes",
+            "Reims",
         ]
 
         # Статуси на заявки
@@ -112,11 +99,11 @@ def create_test_database():
         for i in range(50):
             volunteer = Volunteer(
                 name=f"[TEST] {fake.first_name()} {fake.last_name()}",
-                email=f"test.volunteer{i + 1}@helpchain-test.bg",
+                email=f"test.volunteer{i + 1}@helpchain-test.fr",
                 phone=fake.phone_number()[:15],
-                location=random.choice(bulgarian_cities),
+                location=random.choice(french_cities),
                 skills=", ".join(random.sample(skills_list, random.randint(2, 5))),
-                is_active=random.choice([True, True, True, False]),  # 75% активни
+                is_active=random.choice([True, True, True, False]),  # 75% actifs
             )
             volunteers.append(volunteer)
             db.session.add(volunteer)

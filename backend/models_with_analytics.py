@@ -28,28 +28,15 @@ AdminUser = None
 User = None
 Volunteer = None
 try:
-    # canonical absolute import
-    from backend.models import AdminUser, User, Volunteer
+    from models import AdminUser, User, Volunteer
 except Exception:
-    try:
-        # package-relative import when running as part of the package
-        from .models import AdminUser, User, Volunteer
-    except Exception:
-        try:
-            # fallback to canonical package import for older layouts
-            from backend.models import AdminUser, User, Volunteer
-        except Exception:
-            AdminUser = User = Volunteer = None
+    AdminUser = User = Volunteer = None
 
 
-# Try relative imports first, fall back to canonical backend package import
 try:
-    # Prefer package-relative import when running as backend package
-    from .extensions import db
+    from extensions import db
 except Exception:
-    # Use the canonical package-qualified import to avoid creating a second
-    # SQLAlchemy() object when legacy top-level `extensions` is present.
-    from backend.extensions import db
+    db = None
 
 # Ensure AdminUser is properly imported for relationships
 if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
@@ -61,7 +48,7 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
         # Prefer importing the canonical backend.models module to ensure
         # we reference the single shared AdminUser class object.
         try:
-            from backend.models import AdminUser as RealAdminUser
+            from models import AdminUser as RealAdminUser
 
             AdminUser = RealAdminUser
         except Exception:
@@ -73,7 +60,7 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
             except Exception:
                 # Final fallback: try old top-level layout if present
                 try:
-                    from backend.models import AdminUser as RealAdminUser
+                    from models import AdminUser as RealAdminUser
 
                     AdminUser = RealAdminUser
                 except Exception:

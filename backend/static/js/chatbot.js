@@ -23,56 +23,56 @@ class HelpChainChatbot {
     const widget = document.createElement("div");
     widget.className = "chatbot-widget";
     widget.innerHTML = `
-            <!-- Toggle бутон -->
+            <!-- Bouton de bascule -->
             <button class="chatbot-toggle" id="chatbot-toggle">
-                <i class="fas fa-comments"></i>
+              <i class="fas fa-comments"></i>
             </button>
 
-            <!-- Чат прозорец -->
+            <!-- Fenêtre de chat -->
             <div class="chatbot-window" id="chatbot-window">
-                <!-- Header -->
-                <div class="chatbot-header">
-                    <div class="chatbot-title">
-                        <i class="fas fa-robot"></i>
-                        HelpChain Асистент
-                    </div>
-                    <button class="chatbot-close" id="chatbot-close">
-                        <i class="fas fa-times"></i>
+              <!-- En-tête -->
+              <div class="chatbot-header">
+                <div class="chatbot-title">
+                  <i class="fas fa-robot"></i>
+                  Assistant HelpChain
+                </div>
+                <button class="chatbot-close" id="chatbot-close">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+
+              <!-- Contenu -->
+              <div class="chatbot-content">
+                <!-- Messages -->
+                <div class="chatbot-messages" id="chatbot-messages">
+                  <!-- Les messages seront ajoutés ici -->
+                </div>
+
+                <!-- Indicateur de saisie -->
+                <div class="typing-indicator" id="typing-indicator">
+                  L'assistant HelpChain écrit<span class="typing-dots"></span>
+                </div>
+
+                <!-- Questions rapides -->
+                <div class="quick-questions" id="quick-questions">
+                  <!-- Les questions rapides seront ajoutées ici -->
+                </div>
+
+                <!-- Zone de saisie -->
+                <div class="chatbot-input-area">
+                  <div class="chatbot-input-container">
+                    <textarea
+                      class="chatbot-input"
+                      id="chatbot-input"
+                      placeholder="Écrivez un message..."
+                      rows="1"
+                    ></textarea>
+                    <button class="chatbot-send" id="chatbot-send">
+                      <i class="fas fa-paper-plane"></i>
                     </button>
+                  </div>
                 </div>
-
-                <!-- Съдържание -->
-                <div class="chatbot-content">
-                    <!-- Съобщения -->
-                    <div class="chatbot-messages" id="chatbot-messages">
-                        <!-- Съобщенията ще се добавят тук -->
-                    </div>
-
-                    <!-- Typing indicator -->
-                    <div class="typing-indicator" id="typing-indicator">
-                        HelpChain асистента пише<span class="typing-dots"></span>
-                    </div>
-
-                    <!-- Бързи въпроси -->
-                    <div class="quick-questions" id="quick-questions">
-                        <!-- Бързите въпроси ще се добавят тук -->
-                    </div>
-
-                    <!-- Input област -->
-                    <div class="chatbot-input-area">
-                        <div class="chatbot-input-container">
-                            <textarea
-                                class="chatbot-input"
-                                id="chatbot-input"
-                                placeholder="Напишете съобщение..."
-                                rows="1"
-                            ></textarea>
-                            <button class="chatbot-send" id="chatbot-send">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
         `;
 
@@ -189,20 +189,24 @@ class HelpChainChatbot {
       if (data.success) {
         this.addMessage(data.message, "bot");
 
-        // Ако има предложения, показваме ги
+        // S'il y a des suggestions, on les affiche
         if (data.suggestions) {
           setTimeout(() => {
             this.showQuickQuestions(data.suggestions);
           }, 500);
         }
       } else {
-        this.addMessage("Възникна грешка. Моля опитайте отново.", "bot", true);
+        this.addMessage(
+          "Une erreur s'est produite. Veuillez réessayer.",
+          "bot",
+          true,
+        );
       }
     } catch (error) {
       console.error("Error sending message:", error);
       this.hideTyping();
       this.addMessage(
-        "Възникна техническа грешка. Моля опитайте отново.",
+        "Une erreur technique s'est produite. Veuillez réessayer.",
         "bot",
         true,
       );
@@ -226,7 +230,7 @@ class HelpChainChatbot {
 
     const timeDiv = document.createElement("div");
     timeDiv.className = "message-time";
-    timeDiv.textContent = new Date().toLocaleTimeString("bg-BG", {
+    timeDiv.textContent = new Date().toLocaleTimeString("fr-FR", {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -240,16 +244,16 @@ class HelpChainChatbot {
   }
 
   formatMessage(text) {
-    // Заменяме нови редове с <br>
+    // Remplacer les nouvelles lignes par <br>
     text = text.replace(/\n/g, "<br>");
 
-    // Заменяме email адреси с links
+    // Remplacer les adresses email par des liens
     text = text.replace(
       /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g,
       '<a href="mailto:$1" target="_blank">$1</a>',
     );
 
-    // Заменяме URLs с links
+    // Remplacer les URLs par des liens
     text = text.replace(
       /(https?:\/\/[^\s]+)/g,
       '<a href="$1" target="_blank">$1</a>',
@@ -273,6 +277,7 @@ class HelpChainChatbot {
       this.quickQuestions.appendChild(btn);
     });
 
+    // Afficher les questions rapides
     this.quickQuestions.classList.add("show");
     this.scrollToBottom();
   }
@@ -323,7 +328,7 @@ class HelpChainChatbot {
 
 // Инициализираме чатбота когато документът е зареден
 document.addEventListener("DOMContentLoaded", function () {
-  // Проверяваме дали имаме Font Awesome
+  // Vérifier si Font Awesome est présent
   if (
     !document.querySelector('link[href*="font-awesome"]') &&
     !document.querySelector('link[href*="fontawesome"]')
@@ -335,7 +340,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.head.appendChild(fontAwesome);
   }
 
-  // Инициализираме чатбота
+  // Initialiser le chatbot
   window.helpchainChatbot = new HelpChainChatbot();
 });
 

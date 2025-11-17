@@ -5,9 +5,9 @@ Admin routes for role and user management
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from werkzeug.security import generate_password_hash
 
-from .extensions import db
-from .models import Permission, Role, RolePermission, User, UserRole
-from .permissions import require_admin_login
+from extensions import db
+from models import Permission, Role, RolePermission, User, UserRole
+from permissions import require_admin_login
 
 admin_roles_bp = Blueprint("admin_roles", __name__)
 

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ current_locale or 'fr' }}">
+<html lang="{{ current_locale if current_locale == 'en' else 'fr' }}">
   <head>
     <meta charset="UTF-8" />
     <title>HelpChain – Свързваме хората, които помагат</title>
@@ -30,13 +30,7 @@
             ><span data-i18n="nav.cta">Включи се във веригата</span>
           </a>
           <div class="lang-switch" aria-label="Language switch">
-            <button
-              type="button"
-              data-setlang="bg"
-              class="{% if current_locale == 'bg' %}active{% endif %}"
-            >
-              BG
-            </button>
+            <!-- Only French and English available -->
             <button
               type="button"
               data-setlang="fr"
@@ -394,24 +388,8 @@
         </div>
       </section>
 
-      <div
-        style="
-          position: fixed;
-          top: 8px;
-          right: 8px;
-          font-size: 11px;
-          color: #9ca3af;
-          z-index: 1200;
-        "
-        aria-label="Current language"
-      >
-        <span
-          style="
-            padding: 4px 8px;
-            border: 1px solid rgba(148, 163, 253, 0.3);
-            border-radius: 8px;
-            background: rgba(15, 23, 42, 0.7);
-          "
+      <div class="current-locale" aria-label="Current language">
+        <span class="current-locale-label"
           >Locale: {{ current_locale|upper }}</span
         >
       </div>

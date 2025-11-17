@@ -1,15 +1,20 @@
 import base64
+import datetime
 import hashlib
 import json
 import logging
 import os
+import random
+import re
 import sys
 import time
 from collections import defaultdict, deque
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from threading import Lock
 
 import jwt
+import pyotp
 from flask import (
     Flask,
     Response,
@@ -25,40 +30,34 @@ from flask import (
     session,
     url_for,
 )
-from flask_wtf import CSRFProtect
-
-from .models import User
-
-try:
-    from dotenv import load_dotenv  # type: ignore
-
-    # Load .env explicitly from this file's directory (robust against cwd changes)
-    _env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-    load_dotenv(_env_path)
-except Exception:
-    pass  # Fail-open if python-dotenv not installed yet
-from flask_babel import gettext as _  # ensure _ available if Babel not auto-injected
+from flask_babel import Babel, _, gettext
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
+from flask_mail import Mail, Message
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func, literal_column, text
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import relationship
+from werkzeug.security import check_password_hash, generate_password_hash
 
-# Робустни импорти: позволяват стартиране и в двата режима.
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.dirname(BASE_DIR)
-for _p in (BASE_DIR, PARENT_DIR):
-    if _p and _p not in sys.path:
-        sys.path.insert(0, _p)
+from extensions import babel, db  # type: ignore
+from microsoft_auth import bp as microsoft_bp  # type: ignore
+from models import AdminUser, HelpRequest, PriorityEnum, RoleEnum, User, Volunteer  # type: ignore
 
-db = None
-HelpRequest = None
-PriorityEnum = None
 User = None
 RoleEnum = None
 Volunteer = None
 AdminUser = None
 
-from .extensions import babel, db  # type: ignore
-from .microsoft_auth import bp as microsoft_bp  # type: ignore
-from .models import AdminUser, HelpRequest, PriorityEnum, RoleEnum, User, Volunteer  # type: ignore
+from extensions import babel, db  # type: ignore
+from microsoft_auth import bp as microsoft_bp  # type: ignore
+from models import AdminUser, HelpRequest, PriorityEnum, RoleEnum, User, Volunteer  # type: ignore
 
 app = Flask(__name__)
 # Ensure a concrete secret key (Flask-WTF requires app.secret_key not None).
@@ -111,12 +110,12 @@ try:
         "BABEL_TRANSLATION_DIRECTORIES", os.path.join(basedir, "translations")
     )
 
-    SUPPORTED_LOCALES = ["fr", "bg", "en"]
+    SUPPORTED_LOCALES = ["fr", "en"]
 
     def _detect_country_code() -> str | None:
         """Best-effort country detection from common proxy/CDN headers.
 
-        Returns two-letter ISO country code if available (e.g. 'FR', 'BG').
+        Returns two-letter ISO country code if available (e.g. 'FR', 'EN').
         This avoids external lookups and works behind providers like Cloudflare
         (CF-IPCountry) or AppEngine (X-AppEngine-Country). Returns None if
         nothing reliable is present.
@@ -138,12 +137,11 @@ try:
         if lang_cookie in SUPPORTED_LOCALES:
             return lang_cookie
 
-        # 2) Geo-IP via headers: FR->fr, BG->bg, others->en
+        # 2) Geo-IP via headers: FR->fr, others->en
         cc = _detect_country_code()
         if cc == "FR":
             return "fr"
-        if cc == "BG":
-            return "bg"
+        # Remove Bulgarian country code mapping
         if cc:  # any other detected country
             return "en"
 
@@ -986,7 +984,7 @@ def service_worker():
 
 @app.get("/set_language")
 def set_language():
-    lang = (request.args.get("language") or "bg").strip().lower()
+    lang = (request.args.get("language") or "en").strip().lower()
     nxt = request.args.get("next") or url_for("index")
     resp = make_response(redirect(nxt))
     # 180 days
