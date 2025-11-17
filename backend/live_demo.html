@@ -80,16 +80,6 @@
         line-height: 1.6;
       }
 
-      .demo-note {
-        margin-top: 12px;
-        font-size: 0.85rem;
-        opacity: 0.85;
-      }
-
-      .demo-link-highlight {
-        color: #ffd700;
-      }
-
       .demo-btn {
         display: inline-block;
         padding: 12px 25px;
@@ -198,8 +188,7 @@
           <a
             href="https://402ab0c7ef80.ngrok-free.app"
             target="_blank"
-            rel="noopener"
-            class="demo-link-highlight"
+            style="color: #ffd700"
             >https://402ab0c7ef80.ngrok-free.app</a
           >
         </p>
@@ -212,24 +201,20 @@
       <div class="performance-stats">
         <h4>⚡ Performance Optimizations Активни</h4>
         <div class="stat-item">
-          <span>✅ Simple Cache + WebSocket клиент</span>
-          <span>Realtime ready</span>
+          <span>✅ Simple Cache System</span>
+          <span>Готов</span>
         </div>
         <div class="stat-item">
-          <span>✅ Postgres / SQLite профил</span>
-          <span>Индекси активни</span>
+          <span>✅ Database Indexing</span>
+          <span>4 индекса създадени</span>
         </div>
         <div class="stat-item">
-          <span>✅ Sample Analytics Generator</span>
-          <span>Celery на всеки 2 ч.</span>
+          <span>✅ Analytics Engine</span>
+          <span>1,013+ събития</span>
         </div>
         <div class="stat-item">
-          <span>✅ Professional Dashboards</span>
-          <span>UI refresh 2025</span>
-        </div>
-        <div class="stat-item">
-          <span>✅ Service Worker + PWA</span>
-          <span>Offline fallback</span>
+          <span>✅ Professional Dashboard</span>
+          <span>Dual theme system</span>
         </div>
       </div>
 
@@ -239,7 +224,7 @@
           <p>
             Добре дошли страница на HelpChain.bg платформата за доброволчество
           </p>
-          <a href="/" class="demo-btn" target="_blank" rel="noopener">Отвори</a>
+          <a href="/" class="demo-btn" target="_blank">Отвори</a>
         </div>
 
         <div class="demo-card">
@@ -247,9 +232,7 @@
           <p>
             Пълен административен интерфейс за управление на доброволци и заявки
           </p>
-          <a href="/admin/login" class="demo-btn" target="_blank" rel="noopener"
-            >Отвори</a
-          >
+          <a href="/admin" class="demo-btn" target="_blank">Отвори</a>
         </div>
 
         <div class="demo-card">
@@ -257,76 +240,28 @@
           <p>
             Професионална analytics система с реално време статистики и графики
           </p>
-          <a
-            href="/admin_analytics"
-            class="demo-btn"
-            target="_blank"
-            rel="noopener"
-            >Отвори</a
-          >
+          <a href="/admin/analytics" class="demo-btn" target="_blank">Отвори</a>
         </div>
 
         <div class="demo-card">
           <h3>🔧 Admin Dashboard</h3>
           <p>Стандартен админ dashboard с управление на доброволци</p>
-          <a
-            href="/admin/dashboard"
-            class="demo-btn"
-            target="_blank"
-            rel="noopener"
-            >Отвори</a
-          >
+          <a href="/admin/dashboard" class="demo-btn" target="_blank">Отвори</a>
         </div>
 
         <div class="demo-card">
           <h3>📈 API Analytics</h3>
           <p>RESTful API endpoint за analytics данни с филтриране и cache</p>
-          <a
-            href="/analytics/api/analytics/data"
-            class="demo-btn"
-            target="_blank"
-            rel="noopener"
+          <a href="/api/analytics-data" class="demo-btn" target="_blank"
             >Отвори JSON</a
           >
         </div>
 
         <div class="demo-card">
-          <h3>🤝 Доброволчески панел</h3>
-          <p>
-            Обновен интерфейс с бърз достъп до задачи, награди и актуализация на
-            локацията
-          </p>
-          <a
-            href="/volunteer_dashboard"
-            class="demo-btn"
-            target="_blank"
-            rel="noopener"
-            >Отвори</a
-          >
-          <p class="demo-note">
-            Вход: <code>ivan@example.com</code> (OTP bypass активен)
-          </p>
-        </div>
-
-        <div class="demo-card">
-          <h3>🌐 Многоезична версия</h3>
-          <p>
-            BG / EN / FR локализации, езиков селектор в навигацията и обновени
-            преводи
-          </p>
-          <a href="/" class="demo-btn" target="_blank" rel="noopener"
-            >Тествай езиците</a
-          >
-        </div>
-
-        <div class="demo-card">
-          <h3>📱 PWA & Notifications</h3>
-          <p>
-            Service Worker, offline cache и push fallback-и при липса на VAPID
-            ключ
-          </p>
-          <a href="/sw.js" class="demo-btn" target="_blank" rel="noopener"
-            >Прегледай SW</a
+          <h3>💾 Cache Stats</h3>
+          <p>Performance monitoring на cache системата в реално време</p>
+          <a href="/api/cache-stats" class="demo-btn" target="_blank"
+            >Отвори Stats</a
           >
         </div>
       </div>
@@ -340,26 +275,20 @@
 
         <div class="status-item">
           <h4>🟢 Database</h4>
-          <p>Postgres (prod) / SQLite (dev)</p>
-          <p>Индекси и миграции</p>
+          <p>SQLite активна</p>
+          <p>4 оптимизирани индекса</p>
         </div>
 
         <div class="status-item">
-          <h4>🟢 Realtime</h4>
-          <p>WebSocket client 20251028a</p>
-          <p>Fallback към polling</p>
+          <h4>🟢 Cache System</h4>
+          <p>Simple Cache готов</p>
+          <p>In-memory storage</p>
         </div>
 
         <div class="status-item">
           <h4>🟢 Analytics</h4>
-          <p>Sample events авто-генерация</p>
-          <p>API + dashboards</p>
-        </div>
-
-        <div class="status-item">
-          <h4>🟢 Localisation</h4>
-          <p>BG / EN / FR активни</p>
-          <p>Lang switcher в navbar</p>
+          <p>1,013+ събития</p>
+          <p>7 типа данни</p>
         </div>
       </div>
 
