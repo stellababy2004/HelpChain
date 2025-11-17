@@ -1,3 +1,9 @@
+"""Deprecated legacy file. Do not run directly. Use app.py.
+
+This module remains for archival reference only.
+"""
+
+
 # AJAX endpoint for admin dashboard: all requests as JSON
 @app.route("/admin/api/requests", methods=["GET"])
 @require_admin_login

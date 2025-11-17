@@ -912,7 +912,7 @@ index 6d9fbb6..48c45e4 100644
 @@ -1168,8 +1168,56 @@ def app():
          except Exception:
              pass
- 
+
 -        db.drop_all()
 -        db.create_all()
 +        # Drop any existing schema to start from a clean state for tests.
@@ -4400,7 +4400,7 @@ index 52189c9..1e1b675 100644
 +++ b/backend/sent_emails.txt
 @@ -2835,3 +2835,10 @@ From: noreply@helpchain.bg
  HelpChain системата
- 
+
  ==================================================
 +Subject: HelpChain: Потвърдете имейла си
 +To: ['testuser@example.com']
@@ -18471,7 +18471,7 @@ diff --git a/templates/backend/templates/# Code Citations.md b/templates/backend
 new file mode 100644
 index 0000000..c92205c
 --- /dev/null
-+++ b/templates/backend/templates/# Code Citations.md	
++++ b/templates/backend/templates/# Code Citations.md
 @@ -0,0 +1,976 @@
 +# Code Citations
 +
@@ -25583,7 +25583,7 @@ diff --git a/tests/# Code Citations.txt b/tests/# Code Citations.txt
 new file mode 100644
 index 0000000..b0d864e
 --- /dev/null
-+++ b/tests/# Code Citations.txt	
++++ b/tests/# Code Citations.txt
 @@ -0,0 +1,975 @@
 +# Code Citations
 +

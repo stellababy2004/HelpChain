@@ -1,0 +1,1952 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HelpChain – Свързваме хората, които помагат</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      :root {
+        --bg: #020817;
+        --bg-soft: #050b20;
+        --accent: #7c3aed;
+        --accent-soft: rgba(124, 58, 237, 0.16);
+        --accent-alt: #38bdf8;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --danger: #f97316;
+        --radius-xl: 22px;
+        --transition-fast: 0.2s ease;
+        --shadow-soft: 0 18px 55px rgba(15, 23, 42, 0.68);
+        --font: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          -system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--font);
+        background: radial-gradient(
+          circle at top,
+          #0f172a 0,
+          #020817 40%,
+          #000 100%
+        );
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 18px 40px;
+      }
+
+      /* Navbar */
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 26px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 20px;
+        letter-spacing: 0.03em;
+      }
+
+      .logo-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 0, #38bdf8, #7c3aed);
+        box-shadow: 0 0 22px rgba(124, 58, 237, 0.9);
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      .nav-links a {
+        padding: 6px 10px;
+        border-radius: 999px;
+        transition:
+          background var(--transition-fast),
+          color var(--transition-fast),
+          transform var(--transition-fast);
+      }
+
+      .nav-links a:hover {
+        background: rgba(148, 163, 253, 0.08);
+        color: var(--accent-alt);
+        transform: translateY(-1px);
+      }
+
+      .nav-cta {
+        padding: 8px 16px;
+        border-radius: 999px;
+        background: linear-gradient(to right, #38bdf8, #7c3aed);
+        color: #0f172a;
+        font-weight: 600;
+        box-shadow: var(--shadow-soft);
+        cursor: pointer;
+        border: none;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition:
+          transform var(--transition-fast),
+          box-shadow var(--transition-fast),
+          background var(--transition-fast);
+      }
+
+      .nav-cta span.icon {
+        font-size: 15px;
+      }
+
+      .nav-cta:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+        background: linear-gradient(to right, #7c3aed, #38bdf8);
+      }
+
+      /* Layout: Hero + Side panel */
+      .hero-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2.2fr) minmax(260px, 1fr);
+        gap: 24px;
+        align-items: stretch;
+        margin-bottom: 30px;
+      }
+
+      /* Hero */
+      .hero {
+        background: radial-gradient(
+            circle at top left,
+            rgba(124, 58, 237, 0.14),
+            transparent
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(56, 189, 248, 0.09),
+            transparent
+          );
+        padding: 22px 20px 20px;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-soft);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 253, 0.1);
+      }
+
+      .label-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px 4px 5px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.8);
+        color: var(--accent-alt);
+        font-size: 11px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(56, 189, 248, 0.18);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+      }
+
+      .label-pill-icon {
+        width: 17px;
+        height: 17px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 0, #38bdf8, #22c55e);
+        display: inline-block;
+        box-shadow: 0 0 18px rgba(34, 197, 94, 0.9);
+      }
+
+      .hero h1 {
+        font-size: clamp(26px, 4vw, 34px);
+        font-weight: 700;
+        margin-bottom: 10px;
+        letter-spacing: 0.01em;
+      }
+
+      .hero h1 span {
+        background: linear-gradient(to right, #38bdf8, #a855f7);
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+
+      .hero-sub {
+        font-size: 14px;
+        color: var(--muted);
+        max-width: 500px;
+        margin-bottom: 16px;
+      }
+
+      .hero-cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .btn-primary,
+      .btn-ghost {
+        padding: 9px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        white-space: nowrap;
+      }
+
+      .btn-primary {
+        background: linear-gradient(to right, #38bdf8, #7c3aed);
+        color: #020817;
+        font-weight: 600;
+        box-shadow: var(--shadow-soft);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.9);
+        background: linear-gradient(to right, #7c3aed, #38bdf8);
+      }
+
+      .btn-ghost {
+        background: rgba(15, 23, 42, 0.7);
+        color: var(--accent-alt);
+        border: 1px solid rgba(148, 163, 253, 0.24);
+      }
+
+      .btn-ghost:hover {
+        background: rgba(15, 23, 42, 0.98);
+        transform: translateY(-1px);
+      }
+
+      /* Hero stats & ticker */
+      .hero-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 11px;
+        margin-bottom: 10px;
+        color: var(--muted);
+      }
+
+      .stat-pill {
+        padding: 8px 11px;
+        border-radius: 14px;
+        background: rgba(9, 9, 11, 0.9);
+        border: 1px solid rgba(75, 85, 99, 0.7);
+        box-shadow: 0 10px 20px rgba(15, 23, 42, 0.7);
+        display: flex;
+        flex-direction: column;
+        min-width: 110px;
+      }
+
+      .stat-label {
+        font-size: 9px;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 3px;
+      }
+
+      .stat-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: #e5e7eb;
+      }
+
+      .stat-sub {
+        font-size: 9px;
+        color: var(--muted);
+      }
+
+      .live-ticker {
+        margin-top: 4px;
+        font-size: 10px;
+        color: var(--accent-alt);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.9;
+      }
+
+      .live-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 12px #22c55e;
+        animation: pulse 1.4s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        60% {
+          transform: scale(1.7);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+        }
+      }
+
+      /* Side card: Join the Chain */
+      .side-card {
+        background: radial-gradient(
+            circle at top,
+            rgba(148, 163, 253, 0.22),
+            transparent
+          ),
+          var(--bg-soft);
+        border-radius: var(--radius-xl);
+        padding: 16px 14px 14px;
+        border: 1px solid rgba(148, 163, 253, 0.18);
+        box-shadow: var(--shadow-soft);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .side-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .side-sub {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .pill-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 4px 0 6px;
+        font-size: 10px;
+      }
+
+      .pill {
+        padding: 7px 9px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.98);
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        cursor: pointer;
+        color: var(--muted);
+        display: inline-flex;
+        gap: 5px;
+        align-items: center;
+        transition: all var(--transition-fast);
+      }
+
+      .pill span.icon {
+        font-size: 11px;
+      }
+
+      .pill:hover {
+        color: var(--accent-alt);
+        border-color: rgba(56, 189, 248, 0.7);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.9);
+        transform: translateY(-1px);
+      }
+
+      .side-input {
+        width: 100%;
+        padding: 8px 9px;
+        border-radius: 12px;
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        background: rgba(2, 6, 23, 0.98);
+        color: var(--text);
+        font-size: 11px;
+        margin: 2px 0 4px;
+        outline: none;
+        transition: all var(--transition-fast);
+      }
+
+      .side-input::placeholder {
+        color: #6b7280;
+      }
+
+      .side-input:focus {
+        border-color: var(--accent-alt);
+        box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+      }
+
+      .side-btn {
+        margin-top: 4px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: linear-gradient(to right, var(--accent), var(--accent-alt));
+        color: #020817;
+        font-size: 11px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: var(--shadow-soft);
+        transition: all var(--transition-fast);
+        width: 100%;
+      }
+
+      .side-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 22px 55px rgba(15, 23, 42, 0.9);
+      }
+
+      .side-note {
+        font-size: 9px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      /* Map + Stories + How it works */
+      .section {
+        margin-bottom: 26px;
+      }
+
+      .section-title-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .section-title {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .section-sub {
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      .map-card {
+        position: relative;
+        border-radius: var(--radius-xl);
+        padding: 14px 14px 12px;
+        background: radial-gradient(
+            circle at top,
+            rgba(124, 58, 237, 0.1),
+            transparent
+          ),
+          radial-gradient(
+            circle at bottom,
+            rgba(56, 189, 248, 0.04),
+            transparent
+          ),
+          #020817;
+        border: 1px solid rgba(75, 85, 99, 0.7);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        font-size: 10px;
+        color: var(--muted);
+      }
+
+      .map-visual {
+        position: relative;
+        height: 220px;
+        margin-top: 6px;
+        border-radius: 18px;
+        background: radial-gradient(
+            circle at 20% 30%,
+            rgba(56, 189, 248, 0.18),
+            transparent
+          ),
+          radial-gradient(
+            circle at 70% 40%,
+            rgba(124, 58, 237, 0.22),
+            transparent
+          ),
+          radial-gradient(
+            circle at 45% 70%,
+            rgba(34, 197, 94, 0.16),
+            transparent
+          ),
+          #020817;
+        overflow: hidden;
+      }
+
+      .map-pulse {
+        position: absolute;
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: #38bdf8;
+        box-shadow: 0 0 18px rgba(56, 189, 248, 1);
+        animation: mapPulse 2.6s infinite;
+      }
+
+      /* Europe pulse positions (approximate), extra density in France */
+      .map-pulse.p-paris {
+        top: 38%;
+        left: 34%;
+        animation-delay: 0s;
+      }
+      .map-pulse.p-lyon {
+        top: 52%;
+        left: 36%;
+        animation-delay: 0.2s;
+      }
+      .map-pulse.p-marseille {
+        top: 62%;
+        left: 39%;
+        animation-delay: 0.4s;
+      }
+      .map-pulse.p-bordeaux {
+        top: 50%;
+        left: 28%;
+        animation-delay: 0.6s;
+      }
+      .map-pulse.p-lille {
+        top: 30%;
+        left: 34%;
+        animation-delay: 0.8s;
+      }
+      .map-pulse.p-toulouse {
+        top: 58%;
+        left: 31%;
+        animation-delay: 1s;
+      }
+      .map-pulse.p-nice {
+        top: 60%;
+        left: 41%;
+        animation-delay: 1.2s;
+      }
+      .map-pulse.p-nantes {
+        top: 46%;
+        left: 27%;
+        animation-delay: 1.4s;
+      }
+      /* Other EU */
+      .map-pulse.p-madrid {
+        top: 60%;
+        left: 23%;
+        animation-delay: 0.3s;
+      }
+      .map-pulse.p-barcelona {
+        top: 58%;
+        left: 29%;
+        animation-delay: 0.7s;
+      }
+      .map-pulse.p-lisbon {
+        top: 62%;
+        left: 16%;
+        animation-delay: 1.1s;
+      }
+      .map-pulse.p-london {
+        top: 34%;
+        left: 28%;
+        animation-delay: 0.5s;
+      }
+      .map-pulse.p-dublin {
+        top: 28%;
+        left: 20%;
+        animation-delay: 0.9s;
+      }
+      .map-pulse.p-brussels {
+        top: 35%;
+        left: 32%;
+        animation-delay: 1.3s;
+      }
+      .map-pulse.p-amsterdam {
+        top: 32%;
+        left: 34%;
+        animation-delay: 1.5s;
+      }
+      .map-pulse.p-berlin {
+        top: 34%;
+        left: 48%;
+        animation-delay: 0.1s;
+      }
+      .map-pulse.p-hamburg {
+        top: 30%;
+        left: 46%;
+        animation-delay: 0.6s;
+      }
+      .map-pulse.p-munich {
+        top: 45%;
+        left: 47%;
+        animation-delay: 1s;
+      }
+      .map-pulse.p-vienna {
+        top: 44%;
+        left: 54%;
+        animation-delay: 0.2s;
+      }
+      .map-pulse.p-prague {
+        top: 39%;
+        left: 52%;
+        animation-delay: 0.4s;
+      }
+      .map-pulse.p-budapest {
+        top: 49%;
+        left: 57%;
+        animation-delay: 0.8s;
+      }
+      .map-pulse.p-warsaw {
+        top: 33%;
+        left: 58%;
+        animation-delay: 1.2s;
+      }
+      .map-pulse.p-krakow {
+        top: 41%;
+        left: 56%;
+        animation-delay: 1.4s;
+      }
+      .map-pulse.p-rome {
+        top: 60%;
+        left: 49%;
+        animation-delay: 0.3s;
+      }
+      .map-pulse.p-milan {
+        top: 52%;
+        left: 45%;
+        animation-delay: 0.7s;
+      }
+      .map-pulse.p-naples {
+        top: 64%;
+        left: 50%;
+        animation-delay: 1.1s;
+      }
+      .map-pulse.p-zurich {
+        top: 49%;
+        left: 44%;
+        animation-delay: 0.5s;
+      }
+      .map-pulse.p-geneva {
+        top: 48%;
+        left: 41%;
+        animation-delay: 0.9s;
+      }
+      .map-pulse.p-athens {
+        top: 72%;
+        left: 63%;
+        animation-delay: 1.3s;
+      }
+      .map-pulse.p-sofia {
+        top: 61%;
+        left: 64%;
+        animation-delay: 1.5s;
+      }
+      .map-pulse.p-bucharest {
+        top: 52%;
+        left: 64%;
+        animation-delay: 0.1s;
+      }
+      .map-pulse.p-belgrade {
+        top: 53%;
+        left: 60%;
+        animation-delay: 0.6s;
+      }
+      .map-pulse.p-copenhagen {
+        top: 22%;
+        left: 44%;
+        animation-delay: 1s;
+      }
+      .map-pulse.p-stockholm {
+        top: 12%;
+        left: 52%;
+        animation-delay: 0.2s;
+      }
+      .map-pulse.p-oslo {
+        top: 10%;
+        left: 44%;
+        animation-delay: 0.4s;
+      }
+      .map-pulse.p-helsinki {
+        top: 10%;
+        left: 60%;
+        animation-delay: 0.8s;
+      }
+      .map-pulse.p-riga {
+        top: 20%;
+        left: 60%;
+        animation-delay: 1.2s;
+      }
+      .map-pulse.p-tallinn {
+        top: 18%;
+        left: 62%;
+        animation-delay: 1.4s;
+      }
+      .map-pulse.p-vilnius {
+        top: 26%;
+        left: 60%;
+        animation-delay: 1.6s;
+      }
+
+      @keyframes mapPulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        60% {
+          transform: scale(3);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+        }
+      }
+
+      .map-label {
+        position: absolute;
+        padding: 4px 7px;
+        font-size: 9px;
+        border-radius: 10px;
+        background: rgba(2, 6, 23, 0.96);
+        border: 1px solid rgba(148, 163, 253, 0.35);
+        color: var(--accent-alt);
+        display: flex;
+        gap: 5px;
+        align-items: center;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.9);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      .map-label span.icon {
+        font-size: 10px;
+      }
+
+      /* French city labels */
+      .label-paris {
+        top: 32%;
+        left: 34%;
+      }
+      .label-lyon {
+        top: 47%;
+        left: 36%;
+      }
+      .label-marseille {
+        top: 67%;
+        left: 39%;
+      }
+      .label-bordeaux {
+        top: 45%;
+        left: 27%;
+      }
+
+      /* Stories & How it works grid */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: minmax(0, 1.8fr) minmax(220px, 1fr);
+        gap: 18px;
+      }
+
+      .stories {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 3px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(148, 163, 253, 0.4) transparent;
+      }
+
+      .stories::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      .stories::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .stories::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 253, 0.4);
+        border-radius: 999px;
+      }
+
+      .story-card {
+        min-width: 160px;
+        max-width: 200px;
+        padding: 9px 9px 8px;
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.98);
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.9);
+        font-size: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        transition: all var(--transition-fast);
+        cursor: pointer;
+      }
+
+      .story-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 1);
+        border-color: rgba(124, 58, 237, 0.7);
+      }
+
+      .story-tag {
+        font-size: 8px;
+        color: var(--accent-alt);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+      }
+
+      .story-quote {
+        font-size: 10px;
+        color: var(--text);
+      }
+
+      .story-author {
+        font-size: 9px;
+        color: var(--muted);
+      }
+
+      .how-card {
+        padding: 10px 9px 9px;
+        border-radius: 14px;
+        background: rgba(2, 6, 23, 0.98);
+        border: 1px solid rgba(75, 85, 99, 0.9);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.95);
+        font-size: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .how-step {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+      }
+
+      .how-num {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        border: 1px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        color: var(--accent-alt);
+        flex-shrink: 0;
+      }
+
+      .how-label {
+        font-size: 10px;
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      .how-text {
+        font-size: 9px;
+        color: var(--muted);
+      }
+
+      /* Footer */
+      .footer {
+        margin-top: 26px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(31, 41, 55, 0.9);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: space-between;
+        font-size: 9px;
+        color: var(--muted);
+        opacity: 0.8;
+      }
+
+      .footer a {
+        color: var(--accent-alt);
+        transition: color var(--transition-fast);
+      }
+
+      .footer a:hover {
+        color: var(--accent);
+      }
+
+      /* Responsive */
+      @media (max-width: 840px) {
+        .hero-layout {
+          grid-template-columns: 1fr;
+        }
+        .side-card {
+          order: -1;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .nav-links {
+          display: none;
+        }
+      }
+
+      /* Language switcher */
+      .lang-switch {
+        display: inline-flex;
+        gap: 6px;
+        margin-left: 8px;
+        border-left: 1px solid rgba(148, 163, 253, 0.18);
+        padding-left: 8px;
+      }
+      .lang-switch button {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 253, 0.24);
+        background: rgba(15, 23, 42, 0.75);
+        color: var(--muted);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+      .lang-switch button:hover {
+        color: var(--accent-alt);
+        border-color: rgba(56, 189, 248, 0.4);
+      }
+      .lang-switch button.active {
+        color: #020817;
+        background: linear-gradient(to right, #38bdf8, #7c3aed);
+        border-color: transparent;
+        box-shadow: var(--shadow-soft);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- NAV -->
+      <header class="nav">
+        <div class="logo">
+          <div class="logo-icon"></div>
+          <div>HelpChain</div>
+        </div>
+        <div class="nav-links">
+          <a href="#how" data-i18n="nav.how">Как работи</a>
+          <a href="#stories" data-i18n="nav.stories">Истории</a>
+          <a href="/volunteer_register" data-i18n="nav.join"
+            >Стани доброволец</a
+          >
+          <a href="/submit_request" data-i18n="nav.need">Имам нужда от помощ</a>
+          <button
+            class="nav-cta"
+            onclick="window.location.href='/volunteer_register'"
+          >
+            <span class="icon">⚡</span
+            ><span data-i18n="nav.cta">Включи се във веригата</span>
+          </button>
+          <div class="lang-switch" aria-label="Language switch">
+            <button type="button" data-setlang="bg">BG</button>
+            <button type="button" data-setlang="fr">FR</button>
+            <button type="button" data-setlang="en">EN</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- HERO + SIDE -->
+      <section class="hero-layout">
+        <!-- HERO -->
+        <div class="hero">
+          <div class="label-pill">
+            <span class="label-pill-icon"></span>
+            <span data-i18n="label.realtime"
+              >В реално време свързваме помощ с нужда</span
+            >
+          </div>
+          <h1 id="hero-title">
+            Превръщаме <span>добротата</span> в организирана сила.
+          </h1>
+          <p class="hero-sub" data-i18n="hero.sub">
+            HelpChain свързва хора в нужда с проверени доброволци, психолози,
+            адвокати, ИТ специалисти и обикновени хора с голямо сърце. Включи се
+            с едно действие.
+          </p>
+
+          <div class="hero-cta-row">
+            <button
+              class="btn-primary"
+              onclick="window.location.href='/volunteer_register'"
+              data-i18n="btn.join"
+            >
+              💜 Стани доброволец
+            </button>
+            <button
+              class="btn-ghost"
+              onclick="window.location.href='/submit_request'"
+              data-i18n="btn.need"
+            >
+              🙋 Имам нужда от помощ
+            </button>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-pill">
+              <div class="stat-label" data-i18n="stats.volunteers.label">
+                Активни доброволци
+              </div>
+              <div class="stat-value" data-count="327">0</div>
+              <div class="stat-sub" data-i18n="stats.volunteers.sub">
+                онлайн в момента
+              </div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-label" data-i18n="stats.hours.label">
+                Часа дарена помощ
+              </div>
+              <div class="stat-value" data-count="1284">0</div>
+              <div class="stat-sub" data-i18n="stats.hours.sub">
+                последните 30 дни
+              </div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-label" data-i18n="stats.requests.label">
+                Решени заявки
+              </div>
+              <div class="stat-value" data-count="412">0</div>
+              <div class="stat-sub" data-i18n="stats.requests.sub">
+                реални хора, реални истории
+              </div>
+            </div>
+          </div>
+          <div class="live-ticker">
+            <div class="live-dot"></div>
+            <div id="live-msg">
+              Току-що: доброволец от Варна помогна на самотна майка. 💙
+            </div>
+          </div>
+        </div>
+
+        <!-- SIDE CARD: JOIN THE CHAIN -->
+        <aside class="side-card" id="join">
+          <div class="side-title" data-i18n="side.title">
+            Включи се във веригата на помощта
+          </div>
+          <div class="side-sub" data-i18n="side.sub">
+            Избери как искаш да помагаш. Ще ти изпратим подбрани каузи и хора в
+            нужда.
+          </div>
+
+          <div class="pill-grid">
+            <div class="pill" data-role="health">
+              <span class="icon">🩺</span
+              ><span data-i18n="pill.health">Здравна подкрепа</span>
+            </div>
+            <div class="pill" data-role="legal">
+              <span class="icon">⚖️</span
+              ><span data-i18n="pill.legal">Правна помощ</span>
+            </div>
+            <div class="pill" data-role="edu">
+              <span class="icon">🎓</span
+              ><span data-i18n="pill.edu">Обучение</span>
+            </div>
+            <div class="pill" data-role="it">
+              <span class="icon">💻</span
+              ><span data-i18n="pill.it">Техническа помощ</span>
+            </div>
+            <div class="pill" data-role="listen">
+              <span class="icon">💬</span
+              ><span data-i18n="pill.listen">Емоционална подкрепа</span>
+            </div>
+          </div>
+
+          <input
+            class="side-input"
+            id="vol-email"
+            type="email"
+            placeholder="Имейл за контакт"
+            data-i18n-placeholder="placeholders.volEmail"
+          />
+          <input
+            class="side-input"
+            id="vol-city"
+            type="text"
+            placeholder="Град / държава"
+            data-i18n-placeholder="placeholders.volCity"
+          />
+
+          <button class="side-btn" onclick="joinChain()">
+            <span data-i18n="side.btn">Стани част от HelpChain</span>
+            <span>⚡</span>
+          </button>
+
+          <div class="side-note" data-i18n="side.note">
+            Никакъв спам. Само реални сигнали, които можеш да поемеш.
+          </div>
+        </aside>
+      </section>
+
+      <!-- MAP / LIVE IMPACT -->
+      <section class="section">
+        <div class="section-title-row">
+          <div>
+            <div class="section-title" data-i18n="map.title">
+              Жива карта на доброто
+            </div>
+            <div class="section-sub" data-i18n="map.subLeft">
+              Виж къде HelpChain вече свързва хора. Данните могат да идват от
+              реален backend.
+            </div>
+          </div>
+          <div class="section-sub" data-i18n="map.subRight">
+            Ти също ще се появиш тук, когато се включиш. ✨
+          </div>
+        </div>
+
+        <div class="map-card">
+          <div>
+            <span data-i18n="map.activePointsLabel">Активни точки:</span> Париж,
+            Лион, Марсилия, Бордо, Берлин, Мадрид, Рим, Варшава, Лондон...
+          </div>
+          <div class="map-visual">
+            <!-- France (denser) -->
+            <div class="map-pulse p-paris"></div>
+            <div class="map-pulse p-lyon"></div>
+            <div class="map-pulse p-marseille"></div>
+            <div class="map-pulse p-bordeaux"></div>
+            <div class="map-pulse p-lille"></div>
+            <div class="map-pulse p-toulouse"></div>
+            <div class="map-pulse p-nice"></div>
+            <div class="map-pulse p-nantes"></div>
+
+            <!-- Other Europe -->
+            <div class="map-pulse p-madrid"></div>
+            <div class="map-pulse p-barcelona"></div>
+            <div class="map-pulse p-lisbon"></div>
+            <div class="map-pulse p-london"></div>
+            <div class="map-pulse p-dublin"></div>
+            <div class="map-pulse p-brussels"></div>
+            <div class="map-pulse p-amsterdam"></div>
+            <div class="map-pulse p-berlin"></div>
+            <div class="map-pulse p-hamburg"></div>
+            <div class="map-pulse p-munich"></div>
+            <div class="map-pulse p-vienna"></div>
+            <div class="map-pulse p-prague"></div>
+            <div class="map-pulse p-budapest"></div>
+            <div class="map-pulse p-warsaw"></div>
+            <div class="map-pulse p-krakow"></div>
+            <div class="map-pulse p-rome"></div>
+            <div class="map-pulse p-milan"></div>
+            <div class="map-pulse p-naples"></div>
+            <div class="map-pulse p-zurich"></div>
+            <div class="map-pulse p-geneva"></div>
+            <div class="map-pulse p-athens"></div>
+            <div class="map-pulse p-sofia"></div>
+            <div class="map-pulse p-bucharest"></div>
+            <div class="map-pulse p-belgrade"></div>
+            <div class="map-pulse p-copenhagen"></div>
+            <div class="map-pulse p-stockholm"></div>
+            <div class="map-pulse p-oslo"></div>
+            <div class="map-pulse p-helsinki"></div>
+            <div class="map-pulse p-riga"></div>
+            <div class="map-pulse p-tallinn"></div>
+            <div class="map-pulse p-vilnius"></div>
+
+            <!-- French city labels -->
+            <div class="map-label label-paris">
+              <span class="icon">💜</span
+              ><span data-i18n="map.fr.paris">Париж</span>
+            </div>
+            <div class="map-label label-lyon">
+              <span class="icon">💜</span
+              ><span data-i18n="map.fr.lyon">Лион</span>
+            </div>
+            <div class="map-label label-marseille">
+              <span class="icon">💜</span
+              ><span data-i18n="map.fr.marseille">Марсилия</span>
+            </div>
+            <div class="map-label label-bordeaux">
+              <span class="icon">💜</span
+              ><span data-i18n="map.fr.bordeaux">Бордо</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- STORIES + HOW IT WORKS -->
+      <section class="section">
+        <div class="section-title-row">
+          <div class="section-title" id="stories" data-i18n="stories.title">
+            Истории от веригата
+          </div>
+          <div class="section-sub" data-i18n="stories.sub">
+            Реални примери, които показват защо си важна част.
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="stories">
+            <div class="story-card">
+              <div class="story-tag" data-i18n="story1.tag">
+                Финансова помощ
+              </div>
+              <div class="story-quote" data-i18n="story1.quote">
+                “В рамките на ден получих юридическа консултация и не останах на
+                улицата.”
+              </div>
+              <div class="story-author" data-i18n="story1.author">
+                Мария, София
+              </div>
+            </div>
+            <div class="story-card">
+              <div class="story-tag" data-i18n="story2.tag">
+                Психологическа подкрепа
+              </div>
+              <div class="story-quote" data-i18n="story2.quote">
+                “Някой просто ме изслуша. Това ми спаси седмицата.”
+              </div>
+              <div class="story-author" data-i18n="story2.author">
+                Иван, Варна
+              </div>
+            </div>
+            <div class="story-card">
+              <div class="story-tag" data-i18n="story3.tag">IT помощ</div>
+              <div class="story-quote" data-i18n="story3.quote">
+                “Доброволец ми оправи онлайн регистрация за социални помощи.”
+              </div>
+              <div class="story-author" data-i18n="story3.author">
+                Елица, Пловдив
+              </div>
+            </div>
+            <div class="story-card">
+              <div class="story-tag" data-i18n="story4.tag">Общност</div>
+              <div class="story-quote" data-i18n="story4.quote">
+                “HelpChain ми показа, че не съм сама. Сега съм и доброволец.”
+              </div>
+              <div class="story-author" data-i18n="story4.author">
+                Анна, Лондон
+              </div>
+            </div>
+          </div>
+
+          <div class="how-card" id="how">
+            <div
+              class="section-title"
+              style="font-size: 12px; margin-bottom: 2px"
+              data-i18n="how.title"
+            >
+              Как работи HelpChain
+            </div>
+
+            <div class="how-step">
+              <div class="how-num">1</div>
+              <div>
+                <div class="how-label" data-i18n="how.step1.label">
+                  Човек подава сигнал
+                </div>
+                <div class="how-text" data-i18n="how.step1.text">
+                  Кратка форма – каква е нуждата, къде се намира, колко е
+                  спешно.
+                </div>
+              </div>
+            </div>
+
+            <div class="how-step">
+              <div class="how-num">2</div>
+              <div>
+                <div class="how-label" data-i18n="how.step2.label">
+                  Системата намира подходящ доброволец
+                </div>
+                <div class="how-text" data-i18n="how.step2.text">
+                  Алгоритъм + модерация. Само проверени хора, защитени данни.
+                </div>
+              </div>
+            </div>
+
+            <div class="how-step">
+              <div class="how-num">3</div>
+              <div>
+                <div class="how-label" data-i18n="how.step3.label">
+                  Помощта се случва
+                </div>
+                <div class="how-text" data-i18n="how.step3.text">
+                  Чат, обаждане или среща. Документираме резултата, без да
+                  експлоатираме историите.
+                </div>
+              </div>
+            </div>
+
+            <div class="how-step">
+              <div class="how-num">⚡</div>
+              <div>
+                <div class="how-label" data-i18n="how.step4.label">
+                  Ти си част от веригата
+                </div>
+                <div class="how-text" data-i18n="how.step4.text">
+                  Един човек, една идея, едно “да” може да промени нечий ден.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NEED HELP + FOOTER -->
+      <section class="section" id="need-help">
+        <div class="section-title-row">
+          <div class="section-title" data-i18n="need.title">
+            Имаш нужда от помощ?
+          </div>
+          <div class="section-sub" data-i18n="need.sub">
+            Напиши ни. Ще намерим подходящ човек от веригата HelpChain.
+          </div>
+        </div>
+        <div class="map-card" style="margin-bottom: 6px">
+          <div
+            style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px"
+          >
+            <input
+              class="side-input"
+              style="max-width: 260px"
+              placeholder="Кратко опиши нуждата си"
+              data-i18n-placeholder="need.desc"
+            />
+            <input
+              class="side-input"
+              style="max-width: 160px"
+              placeholder="Град / държава"
+              data-i18n-placeholder="need.city"
+            />
+            <input
+              class="side-input"
+              style="max-width: 180px"
+              placeholder="Имейл или телефон за връзка"
+              data-i18n-placeholder="need.contact"
+            />
+          </div>
+          <button
+            class="side-btn"
+            style="max-width: 220px"
+            onclick="window.location.href='/submit_request'"
+          >
+            <span data-i18n="need.sendBtn">Изпрати сигнал за помощ</span>
+          </button>
+          <div class="side-note" data-i18n="need.note">
+            Спокойно. Данните ти са защитени. Първо се свързваме дискретно, без
+            публично показване.
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div data-i18n="footer.text">
+          © 2025 HelpChain. Движение за смислена, отговорна помощ.
+        </div>
+        <div>
+          <a href="/static/previews/new-page.html#how" data-i18n="footer.about"
+            >За проекта</a
+          >
+          ·
+          <a href="/privacy" data-i18n="footer.privacy"
+            >Политика за поверителност</a
+          >
+          ·
+          <a href="/volunteer_register" data-i18n="footer.partner"
+            >Стани партньор</a
+          >
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      // i18n translations and helpers
+      const translations = {
+        bg: {
+          nav: {
+            how: "Как работи",
+            stories: "Истории",
+            join: "Стани доброволец",
+            need: "Имам нужда от помощ",
+            cta: "Включи се във веригата",
+          },
+          label: { realtime: "В реално време свързваме помощ с нужда" },
+          hero: {
+            titleHtml: "Превръщаме <span>добротата</span> в организирана сила.",
+            sub: "HelpChain свързва хора в нужда с проверени доброволци, психолози, адвокати, ИТ специалисти и обикновени хора с голямо сърце. Включи се с едно действие.",
+          },
+          btn: { join: "💜 Стани доброволец", need: "🙋 Имам нужда от помощ" },
+          stats: {
+            volunteers: {
+              label: "Активни доброволци",
+              sub: "онлайн в момента",
+            },
+            hours: { label: "Часа дарена помощ", sub: "последните 30 дни" },
+            requests: {
+              label: "Решени заявки",
+              sub: "реални хора, реални истории",
+            },
+          },
+          side: {
+            title: "Включи се във веригата на помощта",
+            sub: "Избери как искаш да помагаш. Ще ти изпратим подбрани каузи и хора в нужда.",
+            btn: "Стани част от HelpChain",
+            note: "Никакъв спам. Само реални сигнали, които можеш да поемеш.",
+          },
+          pill: {
+            health: "Здравна подкрепа",
+            legal: "Правна помощ",
+            edu: "Обучение",
+            it: "Техническа помощ",
+            listen: "Емоционална подкрепа",
+          },
+          placeholders: {
+            volEmail: "Имейл за контакт",
+            volCity: "Град / държава",
+          },
+          map: {
+            title: "Жива карта на доброто",
+            subLeft:
+              "Виж къде HelpChain вече свързва хора. Данните могат да идват от реален backend.",
+            subRight: "Ти също ще се появиш тук, когато се включиш. ✨",
+            activePointsLabel: "Активни точки:",
+            label1: "София: Доброволец пое заявка за лекарства",
+            label2: "Варна: Подкрепа за самотен възрастен човек",
+            fr: {
+              paris: "Париж",
+              lyon: "Лион",
+              marseille: "Марсилия",
+              bordeaux: "Бордо",
+            },
+          },
+          stories: {
+            title: "Истории от веригата",
+            sub: "Реални примери, които показват защо си важна част.",
+          },
+          story1: {
+            tag: "Финансова помощ",
+            quote:
+              "\u201CВ рамките на ден получих юридическа консултация и не останах на улицата.\u201D",
+            author: "Мария, София",
+          },
+          story2: {
+            tag: "Психологическа подкрепа",
+            quote:
+              "\u201CНякой просто ме изслуша. Това ми спаси седмицата.\u201D",
+            author: "Иван, Варна",
+          },
+          story3: {
+            tag: "IT помощ",
+            quote:
+              "\u201CДоброволец ми оправи онлайн регистрация за социални помощи.\u201D",
+            author: "Елица, Пловдив",
+          },
+          story4: {
+            tag: "Общност",
+            quote:
+              "\u201CHelpChain ми показа, че не съм сама. Сега съм и доброволец.\u201D",
+            author: "Анна, Лондон",
+          },
+          how: {
+            title: "Как работи HelpChain",
+            step1: {
+              label: "Човек подава сигнал",
+              text: "Кратка форма – каква е нуждата, къде се намира, колко е спешно.",
+            },
+            step2: {
+              label: "Системата намира подходящ доброволец",
+              text: "Алгоритъм + модерация. Само проверени хора, защитени данни.",
+            },
+            step3: {
+              label: "Помощта се случва",
+              text: "Чат, обаждане или среща. Документираме резултата, без да експлоатираме историите.",
+            },
+            step4: {
+              label: "Ти си част от веригата",
+              text: "Един човек, една идея, едно \u201Cда\u201D може да промени нечий ден.",
+            },
+          },
+          need: {
+            title: "Имаш нужда от помощ?",
+            sub: "Напиши ни. Ще намерим подходящ човек от веригата HelpChain.",
+            desc: "Кратко опиши нуждата си",
+            city: "Град / държава",
+            contact: "Имейл или телефон за връзка",
+            sendBtn: "Изпрати сигнал за помощ",
+            note: "Спокойно. Данните ти са защитени. Първо се свързваме дискретно, без публично показване.",
+            sent: "Заявката е изпратена (демо). Някой от HelpChain би отговорил тук.",
+          },
+          join: {
+            thanks: "Благодарим ти! Скоро ще получиш каузи, подходящи за теб.",
+            needEmail: "Изпрати ни и имейл, за да можем да те свържем с каузи.",
+          },
+          footer: {
+            text: "© 2025 HelpChain. Движение за смислена, отговорна помощ.",
+            about: "За проекта",
+            privacy: "Политика за поверителност",
+            partner: "Стани партньор",
+          },
+          live: [
+            "Току-що: доброволец от Варна помогна на самотна майка. 💙",
+            "Нов доброволец от Пловдив се включи в HelpChain. ✨",
+            "Юрист от София пое безплатна консултация за семейство в нужда. ⚖️",
+            "IT специалист помогна на пенсионер да заяви онлайн услугите си. 💻",
+          ],
+        },
+        fr: {
+          nav: {
+            how: "Comment ça marche",
+            stories: "Histoires",
+            join: "Devenir bénévole",
+            need: "J’ai besoin d’aide",
+            cta: "Rejoins la chaîne",
+          },
+          label: { realtime: "Nous relions en temps réel l’aide aux besoins" },
+          hero: {
+            titleHtml:
+              "Nous transformons la <span>bienveillance</span> en force organisée.",
+            sub: "HelpChain met en relation des personnes dans le besoin avec des bénévoles vérifiés, des psychologues, des avocats, des spécialistes IT et des personnes au grand cœur. Rejoins-nous en un geste.",
+          },
+          btn: { join: "💜 Devenir bénévole", need: "🙋 J’ai besoin d’aide" },
+          stats: {
+            volunteers: {
+              label: "Bénévoles actifs",
+              sub: "en ligne maintenant",
+            },
+            hours: {
+              label: "Heures d’aide offertes",
+              sub: "30 derniers jours",
+            },
+            requests: {
+              label: "Demandes résolues",
+              sub: "vraies personnes, vraies histoires",
+            },
+          },
+          side: {
+            title: "Rejoins la chaîne d’entraide",
+            sub: "Choisis comment tu veux aider. Nous t’enverrons des causes et des personnes adaptées.",
+            btn: "Deviens membre de HelpChain",
+            note: "Pas de spam. Uniquement des signalements réels que tu peux prendre.",
+          },
+          pill: {
+            health: "Soutien de santé",
+            legal: "Aide juridique",
+            edu: "Formation",
+            it: "Aide technique",
+            listen: "Soutien émotionnel",
+          },
+          placeholders: {
+            volEmail: "E-mail de contact",
+            volCity: "Ville / pays",
+          },
+          map: {
+            title: "Carte vivante de la solidarité",
+            subLeft:
+              "Découvre où HelpChain relie déjà des personnes. Les données peuvent venir d’un vrai backend.",
+            subRight: "Tu apparaîtras ici aussi lorsque tu te joindras. ✨",
+            activePointsLabel: "Points actifs:",
+            label1: "Sofia : Un bénévole a pris une demande de médicaments",
+            label2: "Varna : Soutien à une personne âgée isolée",
+            fr: {
+              paris: "Paris",
+              lyon: "Lyon",
+              marseille: "Marseille",
+              bordeaux: "Bordeaux",
+            },
+          },
+          stories: {
+            title: "Histoires de la chaîne",
+            sub: "Des exemples concrets qui montrent pourquoi tu comptes.",
+          },
+          story1: {
+            tag: "Aide financière",
+            quote:
+              "\u201CEn une journée, j’ai reçu un conseil juridique et je ne me suis pas retrouvé à la rue.\u201D",
+            author: "Maria, Sofia",
+          },
+          story2: {
+            tag: "Soutien psychologique",
+            quote:
+              "\u201CQuelqu’un m’a simplement écouté. Ça m’a sauvé la semaine.\u201D",
+            author: "Ivan, Varna",
+          },
+          story3: {
+            tag: "Aide informatique",
+            quote:
+              "\u201CUn bénévole m’a aidé à finaliser une inscription en ligne pour des aides sociales.\u201D",
+            author: "Elitsa, Plovdiv",
+          },
+          story4: {
+            tag: "Communauté",
+            quote:
+              "\u201CHelpChain m’a montré que je n’étais pas seule. Maintenant, je suis aussi bénévole.\u201D",
+            author: "Anna, Londres",
+          },
+          how: {
+            title: "Comment fonctionne HelpChain",
+            step1: {
+              label: "Une personne soumet un signalement",
+              text: "Formulaire court — besoin, localisation, urgence.",
+            },
+            step2: {
+              label: "Le système trouve un bénévole adapté",
+              text: "Algorithme + modération. Personnes vérifiées, données protégées.",
+            },
+            step3: {
+              label: "L’aide se réalise",
+              text: "Chat, appel ou rencontre. Nous documentons le résultat sans exploiter les histoires.",
+            },
+            step4: {
+              label: "Tu fais partie de la chaîne",
+              text: "Une personne, une idée, un ‘oui’ peut changer une journée.",
+            },
+          },
+          need: {
+            title: "Besoin d’aide ?",
+            sub: "Écris-nous. Nous trouverons la bonne personne dans la chaîne HelpChain.",
+            desc: "Décris brièvement ton besoin",
+            city: "Ville / pays",
+            contact: "E-mail ou téléphone",
+            sendBtn: "Envoyer un signalement",
+            note: "Pas d’inquiétude. Tes données sont protégées. Nous te contactons d’abord discrètement, sans affichage public.",
+            sent: "Signalement envoyé (démo). Quelqu’un de HelpChain répondrait ici.",
+          },
+          join: {
+            thanks: "Merci ! Tu recevras bientôt des causes adaptées à toi.",
+            needEmail:
+              "Donne-nous aussi ton e-mail pour te connecter aux causes.",
+          },
+          footer: {
+            text: "© 2025 HelpChain. Un mouvement pour une aide responsable et porteuse de sens.",
+            about: "À propos du projet",
+            privacy: "Politique de confidentialité",
+            partner: "Devenir partenaire",
+          },
+          live: [
+            "À l’instant : un bénévole de Varna a aidé une mère célibataire. 💙",
+            "Un nouveau bénévole de Plovdiv a rejoint HelpChain. ✨",
+            "Un juriste de Sofia a offert une consultation gratuite à une famille dans le besoin. ⚖️",
+            "Un spécialiste IT a aidé un retraité à demander des services en ligne. 💻",
+          ],
+        },
+        en: {
+          nav: {
+            how: "How it works",
+            stories: "Stories",
+            join: "Become a volunteer",
+            need: "I need help",
+            cta: "Join the chain",
+          },
+          label: { realtime: "We connect help to need in real time" },
+          hero: {
+            titleHtml: "We turn <span>kindness</span> into organized power.",
+            sub: "HelpChain connects people in need with verified volunteers, psychologists, lawyers, IT specialists, and big-hearted people. Join with a single action.",
+          },
+          btn: { join: "💜 Become a volunteer", need: "🙋 I need help" },
+          stats: {
+            volunteers: { label: "Active volunteers", sub: "online now" },
+            hours: { label: "Hours of help given", sub: "last 30 days" },
+            requests: {
+              label: "Requests resolved",
+              sub: "real people, real stories",
+            },
+          },
+          side: {
+            title: "Join the chain of help",
+            sub: "Choose how you want to help. We’ll send you curated causes and people in need.",
+            btn: "Become part of HelpChain",
+            note: "No spam. Only real signals you can take on.",
+          },
+          pill: {
+            health: "Health support",
+            legal: "Legal aid",
+            edu: "Education",
+            it: "Technical help",
+            listen: "Emotional support",
+          },
+          placeholders: {
+            volEmail: "Contact email",
+            volCity: "City / country",
+          },
+          map: {
+            title: "Live map of kindness",
+            subLeft:
+              "See where HelpChain already connects people. Data can come from a real backend.",
+            subRight: "You’ll appear here too when you join. ✨",
+            activePointsLabel: "Active points:",
+            label1: "Sofia: Volunteer took a request for medicine",
+            label2: "Varna: Support for an elderly person living alone",
+            fr: {
+              paris: "Paris",
+              lyon: "Lyon",
+              marseille: "Marseille",
+              bordeaux: "Bordeaux",
+            },
+          },
+          stories: {
+            title: "Chain stories",
+            sub: "Real examples that show why you matter.",
+          },
+          story1: {
+            tag: "Financial aid",
+            quote:
+              "\u201CWithin a day I received legal advice and didn’t end up on the street.\u201D",
+            author: "Maria, Sofia",
+          },
+          story2: {
+            tag: "Psychological support",
+            quote:
+              "\u201CSomeone simply listened to me. It saved my week.\u201D",
+            author: "Ivan, Varna",
+          },
+          story3: {
+            tag: "IT help",
+            quote:
+              "\u201CA volunteer fixed my online registration for social benefits.\u201D",
+            author: "Elitsa, Plovdiv",
+          },
+          story4: {
+            tag: "Community",
+            quote:
+              "\u201CHelpChain showed me I’m not alone. Now I’m a volunteer too.\u201D",
+            author: "Anna, London",
+          },
+          how: {
+            title: "How HelpChain works",
+            step1: {
+              label: "A person submits a request",
+              text: "Short form — what’s needed, where, and how urgent.",
+            },
+            step2: {
+              label: "The system finds a suitable volunteer",
+              text: "Algorithm + moderation. Verified people, protected data.",
+            },
+            step3: {
+              label: "Help happens",
+              text: "Chat, call or meeting. We document outcomes without exploiting stories.",
+            },
+            step4: {
+              label: "You are part of the chain",
+              text: "One person, one idea, one ‘yes’ can change someone’s day.",
+            },
+          },
+          need: {
+            title: "Need help?",
+            sub: "Write to us. We’ll find the right person from the HelpChain network.",
+            desc: "Briefly describe your need",
+            city: "City / country",
+            contact: "Email or phone",
+            sendBtn: "Send help request",
+            note: "Don’t worry. Your data is protected. We contact you discreetly first, without public exposure.",
+            sent: "Request sent (demo). Someone from HelpChain would reply here.",
+          },
+          join: {
+            thanks: "Thank you! You’ll soon receive causes tailored to you.",
+            needEmail:
+              "Please also provide an email so we can match you with causes.",
+          },
+          footer: {
+            text: "© 2025 HelpChain. A movement for meaningful, responsible help.",
+            about: "About the project",
+            privacy: "Privacy policy",
+            partner: "Become a partner",
+          },
+          live: [
+            "Just now: a volunteer from Varna helped a single mother. 💙",
+            "A new volunteer from Plovdiv joined HelpChain. ✨",
+            "A lawyer from Sofia took a free consultation for a family in need. ⚖️",
+            "An IT specialist helped a retiree request online services. 💻",
+          ],
+        },
+      };
+
+      let currentLang = localStorage.getItem("hc_lang") || "fr";
+      function t(key) {
+        try {
+          return (
+            key
+              .split(".")
+              .reduce((o, k) => (o || {})[k], translations[currentLang]) || key
+          );
+        } catch {
+          return key;
+        }
+      }
+
+      function applyTranslations() {
+        // html lang
+        document.documentElement.lang = currentLang;
+
+        // Generic text nodes
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          const val = t(key);
+          if (typeof val === "string") {
+            el.textContent = val;
+          }
+        });
+
+        // Hero title with gradient span
+        const heroTitle = document.getElementById("hero-title");
+        if (heroTitle) heroTitle.innerHTML = t("hero.titleHtml");
+
+        // Placeholders
+        document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+          const key = el.getAttribute("data-i18n-placeholder");
+          const val = t(key);
+          if (typeof val === "string") el.setAttribute("placeholder", val);
+        });
+
+        // Buttons that keep emojis included in translations already
+
+        // Live ticker initial message
+        const live = getLiveMessages();
+        const liveEl = document.getElementById("live-msg");
+        if (liveEl && Array.isArray(live) && live.length) {
+          liveEl.textContent = live[0];
+          liveIndex = 0;
+        }
+      }
+
+      function highlightActiveLang() {
+        document
+          .querySelectorAll(".lang-switch [data-setlang]")
+          .forEach((btn) => {
+            const isActive = btn.getAttribute("data-setlang") === currentLang;
+            btn.classList.toggle("active", isActive);
+            btn.setAttribute("aria-pressed", String(isActive));
+            btn.title = isActive ? "Selected" : "Switch language";
+          });
+      }
+
+      function setupLangSwitcher() {
+        document
+          .querySelectorAll(".lang-switch [data-setlang]")
+          .forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const lang = btn.getAttribute("data-setlang");
+              currentLang = lang;
+              localStorage.setItem("hc_lang", lang);
+              applyTranslations();
+              highlightActiveLang();
+            });
+          });
+        highlightActiveLang();
+      }
+
+      async function detectLangFromIP() {
+        // Skip detection if user already chose a language manually
+        if (localStorage.getItem("hc_lang")) return;
+        try {
+          const resp = await fetch("https://ipapi.co/json/");
+          if (!resp.ok) throw new Error("geo failed");
+          const data = await resp.json();
+          const cc = (data && data.country_code) || "";
+          let detected = "en";
+          if (cc === "BG") detected = "bg";
+          else if (cc === "FR") detected = "fr";
+          // Apply only if different from current default
+          if (detected && detected !== currentLang) {
+            currentLang = detected;
+            applyTranslations();
+            highlightActiveLang();
+          }
+        } catch (e) {
+          // On any error, keep current default (French) and continue
+        }
+      }
+
+      function getLiveMessages() {
+        return translations[currentLang]?.live || translations.bg.live;
+      }
+
+      // smooth scroll helper
+      function scrollToSection(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      // fake join flow
+      function joinChain() {
+        // Redirect to the real volunteer registration page for the demo flow
+        window.location.href = "/volunteer_register";
+      }
+
+      // animate numbers
+      function animateCounters() {
+        document.querySelectorAll(".stat-value[data-count]").forEach((el) => {
+          const target = parseInt(el.getAttribute("data-count"), 10);
+          let current = 0;
+          const steps = 40;
+          const inc = Math.max(1, Math.round(target / steps));
+          const interval = setInterval(() => {
+            current += inc;
+            if (current >= target) {
+              current = target;
+              clearInterval(interval);
+            }
+            el.textContent = current.toString();
+          }, 40);
+        });
+      }
+
+      // simple live ticker rotation
+      let liveMessages = getLiveMessages();
+      let liveIndex = 0;
+      function rotateLive() {
+        const el = document.getElementById("live-msg");
+        if (!el) return;
+        liveMessages = getLiveMessages();
+        liveIndex = (liveIndex + 1) % liveMessages.length;
+        el.style.opacity = "0";
+        setTimeout(() => {
+          el.textContent = liveMessages[liveIndex];
+          el.style.opacity = "1";
+        }, 180);
+      }
+
+      window.addEventListener("load", () => {
+        applyTranslations(); // render default FR immediately
+        setupLangSwitcher();
+        detectLangFromIP(); // then refine based on IP if no manual choice
+        animateCounters();
+        setInterval(rotateLive, 3800);
+
+        // pill select UX
+        document.querySelectorAll(".pill").forEach((pill) => {
+          pill.addEventListener("click", () => {
+            pill.classList.toggle("active");
+            pill.style.background = pill.classList.contains("active")
+              ? "rgba(124,58,237,0.22)"
+              : "rgba(15,23,42,0.98)";
+            pill.style.color = pill.classList.contains("active")
+              ? "#e5e7eb"
+              : "#9ca3af";
+            pill.style.borderColor = pill.classList.contains("active")
+              ? "rgba(124,58,237,0.9)"
+              : "rgba(75,85,99,0.9)";
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

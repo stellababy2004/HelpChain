@@ -9,6 +9,7 @@ endblock %} {% block content %}
     {% if current_user and current_user.two_factor_enabled %}
     <p>2FA е активиран.</p>
     <form action="/admin/2fa/disable" method="post" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
       <button type="submit" class="btn btn-warning btn-sm">
         Деактивирай 2FA
       </button>

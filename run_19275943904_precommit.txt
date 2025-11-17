@@ -229,7 +229,7 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:544:test	Install dependencies	2025-11-11T19:11:03.5639555Z Downloading filelock-3.20.0-py3-none-any.whl (16 kB)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:545:test	Install dependencies	2025-11-11T19:11:03.5948327Z Downloading platformdirs-4.5.0-py3-none-any.whl (18 kB)
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:546:test	Install dependencies	2025-11-11T19:11:03.7378005Z Installing collected packages: distlib, pyyaml, platformdirs, nodeenv, identify, filelock, cfgv, virtualenv, pre-commit
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:547:test	Install dependencies	2025-11-11T19:11:04.0962634Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:547:test	Install dependencies	2025-11-11T19:11:04.0962634Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:548:test	Install dependencies	2025-11-11T19:11:04.1011440Z Successfully installed cfgv-3.4.0 distlib-0.4.0 filelock-3.20.0 identify-2.6.15 nodeenv-1.9.1 platformdirs-4.5.0 pre-commit-4.4.0 pyyaml-6.0.3 virtualenv-20.35.4
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:549:test	Run database migrations	﻿2025-11-11T19:11:04.1631034Z ##[group]Run python -u run_migrations.py
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:550:test	Run database migrations	2025-11-11T19:11:04.1631380Z [36;1mpython -u run_migrations.py[0m
@@ -262,26 +262,26 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:577:test	Run database migrations	2025-11-11T19:11:05.3475947Z 2025-11-11 19:11:05,347 INFO  [sqlalchemy.engine.Engine] [raw sql] ()
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:578:test	Run database migrations	2025-11-11T19:11:05.3477300Z 2025-11-11 19:11:05,347 INFO  [sqlalchemy.engine.Engine] PRAGMA temp.table_info("alembic_version")
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:579:test	Run database migrations	2025-11-11T19:11:05.3478185Z 2025-11-11 19:11:05,347 INFO  [sqlalchemy.engine.Engine] [raw sql] ()
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:580:test	Run database migrations	2025-11-11T19:11:05.3481351Z 2025-11-11 19:11:05,348 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:580:test	Run database migrations	2025-11-11T19:11:05.3481351Z 2025-11-11 19:11:05,348 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:581:test	Run database migrations	2025-11-11T19:11:05.3481900Z CREATE TABLE alembic_version (
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:582:test	Run database migrations	2025-11-11T19:11:05.3482323Z 	version_num VARCHAR(32) NOT NULL, 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:582:test	Run database migrations	2025-11-11T19:11:05.3482323Z 	version_num VARCHAR(32) NOT NULL,
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:583:test	Run database migrations	2025-11-11T19:11:05.3482854Z 	CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:584:test	Run database migrations	2025-11-11T19:11:05.3483622Z )
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:585:test	Run database migrations	2025-11-11T19:11:05.3483789Z 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:586:test	Run database migrations	2025-11-11T19:11:05.3483799Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:585:test	Run database migrations	2025-11-11T19:11:05.3483789Z
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:586:test	Run database migrations	2025-11-11T19:11:05.3483799Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:587:test	Run database migrations	2025-11-11T19:11:05.3484089Z 2025-11-11 19:11:05,348 INFO  [sqlalchemy.engine.Engine] [no key 0.00006s] ()
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:588:test	Run database migrations	2025-11-11T19:11:05.3637254Z 2025-11-11 19:11:05,363 INFO  [alembic.runtime.migration] Running upgrade  -> 8b5b9b0fa3d2, initial
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:589:test	Run database migrations	2025-11-11T19:11:05.3642752Z 2025-11-11 19:11:05,364 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:589:test	Run database migrations	2025-11-11T19:11:05.3642752Z 2025-11-11 19:11:05,364 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:590:test	Run database migrations	2025-11-11T19:11:05.3643426Z CREATE TABLE volunteers (
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:591:test	Run database migrations	2025-11-11T19:11:05.3643783Z 	id INTEGER NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:592:test	Run database migrations	2025-11-11T19:11:05.3644045Z 	name VARCHAR(100) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:593:test	Run database migrations	2025-11-11T19:11:05.3644284Z 	email VARCHAR(120) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:594:test	Run database migrations	2025-11-11T19:11:05.3644513Z 	phone VARCHAR(20), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:595:test	Run database migrations	2025-11-11T19:11:05.3644716Z 	PRIMARY KEY (id), 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:591:test	Run database migrations	2025-11-11T19:11:05.3643783Z 	id INTEGER NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:592:test	Run database migrations	2025-11-11T19:11:05.3644045Z 	name VARCHAR(100) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:593:test	Run database migrations	2025-11-11T19:11:05.3644284Z 	email VARCHAR(120) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:594:test	Run database migrations	2025-11-11T19:11:05.3644513Z 	phone VARCHAR(20),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:595:test	Run database migrations	2025-11-11T19:11:05.3644716Z 	PRIMARY KEY (id),
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:596:test	Run database migrations	2025-11-11T19:11:05.3644901Z 	UNIQUE (email)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:597:test	Run database migrations	2025-11-11T19:11:05.3645073Z )
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:598:test	Run database migrations	2025-11-11T19:11:05.3645160Z 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:599:test	Run database migrations	2025-11-11T19:11:05.3645165Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:598:test	Run database migrations	2025-11-11T19:11:05.3645160Z
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:599:test	Run database migrations	2025-11-11T19:11:05.3645165Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:600:test	Run database migrations	2025-11-11T19:11:05.3645340Z 2025-11-11 19:11:05,364 INFO  [sqlalchemy.engine.Engine] [no key 0.00006s] ()
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:601:test	Run database migrations	2025-11-11T19:11:05.3667166Z 2025-11-11 19:11:05,366 INFO  [sqlalchemy.engine.Engine] INSERT INTO alembic_version (version_num) VALUES ('8b5b9b0fa3d2') RETURNING version_num
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:602:test	Run database migrations	2025-11-11T19:11:05.3668259Z 2025-11-11 19:11:05,366 INFO  [sqlalchemy.engine.Engine] [generated in 0.00010s] ()
@@ -308,23 +308,23 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:623:test	Run database migrations	2025-11-11T19:11:05.3723803Z 2025-11-11 19:11:05,372 INFO  [sqlalchemy.engine.Engine] [raw sql] ()
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:624:test	Run database migrations	2025-11-11T19:11:05.3725333Z 2025-11-11 19:11:05,372 INFO  [sqlalchemy.engine.Engine] SELECT sql FROM  (SELECT * FROM sqlite_master UNION ALL   SELECT * FROM sqlite_temp_master) WHERE name = ? AND type in ('table', 'view')
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:625:test	Run database migrations	2025-11-11T19:11:05.3726303Z 2025-11-11 19:11:05,372 INFO  [sqlalchemy.engine.Engine] [raw sql] ('volunteers',)
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:626:test	Run database migrations	2025-11-11T19:11:05.3747144Z 2025-11-11 19:11:05,374 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:626:test	Run database migrations	2025-11-11T19:11:05.3747144Z 2025-11-11 19:11:05,374 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:627:test	Run database migrations	2025-11-11T19:11:05.3747659Z CREATE TABLE _alembic_tmp_volunteers (
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:628:test	Run database migrations	2025-11-11T19:11:05.3748091Z 	id INTEGER NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:629:test	Run database migrations	2025-11-11T19:11:05.3748324Z 	name VARCHAR(120) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:630:test	Run database migrations	2025-11-11T19:11:05.3748545Z 	email VARCHAR(120) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:631:test	Run database migrations	2025-11-11T19:11:05.3748760Z 	phone VARCHAR(20), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:632:test	Run database migrations	2025-11-11T19:11:05.3748963Z 	location VARCHAR(100), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:633:test	Run database migrations	2025-11-11T19:11:05.3749160Z 	PRIMARY KEY (id), 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:628:test	Run database migrations	2025-11-11T19:11:05.3748091Z 	id INTEGER NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:629:test	Run database migrations	2025-11-11T19:11:05.3748324Z 	name VARCHAR(120) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:630:test	Run database migrations	2025-11-11T19:11:05.3748545Z 	email VARCHAR(120) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:631:test	Run database migrations	2025-11-11T19:11:05.3748760Z 	phone VARCHAR(20),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:632:test	Run database migrations	2025-11-11T19:11:05.3748963Z 	location VARCHAR(100),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:633:test	Run database migrations	2025-11-11T19:11:05.3749160Z 	PRIMARY KEY (id),
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:634:test	Run database migrations	2025-11-11T19:11:05.3749342Z 	UNIQUE (email)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:635:test	Run database migrations	2025-11-11T19:11:05.3749502Z )
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:636:test	Run database migrations	2025-11-11T19:11:05.3749590Z 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:637:test	Run database migrations	2025-11-11T19:11:05.3749595Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:636:test	Run database migrations	2025-11-11T19:11:05.3749590Z
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:637:test	Run database migrations	2025-11-11T19:11:05.3749595Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:638:test	Run database migrations	2025-11-11T19:11:05.3749763Z 2025-11-11 19:11:05,374 INFO  [sqlalchemy.engine.Engine] [no key 0.00006s] ()
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:639:test	Run database migrations	2025-11-11T19:11:05.3775618Z 2025-11-11 19:11:05,377 INFO  [sqlalchemy.engine.Engine] INSERT INTO _alembic_tmp_volunteers (id, name, email, phone) SELECT volunteers.id, volunteers.name, volunteers.email, volunteers.phone 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:639:test	Run database migrations	2025-11-11T19:11:05.3775618Z 2025-11-11 19:11:05,377 INFO  [sqlalchemy.engine.Engine] INSERT INTO _alembic_tmp_volunteers (id, name, email, phone) SELECT volunteers.id, volunteers.name, volunteers.email, volunteers.phone
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:640:test	Run database migrations	2025-11-11T19:11:05.3776798Z FROM volunteers
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:641:test	Run database migrations	2025-11-11T19:11:05.3777391Z 2025-11-11 19:11:05,377 INFO  [sqlalchemy.engine.Engine] [generated in 0.00010s] ()
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:642:test	Run database migrations	2025-11-11T19:11:05.3778030Z 2025-11-11 19:11:05,377 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:642:test	Run database migrations	2025-11-11T19:11:05.3778030Z 2025-11-11 19:11:05,377 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:643:test	Run database migrations	2025-11-11T19:11:05.3778486Z DROP TABLE volunteers
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:644:test	Run database migrations	2025-11-11T19:11:05.3778976Z 2025-11-11 19:11:05,377 INFO  [sqlalchemy.engine.Engine] [no key 0.00006s] ()
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:645:test	Run database migrations	2025-11-11T19:11:05.3780412Z 2025-11-11 19:11:05,377 INFO  [sqlalchemy.engine.Engine] ALTER TABLE _alembic_tmp_volunteers RENAME TO volunteers
@@ -350,87 +350,87 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:665:test	Run database migrations	2025-11-11T19:11:05.3853378Z 2025-11-11 19:11:05,385 INFO  [sqlalchemy.engine.Engine] COMMIT
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:666:test	Run database migrations	2025-11-11T19:11:05.3868649Z 2025-11-11 19:11:05,386 INFO  [sqlalchemy.engine.Engine] BEGIN (implicit)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:667:test	Run database migrations	2025-11-11T19:11:05.3869590Z 2025-11-11 19:11:05,386 INFO  [alembic.runtime.migration] Running upgrade 87b6c47a927d -> 25b31e8d0218, init admin tables
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:668:test	Run database migrations	2025-11-11T19:11:05.3876564Z 2025-11-11 19:11:05,387 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:668:test	Run database migrations	2025-11-11T19:11:05.3876564Z 2025-11-11 19:11:05,387 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:669:test	Run database migrations	2025-11-11T19:11:05.3877067Z CREATE TABLE achievements (
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:670:test	Run database migrations	2025-11-11T19:11:05.3877434Z 	id VARCHAR(64) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:671:test	Run database migrations	2025-11-11T19:11:05.3877698Z 	name VARCHAR(255) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:672:test	Run database migrations	2025-11-11T19:11:05.3877929Z 	description TEXT, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:673:test	Run database migrations	2025-11-11T19:11:05.3878121Z 	icon VARCHAR(255), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:674:test	Run database migrations	2025-11-11T19:11:05.3878332Z 	category VARCHAR(64), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:675:test	Run database migrations	2025-11-11T19:11:05.3878541Z 	points_reward INTEGER, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:676:test	Run database migrations	2025-11-11T19:11:05.3878773Z 	requirement_type VARCHAR(64), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:677:test	Run database migrations	2025-11-11T19:11:05.3879011Z 	requirement_value VARCHAR(255), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:678:test	Run database migrations	2025-11-11T19:11:05.3879442Z 	rarity VARCHAR(32), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:679:test	Run database migrations	2025-11-11T19:11:05.3879639Z 	created_at DATETIME, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:680:test	Run database migrations	2025-11-11T19:11:05.3879839Z 	updated_at DATETIME, 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:670:test	Run database migrations	2025-11-11T19:11:05.3877434Z 	id VARCHAR(64) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:671:test	Run database migrations	2025-11-11T19:11:05.3877698Z 	name VARCHAR(255) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:672:test	Run database migrations	2025-11-11T19:11:05.3877929Z 	description TEXT,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:673:test	Run database migrations	2025-11-11T19:11:05.3878121Z 	icon VARCHAR(255),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:674:test	Run database migrations	2025-11-11T19:11:05.3878332Z 	category VARCHAR(64),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:675:test	Run database migrations	2025-11-11T19:11:05.3878541Z 	points_reward INTEGER,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:676:test	Run database migrations	2025-11-11T19:11:05.3878773Z 	requirement_type VARCHAR(64),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:677:test	Run database migrations	2025-11-11T19:11:05.3879011Z 	requirement_value VARCHAR(255),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:678:test	Run database migrations	2025-11-11T19:11:05.3879442Z 	rarity VARCHAR(32),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:679:test	Run database migrations	2025-11-11T19:11:05.3879639Z 	created_at DATETIME,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:680:test	Run database migrations	2025-11-11T19:11:05.3879839Z 	updated_at DATETIME,
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:681:test	Run database migrations	2025-11-11T19:11:05.3880030Z 	PRIMARY KEY (id)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:682:test	Run database migrations	2025-11-11T19:11:05.3880221Z )
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:683:test	Run database migrations	2025-11-11T19:11:05.3880309Z 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:684:test	Run database migrations	2025-11-11T19:11:05.3880314Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:683:test	Run database migrations	2025-11-11T19:11:05.3880309Z
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:684:test	Run database migrations	2025-11-11T19:11:05.3880314Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:685:test	Run database migrations	2025-11-11T19:11:05.3880710Z 2025-11-11 19:11:05,387 INFO  [sqlalchemy.engine.Engine] [no key 0.00006s] ()
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:686:test	Run database migrations	2025-11-11T19:11:05.3899704Z 2025-11-11 19:11:05,389 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:686:test	Run database migrations	2025-11-11T19:11:05.3899704Z 2025-11-11 19:11:05,389 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:687:test	Run database migrations	2025-11-11T19:11:05.3900222Z CREATE TABLE admin_users (
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:688:test	Run database migrations	2025-11-11T19:11:05.3900569Z 	id INTEGER NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:689:test	Run database migrations	2025-11-11T19:11:05.3900796Z 	username VARCHAR(64), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:690:test	Run database migrations	2025-11-11T19:11:05.3900987Z 	email VARCHAR(120), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:691:test	Run database migrations	2025-11-11T19:11:05.3901201Z 	password_hash VARCHAR(128), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:692:test	Run database migrations	2025-11-11T19:11:05.3901437Z 	role VARCHAR(11) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:693:test	Run database migrations	2025-11-11T19:11:05.3901655Z 	twofa_secret VARCHAR(32), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:694:test	Run database migrations	2025-11-11T19:11:05.3901986Z 	backup_codes TEXT, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:695:test	Run database migrations	2025-11-11T19:11:05.3902224Z 	two_factor_enabled BOOLEAN, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:696:test	Run database migrations	2025-11-11T19:11:05.3902440Z 	created_at DATETIME, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:697:test	Run database migrations	2025-11-11T19:11:05.3902723Z 	updated_at DATETIME, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:698:test	Run database migrations	2025-11-11T19:11:05.3902914Z 	last_login DATETIME, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:699:test	Run database migrations	2025-11-11T19:11:05.3903361Z 	is_active BOOLEAN, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:700:test	Run database migrations	2025-11-11T19:11:05.3903666Z 	failed_login_attempts INTEGER, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:701:test	Run database migrations	2025-11-11T19:11:05.3903938Z 	locked_until DATETIME, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:702:test	Run database migrations	2025-11-11T19:11:05.3904281Z 	PRIMARY KEY (id), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:703:test	Run database migrations	2025-11-11T19:11:05.3904847Z 	UNIQUE (email), 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:688:test	Run database migrations	2025-11-11T19:11:05.3900569Z 	id INTEGER NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:689:test	Run database migrations	2025-11-11T19:11:05.3900796Z 	username VARCHAR(64),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:690:test	Run database migrations	2025-11-11T19:11:05.3900987Z 	email VARCHAR(120),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:691:test	Run database migrations	2025-11-11T19:11:05.3901201Z 	password_hash VARCHAR(128),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:692:test	Run database migrations	2025-11-11T19:11:05.3901437Z 	role VARCHAR(11) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:693:test	Run database migrations	2025-11-11T19:11:05.3901655Z 	twofa_secret VARCHAR(32),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:694:test	Run database migrations	2025-11-11T19:11:05.3901986Z 	backup_codes TEXT,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:695:test	Run database migrations	2025-11-11T19:11:05.3902224Z 	two_factor_enabled BOOLEAN,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:696:test	Run database migrations	2025-11-11T19:11:05.3902440Z 	created_at DATETIME,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:697:test	Run database migrations	2025-11-11T19:11:05.3902723Z 	updated_at DATETIME,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:698:test	Run database migrations	2025-11-11T19:11:05.3902914Z 	last_login DATETIME,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:699:test	Run database migrations	2025-11-11T19:11:05.3903361Z 	is_active BOOLEAN,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:700:test	Run database migrations	2025-11-11T19:11:05.3903666Z 	failed_login_attempts INTEGER,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:701:test	Run database migrations	2025-11-11T19:11:05.3903938Z 	locked_until DATETIME,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:702:test	Run database migrations	2025-11-11T19:11:05.3904281Z 	PRIMARY KEY (id),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:703:test	Run database migrations	2025-11-11T19:11:05.3904847Z 	UNIQUE (email),
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:704:test	Run database migrations	2025-11-11T19:11:05.3905027Z 	UNIQUE (username)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:705:test	Run database migrations	2025-11-11T19:11:05.3905225Z )
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:706:test	Run database migrations	2025-11-11T19:11:05.3905377Z 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:707:test	Run database migrations	2025-11-11T19:11:05.3905386Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:706:test	Run database migrations	2025-11-11T19:11:05.3905377Z
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:707:test	Run database migrations	2025-11-11T19:11:05.3905386Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:708:test	Run database migrations	2025-11-11T19:11:05.3905624Z 2025-11-11 19:11:05,389 INFO  [sqlalchemy.engine.Engine] [no key 0.00006s] ()
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:709:test	Run database migrations	2025-11-11T19:11:05.3920735Z 2025-11-11 19:11:05,391 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:709:test	Run database migrations	2025-11-11T19:11:05.3920735Z 2025-11-11 19:11:05,391 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:710:test	Run database migrations	2025-11-11T19:11:05.3921251Z CREATE TABLE analytics_events (
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:711:test	Run database migrations	2025-11-11T19:11:05.3921578Z 	id INTEGER NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:712:test	Run database migrations	2025-11-11T19:11:05.3921792Z 	event_type VARCHAR(100) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:713:test	Run database migrations	2025-11-11T19:11:05.3922118Z 	event_category VARCHAR(100), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:714:test	Run database migrations	2025-11-11T19:11:05.3922499Z 	event_action VARCHAR(100), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:715:test	Run database migrations	2025-11-11T19:11:05.3922856Z 	event_label VARCHAR(255), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:716:test	Run database migrations	2025-11-11T19:11:05.3923317Z 	event_value INTEGER, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:717:test	Run database migrations	2025-11-11T19:11:05.3923523Z 	user_session VARCHAR(128), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:718:test	Run database migrations	2025-11-11T19:11:05.3923739Z 	user_type VARCHAR(50), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:719:test	Run database migrations	2025-11-11T19:11:05.3923935Z 	user_ip VARCHAR(45), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:720:test	Run database migrations	2025-11-11T19:11:05.3924131Z 	user_agent VARCHAR(500), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:721:test	Run database migrations	2025-11-11T19:11:05.3924350Z 	page_url VARCHAR(500), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:722:test	Run database migrations	2025-11-11T19:11:05.3924564Z 	page_title VARCHAR(255), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:723:test	Run database migrations	2025-11-11T19:11:05.3924779Z 	referrer VARCHAR(500), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:724:test	Run database migrations	2025-11-11T19:11:05.3924966Z 	load_time FLOAT, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:725:test	Run database migrations	2025-11-11T19:11:05.3925171Z 	screen_resolution VARCHAR(20), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:726:test	Run database migrations	2025-11-11T19:11:05.3925405Z 	device_type VARCHAR(50), 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:727:test	Run database migrations	2025-11-11T19:11:05.3925617Z 	created_at DATETIME, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:728:test	Run database migrations	2025-11-11T19:11:05.3925806Z 	updated_at DATETIME, 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:711:test	Run database migrations	2025-11-11T19:11:05.3921578Z 	id INTEGER NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:712:test	Run database migrations	2025-11-11T19:11:05.3921792Z 	event_type VARCHAR(100) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:713:test	Run database migrations	2025-11-11T19:11:05.3922118Z 	event_category VARCHAR(100),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:714:test	Run database migrations	2025-11-11T19:11:05.3922499Z 	event_action VARCHAR(100),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:715:test	Run database migrations	2025-11-11T19:11:05.3922856Z 	event_label VARCHAR(255),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:716:test	Run database migrations	2025-11-11T19:11:05.3923317Z 	event_value INTEGER,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:717:test	Run database migrations	2025-11-11T19:11:05.3923523Z 	user_session VARCHAR(128),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:718:test	Run database migrations	2025-11-11T19:11:05.3923739Z 	user_type VARCHAR(50),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:719:test	Run database migrations	2025-11-11T19:11:05.3923935Z 	user_ip VARCHAR(45),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:720:test	Run database migrations	2025-11-11T19:11:05.3924131Z 	user_agent VARCHAR(500),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:721:test	Run database migrations	2025-11-11T19:11:05.3924350Z 	page_url VARCHAR(500),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:722:test	Run database migrations	2025-11-11T19:11:05.3924564Z 	page_title VARCHAR(255),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:723:test	Run database migrations	2025-11-11T19:11:05.3924779Z 	referrer VARCHAR(500),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:724:test	Run database migrations	2025-11-11T19:11:05.3924966Z 	load_time FLOAT,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:725:test	Run database migrations	2025-11-11T19:11:05.3925171Z 	screen_resolution VARCHAR(20),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:726:test	Run database migrations	2025-11-11T19:11:05.3925405Z 	device_type VARCHAR(50),
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:727:test	Run database migrations	2025-11-11T19:11:05.3925617Z 	created_at DATETIME,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:728:test	Run database migrations	2025-11-11T19:11:05.3925806Z 	updated_at DATETIME,
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:729:test	Run database migrations	2025-11-11T19:11:05.3925998Z 	PRIMARY KEY (id)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:730:test	Run database migrations	2025-11-11T19:11:05.3926165Z )
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:731:test	Run database migrations	2025-11-11T19:11:05.3926272Z 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:732:test	Run database migrations	2025-11-11T19:11:05.3926279Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:731:test	Run database migrations	2025-11-11T19:11:05.3926272Z
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:732:test	Run database migrations	2025-11-11T19:11:05.3926279Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:733:test	Run database migrations	2025-11-11T19:11:05.3926520Z 2025-11-11 19:11:05,392 INFO  [sqlalchemy.engine.Engine] [no key 0.00006s] ()
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:734:test	Run database migrations	2025-11-11T19:11:05.3942592Z 2025-11-11 19:11:05,394 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:734:test	Run database migrations	2025-11-11T19:11:05.3942592Z 2025-11-11 19:11:05,394 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:735:test	Run database migrations	2025-11-11T19:11:05.3943282Z CREATE TABLE chat_rooms (
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:736:test	Run database migrations	2025-11-11T19:11:05.3943634Z 	id INTEGER NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:737:test	Run database migrations	2025-11-11T19:11:05.3943898Z 	name VARCHAR(100) NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:738:test	Run database migrations	2025-11-11T19:11:05.3944116Z 	created_at DATETIME, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:739:test	Run database migrations	2025-11-11T19:11:05.3944312Z 	updated_at DATETIME, 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:736:test	Run database migrations	2025-11-11T19:11:05.3943634Z 	id INTEGER NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:737:test	Run database migrations	2025-11-11T19:11:05.3943898Z 	name VARCHAR(100) NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:738:test	Run database migrations	2025-11-11T19:11:05.3944116Z 	created_at DATETIME,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:739:test	Run database migrations	2025-11-11T19:11:05.3944312Z 	updated_at DATETIME,
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:740:test	Run database migrations	2025-11-11T19:11:05.3944511Z 	PRIMARY KEY (id)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:741:test	Run database migrations	2025-11-11T19:11:05.3944688Z )
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:742:test	Run database migrations	2025-11-11T19:11:05.3944776Z 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:743:test	Run database migrations	2025-11-11T19:11:05.3944781Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:742:test	Run database migrations	2025-11-11T19:11:05.3944776Z
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:743:test	Run database migrations	2025-11-11T19:11:05.3944781Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:744:test	Run database migrations	2025-11-11T19:11:05.3944960Z 2025-11-11 19:11:05,394 INFO  [sqlalchemy.engine.Engine] [no key 0.00007s] ()
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:745:test	Run database migrations	2025-11-11T19:11:05.3969572Z 2025-11-11 19:11:05,396 INFO  [sqlalchemy.engine.Engine] 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:745:test	Run database migrations	2025-11-11T19:11:05.3969572Z 2025-11-11 19:11:05,396 INFO  [sqlalchemy.engine.Engine]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:746:test	Run database migrations	2025-11-11T19:11:05.3970108Z CREATE TABLE chatbot_conversations (
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:747:test	Run database migrations	2025-11-11T19:11:05.3970490Z 	id INTEGER NOT NULL, 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:748:test	Run database migrations	2025-11-11T19:11:05.3970707Z 	session_id VARCHAR(128) NOT NULL, 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:747:test	Run database migrations	2025-11-11T19:11:05.3970490Z 	id INTEGER NOT NULL,
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:748:test	Run database migrations	2025-11-11T19:11:05.3970707Z 	session_id VARCHAR(128) NOT NULL,
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1377:test	Run pre-commit	﻿2025-11-11T19:11:05.6818170Z ##[group]Run pre-commit run --all-files || true
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1378:test	Run pre-commit	2025-11-11T19:11:05.6818556Z [36;1mpre-commit run --all-files || true[0m
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1379:test	Run pre-commit	2025-11-11T19:11:05.6851392Z shell: /usr/bin/bash -e {0}
@@ -466,10 +466,10 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1409:test	Run pre-commit	2025-11-11T19:11:31.5157878Z ruff (legacy alias)......................................................Failed
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1410:test	Run pre-commit	2025-11-11T19:11:31.5158500Z - hook id: ruff
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1411:test	Run pre-commit	2025-11-11T19:11:31.5159651Z - exit code: 1
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1412:test	Run pre-commit	2025-11-11T19:11:31.5160754Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1412:test	Run pre-commit	2025-11-11T19:11:31.5160754Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1413:test	Run pre-commit	2025-11-11T19:11:31.5161249Z warning: The following rules have been removed and ignoring them has no effect:
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1414:test	Run pre-commit	2025-11-11T19:11:31.5161845Z     - UP038
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1415:test	Run pre-commit	2025-11-11T19:11:31.5162027Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1415:test	Run pre-commit	2025-11-11T19:11:31.5162027Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1416:test	Run pre-commit	2025-11-11T19:11:31.5162183Z I001 [*] Import block is un-sorted or un-formatted
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1417:test	Run pre-commit	2025-11-11T19:11:31.5162633Z  --> backend/routes/admin.py:1:1
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1418:test	Run pre-commit	2025-11-11T19:11:31.5163201Z   |
@@ -485,7 +485,7 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1428:test	Run pre-commit	2025-11-11T19:11:31.5166999Z 9 |   router = APIRouter(prefix="/admin", tags=["admin"])
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1429:test	Run pre-commit	2025-11-11T19:11:31.5167270Z   |
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1430:test	Run pre-commit	2025-11-11T19:11:31.5167660Z help: Organize imports
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1431:test	Run pre-commit	2025-11-11T19:11:31.5167785Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1431:test	Run pre-commit	2025-11-11T19:11:31.5167785Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1432:test	Run pre-commit	2025-11-11T19:11:31.5167900Z I001 [*] Import block is un-sorted or un-formatted
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1433:test	Run pre-commit	2025-11-11T19:11:31.5168187Z   --> backend/routes/notifications.py:10:1
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1434:test	Run pre-commit	2025-11-11T19:11:31.5168431Z    |
@@ -499,7 +499,7 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1442:test	Run pre-commit	2025-11-11T19:11:31.5170688Z    | |_________________________________^
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1443:test	Run pre-commit	2025-11-11T19:11:31.5170896Z    |
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1444:test	Run pre-commit	2025-11-11T19:11:31.5171050Z help: Organize imports
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1445:test	Run pre-commit	2025-11-11T19:11:31.5171178Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1445:test	Run pre-commit	2025-11-11T19:11:31.5171178Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1446:test	Run pre-commit	2025-11-11T19:11:31.5171285Z I001 [*] Import block is un-sorted or un-formatted
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1447:test	Run pre-commit	2025-11-11T19:11:31.5171594Z   --> backend/scripts/inspect_requests.py:8:1
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1448:test	Run pre-commit	2025-11-11T19:11:31.5171831Z    |
@@ -512,7 +512,7 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1455:test	Run pre-commit	2025-11-11T19:11:31.5173559Z 11 |   with app.app_context():
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1456:test	Run pre-commit	2025-11-11T19:11:31.5173754Z    |
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1457:test	Run pre-commit	2025-11-11T19:11:31.5173911Z help: Organize imports
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1458:test	Run pre-commit	2025-11-11T19:11:31.5174033Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1458:test	Run pre-commit	2025-11-11T19:11:31.5174033Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1459:test	Run pre-commit	2025-11-11T19:11:31.5174146Z I001 [*] Import block is un-sorted or un-formatted
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1460:test	Run pre-commit	2025-11-11T19:11:31.5174418Z   --> check_volunteers.py:6:1
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1461:test	Run pre-commit	2025-11-11T19:11:31.5174622Z    |
@@ -526,7 +526,7 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1469:test	Run pre-commit	2025-11-11T19:11:31.5176162Z 10 |   app = Flask(__name__)
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1470:test	Run pre-commit	2025-11-11T19:11:31.5176356Z    |
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1471:test	Run pre-commit	2025-11-11T19:11:31.5176503Z help: Organize imports
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1472:test	Run pre-commit	2025-11-11T19:11:31.5176621Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1472:test	Run pre-commit	2025-11-11T19:11:31.5176621Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1473:test	Run pre-commit	2025-11-11T19:11:31.5176736Z I001 [*] Import block is un-sorted or un-formatted
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1474:test	Run pre-commit	2025-11-11T19:11:31.5176996Z   --> extensions.py:10:5
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1475:test	Run pre-commit	2025-11-11T19:11:31.5177182Z    |
@@ -537,7 +537,7 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1480:test	Run pre-commit	2025-11-11T19:11:31.5178440Z 12 |     # If the canonical package module isn't available (e.g. during
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1481:test	Run pre-commit	2025-11-11T19:11:31.5178737Z    |
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1482:test	Run pre-commit	2025-11-11T19:11:31.5178902Z help: Organize imports
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1483:test	Run pre-commit	2025-11-11T19:11:31.5179029Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1483:test	Run pre-commit	2025-11-11T19:11:31.5179029Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1484:test	Run pre-commit	2025-11-11T19:11:31.5179136Z I001 [*] Import block is un-sorted or un-formatted
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1485:test	Run pre-commit	2025-11-11T19:11:31.5179408Z  --> test_analytics.py:5:1
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1486:test	Run pre-commit	2025-11-11T19:11:31.5179598Z   |
@@ -551,7 +551,7 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1494:test	Run pre-commit	2025-11-11T19:11:31.5181338Z 9 |   app = Flask(__name__)
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1495:test	Run pre-commit	2025-11-11T19:11:31.5181532Z   |
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1496:test	Run pre-commit	2025-11-11T19:11:31.5181692Z help: Organize imports
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1497:test	Run pre-commit	2025-11-11T19:11:31.5181816Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1497:test	Run pre-commit	2025-11-11T19:11:31.5181816Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1498:test	Run pre-commit	2025-11-11T19:11:31.5181926Z I001 [*] Import block is un-sorted or un-formatted
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1499:test	Run pre-commit	2025-11-11T19:11:31.5182242Z   --> test_push_notifications_comprehensive.py:26:1
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1500:test	Run pre-commit	2025-11-11T19:11:31.5182501Z    |
@@ -563,14 +563,14 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1506:test	Run pre-commit	2025-11-11T19:11:31.5184021Z 29 |   # Model imports - moved to setUp to ensure proper db initialization
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1507:test	Run pre-commit	2025-11-11T19:11:31.5184333Z    |
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1508:test	Run pre-commit	2025-11-11T19:11:31.5184488Z help: Organize imports
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1509:test	Run pre-commit	2025-11-11T19:11:31.5184613Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1509:test	Run pre-commit	2025-11-11T19:11:31.5184613Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1510:test	Run pre-commit	2025-11-11T19:11:31.5184679Z Found 7 errors.
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1511:test	Run pre-commit	2025-11-11T19:11:31.5184879Z [*] 7 fixable with the `--fix` option.
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1512:test	Run pre-commit	2025-11-11T19:11:31.5185045Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1512:test	Run pre-commit	2025-11-11T19:11:31.5185045Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1513:test	Run pre-commit	2025-11-11T19:11:42.1632422Z prettier.................................................................Failed
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1514:test	Run pre-commit	2025-11-11T19:11:42.1633249Z - hook id: prettier
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1515:test	Run pre-commit	2025-11-11T19:11:42.1633602Z - files were modified by this hook
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1516:test	Run pre-commit	2025-11-11T19:11:42.1633868Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1516:test	Run pre-commit	2025-11-11T19:11:42.1633868Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1517:test	Run pre-commit	2025-11-11T19:11:42.1634023Z backend/ANALYTICS_DOCUMENTATION.md
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1518:test	Run pre-commit	2025-11-11T19:11:42.1634456Z backend/HelpChain_TODO_Auth_DB_Tracing.md
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1519:test	Run pre-commit	2025-11-11T19:11:42.1634875Z static/js/apexcharts.js
@@ -590,14 +590,14 @@
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1533:test	Run pre-commit	2025-11-11T19:11:42.1639906Z static/js/feedback.js
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1534:test	Run pre-commit	2025-11-11T19:11:42.1640223Z templates/index.html
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1535:test	Run pre-commit	2025-11-11T19:11:42.1640533Z templates/profile.html
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1536:test	Run pre-commit	2025-11-11T19:11:42.1640734Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1536:test	Run pre-commit	2025-11-11T19:11:42.1640734Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1537:test	Run pre-commit	2025-11-11T19:11:42.7678025Z fix end of files.........................................................Failed
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1538:test	Run pre-commit	2025-11-11T19:11:42.7679572Z - hook id: end-of-file-fixer
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1539:test	Run pre-commit	2025-11-11T19:11:42.7680074Z - exit code: 1
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1540:test	Run pre-commit	2025-11-11T19:11:42.7680643Z - files were modified by this hook
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1541:test	Run pre-commit	2025-11-11T19:11:42.7680977Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1541:test	Run pre-commit	2025-11-11T19:11:42.7680977Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1542:test	Run pre-commit	2025-11-11T19:11:42.7681151Z Fixing .github/ci-reruns/last_rerun.txt
-> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1543:test	Run pre-commit	2025-11-11T19:11:42.7681577Z 
+> C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1543:test	Run pre-commit	2025-11-11T19:11:42.7681577Z
 > C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1544:test	Run pre-commit	2025-11-11T19:11:43.3834578Z check yaml...............................................................Passed
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1545:test	Run tests	﻿2025-11-11T19:11:43.4041782Z ##[group]Run if [ -f backend/pytest.ini ] || [ -d backend/tests ]; then
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1546:test	Run tests	2025-11-11T19:11:43.4042288Z [36;1mif [ -f backend/pytest.ini ] || [ -d backend/tests ]; then[0m
@@ -616,12 +616,12 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1559:test	Run tests	2025-11-11T19:11:43.4078301Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.14/x64
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1560:test	Run tests	2025-11-11T19:11:43.4078647Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.14/x64/lib
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1561:test	Run tests	2025-11-11T19:11:43.4078932Z ##[endgroup]
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1562:test	Run tests	2025-11-11T19:11:44.7691832Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1562:test	Run tests	2025-11-11T19:11:44.7691832Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1563:test	Run tests	2025-11-11T19:11:44.7692617Z === ВСИЧКИ РЕГИСТРИРАНИ МАРШРУТИ В APP ===
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1564:test	Run tests	2025-11-11T19:11:44.7693558Z /static/<path:filename>         [GET,HEAD,OPTIONS]  -> static
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1565:test	Run tests	2025-11-11T19:11:44.7694236Z /dashboard                      [GET,HEAD,OPTIONS]  -> public_dashboard
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1566:test	Run tests	2025-11-11T19:11:44.7694959Z === КРАЙ НА СПИСЪКА ===
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1567:test	Run tests	2025-11-11T19:11:44.7695196Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1567:test	Run tests	2025-11-11T19:11:44.7695196Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1568:test	Run tests	2025-11-11T19:11:44.7695359Z NOTIFICATIONS MODULE LOADED
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1569:test	Run tests	2025-11-11T19:11:44.7695882Z 2025-11-11 19:11:44,769 - INFO - Starting HelpChain application...
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1570:test	Run tests	2025-11-11T19:11:44.7696686Z 2025-11-11 19:11:44,769 - INFO - Python version: 3.11.14 (main, Oct 10 2025, 01:03:14) [GCC 13.3.0]
@@ -639,12 +639,12 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1582:test	Run tests	2025-11-11T19:11:44.8408350Z Cache initialized successfully
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1583:test	Run tests	2025-11-11T19:11:44.8408968Z 2025-11-11 19:11:44,840 - INFO - Analytics cache initialized successfully
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1584:test	Run tests	2025-11-11T19:11:44.8409768Z 2025-11-11 19:11:44,840 - INFO - Skipping analytics initialization in TESTING mode
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1585:test	Run tests	2025-11-11T19:11:44.8592341Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1585:test	Run tests	2025-11-11T19:11:44.8592341Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1586:test	Run tests	2025-11-11T19:11:44.8592866Z === ВСИЧКИ РЕГИСТРИРАНИ МАРШРУТИ В APP ===
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1587:test	Run tests	2025-11-11T19:11:44.8593685Z /static/<path:filename>         [GET,HEAD,OPTIONS]  -> static
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1588:test	Run tests	2025-11-11T19:11:44.8594386Z /dashboard                      [GET,HEAD,OPTIONS]  -> public_dashboard
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1589:test	Run tests	2025-11-11T19:11:44.8595026Z === КРАЙ НА СПИСЪКА ===
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1590:test	Run tests	2025-11-11T19:11:44.8595257Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1590:test	Run tests	2025-11-11T19:11:44.8595257Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1591:test	Run tests	2025-11-11T19:11:44.8595567Z 2025-11-11 19:11:44,859 - INFO - Starting HelpChain application...
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1592:test	Run tests	2025-11-11T19:11:44.8596709Z 2025-11-11 19:11:44,859 - INFO - Python version: 3.11.14 (main, Oct 10 2025, 01:03:14) [GCC 13.3.0]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1593:test	Run tests	2025-11-11T19:11:44.8597625Z 2025-11-11 19:11:44,859 - INFO - Working directory: /home/runner/work/HelpChain.bg/HelpChain.bg
@@ -661,7 +661,7 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1604:test	Run tests	2025-11-11T19:11:44.8694572Z Cache initialized successfully
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1605:test	Run tests	2025-11-11T19:11:44.8695179Z 2025-11-11 19:11:44,869 - INFO - Analytics cache initialized successfully
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1606:test	Run tests	2025-11-11T19:11:44.8695959Z 2025-11-11 19:11:44,869 - INFO - Skipping analytics initialization in TESTING mode
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1607:test	Run tests	2025-11-11T19:12:01.1741327Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1607:test	Run tests	2025-11-11T19:12:01.1741327Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1608:test	Run tests	2025-11-11T19:12:01.1741997Z ==================================== ERRORS ====================================
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1609:test	Run tests	2025-11-11T19:12:01.1742905Z ____________________ ERROR collecting test_admin_direct.py _____________________
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1610:test	Run tests	2025-11-11T19:12:01.1744555Z /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/sqlalchemy/engine/base.py:1967: in _exec_single_context
@@ -669,7 +669,7 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1612:test	Run tests	2025-11-11T19:12:01.1746842Z /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/sqlalchemy/engine/default.py:951: in do_execute
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1613:test	Run tests	2025-11-11T19:12:01.1748061Z     cursor.execute(statement, parameters)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1614:test	Run tests	2025-11-11T19:12:01.1748730Z E   sqlite3.OperationalError: no such table: admin_users
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1615:test	Run tests	2025-11-11T19:12:01.1749203Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1615:test	Run tests	2025-11-11T19:12:01.1749203Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1616:test	Run tests	2025-11-11T19:12:01.1749508Z The above exception was the direct cause of the following exception:
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1617:test	Run tests	2025-11-11T19:12:01.1750444Z /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/_pytest/runner.py:341: in from_call
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1618:test	Run tests	2025-11-11T19:12:01.1751241Z     result: Optional[TResult] = func()
@@ -728,8 +728,8 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1671:test	Run tests	2025-11-11T19:12:01.1781294Z /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/sqlalchemy/engine/default.py:951: in do_execute
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1672:test	Run tests	2025-11-11T19:12:01.1781793Z     cursor.execute(statement, parameters)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1673:test	Run tests	2025-11-11T19:12:01.1782210Z E   sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such table: admin_users
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1674:test	Run tests	2025-11-11T19:12:01.1784708Z E   [SQL: SELECT admin_users.id AS admin_users_id, admin_users.username AS admin_users_username, admin_users.email AS admin_users_email, admin_users.password_hash AS admin_users_password_hash, admin_users.role AS admin_users_role, admin_users.twofa_secret AS admin_users_twofa_secret, admin_users.backup_codes AS admin_users_backup_codes, admin_users.two_factor_enabled AS admin_users_two_factor_enabled, admin_users.created_at AS admin_users_created_at, admin_users.updated_at AS admin_users_updated_at, admin_users.last_login AS admin_users_last_login, admin_users.is_active AS admin_users_is_active, admin_users.failed_login_attempts AS admin_users_failed_login_attempts, admin_users.locked_until AS admin_users_locked_until 
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1675:test	Run tests	2025-11-11T19:12:01.1786976Z E   FROM admin_users 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1674:test	Run tests	2025-11-11T19:12:01.1784708Z E   [SQL: SELECT admin_users.id AS admin_users_id, admin_users.username AS admin_users_username, admin_users.email AS admin_users_email, admin_users.password_hash AS admin_users_password_hash, admin_users.role AS admin_users_role, admin_users.twofa_secret AS admin_users_twofa_secret, admin_users.backup_codes AS admin_users_backup_codes, admin_users.two_factor_enabled AS admin_users_two_factor_enabled, admin_users.created_at AS admin_users_created_at, admin_users.updated_at AS admin_users_updated_at, admin_users.last_login AS admin_users_last_login, admin_users.is_active AS admin_users_is_active, admin_users.failed_login_attempts AS admin_users_failed_login_attempts, admin_users.locked_until AS admin_users_locked_until
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1675:test	Run tests	2025-11-11T19:12:01.1786976Z E   FROM admin_users
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1676:test	Run tests	2025-11-11T19:12:01.1787191Z E   WHERE admin_users.username = ?
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1677:test	Run tests	2025-11-11T19:12:01.1787423Z E    LIMIT ? OFFSET ?]
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1678:test	Run tests	2025-11-11T19:12:01.1787618Z E   [parameters: ('admin', 1, 0)]
@@ -743,7 +743,7 @@
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1686:test	Run tests	2025-11-11T19:12:01.1790693Z /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/sqlalchemy/engine/default.py:951: in do_execute
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1687:test	Run tests	2025-11-11T19:12:01.1791196Z     cursor.execute(statement, parameters)
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1688:test	Run tests	2025-11-11T19:12:01.1791491Z E   sqlite3.OperationalError: no such table: admin_users
-  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1689:test	Run tests	2025-11-11T19:12:01.1791703Z 
+  C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1689:test	Run tests	2025-11-11T19:12:01.1791703Z
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1690:test	Run tests	2025-11-11T19:12:01.1791876Z The above exception was the direct cause of the following exception:
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1691:test	Run tests	2025-11-11T19:12:01.1792400Z /opt/hostedtoolcache/Python/3.11.14/x64/lib/python3.11/site-packages/_pytest/runner.py:341: in from_call
   C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\run_19275943904.log:1692:test	Run tests	2025-11-11T19:12:01.1792854Z     result: Optional[TResult] = func()

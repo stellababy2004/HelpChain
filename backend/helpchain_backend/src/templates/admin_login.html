@@ -18,14 +18,18 @@ endblock %} {% block content %}
   </div>
   {% endfor %} {% endif %} {% endwith %}
   <form action="/admin/login" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="mb-3">
-      <label for="username" class="form-label">Потребителско име</label>
+      <label for="username" class="form-label"
+        >Потребителско име или имейл</label
+      >
       <input
         type="text"
         class="form-control"
         id="username"
         name="username"
         required
+        placeholder="admin или admin@helpchain.live"
       />
     </div>
     <div class="mb-3">
@@ -36,6 +40,7 @@ endblock %} {% block content %}
         id="password"
         name="password"
         required
+        placeholder="Admin12345! (начална)"
       />
     </div>
     <button type="submit" class="btn btn-primary">Влез</button>

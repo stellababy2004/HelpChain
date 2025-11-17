@@ -1,6 +1,7 @@
 /**
- * HelpChain Service Worker
- * Handles background push notifications and caching
+ * DEPRECATED: This is not the registered Service Worker.
+ * The active SW is at "/sw.js" (project root). Do not modify or register this file.
+ * Keeping for historical reference only.
  */
 
 const CACHE_NAME = "helpchain-v1";

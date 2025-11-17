@@ -1,19 +1,16 @@
-# backend/appy.py
 from __future__ import annotations
 
 import csv
 import json
 import os
-import secrets
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from functools import wraps
 from io import BytesIO, StringIO
 from pathlib import Path
 
-# 2FA библиотеки
-import pyotp  # За TOTP (Time-based One-Time Password)
-import qrcode  # За QR кодове
+import pyotp
+import qrcode
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -39,6 +36,23 @@ from flask_mail import Mail, Message
 from flask_migrate import Migrate
 from werkzeug.exceptions import BadRequest
 from werkzeug.security import check_password_hash, generate_password_hash
+
+from .backup_codes import (
+    generate_backup_codes,
+    mask_records_for_display,
+    verify_and_consume,
+)
+from .models import (
+    AdminLog,
+    AdminRole,
+    AdminUser,
+    Feedback,
+    HelpRequest,
+    SuccessStory,
+    User,
+    Volunteer,
+    db,
+)
 
 # -----------------------------------------------------------------------------
 # .env (зарежда се от backend директорията)
@@ -71,33 +85,20 @@ else:
     )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-try:
-    from .models import (
-        AdminLog,
-        AdminRole,
-        # TwoFactorAuth,  # unused — премахнато
-        # AdminSession,   # unused — премахнато
-        AdminUser,
-        Feedback,
-        HelpRequest,
-        SuccessStory,
-        User,
-        Volunteer,
-        db,
-    )  # type: ignore
-except ImportError:
-    from .models import (
-        AdminLog,
-        AdminRole,
-        AdminUser,
-        Feedback,
-        HelpRequest,
-        SuccessStory,
-        User,
-        Volunteer,
-        db,
-    )  # type: ignore
+from .models import (
+    AdminLog,
+    AdminRole,
+    AdminUser,
+    Feedback,
+    HelpRequest,
+    SuccessStory,
+    User,
+    Volunteer,
+    db,
+)
 
+db.init_app(app)
+migrate = Migrate(app, db)
 db.init_app(app)
 migrate = Migrate(app, db)
 
@@ -312,13 +313,10 @@ def generate_totp_secret():
     return pyotp.random_base32()
 
 
-def generate_backup_codes(count=10):
-    """Генерира backup кодове за 2FA"""
-    codes = []
-    for _i in range(count):
-        code = "".join(secrets.choice("0123456789") for j in range(8))
-        codes.append(f"{code[:4]}-{code[4:]}")
-    return codes
+def generate_plain_backup_codes(count=10):
+    """Deprecated: use secure generator from backup_codes module."""
+    plain, _records = generate_backup_codes(count)
+    return plain
 
 
 def generate_qr_code(admin_user):
@@ -357,20 +355,14 @@ def verify_totp_token(admin_user, token):
 
 
 def verify_backup_code(admin_user, code):
-    """Проверява backup код и го премахва при използване"""
+    """Проверява и консумира backup код (хеширани записи)."""
     if not admin_user.backup_codes:
         return False
-
-    try:
-        backup_codes = json.loads(admin_user.backup_codes)
-        if code in backup_codes:
-            backup_codes.remove(code)
-            admin_user.backup_codes = json.dumps(backup_codes)
-            db.session.commit()
-            return True
-    except (json.JSONDecodeError, ValueError):
-        pass
-
+    ok, updated = verify_and_consume(admin_user.backup_codes, code)
+    if ok:
+        admin_user.backup_codes = updated
+        db.session.commit()
+        return True
     return False
 
 
@@ -1198,7 +1190,14 @@ def admin_2fa_setup():
 
             # Генериране на QR код
             qr_code = generate_qr_code(admin_user)
-            backup_codes = generate_backup_codes()
+            # Показваме plain кодовете само веднъж при настройка
+            plain_codes, records = generate_backup_codes()
+            # Запази временните записи в сесията до успешна верификация
+            try:
+                session["pending_backup_codes"] = json.dumps(records)
+            except Exception:
+                session["pending_backup_codes"] = None
+            backup_codes = plain_codes
 
             return render_template(
                 "admin_2fa_setup.html",
@@ -1216,9 +1215,20 @@ def admin_2fa_setup():
                 # Активиране на 2FA
                 admin_user.two_factor_enabled = True
 
-                # Запазване на backup кодовете
-                backup_codes = generate_backup_codes()
-                admin_user.backup_codes = json.dumps(backup_codes)
+                # Записване на хешираните backup кодове
+                try:
+                    pending = session.pop("pending_backup_codes", None)
+                except Exception:
+                    pending = None
+                if not pending:
+                    # Ако нямаме pending (например директен достъп), генерираме тук
+                    plain_codes, records = generate_backup_codes()
+                    admin_user.backup_codes = json.dumps(records)
+                    backup_codes = plain_codes
+                else:
+                    admin_user.backup_codes = pending
+                    # Не можем да възстановим plain кодовете от хешовете, затова не ги показваме отново
+                    backup_codes = []
 
                 db.session.commit()
 
@@ -1235,7 +1245,12 @@ def admin_2fa_setup():
             else:
                 flash("Невалиден код! Моля опитайте отново.", "danger")
                 qr_code = generate_qr_code(admin_user)
-                backup_codes = generate_backup_codes()
+                plain_codes, records = generate_backup_codes()
+                backup_codes = plain_codes
+                try:
+                    session["pending_backup_codes"] = json.dumps(records)
+                except Exception:
+                    session["pending_backup_codes"] = None
                 return render_template(
                     "admin_2fa_setup.html",
                     admin_user=admin_user,
@@ -1280,13 +1295,10 @@ def admin_2fa_backup_codes():
         flash("Двустепенната автентикация не е активирана.", "warning")
         return redirect(url_for("admin_2fa_setup"))
 
-    try:
-        backup_codes = json.loads(admin_user.backup_codes)
-    except Exception:
-        backup_codes = []
-
+    # Не показваме истинските кодове след генериране; маскираме изгледа
+    masked = mask_records_for_display(admin_user.backup_codes or "")
     return render_template(
-        "admin_2fa_backup_codes.html", admin_user=admin_user, backup_codes=backup_codes
+        "admin_2fa_backup_codes.html", admin_user=admin_user, backup_codes=masked
     )
 
 
@@ -1305,9 +1317,9 @@ def admin_2fa_regenerate_backup():
     totp_token = request.form.get("totp_token", "").strip()
 
     if verify_totp_token(admin_user, totp_token):
-        # Генериране на нови backup кодове
-        backup_codes = generate_backup_codes()
-        admin_user.backup_codes = json.dumps(backup_codes)
+        # Генериране на нови backup кодове (хеширани)
+        plain_codes, records = generate_backup_codes()
+        admin_user.backup_codes = json.dumps(records)
         db.session.commit()
 
         # Записваме в лога
@@ -1319,7 +1331,7 @@ def admin_2fa_regenerate_backup():
         return render_template(
             "admin_2fa_backup_codes.html",
             admin_user=admin_user,
-            backup_codes=backup_codes,
+            backup_codes=plain_codes,
             new_codes=True,
         )
     else:

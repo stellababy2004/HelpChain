@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ current_locale|default('bg') }}">
+<html lang="{{ current_locale|default('fr') }}">
   <head>
     <meta charset="UTF-8" />
     <title>{% block title %}{% endblock %}</title>
@@ -855,5 +855,44 @@
 
       document.addEventListener("DOMContentLoaded", initializeTheme);
     </script>
+
+    <!-- Keep client-side i18n in sync with server locale (with query/localStorage priority) -->
+    <script>
+      (function () {
+        try {
+          var valid = function (l) {
+            return l === "bg" || l === "fr" || l === "en";
+          };
+          var url,
+            qp = null;
+          try {
+            url = new URL(window.location.href);
+            qp = url.searchParams.get("lang");
+          } catch (_) {
+            /* older browsers */
+          }
+
+          var lang = null;
+          if (valid(qp)) {
+            lang = qp;
+          } else {
+            var stored = localStorage.getItem("hc_lang");
+            if (valid(stored)) lang = stored;
+          }
+
+          if (!lang) {
+            var server = "{{ current_locale|default('fr') }}";
+            lang = valid(server) ? server : "fr";
+          }
+
+          localStorage.setItem("hc_lang", lang);
+          document.documentElement.lang = lang;
+        } catch (e) {
+          /* ignore storage errors */
+        }
+      })();
+    </script>
+
+    {% block scripts %}{% endblock %}
   </body>
 </html>

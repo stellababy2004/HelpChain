@@ -1,0 +1,9 @@
+Name            Version ID                  Fix Versions
+--------------- ------- ------------------- ------------
+h11             0.14.0  GHSA-vqfr-h8mv-ghfj 0.16.0
+jinja2          3.1.2   GHSA-h5c8-rqwp-cp95 3.1.3
+jinja2          3.1.2   GHSA-h75v-3vvj-5mfj 3.1.4
+jinja2          3.1.2   GHSA-q2x7-8rv6-6q7h 3.1.5
+jinja2          3.1.2   GHSA-gmj6-6f8f-6699 3.1.5
+jinja2          3.1.2   GHSA-cpwx-vrp4-4pq7 3.1.6
+python-socketio 5.8.0   GHSA-g8c6-8fjj-2r4m 5.14.0

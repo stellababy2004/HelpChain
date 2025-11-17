@@ -95,22 +95,22 @@ test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5298125Z ##[group]Checking out the ref
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:10.5301788Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/46/merge
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0007561Z Note: switching to 'refs/remotes/pull/46/merge'.
-test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0008138Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0008138Z
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0008490Z You are in 'detached HEAD' state. You can look around, make experimental
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0009311Z changes and commit them, and you can discard any commits you make in this
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0010118Z state without impacting any branches by switching back to a branch.
-test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0010647Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0010647Z
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0011003Z If you want to create a new branch to retain commits you create, you may
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0011725Z do so (now or later) by using -c with the switch command. Example:
-test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012162Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012162Z
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012350Z   git switch -c <new-branch-name>
-test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012662Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012662Z
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0012848Z Or undo this operation with:
-test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0013486Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0013486Z
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0013648Z   git switch -
-test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0013902Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0013902Z
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0014312Z Turn off this advice by setting config variable advice.detachedHead to false
-test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0015212Z 
+test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0015212Z
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0015811Z HEAD is now at da2074c Merge ae85b03a0de9f43d262225b3c5c4f78cc960af17 into 0ac05caf7d32194fea39555790932902bff5f097
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0065440Z ##[endgroup]
 test	Run actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955	2025-11-11T19:10:11.0105626Z [command]/usr/bin/git log -1 --format=%H

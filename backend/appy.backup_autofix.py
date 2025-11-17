@@ -1,3 +1,8 @@
+"""Deprecated legacy file. Do not run directly. Use app.py.
+
+This module remains for archival reference only.
+"""
+
 import csv
 import json
 import logging

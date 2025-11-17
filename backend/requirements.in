@@ -1,0 +1,34 @@
+# Top-level dependencies for pip-tools. Keep this minimal.
+# Add only direct dependencies you explicitly use. Run:
+#   pip-compile requirements.in --output-file requirements.txt
+# to update the pinned requirements.txt.
+#
+# Security pin strategy (2025-11-15):
+#   jinja2: Transitive via Flask; explicit pin ensures patched >=3.1.6 fixes multiple GHSA advisories.
+#   h11: Transitive via httpcore/httpx; pin to 0.16.0 (GHSA-vqfr-h8mv-ghfj fix).
+#   python-socketio: Direct and via Flask-SocketIO; pin to 5.14.0 (GHSA-g8c6-8fjj-2r4m fix).
+# These pins supplement transient resolution and keep pip-audit clean.
+
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Mail
+Flask-Babel
+Flask-Login
+Flask-SocketIO==5.3.6  # Flask-SocketIO layer; python-socketio pinned separately
+celery
+redis
+psycopg2-binary
+httpx==0.28.1  # upgrade enables relaxed httpcore allowing h11>=0.16.0
+numpy
+pandas
+scikit-learn
+pytest
+pytest-flask  # provides Flask test client fixtures (client/app)
+sentry-sdk[flask]
+PyJWT
+jinja2==3.1.6
+# HTTP stack upgrade (2025-11-15): Monitoring script detected feasibility for h11>=0.16.0.
+# Pin h11 at 0.16.0 for explicit remediation of GHSA-vqfr-h8mv-ghfj.
+h11==0.16.0
+python-socketio==5.14.0

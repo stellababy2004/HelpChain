@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HelpChain – Детайли за заявка</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/static/css/volunteer_dashboard.css" />
+    <style>
+      .detail-wrap {
+        max-width: 980px;
+        margin: 28px auto;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 10px 14px;
+      }
+      .kv dt {
+        color: var(--text-muted);
+      }
+      .kv dd {
+        margin: 0;
+      }
+      .back-links {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell detail-wrap">
+      <header class="page-header">
+        <div>
+          <div class="page-title">
+            <span class="logo-dot"></span>HelpChain – Детайли за заявка
+          </div>
+          <div class="page-subtitle">
+            Достъп с JWT • съдържа чувствителни полета
+          </div>
+        </div>
+        <div class="pill">
+          <span class="pill-dot"></span
+          ><span id="pill-mode-text">Secure mode</span>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="back-links">
+          <a class="btn-small" href="/demo/volunteers">← Към списъка</a>
+          <button
+            id="btn-logout"
+            class="btn-small outline-danger"
+            style="display: none"
+          >
+            Изход
+          </button>
+        </div>
+        <div class="card-header">
+          <div class="card-title">Заявка <span id="hdr-id">—</span></div>
+          <div class="card-actions" id="auth-status">Проверка на достъп…</div>
+        </div>
+        <div id="detail">
+          <p class="stat-em">Зареждане…</p>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const JWT_KEY = "HELPCHAIN_JWT";
+      const ROLE_KEY = "HELPCHAIN_JWT_ROLE";
+      const qs = new URLSearchParams(location.search);
+      const rid = (qs.get("id") || "").trim();
+      const jwtToken = localStorage.getItem(JWT_KEY);
+      const jwtRole = localStorage.getItem(ROLE_KEY);
+      const authStatusEl = document.getElementById("auth-status");
+      const logoutBtn = document.getElementById("btn-logout");
+
+      function updateAuthUI() {
+        if (jwtToken) {
+          authStatusEl.textContent = `Логнат (${jwtRole || "роля?"})`;
+          logoutBtn.style.display = "inline-block";
+        } else {
+          authStatusEl.innerHTML =
+            'Не сте логнати • <a href="/demo/volunteers">Към входа</a>';
+        }
+      }
+      updateAuthUI();
+
+      function numericIdFromAny(v) {
+        const m = String(v || "")
+          .replace(/^[A-Za-z]+-/, "")
+          .trim();
+        const n = parseInt(m, 10);
+        return isNaN(n) ? null : n;
+      }
+      const numericId = numericIdFromAny(rid);
+      document.getElementById("hdr-id").textContent =
+        rid || (numericId ? `HR-${numericId}` : "—");
+
+      async function loadDetail() {
+        const host = `/api/requests/${numericId}`;
+        const wrap = document.getElementById("detail");
+        if (!jwtToken) {
+          wrap.innerHTML =
+            '<p class="stat-em">Изисква вход за да видите детайлите.</p>';
+          return;
+        }
+        try {
+          const resp = await fetch(host, {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${jwtToken}`,
+            },
+          });
+          if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}`);
+          }
+          const d = await resp.json();
+          wrap.innerHTML = `
+        <dl class="kv">
+          <dt>ID</dt><dd>${d.id || "-"}</dd>
+          <dt>Статус</dt><dd>${d.status || "-"}</dd>
+          <dt>Дата</dt><dd>${d.created_at || "-"}</dd>
+          <dt>Град</dt><dd>${d.city || "-"}</dd>
+          <dt>Категория</dt><dd>${d.category || "-"}</dd>
+          <dt>Заявител</dt><dd>${d.requester || "-"}</dd>
+          <dt>Описание</dt><dd>${d.description || d.message || "-"}</dd>
+          <dt>Email (маскиран)</dt><dd>${d.email_masked || "—"}</dd>
+          ${d.email ? `<dt>Email (реален)</dt><dd>${d.email}</dd>` : ""}
+          <dt>Телефон (маскиран)</dt><dd>${d.phone_masked || "—"}</dd>
+          ${d.phone ? `<dt>Телефон (реален)</dt><dd>${d.phone}</dd>` : ""}
+        </dl>`;
+        } catch (e) {
+          wrap.innerHTML = `<p class="stat-em" style="color:#ef4444">Грешка при зареждане: ${e.message}</p>`;
+        }
+      }
+
+      logoutBtn?.addEventListener("click", () => {
+        localStorage.removeItem(JWT_KEY);
+        localStorage.removeItem(ROLE_KEY);
+        location.href = "/demo/volunteers";
+      });
+
+      if (numericId) {
+        loadDetail();
+      } else {
+        document.getElementById("detail").innerHTML =
+          '<p class="stat-em" style="color:#ef4444">Невалидно ID</p>';
+      }
+    </script>
+  </body>
+</html>
