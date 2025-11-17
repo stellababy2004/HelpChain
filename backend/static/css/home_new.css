@@ -1,3 +1,18 @@
+/* Current locale indicator styles (moved from inline) */
+.current-locale {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  font-size: 11px;
+  color: #9ca3af;
+  z-index: 1200;
+}
+.current-locale-label {
+  padding: 4px 8px;
+  border: 1px solid rgba(148, 163, 253, 0.3);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.7);
+}
 /* Extracted from inline <style> in home_new.html for CSP compliance */
 :root {
   --bg: #020817;

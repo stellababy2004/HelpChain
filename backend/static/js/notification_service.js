@@ -172,7 +172,10 @@ class HelpChainNotificationService {
    */
   async requestPushPermission() {
     if (!this.pushSupported) {
-      this.showAlert("Вашият браузър не поддържа push нотификации.", "warning");
+      this.showAlert(
+        "Votre navigateur ne prend pas en charge les notifications push.",
+        "warning",
+      );
       return false;
     }
 
@@ -180,18 +183,21 @@ class HelpChainNotificationService {
       this.pushPermission = await Notification.requestPermission();
 
       if (this.pushPermission === "granted") {
-        this.showAlert("Push нотификациите са разрешени!", "success");
+        this.showAlert("Les notifications push sont activées !", "success");
         await this.registerServiceWorker();
         this.updateUI();
         this.showTestNotification();
         return true;
       } else {
-        this.showAlert("Push нотификациите бяха отказани.", "warning");
+        this.showAlert("Les notifications push ont été refusées.", "warning");
         return false;
       }
     } catch (error) {
       console.error("Error requesting push permission:", error);
-      this.showAlert("Възникна грешка при искането на разрешение.", "error");
+      this.showAlert(
+        "Une erreur s'est produite lors de la demande d'autorisation.",
+        "error",
+      );
       return false;
     }
   }
@@ -202,8 +208,8 @@ class HelpChainNotificationService {
   showTestNotification() {
     if (this.pushPermission !== "granted") return;
 
-    const notification = new Notification("HelpChain - Тест", {
-      body: "Това е тестова нотификация. Push нотификациите работят!",
+    const notification = new Notification("HelpChain - Test", {
+      body: "Ceci est une notification de test. Les notifications push fonctionnent !",
       icon: "/static/favicon.ico",
       badge: "/static/favicon.ico",
       tag: "test-notification",
@@ -232,8 +238,8 @@ class HelpChainNotificationService {
       return;
     }
 
-    const notification = new Notification("Нова заявка за помощ", {
-      body: `${request.category} - ${request.distance}km от вас`,
+    const notification = new Notification("Nouvelle demande d'aide", {
+      body: `${request.category} - ${request.distance}km de vous`,
       icon: "/static/favicon.ico",
       badge: "/static/favicon.ico",
       tag: `request-${request.id}`,
@@ -262,8 +268,8 @@ class HelpChainNotificationService {
       return;
     }
 
-    const notification = new Notification("СПЕШНА заявка!", {
-      body: `${request.category} - Нужда от незабавна помощ!`,
+    const notification = new Notification("Demande URGENTE !", {
+      body: `${request.category} - Besoin d'aide immédiate !`,
       icon: "/static/favicon.ico",
       badge: "/static/favicon.ico",
       tag: `urgent-${request.id}`,
@@ -294,7 +300,7 @@ class HelpChainNotificationService {
     }
 
     const notification = new Notification(
-      `Ново съобщение от ${message.sender}`,
+      `Nouveau message de ${message.sender}`,
       {
         body:
           message.content.substring(0, 100) +
@@ -327,8 +333,8 @@ class HelpChainNotificationService {
       return;
     }
 
-    const notification = new Notification("Актуализация по задача", {
-      body: `Задача "${task.title}" - ${task.status}`,
+    const notification = new Notification("Mise à jour de la tâche", {
+      body: `Tâche "${task.title}" - ${task.status}`,
       icon: "/static/favicon.ico",
       badge: "/static/favicon.ico",
       tag: `task-${task.id}`,
@@ -346,7 +352,7 @@ class HelpChainNotificationService {
    */
   async sendTestEmail() {
     try {
-      this.showLoading("Изпращане на тест имейл...");
+      this.showLoading("Envoi de l'e-mail de test...");
 
       const response = await fetch("/api/notification/test-email", {
         method: "POST",
@@ -358,14 +364,17 @@ class HelpChainNotificationService {
       this.hideLoading();
 
       if (response.ok) {
-        this.showAlert("Тестовият имейл е изпратен успешно!", "success");
+        this.showAlert(
+          "L'e-mail de test a été envoyé avec succès !",
+          "success",
+        );
       } else {
         throw new Error("Failed to send test email");
       }
     } catch (error) {
       this.hideLoading();
       console.error("Error sending test email:", error);
-      this.showAlert("Грешка при изпращане на тест имейл.", "error");
+      this.showAlert("Erreur lors de l'envoi de l'e-mail de test.", "error");
     }
   }
 
@@ -374,7 +383,7 @@ class HelpChainNotificationService {
    */
   async sendTestSMS() {
     try {
-      this.showLoading("Изпращане на тест SMS...");
+      this.showLoading("Envoi du SMS de test...");
 
       const response = await fetch("/api/notification/test-sms", {
         method: "POST",
@@ -386,14 +395,14 @@ class HelpChainNotificationService {
       this.hideLoading();
 
       if (response.ok) {
-        this.showAlert("Тестовото SMS е изпратено успешно!", "success");
+        this.showAlert("Le SMS de test a été envoyé avec succès !", "success");
       } else {
         throw new Error("Failed to send test SMS");
       }
     } catch (error) {
       this.hideLoading();
       console.error("Error sending test SMS:", error);
-      this.showAlert("Грешка при изпращане на тест SMS.", "error");
+      this.showAlert("Erreur lors de l'envoi du SMS de test.", "error");
     }
   }
 
@@ -402,7 +411,7 @@ class HelpChainNotificationService {
    */
   async saveSettings(settings) {
     try {
-      this.showLoading("Запазване на настройки...");
+      this.showLoading("Enregistrement des paramètres...");
 
       const response = await fetch("/api/notification/settings", {
         method: "POST",
@@ -420,7 +429,10 @@ class HelpChainNotificationService {
           "helpchain_notifications",
           JSON.stringify(settings),
         );
-        this.showAlert("Настройките са запазени успешно!", "success");
+        this.showAlert(
+          "Les paramètres ont été enregistrés avec succès !",
+          "success",
+        );
         this.updateUI();
         return true;
       } else {
@@ -429,7 +441,10 @@ class HelpChainNotificationService {
     } catch (error) {
       this.hideLoading();
       console.error("Error saving settings:", error);
-      this.showAlert("Грешка при запазване на настройки.", "error");
+      this.showAlert(
+        "Erreur lors de l'enregistrement des paramètres.",
+        "error",
+      );
       return false;
     }
   }
@@ -474,22 +489,22 @@ class HelpChainNotificationService {
     if (pushBadge && pushCheckbox) {
       if (!this.pushAvailable) {
         pushBadge.className = "badge badge-denied";
-        pushBadge.textContent = "Недостъпно";
+        pushBadge.textContent = "Indisponible";
         pushCheckbox.disabled = true;
         pushCheckbox.checked = false;
       } else if (this.pushPermission === "granted") {
         pushBadge.className = "badge badge-permission";
-        pushBadge.textContent = "Разрешени";
+        pushBadge.textContent = "Autorisées";
         pushCheckbox.disabled = false;
         pushCheckbox.checked = this.settings.pushEnabled;
       } else if (this.pushPermission === "denied") {
         pushBadge.className = "badge badge-denied";
-        pushBadge.textContent = "Блокирани";
+        pushBadge.textContent = "Bloquées";
         pushCheckbox.disabled = true;
         pushCheckbox.checked = false;
       } else {
         pushBadge.className = "badge badge-denied";
-        pushBadge.textContent = "Не са разрешени";
+        pushBadge.textContent = "Non autorisées";
         pushCheckbox.disabled = true;
         pushCheckbox.checked = false;
       }
@@ -542,16 +557,17 @@ class HelpChainNotificationService {
     if (!this.hasShownPushFallbackAlert) {
       const messageMap = {
         "missing-vapid-endpoint":
-          "Push нотификациите са временно изключени (липсва сървърна конфигурация).",
+          "Les notifications push sont temporairement désactivées (configuration serveur manquante).",
         "missing-vapid-key":
-          "Push нотификациите са временно изключени, защото VAPID ключът не е настроен.",
+          "Les notifications push sont temporairement désactivées car la clé VAPID n'est pas configurée.",
         "subscription-response-error":
-          "Push нотификациите са временно изключени поради грешка при абониране.",
+          "Les notifications push sont temporairement désactivées en raison d'une erreur d'abonnement.",
         "subscription-exception":
-          "Push нотификациите са временно изключени. Проверете конфигурацията и опитайте отново.",
+          "Les notifications push sont temporairement désactivées. Vérifiez la configuration et réessayez.",
       };
       this.showAlert(
-        messageMap[reason] || "Push нотификациите не са налични в момента.",
+        messageMap[reason] ||
+          "Les notifications push ne sont pas disponibles actuellement.",
         "warning",
       );
       this.hasShownPushFallbackAlert = true;

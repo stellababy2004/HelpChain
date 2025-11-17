@@ -1,14 +1,14 @@
 {
-  "name": "HelpChain - Свързваме нуждаещи се с доброволци",
+  "name": "HelpChain - Plateforme d'entraide",
   "short_name": "HelpChain",
-  "description": "Платформа за свързване на хора в нужда с доброволци в България",
+  "description": "Plateforme pour connecter les personnes dans le besoin avec des bénévoles.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1976d2",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "bg",
+  "lang": "fr",
   "categories": ["social", "productivity", "utilities"],
   "icons": [
     {

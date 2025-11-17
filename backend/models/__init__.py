@@ -1,3 +1,4 @@
+# Позволява на Python да разпознае тази папка като пакет.
 from datetime import datetime
 
 

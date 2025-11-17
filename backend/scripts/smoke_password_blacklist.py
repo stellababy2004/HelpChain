@@ -1,30 +1,19 @@
-"""Smoke test for common password blacklist integration.
-
-Run with:
-    python scripts/smoke_password_blacklist.py
-
-Expected: common passwords rejected, strong uncommon accepted.
-"""
-
+"""Smoke test for common password blacklist integration."""
 from __future__ import annotations
 
 import os
 import sys
 
-from alembic import command
 from alembic.config import Config
 from sqlalchemy.engine import make_url
 
+from alembic import command
+
 try:
-    from models import (
-        _load_common_passwords,
-        validate_password_strength,
-    )
+    from backend.models import _load_common_passwords, validate_password_strength
 except ModuleNotFoundError:
     try:
-        from backend.models import (
-            validate_password_strength,
-        )
+        from models import _load_common_passwords, validate_password_strength
     except ModuleNotFoundError:
         raise
 

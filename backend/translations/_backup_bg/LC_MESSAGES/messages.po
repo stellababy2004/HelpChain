@@ -1,0 +1,1 @@
+[BACKUP] Bulgarian translation file (messages.po) removed from active translations.

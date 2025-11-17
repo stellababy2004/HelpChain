@@ -3,37 +3,33 @@ Advanced Analytics Service for HelpChain
 Provides comprehensive analytics and user behavior tracking
 """
 
+import datetime
 import json
-import time
-from collections import Counter
-from datetime import UTC, datetime, timedelta
-from functools import wraps
-from typing import Any
-
-from sqlalchemy import and_, case, func, text
-
-# Remove direct db import - we'll get it from current_app
-try:
-    from .models_with_analytics import (
-        AnalyticsEvent,
-        ChatbotConversation,
-        PerformanceMetrics,
-        UserBehavior,
-    )
-except ImportError:
-    from backend.models_with_analytics import (
-        AnalyticsEvent,
-        ChatbotConversation,
-        PerformanceMetrics,
-        UserBehavior,
-    )
 import logging
+import os
+import random
+import re
+import statistics
+import time
+from collections import Counter, defaultdict
+from collections.abc import Callable
+from datetime import UTC, timedelta
+from functools import wraps
+from typing import Any, Optional, Union
 
+from flask import current_app
+from sqlalchemy import and_, case, func, text
+from sqlalchemy.orm import Session
 
-def utc_now() -> datetime:
-    """Return naive UTC timestamp without using datetime.utcnow."""
-    return datetime.now(UTC).replace(tzinfo=None)
-
+from .models import (
+    AnalyticsEvent,
+    ChatbotConversation,
+    PerformanceMetrics,
+    User,
+    UserBehavior,
+    Volunteer,
+    utc_now,
+)
 
 logger = logging.getLogger(__name__)
 
