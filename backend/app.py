@@ -955,30 +955,7 @@ with app.app_context():
 
 @app.get("/")
 def index():
-    """Начална страница – използва новия Jinja шаблон `home_new.html`."""
-    # Опит за динамични броячи – безопасно игнорира грешки при ранно стартиране.
-    try:
-        volunteers_count = db.session.query(func.count(Volunteer.id)).scalar() or 0
-    except Exception:
-        volunteers_count = 0
-    try:
-        requests_count = db.session.query(func.count(HelpRequest.id)).scalar() or 0
-    except Exception:
-        requests_count = 0
-
-    # Покажи езика така, както би го избрал селекторът (cookie/IP/Accept-Language)
-    current_locale = _select_locale()
-
-    # Шаблонът `home_new.html` засега има статични data-count стойности;
-    # подаваме динамичните за бъдеща интеграция ако решите да ги използвате.
-    return render_template(
-        "home_new.html",
-        volunteers_count=volunteers_count,
-        requests_count=requests_count,
-        current_locale=current_locale,
-        user_logged_in=session.get("user_logged_in"),
-        admin_logged_in=session.get("admin_logged_in"),
-    )
+    return render_template("home_new.html")
 
 
 # Redirect legacy static preview URL към новата начална страница
