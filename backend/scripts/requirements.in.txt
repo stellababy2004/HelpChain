@@ -1,5 +1,0 @@
-Flask
-Flask-SQLAlchemy
-httpx
-numpy
-pytest
