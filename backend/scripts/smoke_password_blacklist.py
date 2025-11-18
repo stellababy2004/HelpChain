@@ -1,13 +1,10 @@
-"""Smoke test for common password blacklist integration."""
+# ruff: noqa
 from __future__ import annotations
-
 import os
 import sys
-
+from alembic import command
 from alembic.config import Config
 from sqlalchemy.engine import make_url
-
-from alembic import command
 
 try:
     from backend.models import _load_common_passwords, validate_password_strength
@@ -16,6 +13,7 @@ except ModuleNotFoundError:
         from models import _load_common_passwords, validate_password_strength
     except ModuleNotFoundError:
         raise
+"""Smoke test for common password blacklist integration."""
 
 COMMON = [
     "password",
