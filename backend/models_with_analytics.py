@@ -108,7 +108,9 @@ class AdminLog(db.Model):
     # import-order resolution problems during mapper configuration.
     # Using a lambda keeps the reference lazy and avoids evaluate-time
     # string lookups that can fail in complex import scenarios.
-    admin_user = db.relationship(lambda: AdminUser, backref="admin_logs")
+    admin_user = db.relationship(
+        lambda: AdminUser, backref=db.backref("admin_logs", overlaps="admin_user")
+    )
 
     def __repr__(self):
         return f"<AdminLog {self.action} by {self.admin_user_id}>"

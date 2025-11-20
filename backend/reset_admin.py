@@ -5,6 +5,8 @@ def create_or_update_admin(username, password, email=None):
         db.session.add(admin)
     admin.set_password(password)
     admin.is_active = True
+    admin.locked_until = None
+    admin.failed_login_attempts = 0
     db.session.commit()
     print(f"Админ '{username}' е създаден/обновен успешно!")
 
@@ -12,14 +14,14 @@ def create_or_update_admin(username, password, email=None):
 from flask import Flask
 
 from app import app
-from backend.extensions import db
-from backend.models import AdminUser
+from extensions import db
+from models import AdminUser
 
 if __name__ == "__main__":
     # Задай пътя към базата, ако не е конфигуриран
     if not app.config.get("SQLALCHEMY_DATABASE_URI"):
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///./instance/volunteers.db"
-    db.init_app(app)
+    ## db.init_app(app)  # Already initialized in app.py
     with app.app_context():
         db.create_all()
         create_or_update_admin("admin", "Admin1234", "admin@example.com")

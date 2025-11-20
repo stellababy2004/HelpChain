@@ -101,3 +101,5 @@ if FLASK_CACHING_AVAILABLE:
     cache = Cache()
 else:
     cache = None
+
+import extensions
