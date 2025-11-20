@@ -1,8 +1,10 @@
 <!doctype html>
-<html lang="{{ current_locale if current_locale == 'en' else 'fr' }}">
+<html
+  lang="{{ current_locale if current_locale in ['fr', 'en', 'bg'] else 'fr' }}"
+>
   <head>
     <meta charset="UTF-8" />
-    <title>HelpChain – Свързваме хората, които помагат</title>
+    <title>{{ _("HelpChain – Свързваме хората, които помагат") }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       rel="stylesheet"
@@ -14,23 +16,23 @@
       <header class="nav">
         <div class="logo">
           <div class="logo-icon"></div>
-          <div>HelpChain</div>
+          <div>{{ _("HelpChain") }}</div>
         </div>
         <div class="nav-links">
-          <a href="#how" data-i18n="nav.how">Как работи</a>
-          <a href="#stories" data-i18n="nav.stories">Истории</a>
+          <a href="#how" data-i18n="nav.how">{{ _("Как работи") }}</a>
+          <a href="#stories" data-i18n="nav.stories">{{ _("Истории") }}</a>
           <a href="{{ url_for('volunteer_register') }}" data-i18n="nav.join"
-            >Стани доброволец</a
+            >{{ _("Стани доброволец") }}</a
           >
           <a href="{{ url_for('submit_request') }}" data-i18n="nav.need"
-            >Имам нужда от помощ</a
+            >{{ _("Имам нужда от помощ") }}</a
           >
           <a class="nav-cta" href="{{ url_for('volunteer_register') }}">
             <span class="icon">⚡</span
-            ><span data-i18n="nav.cta">Включи се във веригата</span>
+            ><span data-i18n="nav.cta">{{ _("Включи се във веригата") }}</span>
           </a>
           <div class="lang-switch" aria-label="Language switch">
-            <!-- Only French and English available -->
+            <!-- French, English, and Bulgarian available -->
             <button
               type="button"
               data-setlang="fr"
@@ -45,7 +47,29 @@
             >
               EN
             </button>
+            <button
+              type="button"
+              data-setlang="bg"
+              class="{% if current_locale == 'bg' %}active{% endif %}"
+            >
+              BG
+            </button>
           </div>
+          <script>
+            document.addEventListener("DOMContentLoaded", function () {
+              document
+                .querySelectorAll(".lang-switch button")
+                .forEach(function (btn) {
+                  btn.addEventListener("click", function () {
+                    const lang = btn.getAttribute("data-setlang");
+                    const next = window.location.pathname;
+                    window.location.href = `/set_language?language=${lang}&next=${encodeURIComponent(
+                      next,
+                    )}`;
+                  });
+                });
+            });
+          </script>
         </div>
       </header>
 
@@ -54,11 +78,12 @@
           <div class="label-pill">
             <span class="label-pill-icon"></span>
             <span data-i18n="label.realtime"
-              >В реално време свързваме помощ с нужда</span
+              >{{ _("В реално време свързваме помощ с нужда") }}</span
             >
           </div>
           <h1 id="hero-title">
-            Превръщаме <span>добротата</span> в организирана сила.
+            {{ _("Превръщаме") }} <span>{{ _("добротата") }}</span> {{ _("в
+            организирана сила.") }}
           </h1>
           <p class="hero-sub" data-i18n="hero.sub">
             HelpChain свързва хора в нужда с проверени доброволци, психолози,
@@ -71,13 +96,13 @@
               class="btn-primary"
               href="{{ url_for('volunteer_register') }}"
               data-i18n="btn.join"
-              >💜 Стани доброволец</a
+              >💜 {{ _("Стани доброволец") }}</a
             >
             <a
               class="btn-ghost"
               href="{{ url_for('submit_request') }}"
               data-i18n="btn.need"
-              >🙋 Имам нужда от помощ</a
+              >🙋 {{ _("Имам нужда от помощ") }}</a
             >
           </div>
 
@@ -196,7 +221,7 @@
           <div class="side-sub">1. Имейл → 2. Microsoft потвърждение</div>
           <form
             method="POST"
-            action="{{ url_for('msauth.start') }}"
+            action="{{ url_for('volunteer_register') }}"
             class="login-form"
           >
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />

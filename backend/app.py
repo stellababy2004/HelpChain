@@ -1,3 +1,7 @@
+# ...existing code...
+
+# ...existing code...
+
 import base64
 import datetime
 import hashlib
@@ -19,18 +23,17 @@ from flask import (
     Flask,
     Response,
     abort,
-    flash,
-    g,
     jsonify,
-    make_response,
-    redirect,
     render_template,
-    request,
+    flash,
     send_from_directory,
+    g,
     session,
+    request,
+    redirect,
     url_for,
 )
-from flask_babel import Babel, _, gettext
+from flask_babel import Babel, _
 from flask_login import (
     LoginManager,
     current_user,
@@ -47,17 +50,8 @@ from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from extensions import babel, db  # type: ignore
-from microsoft_auth import bp as microsoft_bp  # type: ignore
-from models import AdminUser, HelpRequest, PriorityEnum, RoleEnum, User, Volunteer  # type: ignore
-
-User = None
-RoleEnum = None
-Volunteer = None
-AdminUser = None
-
-from extensions import babel, db  # type: ignore
-from microsoft_auth import bp as microsoft_bp  # type: ignore
-from models import AdminUser, HelpRequest, PriorityEnum, RoleEnum, User, Volunteer  # type: ignore
+from models_with_analytics import AdminUser, User, Volunteer
+from models import RoleEnum, PriorityEnum, HelpRequest
 
 app = Flask(__name__)
 # Ensure a concrete secret key (Flask-WTF requires app.secret_key not None).
@@ -71,8 +65,30 @@ app.secret_key = _secret  # explicit assignment for older extension lookups
 csrf = CSRFProtect(app)
 APP_START_TS = time.time()
 
-# Basic SQLite configuration (reuses pattern from appy.py but simplified)
+# --- Define basedir for later use ---
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+# --- Babel i18n setup ---
+
+from flask_babel import Babel, _
+from flask import session, request, redirect, url_for
+
+
+def get_locale():
+    supported_locales = ["bg", "en", "fr"]
+    # 1. Session
+    lang = session.get("language")
+    if lang in supported_locales:
+        return lang
+    # 2. Browser
+    browser_lang = request.accept_languages.best_match(supported_locales)
+    if browser_lang:
+        return browser_lang
+    # 3. Default: French
+    return "fr"
+
+
+babel.locale_selector_func = get_locale
 instance_dir = os.path.join(basedir, "instance")
 os.makedirs(instance_dir, exist_ok=True)
 db_path = os.path.join(instance_dir, "volunteers.db")
@@ -97,6 +113,7 @@ app.config.setdefault("MICROSOFT_TENANT_ID", os.getenv("MICROSOFT_TENANT_ID", "c
 app.config.setdefault(
     "MICROSOFT_CLIENT_ID", os.getenv("MICROSOFT_CLIENT_ID", "CHANGE-ME-CLIENT-ID")
 )
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 # ----------------------------
 # i18n (Flask-Babel) setup
@@ -110,7 +127,7 @@ try:
         "BABEL_TRANSLATION_DIRECTORIES", os.path.join(basedir, "translations")
     )
 
-    SUPPORTED_LOCALES = ["fr", "en"]
+    SUPPORTED_LOCALES = ["fr", "en", "bg"]
 
     def _detect_country_code() -> str | None:
         """Best-effort country detection from common proxy/CDN headers.
@@ -122,13 +139,12 @@ try:
         """
         # Cloudflare
         cc = (request.headers.get("CF-IPCountry") or "").strip().upper()
-        if cc and cc not in {"XX", "T1"}:  # 'XX'/'T1' are unknown/tor
+        if cc:
             return cc
-        # AppEngine / generic reverse proxies
-        for hdr in ("X-AppEngine-Country", "X-Country-Code", "X-Geo-Country"):
-            cc = (request.headers.get(hdr) or "").strip().upper()
-            if cc:
-                return cc
+        # AppEngine
+        cc = (request.headers.get("X-AppEngine-Country") or "").strip().upper()
+        if cc:
+            return cc
         return None
 
     def _select_locale() -> str:
@@ -137,21 +153,18 @@ try:
         if lang_cookie in SUPPORTED_LOCALES:
             return lang_cookie
 
-        # 2) Geo-IP via headers: FR->fr, others->en
+        # 2) Geo-IP via headers: FR->fr, други игнорирай
         cc = _detect_country_code()
         if cc == "FR":
             return "fr"
-        # Remove Bulgarian country code mapping
-        if cc:  # any other detected country
-            return "en"
 
-        # 3) Accept-Language as a graceful fallback
+        # 3) Accept-Language като fallback, но само ако е fr, en или bg
         best = request.accept_languages.best_match(SUPPORTED_LOCALES)
-        if best:
+        if best in SUPPORTED_LOCALES:
             return best
 
-        # 4) Final fallback to configured default (French)
-        return app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+        # 4) Винаги връщай френски по подразбиране
+        return "fr"
 
     # Support both Flask-Babel v2 and v3+ init styles
     try:
@@ -193,28 +206,27 @@ def _ensure_sqlite_fts():
         if db.engine.name != "sqlite":
             FTS_ENABLED = False
             return
-        # Create virtual table (external content)
-        db.session.execute(
-            text(
-                """
-                CREATE VIRTUAL TABLE IF NOT EXISTS help_requests_fts USING fts5(
-                    title, description, message, city, region, name, email,
-                    content='help_requests', content_rowid='id'
-                );
-                """
+            # Create virtual table (external content)
+            db.session.execute(
+                text(
+                    """
+                    CREATE VIRTUAL TABLE IF NOT EXISTS help_requests_fts USING fts5(
+                        title, description, message, city, region, name, email,
+                        content='help_requests', content_rowid='id'
+                    )
+                    """
+                )
             )
-        )
-        # Triggers to sync FTS with base table
-        db.session.execute(
-            text(
-                """
-                CREATE TRIGGER IF NOT EXISTS help_requests_ai AFTER INSERT ON help_requests BEGIN
-                  INSERT INTO help_requests_fts(rowid,title,description,message,city,region,name,email)
-                  VALUES (new.id, new.title, new.description, new.message, new.city, new.region, new.name, new.email);
-                END;
-                """
+            db.session.execute(
+                text(
+                    """
+                    CREATE TRIGGER IF NOT EXISTS help_requests_ai AFTER INSERT ON help_requests BEGIN
+                      INSERT INTO help_requests_fts(rowid,title,description,message,city,region,name,email)
+                      VALUES (new.id, new.title, new.description, new.message, new.city, new.region, new.name, new.email);
+                    END;
+                    """
+                )
             )
-        )
         db.session.execute(
             text(
                 """
@@ -942,7 +954,8 @@ with app.app_context():
     _seed_if_empty()
     # Register blueprint after app + db initialized
     try:
-        app.register_blueprint(microsoft_bp)
+        # app.register_blueprint(microsoft_bp)
+        pass
     except Exception:
         pass  # Fail-open if blueprint not available
 
@@ -953,7 +966,11 @@ with app.app_context():
 
 @app.get("/")
 def index():
-    return render_template("home_new.html")
+    from flask import request
+
+    lang_cookie = (request.cookies.get("language") or "fr").strip().lower()
+    current_locale = lang_cookie if lang_cookie in ["fr", "en", "bg"] else "fr"
+    return render_template("home_new.html", current_locale=current_locale)
 
 
 # Redirect legacy static preview URL към новата начална страница
@@ -980,16 +997,6 @@ def service_worker():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     # Serve the service worker from the app root path
     return send_from_directory(base_dir, "sw.js", mimetype="application/javascript")
-
-
-@app.get("/set_language")
-def set_language():
-    lang = (request.args.get("language") or "en").strip().lower()
-    nxt = request.args.get("next") or url_for("index")
-    resp = make_response(redirect(nxt))
-    # 180 days
-    resp.set_cookie("language", lang, max_age=60 * 60 * 24 * 180, samesite="Lax")
-    return resp
 
 
 @app.get("/static/previews/new-page.html")
@@ -1276,8 +1283,10 @@ def admin_dev_reset():
     except Exception as e:
         db.session.rollback()
         flash(f"Грешка при нулиране: {e}", "error")
+
     return redirect(url_for("admin_login"))
 
 
+# --- Flask entrypoint ---
 if __name__ == "__main__":
     app.run(debug=True)
