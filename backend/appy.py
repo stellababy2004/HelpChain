@@ -4174,7 +4174,7 @@ def logout():
 @require_admin_login
 def admin_requests_api():
     """Return help requests for the admin dashboard with advanced filters."""
-    # Build unified query results from both HelpRequest and legacy Request models
+    # Build unified query results from HelpRequest model
     db_obj = get_db()
     session = db_obj.session
 
@@ -4186,15 +4186,13 @@ def admin_requests_api():
             status_values = status_param.split(",")
     statuses = [value.strip().lower() for value in status_values if value.strip()]
 
-    # Query HelpRequest and Request separately, then merge
+    # Query HelpRequest only
     help_q = session.query(HelpRequest)
-    req_q = session.query(Request)
 
     if statuses:
         help_q = help_q.filter(func.lower(HelpRequest.status).in_(statuses))
-        req_q = req_q.filter(func.lower(Request.status).in_(statuses))
 
-    # Apply basic search filter (shared)
+    # Apply basic search filter
     search_param = request.args.get("search") or request.args.get("q")
     if search_param:
         search_like = f"%{search_param.strip().lower()}%"
@@ -4206,18 +4204,9 @@ def admin_requests_api():
                 func.lower(HelpRequest.title).like(search_like),
             )
         )
-        req_q = req_q.filter(
-            or_(
-                func.lower(Request.name).like(search_like),
-                func.lower(Request.email).like(search_like),
-                func.lower(Request.description).like(search_like),
-                func.lower(Request.category).like(search_like),
-            )
-        )
 
-    # Execute queries and materialize results
+    # Execute query
     help_results = help_q.all()
-    req_results = req_q.all()
 
     # Combine results into unified items list
     combined = []
@@ -4257,28 +4246,6 @@ def admin_requests_api():
                     "created_at": _format_datetime_for_response(req.created_at),
                     "completed_at": _format_datetime_for_response(
                         getattr(req, "completed_at", None)
-                    ),
-                },
-            )
-        )
-
-    for r in req_results:
-        combined.append(
-            (
-                r.created_at or _utcnow(),
-                {
-                    "id": r.id,
-                    "name": getattr(r, "name", None),
-                    "status": r.status,
-                    "priority": getattr(r, "urgency", None)
-                    or getattr(r, "priority", None),
-                    "request_type": getattr(r, "category", None),
-                    "city": None,
-                    "location": getattr(r, "location", None),
-                    "volunteer": {"id": None, "name": None, "email": None},
-                    "created_at": _format_datetime_for_response(r.created_at),
-                    "completed_at": _format_datetime_for_response(
-                        getattr(r, "completed_at", None)
                     ),
                 },
             )
