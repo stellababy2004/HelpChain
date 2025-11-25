@@ -19,10 +19,10 @@ from permissions import initialize_default_roles_and_permissions
 
 try:  # Prefer relative import when available
     from .extensions import db
-    from .models import RoleEnum, User, Volunteer
+    from .models import AdminUser, RoleEnum, User, Volunteer
 except ImportError:  # Fallback for direct script execution
     from backend.extensions import db
-    from backend.models import RoleEnum, User, Volunteer
+    from backend.models import AdminUser, RoleEnum, User, Volunteer
 
 
 def main():
@@ -40,17 +40,12 @@ def main():
             initialize_default_roles_and_permissions()
 
             print("🔄 Създаване на администраторски потребител...")
-            # Create default admin user
-            admin_user = User(
+            admin_user = AdminUser(
                 username="admin",
                 email="admin@helpchain.live",
-                password_hash=generate_password_hash(
-                    os.getenv("ADMIN_USER_PASSWORD", "admin123")
-                ),
-                role=RoleEnum.superadmin,
-                is_active=True,
+                role=RoleEnum.ADMIN.value,
             )
-
+            admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "admin123"))
             db.session.add(admin_user)
             db.session.commit()
 
@@ -59,9 +54,7 @@ def main():
             volunteer = Volunteer(
                 name="Ivan Tester",
                 email="ivan@example.com",
-                phone="0000000000",
-                skills="Обща помощ, пазаруване",
-                location="Varna, Bulgaria",
+                city="Varna",
             )
 
             db.session.add(volunteer)

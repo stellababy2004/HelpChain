@@ -38,6 +38,195 @@
     />
 
     <style>
+      /* Светъл фон за цялата страница */
+      body {
+        background: linear-gradient(120deg, #fafdff 0%, #f3f6fa 100%);
+        color: #23272f;
+      }
+
+      /* KPI Cards - по-меки цветове, анимация и икони */
+      .kpi-card {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(102, 126, 234, 0.07);
+        padding: 1.7rem 1.2rem 1.2rem 1.2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition:
+          box-shadow 0.3s,
+          transform 0.3s;
+        animation: fadeInUp 0.7s cubic-bezier(0.39, 0.575, 0.56, 1) both;
+      }
+      .kpi-card:hover {
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.13);
+        transform: translateY(-4px) scale(1.03);
+      }
+      .kpi-icon {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        color: #667eea;
+        opacity: 0.85;
+        transition: color 0.2s;
+      }
+      .kpi-card:hover .kpi-icon {
+        color: #764ba2;
+      }
+      @keyframes fadeInUp {
+        0% {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Sticky филтри */
+      .filters-section {
+        position: sticky;
+        top: 1.2rem;
+        z-index: 10;
+        background: #f8f9fb;
+        box-shadow: 0 2px 12px rgba(102, 126, 234, 0.04);
+      }
+
+      /* Tooltip стил */
+      .kpi-card[title] {
+        cursor: help;
+      }
+
+      /* Плавна анимация за секции */
+      .chart-container,
+      .filters-section {
+        animation: fadeInUp 0.8s cubic-bezier(0.39, 0.575, 0.56, 1) both;
+      }
+
+      /* По-меки цветове за бутони */
+      .export-btn,
+      .btn-primary {
+        background: linear-gradient(90deg, #667eea 0%, #aab6f6 100%);
+        color: #fff;
+        border: none;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.07);
+      }
+      .export-btn:hover,
+      .btn-primary:hover {
+        background: linear-gradient(90deg, #764ba2 0%, #b8c6f7 100%);
+      }
+      /* Toast Notification */
+      .toast-container {
+        position: fixed;
+        top: 1.5rem;
+        right: 1.5rem;
+        z-index: 9999;
+      }
+      .toast {
+        min-width: 220px;
+        background: #fff;
+        color: #333;
+        border-radius: 8px;
+        box-shadow: 0 4px 24px rgba(102, 126, 234, 0.15);
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1rem;
+        opacity: 0.97;
+        border-left: 6px solid #667eea;
+        animation: fadeIn 0.5s;
+      }
+      .toast.toast-success {
+        border-left-color: #28a745;
+      }
+      .toast.toast-error {
+        border-left-color: #dc3545;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 0.97;
+          transform: translateY(0);
+        }
+      }
+      /* Skeleton Loader */
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 37%,
+          #f0f0f0 63%
+        );
+        background-size: 400% 100%;
+        animation: skeleton-loading 1.2s ease-in-out infinite;
+        border-radius: 8px;
+        min-height: 24px;
+      }
+      @keyframes skeleton-loading {
+        0% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0 50%;
+        }
+      }
+      .skeleton-card {
+        height: 120px;
+        margin-bottom: 1.5rem;
+      }
+      .skeleton-chart {
+        height: 320px;
+        margin-bottom: 2rem;
+      }
+      body.dark-theme {
+        background: var(--dark-bg);
+        color: var(--text-light);
+      }
+      body.dark-theme .stats-card,
+      body.dark-theme .chart-container {
+        background: var(--dark-card);
+        color: var(--text-light);
+        box-shadow: var(--shadow-dark);
+      }
+      body.dark-theme .navbar-modern,
+      body.dark-theme .navbar-light {
+        background: rgba(34, 34, 34, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      body.dark-theme .breadcrumb {
+        background: #232323;
+      }
+      body.dark-theme .form-control,
+      body.dark-theme .form-select {
+        background: #232323;
+        color: var(--text-light);
+        border-color: #444;
+      }
+      body.dark-theme .btn,
+      body.dark-theme .btn-outline-info {
+        color: var(--text-light);
+        border-color: #666;
+      }
+      body.dark-theme .table {
+        color: var(--text-light);
+      }
+      .theme-switcher {
+        border: none;
+        background: none;
+        font-size: 1.3rem;
+        cursor: pointer;
+        color: #888;
+        transition: color 0.2s;
+      }
+      .theme-switcher.active,
+      .theme-switcher:focus {
+        color: #764ba2;
+      }
       :root {
         --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -244,15 +433,65 @@
         background: white;
         border-radius: var(--border-radius);
         box-shadow: var(--shadow);
-        padding: 1.5rem;
+        padding: 2rem 1.5rem 1.5rem 1.5rem;
         margin-bottom: 2rem;
+        border: 2px solid #667eea22;
+        position: relative;
+      }
+
+      .filters-section h5 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 1.5rem;
       }
 
       .filter-row {
         display: flex;
-        gap: 1rem;
-        align-items: center;
+        gap: 1.5rem;
+        align-items: flex-end;
         flex-wrap: wrap;
+      }
+
+      .form-group {
+        min-width: 180px;
+        flex: 1 1 180px;
+      }
+
+      .form-label {
+        font-weight: 600;
+        color: #764ba2;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-select {
+        font-size: 1rem;
+        border-radius: 8px;
+        border: 1.5px solid #667eea55;
+        box-shadow: none;
+        transition: border 0.2s;
+      }
+      .form-select:focus {
+        border-color: #667eea;
+        outline: none;
+      }
+
+      .btn-primary {
+        font-size: 1.05rem;
+        padding: 0.55rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        background: var(--primary-gradient);
+        border: none;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+        transition:
+          background 0.2s,
+          box-shadow 0.2s;
+      }
+      .btn-primary:hover,
+      .btn-primary:focus {
+        background: var(--secondary-gradient);
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
       }
 
       /* Real-time Updates */
@@ -292,16 +531,26 @@
         background: var(--primary-gradient);
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 500;
+        padding: 0.65rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1.08rem;
         cursor: pointer;
         transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        outline: none;
+        position: relative;
       }
-
+      .export-btn:focus {
+        box-shadow: 0 0 0 3px #667eea33;
+      }
       .export-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.18);
+        background: var(--secondary-gradient);
       }
 
       /* Loading States */
@@ -339,19 +588,18 @@
       }
 
       /* Responsive Design */
-      @media (max-width: 768px) {
+      @media (max-width: 992px) {
         .kpi-grid {
           grid-template-columns: 1fr;
         }
-
         .filter-row {
           flex-direction: column;
           align-items: stretch;
+          gap: 1rem;
         }
-
-        .chart-controls {
-          flex-direction: column;
-          align-items: stretch;
+        .export-btn {
+          width: 100%;
+          justify-content: center;
         }
       }
 
@@ -419,27 +667,34 @@
             <li class="nav-item">
               <a
                 class="nav-link active"
-                href="{{ url_for('analytics_bp.admin_analytics') }}"
+                href="{{ url_for('admin_analytics') }}"
               >
                 <i class="fas fa-chart-line me-1"></i>{{ _('Analytics') }}
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ url_for('admin_api_volunteers') }}">
                 <i class="fas fa-users me-1"></i>{{ _('Доброволци') }}
               </a>
             </li>
             <li class="nav-item">
-              <a
-                class="nav-link"
-                href="{{ url_for('admin_roles.roles_dashboard') }}"
-              >
+              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
                 <i class="fas fa-user-shield me-1"></i>{{ _('Роли') }}
               </a>
             </li>
           </ul>
 
           <ul class="navbar-nav">
+            <li class="nav-item me-2">
+              <button
+                class="theme-switcher"
+                id="themeSwitcher"
+                title="Смени тема"
+                aria-label="Смени тема"
+              >
+                <i class="fas fa-moon" id="themeIcon"></i>
+              </button>
+            </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('logout') }}">
                 <i class="fas fa-sign-out-alt me-1"></i>{{ _('Изход') }}
@@ -449,11 +704,62 @@
         </div>
       </div>
     </nav>
+    <script>
+      // Theme switcher logic
+      const themeSwitcher = document.getElementById("themeSwitcher");
+      const themeIcon = document.getElementById("themeIcon");
+      function setTheme(dark) {
+        if (dark) {
+          document.body.classList.add("dark-theme");
+          themeIcon.classList.remove("fa-moon");
+          themeIcon.classList.add("fa-sun");
+          themeSwitcher.classList.add("active");
+          localStorage.setItem("theme", "dark");
+        } else {
+          document.body.classList.remove("dark-theme");
+          themeIcon.classList.remove("fa-sun");
+          themeIcon.classList.add("fa-moon");
+          themeSwitcher.classList.remove("active");
+          localStorage.setItem("theme", "light");
+        }
+      }
+      if (themeSwitcher) {
+        themeSwitcher.addEventListener("click", () => {
+          setTheme(!document.body.classList.contains("dark-theme"));
+        });
+      }
+      // On load
+      (function () {
+        const saved = localStorage.getItem("theme");
+        if (saved === "dark") setTheme(true);
+      })();
+    </script>
 
     <!-- Spacer for fixed navbar -->
     <div class="navbar-spacer"></div>
 
     <div class="container-xxl dashboard-container">
+      {% if not dashboard_stats.totals.requests and not
+      dashboard_stats.totals.volunteers %}
+      <!-- Skeleton cards for loading state -->
+      <div class="row">
+        <div class="col-md-3 col-6">
+          <div class="skeleton skeleton-card"></div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="skeleton skeleton-card"></div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="skeleton skeleton-card"></div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="skeleton skeleton-card"></div>
+        </div>
+      </div>
+      {% endif %} {% if not trends_data.labels %}
+      <!-- Skeleton chart for loading state -->
+      <div class="skeleton skeleton-chart"></div>
+      {% endif %}
       <!-- Breadcrumbs -->
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
@@ -485,11 +791,21 @@
                 </span>
               </p>
             </div>
-            <div class="d-flex gap-2">
-              <button class="export-btn" onclick="exportData('json')">
+            <div class="d-flex gap-3 flex-wrap">
+              <button
+                class="export-btn"
+                onclick="exportData('json')"
+                title="Експортирай като JSON"
+                aria-label="Експортирай като JSON"
+              >
                 <i class="fas fa-download me-1"></i>{{ _('Export JSON') }}
               </button>
-              <button class="export-btn" onclick="exportData('csv')">
+              <button
+                class="export-btn"
+                onclick="exportData('csv')"
+                title="Експортирай като CSV"
+                aria-label="Експортирай като CSV"
+              >
                 <i class="fas fa-file-csv me-1"></i>{{ _('Export CSV') }}
               </button>
             </div>
@@ -504,12 +820,13 @@
         </h5>
         <div class="filter-row">
           <div class="form-group">
-            <label class="form-label">{{ _('Период') }}</label>
+            <label class="form-label" for="timeRange">{{ _('Период') }}</label>
             <select
               class="form-select"
               id="timeRange"
               onchange="updateTimeRange()"
-              title="Select time range for analytics"
+              title="Избери период за аналитика"
+              aria-label="Избери период за аналитика"
             >
               <option value="7">{{ _('Последните 7 дни') }}</option>
               <option value="30" selected>{{ _('Последните 30 дни') }}</option>
@@ -519,12 +836,15 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">{{ _('Категория') }}</label>
+            <label class="form-label" for="categoryFilter"
+              >{{ _('Категория') }}</label
+            >
             <select
               class="form-select"
               id="categoryFilter"
               onchange="updateFilters()"
-              title="Filter by help category"
+              title="Филтрирай по категория на помощта"
+              aria-label="Филтрирай по категория на помощта"
             >
               <option value="all" selected>{{ _('Всички категории') }}</option>
               <option value="medical">{{ _('Медицинска помощ') }}</option>
@@ -535,12 +855,15 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">{{ _('Регион') }}</label>
+            <label class="form-label" for="regionFilter"
+              >{{ _('Регион') }}</label
+            >
             <select
               class="form-select"
               id="regionFilter"
               onchange="updateFilters()"
-              title="Filter by region"
+              title="Филтрирай по регион"
+              aria-label="Филтрирай по регион"
             >
               <option value="all" selected>{{ _('Всички региони') }}</option>
               <option value="sofia">{{ _('София') }}</option>
@@ -551,16 +874,24 @@
           </div>
 
           <div class="form-group d-flex align-items-end">
-            <button class="btn btn-primary" onclick="refreshData()">
+            <button
+              class="btn btn-primary"
+              onclick="refreshData()"
+              title="Обнови аналитиката"
+              aria-label="Обнови аналитиката"
+            >
               <i class="fas fa-sync-alt me-1"></i>{{ _('Обнови') }}
             </button>
           </div>
         </div>
       </div>
+      <!-- Toast container for export feedback -->
+      <div class="toast-container" id="toastContainer"></div>
 
       <!-- KPI Overview -->
       <div class="kpi-grid">
-        <div class="kpi-card">
+        <div class="kpi-card" title="Общ брой заявки за избрания период">
+          <div class="kpi-icon"><i class="fas fa-clipboard-list"></i></div>
           <div class="kpi-value text-primary" id="totalRequests">
             {{ dashboard_stats.totals.requests|default(0) }}
           </div>
@@ -571,7 +902,8 @@
           </div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" title="Процент успешно изпълнени заявки">
+          <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
           <div class="kpi-value text-success" id="successRate">
             {{ "%.1f"|format(performance_metrics.success_rate|default(0)) }}%
           </div>
@@ -582,7 +914,8 @@
           </div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" title="Средно време за отговор (в дни)">
+          <div class="kpi-icon"><i class="fas fa-clock"></i></div>
           <div class="kpi-value text-info" id="avgResponseTime">
             {{ "%.1f"|format(performance_metrics.avg_response_time|default(0))
             }}
@@ -594,7 +927,8 @@
           </div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" title="Брой активни доброволци за периода">
+          <div class="kpi-icon"><i class="fas fa-user-friends"></i></div>
           <div class="kpi-value text-warning" id="activeVolunteers">
             {{ dashboard_stats.totals.volunteers|default(0) }}
           </div>
@@ -742,9 +1076,7 @@
               >
                 <strong>{{ anomaly.type|replace('_', ' ')|title }}</strong>: {{
                 anomaly.description }} <br /><small class="text-muted"
-                  >{{
-                  anomaly.timestamp|strptime('%Y-%m-%dT%H:%M:%S.%f')|strftime('%d.%m.%Y
-                  %H:%M') }}</small
+                  >{{ anomaly.timestamp }}</small
                 >
               </div>
               {% endfor %} {% else %}
@@ -1249,7 +1581,38 @@
 
       function exportData(format) {
         const url = `/analytics/api/analytics/export?format=${format}&type=dashboard`;
-        window.open(url, "_blank");
+        fetch(url)
+          .then((response) => {
+            if (!response.ok) throw new Error("Export failed");
+            return response.blob();
+          })
+          .then((blob) => {
+            // Download file
+            const a = document.createElement("a");
+            a.href = window.URL.createObjectURL(blob);
+            a.download = `analytics_export.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            showToast("Експортът беше успешен!", "success");
+          })
+          .catch(() => {
+            showToast("Възникна грешка при експорта!", "error");
+          });
+      }
+
+      function showToast(message, type = "success") {
+        const toastContainer = document.getElementById("toastContainer");
+        const toast = document.createElement("div");
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML =
+          type === "success"
+            ? `<i class='fas fa-check-circle text-success'></i> ${message}`
+            : `<i class='fas fa-times-circle text-danger'></i> ${message}`;
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.remove();
+        }, 3500);
       }
 
       // Cleanup on page unload

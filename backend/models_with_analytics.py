@@ -424,7 +424,7 @@ class Task(db.Model):
     start_date = db.Column(db.DateTime, nullable=True)
 
     # Assignment tracking
-    assigned_to = db.Column(db.Integer, db.ForeignKey("volunteers.id"), nullable=True)
+    # assigned_to = db.Column(db.Integer, db.ForeignKey("volunteers.id"), nullable=True)
     assigned_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True)
 
@@ -451,7 +451,7 @@ class TaskAssignment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"), nullable=False)
-    volunteer_id = db.Column(db.Integer, db.ForeignKey("volunteers.id"), nullable=False)
+    # volunteer_id = db.Column(db.Integer, db.ForeignKey("volunteers.id"), nullable=False)
 
     # Matching scores (0-100)
     skill_match_score = db.Column(db.Float, default=0.0)
@@ -493,7 +493,7 @@ class TaskPerformance(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"), nullable=False)
-    volunteer_id = db.Column(db.Integer, db.ForeignKey("volunteers.id"), nullable=False)
+    # volunteer_id = db.Column(db.Integer, db.ForeignKey("volunteers.id"), nullable=False)
 
     # Performance metrics
     time_taken_hours = db.Column(db.Float, nullable=True)

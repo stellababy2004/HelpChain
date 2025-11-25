@@ -314,31 +314,34 @@
 
     <nav aria-label="Volunteers pagination">
       <ul class="pagination pagination-sm mb-0">
-        {% if page > 1 %}
+        {%- if page > 1 -%}
         <li class="page-item">
           <a
             class="page-link"
             href="{{ url_for('admin_volunteers', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
-            >Предишна</a
+            aria-label="{{ _('Предишна страница') }}"
+            >{{ _('Предишна') }}</a
           >
         </li>
-        {% endif %} {% for page_num in range(start_page, end_page + 1) %}
+        {%- endif -%}{%- for page_num in range(start_page, end_page + 1) -%}
         <li class="page-item {% if page_num == page %}active{% endif %}">
           <a
             class="page-link"
             href="{{ url_for('admin_volunteers', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
+            aria-label="{{ _('Страница') }} {{ page_num }}"
             >{{ page_num }}</a
           >
         </li>
-        {% endfor %} {% if page < total_pages %}
+        {%- endfor -%}{%- if page < total_pages -%}
         <li class="page-item">
           <a
             class="page-link"
             href="{{ url_for('admin_volunteers', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
-            >Следваща</a
+            aria-label="{{ _('Следваща страница') }}"
+            >{{ _('Следваща') }}</a
           >
         </li>
-        {% endif %}
+        {%- endif -%}
       </ul>
     </nav>
   </div>

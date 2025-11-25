@@ -1,8 +1,8 @@
 {% extends "base.html" %} {% block title %}2FA Верификация | HelpChain.live{%
 endblock %} {% block content %}
 <div class="container mt-5">
-  <h2 class="mb-4">Двуфакторна автентикация</h2>
-  <p>Въведете кода от вашето 2FA приложение.</p>
+  <h2 class="mb-4">{{ _('Двуфакторна автентикация') }}</h2>
+  <p>{{ _('Въведете кода от вашето 2FA приложение.') }}</p>
   {% with messages = get_flashed_messages(with_categories=true) %} {% if
   messages %} {% for category, message in messages %}
   <div
@@ -21,7 +21,7 @@ endblock %} {% block content %}
   <form action="/admin/2fa" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="mb-3">
-      <label for="token" class="form-label">2FA Код</label>
+      <label for="token" class="form-label">{{ _('2FA Код') }}</label>
       <input
         type="text"
         class="form-control"
@@ -32,7 +32,9 @@ endblock %} {% block content %}
         pattern="[0-9]{6}"
       />
     </div>
-    <button type="submit" class="btn btn-primary">Верифицирай</button>
+    <button type="submit" class="btn btn-primary">
+      {{ _('Верифицирай') }}
+    </button>
   </form>
 </div>
 {% endblock %}

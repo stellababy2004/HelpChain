@@ -1,0 +1,76 @@
+{
+  "info": {
+    "name": "HelpChainAI API Test Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Q&A Endpoint",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"question\": \"Кой е столицата на България?\", \"context\": \"Столицата на България е София.\"}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/ask",
+          "protocol": "http",
+          "host": ["127.0.0.1"],
+          "port": "5000",
+          "path": ["api", "ask"]
+        }
+      }
+    },
+    {
+      "name": "Translate Endpoint",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Здравей свят!\", \"src_lang\": \"bg\", \"tgt_lang\": \"en\"}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/translate",
+          "protocol": "http",
+          "host": ["127.0.0.1"],
+          "port": "5000",
+          "path": ["api", "translate"]
+        }
+      }
+    },
+    {
+      "name": "Detect Language Endpoint",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Bonjour le monde!\"}"
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/detect_language",
+          "protocol": "http",
+          "host": ["127.0.0.1"],
+          "port": "5000",
+          "path": ["api", "detect_language"]
+        }
+      }
+    },
+    {
+      "name": "Health Check Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://127.0.0.1:5000/api/health",
+          "protocol": "http",
+          "host": ["127.0.0.1"],
+          "port": "5000",
+          "path": ["api", "health"]
+        }
+      }
+    }
+  ]
+}

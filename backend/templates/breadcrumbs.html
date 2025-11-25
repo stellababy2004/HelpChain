@@ -3,18 +3,18 @@
   <ol class="breadcrumb bg-light rounded p-3">
     <li class="breadcrumb-item">
       <a href="{{ url_for('index') }}" class="text-decoration-none"
-        ><i class="fas fa-home me-1"></i>Начало</a
+        ><i class="fas fa-home me-1"></i>{{ _('Начало') }}</a
       >
     </li>
     {% for crumb in breadcrumbs %} {% if crumb.url %}
     <li class="breadcrumb-item">
       <a href="{{ crumb.url }}" class="text-decoration-none"
-        >{{ crumb.title }}</a
+        >{{ _(crumb.title) }}</a
       >
     </li>
     {% else %}
     <li class="breadcrumb-item active" aria-current="page">
-      {{ crumb.title }}
+      {{ _(crumb.title) }}
     </li>
     {% endif %} {% endfor %}
   </ol>

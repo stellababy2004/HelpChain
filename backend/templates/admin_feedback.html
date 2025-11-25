@@ -410,11 +410,11 @@ HelpChain.bg{% endblock %} {% block content %}
       <div class="card">
         <div class="card-body text-center text-muted">
           <i class="fa fa-inbox fa-3x mb-3"></i>
-          <h5>Няма feedback съобщения</h5>
+          <h5>{{ _('Няма feedback съобщения') }}</h5>
           <p>
-            {% if current_status != 'all' or current_priority != 'all' %}Няма
-            съобщения със зададените филтри.{% else %}Все още няма получени
-            съобщения.{% endif %}
+            {% if current_status != 'all' or current_priority != 'all' %}{{
+            _('Няма съобщения със зададените филтри.') }}{% else %}{{ _('Все още
+            няма получени съобщения.') }}{% endif %}
           </p>
         </div>
       </div>

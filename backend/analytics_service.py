@@ -21,7 +21,7 @@ from flask import current_app
 from sqlalchemy import and_, case, func, text
 from sqlalchemy.orm import Session
 
-from .models import (
+from models import (
     AnalyticsEvent,
     ChatbotConversation,
     PerformanceMetrics,

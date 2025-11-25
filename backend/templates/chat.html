@@ -202,30 +202,30 @@
     <div class="container">
       <div class="chat-container">
         <div class="chat-header">
-          <h1><i class="fas fa-comments"></i> HelpChain Чат</h1>
-          <p>Свържете се с доброволци и общността</p>
+          <h1><i class="fas fa-comments"></i> {{ _('HelpChain Чат') }}</h1>
+          <p>{{ _('Свържете се с доброволци и общността') }}</p>
         </div>
 
         <div class="rooms-section">
           {% if user_info %}
           <div class="user-info">
-            <strong>Влезли сте като:</strong> {{ user_info.name }}
+            <strong>{{ _('Влезли сте като:') }}</strong> {{ user_info.name }}
             <span
               class="badge bg-{{ 'success' if user_info.type == 'volunteer' else 'primary' }} ms-2"
             >
-              {{ 'Доброволец' if user_info.type == 'volunteer' else
-              'Администратор' }}
+              {{ _('Доброволец') if user_info.type == 'volunteer' else
+              _('Администратор') }}
             </span>
           </div>
           {% endif %}
 
           <a href="#" class="create-room-btn" onclick="createNewRoom()">
-            <i class="fas fa-plus"></i> Създай нова стая
+            <i class="fas fa-plus"></i> {{ _('Създай нова стая') }}
           </a>
 
           <!-- Public Rooms -->
           <h2 class="section-title">
-            <i class="fas fa-globe"></i> Публични стаи
+            <i class="fas fa-globe"></i> {{ _('Публични стаи') }}
           </h2>
 
           {% if public_rooms %} {% for room in public_rooms %}
@@ -239,27 +239,29 @@
             <div class="room-stats">
               <div class="online-count">
                 <i class="fas fa-circle"></i>
-                {{ room.online_count or 0 }} онлайн
+                {{ room.online_count or 0 }} {{ _('онлайн') }}
               </div>
               <a
                 href="{{ url_for('chat_room', room_id=room.id) }}"
                 class="join-btn"
               >
-                <i class="fas fa-sign-in-alt"></i> Влез
+                <i class="fas fa-sign-in-alt"></i> {{ _('Влез') }}
               </a>
             </div>
           </div>
           {% endfor %} {% else %}
           <div class="empty-state">
             <i class="fas fa-comments"></i>
-            <h4>Няма публични стаи</h4>
-            <p>Бъдете първият, който ще създаде стая!</p>
+            <h4>{{ _('Няма публични стаи') }}</h4>
+            <p>{{ _('Бъдете първият, който ще създаде стая!') }}</p>
           </div>
           {% endif %}
 
           <!-- Private Rooms -->
           {% if private_rooms %}
-          <h2 class="section-title"><i class="fas fa-lock"></i> Моите стаи</h2>
+          <h2 class="section-title">
+            <i class="fas fa-lock"></i> {{ _('Моите стаи') }}
+          </h2>
 
           {% for room in private_rooms %}
           <div class="room-card private">
@@ -272,13 +274,13 @@
             <div class="room-stats">
               <div class="online-count">
                 <i class="fas fa-circle"></i>
-                {{ room.online_count or 0 }} онлайн
+                {{ room.online_count or 0 }} {{ _('онлайн') }}
               </div>
               <a
                 href="{{ url_for('chat_room', room_id=room.id) }}"
                 class="join-btn"
               >
-                <i class="fas fa-sign-in-alt"></i> Влез
+                <i class="fas fa-sign-in-alt"></i> {{ _('Влез') }}
               </a>
             </div>
           </div>
@@ -292,18 +294,20 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Създай нова стая</h5>
+            <h5 class="modal-title">{{ _('Създай нова стая') }}</h5>
             <button
               type="button"
               class="btn-close"
               data-bs-dismiss="modal"
-              title="Затвори"
+              title="{{ _('Затвори') }}"
             ></button>
           </div>
           <div class="modal-body">
             <form id="createRoomForm">
               <div class="mb-3">
-                <label for="roomName" class="form-label">Име на стаята *</label>
+                <label for="roomName" class="form-label"
+                  >{{ _('Име на стаята *') }}</label
+                >
                 <input
                   type="text"
                   class="form-control"
@@ -312,7 +316,9 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="roomDescription" class="form-label">Описание</label>
+                <label for="roomDescription" class="form-label"
+                  >{{ _('Описание') }}</label
+                >
                 <textarea
                   class="form-control"
                   id="roomDescription"
@@ -320,11 +326,13 @@
                 ></textarea>
               </div>
               <div class="mb-3">
-                <label for="roomType" class="form-label">Тип стая</label>
+                <label for="roomType" class="form-label"
+                  >{{ _('Тип стая') }}</label
+                >
                 <select class="form-select" id="roomType">
-                  <option value="public">Публична</option>
+                  <option value="public">{{ _('Публична') }}</option>
                   {% if user_info.type == 'admin' %}
-                  <option value="private">Лична</option>
+                  <option value="private">{{ _('Лична') }}</option>
                   {% endif %}
                 </select>
               </div>
@@ -336,14 +344,14 @@
               class="btn btn-secondary"
               data-bs-dismiss="modal"
             >
-              Отказ
+              {{ _('Отказ') }}
             </button>
             <button
               type="button"
               class="btn btn-primary"
               onclick="submitCreateRoom()"
             >
-              Създай
+              {{ _('Създай') }}
             </button>
           </div>
         </div>

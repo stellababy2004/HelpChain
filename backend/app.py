@@ -1,90 +1,307 @@
-# ...existing code...
-
-# ...existing code...
-
+# --- Imports (strictly alphabetized, flat, no try/except, no blank lines) ---
 import base64
+import collections
 import datetime
 import hashlib
 import json
 import logging
 import os
-import random
-import re
-import sys
+import threading
 import time
-from collections import defaultdict, deque
-from collections.abc import Callable
-from datetime import datetime, timedelta
-from threading import Lock
 
 import jwt
-import pyotp
+import sqlalchemy
 from flask import (
     Flask,
     Response,
     abort,
-    jsonify,
-    render_template,
     flash,
-    send_from_directory,
     g,
-    session,
-    request,
+    jsonify,
     redirect,
+    render_template,
+    request,
+    send_file,
+    send_from_directory,
+    session,
     url_for,
 )
-from flask_babel import Babel, _
-from flask_login import (
-    LoginManager,
-    current_user,
-    login_required,
-    login_user,
-    logout_user,
-)
-from flask_mail import Mail, Message
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
-from sqlalchemy import func, literal_column, text
+from flask_babel import _
+from flask_socketio import SocketIO
+from flask_wtf import CSRFProtect
+from sqlalchemy import literal_column, text
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import relationship
-from werkzeug.security import check_password_hash, generate_password_hash
 
-from extensions import babel, db  # type: ignore
-from models_with_analytics import AdminUser, User, Volunteer
-from models import RoleEnum, PriorityEnum, HelpRequest
+from dependencies import require_role
 
+# --- Flask app init ---
 app = Flask(__name__)
-# Ensure a concrete secret key (Flask-WTF requires app.secret_key not None).
-_secret = (
-    os.getenv("HELPCHAIN_SECRET_KEY")
-    or os.getenv("SECRET_KEY")
-    or "dev-insecure-change-me"
-)
-app.config["SECRET_KEY"] = _secret
-app.secret_key = _secret  # explicit assignment for older extension lookups
-csrf = CSRFProtect(app)
+app.config["PROPAGATE_EXCEPTIONS"] = True
+app.debug = True
+
+# Track app start time for uptime reporting
 APP_START_TS = time.time()
 
-# --- Define basedir for later use ---
+
+@app.route("/set_language/<language>", methods=["POST"])
+def set_language_post(language):
+    supported = ["fr", "en", "bg"]
+    if language not in supported:
+        language = "fr"
+    session["language"] = language
+    resp = redirect(request.referrer or url_for("index"))
+    resp.set_cookie("language", language, max_age=60 * 60 * 24 * 30)
+    return resp
+
+
+# Setup logging at the top
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("error.log", encoding="utf-8"),
+    ],
+)
+
+
+socketio = SocketIO(app, async_mode="threading")
+
+
+# Local imports (strictly sorted, all at top-level)
+from extensions import babel, db
+from models import (
+    AdminRole,
+    AdminUser,
+    HelpRequest,
+    PriorityEnum,
+    RoleEnum,
+    User,
+    Volunteer,
+)
+from models_with_analytics import AnalyticsEvent, Feedback
+from permissions import require_admin_login
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
+
+# --- Define basedir and instance_dir for later use (must be before use) ---
 basedir = os.path.abspath(os.path.dirname(__file__))
+instance_dir = os.path.join(basedir, "instance")
+os.makedirs(instance_dir, exist_ok=True)
 
-# --- Babel i18n setup ---
 
-from flask_babel import Babel, _
-from flask import session, request, redirect, url_for
+# --- Minimal stub for apply_filters to prevent NameError ---
+def apply_filters(query, for_event_type=None, for_language=None):
+    # This is a placeholder. Real filtering logic should be implemented as needed.
+    if for_event_type:
+        query = query.filter(AnalyticsEvent.event_type == for_event_type)
+    if for_language:
+        query = query.filter(AnalyticsEvent.language == for_language)
+    return query
+
+
+# --- Set secret key for CSRF and sessions (must be before CSRFProtect) ---
+app.config["SECRET_KEY"] = os.getenv(
+    "HELPCHAIN_SECRET_KEY", os.getenv("SECRET_KEY", "change-me-please")
+)
+app.secret_key = app.config["SECRET_KEY"]
+
+
+# --- ADMIN ANALYTICS DASHBOARD ---
+@app.route("/admin/analytics", methods=["GET"])
+def admin_analytics():
+    days = request.args.get("days", 30)
+    # TODO: Може да се разшири с реални данни и drilldown
+    dashboard_stats = {
+        "totals": {
+            "requests": 0,
+            "volunteers": 0,
+            "completed": 0,
+            "active": 0,
+        },
+        "growth": {},
+        "recent": [],
+    }
+    performance_metrics = {
+        "success_rate": 0.0,
+        "avg_response_time": 0.0,
+        "avg_completion_time": 0.0,
+    }
+    predictions = {"ml_insights": {"anomalies": [], "predictions": {}}}
+    trends_data = {"labels": [], "requests": [], "completed": [], "volunteers": []}
+    category_stats = {"labels": [], "data": []}
+    return render_template(
+        "admin_analytics_professional.html",
+        dashboard_stats=dashboard_stats,
+        performance_metrics=performance_metrics,
+        predictions=predictions,
+        trends_data=trends_data,
+        category_stats=category_stats,
+    )
+
+
+# Setup logging at the top
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("error.log", encoding="utf-8"),
+    ],
+)
+
+
+@require_admin_login()
+def admin_api_requests():
+    # Debug: логни session, claims, username
+    logging.debug(f"[admin_api_requests] session: {dict(session)}")
+    logging.debug(f"[admin_api_requests] cookies: {request.cookies}")
+    logging.debug(f"[admin_api_requests] headers: {dict(request.headers)}")
+    claims = getattr(request, "_claims", None)
+    logging.debug(f"[admin_api_requests] claims: {claims}")
+    admin_username = None
+    if session.get("admin_logged_in"):
+        try:
+            admin = AdminUser.query.filter_by(username="admin").first()
+            admin_username = getattr(admin, "username", None)
+            # Inject admin claims for downstream API
+            request._claims = {"sub": admin_username or "admin", "role": "admin"}
+        except Exception:
+            pass
+    logging.debug(f"[admin_api_requests] admin_username: {admin_username}")
+    # Проксито към съществуващия /api/requests, но с админ права
+    return api_requests()
+
+
+@app.route("/admin/api/volunteers")
+@require_admin_login()
+def admin_api_volunteers():
+    # Debug: логни session, claims, username
+    logging.debug(f"[admin_api_volunteers] session: {dict(session)}")
+    claims = getattr(request, "_claims", None)
+    logging.debug(f"[admin_api_volunteers] claims: {claims}")
+    admin_username = None
+    if session.get("admin_logged_in"):
+        try:
+            admin = AdminUser.query.filter_by(username="admin").first()
+            admin_username = getattr(admin, "username", None)
+        except Exception:
+            pass
+    logging.debug(f"[admin_api_volunteers] admin_username: {admin_username}")
+    # Връща списък с доброволци (id, name, email, phone, location)
+    volunteers = Volunteer.query.order_by(Volunteer.id.desc()).limit(100).all()
+
+    def serialize_vol(v):
+        return {
+            "id": v.id,
+            "name": v.name,
+            "email": v.email,
+            "location": getattr(v, "location", None),
+        }
+
+    return jsonify({"volunteers": [serialize_vol(v) for v in volunteers]})
+
+
+@app.route("/admin/requests-table.json")
+@require_role("admin", "superadmin", "moderator")
+def admin_requests_table():
+    # Филтри от заявката (drilldown)
+    date_from = request.args.get("date_from")
+    date_to = request.args.get("date_to")
+    channel = request.args.get("channel")
+    status_f = request.args.get("status")
+    category = request.args.get("category")
+    city = request.args.get("city")
+    # Пагинация
+    page = max(int(request.args.get("page", 1)), 1)
+    page_size = min(int(request.args.get("page_size", 20)), 100)
+    q = HelpRequest.query
+    if date_from:
+        try:
+            from datetime import datetime
+
+            dt = datetime.strptime(date_from, "%Y-%m-%d")
+            q = q.filter(HelpRequest.created_at >= dt)
+        except Exception:
+            pass
+    if date_to:
+        try:
+            from datetime import datetime, timedelta
+
+            dt = datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1)
+            q = q.filter(HelpRequest.created_at < dt)
+        except Exception:
+            pass
+    if channel:
+        q = q.filter(sqlalchemy.func.lower(HelpRequest.channel) == channel.lower())
+    if status_f:
+        q = q.filter(sqlalchemy.func.lower(HelpRequest.status) == status_f.lower())
+    if category:
+        q = q.filter(sqlalchemy.func.lower(HelpRequest.title) == category.lower())
+    if city:
+        q = q.filter(sqlalchemy.func.lower(HelpRequest.city) == city.lower())
+    total = q.count()
+    items = (
+        q.order_by(HelpRequest.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+
+    def serialize_req(r):
+        return {
+            "id": r.id,
+            "title": r.title,
+            "category": getattr(r, "category", r.title),
+            "city": r.city,
+            "status": r.status,
+            "priority": getattr(r, "priority", ""),
+            "created_at": (
+                r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else ""
+            ),
+        }
+
+    return jsonify(
+        {
+            "items": [serialize_req(r) for r in items],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+        }
+    )
+
+
+@app.route("/admin/feedback-filters.json")
+@require_role("admin", "superadmin", "moderator")
+def feedback_filters_json():
+    # Връща примерни филтри за feedback таба (може да се разшири по нужда)
+    return jsonify(
+        {
+            "categories": ["Общи", "Транспорт", "Здраве", "Друго"],
+            "models": ["gpt-4", "gpt-3.5", "local-llm"],
+            "languages": ["bg", "en", "uk"],
+            "rating_min": 1,
+            "rating_max": 5,
+        }
+    )
 
 
 def get_locale():
-    supported_locales = ["bg", "en", "fr"]
-    # 1. Session
+    supported_locales = ["fr", "en", "bg"]
+    # 1. Cookie
+    lang = request.cookies.get("language")
+    if lang in supported_locales:
+        return lang
+    # 2. Session (fallback)
     lang = session.get("language")
     if lang in supported_locales:
         return lang
-    # 2. Browser
+    # 3. Browser
     browser_lang = request.accept_languages.best_match(supported_locales)
     if browser_lang:
         return browser_lang
-    # 3. Default: French
+    # 4. Default: French
     return "fr"
 
 
@@ -97,7 +314,10 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 # Secure cookie/session defaults
-app.config.setdefault("SESSION_COOKIE_SECURE", True)
+if app.debug:
+    app.config["SESSION_COOKIE_SECURE"] = False
+else:
+    app.config.setdefault("SESSION_COOKIE_SECURE", True)
 app.config.setdefault("SESSION_COOKIE_HTTPONLY", True)
 app.config.setdefault("SESSION_COOKIE_SAMESITE", "Lax")
 app.config.setdefault("PERMANENT_SESSION_LIFETIME", 60 * 60 * 8)
@@ -141,7 +361,9 @@ try:
         cc = (request.headers.get("CF-IPCountry") or "").strip().upper()
         if cc:
             return cc
-        # AppEngine
+            # AppEngine
+            # Inject csrf_token for all templates (for Flask-WTF forms and manual forms)
+            from flask_wtf.csrf import generate_csrf
         cc = (request.headers.get("X-AppEngine-Country") or "").strip().upper()
         if cc:
             return cc
@@ -178,14 +400,7 @@ try:
             pass
 
     # Ensure _ is available in templates even if extension doesn't auto-inject
-    @app.context_processor
-    def _inject_gettext():
-        return dict(_=_)
 
-    # Expose get_locale-like helper for templates expecting it
-    @app.context_processor
-    def _inject_get_locale():
-        return dict(get_locale=_select_locale)
 
 except Exception:
     # If Babel isn't available, continue without i18n (templates still get _ from import)
@@ -248,10 +463,10 @@ def _ensure_sqlite_fts():
             )
         )
         # Initial (re)build only if empty
-        count = db.session.execute(
+        fts_row_count = db.session.execute(
             text("SELECT count(*) FROM help_requests_fts")
         ).scalar()
-        if count is None or int(count) == 0:
+        if fts_row_count is None or int(fts_row_count) == 0:
             db.session.execute(
                 text(
                     "INSERT INTO help_requests_fts(help_requests_fts) VALUES('rebuild')"
@@ -324,15 +539,15 @@ def _apply_text_search(query, q: str, privileged: bool):
             # Fallback: case-insensitive LIKE across allowed columns
             patt = f"%{q.lower()}%"
             cond = (
-                func.lower(HelpRequest.title).like(patt)
-                | func.lower(HelpRequest.description).like(patt)
-                | func.lower(HelpRequest.message).like(patt)
-                | func.lower(HelpRequest.city).like(patt)
-                | func.lower(HelpRequest.region).like(patt)
-                | func.lower(HelpRequest.name).like(patt)
+                sqlalchemy.func.lower(HelpRequest.title).like(patt)
+                | sqlalchemy.func.lower(HelpRequest.description).like(patt)
+                | sqlalchemy.func.lower(HelpRequest.message).like(patt)
+                | sqlalchemy.func.lower(HelpRequest.city).like(patt)
+                | sqlalchemy.func.lower(HelpRequest.region).like(patt)
+                | sqlalchemy.func.lower(HelpRequest.name).like(patt)
             )
             if privileged:
-                cond = cond | func.lower(HelpRequest.email).like(patt)
+                cond = cond | sqlalchemy.func.lower(HelpRequest.email).like(patt)
             return query.filter(cond), None
     except Exception:
         # On any unexpected error, return original query (fail open)
@@ -366,8 +581,10 @@ def _serialize_request(r):
 # Rate limiting (simple in-memory sliding window)
 RATE_LIMIT = int(os.getenv("HELPCHAIN_RATE_LIMIT", "60"))  # requests
 RATE_WINDOW = int(os.getenv("HELPCHAIN_RATE_WINDOW", "60"))  # seconds
-_rate_lock = Lock()
-_rate_hits: dict[str, deque] = defaultdict(deque)  # IP -> deque[timestamps]
+_rate_lock = threading.Lock()
+_rate_hits: dict[str, collections.deque] = collections.defaultdict(
+    collections.deque
+)  # IP -> deque[timestamps]
 
 
 def _prune_and_count(ip: str, now: float):
@@ -525,9 +742,13 @@ def api_login():
     user = None
     try:
         if email:
-            user = User.query.filter(func.lower(User.email) == email.lower()).first()
+            user = User.query.filter(
+                sqlalchemy.func.lower(User.email) == email.lower()
+            ).first()
         elif username and "@" in username:
-            user = User.query.filter(func.lower(User.email) == username.lower()).first()
+            user = User.query.filter(
+                sqlalchemy.func.lower(User.email) == username.lower()
+            ).first()
         else:
             user = User.query.filter_by(username=username).first()
     except Exception:
@@ -551,7 +772,9 @@ def api():
 
 @app.get("/api/requests")
 def api_requests():
-    _require_auth()
+    # Allow admin session proxy to inject claims
+    if not getattr(request, "_claims", None):
+        _require_auth()
     page = max(int(request.args.get("page", 1)), 1)
     page_size = int(request.args.get("page_size", 20))
     if page_size > 100:
@@ -567,20 +790,31 @@ def api_requests():
     status_param = request.args.get("status")
     if status_param:
         statuses = [s.strip().lower() for s in status_param.split(",") if s.strip()]
+
         if statuses:
-            query = query.filter(func.lower(HelpRequest.status).in_(statuses))
+            query = query.filter(
+                sqlalchemy.func.lower(HelpRequest.status).in_(statuses)
+            )
 
     city = request.args.get("city")
+
     if city:
-        query = query.filter(func.lower(HelpRequest.city) == city.lower())
+        query = query.filter(sqlalchemy.func.lower(HelpRequest.city) == city.lower())
 
     category = request.args.get("category")
+
     if category:
-        query = query.filter(func.lower(HelpRequest.title) == category.lower())
+        query = query.filter(
+            sqlalchemy.func.lower(HelpRequest.title) == category.lower()
+        )
 
     search = request.args.get("q") or request.args.get("search")
     # Apply FTS5 / fallback search only when provided
-    query, rank_expr = _apply_text_search(query, search, privileged)
+    result = _apply_text_search(query, search, privileged)
+    if isinstance(result, tuple) and len(result) == 2:
+        query, rank_expr = result
+    else:
+        query, rank_expr = result, None
 
     # Multi-column sorting: ?sort=created_at,-priority,city
     raw_sort = request.args.get("sort") or "created_at"
@@ -616,7 +850,9 @@ def api_requests():
     )
 
     # ETag for caching
-    latest_ts = db.session.query(func.max(HelpRequest.updated_at)).scalar() or "0"
+    latest_ts = (
+        db.session.query(sqlalchemy.func.max(HelpRequest.updated_at)).scalar() or "0"
+    )
     etag_payload = {
         "total": total,
         "page": page,
@@ -800,7 +1036,12 @@ def api_fts_status():
 
     # Basic counts
     try:
-        total = db.session.query(func.count(HelpRequest.id)).scalar() or 0
+        total = (
+            db.session.query(sqlalchemy.func.count.label("count"))
+            .select_from(HelpRequest)
+            .scalar()
+            or 0
+        )
         info["help_requests_count"] = int(total)
     except Exception:
         info["help_requests_count"] = None
@@ -875,10 +1116,11 @@ def _seed_if_empty():
             except Exception:
                 db.session.rollback()
         # Ensure an AdminUser account exists for admin console (lockout-enabled)
+        _AdminRole = None
         try:
-            from models import AdminRole as _AdminRole
+            _AdminRole = AdminRole
         except Exception:
-            _AdminRole = None
+            pass
         if AdminUser.query.filter_by(username="admin").first() is None:
             try:
                 au = AdminUser(
@@ -918,9 +1160,8 @@ def _seed_if_empty():
                     "title": "Administrative",
                     "city": "Paris",
                     "description": "Need help with residency paperwork.",
-                    "message": "Residency paperwork assistance",
                     "status": "pending",
-                    "priority": PriorityEnum.normal,
+                    "priority": PriorityEnum.MEDIUM.value,
                 },
                 {
                     "name": "Jean P.",
@@ -928,9 +1169,8 @@ def _seed_if_empty():
                     "title": "Medical",
                     "city": "Lyon",
                     "description": "Looking for transport to clinic.",
-                    "message": "Transport to clinic",
                     "status": "in_progress",
-                    "priority": PriorityEnum.low,
+                    "priority": PriorityEnum.LOW.value,
                 },
                 {
                     "name": "Amina K.",
@@ -938,26 +1178,14 @@ def _seed_if_empty():
                     "title": "Social",
                     "city": "Marseille",
                     "description": "Seeking community meetup information.",
-                    "message": "Community meetup info",
                     "status": "completed",
-                    "priority": PriorityEnum.normal,
+                    "priority": PriorityEnum.MEDIUM.value,
                 },
             ]
             for s in samples:
                 db.session.add(HelpRequest(**s))
             db.session.commit()
 
-
-with app.app_context():
-    db.create_all()
-    _ensure_sqlite_fts()
-    _seed_if_empty()
-    # Register blueprint after app + db initialized
-    try:
-        # app.register_blueprint(microsoft_bp)
-        pass
-    except Exception:
-        pass  # Fail-open if blueprint not available
 
 # ----------------------------
 # Public site routes (UX)
@@ -1032,65 +1260,78 @@ def admin_login():
         user = None
         security_logger = logging.getLogger("security")
         remote_ip = request.remote_addr or "?"
+        logging.debug(
+            f"[admin_login] POST: username={username!r}, password_len={len(password)}"
+        )
         security_logger.info(
             f"admin_login_attempt start username={username!r} ip={remote_ip} password_len={len(password)}"
         )
         if username:
             try:
                 admin = AdminUser.query.filter(
-                    func.lower(AdminUser.username) == username.lower()
+                    sqlalchemy.func.lower(AdminUser.username) == username.lower()
                 ).first()
-            except Exception:
+                logging.debug(f"[admin_login] AdminUser found: {admin is not None}")
+            except Exception as e:
+                logging.warning(f"[admin_login] Exception in AdminUser.query: {e}")
                 admin = None
             if admin is None:
                 try:
                     user = User.query.filter(
-                        func.lower(User.username) == username.lower()
+                        sqlalchemy.func.lower(User.username) == username.lower()
                     ).first()
-                except Exception:
+                    logging.debug(
+                        f"[admin_login] User fallback found: {user is not None}"
+                    )
+                except Exception as e:
+                    logging.warning(f"[admin_login] Exception in User.query: {e}")
                     user = None
 
-        # If AdminUser exists, apply lockout policy
+        # If AdminUser exists, check password only (lockout policy DISABLED for dev)
         if admin is not None:
-            now = datetime.utcnow()
-            if admin.locked_until and now < admin.locked_until:
-                minutes = max(1, int((admin.locked_until - now).total_seconds() // 60))
-                flash(
-                    f"Акаунтът е временно заключен. Опитайте след ~{minutes} мин.",
-                    "error",
-                )
-                security_logger.warning(
-                    f"admin_login_locked username={username!r} ip={remote_ip} locked_until={admin.locked_until}"
-                )
-                return render_template("admin_login.html"), 423
-
-            if not admin.check_password(password):
+            pw_ok = admin.check_password(password)
+            logging.debug(f"[admin_login] AdminUser.check_password: {pw_ok}")
+            if not pw_ok:
                 try:
                     admin.failed_login_attempts = (admin.failed_login_attempts or 0) + 1
-                    if admin.failed_login_attempts >= 5:
-                        admin.locked_until = now + timedelta(minutes=10)
-                        admin.failed_login_attempts = 0
                     db.session.add(admin)
                     db.session.commit()
-                except Exception:
+                except Exception as e:
+                    logging.warning(
+                        f"[admin_login] Exception updating failed_login_attempts: {e}"
+                    )
                     db.session.rollback()
                 flash("Невалидни данни за вход.", "error")
                 security_logger.warning(
-                    f"admin_login_failure username={username!r} ip={remote_ip} reason=bad_password attempts={admin.failed_login_attempts}"
+                    f"admin_login_failure username={username!r} ip={remote_ip} reason=bad_password attempts={getattr(admin, 'failed_login_attempts', '?')}"
+                )
+                logging.debug(
+                    f"[admin_login] Session after failed login: {dict(session)}"
                 )
                 return render_template("admin_login.html"), 401
 
             try:
                 admin.failed_login_attempts = 0
-                admin.locked_until = None
                 db.session.add(admin)
                 db.session.commit()
-            except Exception:
+            except Exception as e:
+                logging.warning(
+                    f"[admin_login] Exception resetting failed_login_attempts: {e}"
+                )
                 db.session.rollback()
             session["admin_logged_in"] = True
+            logging.info(
+                f"[admin_login] Set session['admin_logged_in']=True for {username!r}"
+            )
+            logging.debug(
+                f"[admin_login] Session after successful login: {dict(session)}"
+            )
             flash("Успешен вход.", "success")
             security_logger.info(
                 f"admin_login_success username={username!r} ip={remote_ip} model=AdminUser"
+            )
+            logging.info(
+                f"[admin_login] Redirecting to admin_dashboard for {username!r}"
             )
             return redirect(url_for("admin_dashboard"))
 
@@ -1100,11 +1341,23 @@ def admin_login():
             security_logger.warning(
                 f"admin_login_failure username={username!r} ip={remote_ip} reason=legacy_user_bad_password"
             )
+            logging.debug(
+                f"[admin_login] Session after legacy user failed login: {dict(session)}"
+            )
             return render_template("admin_login.html"), 401
         session["admin_logged_in"] = True
+        logging.info(
+            f"[admin_login] Set session['admin_logged_in']=True for legacy user {username!r}"
+        )
+        logging.debug(
+            f"[admin_login] Session after legacy user successful login: {dict(session)}"
+        )
         flash("Успешен вход.", "success")
         security_logger.info(
             f"admin_login_success username={username!r} ip={remote_ip} model=User legacy_break_glass=True"
+        )
+        logging.info(
+            f"[admin_login] Redirecting to admin_dashboard for legacy user {username!r}"
         )
         return redirect(url_for("admin_dashboard"))
     return render_template("admin_login.html")
@@ -1132,11 +1385,11 @@ def user_login():
     try:
         if "@" in identifier:
             user = User.query.filter(
-                func.lower(User.email) == identifier.lower()
+                sqlalchemy.func.lower(User.email) == identifier.lower()
             ).first()
         else:
             user = User.query.filter(
-                func.lower(User.username) == identifier.lower()
+                sqlalchemy.func.lower(User.username) == identifier.lower()
             ).first()
     except Exception:
         user = None
@@ -1194,17 +1447,17 @@ def admin_dashboard():
         "total_requests": _safe_count(lambda: HelpRequest.query.count()),
         "pending_requests": _safe_count(
             lambda: HelpRequest.query.filter(
-                func.lower(HelpRequest.status) == "pending"
+                sqlalchemy.func.lower(HelpRequest.status) == "pending"
             ).count()
         ),
         "in_progress": _safe_count(
             lambda: HelpRequest.query.filter(
-                func.lower(HelpRequest.status) == "in_progress"
+                sqlalchemy.func.lower(HelpRequest.status) == "in_progress"
             ).count()
         ),
         "completed_requests": _safe_count(
             lambda: HelpRequest.query.filter(
-                func.lower(HelpRequest.status) == "completed"
+                sqlalchemy.func.lower(HelpRequest.status) == "completed"
             ).count()
         ),
     }
@@ -1287,6 +1540,415 @@ def admin_dev_reset():
     return redirect(url_for("admin_login"))
 
 
+# --- ADMIN AI DASHBOARD ---
+@app.route("/admin/ai-dashboard")
+def ai_dashboard():
+    return render_template("ai_dashboard.html")
+
+
+# --- KPI JSON API for dashboard ---
+@app.route("/admin/kpi.json")
+def kpi_json():
+    # (imports moved to top)
+    now = datetime.datetime.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today_start - datetime.timedelta(days=1)
+    week_start = today_start - datetime.timedelta(days=now.weekday())
+    # Requests today, yesterday, week
+    today_count = AnalyticsEvent.query.filter(
+        AnalyticsEvent.created_at >= today_start
+    ).count()
+    yesterday_count = AnalyticsEvent.query.filter(
+        AnalyticsEvent.created_at >= yesterday_start,
+        AnalyticsEvent.created_at < today_start,
+    ).count()
+    week_count = AnalyticsEvent.query.filter(
+        AnalyticsEvent.created_at >= week_start
+    ).count()
+    # % change vs yesterday
+    today_delta = 0
+    if yesterday_count:
+        today_delta = round((today_count - yesterday_count) / yesterday_count * 100, 1)
+    # Weekly trend (vs previous week)
+    prev_week_start = week_start - datetime.timedelta(days=7)
+    prev_week_count = AnalyticsEvent.query.filter(
+        AnalyticsEvent.created_at >= prev_week_start,
+        AnalyticsEvent.created_at < week_start,
+    ).count()
+    week_trend = 0
+    if prev_week_count:
+        week_trend = round((week_count - prev_week_count) / prev_week_count * 100, 1)
+    # Latency (AI only)
+    ai_q = AnalyticsEvent.query.filter(
+        AnalyticsEvent.event_type == "AI", AnalyticsEvent.created_at >= today_start
+    )
+    latency_sec = round(
+        (
+            ai_q.with_entities(sqlalchemy.func.avg(AnalyticsEvent.load_time)).scalar()
+            or 0
+        ),
+        2,
+    )
+    # Success % (label == 'success')
+    total_ai = ai_q.count() or 1
+    success_count = ai_q.filter(AnalyticsEvent.event_label == "success").count()
+    success_pct = round(success_count / total_ai * 100, 1)
+    # AI status (dummy logic)
+    ai_status = "OK" if latency_sec < 2 else "SLOW" if latency_sec < 5 else "ERROR"
+    # AI latency ms (for badge coloring)
+    ai_latency_ms = int(latency_sec * 1000)
+    return jsonify(
+        {
+            "today": today_count,
+            "today_delta": today_delta,
+            "week": week_count,
+            "week_trend": week_trend,
+            "latency_sec": latency_sec,
+            "success_pct": success_pct,
+            "ai_status": ai_status,
+            "ai_latency_ms": ai_latency_ms,
+        }
+    )
+
+
+@app.route("/admin/ai-stats.json")
+def ai_stats():
+    # (imports moved to top)
+    now = datetime.datetime.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = today_start - datetime.timedelta(days=now.weekday())
+    month_start = today_start.replace(day=1)
+
+    # --- Филтри от заявката ---
+    date_from = request.args.get("date_from")
+    date_to = request.args.get("date_to")
+    channel = request.args.get("channel")
+    language = request.args.get("language")
+    status_f = request.args.get("status")
+
+    # Total requests
+    requests_today = apply_filters(
+        AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= today_start)
+    ).count()
+    requests_week = apply_filters(
+        AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= week_start)
+    ).count()
+    requests_month = apply_filters(
+        AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= month_start)
+    ).count()
+
+    # By channel
+    total = apply_filters(AnalyticsEvent.query).count() or 1
+    ai_count = apply_filters(AnalyticsEvent.query, for_event_type="AI").count()
+    faq_count = apply_filters(AnalyticsEvent.query, for_event_type="FAQ").count()
+    human_count = apply_filters(AnalyticsEvent.query, for_event_type="Human").count()
+    percent_ai = round(ai_count / total * 100)
+    percent_faq = round(faq_count / total * 100)
+    percent_human = round(human_count / total * 100)
+
+    # Average latency (AI only)
+    avg_latency = (
+        apply_filters(
+            AnalyticsEvent.query.with_entities(
+                sqlalchemy.func.avg(AnalyticsEvent.load_time)
+            ),
+            for_event_type="AI",
+        ).scalar()
+        or 0
+    )
+    avg_latency = int(avg_latency * 1000)  # ms
+
+    # Success rate (AI only, event_label == 'success')
+    ai_total = apply_filters(AnalyticsEvent.query, for_event_type="AI").count() or 1
+    ai_success = (
+        apply_filters(AnalyticsEvent.query, for_event_type="AI")
+        .filter(AnalyticsEvent.event_label == "success")
+        .count()
+    )
+    success_rate = round(ai_success / ai_total * 100)
+
+    # Status (dummy: online if avg_latency < 3000ms)
+    status = (
+        "online"
+        if avg_latency < 3000
+        else ("degraded" if avg_latency < 7000 else "offline")
+    )
+
+    # Line chart: requests per day (last 7 days)
+    days = [(today_start - datetime.timedelta(days=i)) for i in range(6, -1, -1)]
+    labels = [d.strftime("%d.%m") for d in days]
+    data = []
+    for d in days:
+        d2 = d + datetime.timedelta(days=1)
+        data.append(
+            apply_filters(
+                AnalyticsEvent.query.filter(
+                    AnalyticsEvent.created_at >= d, AnalyticsEvent.created_at < d2
+                )
+            ).count()
+        )
+
+    # Средно време за отговор по канал
+    avg_faq = (
+        apply_filters(
+            AnalyticsEvent.query.with_entities(
+                sqlalchemy.func.avg(AnalyticsEvent.load_time)
+            ),
+            for_event_type="FAQ",
+        ).scalar()
+        or 0
+    )
+    avg_ai = (
+        apply_filters(
+            AnalyticsEvent.query.with_entities(
+                sqlalchemy.func.avg(AnalyticsEvent.load_time)
+            ),
+            for_event_type="AI",
+        ).scalar()
+        or 0
+    )
+    avg_human = (
+        apply_filters(
+            AnalyticsEvent.query.with_entities(
+                sqlalchemy.func.avg(AnalyticsEvent.load_time)
+            ),
+            for_event_type="Human",
+        ).scalar()
+        or 0
+    )
+    avg_by_channel = {
+        "faq": int(avg_faq * 1000),
+        "ai": int(avg_ai * 1000),
+        "human": int(avg_human * 1000),
+    }
+    return jsonify(
+        {
+            "requests_today": requests_today,
+            "requests_week": requests_week,
+            "requests_month": requests_month,
+            "percent_ai": percent_ai,
+            "percent_faq": percent_faq,
+            "percent_human": percent_human,
+            "avg_latency": avg_latency,
+            "success_rate": success_rate,
+            "status": status,
+            "avg_by_channel": avg_by_channel,
+            "chart": {"labels": labels, "data": data},
+        }
+    )
+
+
+### --- FEEDBACK QUALITY PANEL ---
+
+
+@app.route("/admin/feedback-stats.json")
+def feedback_stats():
+    # (imports moved to top)
+    # Филтри
+    category = request.args.get("category")
+    model = request.args.get("model")
+    language = request.args.get("language")
+    rating_min = request.args.get("rating_min", type=float)
+    rating_max = request.args.get("rating_max", type=float)
+    q = Feedback.query
+    if category:
+        q = q.filter(Feedback.page_url.like(f"%{category}%"))
+    if model:
+        q = q.filter(Feedback.ai_provider == model)
+    if language:
+        q = q.filter(Feedback.user_type == language)
+    if rating_min is not None:
+        q = q.filter(Feedback.sentiment_score >= rating_min)
+    if rating_max is not None:
+        q = q.filter(Feedback.sentiment_score <= rating_max)
+
+    # Среден рейтинг (sentiment_score)
+    avg_rating = (
+        q.with_entities(sqlalchemy.func.avg(Feedback.sentiment_score)).scalar() or 0
+    )
+
+    # Breakdown по език
+    avg_by_lang = (
+        Feedback.query.with_entities(
+            Feedback.user_type, sqlalchemy.func.avg(Feedback.sentiment_score)
+        )
+        .group_by(Feedback.user_type)
+        .all()
+    )
+    avg_by_lang = [
+        {
+            "language": str(t) if t is not None and t != "None" else "Unknown",
+            "avg_rating": float(round(r, 2)) if r is not None else 0.0,
+        }
+        for t, r in avg_by_lang
+    ]
+
+    # Breakdown по категория
+    avg_by_cat = (
+        Feedback.query.with_entities(
+            Feedback.page_url, sqlalchemy.func.avg(Feedback.sentiment_score)
+        )
+        .group_by(Feedback.page_url)
+        .all()
+    )
+    avg_by_cat = [
+        {
+            "category": (
+                str((cat or "").split("/")[-1])
+                if cat is not None and str(cat).lower() != "none"
+                else "Unknown"
+            ),
+            "avg_rating": float(round(r, 2)) if r is not None else 0.0,
+        }
+        for cat, r in avg_by_cat
+    ]
+
+    # Breakdown по модел
+    avg_by_model = (
+        Feedback.query.with_entities(
+            Feedback.ai_provider, sqlalchemy.func.avg(Feedback.sentiment_score)
+        )
+        .group_by(Feedback.ai_provider)
+        .all()
+    )
+    avg_by_model = [
+        {
+            "model": str(mod) if mod is not None and mod != "None" else "Unknown",
+            "avg_rating": float(round(r, 2)) if r is not None else 0.0,
+        }
+        for mod, r in avg_by_model
+    ]
+
+    # Breakdown по sentiment_label
+    avg_by_label = (
+        Feedback.query.with_entities(
+            Feedback.sentiment_label, sqlalchemy.func.count.label("count")
+        )
+        .group_by(Feedback.sentiment_label)
+        .all()
+    )
+    avg_by_label = [
+        {"label": str(lbl) if lbl not in (None, "None") else "", "count": int(cnt)}
+        for lbl, cnt in avg_by_label
+    ]
+
+    # Проблемни категории (avg < 3.0)
+    problematic_categories = [
+        (
+            str(cat["category"])
+            if cat.get("category") not in (None, "", "None")
+            else "Unknown"
+        )
+        for cat in avg_by_cat
+        if cat.get("avg_rating", 0) < 3.0
+    ]
+    problematic_categories = sorted(
+        [c for c in problematic_categories if c not in (None, "", "None")], key=str
+    )
+
+    # Най-високо/ниско оценени отговори (top 10, bottom 10)
+    best = q.order_by(Feedback.sentiment_score.desc()).limit(10).all()
+    worst = q.order_by(Feedback.sentiment_score.asc()).limit(10).all()
+
+    def fb_to_dict(fb):
+        preview = (fb.message or "")[:50] + (
+            "..." if fb.message and len(fb.message) > 50 else ""
+        )
+        highlight = False
+        # Highlight ако категорията е проблемна
+        cat = (
+            str(getattr(fb, "page_url", "") or "Unknown").split("/")[-1]
+            if getattr(fb, "page_url", None) is not None
+            else "Unknown"
+        )
+        if cat in problematic_categories:
+            highlight = True
+        return {
+            "id": fb.id if fb.id is not None else 0,
+            "score": (
+                float(fb.sentiment_score) if fb.sentiment_score is not None else 0.0
+            ),
+            "label": (
+                str(fb.sentiment_label)
+                if fb.sentiment_label not in (None, "None")
+                else ""
+            ),
+            "message": fb.message or "",
+            "preview": preview,
+            "language": str(getattr(fb, "user_type", "") or "Unknown"),
+            "category": cat,
+            "user_type": str(getattr(fb, "user_type", "") or "Unknown"),
+            "model": str(getattr(fb, "ai_provider", "") or "Unknown"),
+            "timestamp": (
+                fb.timestamp.strftime("%Y-%m-%d %H:%M")
+                if getattr(fb, "timestamp", None)
+                else ""
+            ),
+            "highlight": highlight,
+        }
+
+    # Tooltip причини за нисък рейтинг (примерно sentiment_label)
+    tooltip_map = {
+        "negative": "Отговорът не беше полезен",
+        "neutral": "Неутрален/неясен отговор",
+        "positive": "Положителен отговор",
+        "": "",
+    }
+
+    return jsonify(
+        {
+            "avg_rating": round(avg_rating, 2) if avg_rating else 0,
+            "avg_by_lang": avg_by_lang,
+            "avg_by_cat": avg_by_cat,
+            "avg_by_model": avg_by_model,
+            "avg_by_label": avg_by_label,
+            "problematic_categories": problematic_categories,
+            "best": [fb_to_dict(fb) for fb in best],
+            "worst": [fb_to_dict(fb) for fb in worst],
+            "tooltip_map": tooltip_map,
+        }
+    )
+
+
+@app.route("/analytics/api/analytics/export")
+def analytics_export():
+    format = request.args.get("format", "json")
+    # TODO: Добави логика за генериране на файл/данни
+    if format == "csv":
+        # Пример: връщане на CSV файл
+        return send_file("path/to/your.csv", as_attachment=True)
+    else:
+        # Пример: връщане на JSON
+        data = {"example": 123}
+        return jsonify(data)
+
+
+@app.route("/analytics/api/analytics/live")
+def analytics_live():
+    # TODO: Добави логика за live данни
+    return jsonify({"live": True})
+
+
 # --- Flask entrypoint ---
+@app.route("/set_language")
+def set_language():
+    lang = request.args.get("language", "fr")
+    next_url = request.args.get("next", url_for("index"))
+    resp = redirect(next_url)
+    # Поддържани езици
+    supported = ["fr", "en", "bg"]
+    if lang not in supported:
+        lang = "fr"
+    resp.set_cookie("language", lang, max_age=60 * 60 * 24 * 30)  # 30 дни
+    session["language"] = lang
+    return resp
+
+
+app.config["PROPAGATE_EXCEPTIONS"] = True
+app.debug = True
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+
+logging.basicConfig(level=logging.DEBUG)

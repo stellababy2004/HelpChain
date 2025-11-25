@@ -9,8 +9,8 @@ from flask import current_app, flash, redirect, session, url_for
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
-    from .extensions import db
-    from .models import Permission, PermissionEnum, Role, RolePermission, User, UserRole
+    from extensions import db
+    from models import Permission, PermissionEnum, Role, RolePermission, User, UserRole
 except ImportError:
     # Fallback for standalone execution
     import os
@@ -20,8 +20,8 @@ except ImportError:
     if backend_dir not in sys.path:
         sys.path.insert(0, backend_dir)
 
-    from backend.extensions import db
-    from backend.models import (
+    from extensions import db
+    from models import (
         Permission,
         PermissionEnum,
         Role,
@@ -238,6 +238,15 @@ def require_admin_login(redirect_url="admin_login"):
                     return f(*args, **kwargs)
 
                 if not session.get("admin_logged_in"):
+                    from flask import jsonify, request
+
+                    # If AJAX or API request, return JSON 401 instead of redirect
+                    if (
+                        request.headers.get("X-Requested-With") == "XMLHttpRequest"
+                        or request.accept_mimetypes.best == "application/json"
+                        or request.path.startswith("/admin/api/")
+                    ):
+                        return jsonify({"error": "Unauthorized"}), 401
                     flash("Моля, влезте като администратор.", "warning")
                     return redirect(url_for(redirect_url))
                 return f(*args, **kwargs)

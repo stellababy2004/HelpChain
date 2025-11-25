@@ -299,9 +299,11 @@
       <div class="header-section">
         <div class="d-flex justify-content-between align-items-center">
           <div>
-            <h1><i class="fas fa-globe"></i> Управление на преводи</h1>
+            <h1>
+              <i class="fas fa-globe"></i> {{ _('Управление на преводи') }}
+            </h1>
             <p class="mb-0 text-muted">
-              Управление на многоезичната поддръжка и преводи
+              {{ _('Управление на многоезичната поддръжка и преводи') }}
             </p>
           </div>
           <div>
@@ -309,10 +311,10 @@
               href="{{ url_for('admin_dashboard') }}"
               class="btn btn-outline-primary"
             >
-              <i class="fas fa-arrow-left"></i> Обратно към таблото
+              <i class="fas fa-arrow-left"></i> {{ _('Обратно към таблото') }}
             </a>
             <button class="btn btn-primary" onclick="refreshStats()">
-              <i class="fas fa-sync-alt"></i> Refresh
+              <i class="fas fa-sync-alt"></i> {{ _('Обнови') }}
             </button>
           </div>
         </div>
@@ -324,19 +326,19 @@
           <div class="stat-value" id="totalKeys">
             {{ stats.total_keys or 0 }}
           </div>
-          <div class="stat-label">Translation Keys</div>
+          <div class="stat-label">{{ _('Translation Keys') }}</div>
         </div>
         <div class="stat-card success">
           <div class="stat-value" id="totalTranslations">
             {{ stats.total_translations or 0 }}
           </div>
-          <div class="stat-label">Total Translations</div>
+          <div class="stat-label">{{ _('Total Translations') }}</div>
         </div>
         <div class="stat-card info">
           <div class="stat-value" id="languageCount">
             {{ stats.languages|length or 0 }}
           </div>
-          <div class="stat-label">Supported Languages</div>
+          <div class="stat-label">{{ _('Supported Languages') }}</div>
         </div>
         <div class="stat-card warning">
           <div class="stat-value" id="avgCompletion">
@@ -344,23 +346,24 @@
             "%.1f"|format((stats.languages|sum(attribute='completion_percentage'))/stats.languages|length)
             }}% {% else %} 0% {% endif %}
           </div>
-          <div class="stat-label">Average Completion</div>
+          <div class="stat-label">{{ _('Average Completion') }}</div>
         </div>
       </div>
 
       <!-- AI Translation Panel -->
       <div class="ai-translation-panel">
-        <h3><i class="fas fa-robot"></i> AI Auto-Translation</h3>
+        <h3><i class="fas fa-robot"></i> {{ _('AI Auto-Translation') }}</h3>
         <p class="text-muted">
-          Автоматично генериране на липсващи преводи с изкуствен интелект
+          {{ _('Автоматично генериране на липсващи преводи с изкуствен
+          интелект') }}
         </p>
 
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
-              <label class="form-label">Target Language</label>
+              <label class="form-label">{{ _('Target Language') }}</label>
               <select class="form-select" id="targetLanguage">
-                <option value="">Select language...</option>
+                <option value="">{{ _('Select language...') }}</option>
                 {% for language in stats.languages %} {% if not
                 language.is_default %}
                 <option value="{{ language.code }}">
@@ -372,7 +375,7 @@
           </div>
           <div class="col-md-3">
             <div class="mb-3">
-              <label class="form-label">Max Translations</label>
+              <label class="form-label">{{ _('Max Translations') }}</label>
               <input
                 type="number"
                 class="form-control"
@@ -390,7 +393,7 @@
                 class="btn btn-ai-translate w-100"
                 onclick="startAITranslation()"
               >
-                <i class="fas fa-magic"></i> Start AI Translation
+                <i class="fas fa-magic"></i> {{ _('Start AI Translation') }}
               </button>
             </div>
           </div>
@@ -405,15 +408,21 @@
         </div>
 
         <div class="translation-log" id="translationLog">
-          <div class="log-entry log-info">🤖 AI Translation System Ready</div>
-          <div class="log-entry log-info">✅ OpenAI Integration Active</div>
+          <div class="log-entry log-info">
+            🤖 {{ _('AI Translation System Ready') }}
+          </div>
+          <div class="log-entry log-info">
+            ✅ {{ _('OpenAI Integration Active') }}
+          </div>
         </div>
       </div>
 
       <!-- Languages Overview -->
       <div class="control-panel">
-        <h3><i class="fas fa-flag"></i> Languages Overview</h3>
-        <p class="text-muted">Статус на преводите за всички поддържани езици</p>
+        <h3><i class="fas fa-flag"></i> {{ _('Languages Overview') }}</h3>
+        <p class="text-muted">
+          {{ _('Статус на преводите за всички поддържани езици') }}
+        </p>
 
         <div class="languages-grid">
           {% for language in stats.languages %}
@@ -426,8 +435,8 @@
                 <div>
                   <div>{{ language.native_name }}</div>
                   <small class="text-muted"
-                    >{{ language.code.upper() }}{% if language.is_default %}
-                    (Default){% endif %}</small
+                    >{{ language.code.upper() }}{% if language.is_default %} ({{
+                    _('Default') }}){% endif %}</small
                   >
                 </div>
               </div>
@@ -443,7 +452,7 @@
               ></div>
             </div>
             <div class="completion-text">
-              {{ language.completion_percentage }}% complete ({{
+              {{ language.completion_percentage }}% {{ _('complete') }} ({{
               language.translations_count }}/{{ stats.total_keys }})
             </div>
 
@@ -453,20 +462,20 @@
                 class="btn btn-ai-translate btn-sm"
                 onclick="translateLanguage('{{ language.code }}')"
               >
-                <i class="fas fa-magic"></i> AI Translate
+                <i class="fas fa-magic"></i> {{ _('AI Translate') }}
               </button>
               {% endif %}
               <button
                 class="btn btn-outline-primary btn-sm"
                 onclick="exportLanguage('{{ language.code }}')"
               >
-                <i class="fas fa-download"></i> Export
+                <i class="fas fa-download"></i> {{ _('Export') }}
               </button>
               <button
                 class="btn btn-outline-info btn-sm"
                 onclick="viewLanguageDetails('{{ language.code }}')"
               >
-                <i class="fas fa-eye"></i> View
+                <i class="fas fa-eye"></i> {{ _('View') }}
               </button>
             </div>
           </div>
@@ -476,13 +485,16 @@
 
       <!-- Import/Export Panel -->
       <div class="import-panel">
-        <h3><i class="fas fa-file-exchange"></i> Import/Export Translations</h3>
+        <h3>
+          <i class="fas fa-file-exchange"></i> {{ _('Import/Export
+          Translations') }}
+        </h3>
 
         <div class="row">
           <div class="col-md-6">
-            <h5>Import Translations</h5>
+            <h5>{{ _('Import Translations') }}</h5>
             <div class="mb-3">
-              <label class="form-label">JSON File</label>
+              <label class="form-label">{{ _('JSON File') }}</label>
               <input
                 type="file"
                 class="form-control"
@@ -490,21 +502,23 @@
                 accept=".json"
               />
               <small class="text-muted"
-                >Upload JSON file with translation data</small
+                >{{ _('Upload JSON file with translation data') }}</small
               >
             </div>
             <button class="btn btn-success" onclick="importTranslations()">
-              <i class="fas fa-upload"></i> Import Translations
+              <i class="fas fa-upload"></i> {{ _('Import Translations') }}
             </button>
           </div>
           <div class="col-md-6">
-            <h5>Export All Translations</h5>
-            <p class="text-muted">Download all translations as JSON backup</p>
+            <h5>{{ _('Export All Translations') }}</h5>
+            <p class="text-muted">
+              {{ _('Download all translations as JSON backup') }}
+            </p>
             <button class="btn btn-primary" onclick="exportAllTranslations()">
-              <i class="fas fa-download"></i> Export All
+              <i class="fas fa-download"></i> {{ _('Export All') }}
             </button>
             <button class="btn btn-outline-primary" onclick="exportTemplate()">
-              <i class="fas fa-file-code"></i> Export Template
+              <i class="fas fa-file-code"></i> {{ _('Export Template') }}
             </button>
           </div>
         </div>
@@ -516,7 +530,7 @@
       <div id="notificationToast" class="toast" role="alert">
         <div class="toast-header">
           <i class="fas fa-info-circle text-primary me-2"></i>
-          <strong class="me-auto">Translation Manager</strong>
+          <strong class="me-auto">{{ _('Translation Manager') }}</strong>
           <small id="toastTime"></small>
           <button
             type="button"
@@ -536,7 +550,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
-              <i class="fas fa-flag"></i> Language Details
+              <i class="fas fa-flag"></i> {{ _('Language Details') }}
             </h5>
             <button
               type="button"
@@ -590,20 +604,26 @@
           document.getElementById("maxTranslations").value;
 
         if (!targetLanguage) {
-          showToast("Моля, изберете целеви език", "error");
+          showToast("{{ _('Моля, изберете целеви език') }}", "error");
           return;
         }
 
         if (translationInProgress) {
-          showToast("Translation already in progress", "warning");
+          showToast("{{ _('Translation already in progress') }}", "warning");
           return;
         }
 
         translationInProgress = true;
         document.querySelector(".progress-container").style.display = "block";
 
-        addLogEntry(`🚀 Starting AI translation to ${targetLanguage}`, "info");
-        addLogEntry(`📊 Max translations: ${maxTranslations}`, "info");
+        addLogEntry(
+          `🚀 {{ _('Starting AI translation to') }} ${targetLanguage}`,
+          "info",
+        );
+        addLogEntry(
+          `📊 {{ _('Max translations:') }} ${maxTranslations}`,
+          "info",
+        );
 
         try {
           const response = await fetch("/admin/translations/auto-translate", {
@@ -623,7 +643,7 @@
           if (result.success) {
             addLogEntry(`✅ ${result.message}`, "success");
             showToast(
-              `Успешно преведени ${result.translated_count} елемента`,
+              `{{ _('Успешно преведени') }} ${result.translated_count} {{ _('елемента') }}`,
               "success",
             );
 
@@ -633,12 +653,15 @@
             // Refresh stats after short delay
             setTimeout(refreshStats, 2000);
           } else {
-            addLogEntry(`❌ Грешка: ${result.error}`, "error");
-            showToast(`Преводът не успя: ${result.error}`, "error");
+            addLogEntry(`❌ {{ _('Грешка:') }} ${result.error}`, "error");
+            showToast(`{{ _('Преводът не успя:') }} ${result.error}`, "error");
           }
         } catch (error) {
-          addLogEntry(`❌ Мрежова грешка: ${error.message}`, "error");
-          showToast(`Мрежова грешка: ${error.message}`, "error");
+          addLogEntry(
+            `❌ {{ _('Мрежова грешка:') }} ${error.message}`,
+            "error",
+          );
+          showToast(`{{ _('Мрежова грешка:') }} ${error.message}`, "error");
         }
 
         translationInProgress = false;
@@ -692,17 +715,17 @@
                 avgCompletion.toFixed(1) + "%";
             }
 
-            addLogEntry("📊 Statistics refreshed", "info");
-            showToast("Статистиката е обновена успешно", "success");
+            addLogEntry("📊 {{ _('Statistics refreshed') }}", "info");
+            showToast("{{ _('Статистиката е обновена успешно') }}", "success");
           } else {
             addLogEntry(
-              `❌ Неуспешно обновяване на статистиката: ${result.error}`,
+              `❌ {{ _('Неуспешно обновяване на статистиката:') }} ${result.error}`,
               "error",
             );
           }
         } catch (error) {
           addLogEntry(
-            `❌ Грешка при обновяване на статистиката: ${error.message}`,
+            `❌ {{ _('Грешка при обновяване на статистиката:') }} ${error.message}`,
             "error",
           );
         }
@@ -725,7 +748,10 @@
           a.click();
 
           window.URL.revokeObjectURL(url);
-          showToast(`Експортирани преводи за ${languageCode}`, "success");
+          showToast(
+            `{{ _('Експортирани преводи за') }} ${languageCode}`,
+            "success",
+          );
         } catch (error) {
           showToast(`Експортирането не успя: ${error.message}`, "error");
         }
@@ -734,7 +760,10 @@
       async function exportAllTranslations() {
         try {
           // Implementation for exporting all translations
-          showToast("Функционалността за експорт предстои скоро", "info");
+          showToast(
+            "{{ _('Функционалността за експорт предстои скоро') }}",
+            "info",
+          );
         } catch (error) {
           showToast(`Експортирането не успя: ${error.message}`, "error");
         }
@@ -770,7 +799,7 @@
         a.click();
         window.URL.revokeObjectURL(url);
 
-        showToast("Шаблонът за превод е изтеглен", "success");
+        showToast("{{ _('Шаблонът за превод е изтеглен') }}", "success");
       }
 
       // Import function
@@ -779,7 +808,7 @@
         const file = fileInput.files[0];
 
         if (!file) {
-          showToast("Моля, изберете файл за импортиране", "warning");
+          showToast("{{ _('Моля, изберете файл за импортиране') }}", "warning");
           return;
         }
 
@@ -799,21 +828,33 @@
 
           if (result.success) {
             showToast(
-              `Успешно импортирани ${result.imported_count} превода`,
+              `{{ _('Успешно импортирани') }} ${result.imported_count} {{ _('превода') }}`,
               "success",
             );
             addLogEntry(
-              `✅ Импортирани ${result.imported_count} превода`,
+              `✅ {{ _('Импортирани') }} ${result.imported_count} {{ _('превода') }}`,
               "success",
             );
             setTimeout(refreshStats, 1000);
           } else {
-            showToast(`Импортирането не успя: ${result.error}`, "error");
-            addLogEntry(`❌ Грешка при импортиране: ${result.error}`, "error");
+            showToast(
+              `{{ _('Импортирането не успя:') }} ${result.error}`,
+              "error",
+            );
+            addLogEntry(
+              `❌ {{ _('Грешка при импортиране:') }} ${result.error}`,
+              "error",
+            );
           }
         } catch (error) {
-          showToast(`Импортирането не успя: ${error.message}`, "error");
-          addLogEntry(`❌ Грешка при импортиране: ${error.message}`, "error");
+          showToast(
+            `{{ _('Импортирането не успя:') }} ${error.message}`,
+            "error",
+          );
+          addLogEntry(
+            `❌ {{ _('Грешка при импортиране:') }} ${error.message}`,
+            "error",
+          );
         }
       }
 
@@ -821,14 +862,17 @@
       function viewLanguageDetails(languageCode) {
         // Implementation for viewing language details
         showToast(
-          "Функционалността за детайли за езика предстои скоро",
+          "{{ _('Функционалността за детайли за езика предстои скоро') }}",
           "info",
         );
       }
 
       // Initialize
       document.addEventListener("DOMContentLoaded", function () {
-        addLogEntry("🌐 Translation Management Dashboard loaded", "success");
+        addLogEntry(
+          "🌐 {{ _('Translation Management Dashboard loaded') }}",
+          "success",
+        );
 
         // Auto-refresh stats every 30 seconds
         setInterval(refreshStats, 30000);

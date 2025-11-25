@@ -1,8 +1,32 @@
-@app.route("/contact", methods=["GET", "POST"]) def contact(): if request.method
-== "POST": name = request.form.get("name") email = request.form.get("email")
-message = request.form.get("message") # Разпознаване на езика на съобщението
-detected_lang = detect_supported_language(message or "") # Тук можете да
-запишете, изпратите или обработите съобщението app.logger.info( "[CONTACT]
-Message from %s <%s> [%s]: %s", name, email, detected_lang, message )
-flash("Благодарим за вашето съобщение!") return redirect(url_for("contact"))
-return render_template("contact.html")
+{% extends "base.html" %} {% block content %}
+<div class="container mt-5">
+  <h2>{{ _('Свържете се с нас') }}</h2>
+  <form method="post">
+    <div class="mb-3">
+      <label for="name">{{ _('Име') }}</label>
+      <input type="text" name="name" id="name" class="form-control" required />
+    </div>
+    <div class="mb-3">
+      <label for="email">{{ _('Имейл') }}</label>
+      <input
+        type="email"
+        name="email"
+        id="email"
+        class="form-control"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <label for="message">{{ _('Съобщение') }}</label>
+      <textarea
+        name="message"
+        id="message"
+        class="form-control"
+        rows="5"
+        required
+      ></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ _('Изпрати') }}</button>
+  </form>
+</div>
+{% endblock %}

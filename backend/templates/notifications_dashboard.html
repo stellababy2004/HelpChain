@@ -4,17 +4,17 @@ endblock %} {% block content %}
   <!-- Header -->
   <div class="row mb-4">
     <div class="col">
-      <h1 class="display-5 mb-0">🔔 Управление на известия</h1>
+      <h1 class="display-5 mb-0">🔔 {{ _('Управление на известия') }}</h1>
       <p class="lead text-muted">
-        Управление на нотификации, шаблони и статистики
+        {{ _('Управление на нотификации, шаблони и статистики') }}
       </p>
     </div>
     <div class="col-auto">
       <button class="btn btn-primary" onclick="processQueue()">
-        <i class="fas fa-play"></i> Process Queue
+        <i class="fas fa-play"></i> {{ _('Process Queue') }}
       </button>
       <button class="btn btn-success" onclick="loadDashboard()">
-        <i class="fas fa-refresh"></i> Refresh
+        <i class="fas fa-refresh"></i> {{ _('Refresh') }}
       </button>
     </div>
   </div>
@@ -25,9 +25,9 @@ endblock %} {% block content %}
       <div class="card bg-primary text-white">
         <div class="card-body text-center">
           <div class="display-6 mb-2">📧</div>
-          <h5>Total Sent</h5>
+          <h5>{{ _('Total Sent') }}</h5>
           <h2 id="totalSent">-</h2>
-          <small>Last 30 days</small>
+          <small>{{ _('Last 30 days') }}</small>
         </div>
       </div>
     </div>
@@ -35,9 +35,9 @@ endblock %} {% block content %}
       <div class="card bg-warning text-white">
         <div class="card-body text-center">
           <div class="display-6 mb-2">⏳</div>
-          <h5>Pending</h5>
+          <h5>{{ _('Pending') }}</h5>
           <h2 id="pendingCount">-</h2>
-          <small>In queue</small>
+          <small>{{ _('In queue') }}</small>
         </div>
       </div>
     </div>
@@ -45,9 +45,9 @@ endblock %} {% block content %}
       <div class="card bg-success text-white">
         <div class="card-body text-center">
           <div class="display-6 mb-2">✅</div>
-          <h5>Delivery Rate</h5>
+          <h5>{{ _('Delivery Rate') }}</h5>
           <h2 id="deliveryRate">-</h2>
-          <small>Success percentage</small>
+          <small>{{ _('Success percentage') }}</small>
         </div>
       </div>
     </div>
@@ -55,9 +55,9 @@ endblock %} {% block content %}
       <div class="card bg-info text-white">
         <div class="card-body text-center">
           <div class="display-6 mb-2">📱</div>
-          <h5>Engagement</h5>
+          <h5>{{ _('Engagement') }}</h5>
           <h2 id="engagementRate">-</h2>
-          <small>Click rate</small>
+          <small>{{ _('Click rate') }}</small>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@ endblock %} {% block content %}
             data-bs-target="#queue"
             type="button"
           >
-            📬 Управление на опашката
+            📬 {{ _('Управление на опашката') }}
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -86,7 +86,7 @@ endblock %} {% block content %}
             data-bs-target="#templates"
             type="button"
           >
-            📋 Templates
+            📋 {{ _('Templates') }}
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -97,7 +97,7 @@ endblock %} {% block content %}
             data-bs-target="#stats"
             type="button"
           >
-            📊 Statistics
+            📊 {{ _('Statistics') }}
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -108,7 +108,7 @@ endblock %} {% block content %}
             data-bs-target="#send"
             type="button"
           >
-            ✉️ Send Notification
+            ✉️ {{ _('Send Notification') }}
           </button>
         </li>
       </ul>
@@ -118,26 +118,28 @@ endblock %} {% block content %}
         <div class="tab-pane fade show active" id="queue" role="tabpanel">
           <div class="card mt-3">
             <div class="card-header">
-              <h5 class="mb-0">📬 Notification Queue</h5>
+              <h5 class="mb-0">📬 {{ _('Notification Queue') }}</h5>
             </div>
             <div class="card-body">
               <div class="table-responsive">
                 <table class="table table-hover">
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>Recipient</th>
-                      <th>Template</th>
-                      <th>Status</th>
-                      <th>Priority</th>
-                      <th>Attempts</th>
-                      <th>Scheduled</th>
-                      <th>Actions</th>
+                      <th>{{ _('ID') }}</th>
+                      <th>{{ _('Recipient') }}</th>
+                      <th>{{ _('Template') }}</th>
+                      <th>{{ _('Status') }}</th>
+                      <th>{{ _('Priority') }}</th>
+                      <th>{{ _('Attempts') }}</th>
+                      <th>{{ _('Scheduled') }}</th>
+                      <th>{{ _('Actions') }}</th>
                     </tr>
                   </thead>
                   <tbody id="queueTable">
                     <tr>
-                      <td colspan="8" class="text-center">Зареждане...</td>
+                      <td colspan="8" class="text-center">
+                        {{ _('Зареждане...') }}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -152,17 +154,19 @@ endblock %} {% block content %}
             <div
               class="card-header d-flex justify-content-between align-items-center"
             >
-              <h5 class="mb-0">📋 Notification Templates</h5>
+              <h5 class="mb-0">📋 {{ _('Notification Templates') }}</h5>
               <button
                 class="btn btn-sm btn-success"
                 onclick="showCreateTemplate()"
               >
-                <i class="fas fa-plus"></i> New Template
+                <i class="fas fa-plus"></i> {{ _('New Template') }}
               </button>
             </div>
             <div class="card-body">
               <div class="row" id="templatesGrid">
-                <div class="col-12 text-center">Зареждане на шаблони...</div>
+                <div class="col-12 text-center">
+                  {{ _('Зареждане на шаблони...') }}
+                </div>
               </div>
             </div>
           </div>
@@ -175,7 +179,7 @@ endblock %} {% block content %}
               <div class="col-md-6">
                 <div class="card">
                   <div class="card-header">
-                    <h5 class="mb-0">📈 Notifications by Channel</h5>
+                    <h5 class="mb-0">📈 {{ _('Notifications by Channel') }}</h5>
                   </div>
                   <div class="card-body">
                     <canvas id="channelChart"></canvas>
@@ -185,7 +189,7 @@ endblock %} {% block content %}
               <div class="col-md-6">
                 <div class="card">
                   <div class="card-header">
-                    <h5 class="mb-0">📊 Delivery Status</h5>
+                    <h5 class="mb-0">📊 {{ _('Delivery Status') }}</h5>
                   </div>
                   <div class="card-body">
                     <canvas id="statusChart"></canvas>
@@ -198,7 +202,7 @@ endblock %} {% block content %}
               <div class="col-md-6">
                 <div class="card">
                   <div class="card-header">
-                    <h5 class="mb-0">🎯 Engagement Metrics</h5>
+                    <h5 class="mb-0">🎯 {{ _('Engagement Metrics') }}</h5>
                   </div>
                   <div class="card-body">
                     <div class="row text-center">
@@ -210,7 +214,7 @@ endblock %} {% block content %}
                           >
                             -
                           </div>
-                          <div class="metric-label">Delivered</div>
+                          <div class="metric-label">{{ _('Delivered') }}</div>
                         </div>
                       </div>
                       <div class="col-4">
@@ -218,7 +222,7 @@ endblock %} {% block content %}
                           <div class="metric-value text-info" id="statsRead">
                             -
                           </div>
-                          <div class="metric-label">Read</div>
+                          <div class="metric-label">{{ _('Read') }}</div>
                         </div>
                       </div>
                       <div class="col-4">
@@ -229,7 +233,7 @@ endblock %} {% block content %}
                           >
                             -
                           </div>
-                          <div class="metric-label">Clicked</div>
+                          <div class="metric-label">{{ _('Clicked') }}</div>
                         </div>
                       </div>
                     </div>
@@ -239,7 +243,7 @@ endblock %} {% block content %}
               <div class="col-md-6">
                 <div class="card">
                   <div class="card-header">
-                    <h5 class="mb-0">📂 By Category</h5>
+                    <h5 class="mb-0">📂 {{ _('By Category') }}</h5>
                   </div>
                   <div class="card-body">
                     <canvas id="categoryChart"></canvas>
@@ -254,22 +258,24 @@ endblock %} {% block content %}
         <div class="tab-pane fade" id="send" role="tabpanel">
           <div class="card mt-3">
             <div class="card-header">
-              <h5 class="mb-0">✉️ Send New Notification</h5>
+              <h5 class="mb-0">✉️ {{ _('Send New Notification') }}</h5>
             </div>
             <div class="card-body">
               <form id="sendNotificationForm">
                 <div class="row">
                   <div class="col-md-6">
                     <div class="mb-3">
-                      <label class="form-label">Template</label>
+                      <label class="form-label">{{ _('Template') }}</label>
                       <select class="form-select" id="templateSelect" required>
-                        <option value="">Choose template...</option>
+                        <option value="">{{ _('Choose template...') }}</option>
                       </select>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="mb-3">
-                      <label class="form-label">Recipient Email</label>
+                      <label class="form-label"
+                        >{{ _('Recipient Email') }}</label
+                      >
                       <input
                         type="email"
                         class="form-control"
@@ -283,34 +289,38 @@ endblock %} {% block content %}
                 <div class="row">
                   <div class="col-md-6">
                     <div class="mb-3">
-                      <label class="form-label">Priority</label>
+                      <label class="form-label">{{ _('Priority') }}</label>
                       <select class="form-select" id="priority">
-                        <option value="normal">Normal</option>
-                        <option value="high">High</option>
-                        <option value="low">Low</option>
-                        <option value="urgent">Urgent</option>
+                        <option value="normal">{{ _('Normal') }}</option>
+                        <option value="high">{{ _('High') }}</option>
+                        <option value="low">{{ _('Low') }}</option>
+                        <option value="urgent">{{ _('Urgent') }}</option>
                       </select>
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="mb-3">
-                      <label class="form-label">Recipient Type</label>
+                      <label class="form-label"
+                        >{{ _('Recipient Type') }}</label
+                      >
                       <select class="form-select" id="recipientType">
-                        <option value="volunteer">Volunteer</option>
-                        <option value="admin">Admin</option>
-                        <option value="system">System</option>
+                        <option value="volunteer">{{ _('Volunteer') }}</option>
+                        <option value="admin">{{ _('Admin') }}</option>
+                        <option value="system">{{ _('System') }}</option>
                       </select>
                     </div>
                   </div>
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label">Personalization Data (JSON)</label>
+                  <label class="form-label"
+                    >{{ _('Personalization Data (JSON)') }}</label
+                  >
                   <textarea
                     class="form-control"
                     id="personalizationData"
                     rows="4"
-                    placeholder='{"name": "John Doe", "city": "Sofia"}'
+                    placeholder='{{ _("{\"name\": \"John Doe\", \"city\": \"Sofia\"}") }}'
                   >
 {}</textarea
                   >
@@ -318,7 +328,8 @@ endblock %} {% block content %}
 
                 <div class="text-end">
                   <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-paper-plane"></i> Send Notification
+                    <i class="fas fa-paper-plane"></i> {{ _('Send Notification')
+                    }}
                   </button>
                 </div>
               </form>

@@ -8,46 +8,50 @@ class PermissionEnum(Enum):
     ADMIN = "admin"
 
 
+# Модели и енумерации за HelpChain
 import datetime
+from enum import Enum
+
+from flask_login import UserMixin
+from werkzeug.security import check_password_hash, generate_password_hash
+
 from extensions import db
 
+# Expose AdminRole from helpchain_backend.src.models if available
+try:
+    from helpchain_backend.src.models import AdminRole
+except ImportError:
+    AdminRole = None
 
-# Dummy utc_now function for test compatibility
+
+class PermissionEnum(Enum):
+    READ = "read"
+    WRITE = "write"
+    ADMIN = "admin"
+
+
 def utc_now():
     return datetime.datetime.utcnow()
 
 
-# Dummy Permission model for test compatibility (след import на db)
 class Permission(db.Model):
     __tablename__ = "permissions"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
 
 
-# Dummy RolePermission model for test compatibility (след импорт на db)
-
-# Импорт на db трябва да е най-отгоре!
-from extensions import db
-
-
-# Dummy Role model for test compatibility
 class Role(db.Model):
     __tablename__ = "roles"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
 
 
-# Dummy Notification model for test compatibility
 class Notification(db.Model):
     __tablename__ = "notifications"
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(255))
 
 
-# ... всички останали класове ...
-
-
-# Dummy UserRole model for test compatibility
 class UserRole(db.Model):
     __tablename__ = "user_roles"
     id = db.Column(db.Integer, primary_key=True)
@@ -55,7 +59,6 @@ class UserRole(db.Model):
     role_id = db.Column(db.Integer)
 
 
-# Dummy PushSubscription model for test compatibility
 class PushSubscription(db.Model):
     __tablename__ = "push_subscriptions"
     id = db.Column(db.Integer, primary_key=True)
@@ -65,36 +68,6 @@ class PushSubscription(db.Model):
     p256dh = db.Column(db.String(255))
 
 
-# __all__ трябва да е най-отдолу, след всички класове
-__all__ = [
-    "RolePermission",
-    "Role",
-    "Notification",
-    "RequestLog",
-    "AdminUser",
-    "User",
-    "PushSubscription",
-    "Permission",
-    "PermissionEnum",
-    "Volunteer",
-    "HelpRequest",
-    "AdminLog",
-    "Feedback",
-    "Request",
-    "AnalyticsEvent",
-    "ChatbotConversation",
-    "PerformanceMetrics",
-    "UserBehavior",
-    "ChatMessage",
-    "ChatParticipant",
-    "ChatRoom",
-    "RoleEnum",
-    "UserRole",
-    "utc_now",
-]
-
-
-# Dummy ChatMessage model for test compatibility
 class ChatMessage(db.Model):
     __tablename__ = "chat_messages"
     id = db.Column(db.Integer, primary_key=True)
@@ -103,7 +76,6 @@ class ChatMessage(db.Model):
     created_at = db.Column(db.DateTime)
 
 
-# Dummy ChatParticipant model for test compatibility
 class ChatParticipant(db.Model):
     __tablename__ = "chat_participants"
     id = db.Column(db.Integer, primary_key=True)
@@ -126,12 +98,6 @@ class RequestLog(db.Model):
     log = db.Column(db.Text)
 
 
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-from enum import Enum
-
-
-# Dummy RolePermission model for test compatibility (след импорт на db)
 class RolePermission(db.Model):
     __tablename__ = "role_permissions"
     id = db.Column(db.Integer, primary_key=True)
@@ -158,7 +124,6 @@ class AdminUser(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(20), default=RoleEnum.ADMIN.value)
-
     failed_login_attempts = db.Column(db.Integer, default=0)
     locked_until = db.Column(db.DateTime, nullable=True)
 
@@ -192,6 +157,7 @@ class Volunteer(db.Model):
 
 
 class HelpRequest(db.Model):
+    __tablename__ = "help_requests"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
@@ -201,6 +167,10 @@ class HelpRequest(db.Model):
     region = db.Column(db.String(80))
     name = db.Column(db.String(80))
     email = db.Column(db.String(120))
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
+    )
 
 
 class AdminLog(db.Model):
@@ -219,7 +189,6 @@ class AdminLog(db.Model):
     )
 
 
-# Dummy Feedback model for test compatibility
 class Feedback(db.Model):
     __tablename__ = "feedbacks"
     id = db.Column(db.Integer, primary_key=True)
@@ -229,14 +198,12 @@ class Feedback(db.Model):
     created_at = db.Column(db.DateTime)
 
 
-# Dummy Request model for test compatibility
 class Request(db.Model):
     __tablename__ = "requests"
     id = db.Column(db.Integer, primary_key=True)
     data = db.Column(db.Text)
 
 
-# Dummy AnalyticsEvent model for test compatibility
 class AnalyticsEvent(db.Model):
     __tablename__ = "analytics_events"
     id = db.Column(db.Integer, primary_key=True)
@@ -245,7 +212,6 @@ class AnalyticsEvent(db.Model):
     timestamp = db.Column(db.DateTime)
 
 
-# Dummy ChatbotConversation model for test compatibility
 class ChatbotConversation(db.Model):
     __tablename__ = "chatbot_conversations"
     id = db.Column(db.Integer, primary_key=True)
@@ -253,7 +219,6 @@ class ChatbotConversation(db.Model):
     started_at = db.Column(db.DateTime)
 
 
-# Dummy PerformanceMetrics model for test compatibility
 class PerformanceMetrics(db.Model):
     __tablename__ = "performance_metrics"
     id = db.Column(db.Integer, primary_key=True)
@@ -262,10 +227,37 @@ class PerformanceMetrics(db.Model):
     timestamp = db.Column(db.DateTime)
 
 
-# Dummy UserBehavior model for test compatibility
 class UserBehavior(db.Model):
     __tablename__ = "user_behaviors"
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
     action = db.Column(db.String(80))
     timestamp = db.Column(db.DateTime)
+
+
+__all__ = [
+    "RolePermission",
+    "Role",
+    "Notification",
+    "RequestLog",
+    "AdminUser",
+    "User",
+    "PushSubscription",
+    "Permission",
+    "PermissionEnum",
+    "Volunteer",
+    "HelpRequest",
+    "AdminLog",
+    "Feedback",
+    "Request",
+    "AnalyticsEvent",
+    "ChatbotConversation",
+    "PerformanceMetrics",
+    "UserBehavior",
+    "ChatMessage",
+    "ChatParticipant",
+    "ChatRoom",
+    "RoleEnum",
+    "UserRole",
+    "utc_now",
+]

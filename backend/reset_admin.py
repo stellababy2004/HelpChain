@@ -24,4 +24,4 @@ if __name__ == "__main__":
     ## db.init_app(app)  # Already initialized in app.py
     with app.app_context():
         db.create_all()
-        create_or_update_admin("admin", "Admin1234", "admin@example.com")
+        create_or_update_admin("admin", "Azerty5!", "admin@example.com")

@@ -1,13 +1,10 @@
-# French translations for PROJECT.
-# Copyright (C) 2025 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
-#
+
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-19 22:20+0100\n"
+"POT-Creation-Date: 2025-11-24 19:48+0100\n"
 "PO-Revision-Date: 2025-10-28 09:45+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -22,285 +19,290 @@ msgstr ""
 msgid "Доброволецът е добавен успешно!"
 msgstr "Le bénévole a été ajouté avec succès !"
 
-#: templates/admin_analytics_professional.html:399
+#: templates/admin_analytics_professional.html:647
 msgid "HelpChain Analytics"
 msgstr "Analyses HelpChain"
 
-#: templates/admin_analytics_professional.html:416
+#: templates/admin_analytics_professional.html:664
 msgid "Dashboard"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:424
+#: templates/admin_analytics_professional.html:672
 #, fuzzy
 msgid "Analytics"
 msgstr "Analyses Avancées"
 
-#: templates/admin_analytics_professional.html:429
+#: templates/admin_analytics_professional.html:677
 #: templates/dashboard_nav.html:107 templates/home.html:39
 #: templates/index.html:218 templates/index.html:259
 msgid "Доброволци"
 msgstr "Bénévoles"
 
-#: templates/admin_analytics_professional.html:437
+#: templates/admin_analytics_professional.html:682
 #, fuzzy
 msgid "Роли"
 msgstr "Profil"
 
-#: templates/admin_analytics_professional.html:445
+#: templates/admin_analytics_professional.html:700
 #: templates/dashboard_nav.html:241 templates/volunteer_dashboard.html:580
 msgid "Изход"
 msgstr "Déconnexion"
 
-#: templates/admin_analytics_professional.html:462
+#: templates/admin_analytics_professional.html:768
 #: templates/dashboard_nav.html:251
 msgid "Админ панел"
 msgstr "Panneau d'administration"
 
-#: templates/admin_analytics_professional.html:466
+#: templates/admin_analytics_professional.html:772
 #: templates/dashboard_nav.html:115
 msgid "Аналитика"
 msgstr "Analyses"
 
-#: templates/admin_analytics_professional.html:478
+#: templates/admin_analytics_professional.html:784
 msgid "Advanced Analytics"
 msgstr "Analyses Avancées"
 
-#: templates/admin_analytics_professional.html:481
+#: templates/admin_analytics_professional.html:787
 msgid "Real-time аналитика и прогнози за HelpChain"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:484
+#: templates/admin_analytics_professional.html:790
 msgid "Live"
 msgstr "En direct"
 
-#: templates/admin_analytics_professional.html:490
+#: templates/admin_analytics_professional.html:801
 msgid "Export JSON"
 msgstr "Exporter en JSON"
 
-#: templates/admin_analytics_professional.html:493
+#: templates/admin_analytics_professional.html:809
 msgid "Export CSV"
 msgstr "Exporter en CSV"
 
-#: templates/admin_analytics_professional.html:503
+#: templates/admin_analytics_professional.html:819
 msgid "Филтри"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:507
+#: templates/admin_analytics_professional.html:823
 msgid "Период"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:514
+#: templates/admin_analytics_professional.html:831
 msgid "Последните 7 дни"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:515
+#: templates/admin_analytics_professional.html:832
 msgid "Последните 30 дни"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:516
+#: templates/admin_analytics_professional.html:833
 msgid "Последните 3 месеца"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:517
+#: templates/admin_analytics_professional.html:834
 msgid "Последната година"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:522
+#: templates/admin_analytics_professional.html:840
 #, fuzzy
 msgid "Категория"
 msgstr "Fermer"
 
-#: templates/admin_analytics_professional.html:529
+#: templates/admin_analytics_professional.html:849
 msgid "Всички категории"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:530
+#: templates/admin_analytics_professional.html:850
 msgid "Медицинска помощ"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:531
+#: templates/admin_analytics_professional.html:851
 msgid "Транспорт"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:532
+#: templates/admin_analytics_professional.html:852
 msgid "Домакинска помощ"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:533
+#: templates/admin_analytics_professional.html:853
 msgid "Образование"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:538
+#: templates/admin_analytics_professional.html:859
 msgid "Регион"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:545
+#: templates/admin_analytics_professional.html:868
 msgid "Всички региони"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:546
+#: templates/admin_analytics_professional.html:869
 msgid "София"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:547
+#: templates/admin_analytics_professional.html:870
 #, fuzzy
 msgid "Пловдив"
 msgstr "Georgi, Plovdiv"
 
-#: templates/admin_analytics_professional.html:548
+#: templates/admin_analytics_professional.html:871
 #, fuzzy
 msgid "Варна"
 msgstr "Ivan, Varna"
 
-#: templates/admin_analytics_professional.html:549
+#: templates/admin_analytics_professional.html:872
 msgid "Бургас"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:555
+#: templates/admin_analytics_professional.html:883
 #: templates/volunteer_dashboard.html:733
 #, fuzzy
 msgid "Обнови"
-msgstr "Mettez à jour maintenant"
+msgstr "Rejoins la chaîne"
 
-#: templates/admin_analytics_professional.html:567
+#: templates/admin_analytics_professional.html:898
 msgid "Общо заявки"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:578
+#: templates/admin_analytics_professional.html:910
 msgid "Успеваемост"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:590
+#: templates/admin_analytics_professional.html:923
 msgid "Средно време за отговор (дни)"
-msgstr ""
+msgstr "Histoires"
 
-#: templates/admin_analytics_professional.html:601
-#: templates/admin_analytics_professional.html:717
+#: templates/admin_analytics_professional.html:935
+#: templates/admin_analytics_professional.html:1051 templates/home_new.html:123
 #, fuzzy
 msgid "Активни доброволци"
-msgstr "Devenir bénévole"
+msgstr "Email de contact"
 
-#: templates/admin_analytics_professional.html:615
+#: templates/admin_analytics_professional.html:949
 msgid ""
 "Трендове през\n"
 "                времето"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:623
+#: templates/admin_analytics_professional.html:957
 msgid "Select trend period"
-msgstr "Sélectionner la période de tendance"
+msgstr ""
 
-#: templates/admin_analytics_professional.html:625
+#: templates/admin_analytics_professional.html:959
 msgid "6 месеца"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:626
+#: templates/admin_analytics_professional.html:960
 msgid "12 месеца"
-msgstr ""
+msgstr "Email"
 
-#: templates/admin_analytics_professional.html:627
+#: templates/admin_analytics_professional.html:961
+#, fuzzy
 msgid "24 месеца"
-msgstr ""
+msgstr "Email"
 
-#: templates/admin_analytics_professional.html:639
+#: templates/admin_analytics_professional.html:973
 msgid ""
 "Разпределение по\n"
 "                категории"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:654
+#: templates/admin_analytics_professional.html:988
 msgid ""
 "Географско\n"
 "                разпределение"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:666
+#: templates/admin_analytics_professional.html:1000
 msgid ""
 "Прогнози за\n"
 "                следващите 3 месеца"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:679
-#, fuzzy
+#: templates/admin_analytics_professional.html:1013
 msgid ""
 "Performance\n"
 "            Metrics"
-msgstr "Indicateurs de performance"
-
-#: templates/admin_analytics_professional.html:690
-msgid "Utilization Rate"
-msgstr "Taux d'utilisation"
-
-#: templates/admin_analytics_professional.html:699
-msgid "Завършени заявки"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:708
+#: templates/admin_analytics_professional.html:1024
+msgid "Utilization Rate"
+msgstr ""
+"L'application offre une protection supplémentaire et une vérification "
+"d'identité."
+
+#: templates/admin_analytics_professional.html:1033
+#, fuzzy
+msgid "Завършени заявки"
+msgstr "Demandes résolues"
+
+#: templates/admin_analytics_professional.html:1042
 msgid "Активни заявки"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:729
+#: templates/admin_analytics_professional.html:1063
 msgid "AI/ML Insights"
-msgstr "Analyses IA/ML"
+msgstr ""
+"Vois où HelpChain relie déjà des personnes. Les données peuvent provenir "
+"d'un backend réel."
 
-#: templates/admin_analytics_professional.html:736
+#: templates/admin_analytics_professional.html:1070
+#, fuzzy
 msgid ""
 "Открити\n"
 "                аномалии"
-msgstr ""
+msgstr "Mes tâches"
 
-#: templates/admin_analytics_professional.html:752
+#: templates/admin_analytics_professional.html:1084
 msgid ""
 "Няма открити\n"
 "                аномалии в данните"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:757
-#, fuzzy
+#: templates/admin_analytics_professional.html:1089
 msgid ""
 "User Behavior\n"
 "                Predictions"
-msgstr "Prédictions du comportement des utilisateurs"
+msgstr ""
 
-#: templates/admin_analytics_professional.html:763
+#: templates/admin_analytics_professional.html:1095
 msgid "Оптимално време за ангажиране:"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:766
+#: templates/admin_analytics_professional.html:1098
 #, python-format
 msgid "%(count)s взаимодействия"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:773
+#: templates/admin_analytics_professional.html:1105
 msgid "Риск от churn:"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:780
+#: templates/admin_analytics_professional.html:1112
 #, python-format
 msgid "(%(days)s дни без активност)"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:786
+#: templates/admin_analytics_professional.html:1118
 msgid ""
 "ML insights не са\n"
 "                налични в момента"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:798
+#: templates/admin_analytics_professional.html:1130
 msgid ""
 "Препоръки за\n"
 "                оптимизация"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:823
+#: templates/admin_analytics_professional.html:1155
 msgid "Няма налични препоръки в момента"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:852
+#: templates/admin_analytics_professional.html:1184
 msgid "Live (WebSocket)"
 msgstr ""
 
-#: templates/admin_analytics_professional.html:853
+#: templates/admin_analytics_professional.html:1185
 msgid "Live (Polling)"
 msgstr ""
 
@@ -317,6 +319,7 @@ msgid "Инсталирай приложението"
 msgstr "Installez l'application"
 
 #: templates/base.html:463 templates/base.html:464 templates/base.html:465
+#: templates/home_new.html:32
 #, fuzzy
 msgid "Превключи към тъмна тема"
 msgstr "Basculer entre le thème clair et le thème sombre"
@@ -324,7 +327,7 @@ msgstr "Basculer entre le thème clair et le thème sombre"
 #: templates/base.html:466
 #, fuzzy
 msgid "Превключи към светла тема"
-msgstr "Basculer entre le thème clair et le thème sombre"
+msgstr "Basculer entre le thème clair и le thème sombre"
 
 #: templates/base.html:480
 msgid "Email"
@@ -338,7 +341,7 @@ msgstr "Facebook"
 msgid "Условия за ползване"
 msgstr "Conditions d'utilisation"
 
-#: templates/base.html:484
+#: templates/base.html:484 templates/home_new.html:457
 msgid "Политика за поверителност"
 msgstr "Politique de confidentialité"
 
@@ -431,15 +434,15 @@ msgstr "Demandes envoyées"
 
 #: templates/home.html:52
 msgid "Как работи?"
-msgstr ""
+msgstr "Comment ça marche ?"
 
 #: templates/home.html:55
 msgid "Подай сигнал с няколко клика."
-msgstr ""
+msgstr "Soumets une demande en quelques clics."
 
 #: templates/home.html:57
 msgid "Най-близкият доброволец получава уведомление."
-msgstr ""
+msgstr "Le bénévole le plus proche reçoit une notification."
 
 #: templates/home.html:59
 #, fuzzy
@@ -453,236 +456,386 @@ msgid ""
 "          живот днес!"
 msgstr "Devenez bénévole dès aujourd'hui et changez la vie de quelqu'un !"
 
-#: templates/home_new.html:5
+#: templates/home_new.html:8
 msgid "HelpChain – Свързваме хората, които помагат"
-msgstr ""
+msgstr "HelpChain – Nous relions les personnes qui aident"
 
-#: templates/home_new.html:17
+#: templates/home_new.html:29
 #, fuzzy
 msgid "HelpChain"
 msgstr "Analyses HelpChain"
 
-#: templates/home_new.html:20
+#: templates/home_new.html:35
+#, fuzzy
 msgid "Как работи"
-msgstr ""
+msgstr "Analyses HelpChain"
 
-#: templates/home_new.html:21
+#: templates/home_new.html:36
 msgid "Истории"
-msgstr ""
+msgstr "Histoires"
 
-#: templates/home_new.html:23 templates/home_new.html:92
+#: templates/home_new.html:38 templates/home_new.html:110
 #: templates/index.html:382 templates/index.html:413
 msgid "Стани доброволец"
 msgstr "Devenir bénévole"
 
-#: templates/home_new.html:26 templates/home_new.html:98
+#: templates/home_new.html:41 templates/home_new.html:116
 msgid "Имам нужда от помощ"
 msgstr ""
 
-#: templates/home_new.html:30
+#: templates/home_new.html:45
 msgid "Включи се във веригата"
-msgstr ""
+msgstr "Rejoins la chaîne"
 
-#: templates/home_new.html:75
+#: templates/home_new.html:94
 msgid "В реално време свързваме помощ с нужда"
-msgstr ""
+msgstr "Nous connectons l'aide en temps réel avec ceux qui en ont besoin"
 
-#: templates/home_new.html:79
+#: templates/home_new.html:98
 msgid "Превръщаме"
-msgstr ""
+msgstr "Nous transformons"
 
-#: templates/home_new.html:79
+#: templates/home_new.html:98
 msgid "добротата"
+msgstr "la bonté"
+
+#: templates/home_new.html:98
+msgid "в организирана сила."
+msgstr "en force organisée."
+
+#: templates/home_new.html:101
+msgid ""
+"HelpChain свързва хора в нужда с проверени доброволци, психолози, "
+"адвокати, ИТ специалисти и обикновени хора с голямо сърце. Включи се"
+msgstr ""
+"HelpChain connecte les personnes dans le besoin avec des bénévoles "
+"vérifiés, des psychologues, des avocats, des spécialistes IT et des gens "
+"ordinaires au grand cœur. Rejoins-nous."
+
+#: templates/home_new.html:127
+msgid "онлайн в момента"
+msgstr "en ligne maintenant"
+
+#: templates/home_new.html:132
+msgid "Часа дарена помощ"
+msgstr "Heures d'aide offertes"
+
+#: templates/home_new.html:136
+msgid "последните 30 дни"
+msgstr "les 30 derniers jours"
+
+#: templates/home_new.html:141
+msgid "Решени заявки"
+msgstr "Demandes résolues"
+
+#: templates/home_new.html:145
+msgid "реални хора, реални истории"
+msgstr "vraies personnes, vraies histoires"
+
+#: templates/home_new.html:152
+msgid "Току-що: доброволец от Варна помогна на самотна майка. 💙"
+msgstr "À l'instant : un bénévole de Varna a aidé une mère célibataire. 💙"
+
+#: templates/home_new.html:159
+msgid "Включи се във веригата на помощта"
+msgstr "Rejoins la chaîne d'entraide"
+
+#: templates/home_new.html:162
+msgid "Избери как искаш да помагаш. Ще ти изпратим подбрани каузи и хора в нужда."
+msgstr ""
+"Choisis comment tu veux aider. Nous t'enverrons des causes и des "
+"personnes sélectionnées dans le besoin."
+
+#: templates/home_new.html:167
+msgid "Здравна подкрепа"
+msgstr "Soutien santé"
+
+#: templates/home_new.html:170
+msgid "Правна помощ"
+msgstr "Aide juridique"
+
+#: templates/home_new.html:173
+msgid "Обучение"
+msgstr "Formation"
+
+#: templates/home_new.html:176
+msgid "Техническа помощ"
+msgstr "Aide technique"
+
+#: templates/home_new.html:179
+msgid "Емоционална подкрепа"
+msgstr "Soutien émotionnel"
+
+#: templates/home_new.html:183
+msgid "Имейл за контакт"
+msgstr "Email de contact"
+
+#: templates/home_new.html:184 templates/home_new.html:429
+msgid "Град / държава"
+msgstr "Ville / pays"
+
+#: templates/home_new.html:332
+msgid "Жива карта на доброто"
 msgstr ""
 
-#: templates/home_new.html:79
-msgid "в организирана сила."
+#: templates/home_new.html:335
+msgid ""
+"Виж къде HelpChain вече свързва хора. Данните могат да идват от реален "
+"backend."
+msgstr ""
+
+#: templates/home_new.html:339
+msgid "Ти също ще се появиш тук, когато се включиш. ✨"
+msgstr ""
+
+#: templates/home_new.html:344
+#, fuzzy
+msgid "Активни точки:"
+msgstr "Email de contact"
+
+#: templates/home_new.html:344
+msgid "Париж, Лион, Марсилия, Бордо, Берлин, Мадрид, Рим, Варшава, Лондон..."
+msgstr ""
+
+#: templates/home_new.html:388
+msgid "Париж"
+msgstr ""
+
+#: templates/home_new.html:392
+msgid "Лион"
+msgstr ""
+
+#: templates/home_new.html:396
+msgid "Марсилия"
+msgstr ""
+
+#: templates/home_new.html:400
+msgid "Бордо"
+msgstr ""
+
+#: templates/home_new.html:414
+msgid "Имаш нужда от помощ?"
+msgstr ""
+
+#: templates/home_new.html:417
+msgid "Напиши ни. Ще намерим подходящ човек от веригата HelpChain."
+msgstr ""
+
+#: templates/home_new.html:424
+msgid "Кратко опиши нуждата си"
+msgstr ""
+
+#: templates/home_new.html:434
+msgid "Имейл или телефон за връзка"
+msgstr ""
+
+#: templates/home_new.html:439
+#, fuzzy
+msgid "Изпрати сигнал за помощ"
+msgstr "Soumettre une demande d'aide"
+
+#: templates/home_new.html:442
+msgid ""
+"Спокойно. Данните ти са защитени. Първо се свързваме дискретно, без "
+"публично показване."
+msgstr ""
+
+#: templates/home_new.html:449
+msgid "Движение за смислена, отговорна помощ."
+msgstr ""
+
+#: templates/home_new.html:453
+msgid "За проекта"
+msgstr ""
+
+#: templates/home_new.html:463
+msgid "Стани партньор"
 msgstr ""
 
 #: templates/index.html:75
 msgid "Сърце с ръце"
-msgstr "Mains tenant un cœur"
+msgstr ""
 
 #: templates/index.html:139
+#, fuzzy
 msgid "Добре дошли!"
-msgstr "Bienvenue !"
+msgstr "Bénévoles"
 
 #: templates/index.html:146
+#, fuzzy
 msgid "свързва хора в нужда с доброволци, готови да помогнат."
 msgstr "relie les personnes dans le besoin à des bénévoles prêts à aider."
 
 #: templates/index.html:148
 msgid "Заедно изграждаме общество, в което всеки има значение."
-msgstr "Ensemble, nous construisons une communauté où chacun compte."
+msgstr ""
 
 #: templates/index.html:166
 msgid "NEW"
-msgstr "NOUVEAU"
+msgstr ""
 
 #: templates/index.html:181
+#, fuzzy
 msgid "Регистрация на доброволец"
-msgstr "Inscription bénévole"
+msgstr "Devenir bénévole"
 
 #: templates/index.html:191
+#, fuzzy
 msgid "Подай сигнал"
-msgstr "Signaler un besoin"
+msgstr "Demandes envoyées"
 
 #: templates/index.html:192
 msgid "Сподели проблема си лесно и бързо."
-msgstr "Partage ton problème facilement et rapidement."
+msgstr ""
 
 #: templates/index.html:200
+#, fuzzy
 msgid "Доброволец откликва"
-msgstr "Un bénévole répond"
+msgstr "Bénévoles"
 
 #: templates/index.html:201
 msgid "Нашите доброволци са винаги готови да помогнат."
-msgstr "Nos bénévoles sont toujours prêts à aider."
+msgstr ""
 
 #: templates/index.html:209
+#, fuzzy
 msgid "Получаваш помощ"
-msgstr "Vous recevez de l'aide"
+msgstr "Aide juridique"
 
 #: templates/index.html:210
 msgid "Реална подкрепа за теб и твоите близки."
-msgstr "Un soutien concret pour vous et vos proches."
+msgstr ""
 
 #: templates/index.html:248
 msgid "Защо да се включа?"
-msgstr "Pourquoi participer ?"
+msgstr ""
 
 #: templates/index.html:274 templates/index.html:319
 msgid "Мария"
-msgstr "Maria"
+msgstr ""
 
 #: templates/index.html:277 templates/index.html:323
 msgid "„Благодарение на helpchain.live най-много имах нужда!“"
 msgstr ""
-"« Grâce à helpchain.live j'ai obtenu l'aide dont j'avais le plus besoin !"
-" »"
 
 #: templates/index.html:278 templates/index.html:312 templates/index.html:326
 msgid "Мария, София"
-msgstr "Maria, Sofia"
+msgstr ""
 
 #: templates/index.html:284
+#, fuzzy
 msgid "Стани доброволец днес и промени нечий живот!"
 msgstr "Devenez bénévole dès aujourd'hui et changez la vie de quelqu'un !"
 
 #: templates/index.html:287
 msgid "Заедно можем повече!"
-msgstr "Ensemble, nous pouvons plus !"
+msgstr ""
 
 #: templates/index.html:290
 msgid "Имате идея или проблем?"
-msgstr "Vous avez une idée ou un problème ?"
+msgstr ""
 
 #: templates/index.html:292
 msgid "Пишете ни"
-msgstr "Écrivez-nous"
+msgstr ""
 
 #: templates/index.html:311
-#, fuzzy
 msgid ""
 "„Благодарение на helpchain.live\n"
 "най-много имах нужда!“"
 msgstr ""
-"« Grâce à helpchain.live j'ai obtenu l'aide dont j'avais le plus besoin !"
-" »"
 
 #: templates/index.html:312
-#, fuzzy
 msgid ""
 "„Екипът\n"
 "реагира бързо и професионално!“"
-msgstr "« L'équipe a réagi rapidement et avec professionnalisme ! »"
+msgstr ""
 
 #: templates/index.html:313
+#, fuzzy
 msgid "Георги, Пловдив"
 msgstr "Georgi, Plovdiv"
 
 #: templates/index.html:314
 msgid "„Чувствам се подкрепен и разбран!“"
-msgstr "« Je me sens soutenu et compris ! »"
+msgstr ""
 
 #: templates/index.html:314
+#, fuzzy
 msgid "Иван, Варна"
 msgstr "Ivan, Varna"
 
 #: templates/index.html:367
 msgid "Меню"
-msgstr "Menu"
+msgstr ""
 
 #: templates/index.html:377 templates/index.html:405 templates/index.html:462
+#, fuzzy
 msgid "Новини"
-msgstr "Actualités"
+msgstr "Rejoins la chaîne"
 
 #: templates/index.html:387 templates/index.html:425
 msgid "Полезни връзки"
-msgstr "Liens utiles"
+msgstr ""
 
 #: templates/index.html:392 templates/index.html:442
 msgid "Контакти"
-msgstr "Contacts"
+msgstr ""
 
 #: templates/index.html:408
 msgid "HelpChain стартира нова кампания за подкрепа на възрастни хора!"
-msgstr "HelpChain lance une nouvelle campagne de soutien aux personnes âgées !"
+msgstr ""
 
 #: templates/index.html:416
 msgid "Регистрирай се и помогни на хора в нужда – всеки може да бъде герой!"
 msgstr ""
-"Inscris-toi et aide les personnes dans le besoin – chacun peut être un "
-"héros !"
 
 #: templates/index.html:420
+#, fuzzy
 msgid "Регистрирай се като доброволец"
-msgstr "Inscris-toi comme bénévole"
+msgstr "Devenir bénévole"
 
 #: templates/index.html:430
 msgid "БЧК"
-msgstr "Croix-Rouge bulgare"
+msgstr ""
 
 #: templates/index.html:435
 msgid "Държавни услуги"
-msgstr "Services publics"
+msgstr ""
 
 #: templates/index.html:445
 msgid "Пиши ни на"
-msgstr "Écris-nous à"
+msgstr ""
 
 #: templates/index.html:468
+#, fuzzy
 msgid "Затвори"
 msgstr "Fermer"
 
 #: templates/index.html:473
-#, fuzzy
 msgid ""
 "HelpChain стартира нова кампания за подкрепа на възрастни\n"
 "          хора!"
-msgstr "HelpChain lance une nouvelle campagne de soutien aux personnes âgées !"
+msgstr ""
 
 #: templates/index.html:477
-#, fuzzy
 msgid ""
 "От 1 август 2025 г. доброволците ни ще посещават домове на\n"
 "          възрастни хора и ще оказват помощ с пазаруване, лекарства и "
 "социална\n"
 "          подкрепа."
 msgstr ""
-"À partir du 1er août 2025, nos bénévoles rendront visite aux personnes "
-"âgées à domicile et les aideront pour les courses, les médicaments et le "
-"soutien social."
 
 #: templates/index.html:482
 msgid "Публикувано на: 23 юли 2025 г."
-msgstr "Publié le : 23 juillet 2025"
+msgstr ""
 
 #: templates/volunteer_dashboard.html:1
+#, fuzzy
 msgid ""
 "Доброволчески панел -\n"
 "HelpChain"
-msgstr ""
+msgstr "Bienvenue !"
 
 #: templates/volunteer_dashboard.html:559
 #, fuzzy
@@ -695,9 +848,9 @@ msgid "Доброволец"
 msgstr "Bénévoles"
 
 #: templates/volunteer_dashboard.html:571
-#, fuzzy, python-format
+#, python-format
 msgid "Добре дошли, %(name)s! 👋"
-msgstr "Bienvenue !"
+msgstr ""
 
 #: templates/volunteer_dashboard.html:574
 #, python-format
@@ -709,13 +862,13 @@ msgstr ""
 #: templates/volunteer_dashboard.html:595
 #, fuzzy
 msgid "Завършени задачи"
-msgstr "Tâches disponibles"
+msgstr "Demandes résolues"
 
 #: templates/volunteer_dashboard.html:604
 #: templates/volunteer_dashboard.html:773
 #, fuzzy
 msgid "Активни задачи"
-msgstr "Tâches disponibles"
+msgstr "Email de contact"
 
 #: templates/volunteer_dashboard.html:606
 msgid "В момента работите по тези задачи"
@@ -760,10 +913,11 @@ msgid "Нови постижения скоро!"
 msgstr "Réalisations"
 
 #: templates/volunteer_dashboard.html:685
+#, fuzzy
 msgid ""
 "Вашите активни\n"
 "        задачи"
-msgstr ""
+msgstr "Tâches disponibles"
 
 #: templates/volunteer_dashboard.html:689
 msgid "Задачи, по които работите в момента"
@@ -783,20 +937,19 @@ msgid "Завърши задачата"
 msgstr ""
 
 #: templates/volunteer_dashboard.html:740
-#, fuzzy
 msgid "Завърши"
-msgstr "Fermer"
+msgstr ""
 
 #: templates/volunteer_dashboard.html:749
-#, fuzzy
 msgid "Нямате активни задачи"
-msgstr "Tâches disponibles"
+msgstr ""
 
 #: templates/volunteer_dashboard.html:751
 msgid "Приемете нова задача от секцията „Налични задачи“ по-долу."
 msgstr ""
 
 #: templates/volunteer_dashboard.html:763
+#, fuzzy
 msgid "Налични задачи"
 msgstr "Tâches disponibles"
 
@@ -891,9 +1044,8 @@ msgid "Нисък приоритет"
 msgstr ""
 
 #: templates/volunteer_dashboard.html:885
-#, fuzzy
 msgid "Подреди наличните задачи"
-msgstr "Tâches disponibles"
+msgstr ""
 
 #: templates/volunteer_dashboard.html:887
 msgid "Най-нови"
@@ -925,8 +1077,9 @@ msgid "Спешни"
 msgstr ""
 
 #: templates/volunteer_dashboard.html:925
+#, fuzzy
 msgid "Високи"
-msgstr ""
+msgstr "Histoires"
 
 #: templates/volunteer_dashboard.html:935
 msgid "Средни"
@@ -964,9 +1117,8 @@ msgid "Грешка при свързване със сървъра"
 msgstr ""
 
 #: templates/volunteer_dashboard.html:1147
-#, fuzzy
 msgid "Няма намерени задачи"
-msgstr "Tâches disponibles"
+msgstr ""
 
 #: templates/volunteer_dashboard.html:1148
 msgid "Опитайте с други критерии за търсене."
@@ -1243,10 +1395,6 @@ msgstr ""
 msgid "Could not open file {filename!r}: {message}"
 msgstr ""
 
-#: venv/Lib/site-packages/click/formatting.py:156
-msgid "Usage:"
-msgstr ""
-
 #: venv/Lib/site-packages/click/parser.py:231
 #, python-brace-format
 msgid "Argument {name!r} takes {nargs} values."
@@ -1329,7 +1477,7 @@ msgid "{value} is not in the range {range}."
 msgstr ""
 
 #: venv/Lib/site-packages/click/types.py:611
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "{value!r} is not a valid boolean."
 msgstr ""
 
@@ -1992,175 +2140,20 @@ msgstr ""
 msgid "Not a valid float value."
 msgstr ""
 
-#~ msgid "ambiguous option: %(option)s could match %(matches)s"
+#~ msgid "Разпределение по\n"
 #~ msgstr ""
 
-#~ msgid "algorithm"
+#~ msgid "Географско\n"
 #~ msgstr ""
 
-#~ msgid "Advanced Analytics - HelpChain"
-#~ msgstr "Analyses Avancées - HelpChain"
-
-#~ msgid "Real-time analytics and forecasts for HelpChain"
-#~ msgstr "Analyses et prévisions en temps réel pour HelpChain"
-
-#~ msgid "Filters"
-#~ msgstr "Filtres"
-
-#~ msgid "Period"
-#~ msgstr "Période"
-
-#~ msgid "Select time range for analytics"
-#~ msgstr "Sélectionnez la période d'analyse"
-
-#~ msgid "Last 7 days"
-#~ msgstr "7 derniers jours"
-
-#~ msgid "Last 30 days"
-#~ msgstr "30 derniers jours"
-
-#~ msgid "Last 3 months"
-#~ msgstr "3 derniers mois"
-
-#~ msgid "Last year"
-#~ msgstr "12 derniers mois"
-
-#~ msgid "Category"
-#~ msgstr "Catégorie"
-
-#~ msgid "Filter by help category"
-#~ msgstr "Filtrer par type d'aide"
-
-#~ msgid "All categories"
-#~ msgstr "Toutes les catégories"
-
-#~ msgid "Medical assistance"
-#~ msgstr "Assistance médicale"
-
-#~ msgid "Transportation"
-#~ msgstr "Transport"
-
-#~ msgid "Household help"
-#~ msgstr "Aide ménagère"
-
-#~ msgid "Education"
-#~ msgstr "Éducation"
-
-#~ msgid "Region"
-#~ msgstr "Région"
-
-#~ msgid "Filter by region"
-#~ msgstr "Filtrer par région"
-
-#~ msgid "All regions"
-#~ msgstr "Toutes les régions"
-
-#~ msgid "Sofia"
-#~ msgstr "Sofia"
-
-#~ msgid "Plovdiv"
-#~ msgstr "Plovdiv"
-
-#~ msgid "Varna"
-#~ msgstr "Varna"
-
-#~ msgid "Burgas"
-#~ msgstr "Burgas"
-
-#~ msgid "Refresh"
-#~ msgstr "Actualiser"
-
-#~ msgid "Total requests"
-#~ msgstr "Total des demandes"
-
-#~ msgid "Success rate"
-#~ msgstr "Taux de réussite"
-
-#~ msgid "Average response time (days)"
-#~ msgstr "Temps de réponse moyen (jours)"
-
-#~ msgid "Active volunteers"
-#~ msgstr "Bénévoles actifs"
-
-#~ msgid "Trends over time"
-#~ msgstr "Tendances dans le temps"
-
-#~ msgid "6 months"
-#~ msgstr "6 mois"
-
-#~ msgid "12 months"
-#~ msgstr "12 mois"
-
-#~ msgid "24 months"
-#~ msgstr "24 mois"
-
-#~ msgid "Distribution by category"
-#~ msgstr "Répartition par catégorie"
-
-#~ msgid "Geographic distribution"
-#~ msgstr "Répartition géographique"
-
-#~ msgid "Forecasts for the next 3 months"
-#~ msgstr "Prévisions pour les 3 prochains mois"
-
-#~ msgid "Completed requests"
-#~ msgstr "Demandes terminées"
-
-#~ msgid "Active requests"
-#~ msgstr "Demandes actives"
-
-#~ msgid "Detected anomalies"
-#~ msgstr "Anomalies détectées"
-
-#~ msgid "No anomalies detected in the data"
-#~ msgstr "Aucune anomalie détectée dans les données"
-
-#~ msgid "ML insights are not available without JavaScript"
-#~ msgstr "Les analyses ML ne sont pas disponibles pour le moment"
-
-#~ msgid "Optimization recommendations"
-#~ msgstr "Recommandations d'optimisation"
-
-#~ msgid "No recommendations available at the moment"
-#~ msgstr "Aucune recommandation disponible pour le moment"
-
-#~ msgid "Enable JavaScript to see dynamic recommendations."
+#~ msgid "Прогнози за\n"
 #~ msgstr ""
 
-#~ msgid "Requests"
-#~ msgstr "Demandes"
+#~ msgid "User Behavior\n"
+#~ msgstr "Bordeaux"
 
-#~ msgid "Completed"
-#~ msgstr "Terminées"
-
-#~ msgid "Volunteers"
-#~ msgstr "Bénévoles"
-
-#~ msgid "Requests by region"
-#~ msgstr "Demandes par région"
-
-#~ msgid "Request forecast"
-#~ msgstr "Prévision des demandes"
-
-#~ msgid "Volunteer forecast"
-#~ msgstr "Prévision des bénévoles"
-
-#~ msgid "Превключи темата"
-#~ msgstr "Changer de thème"
-
-#~ msgid "{text} {deprecated_message}"
+#~ msgid "ML insights не са\n"
 #~ msgstr ""
 
-#~ msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "DeprecationWarning: The {param_type} {name!r} "
-#~ "is deprecated.{extra_message}"
-#~ msgstr ""
-
-#~ msgid "{value!r} is not a valid boolean. Recognized values: {states}"
-#~ msgstr ""
-
-#~ msgid "{name} {filename!r} is a directory."
+#~ msgid "Препоръки за\n"
 #~ msgstr ""

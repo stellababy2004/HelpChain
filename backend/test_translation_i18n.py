@@ -1,5 +1,6 @@
 import pytest
 from flask import Flask
+
 from appy import app as flask_app
 
 
