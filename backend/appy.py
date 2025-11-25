@@ -100,7 +100,7 @@ class Request:
 import logging
 
 logger = logging.getLogger(__name__)
-from models import (
+from backend.models import (
     HelpRequest,
     AdminUser,
     ChatMessage,
@@ -3060,7 +3060,7 @@ if socketio:
         if volunteer_id and location:
             try:
                 from extensions import db
-                from models import Volunteer
+                from backend.models import Volunteer
 
                 volunteer = db.session.get(Volunteer, volunteer_id)
                 if volunteer:
