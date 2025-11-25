@@ -104,7 +104,7 @@ jobs:
             })
 
       - name: Upload SSL Labs Report
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: ssl-labs-assessment
           path: ssl-labs-report.json
