@@ -82,14 +82,7 @@ class DummyAnalyticsService:
 analytics_service = DummyAnalyticsService()
 
 
-class FileSystemLoader:
-    def __init__(self, d):
-        pass
-
-
-class ChoiceLoader:
-    def __init__(self, loaders):
-        pass
+from jinja2 import FileSystemLoader, ChoiceLoader
 
 
 def require_admin_login(f):
@@ -285,7 +278,7 @@ def public_requests_list():
 
     # Може да добавим пагинация в бъдеще
     result = []
-    for req in requests:
+    for req in query.all():
         result.append(
             {
                 "id": req.id,
@@ -335,7 +328,6 @@ def public_create_request():
             title=category or "Заявка",
             city=city,
             description=problem,
-            message=problem,
             phone=phone,
             status="pending",
         )
@@ -492,7 +484,6 @@ from werkzeug.utils import secure_filename
 
 # First-party imports (robust fallbacks for direct script or package modes)
 
-import datetime
 import requests
 
 SUPPORTED_DATE_FORMATS = ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y", "%Y/%m/%d")
@@ -2728,7 +2719,7 @@ except Exception:
 
 if auth_bp is not None:
     try:
-        app.register_blueprint(auth_bp)
+        app.register_blueprint(auth_bp, url_prefix="/auth")
     except Exception as e:
         app.logger.warning(f"Failed to register auth blueprint: {e}")
 else:

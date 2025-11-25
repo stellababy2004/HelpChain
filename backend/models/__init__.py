@@ -167,10 +167,20 @@ class HelpRequest(db.Model):
     region = db.Column(db.String(80))
     name = db.Column(db.String(80))
     email = db.Column(db.String(120))
+    phone = db.Column(db.String(20))
+    location_text = db.Column(db.String(255))
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    completed_at = db.Column(db.DateTime)
+    source_channel = db.Column(db.String(50))
+    assigned_volunteer_id = db.Column(
+        db.Integer, db.ForeignKey("volunteer.id"), nullable=True
+    )
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_at = db.Column(
         db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow
     )
+    assigned_volunteer = db.relationship("Volunteer", backref="assigned_requests")
 
 
 class AdminLog(db.Model):
