@@ -274,6 +274,44 @@ class UserRole(db.Model):
         return f"<UserRole user:{self.user_id} role:{self.role_id}>"
 
 
+class Request(db.Model):
+    """Request model for helpchain_backend"""
+
+    __tablename__ = "requests"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(120), nullable=False)
+    location = db.Column(db.String(100))
+    category = db.Column(db.String(100))
+    description = db.Column(db.Text)
+    urgency = db.Column(db.String(50))
+    status = db.Column(db.String(50), default="pending")
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
+
+    def __repr__(self):
+        return f"<Request {self.name}>"
+
+
+class RequestLog(db.Model):
+    """Request log model for tracking status changes"""
+
+    __tablename__ = "request_logs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    request_id = db.Column(db.Integer, db.ForeignKey("requests.id"), nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+    new_status = db.Column(db.String(50), nullable=True)
+    action = db.Column(db.String(100), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    changed_at = db.Column(db.DateTime, default=utc_now)
+
+    def __repr__(self):
+        return f"<RequestLog {self.request_id} status:{self.status}>"
+
+
 # Export all models
 __all__ = [
     "AdminRole",
@@ -282,6 +320,8 @@ __all__ = [
     "Permission",
     "PermissionEnum",
     "PriorityEnum",
+    "Request",
+    "RequestLog",
     "Role",
     "RoleEnum",
     "RolePermission",

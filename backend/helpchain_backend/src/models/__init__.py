@@ -33,7 +33,6 @@ only registers each mapped class once.
 
 from models import (
     AdminUser,
-    Feedback,
     Request,
     RequestLog,
     User,
@@ -44,7 +43,6 @@ __all__ = [
     "Request",
     "RequestLog",
     "Volunteer",
-    "Feedback",
     "AdminUser",
     "User",
 ]
