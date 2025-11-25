@@ -25,19 +25,50 @@ class AnalyticsCache:
     def init_app(self, app):
         """Initialize the cache with the Flask app"""
 
+        # Try Redis first
         try:
-            # Configure cache with Redis URL
             cache_config = PERFORMANCE_CONFIG.copy()
             app.config.update(cache_config)
             self.cache = Cache(app)
-            print("Cache initialized successfully")
-
+            # Test the cache by trying to set/get a test value
+            test_key = "cache_test_init"
+            self.cache.set(test_key, "test_value", timeout=1)
+            test_result = self.cache.get(test_key)
+            if test_result == "test_value":
+                print("✅ Cache initialized successfully with Redis")
+                return
+            else:
+                raise Exception("Cache test failed")
         except Exception as e:
-            # If anything fails, fallback to simple cache
-            print(f"Cache initialization failed ({e}), using simple fallback")
+            print(f"⚠️ Redis cache failed ({e}), falling back to simple cache")
+
+            # Clear any Redis config that might interfere
+            redis_keys = [
+                k
+                for k in app.config.keys()
+                if "redis" in k.lower() or "CACHE_REDIS" in k
+            ]
+            for key in redis_keys:
+                app.config.pop(key, None)
+
+            # Setup simple cache
             app.config["CACHE_TYPE"] = "simple"
             app.config["CACHE_DEFAULT_TIMEOUT"] = 300
-            self.cache = Cache(app)
+            app.config["CACHE_THRESHOLD"] = 500  # Max items in memory
+
+            try:
+                self.cache = Cache(app)
+                # Test simple cache
+                test_key = "cache_test_simple"
+                self.cache.set(test_key, "test_value", timeout=1)
+                test_result = self.cache.get(test_key)
+                if test_result == "test_value":
+                    print("✅ Simple cache initialized successfully")
+                else:
+                    raise Exception("Simple cache test failed")
+            except Exception as simple_error:
+                print(f"❌ Even simple cache failed: {simple_error}")
+                self.cache = None  # Disable caching completely
 
     def cached_analytics_data(self, timeout=None):
         """Decorator за caching на analytics данни"""
@@ -50,29 +81,73 @@ class AnalyticsCache:
                     print("Cache not initialized, calling function directly")
                     return f(*args, **kwargs)
 
-                # Създай unique cache key от параметрите
+                # Създай unique cache key от параметрите - ПОПРАВЕНА ВЕРСИЯ
                 try:
-                    cache_key = (
-                        f"analytics_{f.__name__}_{hash(str(sorted(kwargs.items())))}"
-                    )
+                    # Използвай по-надежден начин за key генерация
+                    import hashlib
+
+                    # Събери всички параметри в string
+                    key_parts = [f.__name__]
+
+                    # Добави args (без self ако е method)
+                    if args:
+                        # Премахни self ако е instance method
+                        filtered_args = (
+                            args[1:]
+                            if len(args) > 0 and hasattr(args[0], "__class__")
+                            else args
+                        )
+                        if filtered_args:
+                            key_parts.append(f"args_{hash(str(filtered_args))}")
+
+                    # Добави kwargs
+                    if kwargs:
+                        # Сортирай за consistent hashing
+                        sorted_kwargs = sorted(kwargs.items())
+                        kwargs_str = json.dumps(
+                            sorted_kwargs, sort_keys=True, default=str
+                        )
+                        kwargs_hash = hashlib.md5(kwargs_str.encode()).hexdigest()[:8]
+                        key_parts.append(f"kwargs_{kwargs_hash}")
+
+                    # Добави request context ако има
+                    try:
+                        from flask import request
+
+                        if request and hasattr(request, "args"):
+                            request_params = dict(request.args)
+                            if request_params:
+                                sorted_params = sorted(request_params.items())
+                                params_str = json.dumps(
+                                    sorted_params, sort_keys=True, default=str
+                                )
+                                params_hash = hashlib.md5(
+                                    params_str.encode()
+                                ).hexdigest()[:8]
+                                key_parts.append(f"req_{params_hash}")
+                    except Exception:
+                        pass  # Ignore request context errors
+
+                    cache_key = "_".join(key_parts)
+
                 except Exception as key_error:
                     # Fallback cache key if hashing fails
-                    cache_key = f"analytics_{f.__name__}_fallback_{id(f)}"
+                    cache_key = f"analytics_{f.__name__}_fallback_{id(f)}_{hash(str(args) + str(kwargs))}"
 
                 # Провери дали има cached версия
                 try:
                     result = self.cache.get(cache_key)
                     if result is not None:
-                        print(f"Cache HIT for {cache_key}")
+                        print(f"✅ Cache HIT: {f.__name__} (key: {cache_key[:50]}...)")
                         return result
                     else:
-                        print(f"Cache MISS for {cache_key}")
+                        print(f"❌ Cache MISS: {f.__name__} (key: {cache_key[:50]}...)")
                 except Exception as cache_error:
-                    print(f"Cache read error: {cache_error}")
+                    print(f"⚠️ Cache read error: {cache_error}")
                     # Continue without cache
 
                 # Call the function
-                print(f"Calling function {f.__name__} (cache miss)")
+                print(f"🔄 Executing {f.__name__} (cache miss)")
                 result = f(*args, **kwargs)
 
                 # Try to cache the result
@@ -81,9 +156,11 @@ class AnalyticsCache:
                         timeout if timeout is not None else self.cache.default_timeout
                     )
                     self.cache.set(cache_key, result, timeout=cache_timeout)
-                    print(f"Cached result for {cache_key} (timeout: {cache_timeout}s)")
+                    print(
+                        f"💾 Cached result for {f.__name__} (key: {cache_key[:50]}..., timeout: {cache_timeout}s)"
+                    )
                 except Exception as cache_error:
-                    print(f"Cache write error: {cache_error}")
+                    print(f"⚠️ Cache write error: {cache_error}")
                     # Continue without caching
 
                 return result

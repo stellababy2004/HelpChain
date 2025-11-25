@@ -1008,6 +1008,27 @@ def privacy():
     return render_template("privacy.html")
 
 
+@app.route("/feedback", methods=["GET", "POST"])
+def feedback():
+    """Handle feedback form submission and display."""
+    if request.method == "POST":
+        try:
+            feedback_entry = Feedback(
+                name=request.form.get("name"),
+                email=request.form.get("email"),
+                message=request.form.get("message"),
+                user_type="guest",
+            )
+            db.session.add(feedback_entry)
+            db.session.commit()
+            flash("Благодарим ви за обратната връзка!", "success")
+            return redirect(url_for("index"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Грешка при изпращане: {e}", "error")
+    return render_template("feedback.html")
+
+
 @app.get("/favicon.ico")
 def favicon():
     """Serve favicon; prefer static file, fallback to tiny PNG to avoid 404."""
@@ -1198,7 +1219,7 @@ def index():
 
     lang_cookie = (request.cookies.get("language") or "fr").strip().lower()
     current_locale = lang_cookie if lang_cookie in ["fr", "en", "bg"] else "fr"
-    return render_template("home_new.html", current_locale=current_locale)
+    return render_template("index.html", current_locale=current_locale)
 
 
 # Redirect legacy static preview URL към новата начална страница
