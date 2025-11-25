@@ -2,7 +2,7 @@
 <html lang="bg">
   <head>
     <meta charset="UTF-8" />
-    <title>🤖 Чатбот тест - HelpChain</title>
+    <title>{{ _('🤖 Чатбот тест - HelpChain') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Bootstrap CSS -->
     <link
@@ -64,34 +64,36 @@
     <div class="container">
       <!-- Инструкции -->
       <div class="instructions">
-        <h1><i class="fas fa-robot"></i> Тест на HelpChain Чатбот</h1>
+        <h1>
+          <i class="fas fa-robot"></i> {{ _('Тест на HelpChain Чатбот') }}
+        </h1>
         <p class="mb-0">
-          Тук можете да тествате всички функции на чатбота. Кликнете върху
-          лилавия бутон в долния десен ъгъл за да отворите чата!
+          {{ _('Тук можете да тествате всички функции на чатбота. Кликнете върху
+          лилавия бутон в долния десен ъгъл за да отворите чата!') }}
         </p>
       </div>
 
       <!-- API Тест -->
       <div class="test-card">
-        <h3><i class="fas fa-code"></i> API Тестове</h3>
-        <p>Тестваме backend функционалността на чатбота:</p>
+        <h3><i class="fas fa-code"></i> {{ _('API Тестове') }}</h3>
+        <p>{{ _('Тестваме backend функционалността на чатбота:') }}</p>
 
         <button class="btn btn-primary test-btn" onclick="testInit()">
-          <i class="fas fa-play"></i> Тест Инициализация
+          <i class="fas fa-play"></i> {{ _('Тест Инициализация') }}
         </button>
 
         <button
           class="btn btn-success test-btn"
           onclick="testMessage('Как се регистрирам?')"
         >
-          <i class="fas fa-question"></i> Тест FAQ Въпрос
+          <i class="fas fa-question"></i> {{ _('Тест FAQ Въпрос') }}
         </button>
 
         <button
           class="btn btn-warning test-btn"
           onclick="testMessage('Невалиден въпрос за тест')"
         >
-          <i class="fas fa-exclamation"></i> Тест Fallback
+          <i class="fas fa-exclamation"></i> {{ _('Тест Fallback') }}
         </button>
 
         <div id="api-results"></div>
@@ -99,8 +101,8 @@
 
       <!-- Предварително зададени въпроси -->
       <div class="test-card">
-        <h3><i class="fas fa-comments"></i> Тестови Въпроси</h3>
-        <p>Кликнете върху въпрос за да го изпратите в чата:</p>
+        <h3><i class="fas fa-comments"></i> {{ _('Тестови Въпроси') }}</h3>
+        <p>{{ _('Кликнете върху въпрос за да го изпратите в чата:') }}</p>
 
         <div class="row">
           <div class="col-md-6">
@@ -108,25 +110,25 @@
               class="btn btn-outline-primary test-btn"
               onclick="sendToChat('Как мога да се регистрирам като доброволец?')"
             >
-              👋 Регистрация
+              👋 {{ _('Регистрация') }}
             </button>
             <button
               class="btn btn-outline-primary test-btn"
               onclick="sendToChat('Какви услуги предлагате?')"
             >
-              🔧 Услуги
+              🔧 {{ _('Услуги') }}
             </button>
             <button
               class="btn btn-outline-primary test-btn"
               onclick="sendToChat('Безплатно ли е?')"
             >
-              💰 Цени
+              💰 {{ _('Цени') }}
             </button>
             <button
               class="btn btn-outline-primary test-btn"
               onclick="sendToChat('В кои градове работите?')"
             >
-              🌍 Локации
+              🌍 {{ _('Локации') }}
             </button>
           </div>
           <div class="col-md-6">
@@ -134,25 +136,25 @@
               class="btn btn-outline-success test-btn"
               onclick="sendToChat('Колко време отнема да получа помощ?')"
             >
-              ⏰ Време
+              ⏰ {{ _('Време') }}
             </button>
             <button
               class="btn btn-outline-success test-btn"
               onclick="sendToChat('Как да се свържа с вас?')"
             >
-              📞 Контакти
+              📞 {{ _('Контакти') }}
             </button>
             <button
               class="btn btn-outline-success test-btn"
               onclick="sendToChat('Сигурни ли са личните ми данни?')"
             >
-              🔐 Сигурност
+              🔐 {{ _('Сигурност') }}
             </button>
             <button
               class="btn btn-outline-success test-btn"
               onclick="sendToChat('Какви са изискванията за доброволци?')"
             >
-              ✅ Изисквания
+              ✅ {{ _('Изисквания') }}
             </button>
           </div>
         </div>
@@ -160,41 +162,41 @@
 
       <!-- Контроли за чата -->
       <div class="test-card">
-        <h3><i class="fas fa-tools"></i> Контроли за Чат</h3>
+        <h3><i class="fas fa-tools"></i> {{ _('Контроли за Чат') }}</h3>
         <button class="btn btn-info test-btn" onclick="openChat()">
-          <i class="fas fa-comment-dots"></i> Отвори Чата
+          <i class="fas fa-comment-dots"></i> {{ _('Отвори Чата') }}
         </button>
         <button class="btn btn-secondary test-btn" onclick="closeChat()">
-          <i class="fas fa-times"></i> Затвори Чата
+          <i class="fas fa-times"></i> {{ _('Затвори Чата') }}
         </button>
       </div>
 
       <!-- Статистики -->
       <div class="test-card">
-        <h3><i class="fas fa-chart-line"></i> Статистики</h3>
+        <h3><i class="fas fa-chart-line"></i> {{ _('Статистики') }}</h3>
         <div class="row">
           <div class="col-md-3">
             <div class="text-center p-3">
               <h4 class="text-primary" id="total-messages">0</h4>
-              <small>Общо съобщения</small>
+              <small>{{ _('Общо съобщения') }}</small>
             </div>
           </div>
           <div class="col-md-3">
             <div class="text-center p-3">
               <h4 class="text-success" id="faq-matches">0</h4>
-              <small>FAQ отговори</small>
+              <small>{{ _('FAQ отговори') }}</small>
             </div>
           </div>
           <div class="col-md-3">
             <div class="text-center p-3">
               <h4 class="text-warning" id="fallback-responses">0</h4>
-              <small>Fallback отговори</small>
+              <small>{{ _('Fallback отговори') }}</small>
             </div>
           </div>
           <div class="col-md-3">
             <div class="text-center p-3">
               <h4 class="text-info" id="session-id">-</h4>
-              <small>Session ID</small>
+              <small>{{ _('Session ID') }}</small>
             </div>
           </div>
         </div>
@@ -339,7 +341,7 @@
         // Малко изчакване за чатбота да се зареди
         setTimeout(() => {
           showResult(
-            "🚀 Тестовата страница е заредена! Можете да започнете тестването.",
+            "🚀 {{ _('Тестовата страница е заредена! Можете да започнете тестването.') }}",
             "info",
           );
         }, 1000);

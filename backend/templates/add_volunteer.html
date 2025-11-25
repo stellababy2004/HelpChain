@@ -1,40 +1,60 @@
 {% extends "base.html" %} {% block content %}
 <div class="container mt-5">
-  <h2>Добави доброволец</h2>
+  <h2>{{ _('Добави доброволец') }}</h2>
   <form method="post">
     <div class="mb-3">
-      <label>Име</label>
-      <input type="text" name="name" class="form-control" required />
+      <label>{{ _('Име') }}</label>
+      <input
+        type="text"
+        name="name"
+        class="form-control"
+        required
+        title="{{ _('Име') }}"
+        placeholder="{{ _('Въведете име') }}"
+      />
     </div>
     <div class="mb-3">
-      <label>Имейл</label>
-      <input type="email" name="email" class="form-control" required />
+      <label>{{ _('Имейл') }}</label>
+      <input
+        type="email"
+        name="email"
+        class="form-control"
+        required
+        title="{{ _('Имейл') }}"
+        placeholder="{{ _('Въведете имейл') }}"
+      />
     </div>
     <div class="mb-3">
-      <label>Телефон</label>
-      <input type="text" name="phone" class="form-control" />
+      <label>{{ _('Телефон') }}</label>
+      <input
+        type="text"
+        name="phone"
+        class="form-control"
+        title="{{ _('Телефон') }}"
+        placeholder="{{ _('Въведете телефон') }}"
+      />
     </div>
     <div class="mb-3">
-      <label>Локация</label>
+      <label>{{ _('Локация') }}</label>
       <input
         type="text"
         name="location"
         class="form-control"
-        placeholder="Град или регион"
+        placeholder="{{ _('Град или регион') }}"
       />
     </div>
     <div class="mb-3">
-      <label>Умения</label>
+      <label>{{ _('Умения') }}</label>
       <input
         type="text"
         name="skills"
         class="form-control"
-        placeholder="Например: медицинска помощ, транспорт, образование"
+        placeholder="{{ _('Например: медицинска помощ, транспорт, образование') }}"
       />
     </div>
-    <button type="submit" class="btn btn-success">Добави</button>
+    <button type="submit" class="btn btn-success">{{ _('Добави') }}</button>
     <a href="{{ url_for('admin_volunteers') }}" class="btn btn-primary mb-3"
-      >Доброволци</a
+      >{{ _('Доброволци') }}</a
     >
   </form>
 </div>

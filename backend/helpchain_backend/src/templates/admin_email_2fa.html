@@ -34,7 +34,9 @@ endblock %} {% block content %}
           <form action="/admin/email_2fa" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <div class="mb-3">
-              <label for="code" class="form-label">Код за верификация</label>
+              <label for="code" class="form-label"
+                >{{ _('Код за верификация') }}</label
+              >
               <input
                 type="text"
                 class="form-control form-control-lg text-center"
@@ -46,11 +48,11 @@ endblock %} {% block content %}
                 placeholder="000000"
                 style="font-size: 1.5rem; letter-spacing: 0.5rem"
               />
-              <div class="form-text">Кодът е валиден 10 минути.</div>
+              <div class="form-text">{{ _('Кодът е валиден 10 минути.') }}</div>
             </div>
             <div class="d-grid">
               <button type="submit" class="btn btn-primary btn-lg">
-                <i class="fas fa-check"></i> Верифицирай и влез
+                <i class="fas fa-check"></i> {{ _('Верифицирай и влез') }}
               </button>
             </div>
           </form>
@@ -60,7 +62,7 @@ endblock %} {% block content %}
               href="{{ url_for('admin_login') }}"
               class="btn btn-outline-secondary"
             >
-              <i class="fas fa-arrow-left"></i> Обратно към вход
+              <i class="fas fa-arrow-left"></i> {{ _('Обратно към вход') }}
             </a>
           </div>
         </div>

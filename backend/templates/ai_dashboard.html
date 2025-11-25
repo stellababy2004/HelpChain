@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <title>{{ _('AI Dashboard') }} | {{ _('HelpChain Admin') }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css') }}"
+    />
+
+    <!-- Всички JS и CSS блокове са изнесени във външни файлове. HTML-ът е напълно почистен от видим код. -->
+    <!-- Премахнат дублиращ KPI блок -->
+  </head>
+  <body>
+    <div class="row mb-4">
+      <!-- KPI Cards Row -->
+      <div class="col-md-12 mb-3">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('Заявки (ДНЕС)') }}</div>
+              <div class="kpi-value" id="kpi-today">0</div>
+              <div class="kpi-sub" id="kpi-today-delta"></div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('Заявки (СЕДМИЦА)') }}</div>
+              <div class="kpi-value" id="kpi-week">0</div>
+              <div class="kpi-sub" id="kpi-week-trend"></div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('Заявки (МЕСЕЦ)') }}</div>
+              <div class="kpi-value" id="kpi-month">0</div>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('AI %') }}</div>
+              <div class="kpi-value" id="kpi-ai">0%</div>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('FAQ %') }}</div>
+              <div class="kpi-value" id="kpi-faq">0%</div>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('Human %') }}</div>
+              <div class="kpi-value" id="kpi-human">0%</div>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('Средно време (сек)') }}</div>
+              <div class="kpi-value" id="kpi-latency">0</div>
+              <span class="badge" id="kpi-latency-badge"></span>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('Успешни заявки') }}</div>
+              <div class="kpi-value" id="kpi-success">0%</div>
+              <span class="badge" id="kpi-success-badge"></span>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="card p-3 h-100">
+              <div class="kpi-title">{{ _('AI статус') }}</div>
+              <div class="kpi-value pulse" id="ai-status">
+                <span class="status-online">Online</span>
+              </div>
+              <div class="kpi-sub" id="ai-latency"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- KPI Distribution Row -->
+      <div class="col-md-4">
+        <div class="card p-3 mb-3">
+          <div class="kpi-title">{{ _('Разпределение по канал') }}</div>
+          <div class="skeleton-chart" id="donutChart-skel"></div>
+          <canvas id="donutChart" height="120" class="canvas-hide"></canvas>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div
+          class="skeleton-chart skeleton-chart-80"
+          id="requestsChart-skel"
+        ></div>
+        <canvas id="requestsChart" height="80" class="canvas-hide"></canvas>
+        <div class="card p-3 mt-4">
+          <div class="kpi-title">
+            {{ _('Средно време за отговор по канал') }}
+          </div>
+          <div
+            class="skeleton-chart skeleton-chart-60"
+            id="barChart-skel"
+          ></div>
+          <canvas id="barChart" height="60" class="canvas-hide"></canvas>
+        </div>
+      </div>
+      <!-- Таб навигация: Заявки / Feedback -->
+      <div class="container mb-4">
+        <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="requests-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#requests-panel"
+              type="button"
+              role="tab"
+              aria-controls="requests-panel"
+              aria-selected="true"
+            >
+              {{ _('Заявки') }}
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="feedback-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#feedback-panel"
+              type="button"
+              role="tab"
+              aria-controls="feedback-panel"
+              aria-selected="false"
+            >
+              {{ _('Feedback') }}
+            </button>
+          </li>
+        </ul>
+        <!-- Тук ще има бутон за експорт -->
+
+        <div class="table-responsive">
+          <table
+            class="table table-dark table-striped align-middle"
+            id="requests-table"
+            aria-label="Таблица със заявки"
+          >
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">{{ _('Заглавие') }}</th>
+                <th scope="col">{{ _('Категория') }}</th>
+                <th scope="col">{{ _('Град') }}</th>
+                <th scope="col">{{ _('Статус') }}</th>
+                <th scope="col">{{ _('Приоритет') }}</th>
+                <th scope="col">{{ _('Дата') }}</th>
+                <th scope="col">{{ _('Действия') }}</th>
+              </tr>
+            </thead>
+            <tbody id="requests-table-body">
+              <!-- Динамично съдържание -->
+            </tbody>
+          </table>
+        </div>
+        <!-- Пагинация (по избор) -->
+        <nav
+          id="requests-pagination"
+          aria-label="{{ _('Пагинация на заявки') }}"
+        ></nav>
+      </div>
+      <!-- Таб: Feedback (старият панел) -->
+      <div
+        class="tab-pane fade"
+        id="feedback-panel"
+        role="tabpanel"
+        aria-labelledby="feedback-tab"
+      >
+        <div class="card p-4 kpi-card-bg">
+          <h4 class="mb-3">
+            {{ _('Качество на отговорите') }}
+            <span class="fs-6 text-secondary">({{ _('Feedback Loop') }})</span>
+          </h4>
+          <!-- Бързи филтри -->
+          <form
+            id="fb-filters"
+            class="row g-2 mb-3 align-items-end"
+            autocomplete="off"
+            aria-label="Филтри за feedback"
+          >
+            <div class="col-md-2">
+              <label class="form-label" for="fb-filter-rating"
+                >{{ _('Рейтинг') }}</label
+              >
+              <select
+                class="form-select"
+                id="fb-filter-rating"
+                aria-label="Рейтинг"
+                title="Изберете рейтинг"
+              >
+                <option value="">{{ _('Всички') }}</option>
+                <option value="1-2">1–2</option>
+                <option value="3-4">3–4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label" for="fb-filter-language"
+                >{{ _('Език') }}</label
+              >
+              <select
+                class="form-select"
+                id="fb-filter-language"
+                aria-label="Език"
+                title="Изберете език"
+              ></select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label" for="fb-filter-category"
+                >{{ _('Категория') }}</label
+              >
+              <select
+                class="form-select"
+                id="fb-filter-category"
+                aria-label="Категория"
+                title="Изберете категория"
+              ></select>
+            </div>
+          </form>
+          <!-- Alert за проблемни категории -->
+          <div id="fb-alert-problem" class="alert alert-warning d-none mb-3">
+            {{ _('Проблемни категории') }}
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="kpi-title">{{ _('Среден рейтинг') }}</div>
+              <div class="kpi-value" id="fb-avg-rating">-</div>
+            </div>
+            <div class="col-md-8">
+              <canvas id="fb-bar-lang" height="60"></canvas>
+              <canvas id="fb-bar-cat" height="60" class="mt-2"></canvas>
+              <canvas id="fb-bar-model" height="60" class="mt-2"></canvas>
+            </div>
+          </div>
+          <!-- Таблица с feedback -->
+          <div class="table-responsive">
+            <table
+              class="table table-dark table-striped align-middle"
+              id="fb-table"
+              aria-label="Таблица с обратна връзка"
+            >
+              <thead>
+                <tr>
+                  <th scope="col">{{ _('Рейтинг') }}</th>
+                  <th scope="col">{{ _('Език') }}</th>
+                  <th scope="col">{{ _('Категория') }}</th>
+                  <th scope="col">{{ _('Тип потребител') }}</th>
+                  <th scope="col">{{ _('Модел') }}</th>
+                  <th scope="col">{{ _('Време') }}</th>
+                  <th scope="col">{{ _('Преглед') }}</th>
+                  <th scope="col" aria-label="{{ _('Действия') }}"></th>
+                </tr>
+              </thead>
+              <tbody id="fb-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- end main dashboard container -->
+    </div>
+    <!-- Всички JS блокове са изнесени във външния dashboard.js. HTML-ът е почистен от видим JS код. -->
+    <script src="/static/dashboard.js"></script>
+  </body>
+</html>

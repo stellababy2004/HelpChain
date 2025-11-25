@@ -1,49 +1,53 @@
 {% extends "base.html" %} {% block title %}Админ заявки | HelpChain.live{%
 endblock %} {% block content %}
 <div class="container mt-5">
-  <h2 class="mb-4 text-primary text-center">Админски заявки</h2>
+  <h2 class="mb-4 text-primary text-center">{{ _('Админски заявки') }}</h2>
   <!-- Форма за филтриране -->
   <form id="filter-form" class="mb-4 d-flex flex-wrap gap-3 align-items-end">
     <div>
-      <label for="category" class="form-label">Категория</label>
+      <label for="category" class="form-label">{{ _('Категория') }}</label>
       <select id="category" name="category" class="form-select">
-        <option value="">Всички</option>
-        <option value="Медицинска">Медицинска</option>
-        <option value="Транспорт">Транспорт</option>
-        <option value="Храна">Храна</option>
+        <option value="">{{ _('Всички') }}</option>
+        <option value="Медицинска">{{ _('Медицинска') }}</option>
+        <option value="Транспорт">{{ _('Транспорт') }}</option>
+        <option value="Храна">{{ _('Храна') }}</option>
         <!-- Добавете още категории при нужда -->
       </select>
     </div>
     <div>
-      <label for="status" class="form-label">Статус</label>
+      <label for="status" class="form-label">{{ _('Статус') }}</label>
       <select id="status" name="status" class="form-select">
-        <option value="">Всички</option>
-        <option value="pending">В изчакване</option>
-        <option value="approved">Одобрена</option>
-        <option value="rejected">Отхвърлена</option>
+        <option value="">{{ _('Всички') }}</option>
+        <option value="pending">{{ _('В изчакване') }}</option>
+        <option value="approved">{{ _('Одобрена') }}</option>
+        <option value="rejected">{{ _('Отхвърлена') }}</option>
       </select>
     </div>
     <div>
-      <label for="date" class="form-label">Дата</label>
+      <label for="date" class="form-label">{{ _('Дата') }}</label>
       <input type="date" id="date" name="date" class="form-control" />
     </div>
-    <button type="submit" class="btn btn-primary">Филтрирай</button>
+    <button type="submit" class="btn btn-primary">{{ _('Филтрирай') }}</button>
   </form>
   <div class="table-responsive">
     <table class="table table-modern">
       <thead>
         <tr>
           <th class="sortable" data-column="id" data-order="asc">ID</th>
-          <th class="sortable" data-column="name" data-order="asc">Име</th>
-          <th class="sortable" data-column="email" data-order="asc">Имейл</th>
+          <th class="sortable" data-column="name" data-order="asc">
+            {{ _('Име') }}
+          </th>
+          <th class="sortable" data-column="email" data-order="asc">
+            {{ _('Имейл') }}
+          </th>
           <th class="sortable" data-column="category" data-order="asc">
-            Категория
+            {{ _('Категория') }}
           </th>
           <th class="sortable" data-column="location" data-order="asc">
-            Локация
+            {{ _('Локация') }}
           </th>
           <th class="sortable" data-column="created_at" data-order="asc">
-            Дата
+            {{ _('Дата') }}
           </th>
         </tr>
       </thead>

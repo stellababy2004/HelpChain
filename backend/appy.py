@@ -141,7 +141,7 @@ if __name__ == "__main__":
     raise SystemExit(1)
 
 # Импорт на _dispatch_email за изпращане на имейли
-from backend._dispatch_email import _dispatch_email
+from _dispatch_email import _dispatch_email
 
 import sys as _early_sys
 

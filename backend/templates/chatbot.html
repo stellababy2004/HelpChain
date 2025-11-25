@@ -13,181 +13,14 @@
       rel="stylesheet"
     />
     <style>
-      body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        min-height: 100vh;
-      }
-
-      .chat-container {
-        max-width: 800px;
-        margin: 2rem auto;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-      }
-
-      .chat-header {
-        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-        color: white;
-        padding: 1.5rem;
-        text-align: center;
-      }
-
-      .chat-header h2 {
-        margin: 0;
-        font-size: 1.5rem;
-      }
-
-      .chat-header p {
-        margin: 0.5rem 0 0 0;
-        opacity: 0.9;
-        font-size: 0.9rem;
-      }
-
-      .chat-messages {
-        height: 500px;
-        overflow-y: auto;
-        padding: 1rem;
-        background: #f8f9fa;
-      }
-
-      .message {
-        margin-bottom: 1rem;
-        padding: 0.75rem 1rem;
-        border-radius: 18px;
-        max-width: 70%;
-        word-wrap: break-word;
-      }
-
-      .message.user {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        margin-left: auto;
-        text-align: right;
-      }
-
-      .message.bot {
-        background: white;
-        border: 1px solid #e9ecef;
-        color: #333;
-      }
-
-      .message .timestamp {
-        font-size: 0.75rem;
-        opacity: 0.7;
-        margin-top: 0.25rem;
-      }
-
-      .chat-input {
-        padding: 1rem;
-        background: white;
-        border-top: 1px solid #e9ecef;
-        display: flex;
-        gap: 0.5rem;
-      }
-
-      .message-input-container {
-        flex: 1;
-        display: flex;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        border-radius: 25px;
-        overflow: hidden;
-      }
-
-      .form-control {
-        border: none;
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-      }
-
-      .form-control:focus {
-        box-shadow: none;
-      }
-
-      .btn-send {
-        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0 25px 25px 0;
-        color: white;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-        font-weight: 500;
-      }
-
-      .btn-send:hover {
-        background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-      }
-
-      .typing-indicator {
-        display: none;
-        padding: 0.5rem 1rem;
-        color: #666;
-        font-style: italic;
-      }
-
-      .typing-indicator i {
-        margin-right: 0.5rem;
-      }
-
-      .navbar {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      }
-
-      .navbar-brand {
-        color: white !important;
-        font-weight: bold;
-      }
-
-      .navbar-nav .nav-link {
-        color: rgba(255, 255, 255, 0.8) !important;
-      }
-
-      .navbar-nav .nav-link:hover {
-        color: white !important;
-      }
-
-      .features {
-        padding: 2rem 0;
-        background: rgba(255, 255, 255, 0.05);
-      }
-
-      .feature-card {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-      }
-
-      .feature-card h5 {
-        color: white;
-        margin-bottom: 0.5rem;
-      }
-
-      .feature-card p {
-        opacity: 0.9;
-        margin: 0;
-      }
-
       @media (max-width: 768px) {
         .chat-container {
           margin: 1rem;
           max-width: none;
         }
-
         .chat-messages {
           height: 400px;
         }
-
         .message {
           max-width: 85%;
         }
@@ -206,6 +39,7 @@
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
+          title="{{ _('Меню') }}"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -213,17 +47,18 @@
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <a class="nav-link" href="/"
-                ><i class="fas fa-home"></i> Начало</a
+                ><i class="fas fa-home"></i> {{ _('Начало') }}</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/volunteer_register"
-                ><i class="fas fa-user-plus"></i> Стани доброволец</a
+                ><i class="fas fa-user-plus"></i> {{ _('Стани доброволец') }}</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/submit_request"
-                ><i class="fas fa-plus-circle"></i> Заявка за помощ</a
+                ><i class="fas fa-plus-circle"></i> {{ _('Заявка за помощ')
+                }}</a
               >
             </li>
           </ul>
@@ -237,23 +72,25 @@
         <div class="row">
           <div class="col-md-4">
             <div class="feature-card">
-              <h5><i class="fas fa-brain"></i> Интелигентни отговори</h5>
+              <h5>
+                <i class="fas fa-brain"></i> {{ _('Интелигентни отговори') }}
+              </h5>
               <p>
-                AI асистентът разбира вашите нужди и предоставя персонализирана
-                помощ
+                {{ _('AI асистентът разбира вашите нужди и предоставя
+                персонализирана помощ') }}
               </p>
             </div>
           </div>
           <div class="col-md-4">
             <div class="feature-card">
-              <h5><i class="fas fa-clock"></i> 24/7 наличност</h5>
-              <p>Получете помощ по всяко време на денонощието</p>
+              <h5><i class="fas fa-clock"></i> {{ _('24/7 наличност') }}</h5>
+              <p>{{ _('Получете помощ по всяко време на денонощието') }}</p>
             </div>
           </div>
           <div class="col-md-4">
             <div class="feature-card">
-              <h5><i class="fas fa-language"></i> На български</h5>
-              <p>Комуникация на родния език за по-добро разбиране</p>
+              <h5><i class="fas fa-language"></i> {{ _('На български') }}</h5>
+              <p>{{ _('Комуникация на родния език за по-добро разбиране') }}</p>
             </div>
           </div>
         </div>
@@ -264,43 +101,175 @@
     <div class="container">
       <div class="chat-container">
         <div class="chat-header">
-          <h2><i class="fas fa-robot"></i> HelpChain AI Асистент</h2>
-          <p>Задайте въпрос или поискайте помощ - аз съм тук да ви помогна!</p>
+          <h2><i class="fas fa-robot"></i> {{ _('HelpChain AI Асистент') }}</h2>
+          <p>
+            {{ _('Задайте въпрос или поискайте помощ - аз съм тук да ви
+            помогна!') }}
+          </p>
         </div>
-
         <div class="chat-messages" id="chatMessages">
           <div class="message bot">
-            <strong>HelpChain AI:</strong> Здравейте! Аз съм AI асистентът на
-            HelpChain. Мога да ви помогна с:
-            <ul style="margin: 0.5rem 0; padding-left: 1.5rem">
-              <li>Информация за доброволчество</li>
-              <li>Подаване на заявки за помощ</li>
-              <li>Отговори на често задавани въпроси</li>
-              <li>Съвети за използване на платформата</li>
+            <strong>{{ _('HelpChain AI:') }}</strong> {{ _('Здравейте! Аз съм AI
+            асистентът на HelpChain. Мога да ви помогна с:') }}
+            <ul class="chatbot-list">
+              <li>{{ _('Информация за доброволчество') }}</li>
+              <li>{{ _('Подаване на заявки за помощ') }}</li>
+              <li>{{ _('Отговори на често задавани въпроси') }}</li>
+              <li>{{ _('Съвети за използване на платформата') }}</li>
             </ul>
-            Как мога да ви помогна днес?
-            <div class="timestamp">сейчас</div>
+            {{ _('Как мога да ви помогна днес?') }}
+            <div class="timestamp">{{ _('сега') }}</div>
           </div>
         </div>
-
         <div class="typing-indicator" id="typingIndicator">
           <i class="fas fa-circle"></i>
           <i class="fas fa-circle"></i>
           <i class="fas fa-circle"></i>
-          AI пише...
+          {{ _('AI пише...') }}
         </div>
+      </div>
+    </div>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script>
+      class ChatBot {
+        constructor() {
+          this.sessionId = this.generateSessionId();
+          this.messageInput = document.getElementById("messageInput");
+          this.sendButton = document.getElementById("sendButton");
+          this.chatMessages = document.getElementById("chatMessages");
+          this.typingIndicator = document.getElementById("typingIndicator");
+          this.init();
+        }
+        init() {
+          if (this.sendButton) {
+            this.sendButton.addEventListener("click", () => this.sendMessage());
+          }
+          if (this.messageInput) {
+            this.messageInput.addEventListener("keypress", (e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+              }
+            });
+            this.messageInput.focus();
+          }
+        }
+        generateSessionId() {
+          return (
+            "session_" +
+            Date.now() +
+            "_" +
+            Math.random().toString(36).substr(2, 9)
+          );
+        }
+        async sendMessage() {
+          const message = this.messageInput.value.trim();
+          if (!message) return;
+          this.addMessage(message, "user");
+          this.messageInput.value = "";
+          this.showTyping();
+          try {
+            const response = await fetch("/api/chatbot/message", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ message, session_id: this.sessionId }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+              this.addMessage(data.response, "bot");
+            } else {
+              this.addMessage(
+                "Извинявам се, възникна грешка. Моля, опитайте пак.",
+                "bot",
+              );
+            }
+          } catch (error) {
+            this.addMessage(
+              "Извинявам се, няма връзка със сървъра. Моля, опитайте по-късно.",
+              "bot",
+            );
+          }
+          this.hideTyping();
+        }
+        addMessage(text, type) {
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `message ${type}`;
+          const content =
+            type === "bot" ? `<strong>HelpChain AI:</strong> ${text}` : text;
+          messageDiv.innerHTML = content;
+          const timestamp = document.createElement("div");
+          timestamp.className = "timestamp";
+          timestamp.textContent = moment().format("HH:mm");
+          messageDiv.appendChild(timestamp);
+          this.chatMessages.appendChild(messageDiv);
+          this.scrollToBottom();
+        }
+        showTyping() {
+          this.typingIndicator.style.display = "block";
+          this.scrollToBottom();
+        }
+        hideTyping() {
+          this.typingIndicator.style.display = "none";
+        }
+        scrollToBottom() {
+          this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+        }
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        new ChatBot();
+      });
+    </script>
+
+    <!-- Chat Interface -->
+    <div class="container">
+      <div class="chat-container">
+        <div class="chat-header">
+          <h2><i class="fas fa-robot"></i> {{ _('HelpChain AI Асистент') }}</h2>
+          <p>
+            {{ _('Задайте въпрос или поискайте помощ - аз съм тук да ви
+            помогна!') }}
+          </p>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="message bot">
+            <strong>{{ _('HelpChain AI:') }}</strong> {{ _('Здравейте! Аз съм AI
+            асистентът на HelpChain. Мога да ви помогна с:') }}
+            <ul class="chatbot-list">
+              <li>{{ _('Информация за доброволчество') }}</li>
+              <li>{{ _('Подаване на заявки за помощ') }}</li>
+              <li>{{ _('Отговори на често задавани въпроси') }}</li>
+              <li>{{ _('Съвети за използване на платформата') }}</li>
+            </ul>
+            {{ _('Как мога да ви помогна днес?') }}
+            <div class="timestamp">{{ _('сега') }}</div>
+          </div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+          <i class="fas fa-circle"></i>
+          <i class="fas fa-circle"></i>
+          <i class="fas fa-circle"></i>
+          {{ _('AI пише...') }}
+        </div>
         <div class="chat-input">
           <div class="message-input-container">
             <input
               type="text"
               class="form-control"
               id="messageInput"
-              placeholder="Напишете вашето съобщение тук..."
+              placeholder="{{ _('Напишете вашето съобщение тук...') }}"
               maxlength="500"
             />
-            <button class="btn btn-send" id="sendButton" type="button">
-              <i class="fas fa-paper-plane"></i> Изпрати
+            <button
+              class="btn btn-send"
+              id="sendButton"
+              type="button"
+              aria-label="{{ _('Изпрати съобщение') }}"
+              title="{{ _('Изпрати') }}"
+            >
+              <i class="fas fa-paper-plane"></i> {{ _('Изпрати') }}
             </button>
           </div>
         </div>

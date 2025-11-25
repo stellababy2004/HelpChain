@@ -1,10 +1,10 @@
 {% extends "base.html" %} {% block title %}Настройка 2FA | HelpChain.live{%
 endblock %} {% block content %}
 <div class="container mt-5">
-  <h2 class="mb-4">Настройка на двуфакторна автентикация</h2>
+  <h2 class="mb-4">{{ _('Настройка на двуфакторна автентикация') }}</h2>
   <p>
-    Сканирайте QR кода с вашето 2FA приложение (например Google Authenticator) и
-    въведете генерирания код.
+    {{ _('Сканирайте QR кода с вашето 2FA приложение (например Google
+    Authenticator) и въведете генерирания код.') }}
   </p>
   {% with messages = get_flashed_messages(with_categories=true) %} {% if
   messages %} {% for category, message in messages %}
@@ -32,7 +32,9 @@ endblock %} {% block content %}
   <form action="/admin/2fa/setup" method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="mb-3">
-      <label for="token" class="form-label">2FA Код за верификация</label>
+      <label for="token" class="form-label"
+        >{{ _('2FA Код за верификация') }}</label
+      >
       <input
         type="text"
         class="form-control"
@@ -43,12 +45,14 @@ endblock %} {% block content %}
         pattern="[0-9]{6}"
       />
     </div>
-    <button type="submit" class="btn btn-primary">Активирай 2FA</button>
+    <button type="submit" class="btn btn-primary">
+      {{ _('Активирай 2FA') }}
+    </button>
   </form>
 
   <div class="mt-3">
     <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary"
-      >Отказ</a
+      >{{ _('Отказ') }}</a
     >
   </div>
 </div>

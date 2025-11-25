@@ -179,9 +179,13 @@ vine==5.1.0
     #   kombu
 wcwidth==0.2.14
     # via prompt-toolkit
-werkzeug==2.3.7
+werkzeug>=3.0.6
     # via
     #   flask
     #   flask-login
 wsproto==1.2.0
     # via simple-websocket
+flask
+transformers
+langdetect
+sentence-transformers

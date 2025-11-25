@@ -23,6 +23,71 @@ fake = Faker("fr_FR")  # French locale
 
 
 def create_test_database():
+    """
+    Създава тестова база данни с разнообразни данни
+    """
+    # Изтрий всички тестови данни за чисто seed-ване
+    print("🧹 Изчистване на тестови данни...")
+    from models_with_analytics import AnalyticsEvent, Feedback
+
+    with app.app_context():
+        Volunteer.query.filter(Volunteer.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        Feedback.query.filter(Feedback.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        HelpRequest.query.filter(HelpRequest.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        AnalyticsEvent.query.filter(
+            AnalyticsEvent.user_session.like("test_session_%")
+        ).delete(synchronize_session=False)
+        db.session.commit()
+        print("✅ Всички тестови данни са изтрити.")
+        print("📝 Създаване на тестови Feedback записи...")
+        feedback_samples = []
+        feedback_languages = ["bg", "en", "ru"]
+        feedback_categories = [
+            "faq/general",
+            "ai/medical",
+            "ai/legal",
+            "ai/transport",
+            "human/support",
+        ]
+        feedback_models = ["openai", "gemini", "custom", "gpt-3.5", "gpt-4"]
+        feedback_labels = ["positive", "neutral", "negative"]
+        for i in range(60):
+            lang = random.choice(feedback_languages)
+            cat = random.choice(feedback_categories)
+            model = random.choice(feedback_models)
+            label = random.choices(feedback_labels, weights=[0.5, 0.2, 0.3])[0]
+            score = {
+                "positive": random.uniform(4.0, 5.0),
+                "neutral": random.uniform(2.5, 3.5),
+                "negative": random.uniform(1.0, 2.4),
+            }[label]
+            fb = Feedback(
+                name=f"[TEST] {fake.first_name()} {fake.last_name()}",
+                email=f"test.feedback{i+1}@helpchain-test.bg",
+                message=f"[TEST] {fake.sentence(nb_words=10)} {label} feedback for {cat} ({model})",
+                timestamp=fake.date_time_between(start_date="-30d", end_date="now"),
+                sentiment_score=score,
+                sentiment_label=label,
+                sentiment_confidence=round(random.uniform(0.7, 1.0), 2),
+                ai_processed=True,
+                ai_processing_time=random.uniform(0.1, 1.5),
+                ai_provider=model,
+                user_type=lang,
+                user_id=None,
+                page_url=cat,
+                user_agent="TestUserAgent/1.0",
+                ip_address=fake.ipv4(),
+            )
+            feedback_samples.append(fb)
+            db.session.add(fb)
+        db.session.commit()
+        print(f"✅ Създадени {len(feedback_samples)} тестови Feedback записа")
     """Създава тестова база данни с разнообразни данни"""
 
     with app.app_context():
@@ -100,10 +165,6 @@ def create_test_database():
             volunteer = Volunteer(
                 name=f"[TEST] {fake.first_name()} {fake.last_name()}",
                 email=f"test.volunteer{i + 1}@helpchain-test.fr",
-                phone=fake.phone_number()[:15],
-                location=random.choice(french_cities),
-                skills=", ".join(random.sample(skills_list, random.randint(2, 5))),
-                is_active=random.choice([True, True, True, False]),  # 75% actifs
             )
             volunteers.append(volunteer)
             db.session.add(volunteer)
@@ -189,10 +250,8 @@ def create_test_database():
             help_request = HelpRequest(
                 name=f"[TEST] {fake.first_name()} {fake.last_name()}",
                 email=f"test.requester{i + 1}@helpchain-test.bg",
-                phone=fake.phone_number()[:15],
                 title=title,
                 description=f"[TEST] {fake.text(max_nb_chars=200)}",
-                message=f"[TEST] {fake.text(max_nb_chars=200)}",
                 priority=random.choice(["low", "normal", "urgent"]),
                 status=random.choice(request_statuses),
             )

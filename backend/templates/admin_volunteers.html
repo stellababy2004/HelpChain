@@ -2,13 +2,13 @@
 HelpChain.live{% endblock %} {% block content %}
 <div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-users"></i> Управление на доброволци</h2>
+    <h2><i class="fas fa-users"></i> {{ _('Управление на доброволци') }}</h2>
     <div>
       <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Назад към админ панел
+        <i class="fas fa-arrow-left"></i> {{ _('Назад към админ панел') }}
       </a>
       <a href="{{ url_for('add_volunteer') }}" class="btn btn-success">
-        <i class="fas fa-plus"></i> Добави доброволец
+        <i class="fas fa-plus"></i> {{ _('Добави доброволец') }}
       </a>
     </div>
   </div>
@@ -22,29 +22,31 @@ HelpChain.live{% endblock %} {% block content %}
         class="row g-3"
       >
         <div class="col-md-4">
-          <label for="search" class="form-label">Търсене</label>
+          <label for="search" class="form-label">{{ _('Търсене') }}</label>
           <input
             type="text"
             class="form-control"
             id="search"
             name="search"
             value="{{ search }}"
-            placeholder="Име, имейл или умения"
+            placeholder="{{ _('Име, имейл или умения') }}"
           />
         </div>
         <div class="col-md-3">
-          <label for="location" class="form-label">Локация</label>
+          <label for="location" class="form-label">{{ _('Локация') }}</label>
           <input
             type="text"
             class="form-control"
             id="location"
             name="location_filter"
             value="{{ location_filter }}"
-            placeholder="Град или район"
+            placeholder="{{ _('Град или район') }}"
           />
         </div>
         <div class="col-md-2">
-          <label for="per_page" class="form-label">На страница</label>
+          <label for="per_page" class="form-label"
+            >{{ _('На страница') }}</label
+          >
           <select class="form-select" id="per_page" name="per_page">
             <option value="10" {% if per_page="" ="10" %}selected{% endif %}>
               10
@@ -59,13 +61,13 @@ HelpChain.live{% endblock %} {% block content %}
         </div>
         <div class="col-md-3 d-flex align-items-end">
           <button type="submit" class="btn btn-primary me-2">
-            <i class="fas fa-search"></i> Търси
+            <i class="fas fa-search"></i> {{ _('Търси') }}
           </button>
           <a
             href="{{ url_for('admin_volunteers') }}"
             class="btn btn-outline-secondary"
           >
-            <i class="fas fa-times"></i> Изчисти
+            <i class="fas fa-times"></i> {{ _('Изчисти') }}
           </a>
         </div>
       </form>
@@ -78,7 +80,7 @@ HelpChain.live{% endblock %} {% block content %}
       <div class="card bg-primary text-white">
         <div class="card-body">
           <h5 class="card-title">{{ total_volunteers }}</h5>
-          <p class="card-text">Общо доброволци</p>
+          <p class="card-text">{{ _('Общо доброволци') }}</p>
         </div>
       </div>
     </div>
@@ -86,7 +88,7 @@ HelpChain.live{% endblock %} {% block content %}
       <div class="card bg-success text-white">
         <div class="card-body">
           <h5 class="card-title">{{ pagination.total }}</h5>
-          <p class="card-text">Показани резултати</p>
+          <p class="card-text">{{ _('Показани резултати') }}</p>
         </div>
       </div>
     </div>
@@ -94,7 +96,7 @@ HelpChain.live{% endblock %} {% block content %}
       <div class="card bg-info text-white">
         <div class="card-body">
           <h5 class="card-title">{{ pagination.page }}</h5>
-          <p class="card-text">Текуща страница</p>
+          <p class="card-text">{{ _('Текуща страница') }}</p>
         </div>
       </div>
     </div>
@@ -102,7 +104,7 @@ HelpChain.live{% endblock %} {% block content %}
       <div class="card bg-warning text-white">
         <div class="card-body">
           <h5 class="card-title">{{ pagination.pages }}</h5>
-          <p class="card-text">Общо страници</p>
+          <p class="card-text">{{ _('Общо страници') }}</p>
         </div>
       </div>
     </div>
@@ -111,7 +113,7 @@ HelpChain.live{% endblock %} {% block content %}
   <!-- Таблица с доброволци -->
   <div class="card">
     <div class="card-header">
-      <h5 class="mb-0">Списък с доброволци</h5>
+      <h5 class="mb-0">{{ _('Списък с доброволци') }}</h5>
     </div>
     <div class="card-body">
       {% if volunteers %}
@@ -126,16 +128,16 @@ HelpChain.live{% endblock %} {% block content %}
                 data-column="name"
                 data-order="asc"
               >
-                Име
+                {{ _('Име') }}
               </th>
-              <th scope="col">Имейл</th>
-              <th scope="col">Телефон</th>
-              <th scope="col">Локация</th>
-              <th scope="col">Умения</th>
-              <th scope="col">Точки</th>
-              <th scope="col">Ниво</th>
-              <th scope="col">Регистриран</th>
-              <th scope="col">Действия</th>
+              <th scope="col">{{ _('Имейл') }}</th>
+              <th scope="col">{{ _('Телефон') }}</th>
+              <th scope="col">{{ _('Локация') }}</th>
+              <th scope="col">{{ _('Умения') }}</th>
+              <th scope="col">{{ _('Точки') }}</th>
+              <th scope="col">{{ _('Ниво') }}</th>
+              <th scope="col">{{ _('Регистриран') }}</th>
+              <th scope="col">{{ _('Действия') }}</th>
             </tr>
           </thead>
           <tbody id="table-body">
@@ -145,7 +147,10 @@ HelpChain.live{% endblock %} {% block content %}
               <td>
                 <strong>{{ volunteer.name }}</strong>
                 {% if volunteer.streak_days and volunteer.streak_days > 0 %}
-                <span class="badge bg-warning ms-1" title="Активни дни подред">
+                <span
+                  class="badge bg-warning ms-1"
+                  title="{{ _('Активни дни подред') }}"
+                >
                   🔥 {{ volunteer.streak_days }}
                 </span>
                 {% endif %}
@@ -208,7 +213,7 @@ HelpChain.live{% endblock %} {% block content %}
                   <a
                     href="{{ url_for('edit_volunteer', id=volunteer.id) }}"
                     class="btn btn-sm btn-outline-primary"
-                    title="Редактирай"
+                    title="{{ _('Редактирай') }}"
                   >
                     <i class="fas fa-edit"></i>
                   </a>
@@ -216,7 +221,7 @@ HelpChain.live{% endblock %} {% block content %}
                     type="button"
                     class="btn btn-sm btn-outline-danger"
                     onclick="deleteVolunteer({{ volunteer.id }}, {{ volunteer.name | tojson }})"
-                    title="Изтрий"
+                    title="{{ _('Изтрий') }}"
                   >
                     <i class="fas fa-trash"></i>
                   </button>
@@ -239,14 +244,15 @@ HelpChain.live{% endblock %} {% block content %}
               href="{{ url_for('admin_volunteers', page=pagination.prev_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
+              aria-label="{{ _('Предишна страница') }}"
             >
-              <i class="fas fa-chevron-left"></i> Предишна
+              <i class="fas fa-chevron-left"></i> {{ _('Предишна') }}
             </a>
           </li>
           {% else %}
           <li class="page-item disabled">
             <span class="page-link">
-              <i class="fas fa-chevron-left"></i> Предишна
+              <i class="fas fa-chevron-left"></i> {{ _('Предишна') }}
             </span>
           </li>
           {% endif %} {# Compute page range safely without relying on Python
@@ -263,6 +269,7 @@ HelpChain.live{% endblock %} {% block content %}
               href="{{ url_for('admin_volunteers', page=page_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
+              aria-label="{{ _('Страница') }} {{ page_num }}"
             >
               {{ page_num }}
             </a>
@@ -274,14 +281,15 @@ HelpChain.live{% endblock %} {% block content %}
               href="{{ url_for('admin_volunteers', page=pagination.next_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
+              aria-label="{{ _('Следваща страница') }}"
             >
-              Следваща <i class="fas fa-chevron-right"></i>
+              {{ _('Следваща') }} <i class="fas fa-chevron-right"></i>
             </a>
           </li>
           {% else %}
           <li class="page-item disabled">
             <span class="page-link">
-              Следваща <i class="fas fa-chevron-right"></i>
+              {{ _('Следваща') }} <i class="fas fa-chevron-right"></i>
             </span>
           </li>
           {% endif %}
@@ -290,14 +298,14 @@ HelpChain.live{% endblock %} {% block content %}
       {% endif %} {% else %}
       <div class="text-center py-5">
         <i class="fas fa-users fa-3x text-muted mb-3"></i>
-        <h5 class="text-muted">Няма намерени доброволци</h5>
+        <h5 class="text-muted">{{ _('Няма намерени доброволци') }}</h5>
         <p class="text-muted">
-          {% if search or location_filter %} Няма доброволци, отговарящи на
-          зададените критерии за търсене. {% else %} Все още няма регистрирани
-          доброволци. {% endif %}
+          {% if search or location_filter %} {{ _('Няма доброволци, отговарящи
+          на зададените критерии за търсене.') }} {% else %} {{ _('Все още няма
+          регистрирани доброволци.') }} {% endif %}
         </p>
         <a href="{{ url_for('add_volunteer') }}" class="btn btn-success">
-          <i class="fas fa-plus"></i> Добави първия доброволец
+          <i class="fas fa-plus"></i> {{ _('Добави първия доброволец') }}
         </a>
       </div>
       {% endif %}
@@ -308,7 +316,7 @@ HelpChain.live{% endblock %} {% block content %}
   {% if volunteers %}
   <div class="card mt-4">
     <div class="card-header">
-      <h6 class="mb-0">Експорт на данни</h6>
+      <h6 class="mb-0">{{ _('Експорт на данни') }}</h6>
     </div>
     <div class="card-body">
       <div class="row">
@@ -342,7 +350,7 @@ HelpChain.live{% endblock %} {% block content %}
             class="btn btn-outline-success w-100"
             onclick="printVolunteers()"
           >
-            <i class="fas fa-print"></i> Печат
+            <i class="fas fa-print"></i> {{ _('Печат') }}
           </button>
         </div>
       </div>
@@ -363,7 +371,7 @@ HelpChain.live{% endblock %} {% block content %}
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="deleteModalLabel">
-          Потвърждение за изтриване
+          {{ _('Потвърждение за изтриване') }}
         </h5>
         <button
           type="button"
@@ -374,17 +382,21 @@ HelpChain.live{% endblock %} {% block content %}
       </div>
       <div class="modal-body">
         <p>
-          Сигурни ли сте, че искате да изтриете доброволеца
+          {{ _('Сигурни ли сте, че искате да изтриете доброволеца') }}
           <strong id="volunteerName"></strong>?
         </p>
-        <p class="text-danger">Това действие не може да бъде отменено!</p>
+        <p class="text-danger">
+          {{ _('Това действие не може да бъде отменено!') }}
+        </p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Отказ
+          {{ _('Отказ') }}
         </button>
         <form id="deleteForm" method="post" class="d-inline">
-          <button type="submit" class="btn btn-danger">Изтрий</button>
+          <button type="submit" class="btn btn-danger">
+            {{ _('Изтрий') }}
+          </button>
         </form>
       </div>
     </div>

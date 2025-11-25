@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ room.name }} - HelpChain Чат</title>
+    <title>{{ _(room.name) }} - {{ _('HelpChain Чат') }}</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -334,7 +334,7 @@
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <a href="{{ url_for('chat') }}" class="back-btn">
-              <i class="fas fa-arrow-left"></i> Назад
+              <i class="fas fa-arrow-left"></i> {{ _('Назад') }}
             </a>
           </div>
           <div class="text-center flex-grow-1">
@@ -347,7 +347,7 @@
             <button
               class="participants-toggle"
               onclick="toggleParticipants()"
-              title="Покажи участници"
+              title="{{ _('Покажи участници') }}"
             >
               <i class="fas fa-users"></i>
             </button>
@@ -358,7 +358,7 @@
       <!-- Messages Area -->
       <div class="chat-messages" id="messagesContainer">
         <div id="typingIndicator" class="typing-indicator">
-          <i class="fas fa-circle-notch fa-spin"></i> Пише...
+          <i class="fas fa-circle-notch fa-spin"></i> {{ _('Пише...') }}
         </div>
       </div>
 
@@ -373,7 +373,7 @@
         <button
           class="file-btn"
           onclick="document.getElementById('fileInput').click()"
-          title="Прикачи файл"
+          title="{{ _('Прикачи файл') }}"
         >
           <i class="fas fa-paperclip"></i>
         </button>
@@ -381,7 +381,7 @@
           type="text"
           id="messageInput"
           class="message-input"
-          placeholder="Напишете съобщение..."
+          placeholder="{{ _('Напишете съобщение...') }}"
           maxlength="1000"
         />
         <button
@@ -389,7 +389,7 @@
           id="sendButton"
           onclick="sendMessage()"
           disabled
-          title="Изпрати съобщение"
+          title="{{ _('Изпрати съобщение') }}"
         >
           <i class="fas fa-paper-plane"></i>
         </button>
@@ -398,7 +398,7 @@
 
     <!-- Participants List -->
     <div class="participants-list" id="participantsList">
-      <h5 class="mb-3"><i class="fas fa-users"></i> Участници</h5>
+      <h5 class="mb-3"><i class="fas fa-users"></i> {{ _('Участници') }}</h5>
       <div id="participantsContainer">
         <!-- Participants will be loaded here -->
       </div>

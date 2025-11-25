@@ -3,8 +3,10 @@ Admin{% endblock %} {% block content %}
 <div class="container mt-4">
   <div class="row mb-4">
     <div class="col">
-      <h1 class="display-5 mb-0">🤖 Управление на AI чатбот</h1>
-      <p class="lead text-muted">Управление на AI чатбот и аналитика</p>
+      <h1 class="display-5 mb-0">🤖 {{ _('Управление на AI чатбот') }}</h1>
+      <p class="lead text-muted">
+        {{ _('Управление на AI чатбот и аналитика') }}
+      </p>
     </div>
   </div>
 
@@ -14,13 +16,13 @@ Admin{% endblock %} {% block content %}
       <div class="card border-0 shadow-sm">
         <div class="card-body text-center">
           <div class="display-4 mb-3" id="ai-status-icon">⚙️</div>
-          <h5 class="card-title">AI Status</h5>
-          <p class="card-text" id="ai-status-text">Зареждане...</p>
+          <h5 class="card-title">{{ _('AI статус') }}</h5>
+          <p class="card-text" id="ai-status-text">{{ _('Зареждане...') }}</p>
           <button
             class="btn btn-outline-primary btn-sm"
             onclick="refreshAIStatus()"
           >
-            <i class="fas fa-sync"></i> Обнови
+            <i class="fas fa-sync"></i> {{ _('Обнови') }}
           </button>
         </div>
       </div>
@@ -30,12 +32,13 @@ Admin{% endblock %} {% block content %}
       <div class="card border-0 shadow-sm">
         <div class="card-body text-center">
           <div class="display-4 mb-3">📊</div>
-          <h5 class="card-title">AI Разговори</h5>
+          <h5 class="card-title">{{ _('AI Разговори') }}</h5>
           <p class="card-text">
-            <span id="ai-conversations-count">0</span> AI отговора
+            <span id="ai-conversations-count">0</span> {{ _('AI отговора') }}
           </p>
           <small class="text-muted"
-            >Средна увереност: <span id="avg-confidence">0%</span></small
+            >{{ _('Средна увереност:') }}
+            <span id="avg-confidence">0%</span></small
           >
         </div>
       </div>
@@ -45,12 +48,13 @@ Admin{% endblock %} {% block content %}
       <div class="card border-0 shadow-sm">
         <div class="card-body text-center">
           <div class="display-4 mb-3">⚡</div>
-          <h5 class="card-title">Performance</h5>
+          <h5 class="card-title">{{ _('Производителност') }}</h5>
           <p class="card-text">
-            Средно време: <span id="avg-response-time">0ms</span>
+            {{ _('Средно време:') }} <span id="avg-response-time">0ms</span>
           </p>
           <small class="text-muted"
-            >Tokens използвани: <span id="total-tokens">0</span></small
+            >{{ _('Tokens използвани:') }}
+            <span id="total-tokens">0</span></small
           >
         </div>
       </div>
@@ -63,7 +67,7 @@ Admin{% endblock %} {% block content %}
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-primary text-white">
           <h5 class="mb-0">
-            <i class="fas fa-cog"></i> Конфигурация на AI доставчик
+            <i class="fas fa-cog"></i> {{ _('Конфигурация на AI доставчик') }}
           </h5>
         </div>
         <div class="card-body">
@@ -78,11 +82,11 @@ Admin{% endblock %} {% block content %}
           <hr />
 
           <button class="btn btn-success me-2" onclick="testAIConnections()">
-            <i class="fas fa-plug"></i> Тест връзките
+            <i class="fas fa-plug"></i> {{ _('Тест връзките') }}
           </button>
 
           <button class="btn btn-info" onclick="showAIDemo()">
-            <i class="fas fa-robot"></i> AI Demo
+            <i class="fas fa-robot"></i> {{ _('AI Демо') }}
           </button>
         </div>
       </div>
@@ -92,14 +96,14 @@ Admin{% endblock %} {% block content %}
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-success text-white">
           <h5 class="mb-0">
-            <i class="fas fa-chart-bar"></i> Chatbot Analytics
+            <i class="fas fa-chart-bar"></i> {{ _('Чатбот Аналитика') }}
           </h5>
         </div>
         <div class="card-body">
           <canvas id="responseTypesChart" width="400" height="200"></canvas>
 
           <div class="mt-3">
-            <h6>Най-популярни FAQ:</h6>
+            <h6>{{ _('Най-популярни FAQ:') }}</h6>
             <div id="popular-faqs" class="list-group list-group-flush">
               <!-- FAQ ще се заредят динамично -->
             </div>
@@ -115,7 +119,7 @@ Admin{% endblock %} {% block content %}
       <div class="card border-0 shadow-sm">
         <div class="card-header bg-info text-white">
           <h5 class="mb-0">
-            <i class="fas fa-comments"></i> Последни AI Разговори
+            <i class="fas fa-comments"></i> {{ _('Последни AI Разговори') }}
           </h5>
         </div>
         <div class="card-body">
@@ -123,13 +127,13 @@ Admin{% endblock %} {% block content %}
             <table class="table table-hover">
               <thead>
                 <tr>
-                  <th>Време</th>
-                  <th>Потребител</th>
-                  <th>Въпрос</th>
-                  <th>AI Отговор</th>
-                  <th>Provider</th>
-                  <th>Увереност</th>
-                  <th>Време обработка</th>
+                  <th>{{ _('Време') }}</th>
+                  <th>{{ _('Потребител') }}</th>
+                  <th>{{ _('Въпрос') }}</th>
+                  <th>{{ _('AI Отговор') }}</th>
+                  <th>{{ _('Доставчик') }}</th>
+                  <th>{{ _('Увереност') }}</th>
+                  <th>{{ _('Време обработка') }}</th>
                 </tr>
               </thead>
               <tbody id="ai-conversations-table">
@@ -155,7 +159,7 @@ Admin{% endblock %} {% block content %}
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">
-          <i class="fas fa-robot"></i> AI Chatbot Demo
+          <i class="fas fa-robot"></i> {{ _('AI Chatbot Демо') }}
         </h5>
         <button
           type="button"
@@ -166,39 +170,43 @@ Admin{% endblock %} {% block content %}
       <div class="modal-body">
         <div class="mb-3">
           <label for="demoMessage" class="form-label"
-            >Въведете съобщение за тест:</label
+            >{{ _('Въведете съобщение за тест:') }}</label
           >
           <textarea
             class="form-control"
             id="demoMessage"
             rows="3"
-            placeholder="Напр: Как мога да се регистрирам като доброволец?"
+            placeholder="{{ _('Напр: Как мога да се регистрирам като доброволец?') }}"
           ></textarea>
         </div>
 
         <button class="btn btn-primary" onclick="runAIDemo()">
-          <i class="fas fa-paper-plane"></i> Изпрати
+          <i class="fas fa-paper-plane"></i> {{ _('Изпрати') }}
         </button>
 
         <hr />
 
         <div id="demoResponse" style="display: none">
-          <h6>AI Отговор:</h6>
+          <h6>{{ _('AI Отговор:') }}</h6>
           <div class="alert alert-info" id="demoResponseContent"></div>
 
           <div class="row">
             <div class="col-md-6">
               <small class="text-muted">
-                <strong>Provider:</strong> <span id="demoProvider"></span><br />
-                <strong>Увереност:</strong> <span id="demoConfidence"></span
-                ><br />
-                <strong>Tokens:</strong> <span id="demoTokens"></span>
+                <strong>{{ _('Доставчик:') }}</strong>
+                <span id="demoProvider"></span><br />
+                <strong>{{ _('Увереност:') }}</strong>
+                <span id="demoConfidence"></span><br />
+                <strong>{{ _('Tokens:') }}</strong>
+                <span id="demoTokens"></span>
               </small>
             </div>
             <div class="col-md-6">
               <small class="text-muted">
-                <strong>Model:</strong> <span id="demoModel"></span><br />
-                <strong>Език:</strong> <span id="demoLanguage"></span>
+                <strong>{{ _('Модел:') }}</strong> <span id="demoModel"></span
+                ><br />
+                <strong>{{ _('Език:') }}</strong>
+                <span id="demoLanguage"></span>
               </small>
             </div>
           </div>

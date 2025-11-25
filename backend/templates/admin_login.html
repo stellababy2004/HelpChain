@@ -1,7 +1,7 @@
-{% extends "base.html" %} {% block title %}Вход за админ{% endblock %} {% block
-content %}
+{% extends "base.html" %} {% block title %}{{ _('Вход за админ') }}{% endblock
+%} {% block content %}
 <div class="container mt-5" style="max-width: 400px">
-  <h2 class="mb-4 text-primary">Вход за администратор</h2>
+  <h2 class="mb-4 text-primary">{{ _('Вход за администратор') }}</h2>
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
   {% endif %}
@@ -9,7 +9,7 @@ content %}
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="mb-3">
       <label for="username" class="form-label"
-        >Потребителско име или имейл:</label
+        >{{ _('Потребителско име или имейл:') }}</label
       >
       <input
         type="text"
@@ -19,11 +19,11 @@ content %}
         required
         autofocus
         autocomplete="username"
-        placeholder="admin или admin@helpchain.live"
+        placeholder="{{ _('admin или admin@helpchain.live') }}"
       />
     </div>
     <div class="mb-3">
-      <label for="password" class="form-label">Парола:</label>
+      <label for="password" class="form-label">{{ _('Парола:') }}</label>
       <input
         type="password"
         class="form-control"
@@ -31,10 +31,10 @@ content %}
         name="password"
         required
         autocomplete="current-password"
-        placeholder="Admin12345! (начална)"
+        placeholder="{{ _('Admin12345! (начална)') }}"
       />
     </div>
-    <button type="submit" class="btn btn-primary">Вход</button>
+    <button type="submit" class="btn btn-primary">{{ _('Вход') }}</button>
   </form>
 </div>
 {% endblock %}
