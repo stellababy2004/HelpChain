@@ -116,40 +116,35 @@ try:
                             pass
                     except Exception:
                         pass
-                    # Ensure the module-level `engine`/`db` in backend.models (if present)
-                    # uses the same engine so that in-memory SQLite data is shared
-                    # between the module-scoped session and the Flask app session.
+                    # Configure `backend.models` to use the Flask-SQLAlchemy
+                    # `db` when possible. Prefer calling a dedicated
+                    # `configure_models` function in the models module (Option 2).
                     try:
-                        # Replace module-level engine and reconfigure its scoped_session
-                        if hasattr(_models, "engine"):
+                        configure = getattr(_models, "configure_models", None)
+                        if callable(configure):
                             try:
-                                _models.engine = engine
+                                configure(db)
                             except Exception:
                                 pass
-                        try:
-                            # Recreate the module-scoped scoped_session bound to the Flask engine
-                            from sqlalchemy.orm import scoped_session, sessionmaker as _sessionmaker
-
+                        else:
+                            # Backwards-compatibility: attempt a best-effort
+                            # assignment of db/db_session/Base.query on the
+                            # models module so older imports still work.
                             try:
-                                _models.db = scoped_session(_sessionmaker(bind=engine, autocommit=False, autoflush=False))
-                            except Exception:
-                                pass
-
-                            try:
-                                _models.db_session = _models.db
-                            except Exception:
-                                pass
-
-                            try:
-                                _models.Base.query = getattr(_models.db, 'query_property', lambda: None)()
-                            except Exception:
                                 try:
-                                    _models.Base.query = _models.db.query_property()
+                                    _models.db = db
                                 except Exception:
                                     pass
-
-                        except Exception:
-                            pass
+                                try:
+                                    _models.db_session = getattr(db, "session", None)
+                                except Exception:
+                                    pass
+                                try:
+                                    _models.Base.query = getattr(db, "session", None).query_property()
+                                except Exception:
+                                    pass
+                            except Exception:
+                                pass
                     except Exception:
                         pass
                     # Also ensure metadata is created on the SQLAlchemy object's
