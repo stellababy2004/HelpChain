@@ -170,175 +170,61 @@ class AdminLog(Base):
     entity_type = Column(String(50), nullable=True)  # "help_request", "volunteer", etc.
 
 # Backwards-compatible alias: some modules import `AuditLog` from backend.models
-# Provide the expected name without changing existing AdminLog behavior.
-AuditLog = AdminLog
+# Option 2: defer all session/engine ownership to Flask-SQLAlchemy.
+#
+# This module no longer creates a module-level engine or scoped_session
+# at import time. Instead, `backend.extensions.init_app` should call
+# `configure_models(flask_db)` after it initializes the Flask-SQLAlchemy
+# `db` so that the module-level aliases point to the app-backed
+# session/engine. This keeps initialization centralized and avoids
+# duplicate registries.
+
+# Module-level aliases populated by `configure_models`.
+db = None
+db_session = None
 
 
-class HelpRequest(Base):
-    """Модел за заявки за помощ"""
+def configure_models(flask_db):
+    """Configure module-level DB aliases to use the provided Flask-SQLAlchemy
+    `flask_db` object.
 
-    __tablename__ = "help_requests"
+    This should be called from `backend.extensions._init_app_and_sync` when
+    the Flask app's `db` is available.
+    """
+    global db, db_session
+    try:
+        db = flask_db
+    except Exception:
+        db = None
+    try:
+        db_session = getattr(flask_db, "session", None)
+    except Exception:
+        db_session = None
 
-    id = Column(Integer, primary_key=True)
-    # Legacy fields: some code/tests use 'name' and 'message'
-    name = Column(String(200), nullable=True)
-    title = Column(String(100), nullable=True)
-    description = Column(Text, nullable=True)
-    message = Column(Text, nullable=True)
-    # Legacy contact fields used by older code/tests
-    email = Column(String(200), nullable=True)
-    phone = Column(String(50), nullable=True)
-    status = Column(String(50), nullable=False, default="pending")
-    created_at = Column(DateTime, default=utc_now)
-    updated_at = Column(DateTime, nullable=True, onupdate=utc_now)
-    # Assigned volunteer (optional) — some views expect this attribute
-    assigned_volunteer_id = Column(Integer, ForeignKey("volunteers.id"), nullable=True)
-    assigned_volunteer = relationship("Volunteer", foreign_keys=[assigned_volunteer_id])
-
-    def __init__(self, **kwargs):
-        # Accept legacy keyword arguments (email, phone, message, name, etc.)
-        # without raising TypeError during test object construction.
-        for k, v in kwargs.items():
+    # Ensure Base.query is set to use the app session's query property.
+    try:
+        if db_session is not None:
+            Base.query = db_session.query_property()
+        else:
+            # As a fallback, try the Flask-SQLAlchemy helper directly.
             try:
-                # Map some common legacy names to current attributes
-                if k in ("contact_email", "email") and hasattr(self.__class__, "email"):
-                    setattr(self, "email", v)
-                elif k in ("contact_phone", "phone") and hasattr(self.__class__, "phone"):
-                    setattr(self, "phone", v)
-                elif hasattr(self.__class__, k):
-                    setattr(self, k, v)
-                else:
-                    # ignore unknown legacy keys
-                    pass
+                Base.query = getattr(flask_db, "session", None).query_property()
             except Exception:
                 pass
+    except Exception:
+        pass
 
 
-
-class ChatMessage(Base):
-    """Модел за съобщения в чата"""
-
-    __tablename__ = "chat_messages"
-
-    id = Column(Integer, primary_key=True)
-    room_id = Column(Integer, ForeignKey("chat_rooms.id"), nullable=False)
-    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    content = Column(Text, nullable=False)
-    timestamp = Column(DateTime, nullable=False)
-
-
-class ChatParticipant(Base):
-    """Модел за участници в чата"""
-
-    __tablename__ = "chat_participants"
-
-    id = Column(Integer, primary_key=True)
-    room_id = Column(Integer, ForeignKey("chat_rooms.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-
-
-class ChatRoom(Base):
-    """Модел за чат стаи"""
-
-    __tablename__ = "chat_rooms"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-    created_at = Column(DateTime, nullable=False)
-
-
-class Notification(Base):
-    """Модел за известия"""
-
-    __tablename__ = "notifications"
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    message = Column(Text, nullable=False)
-    created_at = Column(DateTime, nullable=False)
-
-
-class NotificationPreference(Base):
-    """Модел за потребителски предпочитания за известия (минимален)."""
-
-    __tablename__ = "notification_preferences"
-
-    id = Column(Integer, primary_key=True)
-    # Allow anonymous/guest subscriptions (tests create subscriptions
-    # without a logged-in user). Make `user_id` nullable for compatibility.
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    # Use flexible column names but accept legacy kwargs like
-    # `email_enabled`, `push_enabled`, `sms_enabled` used in tests.
-    email_notifications = Column(String(5), nullable=True)
-    push_notifications = Column(String(5), nullable=True)
-    # Some tests expect `sms_enabled` to be accepted; provide a column
-    # to store that legacy flag.
-    sms_notifications = Column(String(5), nullable=True)
-    created_at = Column(DateTime, default=utc_now)
-
-    def __init__(self, **kwargs):
-        # Map legacy boolean kwargs to string columns used above.
-        try:
-            if "email_enabled" in kwargs:
-                val = kwargs.pop("email_enabled")
-                self.email_notifications = "1" if bool(val) else "0"
-            if "push_enabled" in kwargs:
-                val = kwargs.pop("push_enabled")
-                self.push_notifications = "1" if bool(val) else "0"
-            if "sms_enabled" in kwargs:
-                val = kwargs.pop("sms_enabled")
-                self.sms_notifications = "1" if bool(val) else "0"
-        except Exception:
-            pass
-        # Accept and set any remaining known attributes
-        for k, v in kwargs.items():
-            try:
-                if hasattr(self.__class__, k):
-                    setattr(self, k, v)
-            except Exception:
-                pass
-
-
-class Role(Base):
-    """Модел за роли на потребители"""
-
-    __tablename__ = "roles"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50), unique=True, nullable=False)
-    description = Column(Text, nullable=True)
-    # Backwards-compatible flag used by seeding code/tests to mark system roles
-    is_system_role = Column(Boolean, default=False)
-    # Relationship to role permissions: provide the attribute `role_permissions`
-    # which many tests expect to exist and iterate over.
-    role_permissions = relationship(
-        "RolePermission",
-        back_populates="role",
-        cascade="all, delete-orphan",
-    )
-
-
-class RolePermission(Base):
-    """Модел за права на роли"""
-
-    __tablename__ = "role_permissions"
-
-    id = Column(Integer, primary_key=True)
-    role_id = Column(Integer, ForeignKey("roles.id"), nullable=False)
-    # Prefer storing a foreign key to the Permission.id so code can access
-    # the Permission model instance via the `permission` relationship.
-    permission_id = Column(Integer, ForeignKey("permissions.id"), nullable=True)
-    # Relationship to Permission model. Use a private relationship attribute
-    # and expose a `permission` property so tests (and older code) can assign
-    # a permission by codename (string) or by Permission instance.
-    _permission = relationship("Permission", foreign_keys=[permission_id])
-    # Relationship back to Role so role.role_permissions is available
-    role = relationship("Role", back_populates="role_permissions")
-
-    @property
-    def permission(self):
-        return getattr(self, "_permission", None)
-
+# Backwards-compatible helper used by some modules/tests that call
+# `Model.get_query()` — use the configured db_session if available.
+def get_query_for(model):
+    try:
+        if db_session is not None:
+            return db_session.query(model)
+    except Exception:
+        pass
+    # Final fallback: raise so callers notice configuration issue early.
+    raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
     @permission.setter
     def permission(self, value):
         # Allow assigning by codename string or by Permission instance.
