@@ -228,6 +228,27 @@ ADMIN_EMAIL=admin@helpchain.live
 
 ## 🧪 Тестване
 
+### Testing database notes (workaround)
+
+During development and tests the project historically used a module-level
+SQLAlchemy engine which caused duplicate engine/session issues with
+Flask-SQLAlchemy (different in-memory SQLite connections). To avoid
+test flakiness two runtime flags are supported:
+
+- `HELPCHAIN_TEST_DEBUG=1` — when set, `backend.extensions` will print
+   diagnostic messages useful for CI debugging. Defaults to off.
+- `HELPCHAIN_MODULE_DB_URL` — if set to a DB URL (for example
+   `sqlite:///./hc_test.db`), the models module will create and bind a
+   local engine at import time. This is provided as a temporary
+   compatibility mode for scripts/tests that require a module-level
+   database. Prefer configuring the Flask app and letting
+   `backend.extensions` bind the session in normal runs.
+
+We plan a long-term refactor to remove module-level engines entirely
+(see `backend/models.py` and `backend/extensions.py`) so tests and the
+application share a single SQLAlchemy registry. For now, the above
+flags provide a safe migration path and reproducible test runs.
+
 ### Unit тестове
 
 ```bash
