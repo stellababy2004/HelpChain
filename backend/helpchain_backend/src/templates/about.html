@@ -173,32 +173,32 @@
     <header>
       <nav>
         <div class="nav-container">
-          <a href="{{ url_for('index') }}" class="logo"
+          <a href="{{ safe_url_for('index') }}" class="logo"
             ><i class="fas fa-hands-helping"></i> {{ _('HelpChain') }}</a
           >
           <ul class="nav-menu">
             <li>
-              <a href="{{ url_for('index') }}"
+              <a href="{{ safe_url_for('index') }}"
                 ><i class="fas fa-home"></i> {{ _('Начало') }}</a
               >
             </li>
             <li>
-              <a href="{{ url_for('about') }}"
+              <a href="{{ safe_url_for('about') }}"
                 ><i class="fas fa-info-circle"></i> {{ _('За нас') }}</a
               >
             </li>
             <li>
-              <a href="{{ url_for('dashboard') }}"
+              <a href="{{ safe_url_for('dashboard') }}"
                 ><i class="fas fa-tachometer-alt"></i> {{ _('Dashboard') }}</a
               >
             </li>
             <li>
-              <a href="{{ url_for('profile') }}"
+              <a href="{{ safe_url_for('profile') }}"
                 ><i class="fas fa-user"></i> {{ _('Профил') }}</a
               >
             </li>
             <li>
-              <a href="{{ url_for('logout') }}"
+              <a href="{{ safe_url_for('logout') }}"
                 ><i class="fas fa-sign-out-alt"></i> {{ _('Изход') }}</a
               >
             </li>

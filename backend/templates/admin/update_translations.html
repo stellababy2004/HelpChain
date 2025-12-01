@@ -24,7 +24,7 @@ endblock %} {% block content %}
   </button>
 </form>
 
-<a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary mt-3"
+<a href="{{ safe_url_for('admin_dashboard') }}" class="btn btn-secondary mt-3"
   >⬅ {{ _('Назад') }}</a
 >
 {% endblock %}

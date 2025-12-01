@@ -23,7 +23,7 @@
         <div class="navbar-nav ms-auto">
           <a
             class="nav-link"
-            href="{{ url_for('admin_roles.roles_dashboard') }}"
+            href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
           >
             <i class="fas fa-arrow-left"></i> Обратно
           </a>
@@ -105,7 +105,7 @@
 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                   <a
-                    href="{{ url_for('admin_roles.roles_dashboard') }}"
+                    href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
                     class="btn btn-secondary"
                   >
                     <i class="fas fa-times"></i> Отказ

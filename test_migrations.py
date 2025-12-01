@@ -155,7 +155,7 @@ with app.app_context():
         if not admin:
             admin = AdminUser(username='admin')
             admin.set_password('Admin123')
-            from extensions import db
+            from backend.extensions import db
             db.session.add(admin)
             db.session.commit()
             print("OK Default admin user created (admin/Admin123)")

@@ -4,13 +4,9 @@ Test AI service configuration
 """
 
 import os
-import sys
 
 # Set mock mode for testing
 os.environ["AI_DEV_MOCK"] = "1"
-
-# Add backend to path
-sys.path.insert(0, "backend")
 
 try:
     from backend.ai_service import ai_service

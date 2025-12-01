@@ -473,27 +473,27 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('volunteer_dashboard') }}">
+              <a class="nav-link" href="{{ safe_url_for('volunteer_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('my_tasks') }}">
+              <a class="nav-link" href="{{ safe_url_for('my_tasks') }}">
                 <i class="fas fa-tasks me-1"></i>Моите задачи
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('available_tasks') }}">
+              <a class="nav-link" href="{{ safe_url_for('available_tasks') }}">
                 <i class="fas fa-search me-1"></i>Налични задачи
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('achievements') }}">
+              <a class="nav-link" href="{{ safe_url_for('achievements') }}">
                 <i class="fas fa-trophy me-1"></i>Постижения
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="{{ url_for('leaderboard') }}">
+              <a class="nav-link active" href="{{ safe_url_for('leaderboard') }}">
                 <i class="fas fa-crown me-1"></i>Класация
               </a>
             </li>
@@ -515,7 +515,7 @@
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{{ url_for('volunteer_profile') }}"
+                    href="{{ safe_url_for('volunteer_profile') }}"
                   >
                     <i class="fas fa-user me-2"></i>Моят профил
                   </a>
@@ -523,7 +523,7 @@
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{{ url_for('volunteer_settings') }}"
+                    href="{{ safe_url_for('volunteer_settings') }}"
                   >
                     <i class="fas fa-cog me-2"></i>Настройки
                   </a>
@@ -534,7 +534,7 @@
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{{ url_for('volunteer_logout') }}"
+                    href="{{ safe_url_for('volunteer_logout') }}"
                   >
                     <i class="fas fa-sign-out-alt me-2"></i>Изход
                   </a>

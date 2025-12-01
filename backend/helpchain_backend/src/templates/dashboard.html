@@ -284,32 +284,32 @@
     <header>
       <nav>
         <div class="nav-container">
-          <a href="{{ url_for('index') }}" class="logo"
+          <a href="{{ safe_url_for('index') }}" class="logo"
             ><i class="fas fa-hands-helping"></i> HelpChain</a
           >
           <ul class="nav-menu">
             <li>
-              <a href="{{ url_for('index') }}"
+              <a href="{{ safe_url_for('index') }}"
                 ><i class="fas fa-home"></i> Начало</a
               >
             </li>
             <li>
-              <a href="{{ url_for('about') }}"
+              <a href="{{ safe_url_for('about') }}"
                 ><i class="fas fa-info-circle"></i> За нас</a
               >
             </li>
             <li>
-              <a href="{{ url_for('dashboard') }}"
+              <a href="{{ safe_url_for('dashboard') }}"
                 ><i class="fas fa-tachometer-alt"></i> Dashboard</a
               >
             </li>
             <li>
-              <a href="{{ url_for('profile') }}"
+              <a href="{{ safe_url_for('profile') }}"
                 ><i class="fas fa-user"></i> Профил</a
               >
             </li>
             <li>
-              <a href="{{ url_for('logout') }}"
+              <a href="{{ safe_url_for('logout') }}"
                 ><i class="fas fa-sign-out-alt"></i> Изход</a
               >
             </li>
@@ -371,7 +371,7 @@
           <i class="fas fa-plus-circle"></i>
           <h3>Подай нова заявка</h3>
           <p>Имаш нужда от помощ? Разкажи ни!</p>
-          <a href="{{ url_for('submit_request') }}" class="action-btn"
+          <a href="{{ safe_url_for('submit_request') }}" class="action-btn"
             >Подай заявка</a
           >
         </div>
@@ -379,7 +379,7 @@
           <i class="fas fa-users"></i>
           <h3>Стани доброволец</h3>
           <p>Присъедини се към общността на помощниците.</p>
-          <a href="{{ url_for('become_volunteer') }}" class="action-btn"
+          <a href="{{ safe_url_for('become_volunteer') }}" class="action-btn"
             >Регистрирай се</a
           >
         </div>
@@ -387,7 +387,7 @@
           <i class="fas fa-user-edit"></i>
           <h3>Редактирай профил</h3>
           <p>Обнови информацията си за по-добра помощ.</p>
-          <a href="{{ url_for('profile') }}" class="action-btn">Редактирай</a>
+          <a href="{{ safe_url_for('profile') }}" class="action-btn">Редактирай</a>
         </div>
       </section>
 
@@ -437,7 +437,7 @@
           <i class="fas fa-search"></i>
           <h3>Няма заявки</h3>
           <p>Нямате активни заявки. Искате ли да подадете нова?</p>
-          <a href="{{ url_for('submit_request') }}" class="action-btn"
+          <a href="{{ safe_url_for('submit_request') }}" class="action-btn"
             >Подай заявка</a
           >
         </div>

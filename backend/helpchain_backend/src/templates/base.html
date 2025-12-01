@@ -26,7 +26,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
       <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
+        <a class="navbar-brand fw-bold" href="{{ safe_url_for('main.index') }}">
           <i class="fas fa-hand-holding-heart me-2"></i>HelpChain
         </a>
         <button
@@ -40,18 +40,18 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.index') }}"
+              <a class="nav-link" href="{{ safe_url_for('main.index') }}"
                 ><i class="fas fa-home me-1"></i>Начало</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.about') }}"
+              <a class="nav-link" href="{{ safe_url_for('main.about') }}"
                 ><i class="fas fa-info-circle me-1"></i>За нас</a
               >
             </li>
             {% if current_user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('dashboard') }}"
+              <a class="nav-link" href="{{ safe_url_for('dashboard') }}"
                 ><i class="fas fa-tachometer-alt me-1"></i>Dashboard</a
               >
             </li>
@@ -62,24 +62,24 @@
             </li>
             {% if current_user.is_admin %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}"
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}"
                 ><i class="fas fa-cog me-1"></i>Админ</a
               >
             </li>
             {% endif %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('logout') }}"
+              <a class="nav-link" href="{{ safe_url_for('logout') }}"
                 ><i class="fas fa-sign-out-alt me-1"></i>Изход</a
               >
             </li>
             {% else %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('login') }}"
+              <a class="nav-link" href="{{ safe_url_for('login') }}"
                 ><i class="fas fa-sign-in-alt me-1"></i>Вход</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('register') }}"
+              <a class="nav-link" href="{{ safe_url_for('volunteer_register') }}"
                 ><i class="fas fa-user-plus me-1"></i>Регистрация</a
               >
             </li>
@@ -115,9 +115,9 @@
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-5">
       <div class="container">
-        <p>
+          <p>
           &copy; 2025 HelpChain. Разработено от Stella Barbarella.
-          <a href="{{ url_for('main.about') }}" class="text-light">За нас</a>
+          <a href="{{ safe_url_for('main.about') }}" class="text-light">За нас</a>
         </p>
       </div>
     </footer>

@@ -43,13 +43,13 @@
           <!-- Main Actions -->
           <div class="d-grid gap-3 mb-4">
             <a
-              href="{{ url_for('submit_request') }}"
+              href="{{ safe_url_for('submit_request') }}"
               class="btn btn-primary btn-lg"
             >
               <i class="fas fa-plus-circle me-2"></i>Подай заявка за помощ
             </a>
             <a
-              href="{{ url_for('volunteer_register') }}"
+              href="{{ safe_url_for('volunteer_register') }}"
               class="btn btn-outline-primary btn-lg"
             >
               <i class="fas fa-hand-holding-heart me-2"></i>Стани доброволец
@@ -60,7 +60,7 @@
           <div class="row g-2">
             <div class="col-6">
               <a
-                href="{{ url_for('admin_panel') }}"
+                href="{{ safe_url_for('admin_panel') }}"
                 class="btn btn-outline-secondary w-100"
               >
                 <i class="fas fa-cog me-1"></i>Админ

@@ -63,7 +63,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Управление на доброволци</h1>
     <a
-      href="{{ url_for('admin_dashboard') }}"
+      href="{{ safe_url_for('admin_dashboard') }}"
       class="btn btn-outline-secondary"
     >
       <i class="fas fa-arrow-left me-2"></i>Обратно към dashboard
@@ -171,19 +171,19 @@
   <div class="export-buttons">
     <h5>Експорт на данни:</h5>
     <a
-      href="{{ url_for('export_volunteers', format='csv', search=search, location=location_filter) }}"
+      href="{{ safe_url_for('export_volunteers', format='csv', search=search, location=location_filter) }}"
       class="btn btn-success btn-sm"
     >
       <i class="fas fa-file-csv me-1"></i>CSV
     </a>
     <a
-      href="{{ url_for('export_volunteers', format='json', search=search, location=location_filter) }}"
+      href="{{ safe_url_for('export_volunteers', format='json', search=search, location=location_filter) }}"
       class="btn btn-info btn-sm"
     >
       <i class="fas fa-file-code me-1"></i>JSON
     </a>
     <a
-      href="{{ url_for('export_volunteers', format='pdf', search=search, location=location_filter) }}"
+      href="{{ safe_url_for('export_volunteers', format='pdf', search=search, location=location_filter) }}"
       class="btn btn-danger btn-sm"
     >
       <i class="fas fa-file-pdf me-1"></i>PDF
@@ -197,7 +197,7 @@
 
   <!-- Add Volunteer Button -->
   <div class="mb-3">
-    <a href="{{ url_for('add_volunteer') }}" class="btn btn-primary">
+    <a href="{{ safe_url_for('add_volunteer') }}" class="btn btn-primary">
       <i class="fas fa-plus me-1"></i>Добави нов доброволец
     </a>
   </div>
@@ -210,7 +210,7 @@
           <th>ID</th>
           <th>
             <a
-              href="{{ url_for('admin_volunteers', sort='name', order='desc' if sort_by == 'name' and sort_order == 'asc' else 'asc', search=search, location=location_filter) }}"
+              href="{{ safe_url_for('admin_volunteers', sort='name', order='desc' if sort_by == 'name' and sort_order == 'asc' else 'asc', search=search, location=location_filter) }}"
               class="text-white text-decoration-none"
             >
               Име
@@ -246,14 +246,14 @@
           <td>
             <div class="btn-group btn-group-sm">
               <a
-                href="{{ url_for('admin.volunteer_detail', id=volunteer.id) }}"
+                href="{{ safe_url_for('admin.volunteer_detail', id=volunteer.id) }}"
                 class="btn btn-outline-info btn-sm"
                 title="Преглед"
               >
                 <i class="fas fa-eye"></i>
               </a>
               <a
-                href="{{ url_for('admin.edit_volunteer', id=volunteer.id) }}"
+                href="{{ safe_url_for('admin.edit_volunteer', id=volunteer.id) }}"
                 class="btn btn-outline-warning btn-sm"
                 title="Редактирай"
               >
@@ -306,10 +306,10 @@
           50
         </option>
         <option value="100" {% if per_page="" ="100" %}selected{% endif %}>
-          100
-        </option>
-      </select>
-      <span class="ms-2 text-muted">на страница</span>
+              <a
+                class="text-white text-decoration-none"
+                href="{{ safe_url_for('admin_volunteers', sort='name', order='desc' if sort_by == 'name' and sort_order == 'asc' else 'asc', search=search, location=location_filter) }}"
+              >
     </div>
 
     <nav aria-label="Volunteers pagination">
@@ -318,7 +318,7 @@
         <li class="page-item">
           <a
             class="page-link"
-            href="{{ url_for('admin_volunteers', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
+            href="{{ safe_url_for('admin_volunteers', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
             aria-label="{{ _('Предишна страница') }}"
             >{{ _('Предишна') }}</a
           >
@@ -327,7 +327,7 @@
         <li class="page-item {% if page_num == page %}active{% endif %}">
           <a
             class="page-link"
-            href="{{ url_for('admin_volunteers', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
+            href="{{ safe_url_for('admin_volunteers', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
             aria-label="{{ _('Страница') }} {{ page_num }}"
             >{{ page_num }}</a
           >
@@ -336,7 +336,7 @@
         <li class="page-item">
           <a
             class="page-link"
-            href="{{ url_for('admin_volunteers', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
+            href="{{ safe_url_for('admin_volunteers', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
             aria-label="{{ _('Следваща страница') }}"
             >{{ _('Следваща') }}</a
           >

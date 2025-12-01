@@ -537,23 +537,23 @@
           <ul class="nav-menu">
             <li><a class="nav-link-light" href="#features">Функции</a></li>
             <li>
-              <a class="nav-link-light" href="{{ url_for('all_categories') }}"
+              <a class="nav-link-light" href="{{ safe_url_for('all_categories') }}"
                 >Категории</a
               >
             </li>
             <li>
-              <a class="nav-link-light" href="{{ url_for('faq') }}">ЧЗВ</a>
+              <a class="nav-link-light" href="{{ safe_url_for('faq') }}">ЧЗВ</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ url_for('login') }}">Вход</a>
+              <a class="nav-link-light" href="{{ safe_url_for('login') }}">Вход</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ url_for('register') }}"
+              <a class="nav-link-light" href="{{ safe_url_for('register') }}"
                 >Регистрация</a
               >
             </li>
             <li>
-              <a class="nav-link-light" href="{{ url_for('volunteer_login') }}"
+              <a class="nav-link-light" href="{{ safe_url_for('volunteer_login') }}"
                 >Вход за доброволци</a
               >
             </li>
@@ -618,14 +618,14 @@
           >
             <a
               class="btn-light btn-primary focus-visible"
-              href="{{ url_for('submit_request') }}"
+              href="{{ safe_url_for('submit_request') }}"
             >
               <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>Подай
               заявка за помощ
             </a>
             <a
               class="btn-light btn-success focus-visible"
-              href="{{ url_for('become_volunteer') }}"
+              href="{{ safe_url_for('become_volunteer') }}"
             >
               <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i
               >Стани доброволец
@@ -765,22 +765,22 @@
               <h5>Бързи връзки</h5>
               <ul class="list-unstyled">
                 <li>
-                  <a href="{{ url_for('all_categories') }}" class="text-light"
+                  <a href="{{ safe_url_for('all_categories') }}" class="text-light"
                     >Категории помощ</a
                   >
                 </li>
                 <li>
-                  <a href="{{ url_for('faq') }}" class="text-light"
+                  <a href="{{ safe_url_for('faq') }}" class="text-light"
                     >Често задавани въпроси</a
                   >
                 </li>
                 <li>
-                  <a href="{{ url_for('privacy') }}" class="text-light"
+                  <a href="{{ safe_url_for('privacy') }}" class="text-light"
                     >Поверителност</a
                   >
                 </li>
                 <li>
-                  <a href="{{ url_for('terms') }}" class="text-light"
+                  <a href="{{ safe_url_for('terms') }}" class="text-light"
                     >Условия за ползване</a
                   >
                 </li>

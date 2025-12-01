@@ -9,6 +9,8 @@ import sys
 import unittest
 
 import requests
+import tempfile
+import uuid
 
 # Add backend to path
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
@@ -23,7 +25,7 @@ except ImportError:
     pass
 
 # Flask imports
-from extensions import db
+from backend.extensions import db
 from flask import Flask
 
 # Model imports - moved to setUp to ensure proper db initialization
@@ -57,7 +59,13 @@ class TestPushNotifications(unittest.TestCase):
         self.app = Flask(__name__)
         self.app.config["TESTING"] = True
         self.app.config["SECRET_KEY"] = "test-secret-key"
-        self.app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+        # Use a unique temporary file-based SQLite DB per test to avoid
+        # cross-test contamination while still letting module-level and
+        # Flask-SQLAlchemy engines share the same file for that test.
+        tmp = tempfile.NamedTemporaryFile(prefix="hc_test_", suffix=".db", delete=False)
+        tmp.close()
+        self._test_db_path = tmp.name
+        self.app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{self._test_db_path}"
         self.app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
         # VAPID configuration
@@ -109,6 +117,12 @@ class TestPushNotifications(unittest.TestCase):
         with self.app.app_context():
             db.session.remove()
             db.drop_all()
+        # Remove the temporary DB file created for this test
+        try:
+            if hasattr(self, "_test_db_path") and os.path.exists(self._test_db_path):
+                os.remove(self._test_db_path)
+        except Exception:
+            pass
 
     def test_01_vapid_configuration(self):
         """Test VAPID key configuration"""
@@ -350,6 +364,7 @@ class TestPushNotifications(unittest.TestCase):
         print("\n=== Testing Database Relationships ===")
 
         with self.app.app_context():
+            print('DEBUG at start of app_context: db.session id:', id(db.session))
             # Create user
             user = self.User(
                 username="test_user",
@@ -378,8 +393,31 @@ class TestPushNotifications(unittest.TestCase):
             db.session.add(preference)
 
             db.session.commit()
+            print('DEBUG after commit: db.session id:', id(db.session))
 
             # Test relationships
+            # DEBUG: inspect User class and query behavior
+            try:
+                print('DEBUG: User class module:', self.User.__module__)
+                print('DEBUG: User class id:', id(self.User))
+                print('DEBUG: User.query repr:', repr(getattr(self.User, 'query', None)))
+                print('DEBUG: db.session id:', id(db.session))
+                try:
+                    print('DEBUG: db.engine:', getattr(db, 'engine', None))
+                    try:
+                        res = list(db.engine.execute('SELECT count(*) FROM users'))
+                        print('DEBUG: raw users count via engine:', res)
+                    except Exception as _e:
+                        print('DEBUG: raw select failed:', _e)
+                except Exception:
+                    pass
+                try:
+                    print('DEBUG: session.query(User).all():', db.session.query(self.User).all())
+                except Exception as _e:
+                    print('DEBUG: session.query(User) raised:', _e)
+            except Exception:
+                pass
+
             saved_user = self.User.query.filter_by(username="test_user").first()
             self.assertIsNotNone(saved_user, "User should be saved")
 

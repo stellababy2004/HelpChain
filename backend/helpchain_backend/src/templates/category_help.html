@@ -29,7 +29,7 @@ HelpChain{% endblock %} {% block content %}
   <!-- Навигация обратно -->
   <div class="row mb-4">
     <div class="col-12">
-      <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+      <a href="{{ safe_url_for('main.index') }}" class="btn btn-outline-primary">
         <i class="fas fa-arrow-left me-2"></i>Обратно към началната страница
       </a>
     </div>
@@ -49,7 +49,7 @@ HelpChain{% endblock %} {% block content %}
             Бъдете първият доброволец в категорията "{{ category_display }}"!
           </p>
           <a
-            href="{{ url_for('main.become_volunteer') }}"
+            href="{{ safe_url_for('main.become_volunteer') }}"
             class="btn btn-primary btn-lg"
           >
             <i class="fas fa-hand-holding-heart me-2"></i>Стани доброволец
@@ -140,7 +140,7 @@ HelpChain{% endblock %} {% block content %}
             cat != category %}
             <div class="col-6 col-md-3">
               <a
-                href="{{ url_for('main.category_help', category=cat) }}"
+                href="{{ safe_url_for('main.category_help', category=cat) }}"
                 class="btn btn-outline-secondary w-100"
               >
                 {{ name }}

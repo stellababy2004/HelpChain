@@ -34,7 +34,7 @@ def test_imports():
         print("✓ Core models imported")
 
         # Test extensions
-        from extensions import db, mail
+        from backend.extensions import db, mail
 
         print("✓ Database and mail extensions imported")
 
@@ -104,7 +104,7 @@ def test_database_initialization():
 
         with app.app_context():
             # Try to create all tables
-            from extensions import db
+            from backend.extensions import db
 
             db.create_all()
             print("✓ Database tables created")

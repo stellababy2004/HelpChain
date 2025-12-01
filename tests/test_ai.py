@@ -8,9 +8,6 @@ import sys
 
 from dotenv import load_dotenv
 
-# Add backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
-
 from backend.ai_service import ai_service
 
 load_dotenv()

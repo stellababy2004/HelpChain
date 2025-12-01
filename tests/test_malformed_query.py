@@ -4,16 +4,15 @@ Test script to reproduce the malformed SQL query error
 """
 
 import os
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
 
 
 def test_volunteer_queries():
     """Test various volunteer query patterns to find malformed SQL"""
 
-    # Import the app and use its context
-    from appy import Volunteer, app, db
+    # Import the app and use its context via package-qualified modules
+    from backend.appy import app
+    from backend.extensions import db
+    from backend.models import Volunteer
 
     with app.app_context():
         print("Testing volunteer queries...")

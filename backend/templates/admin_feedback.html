@@ -55,7 +55,7 @@ HelpChain.bg{% endblock %} {% block content %}
     </div>
     <div class="col-lg-2 col-md-4 col-sm-6">
       <a
-        href="{{ url_for('admin_dashboard') }}"
+        href="{{ safe_url_for('admin_dashboard') }}"
         class="btn btn-outline-secondary btn-block"
       >
         ⬅ Назад

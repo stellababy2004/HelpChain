@@ -258,9 +258,9 @@ async def analytics_data():
 
         # Return full analytics data
         try:
-            from analytics_service import analytics_service
+            from backend.analytics_service import analytics_service
         except ImportError:
-            from analytics_service import analytics_service
+            from backend.analytics_service import analytics_service
 
         # Run analytics_service in thread executor since it may not be async
         import asyncio

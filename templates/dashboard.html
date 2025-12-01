@@ -519,17 +519,17 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link active" href="{{ url_for('dashboard') }}">
+              <a class="nav-link active" href="{{ safe_url_for('dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('submit_request') }}">
+              <a class="nav-link" href="{{ safe_url_for('submit_request') }}">
                 <i class="fas fa-plus-circle me-1"></i>Нова заявка
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('profile') }}">
+              <a class="nav-link" href="{{ safe_url_for('profile') }}">
                 <i class="fas fa-user me-1"></i>Профил
               </a>
             </li>
@@ -538,13 +538,13 @@
           <ul class="navbar-nav">
             {% if current_user.is_admin %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_panel') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin_panel') }}">
                 <i class="fas fa-cogs me-1"></i>Админ
               </a>
             </li>
             {% endif %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('logout') }}">
+              <a class="nav-link" href="{{ safe_url_for('logout') }}">
                 <i class="fas fa-sign-out-alt me-1"></i>Изход
               </a>
             </li>
@@ -655,7 +655,7 @@
           <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
         </h4>
         <div class="action-grid">
-          <a href="{{ url_for('submit_request') }}" class="action-card">
+          <a href="{{ safe_url_for('submit_request') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-plus-circle"></i>
             </div>
@@ -663,7 +663,7 @@
             <div class="action-description">Подайте нова заявка за помощ</div>
           </a>
 
-          <a href="{{ url_for('profile') }}" class="action-card">
+          <a href="{{ safe_url_for('profile') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-user-edit"></i>
             </div>
@@ -671,7 +671,7 @@
             <div class="action-description">Обновете информацията си</div>
           </a>
 
-          <a href="{{ url_for('my_requests') }}" class="action-card">
+          <a href="{{ safe_url_for('my_requests') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-list"></i>
             </div>
@@ -679,7 +679,7 @@
             <div class="action-description">Вижте всички ваши заявки</div>
           </a>
 
-          <a href="{{ url_for('feedback') }}" class="action-card">
+          <a href="{{ safe_url_for('feedback') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-comments"></i>
             </div>
@@ -696,7 +696,7 @@
             <i class="fas fa-history me-2"></i>Последни заявки
           </h4>
           <a
-            href="{{ url_for('my_requests') }}"
+            href="{{ safe_url_for('my_requests') }}"
             class="btn btn-primary-modern btn-modern"
           >
             <i class="fas fa-eye me-1"></i>Виж всички
@@ -765,7 +765,7 @@
             Подайте първата си заявка за помощ и ние ще се погрижим за вас
           </p>
           <a
-            href="{{ url_for('submit_request') }}"
+            href="{{ safe_url_for('submit_request') }}"
             class="btn btn-primary-modern btn-modern"
           >
             <i class="fas fa-plus-circle me-1"></i>Подай заявка

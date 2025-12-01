@@ -164,12 +164,12 @@ from appy import app
 with app.app_context():
     try:
         # Initialize default admin user
-        from models import AdminUser
+            from models import AdminUser
         admin = AdminUser.query.filter_by(username='admin').first()
         if not admin:
             admin = AdminUser(username='admin')
             admin.set_password('Admin123')
-            from extensions import db
+            from backend.extensions import db
             db.session.add(admin)
             db.session.commit()
             print("✅ Default admin user created (admin/Admin123)")

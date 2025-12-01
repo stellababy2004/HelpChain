@@ -68,7 +68,7 @@ HelpChain.live{% endblock %} {% block content %} {% macro status_badge(status)
       <i class="bi bi-exclamation-triangle me-2"></i> {{ _('2FA не е
       активиран.') }}
     </div>
-    <a href="{{ url_for('admin_2fa_setup') }}" class="btn btn-success btn-sm">
+    <a href="{{ safe_url_for('admin_2fa_setup') }}" class="btn btn-success btn-sm">
       <i class="bi bi-shield-plus me-1"></i> {{ _('Настрой 2FA') }}
     </a>
     {% endif %}
@@ -138,7 +138,7 @@ HelpChain.live{% endblock %} {% block content %} {% macro status_badge(status)
       >
         <i class="bi bi-arrow-clockwise me-1"></i> {{ _('Обнови') }}
       </button>
-      <a href="{{ url_for('admin_analytics') }}" class="btn btn-outline-info">
+      <a href="{{ safe_url_for('admin_analytics') }}" class="btn btn-outline-info">
         <i class="bi bi-graph-up me-1"></i> {{ _('Аналитика') }}
       </a>
       <div class="vr d-none d-md-block"></div>
@@ -332,6 +332,16 @@ HelpChain.live{% endblock %} {% block content %} {% macro status_badge(status)
 </div>
 
 <script>
+  // Ensure a global `stats` object exists for legacy client-side scripts.
+  // This avoids "stats is undefined" JS runtime errors when analytics
+  // or dashboard data isn't available during tests.
+  // Ensure `stats` is always defined even if the template context lacks it.
+  // Use a safe conditional to avoid Jinja rendering errors when `stats` is undefined.
+  try {
+    var stats = {{ (stats if stats is defined else {}) | tojson | safe }};
+  } catch (e) {
+    var stats = {};
+  }
   // --- AJAX loading for volunteers and requests ---
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -617,6 +627,48 @@ HelpChain.live{% endblock %} {% block content %} {% macro status_badge(status)
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast("{{ _('CSV експортиран успешно!') }}", "success");
+  }
+
+  // Export requests as CSV by fetching admin API and building a CSV file
+  function exportData() {
+    const csrfToken = getCSRFToken();
+    const headers = {};
+    if (csrfToken) {
+      headers['X-CSRFToken'] = csrfToken;
+      headers['X-CSRF-Token'] = csrfToken;
+    }
+    fetch('/admin/api/requests?page_size=1000', {
+      credentials: 'same-origin',
+      headers,
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error('Failed to fetch requests');
+        return r.json();
+      })
+      .then((data) => {
+        const items = data.items || [];
+        if (!items.length) return toast('{{ _('Няма налични заявки') }}', 'warning');
+        // Build CSV header
+        const cols = ['id', 'name', 'title', 'status', 'city', 'created_at'];
+        let csv = cols.join(',') + '\n';
+        items.forEach((it) => {
+          const row = cols.map((c) => '"' + ((it[c] || '') + '').replace(/"/g, '""') + '"');
+          csv += row.join(',') + '\n';
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'requests.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        toast('{{ _('CSV експортиран успешно!') }}', 'success');
+      })
+      .catch(() => {
+        toast('{{ _('Грешка при зареждане на заявки') }}', 'danger');
+      });
   }
 </script>
 {% endblock %}

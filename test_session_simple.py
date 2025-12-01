@@ -1,4 +1,11 @@
+import os
+import pytest
 import requests
+
+# Skip this module by default — it requires a running server at 127.0.0.1:5000.
+# To run it, set the env var `RUN_EXTERNAL_SERVER=1` before invoking pytest.
+if not os.environ.get("RUN_EXTERNAL_SERVER"):
+    pytest.skip("external-server test skipped (set RUN_EXTERNAL_SERVER=1 to run)", allow_module_level=True)
 
 # Test session persistence
 session = requests.Session()

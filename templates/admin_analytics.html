@@ -381,27 +381,27 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
               <a
                 class="nav-link active"
-                href="{{ url_for('analytics_main.admin_analytics') }}"
+                href="{{ safe_url_for('analytics_main.admin_analytics') }}"
               >
                 <i class="fas fa-chart-line me-1"></i>Analytics
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}">
                 <i class="fas fa-users me-1"></i>Доброволци
               </a>
             </li>
             <li class="nav-item">
               <a
                 class="nav-link"
-                href="{{ url_for('admin_roles.roles_dashboard') }}"
+                href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
               >
                 <i class="fas fa-user-shield me-1"></i>Роли
               </a>
@@ -427,7 +427,7 @@
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ url_for('admin_dashboard') }}">
+            <a href="{{ safe_url_for('admin_dashboard') }}">
               <i class="fas fa-home me-1"></i>Админ панел
             </a>
           </li>

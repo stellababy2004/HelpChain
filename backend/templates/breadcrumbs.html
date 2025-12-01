@@ -2,7 +2,7 @@
 <nav aria-label="breadcrumb" class="mb-4">
   <ol class="breadcrumb bg-light rounded p-3">
     <li class="breadcrumb-item">
-      <a href="{{ url_for('index') }}" class="text-decoration-none"
+      <a href="{{ safe_url_for('index') }}" class="text-decoration-none"
         ><i class="fas fa-home me-1"></i>{{ _('Начало') }}</a
       >
     </li>
