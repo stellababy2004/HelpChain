@@ -24,6 +24,11 @@ Thumbs.db
 .venv/
 backend/.venv/
 venv/
+*.venv
+.venv311/
+.venv311
+venv311/
+venv311
 
 # python
 __pycache__/
