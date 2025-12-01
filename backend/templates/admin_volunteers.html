@@ -4,10 +4,10 @@ HelpChain.live{% endblock %} {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-users"></i> {{ _('Управление на доброволци') }}</h2>
     <div>
-      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+      <a href="{{ safe_url_for('admin_dashboard') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> {{ _('Назад към админ панел') }}
       </a>
-      <a href="{{ url_for('add_volunteer') }}" class="btn btn-success">
+      <a href="{{ safe_url_for('add_volunteer') }}" class="btn btn-success">
         <i class="fas fa-plus"></i> {{ _('Добави доброволец') }}
       </a>
     </div>
@@ -48,15 +48,9 @@ HelpChain.live{% endblock %} {% block content %}
             >{{ _('На страница') }}</label
           >
           <select class="form-select" id="per_page" name="per_page">
-            <option value="10" {% if per_page="" ="10" %}selected{% endif %}>
-              10
-            </option>
-            <option value="25" {% if per_page="" ="25" %}selected{% endif %}>
-              25
-            </option>
-            <option value="50" {% if per_page="" ="50" %}selected{% endif %}>
-              50
-            </option>
+            <option value="10" {% if per_page == '10' %}selected{% endif %}>10</option>
+            <option value="25" {% if per_page == '25' %}selected{% endif %}>25</option>
+            <option value="50" {% if per_page == '50' %}selected{% endif %}>50</option>
           </select>
         </div>
         <div class="col-md-3 d-flex align-items-end">
@@ -64,7 +58,7 @@ HelpChain.live{% endblock %} {% block content %}
             <i class="fas fa-search"></i> {{ _('Търси') }}
           </button>
           <a
-            href="{{ url_for('admin_volunteers') }}"
+            href="{{ safe_url_for('admin_volunteers') }}"
             class="btn btn-outline-secondary"
           >
             <i class="fas fa-times"></i> {{ _('Изчисти') }}
@@ -211,7 +205,7 @@ HelpChain.live{% endblock %} {% block content %}
               <td>
                 <div class="btn-group" role="group">
                   <a
-                    href="{{ url_for('edit_volunteer', id=volunteer.id) }}"
+                    href="{{ safe_url_for('edit_volunteer', id=volunteer.id) }}"
                     class="btn btn-sm btn-outline-primary"
                     title="{{ _('Редактирай') }}"
                   >
@@ -241,7 +235,7 @@ HelpChain.live{% endblock %} {% block content %}
           <li class="page-item">
             <a
               class="page-link"
-              href="{{ url_for('admin_volunteers', page=pagination.prev_num,
+              href="{{ safe_url_for('admin_volunteers', page=pagination.prev_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
               aria-label="{{ _('Предишна страница') }}"
@@ -255,18 +249,20 @@ HelpChain.live{% endblock %} {% block content %}
               <i class="fas fa-chevron-left"></i> {{ _('Предишна') }}
             </span>
           </li>
-          {% endif %} {# Compute page range safely without relying on Python
-          builtins like max/min #} {% set cur = pagination.page|default(1) %} {%
-          set pages = pagination.pages|default(1) %} {% set start_page = (cur -
-          2) if cur > 2 else 1 %} {% set end_page = (cur + 3) if (cur + 3) <=
-          (pages + 1) else (pages + 1) %} {% for page_num in range(start_page,
-          end_page) %}
+          {% endif %}
+
+          {# Compute page range safely without relying on Python builtins like max/min #}
+          {% set cur = pagination.page|default(1) %}
+          {% set pages = pagination.pages|default(1) %}
+          {% set start_page = (cur - 2) if cur > 2 else 1 %}
+          {% set end_page = (cur + 3) if (cur + 3) <= (pages + 1) else (pages + 1) %}
+          {% for page_num in range(start_page, end_page) %}
           <li
             class="page-item {% if page_num == pagination.page %}active{% endif %}"
           >
             <a
               class="page-link"
-              href="{{ url_for('admin_volunteers', page=page_num,
+              href="{{ safe_url_for('admin_volunteers', page=page_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
               aria-label="{{ _('Страница') }} {{ page_num }}"
@@ -274,11 +270,12 @@ HelpChain.live{% endblock %} {% block content %}
               {{ page_num }}
             </a>
           </li>
-          {% endfor %} {% if pagination.has_next %}
+          {% endfor %}
+          {% if pagination.has_next %}
           <li class="page-item">
             <a
               class="page-link"
-              href="{{ url_for('admin_volunteers', page=pagination.next_num,
+              href="{{ safe_url_for('admin_volunteers', page=pagination.next_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
               aria-label="{{ _('Следваща страница') }}"
@@ -295,7 +292,9 @@ HelpChain.live{% endblock %} {% block content %}
           {% endif %}
         </ul>
       </nav>
-      {% endif %} {% else %}
+      {% endif %}
+
+      {% else %}
       <div class="text-center py-5">
         <i class="fas fa-users fa-3x text-muted mb-3"></i>
         <h5 class="text-muted">{{ _('Няма намерени доброволци') }}</h5>
@@ -304,7 +303,7 @@ HelpChain.live{% endblock %} {% block content %}
           на зададените критерии за търсене.') }} {% else %} {{ _('Все още няма
           регистрирани доброволци.') }} {% endif %}
         </p>
-        <a href="{{ url_for('add_volunteer') }}" class="btn btn-success">
+        <a href="{{ safe_url_for('add_volunteer') }}" class="btn btn-success">
           <i class="fas fa-plus"></i> {{ _('Добави първия доброволец') }}
         </a>
       </div>
@@ -322,7 +321,7 @@ HelpChain.live{% endblock %} {% block content %}
       <div class="row">
         <div class="col-md-3">
           <a
-            href="{{ url_for('export_volunteers', format='csv', search=search, location=location_filter) }}"
+            href="{{ safe_url_for('export_volunteers', format='csv', search=search, location=location_filter) }}"
             class="btn btn-outline-primary w-100"
           >
             <i class="fas fa-file-csv"></i> CSV
@@ -330,7 +329,7 @@ HelpChain.live{% endblock %} {% block content %}
         </div>
         <div class="col-md-3">
           <a
-            href="{{ url_for('export_volunteers', format='json', search=search, location=location_filter) }}"
+            href="{{ safe_url_for('export_volunteers', format='json', search=search, location=location_filter) }}"
             class="btn btn-outline-info w-100"
           >
             <i class="fas fa-file-code"></i> JSON
@@ -338,7 +337,7 @@ HelpChain.live{% endblock %} {% block content %}
         </div>
         <div class="col-md-3">
           <a
-            href="{{ url_for('export_volunteers', format='pdf', search=search, location=location_filter) }}"
+            href="{{ safe_url_for('export_volunteers', format='pdf', search=search, location=location_filter) }}"
             class="btn btn-outline-danger w-100"
           >
             <i class="fas fa-file-pdf"></i> PDF

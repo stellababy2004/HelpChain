@@ -333,7 +333,7 @@
       <div class="chat-header">
         <div class="d-flex justify-content-between align-items-center">
           <div>
-            <a href="{{ url_for('chat') }}" class="back-btn">
+            <a href="{{ safe_url_for('chat') }}" class="back-btn">
               <i class="fas fa-arrow-left"></i> {{ _('Назад') }}
             </a>
           </div>

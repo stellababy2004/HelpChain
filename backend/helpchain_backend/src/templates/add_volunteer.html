@@ -90,7 +90,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1><i class="fas fa-user-plus me-2"></i>Добавяне на нов доброволец</h1>
     <a
-      href="{{ url_for('admin_volunteers') }}"
+      href="{{ safe_url_for('admin_volunteers') }}"
       class="btn btn-outline-secondary"
     >
       <i class="fas fa-arrow-left me-2"></i>Обратно към списъка
@@ -106,7 +106,7 @@
 
   <!-- Add Volunteer Form -->
   <div class="form-section">
-    <form method="POST" action="{{ url_for('add_volunteer') }}">
+    <form method="POST" action="{{ safe_url_for('add_volunteer') }}">
       <div class="row">
         <div class="col-md-6">
           <div class="form-group">
@@ -193,7 +193,7 @@
       <div class="row mt-4">
         <div class="col-12">
           <div class="d-flex justify-content-between align-items-center">
-            <a href="{{ url_for('admin_volunteers') }}" class="btn-cancel">
+            <a href="{{ safe_url_for('admin_volunteers') }}" class="btn-cancel">
               <i class="fas fa-times me-2"></i>Отказ
             </a>
 

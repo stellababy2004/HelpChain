@@ -2,6 +2,15 @@
 %} {% block content %}
 <div class="container mt-5" style="max-width: 400px">
   <h2 class="mb-4 text-primary">{{ _('Вход за администратор') }}</h2>
+  {%- with messages = get_flashed_messages(with_categories=true) -%}
+  {%- if messages -%}
+  <div class="mt-2">
+    {% for category, msg in messages %}
+    <div class="alert alert-{{ category if category else 'info' }}">{{ msg }}</div>
+    {% endfor %}
+  </div>
+  {%- endif -%}
+  {%- endwith -%}
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
   {% endif %}

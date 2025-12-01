@@ -35,7 +35,7 @@ block content %}
       <div class="mt-3 text-center">
         <p class="mb-1" id="vl-noacc">Нямате регистрация като доброволец?</p>
         <a
-          href="{{ url_for('volunteer_register') }}"
+          href="{{ safe_url_for('volunteer_register') }}"
           class="btn btn-outline-primary btn-sm"
           id="vl-register-link"
           >Регистрирайте се</a

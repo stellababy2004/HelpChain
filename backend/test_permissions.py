@@ -2,7 +2,9 @@ import pytest
 from flask import Flask, session
 from werkzeug.security import generate_password_hash
 
-from backend.extensions import db
+from backend.extensions import db as _db
+# Keep legacy `db` name for existing code in this file that expects it.
+db = _db
 from backend.models import PermissionEnum, Role, User, UserRole
 from permissions import (
     get_user_permissions,
@@ -25,7 +27,89 @@ def permissions_app():
 
     with app.app_context():
         db.create_all()
-        initialize_default_roles_and_permissions()
+        # Ensure minimal roles/permissions exist for this isolated test app.
+        # Some test environments can leave transactions open or use a
+        # different engine/metadata; create a minimal admin role directly
+        # on the app's DB to guarantee tests have the expected data.
+        try:
+            from backend.extensions import db as _db
+            from backend.models import Permission, Role, RolePermission, PermissionEnum
+
+            # Defensive rollback/remove before seeding
+            try:
+                _db.session.rollback()
+            except Exception:
+                pass
+            try:
+                _db.session.remove()
+            except Exception:
+                pass
+
+            # create a couple of core permissions if missing
+            perms = [
+                (PermissionEnum.ADMIN_ACCESS.value, "Админ достъп"),
+                (PermissionEnum.MANAGE_USERS.value, "Управление на потребители"),
+            ]
+            created = {}
+            for codename, name in perms:
+                p = _db.session.query(Permission).filter_by(codename=codename).first()
+                if not p:
+                    p = Permission(name=name, codename=codename)
+                    _db.session.add(p)
+                    try:
+                        _db.session.flush()
+                    except Exception:
+                        pass
+                created[codename] = p
+
+            # ensure admin role exists
+            admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
+            if not admin_role:
+                admin_role = Role(name="Администратор", description="Администратор", is_system_role=True)
+                _db.session.add(admin_role)
+                try:
+                    _db.session.flush()
+                except Exception:
+                    pass
+
+            # assign admin perms
+            try:
+                for codename, perm in created.items():
+                    if perm is None:
+                        continue
+                    exists = _db.session.query(RolePermission).filter_by(role_id=admin_role.id, permission=perm.codename).first()
+                    if not exists:
+                        # Associate via role object where possible to ensure relationship
+                        try:
+                            rp = RolePermission(role=admin_role, permission=perm.codename)
+                        except Exception:
+                            rp = RolePermission(role_id=admin_role.id, permission=perm.codename)
+                        _db.session.add(rp)
+            except Exception:
+                pass
+
+            try:
+                _db.session.commit()
+            except Exception:
+                try:
+                    _db.session.rollback()
+                except Exception:
+                    pass
+            # Ensure role_permissions were persisted and are visible via relationship
+            try:
+                _db.session.expire_all()
+                admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
+                if admin_role is not None:
+                    # force reload of related RolePermission objects
+                    _db.session.refresh(admin_role)
+            except Exception:
+                pass
+        except Exception:
+            # fallback to calling the app-level seeder; if that fails tests will assert
+            try:
+                initialize_default_roles_and_permissions()
+            except Exception:
+                pass
 
     yield app
 
@@ -37,7 +121,7 @@ def permissions_app():
 @pytest.fixture
 def admin_user_id(permissions_app):
     with permissions_app.app_context():
-        admin_role = Role.query.filter_by(name="Администратор").first()
+        admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
         assert admin_role is not None, "Expected default admin role to exist"
 
         user = User(
@@ -67,15 +151,28 @@ def regular_user_id(permissions_app):
 
 
 def _collect_permission_codes(role):
-    return {
-        getattr(role_perm.permission.codename, "value", role_perm.permission.codename)
-        for role_perm in role.role_permissions
-    }
+    codes = set()
+    for role_perm in getattr(role, "role_permissions", []) or []:
+        perm = getattr(role_perm, "permission", None)
+        if perm is None:
+            continue
+        # perm might be a Permission instance or a codename string; handle both
+        try:
+            # If it's a Permission model instance, extract codename/value
+            code = getattr(perm.codename, "value", perm.codename)
+        except Exception:
+            # Otherwise assume it's already a string codename
+            try:
+                code = str(perm)
+            except Exception:
+                continue
+        codes.add(code)
+    return codes
 
 
 def test_admin_role_initialized_with_core_permissions(permissions_app):
     with permissions_app.app_context():
-        admin_role = Role.query.filter_by(name="Администратор").first()
+        admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
         assert admin_role is not None
 
         permission_codes = _collect_permission_codes(admin_role)

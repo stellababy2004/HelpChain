@@ -63,19 +63,19 @@
             </h1>
             <div>
               <a
-                href="{{ url_for('admin_roles.create_role') }}"
+                href="{{ safe_url_for('admin_roles.create_role') }}"
                 class="btn btn-success me-2"
               >
                 <i class="fas fa-plus me-1"></i>Нова роля
               </a>
               <a
-                href="{{ url_for('admin_roles.create_user') }}"
+                href="{{ safe_url_for('admin_roles.create_user') }}"
                 class="btn btn-primary me-2"
               >
                 <i class="fas fa-user-plus me-1"></i>Нов потребител
               </a>
               <a
-                href="{{ url_for('admin_roles.create_permission') }}"
+                href="{{ safe_url_for('admin_roles.create_permission') }}"
                 class="btn btn-warning"
               >
                 <i class="fas fa-key me-1"></i>Ново право
@@ -125,14 +125,14 @@
                 <div class="card-footer">
                   {% if not role.is_system_role %}
                   <a
-                    href="{{ url_for('admin_roles.edit_role', role_id=role.id) }}"
+                    href="{{ safe_url_for('admin_roles.edit_role', role_id=role.id) }}"
                     class="btn btn-sm btn-outline-primary me-1"
                   >
                     <i class="fas fa-edit"></i> Редактирай
                   </a>
                   <form
                     method="POST"
-                    action="{{ url_for('admin_roles.delete_role', role_id=role.id) }}"
+                    action="{{ safe_url_for('admin_roles.delete_role', role_id=role.id) }}"
                     class="d-inline"
                     onsubmit="return confirm('Сигурни ли сте, че искате да изтриете тази роля?')"
                   >
@@ -196,14 +196,14 @@
                       </td>
                       <td>
                         <a
-                          href="{{ url_for('admin_roles.manage_user_roles', user_id=user.id) }}"
+                          href="{{ safe_url_for('admin_roles.manage_user_roles', user_id=user.id) }}"
                           class="btn btn-sm btn-outline-primary me-1"
                         >
                           <i class="fas fa-user-tag"></i> Роли
                         </a>
                         <form
                           method="POST"
-                          action="{{ url_for('admin_roles.toggle_user_status', user_id=user.id) }}"
+                          action="{{ safe_url_for('admin_roles.toggle_user_status', user_id=user.id) }}"
                           class="d-inline"
                         >
                           <input

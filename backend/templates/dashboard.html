@@ -324,10 +324,10 @@ block head %}
         {{ _('Използвайте филтрите, за да работите по-бързо със заявките.') }}
       </div>
       <div class="d-flex gap-2">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary"
+        <a href="{{ safe_url_for('dashboard') }}" class="btn btn-outline-primary"
           >{{ _('Обнови таблото') }}</a
         >
-        <a href="{{ url_for('submit_request') }}" class="btn btn-primary"
+        <a href="{{ safe_url_for('submit_request') }}" class="btn btn-primary"
           >{{ _('Нова заявка') }}</a
         >
         <button type="button" class="btn btn-success" id="exportVolunteersBtn">

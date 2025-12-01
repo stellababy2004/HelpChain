@@ -491,22 +491,22 @@
           <span class="text-muted">© 2025 HelpChain.live</span>
           <div class="language-switcher">
             <a
-              class="btn btn-sm btn-outline-primary {% if not session.get('language') or session.get('language') == 'bg' %}active{% endif %}"
-              href="{{ url_for('set_language', language='bg', next=request.url) }}"
+              class="btn btn-sm btn-outline-primary {% if current_locale == 'bg' %}active{% endif %}"
+              href="{{ safe_url_for('set_language', language='bg', next=request.url) }}"
               role="button"
             >
               BG
             </a>
             <a
-              class="btn btn-sm btn-outline-info {% if session.get('language') == 'fr' %}active{% endif %}"
-              href="{{ url_for('set_language', language='fr', next=request.url) }}"
+              class="btn btn-sm btn-outline-info {% if current_locale == 'fr' %}active{% endif %}"
+              href="{{ safe_url_for('set_language', language='fr', next=request.url) }}"
               role="button"
             >
               FR
             </a>
             <a
-              class="btn btn-sm btn-outline-secondary {% if session.get('language') == 'en' %}active{% endif %}"
-              href="{{ url_for('set_language', language='en', next=request.url) }}"
+              class="btn btn-sm btn-outline-secondary {% if current_locale == 'en' %}active{% endif %}"
+              href="{{ safe_url_for('set_language', language='en', next=request.url) }}"
               role="button"
             >
               EN

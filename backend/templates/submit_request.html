@@ -35,7 +35,7 @@ HelpChain.live{% endblock %} {% block content %}
       <div class="glass p-4">
         <form
           method="POST"
-          action="{{ url_for('submit_request') }}"
+          action="{{ safe_url_for('submit_request') }}"
           enctype="multipart/form-data"
         >
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />

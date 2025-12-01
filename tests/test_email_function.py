@@ -3,12 +3,8 @@
 Test script for email functionality
 """
 import os
-import sys
 
-# Add backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
-
-from appy import app, send_email_2fa_code
+from backend.appy import app, send_email_2fa_code
 
 
 def test_email():

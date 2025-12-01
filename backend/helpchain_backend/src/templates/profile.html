@@ -122,13 +122,13 @@
     <header>
       <nav>
         <div class="nav-container">
-          <a href="{{ url_for('index') }}" class="logo">HelpChain</a>
+          <a href="{{ safe_url_for('index') }}" class="logo">HelpChain</a>
           <ul class="nav-menu">
-            <li><a href="{{ url_for('index') }}">Начало</a></li>
-            <li><a href="{{ url_for('about') }}">За нас</a></li>
-            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
-            <li><a href="{{ url_for('profile') }}">Профил</a></li>
-            <li><a href="{{ url_for('logout') }}">Изход</a></li>
+            <li><a href="{{ safe_url_for('index') }}">Начало</a></li>
+            <li><a href="{{ safe_url_for('about') }}">За нас</a></li>
+            <li><a href="{{ safe_url_for('dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ safe_url_for('profile') }}">Профил</a></li>
+            <li><a href="{{ safe_url_for('logout') }}">Изход</a></li>
           </ul>
         </div>
       </nav>

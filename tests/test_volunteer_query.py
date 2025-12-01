@@ -1,9 +1,8 @@
 import os
-import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "backend"))
-
-from appy import Volunteer, app, db
+from backend.appy import app
+from backend.extensions import db
+from backend.models import Volunteer
 
 with app.app_context():
     try:

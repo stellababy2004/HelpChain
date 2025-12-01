@@ -1,8 +1,6 @@
 import os
-import sys
 
-sys.path.insert(0, "backend")
-from appy import app
+from backend.appy import app
 
 # Test admin login
 with app.test_client() as client:

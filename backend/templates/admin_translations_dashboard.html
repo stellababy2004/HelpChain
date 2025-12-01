@@ -308,7 +308,7 @@
           </div>
           <div>
             <a
-              href="{{ url_for('admin_dashboard') }}"
+              href="{{ safe_url_for('admin_dashboard') }}"
               class="btn btn-outline-primary"
             >
               <i class="fas fa-arrow-left"></i> {{ _('Обратно към таблото') }}

@@ -6,8 +6,12 @@ sys.path.insert(0, "backend")
 # Import models to resolve relationships
 # Create Flask app for database access
 from flask import Flask
-from models import db
-from models_with_analytics import AnalyticsEvent, ChatbotConversation, UserBehavior
+from backend.extensions import db
+from backend.models_with_analytics import (
+    AnalyticsEvent,
+    ChatbotConversation,
+    UserBehavior,
+)
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = (
@@ -17,6 +21,18 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 with app.app_context():
+    # Ensure schema exists on this test DB before running direct queries.
+    try:
+        # Remove any older schema that might be present in the DB file so
+        # tests see the current models. This is safe for test runs but
+        # destructive to any pre-existing instance DB.
+        try:
+            db.drop_all()
+        except Exception:
+            pass
+        db.create_all()
+    except Exception:
+        pass
     print("=== ANALYTICS TEST RESULTS ===")
 
     # Check AnalyticsEvent count

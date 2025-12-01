@@ -38,7 +38,7 @@
       />
     </div>
     <button type="submit" class="btn btn-primary">{{ _('Запази') }}</button>
-    <a href="{{ url_for('admin_volunteers') }}" class="btn btn-secondary"
+    <a href="{{ safe_url_for('admin_volunteers') }}" class="btn btn-secondary"
       >{{ _('Назад') }}</a
     >
   </form>
