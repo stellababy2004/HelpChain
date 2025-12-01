@@ -517,17 +517,17 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('dashboard') }}">
+              <a class="nav-link" href="{{ safe_url_for('dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="{{ url_for('profile') }}">
+              <a class="nav-link active" href="{{ safe_url_for('profile') }}">
                 <i class="fas fa-user me-1"></i>Профил
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('submit_request') }}">
+              <a class="nav-link" href="{{ safe_url_for('submit_request') }}">
                 <i class="fas fa-plus-circle me-1"></i>Нова заявка
               </a>
             </li>
@@ -536,13 +536,13 @@
           <ul class="navbar-nav">
             {% if current_user.is_admin %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_panel') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin_panel') }}">
                 <i class="fas fa-cogs me-1"></i>Админ
               </a>
             </li>
             {% endif %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('logout') }}">
+              <a class="nav-link" href="{{ safe_url_for('logout') }}">
                 <i class="fas fa-sign-out-alt me-1"></i>Изход
               </a>
             </li>

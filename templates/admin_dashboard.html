@@ -583,7 +583,7 @@
             <li class="nav-item">
               <a
                 class="nav-link active"
-                href="{{ url_for('admin_dashboard') }}"
+                href="{{ safe_url_for('admin_dashboard') }}"
               >
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
@@ -591,20 +591,20 @@
             <li class="nav-item">
               <a
                 class="nav-link"
-                href="{{ url_for('admin_roles.roles_dashboard') }}"
+                href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
               >
                 <i class="fas fa-users-cog me-1"></i>Роли и права
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}">
                 <i class="fas fa-hand-holding-heart me-1"></i>Доброволци
               </a>
             </li>
             <li class="nav-item">
               <a
                 class="nav-link"
-                href="{{ url_for('analytics_main.admin_analytics') }}"
+                href="{{ safe_url_for('analytics_main.admin_analytics') }}"
               >
                 <i class="fas fa-chart-line me-1"></i>Аналитика
               </a>
@@ -612,7 +612,7 @@
             <li class="nav-item">
               <a
                 class="nav-link"
-                href="{{ url_for('notification_dashboard') }}"
+                href="{{ safe_url_for('notification_dashboard') }}"
               >
                 <i class="fas fa-bell me-1"></i>Нотификации
               </a>
@@ -633,14 +633,14 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" href="{{ url_for('profile') }}">
+                  <a class="dropdown-item" href="{{ safe_url_for('profile') }}">
                     <i class="fas fa-user me-2"></i>Профил
                   </a>
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{{ url_for('admin_settings') }}"
+                    href="{{ safe_url_for('admin_settings') }}"
                   >
                     <i class="fas fa-cog me-2"></i>Настройки
                   </a>
@@ -797,7 +797,7 @@
           <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
         </h4>
         <div class="action-grid">
-          <a href="{{ url_for('admin_volunteers') }}" class="action-card">
+          <a href="{{ safe_url_for('admin_volunteers') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-user-plus"></i>
             </div>
@@ -808,7 +808,7 @@
           </a>
 
           <a
-            href="{{ url_for('admin_roles.create_role') }}"
+            href="{{ safe_url_for('admin_roles.create_role') }}"
             class="action-card"
           >
             <div class="action-icon">
@@ -821,7 +821,7 @@
           </a>
 
           <a
-            href="{{ url_for('analytics_main.admin_analytics') }}"
+            href="{{ safe_url_for('analytics_main.admin_analytics') }}"
             class="action-card"
           >
             <div class="action-icon">
@@ -833,7 +833,7 @@
             </div>
           </a>
 
-          <a href="{{ url_for('notification_dashboard') }}" class="action-card">
+          <a href="{{ safe_url_for('notification_dashboard') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-envelope"></i>
             </div>
@@ -841,7 +841,7 @@
             <div class="action-description">Управлявай имейл нотификациите</div>
           </a>
 
-          <a href="{{ url_for('admin_settings') }}" class="action-card">
+          <a href="{{ safe_url_for('admin_settings') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-cog"></i>
             </div>
@@ -851,7 +851,7 @@
             </div>
           </a>
 
-          <a href="{{ url_for('export_data') }}" class="action-card">
+          <a href="{{ safe_url_for('export_data') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-file-export"></i>
             </div>
@@ -931,24 +931,24 @@
                   </tr>
                 </thead>
                 <tbody id="requestsTable">
-                  {% if requests.items %} {% for request in requests.items %}
+                  {% if requests.items %} {% for req in requests.items %}
                   <tr>
-                    <td>{{ request.id }}</td>
-                    <td>{{ request.name }}</td>
-                    <td>{{ request.phone }}</td>
-                    <td>{{ request.location }}</td>
-                    <td>{{ request.category }}</td>
+                    <td>{{ req.id }}</td>
+                    <td>{{ req.name }}</td>
+                    <td>{{ req.phone }}</td>
+                    <td>{{ req.location }}</td>
+                    <td>{{ req.category }}</td>
                     <td>
                       <span
-                        class="status-badge status-{{ request.status|lower }}"
+                        class="status-badge status-{{ req.status|lower }}"
                       >
-                        {{ request.status }}
+                        {{ req.status }}
                       </span>
                     </td>
                     <td>
-                      {% if request.urgency == 'high' %}
+                      {% if req.urgency == 'high' %}
                       <span class="badge bg-danger">Висока</span>
-                      {% elif request.urgency == 'medium' %}
+                      {% elif req.urgency == 'medium' %}
                       <span class="badge bg-warning">Средна</span>
                       {% else %}
                       <span class="badge bg-success">Ниска</span>
@@ -958,19 +958,19 @@
                       <div class="btn-group" role="group">
                         <button
                           class="btn btn-primary-modern btn-modern btn-sm"
-                          onclick="viewRequest({{ request.id }})"
+                          onclick="viewRequest({{ req.id }})"
                         >
                           <i class="fas fa-eye"></i>
                         </button>
                         <button
                           class="btn btn-success-modern btn-modern btn-sm"
-                          onclick="assignVolunteer({{ request.id }})"
+                          onclick="assignVolunteer({{ req.id }})"
                         >
                           <i class="fas fa-user-plus"></i>
                         </button>
                         <button
                           class="btn btn-warning-modern btn-modern btn-sm"
-                          onclick="updateStatus({{ request.id }}, 'completed')"
+                          onclick="updateStatus({{ req.id }}, 'completed')"
                         >
                           <i class="fas fa-check"></i>
                         </button>

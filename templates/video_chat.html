@@ -15,8 +15,8 @@
       <div class="container">
         <a class="navbar-brand" href="/">HelpChain</a>
         <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
-          <a class="nav-link" href="{{ url_for('logout') }}">Изход</a>
+          <a class="nav-link" href="{{ safe_url_for('dashboard') }}">Dashboard</a>
+          <a class="nav-link" href="{{ safe_url_for('logout') }}">Изход</a>
         </div>
       </div>
     </nav>
@@ -36,8 +36,8 @@
                 == current_user.id else session.initiator.username }}
               </h5>
               <p>Статус: {{ session.status }}</p>
-              <a
-                href="{{ url_for('join_video_chat', session_id=session.session_id) }}"
+                <a
+                href="{{ safe_url_for('join_video_chat', session_id=session.session_id) }}"
                 class="btn btn-primary"
                 >Присъедини се</a
               >

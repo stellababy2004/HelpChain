@@ -304,3 +304,20 @@ async function cleanOldCache() {
     console.error("[SW] Error during cache cleanup:", error);
   }
 }
+
+// Placeholder Service Worker
+self.addEventListener('install', (event) => {
+    console.log('Service Worker installed.');
+});
+
+self.addEventListener('fetch', (event) => {
+    console.log('Fetch event:', event.request.url);
+});
+
+import os
+from flask import send_file
+
+@app.route('/sw.js')
+def service_worker():
+    sw_path = os.path.join(app.root_path, 'sw.js')  # Пътят към файла
+    return send_file(sw_path, mimetype='application/javascript')

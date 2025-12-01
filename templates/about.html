@@ -405,29 +405,29 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('index') }}">Начало</a>
+              <a class="nav-link" href="{{ safe_url_for('index') }}">Начало</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="{{ url_for('about') }}"
+              <a class="nav-link active" href="{{ safe_url_for('about') }}"
                 >За нас</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('all_categories') }}"
+              <a class="nav-link" href="{{ safe_url_for('all_categories') }}"
                 >Категории</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('faq') }}">ЧЗВ</a>
+              <a class="nav-link" href="{{ safe_url_for('faq') }}">ЧЗВ</a>
             </li>
           </ul>
 
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('login') }}">Вход</a>
+              <a class="nav-link" href="{{ safe_url_for('login') }}">Вход</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('register') }}"
+              <a class="nav-link" href="{{ safe_url_for('register') }}"
                 >Регистрация</a
               >
             </li>
@@ -652,22 +652,22 @@
             <h5>Бързи връзки</h5>
             <ul class="list-unstyled">
               <li>
-                <a href="{{ url_for('all_categories') }}" class="footer-link"
+                <a href="{{ safe_url_for('all_categories') }}" class="footer-link"
                   >Категории помощ</a
                 >
               </li>
               <li>
-                <a href="{{ url_for('faq') }}" class="footer-link"
+                <a href="{{ safe_url_for('faq') }}" class="footer-link"
                   >Често задавани въпроси</a
                 >
               </li>
               <li>
-                <a href="{{ url_for('privacy') }}" class="footer-link"
+                <a href="{{ safe_url_for('privacy') }}" class="footer-link"
                   >Поверителност</a
                 >
               </li>
               <li>
-                <a href="{{ url_for('terms') }}" class="footer-link"
+                <a href="{{ safe_url_for('terms') }}" class="footer-link"
                   >Условия за ползване</a
                 >
               </li>

@@ -11,7 +11,7 @@
     <!-- Brand -->
     <a
       class="navbar-brand d-flex align-items-center text-decoration-none"
-      href="{{ url_for('index') }}"
+      href="{{ safe_url_for('index') }}"
     >
       <i class="fas fa-hand-holding-heart text-primary me-2 fs-5"></i>
       <span class="fw-bold text-primary h4 mb-0">HelpChain</span>
@@ -40,7 +40,7 @@
         <li class="nav-item">
           <a
             class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast hover-scale-sm {{ 'active bg-primary text-white' if request.endpoint == 'volunteer_dashboard' else 'text-gray-700 hover-primary' }}"
-            href="{{ url_for('volunteer_dashboard') }}"
+            href="{{ safe_url_for('volunteer_dashboard') }}"
             aria-label="Dashboard - main overview page"
           >
             <i
@@ -53,7 +53,7 @@
         <li class="nav-item">
           <a
             class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast text-gray-700 hover-primary"
-            href="{{ url_for('volunteer_dashboard') }}#active-tasks"
+            href="{{ safe_url_for('volunteer_dashboard') }}#active-tasks"
             aria-label="My tasks - view assigned tasks"
           >
             <i class="fas fa-tasks me-2" aria-hidden="true"></i>{{ _('Моите
@@ -63,7 +63,7 @@
         <li class="nav-item">
           <a
             class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast text-gray-700 hover-primary"
-            href="{{ url_for('volunteer_dashboard') }}#available-tasks"
+            href="{{ safe_url_for('volunteer_dashboard') }}#available-tasks"
             aria-label="Available tasks - browse tasks to accept"
           >
             <i class="fas fa-list me-2" aria-hidden="true"></i>{{ _('Налични
@@ -73,7 +73,7 @@
         <li class="nav-item">
           <a
             class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast text-gray-700 hover-primary"
-            href="{{ url_for('volunteer_dashboard') }}#location-update"
+            href="{{ safe_url_for('volunteer_dashboard') }}#location-update"
             aria-label="Profile - manage your account"
           >
             <i class="fas fa-user me-2" aria-hidden="true"></i>{{ _('Профил') }}
@@ -82,7 +82,7 @@
         <li class="nav-item">
           <a
             class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast text-gray-700 hover-primary"
-            href="{{ url_for('volunteer_dashboard') }}#achievements-section"
+            href="{{ safe_url_for('volunteer_dashboard') }}#achievements-section"
             aria-label="Achievements - view earned badges"
           >
             <i class="fas fa-trophy me-2" aria-hidden="true"></i>{{
@@ -94,7 +94,7 @@
         <li class="nav-item">
           <a
             class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'admin_dashboard' else 'text-gray-700 hover-primary' }}"
-            href="{{ url_for('admin_dashboard') }}"
+            href="{{ safe_url_for('admin_dashboard') }}"
           >
             <i class="fas fa-tachometer-alt me-2"></i>{{ _('Табло') }}
           </a>
@@ -110,7 +110,7 @@
         <li class="nav-item">
           <a
             class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'analytics_main.analytics_page' else 'text-gray-700 hover-primary' }}"
-            href="{{ url_for('analytics_main.analytics_page') }}"
+            href="{{ safe_url_for('analytics_main.analytics_page') }}"
           >
             <i class="fas fa-chart-bar me-2"></i>{{ _('Аналитика') }}
           </a>
@@ -122,7 +122,7 @@
       <ul class="navbar-nav ms-auto d-flex align-items-center">
         <!-- Language Switcher -->
         <li class="nav-item dropdown me-2">
-          <button
+            <button
             class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center px-3 py-2 rounded-pill btn-hover-lift focus-ring"
             type="button"
             data-bs-toggle="dropdown"
@@ -136,13 +136,13 @@
               session.get('language') == 'fr' %}FR{% else %}BG{% endif %}
             </span>
           </button>
-          <ul
+            <ul
             class="dropdown-menu dropdown-menu-end shadow border-0 rounded-lg mt-2"
           >
             <li>
               <a
-                href="{{ url_for('set_language', language='bg', next=request.url) }}"
-                class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if not session.get('language') or session.get('language') == 'bg' %}active{% endif %}"
+                href="{{ safe_url_for('set_language', language='bg', next=request.url) }}"
+                class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if current_locale == 'bg' %}active{% endif %}"
               >
                 <span class="flag-icon flag-icon-bg me-3"></span>{{
                 _('Български') }}
@@ -150,16 +150,16 @@
             </li>
             <li>
               <a
-                href="{{ url_for('set_language', language='en', next=request.url) }}"
-                class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if session.get('language') == 'en' %}active{% endif %}"
+                href="{{ safe_url_for('set_language', language='en', next=request.url) }}"
+                class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if current_locale == 'en' %}active{% endif %}"
               >
                 <span class="flag-icon flag-icon-us me-3"></span>English
               </a>
             </li>
             <li>
               <a
-                href="{{ url_for('set_language', language='fr', next=request.url) }}"
-                class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if session.get('language') == 'fr' %}active{% endif %}"
+                href="{{ safe_url_for('set_language', language='fr', next=request.url) }}"
+                class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50 {% if current_locale == 'fr' %}active{% endif %}"
               >
                 <span class="flag-icon flag-icon-fr me-3"></span>Français
               </a>
@@ -218,7 +218,7 @@
             <li>
               <a
                 class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50"
-                href="{{ url_for('volunteer_profile') }}"
+                href="{{ safe_url_for('volunteer_profile') }}"
               >
                 <i class="fas fa-user me-3 text-primary"></i>{{ _('Профил') }}
               </a>
@@ -226,7 +226,7 @@
             <li>
               <a
                 class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50"
-                href="{{ url_for('volunteer_profile') }}"
+                href="{{ safe_url_for('volunteer_profile') }}"
               >
                 <i class="fas fa-cog me-3 text-secondary"></i>{{ _('Настройки')
                 }}
@@ -236,7 +236,7 @@
             <li>
               <a
                 class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast text-danger hover-bg-danger-50"
-                href="{{ url_for('volunteer_logout') }}"
+                href="{{ safe_url_for('volunteer_logout') }}"
               >
                 <i class="fas fa-sign-out-alt me-3"></i>{{ _('Изход') }}
               </a>
@@ -245,7 +245,7 @@
             <li>
               <a
                 class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50"
-                href="{{ url_for('admin_dashboard') }}"
+                href="{{ safe_url_for('admin_dashboard') }}"
               >
                 <i class="fas fa-tachometer-alt me-3 text-primary"></i>{{
                 _('Админ панел') }}
@@ -255,7 +255,7 @@
             <li>
               <a
                 class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast text-danger hover-bg-danger-50"
-                href="{{ url_for('admin_logout') }}"
+                href="{{ safe_url_for('admin_logout') }}"
               >
                 <i class="fas fa-sign-out-alt me-3"></i>Изход
               </a>

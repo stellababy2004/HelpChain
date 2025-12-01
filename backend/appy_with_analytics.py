@@ -102,6 +102,51 @@ migrate = Migrate(app, db)
 db.init_app(app)
 migrate = Migrate(app, db)
 
+# Test-only: force an admin login for pytest runs. Mirrors the helper in
+# the lightweight `appy.py` module but avoids calling `login_user()` so
+# it's safe for test AdminUser variants that don't implement Flask-Login
+# attributes. Sets server-side session keys which fixtures rely on.
+@app.route("/_pytest_force_admin_login", methods=["GET"])  # test-only
+def _pytest_force_admin_login():
+    if not app.config.get("TESTING"):
+        return ("Not Found", 404)
+    try:
+        admin_id = session.get("admin_user_id") or request.args.get("admin_id")
+        admin = None
+        if admin_id:
+            try:
+                admin = db.session.get(AdminUser, int(admin_id))
+            except Exception:
+                admin = None
+
+        if admin is None:
+            username = request.args.get("username") or "admin"
+            try:
+                admin = AdminUser.query.filter_by(username=username).first()
+            except Exception:
+                admin = None
+
+        if not admin:
+            return jsonify({"success": False, "error": "admin not found"}), 404
+
+        try:
+            session["admin_logged_in"] = True
+            session["admin_user_id"] = admin.id
+            session["admin_username"] = admin.username
+            try:
+                session.modified = True
+            except Exception:
+                try:
+                    session["modified"] = True
+                except Exception:
+                    pass
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+
+        return jsonify({"success": True, "admin_id": admin.id, "username": admin.username}), 200
+    except Exception as exc:
+        return jsonify({"success": False, "error": str(exc)}), 500
+
 # -----------------------------------------------------------------------------
 # I18N / Babel
 # -----------------------------------------------------------------------------

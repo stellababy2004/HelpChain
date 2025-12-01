@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container mt-5 volunteer-register-container">
   <h2 class="mb-4 text-success" id="vr-title">Стани доброволец</h2>
-  <form method="POST" action="{{ url_for('volunteer_register') }}">
+  <form method="POST" action="{{ safe_url_for('volunteer_register') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="mb-3">
       <label for="name" class="form-label" id="lbl-name">Име:</label>

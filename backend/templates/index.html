@@ -151,7 +151,7 @@ content %}
         </div>
       </div>
       <form
-        action="{{ url_for('submit_request') }}"
+        action="{{ safe_url_for('submit_request') }}"
         method="get"
         class="d-inline mb-4"
       >
@@ -169,13 +169,13 @@ content %}
       </form>
       <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
         <a
-          href="{{ url_for('volunteer_login') }}"
+          href="{{ safe_url_for('volunteer_login') }}"
           class="btn btn-outline-primary btn-sm"
         >
           <i class="fas fa-door-open me-1"></i>{{ _('Вход за доброволци') }}
         </a>
         <a
-          href="{{ url_for('volunteer_register') }}"
+          href="{{ safe_url_for('volunteer_register') }}"
           class="btn btn-success btn-sm"
         >
           <i class="fas fa-user-plus me-1"></i>{{ _('Регистрация на доброволец')
@@ -378,7 +378,7 @@ _('„Чувствам се подкрепен и разбран!“'), "author"
       </a>
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="{{ url_for('volunteer_register') }}">
+      <a class="nav-link text-dark" href="{{ safe_url_for('volunteer_register') }}">
         <i class="fa fa-hands-helping me-2"></i>{{ _('Стани доброволец') }}
       </a>
     </li>
@@ -393,7 +393,7 @@ _('„Чувствам се подкрепен и разбран!“'), "author"
       >
     </li>
     <li class="nav-item mb-2">
-      <a class="nav-link text-dark" href="{{ url_for('feedback') }}">
+      <a class="nav-link text-dark" href="{{ safe_url_for('feedback') }}">
         <i class="fa fa-comment-dots me-2"></i>{{ _('Обратна връзка') }}
       </a>
     </li>
@@ -416,7 +416,7 @@ _('„Чувствам се подкрепен и разбран!“'), "author"
     {{ _('Регистрирай се и помогни на хора в нужда – всеки може да бъде герой!')
     }}
   </p>
-  <a href="{{ url_for('volunteer_register') }}" class="btn btn-success mt-2"
+  <a href="{{ safe_url_for('volunteer_register') }}" class="btn btn-success mt-2"
     >{{ _('Регистрирай се като доброволец') }}</a
   >
 </div>

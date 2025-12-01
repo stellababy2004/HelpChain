@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>CSRF грешка</title>
+    <style>
+      body{font-family:system-ui,-apple-system,Segoe UI, Roboto, "Helvetica Neue", Arial; padding:24px}
+      .wrap{max-width:760px;margin:16px auto}
+      h1{color:#c00}
+      pre{background:#f7f7f7;padding:12px;border-radius:6px}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>CSRF проверка не е преминала</h1>
+      <p>Заявката не съдържа валиден CSRF токен или сесията е изтекла. Моля опитайте отново чрез формата или през уеб интерфейса.</p>
+      {% if message %}
+      <h3>Съобщение:</h3>
+      <pre>{{ message }}</pre>
+      {% endif %}
+      <p>За бързо изпробване от терминал може да получите формата първо (GET), придържайки се към бисквитките и след това да изпратите POST с полето за CSRF.</p>
+    </div>
+  </body>
+</html>

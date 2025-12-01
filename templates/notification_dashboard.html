@@ -167,7 +167,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="{{ url_for('admin_dashboard') }}">
+        <a class="navbar-brand" href="{{ safe_url_for('admin_dashboard') }}">
           <i class="fas fa-shield-alt me-2"></i>HelpChain Admin
         </a>
         <button
@@ -181,19 +181,19 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}">
                 <i class="fas fa-users me-1"></i>Доброволци
               </a>
             </li>
             <li class="nav-item">
               <a
                 class="nav-link"
-                href="{{ url_for('analytics_main.admin_analytics') }}"
+                href="{{ safe_url_for('analytics_main.admin_analytics') }}"
               >
                 <i class="fas fa-chart-bar me-1"></i>Аналитика
               </a>
@@ -213,14 +213,14 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" href="{{ url_for('profile') }}">
+                  <a class="dropdown-item" href="{{ safe_url_for('profile') }}">
                     <i class="fas fa-user me-2"></i>Профил
                   </a>
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{{ url_for('admin_settings') }}"
+                    href="{{ safe_url_for('admin_settings') }}"
                   >
                     <i class="fas fa-cog me-2"></i>Настройки
                   </a>
@@ -229,7 +229,7 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ url_for('logout') }}">
+                  <a class="dropdown-item" href="{{ safe_url_for('logout') }}">
                     <i class="fas fa-sign-out-alt me-2"></i>Изход
                   </a>
                 </li>
@@ -245,7 +245,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ url_for('admin_dashboard') }}">
+            <a href="{{ safe_url_for('admin_dashboard') }}">
               <i class="fas fa-home me-1"></i>Dashboard
             </a>
           </li>
@@ -360,7 +360,7 @@
             </button>
           </div>
           <div>
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">
+            <a href="{{ safe_url_for('admin_dashboard') }}" class="btn btn-primary">
               <i class="fas fa-arrow-left me-1"></i>Назад към Dashboard
             </a>
           </div>

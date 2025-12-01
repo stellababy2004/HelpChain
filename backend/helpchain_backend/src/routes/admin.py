@@ -481,6 +481,35 @@ def admin_dashboard():
         for v in volunteers
     ]
 
+    # Defensive stats: ensure templates always receive a `stats` mapping
+    try:
+        total_requests = len(requests) if requests is not None else 0
+    except Exception:
+        total_requests = 0
+    try:
+        pending_requests = sum(1 for r in requests if getattr(r, "status", None) not in ("completed", "done", None))
+    except Exception:
+        pending_requests = 0
+    try:
+        total_volunteers = len(volunteers) if volunteers is not None else 0
+    except Exception:
+        total_volunteers = 0
+
+    stats = {
+        "total_requests": total_requests,
+        "pending_requests": pending_requests,
+        "total_volunteers": total_volunteers,
+    }
+
+    # Log the final template context summary for diagnostics during tests
+    try:
+        import logging as _logging
+
+        _log = _logging.getLogger(__name__)
+        _log.info("admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s", stats, total_requests, total_volunteers)
+    except Exception:
+        pass
+
     return render_template(
         "admin_dashboard.html",
         requests={"items": requests},
@@ -488,6 +517,7 @@ def admin_dashboard():
         requests_json=requests_dict,
         volunteers=volunteers,
         volunteers_json=volunteers_dict,
+        stats=stats,
     )
 
 

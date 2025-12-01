@@ -12,7 +12,7 @@ def utc_now() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-from extensions import db
+from backend.extensions import db
 
 
 class AdminRole(Enum):
@@ -31,7 +31,7 @@ This keeps existing imports in the codebase working while ensuring SQLAlchemy
 only registers each mapped class once.
 """
 
-from models import (
+from backend.models import (
     AdminUser,
     Feedback,
     Request,

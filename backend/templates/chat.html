@@ -242,7 +242,7 @@
                 {{ room.online_count or 0 }} {{ _('онлайн') }}
               </div>
               <a
-                href="{{ url_for('chat_room', room_id=room.id) }}"
+                href="{{ safe_url_for('chat_room', room_id=room.id) }}"
                 class="join-btn"
               >
                 <i class="fas fa-sign-in-alt"></i> {{ _('Влез') }}
@@ -277,7 +277,7 @@
                 {{ room.online_count or 0 }} {{ _('онлайн') }}
               </div>
               <a
-                href="{{ url_for('chat_room', room_id=room.id) }}"
+                href="{{ safe_url_for('chat_room', room_id=room.id) }}"
                 class="join-btn"
               >
                 <i class="fas fa-sign-in-alt"></i> {{ _('Влез') }}

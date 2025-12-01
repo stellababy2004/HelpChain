@@ -4,12 +4,8 @@ Test script to verify error handling functionality
 """
 
 import os
-import sys
 
-# Add backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
-
-from appy import app
+from backend.appy import app
 
 
 def test_error_handlers():

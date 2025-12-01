@@ -158,17 +158,17 @@
 
         <div class="login-links">
           <p class="mb-2">
-            <a href="{{ url_for('register') }}">
+            <a href="{{ safe_url_for('register') }}">
               <i class="fas fa-user-plus me-1"></i>Стани доброволец
             </a>
           </p>
           <p class="mb-2">
-            <a href="{{ url_for('index') }}">
+            <a href="{{ safe_url_for('index') }}">
               <i class="fas fa-home me-1"></i>Обратно към началната страница
             </a>
           </p>
           <p class="mb-0">
-            <a href="{{ url_for('login') }}">
+            <a href="{{ safe_url_for('login') }}">
               <i class="fas fa-user me-1"></i>Вход като потребител
             </a>
           </p>

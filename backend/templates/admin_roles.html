@@ -40,7 +40,7 @@
           <i class="fas fa-shield-alt"></i> {{ _('Управление на роли') }}
         </a>
         <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+          <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}">
             <i class="fas fa-arrow-left"></i> {{ _('Обратно към админ панел') }}
           </a>
         </div>
@@ -56,13 +56,13 @@
             </h2>
             <div>
               <a
-                href="{{ url_for('admin_roles.create_role') }}"
+                href="{{ safe_url_for('admin_roles.create_role') }}"
                 class="btn btn-success"
               >
                 <i class="fas fa-plus"></i> {{ _('Нова роля') }}
               </a>
               <a
-                href="{{ url_for('admin_roles.create_user') }}"
+                href="{{ safe_url_for('admin_roles.create_user') }}"
                 class="btn btn-primary"
               >
                 <i class="fas fa-user-plus"></i> {{ _('Нов потребител') }}
@@ -122,7 +122,7 @@
                   <td>
                     {% if not role.is_system_role %}
                     <a
-                      href="{{ url_for('admin_roles.edit_role', role_id=role.id) }}"
+                      href="{{ safe_url_for('admin_roles.edit_role', role_id=role.id) }}"
                       class="btn btn-sm btn-outline-primary"
                     >
                       <i class="fas fa-edit"></i>
@@ -190,7 +190,7 @@
                   </td>
                   <td>
                     <a
-                      href="{{ url_for('admin_roles.manage_user_roles', user_id=user.id) }}"
+                      href="{{ safe_url_for('admin_roles.manage_user_roles', user_id=user.id) }}"
                       class="btn btn-sm btn-outline-primary"
                     >
                       <i class="fas fa-user-tag"></i> {{ _('Роли') }}

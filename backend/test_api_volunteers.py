@@ -12,7 +12,21 @@ class TestVolunteerAPI:
         self.app.config["TESTING"] = True
         self.client = self.app.test_client()
         with self.app.app_context():
+            # Ensure a clean schema for each test run. Some modules may
+            # seed data at import time; drop existing tables before
+            # creating them so tests start from an empty database.
+            try:
+                db.drop_all()
+            except Exception:
+                pass
             db.create_all()
+            # Defensive: remove any pre-seeded volunteers that may exist
+            # due to module-level seeding in other modules imported by the app.
+            try:
+                db.session.query(Volunteer).delete()
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
 
     def teardown_method(self):
         """Clean up after each test method."""

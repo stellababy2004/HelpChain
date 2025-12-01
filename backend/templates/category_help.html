@@ -46,17 +46,17 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <div class="navbar-nav ms-auto">
-            <a class="nav-link" href="{{ url_for('index') }}"
+            <a class="nav-link" href="{{ safe_url_for('index') }}"
               ><i class="fas fa-home me-1"></i>{{ _('Начало') }}</a
             >
-            <a class="nav-link" href="{{ url_for('all_categories') }}"
+            <a class="nav-link" href="{{ safe_url_for('all_categories') }}"
               ><i class="fas fa-list me-1"></i>{{ _('Категории') }}</a
             >
-            <a class="nav-link" href="{{ url_for('volunteer_register') }}"
+            <a class="nav-link" href="{{ safe_url_for('volunteer_register') }}"
               ><i class="fas fa-user-plus me-1"></i>{{ _('Стани доброволец')
               }}</a
             >
-            <a class="nav-link" href="{{ url_for('admin_login') }}"
+            <a class="nav-link" href="{{ safe_url_for('admin_login') }}"
               ><i class="fas fa-user-shield me-1"></i>{{ _('Админ вход') }}</a
             >
           </div>
@@ -74,7 +74,7 @@
           категория') }}
         </p>
         <a
-          href="{{ url_for('submit_request') }}"
+          href="{{ safe_url_for('submit_request') }}"
           class="btn btn-light btn-lg px-4"
         >
           <i class="fas fa-plus-circle me-2"></i>{{ _('Подайте заявка') }}
@@ -153,7 +153,7 @@
           <p class="text-muted">
             {{ _('В момента няма регистрирани доброволци в тази категория.') }}
           </p>
-          <a href="{{ url_for('volunteer_register') }}" class="btn btn-primary">
+          <a href="{{ safe_url_for('volunteer_register') }}" class="btn btn-primary">
             <i class="fas fa-user-plus me-2"></i>{{ _('Стани първият
             доброволец') }}
           </a>
@@ -162,12 +162,12 @@
 
         <div class="text-center mt-5">
           <a
-            href="{{ url_for('all_categories') }}"
+            href="{{ safe_url_for('all_categories') }}"
             class="btn btn-outline-primary me-2"
           >
             <i class="fas fa-arrow-left me-1"></i>{{ _('Всички категории') }}
           </a>
-          <a href="{{ url_for('index') }}" class="btn btn-primary">
+          <a href="{{ safe_url_for('index') }}" class="btn btn-primary">
             <i class="fas fa-home me-1"></i>{{ _('Към началната страница') }}
           </a>
         </div>
@@ -188,17 +188,17 @@
             <h5>{{ _('Връзки') }}</h5>
             <ul class="list-unstyled">
               <li>
-                <a href="{{ url_for('privacy') }}" class="text-light"
+                <a href="{{ safe_url_for('privacy') }}" class="text-light"
                   >{{ _('Политика за поверителност') }}</a
                 >
               </li>
               <li>
-                <a href="{{ url_for('terms') }}" class="text-light"
+                <a href="{{ safe_url_for('terms') }}" class="text-light"
                   >{{ _('Условия за ползване') }}</a
                 >
               </li>
               <li>
-                <a href="{{ url_for('faq') }}" class="text-light"
+                <a href="{{ safe_url_for('faq') }}" class="text-light"
                   >{{ _('ЧЗВ') }}</a
                 >
               </li>
