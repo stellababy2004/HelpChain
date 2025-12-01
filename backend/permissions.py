@@ -426,11 +426,11 @@ def initialize_default_roles_and_permissions():
         except Exception:
             pass
         try:
-            from backend.extensions import db as _ext_db
+            from backend.extensions import db as _ext_db, get_db_engine
 
             engine = None
             try:
-                engine = _ext_db.get_engine(current_app)
+                engine = get_db_engine(current_app, _ext_db)
             except Exception:
                 engine = getattr(_ext_db, "engine", None)
 

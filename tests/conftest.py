@@ -77,6 +77,61 @@ from unittest.mock import MagicMock, patch
 
 from sqlalchemy.pool import StaticPool
 
+
+# Minimal compatibility helper used only in tests to resolve the actual
+# SQLAlchemy Engine in a way that works across Flask-SQLAlchemy versions.
+def _resolve_engine(app=None, db_obj=None):
+    try:
+        # Prefer a centralized helper from backend.extensions if available
+        try:
+            from backend.extensions import get_db_engine as _be_get_db_engine
+
+            try:
+                return _be_get_db_engine(app, db_obj)
+            except Exception:
+                # fall through to attribute-based fallbacks
+                pass
+        except Exception:
+            pass
+
+        # If a db object wasn't passed, try to obtain the canonical one
+        if db_obj is None:
+            try:
+                import importlib
+
+                be_ext = importlib.import_module("backend.extensions")
+                db_obj = getattr(be_ext, "db", None)
+            except Exception:
+                db_obj = None
+
+        if db_obj is None:
+            return None
+
+        # Prefer attribute access (Flask-SQLAlchemy 3.x exposes `.engine`)
+        engine = getattr(db_obj, "engine", None)
+        if engine is not None:
+            return engine
+
+        # Fallback to get_engine(...) if present
+        if hasattr(db_obj, "get_engine"):
+            try:
+                return db_obj.get_engine(app) if app is not None else db_obj.get_engine()
+            except Exception:
+                pass
+
+        # Fallback to engines mapping when present (Flask-SQLAlchemy 3.x)
+        if hasattr(db_obj, "engines"):
+            try:
+                emap = getattr(db_obj, "engines")
+                if isinstance(emap, dict) and emap:
+                    return list(emap.values())[0]
+            except Exception:
+                pass
+
+        return None
+    except Exception:
+        return None
+
 # NOTE: Avoid importing model modules at top-level here. Models must be imported
 # against the canonical `db` instance which the app provides; importing them
 # too early can bind them to a different SQLAlchemy() object.
@@ -614,12 +669,7 @@ try:
         except Exception:
             # Try to create tables with the models' Base against the db engine
             try:
-                engine = getattr(_db, "engine", None)
-                if engine is None and hasattr(_db, "get_engine"):
-                    try:
-                        engine = _db.get_engine()
-                    except Exception:
-                        engine = None
+                engine = _resolve_engine(None, _db) or getattr(_db, "engine", None)
                 if engine is not None:
                     bm = importlib.import_module("backend.models")
                     Base = getattr(bm, "Base", None)
@@ -693,12 +743,7 @@ def app():
                         # recreation on the actual engine used by the Flask-SQLAlchemy
                         # extension so the app's DB reflects current model definitions.
                         try:
-                            engine = None
-                            try:
-                                engine = _db.get_engine(app)
-                            except Exception:
-                                engine = getattr(_db, "engine", None)
-
+                            engine = _resolve_engine(app, _db) or getattr(_db, "engine", None)
                             # Fallback: try to extract from engines mapping when
                             # present (Flask-SQLAlchemy 3.x exposes engines dict)
                             if engine is None and hasattr(_db, "engines"):
@@ -746,12 +791,7 @@ def app():
                             bm = importlib.import_module("backend.models")
                             Base = getattr(bm, "Base", None)
                             if Base is not None and _db is not None:
-                                engine = None
-                                try:
-                                    # Preferred: get_engine(app) when available
-                                    engine = _db.get_engine(app)
-                                except Exception:
-                                    engine = getattr(_db, "engine", None)
+                                engine = _resolve_engine(app, _db) or getattr(_db, "engine", None)
                                 if engine is not None:
                                     Base.metadata.create_all(bind=engine)
                         except Exception:
@@ -971,13 +1011,7 @@ def db_session(app):
 
                     # Fallback: try db.get_engine(app) or engines map
                     if engine_candidate is None:
-                        try:
-                            engine_candidate = db.get_engine(app)
-                        except Exception:
-                            try:
-                                engine_candidate = getattr(db, "engine", None)
-                            except Exception:
-                                engine_candidate = None
+                        engine_candidate = _resolve_engine(app, db) or getattr(db, "engine", None)
                     if engine_candidate is None and hasattr(db, "engines"):
                         try:
                             emap = getattr(db, "engines")
@@ -1275,11 +1309,7 @@ def session_db(app):
         # recently-added columns (e.g. volunteers.latitude/longitude) is
         # created on the actual engine used by the Flask-SQLAlchemy extension.
         try:
-            engine = None
-            try:
-                engine = _db.get_engine(app)
-            except Exception:
-                engine = getattr(_db, "engine", None)
+            engine = _resolve_engine(app, _db) or getattr(_db, "engine", None)
 
             if engine is not None:
                 try:
@@ -1427,7 +1457,7 @@ def clear_tables_per_test(app):
 
     try:
         try:
-            engine = _db.get_engine(app)
+            engine = _resolve_engine(app, _db) or getattr(_db, "engine", None)
         except Exception:
             engine = getattr(_db, "engine", None)
 

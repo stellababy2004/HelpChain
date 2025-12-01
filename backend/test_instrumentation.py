@@ -77,7 +77,9 @@ if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1" and db is not None:
 
         try:
             try:
-                default_eng = db.get_engine()
+                from backend.extensions import get_db_engine
+
+                default_eng = get_db_engine(None, db)
             except Exception:
                 default_eng = getattr(db, "engine", None)
             if default_eng is not None:
