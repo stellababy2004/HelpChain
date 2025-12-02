@@ -1280,7 +1280,12 @@ def api_request_detail(request_id: int):
 @app.get("/demo/volunteers")
 def demo_volunteers():
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    return send_from_directory(base_dir, "volunteer_dashboard.html")
+    # The dashboard template lives in `backend/templates/`; render it via Jinja
+    try:
+        return render_template("volunteer_dashboard.html")
+    except Exception:
+        # Fallback: attempt to serve the raw file if template rendering fails
+        return send_from_directory(os.path.join(base_dir, "templates"), "volunteer_dashboard.html")
 
 
 @app.get("/demo/request")
