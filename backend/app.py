@@ -1290,7 +1290,7 @@ def demo_request_page():
     return send_from_directory(base_dir, "request_detail.html")
 
 
-@app.route("/volunteer_login", methods=["GET", "POST"])
+@app.route("/volunteer_login", methods=["GET", "POST"], endpoint="volunteer_login")
 def volunteer_login_redirect():
     """Backward-compatible route that redirects to the demo dashboard.
 
