@@ -795,6 +795,15 @@ def _global_request_diagnostics_app():
             "cookies": list(request.cookies.keys()),
             "current_user_authenticated": getattr(current_user, "is_authenticated", False),
         }
+        # Include raw cookie header diagnostics to help test harness debugging
+        try:
+            raw_cookie = request.environ.get("HTTP_COOKIE")
+            header_cookie = request.headers.get("Cookie")
+            dn["raw_HTTP_COOKIE"] = raw_cookie
+            dn["raw_header_Cookie"] = header_cookie
+        except Exception:
+            dn["raw_HTTP_COOKIE"] = None
+            dn["raw_header_Cookie"] = None
         try:
             dn["db_engine_id"] = id(db.engine)
         except Exception:
@@ -850,6 +859,80 @@ def _pytest_force_admin_login_app():
         return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
     except Exception as exc:
         app.logger.exception("_pytest_force_admin_login_app failed")
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+
+@app.route("/_pytest_force_volunteer_login", methods=["GET"])  # test-only
+def _pytest_force_volunteer_login_app():
+    # Allow this test helper in TESTING or when running in debug/dev mode.
+    if not (app.config.get("TESTING") or app.debug):
+        return ("Not Found", 404)
+    try:
+        # Minimal session shim for volunteer identity used by tests
+        try:
+            vid = int(request.args.get("volunteer_id") or session.get("volunteer_id") or 1)
+        except Exception:
+            vid = 1
+        session["volunteer_logged_in"] = True
+        session["volunteer_id"] = vid
+        try:
+            # Provide a human-friendly name when available
+            session["volunteer_name"] = request.args.get("volunteer_name") or session.get("volunteer_name") or "test_volunteer"
+        except Exception:
+            pass
+        try:
+            session.modified = True
+        except Exception:
+            pass
+        try:
+            from flask_login import current_user
+            diag = {
+                "session_keys": list(session.keys()),
+                "session_volunteer_logged_in": bool(session.get("volunteer_logged_in")),
+                "cookies": list(request.cookies.keys()),
+                "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+            }
+            try:
+                diag["db_engine_id"] = id(db.engine)
+            except Exception:
+                diag["db_engine_id"] = None
+            app.logger.debug("_pytest_force_volunteer_login_app: applied session shim %s", diag)
+        except Exception:
+            app.logger.debug("_pytest_force_volunteer_login_app: applied session shim")
+        return jsonify({"success": True, "volunteer_id": session["volunteer_id"]}), 200
+    except Exception as exc:
+        app.logger.exception("_pytest_force_volunteer_login_app failed")
+        return jsonify({"success": False, "error": str(exc)}), 500
+
+@app.route("/_pytest_set_pending_email_2fa", methods=["GET"])  # test-only helper
+def _pytest_set_pending_email_2fa_app():
+    # Allow this test helper in TESTING or when running in debug/dev mode.
+    if not (app.config.get("TESTING") or app.debug):
+        return ("Not Found", 404)
+    try:
+        import time
+        try:
+            admin_id = int(request.args.get("admin_id") or 1)
+        except Exception:
+            admin_id = 1
+        code = request.args.get("code") or "000000"
+        try:
+            expires = int(request.args.get("expires") or (int(time.time()) + 600))
+        except Exception:
+            expires = int(time.time()) + 600
+
+        session["pending_email_2fa"] = True
+        session["pending_admin_id"] = admin_id
+        session["email_2fa_code"] = code
+        session["email_2fa_expires"] = expires
+        try:
+            session.modified = True
+        except Exception:
+            pass
+        app.logger.debug("_pytest_set_pending_email_2fa_app: set pending admin %s code=%s", admin_id, code)
+        return jsonify({"success": True, "pending_admin_id": admin_id}), 200
+    except Exception as exc:
+        app.logger.exception("_pytest_set_pending_email_2fa_app failed")
         return jsonify({"success": False, "error": str(exc)}), 500
 
 
@@ -1830,6 +1913,50 @@ def admin_dashboard():
         stats=stats,
         current_user=current_admin,
     )
+
+
+# Admin logout routes (support GET and POST to match legacy variants)
+@app.route("/admin_logout")
+@app.route("/admin/logout", methods=["GET", "POST"])
+def admin_logout():
+    # Clear admin-related session keys and redirect to public index
+    try:
+        session.pop("admin_id", None)
+        session.pop("admin_logged_in", None)
+        session.pop("admin_user_id", None)
+        session.pop("admin_username", None)
+        session.pop("user_id", None)
+        session.pop("pending_admin_id", None)
+        session.pop("pending_2fa", None)
+        session.pop("email_2fa_code", None)
+        session.pop("email_2fa_expires", None)
+    except Exception:
+        try:
+            app.logger.debug("admin_logout: session cleanup failed")
+        except Exception:
+            pass
+    return redirect(url_for("index"))
+
+
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+    # Generic logout: clear session keys used by admin/user flows and go to index
+    try:
+        session.pop("admin_id", None)
+        session.pop("admin_logged_in", None)
+        session.pop("admin_user_id", None)
+        session.pop("admin_username", None)
+        session.pop("user_id", None)
+        session.pop("pending_admin_id", None)
+        session.pop("pending_2fa", None)
+        session.pop("email_2fa_code", None)
+        session.pop("email_2fa_expires", None)
+    except Exception:
+        try:
+            app.logger.debug("logout: session cleanup failed")
+        except Exception:
+            pass
+    return redirect(url_for("index"))
 
 
 @app.route("/admin/2fa/disable", methods=["POST"])
