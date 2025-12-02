@@ -35,7 +35,7 @@ fastapi==0.122.0
 ffmpy==1.0.0
 filelock==3.20.0
 flake8==7.3.0
-Flask==3.1.2
+Flask==2.1.2
 Flask-Admin==2.0.2
 Flask-Babel==2.0.0
 flask-cors==6.0.1
@@ -181,7 +181,7 @@ fastapi==0.122.0
 ffmpy==1.0.0
 filelock==3.20.0
 flake8==7.3.0
-Flask==3.1.2
+Flask==2.1.2
 Flask-Admin==2.0.2
 Flask-Babel==2.0.0
 flask-cors==6.0.1
