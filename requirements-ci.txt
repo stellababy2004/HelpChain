@@ -19,3 +19,4 @@ gevent==25.9.1
 cryptography
 beautifulsoup4==4.12.2
 PyJWT==2.8.0
+flask-socketio==5.3.5
