@@ -16,3 +16,4 @@ Flask-Babel==2.0.0
 Flask-WTF==1.2.2
 python-dotenv==1.0.0
 gevent==25.9.1
+cryptography
