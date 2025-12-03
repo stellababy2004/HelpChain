@@ -11,7 +11,6 @@ import time
 
 import jwt
 import sqlalchemy
-from dependencies import require_role
 from flask import (
     Flask,
     Response,
@@ -32,6 +31,8 @@ from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
 from sqlalchemy import literal_column, text
 from sqlalchemy.exc import OperationalError
+
+from dependencies import require_role
 
 # --- Flask app init ---
 app = Flask(__name__)
@@ -132,6 +133,8 @@ def _write_admin_debug(entry: dict):
             pass
 
 
+# Local imports (strictly sorted, all at top-level)
+from extensions import babel, db
 from models import (
     AdminRole,
     AdminUser,
@@ -142,9 +145,6 @@ from models import (
     Volunteer,
 )
 from models_with_analytics import AnalyticsEvent, Feedback
-
-# Local imports (strictly sorted, all at top-level)
-from extensions import babel, db
 from permissions import require_admin_login
 
 # Initialize CSRF protection

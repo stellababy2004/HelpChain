@@ -39,6 +39,7 @@ except ImportError:
         )
     except Exception:
         # Last-resort: fall back to legacy top-level imports if present
+        from extensions import db
         from models import (
             Permission,
             PermissionEnum,
@@ -47,8 +48,6 @@ except ImportError:
             User,
             UserRole,
         )
-
-        from extensions import db
 
 
 def has_permission(permission_codename):

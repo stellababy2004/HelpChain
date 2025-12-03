@@ -7824,6 +7824,32 @@ HelpChain системата
         )
 
 
+@app.route("/dev/impersonate_volunteer/<int:vol_id>")
+def _dev_impersonate_volunteer(vol_id: int):
+    """Dev-only endpoint to set a volunteer session without password.
+
+    This endpoint is restricted to debug/testing environments only.
+    It sets `session['volunteer_logged_in'] = True` and `session['volunteer_id'] = vol_id`
+    then redirects to the volunteer dashboard.
+    """
+    from flask import abort
+
+    try:
+        if not (
+            app.debug
+            or os.environ.get("HELPCHAIN_TEST_DEBUG") == "1"
+            or os.environ.get("HELPCHAIN_TESTING") == "1"
+        ):
+            abort(404)
+    except Exception:
+        abort(404)
+
+    # set session and redirect
+    session["volunteer_logged_in"] = True
+    session["volunteer_id"] = vol_id
+    return redirect(url_for("volunteer_dashboard"))
+
+
 @app.route("/volunteer_dashboard")
 def volunteer_dashboard():
     """Enhanced volunteer dashboard with performance optimizations and better error handling"""

@@ -12,9 +12,9 @@ CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, CURRENT_DIR)
 sys.path.insert(0, os.path.dirname(CURRENT_DIR))
 
-from appy import app
 from werkzeug.security import generate_password_hash
 
+from appy import app
 from permissions import initialize_default_roles_and_permissions
 
 try:  # Prefer relative import when available

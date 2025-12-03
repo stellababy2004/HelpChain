@@ -35,9 +35,8 @@ def main():
 
     with app.app_context():
         try:
-            from models import AdminUser
-
             from extensions import db
+            from models import AdminUser
         except Exception as exc:
             print("Import models failed:", exc)
             return

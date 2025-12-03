@@ -18,6 +18,7 @@ except ImportError:
 import os
 import sys
 
+
 # Helper to ensure a single SQLAlchemy() instance across imports
 def _make_db():
     """Return a canonical `db` object, creating it only if needed.
@@ -43,6 +44,7 @@ def _make_db():
     # Fall back to creating a new instance
     globals()["db"] = SQLAlchemy()
     return globals()["db"]
+
 
 # Test-only: make module-level queries during collection tolerant of
 # unbound sessions by returning None instead of raising. This is a

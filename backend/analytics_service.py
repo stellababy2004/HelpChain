@@ -18,6 +18,9 @@ from functools import wraps
 from typing import Any, Optional, Union
 
 from flask import current_app
+from sqlalchemy import and_, case, func, text
+from sqlalchemy.orm import Session
+
 from models import (
     AnalyticsEvent,
     ChatbotConversation,
@@ -27,8 +30,6 @@ from models import (
     Volunteer,
     utc_now,
 )
-from sqlalchemy import and_, case, func, text
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

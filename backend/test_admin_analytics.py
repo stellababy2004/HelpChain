@@ -11,7 +11,6 @@ import tempfile
 sys.path.insert(0, os.path.dirname(__file__))
 
 from appy import app
-
 from backend.models import AdminUser
 
 

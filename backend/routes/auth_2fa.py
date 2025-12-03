@@ -2,12 +2,13 @@ import base64
 import io
 
 import qrcode
-from audit import log_admin_action
-from auth_2fa import disable_2fa, generate_2fa_secret_for_user, verify_2fa_token
 from db import get_db
-from dependencies import get_current_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
+from audit import log_admin_action
+from auth_2fa import disable_2fa, generate_2fa_secret_for_user, verify_2fa_token
+from dependencies import get_current_user
 
 router = APIRouter(prefix="/2fa", tags=["2fa"])
 
