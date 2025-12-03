@@ -2012,17 +2012,21 @@ def authenticated_admin_client(app, test_admin_user):
 
 
 @pytest.fixture
-def authenticated_volunteer_client(client, test_volunteer):
-    """Create a test client with authenticated volunteer user using the
-    canonical `client` fixture and call only the volunteer helper.
+def authenticated_volunteer_client(app, test_volunteer):
+    """Create a test client with authenticated volunteer user.
 
-    This keeps helper usage explicit and avoids unnecessary admin helper
-    calls when only volunteer auth is required.
+    Use a fresh `app.test_client()` so mutation of the shared `client`
+    fixture doesn't leak session state into tests that request both
+    `client` and `authenticated_volunteer_client` simultaneously.
     """
+    vc = app.test_client()
     try:
-        resp = client.get(
-            f"/_pytest_force_volunteer_login?volunteer_id={test_volunteer.id}"
-        )
+        _ensure_cookie_jar_for_test_client(vc)
+    except Exception:
+        pass
+
+    try:
+        resp = vc.get(f"/_pytest_force_volunteer_login?volunteer_id={test_volunteer.id}")
         # Mirror Set-Cookie into environ_base so subsequent requests include it
         try:
             headers = getattr(resp, "headers", {})
@@ -2042,17 +2046,17 @@ def authenticated_volunteer_client(client, test_volunteer):
                     except Exception:
                         parts.append(v)
                 try:
-                    client.environ_base["HTTP_COOKIE"] = "; ".join(parts)
+                    vc.environ_base["HTTP_COOKIE"] = "; ".join(parts)
                 except Exception:
                     try:
-                        client.environ_base.update({"HTTP_COOKIE": "; ".join(parts)})
+                        vc.environ_base.update({"HTTP_COOKIE": "; ".join(parts)})
                     except Exception:
                         pass
         except Exception:
             pass
     except Exception:
         pass
-    return client
+    return vc
 
 
 def _ensure_cookie_jar_for_test_client(test_client):
