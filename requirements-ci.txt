@@ -17,3 +17,4 @@ Flask-WTF==1.2.2
 python-dotenv==1.0.0
 gevent==25.9.1
 cryptography
+beautifulsoup4==4.12.2
