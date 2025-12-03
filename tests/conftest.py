@@ -74,6 +74,7 @@ def _import_hook(name, globals=None, locals=None, fromlist=(), level=0):
 builtins.__import__ = _import_hook
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
 # the application's configuration (database selection, logging, etc.).
 os.environ.setdefault("HELPCHAIN_TESTING", "1")
 import tempfile
@@ -2026,7 +2027,9 @@ def authenticated_volunteer_client(app, test_volunteer):
         pass
 
     try:
-        resp = vc.get(f"/_pytest_force_volunteer_login?volunteer_id={test_volunteer.id}")
+        resp = vc.get(
+            f"/_pytest_force_volunteer_login?volunteer_id={test_volunteer.id}"
+        )
         # Mirror Set-Cookie into environ_base so subsequent requests include it
         try:
             headers = getattr(resp, "headers", {})
@@ -2339,9 +2342,9 @@ def client(app):
                                     if parts:
                                         cookie_hdr = "; ".join(parts)
                                         try:
-                                            self._inner.environ_base[
-                                                "HTTP_COOKIE"
-                                            ] = cookie_hdr
+                                            self._inner.environ_base["HTTP_COOKIE"] = (
+                                                cookie_hdr
+                                            )
                                         except Exception:
                                             pass
                             except Exception:
@@ -2371,7 +2374,9 @@ def client(app):
                                     try:
                                         r_vol = None
                                         try:
-                                            r_vol = self._inner.get(f"/_pytest_force_volunteer_login?volunteer_id={sid}")
+                                            r_vol = self._inner.get(
+                                                f"/_pytest_force_volunteer_login?volunteer_id={sid}"
+                                            )
                                         except Exception:
                                             r_vol = None
                                         pass
@@ -2381,7 +2386,9 @@ def client(app):
                                     try:
                                         r_admin = None
                                         try:
-                                            r_admin = self._inner.get(f"/_pytest_force_admin_login?admin_id={aid}")
+                                            r_admin = self._inner.get(
+                                                f"/_pytest_force_admin_login?admin_id={aid}"
+                                            )
                                         except Exception:
                                             r_admin = None
                                         pass
@@ -2396,7 +2403,9 @@ def client(app):
                                 try:
                                     resp = None
                                     try:
-                                        resp = self._inner.get("/", follow_redirects=True)
+                                        resp = self._inner.get(
+                                            "/", follow_redirects=True
+                                        )
                                     except Exception:
                                         resp = None
                                     if resp is not None:
@@ -2405,9 +2414,15 @@ def client(app):
                                             pass
                                             cookie_vals = []
                                             if hasattr(headers, "getlist"):
-                                                cookie_vals = list(headers.getlist("Set-Cookie") or [])
+                                                cookie_vals = list(
+                                                    headers.getlist("Set-Cookie") or []
+                                                )
                                             else:
-                                                sc = headers.get("Set-Cookie") if hasattr(headers, "get") else None
+                                                sc = (
+                                                    headers.get("Set-Cookie")
+                                                    if hasattr(headers, "get")
+                                                    else None
+                                                )
                                                 if sc:
                                                     cookie_vals = [sc]
                                             if cookie_vals:
@@ -2418,10 +2433,18 @@ def client(app):
                                                     except Exception:
                                                         parts.append(v)
                                                 try:
-                                                    self._inner.environ_base["HTTP_COOKIE"] = "; ".join(parts)
+                                                    self._inner.environ_base[
+                                                        "HTTP_COOKIE"
+                                                    ] = "; ".join(parts)
                                                 except Exception:
                                                     try:
-                                                        self._inner.environ_base.update({"HTTP_COOKIE": "; ".join(parts)})
+                                                        self._inner.environ_base.update(
+                                                            {
+                                                                "HTTP_COOKIE": "; ".join(
+                                                                    parts
+                                                                )
+                                                            }
+                                                        )
                                                     except Exception:
                                                         pass
                                         except Exception:

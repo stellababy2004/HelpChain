@@ -60,7 +60,9 @@ def get_db():
         # If the extension object is a wrapper, try common fallbacks where
         # the real SQLAlchemy object might live (eg. `.db` or `.SQLAlchemy`).
         try:
-            candidate = getattr(ext_db, "db", None) or getattr(ext_db, "SQLAlchemy", None)
+            candidate = getattr(ext_db, "db", None) or getattr(
+                ext_db, "SQLAlchemy", None
+            )
             if candidate is not None and hasattr(candidate, "session"):
                 return candidate
         except Exception:
