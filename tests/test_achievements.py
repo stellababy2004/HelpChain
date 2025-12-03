@@ -1,17 +1,15 @@
 class TestAchievementsIntegration:
     """Integration тестове за achievements функционалност"""
 
-    def test_volunteer_login_and_achievements_access(self, client, init_test_data):
+    def test_volunteer_login_and_achievements_access(
+        self, authenticated_volunteer_client, init_test_data
+    ):
         """Тест за volunteer login и достъп до achievements"""
-        # Първо се логваме като volunteer
+        # Use the authenticated volunteer test client fixture
+        client = authenticated_volunteer_client
         volunteer = init_test_data["volunteer"]
 
-        # За сега използваме session-based authentication
-        with client.session_transaction() as sess:
-            sess["volunteer_logged_in"] = True
-            sess["volunteer_id"] = volunteer.id
-
-        # Сега опитваме да достъпим achievements
+        # Now attempt to access achievements
         response = client.get("/achievements")
         assert response.status_code == 200
 

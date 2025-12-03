@@ -10,13 +10,7 @@ import time
 from datetime import datetime
 
 from dotenv import load_dotenv
-from flask import (
-    Flask,
-    flash,
-    redirect,
-    render_template_string,
-    url_for,
-)
+from flask import Flask, flash, redirect, render_template_string, url_for
 from flask_mail import Mail, Message
 
 # from .tasks import send_email_task  # Moved inside function to avoid import issues

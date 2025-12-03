@@ -1,0 +1,16 @@
+build==1.3.0
+colorama==0.4.6
+joblib @ file:///home/conda/feedstock_root/build_artifacts/joblib_1756321760188/work
+numpy @ file:///D:/bld/numpy_1747544598377/work/dist/numpy-2.2.6-cp311-cp311-win_amd64.whl#sha256=25e74f9fc5d96572a55bd862a27d842458bd6d3b8d7a612e6bb03bc3f1fd084d
+opencv-python==4.11.0
+opencv-python-headless==4.11.0
+packaging==25.0
+pandas @ file:///D:/bld/pandas_1759265558267/work
+pyproject_hooks==1.2.0
+python-dateutil @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_python-dateutil_1751104122/work
+pytz @ file:///home/conda/feedstock_root/build_artifacts/pytz_1742920838005/work
+scikit-learn @ file:///D:/bld/scikit-learn_1757432804930/work/dist/scikit_learn-1.7.2-cp311-cp311-win_amd64.whl#sha256=933d5b09ab3bb0ad974b8d4f76aa32096213702421cb325514d3c4a7fee3d01e
+scipy @ file:///C:/bld/scipy-split_1763219312406/work/dist/scipy-1.16.3-cp311-cp311-win_amd64.whl#sha256=32ef1aa718e65de14b6b9fe94b2724affaaad7dfc2002b43b37a2f347293c673
+six @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_six_1753199211/work
+threadpoolctl @ file:///home/conda/feedstock_root/build_artifacts/threadpoolctl_1741878222898/work
+tzdata @ file:///home/conda/feedstock_root/build_artifacts/python-tzdata_1742745135198/work

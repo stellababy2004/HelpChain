@@ -1,5 +1,6 @@
 import sys
 
+
 def _is_sqlalchemy_like(obj):
     # Heuristic: Flask-SQLAlchemy exposes `init_app` and a `session` proxy.
     try:
@@ -25,7 +26,9 @@ def test_single_sqlalchemy_instance():
             db = getattr(mod, "db", None)
             if _is_sqlalchemy_like(db):
                 ids.add(id(db))
-                locations[id(db)] = locations.get(id(db), []) + [getattr(mod, "__name__", str(mod))]
+                locations[id(db)] = locations.get(id(db), []) + [
+                    getattr(mod, "__name__", str(mod))
+                ]
         except Exception:
             pass
 
@@ -34,7 +37,9 @@ def test_single_sqlalchemy_instance():
         from backend.extensions import db as canonical_db
 
         ids.add(id(canonical_db))
-        locations[id(canonical_db)] = locations.get(id(canonical_db), []) + ["backend.extensions"]
+        locations[id(canonical_db)] = locations.get(id(canonical_db), []) + [
+            "backend.extensions"
+        ]
     except Exception:
         # If importing backend.extensions fails, still assert on what we found
         pass

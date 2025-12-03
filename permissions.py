@@ -6,6 +6,7 @@ This prevents test-time imports like `from permissions import ...`
 from accidentally loading a missing top-level module and ensures the
 seeding and helper functions are the same implementation the app uses.
 """
+
 try:
     # Prefer the backend package implementation
     from backend.permissions import *  # noqa: F401,F403

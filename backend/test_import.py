@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 def main():
     try:
         from appy import app
+
         from backend.extensions import db
 
         print("App imported successfully")

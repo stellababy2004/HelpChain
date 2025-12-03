@@ -31,14 +31,7 @@ This keeps existing imports in the codebase working while ensuring SQLAlchemy
 only registers each mapped class once.
 """
 
-from backend.models import (
-    AdminUser,
-    Feedback,
-    Request,
-    RequestLog,
-    User,
-    Volunteer,
-)
+from backend.models import AdminUser, Feedback, Request, RequestLog, User, Volunteer
 
 __all__ = [
     "Request",

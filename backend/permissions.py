@@ -5,7 +5,7 @@ Permission-based access control decorators and utilities for HelpChain
 from functools import wraps
 from inspect import iscoroutinefunction
 
-from flask import current_app, flash, redirect, session, url_for, render_template
+from flask import current_app, flash, redirect, render_template, session, url_for
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
@@ -39,7 +39,6 @@ except ImportError:
         )
     except Exception:
         # Last-resort: fall back to legacy top-level imports if present
-        from extensions import db
         from models import (
             Permission,
             PermissionEnum,
@@ -48,6 +47,8 @@ except ImportError:
             User,
             UserRole,
         )
+
+        from extensions import db
 
 
 def has_permission(permission_codename):
@@ -257,7 +258,7 @@ def require_admin_login(redirect_url="admin_login"):
 
             @wraps(f)
             async def wrapped_function(*args, **kwargs):
-                from flask import current_app, request, jsonify
+                from flask import current_app, jsonify, request
 
                 # Test-time bypass
                 if current_app.config.get("TESTING") and (
@@ -292,7 +293,7 @@ def require_admin_login(redirect_url="admin_login"):
 
             @wraps(f)
             def wrapped_function(*args, **kwargs):
-                from flask import current_app, request, jsonify
+                from flask import current_app, jsonify, request
 
                 # Test-time bypass
                 if current_app.config.get("TESTING") and (
@@ -426,7 +427,8 @@ def initialize_default_roles_and_permissions():
         except Exception:
             pass
         try:
-            from backend.extensions import db as _ext_db, get_db_engine
+            from backend.extensions import db as _ext_db
+            from backend.extensions import get_db_engine
 
             engine = None
             try:
@@ -443,9 +445,7 @@ def initialize_default_roles_and_permissions():
                     table_names = []
 
                 try:
-                    metadata_tables = set(
-                        getattr(db, "metadata", {}).tables.keys()
-                    )
+                    metadata_tables = set(getattr(db, "metadata", {}).tables.keys())
                 except Exception:
                     metadata_tables = set()
 
@@ -482,22 +482,102 @@ def initialize_default_roles_and_permissions():
 
         # Create default permissions
         default_permissions = [
-            {"name": "Преглед на профил", "codename": PermissionEnum.VIEW_PROFILE.value, "category": "user", "is_system_permission": True},
-            {"name": "Редактиране на профил", "codename": PermissionEnum.EDIT_PROFILE.value, "category": "user", "is_system_permission": True},
-            {"name": "Преглед на доброволци", "codename": PermissionEnum.VIEW_VOLUNTEERS.value, "category": "volunteer", "is_system_permission": True},
-            {"name": "Управление на доброволци", "codename": PermissionEnum.MANAGE_VOLUNTEERS.value, "category": "volunteer", "is_system_permission": True},
-            {"name": "Преглед на заявки", "codename": PermissionEnum.VIEW_REQUESTS.value, "category": "volunteer", "is_system_permission": True},
-            {"name": "Управление на заявки", "codename": PermissionEnum.MANAGE_REQUESTS.value, "category": "volunteer", "is_system_permission": True},
-            {"name": "Използване на видео чат", "codename": PermissionEnum.USE_VIDEO_CHAT.value, "category": "volunteer", "is_system_permission": True},
-            {"name": "Модериране на съдържание", "codename": PermissionEnum.MODERATE_CONTENT.value, "category": "moderator", "is_system_permission": True},
-            {"name": "Преглед на аналитика", "codename": PermissionEnum.VIEW_ANALYTICS.value, "category": "moderator", "is_system_permission": True},
-            {"name": "Управление на категории", "codename": PermissionEnum.MANAGE_CATEGORIES.value, "category": "moderator", "is_system_permission": True},
-            {"name": "Админ достъп", "codename": PermissionEnum.ADMIN_ACCESS.value, "category": "admin", "is_system_permission": True},
-            {"name": "Управление на потребители", "codename": PermissionEnum.MANAGE_USERS.value, "category": "admin", "is_system_permission": True},
-            {"name": "Управление на роли", "codename": PermissionEnum.MANAGE_ROLES.value, "category": "admin", "is_system_permission": True},
-            {"name": "Системни настройки", "codename": PermissionEnum.SYSTEM_SETTINGS.value, "category": "admin", "is_system_permission": True},
-            {"name": "Преглед на одит логове", "codename": PermissionEnum.VIEW_AUDIT_LOGS.value, "category": "admin", "is_system_permission": True},
-            {"name": "Супер админ", "codename": PermissionEnum.SUPER_ADMIN.value, "category": "superadmin", "is_system_permission": True},
+            {
+                "name": "Преглед на профил",
+                "codename": PermissionEnum.VIEW_PROFILE.value,
+                "category": "user",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Редактиране на профил",
+                "codename": PermissionEnum.EDIT_PROFILE.value,
+                "category": "user",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Преглед на доброволци",
+                "codename": PermissionEnum.VIEW_VOLUNTEERS.value,
+                "category": "volunteer",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Управление на доброволци",
+                "codename": PermissionEnum.MANAGE_VOLUNTEERS.value,
+                "category": "volunteer",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Преглед на заявки",
+                "codename": PermissionEnum.VIEW_REQUESTS.value,
+                "category": "volunteer",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Управление на заявки",
+                "codename": PermissionEnum.MANAGE_REQUESTS.value,
+                "category": "volunteer",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Използване на видео чат",
+                "codename": PermissionEnum.USE_VIDEO_CHAT.value,
+                "category": "volunteer",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Модериране на съдържание",
+                "codename": PermissionEnum.MODERATE_CONTENT.value,
+                "category": "moderator",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Преглед на аналитика",
+                "codename": PermissionEnum.VIEW_ANALYTICS.value,
+                "category": "moderator",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Управление на категории",
+                "codename": PermissionEnum.MANAGE_CATEGORIES.value,
+                "category": "moderator",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Админ достъп",
+                "codename": PermissionEnum.ADMIN_ACCESS.value,
+                "category": "admin",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Управление на потребители",
+                "codename": PermissionEnum.MANAGE_USERS.value,
+                "category": "admin",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Управление на роли",
+                "codename": PermissionEnum.MANAGE_ROLES.value,
+                "category": "admin",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Системни настройки",
+                "codename": PermissionEnum.SYSTEM_SETTINGS.value,
+                "category": "admin",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Преглед на одит логове",
+                "codename": PermissionEnum.VIEW_AUDIT_LOGS.value,
+                "category": "admin",
+                "is_system_permission": True,
+            },
+            {
+                "name": "Супер админ",
+                "codename": PermissionEnum.SUPER_ADMIN.value,
+                "category": "superadmin",
+                "is_system_permission": True,
+            },
         ]
 
         for perm_data in default_permissions:
@@ -511,11 +591,31 @@ def initialize_default_roles_and_permissions():
 
         # Create default roles
         default_roles = [
-            {"name": "Потребител", "description": "Основен потребител с ограничени права", "is_system_role": True},
-            {"name": "Доброволец", "description": "Доброволец с права за управление на заявки", "is_system_role": True},
-            {"name": "Модератор", "description": "Модератор с права за модериране на съдържание", "is_system_role": True},
-            {"name": "Администратор", "description": "Администратор с пълни права за управление", "is_system_role": True},
-            {"name": "Супер администратор", "description": "Супер администратор с неограничени права", "is_system_role": True},
+            {
+                "name": "Потребител",
+                "description": "Основен потребител с ограничени права",
+                "is_system_role": True,
+            },
+            {
+                "name": "Доброволец",
+                "description": "Доброволец с права за управление на заявки",
+                "is_system_role": True,
+            },
+            {
+                "name": "Модератор",
+                "description": "Модератор с права за модериране на съдържание",
+                "is_system_role": True,
+            },
+            {
+                "name": "Администратор",
+                "description": "Администратор с пълни права за управление",
+                "is_system_role": True,
+            },
+            {
+                "name": "Супер администратор",
+                "description": "Супер администратор с неограничени права",
+                "is_system_role": True,
+            },
         ]
 
         for role_data in default_roles:
@@ -551,9 +651,15 @@ def assign_default_role_permissions():
     """
     try:
         try:
-            cnt_perms = Permission.query.count() if hasattr(Permission, 'query') else 'unknown'
-            cnt_roles = Role.query.count() if hasattr(Role, 'query') else 'unknown'
-            cnt_rps = RolePermission.query.count() if hasattr(RolePermission, 'query') else 'unknown'
+            cnt_perms = (
+                Permission.query.count() if hasattr(Permission, "query") else "unknown"
+            )
+            cnt_roles = Role.query.count() if hasattr(Role, "query") else "unknown"
+            cnt_rps = (
+                RolePermission.query.count()
+                if hasattr(RolePermission, "query")
+                else "unknown"
+            )
             current_app.logger.debug(
                 "Assigning default role permissions: counts -> permissions=%s, roles=%s, role_permissions=%s",
                 cnt_perms,
@@ -561,7 +667,9 @@ def assign_default_role_permissions():
                 cnt_rps,
             )
             # Also print to stdout so pytest shows it in captured output
-            print(f"DEBUG_ASSIGN: permissions={cnt_perms} roles={cnt_roles} role_permissions={cnt_rps}")
+            print(
+                f"DEBUG_ASSIGN: permissions={cnt_perms} roles={cnt_roles} role_permissions={cnt_rps}"
+            )
         except Exception:
             print("DEBUG_ASSIGN: failed to read counts")
             pass
@@ -570,7 +678,9 @@ def assign_default_role_permissions():
         volunteer_role = db.session.query(Role).filter_by(name="Доброволец").first()
         moderator_role = db.session.query(Role).filter_by(name="Модератор").first()
         admin_role = db.session.query(Role).filter_by(name="Администратор").first()
-        superadmin_role = db.session.query(Role).filter_by(name="Супер администратор").first()
+        superadmin_role = (
+            db.session.query(Role).filter_by(name="Супер администратор").first()
+        )
 
         # Get permissions via the same session
         permissions = {p.codename: p for p in db.session.query(Permission).all()}
@@ -584,9 +694,9 @@ def assign_default_role_permissions():
             for perm in user_perms:
                 if (
                     perm
-                    and not db.session.query(RolePermission).filter_by(
-                        role_id=user_role.id, permission_id=perm.id
-                    ).first()
+                    and not db.session.query(RolePermission)
+                    .filter_by(role_id=user_role.id, permission_id=perm.id)
+                    .first()
                 ):
                     db.session.add(
                         RolePermission(role_id=user_role.id, permission_id=perm.id)
@@ -606,9 +716,9 @@ def assign_default_role_permissions():
             for perm in volunteer_perms:
                 if (
                     perm
-                    and not db.session.query(RolePermission).filter_by(
-                        role_id=volunteer_role.id, permission_id=perm.id
-                    ).first()
+                    and not db.session.query(RolePermission)
+                    .filter_by(role_id=volunteer_role.id, permission_id=perm.id)
+                    .first()
                 ):
                     db.session.add(
                         RolePermission(role_id=volunteer_role.id, permission_id=perm.id)
@@ -631,9 +741,9 @@ def assign_default_role_permissions():
             for perm in moderator_perms:
                 if (
                     perm
-                    and not db.session.query(RolePermission).filter_by(
-                        role_id=moderator_role.id, permission_id=perm.id
-                    ).first()
+                    and not db.session.query(RolePermission)
+                    .filter_by(role_id=moderator_role.id, permission_id=perm.id)
+                    .first()
                 ):
                     db.session.add(
                         RolePermission(role_id=moderator_role.id, permission_id=perm.id)
@@ -661,9 +771,9 @@ def assign_default_role_permissions():
             for perm in admin_perms:
                 if (
                     perm
-                    and not db.session.query(RolePermission).filter_by(
-                        role_id=admin_role.id, permission_id=perm.id
-                    ).first()
+                    and not db.session.query(RolePermission)
+                    .filter_by(role_id=admin_role.id, permission_id=perm.id)
+                    .first()
                 ):
                     try:
                         current_app.logger.debug(
@@ -675,7 +785,9 @@ def assign_default_role_permissions():
                         pass
                     # Print to stdout to help pytest capture this during tests
                     try:
-                        print(f"DEBUG_ADD_RP: role_id={admin_role.id} perm_id={perm.id} perm_codename={getattr(perm, 'codename', None)}")
+                        print(
+                            f"DEBUG_ADD_RP: role_id={admin_role.id} perm_id={perm.id} perm_codename={getattr(perm, 'codename', None)}"
+                        )
                     except Exception:
                         print("DEBUG_ADD_RP: could not print details")
                     db.session.add(
@@ -686,9 +798,11 @@ def assign_default_role_permissions():
         if superadmin_role:
             all_permissions = db.session.query(Permission).all()
             for perm in all_permissions:
-                if not db.session.query(RolePermission).filter_by(
-                    role_id=superadmin_role.id, permission_id=perm.id
-                ).first():
+                if (
+                    not db.session.query(RolePermission)
+                    .filter_by(role_id=superadmin_role.id, permission_id=perm.id)
+                    .first()
+                ):
                     db.session.add(
                         RolePermission(
                             role_id=superadmin_role.id, permission_id=perm.id

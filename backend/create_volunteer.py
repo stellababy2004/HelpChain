@@ -9,9 +9,9 @@ import sys
 # Add current directory to path
 sys.path.insert(0, os.path.dirname(__file__))
 
+from appy import app
 from werkzeug.security import generate_password_hash
 
-from appy import app
 from backend.extensions import db
 from backend.models import User, Volunteer
 

@@ -6,7 +6,6 @@ Background Notification Processor за HelpChain
 import time
 
 import schedule
-
 from appy import app
 from notification_service import notification_service
 

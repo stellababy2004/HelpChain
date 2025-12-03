@@ -2,6 +2,7 @@ import sys
 
 sys.path.insert(0, ".")
 from appy import app
+
 from backend.extensions import db
 from backend.models import Role, RolePermission, User, UserRole
 from permissions import has_permission

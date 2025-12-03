@@ -12,13 +12,14 @@ from flask import Flask
 # Ensure package import path
 HERE = os.path.abspath(os.path.dirname(__file__))
 # Add repo root (one level above `backend`) so `import backend.app` works
-ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 sys.path.insert(0, ROOT)
 # Also ensure the `backend` package directory is importable as top-level modules
 # Some modules in `backend` use absolute imports like `from dependencies import ...`
 backend_dir = os.path.join(ROOT, "backend")
 if os.path.isdir(backend_dir):
     sys.path.insert(0, backend_dir)
+
 
 def main():
     # Import app and models inside function to avoid import-time side effects
@@ -29,43 +30,44 @@ def main():
             # fallback if module layout differs
             from backend.app import app
         except Exception as exc:
-            print('Could not import app:', exc)
+            print("Could not import app:", exc)
             return
 
     with app.app_context():
         try:
-            from extensions import db
             from models import AdminUser
+
+            from extensions import db
         except Exception as exc:
-            print('Import models failed:', exc)
+            print("Import models failed:", exc)
             return
 
         admin = None
         try:
-            admin = db.session.query(AdminUser).filter_by(username='admin').first()
+            admin = db.session.query(AdminUser).filter_by(username="admin").first()
         except Exception:
             try:
-                admin = AdminUser.query.filter_by(username='admin').first()
+                admin = AdminUser.query.filter_by(username="admin").first()
             except Exception as exc:
-                print('Query admin failed:', exc)
+                print("Query admin failed:", exc)
                 return
 
         if not admin:
-            print('Admin user not found')
+            print("Admin user not found")
             return
 
-        pw = 'Admin12345!'
+        pw = "Admin12345!"
         try:
             ok = admin.check_password(pw)
         except Exception as exc:
-            print('check_password raised:', exc)
+            print("check_password raised:", exc)
             ok = None
 
-        print('admin.id=', getattr(admin, 'id', None))
-        print('admin.username=', getattr(admin, 'username', None))
-        print('admin.password_hash=', getattr(admin, 'password_hash', None))
-        print('check_password(Admin12345!) ->', ok)
+        print("admin.id=", getattr(admin, "id", None))
+        print("admin.username=", getattr(admin, "username", None))
+        print("admin.password_hash=", getattr(admin, "password_hash", None))
+        print("check_password(Admin12345!) ->", ok)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -9,7 +9,6 @@ import sys
 sys.path.insert(0, ".")
 
 import pyotp
-
 from appy import app
 
 from .extensions import db

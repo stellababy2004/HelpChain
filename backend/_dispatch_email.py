@@ -11,7 +11,9 @@ def _dispatch_email(subject=None, recipients=None, body=None, sender=None, **kwa
     :param sender: Optional sender address
     """
     try:
-        print(f"Email sent!\nSubject: {subject}\nRecipients: {recipients}\nBody: {body}")
+        print(
+            f"Email sent!\nSubject: {subject}\nRecipients: {recipients}\nBody: {body}"
+        )
     except Exception:
         # Best-effort: do not raise from the mock dispatcher
         pass

@@ -19,6 +19,7 @@ sys.path.insert(0, src_dir)
 # the process and only runs before importing the app.
 try:
     import werkzeug.urls as _werkzeug_urls
+
     if not hasattr(_werkzeug_urls, "url_quote"):
         from urllib.parse import quote as _qp
 
@@ -37,6 +38,7 @@ except Exception:
 # extensions that import `app_ctx` keep working.
 try:
     import flask.globals as _flask_globals
+
     if not hasattr(_flask_globals, "app_ctx"):
         from werkzeug.local import LocalProxy
 

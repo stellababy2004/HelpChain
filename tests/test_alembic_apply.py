@@ -1,12 +1,12 @@
 import os
 import pathlib
 import tempfile
-import sqlalchemy as sa
-from sqlalchemy import create_engine, inspect
-from alembic.config import Config
-from alembic import command
-from flask import Flask
 
+import sqlalchemy as sa
+from alembic import command
+from alembic.config import Config
+from flask import Flask
+from sqlalchemy import create_engine, inspect
 
 try:
     # canonical db instance used by the app

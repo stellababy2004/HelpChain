@@ -13,7 +13,7 @@
 ### 🏗️ Infrastructure Setup
 
 - [ ] **Render Deployment**: App deployed and accessible
-- [ ] **Database**: SQLite/PostgreSQL configured and migrated
+- [x] **Database**: SQLite/PostgreSQL configured and migrated
 - [ ] **Email Service**: Zoho SMTP working
 - [ ] **File Uploads**: Directory permissions correct
 - [ ] **Environment Variables**: All secrets configured
@@ -40,7 +40,7 @@
 
    - [ ] Render service created
    - [ ] Environment variables set
-   - [ ] Database initialized
+   - [x] Database initialized
    - [ ] File upload directory created
 
 3. **Security Headers Verification**

@@ -186,10 +186,9 @@ async def analytics_data():
         if simple:
             # Return simple dashboard stats using async database queries
             try:
+                from appy import async_session
                 from flask import current_app
                 from sqlalchemy import func, select
-
-                from appy import async_session
 
                 async with async_session() as session:
                     # Count HelpRequest
@@ -339,10 +338,9 @@ async def analytics_simple_data():
             print(f"Cache error: {cache_error}")
 
         # Get basic counts from database using async session
+        from appy import async_session
         from flask import current_app
         from sqlalchemy import func, select
-
-        from appy import async_session
 
         async with async_session() as session:
             # Count HelpRequest

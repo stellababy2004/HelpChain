@@ -1,0 +1,1520 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Доброволчески панел - HelpChain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1976d2" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="HelpChain" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-TileColor" content="#1976d2" />
+    <meta name="msapplication-config" content="/static/browserconfig.xml" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json" />
+
+    <!-- Apple Touch Icons -->
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/static/hands-heart.png"
+      href="/static/hands-heart.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="512x512"
+      href="/static/volunteers.jpg"
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/static/hands-heart.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/static/hands-heart.png"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- HelpChain Styles -->
+    <link href="/static/css/styles.css" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light;
+        --gradient-subtle: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+        --gradient-card: rgba(255, 255, 255, 0.88);
+        --glass-border: rgba(255, 255, 255, 0.24);
+        --radius-2xl: 32px;
+        --shadow-lg: 0 24px 50px rgba(15, 23, 42, 0.12);
+        --shadow-button-base: 0 2px 12px rgba(25, 118, 210, 0.2);
+        --shadow-button-hover: 0 4px 24px rgba(25, 118, 210, 0.27);
+        --space-8: 3rem;
+        --space-6: 1.5rem;
+        --transition-slow: all 0.6s ease;
+        --text-primary: #1f2937;
+        --text-muted: #475569;
+        --heading-color: #1976d2;
+        --blockquote-bg: #f8faff;
+        --blockquote-border: #1976d2;
+        --section-soft-bg: #e3f2fd;
+        --animated-gradient: linear-gradient(120deg, #e3f2fd 0%, #ffffff 100%);
+        --loader-overlay: rgba(255, 255, 255, 0.8);
+        --btn-gradient: linear-gradient(90deg, #1976d2 60%, #00bfae 100%);
+        --btn-gradient-hover: linear-gradient(90deg, #00bfae 0%, #1976d2 100%);
+        --toggle-bg: rgba(255, 255, 255, 0.92);
+        --toggle-color: #0f172a;
+        --toggle-border: rgba(15, 23, 42, 0.08);
+        --toggle-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+        --toggle-shadow-hover: 0 20px 40px rgba(15, 23, 42, 0.18);
+      }
+
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --gradient-subtle: linear-gradient(135deg, #0f172a 0%, #111827 100%);
+        --gradient-card: rgba(17, 24, 39, 0.88);
+        --glass-border: rgba(148, 163, 184, 0.28);
+        --shadow-lg: 0 28px 52px rgba(2, 6, 23, 0.6);
+        --shadow-button-base: 0 2px 12px rgba(14, 165, 233, 0.3);
+        --shadow-button-hover: 0 4px 24px rgba(56, 189, 248, 0.38);
+        --text-primary: #e2e8f0;
+        --text-muted: #94a3b8;
+        --heading-color: #38bdf8;
+        --blockquote-bg: rgba(30, 41, 59, 0.78);
+        --blockquote-border: #38bdf8;
+        --section-soft-bg: rgba(59, 130, 246, 0.2);
+        --animated-gradient: linear-gradient(120deg, #0f172a 0%, #1e293b 100%);
+        --loader-overlay: rgba(15, 23, 42, 0.72);
+        --btn-gradient: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+        --btn-gradient-hover: linear-gradient(90deg, #0ea5e9 0%, #1d4ed8 100%);
+        --toggle-bg: rgba(15, 23, 42, 0.94);
+        --toggle-color: #f8fafc;
+        --toggle-border: rgba(148, 163, 184, 0.36);
+        --toggle-shadow: 0 20px 40px rgba(2, 6, 23, 0.55);
+        --toggle-shadow-hover: 0 22px 44px rgba(2, 6, 23, 0.6);
+      }
+
+      body {
+        background: var(--gradient-subtle);
+        color: var(--text-primary);
+        min-height: 100vh;
+        transition:
+          background 0.45s ease,
+          color 0.45s ease;
+      }
+
+      .glass {
+        background: var(--gradient-card);
+        color: var(--text-primary);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--shadow-lg);
+        padding: var(--space-8) var(--space-6) var(--space-6) var(--space-6);
+        margin-top: var(--space-6);
+        opacity: 0;
+        transition: var(--transition-slow);
+        transform: translateZ(0);
+        -webkit-will-change: opacity, transform;
+        will-change: opacity, transform;
+      }
+
+      .glass.visible {
+        opacity: 1;
+      }
+
+      .heart-img {
+        max-width: 140px;
+        border-radius: 50%;
+        box-shadow: 0 4px 24px #1976d244;
+        border: 4px solid #fff;
+        background: #fff;
+        object-fit: cover;
+      }
+
+      .platform-desc {
+        font-size: 1.15rem;
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+      }
+
+      h1 {
+        color: var(--heading-color);
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+
+      .btn-primary {
+        background: var(--btn-gradient);
+        border: none;
+        font-weight: 600;
+        font-size: 1.2rem;
+        box-shadow: var(--shadow-button-base);
+        -webkit-transition: background 0.3s;
+        -moz-transition: background 0.3s;
+        -o-transition: background 0.3s;
+        transition: background 0.3s;
+      }
+
+      .btn-primary:hover {
+        background: var(--btn-gradient-hover);
+      }
+
+      .btn-primary,
+      .btn-outline-primary,
+      .btn-outline-secondary {
+        -webkit-transition:
+          -webkit-transform 0.2s,
+          box-shadow 0.2s;
+        -moz-transition:
+          -moz-transform 0.2s,
+          box-shadow 0.2s;
+        -o-transition:
+          -o-transform 0.2s,
+          box-shadow 0.2s;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .btn-primary:hover,
+      .btn-outline-primary:hover,
+      .btn-outline-secondary:hover {
+        -webkit-transform: scale(1.08);
+        -moz-transform: scale(1.08);
+        -ms-transform: scale(1.08);
+        transform: scale(1.08);
+        box-shadow: var(--shadow-button-hover);
+      }
+
+      .slogan {
+        font-style: italic;
+        color: var(--heading-color);
+      }
+
+      .step-icon {
+        transition: transform 0.3s;
+        will-change: transform;
+      }
+
+      .step-icon:hover {
+        color: #00bfae;
+        transform: scale(1.3) rotate(-8deg);
+      }
+
+      .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .blockquote {
+        background: var(--blockquote-bg);
+        border-left: 4px solid var(--blockquote-border);
+        border-radius: 10px;
+        padding: 1.2em 1.5em;
+        color: var(--text-primary);
+        will-change: transform, box-shadow;
+      }
+
+      .blockquote:hover {
+        box-shadow: var(--shadow-button-hover);
+        transform: scale(1.03);
+      }
+
+      .bg-why {
+        background: var(--section-soft-bg);
+        border-radius: 16px;
+      }
+
+      .animated-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        background: var(--animated-gradient);
+      }
+
+      #loader {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: var(--loader-overlay);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        border: 1px solid var(--toggle-border);
+        background: var(--toggle-bg);
+        color: var(--toggle-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: var(--toggle-shadow);
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease,
+          background 0.25s ease,
+          color 0.25s ease;
+        z-index: 1200;
+      }
+
+      .theme-toggle:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--toggle-shadow-hover);
+      }
+
+      .theme-toggle:focus-visible {
+        outline: 2px solid var(--heading-color);
+        outline-offset: 3px;
+      }
+
+      .theme-toggle-icon {
+        font-size: 1.2rem;
+        line-height: 1;
+      }
+
+      /* PWA Install Button */
+      #pwa-install-btn {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: linear-gradient(135deg, #1976d2 0%, #00bfae 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 4px 20px rgba(25, 118, 210, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        animation: slideInUp 0.5s ease-out;
+      }
+
+      #pwa-install-btn:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 25px rgba(25, 118, 210, 0.4);
+      }
+
+      #pwa-install-btn:active {
+        transform: translateY(0) scale(0.98);
+      }
+
+      #pwa-install-btn i {
+        margin-right: 8px;
+        animation: bounce 2s infinite;
+      }
+
+      #pwa-install-btn.hidden {
+        opacity: 0;
+        transform: translateY(100px);
+        pointer-events: none;
+      }
+
+      /* Bounce animation for the icon */
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-3px);
+        }
+        60% {
+          transform: translateY(-2px);
+        }
+      }
+
+      /* Slide in animation */
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(100px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Hide install button on very small screens */
+      @media (max-width: 480px) {
+        #pwa-install-btn {
+          bottom: 15px;
+          right: 15px;
+          padding: 10px 16px;
+          font-size: 13px;
+        }
+      }
+
+      /* Mobile responsiveness improvements */
+      @media (max-width: 768px) {
+        .container {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+
+        .glass {
+          margin-top: 1rem;
+          padding: 2rem 1.5rem;
+        }
+
+        .btn-group-sm .btn {
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
+        }
+
+        h1 {
+          font-size: 1.75rem;
+        }
+
+        .platform-desc {
+          font-size: 1rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .welcome-section {
+          padding: 1rem;
+        }
+
+        .stats-card {
+          padding: 1.5rem 1rem;
+        }
+
+        .btn-primary {
+          font-size: 1rem;
+          padding: 0.75rem 1.5rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body data-socket-transports="polling">
+    <div id="loader">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <!-- PWA Install Button -->
+    <button
+      id="pwa-install-btn"
+      onclick="installApp()"
+      aria-label="Инсталирай HelpChain като мобилно приложение"
+      title="Инсталирай приложението за по-добро изживяване"
+    >
+      <i class="bi bi-download"></i>
+      Инсталирай приложението
+    </button>
+
+    <!-- Theme Toggle Button -->
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      type="button"
+      onclick="toggleTheme()"
+      aria-label="Превключи към тъмна тема"
+      title="Превключи към тъмна тема"
+      data-title-light="Превключи към тъмна тема"
+      data-title-dark="Превключи към светла тема"
+    >
+      <i id="theme-icon" class="bi bi-moon theme-toggle-icon"></i>
+    </button>
+
+    <div class="container">
+         
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          
+          <h1 class="mb-2">
+            Добре дошли, Тестов Доброволец! 👋
+          </h1>
+          <p class="mb-0 opacity-75">
+            Благодарим ви за доброволчеството! Днес можете да помогнете на
+            още 0 души.
+          </p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="/volunteer_logout" class="btn btn-light">
+            <i class="fas fa-sign-out-alt me-1"></i>Изход
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4" id="achievements-section">
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="stats-card stats-completed fade-in-up">
+        <div class="stats-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stats-number">0</div>
+        <div class="stats-label">Завършени задачи</div>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="stats-card stats-active fade-in-up">
+        <div class="stats-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <div class="stats-number">0</div>
+        <div class="stats-label">Активни задачи</div>
+        <p class="text-muted mb-0 small">
+          В момента работите по тези задачи
+        </p>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="stats-card stats-rating fade-in-up">
+        <div class="stats-icon">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="stats-number">0.0</div>
+        <div class="stats-label">Средна оценка</div>
+        <p class="text-muted mb-0 small">
+          0 спешни задачи наблизо!
+        </p>
+      </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+      <div class="stats-card stats-people fade-in-up">
+        <div class="stats-icon">
+          <i class="fas fa-heart"></i>
+        </div>
+        <div class="stats-number">0</div>
+        <div class="stats-label">Помогнати хора</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gamification Section -->
+  <div class="row mb-4">
+    <div class="col-lg-8 mb-4">
+      <div class="stats-card fade-in-up">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">
+            <i class="fas fa-trophy text-warning me-2"></i>Ниво
+            1
+          </h5>
+          <div class="text-end">
+            <div class="stats-number">0</div>
+            <div class="text-muted small">Общо XP</div>
+          </div>
+        </div>
+        <div class="gamification-progress-label">
+          <span>Прогрес към следващо ниво</span>
+          <span>0.0%</span>
+        </div>
+        <div class="progress progress-thick mb-3">
+          <div
+            class="progress-bar bg-warning progress-value"
+            data-progress-value="0.0"
+          ></div>
+        </div>
+        <div class="text-center">
+          <small class="text-muted">
+            Още 100 опит до ниво 2
+          </small>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 mb-4">
+      <div class="stats-card fade-in-up">
+        <h6 class="mb-3">
+          <i class="fas fa-medал text-success me-2"></i>Постижения
+        </h6>
+        <div class="text-center">
+          <div class="mb-2">
+            <i class="fas fa-star text-warning achievement-icon"></i>
+          </div>
+          <small class="text-muted">Нови постижения скоро!</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Tasks Section -->
+  <div class="tasks-section fade-in-up" id="active-tasks">
+    <div class="section-header">
+      <h2 class="section-title">
+        <i class="fas fa-tasks text-primary me-2"></i>Вашите активни
+        задачи
+      </h2>
+      <p class="section-subtitle">
+        Задачи, по които работите в момента
+      </p>
+    </div>
+
+    
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-clipboard-list"></i>
+      </div>
+      <h5 class="empty-title">Нямате активни задачи</h5>
+      <p class="empty-description">
+        Приемете нова задача от секцията „Налични задачи“ по-долу.
+      </p>
+    </div>
+    
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions">
+    <a href="#available-tasks" class="action-card action-tasks fade-in-up">
+      <div class="action-icon">
+        <i class="fas fa-plus-circle"></i>
+      </div>
+      <div class="action-title">Налични задачи</div>
+      <div class="action-description">
+        0 задачи чакат помощ
+      </div>
+    </a>
+
+    <a href="#active-tasks" class="action-card action-active fade-in-up">
+      <div class="action-icon">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <div class="action-title">Активни задачи</div>
+      <div class="action-description">
+        Прегледай текущите си ангажименти
+      </div>
+    </a>
+
+    <a href="#location-update" class="action-card action-location fade-in-up">
+      <div class="action-icon">
+        <i class="fas fa-map-marker-alt"></i>
+      </div>
+      <div class="action-title">Актуализирай локация</div>
+      <div class="action-description">
+        Намери близки заявки за помощ
+      </div>
+    </a>
+
+    <a
+      href="/volunteer_profile"
+      class="action-card action-profile fade-in-up"
+    >
+      <div class="action-icon">
+        <i class="fas fa-user-edit"></i>
+      </div>
+      <div class="action-title">Редактирай профил</div>
+      <div class="action-description">Обнови информацията си</div>
+    </a>
+
+    <a
+      href="#achievements-section"
+      class="action-card action-achievements fade-in-up"
+    >
+      <div class="action-icon">
+        <i class="fas fa-trophy"></i>
+      </div>
+      <div class="action-title">Постижения</div>
+      <div class="action-description">Виж своите значки и XP</div>
+    </a>
+
+    <a
+      href="mailto:contact@helpchain.live"
+      class="action-card action-support fade-in-up"
+    >
+      <div class="action-icon">
+        <i class="fas fa-headset"></i>
+      </div>
+      <div class="action-title">Поддръжка</div>
+      <div class="action-description">Свържи се с нас</div>
+    </a>
+  </div>
+
+  <!-- Available Tasks Section -->
+  <div id="available-tasks" class="tasks-section fade-in-up">
+    <div class="section-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="section-title">
+            <i class="fas fa-search text-success me-2"></i>Налични
+            задачи
+          </h2>
+          <p class="section-subtitle mb-2">
+            Задачи, които се нуждаят от доброволци
+          </p>
+          <div class="tasks-summary-badges">
+            <span class="tasks-summary-badge">
+              <i class="fas fa-clipboard-check text-primary"></i>
+              Общо: <span data-task-summary="all">0</span>
+            </span>
+            <span class="tasks-summary-badge">
+              <i class="fas fa-bolt text-danger"></i>
+              Спешни: <span data-task-summary="urgent">0</span>
+            </span>
+            <span class="tasks-summary-badge">
+              <i class="fas fa-arrow-up text-warning"></i>
+              Високи: <span data-task-summary="high">0</span>
+            </span>
+            <span class="tasks-summary-badge">
+              <i class="fas fa-equals text-info"></i>
+              Средни: <span data-task-summary="medium">0</span>
+            </span>
+            <span class="tasks-summary-badge">
+              <i class="fas fa-arrow-down text-success"></i>
+              Ниски: <span data-task-summary="low">0</span>
+            </span>
+          </div>
+        </div>
+        <div class="tasks-filter-toolbar">
+          <div class="input-group" role="search">
+            <span class="input-group-text" id="task-search-label">
+              <i class="fas fa-search"></i>
+            </span>
+            <input
+              type="text"
+              id="taskSearch"
+              class="form-control task-search-input"
+              placeholder="Търси задачи..."
+              aria-describedby="task-search-label"
+            />
+          </div>
+          <select
+            id="taskFilter"
+            class="form-select task-filter-select"
+            title="Филтрирай по приоритет"
+          >
+            <option value="">Всички приоритети</option>
+            <option value="urgent">Само спешни</option>
+            <option value="high">Висок приоритет</option>
+            <option value="medium">Среден приоритет</option>
+            <option value="low">Нисък приоритет</option>
+          </select>
+          <select
+            id="taskSort"
+            class="form-select task-filter-select"
+            title="Подреди наличните задачи"
+          >
+            <option value="recent">Най-нови</option>
+            <option value="oldest">Най-стари</option>
+            <option value="shortest">
+              Най-кратка продължителност
+            </option>
+            <option value="longest">
+              Най-дълга продължителност
+            </option>
+          </select>
+        </div>
+      </div>
+      <div
+        class="task-priority-pills"
+        id="taskPriorityPills"
+        role="group"
+        aria-label="Бързи филтри по приоритет"
+      >
+        <button
+          type="button"
+          class="task-priority-pill active"
+          data-priority-pill=""
+        >
+          Всички
+          <span class="badge bg-primary" data-priority-count="all">0</span>
+        </button>
+        <button
+          type="button"
+          class="task-priority-pill"
+          data-priority-pill="urgent"
+        >
+          Спешни
+          <span class="badge bg-danger" data-priority-count="urgent">0</span>
+        </button>
+        <button
+          type="button"
+          class="task-priority-pill"
+          data-priority-pill="high"
+        >
+          Високи
+          <span class="badge bg-warning text-dark" data-priority-count="high"
+            >0</span
+          >
+        </button>
+        <button
+          type="button"
+          class="task-priority-pill"
+          data-priority-pill="medium"
+        >
+          Средни
+          <span class="badge bg-info text-dark" data-priority-count="medium"
+            >0</span
+          >
+        </button>
+        <button
+          type="button"
+          class="task-priority-pill"
+          data-priority-pill="low"
+        >
+          Ниски
+          <span class="badge bg-success" data-priority-count="low">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="availableTasksContainer">
+      <!-- Tasks will be loaded here via AJAX -->
+      <div class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Зареждане...</span>
+        </div>
+        <p class="mt-2 text-muted">Зареждане на налични задачи...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Location Update Section -->
+  <div id="location-update" class="location-section fade-in-up">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h3 class="mb-1">
+          <i class="fas fa-map-marker-alt text-info me-2"></i>Актуализирайте
+          вашата локация
+        </h3>
+        <p class="text-muted mb-0">За да намирате близки заявки за помощ</p>
+      </div>
+      
+    </div>
+
+    <form id="locationForm" class="location-form">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="latitude" class="form-label fw-semibold">
+            <i class="fas fa-globe me-1"></i>Ширина (Latitude)
+          </label>
+          <input
+            type="number"
+            step="0.000001"
+            class="form-control"
+            id="latitude"
+            placeholder="42.6977"
+            value=""
+          />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="longitude" class="form-label fw-semibold">
+            <i class="fas fa-globe me-1"></i>Дължина (Longitude)
+          </label>
+          <input
+            type="number"
+            step="0.000001"
+            class="form-control"
+            id="longitude"
+            placeholder="23.3219"
+            value=""
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="locationText" class="form-label fw-semibold">
+            <i class="fas fa-city me-1"></i>Град/Населено място
+          </label>
+          <input
+            type="text"
+            class="form-control"
+            id="locationText"
+            placeholder="София"
+            value="София"
+          />
+        </div>
+        <div class="col-md-6 mb-3 d-flex align-items-end gap-2">
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-location flex-fill"
+            onclick="getCurrentLocation()"
+          >
+            <i class="fas fa-crosshairs me-1"></i>GPS
+          </button>
+          <button
+            type="button"
+            class="btn btn-success btn-location flex-fill"
+            onclick="updateLocation()"
+          >
+            <i class="fas fa-save me-1"></i>Запази
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Notification Container -->
+<div id="notificationContainer" class="notification"></div>
+
+<script>
+  // Global variables
+  let availableTasks = [];
+  let filteredTasks = [];
+  let activePriorityFilter = "";
+  let activeSort = "recent";
+  const userLocale = "fr";
+  const priorityLabels = {
+    urgent: "Спешна",
+    high: "Висока",
+    medium: "Средна",
+    low: "Ниска",
+  };
+
+  // Initialize dashboard
+  document.addEventListener("DOMContentLoaded", () => {
+    initializeDashboard();
+  });
+
+  function initializeDashboard() {
+    loadAvailableTasks();
+    setupSearchAndFilter();
+    setupAvailableTaskActions();
+    setupActiveTaskActions();
+    initializeProgressIndicators();
+  }
+
+  // Load available tasks via API
+  async function loadAvailableTasks() {
+    try {
+      const response = await fetch("/api/tasks?status=open&limit=10");
+      const data = await response.json();
+
+      if (!data.success) {
+        showNotification(
+          "Грешка при зареждане на задачите",
+          "danger",
+        );
+        return;
+      }
+
+      availableTasks = Array.isArray(data.tasks) ? data.tasks : [];
+      filteredTasks = sortTasks([...availableTasks], activeSort);
+      updateTaskSummary(filteredTasks);
+      updatePriorityCounts(availableTasks);
+      renderAvailableTasks(filteredTasks);
+    } catch (error) {
+      console.error("Error loading tasks:", error);
+      showNotification("Грешка при свързване със сървъра", "danger");
+    }
+  }
+
+  function updateTaskSummary(tasks) {
+    const summary = tasks.reduce(
+      (acc, task) => {
+        const priority = (task.priority || "low").toLowerCase();
+        acc.all += 1;
+        acc[priority] = (acc[priority] || 0) + 1;
+        return acc;
+      },
+      { all: 0, urgent: 0, high: 0, medium: 0, low: 0 },
+    );
+
+    document.querySelectorAll("[data-task-summary]").forEach((node) => {
+      const key = node.dataset.taskSummary;
+      node.textContent = summary[key] || 0;
+    });
+  }
+
+  function updatePriorityCounts(tasks) {
+    const counts = tasks.reduce(
+      (acc, task) => {
+        const priority = (task.priority || "").toLowerCase();
+        acc.all += 1;
+        if (priority) {
+          acc[priority] = (acc[priority] || 0) + 1;
+        }
+        return acc;
+      },
+      { all: 0 },
+    );
+
+    document.querySelectorAll("[data-priority-count]").forEach((badge) => {
+      const key = badge.dataset.priorityCount;
+      const value = key === "all" ? counts.all : counts[key] || 0;
+      badge.textContent = value;
+    });
+  }
+
+  function renderAvailableTasks(tasks) {
+    const container = document.getElementById("availableTasksContainer");
+    if (!container) {
+      return;
+    }
+
+    if (!tasks.length) {
+      container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <i class="fas fa-search"></i>
+        </div>
+        <h5 class="empty-title">Няма намерени задачи</h5>
+        <p class="empty-description">Опитайте с други критерии за търсене.</p>
+      </div>
+    `;
+      return;
+    }
+
+    const cards = tasks
+      .map((task) => {
+        const createdAt = task.created_at
+          ? new Date(task.created_at).toLocaleDateString(userLocale || "bg-BG")
+          : "";
+        const duration = task.estimated_hours
+          ? `${task.estimated_hours}ч`
+          : "Няма";
+        const location = task.location_text || "Не е посочена";
+        const description = task.description || "Няма описание";
+        const priority = (task.priority || "low").toLowerCase();
+
+        return `
+      <div class="task-card">
+        <div class="task-header">
+          <div class="flex-grow-1">
+            <h5 class="task-title">${task.title}</h5>
+            <div class="task-meta">
+              <span><i class="fas fa-map-marker-alt"></i>${location}</span>
+              <span><i class="fas fa-calendar"></i>${createdAt}</span>
+              <span><i class="fas fa-clock"></i>${duration}</span>
+            </div>
+          </div>
+          <span class="priority-badge priority-${priority}">
+            ${priorityLabels[priority] || priority}
+          </span>
+        </div>
+
+        <p class="task-description">${description}</p>
+
+        <div class="task-actions">
+          <button class="btn btn-outline-info btn-task js-view-task" data-task-id="${
+            task.id
+          }" title="Преглед на детайлите">
+            <i class="fas fa-eye me-1"></i>Детайли
+          </button>
+          <button class="btn btn-primary btn-task js-accept-task" data-task-id="${
+            task.id
+          }" title="Приеми задачата">
+            <i class="fas fa-hand-paper me-1"></i>Приеми
+          </button>
+        </div>
+      </div>
+    `;
+      })
+      .join("");
+
+    container.innerHTML = cards;
+  }
+
+  function setupSearchAndFilter() {
+    const searchInput = document.getElementById("taskSearch");
+    const filterSelect = document.getElementById("taskFilter");
+    const sortSelect = document.getElementById("taskSort");
+    const priorityPills = Array.from(
+      document.querySelectorAll("[data-priority-pill]"),
+    );
+
+    const applyFilters = () => {
+      const term = (searchInput?.value || "").toLowerCase();
+      const priority = activePriorityFilter || filterSelect?.value || "";
+
+      filteredTasks = availableTasks.filter((task) => {
+        const titleMatch = task.title
+          ? task.title.toLowerCase().includes(term)
+          : false;
+        const descriptionMatch = task.description
+          ? task.description.toLowerCase().includes(term)
+          : false;
+        const matchesSearch = term ? titleMatch || descriptionMatch : true;
+        const matchesPriority = priority
+          ? (task.priority || "").toLowerCase() === priority
+          : true;
+        return matchesSearch && matchesPriority;
+      });
+
+      filteredTasks = sortTasks(filteredTasks, activeSort);
+      updateTaskSummary(filteredTasks);
+      renderAvailableTasks(filteredTasks);
+    };
+
+    searchInput?.addEventListener("input", applyFilters);
+
+    filterSelect?.addEventListener("change", (event) => {
+      activePriorityFilter = event.target.value;
+      priorityPills.forEach((pill) => {
+        const pillPriority = pill.dataset.priorityPill || "";
+        pill.classList.toggle("active", pillPriority === activePriorityFilter);
+      });
+      applyFilters();
+    });
+
+    sortSelect?.addEventListener("change", (event) => {
+      activeSort = event.target.value;
+      filteredTasks = sortTasks(filteredTasks, activeSort);
+      updateTaskSummary(filteredTasks);
+      renderAvailableTasks(filteredTasks);
+    });
+
+    priorityPills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        activePriorityFilter = pill.dataset.priorityPill || "";
+        if (filterSelect) {
+          filterSelect.value = activePriorityFilter;
+        }
+        priorityPills.forEach((button) =>
+          button.classList.toggle("active", button === pill),
+        );
+        applyFilters();
+      });
+    });
+
+    applyFilters();
+  }
+
+  function sortTasks(tasks, sortValue) {
+    const sorted = [...tasks];
+
+    switch (sortValue) {
+      case "oldest":
+        sorted.sort(
+          (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0),
+        );
+        break;
+      case "shortest":
+        sorted.sort(
+          (a, b) =>
+            (a.estimated_hours || Infinity) - (b.estimated_hours || Infinity),
+        );
+        break;
+      case "longest":
+        sorted.sort(
+          (a, b) => (b.estimated_hours || 0) - (a.estimated_hours || 0),
+        );
+        break;
+      default:
+        sorted.sort(
+          (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
+        );
+        break;
+    }
+
+    return sorted;
+  }
+
+  function setupAvailableTaskActions() {
+    const container = document.getElementById("availableTasksContainer");
+    if (!container) {
+      return;
+    }
+
+    container.addEventListener("click", (event) => {
+      const viewButton = event.target.closest(".js-view-task");
+      const acceptButton = event.target.closest(".js-accept-task");
+
+      if (viewButton) {
+        const taskId = parseInt(viewButton.dataset.taskId, 10);
+        if (!Number.isNaN(taskId)) {
+          viewTaskDetails(taskId);
+        }
+        return;
+      }
+
+      if (acceptButton) {
+        const taskId = parseInt(acceptButton.dataset.taskId, 10);
+        if (!Number.isNaN(taskId)) {
+          acceptTask(taskId);
+        }
+      }
+    });
+  }
+
+  function setupActiveTaskActions() {
+    const progressButtons = document.querySelectorAll(".js-update-progress");
+    const completeButtons = document.querySelectorAll(".js-complete-task");
+
+    progressButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const taskId = parseInt(button.dataset.taskId, 10);
+        const nextValue = parseFloat(button.dataset.progressNext);
+        if (!Number.isNaN(taskId)) {
+          updateProgress(taskId, nextValue);
+        }
+      });
+    });
+
+    completeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const taskId = parseInt(button.dataset.taskId, 10);
+        if (!Number.isNaN(taskId)) {
+          completeTask(taskId);
+        }
+      });
+    });
+  }
+
+  function initializeProgressIndicators() {
+    document.querySelectorAll("[data-progress-value]").forEach((bar) => {
+      const value = parseFloat(bar.dataset.progressValue);
+      if (!Number.isNaN(value)) {
+        const bounded = Math.min(Math.max(value, 0), 100);
+        bar.style.width = `${bounded}%`;
+      }
+    });
+  }
+
+  async function acceptTask(taskId) {
+    if (
+      !confirm("Сигурни ли сте, че искате да приемете тази задача?")
+    ) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/tasks/${taskId}/assign/1`,
+        {
+          method: "POST",
+        },
+      );
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification("Задачата е приета успешно!", "success");
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification(
+          "Грешка при приемане на задачата: " + (data.error || ""),
+          "danger",
+        );
+      }
+    } catch (error) {
+      console.error("Error accepting task:", error);
+      showNotification("Грешка при свързване със сървъра", "danger");
+    }
+  }
+
+  function viewTaskDetails(taskId) {
+    showNotification(
+      "Детайлите за задачата ще бъдат показани в модален прозорец",
+      "info",
+    );
+  }
+
+  async function updateProgress(taskId, newProgress) {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ progress: Math.min(newProgress, 100) }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification("Прогресът е обновен!", "success");
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showNotification(
+          "Грешка при обновяване на прогреса",
+          "danger",
+        );
+      }
+    } catch (error) {
+      console.error("Error updating progress:", error);
+      showNotification("Грешка при свързване със сървъра", "danger");
+    }
+  }
+
+  async function completeTask(taskId) {
+    if (!confirm("Сигурни ли сте, че задачата е завършена?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/complete`, {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification(
+          "Задачата е отбелязана като завършена!",
+          "success",
+        );
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification(
+          "Грешка при завършване на задачата",
+          "danger",
+        );
+      }
+    } catch (error) {
+      console.error("Error completing task:", error);
+      showNotification("Грешка при свързване със сървъра", "danger");
+    }
+  }
+
+  // Location functions
+  function getCurrentLocation() {
+    const btn = event.target.closest("button");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>Зареждане...`;
+    btn.classList.add("loading");
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          document.getElementById("latitude").value =
+            position.coords.latitude.toFixed(6);
+          document.getElementById("longitude").value =
+            position.coords.longitude.toFixed(6);
+
+          // Reverse geocode to get city name
+          fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&localityLanguage=bg`,
+          )
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.city) {
+                document.getElementById("locationText").value = data.city;
+              }
+            })
+            .catch((error) => console.log("Reverse geocoding failed:", error));
+
+          btn.innerHTML = originalText;
+          btn.classList.remove("loading");
+          showNotification(
+            "Локацията е получена успешно!",
+            "success",
+          );
+        },
+        function (error) {
+          btn.innerHTML = originalText;
+          btn.classList.remove("loading");
+          showNotification(
+            "Не можахме да получим вашата локация. Моля, въведете я ръчно.",
+            "warning",
+          );
+        },
+      );
+    } else {
+      btn.innerHTML = originalText;
+      btn.classList.remove("loading");
+      showNotification(
+        "Вашият браузър не поддържа геолокация.",
+        "warning",
+      );
+    }
+  }
+
+  async function updateLocation() {
+    const latitude = document.getElementById("latitude").value;
+    const longitude = document.getElementById("longitude").value;
+    const locationText = document.getElementById("locationText").value;
+
+    if (!latitude || !longitude) {
+      showNotification(
+        "Моля, въведете валидни координати.",
+        "warning",
+      );
+      return;
+    }
+
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>Запазване...`;
+    btn.disabled = true;
+
+    try {
+      const response = await fetch(
+        `/api/volunteers/1/location`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            latitude: parseFloat(latitude),
+            longitude: parseFloat(longitude),
+            location: locationText,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        showNotification(
+          "Локацията е актуализирана успешно!",
+          "success",
+        );
+        setTimeout(() => location.reload(), 1500);
+      } else {
+        showNotification(
+          "Грешка при актуализиране на локацията: " +
+            (data.error || ""),
+          "danger",
+        );
+      }
+    } catch (error) {
+      console.error("Update location error:", error);
+      showNotification(
+        "Грешка при свързване със сървъра.",
+        "danger",
+      );
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
+
+  // Notification system
+  function showNotification(message, type = "info") {
+    const container = document.getElementById("notificationContainer");
+    const notificationId = "notification-" + Date.now();
+
+    const notificationHtml = `
+    <div id="${notificationId}" class="alert alert-${type} alert-dismissible fade show" role="alert">
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+
+    container.insertAdjacentHTML("beforeend", notificationHtml);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      const notification = document.getElementById(notificationId);
+      if (notification) {
+        notification.remove();
+      }
+    }, 5000);
+  }
+
+  // Add loading animation to cards
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: "0px 0px -50px 0px",
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = "1";
+        entry.target.style.transform = "translateY(0)";
+      }
+    });
+  }, observerOptions);
+
+  // Observe all cards
+  document
+    .querySelectorAll(".stats-card, .action-card, .tasks-section")
+    .forEach((card) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(30px)";
+      card.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+      observer.observe(card);
+    });
+</script>
+
+      <footer class="text-center mt-5">
+        <div class="footer-links mb-4">
+          <a href="mailto:contact@helpchain.live">Email</a>
+          <a href="https://facebook.com">Facebook</a>
+          <a href="/terms" target="_blank">Условия за ползване</a>
+          <a href="/privacy" target="_blank"
+            >Политика за поверителност</a
+          >
+          <a href="/faq">FAQ</a>
+          <a href="/success_stories">Истории на успеха</a>
+          <a href="/feedback">Обратна връзка</a>
+        </div>
+        <div class="d-flex justify-content-center align-items-center gap-2">
+          <span class="text-muted">© 2025 HelpChain.live</span>
+          <div class="language-switcher">
+            <a
+              class="btn btn-sm btn-outline-primary "
+              href="/set_language/bg?next=http://localhost/volunteer_dashboard"
+              role="button"
+            >
+              BG
+            </a>
+            <a
+              class="btn btn-sm btn-outline-info active"
+              href="/set_language/fr?next=http://localhost/volunteer_dashboard"
+              role="button"
+            >
+              FR
+            </a>
+            <a
+              class="btn btn-sm btn-outline-secondary "
+              href="/set_language/en?next=http://localhost/volunteer_dashboard"
+              role="button"
+            >
+              EN
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Small runtime config for client scripts -->
+    <script>
+      window.HC = window.HC || {};
+      window.HC.current_locale = "fr";
+      window.HC.strings = {
+        update_available: "Нова версия на HelpChain е налична!",
+        update_now: "Обнови сега",
+        later: "По-късно",
+        install_label: "Инсталирай приложението",
+        install_title: "Инсталирай HelpChain като мобилно приложение"
+      };
+    </script>
+
+    <script src="/static/js/base.js"></script>
+
+    
+  </body>
+</html>

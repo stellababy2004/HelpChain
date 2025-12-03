@@ -144,7 +144,12 @@ def subscribe_push():
                 # Create or get placeholder user with id=0
                 placeholder = db_instance.session.get(User, 0)
                 if not placeholder:
-                    placeholder = User(id=0, username="anonymous", email="anonymous@example.com", password_hash="")
+                    placeholder = User(
+                        id=0,
+                        username="anonymous",
+                        email="anonymous@example.com",
+                        password_hash="",
+                    )
                     # add directly to Flask DB session
                     db_instance.session.add(placeholder)
                     db_instance.session.commit()
@@ -203,8 +208,10 @@ def vapid_public_key():
         # hit the server can retrieve a usable key.
         if not public_key:
             test_key = current_app.config.get("TEST_VAPID_PUBLIC_KEY")
-            if test_key or current_app.config.get("TESTING") or (
-                current_app.config.get("HELPCHAIN_TEST_DEBUG")
+            if (
+                test_key
+                or current_app.config.get("TESTING")
+                or (current_app.config.get("HELPCHAIN_TEST_DEBUG"))
             ):
                 fallback = test_key or "BTestPublicKeyForLocalTests-ReplaceMe"
                 current_app.logger.info("Using test VAPID public key for tests")

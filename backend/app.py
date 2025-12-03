@@ -11,6 +11,7 @@ import time
 
 import jwt
 import sqlalchemy
+from dependencies import require_role
 from flask import (
     Flask,
     Response,
@@ -32,12 +33,11 @@ from flask_wtf import CSRFProtect
 from sqlalchemy import literal_column, text
 from sqlalchemy.exc import OperationalError
 
-from dependencies import require_role
-
 # --- Flask app init ---
 app = Flask(__name__)
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.debug = True
+
 
 # Safe URL builder for templates: return '#' when endpoint missing
 def safe_url_for(endpoint: str, **values) -> str:
@@ -72,6 +72,7 @@ def safe_url_for(endpoint: str, **values) -> str:
         except Exception:
             pass
         return "#"
+
 
 # Expose to Jinja templates
 app.jinja_env.globals["safe_url_for"] = safe_url_for
@@ -113,7 +114,7 @@ except Exception:
         # provide a no-op placeholder to avoid import-time crashes.
         socketio = None
 
- 
+
 # Lightweight admin debug logger: append JSON lines to backend/logs/admin_debug.log
 def _write_admin_debug(entry: dict):
     try:
@@ -130,8 +131,7 @@ def _write_admin_debug(entry: dict):
         except Exception:
             pass
 
-# Local imports (strictly sorted, all at top-level)
-from extensions import babel, db
+
 from models import (
     AdminRole,
     AdminUser,
@@ -142,6 +142,9 @@ from models import (
     Volunteer,
 )
 from models_with_analytics import AnalyticsEvent, Feedback
+
+# Local imports (strictly sorted, all at top-level)
+from extensions import babel, db
 from permissions import require_admin_login
 
 # Initialize CSRF protection
@@ -219,15 +222,19 @@ logging.basicConfig(
 def admin_api_requests():
     # Debug: логване за диагностика на AJAX повикванията
     try:
-        logging.debug(f"[admin_api_requests] session_keys={list(session.keys())} cookies={list(request.cookies.keys())}")
-        _write_admin_debug({
-            "event": "admin_api_requests_called",
-            "session_keys": list(session.keys()),
-            "cookies": list(request.cookies.keys()),
-            "headers": {k: v for k, v in list(request.headers.items())[:10]},
-            "path": request.path,
-            "method": request.method,
-        })
+        logging.debug(
+            f"[admin_api_requests] session_keys={list(session.keys())} cookies={list(request.cookies.keys())}"
+        )
+        _write_admin_debug(
+            {
+                "event": "admin_api_requests_called",
+                "session_keys": list(session.keys()),
+                "cookies": list(request.cookies.keys()),
+                "headers": {k: v for k, v in list(request.headers.items())[:10]},
+                "path": request.path,
+                "method": request.method,
+            }
+        )
     except Exception:
         logging.exception("Failed to write admin_api_requests debug")
 
@@ -325,7 +332,9 @@ def admin_requests_table():
         total = q.count()
     except sqlalchemy.exc.UnboundExecutionError:
         try:
-            total = int(db.session.query(sqlalchemy.func.count(HelpRequest.id)).scalar() or 0)
+            total = int(
+                db.session.query(sqlalchemy.func.count(HelpRequest.id)).scalar() or 0
+            )
         except Exception:
             total = 0
 
@@ -752,7 +761,9 @@ def _test_bypass_admin_header_app():
             if request.headers.get("X-Admin-Bypass") == "1":
                 session["admin_logged_in"] = True
                 session["admin_user_id"] = session.get("admin_user_id") or 1
-                session["admin_username"] = session.get("admin_username") or "test_admin"
+                session["admin_username"] = (
+                    session.get("admin_username") or "test_admin"
+                )
                 try:
                     session.modified = True
                 except Exception:
@@ -760,20 +771,32 @@ def _test_bypass_admin_header_app():
                     # Diagnostic: log minimal session/header/cookie state
                     try:
                         from flask_login import current_user
+
                         diag = {
                             "session_keys": list(session.keys()),
-                            "session_admin_logged_in": bool(session.get("admin_logged_in")),
-                            "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
+                            "session_admin_logged_in": bool(
+                                session.get("admin_logged_in")
+                            ),
+                            "header_X-Admin-Bypass": request.headers.get(
+                                "X-Admin-Bypass"
+                            ),
                             "cookies": list(request.cookies.keys()),
-                            "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                            "current_user_authenticated": getattr(
+                                current_user, "is_authenticated", False
+                            ),
                         }
                         try:
                             diag["db_engine_id"] = id(db.engine)
                         except Exception:
                             diag["db_engine_id"] = None
-                        app.logger.debug("_test_bypass_admin_header_app: applied header bypass %s", diag)
+                        app.logger.debug(
+                            "_test_bypass_admin_header_app: applied header bypass %s",
+                            diag,
+                        )
                     except Exception:
-                        app.logger.debug("_test_bypass_admin_header_app: applied header bypass")
+                        app.logger.debug(
+                            "_test_bypass_admin_header_app: applied header bypass"
+                        )
         except Exception:
             app.logger.exception("_test_bypass_admin_header_app header check failed")
     except Exception:
@@ -787,13 +810,16 @@ def _test_bypass_admin_header_app():
 def _global_request_diagnostics_app():
     try:
         from flask_login import current_user
+
         dn = {
             "path": request.path,
             "method": request.method,
             "session_keys": list(session.keys()),
             "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
             "cookies": list(request.cookies.keys()),
-            "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+            "current_user_authenticated": getattr(
+                current_user, "is_authenticated", False
+            ),
         }
         # Include raw cookie header diagnostics to help test harness debugging
         try:
@@ -809,13 +835,19 @@ def _global_request_diagnostics_app():
         except Exception:
             dn["db_engine_id"] = None
         try:
-            dn["db_session_bind_id"] = id(db.session.bind) if getattr(db, "session", None) and getattr(db.session, "bind", None) else None
+            dn["db_session_bind_id"] = (
+                id(db.session.bind)
+                if getattr(db, "session", None) and getattr(db.session, "bind", None)
+                else None
+            )
         except Exception:
             dn["db_session_bind_id"] = None
         app.logger.debug("_global_request_diagnostics_app: %s", dn)
     except Exception:
         try:
-            app.logger.debug("_global_request_diagnostics_app: failed to collect diagnostics")
+            app.logger.debug(
+                "_global_request_diagnostics_app: failed to collect diagnostics"
+            )
         except Exception:
             pass
 
@@ -842,21 +874,35 @@ def _pytest_force_admin_login_app():
         # Diagnostic: expose session/header/cookie snapshot for pytest tracing
         try:
             from flask_login import current_user
+
             diag = {
                 "session_keys": list(session.keys()),
                 "session_admin_logged_in": bool(session.get("admin_logged_in")),
                 "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                 "cookies": list(request.cookies.keys()),
-                "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                "current_user_authenticated": getattr(
+                    current_user, "is_authenticated", False
+                ),
             }
             try:
                 diag["db_engine_id"] = id(db.engine)
             except Exception:
                 diag["db_engine_id"] = None
-            app.logger.debug("_pytest_force_admin_login_app: applied session shim %s", diag)
+            app.logger.debug(
+                "_pytest_force_admin_login_app: applied session shim %s", diag
+            )
         except Exception:
             app.logger.debug("_pytest_force_admin_login_app: applied session shim")
-        return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "admin_id": session["admin_user_id"],
+                    "username": session["admin_username"],
+                }
+            ),
+            200,
+        )
     except Exception as exc:
         app.logger.exception("_pytest_force_admin_login_app failed")
         return jsonify({"success": False, "error": str(exc)}), 500
@@ -870,14 +916,20 @@ def _pytest_force_volunteer_login_app():
     try:
         # Minimal session shim for volunteer identity used by tests
         try:
-            vid = int(request.args.get("volunteer_id") or session.get("volunteer_id") or 1)
+            vid = int(
+                request.args.get("volunteer_id") or session.get("volunteer_id") or 1
+            )
         except Exception:
             vid = 1
         session["volunteer_logged_in"] = True
         session["volunteer_id"] = vid
         try:
             # Provide a human-friendly name when available
-            session["volunteer_name"] = request.args.get("volunteer_name") or session.get("volunteer_name") or "test_volunteer"
+            session["volunteer_name"] = (
+                request.args.get("volunteer_name")
+                or session.get("volunteer_name")
+                or "test_volunteer"
+            )
         except Exception:
             pass
         try:
@@ -886,23 +938,29 @@ def _pytest_force_volunteer_login_app():
             pass
         try:
             from flask_login import current_user
+
             diag = {
                 "session_keys": list(session.keys()),
                 "session_volunteer_logged_in": bool(session.get("volunteer_logged_in")),
                 "cookies": list(request.cookies.keys()),
-                "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                "current_user_authenticated": getattr(
+                    current_user, "is_authenticated", False
+                ),
             }
             try:
                 diag["db_engine_id"] = id(db.engine)
             except Exception:
                 diag["db_engine_id"] = None
-            app.logger.debug("_pytest_force_volunteer_login_app: applied session shim %s", diag)
+            app.logger.debug(
+                "_pytest_force_volunteer_login_app: applied session shim %s", diag
+            )
         except Exception:
             app.logger.debug("_pytest_force_volunteer_login_app: applied session shim")
         return jsonify({"success": True, "volunteer_id": session["volunteer_id"]}), 200
     except Exception as exc:
         app.logger.exception("_pytest_force_volunteer_login_app failed")
         return jsonify({"success": False, "error": str(exc)}), 500
+
 
 @app.route("/_pytest_set_pending_email_2fa", methods=["GET"])  # test-only helper
 def _pytest_set_pending_email_2fa_app():
@@ -911,6 +969,7 @@ def _pytest_set_pending_email_2fa_app():
         return ("Not Found", 404)
     try:
         import time
+
         try:
             admin_id = int(request.args.get("admin_id") or 1)
         except Exception:
@@ -929,7 +988,11 @@ def _pytest_set_pending_email_2fa_app():
             session.modified = True
         except Exception:
             pass
-        app.logger.debug("_pytest_set_pending_email_2fa_app: set pending admin %s code=%s", admin_id, code)
+        app.logger.debug(
+            "_pytest_set_pending_email_2fa_app: set pending admin %s code=%s",
+            admin_id,
+            code,
+        )
         return jsonify({"success": True, "pending_admin_id": admin_id}), 200
     except Exception as exc:
         app.logger.exception("_pytest_set_pending_email_2fa_app failed")
@@ -947,9 +1010,16 @@ def _admin_force_login_app():
         try:
             # Log the session outcome as well
             from flask_login import current_user
-            app.logger.debug("_admin_force_login_app: proxied to _pytest_force_admin_login_app, session_keys=%s, current_user_authenticated=%s", list(session.keys()), getattr(current_user, "is_authenticated", False))
+
+            app.logger.debug(
+                "_admin_force_login_app: proxied to _pytest_force_admin_login_app, session_keys=%s, current_user_authenticated=%s",
+                list(session.keys()),
+                getattr(current_user, "is_authenticated", False),
+            )
         except Exception:
-            app.logger.debug("_admin_force_login_app: proxied to _pytest_force_admin_login_app")
+            app.logger.debug(
+                "_admin_force_login_app: proxied to _pytest_force_admin_login_app"
+            )
         return resp
     except Exception:
         app.logger.exception("_admin_force_login_app failed")
@@ -1077,7 +1147,9 @@ def api_login():
         role_val = getattr(user.role, "value", None) or str(getattr(user, "role", ""))
         if str(role_val).lower() == "volunteer":
             return (
-                jsonify(error="Volunteers must use email code login via /volunteer_login"),
+                jsonify(
+                    error="Volunteers must use email code login via /volunteer_login"
+                ),
                 403,
             )
     except Exception:
@@ -1181,13 +1253,18 @@ def api_requests():
         total = query.count()
     except sqlalchemy.exc.UnboundExecutionError:
         try:
-            total = int(db.session.query(sqlalchemy.func.count(HelpRequest.id)).scalar() or 0)
+            total = int(
+                db.session.query(sqlalchemy.func.count(HelpRequest.id)).scalar() or 0
+            )
         except Exception:
             total = 0
 
     try:
         items = (
-            query.order_by(*order_by).offset((page - 1) * page_size).limit(page_size).all()
+            query.order_by(*order_by)
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
         )
     except sqlalchemy.exc.UnboundExecutionError:
         try:
@@ -1282,10 +1359,32 @@ def demo_volunteers():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     # The dashboard template lives in `backend/templates/`; render it via Jinja
     try:
-        return render_template("volunteer_dashboard.html")
+        # Provide lightweight default context so demo page renders nicely
+        stats = {
+            "completed_tasks": 0,
+            "active_tasks": 0,
+            "rating": 0.0,
+            "people_helped": 0,
+        }
+        gamification = type(
+            "G",
+            (),
+            {"level": 1, "experience": 0, "level_progress": 0, "next_level_exp": 100},
+        )()
+        context = {
+            "stats": stats,
+            "available_tasks": 0,
+            "active_tasks": [],
+            "urgent_tasks": 0,
+            "gamification": gamification,
+            "current_locale": get_locale(),
+        }
+        return render_template("volunteer_dashboard.html", **context)
     except Exception:
         # Fallback: attempt to serve the raw file if template rendering fails
-        return send_from_directory(os.path.join(base_dir, "templates"), "volunteer_dashboard.html")
+        return send_from_directory(
+            os.path.join(base_dir, "templates"), "volunteer_dashboard.html"
+        )
 
 
 @app.get("/demo/request")
@@ -1324,18 +1423,32 @@ def volunteer_register():
             # Create associated User record so Volunteer.user_id is always set.
             # Use a generated password (not exposed) and set role to volunteer.
             try:
-                from werkzeug.security import generate_password_hash
                 import secrets
 
-                username = (email.split("@")[0] if email and "@" in email else name.replace(" ", "_") or f"vol_{secrets.token_hex(4)}")
+                from werkzeug.security import generate_password_hash
+
+                username = (
+                    email.split("@")[0]
+                    if email and "@" in email
+                    else name.replace(" ", "_") or f"vol_{secrets.token_hex(4)}"
+                )
                 random_password = secrets.token_urlsafe(16)
                 password_hash = generate_password_hash(random_password)
             except Exception:
                 # Fallbacks if werkzeug or secrets not available
-                username = email.split("@")[0] if email and "@" in email else name.replace(" ", "_") or "volunteer"
+                username = (
+                    email.split("@")[0]
+                    if email and "@" in email
+                    else name.replace(" ", "_") or "volunteer"
+                )
                 password_hash = ""
 
-            user = User(username=username, email=email, password_hash=password_hash, role=RoleEnum.VOLUNTEER.value)
+            user = User(
+                username=username,
+                email=email,
+                password_hash=password_hash,
+                role=RoleEnum.VOLUNTEER.value,
+            )
             db.session.add(user)
             # Flush to populate user.id so we can reference it on Volunteer
             db.session.flush()
@@ -1359,6 +1472,27 @@ def volunteer_register():
     return render_template("volunteer_register.html")
 
 
+@app.route("/volunteer_logout", methods=["GET", "POST"])  # compatibility for templates
+def volunteer_logout():
+    """Clear volunteer session keys and redirect to public index.
+
+    Some templates call `url_for('volunteer_logout')` directly — provide a
+    lightweight handler so `render_template` does not raise a BuildError and
+    templates render normally.
+    """
+    try:
+        session.pop("volunteer_logged_in", None)
+        session.pop("volunteer_id", None)
+        session.pop("volunteer_name", None)
+        session.pop("_user_id", None)
+    except Exception:
+        try:
+            app.logger.debug("volunteer_logout: session cleanup failed")
+        except Exception:
+            pass
+    return redirect(url_for("index"))
+
+
 # Dev/test convenience: allow POST to the volunteer registration form without CSRF
 # when running in debug mode or during tests. This is a local-only developer
 # aid and does not change production behavior because it is gated by
@@ -1367,7 +1501,9 @@ try:
     if app.debug or app.config.get("TESTING"):
         try:
             csrf.exempt(volunteer_register)
-            app.logger.debug("Applied csrf.exempt to volunteer_register (dev/test mode)")
+            app.logger.debug(
+                "Applied csrf.exempt to volunteer_register (dev/test mode)"
+            )
         except Exception:
             app.logger.exception("Failed to apply csrf.exempt to volunteer_register")
 except Exception:
@@ -1493,6 +1629,81 @@ def api_health():
     """Minimal health endpoint: unauthenticated OK + uptime."""
     uptime = max(0, int(time.time() - APP_START_TS))
     return jsonify(status="ok", ok=True, uptime_seconds=uptime)
+
+
+@app.get("/api/tasks")
+def api_tasks():
+    """Return a small task catalogue used by demo pages and legacy clients.
+
+    This endpoint is intentionally permissive for demo UX: it will return an
+    empty tasks list for production-like runs or a sample task when running
+    in debug/test mode so the frontend can render something useful.
+    """
+    try:
+        status = (request.args.get("status") or "").lower()
+        limit = int(request.args.get("limit") or 10)
+    except Exception:
+        status = ""
+        limit = 10
+
+    tasks = []
+    # In test/debug mode provide a lightweight sample so the demo UI shows data.
+    if app.debug or app.config.get("TESTING"):
+        tasks = [
+            {"name": "demo_task", "description": "Sample demo task.", "status": "open"}
+        ][:limit]
+
+    # If a status filter is provided and not in debug, return empty list for now.
+    if status and not (app.debug or app.config.get("TESTING")):
+        tasks = []
+
+    return jsonify({"success": True, "tasks": tasks})
+
+
+@app.route("/api/tasks/<int:task_id>/assign/<int:volunteer_id>", methods=["POST"])
+def api_assign_task(task_id: int, volunteer_id: int):
+    """Demo stub: assign a task to a volunteer and return success.
+
+    This is intentionally lightweight to support demo UI interactions
+    without requiring full business logic.
+    """
+    try:
+        app.logger.debug(
+            "api_assign_task: task_id=%s volunteer_id=%s", task_id, volunteer_id
+        )
+    except Exception:
+        pass
+    return jsonify({"success": True, "task_id": task_id, "assigned_to": volunteer_id})
+
+
+@app.route("/api/tasks/<int:task_id>/complete", methods=["POST"])
+def api_complete_task(task_id: int):
+    """Demo stub: mark a task as complete."""
+    try:
+        app.logger.debug("api_complete_task: task_id=%s", task_id)
+    except Exception:
+        pass
+    return jsonify({"success": True, "task_id": task_id, "completed": True})
+
+
+@app.route("/api/volunteers/<int:volunteer_id>/location", methods=["PUT"])
+def api_update_volunteer_location(volunteer_id: int):
+    """Demo stub: accept a volunteer location update (latitude/longitude/location).
+
+    Accepts JSON body { latitude, longitude, location } and returns success.
+    """
+    data = {}
+    try:
+        data = request.get_json() or {}
+    except Exception:
+        data = {}
+    try:
+        app.logger.debug(
+            "api_update_volunteer_location: vol=%s data=%s", volunteer_id, data
+        )
+    except Exception:
+        pass
+    return jsonify({"success": True, "volunteer_id": volunteer_id, "location": data})
 
 
 def _seed_if_empty():
@@ -1654,7 +1865,6 @@ def csrf_error_handler(err):
 # ---------------------------------
 
 
-
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     logging.debug("[admin_login] Route accessed")
@@ -1668,9 +1878,9 @@ def admin_login():
         admin = None
         try:
             if username and "@" in username:
-                admin = (
-                    AdminUser.query.filter(sqlalchemy.func.lower(AdminUser.email) == username.lower()).first()
-                )
+                admin = AdminUser.query.filter(
+                    sqlalchemy.func.lower(AdminUser.email) == username.lower()
+                ).first()
             else:
                 admin = AdminUser.query.filter_by(username=username).first()
         except Exception:
@@ -1683,13 +1893,18 @@ def admin_login():
                 if username and "@" in username:
                     admin = (
                         db.session.query(AdminUser)
-                        .filter(sqlalchemy.func.lower(AdminUser.email) == username.lower())
+                        .filter(
+                            sqlalchemy.func.lower(AdminUser.email) == username.lower()
+                        )
                         .first()
                     )
                 else:
                     admin = (
                         db.session.query(AdminUser)
-                        .filter(sqlalchemy.func.lower(AdminUser.username) == (username or "").lower())
+                        .filter(
+                            sqlalchemy.func.lower(AdminUser.username)
+                            == (username or "").lower()
+                        )
                         .first()
                     )
             except Exception:
@@ -1698,13 +1913,15 @@ def admin_login():
         if not admin:
             logging.warning("[admin_login] Admin user not found: %s", username)
             try:
-                _write_admin_debug({
-                    "event": "login_failed",
-                    "reason": "not_found",
-                    "username": username,
-                    "session_keys": list(session.keys()),
-                    "cookies": list(request.cookies.keys()),
-                })
+                _write_admin_debug(
+                    {
+                        "event": "login_failed",
+                        "reason": "not_found",
+                        "username": username,
+                        "session_keys": list(session.keys()),
+                        "cookies": list(request.cookies.keys()),
+                    }
+                )
             except Exception:
                 pass
             flash("Невалидно потребителско име или парола.", "error")
@@ -1715,13 +1932,15 @@ def admin_login():
             if not admin.check_password(password):
                 logging.warning("[admin_login] Invalid password for admin %s", username)
                 try:
-                    _write_admin_debug({
-                        "event": "login_failed",
-                        "reason": "bad_password",
-                        "username": username,
-                        "session_keys": list(session.keys()),
-                        "cookies": list(request.cookies.keys()),
-                    })
+                    _write_admin_debug(
+                        {
+                            "event": "login_failed",
+                            "reason": "bad_password",
+                            "username": username,
+                            "session_keys": list(session.keys()),
+                            "cookies": list(request.cookies.keys()),
+                        }
+                    )
                 except Exception:
                     pass
                 flash("Невалидно потребителско име или парола.", "error")
@@ -1738,9 +1957,13 @@ def admin_login():
                     flash("Моля въведете 2FA код.", "warning")
                     return render_template("admin_login.html", error="2FA required")
                 if not admin.verify_totp(token):
-                    logging.warning("[admin_login] Invalid 2FA token for admin %s", username)
+                    logging.warning(
+                        "[admin_login] Invalid 2FA token for admin %s", username
+                    )
                     flash("Невалиден 2FA код.", "error")
-                    return render_template("admin_login.html", error="Invalid 2FA token")
+                    return render_template(
+                        "admin_login.html", error="Invalid 2FA token"
+                    )
         except Exception:
             logging.exception("[admin_login] 2FA verification failed")
 
@@ -1761,39 +1984,62 @@ def admin_login():
         except Exception:
             logging.exception("[admin_login] Failed to set admin session")
 
-        logging.info("[admin_login] Admin %s logged in", getattr(admin, "username", "?"))
+        logging.info(
+            "[admin_login] Admin %s logged in", getattr(admin, "username", "?")
+        )
         try:
-            _write_admin_debug({
-                "event": "login_success",
-                "username": getattr(admin, "username", None),
-                "admin_id": getattr(admin, "id", None),
-                "session_keys": list(session.keys()),
-                "cookies": list(request.cookies.keys()),
-            })
+            _write_admin_debug(
+                {
+                    "event": "login_success",
+                    "username": getattr(admin, "username", None),
+                    "admin_id": getattr(admin, "id", None),
+                    "session_keys": list(session.keys()),
+                    "cookies": list(request.cookies.keys()),
+                }
+            )
         except Exception:
             pass
         return redirect(url_for("admin_dashboard"))
     return render_template("admin_login.html")
 
+
 @app.route("/admin_dashboard", methods=["GET"])
 def admin_dashboard():
     logging.debug("[admin_dashboard] Route accessed")
     try:
-        _write_admin_debug({
-            "event": "dashboard_access_attempt",
-            "path": request.path,
-            "method": request.method,
-            "session_keys": list(session.keys()),
-            "cookies": list(request.cookies.keys()),
-            "admin_logged_in": bool(session.get("admin_logged_in")),
-        })
+        _write_admin_debug(
+            {
+                "event": "dashboard_access_attempt",
+                "path": request.path,
+                "method": request.method,
+                "session_keys": list(session.keys()),
+                "cookies": list(request.cookies.keys()),
+                "admin_logged_in": bool(session.get("admin_logged_in")),
+            }
+        )
     except Exception:
         pass
     try:
         from flask_login import current_user
-        logging.debug("[admin_dashboard] diagnostics: session_keys=%s, header_X-Admin-Bypass=%s, cookies=%s, current_user_authenticated=%s", list(session.keys()), request.headers.get("X-Admin-Bypass"), list(request.cookies.keys()), getattr(current_user, "is_authenticated", False))
+
+        logging.debug(
+            "[admin_dashboard] diagnostics: session_keys=%s, header_X-Admin-Bypass=%s, cookies=%s, current_user_authenticated=%s",
+            list(session.keys()),
+            request.headers.get("X-Admin-Bypass"),
+            list(request.cookies.keys()),
+            getattr(current_user, "is_authenticated", False),
+        )
         try:
-            logging.debug("[admin_dashboard] db_engine_id=%s db_session_bind_id=%s", id(db.engine), id(db.session.bind) if getattr(db, "session", None) and getattr(db.session, "bind", None) else None)
+            logging.debug(
+                "[admin_dashboard] db_engine_id=%s db_session_bind_id=%s",
+                id(db.engine),
+                (
+                    id(db.session.bind)
+                    if getattr(db, "session", None)
+                    and getattr(db.session, "bind", None)
+                    else None
+                ),
+            )
         except Exception:
             pass
     except Exception:
@@ -1806,7 +2052,10 @@ def admin_dashboard():
         try:
             from flask import current_app
 
-            if getattr(current_app, "config", {}).get("TESTING") and request.headers.get("X-Legacy-Admin-Alias") == "1":
+            if (
+                getattr(current_app, "config", {}).get("TESTING")
+                and request.headers.get("X-Legacy-Admin-Alias") == "1"
+            ):
                 try:
                     return render_template("admin_login.html", error=None)
                 except Exception:
@@ -1814,7 +2063,9 @@ def admin_dashboard():
         except Exception:
             pass
 
-        logging.debug("[admin_dashboard] Admin not logged in, redirecting to /admin/login")
+        logging.debug(
+            "[admin_dashboard] Admin not logged in, redirecting to /admin/login"
+        )
         return redirect(url_for("admin_login"))
     logging.debug("[admin_dashboard] Admin logged in, rendering dashboard")
     # Basic data queries (defensive: ignore failures individually)
@@ -1840,30 +2091,32 @@ def admin_dashboard():
 
     stats = {
         "total_requests": _safe_count(
-            lambda: int(db.session.query(sqlalchemy.func.count(HelpRequest.id)).scalar() or 0)
+            lambda: int(
+                db.session.query(sqlalchemy.func.count(HelpRequest.id)).scalar() or 0
+            )
         ),
         "pending_requests": _safe_count(
             lambda: int(
-                db.session
-                .query(sqlalchemy.func.count(HelpRequest.id))
+                db.session.query(sqlalchemy.func.count(HelpRequest.id))
                 .filter(sqlalchemy.func.lower(HelpRequest.status) == "pending")
-                .scalar() or 0
+                .scalar()
+                or 0
             )
         ),
         "in_progress": _safe_count(
             lambda: int(
-                db.session
-                .query(sqlalchemy.func.count(HelpRequest.id))
+                db.session.query(sqlalchemy.func.count(HelpRequest.id))
                 .filter(sqlalchemy.func.lower(HelpRequest.status) == "in_progress")
-                .scalar() or 0
+                .scalar()
+                or 0
             )
         ),
         "completed_requests": _safe_count(
             lambda: int(
-                db.session
-                .query(sqlalchemy.func.count(HelpRequest.id))
+                db.session.query(sqlalchemy.func.count(HelpRequest.id))
                 .filter(sqlalchemy.func.lower(HelpRequest.status) == "completed")
-                .scalar() or 0
+                .scalar()
+                or 0
             )
         ),
     }
@@ -2010,7 +2263,9 @@ def admin_dev_reset():
         )
     except Exception:
         try:
-            admin = AdminUser.query.filter(_func.lower(AdminUser.username) == "admin").first()
+            admin = AdminUser.query.filter(
+                _func.lower(AdminUser.username) == "admin"
+            ).first()
         except Exception:
             admin = None
     created = False
@@ -2445,20 +2700,4 @@ app.debug = True
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0", port=5000)
 
-logging.basicConfig(level=logging.DEBUG)
-
-from flask import Flask
-
-def create_app():
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'your_secret_key_here'
-
-    @app.route('/')
-    def home():
-        return "Hello, HelpChain!"
-
-    return app
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run(debug=True)
+# End of file: application is started earlier via socketio.run when run.py executes.

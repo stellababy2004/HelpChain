@@ -17,19 +17,9 @@ except ImportError:
 from backend.extensions import db
 
 try:
-    from backend.models import (
-        AdminUser,
-        ChatMessage,
-        HelpRequest,
-        Volunteer,
-    )
+    from backend.models import AdminUser, ChatMessage, HelpRequest, Volunteer
 except ImportError:
-    from backend.models import (
-        AdminUser,
-        ChatMessage,
-        HelpRequest,
-        Volunteer,
-    )
+    from backend.models import AdminUser, ChatMessage, HelpRequest, Volunteer
 
 try:
     from backend.models_with_analytics import AnalyticsEvent, Task, TaskPerformance

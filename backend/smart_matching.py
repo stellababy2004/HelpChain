@@ -15,6 +15,7 @@ try:
 except ImportError:
     try:
         from ai_service import ai_service
+
         from backend.extensions import db
         from backend.models import HelpRequest, UserActivity, Volunteer
     except ImportError:
