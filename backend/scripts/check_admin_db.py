@@ -29,7 +29,11 @@ def main():
             rows = cur.fetchall()
             print("  COLUMNS:", cols)
             for r in rows:
-                print("  ", dict(zip(cols, r)))
+                try:
+                    print("  ", dict(zip(cols, r, strict=False)))
+                except TypeError:
+                    # Older Python versions or non-strict zip: fall back to plain zip
+                    print("  ", dict(zip(cols, r)))  # noqa: B905
     except Exception as e:
         print("Could not read admin_users:", e)
 

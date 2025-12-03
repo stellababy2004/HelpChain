@@ -13,7 +13,7 @@ try:
 except Exception:
     # Fallback: try to import a local module if present
     try:
-        from .backend.permissions import *  # type: ignore
+        from .backend.permissions import *  # type: ignore  # noqa: F403
     except Exception:
         # As a last resort, raise the original ImportError so tests fail
         raise

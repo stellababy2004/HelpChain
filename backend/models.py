@@ -285,7 +285,7 @@ def get_query_for(model):
         "Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app"
     )
 
-    @permission.setter
+    @permission.setter  # noqa: F821
     def permission(self, value):
         # Allow assigning by codename string or by Permission instance.
         try:

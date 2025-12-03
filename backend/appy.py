@@ -2263,6 +2263,37 @@ def _global_request_diagnostics():
 def _pytest_force_admin_login():
     if not app.config.get("TESTING"):
         return ("Not Found", 404)
+    # If a volunteer session is already present, avoid overriding it.
+    # Some test helpers call client.session_transaction() to set volunteer
+    # session keys and rely on the client wrapper to persist the cookie.
+    # The client wrapper used to always call the admin helper after a
+    # session_transaction which could inadvertently replace volunteer
+    # session data and cause protected volunteer routes to see an
+    # unauthenticated volunteer. Guard here to make the admin helper a
+    # no-op when a volunteer session is active.
+    try:
+        if session.get("volunteer_logged_in"):
+            try:
+                app.logger.info(
+                    "_pytest_force_admin_login: volunteer session present; skipping admin override"
+                )
+            except Exception:
+                pass
+            # Return current session-derived admin info if present, otherwise
+            # a generic success so the calling fixture sees a 200 response.
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "admin_id": session.get("admin_user_id"),
+                        "username": session.get("admin_username"),
+                    }
+                ),
+                200,
+            )
+    except Exception:
+        # If reading session fails for any reason, continue with normal flow
+        pass
     try:
         # Prefer an admin id already present in the session
         admin_id = session.get("admin_user_id") or request.args.get("admin_id")
