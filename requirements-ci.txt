@@ -22,4 +22,4 @@ PyJWT==2.8.0
 flask-socketio==5.3.5
 Flask-Limiter
 
-Flask-Talisman
+Flask-Talisman==1.0.0
