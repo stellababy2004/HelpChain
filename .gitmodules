@@ -1,0 +1,10 @@
+# .gitmodules
+# Removed hc-merge-pr35 submodule entry to avoid CI checkout errors
+# If this repository needs submodules, re-add entries with proper 'url = ...' lines.
+# Example entry format (commented):
+# [submodule "some-submodule"]
+# 	path = some-submodule
+# 	url = https://github.com/owner/some-submodule.git
+
+# Intentionally left empty to avoid malformed submodule entries causing
+# `fatal: No url found for submodule path 'hc-merge-pr35' in .gitmodules` during CI.
