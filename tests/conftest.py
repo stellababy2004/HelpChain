@@ -2471,11 +2471,35 @@ def admin_credentials():
 @pytest.fixture
 def login_admin(client, admin_credentials):
     """Helper to login as admin and return authenticated client."""
-    response = client.post(
+    # Use an isolated test client so tests that also use the shared `client`
+    # fixture don't observe session leakage from this helper.
+    admin_client = client
+    try:
+        # If caller passed the shared `client`, prefer creating a fresh one
+        # so session state does not leak into other fixtures.
+        from flask import current_app
+
+        try:
+            admin_client = current_app.test_client()
+        except Exception:
+            # Fallback to app-level client construction if current_app not set
+            try:
+                admin_client = client.application.test_client()
+            except Exception:
+                admin_client = client
+    except Exception:
+        admin_client = client
+
+    try:
+        _ensure_cookie_jar_for_test_client(admin_client)
+    except Exception:
+        pass
+
+    response = admin_client.post(
         "/admin/login", data=admin_credentials, follow_redirects=True
     )
-    assert response.status_code == 200
-    return client
+    assert response is not None and response.status_code == 200
+    return admin_client
 
 
 @pytest.fixture
