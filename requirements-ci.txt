@@ -15,3 +15,4 @@ gunicorn==23.0.0
 Flask-Babel==2.0.0
 Flask-WTF==1.2.2
 python-dotenv==1.0.0
+gevent==23.12.0
