@@ -47,15 +47,16 @@ class TestAchievementsIntegration:
             # Проверяваме че redirect е към login страница
             assert "login" in response.headers.get("Location", "").lower()
 
-    def test_achievements_with_different_volunteers(self, client, init_test_data):
+    def test_achievements_with_different_volunteers(
+        self, authenticated_volunteer_client, init_test_data
+    ):
         """Тест за achievements с различни volunteers"""
         volunteers = [init_test_data["volunteer"]]
 
-        for volunteer in volunteers:
-            with client.session_transaction() as sess:
-                sess["volunteer_logged_in"] = True
-                sess["volunteer_id"] = volunteer.id
+        client = authenticated_volunteer_client
 
+        for volunteer in volunteers:
+            # authenticated_volunteer_client already sets the session via helper
             response = client.get("/achievements")
             assert response.status_code == 200
 

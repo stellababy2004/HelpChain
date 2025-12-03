@@ -1,14 +1,12 @@
 class TestVolunteerIntegration:
     """Integration тестове за volunteer функционалност"""
 
-    def test_volunteer_login_flow(self, client, init_test_data):
+    def test_volunteer_login_flow(self, authenticated_volunteer_client, init_test_data):
         """Тест за volunteer login процес"""
         volunteer = init_test_data["volunteer"]
 
-        # Test login via session
-        with client.session_transaction() as sess:
-            sess["volunteer_logged_in"] = True
-            sess["volunteer_id"] = volunteer.id
+        # Use authenticated volunteer client which calls the server-side helper
+        client = authenticated_volunteer_client
 
         # Check dashboard access
         response = client.get("/volunteer_dashboard")

@@ -74,109 +74,6 @@ def _import_hook(name, globals=None, locals=None, fromlist=(), level=0):
 builtins.__import__ = _import_hook
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-from sqlalchemy.pool import StaticPool
-
-
-# Minimal compatibility helper used only in tests to resolve the actual
-# SQLAlchemy Engine in a way that works across Flask-SQLAlchemy versions.
-def _resolve_engine(app=None, db_obj=None):
-    try:
-        # Prefer a centralized helper from backend.extensions if available
-        try:
-            from backend.extensions import get_db_engine as _be_get_db_engine
-
-            try:
-                return _be_get_db_engine(app, db_obj)
-            except Exception:
-                # fall through to attribute-based fallbacks
-                pass
-        except Exception:
-            pass
-
-        # If a db object wasn't passed, try to obtain the canonical one
-        if db_obj is None:
-            try:
-                import importlib
-
-                be_ext = importlib.import_module("backend.extensions")
-                db_obj = getattr(be_ext, "db", None)
-            except Exception:
-                db_obj = None
-
-        if db_obj is None:
-            return None
-
-        # Prefer attribute access (Flask-SQLAlchemy 3.x exposes `.engine`)
-        engine = getattr(db_obj, "engine", None)
-        if engine is not None:
-            return engine
-
-        # Fallback to get_engine(...) if present
-        if hasattr(db_obj, "get_engine"):
-            try:
-                return (
-                    db_obj.get_engine(app) if app is not None else db_obj.get_engine()
-                )
-            except Exception:
-                pass
-
-        # Fallback to engines mapping when present (Flask-SQLAlchemy 3.x)
-        if hasattr(db_obj, "engines"):
-            try:
-                emap = getattr(db_obj, "engines")
-                if isinstance(emap, dict) and emap:
-                    return list(emap.values())[0]
-            except Exception:
-                pass
-
-        return None
-    except Exception:
-        return None
-
-
-# NOTE: Avoid importing model modules at top-level here. Models must be imported
-# against the canonical `db` instance which the app provides; importing them
-# too early can bind them to a different SQLAlchemy() object.
-#
-# Early aliasing: ensure legacy short import names resolve to the canonical
-# backend.* modules before other imports during test collection. This avoids
-# accidental re-execution or instantiation of multiple SQLAlchemy() objects
-# when modules import using legacy names like `import models` or
-# `from models import X`.
-try:
-    import os
-    import sys
-
-    if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-        print("[EARLY ALIASING] attempting to alias legacy model module names")
-    from importlib import import_module
-
-    bm = import_module("backend.models")
-    bma = import_module("backend.models_with_analytics")
-    legacy_to_mod = {
-        "models": bm,
-        "models_with_analytics": bma,
-        "src.models": bm,
-        "backend.src.models": bm,
-        "helpchain_backend.models": bm,
-        "helpchain_backend.src.models": bm,
-        "helpchain_backend.src.models_with_analytics": bma,
-        "backend.models_with_analytics": bma,
-    }
-    for name, mod in legacy_to_mod.items():
-        if name not in sys.modules:
-            sys.modules[name] = mod
-            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                print(f'[EARLY ALIASING] sys.modules["{name}"] -> {mod}')
-except Exception as _alias_exc:
-    # don't fail collection if aliasing can't be applied; we'll surface later
-    if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-        print("[EARLY ALIASING] failed:", _alias_exc)
-
-
-# Ensure tests force test-mode early so app initialization picks it up.
-# This must happen before importing `appy` so HELPCHAIN_TESTING influences
 # the application's configuration (database selection, logging, etc.).
 os.environ.setdefault("HELPCHAIN_TESTING", "1")
 import tempfile
@@ -2115,19 +2012,47 @@ def authenticated_admin_client(app, test_admin_user):
 
 
 @pytest.fixture
-def authenticated_volunteer_client(app, test_volunteer):
-    """Create a test client with authenticated volunteer user."""
-    volunteer_client = app.test_client()
-    # Use server-side test helper to set the volunteer session without
-    # relying on client.session_transaction(), which may be unavailable
-    # under some Werkzeug/Flask versions used in the test environment.
+def authenticated_volunteer_client(client, test_volunteer):
+    """Create a test client with authenticated volunteer user using the
+    canonical `client` fixture and call only the volunteer helper.
+
+    This keeps helper usage explicit and avoids unnecessary admin helper
+    calls when only volunteer auth is required.
+    """
     try:
-        volunteer_client.get(
+        resp = client.get(
             f"/_pytest_force_volunteer_login?volunteer_id={test_volunteer.id}"
         )
+        # Mirror Set-Cookie into environ_base so subsequent requests include it
+        try:
+            headers = getattr(resp, "headers", {})
+            cookie_vals = []
+            if hasattr(headers, "getlist"):
+                cookie_vals = list(headers.getlist("Set-Cookie") or [])
+            else:
+                sc = headers.get("Set-Cookie") if hasattr(headers, "get") else None
+                if sc:
+                    cookie_vals = [sc]
+
+            if cookie_vals:
+                parts = []
+                for v in cookie_vals:
+                    try:
+                        parts.append(v.split(";", 1)[0])
+                    except Exception:
+                        parts.append(v)
+                try:
+                    client.environ_base["HTTP_COOKIE"] = "; ".join(parts)
+                except Exception:
+                    try:
+                        client.environ_base.update({"HTTP_COOKIE": "; ".join(parts)})
+                    except Exception:
+                        pass
+        except Exception:
+            pass
     except Exception:
         pass
-    return volunteer_client
+    return client
 
 
 def _ensure_cookie_jar_for_test_client(test_client):
@@ -2380,23 +2305,23 @@ def client(app):
 
             class _Ctx:
                 def __enter__(self_non):
-                    return inner_cm.__enter__()
+                    # Capture the session object returned by the inner context
+                    self_non._sess = inner_cm.__enter__()
+                    return self_non._sess
 
                 def __exit__(self_non, exc_type, exc, tb):
                     res = inner_cm.__exit__(exc_type, exc, tb)
                     try:
-                        # Trigger server-side persistence of session cookie.
-                        # Ensure we send the test client's cookie header so
-                        # the helper request uses the same session the test
-                        # just modified via `session_transaction()`.
+                        # Mirror any cookies stored in the client's cookie_jar
+                        # into `environ_base['HTTP_COOKIE']` so subsequent
+                        # requests include them. We deliberately do NOT call
+                        # server-side helpers here; helpers should be invoked
+                        # explicitly by login fixtures (e.g. authenticated_volunteer_client)
+                        # to avoid unnecessary or surprising helper calls.
                         try:
                             cookie_hdr = self._inner.environ_base.get("HTTP_COOKIE")
                         except Exception:
                             cookie_hdr = None
-                        # If environ_base doesn't contain the cookie header,
-                        # try to build it from the client's cookie_jar so the
-                        # helper requests use the same session cookie the
-                        # test client holds.
                         if not cookie_hdr:
                             try:
                                 jar = getattr(self._inner, "cookie_jar", None)
@@ -2410,39 +2335,99 @@ def client(app):
                                     if parts:
                                         cookie_hdr = "; ".join(parts)
                                         try:
-                                            self._inner.environ_base["HTTP_COOKIE"] = (
-                                                cookie_hdr
-                                            )
+                                            self._inner.environ_base[
+                                                "HTTP_COOKIE"
+                                            ] = cookie_hdr
                                         except Exception:
                                             pass
                             except Exception:
                                 pass
-                        headers = {"Cookie": cookie_hdr} if cookie_hdr else None
-                        # First try setting pending email 2FA on the server-side
-                        try:
-                            self._inner.get(
-                                "/_pytest_set_pending_email_2fa?admin_id=1&code=123456",
-                                headers=headers,
-                            )
-                        except Exception:
-                            # Ignore if helper not present for this app variant
-                            pass
-                        # Trigger server-side persistence of session cookie.
-                        self._inner.get("/_pytest_force_admin_login", headers=headers)
-                    except Exception:
-                        try:
+                            # If no cookies were present yet, try invoking the
+                            # server-side pytest helper endpoints so the server
+                            # will persist any session changes into a Set-Cookie
+                            # header. These helpers are test-only and safe to
+                            # call; admin helper is guarded against overwriting
+                            # an active volunteer session.
                             try:
-                                cookie_hdr = self._inner.environ_base.get("HTTP_COOKIE")
+                                # If the session contains a volunteer/admin id, call
+                                # the corresponding pytest helper with that id so the
+                                # server will emit a Set-Cookie for the session.
+                                sid = None
+                                aid = None
+                                try:
+                                    sess = getattr(self_non, "_sess", None)
+                                    if sess is not None:
+                                        sid = sess.get("volunteer_id")
+                                        aid = sess.get("admin_user_id")
+                                except Exception:
+                                    sid = None
+                                    aid = None
+
+                                if sid:
+                                    try:
+                                        r_vol = None
+                                        try:
+                                            r_vol = self._inner.get(f"/_pytest_force_volunteer_login?volunteer_id={sid}")
+                                        except Exception:
+                                            r_vol = None
+                                        pass
+                                    except Exception:
+                                        pass
+                                if aid:
+                                    try:
+                                        r_admin = None
+                                        try:
+                                            r_admin = self._inner.get(f"/_pytest_force_admin_login?admin_id={aid}")
+                                        except Exception:
+                                            r_admin = None
+                                        pass
+                                    except Exception:
+                                        pass
+                                pass
+                                # If helpers didn't produce a cookie, perform a simple
+                                # GET to the root so the session (modified in the
+                                # session_transaction) is written and the response
+                                # may include a Set-Cookie header. Mirror that
+                                # header into environ_base if present.
+                                try:
+                                    resp = None
+                                    try:
+                                        resp = self._inner.get("/", follow_redirects=True)
+                                    except Exception:
+                                        resp = None
+                                    if resp is not None:
+                                        try:
+                                            headers = getattr(resp, "headers", {})
+                                            pass
+                                            cookie_vals = []
+                                            if hasattr(headers, "getlist"):
+                                                cookie_vals = list(headers.getlist("Set-Cookie") or [])
+                                            else:
+                                                sc = headers.get("Set-Cookie") if hasattr(headers, "get") else None
+                                                if sc:
+                                                    cookie_vals = [sc]
+                                            if cookie_vals:
+                                                parts = []
+                                                for v in cookie_vals:
+                                                    try:
+                                                        parts.append(v.split(";", 1)[0])
+                                                    except Exception:
+                                                        parts.append(v)
+                                                try:
+                                                    self._inner.environ_base["HTTP_COOKIE"] = "; ".join(parts)
+                                                except Exception:
+                                                    try:
+                                                        self._inner.environ_base.update({"HTTP_COOKIE": "; ".join(parts)})
+                                                    except Exception:
+                                                        pass
+                                        except Exception:
+                                            pass
+                                except Exception:
+                                    pass
                             except Exception:
-                                cookie_hdr = None
-                            headers = {"Cookie": cookie_hdr} if cookie_hdr else None
-                            # Fallback to volunteer shim if admin helper
-                            # is unavailable in this app variant.
-                            self._inner.get(
-                                "/_pytest_force_volunteer_login", headers=headers
-                            )
-                        except Exception:
-                            pass
+                                pass
+                    except Exception:
+                        pass
                     return res
 
             return _Ctx()
