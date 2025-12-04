@@ -1,10 +1,11 @@
-"""
-Minimal shim for `flask_caching` to satisfy import-time references in tests
-when the real `Flask-Caching` package is not installed in CI.
+"""Minimal shim for ``flask_caching`` used in CI.
 
-This provides a tiny, no-op `Cache` class with the API the app imports:
-`from flask_caching import Cache`.
+This provides a tiny, no-op :class:`Cache` with the minimal API the
+application imports (``from flask_caching import Cache``). It's intended
+only to satisfy import-time references during tests when the real
+``Flask-Caching`` package is not installed in CI.
 """
+
 
 class Cache:
     def __init__(self, app=None, **kwargs):
