@@ -2512,6 +2512,7 @@ def _pytest_force_volunteer_login():
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
 
+
 @app.route("/_pytest_set_pending_email_2fa", methods=["GET"])  # test-only helper
 def _pytest_set_pending_email_2fa():
     # Allow this test helper in TESTING or when running in debug/dev mode.
