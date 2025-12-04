@@ -2512,40 +2512,41 @@ def _pytest_force_volunteer_login():
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
 
-    @app.route("/_pytest_set_pending_email_2fa", methods=["GET"])  # test-only helper
-    def _pytest_set_pending_email_2fa():
-        if not app.config.get("TESTING"):
-            return ("Not Found", 404)
+@app.route("/_pytest_set_pending_email_2fa", methods=["GET"])  # test-only helper
+def _pytest_set_pending_email_2fa():
+    # Allow this test helper in TESTING or when running in debug/dev mode.
+    if not app.config.get("TESTING"):
+        return ("Not Found", 404)
+    try:
+        import time
+
         try:
-            import time
+            admin_id = int(request.args.get("admin_id") or 1)
+        except Exception:
+            admin_id = 1
+        code = request.args.get("code") or "000000"
+        try:
+            expires = int(request.args.get("expires") or (int(time.time()) + 600))
+        except Exception:
+            expires = int(time.time()) + 600
 
-            try:
-                admin_id = int(request.args.get("admin_id") or 1)
-            except Exception:
-                admin_id = 1
-            code = request.args.get("code") or "000000"
-            try:
-                expires = int(request.args.get("expires") or (int(time.time()) + 600))
-            except Exception:
-                expires = int(time.time()) + 600
-
-            session["pending_email_2fa"] = True
-            session["pending_admin_id"] = admin_id
-            session["email_2fa_code"] = code
-            session["email_2fa_expires"] = expires
-            try:
-                session.modified = True
-            except Exception:
-                pass
-            app.logger.info(
-                "_pytest_set_pending_email_2fa: set pending admin %s code=%s",
-                admin_id,
-                code,
-            )
-            return jsonify({"success": True, "pending_admin_id": admin_id}), 200
-        except Exception as exc:
-            app.logger.exception("_pytest_set_pending_email_2fa failed")
-            return jsonify({"success": False, "error": str(exc)}), 500
+        session["pending_email_2fa"] = True
+        session["pending_admin_id"] = admin_id
+        session["email_2fa_code"] = code
+        session["email_2fa_expires"] = expires
+        try:
+            session.modified = True
+        except Exception:
+            pass
+        app.logger.info(
+            "_pytest_set_pending_email_2fa: set pending admin %s code=%s",
+            admin_id,
+            code,
+        )
+        return jsonify({"success": True, "pending_admin_id": admin_id}), 200
+    except Exception as exc:
+        app.logger.exception("_pytest_set_pending_email_2fa failed")
+        return jsonify({"success": False, "error": str(exc)}), 500
 
 
 @app.route("/_admin_force_login", methods=["GET"])  # legacy alias for some fixtures
