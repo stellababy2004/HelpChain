@@ -7,9 +7,8 @@ from backend.models import Volunteer, User
 
 @pytest.fixture
 def client():
-    # Enable testing mode and disable CSRF for API tests
+    # Enable testing mode; CSRF is managed centrally in conftest.py
     app.config["TESTING"] = True
-    app.config["WTF_CSRF_ENABLED"] = False
     with app.test_client() as c:
         yield c
 
@@ -25,19 +24,53 @@ def ensure_demo_volunteer():
         vol.email = "volunteer@example.com"
         db.session.add(vol)
         db.session.commit()
-        # ensure corresponding user exists
+
+        # ensure corresponding user exists and link to volunteer
         user = User.query.filter_by(email=vol.email).first()
         if not user:
+            # derive a safe username from the email local-part and ensure uniqueness
+            base = (vol.email.split("@")[0] or "volunteer")[:45]
+            uname = base
+            suffix = 1
+            while User.query.filter_by(username=uname).first() is not None:
+                uname = f"{base}_{suffix}"
+                suffix += 1
+
+            # For security: avoid committing a hard-coded password into the repo.
+            # If a test runner needs to control the demo volunteer password, set
+            # the env var `HELPCHAIN_DEMO_VOLUNTEER_PASSWORD`. Otherwise generate
+            # a random password at runtime (not stored in source control).
+            import os, secrets
+
+            demo_pw = os.getenv("HELPCHAIN_DEMO_VOLUNTEER_PASSWORD")
+            if not demo_pw:
+                demo_pw = secrets.token_urlsafe(16)
+
             u = User()
-            u.username = "volunteer"
+            u.username = uname
             u.email = vol.email
             try:
-                u.set_password("Volunteer123")
+                u.set_password(demo_pw)
             except Exception:
-                u.password_hash = "Volunteer123"
+                # fallback if password hashing helpers unavailable
+                u.password_hash = demo_pw
             u.role = "volunteer"
             db.session.add(u)
             db.session.commit()
+            user = u
+
+        # Link volunteer -> user if not already linked
+        try:
+            if getattr(vol, "user_id", None) != getattr(user, "id", None):
+                vol.user_id = user.id
+                db.session.add(vol)
+                db.session.commit()
+        except Exception:
+            # best-effort only; don't fail helper on linking issues
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
         return vol
 
 

@@ -41,6 +41,13 @@ except Exception:
 
 import pytest
 
+# When running under pytest, set a test-only env var so the application
+# can avoid initializing real CSRF protection at import time. This is a
+# deliberate, scoped development/testing convenience to make the Flask
+# test client able to POST/PUT without dealing with CSRF tokens.
+import os
+os.environ.setdefault("HELPCHAIN_DISABLE_CSRF_FOR_TESTS", "1")
+
 # Compatibility shim for SQLAlchemy engine creation kwargs used in tests.
 # Some test setups pass `pool_size`/`max_overflow` which are invalid
 # for NullPool or for SQLite in-memory/backed tests under newer SQLAlchemy.

@@ -20,6 +20,7 @@ from flask import (
     jsonify,
     redirect,
     render_template,
+    render_template_string,
     request,
     send_file,
     send_from_directory,
@@ -148,7 +149,24 @@ from models_with_analytics import AnalyticsEvent, Feedback
 from permissions import require_admin_login
 
 # Initialize CSRF protection
-csrf = CSRFProtect(app)
+# In test mode (pytest) we may want to disable the real CSRF protection
+# so the Flask test client can make POST/PUT requests without a token.
+# The environment variable `HELPCHAIN_DISABLE_CSRF_FOR_TESTS` is set by
+# `conftest.py` during tests to opt-in to this behavior.
+import os as _os
+if _os.getenv("HELPCHAIN_DISABLE_CSRF_FOR_TESTS"):
+    class _NoopCSRF:
+        def exempt(self, obj=None):
+            if obj is None:
+                def _decorator(f):
+                    return f
+
+                return _decorator
+            return obj
+
+    csrf = _NoopCSRF()
+else:
+    csrf = CSRFProtect(app)
 
 # --- Define basedir and instance_dir for later use (must be before use) ---
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -1379,11 +1397,57 @@ def demo_volunteers():
             "gamification": gamification,
             "current_locale": get_locale(),
         }
+        # Provide a minimal `current_user` object so templates that reference
+        # `current_user` (from Flask-Login in production) can render for demo.
+        try:
+            from types import SimpleNamespace
+
+            if "current_user" not in context:
+                context["current_user"] = SimpleNamespace(
+                    id=1,
+                    name="Демо доброволец",
+                    latitude=None,
+                    longitude=None,
+                    location="",
+                    is_authenticated=True,
+                    two_factor_enabled=False,
+                )
+        except Exception:
+            # If SimpleNamespace is unavailable for any reason, fall back to a dict
+            context.setdefault("current_user", {
+                "id": 1,
+                "name": "Демо доброволец",
+                "latitude": None,
+                "longitude": None,
+                "location": "",
+                "is_authenticated": True,
+                "two_factor_enabled": False,
+            })
         return render_template("volunteer_dashboard.html", **context)
-    except Exception:
-        # Fallback: attempt to serve the raw file if template rendering fails
-        return send_from_directory(
-            os.path.join(base_dir, "templates"), "volunteer_dashboard.html"
+    except Exception as e:
+        # If rendering fails, log the exception and return a safe error page.
+        # Serving the raw template file exposes Jinja source and translations —
+        # that looks broken in the browser and may leak template internals.
+        try:
+            app.logger.exception(
+                "Failed to render volunteer_dashboard.html demo page: %s", e
+            )
+        except Exception:
+            pass
+        return (
+            render_template_string(
+                """
+                <!doctype html>
+                <html lang="bg">
+                  <head><meta charset="utf-8"><title>Грешка</title></head>
+                  <body>
+                    <h1>Страницата не може да се покаже</h1>
+                    <p>Временно възникна грешка при зареждане на демо страницата. Проверете дневниците на сървъра за подробности.</p>
+                  </body>
+                </html>
+                """
+            ),
+            500,
         )
 
 
@@ -1396,13 +1460,60 @@ def demo_request_page():
 
 @app.route("/volunteer_login", methods=["GET", "POST"], endpoint="volunteer_login")
 def volunteer_login_redirect():
-    """Backward-compatible route that redirects to the demo dashboard.
+    """Lightweight volunteer login handler for demo/dev runs.
 
-    Uses 303 See Other for correctness: when a form POSTs here the client is
-    explicitly instructed to perform a GET to the target, avoiding any chance
-    of the POST body being re-sent.
+    - GET: render `volunteer_login.html` form
+    - POST: look up volunteer by email; if found, establish volunteer session
+      and redirect to the volunteer dashboard. This is intentionally minimal
+      (no OTP) for local/demo usage. In production the more complete
+      email-code flow from the legacy `appy.py` may be used instead.
     """
-    return redirect(url_for("demo_volunteers"), code=303)
+    error = None
+    # If the client posts an email, try to log them in (demo flow)
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip()
+        try:
+            volunteer = None
+            try:
+                volunteer = Volunteer.query.filter_by(email=email).first()
+            except Exception:
+                # Fallback using direct db.session if the query proxy fails
+                try:
+                    volunteer = (
+                        db.session.query(Volunteer)
+                        .filter(Volunteer.email == email)
+                        .first()
+                    )
+                except Exception:
+                    volunteer = None
+
+            if volunteer:
+                # Activate minimal volunteer session
+                try:
+                    session.pop("admin_logged_in", None)
+                    session.pop("admin_user_id", None)
+                    session.pop("admin_username", None)
+                except Exception:
+                    pass
+                session.permanent = True
+                session["volunteer_logged_in"] = True
+                session["volunteer_id"] = getattr(volunteer, "id", None)
+                session["volunteer_name"] = getattr(volunteer, "name", "Доброволец")
+                try:
+                    session.modified = True
+                except Exception:
+                    pass
+                flash("Успешен вход като доброволец.", "success")
+                return redirect(url_for("demo_volunteers"))
+            else:
+                error = "Няма регистриран доброволец с този имейл!"
+                flash(error, "error")
+        except Exception as e:
+            error = f"Грешка при проверка на потребител: {e}"
+            app.logger.exception("Volunteer login check failed")
+
+    # Render the volunteer login form (template exists in `backend/templates`)
+    return render_template("volunteer_login.html", error=error)
 
 
 @app.route("/volunteer_register", methods=["GET", "POST"])
@@ -1470,6 +1581,50 @@ def volunteer_register():
             db.session.rollback()
             flash(f"Грешка при записване: {e}", "error")
     return render_template("volunteer_register.html")
+
+
+# Demo-only quick login helpers (only active when app.debug=True)
+@app.get("/_demo_login_admin")
+def _demo_login_admin():
+    if not getattr(app, "debug", False):
+        abort(404)
+    try:
+        # Try to find an admin id to wedge into the session
+        admin = AdminUser.query.first()
+        aid = getattr(admin, "id", 1) if admin else 1
+    except Exception:
+        aid = 1
+    try:
+        session["admin_logged_in"] = True
+        session["admin_user_id"] = aid
+        session["admin_username"] = getattr(admin, "username", "admin") if admin else "admin"
+        session["_user_id"] = str(aid)
+        session.modified = True
+    except Exception:
+        pass
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.get("/_demo_login_volunteer")
+def _demo_login_volunteer():
+    if not getattr(app, "debug", False):
+        abort(404)
+    try:
+        vol = Volunteer.query.first()
+        uid = getattr(vol, "id", None)
+    except Exception:
+        uid = None
+    try:
+        # Set a minimal volunteer session shim used by templates/tests
+        if uid:
+            session["volunteer_logged_in"] = True
+            session["volunteer_id"] = uid
+            # Flask-Login compatibility alias
+            session["_user_id"] = str(uid)
+            session.modified = True
+    except Exception:
+        pass
+    return redirect(url_for("demo_volunteers"))
 
 
 @app.route("/volunteer_logout", methods=["GET", "POST"])  # compatibility for templates
@@ -2001,6 +2156,28 @@ def admin_login():
             pass
         return redirect(url_for("admin_dashboard"))
     return render_template("admin_login.html")
+
+
+# In development/debug mode, exempt the admin login POST from CSRF so local
+# demo/testing flows can submit the form without a valid CSRF token. This
+# keeps production behavior unchanged (CSRF remains enabled when not debug).
+try:
+    if getattr(app, "debug", False):
+        try:
+            csrf.exempt(admin_login)
+        except Exception:
+            app.logger.debug("Could not exempt admin_login from CSRF")
+except Exception:
+    pass
+
+try:
+    if getattr(app, "debug", False):
+        try:
+            csrf.exempt(volunteer_login_redirect)
+        except Exception:
+            app.logger.debug("Could not exempt volunteer_login from CSRF")
+except Exception:
+    pass
 
 
 @app.route("/admin_dashboard", methods=["GET"])

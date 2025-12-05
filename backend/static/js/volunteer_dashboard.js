@@ -12,6 +12,15 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     initializeDashboard();
+    // Try to auto-fill coordinates on load if fields are empty
+    try {
+      // Delay slightly to allow DOM inputs to be present
+      setTimeout(function () {
+        autoFillCoordinatesIfEmpty();
+      }, 300);
+    } catch (e) {
+      console.warn('Auto-fill coordinates initialization failed', e);
+    }
   });
 
   function initializeDashboard() {
@@ -246,6 +255,75 @@
       }
     }
   }
+
+  // Attempt to obtain browser geolocation and fill latitude/longitude fields
+  function autoFillCoordinatesIfEmpty() {
+    try {
+      var latNode = document.getElementById('latitude');
+      var lonNode = document.getElementById('longitude');
+      if (!latNode || !lonNode) return;
+      var lat = (latNode.value || '').toString().trim();
+      var lon = (lonNode.value || '').toString().trim();
+      if (lat !== '' && lon !== '') return; // already populated
+
+      if (!navigator.geolocation) {
+        // Geolocation not supported by browser
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        try {
+          var latitude = pos.coords.latitude;
+          var longitude = pos.coords.longitude;
+          if (latNode && (!latNode.value || latNode.value === '')) latNode.value = latitude.toFixed(6);
+          if (lonNode && (!lonNode.value || lonNode.value === '')) lonNode.value = longitude.toFixed(6);
+          showNotification(strings.location_success || 'Location obtained', 'success');
+        } catch (e) {
+          console.warn('Failed to set coords from geolocation', e);
+        }
+      }, function (err) {
+        // Silent fail — user may have denied permission
+        console.warn('Geolocation failed or denied', err);
+      }, { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 });
+    } catch (e) {
+      console.warn('autoFillCoordinatesIfEmpty error', e);
+    }
+  }
+
+  // Function wired to template's GPS button
+  window.getCurrentLocation = function () {
+    try {
+      var latNode = document.getElementById('latitude');
+      var lonNode = document.getElementById('longitude');
+      if (!navigator.geolocation) {
+        showNotification(strings.geo_unsupported || 'Geolocation not supported', 'warning');
+        return;
+      }
+      var btn = document.querySelector('[onclick="getCurrentLocation()"]');
+      var original = null;
+      if (btn) { original = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>' + (strings.loading_location || 'Loading...'); btn.disabled = true; }
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        try {
+          var latitude = pos.coords.latitude;
+          var longitude = pos.coords.longitude;
+          if (latNode) latNode.value = latitude.toFixed(6);
+          if (lonNode) lonNode.value = longitude.toFixed(6);
+          showNotification(strings.location_success || 'Location obtained', 'success');
+        } catch (e) {
+          console.warn('getCurrentLocation success handler error', e);
+        } finally {
+          if (btn) { btn.innerHTML = original; btn.disabled = false; }
+        }
+      }, function (err) {
+        console.warn('Geolocation error', err);
+        showNotification(strings.location_fail || 'Could not get your location', 'warning');
+        if (btn) { btn.innerHTML = original; btn.disabled = false; }
+      }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+    } catch (e) {
+      console.error('getCurrentLocation error', e);
+      showNotification(strings.location_fail || 'Could not get your location', 'danger');
+    }
+  };
 
   function showNotification(message, type) {
     var container = document.getElementById('notificationContainer');
