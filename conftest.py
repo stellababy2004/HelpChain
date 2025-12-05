@@ -71,9 +71,14 @@ _app_factory = None
 
 @pytest.fixture(scope="session")
 def app():
+    # If a richer test app factory is registered, use it and ensure
+    # testing-mode config values are set consistently for all tests.
     if _app_factory is not None:
         try:
-            return _app_factory()
+            _a = _app_factory()
+            _a.config.setdefault("TESTING", True)
+            _a.config.setdefault("WTF_CSRF_ENABLED", False)
+            return _a
         except Exception:
             pass
 
@@ -82,6 +87,7 @@ def app():
         from backend.appy import app as _app  # type: ignore
 
         _app.config.setdefault("TESTING", True)
+        _app.config.setdefault("WTF_CSRF_ENABLED", False)
         return _app
     except Exception:
         # Final minimal fallback
@@ -89,4 +95,5 @@ def app():
 
         _app = Flask(__name__)
         _app.config["TESTING"] = True
+        _app.config["WTF_CSRF_ENABLED"] = False
         return _app
