@@ -12,6 +12,7 @@ from flask_login import current_user, login_required
 
 from backend.extensions import db
 from backend.models import AdminUser, Request, RequestLog, Volunteer
+import logging
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -427,7 +428,9 @@ def admin_2fa_setup():
                 try:
                     db.session.rollback()
                 except Exception:
-                    pass
+                    logging.exception(
+                        "Failed to rollback DB transaction in admin 2FA setup"
+                    )
             flash("2FA е активиран успешно!", "success")
             return redirect(url_for("admin.admin_dashboard"))
         else:
@@ -453,7 +456,9 @@ def admin_2fa_disable():
         try:
             db.session.rollback()
         except Exception:
-            pass
+            logging.exception(
+                "Failed to rollback DB transaction in admin 2FA disable"
+            )
     flash("2FA е деактивиран.", "success")
     return redirect(url_for("admin.admin_dashboard"))
 

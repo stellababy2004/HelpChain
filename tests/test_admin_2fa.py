@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import pytest
 
 
 def test_enable_2fa_persists(db_session, test_admin_user):
