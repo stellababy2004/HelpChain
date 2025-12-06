@@ -75,6 +75,30 @@ builtins.__import__ = _import_hook
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+# Compatibility shim: some installed Werkzeug versions removed `url_quote` that
+# older Flask helpers import. During test collection we may import Flask (via
+# many modules); ensure `werkzeug.urls.url_quote` exists to avoid ImportError
+# while we reconcile dependency pins. This is a minimal shim that delegates
+# to `urllib.parse.quote` when the symbol is missing.
+try:
+    import importlib
+
+    _w_urls = importlib.import_module("werkzeug.urls")
+    if not hasattr(_w_urls, "url_quote"):
+        from urllib.parse import quote as _urllib_quote
+
+        def url_quote(s, safe=""):
+            try:
+                return _urllib_quote(s, safe=safe)
+            except Exception:
+                return _urllib_quote(str(s), safe=safe)
+
+        setattr(_w_urls, "url_quote", url_quote)
+except Exception:
+    # Best-effort shim; if import fails, proceed and let tests surface
+    # the original ImportError so it can be addressed by pinning deps.
+    pass
+
 from sqlalchemy.pool import StaticPool
 
 # NOTE: Avoid importing model modules at top-level here. Models must be imported
