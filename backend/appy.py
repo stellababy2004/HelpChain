@@ -6059,6 +6059,28 @@ def export_data():
 
 @app.route("/admin/email_2fa", methods=["GET", "POST"])
 def admin_email_2fa():
+    # Diagnostics: during test triage we print incoming cookie header,
+    # parsed request.cookies and current session contents so we can see
+    # whether the test client cookie is making it into the request.
+    try:
+        print("[DIAG] admin_email_2fa - HTTP_COOKIE:", request.environ.get("HTTP_COOKIE"))
+        try:
+            print("[DIAG] admin_email_2fa - request.cookies:", dict(request.cookies))
+        except Exception:
+            print("[DIAG] admin_email_2fa - request.cookies: <unavailable>")
+        try:
+            print("[DIAG] admin_email_2fa - session keys:", list(session.keys()))
+            # Also print a small snapshot of session values relevant to 2FA
+            print("[DIAG] admin_email_2fa - session snapshot:", {k: session.get(k) for k in ("pending_email_2fa","email_2fa_code","email_2fa_expires","pending_admin_id")})
+        except Exception:
+            print("[DIAG] admin_email_2fa - session: <unavailable>")
+        try:
+            print("[DIAG] admin_email_2fa - SECRET_KEY set?", bool(current_app.config.get("SECRET_KEY")))
+        except Exception:
+            pass
+    except Exception:
+        pass
+
     if not session.get("pending_email_2fa"):
         return redirect(url_for("admin_login"))
 
