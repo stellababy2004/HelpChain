@@ -9,43 +9,13 @@ that would result in a second SQLAlchemy() instance.
 import sys
 
 try:
-    # Try to prefer an already-imported package-qualified module
+    # If `backend.extensions` is already imported in the current process,
+    # prefer that object for the short name `extensions`. Do NOT attempt to
+    # import `backend.extensions` proactively here as that can trigger
+    # circular imports during test collection (SQLAlchemy/Flask internals
+    # import machinery). Only alias when the canonical module is present.
     if "backend.extensions" in sys.modules:
         sys.modules["extensions"] = sys.modules["backend.extensions"]
-    else:
-        # Try importing the canonical module and aliasing it immediately
-        import importlib
-
-        try:
-            _tmp = importlib.import_module("backend.extensions")
-            sys.modules["extensions"] = _tmp
-        except Exception:
-            # best-effort; continue if import fails
-            pass
-        # Defensive reconciliation: ensure any top-level 'extensions' module
-        # references the canonical db instance before per-test create_all()
-        try:
-            try:
-                canonical_ext = importlib.import_module("backend.extensions")
-            except Exception:
-                canonical_ext = None
-            if canonical_ext is not None and "extensions" in sys.modules:
-                dup = sys.modules.get("extensions")
-                if dup is not None and dup is not canonical_ext:
-                    try:
-                        # Align attributes so the short-name module uses the
-                        # canonical SQLAlchemy instance and related helpers.
-                        for attr in ("db", "babel", "mail", "cache"):
-                            try:
-                                if hasattr(canonical_ext, attr):
-                                    setattr(dup, attr, getattr(canonical_ext, attr))
-                            except Exception:
-                                pass
-                        sys.modules["extensions"] = canonical_ext
-                    except Exception:
-                        pass
-        except Exception:
-            pass
 except Exception:
     pass
 
