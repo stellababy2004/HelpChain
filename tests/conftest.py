@@ -330,6 +330,11 @@ except Exception as _alias_exc:
 # This must happen before importing `appy` so HELPCHAIN_TESTING influences
 # the application's configuration (database selection, logging, etc.).
 os.environ.setdefault("HELPCHAIN_TESTING", "1")
+# Opt-in for legacy admin-dashboard alias behavior in tests. When set to
+# '1' and combined with the per-request header `X-Legacy-Admin-Alias: 1`,
+# the app will render the login HTML (200) instead of redirecting (302).
+# This is test-only and does not affect production behavior.
+os.environ.setdefault("HELPCHAIN_LEGACY_ADMIN_ALIAS", "1")
 import tempfile
 
 # Use a file-backed temporary SQLite DB for tests to avoid in-memory
@@ -1891,12 +1896,72 @@ def test_help_request(db_session, test_volunteer):
     return request
 
 
+def _patch_client_session_transaction(tc, app_obj):
+    """Test-only helper: patch a Flask test client instance so that
+    session changes made inside `with tc.session_transaction():` are
+    serialized and persisted into that same client's cookie jar.
+    This keeps each client isolated while ensuring session round-trips
+    work for different Flask/Werkzeug versions.
+    """
+    try:
+        orig_st = getattr(tc, "session_transaction")
+    except Exception:
+        return
+    try:
+        from contextlib import contextmanager
+
+        @contextmanager
+        def _st_inner(*args, **kwargs):
+            with orig_st(*args, **kwargs) as sess:
+                yield sess
+            try:
+                if app_obj is None:
+                    return
+                try:
+                    ser = app_obj.session_interface.get_signing_serializer(app_obj)
+                except Exception:
+                    ser = None
+                if ser is None:
+                    return
+                cookie_name = getattr(app_obj, "session_cookie_name", app_obj.config.get("SESSION_COOKIE_NAME", "session"))
+                try:
+                    cookie_val = ser.dumps(dict(sess))
+                except Exception:
+                    try:
+                        cookie_val = ser.dumps({k: v for k, v in sess.items()})
+                    except Exception:
+                        return
+                try:
+                    tc.set_cookie("localhost", cookie_name, cookie_val)
+                except Exception:
+                    try:
+                        tc.set_cookie((cookie_name, cookie_val))
+                    except Exception:
+                        cj = getattr(tc, "cookie_jar", None)
+                        if cj is not None and hasattr(cj, "set_cookie"):
+                            try:
+                                cj.set_cookie((cookie_name, cookie_val))
+                            except Exception:
+                                pass
+
+            except Exception:
+                pass
+
+        tc.session_transaction = _st_inner
+    except Exception:
+        pass
+
+
 @pytest.fixture
 def authenticated_admin_client(app, test_admin_user):
     """Create a test client with authenticated admin user."""
     from flask_login import login_user
 
     admin_client = app.test_client()
+    try:
+        _patch_client_session_transaction(admin_client, app)
+    except Exception:
+        pass
     # Ensure bypass is set early so any setup requests from the fixture
     # are allowed to bypass the admin auth decorator and persist session.
     try:
@@ -2029,6 +2094,10 @@ def authenticated_admin_client(app, test_admin_user):
 def authenticated_volunteer_client(app, test_volunteer):
     """Create a test client with authenticated volunteer user."""
     volunteer_client = app.test_client()
+    try:
+        _patch_client_session_transaction(volunteer_client, app)
+    except Exception:
+        pass
     with app.test_request_context():
         with volunteer_client.session_transaction() as sess:
             sess["volunteer_logged_in"] = True
