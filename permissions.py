@@ -10,11 +10,21 @@ try:
     # Prefer the backend package implementation
     from backend.permissions import *  # noqa: F401,F403
 except Exception:
-    # Fallback: try to import a local module if present
+    # Fallback: dynamically import the backend.permissions module and
+    # copy public symbols into this module's globals to preserve the
+    # compatibility shim without using a star-relative import.
     try:
-        from .backend.permissions import *  # type: ignore
+        import importlib
+
+        _mod = importlib.import_module("backend.permissions")
+        for _name in dir(_mod):
+            if not _name.startswith("_"):
+                try:
+                    globals()[_name] = getattr(_mod, _name)
+                except Exception:
+                    pass
     except Exception:
-        # As a last resort, raise the original ImportError so tests fail
+        # As a last resort, re-raise so test imports fail loudly.
         raise
 
 __all__ = [

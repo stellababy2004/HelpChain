@@ -282,78 +282,12 @@ def get_query_for(model):
         pass
     # Final fallback: raise so callers notice configuration issue early.
     raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
-    @permission.setter
-    def permission(self, value):
-        # Allow assigning by codename string or by Permission instance.
-        try:
-            logger.debug(f"RolePermission.permission setter called with value={value!r}")
-        except Exception:
-            pass
-        if isinstance(value, str):
-            try:
-                # Try model-level query first (works when query proxy is attached)
-                p = None
-                try:
-                    p = Permission.query.filter_by(codename=value).first()
-                except Exception:
-                    p = None
 
-                if p is None:
-                    # Fallback: try to resolve using a session associated with
-                    # this RolePermission or its Role (object_session), then
-                    # try the Flask-SQLAlchemy session if available. This
-                    # covers test fixtures that add objects via a different
-                    # session than the models module's query proxy.
-                    try:
-                        from sqlalchemy.orm import object_session
-
-                        sess = object_session(self) or (object_session(self.role) if getattr(self, 'role', None) is not None else None)
-                    except Exception:
-                        sess = None
-
-                    if sess is not None:
-                        try:
-                            p = sess.query(Permission).filter_by(codename=value).first()
-                        except Exception:
-                            p = None
-
-                    if p is None:
-                        try:
-                            from backend.extensions import db as _ext_db
-
-                            p = _ext_db.session.query(Permission).filter_by(codename=value).first()
-                        except Exception:
-                            p = None
-
-                if p is not None:
-                    self.permission_id = p.id
-                    self._permission = p
-                    try:
-                        logger.debug(f"Resolved permission codename '{value}' -> id={p.id}")
-                    except Exception:
-                        pass
-                else:
-                    # No matching Permission found; clear relation
-                    self.permission_id = None
-                    self._permission = None
-            except Exception:
-                self.permission_id = None
-                self._permission = None
-        elif value is None:
-            self.permission_id = None
-            self._permission = None
-        else:
-            # Assume a Permission instance-like object
-            try:
-                self._permission = value
-                self.permission_id = getattr(value, "id", None)
-                try:
-                    logger.debug(f"Assigned Permission instance -> id={self.permission_id}")
-                except Exception:
-                    pass
-            except Exception:
-                self._permission = None
-                self.permission_id = None
+# NOTE: Previously there was a `@permission.setter` block here that appeared
+# to be misplaced at module scope (likely intended for a RolePermission
+# class). It has been removed to avoid runtime and linter errors. If the
+# setter is required, restore it inside the appropriate class definition
+# (e.g. `RolePermission`) so the decorator and name `permission` are valid.
 
 
 class User(Base):

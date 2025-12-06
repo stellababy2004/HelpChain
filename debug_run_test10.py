@@ -53,12 +53,14 @@ with app.app_context():
         res = db.session.query(User).filter_by(username='test_user').all()
         print('session.query(User).all():', res)
     except Exception as e:
-        import traceback; traceback.print_exc()
+        import traceback
+        traceback.print_exc()
 
     try:
         res2 = User.query.filter_by(username='test_user').all()
         print('User.query.all():', res2)
     except Exception as e:
-        import traceback; traceback.print_exc()
+        import traceback
+        traceback.print_exc()
 
 print('done')
