@@ -3,6 +3,7 @@ from flask import Flask, session
 from werkzeug.security import generate_password_hash
 
 from backend.extensions import db as _db
+
 # Keep legacy `db` name for existing code in this file that expects it.
 db = _db
 from backend.models import PermissionEnum, Role, User, UserRole
@@ -33,7 +34,7 @@ def permissions_app():
         # on the app's DB to guarantee tests have the expected data.
         try:
             from backend.extensions import db as _db
-            from backend.models import Permission, Role, RolePermission, PermissionEnum
+            from backend.models import Permission, PermissionEnum, Role, RolePermission
 
             # Defensive rollback/remove before seeding
             try:

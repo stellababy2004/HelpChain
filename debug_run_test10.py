@@ -1,5 +1,8 @@
-import os, sys
+import os
+import sys
+
 from flask import Flask
+
 # ensure backend dir is on path
 backend_dir = os.path.join(os.path.dirname(__file__), 'backend')
 if backend_dir not in sys.path:

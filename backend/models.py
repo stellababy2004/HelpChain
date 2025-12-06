@@ -1,16 +1,19 @@
 # Placeholder for SQLAlchemy models
 
+import os
+import sys
 from datetime import datetime
 from enum import Enum
+
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
-    Boolean,
     String,
     Text,
-    Float,
     create_engine,
     inspect,
     text,
@@ -18,11 +21,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     declarative_base,
     relationship,
-    sessionmaker,
     scoped_session,
+    sessionmaker,
 )
-import os
-import sys
 
 Base = declarative_base()
 
@@ -756,6 +757,7 @@ class PushSubscription(Base):
         # Ensure the push_subscriptions table exists on the Flask app engine
         try:
             from flask import current_app
+
             from backend import models as _models
             from backend.extensions import db as _ext_db
             try:
@@ -979,8 +981,7 @@ HelpRequest = Request
 # placeholder user so older tests that create HelpRequest objects without
 # a user won't fail due to NOT NULL constraints on existing DB schemas.
 try:
-    from sqlalchemy import Table, MetaData, insert, select
-    from sqlalchemy import event
+    from sqlalchemy import MetaData, Table, event, insert, select
 
     @event.listens_for(Request, "before_insert")
     def _ensure_request_user(mapper, connection, target):
@@ -1277,7 +1278,7 @@ class _DynamicQuery:
         # module-level session when tests rely on `Model.query` inside
         # app contexts.
         try:
-            from flask import has_app_context, current_app
+            from flask import current_app, has_app_context
 
             if has_app_context():
                 try:

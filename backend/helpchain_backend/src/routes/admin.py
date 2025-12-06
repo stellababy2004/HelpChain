@@ -1,3 +1,5 @@
+import logging
+
 from flask import (
     Blueprint,
     flash,
@@ -12,7 +14,6 @@ from flask_login import current_user, login_required
 
 from backend.extensions import db
 from backend.models import AdminUser, Request, RequestLog, Volunteer
-import logging
 
 admin_bp = Blueprint("admin", __name__)
 

@@ -21,6 +21,7 @@ if backend_dir not in sys.path:
 
 from backend import models
 from backend.app import app
+
 try:
     from backend.extensions import db as ext_db
 except Exception:
