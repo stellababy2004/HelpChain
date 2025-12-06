@@ -1,0 +1,36 @@
+# Ignore virtualenvs and caches
+venv/
+.venv/
+env/
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# Ignore local instance DBs and exports
+instance/
+*.db
+
+# Node and build artifacts
+node_modules/
+dist/
+build/
+coverage/
+
+# Dev scripts and local tools
+dev_scripts/
+*.log
+
+# Avoid uploading large test artifacts, caches, and VCS metadata
+.git/
+.gitignore
+.github/
+/.vercel
+
+# Templates and local IDE files
+.vscode/
+*.swp
+*.swo
+
+# Any other heavy folders we don't want in the deployment
+tests/tmp/
+tmp/
