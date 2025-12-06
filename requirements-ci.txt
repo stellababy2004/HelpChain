@@ -1,0 +1,10 @@
+Flask>=3.0,<4
+Flask-Login
+Flask-Mail
+Flask-SQLAlchemy
+SQLAlchemy
+pytest
+pytest-cov
+python-dotenv
+alembic
+psycopg2-binary
