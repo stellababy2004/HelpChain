@@ -1,0 +1,62 @@
+name: Prebuild and Deploy to Vercel (prebuilt)
+
+on:
+  push:
+    branches:
+      - main
+      - chore/vercel-ignore-extra
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  prebuild-and-deploy:
+    name: Prebuild on GitHub runner and deploy (preview)
+    runs-on: ubuntu-latest
+    environment: preview
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install Python dependencies (wheelhouse)
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          # Prefer a lightweight/dev requirements file for prebuild to avoid heavy ML deps
+          if [ -f requirements-dev-minimal.txt ]; then
+            pip install --prefer-binary -r requirements-dev-minimal.txt
+          elif [ -f requirements.txt ]; then
+            pip install --prefer-binary -r requirements.txt
+          fi
+
+      - name: Install Vercel CLI
+        run: |
+          npm install -g vercel@latest
+
+      - name: Run Vercel build (create .vercel/output)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # build on the runner using Vercel builders and produce the Build Output API format
+          npx vercel@latest build --token "$VERCEL_TOKEN" || true
+
+      - name: Deploy prebuilt output to Vercel (preview)
+        if: always()
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # Deploy the prebuilt output; omit --prod to create a preview deployment
+          npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --confirm
