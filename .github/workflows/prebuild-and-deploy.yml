@@ -67,6 +67,28 @@ jobs:
             exit 1
           fi
 
+      - name: Check prebuilt output size and list large files
+        run: |
+          echo "Calculating size of .vercel/output..."
+          total_bytes=$(du -sb .vercel/output | cut -f1)
+          echo "Total bytes: $total_bytes"
+          echo "Top 20 largest files:" 
+          find .vercel/output -type f -printf "%s\t%p\n" | sort -nr | head -n 20
+
+          # Create a compressed archive for inspection (may be large)
+          echo "Creating compressed archive output.tgz (for size check)..."
+          tar -C .vercel -czf output.tgz output || true
+          archive_size=$(stat -c%s .vercel/output.tgz || stat -f%z .vercel/output.tgz || echo 0)
+          echo "Archive bytes: $archive_size"
+
+          # Fail early if archive exceeds Node/CLI buffer limit (~4GB)
+          limit=$((4294967296))
+          if [ "$archive_size" -ge "$limit" ]; then
+            echo "ERROR: Archive is >= 4GB (possible Node Buffer limit)."
+            echo "List the largest files above and update .vercelignore or reduce build output."
+            exit 1
+          fi
+
       - name: Deploy prebuilt output to Vercel (preview)
         if: always()
         env:
