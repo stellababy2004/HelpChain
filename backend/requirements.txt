@@ -62,16 +62,10 @@ colorama==0.4.6
     # via
     #   click
     #   pytest
-flask==2.3.3
-    # via
-    #   -r requirements.in
-    #   flask-babel
-    #   flask-login
-    #   flask-mail
-    #   flask-migrate
-    #   flask-socketio
-    #   flask-sqlalchemy
-    #   sentry-sdk
+# Note: explicit `Flask` version is declared at the top of this file (Flask==3.1.2).
+# The following transitive pin for 'flask' was removed to avoid conflicting pins
+# during CI prebuilds. If you regenerate this file with pip-compile, ensure the
+# top-level Flask version remains consistent.
 flask-babel==3.1.0
     # via -r requirements.in
 flask-login==0.6.3
