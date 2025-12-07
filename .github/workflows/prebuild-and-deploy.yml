@@ -92,6 +92,21 @@ jobs:
             exit 1
           fi
 
+      - name: Workspace diagnostics (safe)
+        run: |
+          echo "Workspace size summary:" && du -sh . || true
+          echo "Top-level directory sizes:" && du -sh ./* 2>/dev/null | sort -hr | head -n 40 || true
+
+          echo "Listing files >100MB in the repository (for review):"
+          find . -type f -size +100M -printf "%s\t%p\n" | sort -nr | tee large-files-repo.txt || true
+
+          echo "Ensure .vercel/output.tgz exists and show its size (use ls -lh for portability):"
+          tar -C .vercel -czf output.tgz output || true
+          ls -lh .vercel/output.tgz || true
+
+          echo "List largest files in workspace (top 50):"
+          find . -type f -printf "%s\t%p\n" | sort -nr | head -n 50
+
       - name: Deploy prebuilt output to Vercel (preview)
         if: always()
         env:
