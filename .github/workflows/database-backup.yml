@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Detect database file
         id: detect_db
@@ -88,7 +88,7 @@ jobs:
 
       - name: Upload backup artifact
         if: ${{ steps.detect_db.outputs.db_path != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: database-backup
           path: backups/*.sqlite.gz
