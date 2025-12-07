@@ -85,3 +85,8 @@ vercel_inspect.txt
 vercel_logs.json
 vercel_logs.txt
 output.tgz
+/repo-mirror.git
+/miniconda.exe
+/backend.zip
+/.git.zip
+/backend/redis.zip
