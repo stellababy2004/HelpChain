@@ -50,8 +50,22 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
+          # Pull project settings so `vercel build` has local project config
+          npx vercel@latest pull --yes --token "$VERCEL_TOKEN" || true
+
           # build on the runner using Vercel builders and produce the Build Output API format
-          npx vercel@latest build --token "$VERCEL_TOKEN" || true
+          npx vercel@latest build --token "$VERCEL_TOKEN"
+
+      - name: Verify prebuilt output
+        run: |
+          if [ -d .vercel/output ]; then
+            echo ".vercel/output exists"
+            ls -la .vercel/output || true
+          else
+            echo "No .vercel/output found - failing early for debug"
+            ls -la || true
+            exit 1
+          fi
 
       - name: Deploy prebuilt output to Vercel (preview)
         if: always()
@@ -59,4 +73,4 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           # Deploy the prebuilt output; omit --prod to create a preview deployment
-          npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --confirm
+          npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes
