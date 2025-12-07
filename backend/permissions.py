@@ -5,7 +5,7 @@ Permission-based access control decorators and utilities for HelpChain
 from functools import wraps
 from inspect import iscoroutinefunction
 
-from flask import current_app, flash, redirect, session, url_for, render_template
+from flask import current_app, flash, redirect, render_template, session, url_for
 
 # Try relative imports first, fall back to absolute imports for standalone execution
 try:
@@ -257,7 +257,7 @@ def require_admin_login(redirect_url="admin_login"):
 
             @wraps(f)
             async def wrapped_function(*args, **kwargs):
-                from flask import current_app, request, jsonify
+                from flask import current_app, jsonify, request
 
                 # Test-time bypass
                 if current_app.config.get("TESTING") and (
@@ -292,7 +292,7 @@ def require_admin_login(redirect_url="admin_login"):
 
             @wraps(f)
             def wrapped_function(*args, **kwargs):
-                from flask import current_app, request, jsonify
+                from flask import current_app, jsonify, request
 
                 # Test-time bypass
                 if current_app.config.get("TESTING") and (

@@ -29,7 +29,12 @@ def main():
             rows = cur.fetchall()
             print('  COLUMNS:', cols)
             for r in rows:
-                print('  ', dict(zip(cols, r)))
+                # Use explicit strict matching for zip to ensure columns/rows align
+                try:
+                    print('  ', dict(zip(cols, r, strict=True)))
+                except TypeError:
+                    # Fallback for older Python runtimes: fall back to non-strict zip
+                    print('  ', dict(zip(cols, r)))
     except Exception as e:
         print('Could not read admin_users:', e)
 

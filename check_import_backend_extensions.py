@@ -1,4 +1,7 @@
-import sys, os, traceback
+import os
+import sys
+import traceback
+
 sys.path.insert(0, os.path.join(os.getcwd(), 'backend'))
 try:
     import backend.extensions as ext

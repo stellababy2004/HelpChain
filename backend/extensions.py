@@ -17,6 +17,7 @@ except ImportError:
 # would otherwise create two distinct SQLAlchemy() instances.
 import os
 import sys
+from sqlalchemy.pool import StaticPool
 
 # Test-only: make module-level queries during collection tolerant of
 # unbound sessions by returning None instead of raising. This is a
@@ -54,12 +55,12 @@ except Exception:
 # Ensure this module is available under both the short name `extensions`
 # and the package name `backend.extensions` so imports from tests that
 # use either path resolve to the same module object.
-try:
-    if sys.modules.get(__name__) is not None:
-        sys.modules.setdefault("extensions", sys.modules.get(__name__))
-        sys.modules.setdefault("backend.extensions", sys.modules.get(__name__))
-except Exception:
-    pass
+# NOTE: Do not alias this module into `sys.modules['extensions']` here while
+# the module is still initializing. Doing so can create a partially
+# initialized top-level module object that collides with other packages that
+# import a submodule named `extensions` (for example SQLAlchemy internals).
+# The tests' `conftest.py` will perform safe aliasing when appropriate once
+# the app's `backend.extensions` has been fully imported during test setup.
 _existing = sys.modules.get("extensions")
 if _existing is not None:
     try:
@@ -95,7 +96,17 @@ if _existing_db is not None:
                             # Fall back to a file-based DB in the current working dir
                             _uri = "sqlite:///helpchain_pytest.db"
 
-                        _engine = create_engine(_uri, connect_args={"check_same_thread": False})
+                        # Use StaticPool for the test engine so keyword args like
+                        # `pool_size`/`max_overflow` (passed elsewhere) don't
+                        # conflict with NullPool defaults when tests create
+                        # engines or when Flask-SQLAlchemy interacts with the
+                        # engine. StaticPool keeps connections in-memory and
+                        # works well for a file-backed SQLite test DB.
+                        _engine = create_engine(
+                            _uri,
+                            connect_args={"check_same_thread": False},
+                            poolclass=StaticPool,
+                        )
 
                         # If Flask-SQLAlchemy hasn't set an engine yet, attach ours.
                         try:

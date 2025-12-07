@@ -1,6 +1,7 @@
 import pytest
 import requests
 
+
 def test_home_page_status():
     """Test if the home page returns a 200 status code."""
     try:
