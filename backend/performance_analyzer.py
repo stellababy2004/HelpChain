@@ -31,10 +31,7 @@ class PerformanceAnalysis:
         bottlenecks = []
 
         # Response time analysis
-        api_slowdown = (
-            self.current_results["api_average_response"]
-            / self.target_performance["api_response_target"]
-        ) * 100
+        api_slowdown = (self.current_results["api_average_response"] / self.target_performance["api_response_target"]) * 100
 
         if api_slowdown > 200:  # Над 2x по-бавно от target
             bottlenecks.append(
@@ -63,10 +60,7 @@ class PerformanceAnalysis:
             )
 
         # Cache effectiveness
-        if (
-            self.current_results["cache_hit_rate"]
-            < self.target_performance["cache_hit_rate_target"]
-        ):
+        if self.current_results["cache_hit_rate"] < self.target_performance["cache_hit_rate_target"]:
             bottlenecks.append(
                 {
                     "type": "caching",
@@ -90,10 +84,7 @@ class PerformanceAnalysis:
             )
 
         # Throughput analysis
-        if (
-            self.current_results["throughput"]
-            < self.target_performance["throughput_target"]
-        ):
+        if self.current_results["throughput"] < self.target_performance["throughput_target"]:
             bottlenecks.append(
                 {
                     "type": "throughput",
@@ -364,36 +355,15 @@ Expected timeline за significant improvements: **3-5 days**
 
 """.format(
             improvements["after_immediate_actions"]["api_response_time"],
-            int(
-                (
-                    1
-                    - improvements["after_immediate_actions"]["api_response_time"]
-                    / self.current_results["api_average_response"]
-                )
-                * 100
-            ),
+            int((1 - improvements["after_immediate_actions"]["api_response_time"] / self.current_results["api_average_response"]) * 100),
             improvements["after_immediate_actions"]["cache_hit_rate"],
             improvements["after_immediate_actions"]["throughput"],
             improvements["after_short_term_actions"]["api_response_time"],
-            int(
-                (
-                    1
-                    - improvements["after_short_term_actions"]["api_response_time"]
-                    / self.current_results["api_average_response"]
-                )
-                * 100
-            ),
+            int((1 - improvements["after_short_term_actions"]["api_response_time"] / self.current_results["api_average_response"]) * 100),
             improvements["after_short_term_actions"]["cache_hit_rate"],
             improvements["after_short_term_actions"]["throughput"],
             improvements["after_long_term_actions"]["api_response_time"],
-            int(
-                (
-                    1
-                    - improvements["after_long_term_actions"]["api_response_time"]
-                    / self.current_results["api_average_response"]
-                )
-                * 100
-            ),
+            int((1 - improvements["after_long_term_actions"]["api_response_time"] / self.current_results["api_average_response"]) * 100),
             improvements["after_long_term_actions"]["cache_hit_rate"],
             improvements["after_long_term_actions"]["throughput"],
         )

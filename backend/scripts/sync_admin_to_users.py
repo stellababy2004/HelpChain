@@ -10,6 +10,7 @@ The script will, for each `AdminUser` row, ensure there is a corresponding
 `User` row with the same `username` (creates if missing). It will not
 overwrite existing user passwords. By default it runs as a dry-run.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -44,9 +45,7 @@ except Exception:
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Sync AdminUser rows into the User table (idempotent)."
-    )
+    parser = argparse.ArgumentParser(description="Sync AdminUser rows into the User table (idempotent).")
     parser.add_argument(
         "--commit",
         action="store_true",

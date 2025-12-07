@@ -38,9 +38,7 @@ class CachePerformanceTester:
                     data = response.json()
                     cache_info = data.get("metadata", {}).get("cache_stats", {})
 
-                    print(
-                        f"  Run {i + 1}: {response_time:.3f}s - Cache hits: {cache_info.get('hits', 0)}"
-                    )
+                    print(f"  Run {i + 1}: {response_time:.3f}s - Cache hits: {cache_info.get('hits', 0)}")
                 else:
                     print(f"  Run {i + 1}: ERROR - Status {response.status_code}")
 
@@ -56,9 +54,7 @@ class CachePerformanceTester:
         for i in range(runs):
             start_time = time.time()
             try:
-                response = requests.get(
-                    f"{self.base_url}/api/analytics-data"
-                )  # Същия endpoint
+                response = requests.get(f"{self.base_url}/api/analytics-data")  # Същия endpoint
                 end_time = time.time()
 
                 if response.status_code == 200:
@@ -68,9 +64,7 @@ class CachePerformanceTester:
                     data = response.json()
                     cache_info = data.get("metadata", {}).get("cache_stats", {})
 
-                    print(
-                        f"  Run {i + 1}: {response_time:.3f}s - Cache hits: {cache_info.get('hits', 0)}"
-                    )
+                    print(f"  Run {i + 1}: {response_time:.3f}s - Cache hits: {cache_info.get('hits', 0)}")
                 else:
                     print(f"  Run {i + 1}: ERROR - Status {response.status_code}")
 
@@ -133,9 +127,7 @@ class CachePerformanceTester:
                     print(f"  Total requests: {stats.get('total_requests', 0)}")
                     print(f"  Cache hits: {stats.get('hits', 0)}")
                     print(f"  Hit rate: {stats.get('hit_rate', 0):.1f}%")
-                    print(
-                        f"  Average response time: {performance.get('avg_response_time', 0):.3f}s"
-                    )
+                    print(f"  Average response time: {performance.get('avg_response_time', 0):.3f}s")
 
                 else:
                     print(f"❌ Cache Stats API error: {data.get('error', 'Unknown')}")

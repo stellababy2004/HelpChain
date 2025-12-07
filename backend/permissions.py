@@ -71,9 +71,7 @@ def has_permission(permission_codename):
         # Check if user has the permission through their roles
         user_roles = UserRole.query.filter_by(user_id=user.id).all()
         for user_role in user_roles:
-            role_permissions = RolePermission.query.filter_by(
-                role_id=user_role.role_id
-            ).all()
+            role_permissions = RolePermission.query.filter_by(role_id=user_role.role_id).all()
             for role_perm in role_permissions:
                 if role_perm.permission.codename == permission_codename:
                     return True
@@ -241,10 +239,7 @@ def require_admin_login(redirect_url="admin_login"):
         def _is_browser_get(request):
             # Treat as browser GET unless it's explicitly an API/AJAX request
             accept_header = request.headers.get("Accept", "") or ""
-            accepts_json = (
-                request.accept_mimetypes.best == "application/json"
-                or "application/json" in accept_header
-            )
+            accepts_json = request.accept_mimetypes.best == "application/json" or "application/json" in accept_header
             return (
                 request.method == "GET"
                 and not request.path.startswith("/admin/api/")
@@ -260,10 +255,7 @@ def require_admin_login(redirect_url="admin_login"):
                 from flask import current_app, request, jsonify
 
                 # Test-time bypass
-                if current_app.config.get("TESTING") and (
-                    current_app.config.get("BYPASS_ADMIN_AUTH", False)
-                    or bool(request.headers.get("X-Admin-Bypass"))
-                ):
+                if current_app.config.get("TESTING") and (current_app.config.get("BYPASS_ADMIN_AUTH", False) or bool(request.headers.get("X-Admin-Bypass"))):
                     return await f(*args, **kwargs)
 
                 # If not authenticated, choose response based on request type
@@ -276,11 +268,7 @@ def require_admin_login(redirect_url="admin_login"):
                             return redirect(url_for(redirect_url))
 
                     # API/AJAX or non-browser: return JSON 401
-                    if (
-                        request.headers.get("X-Requested-With") == "XMLHttpRequest"
-                        or request.accept_mimetypes.best == "application/json"
-                        or request.path.startswith("/admin/api/")
-                    ):
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.best == "application/json" or request.path.startswith("/admin/api/"):
                         return jsonify({"error": "Unauthorized"}), 401
 
                     flash("Моля, влезте като администратор.", "warning")
@@ -295,10 +283,7 @@ def require_admin_login(redirect_url="admin_login"):
                 from flask import current_app, request, jsonify
 
                 # Test-time bypass
-                if current_app.config.get("TESTING") and (
-                    current_app.config.get("BYPASS_ADMIN_AUTH", False)
-                    or bool(request.headers.get("X-Admin-Bypass"))
-                ):
+                if current_app.config.get("TESTING") and (current_app.config.get("BYPASS_ADMIN_AUTH", False) or bool(request.headers.get("X-Admin-Bypass"))):
                     return f(*args, **kwargs)
 
                 if not session.get("admin_logged_in"):
@@ -309,11 +294,7 @@ def require_admin_login(redirect_url="admin_login"):
                         except Exception:
                             return redirect(url_for(redirect_url))
 
-                    if (
-                        request.headers.get("X-Requested-With") == "XMLHttpRequest"
-                        or request.accept_mimetypes.best == "application/json"
-                        or request.path.startswith("/admin/api/")
-                    ):
+                    if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.best == "application/json" or request.path.startswith("/admin/api/"):
                         return jsonify({"error": "Unauthorized"}), 401
 
                     flash("Моля, влезте като администратор.", "warning")
@@ -351,9 +332,7 @@ def get_user_permissions(user_id=None):
         permissions = set()
 
         for user_role in user_roles:
-            role_permissions = RolePermission.query.filter_by(
-                role_id=user_role.role_id
-            ).all()
+            role_permissions = RolePermission.query.filter_by(role_id=user_role.role_id).all()
             for role_perm in role_permissions:
                 permissions.add(role_perm.permission.codename)
 
@@ -443,16 +422,11 @@ def initialize_default_roles_and_permissions():
                     table_names = []
 
                 try:
-                    metadata_tables = set(
-                        getattr(db, "metadata", {}).tables.keys()
-                    )
+                    metadata_tables = set(getattr(db, "metadata", {}).tables.keys())
                 except Exception:
                     metadata_tables = set()
 
-                if (
-                    "permissions" not in table_names
-                    and "permissions" not in metadata_tables
-                ):
+                if "permissions" not in table_names and "permissions" not in metadata_tables:
                     try:
                         from backend import models as _models
 
@@ -467,13 +441,8 @@ def initialize_default_roles_and_permissions():
                         # ignore and allow skip below
                         pass
 
-                if (
-                    "permissions" not in table_names
-                    and "permissions" not in metadata_tables
-                ):
-                    current_app.logger.debug(
-                        "Permissions table not present after attempted create; skipping initialization."
-                    )
+                if "permissions" not in table_names and "permissions" not in metadata_tables:
+                    current_app.logger.debug("Permissions table not present after attempted create; skipping initialization.")
                     return
         except Exception:
             # If extensions/imports fail, let the seeding proceed and fail
@@ -551,9 +520,9 @@ def assign_default_role_permissions():
     """
     try:
         try:
-            cnt_perms = Permission.query.count() if hasattr(Permission, 'query') else 'unknown'
-            cnt_roles = Role.query.count() if hasattr(Role, 'query') else 'unknown'
-            cnt_rps = RolePermission.query.count() if hasattr(RolePermission, 'query') else 'unknown'
+            cnt_perms = Permission.query.count() if hasattr(Permission, "query") else "unknown"
+            cnt_roles = Role.query.count() if hasattr(Role, "query") else "unknown"
+            cnt_rps = RolePermission.query.count() if hasattr(RolePermission, "query") else "unknown"
             current_app.logger.debug(
                 "Assigning default role permissions: counts -> permissions=%s, roles=%s, role_permissions=%s",
                 cnt_perms,
@@ -582,15 +551,8 @@ def assign_default_role_permissions():
                 permissions.get(PermissionEnum.EDIT_PROFILE.value),
             ]
             for perm in user_perms:
-                if (
-                    perm
-                    and not db.session.query(RolePermission).filter_by(
-                        role_id=user_role.id, permission_id=perm.id
-                    ).first()
-                ):
-                    db.session.add(
-                        RolePermission(role_id=user_role.id, permission_id=perm.id)
-                    )
+                if perm and not db.session.query(RolePermission).filter_by(role_id=user_role.id, permission_id=perm.id).first():
+                    db.session.add(RolePermission(role_id=user_role.id, permission_id=perm.id))
 
         # Volunteer permissions
         if volunteer_role:
@@ -604,15 +566,8 @@ def assign_default_role_permissions():
                 permissions.get(PermissionEnum.USE_VIDEO_CHAT.value),
             ]
             for perm in volunteer_perms:
-                if (
-                    perm
-                    and not db.session.query(RolePermission).filter_by(
-                        role_id=volunteer_role.id, permission_id=perm.id
-                    ).first()
-                ):
-                    db.session.add(
-                        RolePermission(role_id=volunteer_role.id, permission_id=perm.id)
-                    )
+                if perm and not db.session.query(RolePermission).filter_by(role_id=volunteer_role.id, permission_id=perm.id).first():
+                    db.session.add(RolePermission(role_id=volunteer_role.id, permission_id=perm.id))
 
         # Moderator permissions
         if moderator_role:
@@ -629,15 +584,8 @@ def assign_default_role_permissions():
                 permissions.get(PermissionEnum.MANAGE_CATEGORIES.value),
             ]
             for perm in moderator_perms:
-                if (
-                    perm
-                    and not db.session.query(RolePermission).filter_by(
-                        role_id=moderator_role.id, permission_id=perm.id
-                    ).first()
-                ):
-                    db.session.add(
-                        RolePermission(role_id=moderator_role.id, permission_id=perm.id)
-                    )
+                if perm and not db.session.query(RolePermission).filter_by(role_id=moderator_role.id, permission_id=perm.id).first():
+                    db.session.add(RolePermission(role_id=moderator_role.id, permission_id=perm.id))
 
         # Admin permissions
         if admin_role:
@@ -659,12 +607,7 @@ def assign_default_role_permissions():
                 permissions.get(PermissionEnum.VIEW_AUDIT_LOGS.value),
             ]
             for perm in admin_perms:
-                if (
-                    perm
-                    and not db.session.query(RolePermission).filter_by(
-                        role_id=admin_role.id, permission_id=perm.id
-                    ).first()
-                ):
+                if perm and not db.session.query(RolePermission).filter_by(role_id=admin_role.id, permission_id=perm.id).first():
                     try:
                         current_app.logger.debug(
                             "Adding RolePermission for role_id=%s permission_id=%s",
@@ -678,22 +621,14 @@ def assign_default_role_permissions():
                         print(f"DEBUG_ADD_RP: role_id={admin_role.id} perm_id={perm.id} perm_codename={getattr(perm, 'codename', None)}")
                     except Exception:
                         print("DEBUG_ADD_RP: could not print details")
-                    db.session.add(
-                        RolePermission(role_id=admin_role.id, permission_id=perm.id)
-                    )
+                    db.session.add(RolePermission(role_id=admin_role.id, permission_id=perm.id))
 
         # Super admin permissions (all permissions)
         if superadmin_role:
             all_permissions = db.session.query(Permission).all()
             for perm in all_permissions:
-                if not db.session.query(RolePermission).filter_by(
-                    role_id=superadmin_role.id, permission_id=perm.id
-                ).first():
-                    db.session.add(
-                        RolePermission(
-                            role_id=superadmin_role.id, permission_id=perm.id
-                        )
-                    )
+                if not db.session.query(RolePermission).filter_by(role_id=superadmin_role.id, permission_id=perm.id).first():
+                    db.session.add(RolePermission(role_id=superadmin_role.id, permission_id=perm.id))
 
         db.session.commit()
 

@@ -174,9 +174,7 @@ def _sanitize_api_key(raw_key: Any) -> tuple[str, list]:
                     if not cleaned.lower().startswith("sk-"):
                         issues.append('Extracted key does not start with "sk-"')
                     if not issues:
-                        issues.append(
-                            "Extracted key from input (used for connectivity test)"
-                        )
+                        issues.append("Extracted key from input (used for connectivity test)")
         except Exception:
             # If extraction fails silently, keep original issues
             pass
@@ -197,9 +195,7 @@ class AIService:
             openai_provider = get_ai_config().get_provider("openai")
             if openai_provider and openai_provider.enabled:
                 if openai is None:
-                    logger.warning(
-                        "⚠️ OpenAI SDK not installed - OpenAI provider disabled at runtime"
-                    )
+                    logger.warning("⚠️ OpenAI SDK not installed - OpenAI provider disabled at runtime")
                 else:
                     openai.api_key = openai_provider.api_key
                     logger.info("OpenAI configured successfully")
@@ -208,9 +204,7 @@ class AIService:
             gemini_provider = get_ai_config().get_provider("gemini")
             if gemini_provider and gemini_provider.enabled:
                 if genai is None:
-                    logger.warning(
-                        "⚠️ Google Generative AI SDK not installed - Gemini provider disabled at runtime"
-                    )
+                    logger.warning("⚠️ Google Generative AI SDK not installed - Gemini provider disabled at runtime")
                 else:
                     genai.configure(api_key=gemini_provider.api_key)
                     logger.info("Gemini configured successfully")
@@ -218,9 +212,7 @@ class AIService:
         except Exception as e:
             logger.error(f"❌ Error setting up AI providers: {e}")
 
-    async def generate_response(
-        self, user_message: str, context: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    async def generate_response(self, user_message: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Generate AI response to user message
 
@@ -250,11 +242,7 @@ class AIService:
                     response_text = "HelpChain е платформа за доброволчество в България. Свързваме хора нуждаещи се от помощ с проверени доброволци в София, Пловдив, Варна, Бургас и Стара Загора."
                 elif "регистрация" in user_msg_lower or "регистрирам" in user_msg_lower:
                     response_text = "Регистрацията в HelpChain е безплатна! Можете да се регистрирате през нашето мобилно приложение или уеб сайта. За доброволци има процес на проверка и обучение."
-                elif (
-                    "цена" in user_msg_lower
-                    or "струва" in user_msg_lower
-                    or "такса" in user_msg_lower
-                ):
+                elif "цена" in user_msg_lower or "струва" in user_msg_lower or "такса" in user_msg_lower:
                     response_text = "Цените зависят от вида на услугата. Свържете се с нашия екип за точна информация и консултация."
                 elif "доброволец" in user_msg_lower or "стана" in user_msg_lower:
                     response_text = "За да станете доброволец в HelpChain, трябва да минете през процес на регистрация, проверка и кратко обучение. Ще се свържем с вас след регистрацията."
@@ -271,9 +259,7 @@ class AIService:
                 }
 
             # Prepare the conversation context
-            conversation_context = self._build_context(
-                user_message, context, detected_lang
-            )
+            conversation_context = self._build_context(user_message, context, detected_lang)
 
             # Try providers in priority order until one succeeds
             providers_to_try = sorted(
@@ -281,22 +267,16 @@ class AIService:
                 key=lambda p: p.priority,
             )
 
-            logger.info(
-                f"🤖 Trying providers in order: {[p.name for p in providers_to_try]}"
-            )
+            logger.info(f"🤖 Trying providers in order: {[p.name for p in providers_to_try]}")
 
             last_error = None
             for provider in providers_to_try:
                 try:
                     logger.info(f"🤖 Attempting to use provider: {provider.name}")
                     if provider.name == "OpenAI GPT":
-                        result = await self._generate_openai_response(
-                            conversation_context, provider
-                        )
+                        result = await self._generate_openai_response(conversation_context, provider)
                     elif provider.name == "Google Gemini":
-                        result = await self._generate_gemini_response(
-                            conversation_context, provider
-                        )
+                        result = await self._generate_gemini_response(conversation_context, provider)
                     else:
                         continue
 
@@ -318,17 +298,13 @@ class AIService:
             logger.error(f"❌ Error generating AI response: {_safe_message(e)}")
             logger.error(traceback.format_exc())
             return {
-                "response": (
-                    "Извинявам се, възникна грешка при генерирането на отговора. Моля свържете се с нашия екип за помощ."
-                ),
+                "response": ("Извинявам се, възникна грешка при генерирането на отговора. Моля свържете се с нашия екип за помощ."),
                 "confidence": 0.0,
                 "provider": "error_fallback",
                 "error": _safe_message(e),
             }
 
-    def _build_context(
-        self, user_message: str, context: dict[str, Any] | None, language: str
-    ) -> str:
+    def _build_context(self, user_message: str, context: dict[str, Any] | None, language: str) -> str:
         """Build conversation context for AI"""
 
         context_parts = [get_ai_config().system_prompt]
@@ -340,9 +316,7 @@ class AIService:
                 context_parts.append(f"Асистент: {msg.get('bot_response', '')}")
 
         if language != "bg":
-            context_parts.append(
-                f"\nЗАБЕЛЕЖКА: Потребителят пише на {language}, но Отговаряй ЗАДЪЛЖИТЕЛНО на български език."
-            )
+            context_parts.append(f"\nЗАБЕЛЕЖКА: Потребителят пише на {language}, но Отговаряй ЗАДЪЛЖИТЕЛНО на български език.")
 
         context_parts.append(f"\nВЪПРОС НА ПОТРЕБИТЕЛЯ: {user_message}")
         context_parts.append("\nТВОЯТ ОТГОВОР (кратко, полезно, на български):")
@@ -353,9 +327,7 @@ class AIService:
         """Generate response using OpenAI"""
         try:
             if openai is None:
-                raise RuntimeError(
-                    "OpenAI SDK is not installed. Install with 'pip install openai' to enable this provider."
-                )
+                raise RuntimeError("OpenAI SDK is not installed. Install with 'pip install openai' to enable this provider.")
 
             # Use OpenAI >= 1.0 API (new client-based approach)
             try:
@@ -402,9 +374,7 @@ class AIService:
         """Generate response using Google Gemini"""
         try:
             if genai is None:
-                raise RuntimeError(
-                    "Google Generative AI SDK is not installed. Install the appropriate package to enable Gemini provider."
-                )
+                raise RuntimeError("Google Generative AI SDK is not installed. Install the appropriate package to enable Gemini provider.")
             model = genai.GenerativeModel(provider.model)
 
             generation_config = genai.types.GenerationConfig(
@@ -414,9 +384,7 @@ class AIService:
                 top_k=40,
             )
 
-            response = model.generate_content(
-                context, generation_config=generation_config
-            )
+            response = model.generate_content(context, generation_config=generation_config)
 
             ai_response = response.text.strip()
             confidence = self._calculate_confidence(ai_response)
@@ -424,8 +392,7 @@ class AIService:
             return {
                 "response": ai_response,
                 "confidence": confidence,
-                "tokens_used": len(context.split())
-                + len(ai_response.split()),  # Approximate
+                "tokens_used": len(context.split()) + len(ai_response.split()),  # Approximate
                 "model": provider.model,
             }
 
@@ -442,10 +409,7 @@ class AIService:
             return 0.6
         elif "извинявам се" in response.lower() or "не знам" in response.lower():
             return 0.4
-        elif any(
-            word in response.lower()
-            for word in ["регистрация", "helpchain", "доброволец", "услуга"]
-        ):
+        elif any(word in response.lower() for word in ["регистрация", "helpchain", "доброволец", "услуга"]):
             return 0.9
         else:
             return 0.7
@@ -542,32 +506,24 @@ class AIService:
                                             openai.api_key = provider.api_key
                                             openai.ChatCompletion.create(
                                                 model="gpt-3.5-turbo",
-                                                messages=[
-                                                    {"role": "user", "content": "Test"}
-                                                ],
+                                                messages=[{"role": "user", "content": "Test"}],
                                                 max_tokens=1,
                                             )
                                             results[name] = {
                                                 "status": "ok",
-                                                "message": (
-                                                    "Connection successful (via SDK fallback)"
-                                                ),
+                                                "message": ("Connection successful (via SDK fallback)"),
                                             }
                                             continue
                                         else:
                                             client = openai.OpenAI()
                                             client.chat.completions.create(
                                                 model="gpt-3.5-turbo",
-                                                messages=[
-                                                    {"role": "user", "content": "Test"}
-                                                ],
+                                                messages=[{"role": "user", "content": "Test"}],
                                                 max_tokens=1,
                                             )
                                             results[name] = {
                                                 "status": "ok",
-                                                "message": (
-                                                    "Connection successful (via SDK fallback)"
-                                                ),
+                                                "message": ("Connection successful (via SDK fallback)"),
                                             }
                                             continue
                                     except Exception as sdk_e:
@@ -608,9 +564,7 @@ class AIService:
 
         return results
 
-    def generate_response_sync(
-        self, user_message: str, context: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    def generate_response_sync(self, user_message: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
         """
         Synchronous version of generate_response for Flask routes
         """
@@ -625,9 +579,7 @@ class AIService:
                 asyncio.set_event_loop(loop)
 
             # Run async function synchronously
-            return loop.run_until_complete(
-                self.generate_response(user_message, context)
-            )
+            return loop.run_until_complete(self.generate_response(user_message, context))
         except Exception as e:
             logger.error(f"Error in sync wrapper: {e}")
             return {

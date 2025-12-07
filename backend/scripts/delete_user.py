@@ -10,6 +10,7 @@ Usage:
 This script requires you run it from the repository root. It will import
 the Flask app and perform the deletion inside the app context.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -31,9 +32,7 @@ if _backend_dir not in sys.path:
 def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Delete a User by username")
     parser.add_argument("--username", required=True, help="username to delete")
-    parser.add_argument(
-        "--commit", action="store_true", help="Apply deletion (default dry-run)"
-    )
+    parser.add_argument("--commit", action="store_true", help="Apply deletion (default dry-run)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")

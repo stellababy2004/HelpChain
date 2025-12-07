@@ -39,6 +39,7 @@ app = Flask(__name__)
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.debug = True
 
+
 # Safe URL builder for templates: return '#' when endpoint missing
 def safe_url_for(endpoint: str, **values) -> str:
     try:
@@ -72,6 +73,7 @@ def safe_url_for(endpoint: str, **values) -> str:
         except Exception:
             pass
         return "#"
+
 
 # Expose to Jinja templates
 app.jinja_env.globals["safe_url_for"] = safe_url_for
@@ -113,7 +115,7 @@ except Exception:
         # provide a no-op placeholder to avoid import-time crashes.
         socketio = None
 
- 
+
 # Lightweight admin debug logger: append JSON lines to backend/logs/admin_debug.log
 def _write_admin_debug(entry: dict):
     try:
@@ -129,6 +131,7 @@ def _write_admin_debug(entry: dict):
             app.logger.exception("_write_admin_debug failed")
         except Exception:
             pass
+
 
 # Local imports (strictly sorted, all at top-level)
 from extensions import babel, db
@@ -164,9 +167,7 @@ def apply_filters(query, for_event_type=None, for_language=None):
 
 
 # --- Set secret key for CSRF and sessions (must be before CSRFProtect) ---
-app.config["SECRET_KEY"] = os.getenv(
-    "HELPCHAIN_SECRET_KEY", os.getenv("SECRET_KEY", "change-me-please")
-)
+app.config["SECRET_KEY"] = os.getenv("HELPCHAIN_SECRET_KEY", os.getenv("SECRET_KEY", "change-me-please"))
 app.secret_key = app.config["SECRET_KEY"]
 
 
@@ -220,14 +221,16 @@ def admin_api_requests():
     # Debug: логване за диагностика на AJAX повикванията
     try:
         logging.debug(f"[admin_api_requests] session_keys={list(session.keys())} cookies={list(request.cookies.keys())}")
-        _write_admin_debug({
-            "event": "admin_api_requests_called",
-            "session_keys": list(session.keys()),
-            "cookies": list(request.cookies.keys()),
-            "headers": {k: v for k, v in list(request.headers.items())[:10]},
-            "path": request.path,
-            "method": request.method,
-        })
+        _write_admin_debug(
+            {
+                "event": "admin_api_requests_called",
+                "session_keys": list(session.keys()),
+                "cookies": list(request.cookies.keys()),
+                "headers": {k: v for k, v in list(request.headers.items())[:10]},
+                "path": request.path,
+                "method": request.method,
+            }
+        )
     except Exception:
         logging.exception("Failed to write admin_api_requests debug")
 
@@ -330,21 +333,10 @@ def admin_requests_table():
             total = 0
 
     try:
-        items = (
-            q.order_by(HelpRequest.created_at.desc())
-            .offset((page - 1) * page_size)
-            .limit(page_size)
-            .all()
-        )
+        items = q.order_by(HelpRequest.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
     except sqlalchemy.exc.UnboundExecutionError:
         try:
-            items = (
-                db.session.query(HelpRequest)
-                .order_by(HelpRequest.created_at.desc())
-                .offset((page - 1) * page_size)
-                .limit(page_size)
-                .all()
-            )
+            items = db.session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
         except Exception:
             items = []
 
@@ -356,9 +348,7 @@ def admin_requests_table():
             "city": r.city,
             "status": r.status,
             "priority": getattr(r, "priority", ""),
-            "created_at": (
-                r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else ""
-            ),
+            "created_at": (r.created_at.strftime("%Y-%m-%d %H:%M") if r.created_at else ""),
         }
 
     return jsonify(
@@ -429,9 +419,7 @@ app.config.setdefault(
 )
 # Microsoft OIDC placeholders (configure via env or config override)
 app.config.setdefault("MICROSOFT_TENANT_ID", os.getenv("MICROSOFT_TENANT_ID", "common"))
-app.config.setdefault(
-    "MICROSOFT_CLIENT_ID", os.getenv("MICROSOFT_CLIENT_ID", "CHANGE-ME-CLIENT-ID")
-)
+app.config.setdefault("MICROSOFT_CLIENT_ID", os.getenv("MICROSOFT_CLIENT_ID", "CHANGE-ME-CLIENT-ID"))
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # ----------------------------
@@ -442,9 +430,7 @@ try:
     basedir = os.path.abspath(os.path.dirname(__file__))
     # Default език: френски (FR)
     app.config.setdefault("BABEL_DEFAULT_LOCALE", "fr")
-    app.config.setdefault(
-        "BABEL_TRANSLATION_DIRECTORIES", os.path.join(basedir, "translations")
-    )
+    app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", os.path.join(basedir, "translations"))
 
     SUPPORTED_LOCALES = ["fr", "en", "bg"]
 
@@ -562,15 +548,9 @@ def _ensure_sqlite_fts():
             )
         )
         # Initial (re)build only if empty
-        fts_row_count = db.session.execute(
-            text("SELECT count(*) FROM help_requests_fts")
-        ).scalar()
+        fts_row_count = db.session.execute(text("SELECT count(*) FROM help_requests_fts")).scalar()
         if fts_row_count is None or int(fts_row_count) == 0:
-            db.session.execute(
-                text(
-                    "INSERT INTO help_requests_fts(help_requests_fts) VALUES('rebuild')"
-                )
-            )
+            db.session.execute(text("INSERT INTO help_requests_fts(help_requests_fts) VALUES('rebuild')"))
         db.session.commit()
         FTS_ENABLED = True
     except OperationalError:
@@ -623,15 +603,7 @@ def _apply_text_search(query, q: str, privileged: bool):
             if not match_expr:
                 return query, None
             # Join to FTS table for ranking (bm25) and filtering
-            query = (
-                query.join(
-                    text(
-                        "help_requests_fts ON help_requests_fts.rowid = help_requests.id"
-                    )
-                )
-                .filter(text("help_requests_fts MATCH :m"))
-                .params(m=match_expr)
-            )
+            query = query.join(text("help_requests_fts ON help_requests_fts.rowid = help_requests.id")).filter(text("help_requests_fts MATCH :m")).params(m=match_expr)
             rank_expr = literal_column("bm25(help_requests_fts)")
             return query, rank_expr
         else:
@@ -663,17 +635,12 @@ def _serialize_request(r):
         "id": getattr(r, "id", None),
         "title": getattr(r, "title", None),
         "status": getattr(r, "status", None),
-        "priority": priority_val
-        or (str(r.priority) if getattr(r, "priority", None) else None),
+        "priority": priority_val or (str(r.priority) if getattr(r, "priority", None) else None),
         "name": getattr(r, "name", None),
         "city": getattr(r, "city", None),
         "region": getattr(r, "region", None),
-        "created_at": (
-            r.created_at.isoformat() if getattr(r, "created_at", None) else None
-        ),
-        "updated_at": (
-            r.updated_at.isoformat() if getattr(r, "updated_at", None) else None
-        ),
+        "created_at": (r.created_at.isoformat() if getattr(r, "created_at", None) else None),
+        "updated_at": (r.updated_at.isoformat() if getattr(r, "updated_at", None) else None),
     }
 
 
@@ -681,9 +648,7 @@ def _serialize_request(r):
 RATE_LIMIT = int(os.getenv("HELPCHAIN_RATE_LIMIT", "60"))  # requests
 RATE_WINDOW = int(os.getenv("HELPCHAIN_RATE_WINDOW", "60"))  # seconds
 _rate_lock = threading.Lock()
-_rate_hits: dict[str, collections.deque] = collections.defaultdict(
-    collections.deque
-)  # IP -> deque[timestamps]
+_rate_hits: dict[str, collections.deque] = collections.defaultdict(collections.deque)  # IP -> deque[timestamps]
 
 
 def _prune_and_count(ip: str, now: float):
@@ -715,9 +680,7 @@ def _rate_limit_guard():
         if current >= RATE_LIMIT:
             retry_after = 1  # suggest short wait
             remaining = max(0, RATE_LIMIT - current)
-            resp = jsonify(
-                error="rate_limit_exceeded", limit=RATE_LIMIT, window=RATE_WINDOW
-            )
+            resp = jsonify(error="rate_limit_exceeded", limit=RATE_LIMIT, window=RATE_WINDOW)
             resp.status_code = 429
             resp.headers.update(
                 {
@@ -760,6 +723,7 @@ def _test_bypass_admin_header_app():
                     # Diagnostic: log minimal session/header/cookie state
                     try:
                         from flask_login import current_user
+
                         diag = {
                             "session_keys": list(session.keys()),
                             "session_admin_logged_in": bool(session.get("admin_logged_in")),
@@ -787,6 +751,7 @@ def _test_bypass_admin_header_app():
 def _global_request_diagnostics_app():
     try:
         from flask_login import current_user
+
         dn = {
             "path": request.path,
             "method": request.method,
@@ -833,6 +798,7 @@ def _pytest_force_admin_login_app():
         # Diagnostic: expose session/header/cookie snapshot for pytest tracing
         try:
             from flask_login import current_user
+
             diag = {
                 "session_keys": list(session.keys()),
                 "session_admin_logged_in": bool(session.get("admin_logged_in")),
@@ -864,7 +830,12 @@ def _admin_force_login_app():
         try:
             # Log the session outcome as well
             from flask_login import current_user
-            app.logger.debug("_admin_force_login_app: proxied to _pytest_force_admin_login_app, session_keys=%s, current_user_authenticated=%s", list(session.keys()), getattr(current_user, "is_authenticated", False))
+
+            app.logger.debug(
+                "_admin_force_login_app: proxied to _pytest_force_admin_login_app, session_keys=%s, current_user_authenticated=%s",
+                list(session.keys()),
+                getattr(current_user, "is_authenticated", False),
+            )
         except Exception:
             app.logger.debug("_admin_force_login_app: proxied to _pytest_force_admin_login_app")
         return resp
@@ -882,9 +853,7 @@ def _security_headers(resp):
     resp.headers.setdefault("X-Frame-Options", "DENY")
     resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     # Conservative Permissions-Policy baseline
-    resp.headers.setdefault(
-        "Permissions-Policy", "camera=(), microphone=(), geolocation=()"
-    )
+    resp.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
     # Content Security Policy (report-only by default to avoid breakage)
     csp = app.config.get("CSP_POLICY") or "default-src 'self'"
     if app.config.get("CSP_REPORT_ONLY", True):
@@ -973,13 +942,9 @@ def api_login():
     user = None
     try:
         if email:
-            user = User.query.filter(
-                sqlalchemy.func.lower(User.email) == email.lower()
-            ).first()
+            user = User.query.filter(sqlalchemy.func.lower(User.email) == email.lower()).first()
         elif username and "@" in username:
-            user = User.query.filter(
-                sqlalchemy.func.lower(User.email) == username.lower()
-            ).first()
+            user = User.query.filter(sqlalchemy.func.lower(User.email) == username.lower()).first()
         else:
             user = User.query.filter_by(username=username).first()
     except Exception:
@@ -1042,9 +1007,7 @@ def api_requests():
         statuses = [s.strip().lower() for s in status_param.split(",") if s.strip()]
 
         if statuses:
-            query = query.filter(
-                sqlalchemy.func.lower(HelpRequest.status).in_(statuses)
-            )
+            query = query.filter(sqlalchemy.func.lower(HelpRequest.status).in_(statuses))
 
     city = request.args.get("city")
 
@@ -1054,9 +1017,7 @@ def api_requests():
     category = request.args.get("category")
 
     if category:
-        query = query.filter(
-            sqlalchemy.func.lower(HelpRequest.title) == category.lower()
-        )
+        query = query.filter(sqlalchemy.func.lower(HelpRequest.title) == category.lower())
 
     search = request.args.get("q") or request.args.get("search")
     # Apply FTS5 / fallback search only when provided
@@ -1103,25 +1064,15 @@ def api_requests():
             total = 0
 
     try:
-        items = (
-            query.order_by(*order_by).offset((page - 1) * page_size).limit(page_size).all()
-        )
+        items = query.order_by(*order_by).offset((page - 1) * page_size).limit(page_size).all()
     except sqlalchemy.exc.UnboundExecutionError:
         try:
-            items = (
-                db.session.query(HelpRequest)
-                .order_by(*order_by)
-                .offset((page - 1) * page_size)
-                .limit(page_size)
-                .all()
-            )
+            items = db.session.query(HelpRequest).order_by(*order_by).offset((page - 1) * page_size).limit(page_size).all()
         except Exception:
             items = []
 
     # ETag for caching
-    latest_ts = (
-        db.session.query(sqlalchemy.func.max(HelpRequest.updated_at)).scalar() or "0"
-    )
+    latest_ts = db.session.query(sqlalchemy.func.max(HelpRequest.updated_at)).scalar() or "0"
     etag_payload = {
         "total": total,
         "page": page,
@@ -1133,9 +1084,7 @@ def api_requests():
         "search": search,
         "latest": str(latest_ts),
     }
-    etag_val = hashlib.sha256(
-        json.dumps(etag_payload, sort_keys=True).encode()
-    ).hexdigest()
+    etag_val = hashlib.sha256(json.dumps(etag_payload, sort_keys=True).encode()).hexdigest()
     client_etag = request.headers.get("If-None-Match")
     if client_etag == etag_val:
         return Response(status=304, headers={"ETag": etag_val})
@@ -1239,7 +1188,7 @@ def volunteer_register():
                 from werkzeug.security import generate_password_hash
                 import secrets
 
-                username = (email.split("@")[0] if email and "@" in email else name.replace(" ", "_") or f"vol_{secrets.token_hex(4)}")
+                username = email.split("@")[0] if email and "@" in email else name.replace(" ", "_") or f"vol_{secrets.token_hex(4)}"
                 random_password = secrets.token_urlsafe(16)
                 password_hash = generate_password_hash(random_password)
             except Exception:
@@ -1301,9 +1250,7 @@ def submit_request():
                 description=data.get("description") or data.get("problem"),
                 message=data.get("message") or data.get("description"),
                 status="pending",
-                priority=(
-                    PriorityEnum.normal if hasattr(PriorityEnum, "normal") else None
-                ),
+                priority=(PriorityEnum.normal if hasattr(PriorityEnum, "normal") else None),
             )
             db.session.add(r)
             db.session.commit()
@@ -1349,12 +1296,7 @@ def api_fts_status():
 
     # Basic counts
     try:
-        total = (
-            db.session.query(sqlalchemy.func.count.label("count"))
-            .select_from(HelpRequest)
-            .scalar()
-            or 0
-        )
+        total = db.session.query(sqlalchemy.func.count.label("count")).select_from(HelpRequest).scalar() or 0
         info["help_requests_count"] = int(total)
     except Exception:
         info["help_requests_count"] = None
@@ -1362,9 +1304,7 @@ def api_fts_status():
     if engine_name == "sqlite":
         # SQLite version
         try:
-            info["sqlite_version"] = db.session.execute(
-                text("select sqlite_version()")
-            ).scalar()
+            info["sqlite_version"] = db.session.execute(text("select sqlite_version()")).scalar()
         except Exception:
             pass
 
@@ -1390,9 +1330,7 @@ def api_fts_status():
         # FTS row count
         if FTS_ENABLED:
             try:
-                fts_count = db.session.execute(
-                    text("SELECT count(*) FROM help_requests_fts")
-                ).scalar()
+                fts_count = db.session.execute(text("SELECT count(*) FROM help_requests_fts")).scalar()
                 info["fts_rows"] = int(fts_count or 0)
             except Exception:
                 info["fts_rows"] = None
@@ -1412,9 +1350,7 @@ def _seed_if_empty():
         # Ensure a default admin user exists for local testing
         if User.query.filter_by(username="admin").first() is None:
             try:
-                u = User(
-                    username="admin", email="admin@example.com", role=RoleEnum.admin
-                )
+                u = User(username="admin", email="admin@example.com", role=RoleEnum.admin)
                 # Seed с силна парола (>=10, главна, малка, цифри, специален знак)
                 try:
                     u.set_password("Admin12345!")
@@ -1457,9 +1393,7 @@ def _seed_if_empty():
         # Ensure a default non-privileged user exists
         if User.query.filter_by(username="testuser").first() is None:
             try:
-                u2 = User(
-                    username="testuser", email="user@example.com", role=RoleEnum.user
-                )
+                u2 = User(username="testuser", email="user@example.com", role=RoleEnum.user)
                 u2.set_password("secret123")
                 db.session.add(u2)
                 db.session.commit()
@@ -1552,9 +1486,7 @@ def csrf_error_handler(err):
     description = getattr(err, "description", "Bad request")
     if "CSRF" in str(description):
         return (
-            render_template(
-                "csrf_error.html", message="CSRF validation failed. Please retry."
-            ),
+            render_template("csrf_error.html", message="CSRF validation failed. Please retry."),
             400,
         )
     return err
@@ -1564,7 +1496,6 @@ def csrf_error_handler(err):
 # Minimal admin routes (login + dashboard) for CSRF enforcement testing.
 # These are a lightweight subset to allow verifying hidden token rejection.
 # ---------------------------------
-
 
 
 @app.route("/admin/login", methods=["GET", "POST"])
@@ -1580,9 +1511,7 @@ def admin_login():
         admin = None
         try:
             if username and "@" in username:
-                admin = (
-                    AdminUser.query.filter(sqlalchemy.func.lower(AdminUser.email) == username.lower()).first()
-                )
+                admin = AdminUser.query.filter(sqlalchemy.func.lower(AdminUser.email) == username.lower()).first()
             else:
                 admin = AdminUser.query.filter_by(username=username).first()
         except Exception:
@@ -1593,30 +1522,24 @@ def admin_login():
             # or import path differs (avoid missing admin due to import aliasing).
             try:
                 if username and "@" in username:
-                    admin = (
-                        db.session.query(AdminUser)
-                        .filter(sqlalchemy.func.lower(AdminUser.email) == username.lower())
-                        .first()
-                    )
+                    admin = db.session.query(AdminUser).filter(sqlalchemy.func.lower(AdminUser.email) == username.lower()).first()
                 else:
-                    admin = (
-                        db.session.query(AdminUser)
-                        .filter(sqlalchemy.func.lower(AdminUser.username) == (username or "").lower())
-                        .first()
-                    )
+                    admin = db.session.query(AdminUser).filter(sqlalchemy.func.lower(AdminUser.username) == (username or "").lower()).first()
             except Exception:
                 admin = None
 
         if not admin:
             logging.warning("[admin_login] Admin user not found: %s", username)
             try:
-                _write_admin_debug({
-                    "event": "login_failed",
-                    "reason": "not_found",
-                    "username": username,
-                    "session_keys": list(session.keys()),
-                    "cookies": list(request.cookies.keys()),
-                })
+                _write_admin_debug(
+                    {
+                        "event": "login_failed",
+                        "reason": "not_found",
+                        "username": username,
+                        "session_keys": list(session.keys()),
+                        "cookies": list(request.cookies.keys()),
+                    }
+                )
             except Exception:
                 pass
             flash("Невалидно потребителско име или парола.", "error")
@@ -1627,13 +1550,15 @@ def admin_login():
             if not admin.check_password(password):
                 logging.warning("[admin_login] Invalid password for admin %s", username)
                 try:
-                    _write_admin_debug({
-                        "event": "login_failed",
-                        "reason": "bad_password",
-                        "username": username,
-                        "session_keys": list(session.keys()),
-                        "cookies": list(request.cookies.keys()),
-                    })
+                    _write_admin_debug(
+                        {
+                            "event": "login_failed",
+                            "reason": "bad_password",
+                            "username": username,
+                            "session_keys": list(session.keys()),
+                            "cookies": list(request.cookies.keys()),
+                        }
+                    )
                 except Exception:
                     pass
                 flash("Невалидно потребителско име или парола.", "error")
@@ -1675,35 +1600,47 @@ def admin_login():
 
         logging.info("[admin_login] Admin %s logged in", getattr(admin, "username", "?"))
         try:
-            _write_admin_debug({
-                "event": "login_success",
-                "username": getattr(admin, "username", None),
-                "admin_id": getattr(admin, "id", None),
-                "session_keys": list(session.keys()),
-                "cookies": list(request.cookies.keys()),
-            })
+            _write_admin_debug(
+                {
+                    "event": "login_success",
+                    "username": getattr(admin, "username", None),
+                    "admin_id": getattr(admin, "id", None),
+                    "session_keys": list(session.keys()),
+                    "cookies": list(request.cookies.keys()),
+                }
+            )
         except Exception:
             pass
         return redirect(url_for("admin_dashboard"))
     return render_template("admin_login.html")
 
+
 @app.route("/admin_dashboard", methods=["GET"])
 def admin_dashboard():
     logging.debug("[admin_dashboard] Route accessed")
     try:
-        _write_admin_debug({
-            "event": "dashboard_access_attempt",
-            "path": request.path,
-            "method": request.method,
-            "session_keys": list(session.keys()),
-            "cookies": list(request.cookies.keys()),
-            "admin_logged_in": bool(session.get("admin_logged_in")),
-        })
+        _write_admin_debug(
+            {
+                "event": "dashboard_access_attempt",
+                "path": request.path,
+                "method": request.method,
+                "session_keys": list(session.keys()),
+                "cookies": list(request.cookies.keys()),
+                "admin_logged_in": bool(session.get("admin_logged_in")),
+            }
+        )
     except Exception:
         pass
     try:
         from flask_login import current_user
-        logging.debug("[admin_dashboard] diagnostics: session_keys=%s, header_X-Admin-Bypass=%s, cookies=%s, current_user_authenticated=%s", list(session.keys()), request.headers.get("X-Admin-Bypass"), list(request.cookies.keys()), getattr(current_user, "is_authenticated", False))
+
+        logging.debug(
+            "[admin_dashboard] diagnostics: session_keys=%s, header_X-Admin-Bypass=%s, cookies=%s, current_user_authenticated=%s",
+            list(session.keys()),
+            request.headers.get("X-Admin-Bypass"),
+            list(request.cookies.keys()),
+            getattr(current_user, "is_authenticated", False),
+        )
         try:
             logging.debug("[admin_dashboard] db_engine_id=%s db_session_bind_id=%s", id(db.engine), id(db.session.bind) if getattr(db, "session", None) and getattr(db.session, "bind", None) else None)
         except Exception:
@@ -1716,15 +1653,11 @@ def admin_dashboard():
     logging.debug("[admin_dashboard] Admin logged in, rendering dashboard")
     # Basic data queries (defensive: ignore failures individually)
     try:
-        requests_page = (
-            HelpRequest.query.order_by(HelpRequest.created_at.desc()).limit(50).all()
-        )
+        requests_page = HelpRequest.query.order_by(HelpRequest.created_at.desc()).limit(50).all()
     except Exception:
         requests_page = []
     try:
-        volunteers_page = (
-            Volunteer.query.order_by(Volunteer.created_at.desc()).limit(50).all()
-        )
+        volunteers_page = Volunteer.query.order_by(Volunteer.created_at.desc()).limit(50).all()
     except Exception:
         volunteers_page = []
 
@@ -1736,33 +1669,10 @@ def admin_dashboard():
             return 0
 
     stats = {
-        "total_requests": _safe_count(
-            lambda: int(db.session.query(sqlalchemy.func.count(HelpRequest.id)).scalar() or 0)
-        ),
-        "pending_requests": _safe_count(
-            lambda: int(
-                db.session
-                .query(sqlalchemy.func.count(HelpRequest.id))
-                .filter(sqlalchemy.func.lower(HelpRequest.status) == "pending")
-                .scalar() or 0
-            )
-        ),
-        "in_progress": _safe_count(
-            lambda: int(
-                db.session
-                .query(sqlalchemy.func.count(HelpRequest.id))
-                .filter(sqlalchemy.func.lower(HelpRequest.status) == "in_progress")
-                .scalar() or 0
-            )
-        ),
-        "completed_requests": _safe_count(
-            lambda: int(
-                db.session
-                .query(sqlalchemy.func.count(HelpRequest.id))
-                .filter(sqlalchemy.func.lower(HelpRequest.status) == "completed")
-                .scalar() or 0
-            )
-        ),
+        "total_requests": _safe_count(lambda: int(db.session.query(sqlalchemy.func.count(HelpRequest.id)).scalar() or 0)),
+        "pending_requests": _safe_count(lambda: int(db.session.query(sqlalchemy.func.count(HelpRequest.id)).filter(sqlalchemy.func.lower(HelpRequest.status) == "pending").scalar() or 0)),
+        "in_progress": _safe_count(lambda: int(db.session.query(sqlalchemy.func.count(HelpRequest.id)).filter(sqlalchemy.func.lower(HelpRequest.status) == "in_progress").scalar() or 0)),
+        "completed_requests": _safe_count(lambda: int(db.session.query(sqlalchemy.func.count(HelpRequest.id)).filter(sqlalchemy.func.lower(HelpRequest.status) == "completed").scalar() or 0)),
     }
 
     # Wrapper object that supports both .items and .get('items') for template variants
@@ -1836,11 +1746,7 @@ def admin_2fa_setup():
         return redirect(url_for("admin_dashboard"))
     # Minimal inline template keeps dependency surface small.
     return (
-        render_template("admin_2fa_setup.html")
-        if app.jinja_env.list_templates().count("admin_2fa_setup.html")
-        else Response(
-            "<h1>2FA Setup</h1><p>Demo страница. POST с валиден CSRF ще завърши.</p>"
-        )
+        render_template("admin_2fa_setup.html") if app.jinja_env.list_templates().count("admin_2fa_setup.html") else Response("<h1>2FA Setup</h1><p>Demo страница. POST с валиден CSRF ще завърши.</p>")
     )
 
 
@@ -1856,11 +1762,7 @@ def admin_dev_reset():
     from sqlalchemy import func as _func
 
     try:
-        admin = (
-            db.session.query(AdminUser)
-            .filter(_func.lower(AdminUser.username) == "admin")
-            .first()
-        )
+        admin = db.session.query(AdminUser).filter(_func.lower(AdminUser.username) == "admin").first()
     except Exception:
         try:
             admin = AdminUser.query.filter(_func.lower(AdminUser.username) == "admin").first()
@@ -1902,16 +1804,12 @@ def kpi_json():
     yesterday_start = today_start - datetime.timedelta(days=1)
     week_start = today_start - datetime.timedelta(days=now.weekday())
     # Requests today, yesterday, week
-    today_count = AnalyticsEvent.query.filter(
-        AnalyticsEvent.created_at >= today_start
-    ).count()
+    today_count = AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= today_start).count()
     yesterday_count = AnalyticsEvent.query.filter(
         AnalyticsEvent.created_at >= yesterday_start,
         AnalyticsEvent.created_at < today_start,
     ).count()
-    week_count = AnalyticsEvent.query.filter(
-        AnalyticsEvent.created_at >= week_start
-    ).count()
+    week_count = AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= week_start).count()
     # % change vs yesterday
     today_delta = 0
     if yesterday_count:
@@ -1926,14 +1824,9 @@ def kpi_json():
     if prev_week_count:
         week_trend = round((week_count - prev_week_count) / prev_week_count * 100, 1)
     # Latency (AI only)
-    ai_q = AnalyticsEvent.query.filter(
-        AnalyticsEvent.event_type == "AI", AnalyticsEvent.created_at >= today_start
-    )
+    ai_q = AnalyticsEvent.query.filter(AnalyticsEvent.event_type == "AI", AnalyticsEvent.created_at >= today_start)
     latency_sec = round(
-        (
-            ai_q.with_entities(sqlalchemy.func.avg(AnalyticsEvent.load_time)).scalar()
-            or 0
-        ),
+        (ai_q.with_entities(sqlalchemy.func.avg(AnalyticsEvent.load_time)).scalar() or 0),
         2,
     )
     # Success % (label == 'success')
@@ -1974,15 +1867,9 @@ def ai_stats():
     status_f = request.args.get("status")
 
     # Total requests
-    requests_today = apply_filters(
-        AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= today_start)
-    ).count()
-    requests_week = apply_filters(
-        AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= week_start)
-    ).count()
-    requests_month = apply_filters(
-        AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= month_start)
-    ).count()
+    requests_today = apply_filters(AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= today_start)).count()
+    requests_week = apply_filters(AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= week_start)).count()
+    requests_month = apply_filters(AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= month_start)).count()
 
     # By channel
     total = apply_filters(AnalyticsEvent.query).count() or 1
@@ -1996,9 +1883,7 @@ def ai_stats():
     # Average latency (AI only)
     avg_latency = (
         apply_filters(
-            AnalyticsEvent.query.with_entities(
-                sqlalchemy.func.avg(AnalyticsEvent.load_time)
-            ),
+            AnalyticsEvent.query.with_entities(sqlalchemy.func.avg(AnalyticsEvent.load_time)),
             for_event_type="AI",
         ).scalar()
         or 0
@@ -2007,19 +1892,11 @@ def ai_stats():
 
     # Success rate (AI only, event_label == 'success')
     ai_total = apply_filters(AnalyticsEvent.query, for_event_type="AI").count() or 1
-    ai_success = (
-        apply_filters(AnalyticsEvent.query, for_event_type="AI")
-        .filter(AnalyticsEvent.event_label == "success")
-        .count()
-    )
+    ai_success = apply_filters(AnalyticsEvent.query, for_event_type="AI").filter(AnalyticsEvent.event_label == "success").count()
     success_rate = round(ai_success / ai_total * 100)
 
     # Status (dummy: online if avg_latency < 3000ms)
-    status = (
-        "online"
-        if avg_latency < 3000
-        else ("degraded" if avg_latency < 7000 else "offline")
-    )
+    status = "online" if avg_latency < 3000 else ("degraded" if avg_latency < 7000 else "offline")
 
     # Line chart: requests per day (last 7 days)
     days = [(today_start - datetime.timedelta(days=i)) for i in range(6, -1, -1)]
@@ -2027,38 +1904,26 @@ def ai_stats():
     data = []
     for d in days:
         d2 = d + datetime.timedelta(days=1)
-        data.append(
-            apply_filters(
-                AnalyticsEvent.query.filter(
-                    AnalyticsEvent.created_at >= d, AnalyticsEvent.created_at < d2
-                )
-            ).count()
-        )
+        data.append(apply_filters(AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= d, AnalyticsEvent.created_at < d2)).count())
 
     # Средно време за отговор по канал
     avg_faq = (
         apply_filters(
-            AnalyticsEvent.query.with_entities(
-                sqlalchemy.func.avg(AnalyticsEvent.load_time)
-            ),
+            AnalyticsEvent.query.with_entities(sqlalchemy.func.avg(AnalyticsEvent.load_time)),
             for_event_type="FAQ",
         ).scalar()
         or 0
     )
     avg_ai = (
         apply_filters(
-            AnalyticsEvent.query.with_entities(
-                sqlalchemy.func.avg(AnalyticsEvent.load_time)
-            ),
+            AnalyticsEvent.query.with_entities(sqlalchemy.func.avg(AnalyticsEvent.load_time)),
             for_event_type="AI",
         ).scalar()
         or 0
     )
     avg_human = (
         apply_filters(
-            AnalyticsEvent.query.with_entities(
-                sqlalchemy.func.avg(AnalyticsEvent.load_time)
-            ),
+            AnalyticsEvent.query.with_entities(sqlalchemy.func.avg(AnalyticsEvent.load_time)),
             for_event_type="Human",
         ).scalar()
         or 0
@@ -2110,18 +1975,10 @@ def feedback_stats():
         q = q.filter(Feedback.sentiment_score <= rating_max)
 
     # Среден рейтинг (sentiment_score)
-    avg_rating = (
-        q.with_entities(sqlalchemy.func.avg(Feedback.sentiment_score)).scalar() or 0
-    )
+    avg_rating = q.with_entities(sqlalchemy.func.avg(Feedback.sentiment_score)).scalar() or 0
 
     # Breakdown по език
-    avg_by_lang = (
-        Feedback.query.with_entities(
-            Feedback.user_type, sqlalchemy.func.avg(Feedback.sentiment_score)
-        )
-        .group_by(Feedback.user_type)
-        .all()
-    )
+    avg_by_lang = Feedback.query.with_entities(Feedback.user_type, sqlalchemy.func.avg(Feedback.sentiment_score)).group_by(Feedback.user_type).all()
     avg_by_lang = [
         {
             "language": str(t) if t is not None and t != "None" else "Unknown",
@@ -2131,33 +1988,17 @@ def feedback_stats():
     ]
 
     # Breakdown по категория
-    avg_by_cat = (
-        Feedback.query.with_entities(
-            Feedback.page_url, sqlalchemy.func.avg(Feedback.sentiment_score)
-        )
-        .group_by(Feedback.page_url)
-        .all()
-    )
+    avg_by_cat = Feedback.query.with_entities(Feedback.page_url, sqlalchemy.func.avg(Feedback.sentiment_score)).group_by(Feedback.page_url).all()
     avg_by_cat = [
         {
-            "category": (
-                str((cat or "").split("/")[-1])
-                if cat is not None and str(cat).lower() != "none"
-                else "Unknown"
-            ),
+            "category": (str((cat or "").split("/")[-1]) if cat is not None and str(cat).lower() != "none" else "Unknown"),
             "avg_rating": float(round(r, 2)) if r is not None else 0.0,
         }
         for cat, r in avg_by_cat
     ]
 
     # Breakdown по модел
-    avg_by_model = (
-        Feedback.query.with_entities(
-            Feedback.ai_provider, sqlalchemy.func.avg(Feedback.sentiment_score)
-        )
-        .group_by(Feedback.ai_provider)
-        .all()
-    )
+    avg_by_model = Feedback.query.with_entities(Feedback.ai_provider, sqlalchemy.func.avg(Feedback.sentiment_score)).group_by(Feedback.ai_provider).all()
     avg_by_model = [
         {
             "model": str(mod) if mod is not None and mod != "None" else "Unknown",
@@ -2167,70 +2008,35 @@ def feedback_stats():
     ]
 
     # Breakdown по sentiment_label
-    avg_by_label = (
-        Feedback.query.with_entities(
-            Feedback.sentiment_label, sqlalchemy.func.count.label("count")
-        )
-        .group_by(Feedback.sentiment_label)
-        .all()
-    )
-    avg_by_label = [
-        {"label": str(lbl) if lbl not in (None, "None") else "", "count": int(cnt)}
-        for lbl, cnt in avg_by_label
-    ]
+    avg_by_label = Feedback.query.with_entities(Feedback.sentiment_label, sqlalchemy.func.count.label("count")).group_by(Feedback.sentiment_label).all()
+    avg_by_label = [{"label": str(lbl) if lbl not in (None, "None") else "", "count": int(cnt)} for lbl, cnt in avg_by_label]
 
     # Проблемни категории (avg < 3.0)
-    problematic_categories = [
-        (
-            str(cat["category"])
-            if cat.get("category") not in (None, "", "None")
-            else "Unknown"
-        )
-        for cat in avg_by_cat
-        if cat.get("avg_rating", 0) < 3.0
-    ]
-    problematic_categories = sorted(
-        [c for c in problematic_categories if c not in (None, "", "None")], key=str
-    )
+    problematic_categories = [(str(cat["category"]) if cat.get("category") not in (None, "", "None") else "Unknown") for cat in avg_by_cat if cat.get("avg_rating", 0) < 3.0]
+    problematic_categories = sorted([c for c in problematic_categories if c not in (None, "", "None")], key=str)
 
     # Най-високо/ниско оценени отговори (top 10, bottom 10)
     best = q.order_by(Feedback.sentiment_score.desc()).limit(10).all()
     worst = q.order_by(Feedback.sentiment_score.asc()).limit(10).all()
 
     def fb_to_dict(fb):
-        preview = (fb.message or "")[:50] + (
-            "..." if fb.message and len(fb.message) > 50 else ""
-        )
+        preview = (fb.message or "")[:50] + ("..." if fb.message and len(fb.message) > 50 else "")
         highlight = False
         # Highlight ако категорията е проблемна
-        cat = (
-            str(getattr(fb, "page_url", "") or "Unknown").split("/")[-1]
-            if getattr(fb, "page_url", None) is not None
-            else "Unknown"
-        )
+        cat = str(getattr(fb, "page_url", "") or "Unknown").split("/")[-1] if getattr(fb, "page_url", None) is not None else "Unknown"
         if cat in problematic_categories:
             highlight = True
         return {
             "id": fb.id if fb.id is not None else 0,
-            "score": (
-                float(fb.sentiment_score) if fb.sentiment_score is not None else 0.0
-            ),
-            "label": (
-                str(fb.sentiment_label)
-                if fb.sentiment_label not in (None, "None")
-                else ""
-            ),
+            "score": (float(fb.sentiment_score) if fb.sentiment_score is not None else 0.0),
+            "label": (str(fb.sentiment_label) if fb.sentiment_label not in (None, "None") else ""),
             "message": fb.message or "",
             "preview": preview,
             "language": str(getattr(fb, "user_type", "") or "Unknown"),
             "category": cat,
             "user_type": str(getattr(fb, "user_type", "") or "Unknown"),
             "model": str(getattr(fb, "ai_provider", "") or "Unknown"),
-            "timestamp": (
-                fb.timestamp.strftime("%Y-%m-%d %H:%M")
-                if getattr(fb, "timestamp", None)
-                else ""
-            ),
+            "timestamp": (fb.timestamp.strftime("%Y-%m-%d %H:%M") if getattr(fb, "timestamp", None) else ""),
             "highlight": highlight,
         }
 
@@ -2302,15 +2108,17 @@ logging.basicConfig(level=logging.DEBUG)
 
 from flask import Flask
 
+
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'your_secret_key_here'
+    app.config["SECRET_KEY"] = "your_secret_key_here"
 
-    @app.route('/')
+    @app.route("/")
     def home():
         return "Hello, HelpChain!"
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()

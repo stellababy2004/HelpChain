@@ -21,9 +21,7 @@ class NgrokService:
 
     def get_public_url(self):
         try:
-            tunnel_info = requests.get(
-                "http://127.0.0.1:4040/api/tunnels", timeout=5
-            ).json()
+            tunnel_info = requests.get("http://127.0.0.1:4040/api/tunnels", timeout=5).json()
             self.public_url = tunnel_info.get("tunnels", [])[0].get("public_url")
             print(f"✅ Публичен адрес: {self.public_url}")
         except Exception as e:

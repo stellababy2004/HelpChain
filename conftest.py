@@ -17,6 +17,7 @@ def app():
     # Fallback to importing the real app object
     try:
         from backend.appy import app as _app  # type: ignore
+
         _app.config.setdefault("TESTING", True)
         return _app
     except Exception:

@@ -36,9 +36,7 @@ def test_api_endpoints():
                 if endpoint.startswith("/api/"):
                     try:
                         json_data = response.json()
-                        print(
-                            f"  📊 Data: {json.dumps(json_data, ensure_ascii=False)[:100]}..."
-                        )
+                        print(f"  📊 Data: {json.dumps(json_data, ensure_ascii=False)[:100]}...")
                     except Exception:
                         print(f"  📄 Text: {response.text[:100]}...")
             else:

@@ -219,9 +219,7 @@ else:
     db = SQLAlchemy()
 
 try:
-    _existing_babel = (
-        getattr(_existing, "babel", None) if _existing is not None else None
-    )
+    _existing_babel = getattr(_existing, "babel", None) if _existing is not None else None
 except Exception:
     _existing_babel = None
 babel = _existing_babel if _existing_babel is not None else Babel()
@@ -400,7 +398,9 @@ try:
                             def __getattr__(self, name):
                                 try:
                                     if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                                        print(f"[EXT DEBUG] _FlaskQueryProxy __getattr__ called for {getattr(self._model, '__name__', None)} (module={getattr(self._model, '__module__', None)}) using session id={id(_ext_db.session)}")
+                                        print(
+                                            f"[EXT DEBUG] _FlaskQueryProxy __getattr__ called for {getattr(self._model, '__name__', None)} (module={getattr(self._model, '__module__', None)}) using session id={id(_ext_db.session)}"
+                                        )
                                 except Exception:
                                     pass
                                 return getattr(_ext_db.session.query(self._model), name)
@@ -447,7 +447,9 @@ try:
                                         user_cls = getattr(m, "User", None)
                                         user_query = getattr(user_cls, "query", None)
                                         if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                                            print(f"[EXT DEBUG] attached proxies for module '{mod_name}': User id={id(user_cls) if user_cls else None}, User.query id={id(user_query) if user_query else None}")
+                                            print(
+                                                f"[EXT DEBUG] attached proxies for module '{mod_name}': User id={id(user_cls) if user_cls else None}, User.query id={id(user_query) if user_query else None}"
+                                            )
                                     except Exception:
                                         pass
                                 except Exception:
@@ -480,17 +482,19 @@ try:
                             def __getattr__(self, name):
                                 try:
                                     if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                                        print(f"[EXT DEBUG] _FlaskQueryProxy __getattr__ called for {getattr(self._model, '__name__', None)} (module={getattr(self._model, '__module__', None)}) using session id={id(_ext_db.session)}")
+                                        print(
+                                            f"[EXT DEBUG] _FlaskQueryProxy __getattr__ called for {getattr(self._model, '__name__', None)} (module={getattr(self._model, '__module__', None)}) using session id={id(_ext_db.session)}"
+                                        )
                                 except Exception:
                                     pass
                                 return getattr(_ext_db.session.query(self._model), name)
 
                         # Attach common proxies
                         try:
-                            if _models is not None and hasattr(_models, 'User'):
+                            if _models is not None and hasattr(_models, "User"):
                                 _models.User.query = _FlaskQueryProxy(_models.User)
                                 if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                                    print("[EXT] Attached User.query proxy to Flask DB session (module: {} )".format(getattr(_models,'__name__', None)))
+                                    print("[EXT] Attached User.query proxy to Flask DB session (module: {} )".format(getattr(_models, "__name__", None)))
                         except Exception:
                             pass
                         try:
@@ -575,14 +579,9 @@ try:
         try:
             if dup_db is not None and id(dup_db) != id(db):
                 # Move any tables from the duplicate metadata into canonical
-                for tbl in list(
-                    getattr(getattr(dup_db, "metadata", {}), "tables", {}).values()
-                ):
+                for tbl in list(getattr(getattr(dup_db, "metadata", {}), "tables", {}).values()):
                     try:
-                        if (
-                            getattr(tbl, "name", None)
-                            not in getattr(db, "metadata", {}).tables
-                        ):
+                        if getattr(tbl, "name", None) not in getattr(db, "metadata", {}).tables:
                             tbl.tometadata(db.metadata)
                     except Exception as _e:
                         # Provide debug output when requested to help CI diagnostics

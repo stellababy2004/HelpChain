@@ -127,23 +127,15 @@ class GamificationService:
             req_val = GamificationService._parse_requirement_value(achievement)
 
             if achievement.requirement_type == "count":
-                if achievement.category == "tasks" and (
-                    volunteer.total_tasks_completed >= req_val
-                ):
+                if achievement.category == "tasks" and (volunteer.total_tasks_completed >= req_val):
                     unlocked_this = True
             elif achievement.requirement_type == "value":
-                if (
-                    achievement.category == "rating"
-                    and int(volunteer.rating * 10) >= req_val
-                ):
+                if achievement.category == "rating" and int(volunteer.rating * 10) >= req_val:
                     unlocked_this = True
                 elif achievement.category == "level" and volunteer.level >= req_val:
                     unlocked_this = True
             elif achievement.requirement_type == "streak":
-                if (
-                    achievement.category == "streak"
-                    and volunteer.streak_days >= req_val
-                ):
+                if achievement.category == "streak" and volunteer.streak_days >= req_val:
                     unlocked_this = True
 
             if unlocked_this:

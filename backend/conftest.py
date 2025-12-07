@@ -25,6 +25,7 @@ os.environ.setdefault("HELPCHAIN_TESTING", "1")
 # before session fixtures run (avoids ordering/timing issues on CI/Windows).
 try:
     import requests
+
     _requests_orig_request = requests.Session.request
 
     def _requests_intercept(self, method, url, *args, **kwargs):
@@ -40,9 +41,7 @@ try:
                 return resp
             if url.endswith("/admin/roles") and m == "GET":
                 resp.status_code = 200
-                resp._content = "<html><body>Роли и Права</body></html>".encode(
-                    "utf-8"
-                )
+                resp._content = "<html><body>Роли и Права</body></html>".encode("utf-8")
                 return resp
             resp.status_code = 200
             resp._content = b"OK"
@@ -62,9 +61,7 @@ def _ensure_app_uses_test_uri(app_obj):
             app_obj.config["SQLALCHEMY_DATABASE_URI"] = db_url
             # Also register the test file path for helpers that consult it
             if db_url.startswith("sqlite///"):
-                app_obj.config.setdefault(
-                    "_TEST_DB_PATH", db_url.replace("sqlite:///", "")
-                )
+                app_obj.config.setdefault("_TEST_DB_PATH", db_url.replace("sqlite:///", ""))
     except Exception:
         pass
 
@@ -128,7 +125,6 @@ def prepare_database():
                     _db.drop_all()
             except Exception:
                 pass
-
 
     @pytest.fixture(scope="session", autouse=True)
     def external_admin_stub_backend():
@@ -219,8 +215,6 @@ def prepare_database():
                     thread.join(timeout=1)
             except Exception:
                 pass
-
-
 
     @pytest.fixture(scope="session", autouse=True)
     def patch_requests_for_backend_admin():

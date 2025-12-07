@@ -18,9 +18,7 @@ time.sleep(5)
 
 # Стартирай ngrok (ако е инсталиран и желаеш тунел)
 print("🌐 Стартиране на ngrok тунел...")
-ngrok = subprocess.Popen(
-    ["cmd", "/k", "ngrok http 5000"], creationflags=subprocess.CREATE_NEW_CONSOLE
-)
+ngrok = subprocess.Popen(["cmd", "/k", "ngrok http 5000"], creationflags=subprocess.CREATE_NEW_CONSOLE)
 
 # Изчакай ngrok да стартира
 time.sleep(5)

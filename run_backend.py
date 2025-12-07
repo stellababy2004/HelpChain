@@ -100,9 +100,7 @@ def init_db(seed_admin: bool = False) -> int:
         )
         return 2
 
-    run_migrations_path = os.path.join(
-        os.path.dirname(__file__), "backend", "run_migrations.py"
-    )
+    run_migrations_path = os.path.join(os.path.dirname(__file__), "backend", "run_migrations.py")
     database_url = app.config.get("SQLALCHEMY_DATABASE_URI")
 
     rc_mig = None
@@ -111,9 +109,7 @@ def init_db(seed_admin: bool = False) -> int:
         if rc_mig == 0:
             print("Migrations applied successfully")
         else:
-            print(
-                f"Migrations script returned {rc_mig}; will fall back to db.create_all()"
-            )
+            print(f"Migrations script returned {rc_mig}; will fall back to db.create_all()")
     else:
         print("No run_migrations.py found; falling back to db.create_all()")
 
@@ -135,9 +131,7 @@ def init_db(seed_admin: bool = False) -> int:
                 if callable(init_fn):
                     try:
                         init_fn()
-                        print(
-                            "Default admin seeded (initialize_default_admin executed)"
-                        )
+                        print("Default admin seeded (initialize_default_admin executed)")
                     except Exception:
                         import traceback
 
@@ -145,9 +139,7 @@ def init_db(seed_admin: bool = False) -> int:
                         traceback.print_exc()
                         return 4
                 else:
-                    print(
-                        "initialize_default_admin not available in backend.appy; skipping seed"
-                    )
+                    print("initialize_default_admin not available in backend.appy; skipping seed")
 
     except Exception:
         import traceback
@@ -161,9 +153,7 @@ def init_db(seed_admin: bool = False) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description=(
-            "Conservative launcher for HelpChain backend. By default this script only verifies that `backend.appy` can be imported. Use --start to actually run the server."
-        )
+        description=("Conservative launcher for HelpChain backend. By default this script only verifies that `backend.appy` can be imported. Use --start to actually run the server.")
     )
     parser.add_argument("--start", action="store_true", help="Start the server")
     parser.add_argument(

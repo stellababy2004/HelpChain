@@ -101,14 +101,7 @@ class AnalyticsEngine:
     def get_location_stats():
         """Анализира доброволци по географски локации"""
         # Взема реални локации от доброволци
-        volunteers_by_location = (
-            db.session.query(
-                Volunteer.location, func.count(Volunteer.id).label("count")
-            )
-            .filter(Volunteer.location.isnot(None))
-            .group_by(Volunteer.location)
-            .all()
-        )
+        volunteers_by_location = db.session.query(Volunteer.location, func.count(Volunteer.id).label("count")).filter(Volunteer.location.isnot(None)).group_by(Volunteer.location).all()
 
         location_data = {}
         for location, count in volunteers_by_location:

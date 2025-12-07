@@ -20,9 +20,7 @@ class SimpleCache:
     def _cleanup_expired(self):
         """Премахва expired entries"""
         current_time = time.time()
-        expired_keys = [
-            key for key, timeout in self._timeouts.items() if timeout < current_time
-        ]
+        expired_keys = [key for key, timeout in self._timeouts.items() if timeout < current_time]
 
         for key in expired_keys:
             if key in self._cache:
@@ -149,9 +147,7 @@ def cache_request_data(timeout=300, key_prefix="request"):
 
                 # Генерирай cache key с request параметри
                 request_params = dict(request.args)
-                cache_key = (
-                    f"{key_prefix}_{get_cache_key(func.__name__, args, request_params)}"
-                )
+                cache_key = f"{key_prefix}_{get_cache_key(func.__name__, args, request_params)}"
 
                 # Опитай да вземеш от cache
                 cached_result = _global_cache.get(cache_key)
@@ -217,9 +213,7 @@ def warm_cache(warm_functions):
             print(f"  ✅ {func.__name__} warmed in {duration:.3f}s")
 
         except Exception as e:
-            print(
-                f"  ❌ Failed to warm {func_info.get('function', {}).get('__name__', 'unknown')}: {e}"
-            )
+            print(f"  ❌ Failed to warm {func_info.get('function', {}).get('__name__', 'unknown')}: {e}")
 
     print("🔥 Cache warming complete!")
 
@@ -253,9 +247,7 @@ class CachePerformanceMonitor:
             "total_misses": self.misses,
             "total_requests": total_requests,
             "runtime_minutes": runtime / 60,
-            "requests_per_minute": (
-                total_requests / (runtime / 60) if runtime > 0 else 0
-            ),
+            "requests_per_minute": (total_requests / (runtime / 60) if runtime > 0 else 0),
         }
 
 

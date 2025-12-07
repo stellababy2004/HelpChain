@@ -77,9 +77,7 @@ class HelpChainTester:
         try:
             response = requests.get(f"{self.base_url}/admin/login", timeout=5)
             success = response.status_code == 200
-            self.log_test(
-                "Admin login page", success, f"Status: {response.status_code}"
-            )
+            self.log_test("Admin login page", success, f"Status: {response.status_code}")
             return success
         except Exception as e:
             self.log_test("Admin login page", False, str(e))
@@ -108,10 +106,7 @@ class HelpChainTester:
             )
 
             # Check if redirected to dashboard (successful login)
-            success = (
-                response.url.endswith("/admin/dashboard")
-                or "admin/dashboard" in response.url
-            )
+            success = response.url.endswith("/admin/dashboard") or "admin/dashboard" in response.url
             self.log_test("Admin authentication", success, f"Final URL: {response.url}")
             return success
 
@@ -135,21 +130,14 @@ class HelpChainTester:
                 allow_redirects=True,
             )
 
-            if not (
-                login_response.url.endswith("/admin/dashboard")
-                or "admin/dashboard" in login_response.url
-            ):
+            if not (login_response.url.endswith("/admin/dashboard") or "admin/dashboard" in login_response.url):
                 self.log_test("Admin dashboard", False, "Login failed")
                 return False
 
             # Now access dashboard directly
-            dashboard_response = session.get(
-                f"{self.base_url}/admin/dashboard", timeout=5
-            )
+            dashboard_response = session.get(f"{self.base_url}/admin/dashboard", timeout=5)
             success = dashboard_response.status_code == 200
-            self.log_test(
-                "Admin dashboard", success, f"Status: {dashboard_response.status_code}"
-            )
+            self.log_test("Admin dashboard", success, f"Status: {dashboard_response.status_code}")
             return success
 
         except Exception as e:
@@ -233,11 +221,7 @@ class HelpChainTester:
             print(f"Total tests: {total}")
             print(f"Passed: {passed}")
             print(f"Failed: {failed}")
-            print(
-                f"Success rate: {passed / total * 100:.1f}%"
-                if total > 0
-                else "No tests run"
-            )
+            print(f"Success rate: {passed / total * 100:.1f}%" if total > 0 else "No tests run")
 
             if all_passed:
                 print("\n🎉 ALL TESTS PASSED! HelpChain server is fully functional.")

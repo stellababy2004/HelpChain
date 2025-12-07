@@ -24,10 +24,7 @@ def get_db():
     """Get database instance from current app context"""
     try:
         # Try to get from current_app extensions first
-        if (
-            hasattr(current_app, "extensions")
-            and "sqlalchemy" in current_app.extensions
-        ):
+        if hasattr(current_app, "extensions") and "sqlalchemy" in current_app.extensions:
             return current_app.extensions["sqlalchemy"]
         # Fallback to global db instance
         return db
@@ -75,16 +72,12 @@ def notification_settings():
             #     }
             # )
 
-            return jsonify(
-                {"success": True, "message": "Настройките са запазени успешно"}
-            )
+            return jsonify({"success": True, "message": "Настройките са запазени успешно"})
 
     except Exception as e:
         current_app.logger.error(f"Error updating notification settings: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Грешка при запазване на настройките"}
-            ),
+            jsonify({"success": False, "message": "Грешка при запазване на настройките"}),
             500,
         )
 
@@ -203,20 +196,14 @@ def vapid_public_key():
         # hit the server can retrieve a usable key.
         if not public_key:
             test_key = current_app.config.get("TEST_VAPID_PUBLIC_KEY")
-            if test_key or current_app.config.get("TESTING") or (
-                current_app.config.get("HELPCHAIN_TEST_DEBUG")
-            ):
+            if test_key or current_app.config.get("TESTING") or (current_app.config.get("HELPCHAIN_TEST_DEBUG")):
                 fallback = test_key or "BTestPublicKeyForLocalTests-ReplaceMe"
                 current_app.logger.info("Using test VAPID public key for tests")
                 return jsonify({"success": True, "publicKey": fallback})
 
-            current_app.logger.info(
-                "VAPID public key not configured; push API returning disabled flag"
-            )
+            current_app.logger.info("VAPID public key not configured; push API returning disabled flag")
             return (
-                jsonify(
-                    {"success": False, "message": "VAPID public key not configured"}
-                ),
+                jsonify({"success": False, "message": "VAPID public key not configured"}),
                 200,
             )
 
@@ -266,9 +253,7 @@ def unsubscribe_push():
             if subscription:
                 subscription.is_active = False
                 db_instance.session.commit()
-                return jsonify(
-                    {"success": True, "message": "Push subscription deactivated"}
-                )
+                return jsonify({"success": True, "message": "Push subscription deactivated"})
             else:
                 return (
                     jsonify({"success": False, "message": "Subscription not found"}),
@@ -344,9 +329,7 @@ def test_email():
         #     context={"user_id": current_user.id}
         # )
 
-        return jsonify(
-            {"success": True, "message": "Тестовият имейл е изпратен успешно"}
-        )
+        return jsonify({"success": True, "message": "Тестовият имейл е изпратен успешно"})
         # else:
         #     return (
         #         jsonify(
@@ -358,9 +341,7 @@ def test_email():
     except Exception as e:
         current_app.logger.error(f"Error sending test email: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Грешка при изпращане на тест имейл"}
-            ),
+            jsonify({"success": False, "message": "Грешка при изпращане на тест имейл"}),
             500,
         )
 
@@ -386,9 +367,7 @@ def test_sms():
         #     context={"user_id": current_user.id}
         # )
 
-        return jsonify(
-            {"success": True, "message": "Тестовото SMS е изпратено успешно"}
-        )
+        return jsonify({"success": True, "message": "Тестовото SMS е изпратено успешно"})
         # else:
         #     return (
         #         jsonify(
@@ -482,9 +461,7 @@ def send_notification():
     except Exception as e:
         current_app.logger.error(f"Error sending notification: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Грешка при изпращане на нотификация"}
-            ),
+            jsonify({"success": False, "message": "Грешка при изпращане на нотификация"}),
             500,
         )
 
@@ -502,9 +479,7 @@ def _send_new_request_email(recipient, context):
                 "notification_type": "new_request",
                 "recipient_name": recipient.name,
                 "request": context.get("request", {}),
-                "action_url": (
-                    f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"
-                ),
+                "action_url": (f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"),
             },
         )
     except Exception as e:
@@ -524,9 +499,7 @@ def _send_urgent_request_email(recipient, context):
                 "notification_type": "urgent_request",
                 "recipient_name": recipient.name,
                 "request": context.get("request", {}),
-                "action_url": (
-                    f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"
-                ),
+                "action_url": (f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"),
                 "call_url": f"tel:{context.get('request', {}).get('emergency_phone', '')}",
             },
         )
@@ -603,18 +576,14 @@ def _send_push_notification(recipient, notification_type, context):
             push_data.update(
                 {
                     "title": "Нова заявка за помощ",
-                    "body": (
-                        f"{context.get('request', {}).get('category', '')} - {context.get('request', {}).get('distance', '')}km от вас"
-                    ),
+                    "body": (f"{context.get('request', {}).get('category', '')} - {context.get('request', {}).get('distance', '')}km от вас"),
                 }
             )
         elif notification_type == "urgent_request":
             push_data.update(
                 {
                     "title": "СПЕШНА заявка!",
-                    "body": (
-                        f"{context.get('request', {}).get('category', '')} - Нужда от незабавна помощ!"
-                    ),
+                    "body": (f"{context.get('request', {}).get('category', '')} - Нужда от незабавна помощ!"),
                     "urgent": True,
                 }
             )
@@ -628,9 +597,7 @@ def _send_push_notification(recipient, notification_type, context):
 
         # Send push notification (would integrate with push service like FCM)
         # For now, just log it
-        current_app.logger.info(
-            f"Push notification queued for user {recipient.id}: {push_data}"
-        )
+        current_app.logger.info(f"Push notification queued for user {recipient.id}: {push_data}")
 
     except Exception as e:
         current_app.logger.error(f"Error sending push notification: {e}")
@@ -668,8 +635,6 @@ def notification_stats():
     except Exception as e:
         current_app.logger.error(f"Error getting notification stats: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Грешка при зареждане на статистики"}
-            ),
+            jsonify({"success": False, "message": "Грешка при зареждане на статистики"}),
             500,
         )

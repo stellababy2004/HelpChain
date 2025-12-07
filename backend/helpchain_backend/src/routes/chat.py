@@ -16,11 +16,7 @@ def get_chat_history(room):
     chat_room = ChatRoom.query.filter_by(name=room).first()
     if not chat_room:
         return jsonify([])
-    messages = (
-        ChatMessage.query.filter_by(room_id=chat_room.id)
-        .order_by(ChatMessage.timestamp)
-        .all()
-    )
+    messages = ChatMessage.query.filter_by(room_id=chat_room.id).order_by(ChatMessage.timestamp).all()
     history = [
         {
             "username": msg.user.username,
@@ -30,9 +26,7 @@ def get_chat_history(room):
         }
         for msg in messages
     ]
-    analytics_service.track_event(
-        "chat_history", "engagement", "view_history", {"room": room}
-    )
+    analytics_service.track_event("chat_history", "engagement", "view_history", {"room": room})
     return jsonify(history)
 
 
@@ -47,9 +41,7 @@ def upload_file():
     filename = secure_filename(file.filename)
     file_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
     file.save(file_path)
-    analytics_service.track_event(
-        "file_upload", "engagement", "upload_file", {"filename": filename}
-    )
+    analytics_service.track_event("file_upload", "engagement", "upload_file", {"filename": filename})
     return jsonify({"file_path": file_path})
 
 

@@ -26,22 +26,16 @@ def setup_2fa(db: Session = Depends(get_db), current_user=Depends(get_current_us
 
 
 @router.post("/verify")
-def verify_2fa(
-    token: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)
-):
+def verify_2fa(token: str, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     ok = verify_2fa_token(current_user, token)
-    log_admin_action(
-        db, current_user.id, "2fa_verify", outcome="success" if ok else "failure"
-    )
+    log_admin_action(db, current_user.id, "2fa_verify", outcome="success" if ok else "failure")
     if not ok:
         raise HTTPException(status_code=400, detail="Invalid 2FA token")
     return {"verified": True}
 
 
 @router.post("/disable")
-def disable_2fa_route(
-    db: Session = Depends(get_db), current_user=Depends(get_current_user)
-):
+def disable_2fa_route(db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     disable_2fa(current_user)
     db.add(current_user)
     db.commit()

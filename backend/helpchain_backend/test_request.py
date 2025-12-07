@@ -104,12 +104,8 @@ def test_request_submission():
             send_email_notification(test_request)
 
             print("✅ Test completed successfully!")
-            print(
-                "💡 If you see '[MOCK MODE]' messages above, email notifications are working in mock mode"
-            )
-            print(
-                "💡 To enable real emails, remove MAIL_MOCK=true from .env file and configure proper SMTP settings"
-            )
+            print("💡 If you see '[MOCK MODE]' messages above, email notifications are working in mock mode")
+            print("💡 To enable real emails, remove MAIL_MOCK=true from .env file and configure proper SMTP settings")
 
         except Exception as e:
             print(f"❌ Test failed: {e}")

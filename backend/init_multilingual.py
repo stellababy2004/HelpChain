@@ -61,9 +61,7 @@ def initialize_supported_languages():
     print("🌐 Initializing supported languages...")
 
     for lang_data in languages_data:
-        existing_lang = SupportedLanguage.query.filter_by(
-            code=lang_data["code"]
-        ).first()
+        existing_lang = SupportedLanguage.query.filter_by(code=lang_data["code"]).first()
 
         if not existing_lang:
             language = SupportedLanguage(**lang_data)
@@ -375,9 +373,7 @@ def initialize_default_translations():
         db.session.query(TranslationKey)
         .outerjoin(
             Translation,
-            (Translation.key_id == TranslationKey.id)
-            & (Translation.language_id == bg_language.id)
-            & (Translation.is_current),
+            (Translation.key_id == TranslationKey.id) & (Translation.language_id == bg_language.id) & (Translation.is_current),
         )
         .filter(Translation.id.is_(None))
         .all()
@@ -404,9 +400,7 @@ def initialize_default_translations():
 
     try:
         db.session.commit()
-        print(
-            f"✅ Default translations initialized successfully ({added_count} translations)"
-        )
+        print(f"✅ Default translations initialized successfully ({added_count} translations)")
         return added_count
     except Exception as e:
         db.session.rollback()
@@ -477,9 +471,7 @@ def initialize_sample_english_translations():
             continue
 
         # Проверяваме дали вече има превод
-        existing_translation = Translation.query.filter_by(
-            key_id=translation_key.id, language_id=en_language.id, is_current=True
-        ).first()
+        existing_translation = Translation.query.filter_by(key_id=translation_key.id, language_id=en_language.id, is_current=True).first()
 
         if existing_translation:
             print(f"   ⏭️  Skipped: {key_name} (already has translation)")
@@ -504,9 +496,7 @@ def initialize_sample_english_translations():
 
     try:
         db.session.commit()
-        print(
-            f"✅ English translations initialized successfully ({added_count} translations)"
-        )
+        print(f"✅ English translations initialized successfully ({added_count} translations)")
         return added_count
     except Exception as e:
         db.session.rollback()
@@ -577,9 +567,7 @@ def initialize_sample_french_translations():
             continue
 
         # Проверяваме дали вече има превод
-        existing_translation = Translation.query.filter_by(
-            key_id=translation_key.id, language_id=fr_language.id, is_current=True
-        ).first()
+        existing_translation = Translation.query.filter_by(key_id=translation_key.id, language_id=fr_language.id, is_current=True).first()
 
         if existing_translation:
             print(f"   ⏭️  Skipped: {key_name} (already has translation)")
@@ -604,9 +592,7 @@ def initialize_sample_french_translations():
 
     try:
         db.session.commit()
-        print(
-            f"✅ French translations initialized successfully ({added_count} translations)"
-        )
+        print(f"✅ French translations initialized successfully ({added_count} translations)")
         return added_count
     except Exception as e:
         db.session.rollback()

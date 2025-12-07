@@ -7,6 +7,7 @@ Usage examples:
 This script is intentionally conservative: by default it runs in dry-run mode
 and only prints actions. Use `--commit` to apply changes to the database.
 """
+
 import argparse
 import os
 import sys
@@ -21,6 +22,7 @@ if backend_dir not in sys.path:
 
 from backend import models
 from backend.app import app
+
 try:
     from backend.extensions import db as ext_db
 except Exception:
@@ -61,7 +63,7 @@ def main():
                 print("Run with --commit to actually create the user and set password.")
             return
 
-        print(f"Found user {args.username} (id={getattr(user,'id',None)})")
+        print(f"Found user {args.username} (id={getattr(user, 'id', None)})")
         print("Current password_hash:", getattr(user, "password_hash", None))
         try:
             ok = user.check_password(args.password)

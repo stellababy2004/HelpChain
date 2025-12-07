@@ -166,9 +166,7 @@ def init_chatbot_data():
         print("\n✅ Чатбот базата данни е успешно инициализирана!")
         print(f"📚 Добавени FAQ записа: {faq_count}")
         print(f"⚙️  Добавени настройки: {settings_count}")
-        print(
-            f"🕒 Време на инициализация: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        print(f"🕒 Време на инициализация: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         # Показваме примерни категории
         categories = db.session.query(ChatbotFAQ.category).distinct().all()

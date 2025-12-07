@@ -3,6 +3,7 @@ from flask import Flask, session
 from werkzeug.security import generate_password_hash
 
 from backend.extensions import db as _db
+
 # Keep legacy `db` name for existing code in this file that expects it.
 db = _db
 from backend.models import PermissionEnum, Role, User, UserRole
@@ -193,9 +194,7 @@ def test_has_permission_returns_true_for_admin(permissions_app, admin_user_id):
         assert not has_permission("nonexistent_permission")
 
 
-def test_has_permission_returns_false_for_regular_user(
-    permissions_app, regular_user_id
-):
+def test_has_permission_returns_false_for_regular_user(permissions_app, regular_user_id):
     with permissions_app.test_request_context():
         session["user_id"] = regular_user_id
         assert not has_permission(PermissionEnum.ADMIN_ACCESS.value)

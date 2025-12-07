@@ -40,9 +40,7 @@ def test_admin_functionality():
             "username": "admin",
             "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
         }
-        response = session.post(
-            f"{base_url}/admin/login", data=login_data, allow_redirects=False
-        )
+        response = session.post(f"{base_url}/admin/login", data=login_data, allow_redirects=False)
 
         if response.status_code in [302, 200]:  # Redirect or success
             print("✓ Admin login successful")

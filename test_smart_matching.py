@@ -43,9 +43,7 @@ def test_smart_matching():
                 print("\nSample analytics:")
                 print(f"  - Assignment rate: {analytics.get('assignment_rate', 0)}%")
                 print(f"  - Completion rate: {analytics.get('completion_rate', 0)}%")
-                print(
-                    f"  - Average volunteer rating: {analytics.get('avg_volunteer_rating', 0):.1f}"
-                )
+                print(f"  - Average volunteer rating: {analytics.get('avg_volunteer_rating', 0):.1f}")
 
     except Exception as e:
         print(f"❌ Error testing smart matching: {e}")

@@ -39,9 +39,7 @@ with app.app_context():
 # Test 2: Simulate what happens in API call
 print("\n2️⃣ Testing cache key generation...")
 cache_key_data = {"endpoint": "analytics-data", "args": [("days", "7")]}
-cache_key = hashlib.sha256(
-    json.dumps(cache_key_data, sort_keys=True).encode()
-).hexdigest()
+cache_key = hashlib.sha256(json.dumps(cache_key_data, sort_keys=True).encode()).hexdigest()
 print(f"🔑 Cache key: {cache_key}")
 
 # Set data with this key

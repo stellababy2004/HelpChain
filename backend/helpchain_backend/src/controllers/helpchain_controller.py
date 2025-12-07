@@ -85,13 +85,9 @@ class HelpChainController:
         if not MODELS_AVAILABLE:
             return q
         if filters.get("date_from"):
-            q = q.filter(
-                HelpRequest.created_at >= datetime.fromisoformat(filters["date_from"])
-            )
+            q = q.filter(HelpRequest.created_at >= datetime.fromisoformat(filters["date_from"]))
         if filters.get("date_to"):
-            q = q.filter(
-                HelpRequest.created_at <= datetime.fromisoformat(filters["date_to"])
-            )
+            q = q.filter(HelpRequest.created_at <= datetime.fromisoformat(filters["date_to"]))
         if filters.get("status"):
             q = q.filter(HelpRequest.status == filters["status"])
         if filters.get("region"):
@@ -115,31 +111,15 @@ class HelpChainController:
         q = self._apply_filters_query(q, filters)
 
         # counts by status
-        status_counts = (
-            db.session.query(HelpRequest.status, db.func.count(HelpRequest.id))
-            .group_by(HelpRequest.status)
-            .all()
-        )
+        status_counts = db.session.query(HelpRequest.status, db.func.count(HelpRequest.id)).group_by(HelpRequest.status).all()
         out["counts_by_status"] = [{"status": s, "count": c} for s, c in status_counts]
 
         # volunteers by city
-        vol_by_city = (
-            db.session.query(Volunteer.city, db.func.count(Volunteer.id))
-            .group_by(Volunteer.city)
-            .order_by(db.func.count(Volunteer.id).desc())
-            .limit(50)
-            .all()
-        )
+        vol_by_city = db.session.query(Volunteer.city, db.func.count(Volunteer.id)).group_by(Volunteer.city).order_by(db.func.count(Volunteer.id).desc()).limit(50).all()
         out["volunteers_by_city"] = [{"city": c, "count": n} for c, n in vol_by_city]
 
         # top request types
-        types = (
-            db.session.query(HelpRequest.type, db.func.count(HelpRequest.id))
-            .group_by(HelpRequest.type)
-            .order_by(db.func.count(HelpRequest.id).desc())
-            .limit(10)
-            .all()
-        )
+        types = db.session.query(HelpRequest.type, db.func.count(HelpRequest.id)).group_by(HelpRequest.type).order_by(db.func.count(HelpRequest.id).desc()).limit(10).all()
         out["top_request_types"] = [{"type": t, "count": cnt} for t, cnt in types]
 
         # time series active vs completed (simple last 30 days)
@@ -149,32 +129,16 @@ class HelpChainController:
             day = today - timedelta(days=29 - i)
             start = datetime.combine(day, datetime.min.time())
             end = datetime.combine(day, datetime.max.time())
-            active = (
-                db.session.query(HelpRequest)
-                .filter(
-                    HelpRequest.created_at <= end, HelpRequest.status != "completed"
-                )
-                .count()
-            )
-            completed = (
-                db.session.query(HelpRequest)
-                .filter(
-                    HelpRequest.updated_at >= start, HelpRequest.status == "completed"
-                )
-                .count()
-            )
-            series.append(
-                {"date": day.isoformat(), "active": active, "completed": completed}
-            )
+            active = db.session.query(HelpRequest).filter(HelpRequest.created_at <= end, HelpRequest.status != "completed").count()
+            completed = db.session.query(HelpRequest).filter(HelpRequest.updated_at >= start, HelpRequest.status == "completed").count()
+            series.append({"date": day.isoformat(), "active": active, "completed": completed})
         out["timeseries"] = series
 
         return out
 
     def export_requests(self, filters, fmt="excel"):
         if not MODELS_AVAILABLE:
-            raise RuntimeError(
-                "Models HelpRequest/Volunteer not found. Add them under src/models/ to enable export."
-            )
+            raise RuntimeError("Models HelpRequest/Volunteer not found. Add them under src/models/ to enable export.")
 
         q = db.session.query(HelpRequest)
         q = self._apply_filters_query(q, filters)
@@ -197,17 +161,13 @@ class HelpChainController:
         try:
             import pandas as pd  # local import
         except Exception as e:
-            raise RuntimeError(
-                "pandas is required for export_requests. Install with: pip install pandas openpyxl"
-            ) from e
+            raise RuntimeError("pandas is required for export_requests. Install with: pip install pandas openpyxl") from e
 
         df = pd.DataFrame(rows)
 
         tmpdir = tempfile.gettempdir()
         if fmt == "excel":
-            path = os.path.join(
-                tmpdir, f"help_requests_{int(utc_now().timestamp())}.xlsx"
-            )
+            path = os.path.join(tmpdir, f"help_requests_{int(utc_now().timestamp())}.xlsx")
             df.to_excel(path, index=False, engine="openpyxl")
             return (
                 path,
@@ -219,9 +179,7 @@ class HelpChainController:
                 from jinja2 import Template
                 from weasyprint import HTML
             except Exception as e:
-                raise RuntimeError(
-                    "weasyprint/jinja2 required for PDF export. Install with: pip install weasyprint jinja2"
-                ) from e
+                raise RuntimeError("weasyprint/jinja2 required for PDF export. Install with: pip install weasyprint jinja2") from e
             html = Template(
                 """
             <h1>Help Requests</h1>
@@ -232,12 +190,8 @@ class HelpChainController:
             {% endfor %}
             </table>
             """
-            ).render(
-                cols=list(df.columns), rows=df.fillna("").to_dict(orient="records")
-            )
-            path = os.path.join(
-                tmpdir, f"help_requests_{int(utc_now().timestamp())}.pdf"
-            )
+            ).render(cols=list(df.columns), rows=df.fillna("").to_dict(orient="records"))
+            path = os.path.join(tmpdir, f"help_requests_{int(utc_now().timestamp())}.pdf")
             HTML(string=html).write_pdf(path)
             return path, "application/pdf", os.path.basename(path)
         else:

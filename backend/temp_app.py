@@ -84,9 +84,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
 
 # Задаваме явни папки за шаблони и статични файлове (адаптирай пътищата ако е нужно)
-_templates = os.path.join(
-    os.path.dirname(__file__), "helpchain-backend", "src", "templates"
-)
+_templates = os.path.join(os.path.dirname(__file__), "helpchain-backend", "src", "templates")
 _static = os.path.join(os.path.dirname(__file__), "helpchain-backend", "src", "static")
 
 # Създаваме приложението с правилните пътища
@@ -94,9 +92,7 @@ app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
 # Абсолютен път до базата за по-голяма сигурност
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    f"sqlite:///{os.path.join(basedir, 'instance', 'volunteers.db')}"
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'instance', 'volunteers.db')}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
@@ -132,9 +128,7 @@ _template_dirs = [
 _loaders = [FileSystemLoader(d) for d in _template_dirs if os.path.isdir(d)]
 # добавяме текущия loader в края (ако има)
 if _loaders:
-    app.jinja_loader = ChoiceLoader(
-        _loaders + ([app.jinja_loader] if getattr(app, "jinja_loader", None) else [])
-    )
+    app.jinja_loader = ChoiceLoader(_loaders + ([app.jinja_loader] if getattr(app, "jinja_loader", None) else []))
 
 
 @app.route("/")
@@ -152,9 +146,7 @@ def index():
         HelpRequestModel = globals().get("HelpRequest")
         if HelpRequestModel is not None:
             requests_count = HelpRequestModel.query.count()
-            open_requests = HelpRequestModel.query.filter(
-                HelpRequestModel.status != "completed"
-            ).count()
+            open_requests = HelpRequestModel.query.filter(HelpRequestModel.status != "completed").count()
         else:
             requests_count = 0
             open_requests = 0
@@ -234,9 +226,7 @@ def admin_dashboard():
         1: [{"status": "Активен", "changed_at": "2025-07-22"}],
         2: [{"status": "Завършен", "changed_at": "2025-07-21"}],
     }
-    return render_template(
-        "admin_dashboard.html", requests=requests, logs_dict=logs_dict
-    )
+    return render_template("admin_dashboard.html", requests=requests, logs_dict=logs_dict)
 
 
 @app.route("/admin/2fa", methods=["GET", "POST"])
@@ -486,9 +476,7 @@ def search_volunteers():
     if not session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
     q = request.args.get("q", "")
-    volunteers = Volunteer.query.filter(
-        (Volunteer.name.ilike(f"%{q}%")) | (Volunteer.email.ilike(f"%{q}%"))
-    ).all()
+    volunteers = Volunteer.query.filter((Volunteer.name.ilike(f"%{q}%")) | (Volunteer.email.ilike(f"%{q}%"))).all()
     return render_template("admin_volunteers.html", volunteers=volunteers, q=q)
 
 
@@ -500,9 +488,7 @@ def inject_gettext():
 @app.context_processor
 def inject_get_locale():
     def get_locale():
-        return request.cookies.get("language") or request.accept_languages.best_match(
-            ["bg", "en"]
-        )
+        return request.cookies.get("language") or request.accept_languages.best_match(["bg", "en"])
 
     return dict(get_locale=get_locale)
 
@@ -525,9 +511,7 @@ if os.getenv("MAIL_PORT"):
     app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
     app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 else:
-    print(
-        "Warning: MAIL_PORT environment variable is not set! Имейл функционалността няма да работи."
-    )
+    print("Warning: MAIL_PORT environment variable is not set! Имейл функционалността няма да работи.")
 
 # В секцията за mail config, подобри логиката за MAILTRAP/Zoho
 mailtrap_username = os.getenv("MAILTRAP_USERNAME")
@@ -581,9 +565,7 @@ def admin_panel():
 mock_mail_send = patch.object(
     mail,
     "send",
-    side_effect=lambda msg: app.logger.info(
-        f"Mocked email sent: {msg.subject} to {msg.recipients}"
-    ),
+    side_effect=lambda msg: app.logger.info(f"Mocked email sent: {msg.subject} to {msg.recipients}"),
 ).start()
 
 if __name__ == "__main__":

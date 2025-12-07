@@ -9,18 +9,14 @@ from backend import models
 from backend.extensions import db
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    r"sqlite:///C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db"
-)
+app.config["SQLALCHEMY_DATABASE_URI"] = r"sqlite:///C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 with app.app_context():
     try:
         print("Testing AdminUser model...")
-        admin_user = (
-            db.session.query(models.AdminUser).filter_by(username="admin").first()
-        )
+        admin_user = db.session.query(models.AdminUser).filter_by(username="admin").first()
         print(f"Admin user found: {admin_user}")
         if admin_user:
             print(f"Username: {admin_user.username}")

@@ -3,6 +3,7 @@
 Run from repository root:
   python backend/scripts/list_users.py
 """
+
 from __future__ import annotations
 
 import sys

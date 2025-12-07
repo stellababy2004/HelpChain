@@ -74,17 +74,13 @@ def test_blueprint_registration():
         with app.app_context():
             # Check that admin blueprint is registered
             admin_registered = "admin" in app.blueprints
-            print(
-                f"{'✓' if admin_registered else '✗'} Admin blueprint registered: {admin_registered}"
-            )
+            print(f"{'✓' if admin_registered else '✗'} Admin blueprint registered: {admin_registered}")
 
             # Check that other blueprints are registered
             blueprints_to_check = ["analytics_main", "notification"]
             for bp_name in blueprints_to_check:
                 registered = bp_name in app.blueprints
-                print(
-                    f"{'✓' if registered else '⚠'} {bp_name} blueprint registered: {registered}"
-                )
+                print(f"{'✓' if registered else '⚠'} {bp_name} blueprint registered: {registered}")
 
             return admin_registered
 

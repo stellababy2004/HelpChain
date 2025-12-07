@@ -5,9 +5,7 @@ from werkzeug.security import check_password_hash
 conn = sqlite3.connect("instance/volunteers.db")
 cursor = conn.cursor()
 
-cursor.execute(
-    "SELECT username, password_hash FROM admin_users WHERE username = ?", ("admin",)
-)
+cursor.execute("SELECT username, password_hash FROM admin_users WHERE username = ?", ("admin",))
 row = cursor.fetchone()
 if row:
     username, password_hash = row

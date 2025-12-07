@@ -19,9 +19,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def _build_email(
-    volunteer_name, volunteer_email, volunteer_location, template_path, sender
-):
+def _build_email(volunteer_name, volunteer_email, volunteer_location, template_path, sender):
     if not os.path.exists(template_path):
         raise FileNotFoundError(template_path)
     with open(template_path, encoding="utf-8") as f:
@@ -52,9 +50,7 @@ def send_welcome_email(
     smtp_password = os.getenv("MAIL_PASSWORD", "")
     smtp_sender = os.getenv("MAIL_DEFAULT_SENDER", "noreply@example.com")
 
-    msg, _, _ = _build_email(
-        volunteer_name, volunteer_email, volunteer_location, template_path, smtp_sender
-    )
+    msg, _, _ = _build_email(volunteer_name, volunteer_email, volunteer_location, template_path, smtp_sender)
 
     context = ssl.create_default_context()
     with smtp_class(smtp_server, smtp_port, context=context) as server:

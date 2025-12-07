@@ -67,9 +67,7 @@ class TestEmailFunctionality:
         """Test volunteer registration email failure with file fallback"""
         with app.app_context():
             # Mock mail.send to raise exception
-            mock_send = mocker.patch(
-                "backend.appy.mail.send", side_effect=Exception("SMTP Error")
-            )
+            mock_send = mocker.patch("backend.appy.mail.send", side_effect=Exception("SMTP Error"))
 
             # Mock database operations
             mock_query = mocker.patch("backend.appy.Volunteer.query")
@@ -143,15 +141,11 @@ class TestEmailFunctionality:
             assert "Код за достъп:" in call_args.body
             assert "15 минути" in call_args.body
 
-    def test_volunteer_login_access_code_email_failure_fallback(
-        self, app, client, mocker
-    ):
+    def test_volunteer_login_access_code_email_failure_fallback(self, app, client, mocker):
         """Test access code email failure with file fallback"""
         with app.app_context():
             # Mock mail.send to fail
-            mock_send = mocker.patch(
-                "backend.appy.mail.send", side_effect=Exception("SMTP Error")
-            )
+            mock_send = mocker.patch("backend.appy.mail.send", side_effect=Exception("SMTP Error"))
 
             # Mock volunteer
             mock_volunteer = MagicMock()
@@ -195,9 +189,7 @@ class TestEmailFunctionality:
 
             # Assert stays on login page with error
             assert response.status_code == 200
-            assert "Няма регистриран доброволец с този имейл" in response.get_data(
-                as_text=True
-            )
+            assert "Няма регистриран доброволец с този имейл" in response.get_data(as_text=True)
 
     def test_access_code_verification_success(self, app, client, mocker):
         """Test successful access code verification"""
@@ -508,17 +500,9 @@ HelpChain системата
             client.post("/volunteer_login", data=test_data)
 
             # Check that appropriate log messages were generated
-            assert any(
-                "Login attempt for email: test@example.com" in record.message
-                for record in caplog.records
-            )
-            assert any(
-                "Volunteer found: True" in record.message for record in caplog.records
-            )
-            assert any(
-                "Access code sent to test@example.com" in record.message
-                for record in caplog.records
-            )
+            assert any("Login attempt for email: test@example.com" in record.message for record in caplog.records)
+            assert any("Volunteer found: True" in record.message for record in caplog.records)
+            assert any("Access code sent to test@example.com" in record.message for record in caplog.records)
 
     def test_database_error_handling_in_email_flow(self, app, client, mocker):
         """Test that database errors during email operations are handled gracefully"""

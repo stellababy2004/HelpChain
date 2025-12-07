@@ -17,11 +17,7 @@ def remove_orphaned_code():
 
     # Combine patterns to find the orphaned code between the first return and second function
     combined_pattern = (
-        r"("
-        + re.escape("    )\n")
-        + r")"
-        + orphaned_pattern
-        + r'(\s*\n\s*@app\.route\("/admin_dashboard", endpoint="admin_dashboard"\)\s*@require_admin_login\s*def admin_dashboard\(\):)'
+        r"(" + re.escape("    )\n") + r")" + orphaned_pattern + r'(\s*\n\s*@app\.route\("/admin_dashboard", endpoint="admin_dashboard"\)\s*@require_admin_login\s*def admin_dashboard\(\):)'
     )
 
     # Try a simpler approach - just remove the orphaned block

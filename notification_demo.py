@@ -84,9 +84,7 @@ def demo_notifications():
 
     print("\n4. Статистика:")
     print(f"Общо нотификации: {Notification.query.count()}")
-    print(
-        f"Непрочетени за volunteer 2: {Notification.get_unread_count(2, 'volunteer')}"
-    )
+    print(f"Непрочетени за volunteer 2: {Notification.get_unread_count(2, 'volunteer')}")
     print(f"Непрочетени за admin 1: {Notification.get_unread_count(1, 'admin')}")
 
     print("\n5. Извличане на нотификации за потребител:")

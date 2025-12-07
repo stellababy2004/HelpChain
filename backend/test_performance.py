@@ -47,9 +47,7 @@ class PerformanceTester:
                 if response.headers.get("X-Cache-Status") == "hit":
                     cache_hits += 1
 
-                print(
-                    f"  Request {i + 1}: {duration:.3f}s (Status: {response.status_code}, Cache: {response.headers.get('X-Cache-Status', 'unknown')})"
-                )
+                print(f"  Request {i + 1}: {duration:.3f}s (Status: {response.status_code}, Cache: {response.headers.get('X-Cache-Status', 'unknown')})")
 
                 # Small delay между requests
                 time.sleep(0.1)
@@ -112,10 +110,7 @@ class PerformanceTester:
 
         # Compare performance
         if result1 and result2:
-            improvement = (
-                (result1["avg_response_time"] - result2["avg_response_time"])
-                / result1["avg_response_time"]
-            ) * 100
+            improvement = ((result1["avg_response_time"] - result2["avg_response_time"]) / result1["avg_response_time"]) * 100
             print(f"\n📈 Cache Performance Improvement: {improvement:.1f}%")
 
             if improvement > 50:
@@ -125,9 +120,7 @@ class PerformanceTester:
             else:
                 print("⚠️  Limited cache benefit - consider optimization")
 
-    def test_concurrent_requests(
-        self, endpoint="/api/analytics-data", concurrent_users=10
-    ):
+    def test_concurrent_requests(self, endpoint="/api/analytics-data", concurrent_users=10):
         """Тества производителността при concurrent requests"""
 
         print(f"\n👥 Testing Concurrent Performance ({concurrent_users} users)...")
@@ -147,9 +140,7 @@ class PerformanceTester:
                     {
                         "duration": end_time - start_time,
                         "status": response.status_code,
-                        "cache_status": response.headers.get(
-                            "X-Cache-Status", "unknown"
-                        ),
+                        "cache_status": response.headers.get("X-Cache-Status", "unknown"),
                     }
                 )
             except Exception as e:
@@ -214,9 +205,7 @@ class PerformanceTester:
         for endpoint, metrics in self.results.items():
             print(f"\n🔗 Endpoint: {endpoint}")
             print(f"   Average Response Time: {metrics['avg_response_time']:.3f}s")
-            print(
-                f"   Response Time Range: {metrics['min_response_time']:.3f}s - {metrics['max_response_time']:.3f}s"
-            )
+            print(f"   Response Time Range: {metrics['min_response_time']:.3f}s - {metrics['max_response_time']:.3f}s")
             print(f"   Cache Hit Rate: {metrics['cache_hit_rate']:.1f}%")
             print(f"   Error Rate: {metrics['error_rate']:.1f}%")
             print(f"   Total Requests: {metrics['total_requests']}")

@@ -26,9 +26,7 @@ while i < len(lines):
             # Skip this duplicate route and its function until next route or major comment
             while i < len(lines):
                 line = lines[i]
-                if re.match(r"@app\.route\(", line.strip()) or re.match(
-                    r"# =====", line.strip()
-                ):
+                if re.match(r"@app\.route\(", line.strip()) or re.match(r"# =====", line.strip()):
                     break
                 i += 1
             continue

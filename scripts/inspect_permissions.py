@@ -1,8 +1,10 @@
 from flask import Flask
 import os, sys
+
 # Ensure repository root is on sys.path so `backend` package is importable
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import importlib.util
+
 # Load `backend/extensions.py` directly to avoid executing `backend.__init__`
 # (which imports `backend.models` too early). This mirrors how tests import
 # models after the Flask app has been initialized.
@@ -84,6 +86,6 @@ with app.app_context():
     print("Roles:", [(r.id, r.name) for r in Role.query.all()])
     print("RolePermissions raw query:", _db.session.query(RolePermission).all())
     for rp in _db.session.query(RolePermission).all():
-        print("RP:", getattr(rp, 'id', None), "role_id", getattr(rp, 'role_id', None), "permission_id", getattr(rp, 'permission_id', None), "permission_rel", getattr(rp, 'permission', None))
+        print("RP:", getattr(rp, "id", None), "role_id", getattr(rp, "role_id", None), "permission_id", getattr(rp, "permission_id", None), "permission_rel", getattr(rp, "permission", None))
 
-print('done')
+print("done")

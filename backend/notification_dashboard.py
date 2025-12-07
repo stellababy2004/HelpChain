@@ -34,9 +34,7 @@ app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
 app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", "False").lower() == "true"
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
-    "MAIL_DEFAULT_SENDER", "noreply@helpchain.live"
-)
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "noreply@helpchain.live")
 
 mail = Mail(app)
 
@@ -62,9 +60,7 @@ def init_db():
         conn.commit()
 
 
-def save_notification_to_db(
-    recipient, subject, content, status="saved", smtp_error=None
-):
+def save_notification_to_db(recipient, subject, content, status="saved", smtp_error=None):
     """Save notification to database"""
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
@@ -87,9 +83,7 @@ def get_notifications(limit=50):
     """Get recent notifications from database"""
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
-        c.execute(
-            "SELECT * FROM notifications ORDER BY timestamp DESC LIMIT ?", (limit,)
-        )
+        c.execute("SELECT * FROM notifications ORDER BY timestamp DESC LIMIT ?", (limit,))
         notifications = c.fetchall()
     return notifications
 

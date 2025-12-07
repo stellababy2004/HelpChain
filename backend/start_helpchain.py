@@ -29,9 +29,7 @@ flask = subprocess.Popen(
 time.sleep(5)
 
 print("🌐 Стартиране на ngrok тунел...")
-ngrok = subprocess.Popen(
-    ["cmd", "/k", "ngrok http 5000"], creationflags=subprocess.CREATE_NEW_CONSOLE
-)
+ngrok = subprocess.Popen(["cmd", "/k", "ngrok http 5000"], creationflags=subprocess.CREATE_NEW_CONSOLE)
 
 time.sleep(5)
 

@@ -5,7 +5,9 @@ affecting production. It wraps db.session.commit/flush to print bind
 info and attaches engine.connect handlers to log which engine creates
 DBAPI connections during tests.
 """
+
 import os
+
 try:
     from backend.extensions import db
 except Exception:
@@ -96,6 +98,7 @@ if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1" and db is not None:
 
         for eng in list(uniq.values()):
             try:
+
                 def on_connect(dbapi_conn, conn_rec, eng=eng):
                     try:
                         try:

@@ -11,9 +11,7 @@ def test_vapid_key():
     try:
         print("🧪 Testing VAPID public key endpoint...")
 
-        response = requests.get(
-            "http://127.0.0.1:8000/api/notification/vapid-public-key"
-        )
+        response = requests.get("http://127.0.0.1:8000/api/notification/vapid-public-key")
 
         if response.status_code == 200:
             data = response.json()

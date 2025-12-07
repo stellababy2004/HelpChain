@@ -61,9 +61,7 @@ def main() -> int:
     cfg.set_main_option("script_location", str(repo_root / "backend" / "migrations"))
     cfg.set_main_option("sqlalchemy.url", database_url)
 
-    print(
-        f"Running Alembic migrations (alembic.ini={alembic_ini}) against: {database_url}"
-    )
+    print(f"Running Alembic migrations (alembic.ini={alembic_ini}) against: {database_url}")
 
     try:
         # Alembic env.py expects `flask.current_app` (Flask-Migrate integration).

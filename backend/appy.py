@@ -40,9 +40,7 @@ def emit_status_update():
     except Exception as analytics_error:
         app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-    app.logger.info(
-        f"Request {request_id} status updated from {old_status} to {new_status}"
-    )
+    app.logger.info(f"Request {request_id} status updated from {old_status} to {new_status}")
 
 
 class Task:
@@ -123,11 +121,7 @@ def require_admin_login(f):
 
         # Test-only header bypass when TESTING=True
         try:
-            if (
-                current_app
-                and getattr(current_app, "config", {}).get("TESTING")
-                and request.headers.get("X-Admin-Bypass") == "1"
-            ):
+            if current_app and getattr(current_app, "config", {}).get("TESTING") and request.headers.get("X-Admin-Bypass") == "1":
                 return f(*args, **kwargs)
         except Exception:
             pass
@@ -181,10 +175,8 @@ def require_admin_login(f):
             # return 401 for non-GET methods (so GETs may redirect to login).
             is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
             accepts_json = request.accept_mimetypes.best == "application/json"
-            path = (request.path or "")
-            if is_ajax or accepts_json or path.startswith("/admin/api/") or (
-                request.method != "GET" and path.startswith("/api/")
-            ):
+            path = request.path or ""
+            if is_ajax or accepts_json or path.startswith("/admin/api/") or (request.method != "GET" and path.startswith("/api/")):
                 try:
                     return jsonify({"error": "Unauthorized"}), 401
                 except Exception:
@@ -260,14 +252,17 @@ import sys as _early_sys
 try:
     # alias analytics_service
     import backend.analytics_service as _backend_analytics
+
     _early_sys.modules.setdefault("analytics_service", _backend_analytics)
 
     # alias extensions
     import backend.extensions as _backend_extensions
+
     _early_sys.modules.setdefault("extensions", _backend_extensions)
 
     # alias dispatch helper
     import backend._dispatch_email as _backend_dispatch
+
     _early_sys.modules.setdefault("_dispatch_email", _backend_dispatch)
 except Exception:
     # If anything fails here, fall back to existing behaviour and allow
@@ -304,6 +299,7 @@ try:
 
     mail = _MailProxy()
 except Exception:
+
     class _NoopMail:
         def send(self, *a, **k):
             return None
@@ -413,12 +409,7 @@ def public_dashboard():
     db = get_db()
     session = db.session
     # Вземаме последните 30 заявки (може да се коригира)
-    requests = (
-        session.query(HelpRequest)
-        .order_by(HelpRequest.created_at.desc())
-        .limit(30)
-        .all()
-    )
+    requests = session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).limit(30).all()
     # Подготвяме данните за шаблона
     return render_template(
         "dashboard_comparison.html",
@@ -477,11 +468,7 @@ def _testing_admin_request_shim():
                     # the environment opt-in is set, AND the test request
                     # includes the `X-Legacy-Admin-Alias: 1` header. This makes
                     # the legacy-200 behavior opt-in per-request.
-                    if not (
-                        current_app.config.get("TESTING")
-                        and os.environ.get("HELPCHAIN_LEGACY_ADMIN_ALIAS") == "1"
-                        and request.headers.get("X-Legacy-Admin-Alias") == "1"
-                    ):
+                    if not (current_app.config.get("TESTING") and os.environ.get("HELPCHAIN_LEGACY_ADMIN_ALIAS") == "1" and request.headers.get("X-Legacy-Admin-Alias") == "1"):
                         return redirect(url_for("admin_login"))
                 except Exception:
                     # If redirect fails, fall back to rendering the template
@@ -494,10 +481,7 @@ def _testing_admin_request_shim():
             # blanket-block all `/api/` non-GET requests because many public
             # API endpoints (e.g. volunteer location updates) are meant to be
             # accessible without admin authentication in tests.
-            if (
-                (request.path or "").startswith("/admin/api/")
-                and request.method != "GET"
-            ):
+            if (request.path or "").startswith("/admin/api/") and request.method != "GET":
                 return jsonify({"error": "Unauthorized"}), 401
     except Exception:
         # Don't break normal request flow if shim fails
@@ -588,12 +572,7 @@ def admin_dashboard_alias():
             # Only return the login HTML (200) for legacy alias when TESTING
             # and the request explicitly opts in via the header. This avoids
             # changing behavior for tests that expect a redirect (302).
-            if (
-                current_app
-                and current_app.config.get("TESTING")
-                and not session.get("admin_logged_in")
-                and request.headers.get("X-Legacy-Admin-Alias") == "1"
-            ):
+            if current_app and current_app.config.get("TESTING") and not session.get("admin_logged_in") and request.headers.get("X-Legacy-Admin-Alias") == "1":
                 try:
                     return render_template("admin_login.html", error=None)
                 except Exception:
@@ -708,11 +687,7 @@ def public_requests_list():
     keyword = request.args.get("q") or request.args.get("keyword")
     if keyword:
         kw = f"%{keyword.strip().lower()}%"
-        query = query.filter(
-            func.lower(HelpRequest.title).like(kw)
-            | func.lower(HelpRequest.description).like(kw)
-            | func.lower(HelpRequest.message).like(kw)
-        )
+        query = query.filter(func.lower(HelpRequest.title).like(kw) | func.lower(HelpRequest.description).like(kw) | func.lower(HelpRequest.message).like(kw))
 
     # Може да добавим пагинация в бъдеще
     result = []
@@ -818,9 +793,7 @@ def public_request_detail(request_id):
         "email": req.email,
         "phone": req.phone,
         "completed_at": req.completed_at.isoformat() if req.completed_at else None,
-        "priority": (
-            req.priority.name if hasattr(req.priority, "name") else str(req.priority)
-        ),
+        "priority": (req.priority.name if hasattr(req.priority, "name") else str(req.priority)),
         "source_channel": req.source_channel,
         "assigned_volunteer_id": req.assigned_volunteer_id,
     }
@@ -1066,9 +1039,7 @@ def setup_logging():
     root_logger.setLevel(logging.INFO)
 
     # Create formatters
-    detailed_formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
-    )
+    detailed_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s")
     simple_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
     # Console handler for development
@@ -1092,9 +1063,7 @@ def setup_logging():
         # Security logger for sensitive operations
         security_logger = logging.getLogger("security")
         security_logger.setLevel(logging.INFO)
-        security_handler = logging.FileHandler(
-            "helpchain_security.log", encoding="utf-8"
-        )
+        security_handler = logging.FileHandler("helpchain_security.log", encoding="utf-8")
         security_handler.setFormatter(detailed_formatter)
         security_logger.addHandler(security_handler)
         security_logger.propagate = False  # Don't propagate to root logger
@@ -1140,9 +1109,7 @@ def _has_table_uncached(table_name: str) -> bool:
     try:
         engine = db.engine
     except Exception as exc:  # pragma: no cover - defensive
-        logger.debug(
-            "Database engine not ready for table check %s: %s", table_name, exc
-        )
+        logger.debug("Database engine not ready for table check %s: %s", table_name, exc)
         return False
 
     # Fast-path: if SQLAlchemy metadata already knows about the table name
@@ -1193,15 +1160,11 @@ def _has_table_uncached(table_name: str) -> bool:
             from datetime import datetime
             import os
 
-            marker_path = os.path.join(
-                os.path.dirname(__file__), "tools", "connection_markers.txt"
-            )
+            marker_path = os.path.join(os.path.dirname(__file__), "tools", "connection_markers.txt")
             marker_path = os.path.normpath(marker_path)
             try:
                 with open(marker_path, "a", encoding="utf-8") as _mf:
-                    _mf.write(
-                        f"{datetime.utcnow().isoformat()} MARKER _has_table_uncached before engine.connect table={table_name}\n"
-                    )
+                    _mf.write(f"{datetime.utcnow().isoformat()} MARKER _has_table_uncached before engine.connect table={table_name}\n")
             except Exception:
                 pass
         except Exception:
@@ -1350,9 +1313,7 @@ def initialize_default_admin():
 
         if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
             if _admin_init_attempted:
-                logger.debug(
-                    "initialize_default_admin: already attempted during tests; skipping"
-                )
+                logger.debug("initialize_default_admin: already attempted during tests; skipping")
                 return None
             # Mark attempted early to avoid re-entrancy and repeated DB access
             _admin_init_attempted = True
@@ -1363,9 +1324,7 @@ def initialize_default_admin():
 
             if getattr(current_app, "config", {}).get("TESTING"):
                 if _admin_init_attempted:
-                    logger.debug(
-                        "initialize_default_admin: already attempted during tests; skipping"
-                    )
+                    logger.debug("initialize_default_admin: already attempted during tests; skipping")
                     return None
                 _admin_init_attempted = True
         except Exception:
@@ -1382,9 +1341,7 @@ def initialize_default_admin():
     try:
         table_exists = _has_table("admin_users")
         if not table_exists:
-            logger.debug(
-                "initialize_default_admin: admin_users table not present, skipping"
-            )
+            logger.debug("initialize_default_admin: admin_users table not present, skipping")
             return None
     except Exception:
         # If the table check itself fails, continue and attempt the regular flow.
@@ -1400,9 +1357,7 @@ def initialize_default_admin():
             import traceback
 
             if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                print(
-                    "[DEEP DIAG] initialize_default_admin: beginning deep registry diagnostics"
-                )
+                print("[DEEP DIAG] initialize_default_admin: beginning deep registry diagnostics")
 
                 # 1) canonical db instance
                 # Disabled: importlib diagnostics for backend.extensions (not needed in script mode)
@@ -1428,9 +1383,7 @@ def initialize_default_admin():
                 # 3) dump registry internals and mappers
                 for rname, reg in registries:
                     try:
-                        print(
-                            f"[DEEP DIAG] registry {rname} -> id={id(reg)} repr={reg}"
-                        )
+                        print(f"[DEEP DIAG] registry {rname} -> id={id(reg)} repr={reg}")
                         cr = getattr(reg, "_class_registry", None)
                         if cr is not None:
                             try:
@@ -1449,9 +1402,7 @@ def initialize_default_admin():
                                 for k, v in list(cr.items()):
                                     try:
                                         if getattr(v, "__name__", None) == "AuditLog":
-                                            print(
-                                                f"[DEEP DIAG] {rname} class-reg entry {k} -> {v} id={id(v)} module={getattr(v, '__module__', None)}"
-                                            )
+                                            print(f"[DEEP DIAG] {rname} class-reg entry {k} -> {v} id={id(v)} module={getattr(v, '__module__', None)}")
                                     except Exception:
                                         pass
                             except Exception:
@@ -1463,9 +1414,7 @@ def initialize_default_admin():
                                 for m in list(miter):
                                     try:
                                         cls = getattr(m, "class_", None)
-                                        print(
-                                            f"[DEEP DIAG] mapper -> {m} class={cls} id={id(cls) if cls is not None else None} module={getattr(cls, '__module__', None)}"
-                                        )
+                                        print(f"[DEEP DIAG] mapper -> {m} class={cls} id={id(cls) if cls is not None else None} module={getattr(cls, '__module__', None)}")
                                     except Exception:
                                         pass
                         except Exception:
@@ -1489,20 +1438,12 @@ def initialize_default_admin():
                         except Exception:
                             continue
                     if extra_dbs:
-                        print(
-                            "[DEEP DIAG] modules exposing a `db = SQLAlchemy()` instance:"
-                        )
+                        print("[DEEP DIAG] modules exposing a `db = SQLAlchemy()` instance:")
                         for mname, did, cand in extra_dbs:
-                            is_canon = (
-                                canonical_db is not None and id(canonical_db) == did
-                            )
-                            print(
-                                f"[DEEP DIAG] - {mname} id={did} canonical={is_canon} repr={cand}"
-                            )
+                            is_canon = canonical_db is not None and id(canonical_db) == did
+                            print(f"[DEEP DIAG] - {mname} id={did} canonical={is_canon} repr={cand}")
                     else:
-                        print(
-                            "[DEEP DIAG] no other modules exposing db=SQLAlchemy() found"
-                        )
+                        print("[DEEP DIAG] no other modules exposing db=SQLAlchemy() found")
                 except Exception as _e:
                     print(
                         "[DEEP DIAG] scanning sys.modules for extra db instances failed:",
@@ -1518,14 +1459,9 @@ def initialize_default_admin():
                         try:
                             if not mobj:
                                 continue
-                            for attrname, attrval in getattr(
-                                mobj, "__dict__", {}
-                            ).items():
+                            for attrname, attrval in getattr(mobj, "__dict__", {}).items():
                                 try:
-                                    if (
-                                        _inspect.isclass(attrval)
-                                        and attrval.__name__ == "AuditLog"
-                                    ):
+                                    if _inspect.isclass(attrval) and attrval.__name__ == "AuditLog":
                                         found.append(
                                             (
                                                 mname,
@@ -1547,15 +1483,11 @@ def initialize_default_admin():
                                 entry,
                             )
                     else:
-                        print(
-                            "[DEEP DIAG] no AuditLog classes found in sys.modules scan"
-                        )
+                        print("[DEEP DIAG] no AuditLog classes found in sys.modules scan")
                 except Exception as _e:
                     print("[DEEP DIAG] sys.modules AuditLog scan failed:", _e)
 
-                print(
-                    "[DEEP DIAG] initialize_default_admin: deep registry diagnostics complete"
-                )
+                print("[DEEP DIAG] initialize_default_admin: deep registry diagnostics complete")
         except Exception:
             print(
                 "[DEEP DIAG] initialize_default_admin: diagnostics failed:\n",
@@ -1570,9 +1502,7 @@ def initialize_default_admin():
         try:
             with session.begin():
                 # Check if admin user exists
-                admin_user = (
-                    session.query(AdminUser).filter_by(username="admin").first()
-                )
+                admin_user = session.query(AdminUser).filter_by(username="admin").first()
                 if admin_user:
                     logger.info("Admin user already exists")
                     return admin_user
@@ -1593,9 +1523,7 @@ def initialize_default_admin():
                 # if not already present. Use the same transactional session.
                 existing_user = session.query(User).filter_by(username="admin").first()
                 if existing_user:
-                    logger.info(
-                        "User with username 'admin' already exists in users. Skipping creation."
-                    )
+                    logger.info("User with username 'admin' already exists in users. Skipping creation.")
                 else:
                     logger.info("Creating User record with superadmin role...")
                     # Determine a compatible RoleEnum value for superadmin.
@@ -1623,9 +1551,7 @@ def initialize_default_admin():
                         role=role_value,
                         is_active=True,
                     )
-                    logger.info(
-                        f"User object created: username={user.username}, role={user.role}"
-                    )
+                    logger.info(f"User object created: username={user.username}, role={user.role}")
                     session.add(user)
                     logger.info("User added to session")
 
@@ -1640,9 +1566,7 @@ def initialize_default_admin():
     except Exception as e:
         import traceback
 
-        logger.error(
-            "Default admin initialization failed: %s\n%s", e, traceback.format_exc()
-        )
+        logger.error("Default admin initialization failed: %s\n%s", e, traceback.format_exc())
         try:
             # Best-effort: ensure session rollback to release connections
             db = get_db()
@@ -1778,9 +1702,7 @@ HelpChain системата
             logger.info("Email 2FA code saved to file as fallback")
             return True
         except Exception as file_e:
-            logger.error(
-                f"Failed to save email 2FA code to file: {file_e}", exc_info=app.debug
-            )
+            logger.error(f"Failed to save email 2FA code to file: {file_e}", exc_info=app.debug)
             return False
 
 
@@ -1822,18 +1744,11 @@ def load_realtime_settings():
     except FileNotFoundError:
         return REALTIME_SETTINGS_DEFAULTS.copy()
     except json.JSONDecodeError as error:
-        app.logger.warning(
-            "Realtime settings file corrupted (%s). Using defaults.", error
-        )
+        app.logger.warning("Realtime settings file corrupted (%s). Using defaults.", error)
         return REALTIME_SETTINGS_DEFAULTS.copy()
 
     merged = REALTIME_SETTINGS_DEFAULTS.copy()
-    merged.update(
-        {
-            key: bool(persisted.get(key, default))
-            for key, default in REALTIME_SETTINGS_DEFAULTS.items()
-        }
-    )
+    merged.update({key: bool(persisted.get(key, default)) for key, default in REALTIME_SETTINGS_DEFAULTS.items()})
     return merged
 
 
@@ -1953,6 +1868,7 @@ def _test_bypass_admin_header():
                 # Diagnostic: log minimal session/header/cookie state to help pytest tracing
                 try:
                     from flask_login import current_user
+
                     dn = {
                         "session_keys": list(session.keys()),
                         "session_admin_logged_in": bool(session.get("admin_logged_in")),
@@ -1986,6 +1902,7 @@ def _test_bypass_admin_header():
                 # Diagnostic info when header bypass applied
                 try:
                     from flask_login import current_user
+
                     hdr_dn = {
                         "session_keys": list(session.keys()),
                         "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
@@ -2013,6 +1930,7 @@ def _test_bypass_admin_header():
 def _global_request_diagnostics():
     try:
         from flask_login import current_user
+
         dn = {
             "path": request.path,
             "method": request.method,
@@ -2109,6 +2027,7 @@ def _pytest_force_admin_login():
                 # Diagnostic: show session/header/cookie so tests can correlate
                 try:
                     from flask_login import current_user
+
                     diag = {
                         "session_keys": list(session.keys()),
                         "session_admin_logged_in": bool(session.get("admin_logged_in")),
@@ -2250,6 +2169,7 @@ def _admin_force_login():
         try:
             # Additional diagnostics to help trace why later requests may see unauthenticated state
             from flask_login import current_user
+
             diag2 = {
                 "session_keys": list(session.keys()),
                 "session_admin_logged_in": bool(session.get("admin_logged_in")),
@@ -2329,9 +2249,7 @@ def _ensure_db_engine_registration():
             try:
                 existing_engine.dispose()
             except Exception as dispose_error:  # pragma: no cover - defensive
-                app.logger.debug(
-                    "Failed disposing old SQLAlchemy engine: %s", dispose_error
-                )
+                app.logger.debug("Failed disposing old SQLAlchemy engine: %s", dispose_error)
         app_engines.clear()
 
     database_uri = app_obj.config.get("SQLALCHEMY_DATABASE_URI")
@@ -2361,9 +2279,7 @@ def _ensure_db_engine_registration():
 
 
 def _get_bind_with_registration(self, mapper=None, clause=None, **kwargs):
-    app.logger.debug(
-        "Attempting SQLAlchemy bind for app %s", id(current_app._get_current_object())
-    )
+    app.logger.debug("Attempting SQLAlchemy bind for app %s", id(current_app._get_current_object()))
     pass
 
 
@@ -2398,11 +2314,7 @@ def send_email_now(*, subject, recipients, body, sender=None, html=None, templat
             }
         )
         return None
-    use_async = (
-        celery
-        and not app.config.get("TESTING")
-        and is_realtime_feature_enabled("background")
-    )
+    use_async = celery and not app.config.get("TESTING") and is_realtime_feature_enabled("background")
 
     if use_async:
         try:
@@ -2454,9 +2366,7 @@ if is_realtime_feature_enabled("websocket") and not app.config.get("TESTING", Fa
     app.config["SOCKETIO_GEVENT_ENABLED"] = gevent_ready
     from advanced_analytics import RealTimeNotifications
 
-    realtime_notifications = RealTimeNotifications(
-        socketio, feature_checker=is_realtime_feature_enabled
-    )
+    realtime_notifications = RealTimeNotifications(socketio, feature_checker=is_realtime_feature_enabled)
 else:
     socketio = None
     realtime_notifications = None
@@ -2546,11 +2456,7 @@ import sys
 # Heuristic to detect running under pytest: check env var or command-line
 # invocation. This helps ensure the app uses the test DB path early during
 # import when pytest is loading modules.
-if (
-    os.getenv("PYTEST_CURRENT_TEST")
-    or os.getenv("PYTEST_RUNNING")
-    or any("pytest" in str(a).lower() for a in sys.argv)
-):
+if os.getenv("PYTEST_CURRENT_TEST") or os.getenv("PYTEST_RUNNING") or any("pytest" in str(a).lower() for a in sys.argv):
     # If the test harness already provided a test DB path (e.g. via
     # HELPCHAIN_TEST_DB_PATH), prefer that. Otherwise fall back to a
     # repository-local `test_local.sqlite` to avoid creating in-memory DBs
@@ -2587,9 +2493,7 @@ elif app.config.get("TESTING"):
         }
     except Exception:
         # If StaticPool isn't available, fall back to conservative options
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-            "connect_args": {"check_same_thread": False}
-        }
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"connect_args": {"check_same_thread": False}}
     logger.info("TESTING: Using in-memory SQLite database")
     # Provide test VAPID keys so push-related tests receive a configured key.
     try:
@@ -2684,28 +2588,19 @@ def _apply_static_cache_headers(response):
         if is_static:
             # Respect a correct Cache-Control, but override explicit no-cache/private/0 to enable CDN/browser caching
             existing_cc = response.headers.get("Cache-Control", "").lower()
-            should_override = (
-                not existing_cc
-                or "no-cache" in existing_cc
-                or "max-age=0" in existing_cc
-                or "private" in existing_cc
-            )
+            should_override = not existing_cc or "no-cache" in existing_cc or "max-age=0" in existing_cc or "private" in existing_cc
 
             if should_override:
                 # Fingerprinted assets (with a short hash) should be immutable for a long TTL
                 if re.search(r"-[a-f0-9]{8,}\.[a-z0-9]+$", req_path):
-                    response.headers["Cache-Control"] = (
-                        "public, max-age=31536000, immutable"
-                    )
+                    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
                 else:
                     max_age = int(app.config.get("SEND_FILE_MAX_AGE_DEFAULT", 86400))
                     response.headers["Cache-Control"] = f"public, max-age={max_age}"
 
         # Protect admin routes explicitly: never allow public caching
         if req_path.startswith("/admin"):
-            response.headers["Cache-Control"] = (
-                "no-store, no-cache, must-revalidate, max-age=0"
-            )
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
 
     except Exception:
         # Don't break responses on header-setting failures
@@ -2747,9 +2642,7 @@ def _apply_static_cache_headers(response):
                 try:
                     import logging as _logging
 
-                    _logging.getLogger().warning(
-                        "404 Not Found: %s %s", safe_method, safe_path
-                    )
+                    _logging.getLogger().warning("404 Not Found: %s %s", safe_method, safe_path)
                 except Exception:
                     app.logger.debug(
                         "Fallback root logger warning failed: %s",
@@ -2782,30 +2675,16 @@ def _apply_static_cache_headers(response):
                                 traceback.format_exc(),
                             )
                 except Exception:
-                    app.logger.debug(
-                        "Determining TESTING flag failed: %s", traceback.format_exc()
-                    )
+                    app.logger.debug("Determining TESTING flag failed: %s", traceback.format_exc())
             except Exception:
                 try:
-                    safe_path = (
-                        request.path
-                        if isinstance(request.path, str)
-                        else str(request.path)
-                    )
-                    safe_path = (
-                        safe_path.replace("\r", "")
-                        .replace("\n", "")
-                        .replace("\x00", "")
-                    )
+                    safe_path = request.path if isinstance(request.path, str) else str(request.path)
+                    safe_path = safe_path.replace("\r", "").replace("\n", "").replace("\x00", "")
                     app.logger.warning("404 Not Found: %s", safe_path)
                 except Exception:
-                    app.logger.debug(
-                        "Fallback 404 logging failed: %s", traceback.format_exc()
-                    )
+                    app.logger.debug("Fallback 404 logging failed: %s", traceback.format_exc())
     except Exception:
-        app.logger.warning(
-            "Unexpected exception in after_request hook: %s", traceback.format_exc()
-        )
+        app.logger.warning("Unexpected exception in after_request hook: %s", traceback.format_exc())
 
     try:
         # Test-only diagnostic marker to confirm after_request 404 path runs
@@ -2845,18 +2724,14 @@ def _run_migrations_with_fallback():
     uri = app.config.get("SQLALCHEMY_DATABASE_URI", "") or ""
 
     if uri.startswith("sqlite:///:memory:"):
-        app.logger.info(
-            "In-memory database detected; using db.create_all() for schema setup."
-        )
+        app.logger.info("In-memory database detected; using db.create_all() for schema setup.")
         db.create_all()
         return
 
     try:
         from flask_migrate import upgrade as flask_upgrade
     except ImportError:
-        app.logger.warning(
-            "Flask-Migrate not available; falling back to db.create_all()."
-        )
+        app.logger.warning("Flask-Migrate not available; falling back to db.create_all().")
         db.create_all()
         return
 
@@ -2876,9 +2751,7 @@ def _run_migrations_with_fallback():
 def initialize_database():
     """Initialize database tables and default data for production"""
     if app.config.get("TESTING"):
-        app.logger.info(
-            "TESTING mode: skipping automatic db.create_all() and migrations."
-        )
+        app.logger.info("TESTING mode: skipping automatic db.create_all() and migrations.")
         return
     try:
         with app.app_context():
@@ -2912,9 +2785,7 @@ def initialize_database():
                 try:
                     importlib.import_module("performance_benchmarking")
                 except ImportError:
-                    app.logger.info(
-                        "Performance benchmarking module not available; skipping"
-                    )
+                    app.logger.info("Performance benchmarking module not available; skipping")
                 else:
                     app.logger.info("Performance benchmarking initialized")
             except Exception as perf_error:
@@ -3004,12 +2875,7 @@ def _geo_country(ip: str | None) -> str | None:
     if not ip:
         return None
     # Skip local/private ranges
-    if (
-        ip.startswith("127.")
-        or ip.startswith("10.")
-        or ip.startswith("192.168.")
-        or ip.startswith("172.")
-    ):
+    if ip.startswith("127.") or ip.startswith("10.") or ip.startswith("192.168.") or ip.startswith("172."):
         return None
     if ip in _ip_country_cache:
         return _ip_country_cache[ip]
@@ -3138,9 +3004,7 @@ def get_locale():
     country = _geo_country(client_ip)
     ip_lang = _country_to_lang(country)
     if ip_lang in supported_locales:
-        app.logger.debug(
-            "Locale resolved from IP %s country %s => %s", client_ip, country, ip_lang
-        )
+        app.logger.debug("Locale resolved from IP %s country %s => %s", client_ip, country, ip_lang)
         return ip_lang
 
     # 4. Browser preference
@@ -3274,29 +3138,17 @@ def allowed_file(filename):
 
 
 # Email configuration
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
-    "MAIL_DEFAULT_SENDER", app.config.get("MAIL_DEFAULT_SENDER")
-)
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", app.config.get("MAIL_DEFAULT_SENDER"))
 
 mail_server_env = os.getenv("MAIL_SERVER")
 if mail_server_env:
     app.config["MAIL_SERVER"] = mail_server_env
 
 app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", app.config.get("MAIL_PORT", 587)))
-app.config["MAIL_USE_TLS"] = (
-    os.getenv("MAIL_USE_TLS", str(app.config.get("MAIL_USE_TLS", True))).lower()
-    == "true"
-)
-app.config["MAIL_USE_SSL"] = (
-    os.getenv("MAIL_USE_SSL", str(app.config.get("MAIL_USE_SSL", False))).lower()
-    == "true"
-)
-app.config["MAIL_USERNAME"] = os.getenv(
-    "MAIL_USERNAME", app.config.get("MAIL_USERNAME")
-)
-app.config["MAIL_PASSWORD"] = os.getenv(
-    "MAIL_PASSWORD", app.config.get("MAIL_PASSWORD")
-)
+app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", str(app.config.get("MAIL_USE_TLS", True))).lower() == "true"
+app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", str(app.config.get("MAIL_USE_SSL", False))).lower() == "true"
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME", app.config.get("MAIL_USERNAME"))
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", app.config.get("MAIL_PASSWORD"))
 
 logger.info("Email configuration loaded")
 logger.debug(f"MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
@@ -3346,15 +3198,11 @@ def _should_gzip_response(response):
 def _gzip_response(response):
     """Apply gzip compression to the response payload."""
     payload = response.get_data()
-    compressed_payload = gzip.compress(
-        payload, compresslevel=app.config.get("COMPRESS_LEVEL", 6)
-    )
+    compressed_payload = gzip.compress(payload, compresslevel=app.config.get("COMPRESS_LEVEL", 6))
     response.set_data(compressed_payload)
     response.headers["Content-Encoding"] = "gzip"
     vary = response.headers.get("Vary")
-    response.headers["Vary"] = (
-        "Accept-Encoding" if not vary else f"{vary}, Accept-Encoding"
-    )
+    response.headers["Vary"] = "Accept-Encoding" if not vary else f"{vary}, Accept-Encoding"
     response.headers["Content-Length"] = str(len(compressed_payload))
     return response
 
@@ -3445,7 +3293,6 @@ except Exception as e:
 # Initialize analytics service with database session (skip during tests so
 # test fixtures can control DB setup and avoid early engine binding).
 try:
-
     if not app.config.get("TESTING", False):
         init_analytics_service(db.session)
         app.logger.info("Analytics service initialized successfully")
@@ -3745,9 +3592,7 @@ if socketio:
     def handle_connect():
         """Handle client connection"""
         if not is_realtime_feature_enabled("websocket"):
-            app.logger.info(
-                "Rejecting SocketIO connection because websocket feature is disabled"
-            )
+            app.logger.info("Rejecting SocketIO connection because websocket feature is disabled")
             return False
         app.logger.info(f"Client connected: {request.sid}")
         socketio.emit("connected", {"status": "success", "sid": request.sid})
@@ -3779,9 +3624,7 @@ if socketio:
     @socketio.on("join_analytics")
     def handle_join_analytics(data):
         """Handle joining analytics room for real-time updates"""
-        if not is_realtime_feature_enabled(
-            "websocket"
-        ) or not is_realtime_feature_enabled("charts"):
+        if not is_realtime_feature_enabled("websocket") or not is_realtime_feature_enabled("charts"):
             app.logger.debug("join_analytics ignored because charts feature disabled")
             return
         room = data.get("room", "analytics")
@@ -3799,13 +3642,10 @@ if socketio:
     @socketio.on("request_analytics_update")
     def handle_analytics_update():
         """Handle request for analytics data update"""
-        if not is_realtime_feature_enabled(
-            "websocket"
-        ) or not is_realtime_feature_enabled("charts"):
+        if not is_realtime_feature_enabled("websocket") or not is_realtime_feature_enabled("charts"):
             app.logger.debug("Analytics update skipped (charts feature disabled)")
             return
         try:
-
             # Get latest analytics data
             dashboard_data = analytics_service.get_dashboard_analytics()
 
@@ -3828,9 +3668,7 @@ if socketio:
                 "requests_today": dashboard_data.get("totals", {}).get("requests", 0),
                 "success_rate": 85.5,
                 "avg_response_time": 2.3,
-                "active_volunteers": dashboard_data.get("totals", {}).get(
-                    "volunteers", 0
-                ),
+                "active_volunteers": dashboard_data.get("totals", {}).get("volunteers", 0),
                 "timestamp": datetime.now().isoformat(),
             }
 
@@ -4024,9 +3862,7 @@ if socketio:
             )
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
-        app.logger.info(
-            f"Request {request_id} status updated from {old_status} to {new_status}"
-        )
+        app.logger.info(f"Request {request_id} status updated from {old_status} to {new_status}")
 
     @socketio.on("volunteer_assigned")
     def handle_volunteer_assigned(data):
@@ -4082,9 +3918,7 @@ if socketio:
                         "timestamp": datetime.now().isoformat(),
                     }
 
-                    socketio.emit(
-                        "volunteer_location_updated", location_data, room="requests"
-                    )
+                    socketio.emit("volunteer_location_updated", location_data, room="requests")
                     socketio.emit(
                         "volunteer_location_updated",
                         location_data,
@@ -4098,12 +3932,8 @@ if socketio:
     @socketio.on("subscribe_analytics")
     def handle_subscribe_analytics(data):
         """Subscribe to specific analytics updates"""
-        if not is_realtime_feature_enabled(
-            "websocket"
-        ) or not is_realtime_feature_enabled("charts"):
-            app.logger.debug(
-                "subscribe_analytics ignored due to charts feature disabled"
-            )
+        if not is_realtime_feature_enabled("websocket") or not is_realtime_feature_enabled("charts"):
+            app.logger.debug("subscribe_analytics ignored due to charts feature disabled")
             return
         metrics = data.get("metrics", [])
         user_id = data.get("user_id")
@@ -4133,14 +3963,10 @@ if socketio:
                         "labels": ["Sofia", "Plovdiv", "Varna", "Burgas", "Other"],
                         "data": [45, 23, 18, 12, 8],
                     },
-                    "requests_today": dashboard_data.get("totals", {}).get(
-                        "requests", 0
-                    ),
+                    "requests_today": dashboard_data.get("totals", {}).get("requests", 0),
                     "success_rate": 85.5,
                     "avg_response_time": 2.3,
-                    "active_volunteers": dashboard_data.get("totals", {}).get(
-                        "volunteers", 0
-                    ),
+                    "active_volunteers": dashboard_data.get("totals", {}).get("volunteers", 0),
                     "timestamp": datetime.now().isoformat(),
                 }
 
@@ -4175,9 +4001,7 @@ if socketio:
     @socketio.on("request_live_metrics")
     def handle_request_live_metrics():
         """Send live metrics update"""
-        if not is_realtime_feature_enabled(
-            "websocket"
-        ) or not is_realtime_feature_enabled("charts"):
+        if not is_realtime_feature_enabled("websocket") or not is_realtime_feature_enabled("charts"):
             app.logger.debug("Live metrics request ignored; charts feature disabled")
             return
         try:
@@ -4357,9 +4181,7 @@ _template_dirs = [
 _loaders = [FileSystemLoader(d) for d in _template_dirs if os.path.isdir(d)]
 # добавяме текущия loader в края (ако има)
 if _loaders:
-    app.jinja_loader = ChoiceLoader(
-        _loaders + ([app.jinja_loader] if getattr(app, "jinja_loader", None) else [])
-    )
+    app.jinja_loader = ChoiceLoader(_loaders + ([app.jinja_loader] if getattr(app, "jinja_loader", None) else []))
 
 if app.config.get("ENV") == "production" and not app.config.get("TESTING", False):
     app.config["TEMPLATES_AUTO_RELOAD"] = False
@@ -4405,9 +4227,7 @@ def strptime_filter(date_string, format="%Y-%m-%dT%H:%M:%S.%f"):
 @app.before_request
 def log_request():
     try:
-        app.logger.info(
-            f"Request: {request.method} {request.url} - Path: {request.path}"
-        )
+        app.logger.info(f"Request: {request.method} {request.url} - Path: {request.path}")
         print(f"DEBUG: Request: {request.method} {request.url} - Path: {request.path}")
     except Exception as e:
         print(f"DEBUG: Error in before_request: {e}")
@@ -4920,15 +4740,11 @@ def legacy_static_landing_redirect():
 def admin_login():
     logger.info("Admin login route called")
     email_2fa_flag = app.config.get("EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED)
-    logger.debug(
-        f"Request method: {request.method}, EMAIL_2FA_ENABLED = {email_2fa_flag}"
-    )
+    logger.debug(f"Request method: {request.method}, EMAIL_2FA_ENABLED = {email_2fa_flag}")
     # Session diagnostics
     logger.info(f"admin_login called - session keys: {list(session.keys())}")
     logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
-    logger.info(
-        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
-    )
+    logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
     logger.info(f"Session object id: {id(session)}")
 
     error = None
@@ -4965,33 +4781,20 @@ def admin_login():
 
         # Diagnostics to mirror user logs
         try:
-            logger.info(
-                f"admin_login diagnostic: sys.modules['appy'] id={id(sys.modules.get('appy', None))}"
-            )
+            logger.info(f"admin_login diagnostic: sys.modules['appy'] id={id(sys.modules.get('appy', None))}")
         except Exception:
             pass
         try:
             logger.info(f"admin_login diagnostic: found_admin={bool(found_admin)}")
             logger.info(f"admin_login diagnostic: db.engine id={id(db.engine)}")
-            logger.info(
-                f"admin_login diagnostic: db.session.bind id={id(db.session.bind) if db.session.bind else None}"
-            )
-            logger.info(
-                f"admin_login diagnostic: AdminUser class id={id(AdminUser)} module={getattr(AdminUser,'__module__',None)}"
-            )
-            logger.info(
-                f"admin_login diagnostic: AdminUser.count() = {sess.query(AdminUser).count()}"
-            )
+            logger.info(f"admin_login diagnostic: db.session.bind id={id(db.session.bind) if db.session.bind else None}")
+            logger.info(f"admin_login diagnostic: AdminUser class id={id(AdminUser)} module={getattr(AdminUser, '__module__', None)}")
+            logger.info(f"admin_login diagnostic: AdminUser.count() = {sess.query(AdminUser).count()}")
             try:
-                raw_count = (
-                    sess.execute(select(func.count()).select_from(AdminUser)).scalar()
-                    or 0
-                )
+                raw_count = sess.execute(select(func.count()).select_from(AdminUser)).scalar() or 0
             except Exception:
                 raw_count = None
-            logger.info(
-                f"admin_login diagnostic: raw session count(admin_users) = {raw_count}"
-            )
+            logger.info(f"admin_login diagnostic: raw session count(admin_users) = {raw_count}")
         except Exception:
             pass
 
@@ -5008,9 +4811,7 @@ def admin_login():
             app.logger.error(f"Password check raised: {_e}")
 
         print("DIAGNOSTIC_ADMIN_LOGIN:", getattr(user_obj, "username", None), pw_ok)
-        logger.info(
-            f"Diagnostic: chosen_user.username={getattr(user_obj, 'username', None)}, pw_ok={pw_ok}"
-        )
+        logger.info(f"Diagnostic: chosen_user.username={getattr(user_obj, 'username', None)}, pw_ok={pw_ok}")
 
         # Accept login if identifier matches username/email of the located user
         ident_ok = False
@@ -5031,24 +4832,18 @@ def admin_login():
             session.pop("volunteer_name", None)
 
             # Email 2FA when enabled or under TESTING
-            if app.config.get("EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED) or app.config.get(
-                "TESTING"
-            ):
+            if app.config.get("EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED) or app.config.get("TESTING"):
                 logger.info("Email 2FA enabled; sending verification code")
                 code = generate_email_2fa_code()
                 session["pending_email_2fa"] = True
                 session["pending_admin_id"] = user_obj.id
                 session["email_2fa_code"] = code
-                session["email_2fa_expires"] = (
-                    datetime.now() + timedelta(minutes=10)
-                ).timestamp()
+                session["email_2fa_expires"] = (datetime.now() + timedelta(minutes=10)).timestamp()
 
                 remote_addr = request.remote_addr or "0.0.0.0"
                 user_agent = request.headers.get("User-Agent", "Unknown")
                 if not send_email_2fa_code(code, remote_addr, user_agent):
-                    logger.warning(
-                        "Failed to dispatch email 2FA code; fallback engaged"
-                    )
+                    logger.warning("Failed to dispatch email 2FA code; fallback engaged")
                 flash("Изпратен е код за верификация на имейла.", "info")
                 return redirect(url_for("admin_email_2fa"))
 
@@ -5065,18 +4860,12 @@ def admin_login():
             session["admin_username"] = user_obj.username
             session["user_id"] = user_obj.id
             session.permanent = True
-            logger.info(
-                f"Session set: admin_logged_in={session.get('admin_logged_in')}, admin_user_id={session.get('admin_user_id')}"
-            )
+            logger.info(f"Session set: admin_logged_in={session.get('admin_logged_in')}, admin_user_id={session.get('admin_user_id')}")
             return redirect(url_for("admin_dashboard"))
         else:
-            logger.warning(
-                f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}"
-            )
+            logger.warning(f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}")
             error = "Грешно потребителско име или парола!"
-            app.logger.warning(
-                f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}"
-            )
+            app.logger.warning(f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}")
     return render_template("admin_login.html", error=error)
 
 
@@ -5098,9 +4887,7 @@ def seed_admin():
         admin_user = initialize_default_admin()
         if not admin_user:
             return (
-                jsonify(
-                    {"success": False, "error": "Неуспешно създаване на администратор."}
-                ),
+                jsonify({"success": False, "error": "Неуспешно създаване на администратор."}),
                 500,
             )
         try:
@@ -5130,9 +4917,7 @@ def admin_set_password(new_pw):
             return jsonify({"success": False, "error": "Админът липсва"}), 404
         admin_user.set_password(new_pw)
         db.session.commit()
-        return jsonify(
-            {"success": True, "message": "Паролата е обновена", "password": new_pw}
-        )
+        return jsonify({"success": True, "message": "Паролата е обновена", "password": new_pw})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -5180,9 +4965,7 @@ def admin_root():
         # Fallback: render login template directly instead of raising
         try:
             return (
-                render_template(
-                    "admin_login.html", error="Вътрешна грешка, опитайте пак."
-                ),
+                render_template("admin_login.html", error="Вътрешна грешка, опитайте пак."),
                 500,
             )
         except Exception:
@@ -5290,35 +5073,17 @@ def admin_requests_api():
                     "id": req.id,
                     "name": getattr(req, "name", None),
                     "status": req.status,
-                    "priority": (
-                        req.priority.name
-                        if hasattr(req, "priority") and req.priority is not None
-                        else None
-                    ),
+                    "priority": (req.priority.name if hasattr(req, "priority") and req.priority is not None else None),
                     "request_type": getattr(req, "request_type", None),
                     "city": getattr(req, "city", None),
                     "location": getattr(req, "location_text", None),
                     "volunteer": {
-                        "id": (
-                            getattr(req.assigned_volunteer, "id", None)
-                            if hasattr(req, "assigned_volunteer")
-                            else None
-                        ),
-                        "name": (
-                            getattr(req.assigned_volunteer, "name", None)
-                            if hasattr(req, "assigned_volunteer")
-                            else None
-                        ),
-                        "email": (
-                            getattr(req.assigned_volunteer, "email", None)
-                            if hasattr(req, "assigned_volunteer")
-                            else None
-                        ),
+                        "id": (getattr(req.assigned_volunteer, "id", None) if hasattr(req, "assigned_volunteer") else None),
+                        "name": (getattr(req.assigned_volunteer, "name", None) if hasattr(req, "assigned_volunteer") else None),
+                        "email": (getattr(req.assigned_volunteer, "email", None) if hasattr(req, "assigned_volunteer") else None),
                     },
                     "created_at": _format_datetime_for_response(req.created_at),
-                    "completed_at": _format_datetime_for_response(
-                        getattr(req, "completed_at", None)
-                    ),
+                    "completed_at": _format_datetime_for_response(getattr(req, "completed_at", None)),
                 },
             )
         )
@@ -5331,16 +5096,13 @@ def admin_requests_api():
                     "id": r.id,
                     "name": getattr(r, "name", None),
                     "status": r.status,
-                    "priority": getattr(r, "urgency", None)
-                    or getattr(r, "priority", None),
+                    "priority": getattr(r, "urgency", None) or getattr(r, "priority", None),
                     "request_type": getattr(r, "category", None),
                     "city": None,
                     "location": getattr(r, "location", None),
                     "volunteer": {"id": None, "name": None, "email": None},
                     "created_at": _format_datetime_for_response(r.created_at),
-                    "completed_at": _format_datetime_for_response(
-                        getattr(r, "completed_at", None)
-                    ),
+                    "completed_at": _format_datetime_for_response(getattr(r, "completed_at", None)),
                 },
             )
         )
@@ -5393,13 +5155,12 @@ def admin_dashboard():
     app.logger.info(f"admin_logged_in: {session.get('admin_logged_in')}")
     app.logger.info(f"admin_user_id: {session.get('admin_user_id')}")
     app.logger.info(f"admin_username: {session.get('admin_username')}")
-    app.logger.info(
-        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
-    )
+    app.logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
     app.logger.info(f"Session object id: {id(session)}")
     app.logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
     try:
         from flask_login import current_user
+
         extra_diag = {
             "current_user_authenticated": getattr(current_user, "is_authenticated", False),
             "current_user_repr": getattr(current_user, "get_id", lambda: None)(),
@@ -5427,16 +5188,8 @@ def admin_dashboard():
     try:
         # Check if HelpRequest model is available
         total_requests = db.session.query(HelpRequest).count()
-        pending_requests = (
-            db.session.query(HelpRequest)
-            .filter(HelpRequest.status == "pending")
-            .count()
-        )
-        completed_requests = (
-            db.session.query(HelpRequest)
-            .filter(HelpRequest.status == "completed")
-            .count()
-        )
+        pending_requests = db.session.query(HelpRequest).filter(HelpRequest.status == "pending").count()
+        completed_requests = db.session.query(HelpRequest).filter(HelpRequest.status == "completed").count()
         total_volunteers = db.session.query(Volunteer).count()
     except Exception as e:
         # If any DB access fails (common in early test setups where the
@@ -5452,24 +5205,16 @@ def admin_dashboard():
     # Get filtered requests based on filter parameter
     try:
         if filter_param == "pending":
-            requests_query = db.session.query(HelpRequest).filter(
-                HelpRequest.status == "pending"
-            )
+            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "pending")
         elif filter_param == "completed":
-            requests_query = db.session.query(HelpRequest).filter(
-                HelpRequest.status == "completed"
-            )
+            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "completed")
         else:  # "all" or default
             requests_query = db.session.query(HelpRequest)
 
-        requests_query = requests_query.options(
-            joinedload(HelpRequest.assigned_volunteer)
-        )
+        requests_query = requests_query.options(joinedload(HelpRequest.assigned_volunteer))
 
         # Limit to recent requests for dashboard display
-        requests = (
-            requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
-        )
+        requests = requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
 
         # Convert to the expected format for template
         requests_data = []
@@ -5483,16 +5228,8 @@ def admin_dashboard():
                     "city": req.city,
                     "location": getattr(req, "location_text", None),
                     "volunteer_name": getattr(req.assigned_volunteer, "name", None),
-                    "created_at": (
-                        req.created_at.strftime("%Y-%m-%d %H:%M")
-                        if req.created_at
-                        else "Няма дата"
-                    ),
-                    "completed_at": (
-                        req.completed_at.strftime("%Y-%m-%d %H:%M")
-                        if req.completed_at
-                        else None
-                    ),
+                    "created_at": (req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "Няма дата"),
+                    "completed_at": (req.completed_at.strftime("%Y-%m-%d %H:%M") if req.completed_at else None),
                 }
             )
 
@@ -5589,9 +5326,7 @@ def admin_list_tasks():
 def admin_trigger_task(task_name):
     """Trigger a background admin task; legacy endpoint maintained for tests."""
     payload = request.get_json(silent=True) or {}
-    app.logger.info(
-        "Admin task trigger requested: task=%s payload=%s", task_name, payload
-    )
+    app.logger.info("Admin task trigger requested: task=%s payload=%s", task_name, payload)
     return jsonify({"success": True, "task": task_name, "queued": True})
 
 
@@ -5618,9 +5353,7 @@ def admin_find_matches(request_id):
                 }
             )
     except Exception as error:  # pragma: no cover - defensive logging
-        app.logger.warning(
-            "Unable to load volunteer matches for request %s: %s", request_id, error
-        )
+        app.logger.warning("Unable to load volunteer matches for request %s: %s", request_id, error)
 
     return jsonify({"request_id": request_id, "matches": matches})
 
@@ -5786,9 +5519,7 @@ def admin_assign_volunteer(request_id):
         db.session.rollback()
         app.logger.error(f"Error assigning volunteer to request {request_id}: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Грешка при присвояване на доброволец"}
-            ),
+            jsonify({"success": False, "message": "Грешка при присвояване на доброволец"}),
             500,
         )
 
@@ -5841,13 +5572,9 @@ def admin_delete_request(request_id):
             db.session.rollback()
         except Exception:
             pass
-        app.logger.error(
-            f"Error deleting request {request_id}: {e}\n{traceback.format_exc()}"
-        )
+        app.logger.error(f"Error deleting request {request_id}: {e}\n{traceback.format_exc()}")
         return (
-            jsonify(
-                {"success": False, "message": f"Грешка при изтриване на заявката: {e}"}
-            ),
+            jsonify({"success": False, "message": f"Грешка при изтриване на заявката: {e}"}),
             500,
         )
 
@@ -5868,9 +5595,7 @@ def admin_request_details(request_id):
         # Get available volunteers for assignment (if request is approved)
         available_volunteers = []
         if request_obj.status == "approved":
-            available_volunteers = (
-                db.session.query(Volunteer).filter_by(is_active=True).all()
-            )
+            available_volunteers = db.session.query(Volunteer).filter_by(is_active=True).all()
 
         return render_template(
             "admin_request_details.html",
@@ -5899,9 +5624,7 @@ def admin_edit_request(request_id):
             request_obj.email = request.form.get("email", request_obj.email)
             request_obj.message = request.form.get("message", request_obj.message)
             request_obj.title = request.form.get("category", request_obj.title)
-            request_obj.location_text = request.form.get(
-                "location", request_obj.location_text
-            )
+            request_obj.location_text = request.form.get("location", request_obj.location_text)
 
             db.session.commit()
 
@@ -5913,9 +5636,7 @@ def admin_edit_request(request_id):
         if session.get("admin_user_id"):
             current_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
-        return render_template(
-            "admin_edit_request.html", request=request_obj, current_user=current_user
-        )
+        return render_template("admin_edit_request.html", request=request_obj, current_user=current_user)
 
     except Exception as e:
         db.session.rollback()
@@ -5950,22 +5671,14 @@ def admin_profile():
             return render_template("admin_profile.html", current_user=admin_user)
 
         # Check if username is already taken by another admin
-        existing_admin = (
-            db.session.query(AdminUser)
-            .filter(AdminUser.username == username, AdminUser.id != admin_user.id)
-            .first()
-        )
+        existing_admin = db.session.query(AdminUser).filter(AdminUser.username == username, AdminUser.id != admin_user.id).first()
 
         if existing_admin:
             flash("Потребителското име вече е заето.", "error")
             return render_template("admin_profile.html", current_user=admin_user)
 
         # Check if email is already taken by another admin
-        existing_email = (
-            db.session.query(AdminUser)
-            .filter(AdminUser.email == email, AdminUser.id != admin_user.id)
-            .first()
-        )
+        existing_email = db.session.query(AdminUser).filter(AdminUser.email == email, AdminUser.id != admin_user.id).first()
 
         if existing_email:
             flash("Имейлът вече е зает.", "error")
@@ -6003,9 +5716,7 @@ def admin_settings():
     return render_template("admin_settings.html", current_user=admin_user)
 
 
-@app.route(
-    "/notification_dashboard", methods=["GET"], endpoint="notification_dashboard"
-)
+@app.route("/notification_dashboard", methods=["GET"], endpoint="notification_dashboard")
 @require_admin_login
 def notification_dashboard():
     # Get current admin user
@@ -6212,32 +5923,18 @@ def admin_volunteers():
 
         # Apply filters
         if search:
-            query = query.filter(
-                (Volunteer.name.ilike(f"%{search}%"))
-                | (Volunteer.email.ilike(f"%{search}%"))
-                | (Volunteer.phone.ilike(f"%{search}%"))
-            )
+            query = query.filter((Volunteer.name.ilike(f"%{search}%")) | (Volunteer.email.ilike(f"%{search}%")) | (Volunteer.phone.ilike(f"%{search}%")))
 
         if location_filter:
             query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
 
         # Apply sorting
         if sort_by == "name":
-            query = query.order_by(
-                Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc()
-            )
+            query = query.order_by(Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc())
         elif sort_by == "location":
-            query = query.order_by(
-                Volunteer.location.asc()
-                if sort_order == "asc"
-                else Volunteer.location.desc()
-            )
+            query = query.order_by(Volunteer.location.asc() if sort_order == "asc" else Volunteer.location.desc())
         elif sort_by == "created_at":
-            query = query.order_by(
-                Volunteer.created_at.asc()
-                if sort_order == "asc"
-                else Volunteer.created_at.desc()
-            )
+            query = query.order_by(Volunteer.created_at.asc() if sort_order == "asc" else Volunteer.created_at.desc())
         else:
             query = query.order_by(Volunteer.id.asc())
 
@@ -6281,9 +5978,7 @@ def admin_volunteers():
 
             pagination = SimplePagination(page, per_page, total_volunteers, volunteers)
 
-        app.logger.info(
-            f"Admin volunteers query successful: {len(volunteers)} volunteers returned, page {page}/{total_pages}"
-        )
+        app.logger.info(f"Admin volunteers query successful: {len(volunteers)} volunteers returned, page {page}/{total_pages}")
 
     except Exception as e:
         app.logger.error(f"Error in admin_volunteers: {e}", exc_info=app.debug)
@@ -6490,9 +6185,7 @@ def submit_request():
             "email": email[:3] + "***",  # Sanitize PII
             "category": category,
             "location": location,
-            "problem": (
-                problem[:50] + "..." if len(problem) > 50 else problem
-            ),  # Truncate
+            "problem": (problem[:50] + "..." if len(problem) > 50 else problem),  # Truncate
             "filename": filename,
         }
         app.logger.info("submit_request received: %s", request_data)
@@ -6525,9 +6218,7 @@ def submit_request():
 
             db.session.add(help_request)
             db.session.commit()
-            app.logger.info(
-                "Help request saved to database with ID: %s", help_request.id
-            )
+            app.logger.info("Help request saved to database with ID: %s", help_request.id)
         except Exception as e:
             db.session.rollback()
             app.logger.error("Error saving help request to database: %s", str(e))
@@ -6686,19 +6377,12 @@ def volunteer_login():
             logger.warning("Volunteer found: %s", volunteer is not None)
             app.logger.info(f"Volunteer found: {volunteer is not None}")
             if volunteer:
-                app.logger.info(
-                    f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, Email={volunteer.email}"
-                )
+                app.logger.info(f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, Email={volunteer.email}")
 
-                otp_bypassed = (
-                    DISABLE_VOLUNTEER_OTP
-                    or email.lower() in VOLUNTEER_OTP_BYPASS_EMAILS
-                )
+                otp_bypassed = DISABLE_VOLUNTEER_OTP or email.lower() in VOLUNTEER_OTP_BYPASS_EMAILS
 
                 if otp_bypassed:
-                    app.logger.info(
-                        "Volunteer OTP disabled; granting access without code"
-                    )
+                    app.logger.info("Volunteer OTP disabled; granting access without code")
                     _activate_volunteer_session(volunteer)
                     session.pop("pending_volunteer_login", None)
                     flash("Успешен вход като доброволец.", "success")
@@ -6775,9 +6459,7 @@ HelpChain системата
                 app.logger.warning(f"No volunteer found with email: {email}")
         except Exception as e:
             error = f"Database error: {e}"
-            app.logger.error(
-                f"Database error during volunteer login: {e}", exc_info=app.debug
-            )
+            app.logger.error(f"Database error during volunteer login: {e}", exc_info=app.debug)
     return render_template("volunteer_login.html", error=error)
 
 
@@ -6820,19 +6502,12 @@ def volunteer_verify_code():
     try:
         from backend.models import AdminUser
         from backend.extensions import db as _db
+
         try:
-            admin_exists = (
-                _db.session.query(AdminUser)
-                .filter(_db.func.lower(AdminUser.email) == pending_email)
-                .first()
-                is not None
-            )
+            admin_exists = _db.session.query(AdminUser).filter(_db.func.lower(AdminUser.email) == pending_email).first() is not None
         except Exception:
             # Fallback using ORM attribute if direct func not available
-            admin_exists = (
-                AdminUser.query.filter(AdminUser.email.ilike(pending_email)).first()
-                is not None
-            )
+            admin_exists = AdminUser.query.filter(AdminUser.email.ilike(pending_email)).first() is not None
         if admin_exists:
             # Clear pending state and instruct user to use admin login
             session.pop("pending_volunteer_login", None)
@@ -6964,9 +6639,7 @@ def resend_volunteer_code():
 
         # Update session with new code and extended expiration
         session["pending_volunteer_login"]["access_code"] = access_code
-        session["pending_volunteer_login"]["expires"] = (
-            datetime.now().timestamp() + 900
-        )  # 15 minutes
+        session["pending_volunteer_login"]["expires"] = datetime.now().timestamp() + 900  # 15 minutes
 
         # Send email with new access code
         try:
@@ -6987,9 +6660,7 @@ HelpChain системата
             msg = Message(subject="HelpChain - Нов код за достъп", recipients=[volunteer.email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
             mail.send(msg)
 
-            return jsonify(
-                {"success": True, "message": "Нов код е изпратен на вашия имейл."}
-            )
+            return jsonify({"success": True, "message": "Нов код е изпратен на вашия имейл."})
 
         except Exception as e:
             app.logger.error(f"Error resending volunteer code: {e}")
@@ -7006,9 +6677,7 @@ HelpChain системата
                         "С уважение,\nHelpChain системата\n\n"
                         f"{'=' * 50}\n"
                     )
-                app.logger.info(
-                    "New access code saved to file as fallback after failure"
-                )
+                app.logger.info("New access code saved to file as fallback after failure")
                 return jsonify(
                     {
                         "success": True,
@@ -7077,13 +6746,7 @@ def volunteer_dashboard():
 
         # Count urgent tasks nearby (simplified - all urgent pending requests)
         try:
-            urgent_tasks_raw = (
-                db.session.query(db.func.count(HelpRequest.id))
-                .filter(
-                    HelpRequest.status == "pending", HelpRequest.priority == "urgent"
-                )
-                .scalar()
-            )
+            urgent_tasks_raw = db.session.query(db.func.count(HelpRequest.id)).filter(HelpRequest.status == "pending", HelpRequest.priority == "urgent").scalar()
         except Exception as exc:
             app.logger.debug("Urgent task lookup failed: %s", exc)
             urgent_tasks_raw = 0
@@ -7103,12 +6766,8 @@ def volunteer_dashboard():
 
     except Exception as e:
         db.session.rollback()
-        app.logger.error(
-            f"Critical error in volunteer dashboard: {e}", exc_info=app.debug
-        )
-        flash(
-            "Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error"
-        )
+        app.logger.error(f"Critical error in volunteer dashboard: {e}", exc_info=app.debug)
+        flash("Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error")
         return redirect(url_for("index"))
 
 
@@ -7353,21 +7012,15 @@ def volunteer_settings():
 
     if request.method == "POST":
         updated_settings = current_settings.copy()
-        updated_settings["notification_email"] = request.form.get(
-            "notification_email"
-        ) in {"1", "true", "on", "yes"}
+        updated_settings["notification_email"] = request.form.get("notification_email") in {"1", "true", "on", "yes"}
         updated_settings["notification_sms"] = request.form.get("notification_sms") in {
             "1",
             "true",
             "on",
             "yes",
         }
-        updated_settings["language"] = request.form.get(
-            "language", current_settings.get("language", "bg")
-        )
-        updated_settings["timezone"] = request.form.get(
-            "timezone", current_settings.get("timezone", "Europe/Sofia")
-        )
+        updated_settings["language"] = request.form.get("language", current_settings.get("language", "bg"))
+        updated_settings["timezone"] = request.form.get("timezone", current_settings.get("timezone", "Europe/Sofia"))
 
         session["volunteer_settings"] = updated_settings
         session.modified = True
@@ -7406,9 +7059,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         task_stats = (
             db.session.query(
-                db.func.sum(case((Task.status == "completed", 1), else_=0)).label(
-                    "completed"
-                ),
+                db.func.sum(case((Task.status == "completed", 1), else_=0)).label("completed"),
                 db.func.sum(
                     case(
                         (Task.status.in_(["assigned", "in_progress"]), 1),
@@ -7517,9 +7168,7 @@ def _get_active_tasks_safe(volunteer_id):
                     "id": task_id,
                     "title": title,
                     "location": location_text or "Не е посочена локация",
-                    "date": (
-                        created_at.strftime("%Y-%m-%d") if created_at else "Няма дата"
-                    ),
+                    "date": (created_at.strftime("%Y-%m-%d") if created_at else "Няма дата"),
                     "time_remaining": time_remaining,
                     "description": description or "Няма описание",
                     "priority": priority or "medium",
@@ -7530,9 +7179,7 @@ def _get_active_tasks_safe(volunteer_id):
         return active_tasks
 
     except Exception as e:
-        app.logger.error(
-            f"Error fetching active tasks for volunteer {volunteer_id}: {e}"
-        )
+        app.logger.error(f"Error fetching active tasks for volunteer {volunteer_id}: {e}")
         return []
 
 
@@ -7543,19 +7190,11 @@ def _get_gamification_data_safe(volunteer):
             "points": volunteer.points,
             "level": volunteer.level,
             "experience": volunteer.experience,
-            "level_progress": (
-                volunteer.get_level_progress()
-                if hasattr(volunteer, "get_level_progress")
-                else 0
-            ),
-            "next_level_exp": (
-                (volunteer.level * 100) if hasattr(volunteer, "level") else 100
-            ),
+            "level_progress": (volunteer.get_level_progress() if hasattr(volunteer, "get_level_progress") else 0),
+            "next_level_exp": ((volunteer.level * 100) if hasattr(volunteer, "level") else 100),
         }
     except Exception as e:
-        app.logger.error(
-            f"Error getting gamification data for volunteer {volunteer.id}: {e}"
-        )
+        app.logger.error(f"Error getting gamification data for volunteer {volunteer.id}: {e}")
         return {
             "points": 0,
             "level": 1,
@@ -7568,12 +7207,7 @@ def _get_gamification_data_safe(volunteer):
 def _get_available_task_count():
     """Return count of currently available (open) tasks."""
     try:
-        return (
-            db.session.query(db.func.count(Task.id))
-            .filter(Task.status == "open")
-            .scalar()
-            or 0
-        )
+        return db.session.query(db.func.count(Task.id)).filter(Task.status == "open").scalar() or 0
     except Exception as exc:
         app.logger.warning("Error counting available tasks: %s", exc)
         return 0
@@ -7685,10 +7319,7 @@ def api_volunteers_nearby():
             candidate_list = list(volunteers_query)
             # For test-time debugging print to stdout so pytest -s captures it
             try:
-                print("NEARBY CANDIDATES:", [
-                    {"id": getattr(v, 'id', None), "lat": getattr(v, 'latitude', None), "lng": getattr(v, 'longitude', None)}
-                    for v in candidate_list
-                ])
+                print("NEARBY CANDIDATES:", [{"id": getattr(v, "id", None), "lat": getattr(v, "latitude", None), "lng": getattr(v, "longitude", None)} for v in candidate_list])
             except Exception:
                 try:
                     print("NEARBY CANDIDATES (repr):", [repr(v) for v in candidate_list])
@@ -7734,9 +7365,7 @@ def api_volunteers_nearby():
                 "volunteers": results,
                 "count": len(results),
                 "radius_km": radius_km,
-                "search_location": request.args.get(
-                    "location", f"{latitude:.4f}, {longitude:.4f}"
-                ),
+                "search_location": request.args.get("location", f"{latitude:.4f}, {longitude:.4f}"),
             }
         )
     except Exception as exc:
@@ -7788,9 +7417,7 @@ def api_update_volunteer_location(volunteer_id):
                 "lng": volunteer.longitude,
                 "text": volunteer.location,
             },
-            "updated_at": (
-                volunteer.updated_at.isoformat() if volunteer.updated_at else None
-            ),
+            "updated_at": (volunteer.updated_at.isoformat() if volunteer.updated_at else None),
         }
     )
 
@@ -7816,9 +7443,7 @@ def chatbot_message():
             return jsonify({"error": "No message provided"}), 400
 
         if ai_service is None:
-            app.logger.error(
-                "AI service is not configured; cannot process chatbot message"
-            )
+            app.logger.error("AI service is not configured; cannot process chatbot message")
             return (
                 jsonify(
                     {
@@ -7937,13 +7562,7 @@ def api_volunteer_tasks():
         volunteer_id = session.get("volunteer_id")
 
         # Get assigned tasks
-        assigned_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id)
-            .filter(Task.status.in_(["assigned", "in_progress"]))
-            .order_by(Task.created_at.desc())
-            .all()
-        )
+        assigned_tasks = db.session.query(Task).filter_by(assigned_to=volunteer_id).filter(Task.status.in_(["assigned", "in_progress"])).order_by(Task.created_at.desc()).all()
 
         # Get available tasks (not assigned to anyone)
         available_tasks = (
@@ -7968,9 +7587,7 @@ def api_volunteer_tasks():
                 "estimated_hours": task.estimated_hours,
                 "deadline": task.deadline.isoformat() if task.deadline else None,
                 "created_at": task.created_at.isoformat(),
-                "assigned_at": (
-                    task.assigned_at.isoformat() if task.assigned_at else None
-                ),
+                "assigned_at": (task.assigned_at.isoformat() if task.assigned_at else None),
             }
 
         return jsonify(
@@ -8013,12 +7630,7 @@ def admin_delete_volunteer(volunteer_id):
 
         # Optional: Check if volunteer can be deleted (not assigned to active tasks, etc.)
         # Check if volunteer has active tasks
-        active_tasks = (
-            db.session.query(Task)
-            .filter_by(assigned_to=volunteer_id)
-            .filter(Task.status.in_(["assigned", "in_progress"]))
-            .count()
-        )
+        active_tasks = db.session.query(Task).filter_by(assigned_to=volunteer_id).filter(Task.status.in_(["assigned", "in_progress"])).count()
 
         if active_tasks > 0:
             return (
@@ -8053,9 +7665,7 @@ def admin_delete_volunteer(volunteer_id):
         db.session.rollback()
         app.logger.error(f"Error deleting volunteer {volunteer_id}: {e}")
         return (
-            jsonify(
-                {"success": False, "message": "Грешка при изтриване на доброволеца"}
-            ),
+            jsonify({"success": False, "message": "Грешка при изтриване на доброволеца"}),
             500,
         )
 
@@ -8085,12 +7695,7 @@ def admin_tasks():
         total_tasks = query.count()
 
         # Apply pagination and ordering
-        tasks = (
-            query.order_by(Task.created_at.desc())
-            .offset((page - 1) * per_page)
-            .limit(per_page)
-            .all()
-        )
+        tasks = query.order_by(Task.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
         total_pages = (total_tasks + per_page - 1) // per_page
 
@@ -8103,15 +7708,9 @@ def admin_tasks():
         stats = {
             "total_tasks": db.session.query(Task).count(),
             "open_tasks": db.session.query(Task).filter_by(status="open").count(),
-            "assigned_tasks": db.session.query(Task)
-            .filter_by(status="assigned")
-            .count(),
-            "in_progress_tasks": db.session.query(Task)
-            .filter(Task.status == "in_progress")
-            .count(),
-            "completed_tasks": db.session.query(Task)
-            .filter_by(status="completed")
-            .count(),
+            "assigned_tasks": db.session.query(Task).filter_by(status="assigned").count(),
+            "in_progress_tasks": db.session.query(Task).filter(Task.status == "in_progress").count(),
+            "completed_tasks": db.session.query(Task).filter_by(status="completed").count(),
         }
 
         return render_template(
@@ -8144,11 +7743,7 @@ def create_task():
             category = request.form.get("category", "").strip()
             priority = request.form.get("priority", "medium")
             location_required = request.form.get("location_required") == "on"
-            location_text = (
-                request.form.get("location_text", "").strip()
-                if location_required
-                else None
-            )
+            location_text = request.form.get("location_text", "").strip() if location_required else None
             estimated_hours = request.form.get("estimated_hours")
             deadline_str = request.form.get("deadline", "").strip()
 
@@ -8226,11 +7821,7 @@ def edit_task(task_id):
             task.category = request.form.get("category", "").strip()
             task.priority = request.form.get("priority", "medium")
             task.location_required = request.form.get("location_required") == "on"
-            task.location_text = (
-                request.form.get("location_text", "").strip()
-                if task.location_required
-                else None
-            )
+            task.location_text = request.form.get("location_text", "").strip() if task.location_required else None
 
             estimated_hours = request.form.get("estimated_hours")
             if estimated_hours:
@@ -8290,9 +7881,7 @@ def delete_task(task_id):
 
         # Check if task is assigned
         if task.assigned_to:
-            flash(
-                "Не може да изтриете задача, която е присвоена на доброволец", "error"
-            )
+            flash("Не може да изтриете задача, която е присвоена на доброволец", "error")
             return redirect(url_for("admin_tasks"))
 
         db.session.delete(task)
@@ -8358,9 +7947,7 @@ def assign_task(task_id):
     if session.get("admin_user_id"):
         current_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
-    return render_template(
-        "assign_task.html", task=task, volunteers=volunteers, current_user=current_user
-    )
+    return render_template("assign_task.html", task=task, volunteers=volunteers, current_user=current_user)
 
 
 @app.route("/admin_tasks/<int:task_id>/unassign", methods=["POST"])
@@ -8407,9 +7994,7 @@ def admin_update_request_status():
 
         if not request_id or not new_status:
             return (
-                jsonify(
-                    {"success": False, "message": "Липсват задължителни параметри"}
-                ),
+                jsonify({"success": False, "message": "Липсват задължителни параметри"}),
                 400,
             )
 
@@ -8436,9 +8021,7 @@ def admin_update_request_status():
             request_obj.completed_at = None
         db.session.commit()
 
-        app.logger.info(
-            f"Request {request_id} status changed from {old_status} to {new_status}"
-        )
+        app.logger.info(f"Request {request_id} status changed from {old_status} to {new_status}")
 
         return jsonify(
             {
@@ -8473,11 +8056,7 @@ def export_volunteers():
     query = db.session.query(Volunteer)
 
     if search:
-        query = query.filter(
-            (Volunteer.name.ilike(f"%{search}%"))
-            | (Volunteer.email.ilike(f"%{search}%"))
-            | (Volunteer.phone.ilike(f"%{search}%"))
-        )
+        query = query.filter((Volunteer.name.ilike(f"%{search}%")) | (Volunteer.email.ilike(f"%{search}%")) | (Volunteer.phone.ilike(f"%{search}%")))
 
     if location_filter:
         query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
@@ -8678,11 +8257,7 @@ def export_volunteers_pdf(volunteers):
     return Response(
         buffer.getvalue(),
         mimetype="application/pdf",
-        headers={
-            "Content-Disposition": (
-                f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-            )
-        },
+        headers={"Content-Disposition": (f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")},
     )
 
 
@@ -8758,11 +8333,7 @@ def category_help(category):
 
     # Филтрираме доброволци които имат тази категория в skills
     # Търсим case-insensitive в skills полето
-    volunteers = (
-        db.session.query(Volunteer)
-        .filter(Volunteer.skills.ilike(f"%{category}%"))
-        .all()
-    )
+    volunteers = db.session.query(Volunteer).filter(Volunteer.skills.ilike(f"%{category}%")).all()
 
     # Ако няма доброволци, показваме съобщение
     no_volunteers = len(volunteers) == 0
@@ -8879,11 +8450,7 @@ def category_help(category):
         return Response(
             buffer.getvalue(),
             mimetype="application/pdf",
-            headers={
-                "Content-Disposition": (
-                    f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
-                )
-            },
+            headers={"Content-Disposition": (f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")},
         )
 
     except ImportError:
@@ -8895,12 +8462,7 @@ def chat():
     """Main chat page - shows available chat rooms"""
     try:
         # Get public chat rooms
-        public_rooms = (
-            db.session.query(ChatRoom)
-            .filter_by(room_type="public", is_active=True)
-            .order_by(ChatRoom.created_at.desc())
-            .all()
-        )
+        public_rooms = db.session.query(ChatRoom).filter_by(room_type="public", is_active=True).order_by(ChatRoom.created_at.desc()).all()
 
         # Get user's private rooms if logged in
         private_rooms = []
@@ -8957,11 +8519,7 @@ def chat_room(room_id):
             has_access = False
             if session.get("volunteer_logged_in"):
                 volunteer_id = session.get("volunteer_id")
-                participant = (
-                    db.session.query(ChatParticipant)
-                    .filter_by(room_id=room_id, volunteer_id=volunteer_id)
-                    .first()
-                )
+                participant = db.session.query(ChatParticipant).filter_by(room_id=room_id, volunteer_id=volunteer_id).first()
                 has_access = participant is not None
             elif session.get("user_id"):
                 # Admin has access to all rooms
@@ -9008,12 +8566,7 @@ def api_get_chat_rooms():
         room_type = request.args.get("type", "public")
 
         if room_type == "public":
-            rooms = (
-                db.session.query(ChatRoom)
-                .filter_by(room_type="public", is_active=True)
-                .order_by(ChatRoom.created_at.desc())
-                .all()
-            )
+            rooms = db.session.query(ChatRoom).filter_by(room_type="public", is_active=True).order_by(ChatRoom.created_at.desc()).all()
         else:
             # For private rooms, check user permissions
             rooms = []
@@ -9036,11 +8589,7 @@ def api_get_chat_rooms():
         rooms_data = []
         for room in rooms:
             # Count online participants
-            online_count = (
-                db.session.query(ChatParticipant)
-                .filter_by(room_id=room.id, is_online=True)
-                .count()
-            )
+            online_count = db.session.query(ChatParticipant).filter_by(room_id=room.id, is_online=True).count()
 
             rooms_data.append(
                 {
@@ -9072,11 +8621,7 @@ def api_get_room_messages(room_id):
             has_access = False
             if session.get("volunteer_logged_in"):
                 volunteer_id = session.get("volunteer_id")
-                participant = (
-                    db.session.query(ChatParticipant)
-                    .filter_by(room_id=room_id, volunteer_id=volunteer_id)
-                    .first()
-                )
+                participant = db.session.query(ChatParticipant).filter_by(room_id=room_id, volunteer_id=volunteer_id).first()
                 has_access = participant is not None
             elif session.get("user_id"):
                 has_access = True
@@ -9088,14 +8633,7 @@ def api_get_room_messages(room_id):
         limit = int(request.args.get("limit", 50))
         offset = int(request.args.get("offset", 0))
 
-        messages = (
-            db.session.query(ChatMessage)
-            .filter_by(room_id=room_id, is_deleted=False)
-            .order_by(ChatMessage.created_at.desc())
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
+        messages = db.session.query(ChatMessage).filter_by(room_id=room_id, is_deleted=False).order_by(ChatMessage.created_at.desc()).offset(offset).limit(limit).all()
 
         messages_data = []
         for msg in reversed(messages):
@@ -9452,18 +8990,10 @@ def admin_analytics():
 
         period_days = max(1, min(period_days, 365))
 
-        dashboard_stats = AnalyticsEngine.get_dashboard_stats(
-            days=period_days, start_date=custom_start, end_date=custom_end
-        )
+        dashboard_stats = AnalyticsEngine.get_dashboard_stats(days=period_days, start_date=custom_start, end_date=custom_end)
 
         # Допълнителна аналитика от advanced services, ако е налична
-        advanced_analytics = (
-            analytics_service.get_dashboard_analytics(
-                days=period_days, start_date=custom_start, end_date=custom_end
-            )
-            if analytics_service
-            else {}
-        )
+        advanced_analytics = analytics_service.get_dashboard_analytics(days=period_days, start_date=custom_start, end_date=custom_end) if analytics_service else {}
 
         geo_data = AnalyticsEngine.get_geo_data()
         trends_data = AnalyticsEngine.get_trends_data(months=12)
@@ -9588,9 +9118,7 @@ def achievements():
 @app.route("/favicon.ico")
 def favicon():
     """Serve favicon"""
-    return send_from_directory(
-        app.static_folder, "hands-heart.png", mimetype="image/png"
-    )
+    return send_from_directory(app.static_folder, "hands-heart.png", mimetype="image/png")
 
 
 @app.route("/_routes")

@@ -21,9 +21,7 @@ def test_admin_login():
     try:
         # Try to login
         print("Attempting admin login...")
-        req = urllib.request.Request(
-            "http://127.0.0.1:5000/admin/login", data=login_data
-        )
+        req = urllib.request.Request("http://127.0.0.1:5000/admin/login", data=login_data)
         response = opener.open(req)
 
         print(f"Login response status: {response.status}")
@@ -33,9 +31,7 @@ def test_admin_login():
         if response.url.endswith("/admin_dashboard"):
             print("SUCCESS: Login worked and redirected to dashboard!")
         else:
-            print(
-                f"Login response content: {response.read().decode('utf-8', errors='ignore')[:500]}"
-            )
+            print(f"Login response content: {response.read().decode('utf-8', errors='ignore')[:500]}")
 
         # Try to access dashboard
         print("\nAttempting to access dashboard...")

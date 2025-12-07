@@ -71,9 +71,7 @@ def test_pwa_install_functionality():
             print("❌ Browser detection logic not found")
             return False
 
-        print(
-            "\n🎉 Enhanced PWA 'Add to Home Screen' functionality is properly implemented!"
-        )
+        print("\n🎉 Enhanced PWA 'Add to Home Screen' functionality is properly implemented!")
         print("\n📋 Features verified:")
         print("  • Smart install button with device-specific text")
         print("  • Browser-specific installation instructions")
@@ -93,9 +91,7 @@ def test_manifest_and_service_worker():
     """Test that PWA infrastructure is in place"""
     try:
         # Test manifest
-        manifest_response = requests.get(
-            "http://127.0.0.1:8000/manifest.json", timeout=5
-        )
+        manifest_response = requests.get("http://127.0.0.1:8000/manifest.json", timeout=5)
         if manifest_response.status_code != 200:
             print("❌ Manifest not accessible")
             return False

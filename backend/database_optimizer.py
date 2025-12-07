@@ -58,9 +58,7 @@ class DatabaseIndexOptimizer:
             print(f"   📋 Резултати: {len(results)} типа събития")
 
             # 3. Check existing indexes
-            cursor.execute(
-                "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='analytics_events'"
-            )
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='analytics_events'")
             existing_indexes = cursor.fetchall()
             print(f"\n📑 Съществуващи индекси: {len(existing_indexes)}")
             for idx in existing_indexes:
@@ -169,9 +167,7 @@ class DatabaseIndexOptimizer:
         # 4. Анализ на подобренията
         if original_time > 0:
             improvement = ((original_time - optimized_time) / original_time) * 100
-            speedup = (
-                original_time / optimized_time if optimized_time > 0 else float("inf")
-            )
+            speedup = original_time / optimized_time if optimized_time > 0 else float("inf")
 
             print("\n📈 РЕЗУЛТАТИ ОТ ОПТИМИЗАЦИЯТА")
             print("=" * 50)
@@ -191,9 +187,7 @@ class DatabaseIndexOptimizer:
             else:
                 print("❌ БЕЗ ПОДОБРЕНИЕ! Нужни допълнителни оптимизации")
 
-        print(
-            f"\n🎉 DATABASE OPTIMIZATION ЗАВЪРШЕНА - {datetime.now().strftime('%H:%M:%S')}"
-        )
+        print(f"\n🎉 DATABASE OPTIMIZATION ЗАВЪРШЕНА - {datetime.now().strftime('%H:%M:%S')}")
 
 
 if __name__ == "__main__":

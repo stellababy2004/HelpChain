@@ -3,6 +3,7 @@
 
 Writes `admin_login_response.html` and prints status codes and basic diagnostics.
 """
+
 import re
 import sys
 from pathlib import Path
@@ -16,6 +17,7 @@ except Exception:
 BASE = "http://127.0.0.1:5000"
 session = requests.Session()
 out_dir = Path(__file__).resolve().parent
+
 
 # Helper to extract CSRF token from HTML
 def extract_csrf(html: str):
@@ -52,8 +54,8 @@ def main():
     r2 = session.post(BASE + "/admin/login", data=data, allow_redirects=False)
     print("POST status:", r2.status_code)
     # If redirect, follow
-    if 300 <= r2.status_code < 400 and 'Location' in r2.headers:
-        loc = r2.headers['Location']
+    if 300 <= r2.status_code < 400 and "Location" in r2.headers:
+        loc = r2.headers["Location"]
         print("Redirect to:", loc)
         r3 = session.get(BASE + loc)
         print("Follow GET status:", r3.status_code)
@@ -73,7 +75,7 @@ def main():
     (out_dir / "admin_dashboard_response.html").write_text(rdash.text, encoding="utf-8")
 
     # Basic heuristics: check if the login page still present
-    if 'Вход' in final_html or 'admin_login' in final_html or 'login' in final_html.lower():
+    if "Вход" in final_html or "admin_login" in final_html or "login" in final_html.lower():
         print("POST appears to have returned login page (login likely failed)")
     else:
         print("POST did not return obvious login page; check saved HTML files")
@@ -84,5 +86,5 @@ def main():
         print(f" - {c.name} = {c.value} (domain={c.domain} path={c.path})")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

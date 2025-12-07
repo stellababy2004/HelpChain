@@ -23,9 +23,7 @@ def roles_dashboard():
     # Get role-permission mappings
     role_permissions = {}
     for role in roles:
-        role_permissions[role.id] = [
-            rp.permission.codename for rp in role.role_permissions
-        ]
+        role_permissions[role.id] = [rp.permission.codename for rp in role.role_permissions]
 
     # Get user-role mappings
     user_roles = {}
@@ -70,9 +68,7 @@ def create_role():
         for perm_id in permission_ids:
             permission = db.session.get(Permission, int(perm_id))
             if permission:
-                role_permission = RolePermission(
-                    role_id=role.id, permission_id=permission.id
-                )
+                role_permission = RolePermission(role_id=role.id, permission_id=permission.id)
                 db.session.add(role_permission)
 
         db.session.commit()
@@ -119,9 +115,7 @@ def edit_role(role_id):
         for perm_id in permission_ids:
             permission = db.session.get(Permission, int(perm_id))
             if permission:
-                role_permission = RolePermission(
-                    role_id=role.id, permission_id=permission.id
-                )
+                role_permission = RolePermission(role_id=role.id, permission_id=permission.id)
                 db.session.add(role_permission)
 
         db.session.commit()
@@ -184,9 +178,7 @@ def manage_user_roles(user_id):
         for role_id in role_ids:
             role = db.session.get(Role, int(role_id))
             if role:
-                user_role = UserRole(
-                    user_id=user.id, role_id=role.id, assigned_by=session.get("user_id")
-                )
+                user_role = UserRole(user_id=user.id, role_id=role.id, assigned_by=session.get("user_id"))
                 db.session.add(user_role)
 
         db.session.commit()
@@ -196,9 +188,7 @@ def manage_user_roles(user_id):
     roles = Role.query.all()
     current_roles = [ur.role_id for ur in user.user_roles]
 
-    return render_template(
-        "manage_user_roles.html", user=user, roles=roles, current_roles=current_roles
-    )
+    return render_template("manage_user_roles.html", user=user, roles=roles, current_roles=current_roles)
 
 
 @admin_roles_bp.route("/users/create", methods=["GET", "POST"])
@@ -216,9 +206,7 @@ def create_user():
             return redirect(url_for("admin_roles.create_user"))
 
         # Check if user already exists
-        existing_user = User.query.filter(
-            (User.username == username) | (User.email == email)
-        ).first()
+        existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
         if existing_user:
             flash(
                 "Потребител с това потребителско име или имейл вече съществува.",
@@ -243,9 +231,7 @@ def create_user():
         for role_id in role_ids:
             role = db.session.get(Role, int(role_id))
             if role:
-                user_role = UserRole(
-                    user_id=user.id, role_id=role.id, assigned_by=session.get("user_id")
-                )
+                user_role = UserRole(user_id=user.id, role_id=role.id, assigned_by=session.get("user_id"))
                 db.session.add(user_role)
 
         db.session.commit()
@@ -290,17 +276,13 @@ def create_permission():
             return redirect(url_for("admin_roles.create_permission"))
 
         # Check if permission already exists
-        existing_perm = Permission.query.filter(
-            (Permission.codename == codename) | (Permission.name == name)
-        ).first()
+        existing_perm = Permission.query.filter((Permission.codename == codename) | (Permission.name == name)).first()
         if existing_perm:
             flash("Право с това име или кодово име вече съществува.", "danger")
             return redirect(url_for("admin_roles.create_permission"))
 
         # Create permission
-        permission = Permission(
-            name=name, codename=codename, description=description, category=category
-        )
+        permission = Permission(name=name, codename=codename, description=description, category=category)
         db.session.add(permission)
         db.session.commit()
 

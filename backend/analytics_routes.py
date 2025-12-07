@@ -135,9 +135,7 @@ def _parse_period_args():
     return days, start_dt, end_dt
 
 
-def _format_filter_summary(
-    days: int, start_dt: datetime | None, end_dt: datetime | None
-) -> str:
+def _format_filter_summary(days: int, start_dt: datetime | None, end_dt: datetime | None) -> str:
     """Create a localized summary for the currently active date filters."""
 
     if start_dt and end_dt:
@@ -216,11 +214,7 @@ async def analytics_data():
                     try:
                         from backend.models_with_analytics import Task
 
-                        _res = await session.execute(
-                            select(func.count(Task.id)).where(
-                                Task.status.in_(["assigned", "in_progress"])
-                            )
-                        )
+                        _res = await session.execute(select(func.count(Task.id)).where(Task.status.in_(["assigned", "in_progress"])))
                         try:
                             active_tasks = _res.scalar()
                         finally:
@@ -230,11 +224,7 @@ async def analytics_data():
                                 pass
                     except (ImportError, AttributeError):
                         # If Task model not available, count from HelpRequest status
-                        _res = await session.execute(
-                            select(func.count(HelpRequest.id)).where(
-                                HelpRequest.status.in_(["assigned", "in_progress"])
-                            )
-                        )
+                        _res = await session.execute(select(func.count(HelpRequest.id)).where(HelpRequest.status.in_(["assigned", "in_progress"])))
                         try:
                             active_tasks = _res.scalar()
                         finally:
@@ -252,9 +242,7 @@ async def analytics_data():
                 )
             except Exception as e:
                 print(f"Error getting simple analytics data: {e}")
-                return jsonify(
-                    {"total_requests": 0, "total_volunteers": 0, "active_tasks": 0}
-                )
+                return jsonify({"total_requests": 0, "total_volunteers": 0, "active_tasks": 0})
 
         # Return full analytics data
         try:
@@ -270,9 +258,7 @@ async def analytics_data():
 
         data = await loop.run_in_executor(
             None,
-            lambda: analytics_service.get_dashboard_analytics(
-                days=days, start_date=start_dt, end_date=end_dt
-            ),
+            lambda: analytics_service.get_dashboard_analytics(days=days, start_date=start_dt, end_date=end_dt),
         )
 
         # Check if response should be compressed
@@ -307,9 +293,7 @@ async def analytics_data():
             days, start_dt, end_dt = _parse_period_args()
             data = await loop.run_in_executor(
                 None,
-                lambda: AnalyticsEngine.get_dashboard_stats(
-                    days=days, start_date=start_dt, end_date=end_dt
-                ),
+                lambda: AnalyticsEngine.get_dashboard_stats(days=days, start_date=start_dt, end_date=end_dt),
             )
             return jsonify(data)
         except Exception as fallback_e:
@@ -369,11 +353,7 @@ async def analytics_simple_data():
             try:
                 from backend.models_with_analytics import Task
 
-                _res = await session.execute(
-                    select(func.count(Task.id)).where(
-                        Task.status.in_(["assigned", "in_progress"])
-                    )
-                )
+                _res = await session.execute(select(func.count(Task.id)).where(Task.status.in_(["assigned", "in_progress"])))
                 try:
                     active_tasks = _res.scalar()
                 finally:
@@ -383,11 +363,7 @@ async def analytics_simple_data():
                         pass
             except (ImportError, AttributeError):
                 # If Task model not available, count from HelpRequest status
-                _res = await session.execute(
-                    select(func.count(HelpRequest.id)).where(
-                        HelpRequest.status.in_(["assigned", "in_progress"])
-                    )
-                )
+                _res = await session.execute(select(func.count(HelpRequest.id)).where(HelpRequest.status.in_(["assigned", "in_progress"])))
                 try:
                     active_tasks = _res.scalar()
                 finally:
@@ -466,12 +442,8 @@ def analytics_stream():
             yield f"data: {json.dumps({'type': 'connected', 'message': 'Real-time analytics stream connected'})}\n\n"
 
             last_check = datetime.now()
-            alert_check_interval = timedelta(
-                seconds=30
-            )  # Check for alerts every 30 seconds
-            stats_update_interval = timedelta(
-                seconds=10
-            )  # Update stats every 10 seconds
+            alert_check_interval = timedelta(seconds=30)  # Check for alerts every 30 seconds
+            stats_update_interval = timedelta(seconds=10)  # Update stats every 10 seconds
 
             while True:
                 current_time = datetime.now()
@@ -490,9 +462,7 @@ def analytics_stream():
                         analytics_data = {
                             "anomalies": anomalies,
                             "error_rate": 0,  # Would need to calculate from actual error events
-                            "active_users": insights.get("user_segments", {})
-                            .get("regular_users", {})
-                            .get("count", 0),
+                            "active_users": insights.get("user_segments", {}).get("regular_users", {}).get("count", 0),
                             "trends": insights.get("kpi_trends", {}).get("trends", {}),
                         }
 
@@ -563,9 +533,7 @@ async def analytics_live():
 
         # Run analytics_service in thread executor since it may not be async
         loop = asyncio.get_event_loop()
-        data = await loop.run_in_executor(
-            None, analytics_service.get_dashboard_analytics
-        )
+        data = await loop.run_in_executor(None, analytics_service.get_dashboard_analytics)
 
         # Extract live stats from overview
         overview = data.get("overview", {})
@@ -706,14 +674,10 @@ def admin_analytics():
 
         if AnalyticsEngine:
             try:
-                dashboard_stats = AnalyticsEngine.get_dashboard_stats(
-                    days=days, start_date=start_dt, end_date=end_dt
-                )
+                dashboard_stats = AnalyticsEngine.get_dashboard_stats(days=days, start_date=start_dt, end_date=end_dt)
             except Exception as analytics_error:
                 if logger:
-                    logger.warning(
-                        "Falling back to sample analytics data: %s", analytics_error
-                    )
+                    logger.warning("Falling back to sample analytics data: %s", analytics_error)
             else:
                 live_stats = dashboard_stats.get("real_time", {}) or {}
 
@@ -733,13 +697,8 @@ def admin_analytics():
                     trends_data = {
                         "labels": [item.get("date", "") for item in daily_stats],
                         "requests": [item.get("requests", 0) for item in daily_stats],
-                        "completed": [
-                            item.get("completed", item.get("requests", 0))
-                            for item in daily_stats
-                        ],
-                        "volunteers": [
-                            item.get("volunteers", 0) for item in daily_stats
-                        ],
+                        "completed": [item.get("completed", item.get("requests", 0)) for item in daily_stats],
+                        "volunteers": [item.get("volunteers", 0) for item in daily_stats],
                     }
 
                 if not any(trends_data.get("requests", [])):
@@ -753,9 +712,7 @@ def admin_analytics():
                     predictions = AnalyticsEngine.get_predictions(months=3)
                 except Exception as prediction_error:
                     if logger:
-                        logger.debug(
-                            "Prediction generation failed: %s", prediction_error
-                        )
+                        logger.debug("Prediction generation failed: %s", prediction_error)
 
                 try:
                     geo_data = AnalyticsEngine.get_geo_data()
@@ -765,9 +722,7 @@ def admin_analytics():
 
         if analytics_service:
             try:
-                advanced_analytics = analytics_service.get_dashboard_analytics(
-                    days=days, start_date=start_dt, end_date=end_dt
-                )
+                advanced_analytics = analytics_service.get_dashboard_analytics(days=days, start_date=start_dt, end_date=end_dt)
             except Exception as advanced_error:
                 if logger:
                     logger.debug("Advanced analytics unavailable: %s", advanced_error)
@@ -800,9 +755,7 @@ def admin_analytics():
 
     except Exception as e:  # pragma: no cover - safeguard
         if current_app:
-            current_app.logger.error(
-                "Error loading analytics dashboard: %s", e, exc_info=True
-            )
+            current_app.logger.error("Error loading analytics dashboard: %s", e, exc_info=True)
         else:
             print(f"Error loading analytics dashboard: {type(e).__name__}: {e}")
         return "Error loading analytics dashboard", 500
@@ -867,9 +820,7 @@ async def predictive_regional_demand():
 
         # Run predictive analytics in thread executor
         loop = asyncio.get_event_loop()
-        data = await loop.run_in_executor(
-            None, predictive_analytics.get_regional_demand_forecast, region, days_ahead
-        )
+        data = await loop.run_in_executor(None, predictive_analytics.get_regional_demand_forecast, region, days_ahead)
         return jsonify(data)
 
     except Exception as e:
@@ -898,9 +849,7 @@ async def predictive_workload():
 
         # Run predictive analytics in thread executor
         loop = asyncio.get_event_loop()
-        data = await loop.run_in_executor(
-            None, predictive_analytics.get_workload_prediction, hours_ahead
-        )
+        data = await loop.run_in_executor(None, predictive_analytics.get_workload_prediction, hours_ahead)
         return jsonify(data)
 
     except Exception as e:
@@ -927,9 +876,7 @@ async def predictive_insights():
 
         # Run predictive analytics in thread executor
         loop = asyncio.get_event_loop()
-        data = await loop.run_in_executor(
-            None, predictive_analytics.get_predictive_insights
-        )
+        data = await loop.run_in_executor(None, predictive_analytics.get_predictive_insights)
         return jsonify(data)
 
     except Exception as e:
@@ -956,12 +903,8 @@ async def predictive_model_info():
 
         # Get sample predictions to show model capabilities
         loop = asyncio.get_event_loop()
-        regional_sample = await loop.run_in_executor(
-            None, predictive_analytics.get_regional_demand_forecast, None, 1
-        )
-        workload_sample = await loop.run_in_executor(
-            None, predictive_analytics.get_workload_prediction, 1
-        )
+        regional_sample = await loop.run_in_executor(None, predictive_analytics.get_regional_demand_forecast, None, 1)
+        workload_sample = await loop.run_in_executor(None, predictive_analytics.get_workload_prediction, 1)
 
         model_info = {
             "regional_demand_model": {
@@ -976,9 +919,7 @@ async def predictive_model_info():
                     "population_density",
                 ],
                 "prediction_horizon": "1-30 days",
-                "accuracy_metrics": regional_sample.get("model_info", {}).get(
-                    "accuracy", "N/A"
-                ),
+                "accuracy_metrics": regional_sample.get("model_info", {}).get("accuracy", "N/A"),
                 "last_trained": regional_sample.get("generated_at", "N/A"),
             },
             "workload_prediction_model": {
@@ -992,9 +933,7 @@ async def predictive_model_info():
                     "season",
                 ],
                 "prediction_horizon": "1-168 hours",
-                "accuracy_metrics": workload_sample.get("model_info", {}).get(
-                    "accuracy", "N/A"
-                ),
+                "accuracy_metrics": workload_sample.get("model_info", {}).get("accuracy", "N/A"),
                 "last_trained": workload_sample.get("generated_at", "N/A"),
             },
             "data_sources": [
@@ -1058,9 +997,7 @@ async def get_predictions():
 
         # Run prediction in thread executor
         loop = asyncio.get_event_loop()
-        predictions = await loop.run_in_executor(
-            None, analytics.predict_user_behavior, user_id or None
-        )
+        predictions = await loop.run_in_executor(None, analytics.predict_user_behavior, user_id or None)
 
         return jsonify(
             {
@@ -1113,9 +1050,7 @@ async def get_user_behavior():
         loop = asyncio.get_event_loop()
         segments = await loop.run_in_executor(None, analytics._segment_users)
         trends = await loop.run_in_executor(None, analytics._analyze_kpi_trends)
-        recent_events = await loop.run_in_executor(
-            None, analytics.get_recent_events, days
-        )
+        recent_events = await loop.run_in_executor(None, analytics.get_recent_events, days)
 
         user_activity = {}
 
@@ -1132,18 +1067,11 @@ async def get_user_behavior():
                 user_activity[event["user_id"]]["events_count"] += 1
                 user_activity[event["user_id"]]["event_types"].add(event["event_type"])
                 if event["page_url"]:
-                    user_activity[event["user_id"]]["pages_visited"].add(
-                        event["page_url"]
-                    )
+                    user_activity[event["user_id"]]["pages_visited"].add(event["page_url"])
 
                 # Update last activity if more recent
-                if (
-                    event["timestamp"]
-                    > user_activity[event["user_id"]]["last_activity"]
-                ):
-                    user_activity[event["user_id"]]["last_activity"] = event[
-                        "timestamp"
-                    ]
+                if event["timestamp"] > user_activity[event["user_id"]]["last_activity"]:
+                    user_activity[event["user_id"]]["last_activity"] = event["timestamp"]
 
         # Convert sets to lists for JSON serialization
         for user_id, data in user_activity.items():
@@ -1254,9 +1182,7 @@ class AlertSystem:
             # Check for anomalies in the data
             anomalies = analytics_data.get("anomalies", [])
             for anomaly in anomalies:
-                if anomaly.get("type") == alert["id"].replace("_alert", "").replace(
-                    "_", "_"
-                ):
+                if anomaly.get("type") == alert["id"].replace("_alert", "").replace("_", "_"):
                     change_percent = abs(anomaly.get("value", 0))
                     if change_percent >= threshold:
                         return True
@@ -1362,9 +1288,7 @@ async def check_alerts():
         analytics_data = {
             "anomalies": anomalies,
             "error_rate": 0,  # Would need to calculate from actual error events
-            "active_users": insights.get("user_segments", {})
-            .get("regular_users", {})
-            .get("count", 0),
+            "active_users": insights.get("user_segments", {}).get("regular_users", {}).get("count", 0),
             "trends": insights.get("kpi_trends", {}).get("trends", {}),
         }
 
@@ -1441,9 +1365,7 @@ async def export_analytics():
 
             # Run analytics_service in thread executor
             loop = asyncio.get_event_loop()
-            data = await loop.run_in_executor(
-                None, analytics_service.get_dashboard_analytics
-            )
+            data = await loop.run_in_executor(None, analytics_service.get_dashboard_analytics)
         except ImportError:
             from admin_analytics import AnalyticsEngine
 
@@ -1461,9 +1383,7 @@ async def export_analytics():
 
         if format_type == "json":
             response = jsonify(data)
-            response.headers["Content-Disposition"] = (
-                f"attachment; filename=helpchain_analytics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            )
+            response.headers["Content-Disposition"] = f"attachment; filename=helpchain_analytics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             return response
 
         elif format_type == "csv":
@@ -1491,9 +1411,7 @@ async def export_analytics():
             response = Response(
                 csv_data,
                 mimetype="text/csv",
-                headers={
-                    "Content-Disposition": f"attachment; filename=helpchain_analytics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-                },
+                headers={"Content-Disposition": f"attachment; filename=helpchain_analytics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"},
             )
             return response
 

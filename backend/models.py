@@ -199,11 +199,10 @@ class AdminLog(Base):
 
     id = Column(Integer, primary_key=True)
     admin_user_id = Column(Integer, ForeignKey("admin_users.id"), nullable=False)
-    action = Column(
-        String(100), nullable=False
-    )  # "approved_request", "rejected_request", etc.
+    action = Column(String(100), nullable=False)  # "approved_request", "rejected_request", etc.
     details = Column(Text, nullable=True)  # JSON или описание на действието
     entity_type = Column(String(50), nullable=True)  # "help_request", "volunteer", etc.
+
 
 # Backwards-compatible alias: some modules import `AuditLog` from backend.models
 # Option 2: defer all session/engine ownership to Flask-SQLAlchemy.
@@ -281,6 +280,7 @@ def get_query_for(model):
         pass
     # Final fallback: raise so callers notice configuration issue early.
     raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
+
     @permission.setter
     def permission(self, value):
         # Allow assigning by codename string or by Permission instance.
@@ -306,7 +306,7 @@ def get_query_for(model):
                     try:
                         from sqlalchemy.orm import object_session
 
-                        sess = object_session(self) or (object_session(self.role) if getattr(self, 'role', None) is not None else None)
+                        sess = object_session(self) or (object_session(self.role) if getattr(self, "role", None) is not None else None)
                     except Exception:
                         sess = None
 
@@ -394,6 +394,7 @@ class User(Base):
             return bool(self.password_hash and check_password_hash(self.password_hash, password))
         except Exception:
             return self.password_hash == password
+
 
 # (Dynamic `.query` descriptor will be attached after the descriptor is defined.)
 
@@ -643,6 +644,7 @@ class Volunteer(Base):
                 self.achievements = ""
         elif a is None:
             self.achievements = ""
+
     @property
     def achievements_list(self):
         return [a for a in (self.achievements or "").split(",") if a]
@@ -745,7 +747,7 @@ class PushSubscription(Base):
                 self.user_id = value
             except Exception:
                 pass
-    
+
     def __init__(self, *args, **kwargs):
         """Compatibility constructor.
 
@@ -758,6 +760,7 @@ class PushSubscription(Base):
             from flask import current_app
             from backend import models as _models
             from backend.extensions import db as _ext_db
+
             try:
                 engine = _ext_db.get_engine(current_app)
             except Exception:
@@ -1022,9 +1025,7 @@ try:
                 if new_id is None:
                     # Try to select any existing placeholder user
                     try:
-                        sel = connection.execute(
-                            select(users_tbl.c.id).where(users_tbl.c.username == "__auto_user__")
-                        ).first()
+                        sel = connection.execute(select(users_tbl.c.id).where(users_tbl.c.username == "__auto_user__")).first()
                         if sel:
                             new_id = sel[0]
                     except Exception:
@@ -1244,6 +1245,7 @@ db = scoped_session(sessionmaker(autocommit=False, autoflush=False))
 db_session = db
 Base.query = db_session.query_property()
 
+
 # Provide a thin compatibility wrapper so that modules which expect a
 # Flask-SQLAlchemy `db` object (with `init_app` and `.session`) can import
 # `db` from this module or from `extensions` without failing when tests
@@ -1262,6 +1264,7 @@ class _DBShim:
 
     def __getattr__(self, name):
         return getattr(self._scoped, name)
+
 
 # Replace `db` with shim while keeping `db_session` as the actual scoped_session
 _scoped = db
@@ -1421,11 +1424,7 @@ try:
     # of hard-to-debug failure while preserving the original behavior for
     # consumers who set `HELPCHAIN_ALLOW_MODULE_ENGINE=1`.
     allow_module_engine = os.environ.get("HELPCHAIN_ALLOW_MODULE_ENGINE") == "1"
-    if (
-        allow_module_engine
-        and engine is None
-        and (os.environ.get("PYTEST_CURRENT_TEST") or "pytest" in sys.modules)
-    ):
+    if allow_module_engine and engine is None and (os.environ.get("PYTEST_CURRENT_TEST") or "pytest" in sys.modules):
         import tempfile
 
         tf = tempfile.NamedTemporaryFile(prefix="hc_pytest_", suffix=".db", delete=False)

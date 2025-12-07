@@ -7,6 +7,7 @@ accidental side-effects for editors that execute it directly, but prevents
 pytest from attempting to collect fixture-scoped tests here.
 """
 
+
 def main():
     print("This script is maintained for legacy/manual execution. Use pytest in the `tests/` folder.")
 

@@ -13,9 +13,7 @@ from notification_service import notification_service
 
 def process_notifications():
     """Обработка на notification queue"""
-    print(
-        f"🔄 Starting notification queue processing at {time.strftime('%Y-%m-%d %H:%M:%S')}"
-    )
+    print(f"🔄 Starting notification queue processing at {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
     with app.app_context():
         try:
