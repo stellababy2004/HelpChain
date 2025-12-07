@@ -16,6 +16,9 @@ __pycache__/
 
 /.git
 
+# Prevent vendorized Python packages from being included in .vercel/output
+/.vercel/python/**/_vendor
+
 # build / dev
 node_modules/
 dist/
