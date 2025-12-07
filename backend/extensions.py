@@ -270,7 +270,7 @@ try:
                 engine = getattr(db, "engine", None)
                 if engine is None:
                     try:
-                        engine = db.get_engine(app)
+                        engine = get_db_engine(app, db)
                     except Exception:
                         engine = None
 
@@ -542,7 +542,7 @@ try:
                 engine = getattr(db, "engine", None)
                 if engine is None:
                     try:
-                        engine = db.get_engine(app)
+                        engine = get_db_engine(app, db)
                     except Exception:
                         engine = None
 
@@ -614,6 +614,75 @@ if FLASK_CACHING_AVAILABLE:
     cache = Cache()
 else:
     cache = None
+
+
+    # Helper to obtain a SQLAlchemy Engine in a way that's compatible with
+    # both Flask-SQLAlchemy <3 (which exposes `get_engine(app)`) and
+    # Flask-SQLAlchemy >=3 (which exposes `.engine` or `.engines`). Tests
+    # and other modules should call this instead of using `get_engine` to
+    # avoid deprecation warnings and to remain compatible across versions.
+    def get_db_engine(app=None, db_obj=None):
+        """Return a SQLAlchemy Engine for the supplied Flask app and
+        Flask-SQLAlchemy `db` object.
+
+        Order of resolution:
+        - If `db_obj` has an `engine` attribute, return it.
+        - If `db_obj` has an `engines` mapping, try to return a sensible
+          default engine (first value) if present.
+        - If `db_obj` exposes `get_engine(app)`, call that as a fallback.
+        - Otherwise return ``None``.
+        """
+        try:
+            _db = db_obj or globals().get("db")
+            if _db is None:
+                return None
+
+            # Prefer explicit `engine` attribute (Flask-SQLAlchemy 3+)
+            try:
+                eng = getattr(_db, "engine", None)
+                if eng is not None:
+                    return eng
+            except Exception:
+                eng = None
+
+            # If `engines` mapping exists (multi-bind setups), pick the first
+            try:
+                engines = getattr(_db, "engines", None)
+                if engines:
+                    # engines can be a dict-like or iterable; try values()
+                    try:
+                        vals = list(engines.values())
+                        if vals:
+                            return vals[0]
+                    except Exception:
+                        # Try to iterate directly
+                        try:
+                            for e in engines:
+                                return e
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
+            # Fall back to the legacy API if present. Call it inside a
+            # warnings.catch_warnings context to suppress deprecation warnings
+            # emitted by older Flask-SQLAlchemy implementations.
+            try:
+                if hasattr(_db, "get_engine"):
+                    try:
+                        import warnings
+
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore", DeprecationWarning)
+                            return _db.get_engine(app)
+                    except Exception:
+                        return None
+            except Exception:
+                pass
+
+        except Exception:
+            pass
+        return None
 
 # Import test instrumentation when requested (keeps file simple and avoids
 # complex inline instrumentation code). This is only activated when the

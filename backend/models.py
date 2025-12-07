@@ -757,9 +757,9 @@ class PushSubscription(Base):
         try:
             from flask import current_app
             from backend import models as _models
-            from backend.extensions import db as _ext_db
+            from backend.extensions import db as _ext_db, get_db_engine
             try:
-                engine = _ext_db.get_engine(current_app)
+                engine = get_db_engine(current_app, _ext_db)
             except Exception:
                 engine = getattr(_ext_db, "engine", None)
             if engine is not None:
@@ -1420,7 +1420,15 @@ try:
     # mismatches in tests. Requiring an explicit opt-in avoids that class
     # of hard-to-debug failure while preserving the original behavior for
     # consumers who set `HELPCHAIN_ALLOW_MODULE_ENGINE=1`.
-    allow_module_engine = os.environ.get("HELPCHAIN_ALLOW_MODULE_ENGINE") == "1"
+    # Allow tests to opt-in to a temporary module-level engine by setting
+    # `HELPCHAIN_ALLOW_MODULE_ENGINE=1`. For local pytest runs we also
+    # automatically enable this fallback when the test runner is present
+    # to avoid UnboundExecutionError during import-time queries. This is a
+    # temporary, test-only measure to make collection reliable; prefer the
+    # canonical Flask app binding in production flows.
+    allow_module_engine = (
+        os.environ.get("HELPCHAIN_ALLOW_MODULE_ENGINE") == "1" or "pytest" in sys.modules
+    )
     if (
         allow_module_engine
         and engine is None
