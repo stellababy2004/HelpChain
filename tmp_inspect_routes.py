@@ -1,12 +1,14 @@
-import sys
 import importlib
+import sys
+
 sys.path.insert(0, r'c:\dev\HelpChain\HelpChain.bg\backend')
 import os
+
 os.environ.setdefault('HELPCHAIN_TESTING','1')
 
 try:
     appy = importlib.import_module('appy')
-    app = getattr(appy, 'app')
+    app = appy.app
 except Exception as e:
     print('IMPORT_ERROR', e)
     raise

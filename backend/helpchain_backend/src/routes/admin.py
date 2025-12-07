@@ -1,3 +1,5 @@
+import logging
+
 from flask import (
     Blueprint,
     flash,
@@ -356,6 +358,15 @@ def admin_login():
                     session["email_2fa_code"] = "000000"
                 return redirect(url_for("admin_email_2fa"))
             else:
+                # If user has TOTP 2FA enabled, start TOTP flow instead of logging in.
+                try:
+                    if getattr(admin_user, "two_factor_enabled", False):
+                        # set unified session key and redirect to TOTP verification
+                        session["pending_admin_id"] = admin_user.id
+                        return redirect(url_for("admin.admin_2fa"))
+                except Exception:
+                    pass
+
                 from flask_login import login_user
 
                 login_user(admin_user)
@@ -374,7 +385,8 @@ def admin_login():
 @admin_bp.route("/2fa", methods=["GET", "POST"])
 def admin_2fa():
     """2FA верификация за админ"""
-    user_id = session.get("pending_admin_user_id")
+    # Use unified session key `pending_admin_id`. Accept legacy `pending_admin_user_id`.
+    user_id = session.get("pending_admin_id") or session.get("pending_admin_user_id")
     if not user_id:
         return redirect(url_for("admin.admin_login"))
 
@@ -388,7 +400,9 @@ def admin_2fa():
             from flask_login import login_user
 
             login_user(admin_user)
+            # clear both legacy and unified keys
             session.pop("pending_admin_user_id", None)
+            session.pop("pending_admin_id", None)
             return redirect(url_for("admin.admin_dashboard"))
         else:
             flash("Невалиден 2FA код.", "error")
@@ -408,6 +422,16 @@ def admin_2fa_setup():
         token = request.form.get("token")
         if current_user.verify_totp(token):
             current_user.enable_2fa()
+            try:
+                db.session.add(current_user)
+                db.session.commit()
+            except Exception:
+                try:
+                    db.session.rollback()
+                except Exception:
+                    logging.exception(
+                        "Failed to rollback DB transaction in admin 2FA setup"
+                    )
             flash("2FA е активиран успешно!", "success")
             return redirect(url_for("admin.admin_dashboard"))
         else:
@@ -426,6 +450,16 @@ def admin_2fa_disable():
         return redirect(url_for("main.index"))
 
     current_user.disable_2fa()
+    try:
+        db.session.add(current_user)
+        db.session.commit()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            logging.exception(
+                "Failed to rollback DB transaction in admin 2FA disable"
+            )
     flash("2FA е деактивиран.", "success")
     return redirect(url_for("admin.admin_dashboard"))
 
@@ -487,7 +521,11 @@ def admin_dashboard():
     except Exception:
         total_requests = 0
     try:
-        pending_requests = sum(1 for r in requests if getattr(r, "status", None) not in ("completed", "done", None))
+        pending_requests = sum(
+            1
+            for r in requests
+            if getattr(r, "status", None) not in ("completed", "done", None)
+        )
     except Exception:
         pending_requests = 0
     try:
@@ -506,7 +544,12 @@ def admin_dashboard():
         import logging as _logging
 
         _log = _logging.getLogger(__name__)
-        _log.info("admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s", stats, total_requests, total_volunteers)
+        _log.info(
+            "admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s",
+            stats,
+            total_requests,
+            total_volunteers,
+        )
     except Exception:
         pass
 

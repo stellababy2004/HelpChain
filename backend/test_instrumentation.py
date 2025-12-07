@@ -6,6 +6,7 @@ info and attaches engine.connect handlers to log which engine creates
 DBAPI connections during tests.
 """
 import os
+
 try:
     from backend.extensions import db
 except Exception:

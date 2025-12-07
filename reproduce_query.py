@@ -1,9 +1,11 @@
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.getcwd(), 'backend'))
-from flask import Flask
-from backend.extensions import db
 import models
+from flask import Flask
+
+from backend.extensions import db
 
 app = Flask(__name__)
 app.config['TESTING']=True

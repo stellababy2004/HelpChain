@@ -1,5 +1,6 @@
-import traceback
 import sys
+import traceback
+
 try:
     import os
     sys.path.insert(0, os.path.join(os.getcwd(), 'backend'))

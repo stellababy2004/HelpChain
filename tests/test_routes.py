@@ -54,6 +54,29 @@ class TestRoutes:
             sess["pending_email_2fa"] = True
             sess["email_2fa_code"] = "123456"
             sess["email_2fa_expires"] = datetime.now().timestamp() + 600
+        # Persist the signed session cookie into the client's cookie store
+        # so the subsequent GET carries the same session as a browser would.
+        try:
+            cookie_name = client.application.config.get("SESSION_COOKIE_NAME", "session")
+            # Access the cookie value from the compat jar or werkzeug cookie store
+            try:
+                cookie_val = client.cookie_jar._cookies["localhost"]["/"][cookie_name].value
+            except Exception:
+                # Fallback: try attribute form used by some Flask versions
+                try:
+                    cookie_val = client.cookie_jar._cookies["localhost"]["/"]["session"].value
+                except Exception:
+                    cookie_val = None
+            if cookie_val:
+                try:
+                    client.set_cookie("localhost", cookie_name, cookie_val)
+                except TypeError:
+                    # Some test-client impls expect (name, value) without host
+                    client.set_cookie(cookie_name, cookie_val)
+        except Exception:
+            # Non-fatal for environments where cookie handling differs; the
+            # conftest.py wrapper also attempts to persist cookies.
+            pass
 
         response = client.get("/admin/email_2fa")
 
