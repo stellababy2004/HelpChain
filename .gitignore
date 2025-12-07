@@ -77,3 +77,11 @@ instance/*.db
 
 # local backups
 backend/backups/*
+
+# Vercel build artifacts and inspection files
+.vercel/
+vercel_inspect.json
+vercel_inspect.txt
+vercel_logs.json
+vercel_logs.txt
+output.tgz
