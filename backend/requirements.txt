@@ -33,7 +33,7 @@ bidict==0.23.1
     # via python-socketio
 billiard==4.2.2
     # via celery
-blinker==1.7.0
+blinker==1.9.0
     # via
     #   flask
     #   flask-mail

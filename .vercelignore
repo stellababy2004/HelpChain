@@ -14,6 +14,8 @@ venv/
 .cache/
 __pycache__/
 
+/.git
+
 # build / dev
 node_modules/
 dist/
