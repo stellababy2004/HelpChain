@@ -2,7 +2,7 @@ Flask==2.0.3
 requests==2.26.0
 qrcode==6.1
 pyngrok==5.1.0
-SQLAlchemy==1.4.46
+sqlalchemy==2.0.44
 flask-sqlalchemy==3.0.5
 Flask-Mail==0.9.1
 Flask-Babel==2.0.0
