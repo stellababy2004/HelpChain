@@ -26,6 +26,31 @@
 - [ ] **Sentry**: Error monitoring configured
 - [ ] **CSP Reports**: Handler deployed and receiving reports
 
+### ⚙️ Vercel Prebuilt & CI Size Safeguards
+
+- [ ] **Prebuilt deploy flow**: Use Vercel prebuilt on CI: run `npx vercel build` on the runner to produce `.vercel/output` and then `npx vercel deploy --prebuilt` for the preview/production deploy.
+- [ ] **.vercelignore rules**: Ensure `.vercelignore` contains `/.git` and `/.vercel/python/**/_vendor` to avoid uploading vendorized Python binaries (torch, nvidia, triton, etc.).
+- [ ] **Upload size target**: Keep prebuilt upload well under the 4 GiB service limit — recommended target: < 3.5 GiB.
+- [ ] **Split heavy ML deps**: Document and enforce that heavy ML packages live in `requirements-ml.txt` and are NOT installed during the prebuild step.
+- [ ] **Early-fail CI check**: Add a lightweight CI job or step that inspects `.vercel/output` size and lists files >100MB; fail the job if total > 3.5G and notify the team.
+
+Example GitHub Actions check (add as a small job step):
+
+```yaml
+- name: Check .vercel/output size
+   run: |
+      du -sh .vercel/output || true
+      find .vercel/output -type f -size +100M -exec ls -lh {} \; || true
+      total=$(du -sb .vercel/output | awk '{print $1}' || echo 0)
+      # 3758096384 bytes == 3.5 GiB
+      if [ "$total" -gt 3758096384 ]; then
+         echo "Prebuilt output too large: $total bytes" >&2
+         exit 1
+      fi
+```
+
+Note: adjust the snippet for Windows/PowerShell runners if used; the above is a compact Linux runner example.
+
 ## Deployment Steps
 
 ### Phase 1: Infrastructure
