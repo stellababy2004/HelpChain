@@ -45,16 +45,32 @@ except ImportError:
 def get_db():
     """Get the database instance from current Flask app context"""
     from flask import current_app
-
     if current_app and "sqlalchemy" in current_app.extensions:
-        return current_app.extensions["sqlalchemy"]
+        ext = current_app.extensions.get("sqlalchemy")
+        # Prefer a high-level SQLAlchemy object exposing `session`.
+        # Different Flask-SQLAlchemy versions may store either the
+        # wrapper or an internal state object under this key. Try a
+        # few heuristics to return a usable object that has `.session`.
+        try:
+            # Common pattern: extension exposes the SQLAlchemy instance
+            # under an attribute named `db` (or `sqlalchemy`). Try those.
+            candidate = None
+            candidate = getattr(ext, "db", None) or getattr(ext, "sqlalchemy", None) or ext
+            if hasattr(candidate, "session"):
+                return candidate
+            # If the ext itself exposes `.session`, use it.
+            if hasattr(ext, "session"):
+                return ext
+        except Exception:
+            # fall through to fallback resolution
+            pass
 
     # Fallback - use canonical backend.extensions
     try:
         from backend.extensions import db
 
         return db
-    except ImportError:
+    except Exception:
         raise RuntimeError("Could not get database instance") from None
 
 

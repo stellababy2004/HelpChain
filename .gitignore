@@ -77,3 +77,13 @@ instance/*.db
 
 # local backups
 backend/backups/*
+.vercel
+.env*.local
+# local build artifacts and venv
+.git.zip
+backend.zip
+pytest-full.log
+.venv/
+venv/
+.env
+*.log
