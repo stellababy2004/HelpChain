@@ -1,0 +1,3 @@
+Get-Content .\constraints_strip_pydateutil.txt |
+  Where-Object { $_ -notmatch '^pytz==' } |
+  Set-Content .\constraints_strip_no_pytz.txt -Encoding UTF8

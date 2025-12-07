@@ -3,10 +3,11 @@
 Run from repository root:
   python backend/scripts/list_users.py
 """
+
 from __future__ import annotations
 
-import sys
 import os
+import sys
 
 # Ensure backend package is importable when running this script from repo root
 _this_dir = os.path.abspath(os.path.dirname(__file__))
@@ -18,7 +19,7 @@ if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
 try:
-    from app import app, User, db
+    from app import User, app, db
 except Exception as e:
     print("Failed importing backend app:", e)
     raise
@@ -40,7 +41,9 @@ def main() -> int:
             else:
                 print(f"Found {len(users)} users:")
                 for u in users:
-                    print(f" - {getattr(u, 'id', '?')}: {getattr(u, 'username', '')} <{getattr(u, 'email', '')}>")
+                    print(
+                        f" - {getattr(u, 'id', '?')}: {getattr(u, 'username', '')} <{getattr(u, 'email', '')}>"
+                    )
     except Exception as exc:
         print("Error querying users:", exc)
         return 2

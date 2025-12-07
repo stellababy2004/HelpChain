@@ -1,8 +1,12 @@
 import sys
 from pathlib import Path
 
-# Add backend/helpchain-backend/src to sys.path
-SRC_DIR = Path(__file__).resolve().parent / "backend" / "helpchain-backend" / "src"
+# Support both possible package directory names used in different clones:
+# - backend/helpchain-backend/src (older)
+# - backend/helpchain_backend/src (current)
+SRC_DIR = Path(__file__).resolve().parent / "backend" / "helpchain_backend" / "src"
+if not SRC_DIR.exists():
+    SRC_DIR = Path(__file__).resolve().parent / "backend" / "helpchain-backend" / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 

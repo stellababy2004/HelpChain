@@ -1,11 +1,11 @@
 # ruff: noqa
+from audit import log_admin_action
+from db import get_db
+from dependencies import require_role
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from db import get_db
-from audit import log_admin_action
 from backend.models import User
-from dependencies import require_role
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

@@ -6,11 +6,11 @@ Tests all components: models, API endpoints, VAPID configuration, frontend integ
 
 import os
 import sys
+import tempfile
 import unittest
+import uuid
 
 import requests
-import tempfile
-import uuid
 
 # Add backend to path
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
@@ -25,8 +25,9 @@ except ImportError:
     pass
 
 # Flask imports
-from backend.extensions import db
 from flask import Flask
+
+from backend.extensions import db
 
 # Model imports - moved to setUp to ensure proper db initialization
 # try:
@@ -364,7 +365,7 @@ class TestPushNotifications(unittest.TestCase):
         print("\n=== Testing Database Relationships ===")
 
         with self.app.app_context():
-            print('DEBUG at start of app_context: db.session id:', id(db.session))
+            print("DEBUG at start of app_context: db.session id:", id(db.session))
             # Create user
             user = self.User(
                 username="test_user",
@@ -393,28 +394,33 @@ class TestPushNotifications(unittest.TestCase):
             db.session.add(preference)
 
             db.session.commit()
-            print('DEBUG after commit: db.session id:', id(db.session))
+            print("DEBUG after commit: db.session id:", id(db.session))
 
             # Test relationships
             # DEBUG: inspect User class and query behavior
             try:
-                print('DEBUG: User class module:', self.User.__module__)
-                print('DEBUG: User class id:', id(self.User))
-                print('DEBUG: User.query repr:', repr(getattr(self.User, 'query', None)))
-                print('DEBUG: db.session id:', id(db.session))
+                print("DEBUG: User class module:", self.User.__module__)
+                print("DEBUG: User class id:", id(self.User))
+                print(
+                    "DEBUG: User.query repr:", repr(getattr(self.User, "query", None))
+                )
+                print("DEBUG: db.session id:", id(db.session))
                 try:
-                    print('DEBUG: db.engine:', getattr(db, 'engine', None))
+                    print("DEBUG: db.engine:", getattr(db, "engine", None))
                     try:
-                        res = list(db.engine.execute('SELECT count(*) FROM users'))
-                        print('DEBUG: raw users count via engine:', res)
+                        res = list(db.engine.execute("SELECT count(*) FROM users"))
+                        print("DEBUG: raw users count via engine:", res)
                     except Exception as _e:
-                        print('DEBUG: raw select failed:', _e)
+                        print("DEBUG: raw select failed:", _e)
                 except Exception:
                     pass
                 try:
-                    print('DEBUG: session.query(User).all():', db.session.query(self.User).all())
+                    print(
+                        "DEBUG: session.query(User).all():",
+                        db.session.query(self.User).all(),
+                    )
                 except Exception as _e:
-                    print('DEBUG: session.query(User) raised:', _e)
+                    print("DEBUG: session.query(User) raised:", _e)
             except Exception:
                 pass
 

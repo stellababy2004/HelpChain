@@ -119,9 +119,9 @@ jobs:
 
           WORKDIR /app
 
-          COPY csp_report_handler.py requirements.txt ./
+          COPY csp_report_handler.py requirements-csp.txt ./
 
-          RUN pip install --no-cache-dir -r requirements.txt
+          RUN pip install --no-cache-dir -r requirements-csp.txt
 
           EXPOSE 8080
 

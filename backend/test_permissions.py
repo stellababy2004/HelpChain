@@ -3,6 +3,7 @@ from flask import Flask, session
 from werkzeug.security import generate_password_hash
 
 from backend.extensions import db as _db
+
 # Keep legacy `db` name for existing code in this file that expects it.
 db = _db
 from backend.models import PermissionEnum, Role, User, UserRole
@@ -33,7 +34,7 @@ def permissions_app():
         # on the app's DB to guarantee tests have the expected data.
         try:
             from backend.extensions import db as _db
-            from backend.models import Permission, Role, RolePermission, PermissionEnum
+            from backend.models import Permission, PermissionEnum, Role, RolePermission
 
             # Defensive rollback/remove before seeding
             try:
@@ -65,7 +66,11 @@ def permissions_app():
             # ensure admin role exists
             admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
             if not admin_role:
-                admin_role = Role(name="Администратор", description="Администратор", is_system_role=True)
+                admin_role = Role(
+                    name="Администратор",
+                    description="Администратор",
+                    is_system_role=True,
+                )
                 _db.session.add(admin_role)
                 try:
                     _db.session.flush()
@@ -77,13 +82,21 @@ def permissions_app():
                 for codename, perm in created.items():
                     if perm is None:
                         continue
-                    exists = _db.session.query(RolePermission).filter_by(role_id=admin_role.id, permission=perm.codename).first()
+                    exists = (
+                        _db.session.query(RolePermission)
+                        .filter_by(role_id=admin_role.id, permission=perm.codename)
+                        .first()
+                    )
                     if not exists:
                         # Associate via role object where possible to ensure relationship
                         try:
-                            rp = RolePermission(role=admin_role, permission=perm.codename)
+                            rp = RolePermission(
+                                role=admin_role, permission=perm.codename
+                            )
                         except Exception:
-                            rp = RolePermission(role_id=admin_role.id, permission=perm.codename)
+                            rp = RolePermission(
+                                role_id=admin_role.id, permission=perm.codename
+                            )
                         _db.session.add(rp)
             except Exception:
                 pass
@@ -98,7 +111,9 @@ def permissions_app():
             # Ensure role_permissions were persisted and are visible via relationship
             try:
                 _db.session.expire_all()
-                admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
+                admin_role = (
+                    _db.session.query(Role).filter_by(name="Администратор").first()
+                )
                 if admin_role is not None:
                     # force reload of related RolePermission objects
                     _db.session.refresh(admin_role)

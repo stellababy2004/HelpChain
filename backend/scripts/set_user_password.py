@@ -7,6 +7,7 @@ Usage examples:
 This script is intentionally conservative: by default it runs in dry-run mode
 and only prints actions. Use `--commit` to apply changes to the database.
 """
+
 import argparse
 import os
 import sys
@@ -21,6 +22,7 @@ if backend_dir not in sys.path:
 
 from backend import models
 from backend.app import app
+
 try:
     from backend.extensions import db as ext_db
 except Exception:
@@ -39,7 +41,9 @@ def main():
         if user is None:
             print(f"User {args.username} not found — will create (dry-run)")
             if args.commit:
-                user = models.User(username=args.username, email=f"{args.username}@example.test")
+                user = models.User(
+                    username=args.username, email=f"{args.username}@example.test"
+                )
                 try:
                     user.set_password(args.password)
                 except Exception:

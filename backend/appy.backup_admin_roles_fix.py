@@ -31,11 +31,11 @@ import sys
 from datetime import datetime
 from io import StringIO
 
+from admin_roles import admin_roles_bp
 from dotenv import load_dotenv
-from flask import (
+from flask import (  # current_app,  # Премахнат за избягване на circular import
     Flask,
     Response,
-    # current_app,  # Премахнат за избягване на circular import
     flash,
     jsonify,
     redirect,
@@ -44,8 +44,9 @@ from flask import (
     session,
     url_for,
 )
-from flask_babel import Babel, refresh
+from flask_babel import Babel
 from flask_babel import gettext as _
+from flask_babel import refresh
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_mail import Mail
@@ -53,16 +54,15 @@ from flask_migrate import Migrate
 from flask_socketio import emit, join_room, leave_room
 from flask_talisman import Talisman
 from jinja2 import ChoiceLoader, FileSystemLoader
+
+# Import smart matching engine
+from smart_matching import smart_matching_engine
 from sqlalchemy.exc import OperationalError
 
 # All imports at the top
 from werkzeug.utils import secure_filename
 
-from admin_roles import admin_roles_bp
 from backend.routes.notifications import notification_bp
-
-# Import smart matching engine
-from smart_matching import smart_matching_engine
 
 from .extensions import db
 from .models import (
@@ -76,9 +76,8 @@ from .models import (
     Volunteer,
 )
 from .models_with_analytics import Task
-from .permissions import (
+from .permissions import (  # initialize_default_roles_and_permissions,
     require_admin_login,
-    # initialize_default_roles_and_permissions,
     require_permission,
 )
 

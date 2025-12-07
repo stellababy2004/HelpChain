@@ -47,14 +47,34 @@ def get_db():
     from flask import current_app
 
     if current_app and "sqlalchemy" in current_app.extensions:
-        return current_app.extensions["sqlalchemy"]
+        ext_db = current_app.extensions.get("sqlalchemy")
+        # Prefer an object that exposes the `.session` attribute which the
+        # application code expects. Some Flask-SQLAlchemy versions expose an
+        # internal state object that doesn't provide `.session` directly.
+        try:
+            if hasattr(ext_db, "session"):
+                return ext_db
+        except Exception:
+            pass
 
-    # Fallback - use canonical backend.extensions
+        # If the extension object is a wrapper, try common fallbacks where
+        # the real SQLAlchemy object might live (eg. `.db` or `.SQLAlchemy`).
+        try:
+            candidate = getattr(ext_db, "db", None) or getattr(
+                ext_db, "SQLAlchemy", None
+            )
+            if candidate is not None and hasattr(candidate, "session"):
+                return candidate
+        except Exception:
+            pass
+
+    # Fallback - use canonical backend.extensions.db which is created to be
+    # the single canonical SQLAlchemy() instance for the application.
     try:
         from backend.extensions import db
 
         return db
-    except ImportError:
+    except Exception:
         raise RuntimeError("Could not get database instance") from None
 
 
@@ -1450,12 +1470,38 @@ def _minimal_analytics() -> dict:
             "conversions": 0,
             "conversion_rate": 0.0,
         },
-        "user_engagement": {"top_pages": [], "device_breakdown": [], "hourly_activity": [{"hour": h, "activity": 0} for h in range(24)]},
-        "chatbot_analytics": {"total_conversations": 0, "response_types": {}, "ai_statistics": {}, "average_rating": 0, "rated_conversations": 0},
+        "user_engagement": {
+            "top_pages": [],
+            "device_breakdown": [],
+            "hourly_activity": [{"hour": h, "activity": 0} for h in range(24)],
+        },
+        "chatbot_analytics": {
+            "total_conversations": 0,
+            "response_types": {},
+            "ai_statistics": {},
+            "average_rating": 0,
+            "rated_conversations": 0,
+        },
         "performance_metrics": {"endpoint_performance": [], "daily_performance": []},
-        "conversion_funnel": {"total_visitors": 0, "visited_register": 0, "started_registration": 0, "completed_registration": 0, "chatbot_users": 0, "conversion_rates": {}},
-        "user_journey": {"top_entry_pages": [], "top_exit_pages": [], "common_user_paths": []},
-        "real_time": {"active_users_now": 0, "page_views_last_hour": 0, "chatbot_messages_last_hour": 0, "timestamp": utc_now().isoformat()},
+        "conversion_funnel": {
+            "total_visitors": 0,
+            "visited_register": 0,
+            "started_registration": 0,
+            "completed_registration": 0,
+            "chatbot_users": 0,
+            "conversion_rates": {},
+        },
+        "user_journey": {
+            "top_entry_pages": [],
+            "top_exit_pages": [],
+            "common_user_paths": [],
+        },
+        "real_time": {
+            "active_users_now": 0,
+            "page_views_last_hour": 0,
+            "chatbot_messages_last_hour": 0,
+            "timestamp": utc_now().isoformat(),
+        },
         "is_sample_data": True,
     }
 
@@ -1470,7 +1516,8 @@ class _NoopAnalytics:
 
 class _LazyAnalytics:
     """Lazy wrapper that delegates to a real analytics service if available,
-    otherwise returns no-op data when running in TESTING mode or when not initialized."""
+    otherwise returns no-op data when running in TESTING mode or when not initialized.
+    """
 
     def get_dashboard_analytics(self, *a, **k):
         try:

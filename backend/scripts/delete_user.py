@@ -10,6 +10,7 @@ Usage:
 This script requires you run it from the repository root. It will import
 the Flask app and perform the deletion inside the app context.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,7 +29,7 @@ if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Delete a User by username")
     parser.add_argument("--username", required=True, help="username to delete")
     parser.add_argument(
@@ -40,7 +41,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     dry_run = not args.commit
 
     try:
-        from app import app, db, User
+        from app import User, app, db
     except Exception as e:
         logging.error("Failed to import app/models: %s", e)
         return 2
@@ -56,9 +57,16 @@ def main(argv: Optional[list[str]] = None) -> int:
             logging.info("No User with username '%s' found.", args.username)
             return 0
 
-        logging.info("Found User: id=%s username=%s email=%s", getattr(user, "id", "?"), getattr(user, "username", ""), getattr(user, "email", ""))
+        logging.info(
+            "Found User: id=%s username=%s email=%s",
+            getattr(user, "id", "?"),
+            getattr(user, "username", ""),
+            getattr(user, "email", ""),
+        )
         if dry_run:
-            logging.info("Dry-run: would delete this User. Re-run with --commit to apply.")
+            logging.info(
+                "Dry-run: would delete this User. Re-run with --commit to apply."
+            )
             return 0
 
         try:

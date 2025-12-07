@@ -23,12 +23,38 @@ from backend.extensions import db
 def get_db():
     """Get database instance from current app context"""
     try:
-        # Try to get from current_app extensions first
-        if (
-            hasattr(current_app, "extensions")
-            and "sqlalchemy" in current_app.extensions
-        ):
-            return current_app.extensions["sqlalchemy"]
+        # Try to get from current_app extensions first. Flask-SQLAlchemy may
+        # store a state object under `current_app.extensions['sqlalchemy']`
+        # which is not itself the SQLAlchemy object the application expects
+        # (it can be an internal `_SQLAlchemyState` or a dict). Normalize
+        # several common shapes and return an object exposing `.session`.
+        if hasattr(current_app, "extensions") and "sqlalchemy" in current_app.extensions:
+            ext = current_app.extensions["sqlalchemy"]
+            # Case: extension is a dict-like object containing the real db
+            try:
+                if isinstance(ext, dict) and "db" in ext:
+                    candidate = ext["db"]
+                    if hasattr(candidate, "session"):
+                        return candidate
+            except Exception:
+                pass
+
+            # Case: extension is an object that exposes a `db` attribute
+            try:
+                candidate = getattr(ext, "db", None)
+                if candidate is not None and hasattr(candidate, "session"):
+                    return candidate
+            except Exception:
+                pass
+
+            # Case: some Flask-SQLAlchemy versions attach the session
+            # directly onto the state object under `session` — use it if present
+            try:
+                if hasattr(ext, "session"):
+                    return ext
+            except Exception:
+                pass
+
         # Fallback to global db instance
         return db
     except (KeyError, RuntimeError, AttributeError):
@@ -144,7 +170,12 @@ def subscribe_push():
                 # Create or get placeholder user with id=0
                 placeholder = db_instance.session.get(User, 0)
                 if not placeholder:
-                    placeholder = User(id=0, username="anonymous", email="anonymous@example.com", password_hash="")
+                    placeholder = User(
+                        id=0,
+                        username="anonymous",
+                        email="anonymous@example.com",
+                        password_hash="",
+                    )
                     # add directly to Flask DB session
                     db_instance.session.add(placeholder)
                     db_instance.session.commit()
@@ -203,8 +234,10 @@ def vapid_public_key():
         # hit the server can retrieve a usable key.
         if not public_key:
             test_key = current_app.config.get("TEST_VAPID_PUBLIC_KEY")
-            if test_key or current_app.config.get("TESTING") or (
-                current_app.config.get("HELPCHAIN_TEST_DEBUG")
+            if (
+                test_key
+                or current_app.config.get("TESTING")
+                or (current_app.config.get("HELPCHAIN_TEST_DEBUG"))
             ):
                 fallback = test_key or "BTestPublicKeyForLocalTests-ReplaceMe"
                 current_app.logger.info("Using test VAPID public key for tests")

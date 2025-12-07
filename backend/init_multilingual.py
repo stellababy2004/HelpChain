@@ -6,19 +6,9 @@ HelpChain Multilingual Database Initialization
 from datetime import UTC, datetime
 
 try:
-    from backend.models import (
-        SupportedLanguage,
-        Translation,
-        TranslationKey,
-        db,
-    )
+    from backend.models import SupportedLanguage, Translation, TranslationKey, db
 except ImportError:
-    from .models import (
-        SupportedLanguage,
-        Translation,
-        TranslationKey,
-        db,
-    )
+    from .models import SupportedLanguage, Translation, TranslationKey, db
 
 
 def utc_now() -> datetime:

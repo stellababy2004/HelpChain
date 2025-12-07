@@ -17,11 +17,33 @@ logger = logging.getLogger("alembic.env")
 
 def get_engine():
     try:
-        # this works with Flask-SQLAlchemy<3 and Alchemical
-        return current_app.extensions["migrate"].db.get_engine()
-    except (TypeError, AttributeError, RuntimeError):
-        # this works with Flask-SQLAlchemy>=3 or when no app context
-        return current_app.extensions["migrate"].db.engine
+        # Prefer the project's centralized helper to resolve the SQLAlchemy
+        # Engine in a forward/backwards-compatible way. Fall back to
+        # attribute access or the legacy `get_engine()` only if necessary.
+        target_db = current_app.extensions["migrate"].db
+        try:
+            from backend.extensions import get_db_engine
+
+            eng = get_db_engine(current_app, target_db)
+            if eng is not None:
+                return eng
+        except Exception:
+            # Helper not available or errored — continue to fallbacks
+            pass
+
+        eng = getattr(target_db, "engine", None)
+        if eng is not None:
+            return eng
+
+        if hasattr(target_db, "get_engine"):
+            try:
+                return target_db.get_engine(current_app)
+            except Exception:
+                return None
+        return eng
+    except Exception:
+        # Let alembic handle the failure (it can fall back to INI URL)
+        raise
 
 
 def get_engine_url():

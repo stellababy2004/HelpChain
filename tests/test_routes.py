@@ -50,10 +50,11 @@ class TestRoutes:
 
     def test_admin_email_2fa_page_contains_verification_field(self, client):
         """Email 2FA страницата показва поле за код на български."""
-        with client.session_transaction() as sess:
-            sess["pending_email_2fa"] = True
-            sess["email_2fa_code"] = "123456"
-            sess["email_2fa_expires"] = datetime.now().timestamp() + 600
+        # Use the test-only helper to set pending email 2FA on the server
+        try:
+            client.get("/_pytest_set_pending_email_2fa?admin_id=1&code=123456")
+        except Exception:
+            pass
 
         response = client.get("/admin/email_2fa")
 
