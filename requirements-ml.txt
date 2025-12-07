@@ -15,3 +15,15 @@ gradio==6.0.1
 gradio_client==2.0.0
 
 # Add any additional heavy ML/AI packages here used only for experiments/local
+
+# Suggested additional heavy ML packages (keep them out of root `requirements.txt`):
+# torchvision / torchaudio often accompany torch
+torchvision
+torchaudio
+# XGBoost and numba can be large; include if you need them for ML workloads
+xgboost
+numba
+# Extra HF tools
+transformers[torch]
+# If you use large model weights locally, keep them out of Vercel; include safetensors here
+# Add other heavy packages as needed (faiss, sentencepiece, fasttext, etc.)

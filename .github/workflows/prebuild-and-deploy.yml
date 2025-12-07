@@ -38,10 +38,15 @@ jobs:
       - name: Install Python dependencies (wheelhouse)
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          # Prefer a lightweight/dev requirements file for prebuild to avoid heavy ML deps
-          if [ -f requirements-dev-minimal.txt ]; then
+          # Prefer a lightweight backend requirements file for prebuild to avoid heavy ML deps
+          if [ -f backend/requirements.txt ]; then
+            echo "Installing backend/requirements.txt (slim runtime deps)"
+            pip install --prefer-binary -r backend/requirements.txt
+          elif [ -f requirements-dev-minimal.txt ]; then
+            echo "Installing requirements-dev-minimal.txt"
             pip install --prefer-binary -r requirements-dev-minimal.txt
           elif [ -f requirements.txt ]; then
+            echo "Installing requirements.txt (slimmed root requirements)"
             pip install --prefer-binary -r requirements.txt
           fi
 
@@ -68,6 +73,23 @@ jobs:
             echo "No .vercel/output found - failing early for debug"
             ls -la || true
             exit 1
+          fi
+
+      - name: Cleanup large files from .vercel/output
+        if: always()
+        run: |
+          echo "Listing files in .vercel/output larger than 100MB (will remove)"
+          find .vercel/output -type f -size +100M -print0 | xargs -0 du -b 2>/dev/null | sort -nr | tee large-files-to-remove.txt || true
+
+          # Remove large files to avoid Node buffer / upload problems in Vercel deploy.
+          # We show what would be removed first, then remove them. This is conservative
+          # because some large files (model weights) should not be part of the prebuilt output.
+          if [ -s large-files-to-remove.txt ]; then
+            echo "Removing files >100MB from .vercel/output"
+            # Use -print0/xargs -0 to handle spaces and special chars
+            find .vercel/output -type f -size +100M -print0 | xargs -0 rm -v || true
+          else
+            echo "No large files >100MB found in .vercel/output"
           fi
 
       - name: Check prebuilt output size and list large files
