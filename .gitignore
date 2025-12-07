@@ -90,3 +90,28 @@ output.tgz
 /backend.zip
 /.git.zip
 /backend/redis.zip
+# Ignore large artifacts and local envs added by CI cleanup
+repo-mirror.git/
+miniconda.exe
+backend.zip
+.git.zip
+backend/redis.zip
+HelpChain_Financial_Pack_2025.zip
+backend/uploads/*.JPG
+backend/uploads/*.PNG
+backend/uploads/*.png
+backend/uploads/*.jpg
+sent_emails.txt
+staged_changes.patch
+.venv/
+.venv311/
+
+# Local scanner outputs
+all_objects.txt
+all_hashes.txt
+large_blobs_sorted.txt
+large_blobs_verify.txt
+verify_pack_raw.txt
+object_sizes_raw.txt
+large_blobs.txt
+vercel_excerpt_*.txt
