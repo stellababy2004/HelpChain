@@ -1,0 +1,41 @@
+# Ignore heavy model files, caches and local environments
+models/
+data/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.h5
+*.bin
+
+# Python venvs and caches
+.venv/
+venv/
+env/
+__pycache__/
+.pytest_cache/
+.cache/
+
+# Build / distro / node
+node_modules/
+dist/
+build/
+*.tgz
+*.tar.gz
+
+# Local dev/test scripts and artifacts
+dev_scripts/
+tests/
+
+# Vercel and CI inspection artifacts
+.vercel/
+vercel_inspect.json
+vercel_inspect.txt
+vercel_logs.json
+vercel_logs.txt
+
+# Misc
+.DS_Store
+*.log
+*.sqlite*
+instance/
