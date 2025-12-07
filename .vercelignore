@@ -1,3 +1,54 @@
+# Vercel ignore - exclude large local artifacts and dev-only files
+
+# Python virtualenvs and caches
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local instance data / databases / logs
+instance/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.log
+.coverage
+.pytest_cache/
+
+# Node / frontend build artifacts
+node_modules/
+dist/
+build/
+coverage/
+.next/
+/.vercel/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Dev-only scripts and large assets
+dev_scripts/
+tests/local_data/
+sent_emails.txt
+*.bak
+
+# Large binary artifacts
+*.tar
+*.zip
+*.egg
+*.whl
+
+# Exclude any venv-like directories nested anywhere
+**/venv/**
+**/.venv/**
 # Ignore virtualenvs and caches
 venv/
 .venv/
