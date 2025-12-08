@@ -1185,8 +1185,9 @@ def volunteer_register():
             # Create associated User record so Volunteer.user_id is always set.
             # Use a generated password (not exposed) and set role to volunteer.
             try:
-                from werkzeug.security import generate_password_hash
                 import secrets
+
+                from werkzeug.security import generate_password_hash
 
                 username = email.split("@")[0] if email and "@" in email else name.replace(" ", "_") or f"vol_{secrets.token_hex(4)}"
                 random_password = secrets.token_urlsafe(16)

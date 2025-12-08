@@ -1,4 +1,6 @@
-import os, sys
+import os
+import sys
+
 from flask import Flask
 
 # ensure backend dir is on path

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import re
 
+
 def load_paths(all_objects_path='all_objects.txt'):
     m = {}
     try:
-        with open(all_objects_path,'r',encoding='utf-8') as f:
+        with open(all_objects_path,encoding='utf-8') as f:
             for line in f:
                 line=line.strip()
                 if not line:
@@ -23,7 +24,7 @@ def main():
     paths = load_paths()
     entries = []
     try:
-        with open('object_sizes_raw.txt','r',encoding='utf-8') as f:
+        with open('object_sizes_raw.txt',encoding='utf-8') as f:
             for line in f:
                 line=line.strip()
                 if not line.startswith('blob '):

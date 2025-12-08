@@ -15,11 +15,10 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import secrets
 import sys
 from typing import Optional
-import os
-
 
 # Ensure repository root (parent of `backend`) is on sys.path so
 # `import backend` works when the script is executed directly as
@@ -44,7 +43,7 @@ except Exception:
     pass
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Sync AdminUser rows into the User table (idempotent).")
     parser.add_argument(
         "--commit",
@@ -81,7 +80,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     # Import app and models via the project entrypoint so sys.path is set like normal
     try:
         # `run.py` and other dev helpers add `backend/` to sys.path; we import app
-        from backend.app import app, db, AdminUser, User
+        from backend.app import AdminUser, User, app, db
     except Exception as e:  # pragma: no cover - defensive import failure
         logging.error("Failed to import app/models: %s", e)
         return 2
@@ -172,7 +171,7 @@ def main(argv: Optional[list[str]] = None) -> int:
                 # Try to copy role if AdminUser exposes it
                 try:
                     if hasattr(au, "role") and hasattr(new_user, "role"):
-                        new_user.role = getattr(au, "role")
+                        new_user.role = au.role
                 except Exception:
                     pass
 

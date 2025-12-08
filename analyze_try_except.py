@@ -1,7 +1,7 @@
 import re
 
 p = "c:/dev/HelpChain/HelpChain.bg/backend/extensions.py"
-lines = open(p, "r", encoding="utf-8").read().splitlines()
+lines = open(p, encoding="utf-8").read().splitlines()
 stack = []
 for i, l in enumerate(lines, start=1):
     s = l.lstrip("\t ")
