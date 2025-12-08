@@ -157,12 +157,25 @@ jobs:
               curl -sSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
                 "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$ART_ID/zip" -o vercel-output.zip || true
             mkdir -p .vercel
-            unzip -q vercel-output.zip -d .vercel || true
-            if [ -d .vercel/output ]; then
-              echo "Artifact extracted to .vercel/output"
+            TMPDIR=$(mktemp -d)
+            unzip -q vercel-output.zip -d "$TMPDIR" || true
+            # Look for a nested .vercel/output directory in the extracted tree
+            FOUND_DIR=$(find "$TMPDIR" -type d -path '*/.vercel/output' | head -n1 || true)
+            if [ -n "$FOUND_DIR" ]; then
+              echo "Found extracted .vercel/output at: $FOUND_DIR"
+              rm -rf .vercel/output || true
+              mkdir -p .vercel
+              mv "$FOUND_DIR" .vercel/output
+            elif [ -d "$TMPDIR/.vercel/output" ]; then
+              echo "Found .vercel/output at top level in archive"
+              rm -rf .vercel/output || true
+              mv "$TMPDIR/.vercel" .vercel
             else
-              echo "Warning: artifact unzip didn't produce .vercel/output"
+              echo "Warning: artifact unzip didn't produce .vercel/output; listing extracted top-level for debugging:" >&2
+              ls -la "$TMPDIR" || true
+              find "$TMPDIR" -maxdepth 3 -type d -print || true
             fi
+            rm -rf "$TMPDIR" || true
           fi
 
       - name: Install Vercel CLI
