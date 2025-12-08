@@ -87,25 +87,55 @@ jobs:
           echo "Creating compressed archive output.tgz..."
           tar -C .vercel -czf output.tgz output || true
 
+      - name: Local function size check
+        if: always()
+        run: |
+          MAX_SIZE_MB=250
+          echo "Generating function size listing..."
+          du -ah .vercel/output 2>/dev/null | sort -rh | head -n 200 > function-size-listing.txt || true
+
+          echo "Function sizes (MB):" > function-sizes.txt
+          FOUND=0
+          if [ -d .vercel/output/functions ]; then
+            for d in .vercel/output/functions/*; do
+              if [ -d "$d" ]; then
+                sz_bytes=$(du -sb "$d" | awk '{print $1}')
+                sz_mb=$((sz_bytes / 1024 / 1024))
+                echo "$sz_mb $d" >> function-sizes.txt
+                if [ "$sz_mb" -gt "$MAX_SIZE_MB" ]; then
+                  echo "ERROR: Function too large: $d (${sz_mb}MB) > ${MAX_SIZE_MB}MB" >&2
+                  FOUND=1
+                fi
+              fi
+            done
+          else
+            echo ".vercel/output/functions not found; no functions to check." >> function-sizes.txt
+          fi
+
+          cat function-sizes.txt
+          if [ "$FOUND" -eq 1 ]; then
+            echo "One or more functions exceed ${MAX_SIZE_MB}MB. Failing prebuild." >&2
+            exit 1
+          fi
+
+      - name: Upload function-size diagnostics
+        if: always()
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
+        with:
+          name: function-sizes
+          path: |
+            function-size-listing.txt
+            function-sizes.txt
+
       - name: Upload .vercel/output artifact
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
         with:
           name: vercel-output
           path: .vercel/output
 
-  check-functions:
-    name: Check Vercel function sizes
-    needs: prebuild
-    uses: ./.github/workflows/check-function-sizes.yml
-    with:
-      max_size_mb: 250
-      # Artifact name to download inside reusable workflow
-      # Note: check-function-sizes.yml will download artifact 'vercel-output' if present
-      artifact_name: vercel-output
-
   deploy:
     name: Deploy prebuilt output to Vercel (preview)
-    needs: check-functions
+    needs: prebuild
     runs-on: ubuntu-latest
 
     steps:
@@ -113,7 +143,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Download .vercel/output artifact
-        uses: actions/download-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
+        uses: actions/download-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: vercel-output
           path: .vercel/output
