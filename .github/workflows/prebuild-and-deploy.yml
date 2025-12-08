@@ -293,5 +293,14 @@ jobs:
            ls -la .vercel/python || true
            find .vercel/python -maxdepth 3 -ls || true
 
+          # Ensure .env.local exists — some projects or the Vercel CLI expect a .env.local file
+          if [ -f .vercel/.env.development.local ]; then
+            echo "Copying .vercel/.env.development.local -> .env.local"
+            cp .vercel/.env.development.local .env.local || true
+          else
+            echo "Creating empty .env.local for deploy";
+            touch .env.local || true
+          fi
+
           npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes --archive=tgz
 
