@@ -142,11 +142,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
-      - name: Download .vercel/output artifact
-        uses: actions/download-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - name: Download vercel-output artifact (try action)
+        uses: actions/download-artifact@v3
         with:
           name: vercel-output
           path: .vercel/output
+        continue-on-error: true
+
+      - name: Fallback - download artifact via GitHub API
+        if: failure()
+        run: |
+          echo "Fallback: downloading artifact via gh API"
+          set -e
+          ART_ID=$(gh api repos/${{ github.repository }}/actions/artifacts --jq '.artifacts[] | select(.name=="vercel-output") | .id')
+          if [ -z "$ART_ID" ]; then echo "Artifact 'vercel-output' not found"; exit 1; fi
+          gh api repos/${{ github.repository }}/actions/artifacts/$ART_ID/zip --output vercel-output.zip
+          mkdir -p .vercel
+          unzip -q vercel-output.zip -d .vercel || true
+          mv .vercel/output .vercel/output || true
 
       - name: Install Vercel CLI
         run: |
