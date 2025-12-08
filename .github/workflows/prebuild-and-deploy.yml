@@ -81,11 +81,12 @@ jobs:
             echo "No large files >100MB found in .vercel/output"
           fi
 
-      - name: Create compressed artifact of .vercel/output
+      - name: Create compressed artifact of .vercel (includes python runtime)
         if: always()
         run: |
-          echo "Creating compressed archive output.tgz..."
-          tar -C .vercel -czf output.tgz output || true
+          echo "Creating compressed archive vercel.tgz (full .vercel tree)..."
+          # Archive the whole .vercel directory (safe because we removed very large files above)
+          tar -C . -czf vercel.tgz .vercel || true
 
       - name: Local function size check
         if: always()
@@ -127,11 +128,13 @@ jobs:
             function-size-listing.txt
             function-sizes.txt
 
-      - name: Upload .vercel/output artifact
+      - name: Upload .vercel/output and .vercel/python artifact
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
         with:
           name: vercel-output
-          path: .vercel/output
+          path: |
+            .vercel/output
+            .vercel/python
 
   deploy:
     name: Deploy prebuilt output to Vercel (preview)
