@@ -153,16 +153,26 @@ jobs:
             echo "Artifact 'vercel-output' not found - continuing (prebuild may have failed)"
           else
             echo "Found artifact id: $ART_ID"
-              echo "Downloading artifact via curl (avoids gh --output flag incompatibility)"
-              curl -sSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$ART_ID/zip" -o vercel-output.zip || true
+            echo "Downloading artifact via curl (avoids gh --output flag incompatibility)"
+            curl -sSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$ART_ID/zip" -o vercel-output.zip || true
             mkdir -p .vercel
             TMPDIR=$(mktemp -d)
             unzip -q vercel-output.zip -d "$TMPDIR" || true
-            # Look for a nested .vercel/output directory in the extracted tree
+
+            # Robust extraction logic:
+            # 1) If archive contains a nested .vercel/output, move that into .vercel/output
+            # 2) Else if archive contains top-level .vercel/output (i.e. TMPDIR/.vercel/output), move it
+            # 3) Else if archive contains the contents of .vercel/output directly (e.g. functions/, diagnostics/),
+            #    then create .vercel/output and move those items into it
+            # More robust extraction handling:
+            # - If a nested .vercel/output exists anywhere, move it
+            # - Else if a top-level .vercel/output exists, move it
+            # - Else search for any 'functions' / 'diagnostics' dirs anywhere under TMPDIR
+            #   and move them into .vercel/output. Also move common metadata files.
             FOUND_DIR=$(find "$TMPDIR" -type d -path '*/.vercel/output' | head -n1 || true)
             if [ -n "$FOUND_DIR" ]; then
-              echo "Found extracted .vercel/output at: $FOUND_DIR"
+              echo "Found nested .vercel/output at: $FOUND_DIR"
               rm -rf .vercel/output || true
               mkdir -p .vercel
               mv "$FOUND_DIR" .vercel/output
@@ -171,10 +181,33 @@ jobs:
               rm -rf .vercel/output || true
               mv "$TMPDIR/.vercel" .vercel
             else
-              echo "Warning: artifact unzip didn't produce .vercel/output; listing extracted top-level for debugging:" >&2
-              ls -la "$TMPDIR" || true
-              find "$TMPDIR" -maxdepth 3 -type d -print || true
+              # look for functions/diagnostics/static anywhere under TMPDIR
+              FOUND_ANY=0
+              while IFS= read -r -d '' DIR; do
+                echo "Found directory to move: $DIR"
+                mkdir -p .vercel/output
+                mv "$DIR" .vercel/output/ || true
+                FOUND_ANY=1
+              done < <(find "$TMPDIR" -maxdepth 4 -type d \( -name functions -o -name diagnostics -o -name static \) -print0 || true)
+
+              # Move top-level metadata files (builds.json, config.json) if present somewhere under TMPDIR
+              for meta in builds.json config.json; do
+                FOUND_META=$(find "$TMPDIR" -maxdepth 4 -type f -name "$meta" -print -quit || true)
+                if [ -n "$FOUND_META" ]; then
+                  mkdir -p .vercel/output
+                  echo "Moving metadata file: $FOUND_META"
+                  mv "$FOUND_META" .vercel/output/ || true
+                  FOUND_ANY=1
+                fi
+              done
+
+              if [ "$FOUND_ANY" -eq 0 ]; then
+                echo "Warning: artifact unzip didn't produce .vercel/output; listing extracted top-level for debugging:" >&2
+                ls -la "$TMPDIR" || true
+                find "$TMPDIR" -maxdepth 4 -type d -print || true
+              fi
             fi
+
             rm -rf "$TMPDIR" || true
           fi
 
