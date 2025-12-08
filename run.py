@@ -47,7 +47,19 @@ except Exception:
     # If this fails, continue and let the import error surface later.
     pass
 
-from backend.app import app
+try:
+    from backend.app import app
+except Exception:
+    # Fallback: some developer environments use `backend.appy` (legacy
+    # or alternate entrypoint) which registers additional routes such as
+    # `/logout`. Attempt to import it when `backend.app` doesn't expose
+    # the expected application object.
+    try:
+        from backend.appy import app
+    except Exception:
+        # Re-raise the original error to preserve the traceback when
+        # both imports fail.
+        raise
 
 # Disabled Flask auto-reloader to prevent incorrect restart behavior
 if __name__ == "__main__":

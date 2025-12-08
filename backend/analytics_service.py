@@ -21,7 +21,7 @@ from flask import current_app
 from sqlalchemy import and_, case, func, text
 from sqlalchemy.orm import Session
 
-from models import (
+from .models import (
     AnalyticsEvent,
     ChatbotConversation,
     PerformanceMetrics,
@@ -62,7 +62,7 @@ class AdvancedAnalytics:
     """Advanced Analytics Service"""
 
     def __init__(self, db=None):
-        self.cache_duration = 300  # 5 минути кеш
+        self.cache_duration = 300  # 5 ð╝ð©ð¢ÐâÐéð© ð║ðÁÐê
         self._cache = {}
         self.db = db  # Database session passed during initialization
 
@@ -106,7 +106,7 @@ class AdvancedAnalytics:
         event_value: int = None,
         context: dict[str, Any] = None,
     ):
-        """Проследява събитие за аналитика с thread safety"""
+        """ðƒÐÇð¥Ðüð╗ðÁð┤ÐÅð▓ð░ ÐüÐèð▒ð©Ðéð©ðÁ ðÀð░ ð░ð¢ð░ð╗ð©Ðéð©ð║ð░ Ðü thread safety"""
         return self._safe_database_operation(
             self._track_event_impl,
             event_type,
@@ -156,7 +156,7 @@ class AdvancedAnalytics:
             self.db.add(event)
             self.db.commit()
 
-            # Обновяваме user behavior
+            # ð×ð▒ð¢ð¥ð▓ÐÅð▓ð░ð╝ðÁ user behavior
             self._update_user_behavior_impl(context)
 
             return True
@@ -177,7 +177,7 @@ class AdvancedAnalytics:
         unit: str = None,
         context: dict[str, Any] = None,
     ):
-        """Проследява метрики за производителност с thread safety"""
+        """ðƒÐÇð¥Ðüð╗ðÁð┤ÐÅð▓ð░ ð╝ðÁÐéÐÇð©ð║ð© ðÀð░ ð┐ÐÇð¥ð©ðÀð▓ð¥ð┤ð©ÐéðÁð╗ð¢ð¥ÐüÐé Ðü thread safety"""
         return self._safe_database_operation(
             self._track_performance_impl,
             metric_type,
@@ -188,16 +188,16 @@ class AdvancedAnalytics:
         )
 
     def _safe_database_operation(self, operation, *args, **kwargs):
-        """Безопасно извършва database операция с proper Flask app context"""
+        """ðæðÁðÀð¥ð┐ð░Ðüð¢ð¥ ð©ðÀð▓ÐèÐÇÐêð▓ð░ database ð¥ð┐ðÁÐÇð░Ðåð©ÐÅ Ðü proper Flask app context"""
         try:
             from flask import has_app_context
 
-            # Проверяваме дали имаме Flask app context
+            # ðƒÐÇð¥ð▓ðÁÐÇÐÅð▓ð░ð╝ðÁ ð┤ð░ð╗ð© ð©ð╝ð░ð╝ðÁ Flask app context
             if has_app_context():
-                # Ако сме в request context, изпълняваме директно
+                # ðÉð║ð¥ Ðüð╝ðÁ ð▓ request context, ð©ðÀð┐Ðèð╗ð¢ÐÅð▓ð░ð╝ðÁ ð┤ð©ÐÇðÁð║Ðéð¢ð¥
                 return operation(*args, **kwargs)
             else:
-                # Ако сме в background thread, трябва да създадем app context
+                # ðÉð║ð¥ Ðüð╝ðÁ ð▓ background thread, ÐéÐÇÐÅð▒ð▓ð░ ð┤ð░ ÐüÐèðÀð┤ð░ð┤ðÁð╝ app context
                 logger.warning("No Flask app context - skipping database operation for thread safety")
                 return False
         except Exception as e:
@@ -239,14 +239,14 @@ class AdvancedAnalytics:
             return False
 
     def update_user_behavior(self, context: dict[str, Any]):
-        """Обновява потребителското поведение с thread safety"""
+        """ð×ð▒ð¢ð¥ð▓ÐÅð▓ð░ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥Ðéð¥ ð┐ð¥ð▓ðÁð┤ðÁð¢ð©ðÁ Ðü thread safety"""
         return self._safe_database_operation(
             self._update_user_behavior_impl,
             context,
         )
 
     def _update_user_behavior_impl(self, context: dict[str, Any]):
-        """Обновява потребителското поведение"""
+        """ð×ð▒ð¢ð¥ð▓ÐÅð▓ð░ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥Ðéð¥ ð┐ð¥ð▓ðÁð┤ðÁð¢ð©ðÁ"""
         try:
             session_id = context.get("session_id")
             if not session_id:
@@ -266,7 +266,7 @@ class AdvancedAnalytics:
                 )
                 self.db.add(behavior)
 
-            # Обновяваме метриките
+            # ð×ð▒ð¢ð¥ð▓ÐÅð▓ð░ð╝ðÁ ð╝ðÁÐéÐÇð©ð║ð©ÐéðÁ
             behavior.pages_visited = (behavior.pages_visited or 0) + 1
             behavior.last_activity = utc_now()
             behavior.exit_page = context.get("page_url")
@@ -274,7 +274,7 @@ class AdvancedAnalytics:
             if behavior.pages_visited > 1:
                 behavior.bounce_rate = False
 
-            # Обновяваме sequence от посетени страници
+            # ð×ð▒ð¢ð¥ð▓ÐÅð▓ð░ð╝ðÁ sequence ð¥Ðé ð┐ð¥ÐüðÁÐéðÁð¢ð© ÐüÐéÐÇð░ð¢ð©Ðåð©
             pages_sequence = json.loads(behavior.pages_sequence or "[]")
             pages_sequence.append(
                 {
@@ -283,7 +283,7 @@ class AdvancedAnalytics:
                     "title": context.get("page_title"),
                 }
             )
-            behavior.pages_sequence = json.dumps(pages_sequence[-20:])  # Последните 20 страници
+            behavior.pages_sequence = json.dumps(pages_sequence[-20:])  # ðƒð¥Ðüð╗ðÁð┤ð¢ð©ÐéðÁ 20 ÐüÐéÐÇð░ð¢ð©Ðåð©
 
             self.db.commit()
 
@@ -324,7 +324,7 @@ class AdvancedAnalytics:
         start_date: datetime | None = None,
         end_date: datetime | None = None,
     ) -> dict[str, Any]:
-        """Получава подробна аналитика за dashboard"""
+        """ðƒð¥ð╗ÐâÐçð░ð▓ð░ ð┐ð¥ð┤ÐÇð¥ð▒ð¢ð░ ð░ð¢ð░ð╗ð©Ðéð©ð║ð░ ðÀð░ dashboard"""
         try:
             from flask import current_app
 
@@ -379,7 +379,7 @@ class AdvancedAnalytics:
             return self._get_sample_analytics()
 
     def _get_overview_metrics(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
-        """Общи метрики за периода - optimized with indexes and caching"""
+        """ð×ð▒Ðëð© ð╝ðÁÐéÐÇð©ð║ð© ðÀð░ ð┐ðÁÐÇð©ð¥ð┤ð░ - optimized with indexes and caching"""
         try:
             from flask import current_app
 
@@ -399,10 +399,10 @@ class AdvancedAnalytics:
 
             # Optimized queries using new indexes
 
-            # Уникални посетители (по session_id) - uses idx_user_behaviors_session_start
+            # ðúð¢ð©ð║ð░ð╗ð¢ð© ð┐ð¥ÐüðÁÐéð©ÐéðÁð╗ð© (ð┐ð¥ session_id) - uses idx_user_behaviors_session_start
             unique_visitors = self.db.query(func.count(func.distinct(UserBehavior.session_id))).filter(UserBehavior.session_start.between(start_date, end_date)).scalar() or 0
 
-            # Общо page views - uses idx_analytics_timestamp and idx_analytics_event_type
+            # ð×ð▒Ðëð¥ page views - uses idx_analytics_timestamp and idx_analytics_event_type
             total_page_views = (
                 self.db.query(func.count(AnalyticsEvent.id))
                 .filter(
@@ -415,7 +415,7 @@ class AdvancedAnalytics:
                 or 0
             )
 
-            # Средно време на сесия - uses idx_user_behaviors_session_start
+            # ðíÐÇðÁð┤ð¢ð¥ ð▓ÐÇðÁð╝ðÁ ð¢ð░ ÐüðÁÐüð©ÐÅ - uses idx_user_behaviors_session_start
             avg_session_time = self.db.query(func.avg(UserBehavior.total_time_spent)).filter(UserBehavior.session_start.between(start_date, end_date)).scalar() or 0
 
             # Bounce rate calculation - optimized with single query
@@ -444,7 +444,7 @@ class AdvancedAnalytics:
             result = {
                 "unique_visitors": unique_visitors,
                 "total_page_views": total_page_views,
-                "avg_session_time": (round(avg_session_time / 60, 2) if avg_session_time else 0),  # в минути
+                "avg_session_time": (round(avg_session_time / 60, 2) if avg_session_time else 0),  # ð▓ ð╝ð©ð¢ÐâÐéð©
                 "bounce_rate": round(bounce_rate, 2),
                 "total_sessions": total_sessions,
                 "conversions": conversions,
@@ -466,14 +466,14 @@ class AdvancedAnalytics:
             }
 
     def _get_user_engagement(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
-        """Метрики за потребителската ангажираност - optimized with indexes"""
+        """ð£ðÁÐéÐÇð©ð║ð© ðÀð░ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð░Ðéð░ ð░ð¢ð│ð░ðÂð©ÐÇð░ð¢ð¥ÐüÐé - optimized with indexes"""
         try:
             from performance_optimization import DatabaseOptimizer
 
             # Use optimized queries from performance_optimization.py
             optimized_queries = DatabaseOptimizer.get_optimized_analytics_queries()
 
-            # Най-посещавани страници - uses optimized query with index
+            # ðØð░ð╣-ð┐ð¥ÐüðÁÐëð░ð▓ð░ð¢ð© ÐüÐéÐÇð░ð¢ð©Ðåð© - uses optimized query with index
             _ = optimized_queries.get("top_pages")  # retained for compatibility
             top_pages_sql = text(
                 """
@@ -578,15 +578,15 @@ class AdvancedAnalytics:
             }
 
     def _get_chatbot_analytics(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
-        """Аналитика на чатбота"""
+        """ðÉð¢ð░ð╗ð©Ðéð©ð║ð░ ð¢ð░ Ðçð░Ðéð▒ð¥Ðéð░"""
 
         try:
             optimized_queries = DatabaseOptimizer.get_optimized_analytics_queries()
 
-            # Общо разговори - optimized count query
+            # ð×ð▒Ðëð¥ ÐÇð░ðÀð│ð¥ð▓ð¥ÐÇð© - optimized count query
             total_conversations = self.db.query(ChatbotConversation).filter(ChatbotConversation.created_at.between(start_date, end_date)).count()
 
-            # По тип отговор - uses optimized query with index
+            # ðƒð¥ Ðéð©ð┐ ð¥Ðéð│ð¥ð▓ð¥ÐÇ - uses optimized query with index
             response_types_query = optimized_queries["chatbot_conversations_summary"]
             _resp_res = self.db.execute(
                 text(response_types_query),
@@ -602,7 +602,7 @@ class AdvancedAnalytics:
 
             response_types = {row[0]: row[1] for row in response_types_rows}
 
-            # AI статистики - uses optimized query with index
+            # AI ÐüÐéð░Ðéð©ÐüÐéð©ð║ð© - uses optimized query with index
             ai_stats_query = optimized_queries["chatbot_ai_stats"]
             _ai_res = self.db.execute(text(ai_stats_query), {"start_date": start_date, "end_date": end_date})
             try:
@@ -649,10 +649,10 @@ class AdvancedAnalytics:
     def _get_chatbot_analytics_fallback(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
         """Fallback method for chatbot analytics when optimized queries fail"""
 
-        # Общо разговори
+        # ð×ð▒Ðëð¥ ÐÇð░ðÀð│ð¥ð▓ð¥ÐÇð©
         total_conversations = self.db.query(ChatbotConversation).filter(ChatbotConversation.created_at.between(start_date, end_date)).count()
 
-        # По тип отговор
+        # ðƒð¥ Ðéð©ð┐ ð¥Ðéð│ð¥ð▓ð¥ÐÇ
         response_types = (
             self.db.query(
                 ChatbotConversation.response_type,
@@ -663,7 +663,7 @@ class AdvancedAnalytics:
             .all()
         )
 
-        # AI статистики
+        # AI ÐüÐéð░Ðéð©ÐüÐéð©ð║ð©
         ai_conversations = (
             self.db.query(ChatbotConversation)
             .filter(
@@ -705,7 +705,7 @@ class AdvancedAnalytics:
         }
 
     def _get_performance_metrics(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
-        """Метрики за производителност"""
+        """ð£ðÁÐéÐÇð©ð║ð© ðÀð░ ð┐ÐÇð¥ð©ðÀð▓ð¥ð┤ð©ÐéðÁð╗ð¢ð¥ÐüÐé"""
 
         try:
             optimized_queries = DatabaseOptimizer.get_optimized_analytics_queries()
@@ -823,7 +823,7 @@ class AdvancedAnalytics:
         }
 
     def _get_conversion_funnel(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
-        """Анализ на conversion funnel"""
+        """ðÉð¢ð░ð╗ð©ðÀ ð¢ð░ conversion funnel"""
 
         try:
             optimized_queries = DatabaseOptimizer.get_optimized_analytics_queries()
@@ -915,10 +915,10 @@ class AdvancedAnalytics:
     def _get_conversion_funnel_fallback(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
         """Fallback method for conversion funnel when optimized queries fail"""
 
-        # Основни стъпки във funnel-а
+        # ð×Ðüð¢ð¥ð▓ð¢ð© ÐüÐéÐèð┐ð║ð© ð▓Ðèð▓ funnel-ð░
         total_visitors = self.db.query(func.count(func.distinct(UserBehavior.session_id))).filter(UserBehavior.session_start.between(start_date, end_date)).scalar() or 0
 
-        # Посетили форма за регистрация
+        # ðƒð¥ÐüðÁÐéð©ð╗ð© Ðäð¥ÐÇð╝ð░ ðÀð░ ÐÇðÁð│ð©ÐüÐéÐÇð░Ðåð©ÐÅ
         visited_register = (
             self.db.query(func.count(func.distinct(AnalyticsEvent.user_session)))
             .filter(
@@ -931,7 +931,7 @@ class AdvancedAnalytics:
             or 0
         )
 
-        # Започнали регистрация
+        # ðùð░ð┐ð¥Ðçð¢ð░ð╗ð© ÐÇðÁð│ð©ÐüÐéÐÇð░Ðåð©ÐÅ
         started_registration = (
             self.db.query(func.count(func.distinct(AnalyticsEvent.user_session)))
             .filter(
@@ -945,7 +945,7 @@ class AdvancedAnalytics:
             or 0
         )
 
-        # Завършили регистрация - използваме conversion_action в UserBehavior
+        # ðùð░ð▓ÐèÐÇÐêð©ð╗ð© ÐÇðÁð│ð©ÐüÐéÐÇð░Ðåð©ÐÅ - ð©ðÀð┐ð¥ð╗ðÀð▓ð░ð╝ðÁ conversion_action ð▓ UserBehavior
         completed_registration = (
             self.db.query(func.count(UserBehavior.id))
             .filter(
@@ -958,7 +958,7 @@ class AdvancedAnalytics:
             or 0
         )
 
-        # Използвали чатбота
+        # ðÿðÀð┐ð¥ð╗ðÀð▓ð░ð╗ð© Ðçð░Ðéð▒ð¥Ðéð░
         chatbot_users = self.db.query(func.count(func.distinct(ChatbotConversation.session_id))).filter(ChatbotConversation.created_at.between(start_date, end_date)).scalar() or 0
 
         return {
@@ -976,12 +976,12 @@ class AdvancedAnalytics:
         }
 
     def _get_user_journey_analytics(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
-        """Анализ на потребителските пътища"""
+        """ðÉð¢ð░ð╗ð©ðÀ ð¢ð░ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð©ÐéðÁ ð┐ÐèÐéð©Ðëð░"""
 
         try:
             optimized_queries = DatabaseOptimizer.get_optimized_analytics_queries()
 
-            # Най-чести entry points - uses optimized query with index
+            # ðØð░ð╣-ÐçðÁÐüÐéð© entry points - uses optimized query with index
             entry_pages_query = optimized_queries["user_journey_entry_pages"]
             _entry_res = self.db.execute(
                 text(entry_pages_query),
@@ -997,7 +997,7 @@ class AdvancedAnalytics:
 
             entry_pages = [{"page": row[0], "entries": row[1]} for row in entry_pages_rows]
 
-            # Най-чести exit points - uses optimized query with index
+            # ðØð░ð╣-ÐçðÁÐüÐéð© exit points - uses optimized query with index
             exit_pages_query = optimized_queries["user_journey_exit_pages"]
             _exit_res = self.db.execute(text(exit_pages_query), {"start_date": start_date, "end_date": end_date})
             try:
@@ -1010,7 +1010,7 @@ class AdvancedAnalytics:
 
             exit_pages = [{"page": row[0], "exits": row[1]} for row in exit_pages_rows]
 
-            # Най-чести page sequences - optimized with reduced memory usage
+            # ðØð░ð╣-ÐçðÁÐüÐéð© page sequences - optimized with reduced memory usage
             # Use a more efficient approach by limiting records and processing in batches
             common_paths = []
             sessions_with_sequences = (
@@ -1039,7 +1039,7 @@ class AdvancedAnalytics:
                             if path_part:
                                 path_parts.append(path_part[:20])  # Limit length
                         if path_parts:
-                            path = " → ".join(path_parts)
+                            path = " ÔåÆ ".join(path_parts)
                             path_counter[path] += 1
                 except Exception:
                     continue
@@ -1059,7 +1059,7 @@ class AdvancedAnalytics:
     def _get_user_journey_analytics_fallback(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
         """Fallback method for user journey analytics when optimized queries fail"""
 
-        # Най-чести entry points
+        # ðØð░ð╣-ÐçðÁÐüÐéð© entry points
         entry_pages = (
             self.db.query(UserBehavior.entry_page, func.count(UserBehavior.id).label("entries"))
             .filter(
@@ -1074,7 +1074,7 @@ class AdvancedAnalytics:
             .all()
         )
 
-        # Най-чести exit points
+        # ðØð░ð╣-ÐçðÁÐüÐéð© exit points
         exit_pages = (
             self.db.query(UserBehavior.exit_page, func.count(UserBehavior.id).label("exits"))
             .filter(
@@ -1089,7 +1089,7 @@ class AdvancedAnalytics:
             .all()
         )
 
-        # Най-чести page sequences
+        # ðØð░ð╣-ÐçðÁÐüÐéð© page sequences
         common_paths = []
         sessions_with_sequences = (
             self.db.query(UserBehavior)
@@ -1107,7 +1107,7 @@ class AdvancedAnalytics:
             try:
                 sequence = json.loads(session.pages_sequence or "[]")
                 if len(sequence) >= 2:
-                    path = " → ".join([page["url"].split("/")[-1] or "home" for page in sequence[:3]])
+                    path = " ÔåÆ ".join([page["url"].split("/")[-1] or "home" for page in sequence[:3]])
                     path_counter[path] += 1
             except Exception:
                 continue
@@ -1121,14 +1121,14 @@ class AdvancedAnalytics:
         }
 
     def _get_real_time_metrics(self) -> dict[str, Any]:
-        """Real-time метрики (последният час)"""
+        """Real-time ð╝ðÁÐéÐÇð©ð║ð© (ð┐ð¥Ðüð╗ðÁð┤ð¢ð©ÐÅÐé Ðçð░Ðü)"""
         one_hour_ago = utc_now() - timedelta(hours=1)
 
-        # Активни потребители (последните 30 минути)
+        # ðÉð║Ðéð©ð▓ð¢ð© ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗ð© (ð┐ð¥Ðüð╗ðÁð┤ð¢ð©ÐéðÁ 30 ð╝ð©ð¢ÐâÐéð©)
         thirty_min_ago = utc_now() - timedelta(minutes=30)
         active_users = self.db.query(func.count(func.distinct(UserBehavior.session_id))).filter(UserBehavior.last_activity >= thirty_min_ago).scalar() or 0
 
-        # Page views последният час
+        # Page views ð┐ð¥Ðüð╗ðÁð┤ð¢ð©ÐÅÐé Ðçð░Ðü
         recent_page_views = (
             self.db.query(AnalyticsEvent)
             .filter(
@@ -1140,7 +1140,7 @@ class AdvancedAnalytics:
             .count()
         )
 
-        # Чатбот съобщения последният час
+        # ðºð░Ðéð▒ð¥Ðé ÐüÐèð¥ð▒ÐëðÁð¢ð©ÐÅ ð┐ð¥Ðüð╗ðÁð┤ð¢ð©ÐÅÐé Ðçð░Ðü
         recent_chatbot = self.db.query(ChatbotConversation).filter(ChatbotConversation.created_at >= one_hour_ago).count()
 
         return {
@@ -1151,7 +1151,7 @@ class AdvancedAnalytics:
         }
 
     def _is_cached(self, key: str, duration: int = None) -> bool:
-        """Проверява дали данните са в кеша"""
+        """ðƒÐÇð¥ð▓ðÁÐÇÐÅð▓ð░ ð┤ð░ð╗ð© ð┤ð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð▓ ð║ðÁÐêð░"""
         if duration is None:
             duration = self.cache_duration
 
@@ -1248,10 +1248,10 @@ class AdvancedAnalytics:
                     {"page": "/about", "exits": 150},
                 ],
                 "common_user_paths": [
-                    {"path": "home → help-request → contact", "count": 85},
-                    {"path": "home → volunteer-signup → contact", "count": 62},
-                    {"path": "help-request → volunteer-signup", "count": 45},
-                    {"path": "home → about → contact", "count": 38},
+                    {"path": "home ÔåÆ help-request ÔåÆ contact", "count": 85},
+                    {"path": "home ÔåÆ volunteer-signup ÔåÆ contact", "count": 62},
+                    {"path": "help-request ÔåÆ volunteer-signup", "count": 45},
+                    {"path": "home ÔåÆ about ÔåÆ contact", "count": 38},
                 ],
             },
             "real_time": {

@@ -134,8 +134,8 @@ def _write_admin_debug(entry: dict):
 
 
 # Local imports (strictly sorted, all at top-level)
-from extensions import babel, db
-from models import (
+from backend.extensions import babel, db
+from backend.models import (
     AdminRole,
     AdminUser,
     HelpRequest,
@@ -144,8 +144,8 @@ from models import (
     User,
     Volunteer,
 )
-from models_with_analytics import AnalyticsEvent, Feedback
-from permissions import require_admin_login
+from backend.models_with_analytics import AnalyticsEvent, Feedback
+from backend.permissions import require_admin_login
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
@@ -175,7 +175,7 @@ app.secret_key = app.config["SECRET_KEY"]
 @app.route("/admin/analytics", methods=["GET"])
 def admin_analytics():
     days = request.args.get("days", 30)
-    # TODO: Може да се разшири с реални данни и drilldown
+    # TODO: ð£ð¥ðÂðÁ ð┤ð░ ÐüðÁ ÐÇð░ðÀÐêð©ÐÇð© Ðü ÐÇðÁð░ð╗ð¢ð© ð┤ð░ð¢ð¢ð© ð© drilldown
     dashboard_stats = {
         "totals": {
             "requests": 0,
@@ -218,7 +218,7 @@ logging.basicConfig(
 @app.route("/admin/api/requests")
 @require_admin_login()
 def admin_api_requests():
-    # Debug: логване за диагностика на AJAX повикванията
+    # Debug: ð╗ð¥ð│ð▓ð░ð¢ðÁ ðÀð░ ð┤ð©ð░ð│ð¢ð¥ÐüÐéð©ð║ð░ ð¢ð░ AJAX ð┐ð¥ð▓ð©ð║ð▓ð░ð¢ð©ÐÅÐéð░
     try:
         logging.debug(f"[admin_api_requests] session_keys={list(session.keys())} cookies={list(request.cookies.keys())}")
         _write_admin_debug(
@@ -256,7 +256,7 @@ def admin_api_requests():
 @app.route("/admin/api/volunteers")
 @require_admin_login()
 def admin_api_volunteers():
-    # Debug: логни session, claims, username
+    # Debug: ð╗ð¥ð│ð¢ð© session, claims, username
     logging.debug(f"[admin_api_volunteers] session: {dict(session)}")
     claims = getattr(request, "_claims", None)
     logging.debug(f"[admin_api_volunteers] claims: {claims}")
@@ -268,7 +268,7 @@ def admin_api_volunteers():
         except Exception:
             pass
     logging.debug(f"[admin_api_volunteers] admin_username: {admin_username}")
-    # Връща списък с доброволци (id, name, email, phone, location)
+    # ðÆÐÇÐèÐëð░ Ðüð┐ð©ÐüÐèð║ Ðü ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð© (id, name, email, phone, location)
     volunteers = Volunteer.query.order_by(Volunteer.id.desc()).limit(100).all()
 
     def serialize_vol(v):
@@ -285,14 +285,14 @@ def admin_api_volunteers():
 @app.route("/admin/requests-table.json")
 @require_role("admin", "superadmin", "moderator")
 def admin_requests_table():
-    # Филтри от заявката (drilldown)
+    # ðñð©ð╗ÐéÐÇð© ð¥Ðé ðÀð░ÐÅð▓ð║ð░Ðéð░ (drilldown)
     date_from = request.args.get("date_from")
     date_to = request.args.get("date_to")
     channel = request.args.get("channel")
     status_f = request.args.get("status")
     category = request.args.get("category")
     city = request.args.get("city")
-    # Пагинация
+    # ðƒð░ð│ð©ð¢ð░Ðåð©ÐÅ
     page = max(int(request.args.get("page", 1)), 1)
     page_size = min(int(request.args.get("page_size", 20)), 100)
     # Prefer session-bound query to avoid UnboundExecutionError in some test/env setups
@@ -364,10 +364,10 @@ def admin_requests_table():
 @app.route("/admin/feedback-filters.json")
 @require_role("admin", "superadmin", "moderator")
 def feedback_filters_json():
-    # Връща примерни филтри за feedback таба (може да се разшири по нужда)
+    # ðÆÐÇÐèÐëð░ ð┐ÐÇð©ð╝ðÁÐÇð¢ð© Ðäð©ð╗ÐéÐÇð© ðÀð░ feedback Ðéð░ð▒ð░ (ð╝ð¥ðÂðÁ ð┤ð░ ÐüðÁ ÐÇð░ðÀÐêð©ÐÇð© ð┐ð¥ ð¢ÐâðÂð┤ð░)
     return jsonify(
         {
-            "categories": ["Общи", "Транспорт", "Здраве", "Друго"],
+            "categories": ["ð×ð▒Ðëð©", "ðóÐÇð░ð¢Ðüð┐ð¥ÐÇÐé", "ðùð┤ÐÇð░ð▓ðÁ", "ðöÐÇÐâð│ð¥"],
             "models": ["gpt-4", "gpt-3.5", "local-llm"],
             "languages": ["bg", "en", "uk"],
             "rating_min": 1,
@@ -428,7 +428,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 try:
     # Configure default locale and translation directories
     basedir = os.path.abspath(os.path.dirname(__file__))
-    # Default език: френски (FR)
+    # Default ðÁðÀð©ð║: ÐäÐÇðÁð¢Ðüð║ð© (FR)
     app.config.setdefault("BABEL_DEFAULT_LOCALE", "fr")
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", os.path.join(basedir, "translations"))
 
@@ -460,17 +460,17 @@ try:
         if lang_cookie in SUPPORTED_LOCALES:
             return lang_cookie
 
-        # 2) Geo-IP via headers: FR->fr, други игнорирай
+        # 2) Geo-IP via headers: FR->fr, ð┤ÐÇÐâð│ð© ð©ð│ð¢ð¥ÐÇð©ÐÇð░ð╣
         cc = _detect_country_code()
         if cc == "FR":
             return "fr"
 
-        # 3) Accept-Language като fallback, но само ако е fr, en или bg
+        # 3) Accept-Language ð║ð░Ðéð¥ fallback, ð¢ð¥ Ðüð░ð╝ð¥ ð░ð║ð¥ ðÁ fr, en ð©ð╗ð© bg
         best = request.accept_languages.best_match(SUPPORTED_LOCALES)
         if best in SUPPORTED_LOCALES:
             return best
 
-        # 4) Винаги връщай френски по подразбиране
+        # 4) ðÆð©ð¢ð░ð│ð© ð▓ÐÇÐèÐëð░ð╣ ÐäÐÇðÁð¢Ðüð║ð© ð┐ð¥ ð┐ð¥ð┤ÐÇð░ðÀð▒ð©ÐÇð░ð¢ðÁ
         return "fr"
 
     # Support both Flask-Babel v2 and v3+ init styles
@@ -1213,11 +1213,11 @@ def volunteer_register():
             )
             db.session.add(v)
             db.session.commit()
-            flash("Благодарим ви! Регистрацията като доброволец е успешна.", "success")
+            flash("ðæð╗ð░ð│ð¥ð┤ð░ÐÇð©ð╝ ð▓ð©! ðáðÁð│ð©ÐüÐéÐÇð░Ðåð©ÐÅÐéð░ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ðÁ ÐâÐüð┐ðÁÐêð¢ð░.", "success")
             return redirect(url_for("index"))
         except Exception as e:
             db.session.rollback()
-            flash(f"Грешка при записване: {e}", "error")
+            flash(f"ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð©Ðüð▓ð░ð¢ðÁ: {e}", "error")
     return render_template("volunteer_register.html")
 
 
@@ -1255,11 +1255,11 @@ def submit_request():
             )
             db.session.add(r)
             db.session.commit()
-            flash("Заявката е изпратена успешно!", "success")
+            flash("ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
             return redirect(url_for("index"))
         except Exception as e:
             db.session.rollback()
-            flash(f"Грешка при подаване на заявката: {e}", "error")
+            flash(f"ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┐ð¥ð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░: {e}", "error")
     return render_template("submit_request.html")
 
 
@@ -1352,11 +1352,11 @@ def _seed_if_empty():
         if User.query.filter_by(username="admin").first() is None:
             try:
                 u = User(username="admin", email="admin@example.com", role=RoleEnum.admin)
-                # Seed с силна парола (>=10, главна, малка, цифри, специален знак)
+                # Seed Ðü Ðüð©ð╗ð¢ð░ ð┐ð░ÐÇð¥ð╗ð░ (>=10, ð│ð╗ð░ð▓ð¢ð░, ð╝ð░ð╗ð║ð░, Ðåð©ÐäÐÇð©, Ðüð┐ðÁÐåð©ð░ð╗ðÁð¢ ðÀð¢ð░ð║)
                 try:
                     u.set_password("Admin12345!")
                 except Exception:
-                    # Ако политиката се промени и хвърли грешка – fallback към друга валидна парола
+                    # ðÉð║ð¥ ð┐ð¥ð╗ð©Ðéð©ð║ð░Ðéð░ ÐüðÁ ð┐ÐÇð¥ð╝ðÁð¢ð© ð© Ðàð▓ÐèÐÇð╗ð© ð│ÐÇðÁÐêð║ð░ ÔÇô fallback ð║Ðèð╝ ð┤ÐÇÐâð│ð░ ð▓ð░ð╗ð©ð┤ð¢ð░ ð┐ð░ÐÇð¥ð╗ð░
                     try:
                         u.set_password("Admin123456!")
                     except Exception:
@@ -1449,7 +1449,7 @@ def index():
     return render_template("home_new.html", current_locale=current_locale)
 
 
-# Redirect legacy static preview URL към новата начална страница
+# Redirect legacy static preview URL ð║Ðèð╝ ð¢ð¥ð▓ð░Ðéð░ ð¢ð░Ðçð░ð╗ð¢ð░ ÐüÐéÐÇð░ð¢ð©Ðåð░
 @app.get("/static/previews/new-page.html")
 def legacy_preview_redirect():
     return redirect(url_for("index"), code=301)
@@ -1543,7 +1543,7 @@ def admin_login():
                 )
             except Exception:
                 pass
-            flash("Невалидно потребителско име или парола.", "error")
+            flash("ðØðÁð▓ð░ð╗ð©ð┤ð¢ð¥ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥ ð©ð╝ðÁ ð©ð╗ð© ð┐ð░ÐÇð¥ð╗ð░.", "error")
             return render_template("admin_login.html", error="Invalid credentials")
 
         # Verify password
@@ -1562,22 +1562,22 @@ def admin_login():
                     )
                 except Exception:
                     pass
-                flash("Невалидно потребителско име или парола.", "error")
+                flash("ðØðÁð▓ð░ð╗ð©ð┤ð¢ð¥ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥ ð©ð╝ðÁ ð©ð╗ð© ð┐ð░ÐÇð¥ð╗ð░.", "error")
                 return render_template("admin_login.html", error="Invalid credentials")
         except Exception:
             logging.exception("[admin_login] Password verification failed")
-            flash("Грешка при проверка на парола.", "error")
+            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┐ÐÇð¥ð▓ðÁÐÇð║ð░ ð¢ð░ ð┐ð░ÐÇð¥ð╗ð░.", "error")
             return render_template("admin_login.html", error="Password check failed")
 
         # If 2FA enabled, require token
         try:
             if getattr(admin, "two_factor_enabled", False):
                 if not token:
-                    flash("Моля въведете 2FA код.", "warning")
+                    flash("ð£ð¥ð╗ÐÅ ð▓Ðèð▓ðÁð┤ðÁÐéðÁ 2FA ð║ð¥ð┤.", "warning")
                     return render_template("admin_login.html", error="2FA required")
                 if not admin.verify_totp(token):
                     logging.warning("[admin_login] Invalid 2FA token for admin %s", username)
-                    flash("Невалиден 2FA код.", "error")
+                    flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ 2FA ð║ð¥ð┤.", "error")
                     return render_template("admin_login.html", error="Invalid 2FA token")
         except Exception:
             logging.exception("[admin_login] 2FA verification failed")
@@ -1733,7 +1733,7 @@ def admin_2fa_disable():
     if not session.get("admin_logged_in"):
         return redirect(url_for("admin_login"))
     # Placeholder: In full implementation we'd alter a two_factor_enabled flag.
-    flash("2FA деактивиране (демо).", "success")
+    flash("2FA ð┤ðÁð░ð║Ðéð©ð▓ð©ÐÇð░ð¢ðÁ (ð┤ðÁð╝ð¥).", "success")
     return redirect(url_for("admin_dashboard"))
 
 
@@ -1743,11 +1743,11 @@ def admin_2fa_setup():
         return redirect(url_for("admin_login"))
     if request.method == "POST":
         # Accept token field (demo only); CSRF will enforce hidden token.
-        flash("2FA настройка (демо) завършена.", "success")
+        flash("2FA ð¢ð░ÐüÐéÐÇð¥ð╣ð║ð░ (ð┤ðÁð╝ð¥) ðÀð░ð▓ÐèÐÇÐêðÁð¢ð░.", "success")
         return redirect(url_for("admin_dashboard"))
     # Minimal inline template keeps dependency surface small.
     return (
-        render_template("admin_2fa_setup.html") if app.jinja_env.list_templates().count("admin_2fa_setup.html") else Response("<h1>2FA Setup</h1><p>Demo страница. POST с валиден CSRF ще завърши.</p>")
+        render_template("admin_2fa_setup.html") if app.jinja_env.list_templates().count("admin_2fa_setup.html") else Response("<h1>2FA Setup</h1><p>Demo ÐüÐéÐÇð░ð¢ð©Ðåð░. POST Ðü ð▓ð░ð╗ð©ð┤ðÁð¢ CSRF ÐëðÁ ðÀð░ð▓ÐèÐÇÐêð©.</p>")
     )
 
 
@@ -1780,12 +1780,12 @@ def admin_dev_reset():
         admin.locked_until = None
         db.session.add(admin)
         db.session.commit()
-        flash("Админ паролата е нулирана на Admin12345!", "success")
+        flash("ðÉð┤ð╝ð©ð¢ ð┐ð░ÐÇð¥ð╗ð░Ðéð░ ðÁ ð¢Ðâð╗ð©ÐÇð░ð¢ð░ ð¢ð░ Admin12345!", "success")
         if created:
-            flash("Създаден е нов админ акаунт (admin).", "info")
+            flash("ðíÐèðÀð┤ð░ð┤ðÁð¢ ðÁ ð¢ð¥ð▓ ð░ð┤ð╝ð©ð¢ ð░ð║ð░Ðâð¢Ðé (admin).", "info")
     except Exception as e:
         db.session.rollback()
-        flash(f"Грешка при нулиране: {e}", "error")
+        flash(f"ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¢Ðâð╗ð©ÐÇð░ð¢ðÁ: {e}", "error")
 
     return redirect(url_for("admin_login"))
 
@@ -1860,7 +1860,7 @@ def ai_stats():
     week_start = today_start - datetime.timedelta(days=now.weekday())
     month_start = today_start.replace(day=1)
 
-    # --- Филтри от заявката ---
+    # --- ðñð©ð╗ÐéÐÇð© ð¥Ðé ðÀð░ÐÅð▓ð║ð░Ðéð░ ---
     date_from = request.args.get("date_from")
     date_to = request.args.get("date_to")
     channel = request.args.get("channel")
@@ -1907,7 +1907,7 @@ def ai_stats():
         d2 = d + datetime.timedelta(days=1)
         data.append(apply_filters(AnalyticsEvent.query.filter(AnalyticsEvent.created_at >= d, AnalyticsEvent.created_at < d2)).count())
 
-    # Средно време за отговор по канал
+    # ðíÐÇðÁð┤ð¢ð¥ ð▓ÐÇðÁð╝ðÁ ðÀð░ ð¥Ðéð│ð¥ð▓ð¥ÐÇ ð┐ð¥ ð║ð░ð¢ð░ð╗
     avg_faq = (
         apply_filters(
             AnalyticsEvent.query.with_entities(sqlalchemy.func.avg(AnalyticsEvent.load_time)),
@@ -1957,7 +1957,7 @@ def ai_stats():
 @app.route("/admin/feedback-stats.json")
 def feedback_stats():
     # (imports moved to top)
-    # Филтри
+    # ðñð©ð╗ÐéÐÇð©
     category = request.args.get("category")
     model = request.args.get("model")
     language = request.args.get("language")
@@ -1975,10 +1975,10 @@ def feedback_stats():
     if rating_max is not None:
         q = q.filter(Feedback.sentiment_score <= rating_max)
 
-    # Среден рейтинг (sentiment_score)
+    # ðíÐÇðÁð┤ðÁð¢ ÐÇðÁð╣Ðéð©ð¢ð│ (sentiment_score)
     avg_rating = q.with_entities(sqlalchemy.func.avg(Feedback.sentiment_score)).scalar() or 0
 
-    # Breakdown по език
+    # Breakdown ð┐ð¥ ðÁðÀð©ð║
     avg_by_lang = Feedback.query.with_entities(Feedback.user_type, sqlalchemy.func.avg(Feedback.sentiment_score)).group_by(Feedback.user_type).all()
     avg_by_lang = [
         {
@@ -1988,7 +1988,7 @@ def feedback_stats():
         for t, r in avg_by_lang
     ]
 
-    # Breakdown по категория
+    # Breakdown ð┐ð¥ ð║ð░ÐéðÁð│ð¥ÐÇð©ÐÅ
     avg_by_cat = Feedback.query.with_entities(Feedback.page_url, sqlalchemy.func.avg(Feedback.sentiment_score)).group_by(Feedback.page_url).all()
     avg_by_cat = [
         {
@@ -1998,7 +1998,7 @@ def feedback_stats():
         for cat, r in avg_by_cat
     ]
 
-    # Breakdown по модел
+    # Breakdown ð┐ð¥ ð╝ð¥ð┤ðÁð╗
     avg_by_model = Feedback.query.with_entities(Feedback.ai_provider, sqlalchemy.func.avg(Feedback.sentiment_score)).group_by(Feedback.ai_provider).all()
     avg_by_model = [
         {
@@ -2008,22 +2008,22 @@ def feedback_stats():
         for mod, r in avg_by_model
     ]
 
-    # Breakdown по sentiment_label
+    # Breakdown ð┐ð¥ sentiment_label
     avg_by_label = Feedback.query.with_entities(Feedback.sentiment_label, sqlalchemy.func.count.label("count")).group_by(Feedback.sentiment_label).all()
     avg_by_label = [{"label": str(lbl) if lbl not in (None, "None") else "", "count": int(cnt)} for lbl, cnt in avg_by_label]
 
-    # Проблемни категории (avg < 3.0)
+    # ðƒÐÇð¥ð▒ð╗ðÁð╝ð¢ð© ð║ð░ÐéðÁð│ð¥ÐÇð©ð© (avg < 3.0)
     problematic_categories = [(str(cat["category"]) if cat.get("category") not in (None, "", "None") else "Unknown") for cat in avg_by_cat if cat.get("avg_rating", 0) < 3.0]
     problematic_categories = sorted([c for c in problematic_categories if c not in (None, "", "None")], key=str)
 
-    # Най-високо/ниско оценени отговори (top 10, bottom 10)
+    # ðØð░ð╣-ð▓ð©Ðüð¥ð║ð¥/ð¢ð©Ðüð║ð¥ ð¥ÐåðÁð¢ðÁð¢ð© ð¥Ðéð│ð¥ð▓ð¥ÐÇð© (top 10, bottom 10)
     best = q.order_by(Feedback.sentiment_score.desc()).limit(10).all()
     worst = q.order_by(Feedback.sentiment_score.asc()).limit(10).all()
 
     def fb_to_dict(fb):
         preview = (fb.message or "")[:50] + ("..." if fb.message and len(fb.message) > 50 else "")
         highlight = False
-        # Highlight ако категорията е проблемна
+        # Highlight ð░ð║ð¥ ð║ð░ÐéðÁð│ð¥ÐÇð©ÐÅÐéð░ ðÁ ð┐ÐÇð¥ð▒ð╗ðÁð╝ð¢ð░
         cat = str(getattr(fb, "page_url", "") or "Unknown").split("/")[-1] if getattr(fb, "page_url", None) is not None else "Unknown"
         if cat in problematic_categories:
             highlight = True
@@ -2041,11 +2041,11 @@ def feedback_stats():
             "highlight": highlight,
         }
 
-    # Tooltip причини за нисък рейтинг (примерно sentiment_label)
+    # Tooltip ð┐ÐÇð©Ðçð©ð¢ð© ðÀð░ ð¢ð©ÐüÐèð║ ÐÇðÁð╣Ðéð©ð¢ð│ (ð┐ÐÇð©ð╝ðÁÐÇð¢ð¥ sentiment_label)
     tooltip_map = {
-        "negative": "Отговорът не беше полезен",
-        "neutral": "Неутрален/неясен отговор",
-        "positive": "Положителен отговор",
+        "negative": "ð×Ðéð│ð¥ð▓ð¥ÐÇÐèÐé ð¢ðÁ ð▒ðÁÐêðÁ ð┐ð¥ð╗ðÁðÀðÁð¢",
+        "neutral": "ðØðÁÐâÐéÐÇð░ð╗ðÁð¢/ð¢ðÁÐÅÐüðÁð¢ ð¥Ðéð│ð¥ð▓ð¥ÐÇ",
+        "positive": "ðƒð¥ð╗ð¥ðÂð©ÐéðÁð╗ðÁð¢ ð¥Ðéð│ð¥ð▓ð¥ÐÇ",
         "": "",
     }
 
@@ -2067,19 +2067,19 @@ def feedback_stats():
 @app.route("/analytics/api/analytics/export")
 def analytics_export():
     format = request.args.get("format", "json")
-    # TODO: Добави логика за генериране на файл/данни
+    # TODO: ðöð¥ð▒ð░ð▓ð© ð╗ð¥ð│ð©ð║ð░ ðÀð░ ð│ðÁð¢ðÁÐÇð©ÐÇð░ð¢ðÁ ð¢ð░ Ðäð░ð╣ð╗/ð┤ð░ð¢ð¢ð©
     if format == "csv":
-        # Пример: връщане на CSV файл
+        # ðƒÐÇð©ð╝ðÁÐÇ: ð▓ÐÇÐèÐëð░ð¢ðÁ ð¢ð░ CSV Ðäð░ð╣ð╗
         return send_file("path/to/your.csv", as_attachment=True)
     else:
-        # Пример: връщане на JSON
+        # ðƒÐÇð©ð╝ðÁÐÇ: ð▓ÐÇÐèÐëð░ð¢ðÁ ð¢ð░ JSON
         data = {"example": 123}
         return jsonify(data)
 
 
 @app.route("/analytics/api/analytics/live")
 def analytics_live():
-    # TODO: Добави логика за live данни
+    # TODO: ðöð¥ð▒ð░ð▓ð© ð╗ð¥ð│ð©ð║ð░ ðÀð░ live ð┤ð░ð¢ð¢ð©
     return jsonify({"live": True})
 
 
@@ -2089,11 +2089,11 @@ def set_language():
     lang = request.args.get("language", "fr")
     next_url = request.args.get("next", url_for("index"))
     resp = redirect(next_url)
-    # Поддържани езици
+    # ðƒð¥ð┤ð┤ÐèÐÇðÂð░ð¢ð© ðÁðÀð©Ðåð©
     supported = ["fr", "en", "bg"]
     if lang not in supported:
         lang = "fr"
-    resp.set_cookie("language", lang, max_age=60 * 60 * 24 * 30)  # 30 дни
+    resp.set_cookie("language", lang, max_age=60 * 60 * 24 * 30)  # 30 ð┤ð¢ð©
     session["language"] = lang
     return resp
 

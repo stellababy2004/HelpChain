@@ -1,5 +1,5 @@
 def emit_status_update():
-    # Фиктивни стойности за демонстрация
+    # ðñð©ð║Ðéð©ð▓ð¢ð© ÐüÐéð¥ð╣ð¢ð¥ÐüÐéð© ðÀð░ ð┤ðÁð╝ð¥ð¢ÐüÐéÐÇð░Ðåð©ÐÅ
     room_id = "default_room"
     user_id = 1
     message_ids = [1, 2, 3]
@@ -150,7 +150,7 @@ def require_admin_login(f):
                 and (request.path or "") == "/admin_dashboard"
             ):
                 try:
-                    flash("Моля, влезте като администратор.", "warning")
+                    flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning")
                 except Exception:
                     pass
                 try:
@@ -185,7 +185,7 @@ def require_admin_login(f):
             pass
 
         try:
-            flash("Моля, влезте като администратор.", "warning")
+            flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning")
         except Exception:
             pass
         try:
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     print("[HelpChain] appy.py is deprecated. Run: python app.py", file=sys.stderr)
     raise SystemExit(1)
 
-# Импорт на _dispatch_email за изпращане на имейли
+# ðÿð╝ð┐ð¥ÐÇÐé ð¢ð░ _dispatch_email ðÀð░ ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ð©ð╝ðÁð╣ð╗ð©
 from backend._dispatch_email import _dispatch_email
 
 import sys as _early_sys
@@ -312,7 +312,7 @@ except Exception:
 # top-level import when running from the project root (legacy).
 
 
-# --- Flask app и публични заявки ---
+# --- Flask app ð© ð┐Ðâð▒ð╗ð©Ðçð¢ð© ðÀð░ÐÅð▓ð║ð© ---
 from flask import Flask, request, jsonify, Response, render_template
 import traceback
 from sqlalchemy import func
@@ -322,13 +322,13 @@ try:
 except Exception:
     _req = None
 
-# Импортирай всички модели, за да се регистрират таблиците при db.create_all()
-# Robust import: package-relative → backend.* → local module
+# ðÿð╝ð┐ð¥ÐÇÐéð©ÐÇð░ð╣ ð▓Ðüð©Ðçð║ð© ð╝ð¥ð┤ðÁð╗ð©, ðÀð░ ð┤ð░ ÐüðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░Ðé Ðéð░ð▒ð╗ð©Ðåð©ÐéðÁ ð┐ÐÇð© db.create_all()
+# Robust import: package-relative ÔåÆ backend.* ÔåÆ local module
 
 
-# Създаваме само една инстанция на app и всички маршрути се регистрират върху нея
+# ðíÐèðÀð┤ð░ð▓ð░ð╝ðÁ Ðüð░ð╝ð¥ ðÁð┤ð¢ð░ ð©ð¢ÐüÐéð░ð¢Ðåð©ÐÅ ð¢ð░ app ð© ð▓Ðüð©Ðçð║ð© ð╝ð░ÐÇÐêÐÇÐâÐéð© ÐüðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░Ðé ð▓ÐèÐÇÐàÐâ ð¢ðÁÐÅ
 
-# Единствена инстанция на app
+# ðòð┤ð©ð¢ÐüÐéð▓ðÁð¢ð░ ð©ð¢ÐüÐéð░ð¢Ðåð©ÐÅ ð¢ð░ app
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["PROPAGATE_EXCEPTIONS"] = True
 # Note: Jinja builtin exposures were removed to keep template globals minimal.
@@ -399,18 +399,18 @@ if str(_appy_os.environ.get("HELPCHAIN_TESTING", "")).lower() in ("1", "true", "
             app.config.setdefault("_TEST_DB_PATH", _test_db_path)
 from flask import render_template
 
-# === ПУБЛИЧНИ МАРШРУТИ ЗА ЗАЯВКИ ===
+# === ðƒðúðæðøðÿðºðØðÿ ð£ðÉðáð¿ðáðúðóðÿ ðùðÉ ðùðÉð»ðÆðÜðÿ ===
 
 
 # === PUBLIC DASHBOARD ROUTE ===
 @app.route("/dashboard", methods=["GET"])
 def public_dashboard():
-    """Публично табло с последните заявки за помощ (HTML)."""
+    """ðƒÐâð▒ð╗ð©Ðçð¢ð¥ Ðéð░ð▒ð╗ð¥ Ðü ð┐ð¥Ðüð╗ðÁð┤ð¢ð©ÐéðÁ ðÀð░ÐÅð▓ð║ð© ðÀð░ ð┐ð¥ð╝ð¥Ðë (HTML)."""
     db = get_db()
     session = db.session
-    # Вземаме последните 30 заявки (може да се коригира)
+    # ðÆðÀðÁð╝ð░ð╝ðÁ ð┐ð¥Ðüð╗ðÁð┤ð¢ð©ÐéðÁ 30 ðÀð░ÐÅð▓ð║ð© (ð╝ð¥ðÂðÁ ð┤ð░ ÐüðÁ ð║ð¥ÐÇð©ð│ð©ÐÇð░)
     requests = session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).limit(30).all()
-    # Подготвяме данните за шаблона
+    # ðƒð¥ð┤ð│ð¥Ðéð▓ÐÅð╝ðÁ ð┤ð░ð¢ð¢ð©ÐéðÁ ðÀð░ Ðêð░ð▒ð╗ð¥ð¢ð░
     return render_template(
         "dashboard_comparison.html",
         requests=requests,
@@ -418,11 +418,11 @@ def public_dashboard():
 
 
 def print_all_routes():
-    print("\n=== ВСИЧКИ РЕГИСТРИРАНИ МАРШРУТИ В APP ===")
+    print("\n=== ðÆðíðÿðºðÜðÿ ðáðòðôðÿðíðóðáðÿðáðÉðØðÿ ð£ðÉðáð¿ðáðúðóðÿ ðÆ APP ===")
     for rule in app.url_map.iter_rules():
         methods = ",".join(sorted(rule.methods))
         print(f"{rule.rule:30}  [{methods}]  -> {rule.endpoint}")
-    print("=== КРАЙ НА СПИСЪКА ===\n")
+    print("=== ðÜðáðÉðÖ ðØðÉ ðíðƒðÿðíð¬ðÜðÉ ===\n")
 
 
 print_all_routes()
@@ -452,7 +452,7 @@ def _testing_admin_request_shim():
         if not session.get("admin_logged_in"):
             if request.method == "GET" and request.path == "/admin_dashboard":
                 try:
-                    flash("Моля, влезте като администратор.", "warning")
+                    flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning")
                 except Exception:
                     pass
                 try:
@@ -543,7 +543,7 @@ def admin_dashboard_alias():
                     pass
                 else:
                     try:
-                        flash("Моля, влезте като администратор.", "warning")
+                        flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning")
                     except Exception:
                         pass
                     try:
@@ -644,13 +644,13 @@ def _testing_admin_dashboard_after_request(response):
     return response
 
 
-# === СТАТИЧЕН ФАЙЛ ЗА CHROME DEVTOOLS ===
+# === ðíðóðÉðóðÿðºðòðØ ðñðÉðÖðø ðùðÉ CHROME DEVTOOLS ===
 @app.route("/.well-known/appspecific/com.chrome.devtools.json")
 def chrome_devtools_json():
     from flask import send_from_directory
     import os
 
-    # Абсолютен път до файла
+    # ðÉð▒Ðüð¥ð╗ÐÄÐéðÁð¢ ð┐ÐèÐé ð┤ð¥ Ðäð░ð╣ð╗ð░
     file_path = os.path.join(os.path.dirname(__file__), ".well-known", "appspecific")
     return send_from_directory(file_path, "com.chrome.devtools.json")
 
@@ -658,12 +658,12 @@ def chrome_devtools_json():
 # === PUBLIC REQUESTS API ===
 @app.route("/requests", methods=["GET"])
 def public_requests_list():
-    """Публичен endpoint: списък с заявки за помощ (HelpRequest)."""
+    """ðƒÐâð▒ð╗ð©ÐçðÁð¢ endpoint: Ðüð┐ð©ÐüÐèð║ Ðü ðÀð░ÐÅð▓ð║ð© ðÀð░ ð┐ð¥ð╝ð¥Ðë (HelpRequest)."""
     db = get_db()
     session = db.session
     query = session.query(HelpRequest)
 
-    # Филтри по статус (може да е списък), град, категория (може да е списък), ключова дума
+    # ðñð©ð╗ÐéÐÇð© ð┐ð¥ ÐüÐéð░ÐéÐâÐü (ð╝ð¥ðÂðÁ ð┤ð░ ðÁ Ðüð┐ð©ÐüÐèð║), ð│ÐÇð░ð┤, ð║ð░ÐéðÁð│ð¥ÐÇð©ÐÅ (ð╝ð¥ðÂðÁ ð┤ð░ ðÁ Ðüð┐ð©ÐüÐèð║), ð║ð╗ÐÄÐçð¥ð▓ð░ ð┤Ðâð╝ð░
     status = request.args.getlist("status") or request.args.get("status")
     if status:
         if isinstance(status, str):
@@ -689,7 +689,7 @@ def public_requests_list():
         kw = f"%{keyword.strip().lower()}%"
         query = query.filter(func.lower(HelpRequest.title).like(kw) | func.lower(HelpRequest.description).like(kw) | func.lower(HelpRequest.message).like(kw))
 
-    # Може да добавим пагинация в бъдеще
+    # ð£ð¥ðÂðÁ ð┤ð░ ð┤ð¥ð▒ð░ð▓ð©ð╝ ð┐ð░ð│ð©ð¢ð░Ðåð©ÐÅ ð▓ ð▒Ðèð┤ðÁÐëðÁ
     result = []
     for req in query.all():
         result.append(
@@ -702,7 +702,7 @@ def public_requests_list():
                 "region": req.region,
                 "location_text": req.location_text,
                 "name": req.name,
-                # Не връщаме email/phone за privacy
+                # ðØðÁ ð▓ÐÇÐèÐëð░ð╝ðÁ email/phone ðÀð░ privacy
             }
         )
     return jsonify(result)
@@ -710,7 +710,7 @@ def public_requests_list():
 
 @app.route("/requests", methods=["POST"])
 def public_create_request():
-    """Публичен endpoint: създаване на заявка за помощ (HelpRequest)."""
+    """ðƒÐâð▒ð╗ð©ÐçðÁð¢ endpoint: ÐüÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë (HelpRequest)."""
     db = get_db()
     session = db.session
     data = request.get_json() or {}
@@ -725,11 +725,11 @@ def public_create_request():
     city = data.get("city", "").strip() or location
 
     if not name:
-        errors["name"] = "Името е задължително."
+        errors["name"] = "ðÿð╝ðÁÐéð¥ ðÁ ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð¥."
     if not email or "@" not in email:
-        errors["email"] = "Невалиден имейл."
+        errors["email"] = "ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ð©ð╝ðÁð╣ð╗."
     if not problem or len(problem) < 10:
-        errors["problem"] = "Описанието е твърде кратко."
+        errors["problem"] = "ð×ð┐ð©Ðüð░ð¢ð©ðÁÐéð¥ ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð║ÐÇð░Ðéð║ð¥."
 
     if errors:
         return jsonify({"success": False, "errors": errors}), 400
@@ -738,7 +738,7 @@ def public_create_request():
         req = HelpRequest(
             name=name,
             email=email,
-            title=category or "Заявка",
+            title=category or "ðùð░ÐÅð▓ð║ð░",
             city=city,
             description=problem,
             phone=phone,
@@ -772,11 +772,11 @@ def public_create_request():
 
 @app.route("/request/<int:request_id>", methods=["GET"])
 def public_request_detail(request_id):
-    """Публичен endpoint: детайл за заявка по id (HelpRequest)."""
+    """ðƒÐâð▒ð╗ð©ÐçðÁð¢ endpoint: ð┤ðÁÐéð░ð╣ð╗ ðÀð░ ðÀð░ÐÅð▓ð║ð░ ð┐ð¥ id (HelpRequest)."""
     db = get_db()
     session = db.session
     req = session.query(HelpRequest).get_or_404(request_id)
-    # В детайлен изглед връщаме всички детайли, включително контакт
+    # ðÆ ð┤ðÁÐéð░ð╣ð╗ðÁð¢ ð©ðÀð│ð╗ðÁð┤ ð▓ÐÇÐèÐëð░ð╝ðÁ ð▓Ðüð©Ðçð║ð© ð┤ðÁÐéð░ð╣ð╗ð©, ð▓ð║ð╗ÐÄÐçð©ÐéðÁð╗ð¢ð¥ ð║ð¥ð¢Ðéð░ð║Ðé
     result = {
         "id": req.id,
         "title": req.title,
@@ -1001,12 +1001,12 @@ except ImportError:
 
     admin_roles_bp = admin_roles.admin_roles_bp
 
-# Зареди environment variables от .env файла (от корена на проекта)
+# ðùð░ÐÇðÁð┤ð© environment variables ð¥Ðé .env Ðäð░ð╣ð╗ð░ (ð¥Ðé ð║ð¥ÐÇðÁð¢ð░ ð¢ð░ ð┐ÐÇð¥ðÁð║Ðéð░)
 # load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Sentry for error monitoring
 
-# Настройка на logging преди всичко друго
+# ðØð░ÐüÐéÐÇð¥ð╣ð║ð░ ð¢ð░ logging ð┐ÐÇðÁð┤ð© ð▓Ðüð©Ðçð║ð¥ ð┤ÐÇÐâð│ð¥
 if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
     # In test mode avoid opening file handlers (pytest will capture output
     # and leaving file descriptors open across many tests triggers
@@ -1331,7 +1331,7 @@ def initialize_default_admin():
             # If we can't access current_app either, continue normally.
             pass
     # If the admin_users table is not yet present (early import / boot),
-    # avoid querying it — return None so callers can retry later after
+    # avoid querying it ÔÇö return None so callers can retry later after
     # the schema has been created. This prevents OperationalError during
     # test startup where db.create_all() may run later in fixtures.
     # Do a single table existence check and reuse the result to avoid
@@ -1641,34 +1641,34 @@ def send_email_2fa_code(code, ip_address, user_agent):
         # Use Celery task for reliable email delivery with retry
         from tasks import send_email_task
 
-        body = f"""Здравейте,
+        body = f"""ðùð┤ÐÇð░ð▓ðÁð╣ÐéðÁ,
 
-Получен е опит за вход в администраторския панел на HelpChain.
+ðƒð¥ð╗ÐâÐçðÁð¢ ðÁ ð¥ð┐ð©Ðé ðÀð░ ð▓Ðàð¥ð┤ ð▓ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇÐüð║ð©ÐÅ ð┐ð░ð¢ðÁð╗ ð¢ð░ HelpChain.
 
-Код за верификация: {code}
+ðÜð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ: {code}
 
-Детайли за достъпа:
-- IP адрес: {ip_address}
-- Браузър: {user_agent}
-- Време: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+ðöðÁÐéð░ð╣ð╗ð© ðÀð░ ð┤ð¥ÐüÐéÐèð┐ð░:
+- IP ð░ð┤ÐÇðÁÐü: {ip_address}
+- ðæÐÇð░ÐâðÀÐèÐÇ: {user_agent}
+- ðÆÐÇðÁð╝ðÁ: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 
-Ако това не сте вие, моля игнорирайте това съобщение.
+ðÉð║ð¥ Ðéð¥ð▓ð░ ð¢ðÁ ÐüÐéðÁ ð▓ð©ðÁ, ð╝ð¥ð╗ÐÅ ð©ð│ð¢ð¥ÐÇð©ÐÇð░ð╣ÐéðÁ Ðéð¥ð▓ð░ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ.
 
-С уважение,
-HelpChain системата
+ðí Ðâð▓ð░ðÂðÁð¢ð©ðÁ,
+HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░
 """
 
         if celery and is_realtime_feature_enabled("background"):
             send_email_task.delay(
                 recipient=EMAIL_2FA_RECIPIENT,
-                subject="HelpChain - Код за верификация на администратор",
+                subject="HelpChain - ðÜð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ð¢ð░ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ",
                 template=None,  # Direct body content
                 context={"body": body},
             )
         else:
             send_email_task(
                 recipient=EMAIL_2FA_RECIPIENT,
-                subject="HelpChain - Код за верификация на администратор",
+                subject="HelpChain - ðÜð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ð¢ð░ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ",
                 template=None,
                 context={"body": body},
             )
@@ -1683,19 +1683,19 @@ HelpChain системата
             logger.warning("Attempting fallback: saving email to file")
             with open("sent_emails.txt", "a", encoding="utf-8") as f:
                 email_content = (
-                    f"Subject: HelpChain - Код за верификация на администратор\n"
+                    f"Subject: HelpChain - ðÜð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ð¢ð░ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ\n"
                     f"To: {EMAIL_2FA_RECIPIENT}\n"
                     f"From: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
-                    "Здравейте,\n\n"
-                    "Получен е опит за вход в администраторския панел на HelpChain.\n\n"
-                    f"Код за верификация: {code}\n\n"
-                    "Детайли за достъпа:\n"
-                    f"- IP адрес: {ip_address}\n"
-                    f"- Браузър: {user_agent}\n"
-                    f"- Време: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-                    "Ако това не сте вие, моля игнорирайте това съобщение.\n\n"
-                    "С уважение,\n"
-                    "HelpChain системата\n\n"
+                    "ðùð┤ÐÇð░ð▓ðÁð╣ÐéðÁ,\n\n"
+                    "ðƒð¥ð╗ÐâÐçðÁð¢ ðÁ ð¥ð┐ð©Ðé ðÀð░ ð▓Ðàð¥ð┤ ð▓ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇÐüð║ð©ÐÅ ð┐ð░ð¢ðÁð╗ ð¢ð░ HelpChain.\n\n"
+                    f"ðÜð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ: {code}\n\n"
+                    "ðöðÁÐéð░ð╣ð╗ð© ðÀð░ ð┤ð¥ÐüÐéÐèð┐ð░:\n"
+                    f"- IP ð░ð┤ÐÇðÁÐü: {ip_address}\n"
+                    f"- ðæÐÇð░ÐâðÀÐèÐÇ: {user_agent}\n"
+                    f"- ðÆÐÇðÁð╝ðÁ: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+                    "ðÉð║ð¥ Ðéð¥ð▓ð░ ð¢ðÁ ÐüÐéðÁ ð▓ð©ðÁ, ð╝ð¥ð╗ÐÅ ð©ð│ð¢ð¥ÐÇð©ÐÇð░ð╣ÐéðÁ Ðéð¥ð▓ð░ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ.\n\n"
+                    "ðí Ðâð▓ð░ðÂðÁð¢ð©ðÁ,\n"
+                    "HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░\n\n"
                     f"{'=' * 50}\n"
                 )
                 f.write(email_content)
@@ -1706,10 +1706,10 @@ HelpChain системата
             return False
 
 
-# Създай папката instance ако не съществува
+# ðíÐèðÀð┤ð░ð╣ ð┐ð░ð┐ð║ð░Ðéð░ instance ð░ð║ð¥ ð¢ðÁ ÐüÐèÐëðÁÐüÐéð▓Ðâð▓ð░
 os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
 
-# Задаваме явни папки за шаблони и статични файлове (адаптирай пътищата ако е нужно)
+# ðùð░ð┤ð░ð▓ð░ð╝ðÁ ÐÅð▓ð¢ð© ð┐ð░ð┐ð║ð© ðÀð░ Ðêð░ð▒ð╗ð¥ð¢ð© ð© ÐüÐéð░Ðéð©Ðçð¢ð© Ðäð░ð╣ð╗ð¥ð▓ðÁ (ð░ð┤ð░ð┐Ðéð©ÐÇð░ð╣ ð┐ÐèÐéð©Ðëð░Ðéð░ ð░ð║ð¥ ðÁ ð¢ÐâðÂð¢ð¥)
 _templates = os.path.join(os.path.dirname(__file__), "templates")
 _static = os.path.join(os.path.dirname(__file__), "static")
 
@@ -2409,9 +2409,9 @@ if celery:
         enable_utc=True,
     )
 
-# Задаваме SECRET_KEY за сесии и сигурност - ПРЕМЕСТЕН ПО-ГОРЕ ПРЕДИ Session(app)
+# ðùð░ð┤ð░ð▓ð░ð╝ðÁ SECRET_KEY ðÀð░ ÐüðÁÐüð©ð© ð© Ðüð©ð│ÐâÐÇð¢ð¥ÐüÐé - ðƒðáðòð£ðòðíðóðòðØ ðƒð×-ðôð×ðáðò ðƒðáðòðöðÿ Session(app)
 
-# Конфигурация за URL генерация извън контекста на заявка
+# ðÜð¥ð¢Ðäð©ð│ÐâÐÇð░Ðåð©ÐÅ ðÀð░ URL ð│ðÁð¢ðÁÐÇð░Ðåð©ÐÅ ð©ðÀð▓Ðèð¢ ð║ð¥ð¢ÐéðÁð║ÐüÐéð░ ð¢ð░ ðÀð░ÐÅð▓ð║ð░
 # app.config["SERVER_NAME"] = os.getenv("SERVER_NAME", "localhost:3000")
 app.config["PREFERRED_URL_SCHEME"] = os.getenv("PREFERRED_URL_SCHEME", "http")
 
@@ -2445,9 +2445,9 @@ except Exception as e:
     app.logger.error(f"Failed to initialize Sentry: {e}")
 
 
-# Абсолютен път до базата за по-голяма сигурност
+# ðÉð▒Ðüð¥ð╗ÐÄÐéðÁð¢ ð┐ÐèÐé ð┤ð¥ ð▒ð░ðÀð░Ðéð░ ðÀð░ ð┐ð¥-ð│ð¥ð╗ÐÅð╝ð░ Ðüð©ð│ÐâÐÇð¢ð¥ÐüÐé
 basedir = os.path.abspath(os.path.dirname(__file__))
-# За production на Render, използвайме променлива от средата или persistent директория
+# ðùð░ production ð¢ð░ Render, ð©ðÀð┐ð¥ð╗ðÀð▓ð░ð╣ð╝ðÁ ð┐ÐÇð¥ð╝ðÁð¢ð╗ð©ð▓ð░ ð¥Ðé ÐüÐÇðÁð┤ð░Ðéð░ ð©ð╗ð© persistent ð┤ð©ÐÇðÁð║Ðéð¥ÐÇð©ÐÅ
 # If running under pytest, prefer a file-backed test DB so the engine is
 # created with the test path at import time. This avoids engines being
 # initialized against the instance DB before test fixtures can run.
@@ -2471,11 +2471,11 @@ database_url = os.getenv("DATABASE_URL")
 use_postgres = os.getenv("USE_POSTGRES") == "true"
 
 
-# --- ТЕСТОВА СИНХРОНИЗАЦИЯ ---
+# --- ðóðòðíðóð×ðÆðÉ ðíðÿðØðÑðáð×ðØðÿðùðÉðªðÿð» ---
 # Prefer a file-backed test DB if one was provided (via app config or
 # environment) to avoid in-memory per-connection visibility issues.
 if app.config.get("_TEST_DB_PATH"):
-    # Ако фикстурата е задала временен файл за база, използвай него
+    # ðÉð║ð¥ Ðäð©ð║ÐüÐéÐâÐÇð░Ðéð░ ðÁ ðÀð░ð┤ð░ð╗ð░ ð▓ÐÇðÁð╝ðÁð¢ðÁð¢ Ðäð░ð╣ð╗ ðÀð░ ð▒ð░ðÀð░, ð©ðÀð┐ð¥ð╗ðÀð▓ð░ð╣ ð¢ðÁð│ð¥
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{app.config['_TEST_DB_PATH']}"
     logger.info(f"TESTING: Using test SQLite database: {app.config['_TEST_DB_PATH']}")
 elif app.config.get("TESTING"):
@@ -2511,7 +2511,7 @@ elif database_url and use_postgres:
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     logger.info("Using PostgreSQL database from environment")
 else:
-    # Локално development - използвайме instance директория в backend папката
+    # ðøð¥ð║ð░ð╗ð¢ð¥ development - ð©ðÀð┐ð¥ð╗ðÀð▓ð░ð╣ð╝ðÁ instance ð┤ð©ÐÇðÁð║Ðéð¥ÐÇð©ÐÅ ð▓ backend ð┐ð░ð┐ð║ð░Ðéð░
     instance_dir = os.path.join(basedir, "instance")
     os.makedirs(instance_dir, exist_ok=True)
     db_path = os.path.join(instance_dir, "volunteers.db")
@@ -2803,8 +2803,8 @@ def initialize_database():
 
 # Initialize database if in production mode
 
-# Езици
-# По подразбиране използваме български (bg) вместо френски/английски
+# ðòðÀð©Ðåð©
+# ðƒð¥ ð┐ð¥ð┤ÐÇð░ðÀð▒ð©ÐÇð░ð¢ðÁ ð©ðÀð┐ð¥ð╗ðÀð▓ð░ð╝ðÁ ð▒Ðèð╗ð│ð░ÐÇÐüð║ð© (bg) ð▓ð╝ðÁÐüÐéð¥ ÐäÐÇðÁð¢Ðüð║ð©/ð░ð¢ð│ð╗ð©ð╣Ðüð║ð©
 app.config["BABEL_DEFAULT_LOCALE"] = "fr"
 # Support French first, then Bulgarian and English as fallbacks.
 app.config["BABEL_SUPPORTED_LOCALES"] = ["fr", "bg", "en"]
@@ -2979,7 +2979,7 @@ def get_locale():
     """Determine the best locale for the current request with priority:
     1. Explicit ?lang query
     2. Session stored language
-    3. IP geolocation (FR→fr, BG→bg, other→en)
+    3. IP geolocation (FRÔåÆfr, BGÔåÆbg, otherÔåÆen)
     4. Browser Accept-Language match
     5. Fallback 'en'
     """
@@ -3565,7 +3565,7 @@ try:
                     session.permanent = True
                     return redirect(url_for("admin_dashboard"))
                 else:
-                    error = "Грешно потребителско име или парола!"
+                    error = "ðôÐÇðÁÐêð¢ð¥ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥ ð©ð╝ðÁ ð©ð╗ð© ð┐ð░ÐÇð¥ð╗ð░!"
 
             return render_template("admin_login.html", error=error)
 
@@ -4171,7 +4171,7 @@ def add_csp_headers(response):
 #     # Disable CORS for non-API routes (default deny)
 # )
 
-# Настройваме Jinja да търси шаблони в няколко възможни директории
+# ðØð░ÐüÐéÐÇð¥ð╣ð▓ð░ð╝ðÁ Jinja ð┤ð░ ÐéÐèÐÇÐüð© Ðêð░ð▒ð╗ð¥ð¢ð© ð▓ ð¢ÐÅð║ð¥ð╗ð║ð¥ ð▓ÐèðÀð╝ð¥ðÂð¢ð© ð┤ð©ÐÇðÁð║Ðéð¥ÐÇð©ð©
 _template_dirs = [
     os.path.join(os.path.dirname(__file__), "templates"),
     os.path.join(os.path.dirname(__file__), "HelpChain.bg", "backend", "templates"),
@@ -4179,7 +4179,7 @@ _template_dirs = [
     os.path.join(os.path.dirname(__file__), "helpchain_backend", "src", "templates"),
 ]
 _loaders = [FileSystemLoader(d) for d in _template_dirs if os.path.isdir(d)]
-# добавяме текущия loader в края (ако има)
+# ð┤ð¥ð▒ð░ð▓ÐÅð╝ðÁ ÐéðÁð║ÐâÐëð©ÐÅ loader ð▓ ð║ÐÇð░ÐÅ (ð░ð║ð¥ ð©ð╝ð░)
 if _loaders:
     app.jinja_loader = ChoiceLoader(_loaders + ([app.jinja_loader] if getattr(app, "jinja_loader", None) else []))
 
@@ -4191,7 +4191,7 @@ else:
     app.jinja_env.auto_reload = True
 
 
-# Добавяме strftime филтър за Jinja2
+# ðöð¥ð▒ð░ð▓ÐÅð╝ðÁ strftime Ðäð©ð╗ÐéÐèÐÇ ðÀð░ Jinja2
 @app.template_filter("strftime")
 def strftime_filter(date, format="%Y-%m-%d %H:%M:%S"):
     if date is None:
@@ -4199,7 +4199,7 @@ def strftime_filter(date, format="%Y-%m-%d %H:%M:%S"):
     return date.strftime(format)
 
 
-# Добавяме strptime филтър за Jinja2
+# ðöð¥ð▒ð░ð▓ÐÅð╝ðÁ strptime Ðäð©ð╗ÐéÐèÐÇ ðÀð░ Jinja2
 @app.template_filter("strptime")
 def strptime_filter(date_string, format="%Y-%m-%dT%H:%M:%S.%f"):
     """Jinja filter to parse a date/time string into a datetime.
@@ -4239,7 +4239,7 @@ def _force_clear_session_language():
 
     This is intentionally global and will remove `session['language']`
     on every request when `FORCE_CLEAR_SESSION_LANGUAGE` is truthy. Use
-    with caution — it will prevent persisted language preferences from
+    with caution ÔÇö it will prevent persisted language preferences from
     being honored.
     """
     try:
@@ -4317,7 +4317,7 @@ def page_not_found(error):
             jsonify(
                 {
                     "error": "Not Found",
-                    "message": "Страницата или ресурсът не е намерен. Моля, проверете адреса.",
+                    "message": "ðíÐéÐÇð░ð¢ð©Ðåð░Ðéð░ ð©ð╗ð© ÐÇðÁÐüÐâÐÇÐüÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ ð░ð┤ÐÇðÁÐüð░.",
                     "status_code": 404,
                 }
             ),
@@ -4355,7 +4355,7 @@ def internal_server_error(error):
             jsonify(
                 {
                     "error": "Internal Server Error",
-                    "message": "Възникна неочаквана грешка. Нашият екип е уведомен и работи по проблема. Моля, опитайте отново по-късно.",
+                    "message": "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð¢ðÁð¥Ðçð░ð║ð▓ð░ð¢ð░ ð│ÐÇðÁÐêð║ð░. ðØð░Ðêð©ÐÅÐé ðÁð║ð©ð┐ ðÁ Ðâð▓ðÁð┤ð¥ð╝ðÁð¢ ð© ÐÇð░ð▒ð¥Ðéð© ð┐ð¥ ð┐ÐÇð¥ð▒ð╗ðÁð╝ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥ ð┐ð¥-ð║ÐèÐüð¢ð¥.",
                     "status_code": 500,
                 }
             ),
@@ -4399,7 +4399,7 @@ def forbidden(error):
             ),
             403,
         )
-    flash("Нямате права за достъп до тази страница.", "error")
+    flash("ðØÐÅð╝ð░ÐéðÁ ð┐ÐÇð░ð▓ð░ ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ Ðéð░ðÀð© ÐüÐéÐÇð░ð¢ð©Ðåð░.", "error")
     return redirect(url_for("index"))
 
 
@@ -4432,13 +4432,13 @@ def unprocessable_entity(error):
             jsonify(
                 {
                     "error": "Unprocessable Entity",
-                    "message": "Данните са невалидни или непълни. Моля, проверете въведената информация.",
+                    "message": "ðöð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð¢ðÁð▓ð░ð╗ð©ð┤ð¢ð© ð©ð╗ð© ð¢ðÁð┐Ðèð╗ð¢ð©. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ ð▓Ðèð▓ðÁð┤ðÁð¢ð░Ðéð░ ð©ð¢Ðäð¥ÐÇð╝ð░Ðåð©ÐÅ.",
                     "status_code": 422,
                 }
             ),
             422,
         )
-    flash("Данните са невалидни. Моля, проверете формата и опитайте отново.", "error")
+    flash("ðöð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð¢ðÁð▓ð░ð╗ð©ð┤ð¢ð©. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ Ðäð¥ÐÇð╝ð░Ðéð░ ð© ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
     return redirect(request.referrer or url_for("index"))
 
 
@@ -4472,13 +4472,13 @@ def request_entity_too_large(error):
             jsonify(
                 {
                     "error": "Request Entity Too Large",
-                    "message": "Файлът е твърде голям. Максималният размер е 5MB.",
+                    "message": "ðñð░ð╣ð╗ÐèÐé ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð│ð¥ð╗ÐÅð╝. ð£ð░ð║Ðüð©ð╝ð░ð╗ð¢ð©ÐÅÐé ÐÇð░ðÀð╝ðÁÐÇ ðÁ 5MB.",
                     "status_code": 413,
                 }
             ),
             413,
         )
-    flash("Файлът е твърде голям. Максималният размер е 5MB.", "error")
+    flash("ðñð░ð╣ð╗ÐèÐé ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð│ð¥ð╗ÐÅð╝. ð£ð░ð║Ðüð©ð╝ð░ð╗ð¢ð©ÐÅÐé ÐÇð░ðÀð╝ðÁÐÇ ðÁ 5MB.", "error")
     return redirect(request.referrer or url_for("index"))
 
 
@@ -4511,7 +4511,7 @@ def bad_request(error):
             jsonify(
                 {
                     "error": "Bad Request",
-                    "message": "Невалидна заявка. Моля, проверете данните и опитайте отново.",
+                    "message": "ðØðÁð▓ð░ð╗ð©ð┤ð¢ð░ ðÀð░ÐÅð▓ð║ð░. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ ð┤ð░ð¢ð¢ð©ÐéðÁ ð© ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
                     "status_code": 400,
                 }
             ),
@@ -4549,7 +4549,7 @@ def unauthorized(error):
             jsonify(
                 {
                     "error": "Unauthorized",
-                    "message": "Нямате права за достъп до този ресурс. Моля, влезте в системата.",
+                    "message": "ðØÐÅð╝ð░ÐéðÁ ð┐ÐÇð░ð▓ð░ ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ Ðéð¥ðÀð© ÐÇðÁÐüÐâÐÇÐü. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð▓ Ðüð©ÐüÐéðÁð╝ð░Ðéð░.",
                     "status_code": 401,
                 }
             ),
@@ -4587,7 +4587,7 @@ def too_many_requests(error):
             jsonify(
                 {
                     "error": "Too Many Requests",
-                    "message": "Твърде много заявки. Моля, изчакайте малко преди да опитате отново.",
+                    "message": "ðóð▓ÐèÐÇð┤ðÁ ð╝ð¢ð¥ð│ð¥ ðÀð░ÐÅð▓ð║ð©. ð£ð¥ð╗ÐÅ, ð©ðÀÐçð░ð║ð░ð╣ÐéðÁ ð╝ð░ð╗ð║ð¥ ð┐ÐÇðÁð┤ð© ð┤ð░ ð¥ð┐ð©Ðéð░ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
                     "status_code": 429,
                     "retry_after": 60,  # Suggest retry after 60 seconds
                 }
@@ -4627,13 +4627,13 @@ def handle_database_error(error):
             jsonify(
                 {
                     "error": "Database Error",
-                    "message": "Възникна проблем с базата данни. Нашият екип е уведомен и работи по проблема.",
+                    "message": "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð┐ÐÇð¥ð▒ð╗ðÁð╝ Ðü ð▒ð░ðÀð░Ðéð░ ð┤ð░ð¢ð¢ð©. ðØð░Ðêð©ÐÅÐé ðÁð║ð©ð┐ ðÁ Ðâð▓ðÁð┤ð¥ð╝ðÁð¢ ð© ÐÇð░ð▒ð¥Ðéð© ð┐ð¥ ð┐ÐÇð¥ð▒ð╗ðÁð╝ð░.",
                     "status_code": 500,
                 }
             ),
             500,
         )
-    flash("Възникна техническа грешка. Моля, опитайте отново по-късно.", "error")
+    flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ÐéðÁÐàð¢ð©ÐçðÁÐüð║ð░ ð│ÐÇðÁÐêð║ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥ ð┐ð¥-ð║ÐèÐüð¢ð¥.", "error")
     return redirect(url_for("index"))
 
 
@@ -4667,13 +4667,13 @@ def handle_validation_error(error):
             jsonify(
                 {
                     "error": "Validation Error",
-                    "message": "Данните са невалидни. Моля, проверете въведената информация.",
+                    "message": "ðöð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð¢ðÁð▓ð░ð╗ð©ð┤ð¢ð©. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ ð▓Ðèð▓ðÁð┤ðÁð¢ð░Ðéð░ ð©ð¢Ðäð¥ÐÇð╝ð░Ðåð©ÐÅ.",
                     "status_code": 400,
                 }
             ),
             400,
         )
-    flash("Данните са невалидни. Моля, проверете формата и опитайте отново.", "error")
+    flash("ðöð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð¢ðÁð▓ð░ð╗ð©ð┤ð¢ð©. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ Ðäð¥ÐÇð╝ð░Ðéð░ ð© ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
     return redirect(request.referrer or url_for("index"))
 
 
@@ -4710,7 +4710,7 @@ def handle_unexpected_error(error):
             jsonify(
                 {
                     "error": "Internal Server Error",
-                    "message": "Възникна неочаквана грешка. Нашият екип е уведомен.",
+                    "message": "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð¢ðÁð¥Ðçð░ð║ð▓ð░ð¢ð░ ð│ÐÇðÁÐêð║ð░. ðØð░Ðêð©ÐÅÐé ðÁð║ð©ð┐ ðÁ Ðâð▓ðÁð┤ð¥ð╝ðÁð¢.",
                     "status_code": 500,
                 }
             ),
@@ -4727,7 +4727,7 @@ def index():
     return render_template("home_new.html", volunteer_id=volunteer_id, category=category)
 
 
-# Explicit redirect if някой влезе към стария статичен преглед
+# Explicit redirect if ð¢ÐÅð║ð¥ð╣ ð▓ð╗ðÁðÀðÁ ð║Ðèð╝ ÐüÐéð░ÐÇð©ÐÅ ÐüÐéð░Ðéð©ÐçðÁð¢ ð┐ÐÇðÁð│ð╗ðÁð┤
 @app.route("/static/previews/new-page.html")
 def legacy_static_landing_redirect():
     from flask import redirect, url_for
@@ -4844,7 +4844,7 @@ def admin_login():
                 user_agent = request.headers.get("User-Agent", "Unknown")
                 if not send_email_2fa_code(code, remote_addr, user_agent):
                     logger.warning("Failed to dispatch email 2FA code; fallback engaged")
-                flash("Изпратен е код за верификация на имейла.", "info")
+                flash("ðÿðÀð┐ÐÇð░ÐéðÁð¢ ðÁ ð║ð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ð¢ð░ ð©ð╝ðÁð╣ð╗ð░.", "info")
                 return redirect(url_for("admin_email_2fa"))
 
             # TOTP 2FA
@@ -4864,7 +4864,7 @@ def admin_login():
             return redirect(url_for("admin_dashboard"))
         else:
             logger.warning(f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}")
-            error = "Грешно потребителско име или парола!"
+            error = "ðôÐÇðÁÐêð¢ð¥ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥ ð©ð╝ðÁ ð©ð╗ð© ð┐ð░ÐÇð¥ð╗ð░!"
             app.logger.warning(f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}")
     return render_template("admin_login.html", error=error)
 
@@ -4887,7 +4887,7 @@ def seed_admin():
         admin_user = initialize_default_admin()
         if not admin_user:
             return (
-                jsonify({"success": False, "error": "Неуспешно създаване на администратор."}),
+                jsonify({"success": False, "error": "ðØðÁÐâÐüð┐ðÁÐêð¢ð¥ ÐüÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ."}),
                 500,
             )
         try:
@@ -4914,10 +4914,10 @@ def admin_set_password(new_pw):
     try:
         admin_user = AdminUser.query.filter_by(username="admin").first()
         if not admin_user:
-            return jsonify({"success": False, "error": "Админът липсва"}), 404
+            return jsonify({"success": False, "error": "ðÉð┤ð╝ð©ð¢ÐèÐé ð╗ð©ð┐Ðüð▓ð░"}), 404
         admin_user.set_password(new_pw)
         db.session.commit()
-        return jsonify({"success": True, "message": "Паролата е обновена", "password": new_pw})
+        return jsonify({"success": True, "message": "ðƒð░ÐÇð¥ð╗ð░Ðéð░ ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢ð░", "password": new_pw})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -4927,7 +4927,7 @@ def admin_force_login():
     try:
         admin_user = AdminUser.query.filter_by(username="admin").first()
         if not admin_user:
-            return jsonify({"success": False, "error": "Админът липсва"}), 404
+            return jsonify({"success": False, "error": "ðÉð┤ð╝ð©ð¢ÐèÐé ð╗ð©ð┐Ðüð▓ð░"}), 404
         session["admin_logged_in"] = True
         session["admin_user_id"] = admin_user.id
         session["admin_username"] = admin_user.username
@@ -4965,7 +4965,7 @@ def admin_root():
         # Fallback: render login template directly instead of raising
         try:
             return (
-                render_template("admin_login.html", error="Вътрешна грешка, опитайте пак."),
+                render_template("admin_login.html", error="ðÆÐèÐéÐÇðÁÐêð¢ð░ ð│ÐÇðÁÐêð║ð░, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð┐ð░ð║."),
                 500,
             )
         except Exception:
@@ -5180,7 +5180,7 @@ def admin_dashboard():
         pass
 
     # Get filter parameter
-    app.logger.info("[DEBUG] Влезе в admin_dashboard")
+    app.logger.info("[DEBUG] ðÆð╗ðÁðÀðÁ ð▓ admin_dashboard")
     filter_param = request.args.get("filter", "all")
 
     db = get_db()
@@ -5222,13 +5222,13 @@ def admin_dashboard():
             requests_data.append(
                 {
                     "id": req.id,
-                    "name": getattr(req, "name", "Неизвестно име"),
+                    "name": getattr(req, "name", "ðØðÁð©ðÀð▓ðÁÐüÐéð¢ð¥ ð©ð╝ðÁ"),
                     "status": req.status,
                     "request_type": req.request_type,
                     "city": req.city,
                     "location": getattr(req, "location_text", None),
                     "volunteer_name": getattr(req.assigned_volunteer, "name", None),
-                    "created_at": (req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "Няма дата"),
+                    "created_at": (req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "ðØÐÅð╝ð░ ð┤ð░Ðéð░"),
                     "completed_at": (req.completed_at.strftime("%Y-%m-%d %H:%M") if req.completed_at else None),
                 }
             )
@@ -5241,17 +5241,17 @@ def admin_dashboard():
         raise
         requests = {
             "items": [
-                {"id": 1, "name": "Мария", "status": "Активен"},
-                {"id": 2, "name": "Георги", "status": "Завършен"},
+                {"id": 1, "name": "ð£ð░ÐÇð©ÐÅ", "status": "ðÉð║Ðéð©ð▓ðÁð¢"},
+                {"id": 2, "name": "ðôðÁð¥ÐÇð│ð©", "status": "ðùð░ð▓ÐèÐÇÐêðÁð¢"},
             ]
         }
 
-    # Генерирай logs_dict с празен списък за всички заявки, ако няма логове
+    # ðôðÁð¢ðÁÐÇð©ÐÇð░ð╣ logs_dict Ðü ð┐ÐÇð░ðÀðÁð¢ Ðüð┐ð©ÐüÐèð║ ðÀð░ ð▓Ðüð©Ðçð║ð© ðÀð░ÐÅð▓ð║ð©, ð░ð║ð¥ ð¢ÐÅð╝ð░ ð╗ð¥ð│ð¥ð▓ðÁ
     logs_dict = {
-        1: [{"status": "Активен", "changed_at": "2025-07-22"}],
-        2: [{"status": "Завършен", "changed_at": "2025-07-21"}],
+        1: [{"status": "ðÉð║Ðéð©ð▓ðÁð¢", "changed_at": "2025-07-22"}],
+        2: [{"status": "ðùð░ð▓ÐèÐÇÐêðÁð¢", "changed_at": "2025-07-21"}],
     }
-    # Добави празен списък за всички заявки, които ги няма в logs_dict
+    # ðöð¥ð▒ð░ð▓ð© ð┐ÐÇð░ðÀðÁð¢ Ðüð┐ð©ÐüÐèð║ ðÀð░ ð▓Ðüð©Ðçð║ð© ðÀð░ÐÅð▓ð║ð©, ð║ð¥ð©Ðéð¥ ð│ð© ð¢ÐÅð╝ð░ ð▓ logs_dict
     for req in requests["items"]:
         if req["id"] not in logs_dict:
             logs_dict[req["id"]] = []
@@ -5268,7 +5268,7 @@ def admin_dashboard():
     if session.get("admin_user_id"):
         current_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
-    app.logger.info("[DEBUG] Връща admin_dashboard шаблон")
+    app.logger.info("[DEBUG] ðÆÐÇÐèÐëð░ admin_dashboard Ðêð░ð▒ð╗ð¥ð¢")
 
     realtime_settings = load_realtime_settings()
 
@@ -5381,7 +5381,7 @@ def admin_approve_request(request_id):
 
         if request_obj.status != "pending":
             return (
-                jsonify({"success": False, "message": "Заявката вече е обработена"}),
+                jsonify({"success": False, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð¥ð▒ÐÇð░ð▒ð¥ÐéðÁð¢ð░"}),
                 400,
             )
 
@@ -5401,13 +5401,13 @@ def admin_approve_request(request_id):
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-        return jsonify({"success": True, "message": "Заявката е одобрена успешно"})
+        return jsonify({"success": True, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð¥ð┤ð¥ð▒ÐÇðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥"})
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error approving request {request_id}: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при одобряване на заявката"}),
+            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð┤ð¥ð▒ÐÇÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░"}),
             500,
         )
 
@@ -5425,7 +5425,7 @@ def admin_reject_request(request_id):
 
         if request_obj.status != "pending":
             return (
-                jsonify({"success": False, "message": "Заявката вече е обработена"}),
+                jsonify({"success": False, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð¥ð▒ÐÇð░ð▒ð¥ÐéðÁð¢ð░"}),
                 400,
             )
 
@@ -5449,13 +5449,13 @@ def admin_reject_request(request_id):
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-        return jsonify({"success": True, "message": "Заявката е отхвърлена успешно"})
+        return jsonify({"success": True, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð¥ÐéÐàð▓ÐèÐÇð╗ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥"})
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error rejecting request {request_id}: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при отхвърляне на заявката"}),
+            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ÐéÐàð▓ÐèÐÇð╗ÐÅð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░"}),
             500,
         )
 
@@ -5471,7 +5471,7 @@ def admin_assign_volunteer(request_id):
 
         if not volunteer_id:
             return (
-                jsonify({"success": False, "message": "Не е посочен доброволец"}),
+                jsonify({"success": False, "message": "ðØðÁ ðÁ ð┐ð¥Ðüð¥ÐçðÁð¢ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå"}),
                 400,
             )
 
@@ -5483,7 +5483,7 @@ def admin_assign_volunteer(request_id):
                 jsonify(
                     {
                         "success": False,
-                        "message": "Заявката трябва да бъде одобрена преди присвояване",
+                        "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ÐéÐÇÐÅð▒ð▓ð░ ð┤ð░ ð▒Ðèð┤ðÁ ð¥ð┤ð¥ð▒ÐÇðÁð¢ð░ ð┐ÐÇðÁð┤ð© ð┐ÐÇð©Ðüð▓ð¥ÐÅð▓ð░ð¢ðÁ",
                     }
                 ),
                 400,
@@ -5511,7 +5511,7 @@ def admin_assign_volunteer(request_id):
         return jsonify(
             {
                 "success": True,
-                "message": f"Доброволецът {volunteer.name} е присвоен успешно",
+                "message": f"ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé {volunteer.name} ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥",
             }
         )
 
@@ -5519,7 +5519,7 @@ def admin_assign_volunteer(request_id):
         db.session.rollback()
         app.logger.error(f"Error assigning volunteer to request {request_id}: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при присвояване на доброволец"}),
+            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┐ÐÇð©Ðüð▓ð¥ÐÅð▓ð░ð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå"}),
             500,
         )
 
@@ -5541,7 +5541,7 @@ def admin_delete_request(request_id):
                 jsonify(
                     {
                         "success": False,
-                        "message": "Не може да изтриете присвоена заявка",
+                        "message": "ðØðÁ ð╝ð¥ðÂðÁ ð┤ð░ ð©ðÀÐéÐÇð©ðÁÐéðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ðÀð░ÐÅð▓ð║ð░",
                     }
                 ),
                 400,
@@ -5563,7 +5563,7 @@ def admin_delete_request(request_id):
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-        return jsonify({"success": True, "message": "Заявката е изтрита успешно"})
+        return jsonify({"success": True, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð©ðÀÐéÐÇð©Ðéð░ ÐâÐüð┐ðÁÐêð¢ð¥"})
 
     except Exception as e:
         try:
@@ -5574,7 +5574,7 @@ def admin_delete_request(request_id):
             pass
         app.logger.error(f"Error deleting request {request_id}: {e}\n{traceback.format_exc()}")
         return (
-            jsonify({"success": False, "message": f"Грешка при изтриване на заявката: {e}"}),
+            jsonify({"success": False, "message": f"ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀÐéÐÇð©ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░: {e}"}),
             500,
         )
 
@@ -5606,7 +5606,7 @@ def admin_request_details(request_id):
 
     except Exception as e:
         app.logger.error(f"Error loading request details {request_id}: {e}")
-        flash("Грешка при зареждане на детайлите на заявката", "error")
+        flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁ ð¢ð░ ð┤ðÁÐéð░ð╣ð╗ð©ÐéðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░", "error")
         return redirect(url_for("admin_dashboard"))
 
 
@@ -5628,7 +5628,7 @@ def admin_edit_request(request_id):
 
             db.session.commit()
 
-            flash("Заявката е обновена успешно!", "success")
+            flash("ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
             return redirect(url_for("admin_request_details", request_id=request_id))
 
         # Get current admin user
@@ -5641,7 +5641,7 @@ def admin_edit_request(request_id):
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error editing request {request_id}: {e}")
-        flash("Грешка при редактиране на заявката", "error")
+        flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ÐÇðÁð┤ð░ð║Ðéð©ÐÇð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░", "error")
         return redirect(url_for("admin_request_details", request_id=request_id))
 
 
@@ -5649,7 +5649,7 @@ def admin_edit_request(request_id):
 def admin_profile():
     # Check if admin is logged in manually
     if not session.get("admin_logged_in"):
-        flash("Моля, влезте като администратор.", "error")
+        flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "error")
         return redirect(url_for("admin_login"))
 
     # Get current admin user
@@ -5659,7 +5659,7 @@ def admin_profile():
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
     if not admin_user:
-        flash("Не сте логнат като администратор.", "error")
+        flash("ðØðÁ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðé ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "error")
         return redirect(url_for("admin_login"))
 
     if request.method == "POST":
@@ -5667,21 +5667,21 @@ def admin_profile():
         email = request.form.get("email", "").strip()
 
         if not username or not email:
-            flash("Всички полета са задължителни.", "error")
+            flash("ðÆÐüð©Ðçð║ð© ð┐ð¥ð╗ðÁÐéð░ Ðüð░ ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð©.", "error")
             return render_template("admin_profile.html", current_user=admin_user)
 
         # Check if username is already taken by another admin
         existing_admin = db.session.query(AdminUser).filter(AdminUser.username == username, AdminUser.id != admin_user.id).first()
 
         if existing_admin:
-            flash("Потребителското име вече е заето.", "error")
+            flash("ðƒð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥Ðéð¥ ð©ð╝ðÁ ð▓ðÁÐçðÁ ðÁ ðÀð░ðÁÐéð¥.", "error")
             return render_template("admin_profile.html", current_user=admin_user)
 
         # Check if email is already taken by another admin
         existing_email = db.session.query(AdminUser).filter(AdminUser.email == email, AdminUser.id != admin_user.id).first()
 
         if existing_email:
-            flash("Имейлът вече е зает.", "error")
+            flash("ðÿð╝ðÁð╣ð╗ÐèÐé ð▓ðÁÐçðÁ ðÁ ðÀð░ðÁÐé.", "error")
             return render_template("admin_profile.html", current_user=admin_user)
 
         # Update admin user
@@ -5689,7 +5689,7 @@ def admin_profile():
         admin_user.email = email
         db.session.commit()
 
-        flash("Профилът е обновен успешно.", "success")
+        flash("ðƒÐÇð¥Ðäð©ð╗ÐèÐé ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥.", "success")
         return redirect(url_for("admin_profile"))
 
     return render_template("admin_profile.html", current_user=admin_user)
@@ -5705,12 +5705,12 @@ def admin_settings():
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
     if not admin_user:
-        flash("Не сте логнат като администратор.", "error")
+        flash("ðØðÁ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðé ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "error")
         return redirect(url_for("admin_login"))
 
     if request.method == "POST":
         # Handle settings updates (placeholder for now)
-        flash("Настройките са запазени успешно.", "success")
+        flash("ðØð░ÐüÐéÐÇð¥ð╣ð║ð©ÐéðÁ Ðüð░ ðÀð░ð┐ð░ðÀðÁð¢ð© ÐâÐüð┐ðÁÐêð¢ð¥.", "success")
         return redirect(url_for("admin_settings"))
 
     return render_template("admin_settings.html", current_user=admin_user)
@@ -5726,7 +5726,7 @@ def notification_dashboard():
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
     if not admin_user:
-        flash("Не сте логнат като администратор.", "error")
+        flash("ðØðÁ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðé ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "error")
         return redirect(url_for("admin_login"))
 
     # Placeholder for notification dashboard
@@ -5734,13 +5734,13 @@ def notification_dashboard():
         {
             "id": 1,
             "type": "new_volunteer",
-            "message": "Нов доброволец се регистрира",
+            "message": "ðØð¥ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ÐüðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░",
             "timestamp": "2024-01-15 10:30",
         },
         {
             "id": 2,
             "type": "new_request",
-            "message": "Нова заявка за помощ",
+            "message": "ðØð¥ð▓ð░ ðÀð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë",
             "timestamp": "2024-01-15 09:15",
         },
     ]
@@ -5762,7 +5762,7 @@ def export_data():
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
     if not admin_user:
-        flash("Не сте логнат като администратор.", "error")
+        flash("ðØðÁ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðé ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "error")
         return redirect(url_for("admin_login"))
 
     return render_template("export_data.html", current_user=admin_user)
@@ -5779,7 +5779,7 @@ def admin_email_2fa():
         session.pop("pending_admin_id", None)
         session.pop("email_2fa_code", None)
         session.pop("email_2fa_expires", None)
-        flash("Кодът за верификация е изтекъл. Моля, опитайте отново.", "error")
+        flash("ðÜð¥ð┤ÐèÐé ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ðÁ ð©ðÀÐéðÁð║Ðèð╗. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
         return redirect(url_for("admin_login"))
 
     if request.method == "POST":
@@ -5809,11 +5809,11 @@ def admin_email_2fa():
                 session.pop("email_2fa_expires", None)
                 return redirect(url_for("admin_dashboard"))
             else:
-                flash("Невалиден код за верификация.", "error")
+                flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ð║ð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ.", "error")
         except Exception as e:
             print("[2FA ERROR]", e)
             traceback.print_exc()
-            flash("Възникна вътрешна грешка при 2FA.", "error")
+            flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð▓ÐèÐéÐÇðÁÐêð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© 2FA.", "error")
 
     return render_template("admin_email_2fa.html")
 
@@ -5821,12 +5821,12 @@ def admin_email_2fa():
 @app.route("/admin/email_2fa/resend", methods=["GET", "POST"])
 def admin_email_2fa_resend():
     if not session.get("pending_email_2fa"):
-        flash("Сесията е изтекла. Моля, влезте отново.", "warning")
+        flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "warning")
         return redirect(url_for("admin_login"))
 
     admin_id = session.get("pending_admin_id")
     if not admin_id:
-        flash("Сесията е изтекла. Моля, влезте отново.", "warning")
+        flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "warning")
         session.pop("pending_email_2fa", None)
         return redirect(url_for("admin_login"))
 
@@ -5839,7 +5839,7 @@ def admin_email_2fa_resend():
     if not send_email_2fa_code(code, remote_addr, user_agent):
         logger.warning("Failed to resend email 2FA code")
 
-    flash("Изпратен е нов код за верификация.", "info")
+    flash("ðÿðÀð┐ÐÇð░ÐéðÁð¢ ðÁ ð¢ð¥ð▓ ð║ð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ.", "info")
     return redirect(url_for("admin_email_2fa"))
 
 
@@ -5854,13 +5854,13 @@ def admin_2fa():
         # Get admin user
         admin_id = session.get("pending_admin_id")
         if not admin_id:
-            flash("Сесията е изтекла. Моля, логнете се отново.", "error")
+            flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð╗ð¥ð│ð¢ðÁÐéðÁ ÐüðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
             return redirect(url_for("admin_login"))
 
         db = get_db()
         admin_user = db.session.query(AdminUser).get(admin_id)
         if not admin_user:
-            flash("Потребителят не е намерен.", "error")
+            flash("ðƒð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗ÐÅÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢.", "error")
             return redirect(url_for("admin_login"))
 
         # Verify TOTP token
@@ -5873,7 +5873,7 @@ def admin_2fa():
             session.pop("pending_admin_id", None)
             return redirect(url_for("admin_dashboard"))
         else:
-            flash("Невалиден код за верификация.", "error")
+            flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ð║ð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ.", "error")
 
     return render_template("admin_2fa.html")
 
@@ -5888,7 +5888,7 @@ def admin_2fa_setup():
         admin_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
     if not admin_user:
-        flash("Не сте логнат като администратор.", "error")
+        flash("ðØðÁ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðé ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "error")
         return redirect(url_for("admin_login"))
 
     if request.method == "POST":
@@ -5896,10 +5896,10 @@ def admin_2fa_setup():
         if admin_user.verify_totp(token):
             admin_user.enable_2fa()
             db.session.commit()
-            flash("2FA е активиран успешно!", "success")
+            flash("2FA ðÁ ð░ð║Ðéð©ð▓ð©ÐÇð░ð¢ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
             return redirect(url_for("admin_dashboard"))
         else:
-            flash("Невалиден код.", "error")
+            flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ð║ð¥ð┤.", "error")
 
     uri = admin_user.get_totp_uri()
     return render_template("admin_2fa_setup.html", totp_uri=uri)
@@ -5982,7 +5982,7 @@ def admin_volunteers():
 
     except Exception as e:
         app.logger.error(f"Error in admin_volunteers: {e}", exc_info=app.debug)
-        flash("Възникна грешка при зареждането на доброволците", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©ÐéðÁ", "error")
         # Return empty results on error
         volunteers = []
         total_volunteers = 0
@@ -6040,17 +6040,17 @@ def add_volunteer():
         # Validate required fields
         errors = []
         if not name:
-            errors.append("Името е задължително")
+            errors.append("ðÿð╝ðÁÐéð¥ ðÁ ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð¥")
         if not email:
-            errors.append("Имейлът е задължителен")
+            errors.append("ðÿð╝ðÁð╣ð╗ÐèÐé ðÁ ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ðÁð¢")
         if not phone:
-            errors.append("Телефонът е задължителен")
+            errors.append("ðóðÁð╗ðÁÐäð¥ð¢ÐèÐé ðÁ ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ðÁð¢")
         if not location:
-            errors.append("Локацията е задължителна")
+            errors.append("ðøð¥ð║ð░Ðåð©ÐÅÐéð░ ðÁ ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð░")
 
         # Basic email validation
         if email and "@" not in email:
-            errors.append("Невалиден имейл адрес")
+            errors.append("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ð©ð╝ðÁð╣ð╗ ð░ð┤ÐÇðÁÐü")
 
         if errors:
             for error in errors:
@@ -6060,7 +6060,7 @@ def add_volunteer():
         # Check if email already exists
         existing_volunteer = Volunteer.query.filter_by(email=email).first()
         if existing_volunteer:
-            flash("Доброволец с този имейл вече съществува!", "error")
+            flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå Ðü Ðéð¥ðÀð© ð©ð╝ðÁð╣ð╗ ð▓ðÁÐçðÁ ÐüÐèÐëðÁÐüÐéð▓Ðâð▓ð░!", "error")
             return render_template("add_volunteer.html")
 
         try:
@@ -6072,12 +6072,12 @@ def add_volunteer():
             )
             db.session.add(volunteer)
             db.session.commit()
-            flash("Доброволецът е добавен успешно!", "success")
+            flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ðÁ ð┤ð¥ð▒ð░ð▓ðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
             return redirect(url_for("admin_volunteers"))
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error adding volunteer: {e}")
-            flash("Грешка при добавяне на доброволец. Опитайте отново.", "error")
+            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┤ð¥ð▒ð░ð▓ÐÅð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå. ð×ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
             return render_template("add_volunteer.html")
 
     return render_template("add_volunteer.html")
@@ -6099,17 +6099,17 @@ def submit_request():
         # Validate required fields
         errors = []
         if not name or len(name) < 2:
-            errors.append("Името трябва да бъде поне 2 символа")
+            errors.append("ðÿð╝ðÁÐéð¥ ÐéÐÇÐÅð▒ð▓ð░ ð┤ð░ ð▒Ðèð┤ðÁ ð┐ð¥ð¢ðÁ 2 Ðüð©ð╝ð▓ð¥ð╗ð░")
         if not email or "@" not in email:
-            errors.append("Въведете валиден имейл адрес")
+            errors.append("ðÆÐèð▓ðÁð┤ðÁÐéðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ð©ð╝ðÁð╣ð╗ ð░ð┤ÐÇðÁÐü")
         if not category:
-            errors.append("Изберете категория")
+            errors.append("ðÿðÀð▒ðÁÐÇðÁÐéðÁ ð║ð░ÐéðÁð│ð¥ÐÇð©ÐÅ")
         if not location:
-            errors.append("Въведете локация")
+            errors.append("ðÆÐèð▓ðÁð┤ðÁÐéðÁ ð╗ð¥ð║ð░Ðåð©ÐÅ")
         if not problem or len(problem) < 10:
-            errors.append("Опишете проблема си по-подробно (минимум 10 символа)")
+            errors.append("ð×ð┐ð©ÐêðÁÐéðÁ ð┐ÐÇð¥ð▒ð╗ðÁð╝ð░ Ðüð© ð┐ð¥-ð┐ð¥ð┤ÐÇð¥ð▒ð¢ð¥ (ð╝ð©ð¢ð©ð╝Ðâð╝ 10 Ðüð©ð╝ð▓ð¥ð╗ð░)")
         if captcha != "7G5K":
-            errors.append("Грешен код за защита")
+            errors.append("ðôÐÇðÁÐêðÁð¢ ð║ð¥ð┤ ðÀð░ ðÀð░Ðëð©Ðéð░")
 
         if errors:
             for error in errors:
@@ -6118,23 +6118,23 @@ def submit_request():
 
         # Additional security checks
         if len(name) > 100:
-            flash("Името е твърде дълго", "error")
+            flash("ðÿð╝ðÁÐéð¥ ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð┤Ðèð╗ð│ð¥", "error")
             return render_template("submit_request.html")
         if len(email) > 100:
-            flash("Имейлът е твърде дълг", "error")
+            flash("ðÿð╝ðÁð╣ð╗ÐèÐé ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð┤Ðèð╗ð│", "error")
             return render_template("submit_request.html")
         if len(location) > 100:
-            flash("Локацията е твърде дълга", "error")
+            flash("ðøð¥ð║ð░Ðåð©ÐÅÐéð░ ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð┤Ðèð╗ð│ð░", "error")
             return render_template("submit_request.html")
         if len(problem) > 2000:
-            flash("Описанието е твърде дълго (максимум 2000 символа)", "error")
+            flash("ð×ð┐ð©Ðüð░ð¢ð©ðÁÐéð¥ ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð┤Ðèð╗ð│ð¥ (ð╝ð░ð║Ðüð©ð╝Ðâð╝ 2000 Ðüð©ð╝ð▓ð¥ð╗ð░)", "error")
             return render_template("submit_request.html")
 
         # Check for suspicious content
         suspicious_patterns = ["<script", "javascript:", "onload=", "onclick="]
         combined_input = (name + email + location + problem).lower()
         if any(pattern in combined_input for pattern in suspicious_patterns):
-            flash("Открито е подозрително съдържание във формата", "error")
+            flash("ð×Ðéð║ÐÇð©Ðéð¥ ðÁ ð┐ð¥ð┤ð¥ðÀÐÇð©ÐéðÁð╗ð¢ð¥ ÐüÐèð┤ÐèÐÇðÂð░ð¢ð©ðÁ ð▓Ðèð▓ Ðäð¥ÐÇð╝ð░Ðéð░", "error")
             return render_template("submit_request.html")
 
         file = request.files.get("file")
@@ -6142,13 +6142,13 @@ def submit_request():
         filename = None
         if file and file.filename:
             if not allowed_file(file.filename):
-                flash("Позволени са само изображения и PDF файлове!", "error")
+                flash("ðƒð¥ðÀð▓ð¥ð╗ðÁð¢ð© Ðüð░ Ðüð░ð╝ð¥ ð©ðÀð¥ð▒ÐÇð░ðÂðÁð¢ð©ÐÅ ð© PDF Ðäð░ð╣ð╗ð¥ð▓ðÁ!", "error")
                 return render_template("submit_request.html")
 
             # Enhanced file validation
             allowed_mimes = {"image/png", "image/jpg", "image/jpeg", "application/pdf"}
             if file.mimetype not in allowed_mimes:
-                flash("Невалиден тип файл!", "error")
+                flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ Ðéð©ð┐ Ðäð░ð╣ð╗!", "error")
                 return render_template("submit_request.html")
 
             # Check file size (additional to MAX_CONTENT_LENGTH)
@@ -6156,7 +6156,7 @@ def submit_request():
             file_size = file.tell()
             file.seek(0)  # Reset to beginning
             if file_size > 5 * 1024 * 1024:  # 5MB
-                flash("Файлът е твърде голям (макс. 5MB)!", "error")
+                flash("ðñð░ð╣ð╗ÐèÐé ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð│ð¥ð╗ÐÅð╝ (ð╝ð░ð║Ðü. 5MB)!", "error")
                 return render_template("submit_request.html")
 
             # Basic antivirus check (placeholder - integrate with real AV service)
@@ -6172,7 +6172,7 @@ def submit_request():
             file_content_start = file.read(1024)
             file.seek(0)  # Reset
             if any(sig in file_content_start.lower() for sig in dangerous_signatures):
-                flash("Файлът съдържа подозрително съдържание!", "error")
+                flash("ðñð░ð╣ð╗ÐèÐé ÐüÐèð┤ÐèÐÇðÂð░ ð┐ð¥ð┤ð¥ðÀÐÇð©ÐéðÁð╗ð¢ð¥ ÐüÐèð┤ÐèÐÇðÂð░ð¢ð©ðÁ!", "error")
                 return render_template("submit_request.html")
 
             filename = secure_filename(file.filename)
@@ -6195,7 +6195,7 @@ def submit_request():
             # Ensure `title` is provided (DB schema requires it). Use the
             # provided category as a short title when available, otherwise
             # derive a concise title from the problem description.
-            title_val = category if category else (problem[:100] if problem else "Заявка за помощ")
+            title_val = category if category else (problem[:100] if problem else "ðùð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë")
             help_request = HelpRequest(
                 title=title_val,
                 name=name,
@@ -6222,7 +6222,7 @@ def submit_request():
         except Exception as e:
             db.session.rollback()
             app.logger.error("Error saving help request to database: %s", str(e))
-            flash("Грешка при запазване на заявката. Моля, опитайте отново.", "error")
+            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
             return render_template("submit_request.html")
 
         return render_template("submit_success.html")
@@ -6249,27 +6249,27 @@ def volunteer_register():
         phone = request.form.get("phone")
         location = request.form.get("location")
 
-        # Валидация на задължителни полета
+        # ðÆð░ð╗ð©ð┤ð░Ðåð©ÐÅ ð¢ð░ ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð¥ð╗ðÁÐéð░
         if not name or not name.strip():
-            flash("Моля, въведете име.", "error")
+            flash("ð£ð¥ð╗ÐÅ, ð▓Ðèð▓ðÁð┤ðÁÐéðÁ ð©ð╝ðÁ.", "error")
             return redirect(url_for("volunteer_register"))
 
         if not email or not email.strip():
-            flash("Моля, въведете имейл.", "error")
+            flash("ð£ð¥ð╗ÐÅ, ð▓Ðèð▓ðÁð┤ðÁÐéðÁ ð©ð╝ðÁð╣ð╗.", "error")
             return redirect(url_for("volunteer_register"))
 
-        # Основна валидация на имейл формат
+        # ð×Ðüð¢ð¥ð▓ð¢ð░ ð▓ð░ð╗ð©ð┤ð░Ðåð©ÐÅ ð¢ð░ ð©ð╝ðÁð╣ð╗ Ðäð¥ÐÇð╝ð░Ðé
         import re
 
         email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, email):
-            flash("Моля, въведете валиден имейл адрес.", "error")
+            flash("ð£ð¥ð╗ÐÅ, ð▓Ðèð▓ðÁð┤ðÁÐéðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ð©ð╝ðÁð╣ð╗ ð░ð┤ÐÇðÁÐü.", "error")
             return redirect(url_for("volunteer_register"))
 
-        # Провери дали имейлът вече съществува
+        # ðƒÐÇð¥ð▓ðÁÐÇð© ð┤ð░ð╗ð© ð©ð╝ðÁð╣ð╗ÐèÐé ð▓ðÁÐçðÁ ÐüÐèÐëðÁÐüÐéð▓Ðâð▓ð░
         existing_volunteer = Volunteer.query.filter_by(email=email).first()
         if existing_volunteer:
-            flash("Този имейл вече е регистриран като доброволец.", "error")
+            flash("ðóð¥ðÀð© ð©ð╝ðÁð╣ð╗ ð▓ðÁÐçðÁ ðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "error")
             return redirect(url_for("volunteer_register"))
 
         try:
@@ -6289,7 +6289,7 @@ def volunteer_register():
             logger.error("Database error adding volunteer: %s", str(e))
             return f"Database error: {e}", 500
 
-        # Изпрати имейл нотификация за нов доброволец
+        # ðÿðÀð┐ÐÇð░Ðéð© ð©ð╝ðÁð╣ð╗ ð¢ð¥Ðéð©Ðäð©ð║ð░Ðåð©ÐÅ ðÀð░ ð¢ð¥ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå
         try:
             logger.debug(
                 "Mail config - SERVER: %s, PORT: %s, USERNAME: %s, PASSWORD: %s",
@@ -6304,16 +6304,16 @@ def volunteer_register():
             # `_dispatch_email` implementation.
             # Construct a Message object and send as a single positional arg
             msg = Message(
-                subject="Нов доброволец в HelpChain",
+                subject="ðØð¥ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ð▓ HelpChain",
                 recipients=["contact@helpchain.live"],
-                body=f"""Нов доброволец се е регистрирал:
+                body=f"""ðØð¥ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ÐüðÁ ðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð╗:
 
-Име: {name}
-Имейл: {email}
-Телефон: {phone}
-Локация: {location}
+ðÿð╝ðÁ: {name}
+ðÿð╝ðÁð╣ð╗: {email}
+ðóðÁð╗ðÁÐäð¥ð¢: {phone}
+ðøð¥ð║ð░Ðåð©ÐÅ: {location}
 
-Моля, свържете се с доброволеца за допълнителна информация.
+ð£ð¥ð╗ÐÅ, Ðüð▓ÐèÐÇðÂðÁÐéðÁ ÐüðÁ Ðü ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåð░ ðÀð░ ð┤ð¥ð┐Ðèð╗ð¢ð©ÐéðÁð╗ð¢ð░ ð©ð¢Ðäð¥ÐÇð╝ð░Ðåð©ÐÅ.
 """,
                 sender=app.config.get("MAIL_DEFAULT_SENDER"),
             )
@@ -6321,15 +6321,15 @@ def volunteer_register():
             logger.info("Volunteer registration email sent successfully")
         except Exception as e:
             logger.error("Failed to send volunteer registration email: %s", str(e))
-            # Fallback: записваме в файл
+            # Fallback: ðÀð░ð┐ð©Ðüð▓ð░ð╝ðÁ ð▓ Ðäð░ð╣ð╗
             try:
                 with open("sent_emails.txt", "a", encoding="utf-8") as f:
                     f.write(
-                        "Subject: Нов доброволец в HelpChain\n"
+                        "Subject: ðØð¥ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ð▓ HelpChain\n"
                         f"To: contact@helpchain.live\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
-                        "Нов доброволец се е регистрирал:\n\n"
-                        f"Име: {name}\nИмейл: {email}\nТелефон: {phone}\nЛокация: {location}\n\n"
-                        "Моля, свържете се с доброволеца за допълнителна информация.\n\n"
+                        "ðØð¥ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ÐüðÁ ðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð╗:\n\n"
+                        f"ðÿð╝ðÁ: {name}\nðÿð╝ðÁð╣ð╗: {email}\nðóðÁð╗ðÁÐäð¥ð¢: {phone}\nðøð¥ð║ð░Ðåð©ÐÅ: {location}\n\n"
+                        "ð£ð¥ð╗ÐÅ, Ðüð▓ÐèÐÇðÂðÁÐéðÁ ÐüðÁ Ðü ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåð░ ðÀð░ ð┤ð¥ð┐Ðèð╗ð¢ð©ÐéðÁð╗ð¢ð░ ð©ð¢Ðäð¥ÐÇð╝ð░Ðåð©ÐÅ.\n\n"
                         f"{'=' * 50}\n"
                     )
                 logger.info("Volunteer registration email saved to file as fallback")
@@ -6346,7 +6346,7 @@ def volunteer_register():
             },
         )
 
-        flash("Успешна регистрация! Ще се свържем с вас при нужда.")
+        flash("ðúÐüð┐ðÁÐêð¢ð░ ÐÇðÁð│ð©ÐüÐéÐÇð░Ðåð©ÐÅ! ð®ðÁ ÐüðÁ Ðüð▓ÐèÐÇðÂðÁð╝ Ðü ð▓ð░Ðü ð┐ÐÇð© ð¢ÐâðÂð┤ð░.")
         return redirect(url_for("volunteer_register"))
     return render_template("volunteer_register.html")
 
@@ -6355,12 +6355,12 @@ def volunteer_register():
 def volunteer_login():
     # Check if already logged in as volunteer
     if session.get("volunteer_logged_in"):
-        flash("Вече сте логнати като доброволец.", "info")
+        flash("ðÆðÁÐçðÁ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðéð© ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "info")
         return redirect(url_for("volunteer_dashboard"))
 
     # Allow admins to also login as volunteers - remove the admin check that was causing confusion
     # if session.get("admin_logged_in"):
-    #     flash("Администраторите нямат достъп до доброволческия панел.", "warning")
+    #     flash("ðÉð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇð©ÐéðÁ ð¢ÐÅð╝ð░Ðé ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ÐçðÁÐüð║ð©ÐÅ ð┐ð░ð¢ðÁð╗.", "warning")
     #     return redirect(url_for("admin_dashboard"))
 
     error = None
@@ -6385,7 +6385,7 @@ def volunteer_login():
                     app.logger.info("Volunteer OTP disabled; granting access without code")
                     _activate_volunteer_session(volunteer)
                     session.pop("pending_volunteer_login", None)
-                    flash("Успешен вход като доброволец.", "success")
+                    flash("ðúÐüð┐ðÁÐêðÁð¢ ð▓Ðàð¥ð┤ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "success")
                     return redirect(url_for("volunteer_dashboard"))
 
                 # Generate 6-digit access code
@@ -6402,22 +6402,22 @@ def volunteer_login():
 
                 # Send email with access code
                 try:
-                    email_body = f"""Здравейте {volunteer.name},
+                    email_body = f"""ðùð┤ÐÇð░ð▓ðÁð╣ÐéðÁ {volunteer.name},
 
-Получен е опит за вход в доброволческия панел на HelpChain.
+ðƒð¥ð╗ÐâÐçðÁð¢ ðÁ ð¥ð┐ð©Ðé ðÀð░ ð▓Ðàð¥ð┤ ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ÐçðÁÐüð║ð©ÐÅ ð┐ð░ð¢ðÁð╗ ð¢ð░ HelpChain.
 
-Код за достъп: {access_code}
+ðÜð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐: {access_code}
 
-Кодът е валиден за 15 минути.
+ðÜð¥ð┤ÐèÐé ðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ðÀð░ 15 ð╝ð©ð¢ÐâÐéð©.
 
-Ако това не сте вие, моля игнорирайте това съобщение.
+ðÉð║ð¥ Ðéð¥ð▓ð░ ð¢ðÁ ÐüÐéðÁ ð▓ð©ðÁ, ð╝ð¥ð╗ÐÅ ð©ð│ð¢ð¥ÐÇð©ÐÇð░ð╣ÐéðÁ Ðéð¥ð▓ð░ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ.
 
-С уважение,
-HelpChain системата
+ðí Ðâð▓ð░ðÂðÁð¢ð©ðÁ,
+HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░
 """
 
                     # Send as a Message positional arg so tests can inspect call_args[0][0]
-                    msg = Message(subject="HelpChain - Код за достъп", recipients=[email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
+                    msg = Message(subject="HelpChain - ðÜð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐", recipients=[email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
                     mail.send(msg)
                     logger.warning("Access code sent to %s", email)
                     app.logger.info(f"Access code sent to {email}")
@@ -6427,14 +6427,14 @@ HelpChain системата
                     try:
                         with open("sent_emails.txt", "a", encoding="utf-8") as f:
                             fallback_content = (
-                                "Subject: HelpChain - Код за достъп\n"
+                                "Subject: HelpChain - ðÜð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐\n"
                                 f"To: {email}\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
-                                f"Здравейте {volunteer.name},\n\n"
-                                "Получен е опит за вход в доброволческия панел на HelpChain.\n\n"
-                                f"Вашият код за достъп: {access_code}\n\n"
-                                "Кодът е валиден за 15 минути.\n\n"
-                                "Ако това не сте вие, моля игнорирайте това съобщение.\n\n"
-                                "С уважение,\nHelpChain системата\n\n"
+                                f"ðùð┤ÐÇð░ð▓ðÁð╣ÐéðÁ {volunteer.name},\n\n"
+                                "ðƒð¥ð╗ÐâÐçðÁð¢ ðÁ ð¥ð┐ð©Ðé ðÀð░ ð▓Ðàð¥ð┤ ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ÐçðÁÐüð║ð©ÐÅ ð┐ð░ð¢ðÁð╗ ð¢ð░ HelpChain.\n\n"
+                                f"ðÆð░Ðêð©ÐÅÐé ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐: {access_code}\n\n"
+                                "ðÜð¥ð┤ÐèÐé ðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ðÀð░ 15 ð╝ð©ð¢ÐâÐéð©.\n\n"
+                                "ðÉð║ð¥ Ðéð¥ð▓ð░ ð¢ðÁ ÐüÐéðÁ ð▓ð©ðÁ, ð╝ð¥ð╗ÐÅ ð©ð│ð¢ð¥ÐÇð©ÐÇð░ð╣ÐéðÁ Ðéð¥ð▓ð░ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ.\n\n"
+                                "ðí Ðâð▓ð░ðÂðÁð¢ð©ðÁ,\nHelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░\n\n"
                                 f"{'=' * 50}\n"
                             )
                             f.write(fallback_content)
@@ -6445,7 +6445,7 @@ HelpChain системата
                             jsonify(
                                 {
                                     "success": False,
-                                    "message": "Грешка при изпращане на имейл.",
+                                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ð©ð╝ðÁð╣ð╗.",
                                 }
                             ),
                             500,
@@ -6455,7 +6455,7 @@ HelpChain системата
                 app.logger.info("Redirecting to volunteer_verify_code")
                 return redirect(url_for("volunteer_verify_code"))
             else:
-                error = "Няма регистриран доброволец с този имейл!"
+                error = "ðØÐÅð╝ð░ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå Ðü Ðéð¥ðÀð© ð©ð╝ðÁð╣ð╗!"
                 app.logger.warning(f"No volunteer found with email: {email}")
         except Exception as e:
             error = f"Database error: {e}"
@@ -6493,7 +6493,7 @@ def volunteer_verify_code():
     # Check if there's a pending login
     pending = session.get("pending_volunteer_login")
     if not pending:
-        flash("Няма чакащ процес на вход. Моля, започнете отново.", "error")
+        flash("ðØÐÅð╝ð░ Ðçð░ð║ð░Ðë ð┐ÐÇð¥ÐåðÁÐü ð¢ð░ ð▓Ðàð¥ð┤. ð£ð¥ð╗ÐÅ, ðÀð░ð┐ð¥Ðçð¢ðÁÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
         return redirect(url_for("volunteer_login"))
 
     pending_email = (pending.get("email") or "").lower()
@@ -6512,7 +6512,7 @@ def volunteer_verify_code():
             # Clear pending state and instruct user to use admin login
             session.pop("pending_volunteer_login", None)
             flash(
-                "Този имейл е регистриран като администратор. Моля, влезте през админ панела.",
+                "ðóð¥ðÀð© ð©ð╝ðÁð╣ð╗ ðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð┐ÐÇðÁðÀ ð░ð┤ð╝ð©ð¢ ð┐ð░ð¢ðÁð╗ð░.",
                 "error",
             )
             return redirect(url_for("volunteer_login"))
@@ -6523,7 +6523,7 @@ def volunteer_verify_code():
     # Check if code has expired
     if datetime.now().timestamp() > pending.get("expires", 0):
         session.pop("pending_volunteer_login", None)
-        flash("Кодът за достъп е изтекъл. Моля, опитайте отново.", "error")
+        flash("ðÜð¥ð┤ÐèÐé ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ðÁ ð©ðÀÐéðÁð║Ðèð╗. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
         return redirect(url_for("volunteer_login"))
 
     if DISABLE_VOLUNTEER_OTP or pending_email in VOLUNTEER_OTP_BYPASS_EMAILS:
@@ -6531,9 +6531,9 @@ def volunteer_verify_code():
         if volunteer:
             _activate_volunteer_session(volunteer)
             session.pop("pending_volunteer_login", None)
-            flash("Успешен вход като доброволец.", "success")
+            flash("ðúÐüð┐ðÁÐêðÁð¢ ð▓Ðàð¥ð┤ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "success")
             return redirect(url_for("volunteer_dashboard"))
-        flash("Доброволецът не е намерен.", "error")
+        flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢.", "error")
         session.pop("pending_volunteer_login", None)
         return redirect(url_for("volunteer_login"))
 
@@ -6553,7 +6553,7 @@ def volunteer_verify_code():
                 session.pop("pending_volunteer_login", None)
                 app.logger.info(f"Volunteer {volunteer.name} logged in with test code")
                 return redirect(url_for("volunteer_dashboard"))
-            error = "Доброволецът не е намерен."
+            error = "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢."
             session.pop("pending_volunteer_login", None)
         elif entered_code == pending.get("access_code"):
             # Code is correct, complete login
@@ -6564,10 +6564,10 @@ def volunteer_verify_code():
                 app.logger.info(f"Volunteer {volunteer.name} logged in successfully")
                 return redirect(url_for("volunteer_dashboard"))
             else:
-                error = "Доброволецът не е намерен."
+                error = "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢."
                 session.pop("pending_volunteer_login", None)
         else:
-            error = "Невалиден код за достъп."
+            error = "ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐."
 
     return render_template("volunteer_verify_code.html", error=error)
 
@@ -6578,7 +6578,7 @@ def volunteer_logout():
     session.pop("volunteer_logged_in", None)
     session.pop("volunteer_id", None)
     session.pop("volunteer_name", None)
-    flash("Излязохте успешно от системата.", "info")
+    flash("ðÿðÀð╗ÐÅðÀð¥ÐàÐéðÁ ÐâÐüð┐ðÁÐêð¢ð¥ ð¥Ðé Ðüð©ÐüÐéðÁð╝ð░Ðéð░.", "info")
     return redirect(url_for("index"))
 
 
@@ -6594,7 +6594,7 @@ def resend_volunteer_code():
                 jsonify(
                     {
                         "success": False,
-                        "message": "Няма чакащ процес на вход. Моля, започнете отново.",
+                        "message": "ðØÐÅð╝ð░ Ðçð░ð║ð░Ðë ð┐ÐÇð¥ÐåðÁÐü ð¢ð░ ð▓Ðàð¥ð┤. ð£ð¥ð╗ÐÅ, ðÀð░ð┐ð¥Ðçð¢ðÁÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
                     }
                 ),
                 400,
@@ -6607,7 +6607,7 @@ def resend_volunteer_code():
                 jsonify(
                     {
                         "success": True,
-                        "message": "В тази среда не се изисква код за достъп.",
+                        "message": "ðÆ Ðéð░ðÀð© ÐüÐÇðÁð┤ð░ ð¢ðÁ ÐüðÁ ð©ðÀð©Ðüð║ð▓ð░ ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐.",
                     }
                 ),
                 200,
@@ -6620,7 +6620,7 @@ def resend_volunteer_code():
                 jsonify(
                     {
                         "success": False,
-                        "message": "Кодът за достъп е изтекъл. Моля, опитайте отново.",
+                        "message": "ðÜð¥ð┤ÐèÐé ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ðÁ ð©ðÀÐéðÁð║Ðèð╗. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
                     }
                 ),
                 400,
@@ -6630,7 +6630,7 @@ def resend_volunteer_code():
         volunteer = _load_volunteer_by_id(pending["volunteer_id"])
         if not volunteer:
             return (
-                jsonify({"success": False, "message": "Доброволецът не е намерен"}),
+                jsonify({"success": False, "message": "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢"}),
                 404,
             )
 
@@ -6643,45 +6643,45 @@ def resend_volunteer_code():
 
         # Send email with new access code
         try:
-            email_body = f"""Здравейте {volunteer.name},
+            email_body = f"""ðùð┤ÐÇð░ð▓ðÁð╣ÐéðÁ {volunteer.name},
 
-Получен е нов опит за вход в доброволческия панел на HelpChain.
+ðƒð¥ð╗ÐâÐçðÁð¢ ðÁ ð¢ð¥ð▓ ð¥ð┐ð©Ðé ðÀð░ ð▓Ðàð¥ð┤ ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ÐçðÁÐüð║ð©ÐÅ ð┐ð░ð¢ðÁð╗ ð¢ð░ HelpChain.
 
-Вашият нов код за достъп: {access_code}
+ðÆð░Ðêð©ÐÅÐé ð¢ð¥ð▓ ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐: {access_code}
 
-Кодът е валиден за 15 минути.
+ðÜð¥ð┤ÐèÐé ðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ðÀð░ 15 ð╝ð©ð¢ÐâÐéð©.
 
-Ако това не сте вие, моля игнорирайте това съобщение.
+ðÉð║ð¥ Ðéð¥ð▓ð░ ð¢ðÁ ÐüÐéðÁ ð▓ð©ðÁ, ð╝ð¥ð╗ÐÅ ð©ð│ð¢ð¥ÐÇð©ÐÇð░ð╣ÐéðÁ Ðéð¥ð▓ð░ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ.
 
-С уважение,
-HelpChain системата
+ðí Ðâð▓ð░ðÂðÁð¢ð©ðÁ,
+HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░
 """
 
-            msg = Message(subject="HelpChain - Нов код за достъп", recipients=[volunteer.email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
+            msg = Message(subject="HelpChain - ðØð¥ð▓ ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐", recipients=[volunteer.email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
             mail.send(msg)
 
-            return jsonify({"success": True, "message": "Нов код е изпратен на вашия имейл."})
+            return jsonify({"success": True, "message": "ðØð¥ð▓ ð║ð¥ð┤ ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ ð¢ð░ ð▓ð░Ðêð©ÐÅ ð©ð╝ðÁð╣ð╗."})
 
         except Exception as e:
             app.logger.error(f"Error resending volunteer code: {e}")
             try:
                 with open("sent_emails.txt", "a", encoding="utf-8") as f:
                     f.write(
-                        "Subject: HelpChain - Нов код за достъп\n"
+                        "Subject: HelpChain - ðØð¥ð▓ ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐\n"
                         f"To: {volunteer.email}\nFrom: {app.config['MAIL_DEFAULT_SENDER']}\n\n"
-                        f"Здравейте {volunteer.name},\n\n"
-                        "Получен е нов опит за вход в доброволческия панел на HelpChain.\n\n"
-                        f"Вашият нов код за достъп: {access_code}\n\n"
-                        "Кодът е валиден за 15 минути.\n\n"
-                        "Ако това не сте вие, моля игнорирайте това съобщение.\n\n"
-                        "С уважение,\nHelpChain системата\n\n"
+                        f"ðùð┤ÐÇð░ð▓ðÁð╣ÐéðÁ {volunteer.name},\n\n"
+                        "ðƒð¥ð╗ÐâÐçðÁð¢ ðÁ ð¢ð¥ð▓ ð¥ð┐ð©Ðé ðÀð░ ð▓Ðàð¥ð┤ ð▓ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ÐçðÁÐüð║ð©ÐÅ ð┐ð░ð¢ðÁð╗ ð¢ð░ HelpChain.\n\n"
+                        f"ðÆð░Ðêð©ÐÅÐé ð¢ð¥ð▓ ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐: {access_code}\n\n"
+                        "ðÜð¥ð┤ÐèÐé ðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ðÀð░ 15 ð╝ð©ð¢ÐâÐéð©.\n\n"
+                        "ðÉð║ð¥ Ðéð¥ð▓ð░ ð¢ðÁ ÐüÐéðÁ ð▓ð©ðÁ, ð╝ð¥ð╗ÐÅ ð©ð│ð¢ð¥ÐÇð©ÐÇð░ð╣ÐéðÁ Ðéð¥ð▓ð░ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ.\n\n"
+                        "ðí Ðâð▓ð░ðÂðÁð¢ð©ðÁ,\nHelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░\n\n"
                         f"{'=' * 50}\n"
                     )
                 app.logger.info("New access code saved to file as fallback after failure")
                 return jsonify(
                     {
                         "success": True,
-                        "message": "Кодът е записан локално (sent_emails.txt).",
+                        "message": "ðÜð¥ð┤ÐèÐé ðÁ ðÀð░ð┐ð©Ðüð░ð¢ ð╗ð¥ð║ð░ð╗ð¢ð¥ (sent_emails.txt).",
                     }
                 )
             except Exception as file_e:
@@ -6690,7 +6690,7 @@ HelpChain системата
                     jsonify(
                         {
                             "success": False,
-                            "message": "Възникна грешка при изпращане на кода.",
+                            "message": "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ð║ð¥ð┤ð░.",
                         }
                     ),
                     500,
@@ -6702,7 +6702,7 @@ HelpChain системата
             jsonify(
                 {
                     "success": False,
-                    "message": "Възникна системна грешка. Моля, опитайте отново.",
+                    "message": "ðÆÐèðÀð¢ð©ð║ð¢ð░ Ðüð©ÐüÐéðÁð╝ð¢ð░ ð│ÐÇðÁÐêð║ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
                 }
             ),
             500,
@@ -6718,14 +6718,14 @@ def volunteer_dashboard():
         # Check authentication with detailed logging
         if not session.get("volunteer_logged_in"):
             app.logger.warning("Unauthorized access attempt to volunteer dashboard")
-            flash("Моля, влезте като доброволец.", "warning")
+            flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "warning")
             return redirect(url_for("volunteer_login"))
 
         volunteer_id = session.get("volunteer_id")
         if not volunteer_id:
             app.logger.warning("Missing volunteer_id in session")
             session.clear()
-            flash("Сесията е изтекла. Моля, влезте отново.", "error")
+            flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
             return redirect(url_for("volunteer_login"))
 
         volunteer = _load_volunteer_by_id(volunteer_id)
@@ -6733,7 +6733,7 @@ def volunteer_dashboard():
         if not volunteer:
             app.logger.warning(f"Volunteer with ID {volunteer_id} not found")
             session.clear()
-            flash("Доброволецът не е намерен", "error")
+            flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢", "error")
             return redirect(url_for("volunteer_login"))
 
         app.logger.info(f"Volunteer found: {volunteer.name} (id: {volunteer.id})")
@@ -6767,14 +6767,14 @@ def volunteer_dashboard():
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Critical error in volunteer dashboard: {e}", exc_info=app.debug)
-        flash("Възникна грешка при зареждането на панела. Моля, опитайте отново.", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ð░ð¢ðÁð╗ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
         return redirect(url_for("index"))
 
 
 def _require_volunteer_session():
     """Ensure the current request has an authenticated volunteer session."""
     if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
+        flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "warning")
         return None, redirect(url_for("volunteer_login"))
 
     volunteer_id = session.get("volunteer_id")
@@ -6782,7 +6782,7 @@ def _require_volunteer_session():
         volunteer_id = int(volunteer_id)
     except (TypeError, ValueError):
         session.clear()
-        flash("Сесията е изтекла. Моля, влезте отново.", "error")
+        flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
         return None, redirect(url_for("volunteer_login"))
 
     return volunteer_id, None
@@ -6846,7 +6846,7 @@ def _resolve_volunteer_for_display(volunteer_id):
     if volunteer:
         return volunteer
 
-    placeholder_name = session.get("volunteer_name") or f"Доброволец #{volunteer_id}"
+    placeholder_name = session.get("volunteer_name") or f"ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå #{volunteer_id}"
     return SimpleNamespace(
         id=volunteer_id,
         name=placeholder_name,
@@ -6866,7 +6866,7 @@ def _resolve_volunteer_for_display(volunteer_id):
 def _get_available_tasks(limit=10):
     """Return a lightweight list of currently available volunteer tasks."""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         query = (
             db.session.query(
@@ -6952,13 +6952,13 @@ def volunteer_profile():
         if updated:
             try:
                 db.session.commit()
-                flash("Профилът е обновен успешно.", "success")
+                flash("ðƒÐÇð¥Ðäð©ð╗ÐèÐé ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥.", "success")
             except Exception as exc:
                 db.session.rollback()
                 app.logger.error("Failed to update volunteer profile: %s", exc)
-                flash("Възникна грешка при обновяването на профила.", "error")
+                flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ÐÇð¥Ðäð©ð╗ð░.", "error")
         else:
-            flash("Няма подадени промени за запазване.", "info")
+            flash("ðØÐÅð╝ð░ ð┐ð¥ð┤ð░ð┤ðÁð¢ð© ð┐ÐÇð¥ð╝ðÁð¢ð© ðÀð░ ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ.", "info")
 
         return redirect(url_for("volunteer_profile"))
 
@@ -7024,7 +7024,7 @@ def volunteer_settings():
 
         session["volunteer_settings"] = updated_settings
         session.modified = True
-        flash("Настройките са обновени успешно.", "success")
+        flash("ðØð░ÐüÐéÐÇð¥ð╣ð║ð©ÐéðÁ Ðüð░ ð¥ð▒ð¢ð¥ð▓ðÁð¢ð© ÐâÐüð┐ðÁÐêð¢ð¥.", "success")
         return redirect(url_for("volunteer_settings"))
 
     return render_template(
@@ -7055,7 +7055,7 @@ def update_volunteer_settings():
 def _get_volunteer_stats_safe(volunteer_id):
     """Safely get volunteer statistics with fallback values"""
     try:
-        from models_with_analytics import Task, TaskPerformance
+        from backend.models_with_analytics import Task, TaskPerformance
 
         task_stats = (
             db.session.query(
@@ -7112,7 +7112,7 @@ def _get_volunteer_stats_safe(volunteer_id):
 def _get_active_tasks_safe(volunteer_id):
     """Safely get active tasks for volunteer"""
     try:
-        from models_with_analytics import Task
+        from backend.models_with_analytics import Task
 
         active_tasks_query = (
             db.session.query(
@@ -7144,33 +7144,33 @@ def _get_active_tasks_safe(volunteer_id):
         ) in active_tasks_query:
             progress = 10 if status == "assigned" else 50
 
-            time_remaining = "Няма краен срок"
+            time_remaining = "ðØÐÅð╝ð░ ð║ÐÇð░ðÁð¢ ÐüÐÇð¥ð║"
             if deadline:
                 try:
                     now = _utcnow()
                     if deadline > now:
                         days_remaining = (deadline - now).days
                         if days_remaining == 0:
-                            time_remaining = "Днес"
+                            time_remaining = "ðöð¢ðÁÐü"
                         elif days_remaining == 1:
-                            time_remaining = "1 ден"
+                            time_remaining = "1 ð┤ðÁð¢"
                         elif days_remaining < 7:
-                            time_remaining = f"{days_remaining} дни"
+                            time_remaining = f"{days_remaining} ð┤ð¢ð©"
                         else:
-                            time_remaining = f"{days_remaining // 7} седмици"
+                            time_remaining = f"{days_remaining // 7} ÐüðÁð┤ð╝ð©Ðåð©"
                     else:
-                        time_remaining = "Просрочена"
+                        time_remaining = "ðƒÐÇð¥ÐüÐÇð¥ÐçðÁð¢ð░"
                 except Exception:
-                    time_remaining = "Невалидна дата"
+                    time_remaining = "ðØðÁð▓ð░ð╗ð©ð┤ð¢ð░ ð┤ð░Ðéð░"
 
             active_tasks.append(
                 {
                     "id": task_id,
                     "title": title,
-                    "location": location_text or "Не е посочена локация",
-                    "date": (created_at.strftime("%Y-%m-%d") if created_at else "Няма дата"),
+                    "location": location_text or "ðØðÁ ðÁ ð┐ð¥Ðüð¥ÐçðÁð¢ð░ ð╗ð¥ð║ð░Ðåð©ÐÅ",
+                    "date": (created_at.strftime("%Y-%m-%d") if created_at else "ðØÐÅð╝ð░ ð┤ð░Ðéð░"),
                     "time_remaining": time_remaining,
-                    "description": description or "Няма описание",
+                    "description": description or "ðØÐÅð╝ð░ ð¥ð┐ð©Ðüð░ð¢ð©ðÁ",
                     "priority": priority or "medium",
                     "progress": progress,
                 }
@@ -7447,7 +7447,7 @@ def chatbot_message():
             return (
                 jsonify(
                     {
-                        "response": "AI услугата не е налична в момента. Моля, опитайте по-късно.",
+                        "response": "AI ÐâÐüð╗Ðâð│ð░Ðéð░ ð¢ðÁ ðÁ ð¢ð░ð╗ð©Ðçð¢ð░ ð▓ ð╝ð¥ð╝ðÁð¢Ðéð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð┐ð¥-ð║ÐèÐüð¢ð¥.",
                         "error": True,
                     }
                 ),
@@ -7497,7 +7497,7 @@ def chatbot_message():
         return (
             jsonify(
                 {
-                    "response": "Извинявам се, възникна грешка. Моля, опитайте пак или се свържете с екипа ни.",
+                    "response": "ðÿðÀð▓ð©ð¢ÐÅð▓ð░ð╝ ÐüðÁ, ð▓ÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð┐ð░ð║ ð©ð╗ð© ÐüðÁ Ðüð▓ÐèÐÇðÂðÁÐéðÁ Ðü ðÁð║ð©ð┐ð░ ð¢ð©.",
                     "error": True,
                 }
             ),
@@ -7611,11 +7611,11 @@ def edit_volunteer(id):
         volunteer.name = request.form.get("name", volunteer.name)
         volunteer.email = request.form.get("email", volunteer.email)
         volunteer.phone = request.form.get("phone", volunteer.phone)
-        # Защита от липсващо поле location
+        # ðùð░Ðëð©Ðéð░ ð¥Ðé ð╗ð©ð┐Ðüð▓ð░Ðëð¥ ð┐ð¥ð╗ðÁ location
         if "location" in request.form:
             volunteer.location = request.form["location"]
         db.session.commit()
-        flash("Промените са запазени!", "success")
+        flash("ðƒÐÇð¥ð╝ðÁð¢ð©ÐéðÁ Ðüð░ ðÀð░ð┐ð░ðÀðÁð¢ð©!", "success")
         return redirect(url_for("admin_volunteers"))
     return render_template("edit_volunteer.html", volunteer=volunteer)
 
@@ -7637,7 +7637,7 @@ def admin_delete_volunteer(volunteer_id):
                 jsonify(
                     {
                         "success": False,
-                        "message": f"Не може да изтриете доброволец с {active_tasks} активни задачи",
+                        "message": f"ðØðÁ ð╝ð¥ðÂðÁ ð┤ð░ ð©ðÀÐéÐÇð©ðÁÐéðÁ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå Ðü {active_tasks} ð░ð║Ðéð©ð▓ð¢ð© ðÀð░ð┤ð░Ðçð©",
                     }
                 ),
                 400,
@@ -7659,13 +7659,13 @@ def admin_delete_volunteer(volunteer_id):
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-        return jsonify({"success": True, "message": "Доброволецът е изтрит успешно"})
+        return jsonify({"success": True, "message": "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ðÁ ð©ðÀÐéÐÇð©Ðé ÐâÐüð┐ðÁÐêð¢ð¥"})
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error deleting volunteer {volunteer_id}: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при изтриване на доброволеца"}),
+            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀÐéÐÇð©ð▓ð░ð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåð░"}),
             500,
         )
 
@@ -7727,7 +7727,7 @@ def admin_tasks():
 
     except Exception as e:
         app.logger.error(f"Error loading admin tasks: {e}")
-        flash("Възникна грешка при зареждането на задачите", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ðÀð░ð┤ð░Ðçð©ÐéðÁ", "error")
         return redirect(url_for("admin_dashboard"))
 
 
@@ -7749,7 +7749,7 @@ def create_task():
 
             # Validation
             if not title or not description or not category:
-                flash("Моля, попълнете всички задължителни полета", "error")
+                flash("ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð¥ð╗ðÁÐéð░", "error")
                 return redirect(url_for("create_task"))
 
             # Parse deadline
@@ -7760,7 +7760,7 @@ def create_task():
 
                     deadline = datetime.strptime(deadline_str, "%Y-%m-%dT%H:%M")
                 except ValueError:
-                    flash("Невалиден формат на краен срок", "error")
+                    flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ Ðäð¥ÐÇð╝ð░Ðé ð¢ð░ ð║ÐÇð░ðÁð¢ ÐüÐÇð¥ð║", "error")
                     return redirect(url_for("create_task"))
 
             # Parse estimated hours
@@ -7771,7 +7771,7 @@ def create_task():
                     if estimated_hours_int <= 0:
                         raise ValueError
                 except ValueError:
-                    flash("Невалиден брой часове", "error")
+                    flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ð▒ÐÇð¥ð╣ Ðçð░Ðüð¥ð▓ðÁ", "error")
                     return redirect(url_for("create_task"))
 
             # Create task
@@ -7790,13 +7790,13 @@ def create_task():
             db.session.add(task)
             db.session.commit()
 
-            flash("Задачата е създадена успешно!", "success")
+            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ÐüÐèðÀð┤ð░ð┤ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
             return redirect(url_for("admin_tasks"))
 
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error creating task: {e}")
-            flash("Грешка при създаване на задачата", "error")
+            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ÐüÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
             return redirect(url_for("create_task"))
 
     # Get current admin user
@@ -7830,7 +7830,7 @@ def edit_task(task_id):
                     if task.estimated_hours <= 0:
                         raise ValueError
                 except ValueError:
-                    flash("Невалиден брой часове", "error")
+                    flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ð▒ÐÇð¥ð╣ Ðçð░Ðüð¥ð▓ðÁ", "error")
                     return redirect(url_for("edit_task", task_id=task_id))
             else:
                 task.estimated_hours = None
@@ -7842,25 +7842,25 @@ def edit_task(task_id):
 
                     task.deadline = datetime.strptime(deadline_str, "%Y-%m-%dT%H:%M")
                 except ValueError:
-                    flash("Невалиден формат на краен срок", "error")
+                    flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ Ðäð¥ÐÇð╝ð░Ðé ð¢ð░ ð║ÐÇð░ðÁð¢ ÐüÐÇð¥ð║", "error")
                     return redirect(url_for("edit_task", task_id=task_id))
             else:
                 task.deadline = None
 
             # Validation
             if not task.title or not task.description or not task.category:
-                flash("Моля, попълнете всички задължителни полета", "error")
+                flash("ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð¥ð╗ðÁÐéð░", "error")
                 return redirect(url_for("edit_task", task_id=task_id))
 
             db.session.commit()
 
-            flash("Задачата е обновена успешно!", "success")
+            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
             return redirect(url_for("admin_tasks"))
 
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error updating task {task_id}: {e}")
-            flash("Грешка при обновяване на задачата", "error")
+            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
             return redirect(url_for("edit_task", task_id=task_id))
 
     # Get current admin user
@@ -7881,18 +7881,18 @@ def delete_task(task_id):
 
         # Check if task is assigned
         if task.assigned_to:
-            flash("Не може да изтриете задача, която е присвоена на доброволец", "error")
+            flash("ðØðÁ ð╝ð¥ðÂðÁ ð┤ð░ ð©ðÀÐéÐÇð©ðÁÐéðÁ ðÀð░ð┤ð░Ðçð░, ð║ð¥ÐÅÐéð¥ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå", "error")
             return redirect(url_for("admin_tasks"))
 
         db.session.delete(task)
         db.session.commit()
 
-        flash("Задачата е изтрита успешно!", "success")
+        flash("ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ð©ðÀÐéÐÇð©Ðéð░ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error deleting task {task_id}: {e}")
-        flash("Грешка при изтриване на задачата", "error")
+        flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀÐéÐÇð©ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
 
     return redirect(url_for("admin_tasks"))
 
@@ -7908,13 +7908,13 @@ def assign_task(task_id):
         volunteer_id = request.form.get("volunteer_id")
 
         if not volunteer_id:
-            flash("Моля, изберете доброволец", "error")
+            flash("ð£ð¥ð╗ÐÅ, ð©ðÀð▒ðÁÐÇðÁÐéðÁ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå", "error")
             return redirect(url_for("assign_task", task_id=task_id))
 
         try:
             volunteer = db.session.query(Volunteer).get(volunteer_id)
             if not volunteer:
-                flash("Избраният доброволец не е намерен", "error")
+                flash("ðÿðÀð▒ÐÇð░ð¢ð©ÐÅÐé ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢", "error")
                 return redirect(url_for("assign_task", task_id=task_id))
 
             # Assign task to volunteer
@@ -7930,13 +7930,13 @@ def assign_task(task_id):
 
             db.session.commit()
 
-            flash(f"Задачата е присвоена успешно на {volunteer.name}!", "success")
+            flash(f"ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥ ð¢ð░ {volunteer.name}!", "success")
             return redirect(url_for("admin_tasks"))
 
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error assigning task {task_id}: {e}")
-            flash("Грешка при присвояване на задачата", "error")
+            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┐ÐÇð©Ðüð▓ð¥ÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
             return redirect(url_for("assign_task", task_id=task_id))
 
     # Get available volunteers
@@ -7959,7 +7959,7 @@ def unassign_task(task_id):
         task = db.session.query(Task).get_or_404(task_id)
 
         if not task.assigned_to:
-            flash("Задачата не е присвоена на никого", "warning")
+            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ð¢ðÁ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð¢ð©ð║ð¥ð│ð¥", "warning")
             return redirect(url_for("admin_tasks"))
 
         # Update task
@@ -7972,12 +7972,12 @@ def unassign_task(task_id):
 
         db.session.commit()
 
-        flash("Задачата е освободена успешно!", "success")
+        flash("ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ð¥Ðüð▓ð¥ð▒ð¥ð┤ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error unassigning task {task_id}: {e}")
-        flash("Грешка при освобождаване на задачата", "error")
+        flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥Ðüð▓ð¥ð▒ð¥ðÂð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
 
     return redirect(url_for("admin_tasks"))
 
@@ -7994,13 +7994,13 @@ def admin_update_request_status():
 
         if not request_id or not new_status:
             return (
-                jsonify({"success": False, "message": "Липсват задължителни параметри"}),
+                jsonify({"success": False, "message": "ðøð©ð┐Ðüð▓ð░Ðé ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð░ÐÇð░ð╝ðÁÐéÐÇð©"}),
                 400,
             )
 
         request_obj = db.session.query(HelpRequest).get(request_id)
         if not request_obj:
-            return jsonify({"success": False, "message": "Заявката не е намерена"}), 404
+            return jsonify({"success": False, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢ð░"}), 404
 
         # Validate status
         valid_statuses = [
@@ -8011,7 +8011,7 @@ def admin_update_request_status():
             "cancelled",
         ]
         if new_status not in valid_statuses:
-            return jsonify({"success": False, "message": "Невалиден статус"}), 400
+            return jsonify({"success": False, "message": "ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ÐüÐéð░ÐéÐâÐü"}), 400
 
         old_status = request_obj.status
         if new_status == "completed":
@@ -8026,7 +8026,7 @@ def admin_update_request_status():
         return jsonify(
             {
                 "success": True,
-                "message": f"Статусът е обновен на '{new_status}'",
+                "message": f"ðíÐéð░ÐéÐâÐüÐèÐé ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢ ð¢ð░ '{new_status}'",
                 "new_status": new_status,
             }
         )
@@ -8038,7 +8038,7 @@ def admin_update_request_status():
             jsonify(
                 {
                     "success": False,
-                    "message": "Възникна грешка при обновяване на статуса",
+                    "message": "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁ ð¢ð░ ÐüÐéð░ÐéÐâÐüð░",
                 }
             ),
             500,
@@ -8082,14 +8082,14 @@ def export_volunteers_csv(volunteers):
     cw.writerow(
         [
             "ID",
-            "Име",
-            "Имейл",
-            "Телефон",
-            "Локация",
-            "Умения",
-            "Дата на регистрация",
-            "Ширина",
-            "Дължина",
+            "ðÿð╝ðÁ",
+            "ðÿð╝ðÁð╣ð╗",
+            "ðóðÁð╗ðÁÐäð¥ð¢",
+            "ðøð¥ð║ð░Ðåð©ÐÅ",
+            "ðúð╝ðÁð¢ð©ÐÅ",
+            "ðöð░Ðéð░ ð¢ð░ ÐÇðÁð│ð©ÐüÐéÐÇð░Ðåð©ÐÅ",
+            "ð¿ð©ÐÇð©ð¢ð░",
+            "ðöÐèð╗ðÂð©ð¢ð░",
         ]
     )
 
@@ -8191,18 +8191,18 @@ def export_volunteers_pdf(volunteers):
     )
 
     # Title
-    title = Paragraph("Списък с доброволци - HelpChain", title_style)
+    title = Paragraph("ðíð┐ð©ÐüÐèð║ Ðü ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð© - HelpChain", title_style)
     elements.append(title)
     elements.append(Spacer(1, 12))
 
     # Export info
-    info_text = f"Общо доброволци: {len(volunteers)} | Експортирано на: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
+    info_text = f"ð×ð▒Ðëð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©: {len(volunteers)} | ðòð║Ðüð┐ð¥ÐÇÐéð©ÐÇð░ð¢ð¥ ð¢ð░: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
     info_paragraph = Paragraph(info_text, styles["Normal"])
     elements.append(info_paragraph)
     elements.append(Spacer(1, 20))
 
     # Table data
-    data = [["ID", "Име", "Имейл", "Телефон", "Локация", "Регистриран"]]
+    data = [["ID", "ðÿð╝ðÁ", "ðÿð╝ðÁð╣ð╗", "ðóðÁð╗ðÁÐäð¥ð¢", "ðøð¥ð║ð░Ðåð©ÐÅ", "ðáðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢"]]
 
     for v in volunteers:
         data.append(
@@ -8281,7 +8281,7 @@ def feedback():
 
         # Basic input validation
         if not all([name, email, message]) or len(message) < 10:
-            flash("Моля, попълнете всички полета коректно!")
+            flash("ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ð┐ð¥ð╗ðÁÐéð░ ð║ð¥ÐÇðÁð║Ðéð¢ð¥!")
             return redirect(url_for("feedback"))
 
         # Detect language of feedback message
@@ -8295,50 +8295,50 @@ def feedback():
             detected_lang,
             message[:100] + "..." if len(message) > 100 else message,
         )
-        flash("Благодарим за обратната връзка!")
+        flash("ðæð╗ð░ð│ð¥ð┤ð░ÐÇð©ð╝ ðÀð░ ð¥ð▒ÐÇð░Ðéð¢ð░Ðéð░ ð▓ÐÇÐèðÀð║ð░!")
         return redirect(url_for("feedback"))
     return render_template("feedback.html")
 
 
 @app.route("/category_help/<category>")
 def category_help(category):
-    """Показва доброволци по категория помощ"""
-    # Дефинираме категориите и техните описания
+    """ðƒð¥ð║ð░ðÀð▓ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð© ð┐ð¥ ð║ð░ÐéðÁð│ð¥ÐÇð©ÐÅ ð┐ð¥ð╝ð¥Ðë"""
+    # ðöðÁÐäð©ð¢ð©ÐÇð░ð╝ðÁ ð║ð░ÐéðÁð│ð¥ÐÇð©ð©ÐéðÁ ð© ÐéðÁÐàð¢ð©ÐéðÁ ð¥ð┐ð©Ðüð░ð¢ð©ÐÅ
     categories = {
         "food": {
-            "name": "Храна",
+            "name": "ðÑÐÇð░ð¢ð░",
             "icon": "fas fa-utensils",
             "color": "success",
         },
         "medical": {
-            "name": "Медицинска помощ",
+            "name": "ð£ðÁð┤ð©Ðåð©ð¢Ðüð║ð░ ð┐ð¥ð╝ð¥Ðë",
             "icon": "fas fa-medkit",
             "color": "danger",
         },
         "transport": {
-            "name": "Транспорт",
+            "name": "ðóÐÇð░ð¢Ðüð┐ð¥ÐÇÐé",
             "icon": "fas fa-car",
             "color": "info",
         },
         "other": {
-            "name": "Друго",
+            "name": "ðöÐÇÐâð│ð¥",
             "icon": "fas fa-hands-helping",
             "color": "secondary",
         },
     }
 
     if category not in categories:
-        flash("Категорията не е намерена!")
+        flash("ðÜð░ÐéðÁð│ð¥ÐÇð©ÐÅÐéð░ ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢ð░!")
         return redirect(url_for("index"))
 
-    # Филтрираме доброволци които имат тази категория в skills
-    # Търсим case-insensitive в skills полето
+    # ðñð©ð╗ÐéÐÇð©ÐÇð░ð╝ðÁ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð© ð║ð¥ð©Ðéð¥ ð©ð╝ð░Ðé Ðéð░ðÀð© ð║ð░ÐéðÁð│ð¥ÐÇð©ÐÅ ð▓ skills
+    # ðóÐèÐÇÐüð©ð╝ case-insensitive ð▓ skills ð┐ð¥ð╗ðÁÐéð¥
     volunteers = db.session.query(Volunteer).filter(Volunteer.skills.ilike(f"%{category}%")).all()
 
-    # Ако няма доброволци, показваме съобщение
+    # ðÉð║ð¥ ð¢ÐÅð╝ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©, ð┐ð¥ð║ð░ðÀð▓ð░ð╝ðÁ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ
     no_volunteers = len(volunteers) == 0
 
-    # Проверяваме дали потребителят е администратор
+    # ðƒÐÇð¥ð▓ðÁÐÇÐÅð▓ð░ð╝ðÁ ð┤ð░ð╗ð© ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗ÐÅÐé ðÁ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ
     is_admin = session.get("admin_logged_in", False)
 
     category_display = categories[category]["name"]
@@ -8384,18 +8384,18 @@ def category_help(category):
         )
 
         # Title
-        title = Paragraph("Списък с доброволци - HelpChain", title_style)
+        title = Paragraph("ðíð┐ð©ÐüÐèð║ Ðü ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð© - HelpChain", title_style)
         elements.append(title)
         elements.append(Spacer(1, 12))
 
         # Export info
-        info_text = f"Общо доброволци: {len(volunteers)} | Експортирано на: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
+        info_text = f"ð×ð▒Ðëð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©: {len(volunteers)} | ðòð║Ðüð┐ð¥ÐÇÐéð©ÐÇð░ð¢ð¥ ð¢ð░: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}"
         info_paragraph = Paragraph(info_text, styles["Normal"])
         elements.append(info_paragraph)
         elements.append(Spacer(1, 20))
 
         # Table data
-        data = [["ID", "Име", "Имейл", "Телефон", "Локация", "Регистриран"]]
+        data = [["ID", "ðÿð╝ðÁ", "ðÿð╝ðÁð╣ð╗", "ðóðÁð╗ðÁÐäð¥ð¢", "ðøð¥ð║ð░Ðåð©ÐÅ", "ðáðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢"]]
 
         for v in volunteers:
             data.append(
@@ -8503,7 +8503,7 @@ def chat():
 
     except Exception as e:
         app.logger.error(f"Error loading chat page: {e}")
-        flash("Възникна грешка при зареждането на чата", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ Ðçð░Ðéð░", "error")
         return redirect(url_for("index"))
 
 
@@ -8526,7 +8526,7 @@ def chat_room(room_id):
                 has_access = True
 
             if not has_access:
-                flash("Нямате достъп до тази стая", "error")
+                flash("ðØÐÅð╝ð░ÐéðÁ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ Ðéð░ðÀð© ÐüÐéð░ÐÅ", "error")
                 return redirect(url_for("chat"))
 
         # Get user info
@@ -8546,16 +8546,16 @@ def chat_room(room_id):
         else:
             # Allow anonymous access to public rooms
             if room.room_type == "public":
-                user_info = {"type": "guest", "id": 0, "name": "Гост"}
+                user_info = {"type": "guest", "id": 0, "name": "ðôð¥ÐüÐé"}
             else:
-                flash("Трябва да сте логнати за достъп до тази стая", "error")
+                flash("ðóÐÇÐÅð▒ð▓ð░ ð┤ð░ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðéð© ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ Ðéð░ðÀð© ÐüÐéð░ÐÅ", "error")
                 return redirect(url_for("chat"))
 
         return render_template("chat_room.html", room=room, user_info=user_info)
 
     except Exception as e:
         app.logger.error(f"Error loading chat room {room_id}: {e}")
-        flash("Възникна грешка при зареждането на стаята", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ÐüÐéð░ÐÅÐéð░", "error")
         return redirect(url_for("chat"))
 
 
@@ -8789,7 +8789,7 @@ def api_user_profile():
 def accept_task(task_id):
     """Volunteer accepts/requests assignment to a task"""
     if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
+        flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "warning")
         return redirect(url_for("volunteer_login"))
 
     try:
@@ -8797,19 +8797,19 @@ def accept_task(task_id):
         volunteer = db.session.query(Volunteer).get(volunteer_id)
 
         if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
+            flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢.", "error")
             return redirect(url_for("available_tasks"))
 
         task = db.session.query(Task).get_or_404(task_id)
 
         # Check if task is still available
         if task.assigned_to is not None:
-            flash("Задачата вече е присвоена на друг доброволец.", "warning")
+            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð┤ÐÇÐâð│ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "warning")
             return redirect(url_for("available_tasks"))
 
         # Check if task is open
         if task.status != "open":
-            flash("Задачата вече не е налична.", "warning")
+            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ð▓ðÁÐçðÁ ð¢ðÁ ðÁ ð¢ð░ð╗ð©Ðçð¢ð░.", "warning")
             return redirect(url_for("available_tasks"))
 
         # Assign task to volunteer
@@ -8824,13 +8824,13 @@ def accept_task(task_id):
         # db.session.add(assignment)
 
         db.session.commit()
-        flash(f"Успешно се записахте за задачата '{task.title}'!", "success")
+        flash(f"ðúÐüð┐ðÁÐêð¢ð¥ ÐüðÁ ðÀð░ð┐ð©Ðüð░ÐàÐéðÁ ðÀð░ ðÀð░ð┤ð░Ðçð░Ðéð░ '{task.title}'!", "success")
         return redirect(url_for("my_tasks"))
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error accepting task {task_id}: {e}")
-        flash("Възникна грешка при записването за задачата.", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð©Ðüð▓ð░ð¢ðÁÐéð¥ ðÀð░ ðÀð░ð┤ð░Ðçð░Ðéð░.", "error")
         return redirect(url_for("available_tasks"))
 
 
@@ -8838,7 +8838,7 @@ def accept_task(task_id):
 def cancel_task(task_id):
     """Volunteer cancels their task assignment"""
     if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
+        flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "warning")
         return redirect(url_for("volunteer_login"))
 
     try:
@@ -8846,19 +8846,19 @@ def cancel_task(task_id):
         volunteer = db.session.query(Volunteer).get(volunteer_id)
 
         if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
+            flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢.", "error")
             return redirect(url_for("my_tasks"))
 
         task = db.session.query(Task).get_or_404(task_id)
 
         # Check if task is assigned to this volunteer
         if task.assigned_to != volunteer.id:
-            flash("Задачата не е присвоена на вас.", "error")
+            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ð¢ðÁ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð▓ð░Ðü.", "error")
             return redirect(url_for("my_tasks"))
 
         # Check if task can be cancelled (not completed)
         if task.status == "completed":
-            flash("Завършените задачи не могат да бъдат отказани.", "warning")
+            flash("ðùð░ð▓ÐèÐÇÐêðÁð¢ð©ÐéðÁ ðÀð░ð┤ð░Ðçð© ð¢ðÁ ð╝ð¥ð│ð░Ðé ð┤ð░ ð▒Ðèð┤ð░Ðé ð¥Ðéð║ð░ðÀð░ð¢ð©.", "warning")
             return redirect(url_for("my_tasks"))
 
         # Update task
@@ -8871,13 +8871,13 @@ def cancel_task(task_id):
 
         db.session.commit()
 
-        flash(f"Успешно се отказахте от задачата '{task.title}'.", "info")
+        flash(f"ðúÐüð┐ðÁÐêð¢ð¥ ÐüðÁ ð¥Ðéð║ð░ðÀð░ÐàÐéðÁ ð¥Ðé ðÀð░ð┤ð░Ðçð░Ðéð░ '{task.title}'.", "info")
         return redirect(url_for("my_tasks"))
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error cancelling task {task_id}: {e}")
-        flash("Възникна грешка при отказването от задачата.", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥Ðéð║ð░ðÀð▓ð░ð¢ðÁÐéð¥ ð¥Ðé ðÀð░ð┤ð░Ðçð░Ðéð░.", "error")
         return redirect(url_for("my_tasks"))
 
 
@@ -8885,7 +8885,7 @@ def cancel_task(task_id):
 def update_task_progress(task_id):
     """Volunteer updates task progress/status"""
     if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
+        flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "warning")
         return redirect(url_for("volunteer_login"))
 
     try:
@@ -8893,14 +8893,14 @@ def update_task_progress(task_id):
         volunteer = db.session.query(Volunteer).get(volunteer_id)
 
         if not volunteer:
-            flash("Доброволецът не е намерен.", "error")
+            flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢.", "error")
             return redirect(url_for("my_tasks"))
 
         task = db.session.query(Task).get_or_404(task_id)
 
         # Check if task is assigned to this volunteer
         if task.assigned_to != volunteer.id:
-            flash("Задачата не е присвоена на вас.", "error")
+            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ð¢ðÁ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð▓ð░Ðü.", "error")
             return redirect(url_for("my_tasks"))
 
         new_status = request.form.get("status")
@@ -8909,7 +8909,7 @@ def update_task_progress(task_id):
         # Validate status
         valid_statuses = ["assigned", "in_progress", "completed"]
         if new_status not in valid_statuses:
-            flash("Невалиден статус.", "error")
+            flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ÐüÐéð░ÐéÐâÐü.", "error")
             return redirect(url_for("my_tasks"))
 
         # Update task
@@ -8935,25 +8935,25 @@ def update_task_progress(task_id):
         db.session.commit()
 
         status_messages = {
-            "assigned": "Задачата е маркирана като присвоена.",
-            "in_progress": "Задачата е започната.",
-            "completed": "Задачата е завършена успешно!",
+            "assigned": "ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ð╝ð░ÐÇð║ð©ÐÇð░ð¢ð░ ð║ð░Ðéð¥ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░.",
+            "in_progress": "ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ðÀð░ð┐ð¥Ðçð¢ð░Ðéð░.",
+            "completed": "ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ðÀð░ð▓ÐèÐÇÐêðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥!",
         }
 
-        flash(status_messages.get(new_status, "Статусът е обновен."), "success")
+        flash(status_messages.get(new_status, "ðíÐéð░ÐéÐâÐüÐèÐé ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢."), "success")
         return redirect(url_for("my_tasks"))
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error updating task progress {task_id}: {e}")
-        flash("Възникна грешка при обновяването на прогреса.", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ÐÇð¥ð│ÐÇðÁÐüð░.", "error")
         return redirect(url_for("my_tasks"))
 
 
 @app.route("/admin_analytics", methods=["GET"])
 @require_admin_login
 def admin_analytics():
-    """Advanced Analytics Dashboard с real-time графики и прогнози"""
+    """Advanced Analytics Dashboard Ðü real-time ð│ÐÇð░Ðäð©ð║ð© ð© ð┐ÐÇð¥ð│ð¢ð¥ðÀð©"""
     try:
         from admin_analytics import AnalyticsEngine
 
@@ -8992,7 +8992,7 @@ def admin_analytics():
 
         dashboard_stats = AnalyticsEngine.get_dashboard_stats(days=period_days, start_date=custom_start, end_date=custom_end)
 
-        # Допълнителна аналитика от advanced services, ако е налична
+        # ðöð¥ð┐Ðèð╗ð¢ð©ÐéðÁð╗ð¢ð░ ð░ð¢ð░ð╗ð©Ðéð©ð║ð░ ð¥Ðé advanced services, ð░ð║ð¥ ðÁ ð¢ð░ð╗ð©Ðçð¢ð░
         advanced_analytics = analytics_service.get_dashboard_analytics(days=period_days, start_date=custom_start, end_date=custom_end) if analytics_service else {}
 
         geo_data = AnalyticsEngine.get_geo_data()
@@ -9024,7 +9024,7 @@ def admin_analytics():
 
     except Exception as e:
         app.logger.error(f"Error loading analytics dashboard: {e}")
-        flash("Възникна грешка при зареждането на аналитиката", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð░ð¢ð░ð╗ð©Ðéð©ð║ð░Ðéð░", "error")
         return redirect(url_for("admin_dashboard"))
 
 
@@ -9081,7 +9081,7 @@ def readiness_check():
 def achievements():
     """Volunteer achievements page"""
     if not session.get("volunteer_logged_in"):
-        flash("Моля, влезте като доброволец.", "warning")
+        flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "warning")
         return redirect(url_for("volunteer_login"))
 
     try:
@@ -9111,7 +9111,7 @@ def achievements():
 
     except Exception as e:
         app.logger.error(f"Error loading achievements page: {e}")
-        flash("Възникна грешка при зареждането на постиженията.", "error")
+        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ð¥ÐüÐéð©ðÂðÁð¢ð©ÐÅÐéð░.", "error")
         return redirect(url_for("volunteer_dashboard"))
 
 
@@ -9163,7 +9163,7 @@ if __name__ == "__main__":
 
         traceback.print_exc()
 
-# Включи детайлно логване за дебъг
+# ðÆð║ð╗ÐÄÐçð© ð┤ðÁÐéð░ð╣ð╗ð¢ð¥ ð╗ð¥ð│ð▓ð░ð¢ðÁ ðÀð░ ð┤ðÁð▒Ðèð│
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
