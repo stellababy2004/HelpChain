@@ -201,6 +201,21 @@ jobs:
                 fi
               done
 
+              # Also restore any .vercel/python runtime vendored tree if present in the artifact.
+              # The Vercel CLI may access files under .vercel/python during deploy; ensure it's restored.
+              FOUND_PY=$(find "$TMPDIR" -type d -path '*/.vercel/python' -print -quit || true)
+              if [ -n "$FOUND_PY" ]; then
+                echo "Found nested .vercel/python at: $FOUND_PY"
+                rm -rf .vercel/python || true
+                mkdir -p .vercel
+                mv "$FOUND_PY" .vercel/python || true
+              elif [ -d "$TMPDIR/.vercel/python" ]; then
+                echo "Found top-level .vercel/python at: $TMPDIR/.vercel/python"
+                rm -rf .vercel/python || true
+                mkdir -p .vercel
+                mv "$TMPDIR/.vercel/python" .vercel/python || true
+              fi
+
               if [ "$FOUND_ANY" -eq 0 ]; then
                 echo "Warning: artifact unzip didn't produce .vercel/output; listing extracted top-level for debugging:" >&2
                 ls -la "$TMPDIR" || true
@@ -229,6 +244,9 @@ jobs:
           find .vercel/output -maxdepth 6 -type f -printf '%p %s\n' | sort -n | tail -n 40 || true
           echo "Also list a small tree of .vercel to show context"
           find .vercel -maxdepth 4 -ls || true
+           echo "Listing .vercel/python (if present):"
+           ls -la .vercel/python || true
+           find .vercel/python -maxdepth 3 -ls || true
 
           npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes --archive=tgz
 
