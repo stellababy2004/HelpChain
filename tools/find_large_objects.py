@@ -2,6 +2,7 @@
 import subprocess
 import sys
 
+
 def git_cat_file_size(h):
     try:
         out = subprocess.check_output(["git","cat-file","-s",h])
@@ -12,7 +13,7 @@ def git_cat_file_size(h):
 def main():
     objs = []
     try:
-        with open('all_objects.txt','r',encoding='utf-8') as f:
+        with open('all_objects.txt',encoding='utf-8') as f:
             for line in f:
                 line=line.strip()
                 if not line:

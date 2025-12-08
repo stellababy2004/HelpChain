@@ -6,11 +6,11 @@ Tests all components: models, API endpoints, VAPID configuration, frontend integ
 
 import os
 import sys
+import tempfile
 import unittest
+import uuid
 
 import requests
-import tempfile
-import uuid
 
 # Add backend to path
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
@@ -25,8 +25,9 @@ except ImportError:
     pass
 
 # Flask imports
-from backend.extensions import db
 from flask import Flask
+
+from backend.extensions import db
 
 # Model imports - moved to setUp to ensure proper db initialization
 # try:

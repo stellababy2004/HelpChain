@@ -6,6 +6,7 @@ sys.path.insert(0, "backend")
 # Import models to resolve relationships
 # Create Flask app for database access
 from flask import Flask
+
 from backend.extensions import db
 from backend.models_with_analytics import (
     AnalyticsEvent,

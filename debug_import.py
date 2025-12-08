@@ -1,5 +1,5 @@
-import traceback
 import sys
+import traceback
 
 try:
     import os

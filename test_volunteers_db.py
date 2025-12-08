@@ -7,9 +7,9 @@ proper pytest test that uses the `app` fixture so the test DB and schema are
 prepared before queries run.
 """
 
-from backend.models import Volunteer
-
 import pytest
+
+from backend.models import Volunteer
 
 # Rely on the repository-level `app` fixture provided by `conftest.py`.
 # If pytest is invoked from inside `tests/` the richer `tests.conftest.py`

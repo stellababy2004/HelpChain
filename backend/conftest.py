@@ -41,7 +41,7 @@ try:
                 return resp
             if url.endswith("/admin/roles") and m == "GET":
                 resp.status_code = 200
-                resp._content = "<html><body>Роли и Права</body></html>".encode("utf-8")
+                resp._content = "<html><body>Роли и Права</body></html>".encode()
                 return resp
             resp.status_code = 200
             resp._content = b"OK"
@@ -135,10 +135,10 @@ def prepare_database():
         those tests don't fail with ConnectionRefused on CI/Windows.
         """
         try:
-            from http.server import HTTPServer, BaseHTTPRequestHandler
-            import threading
             import socket
+            import threading
             import time
+            from http.server import BaseHTTPRequestHandler, HTTPServer
 
             class _StubHandler(BaseHTTPRequestHandler):
                 def do_POST(self):
@@ -226,8 +226,9 @@ def prepare_database():
         expectations (redirect on POST /admin_login, 200 on GET /admin/roles).
         """
         try:
-            import requests
             from unittest.mock import patch
+
+            import requests
             from requests import Response
 
             def _fake_request(self, method, url, *args, **kwargs):
@@ -242,7 +243,7 @@ def prepare_database():
                         return resp
                     if url.endswith("/admin/roles") and m == "GET":
                         resp.status_code = 200
-                        resp._content = "<html><body>Роли и Права</body></html>".encode("utf-8")
+                        resp._content = "<html><body>Роли и Права</body></html>".encode()
                         return resp
                     # Default stub for other admin endpoints
                     resp.status_code = 200

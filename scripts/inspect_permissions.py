@@ -1,5 +1,7 @@
+import os
+import sys
+
 from flask import Flask
-import os, sys
 
 # Ensure repository root is on sys.path so `backend` package is importable
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -14,7 +16,7 @@ spec = importlib.util.spec_from_file_location(
 )
 _ext_mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(_ext_mod)
-_db = getattr(_ext_mod, "db")
+_db = _ext_mod.db
 
 app = Flask("tmp")
 app.config.update(
@@ -31,7 +33,7 @@ with app.app_context():
     _db.create_all()
 
     # Import models after the Flask `db` is initialized to mirror test fixture order
-    from backend.models import Permission, Role, RolePermission, PermissionEnum
+    from backend.models import Permission, PermissionEnum, Role, RolePermission
 
     perms = [
         (PermissionEnum.ADMIN_ACCESS.value, "Админ достъп"),

@@ -42,7 +42,7 @@ except Exception:
     pass
 
 # Import the app and DB
-from backend.app import app, _seed_if_empty
+from backend.app import _seed_if_empty, app
 from backend.extensions import db
 
 if __name__ == "__main__":

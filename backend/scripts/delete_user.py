@@ -29,7 +29,7 @@ if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
 
-def main(argv: Optional[list[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Delete a User by username")
     parser.add_argument("--username", required=True, help="username to delete")
     parser.add_argument("--commit", action="store_true", help="Apply deletion (default dry-run)")
@@ -39,7 +39,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     dry_run = not args.commit
 
     try:
-        from app import app, db, User
+        from app import User, app, db
     except Exception as e:
         logging.error("Failed to import app/models: %s", e)
         return 2

@@ -6,8 +6,8 @@ Run from repository root:
 
 from __future__ import annotations
 
-import sys
 import os
+import sys
 
 # Ensure backend package is importable when running this script from repo root
 _this_dir = os.path.abspath(os.path.dirname(__file__))
@@ -19,7 +19,7 @@ if _backend_dir not in sys.path:
     sys.path.insert(0, _backend_dir)
 
 try:
-    from app import app, User, db
+    from app import User, app, db
 except Exception as e:
     print("Failed importing backend app:", e)
     raise
