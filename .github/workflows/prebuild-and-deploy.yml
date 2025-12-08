@@ -237,6 +237,40 @@ jobs:
             rm -rf "$TMPDIR" || true
           fi
 
+          # Fallback: if .vercel/python still missing, try downloading the full vercel.tgz archive
+          if [ ! -d .vercel/python ]; then
+            echo ".vercel/python missing after artifact extraction — attempting fallback to vercel-archive..."
+            ART2_ID=$(gh api repos/${{ github.repository }}/actions/artifacts --jq '.artifacts[] | select(.name=="vercel-archive") | .id' | head -n1 || true)
+            if [ -n "$ART2_ID" ]; then
+              echo "Found vercel-archive artifact id: $ART2_ID. Downloading..."
+              curl -sSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$ART2_ID/zip" -o vercel-archive.zip || true
+              FALLTMP=$(mktemp -d)
+              unzip -q vercel-archive.zip -d "$FALLTMP" || true
+              # Search for vercel.tgz inside the archive, and extract it into the workspace
+              FOUND_TGZ=$(find "$FALLTMP" -type f -name 'vercel.tgz' -print -quit || true)
+              if [ -n "$FOUND_TGZ" ]; then
+                echo "Extracting vercel.tgz from $FOUND_TGZ"
+                tar -C . -xzf "$FOUND_TGZ" || true
+              else
+                # If archive contains a nested .vercel directory, move it into place
+                FOUND_VERCEL_DIR=$(find "$FALLTMP" -type d -path '*/.vercel' -print -quit || true)
+                if [ -n "$FOUND_VERCEL_DIR" ]; then
+                  echo "Moving nested .vercel from $FOUND_VERCEL_DIR"
+                  rm -rf .vercel || true
+                  mv "$FOUND_VERCEL_DIR" .vercel || true
+                else
+                  echo "Fallback archive did not contain vercel.tgz or .vercel/ — listing $FALLTMP for debugging" >&2
+                  ls -la "$FALLTMP" || true
+                  find "$FALLTMP" -maxdepth 4 -ls || true
+                fi
+              fi
+              rm -rf "$FALLTMP" || true
+            else
+              echo "No vercel-archive artifact found; cannot perform fallback." >&2
+            fi
+          fi
+
       - name: Install Vercel CLI
         run: |
           npm install -g vercel@latest
