@@ -143,6 +143,8 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Download `vercel-output` artifact via GitHub API (no marketplace action)
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           echo "Attempting to download artifact 'vercel-output' via gh API"
