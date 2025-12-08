@@ -136,6 +136,14 @@ jobs:
             .vercel/output
             .vercel/python
 
+      - name: Upload full .vercel archive (vercel.tgz)
+        if: always()
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
+        with:
+          name: vercel-archive
+          path: |
+            vercel.tgz
+
   deploy:
     name: Deploy prebuilt output to Vercel (preview)
     needs: prebuild
