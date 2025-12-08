@@ -116,18 +116,16 @@ markupsafe==3.0.3
     #   mako
     #   sentry-sdk
     #   werkzeug
-numpy==2.3.4
-    # via
-    #   -r requirements.in
-    #   pandas
-    #   scikit-learn
-    #   scipy
+# numpy removed from runtime requirements to keep serverless bundles small.
+# If you need full ML stack for local/analysis installs, use `requirements-ml.txt`.
+# numpy==2.3.4
 packaging==25.0
     # via
     #   kombu
     #   pytest
-pandas==2.3.3
-    # via -r requirements.in
+# pandas removed from runtime requirements to keep serverless bundles small.
+# If you need full ML stack for local/analysis installs, use `requirements-ml.txt`.
+# pandas==2.3.3
 pluggy==1.6.0
     # via pytest
 prompt-toolkit==3.0.52
@@ -154,10 +152,12 @@ pytz==2023.3.post1
     #   pandas
 redis==5.0.1
     # via -r requirements.in
-scikit-learn==1.7.2
-    # via -r requirements.in
-scipy==1.16.3
-    # via scikit-learn
+# scikit-learn removed from runtime requirements to keep serverless bundles small.
+# If you need full ML stack for local/analysis installs, use `requirements-ml.txt`.
+# scikit-learn==1.7.2
+# scipy removed from runtime requirements to keep serverless bundles small.
+# If you need full ML stack for local/analysis installs, use `requirements-ml.txt`.
+# scipy==1.16.3
 sentry-sdk[flask]==2.13.0
     # via -r requirements.in
 simple-websocket==1.1.0

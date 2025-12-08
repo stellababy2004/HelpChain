@@ -10,16 +10,14 @@ on:
       - main
 
 jobs:
-  prebuild-and-deploy:
-    name: Prebuild on GitHub runner and deploy (preview)
+  prebuild:
+    name: Prebuild on GitHub runner (create .vercel/output)
     runs-on: ubuntu-latest
-    environment: preview
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          # avoid failing the job if the repo has a broken or missing submodule URL
           submodules: false
 
       - name: Set up Node.js
@@ -38,7 +36,6 @@ jobs:
       - name: Install Python dependencies (wheelhouse)
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          # Prefer the slim root requirements file for prebuild to avoid heavy ML deps
           if [ -f requirements.txt ]; then
             echo "Installing requirements.txt (slimmed root requirements)"
             pip install --prefer-binary -r requirements.txt
@@ -58,10 +55,7 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          # Pull project settings so `vercel build` has local project config
           npx vercel@latest pull --yes --token "$VERCEL_TOKEN" || true
-
-          # build on the runner using Vercel builders and produce the Build Output API format
           npx vercel@latest build --token "$VERCEL_TOKEN"
 
       - name: Verify prebuilt output
@@ -80,60 +74,57 @@ jobs:
         run: |
           echo "Listing files in .vercel/output larger than 100MB (will remove)"
           find .vercel/output -type f -size +100M -print0 | xargs -0 du -b 2>/dev/null | sort -nr | tee large-files-to-remove.txt || true
-
-          # Remove large files to avoid Node buffer / upload problems in Vercel deploy.
-          # We show what would be removed first, then remove them. This is conservative
-          # because some large files (model weights) should not be part of the prebuilt output.
           if [ -s large-files-to-remove.txt ]; then
             echo "Removing files >100MB from .vercel/output"
-            # Use -print0/xargs -0 to handle spaces and special chars
             find .vercel/output -type f -size +100M -print0 | xargs -0 rm -v || true
           else
             echo "No large files >100MB found in .vercel/output"
           fi
 
-      - name: Check prebuilt output size and list large files
+      - name: Create compressed artifact of .vercel/output
+        if: always()
         run: |
-          echo "Calculating size of .vercel/output..."
-          total_bytes=$(du -sb .vercel/output | cut -f1)
-          echo "Total bytes: $total_bytes"
-          echo "Top 20 largest files:" 
-          find .vercel/output -type f -printf "%s\t%p\n" | sort -nr | head -n 20
-
-          # Create a compressed archive for inspection (may be large)
-          echo "Creating compressed archive output.tgz (for size check)..."
+          echo "Creating compressed archive output.tgz..."
           tar -C .vercel -czf output.tgz output || true
-          archive_size=$(stat -c%s .vercel/output.tgz || stat -f%z .vercel/output.tgz || echo 0)
-          echo "Archive bytes: $archive_size"
 
-          # Fail early if archive exceeds Node/CLI buffer limit (~4GB)
-          limit=$((4294967296))
-          if [ "$archive_size" -ge "$limit" ]; then
-            echo "ERROR: Archive is >= 4GB (possible Node Buffer limit)."
-            echo "List the largest files above and update .vercelignore or reduce build output."
-            exit 1
-          fi
+      - name: Upload .vercel/output artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vercel-output
+          path: .vercel/output
 
-      - name: Workspace diagnostics (safe)
+  check-functions:
+    name: Check Vercel function sizes
+    needs: prebuild
+    uses: ./.github/workflows/check-function-sizes.yml
+    with:
+      max_size_mb: 250
+      # Artifact name to download inside reusable workflow
+      # Note: check-function-sizes.yml will download artifact 'vercel-output' if present
+      artifact_name: vercel-output
+
+  deploy:
+    name: Deploy prebuilt output to Vercel (preview)
+    needs: check-functions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+
+      - name: Download .vercel/output artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vercel-output
+          path: .vercel/output
+
+      - name: Install Vercel CLI
         run: |
-          echo "Workspace size summary:" && du -sh . || true
-          echo "Top-level directory sizes:" && du -sh ./* 2>/dev/null | sort -hr | head -n 40 || true
-
-          echo "Listing files >100MB in the repository (for review):"
-          find . -type f -size +100M -printf "%s\t%p\n" | sort -nr | tee large-files-repo.txt || true
-
-          echo "Ensure .vercel/output.tgz exists and show its size (use ls -lh for portability):"
-          tar -C .vercel -czf output.tgz output || true
-          ls -lh .vercel/output.tgz || true
-
-          echo "List largest files in workspace (top 50):"
-          find . -type f -printf "%s\t%p\n" | sort -nr | head -n 50
+          npm install -g vercel@latest
 
       - name: Deploy prebuilt output to Vercel (preview)
-        if: always()
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          # Deploy the prebuilt output; omit --prod to create a preview deployment
           npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes --archive=tgz
 
