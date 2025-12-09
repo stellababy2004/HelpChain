@@ -16,8 +16,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@v4
         with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
           submodules: false
 
       - name: Set up Node.js
@@ -201,7 +203,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download `vercel-output` artifact via GitHub API (no marketplace action)
         env:
