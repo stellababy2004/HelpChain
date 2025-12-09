@@ -307,6 +307,18 @@ jobs:
             touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py
           fi
 
+          # Create placeholders for any referenced .dist-info/entry_points.txt files (e.g. alembic)
+          DIST_ENTRIES=$(grep -R --binary-files=without-match -o "_vendor/[^"]*\\.dist-info/entry_points.txt" .vercel/output 2>/dev/null || true)
+          if [ -n "$DIST_ENTRIES" ]; then
+            echo "$DIST_ENTRIES" | sort -u | while read -r DE; do
+              REM_DE=${DE#*'_vendor/'}
+              TARGET_DE=".vercel/python/py3.12/backend/_vendor/$REM_DE"
+              DIR_DE=$(dirname "$TARGET_DE")
+              mkdir -p "$DIR_DE"
+              touch "$TARGET_DE" || true
+            done
+          fi
+
           # If many pytest internals are referenced, create placeholders for the actual pytest package
           # by downloading the wheel (no deps) and unpacking its files to mirror structure.
           set +e
