@@ -8,14 +8,26 @@ seeding and helper functions are the same implementation the app uses.
 """
 
 try:
-    # Prefer the backend package implementation
-    from backend.permissions import *  # noqa: F401,F403
+    # Prefer the backend package implementation; import module and re-export
+    import importlib
+
+    _bp = importlib.import_module("backend.permissions")
+    for _name in dir(_bp):
+        if _name.startswith("_"):
+            continue
+        globals()[_name] = getattr(_bp, _name)
 except Exception:
-    # Fallback: try to import a local module if present
+    # Fallback: try to import a local module if present and re-export
     try:
-        from .backend.permissions import *  # type: ignore
+        import importlib
+
+        _bp = importlib.import_module(".backend.permissions", package=__package__)
+        for _name in dir(_bp):
+            if _name.startswith("_"):
+                continue
+            globals()[_name] = getattr(_bp, _name)
     except Exception:
-        # As a last resort, raise the original ImportError so tests fail
+        # As a last resort, re-raise the import error so tests fail loudly
         raise
 
-__all__ = [name for name in dir() if not name.startswith("_") and name not in ("__name__", "__doc__")]
+__all__ = [name for name in globals().keys() if not name.startswith("_") and name not in ("__name__", "__doc__")]

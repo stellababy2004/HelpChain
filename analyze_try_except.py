@@ -3,9 +3,9 @@ import re
 p = "c:/dev/HelpChain/HelpChain.bg/backend/extensions.py"
 lines = open(p, encoding="utf-8").read().splitlines()
 stack = []
-for i, l in enumerate(lines, start=1):
-    s = l.lstrip("\t ")
-    indent = len(l) - len(s)
+for i, line in enumerate(lines, start=1):
+    s = line.lstrip("\t ")
+    indent = len(line) - len(s)
     if s.startswith("try:"):
         stack.append((i, indent))
     elif s.startswith("except") or s.startswith("finally"):
