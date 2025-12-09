@@ -110,6 +110,33 @@ jobs:
         if: always()
         run: |
           echo "Creating compressed archive output.tgz..."
+          # Prune any unexpectedly large files from .vercel/output to avoid
+          # runaway memory use in downstream steps (Vercel CLI may load
+          # large files into Node buffers and crash with ERR_OUT_OF_RANGE).
+          echo "Scanning for files >200MB in .vercel/output..."
+          find .vercel/output -type f -size +200M -print0 | tee large-files-to-prune.txt || true
+          if [ -s large-files-to-prune.txt ]; then
+            echo "Found large files to prune (will remove):"
+            tr '\0' '\n' < large-files-to-prune.txt | xargs -r -I {} du -h {} || true
+            # Remove large files (safe for build artifacts that shouldn't be this big)
+            tr '\0' '\n' < large-files-to-prune.txt | xargs -r rm -v || true
+          else
+            echo "No large files >200MB found"
+          fi
+
+          # Also guard against massive .vercel/python vendored trees — if the
+          # vendored runtime is present and exceeds 1GB, remove it to avoid
+          # Vercel CLI buffering huge files. This is a pragmatic safety-net;
+          # if your deployment requires certain runtime files, consider
+          # pruning specific packages instead.
+          if [ -d .vercel/python ]; then
+            PY_SZ=$(du -sb .vercel/python | awk '{print $1}') || true
+            if [ -n "$PY_SZ" ] && [ "$PY_SZ" -gt $((1 * 1024 * 1024 * 1024)) ]; then
+              echo ".vercel/python size ($PY_SZ bytes) exceeds 1GB — removing to avoid deploy crash"
+              rm -rf .vercel/python || true
+            fi
+          fi
+
           tar -C .vercel -czf output.tgz output || true
 
       - name: Local function size check
