@@ -33,7 +33,7 @@ def main():
     with open('large_blobs.txt','w',encoding='utf-8') as out:
         for size,h,path in objs[:200]:
             out.write(f"{size}\t{h}\t{path}\n")
-    print('Wrote large_blobs.txt with top %d objects' % min(200, len(objs)))
+    print(f"Wrote large_blobs.txt with top {min(200, len(objs))} objects")
 
 if __name__=='__main__':
     main()
