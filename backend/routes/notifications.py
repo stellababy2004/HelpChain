@@ -24,7 +24,10 @@ def get_db():
     """Get database instance from current app context"""
     try:
         # Try to get from current_app extensions first
-        if hasattr(current_app, "extensions") and "sqlalchemy" in current_app.extensions:
+        if (
+            hasattr(current_app, "extensions")
+            and "sqlalchemy" in current_app.extensions
+        ):
             return current_app.extensions["sqlalchemy"]
         # Fallback to global db instance
         return db
@@ -72,12 +75,22 @@ def notification_settings():
             #     }
             # )
 
-            return jsonify({"success": True, "message": "ðØð░ÐüÐéÐÇð¥ð╣ð║ð©ÐéðÁ Ðüð░ ðÀð░ð┐ð░ðÀðÁð¢ð© ÐâÐüð┐ðÁÐêð¢ð¥"})
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "ðØð░ÐüÐéÐÇð¥ð╣ð║ð©ÐéðÁ Ðüð░ ðÀð░ð┐ð░ðÀðÁð¢ð© ÐâÐüð┐ðÁÐêð¢ð¥",
+                }
+            )
 
     except Exception as e:
         current_app.logger.error(f"Error updating notification settings: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ ð¢ð░ ð¢ð░ÐüÐéÐÇð¥ð╣ð║ð©ÐéðÁ"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ ð¢ð░ ð¢ð░ÐüÐéÐÇð¥ð╣ð║ð©ÐéðÁ",
+                }
+            ),
             500,
         )
 
@@ -137,7 +150,12 @@ def subscribe_push():
                 # Create or get placeholder user with id=0
                 placeholder = db_instance.session.get(User, 0)
                 if not placeholder:
-                    placeholder = User(id=0, username="anonymous", email="anonymous@example.com", password_hash="")
+                    placeholder = User(
+                        id=0,
+                        username="anonymous",
+                        email="anonymous@example.com",
+                        password_hash="",
+                    )
                     # add directly to Flask DB session
                     db_instance.session.add(placeholder)
                     db_instance.session.commit()
@@ -196,14 +214,22 @@ def vapid_public_key():
         # hit the server can retrieve a usable key.
         if not public_key:
             test_key = current_app.config.get("TEST_VAPID_PUBLIC_KEY")
-            if test_key or current_app.config.get("TESTING") or (current_app.config.get("HELPCHAIN_TEST_DEBUG")):
+            if (
+                test_key
+                or current_app.config.get("TESTING")
+                or (current_app.config.get("HELPCHAIN_TEST_DEBUG"))
+            ):
                 fallback = test_key or "BTestPublicKeyForLocalTests-ReplaceMe"
                 current_app.logger.info("Using test VAPID public key for tests")
                 return jsonify({"success": True, "publicKey": fallback})
 
-            current_app.logger.info("VAPID public key not configured; push API returning disabled flag")
+            current_app.logger.info(
+                "VAPID public key not configured; push API returning disabled flag"
+            )
             return (
-                jsonify({"success": False, "message": "VAPID public key not configured"}),
+                jsonify(
+                    {"success": False, "message": "VAPID public key not configured"}
+                ),
                 200,
             )
 
@@ -253,7 +279,9 @@ def unsubscribe_push():
             if subscription:
                 subscription.is_active = False
                 db_instance.session.commit()
-                return jsonify({"success": True, "message": "Push subscription deactivated"})
+                return jsonify(
+                    {"success": True, "message": "Push subscription deactivated"}
+                )
             else:
                 return (
                     jsonify({"success": False, "message": "Subscription not found"}),
@@ -329,7 +357,12 @@ def test_email():
         #     context={"user_id": current_user.id}
         # )
 
-        return jsonify({"success": True, "message": "ðóðÁÐüÐéð¥ð▓ð©ÐÅÐé ð©ð╝ðÁð╣ð╗ ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥"})
+        return jsonify(
+            {
+                "success": True,
+                "message": "ðóðÁÐüÐéð¥ð▓ð©ÐÅÐé ð©ð╝ðÁð╣ð╗ ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥",
+            }
+        )
         # else:
         #     return (
         #         jsonify(
@@ -341,7 +374,12 @@ def test_email():
     except Exception as e:
         current_app.logger.error(f"Error sending test email: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐé ð©ð╝ðÁð╣ð╗"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐé ð©ð╝ðÁð╣ð╗",
+                }
+            ),
             500,
         )
 
@@ -367,7 +405,12 @@ def test_sms():
         #     context={"user_id": current_user.id}
         # )
 
-        return jsonify({"success": True, "message": "ðóðÁÐüÐéð¥ð▓ð¥Ðéð¥ SMS ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ð¥ ÐâÐüð┐ðÁÐêð¢ð¥"})
+        return jsonify(
+            {
+                "success": True,
+                "message": "ðóðÁÐüÐéð¥ð▓ð¥Ðéð¥ SMS ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ð¥ ÐâÐüð┐ðÁÐêð¢ð¥",
+            }
+        )
         # else:
         #     return (
         #         jsonify(
@@ -379,7 +422,12 @@ def test_sms():
     except Exception as e:
         current_app.logger.error(f"Error sending test SMS: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐé SMS"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐé SMS",
+                }
+            ),
             500,
         )
 
@@ -461,7 +509,12 @@ def send_notification():
     except Exception as e:
         current_app.logger.error(f"Error sending notification: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ð¢ð¥Ðéð©Ðäð©ð║ð░Ðåð©ÐÅ"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ð¢ð¥Ðéð©Ðäð©ð║ð░Ðåð©ÐÅ",
+                }
+            ),
             500,
         )
 
@@ -479,7 +532,9 @@ def _send_new_request_email(recipient, context):
                 "notification_type": "new_request",
                 "recipient_name": recipient.name,
                 "request": context.get("request", {}),
-                "action_url": (f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"),
+                "action_url": (
+                    f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"
+                ),
             },
         )
     except Exception as e:
@@ -499,7 +554,9 @@ def _send_urgent_request_email(recipient, context):
                 "notification_type": "urgent_request",
                 "recipient_name": recipient.name,
                 "request": context.get("request", {}),
-                "action_url": (f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"),
+                "action_url": (
+                    f"{current_app.config['FRONTEND_URL']}/request/{context.get('request', {}).get('id')}"
+                ),
                 "call_url": f"tel:{context.get('request', {}).get('emergency_phone', '')}",
             },
         )
@@ -576,14 +633,18 @@ def _send_push_notification(recipient, notification_type, context):
             push_data.update(
                 {
                     "title": "ðØð¥ð▓ð░ ðÀð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë",
-                    "body": (f"{context.get('request', {}).get('category', '')} - {context.get('request', {}).get('distance', '')}km ð¥Ðé ð▓ð░Ðü"),
+                    "body": (
+                        f"{context.get('request', {}).get('category', '')} - {context.get('request', {}).get('distance', '')}km ð¥Ðé ð▓ð░Ðü"
+                    ),
                 }
             )
         elif notification_type == "urgent_request":
             push_data.update(
                 {
                     "title": "ðíðƒðòð¿ðØðÉ ðÀð░ÐÅð▓ð║ð░!",
-                    "body": (f"{context.get('request', {}).get('category', '')} - ðØÐâðÂð┤ð░ ð¥Ðé ð¢ðÁðÀð░ð▒ð░ð▓ð¢ð░ ð┐ð¥ð╝ð¥Ðë!"),
+                    "body": (
+                        f"{context.get('request', {}).get('category', '')} - ðØÐâðÂð┤ð░ ð¥Ðé ð¢ðÁðÀð░ð▒ð░ð▓ð¢ð░ ð┐ð¥ð╝ð¥Ðë!"
+                    ),
                     "urgent": True,
                 }
             )
@@ -597,7 +658,9 @@ def _send_push_notification(recipient, notification_type, context):
 
         # Send push notification (would integrate with push service like FCM)
         # For now, just log it
-        current_app.logger.info(f"Push notification queued for user {recipient.id}: {push_data}")
+        current_app.logger.info(
+            f"Push notification queued for user {recipient.id}: {push_data}"
+        )
 
     except Exception as e:
         current_app.logger.error(f"Error sending push notification: {e}")
@@ -635,6 +698,11 @@ def notification_stats():
     except Exception as e:
         current_app.logger.error(f"Error getting notification stats: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁ ð¢ð░ ÐüÐéð░Ðéð©ÐüÐéð©ð║ð©"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁ ð¢ð░ ÐüÐéð░Ðéð©ÐüÐéð©ð║ð©",
+                }
+            ),
             500,
         )

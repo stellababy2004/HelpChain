@@ -78,7 +78,9 @@ class AdminUser(Base):
         try:
             from werkzeug.security import check_password_hash
 
-            return bool(self.password_hash and check_password_hash(self.password_hash, password))
+            return bool(
+                self.password_hash and check_password_hash(self.password_hash, password)
+            )
         except Exception:
             return self.password_hash == password
 
@@ -140,7 +142,9 @@ class AdminUser(Base):
             import pyotp
 
             totp = pyotp.TOTP(self.two_factor_secret)
-            return totp.provisioning_uri(name=self.email or self.username, issuer_name=issuer_name)
+            return totp.provisioning_uri(
+                name=self.email or self.username, issuer_name=issuer_name
+            )
         except Exception:
             return f"otpauth://totp/{issuer_name}:{self.email or self.username}?secret={self.two_factor_secret}&issuer={issuer_name}"
         finally:
@@ -200,7 +204,9 @@ class AdminLog(Base):
 
     id = Column(Integer, primary_key=True)
     admin_user_id = Column(Integer, ForeignKey("admin_users.id"), nullable=False)
-    action = Column(String(100), nullable=False)  # "approved_request", "rejected_request", etc.
+    action = Column(
+        String(100), nullable=False
+    )  # "approved_request", "rejected_request", etc.
     details = Column(Text, nullable=True)  # JSON или описание на действието
     entity_type = Column(String(50), nullable=True)  # "help_request", "volunteer", etc.
 
@@ -280,7 +286,9 @@ def get_query_for(model):
     except Exception:
         pass
     # Final fallback: raise so callers notice configuration issue early.
-    raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
+    raise RuntimeError(
+        "Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app"
+    )
 
     # NOTE: A permisssion setter helper was previously embedded here by mistake
     # (it belonged to the RolePermission model). The setter method has been
@@ -325,7 +333,9 @@ class User(Base):
         try:
             from werkzeug.security import check_password_hash
 
-            return bool(self.password_hash and check_password_hash(self.password_hash, password))
+            return bool(
+                self.password_hash and check_password_hash(self.password_hash, password)
+            )
         except Exception:
             return self.password_hash == password
 
@@ -489,7 +499,9 @@ class Volunteer(Base):
         # record
         self.total_tasks_completed = int(self.total_tasks_completed or 0) + 1
         try:
-            self.total_hours_volunteered = float(self.total_hours_volunteered or 0) + hrs
+            self.total_hours_volunteered = (
+                float(self.total_hours_volunteered or 0) + hrs
+            )
         except Exception:
             self.total_hours_volunteered = hrs
         # update last activity timestamp
@@ -959,7 +971,11 @@ try:
                 if new_id is None:
                     # Try to select any existing placeholder user
                     try:
-                        sel = connection.execute(select(users_tbl.c.id).where(users_tbl.c.username == "__auto_user__")).first()
+                        sel = connection.execute(
+                            select(users_tbl.c.id).where(
+                                users_tbl.c.username == "__auto_user__"
+                            )
+                        ).first()
                         if sel:
                             new_id = sel[0]
                     except Exception:
@@ -984,6 +1000,7 @@ try:
             # Never let the listener raise; tests will observe DB errors
             # if placeholder creation fails.
             pass
+
 except Exception:
     pass
 
@@ -1269,13 +1286,24 @@ logger = logging.getLogger(__name__)
 module_db_url = os.getenv("HELPCHAIN_MODULE_DB_URL", "")
 if module_db_url:
     try:
-        logger.debug(f"HELPCHAIN_MODULE_DB_URL set, creating module engine {module_db_url}")
-        engine = create_engine(module_db_url, connect_args={"check_same_thread": False} if module_db_url.startswith("sqlite") else {})
+        logger.debug(
+            f"HELPCHAIN_MODULE_DB_URL set, creating module engine {module_db_url}"
+        )
+        engine = create_engine(
+            module_db_url,
+            connect_args=(
+                {"check_same_thread": False}
+                if module_db_url.startswith("sqlite")
+                else {}
+            ),
+        )
         try:
             db.configure(bind=engine)
         except Exception:
             # some older SQLAlchemy versions may require replacement of scoped_session
-            db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+            db = scoped_session(
+                sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            )
             db_session = db
             Base.query = db_session.query_property()
 
@@ -1303,7 +1331,9 @@ try:
             # prefer it for module-level queries to avoid divergence between
             # the module-scoped session and the app session used in tests.
             if ext_engine is not None:
-                logger.debug("Creating metadata on Flask-SQLAlchemy engine for compatibility")
+                logger.debug(
+                    "Creating metadata on Flask-SQLAlchemy engine for compatibility"
+                )
                 Base.metadata.create_all(bind=ext_engine)
             try:
                 # Attempt to switch the module session to use the Flask app's
@@ -1337,7 +1367,9 @@ try:
                 # Non-fatal: best-effort binding; ignore failures
                 pass
         except Exception:
-            logger.debug("Could not create metadata on Flask-SQLAlchemy engine (skipping)")
+            logger.debug(
+                "Could not create metadata on Flask-SQLAlchemy engine (skipping)"
+            )
 except Exception:
     # backend.extensions may not be importable at module import time
     pass
@@ -1358,10 +1390,16 @@ try:
     # of hard-to-debug failure while preserving the original behavior for
     # consumers who set `HELPCHAIN_ALLOW_MODULE_ENGINE=1`.
     allow_module_engine = os.environ.get("HELPCHAIN_ALLOW_MODULE_ENGINE") == "1"
-    if allow_module_engine and engine is None and (os.environ.get("PYTEST_CURRENT_TEST") or "pytest" in sys.modules):
+    if (
+        allow_module_engine
+        and engine is None
+        and (os.environ.get("PYTEST_CURRENT_TEST") or "pytest" in sys.modules)
+    ):
         import tempfile
 
-        tf = tempfile.NamedTemporaryFile(prefix="hc_pytest_", suffix=".db", delete=False)
+        tf = tempfile.NamedTemporaryFile(
+            prefix="hc_pytest_", suffix=".db", delete=False
+        )
         tf.close()
         try:
             tmp_url = f"sqlite:///{tf.name}"
@@ -1369,7 +1407,9 @@ try:
             try:
                 db.configure(bind=engine)
             except Exception:
-                db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+                db = scoped_session(
+                    sessionmaker(autocommit=False, autoflush=False, bind=engine)
+                )
                 db_session = db
             try:
                 Base.metadata.create_all(bind=engine)

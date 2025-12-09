@@ -58,6 +58,8 @@ for lang in LANGUAGES:
 
 # Компилация на преводите
 print("[3] Компилиране на .mo файловете...")
-subprocess.run(["py", "-m", "babel.messages.frontend", "compile", "-d", "translations"], check=True)
+subprocess.run(
+    ["py", "-m", "babel.messages.frontend", "compile", "-d", "translations"], check=True
+)
 
 print("\n✅ Готово! Преводите са извлечени, обновени и компилирани.")

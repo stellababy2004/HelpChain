@@ -30,4 +30,8 @@ except Exception:
         # As a last resort, re-raise the import error so tests fail loudly
         raise
 
-__all__ = [name for name in globals().keys() if not name.startswith("_") and name not in ("__name__", "__doc__")]
+__all__ = [
+    name
+    for name in globals().keys()
+    if not name.startswith("_") and name not in ("__name__", "__doc__")
+]

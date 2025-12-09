@@ -56,7 +56,16 @@ except Exception:
 if db is None:
     # Fallback: build a minimal db-like namespace using SQLAlchemy primitives
     try:
-        from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
+        from sqlalchemy import (
+            Boolean,
+            Column,
+            DateTime,
+            Float,
+            ForeignKey,
+            Integer,
+            String,
+            Text,
+        )
         from sqlalchemy.orm import declarative_base, relationship
 
         _Base = declarative_base()
@@ -118,7 +127,9 @@ class AdminRole(Enum):
 
     SUPER_ADMIN = "super_admin"  # ðƒÐèð╗ðÁð¢ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ ð▓Ðüð©Ðçð║ð¥
     ADMIN = "admin"  # ðíÐéð░ð¢ð┤ð░ÐÇÐéðÁð¢ ð░ð┤ð╝ð©ð¢ ð┤ð¥ÐüÐéÐèð┐
-    MODERATOR = "moderator"  # ð×ð│ÐÇð░ð¢ð©ÐçðÁð¢ ð┤ð¥ÐüÐéÐèð┐ Ðüð░ð╝ð¥ ðÀð░ ð╝ð¥ð┤ðÁÐÇð░Ðåð©ÐÅ
+    MODERATOR = (
+        "moderator"  # ð×ð│ÐÇð░ð¢ð©ÐçðÁð¢ ð┤ð¥ÐüÐéÐèð┐ Ðüð░ð╝ð¥ ðÀð░ ð╝ð¥ð┤ðÁÐÇð░Ðåð©ÐÅ
+    )
 
 
 class AdminLog(db.Model):
@@ -132,9 +143,15 @@ class AdminLog(db.Model):
     # during test collection where models may be defined under different
     # declarative registries. The numeric id is sufficient for tests.
     admin_user_id = db.Column(db.Integer, nullable=False)
-    action = db.Column(db.String(100), nullable=False)  # "approved_request", "rejected_request", etc.
-    details = db.Column(db.Text, nullable=True)  # JSON ð©ð╗ð© ð¥ð┐ð©Ðüð░ð¢ð©ðÁ ð¢ð░ ð┤ðÁð╣ÐüÐéð▓ð©ðÁÐéð¥
-    entity_type = db.Column(db.String(50), nullable=True)  # "help_request", "volunteer", etc.
+    action = db.Column(
+        db.String(100), nullable=False
+    )  # "approved_request", "rejected_request", etc.
+    details = db.Column(
+        db.Text, nullable=True
+    )  # JSON ð©ð╗ð© ð¥ð┐ð©Ðüð░ð¢ð©ðÁ ð¢ð░ ð┤ðÁð╣ÐüÐéð▓ð©ðÁÐéð¥
+    entity_type = db.Column(
+        db.String(50), nullable=True
+    )  # "help_request", "volunteer", etc.
     entity_id = db.Column(db.Integer, nullable=True)  # ID ð¢ð░ ð¥ð▒ðÁð║Ðéð░
     ip_address = db.Column(db.String(45), nullable=True)  # IP ð░ð┤ÐÇðÁÐü
     user_agent = db.Column(db.String(500), nullable=True)  # Browser info
@@ -206,8 +223,12 @@ class Feedback(db.Model):
     timestamp = db.Column(db.DateTime, default=utc_now)
 
     # Sentiment analysis fields
-    sentiment_score = db.Column(db.Float, nullable=True)  # -1.0 to 1.0 (negative to positive)
-    sentiment_label = db.Column(db.String(20), nullable=True)  # positive, negative, neutral
+    sentiment_score = db.Column(
+        db.Float, nullable=True
+    )  # -1.0 to 1.0 (negative to positive)
+    sentiment_label = db.Column(
+        db.String(20), nullable=True
+    )  # positive, negative, neutral
     sentiment_confidence = db.Column(db.Float, nullable=True)  # 0.0 to 1.0
     ai_processed = db.Column(db.Boolean, default=False)
     ai_processing_time = db.Column(db.Float, nullable=True)  # in seconds
@@ -275,8 +296,12 @@ class AnalyticsEvent(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    event_type = db.Column(db.String(100), nullable=False)  # page_view, button_click, etc.
-    event_category = db.Column(db.String(100), nullable=True)  # navigation, engagement, etc.
+    event_type = db.Column(
+        db.String(100), nullable=False
+    )  # page_view, button_click, etc.
+    event_category = db.Column(
+        db.String(100), nullable=True
+    )  # navigation, engagement, etc.
     event_action = db.Column(db.String(100), nullable=True)  # specific action
     event_label = db.Column(db.String(255), nullable=True)  # additional info
     event_value = db.Column(db.Integer, nullable=True)  # numeric value
@@ -333,7 +358,9 @@ class UserBehavior(db.Model):
 
     # Behavior flags
     bounce_rate = db.Column(db.Boolean, default=False)  # left after one page
-    conversion_action = db.Column(db.String(100), nullable=True)  # registration, request_help, etc.
+    conversion_action = db.Column(
+        db.String(100), nullable=True
+    )  # registration, request_help, etc.
 
     # Page sequence (JSON array of visited pages)
     pages_sequence = db.Column(db.Text, nullable=True)  # JSON string
@@ -349,7 +376,9 @@ class PerformanceMetrics(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    metric_type = db.Column(db.String(100), nullable=False)  # response_time, db_query_time, etc.
+    metric_type = db.Column(
+        db.String(100), nullable=False
+    )  # response_time, db_query_time, etc.
     metric_name = db.Column(db.String(100), nullable=False)  # specific metric name
     metric_value = db.Column(db.Float, nullable=False)
     unit = db.Column(db.String(20), nullable=True)  # ms, seconds, bytes, etc.
@@ -417,9 +446,13 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    category = db.Column(db.String(100), nullable=True)  # ðÀð┤ÐÇð░ð▓ðÁ, ð¥ð▒ÐÇð░ðÀð¥ð▓ð░ð¢ð©ðÁ, Ðüð¥Ðåð©ð░ð╗ð¢ð░ ð┐ð¥ð╝ð¥Ðë, etc.
+    category = db.Column(
+        db.String(100), nullable=True
+    )  # ðÀð┤ÐÇð░ð▓ðÁ, ð¥ð▒ÐÇð░ðÀð¥ð▓ð░ð¢ð©ðÁ, Ðüð¥Ðåð©ð░ð╗ð¢ð░ ð┐ð¥ð╝ð¥Ðë, etc.
     priority = db.Column(db.String(20), default="medium")  # low, medium, high, urgent
-    status = db.Column(db.String(50), default="open")  # open, assigned, in_progress, completed, cancelled
+    status = db.Column(
+        db.String(50), default="open"
+    )  # open, assigned, in_progress, completed, cancelled
 
     # Location requirements
     location_required = db.Column(db.Boolean, default=False)
@@ -429,7 +462,9 @@ class Task(db.Model):
 
     # Skills requirements
     required_skills = db.Column(db.Text, nullable=True)  # JSON array of required skills
-    preferred_skills = db.Column(db.Text, nullable=True)  # JSON array of preferred skills
+    preferred_skills = db.Column(
+        db.Text, nullable=True
+    )  # JSON array of preferred skills
 
     # Time requirements
     estimated_hours = db.Column(db.Integer, nullable=True)
@@ -477,7 +512,9 @@ class TaskAssignment(db.Model):
 
     # Assignment details
     assigned_at = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(50), default="suggested")  # suggested, assigned, rejected, completed
+    status = db.Column(
+        db.String(50), default="suggested"
+    )  # suggested, assigned, rejected, completed
     assigned_by = db.Column(db.String(50), default="auto")  # auto, manual, admin
 
     # Feedback and ratings

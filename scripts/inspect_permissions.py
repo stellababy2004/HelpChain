@@ -12,7 +12,11 @@ import importlib.util
 # models after the Flask app has been initialized.
 spec = importlib.util.spec_from_file_location(
     "backend_extensions",
-    os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), "backend", "extensions.py"),
+    os.path.join(
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..")),
+        "backend",
+        "extensions.py",
+    ),
 )
 _ext_mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(_ext_mod)
@@ -53,7 +57,9 @@ with app.app_context():
 
     admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
     if not admin_role:
-        admin_role = Role(name="Администратор", description="Администратор", is_system_role=True)
+        admin_role = Role(
+            name="Администратор", description="Администратор", is_system_role=True
+        )
         _db.session.add(admin_role)
         try:
             _db.session.flush()
@@ -61,7 +67,11 @@ with app.app_context():
             pass
 
     for codename, perm in created.items():
-        exists = _db.session.query(RolePermission).filter_by(role_id=admin_role.id, permission=perm.codename).first()
+        exists = (
+            _db.session.query(RolePermission)
+            .filter_by(role_id=admin_role.id, permission=perm.codename)
+            .first()
+        )
         print("exists check for", codename, "->", exists)
         if not exists:
             try:
@@ -88,6 +98,15 @@ with app.app_context():
     print("Roles:", [(r.id, r.name) for r in Role.query.all()])
     print("RolePermissions raw query:", _db.session.query(RolePermission).all())
     for rp in _db.session.query(RolePermission).all():
-        print("RP:", getattr(rp, "id", None), "role_id", getattr(rp, "role_id", None), "permission_id", getattr(rp, "permission_id", None), "permission_rel", getattr(rp, "permission", None))
+        print(
+            "RP:",
+            getattr(rp, "id", None),
+            "role_id",
+            getattr(rp, "role_id", None),
+            "permission_id",
+            getattr(rp, "permission_id", None),
+            "permission_rel",
+            getattr(rp, "permission", None),
+        )
 
 print("done")

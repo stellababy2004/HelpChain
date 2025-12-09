@@ -22,7 +22,9 @@ def test_sw_route():
 
         @app.route("/sw.js")
         def serve_sw():
-            response = send_from_directory(app.static_folder, "sw.js", mimetype="application/javascript")
+            response = send_from_directory(
+                app.static_folder, "sw.js", mimetype="application/javascript"
+            )
             response.headers["Service-Worker-Allowed"] = "/"
             return response
 
@@ -31,7 +33,9 @@ def test_sw_route():
             response = client.get("/sw.js")
             print(f"Status Code: {response.status_code}")
             print(f"Content-Type: {response.headers.get('Content-Type')}")
-            print(f"Service-Worker-Allowed: {response.headers.get('Service-Worker-Allowed')}")
+            print(
+                f"Service-Worker-Allowed: {response.headers.get('Service-Worker-Allowed')}"
+            )
             print(f"Content Length: {len(response.get_data())}")
 
             if response.status_code == 200:

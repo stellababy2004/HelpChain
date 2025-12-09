@@ -230,14 +230,18 @@ def admin_login():
                         marker_path = os.path.normpath(marker_path)
                         try:
                             with open(marker_path, "a", encoding="utf-8") as _mf:
-                                _mf.write(f"{datetime.now(UTC).isoformat()} MARKER admin_login before session.execute\n")
+                                _mf.write(
+                                    f"{datetime.now(UTC).isoformat()} MARKER admin_login before session.execute\n"
+                                )
                         except Exception:
                             pass
                     except Exception:
                         pass
 
                     try:
-                        _res = _db.session.execute(_text("SELECT count(*) FROM admin_users"))
+                        _res = _db.session.execute(
+                            _text("SELECT count(*) FROM admin_users")
+                        )
                         try:
                             _count = _res.scalar()
                         finally:
@@ -271,7 +275,9 @@ def admin_login():
                             marker_path = os.path.normpath(marker_path)
                             try:
                                 with open(marker_path, "a", encoding="utf-8") as _mf:
-                                    _mf.write(f"{datetime.now(UTC).isoformat()} MARKER admin_login session.execute failed - before ORM fallback\n")
+                                    _mf.write(
+                                        f"{datetime.now(UTC).isoformat()} MARKER admin_login session.execute failed - before ORM fallback\n"
+                                    )
                             except Exception:
                                 pass
                         except Exception:
@@ -331,12 +337,16 @@ def admin_login():
 
                     session["pending_email_2fa"] = True
                     session["email_2fa_code"] = code
-                    session["email_2fa_expires"] = (datetime.now() + timedelta(minutes=10)).timestamp()
+                    session["email_2fa_expires"] = (
+                        datetime.now() + timedelta(minutes=10)
+                    ).timestamp()
 
                     # Attempt to send via appy (monkeypatched send_email_2fa_code in tests)
                     if appy_mod and hasattr(appy_mod, "send_email_2fa_code"):
                         try:
-                            appy_mod.send_email_2fa_code(code, request.remote_addr, request.user_agent.string)
+                            appy_mod.send_email_2fa_code(
+                                code, request.remote_addr, request.user_agent.string
+                            )
                         except Exception:
                             # Don't fail login flow if sending fails during tests
                             pass
@@ -477,7 +487,11 @@ def admin_dashboard():
     except Exception:
         total_requests = 0
     try:
-        pending_requests = sum(1 for r in requests if getattr(r, "status", None) not in ("completed", "done", None))
+        pending_requests = sum(
+            1
+            for r in requests
+            if getattr(r, "status", None) not in ("completed", "done", None)
+        )
     except Exception:
         pending_requests = 0
     try:
@@ -496,7 +510,12 @@ def admin_dashboard():
         import logging as _logging
 
         _log = _logging.getLogger(__name__)
-        _log.info("admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s", stats, total_requests, total_volunteers)
+        _log.info(
+            "admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s",
+            stats,
+            total_requests,
+            total_volunteers,
+        )
     except Exception:
         pass
 
@@ -595,9 +614,13 @@ def edit_volunteer(id):
         volunteer.phone = request.form["phone"]
         volunteer.location = request.form["location"]
         volunteer.skills = request.form.get("skills", "")
-        logging.warning(f"[DEBUG] Before commit: name={volunteer.name}, email={volunteer.email}, phone={volunteer.phone}, location={volunteer.location}, skills={volunteer.skills}")
+        logging.warning(
+            f"[DEBUG] Before commit: name={volunteer.name}, email={volunteer.email}, phone={volunteer.phone}, location={volunteer.location}, skills={volunteer.skills}"
+        )
         db.session.commit()
-        logging.warning(f"[DEBUG] After commit: id={volunteer.id}, email={volunteer.email}")
+        logging.warning(
+            f"[DEBUG] After commit: id={volunteer.id}, email={volunteer.email}"
+        )
         flash("Промените са запазени!", "success")
         return redirect(url_for("admin.admin_volunteers"))
 
@@ -681,10 +704,14 @@ def update_status(req_id):
                 "updated_at": req.updated_at,
             }
             if recipient:
-                send_notification_email(recipient, subject, "email_template.html", context)
+                send_notification_email(
+                    recipient, subject, "email_template.html", context
+                )
         except Exception as e:
             import logging
 
-            logging.warning(f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}")
+            logging.warning(
+                f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}"
+            )
 
     return jsonify({"success": True})

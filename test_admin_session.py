@@ -32,7 +32,9 @@ def test_admin_session_persistence():
         )  # Don't follow redirects to check status
 
         print(f"Login response status: {login_response.status_code}")
-        print(f"Login response location: {login_response.headers.get('Location', 'No redirect')}")
+        print(
+            f"Login response location: {login_response.headers.get('Location', 'No redirect')}"
+        )
 
         # Check cookies - Flask test client stores cookies differently
         print("Cookies after login: Checking session data...")
@@ -42,17 +44,26 @@ def test_admin_session_persistence():
         dashboard_response = client.get("/admin/dashboard", follow_redirects=False)
 
         print(f"Dashboard response status: {dashboard_response.status_code}")
-        print(f"Dashboard response location: {dashboard_response.headers.get('Location', 'No redirect')}")
+        print(
+            f"Dashboard response location: {dashboard_response.headers.get('Location', 'No redirect')}"
+        )
 
         # Check if dashboard access succeeded
         if dashboard_response.status_code == 200:
             print("✓ Dashboard access test PASSED - Session persisted!")
             return True
-        elif dashboard_response.status_code == 302 and "login" in dashboard_response.headers.get("Location", ""):
-            print("✗ Dashboard access test FAILED - Redirected to login (session not persisted)")
+        elif (
+            dashboard_response.status_code == 302
+            and "login" in dashboard_response.headers.get("Location", "")
+        ):
+            print(
+                "✗ Dashboard access test FAILED - Redirected to login (session not persisted)"
+            )
             return False
         else:
-            print(f"? Dashboard access test UNKNOWN - Status {dashboard_response.status_code}")
+            print(
+                f"? Dashboard access test UNKNOWN - Status {dashboard_response.status_code}"
+            )
             return False
 
 

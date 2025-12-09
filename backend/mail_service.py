@@ -261,8 +261,13 @@ def send_task_completed_email(task):
             "recipient_name": task.requester.name,
             "task": {
                 "title": task.title,
-                "completion_note": task.completion_note or "Задачата е успешно завършена.",
-                "completed_at": (task.completed_at.strftime("%d.%m.%Y %H:%M") if task.completed_at else utc_now().strftime("%d.%m.%Y %H:%M")),
+                "completion_note": task.completion_note
+                or "Задачата е успешно завършена.",
+                "completed_at": (
+                    task.completed_at.strftime("%d.%m.%Y %H:%M")
+                    if task.completed_at
+                    else utc_now().strftime("%d.%m.%Y %H:%M")
+                ),
             },
             "feedback_url": f"{current_app.config['FRONTEND_URL']}/feedback/{task.id}",
             "new_request_url": f"{current_app.config['FRONTEND_URL']}/new-request",
@@ -289,7 +294,11 @@ def send_feedback_request_email(task):
             "recipient_name": task.requester.name,
             "task": {
                 "title": task.title,
-                "completed_at": (task.completed_at.strftime("%d.%m.%Y %H:%M") if task.completed_at else utc_now().strftime("%d.%m.%Y %H:%M")),
+                "completed_at": (
+                    task.completed_at.strftime("%d.%m.%Y %H:%M")
+                    if task.completed_at
+                    else utc_now().strftime("%d.%m.%Y %H:%M")
+                ),
             },
             "feedback_url": f"{current_app.config['FRONTEND_URL']}/feedback/{task.id}",
         },

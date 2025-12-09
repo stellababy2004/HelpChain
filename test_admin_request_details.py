@@ -9,7 +9,9 @@ import time
 
 # Add the backend directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend", "helpchain-backend", "src"))
+sys.path.insert(
+    0, os.path.join(os.path.dirname(__file__), "backend", "helpchain-backend", "src")
+)
 
 # Set up environment
 os.environ["FLASK_ENV"] = "testing"
@@ -22,7 +24,9 @@ class MockAnalyticsService:
         pass
 
 
-sys.modules["analytics_service"] = type("MockModule", (), {"analytics_service": MockAnalyticsService()})()
+sys.modules["analytics_service"] = type(
+    "MockModule", (), {"analytics_service": MockAnalyticsService()}
+)()
 
 # Import the existing app
 from backend.appy import app, db
@@ -42,7 +46,9 @@ def test_admin_request_details():
             unique_email = f"test_admin_{timestamp}@test.com"
 
             # Check if admin already exists
-            existing_admin = db.session.query(AdminUser).filter_by(email=unique_email).first()
+            existing_admin = (
+                db.session.query(AdminUser).filter_by(email=unique_email).first()
+            )
             if existing_admin:
                 print(f"Admin with email {unique_email} already exists, using existing")
                 admin = existing_admin
@@ -68,13 +74,17 @@ def test_admin_request_details():
             db.session.commit()
 
             print(f"Created test request with ID: {request.id}")
-            print(f"Request details: {request.name}, {request.email}, {request.message}")
+            print(
+                f"Request details: {request.name}, {request.email}, {request.message}"
+            )
 
             # Verify the request was created correctly
             retrieved_request = db.session.get(HelpRequest, request.id)
             if retrieved_request:
                 print("SUCCESS: Request can be retrieved from database!")
-                print(f"Retrieved request: {retrieved_request.name}, {retrieved_request.email}")
+                print(
+                    f"Retrieved request: {retrieved_request.name}, {retrieved_request.email}"
+                )
                 return True
             else:
                 print("FAILED: Could not retrieve request from database")

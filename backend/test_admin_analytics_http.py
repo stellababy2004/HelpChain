@@ -26,7 +26,9 @@ def test_admin_analytics_http():
             "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
         }
 
-        response = session.post(f"{base_url}/admin/login", data=login_data, allow_redirects=True)
+        response = session.post(
+            f"{base_url}/admin/login", data=login_data, allow_redirects=True
+        )
         print(f"Login response status: {response.status_code}")
         print(f"Final URL after login: {response.url}")
 
@@ -49,7 +51,9 @@ def test_admin_analytics_http():
             soup = BeautifulSoup(response.text, "html.parser")
 
             # Check for Chart.js script
-            chart_js = soup.find("script", string=lambda text: text and "Chart.js" in text)
+            chart_js = soup.find(
+                "script", string=lambda text: text and "Chart.js" in text
+            )
             if chart_js:
                 print("SUCCESS: Chart.js library found")
             else:
@@ -83,7 +87,9 @@ def test_admin_analytics_http():
             if trends_script:
                 try:
                     trends_data = json.loads(trends_script.string)
-                    print(f"SUCCESS: Trends data loaded with {len(trends_data.get('labels', []))} data points")
+                    print(
+                        f"SUCCESS: Trends data loaded with {len(trends_data.get('labels', []))} data points"
+                    )
                 except json.JSONDecodeError:
                     print("WARNING: Trends data is not valid JSON")
             else:
@@ -94,7 +100,9 @@ def test_admin_analytics_http():
             if category_script:
                 try:
                     category_data = json.loads(category_script.string)
-                    print(f"SUCCESS: Category stats loaded with {len(category_data)} categories")
+                    print(
+                        f"SUCCESS: Category stats loaded with {len(category_data)} categories"
+                    )
                 except json.JSONDecodeError:
                     print("WARNING: Category stats is not valid JSON")
             else:
@@ -105,7 +113,9 @@ def test_admin_analytics_http():
             print("Response content:", response.text[:1000])
 
     except requests.exceptions.ConnectionError:
-        print("ERROR: Cannot connect to server. Make sure Flask app is running on port 8000")
+        print(
+            "ERROR: Cannot connect to server. Make sure Flask app is running on port 8000"
+        )
     except Exception as e:
         print(f"ERROR: {e}")
         import traceback

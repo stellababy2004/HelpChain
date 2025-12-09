@@ -40,7 +40,9 @@ def emit_status_update():
     except Exception as analytics_error:
         app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-    app.logger.info(f"Request {request_id} status updated from {old_status} to {new_status}")
+    app.logger.info(
+        f"Request {request_id} status updated from {old_status} to {new_status}"
+    )
 
 
 class Task:
@@ -114,14 +116,20 @@ def require_admin_login(f):
 
         # Allow a config-based bypass (used in some test fixtures)
         try:
-            if current_app and getattr(current_app, "config", {}).get("BYPASS_ADMIN_AUTH", False):
+            if current_app and getattr(current_app, "config", {}).get(
+                "BYPASS_ADMIN_AUTH", False
+            ):
                 return f(*args, **kwargs)
         except Exception:
             pass
 
         # Test-only header bypass when TESTING=True
         try:
-            if current_app and getattr(current_app, "config", {}).get("TESTING") and request.headers.get("X-Admin-Bypass") == "1":
+            if (
+                current_app
+                and getattr(current_app, "config", {}).get("TESTING")
+                and request.headers.get("X-Admin-Bypass") == "1"
+            ):
                 return f(*args, **kwargs)
         except Exception:
             pass
@@ -150,7 +158,10 @@ def require_admin_login(f):
                 and (request.path or "") == "/admin_dashboard"
             ):
                 try:
-                    flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning")
+                    flash(
+                        "ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.",
+                        "warning",
+                    )
                 except Exception:
                     pass
                 try:
@@ -176,7 +187,12 @@ def require_admin_login(f):
             is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
             accepts_json = request.accept_mimetypes.best == "application/json"
             path = request.path or ""
-            if is_ajax or accepts_json or path.startswith("/admin/api/") or (request.method != "GET" and path.startswith("/api/")):
+            if (
+                is_ajax
+                or accepts_json
+                or path.startswith("/admin/api/")
+                or (request.method != "GET" and path.startswith("/api/"))
+            ):
                 try:
                     return jsonify({"error": "Unauthorized"}), 401
                 except Exception:
@@ -185,7 +201,9 @@ def require_admin_login(f):
             pass
 
         try:
-            flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning")
+            flash(
+                "ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning"
+            )
         except Exception:
             pass
         try:
@@ -289,7 +307,12 @@ try:
                     body = getattr(msg, "body", kwargs.get("body", None))
                     _dispatch_func(subject=subj, recipients=recips, body=body, **kwargs)
                 else:
-                    _dispatch_func(subject=kwargs.get("subject"), recipients=kwargs.get("recipients"), body=kwargs.get("body"), **kwargs)
+                    _dispatch_func(
+                        subject=kwargs.get("subject"),
+                        recipients=kwargs.get("recipients"),
+                        body=kwargs.get("body"),
+                        **kwargs,
+                    )
             except TypeError:
                 # Fallback: try best-effort positional mapping
                 try:
@@ -368,9 +391,22 @@ def safe_url_for(endpoint: str, **values) -> str:
         except Exception:
             pass
         try:
-            log_path = os.path.join(getattr(app, "instance_path", app.root_path), "safe_url_for_fallbacks.log")
+            log_path = os.path.join(
+                getattr(app, "instance_path", app.root_path),
+                "safe_url_for_fallbacks.log",
+            )
             with open(log_path, "a", encoding="utf-8") as fh:
-                fh.write(json.dumps({"ts": int(datetime.now().timestamp()), "endpoint": endpoint, "values": values, "error": str(e)}) + "\n")
+                fh.write(
+                    json.dumps(
+                        {
+                            "ts": int(datetime.now().timestamp()),
+                            "endpoint": endpoint,
+                            "values": values,
+                            "error": str(e),
+                        }
+                    )
+                    + "\n"
+                )
         except Exception:
             pass
         return "#"
@@ -393,7 +429,10 @@ if str(_appy_os.environ.get("HELPCHAIN_TESTING", "")).lower() in ("1", "true", "
         # pytest session can control the temporary DB file location.
         try:
             app.config["_TEST_DB_PATH"] = _test_db_path
-            logger.info("TESTING: Using HELPCHAIN_TEST_DB_PATH from environment: %s", _test_db_path)
+            logger.info(
+                "TESTING: Using HELPCHAIN_TEST_DB_PATH from environment: %s",
+                _test_db_path,
+            )
         except Exception:
             # Best-effort: continue if logging or config assignment fails
             app.config.setdefault("_TEST_DB_PATH", _test_db_path)
@@ -409,7 +448,12 @@ def public_dashboard():
     db = get_db()
     session = db.session
     # ðÆðÀðÁð╝ð░ð╝ðÁ ð┐ð¥Ðüð╗ðÁð┤ð¢ð©ÐéðÁ 30 ðÀð░ÐÅð▓ð║ð© (ð╝ð¥ðÂðÁ ð┤ð░ ÐüðÁ ð║ð¥ÐÇð©ð│ð©ÐÇð░)
-    requests = session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).limit(30).all()
+    requests = (
+        session.query(HelpRequest)
+        .order_by(HelpRequest.created_at.desc())
+        .limit(30)
+        .all()
+    )
     # ðƒð¥ð┤ð│ð¥Ðéð▓ÐÅð╝ðÁ ð┤ð░ð¢ð¢ð©ÐéðÁ ðÀð░ Ðêð░ð▒ð╗ð¥ð¢ð░
     return render_template(
         "dashboard_comparison.html",
@@ -452,7 +496,10 @@ def _testing_admin_request_shim():
         if not session.get("admin_logged_in"):
             if request.method == "GET" and request.path == "/admin_dashboard":
                 try:
-                    flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning")
+                    flash(
+                        "ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.",
+                        "warning",
+                    )
                 except Exception:
                     pass
                 try:
@@ -468,7 +515,11 @@ def _testing_admin_request_shim():
                     # the environment opt-in is set, AND the test request
                     # includes the `X-Legacy-Admin-Alias: 1` header. This makes
                     # the legacy-200 behavior opt-in per-request.
-                    if not (current_app.config.get("TESTING") and os.environ.get("HELPCHAIN_LEGACY_ADMIN_ALIAS") == "1" and request.headers.get("X-Legacy-Admin-Alias") == "1"):
+                    if not (
+                        current_app.config.get("TESTING")
+                        and os.environ.get("HELPCHAIN_LEGACY_ADMIN_ALIAS") == "1"
+                        and request.headers.get("X-Legacy-Admin-Alias") == "1"
+                    ):
                         return redirect(url_for("admin_login"))
                 except Exception:
                     # If redirect fails, fall back to rendering the template
@@ -481,7 +532,9 @@ def _testing_admin_request_shim():
             # blanket-block all `/api/` non-GET requests because many public
             # API endpoints (e.g. volunteer location updates) are meant to be
             # accessible without admin authentication in tests.
-            if (request.path or "").startswith("/admin/api/") and request.method != "GET":
+            if (request.path or "").startswith(
+                "/admin/api/"
+            ) and request.method != "GET":
                 return jsonify({"error": "Unauthorized"}), 401
     except Exception:
         # Don't break normal request flow if shim fails
@@ -534,16 +587,27 @@ def admin_dashboard_alias():
             try:
                 # Detect API/AJAX callers similarly to other shims
                 is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
-                accepts_json = request.accept_mimetypes.best == "application/json" or "application/json" in (request.headers.get("Accept", "") or "")
+                accepts_json = (
+                    request.accept_mimetypes.best == "application/json"
+                    or "application/json" in (request.headers.get("Accept", "") or "")
+                )
                 path = request.path or ""
                 # If this appears to be an API/AJAX call, let the shim fall
                 # through so other handlers can return JSON 401 as appropriate.
-                if is_ajax or accepts_json or path.startswith("/admin/api/") or (request.method != "GET" and path.startswith("/api/")):
+                if (
+                    is_ajax
+                    or accepts_json
+                    or path.startswith("/admin/api/")
+                    or (request.method != "GET" and path.startswith("/api/"))
+                ):
                     # Let the normal flow handle API responses
                     pass
                 else:
                     try:
-                        flash("ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.", "warning")
+                        flash(
+                            "ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð║ð░Ðéð¥ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.",
+                            "warning",
+                        )
                     except Exception:
                         pass
                     try:
@@ -572,7 +636,12 @@ def admin_dashboard_alias():
             # Only return the login HTML (200) for legacy alias when TESTING
             # and the request explicitly opts in via the header. This avoids
             # changing behavior for tests that expect a redirect (302).
-            if current_app and current_app.config.get("TESTING") and not session.get("admin_logged_in") and request.headers.get("X-Legacy-Admin-Alias") == "1":
+            if (
+                current_app
+                and current_app.config.get("TESTING")
+                and not session.get("admin_logged_in")
+                and request.headers.get("X-Legacy-Admin-Alias") == "1"
+            ):
                 try:
                     return render_template("admin_login.html", error=None)
                 except Exception:
@@ -630,7 +699,9 @@ def _testing_admin_dashboard_after_request(response):
             try:
                 from flask import make_response
 
-                return make_response(render_template("admin_login.html", error=None), 200)
+                return make_response(
+                    render_template("admin_login.html", error=None), 200
+                )
             except Exception:
                 try:
                     from flask import make_response
@@ -687,7 +758,11 @@ def public_requests_list():
     keyword = request.args.get("q") or request.args.get("keyword")
     if keyword:
         kw = f"%{keyword.strip().lower()}%"
-        query = query.filter(func.lower(HelpRequest.title).like(kw) | func.lower(HelpRequest.description).like(kw) | func.lower(HelpRequest.message).like(kw))
+        query = query.filter(
+            func.lower(HelpRequest.title).like(kw)
+            | func.lower(HelpRequest.description).like(kw)
+            | func.lower(HelpRequest.message).like(kw)
+        )
 
     # ð£ð¥ðÂðÁ ð┤ð░ ð┤ð¥ð▒ð░ð▓ð©ð╝ ð┐ð░ð│ð©ð¢ð░Ðåð©ÐÅ ð▓ ð▒Ðèð┤ðÁÐëðÁ
     result = []
@@ -793,7 +868,9 @@ def public_request_detail(request_id):
         "email": req.email,
         "phone": req.phone,
         "completed_at": req.completed_at.isoformat() if req.completed_at else None,
-        "priority": (req.priority.name if hasattr(req.priority, "name") else str(req.priority)),
+        "priority": (
+            req.priority.name if hasattr(req.priority, "name") else str(req.priority)
+        ),
         "source_channel": req.source_channel,
         "assigned_volunteer_id": req.assigned_volunteer_id,
     }
@@ -1039,7 +1116,9 @@ def setup_logging():
     root_logger.setLevel(logging.INFO)
 
     # Create formatters
-    detailed_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s")
+    detailed_formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s"
+    )
     simple_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
     # Console handler for development
@@ -1063,7 +1142,9 @@ def setup_logging():
         # Security logger for sensitive operations
         security_logger = logging.getLogger("security")
         security_logger.setLevel(logging.INFO)
-        security_handler = logging.FileHandler("helpchain_security.log", encoding="utf-8")
+        security_handler = logging.FileHandler(
+            "helpchain_security.log", encoding="utf-8"
+        )
         security_handler.setFormatter(detailed_formatter)
         security_logger.addHandler(security_handler)
         security_logger.propagate = False  # Don't propagate to root logger
@@ -1109,7 +1190,9 @@ def _has_table_uncached(table_name: str) -> bool:
     try:
         engine = db.engine
     except Exception as exc:  # pragma: no cover - defensive
-        logger.debug("Database engine not ready for table check %s: %s", table_name, exc)
+        logger.debug(
+            "Database engine not ready for table check %s: %s", table_name, exc
+        )
         return False
 
     # Fast-path: if SQLAlchemy metadata already knows about the table name
@@ -1160,11 +1243,15 @@ def _has_table_uncached(table_name: str) -> bool:
             from datetime import datetime
             import os
 
-            marker_path = os.path.join(os.path.dirname(__file__), "tools", "connection_markers.txt")
+            marker_path = os.path.join(
+                os.path.dirname(__file__), "tools", "connection_markers.txt"
+            )
             marker_path = os.path.normpath(marker_path)
             try:
                 with open(marker_path, "a", encoding="utf-8") as _mf:
-                    _mf.write(f"{datetime.utcnow().isoformat()} MARKER _has_table_uncached before engine.connect table={table_name}\n")
+                    _mf.write(
+                        f"{datetime.utcnow().isoformat()} MARKER _has_table_uncached before engine.connect table={table_name}\n"
+                    )
             except Exception:
                 pass
         except Exception:
@@ -1313,7 +1400,9 @@ def initialize_default_admin():
 
         if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
             if _admin_init_attempted:
-                logger.debug("initialize_default_admin: already attempted during tests; skipping")
+                logger.debug(
+                    "initialize_default_admin: already attempted during tests; skipping"
+                )
                 return None
             # Mark attempted early to avoid re-entrancy and repeated DB access
             _admin_init_attempted = True
@@ -1324,7 +1413,9 @@ def initialize_default_admin():
 
             if getattr(current_app, "config", {}).get("TESTING"):
                 if _admin_init_attempted:
-                    logger.debug("initialize_default_admin: already attempted during tests; skipping")
+                    logger.debug(
+                        "initialize_default_admin: already attempted during tests; skipping"
+                    )
                     return None
                 _admin_init_attempted = True
         except Exception:
@@ -1341,7 +1432,9 @@ def initialize_default_admin():
     try:
         table_exists = _has_table("admin_users")
         if not table_exists:
-            logger.debug("initialize_default_admin: admin_users table not present, skipping")
+            logger.debug(
+                "initialize_default_admin: admin_users table not present, skipping"
+            )
             return None
     except Exception:
         # If the table check itself fails, continue and attempt the regular flow.
@@ -1357,7 +1450,9 @@ def initialize_default_admin():
             import traceback
 
             if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                print("[DEEP DIAG] initialize_default_admin: beginning deep registry diagnostics")
+                print(
+                    "[DEEP DIAG] initialize_default_admin: beginning deep registry diagnostics"
+                )
 
                 # 1) canonical db instance
                 # Disabled: importlib diagnostics for backend.extensions (not needed in script mode)
@@ -1383,7 +1478,9 @@ def initialize_default_admin():
                 # 3) dump registry internals and mappers
                 for rname, reg in registries:
                     try:
-                        print(f"[DEEP DIAG] registry {rname} -> id={id(reg)} repr={reg}")
+                        print(
+                            f"[DEEP DIAG] registry {rname} -> id={id(reg)} repr={reg}"
+                        )
                         cr = getattr(reg, "_class_registry", None)
                         if cr is not None:
                             try:
@@ -1402,7 +1499,9 @@ def initialize_default_admin():
                                 for k, v in list(cr.items()):
                                     try:
                                         if getattr(v, "__name__", None) == "AuditLog":
-                                            print(f"[DEEP DIAG] {rname} class-reg entry {k} -> {v} id={id(v)} module={getattr(v, '__module__', None)}")
+                                            print(
+                                                f"[DEEP DIAG] {rname} class-reg entry {k} -> {v} id={id(v)} module={getattr(v, '__module__', None)}"
+                                            )
                                     except Exception:
                                         pass
                             except Exception:
@@ -1414,7 +1513,9 @@ def initialize_default_admin():
                                 for m in list(miter):
                                     try:
                                         cls = getattr(m, "class_", None)
-                                        print(f"[DEEP DIAG] mapper -> {m} class={cls} id={id(cls) if cls is not None else None} module={getattr(cls, '__module__', None)}")
+                                        print(
+                                            f"[DEEP DIAG] mapper -> {m} class={cls} id={id(cls) if cls is not None else None} module={getattr(cls, '__module__', None)}"
+                                        )
                                     except Exception:
                                         pass
                         except Exception:
@@ -1438,12 +1539,20 @@ def initialize_default_admin():
                         except Exception:
                             continue
                     if extra_dbs:
-                        print("[DEEP DIAG] modules exposing a `db = SQLAlchemy()` instance:")
+                        print(
+                            "[DEEP DIAG] modules exposing a `db = SQLAlchemy()` instance:"
+                        )
                         for mname, did, cand in extra_dbs:
-                            is_canon = canonical_db is not None and id(canonical_db) == did
-                            print(f"[DEEP DIAG] - {mname} id={did} canonical={is_canon} repr={cand}")
+                            is_canon = (
+                                canonical_db is not None and id(canonical_db) == did
+                            )
+                            print(
+                                f"[DEEP DIAG] - {mname} id={did} canonical={is_canon} repr={cand}"
+                            )
                     else:
-                        print("[DEEP DIAG] no other modules exposing db=SQLAlchemy() found")
+                        print(
+                            "[DEEP DIAG] no other modules exposing db=SQLAlchemy() found"
+                        )
                 except Exception as _e:
                     print(
                         "[DEEP DIAG] scanning sys.modules for extra db instances failed:",
@@ -1459,9 +1568,14 @@ def initialize_default_admin():
                         try:
                             if not mobj:
                                 continue
-                            for attrname, attrval in getattr(mobj, "__dict__", {}).items():
+                            for attrname, attrval in getattr(
+                                mobj, "__dict__", {}
+                            ).items():
                                 try:
-                                    if _inspect.isclass(attrval) and attrval.__name__ == "AuditLog":
+                                    if (
+                                        _inspect.isclass(attrval)
+                                        and attrval.__name__ == "AuditLog"
+                                    ):
                                         found.append(
                                             (
                                                 mname,
@@ -1483,11 +1597,15 @@ def initialize_default_admin():
                                 entry,
                             )
                     else:
-                        print("[DEEP DIAG] no AuditLog classes found in sys.modules scan")
+                        print(
+                            "[DEEP DIAG] no AuditLog classes found in sys.modules scan"
+                        )
                 except Exception as _e:
                     print("[DEEP DIAG] sys.modules AuditLog scan failed:", _e)
 
-                print("[DEEP DIAG] initialize_default_admin: deep registry diagnostics complete")
+                print(
+                    "[DEEP DIAG] initialize_default_admin: deep registry diagnostics complete"
+                )
         except Exception:
             print(
                 "[DEEP DIAG] initialize_default_admin: diagnostics failed:\n",
@@ -1502,7 +1620,9 @@ def initialize_default_admin():
         try:
             with session.begin():
                 # Check if admin user exists
-                admin_user = session.query(AdminUser).filter_by(username="admin").first()
+                admin_user = (
+                    session.query(AdminUser).filter_by(username="admin").first()
+                )
                 if admin_user:
                     logger.info("Admin user already exists")
                     return admin_user
@@ -1523,7 +1643,9 @@ def initialize_default_admin():
                 # if not already present. Use the same transactional session.
                 existing_user = session.query(User).filter_by(username="admin").first()
                 if existing_user:
-                    logger.info("User with username 'admin' already exists in users. Skipping creation.")
+                    logger.info(
+                        "User with username 'admin' already exists in users. Skipping creation."
+                    )
                 else:
                     logger.info("Creating User record with superadmin role...")
                     # Determine a compatible RoleEnum value for superadmin.
@@ -1536,7 +1658,11 @@ def initialize_default_admin():
                         role_value = None
                     if role_value is None:
                         # Try common alternatives
-                        role_value = getattr(RoleEnum, "ADMIN", None) or getattr(RoleEnum, "SuperAdmin", None) or getattr(RoleEnum, "SUPERADMIN", None)
+                        role_value = (
+                            getattr(RoleEnum, "ADMIN", None)
+                            or getattr(RoleEnum, "SuperAdmin", None)
+                            or getattr(RoleEnum, "SUPERADMIN", None)
+                        )
                     if role_value is None:
                         # As a last resort, pick the first enum member
                         try:
@@ -1551,7 +1677,9 @@ def initialize_default_admin():
                         role=role_value,
                         is_active=True,
                     )
-                    logger.info(f"User object created: username={user.username}, role={user.role}")
+                    logger.info(
+                        f"User object created: username={user.username}, role={user.role}"
+                    )
                     session.add(user)
                     logger.info("User added to session")
 
@@ -1566,7 +1694,9 @@ def initialize_default_admin():
     except Exception as e:
         import traceback
 
-        logger.error("Default admin initialization failed: %s\n%s", e, traceback.format_exc())
+        logger.error(
+            "Default admin initialization failed: %s\n%s", e, traceback.format_exc()
+        )
         try:
             # Best-effort: ensure session rollback to release connections
             db = get_db()
@@ -1702,7 +1832,9 @@ HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░
             logger.info("Email 2FA code saved to file as fallback")
             return True
         except Exception as file_e:
-            logger.error(f"Failed to save email 2FA code to file: {file_e}", exc_info=app.debug)
+            logger.error(
+                f"Failed to save email 2FA code to file: {file_e}", exc_info=app.debug
+            )
             return False
 
 
@@ -1744,11 +1876,18 @@ def load_realtime_settings():
     except FileNotFoundError:
         return REALTIME_SETTINGS_DEFAULTS.copy()
     except json.JSONDecodeError as error:
-        app.logger.warning("Realtime settings file corrupted (%s). Using defaults.", error)
+        app.logger.warning(
+            "Realtime settings file corrupted (%s). Using defaults.", error
+        )
         return REALTIME_SETTINGS_DEFAULTS.copy()
 
     merged = REALTIME_SETTINGS_DEFAULTS.copy()
-    merged.update({key: bool(persisted.get(key, default)) for key, default in REALTIME_SETTINGS_DEFAULTS.items()})
+    merged.update(
+        {
+            key: bool(persisted.get(key, default))
+            for key, default in REALTIME_SETTINGS_DEFAULTS.items()
+        }
+    )
     return merged
 
 
@@ -1874,19 +2013,30 @@ def _test_bypass_admin_header():
                         "session_admin_logged_in": bool(session.get("admin_logged_in")),
                         "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                         "cookies": list(request.cookies.keys()),
-                        "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                        "current_user_authenticated": getattr(
+                            current_user, "is_authenticated", False
+                        ),
                     }
                     try:
                         dn["db_engine_id"] = id(get_db().engine)
                     except Exception:
                         dn["db_engine_id"] = None
                     try:
-                        dn["db_session_bind_id"] = id(db.session.bind) if getattr(db, "session", None) and getattr(db.session, "bind", None) else None
+                        dn["db_session_bind_id"] = (
+                            id(db.session.bind)
+                            if getattr(db, "session", None)
+                            and getattr(db.session, "bind", None)
+                            else None
+                        )
                     except Exception:
                         dn["db_session_bind_id"] = None
-                    current_app.logger.debug("_test_bypass_admin_header: applied BYPASS_ADMIN_AUTH %s", dn)
+                    current_app.logger.debug(
+                        "_test_bypass_admin_header: applied BYPASS_ADMIN_AUTH %s", dn
+                    )
                 except Exception:
-                    current_app.logger.debug("_test_bypass_admin_header: applied BYPASS_ADMIN_AUTH")
+                    current_app.logger.debug(
+                        "_test_bypass_admin_header: applied BYPASS_ADMIN_AUTH"
+                    )
             return
 
         # Honor the X-Admin-Bypass header used by test clients
@@ -1894,7 +2044,9 @@ def _test_bypass_admin_header():
             if request.headers.get("X-Admin-Bypass") == "1":
                 session["admin_logged_in"] = True
                 session["admin_user_id"] = session.get("admin_user_id") or 1
-                session["admin_username"] = session.get("admin_username") or "test_admin"
+                session["admin_username"] = (
+                    session.get("admin_username") or "test_admin"
+                )
                 try:
                     session.modified = True
                 except Exception:
@@ -1907,17 +2059,25 @@ def _test_bypass_admin_header():
                         "session_keys": list(session.keys()),
                         "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                         "cookies": list(request.cookies.keys()),
-                        "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                        "current_user_authenticated": getattr(
+                            current_user, "is_authenticated", False
+                        ),
                     }
                     try:
                         hdr_dn["db_engine_id"] = id(get_db().engine)
                     except Exception:
                         hdr_dn["db_engine_id"] = None
-                    current_app.logger.debug("_test_bypass_admin_header: applied header bypass %s", hdr_dn)
+                    current_app.logger.debug(
+                        "_test_bypass_admin_header: applied header bypass %s", hdr_dn
+                    )
                 except Exception:
-                    current_app.logger.debug("_test_bypass_admin_header: applied header bypass")
+                    current_app.logger.debug(
+                        "_test_bypass_admin_header: applied header bypass"
+                    )
         except Exception:
-            current_app.logger.exception("_test_bypass_admin_header header check failed")
+            current_app.logger.exception(
+                "_test_bypass_admin_header header check failed"
+            )
     except Exception:
         # Never raise during a request; this is only a test shim.
         current_app.logger.exception("_test_bypass_admin_header failed")
@@ -1937,20 +2097,28 @@ def _global_request_diagnostics():
             "session_keys": list(session.keys()),
             "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
             "cookies": list(request.cookies.keys()),
-            "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+            "current_user_authenticated": getattr(
+                current_user, "is_authenticated", False
+            ),
         }
         try:
             dn["db_engine_id"] = id(get_db().engine)
         except Exception:
             dn["db_engine_id"] = None
         try:
-            dn["db_session_bind_id"] = id(db.session.bind) if getattr(db, "session", None) and getattr(db.session, "bind", None) else None
+            dn["db_session_bind_id"] = (
+                id(db.session.bind)
+                if getattr(db, "session", None) and getattr(db.session, "bind", None)
+                else None
+            )
         except Exception:
             dn["db_session_bind_id"] = None
         app.logger.debug("_global_request_diagnostics: %s", dn)
     except Exception:
         try:
-            app.logger.debug("_global_request_diagnostics: failed to collect diagnostics")
+            app.logger.debug(
+                "_global_request_diagnostics: failed to collect diagnostics"
+            )
         except Exception:
             pass
 
@@ -1994,9 +2162,13 @@ def _pytest_force_admin_login():
             username = request.args.get("username") or "admin"
             try:
                 if db_sess is not None:
-                    admin = db_sess.query(AdminUser).filter_by(username=username).first()
+                    admin = (
+                        db_sess.query(AdminUser).filter_by(username=username).first()
+                    )
                 else:
-                    admin = db.session.query(AdminUser).filter_by(username=username).first()
+                    admin = (
+                        db.session.query(AdminUser).filter_by(username=username).first()
+                    )
             except Exception:
                 admin = None
 
@@ -2033,7 +2205,9 @@ def _pytest_force_admin_login():
                         "session_admin_logged_in": bool(session.get("admin_logged_in")),
                         "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                         "cookies": list(request.cookies.keys()),
-                        "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                        "current_user_authenticated": getattr(
+                            current_user, "is_authenticated", False
+                        ),
                     }
                     try:
                         diag["db_engine_id"] = id(get_db().engine)
@@ -2043,17 +2217,45 @@ def _pytest_force_admin_login():
                     try:
                         import json
 
-                        safe_diag = json.dumps(diag, default=str, separators=(',', ':'), ensure_ascii=False)
+                        safe_diag = json.dumps(
+                            diag, default=str, separators=(",", ":"), ensure_ascii=False
+                        )
                         # Escape newlines and carriage-returns to prevent log injection
-                        safe_diag = safe_diag.replace('\n', '\\n').replace('\r', '\\r')
+                        safe_diag = safe_diag.replace("\n", "\\n").replace("\r", "\\r")
                     except Exception:
-                        safe_diag = str({k: ('[error]' if k != 'db_engine_id' else diag.get('db_engine_id')) for k in diag})
-                    app.logger.info("_pytest_force_admin_login: falling back to session shim (no DB admin) diag=%s", safe_diag)
+                        safe_diag = str(
+                            {
+                                k: (
+                                    "[error]"
+                                    if k != "db_engine_id"
+                                    else diag.get("db_engine_id")
+                                )
+                                for k in diag
+                            }
+                        )
+                    app.logger.info(
+                        "_pytest_force_admin_login: falling back to session shim (no DB admin) diag=%s",
+                        safe_diag,
+                    )
                 except Exception:
-                    app.logger.info("_pytest_force_admin_login: falling back to session shim (no DB admin)")
-                return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
+                    app.logger.info(
+                        "_pytest_force_admin_login: falling back to session shim (no DB admin)"
+                    )
+                return (
+                    jsonify(
+                        {
+                            "success": True,
+                            "admin_id": session["admin_user_id"],
+                            "username": session["admin_username"],
+                        }
+                    ),
+                    200,
+                )
             except Exception as e:
-                return jsonify({"success": False, "error": f"session shim failed: {e}"}), 500
+                return (
+                    jsonify({"success": False, "error": f"session shim failed: {e}"}),
+                    500,
+                )
 
         # Set session flags and perform a deterministic Flask-Login login.
         # We prefer to call `login_user` first (so Flask-Login internal
@@ -2107,7 +2309,12 @@ def _pytest_force_admin_login():
             # If any unexpected error occurs, return a JSON error for the test
             return jsonify({"success": False, "error": str(e)}), 500
 
-        return jsonify({"success": True, "admin_id": admin.id, "username": admin.username}), 200
+        return (
+            jsonify(
+                {"success": True, "admin_id": admin.id, "username": admin.username}
+            ),
+            200,
+        )
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
 
@@ -2144,8 +2351,19 @@ def _admin_force_login():
                 session.modified = True
             except Exception:
                 pass
-            current_app.logger.debug("_admin_force_login: applied session shim (no DB admin)")
-            return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
+            current_app.logger.debug(
+                "_admin_force_login: applied session shim (no DB admin)"
+            )
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "admin_id": session["admin_user_id"],
+                        "username": session["admin_username"],
+                    }
+                ),
+                200,
+            )
 
         # If admin exists, perform deterministic login via Flask-Login
         try:
@@ -2174,7 +2392,10 @@ def _admin_force_login():
         except Exception:
             pass
 
-        current_app.logger.debug("_admin_force_login: performed login for admin id=%s", admin.id if admin else "<shim>")
+        current_app.logger.debug(
+            "_admin_force_login: performed login for admin id=%s",
+            admin.id if admin else "<shim>",
+        )
         try:
             # Additional diagnostics to help trace why later requests may see unauthenticated state
             from flask_login import current_user
@@ -2184,16 +2405,29 @@ def _admin_force_login():
                 "session_admin_logged_in": bool(session.get("admin_logged_in")),
                 "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                 "cookies": list(request.cookies.keys()),
-                "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                "current_user_authenticated": getattr(
+                    current_user, "is_authenticated", False
+                ),
             }
             try:
                 diag2["db_engine_id"] = id(get_db().engine)
             except Exception:
                 diag2["db_engine_id"] = None
-            current_app.logger.debug("_admin_force_login: post-login diagnostics %s", diag2)
+            current_app.logger.debug(
+                "_admin_force_login: post-login diagnostics %s", diag2
+            )
         except Exception:
             pass
-        return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "admin_id": session["admin_user_id"],
+                    "username": session["admin_username"],
+                }
+            ),
+            200,
+        )
     except Exception as exc:
         current_app.logger.exception("_admin_force_login failed")
         return jsonify({"success": False, "error": str(exc)}), 500
@@ -2222,8 +2456,17 @@ def _test_diag():
             "testing": app.config.get("TESTING"),
             "test_db_path": app.config.get("_TEST_DB_PATH"),
             "sqlalchemy_uri": app.config.get("SQLALCHEMY_DATABASE_URI"),
-            "current_user_is_authenticated": getattr(current_user, "is_authenticated", False),
-            "session": {k: (v if k in ("admin_username", "admin_user_id", "admin_logged_in") else "<redacted>") for k, v in session.items()},
+            "current_user_is_authenticated": getattr(
+                current_user, "is_authenticated", False
+            ),
+            "session": {
+                k: (
+                    v
+                    if k in ("admin_username", "admin_user_id", "admin_logged_in")
+                    else "<redacted>"
+                )
+                for k, v in session.items()
+            },
         }
         try:
             # Engine and bind diagnostics
@@ -2258,7 +2501,9 @@ def _ensure_db_engine_registration():
             try:
                 existing_engine.dispose()
             except Exception as dispose_error:  # pragma: no cover - defensive
-                app.logger.debug("Failed disposing old SQLAlchemy engine: %s", dispose_error)
+                app.logger.debug(
+                    "Failed disposing old SQLAlchemy engine: %s", dispose_error
+                )
         app_engines.clear()
 
     database_uri = app_obj.config.get("SQLALCHEMY_DATABASE_URI")
@@ -2288,7 +2533,9 @@ def _ensure_db_engine_registration():
 
 
 def _get_bind_with_registration(self, mapper=None, clause=None, **kwargs):
-    app.logger.debug("Attempting SQLAlchemy bind for app %s", id(current_app._get_current_object()))
+    app.logger.debug(
+        "Attempting SQLAlchemy bind for app %s", id(current_app._get_current_object())
+    )
     pass
 
 
@@ -2323,7 +2570,11 @@ def send_email_now(*, subject, recipients, body, sender=None, html=None, templat
             }
         )
         return None
-    use_async = celery and not app.config.get("TESTING") and is_realtime_feature_enabled("background")
+    use_async = (
+        celery
+        and not app.config.get("TESTING")
+        and is_realtime_feature_enabled("background")
+    )
 
     if use_async:
         try:
@@ -2375,7 +2626,9 @@ if is_realtime_feature_enabled("websocket") and not app.config.get("TESTING", Fa
     app.config["SOCKETIO_GEVENT_ENABLED"] = gevent_ready
     from advanced_analytics import RealTimeNotifications
 
-    realtime_notifications = RealTimeNotifications(socketio, feature_checker=is_realtime_feature_enabled)
+    realtime_notifications = RealTimeNotifications(
+        socketio, feature_checker=is_realtime_feature_enabled
+    )
 else:
     socketio = None
     realtime_notifications = None
@@ -2465,7 +2718,11 @@ import sys
 # Heuristic to detect running under pytest: check env var or command-line
 # invocation. This helps ensure the app uses the test DB path early during
 # import when pytest is loading modules.
-if os.getenv("PYTEST_CURRENT_TEST") or os.getenv("PYTEST_RUNNING") or any("pytest" in str(a).lower() for a in sys.argv):
+if (
+    os.getenv("PYTEST_CURRENT_TEST")
+    or os.getenv("PYTEST_RUNNING")
+    or any("pytest" in str(a).lower() for a in sys.argv)
+):
     # If the test harness already provided a test DB path (e.g. via
     # HELPCHAIN_TEST_DB_PATH), prefer that. Otherwise fall back to a
     # repository-local `test_local.sqlite` to avoid creating in-memory DBs
@@ -2502,12 +2759,16 @@ elif app.config.get("TESTING"):
         }
     except Exception:
         # If StaticPool isn't available, fall back to conservative options
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"connect_args": {"check_same_thread": False}}
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "connect_args": {"check_same_thread": False}
+        }
     logger.info("TESTING: Using in-memory SQLite database")
     # Provide test VAPID keys so push-related tests receive a configured key.
     try:
         test_pub = os.environ.get("VAPID_PUBLIC_KEY") or "BTEST_PUBLIC_KEY_1234567890"
-        test_priv = os.environ.get("VAPID_PRIVATE_KEY") or "BTEST_PRIVATE_KEY_0987654321"
+        test_priv = (
+            os.environ.get("VAPID_PRIVATE_KEY") or "BTEST_PRIVATE_KEY_0987654321"
+        )
         app.config.setdefault("VAPID_PUBLIC_KEY", test_pub)
         app.config.setdefault("VAPID_PRIVATE_KEY", test_priv)
         # Also export to environment for modules that read os.getenv
@@ -2597,19 +2858,28 @@ def _apply_static_cache_headers(response):
         if is_static:
             # Respect a correct Cache-Control, but override explicit no-cache/private/0 to enable CDN/browser caching
             existing_cc = response.headers.get("Cache-Control", "").lower()
-            should_override = not existing_cc or "no-cache" in existing_cc or "max-age=0" in existing_cc or "private" in existing_cc
+            should_override = (
+                not existing_cc
+                or "no-cache" in existing_cc
+                or "max-age=0" in existing_cc
+                or "private" in existing_cc
+            )
 
             if should_override:
                 # Fingerprinted assets (with a short hash) should be immutable for a long TTL
                 if re.search(r"-[a-f0-9]{8,}\.[a-z0-9]+$", req_path):
-                    response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+                    response.headers["Cache-Control"] = (
+                        "public, max-age=31536000, immutable"
+                    )
                 else:
                     max_age = int(app.config.get("SEND_FILE_MAX_AGE_DEFAULT", 86400))
                     response.headers["Cache-Control"] = f"public, max-age={max_age}"
 
         # Protect admin routes explicitly: never allow public caching
         if req_path.startswith("/admin"):
-            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+            response.headers["Cache-Control"] = (
+                "no-store, no-cache, must-revalidate, max-age=0"
+            )
 
     except Exception:
         # Don't break responses on header-setting failures
@@ -2651,7 +2921,9 @@ def _apply_static_cache_headers(response):
                 try:
                     import logging as _logging
 
-                    _logging.getLogger().warning("404 Not Found: %s %s", safe_method, safe_path)
+                    _logging.getLogger().warning(
+                        "404 Not Found: %s %s", safe_method, safe_path
+                    )
                 except Exception:
                     app.logger.debug(
                         "Fallback root logger warning failed: %s",
@@ -2684,16 +2956,30 @@ def _apply_static_cache_headers(response):
                                 traceback.format_exc(),
                             )
                 except Exception:
-                    app.logger.debug("Determining TESTING flag failed: %s", traceback.format_exc())
+                    app.logger.debug(
+                        "Determining TESTING flag failed: %s", traceback.format_exc()
+                    )
             except Exception:
                 try:
-                    safe_path = request.path if isinstance(request.path, str) else str(request.path)
-                    safe_path = safe_path.replace("\r", "").replace("\n", "").replace("\x00", "")
+                    safe_path = (
+                        request.path
+                        if isinstance(request.path, str)
+                        else str(request.path)
+                    )
+                    safe_path = (
+                        safe_path.replace("\r", "")
+                        .replace("\n", "")
+                        .replace("\x00", "")
+                    )
                     app.logger.warning("404 Not Found: %s", safe_path)
                 except Exception:
-                    app.logger.debug("Fallback 404 logging failed: %s", traceback.format_exc())
+                    app.logger.debug(
+                        "Fallback 404 logging failed: %s", traceback.format_exc()
+                    )
     except Exception:
-        app.logger.warning("Unexpected exception in after_request hook: %s", traceback.format_exc())
+        app.logger.warning(
+            "Unexpected exception in after_request hook: %s", traceback.format_exc()
+        )
 
     try:
         # Test-only diagnostic marker to confirm after_request 404 path runs
@@ -2733,14 +3019,18 @@ def _run_migrations_with_fallback():
     uri = app.config.get("SQLALCHEMY_DATABASE_URI", "") or ""
 
     if uri.startswith("sqlite:///:memory:"):
-        app.logger.info("In-memory database detected; using db.create_all() for schema setup.")
+        app.logger.info(
+            "In-memory database detected; using db.create_all() for schema setup."
+        )
         db.create_all()
         return
 
     try:
         from flask_migrate import upgrade as flask_upgrade
     except ImportError:
-        app.logger.warning("Flask-Migrate not available; falling back to db.create_all().")
+        app.logger.warning(
+            "Flask-Migrate not available; falling back to db.create_all()."
+        )
         db.create_all()
         return
 
@@ -2760,7 +3050,9 @@ def _run_migrations_with_fallback():
 def initialize_database():
     """Initialize database tables and default data for production"""
     if app.config.get("TESTING"):
-        app.logger.info("TESTING mode: skipping automatic db.create_all() and migrations.")
+        app.logger.info(
+            "TESTING mode: skipping automatic db.create_all() and migrations."
+        )
         return
     try:
         with app.app_context():
@@ -2794,7 +3086,9 @@ def initialize_database():
                 try:
                     importlib.import_module("performance_benchmarking")
                 except ImportError:
-                    app.logger.info("Performance benchmarking module not available; skipping")
+                    app.logger.info(
+                        "Performance benchmarking module not available; skipping"
+                    )
                 else:
                     app.logger.info("Performance benchmarking initialized")
             except Exception as perf_error:
@@ -2845,7 +3139,11 @@ try:
     else:
         # If running in TESTING or development, enable aggressive clearing
         # by default to preserve the previous developer experience.
-        if app.config.get("TESTING") or app.config.get("ENV") == "development" or os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
+        if (
+            app.config.get("TESTING")
+            or app.config.get("ENV") == "development"
+            or os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True")
+        ):
             app.config["FORCE_CLEAR_SESSION_LANGUAGE"] = True
 except Exception:
     # Be defensive: keep the conservative default if anything goes wrong
@@ -2884,7 +3182,12 @@ def _geo_country(ip: str | None) -> str | None:
     if not ip:
         return None
     # Skip local/private ranges
-    if ip.startswith("127.") or ip.startswith("10.") or ip.startswith("192.168.") or ip.startswith("172."):
+    if (
+        ip.startswith("127.")
+        or ip.startswith("10.")
+        or ip.startswith("192.168.")
+        or ip.startswith("172.")
+    ):
         return None
     if ip in _ip_country_cache:
         return _ip_country_cache[ip]
@@ -3013,7 +3316,9 @@ def get_locale():
     country = _geo_country(client_ip)
     ip_lang = _country_to_lang(country)
     if ip_lang in supported_locales:
-        app.logger.debug("Locale resolved from IP %s country %s => %s", client_ip, country, ip_lang)
+        app.logger.debug(
+            "Locale resolved from IP %s country %s => %s", client_ip, country, ip_lang
+        )
         return ip_lang
 
     # 4. Browser preference
@@ -3147,17 +3452,29 @@ def allowed_file(filename):
 
 
 # Email configuration
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", app.config.get("MAIL_DEFAULT_SENDER"))
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
+    "MAIL_DEFAULT_SENDER", app.config.get("MAIL_DEFAULT_SENDER")
+)
 
 mail_server_env = os.getenv("MAIL_SERVER")
 if mail_server_env:
     app.config["MAIL_SERVER"] = mail_server_env
 
 app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", app.config.get("MAIL_PORT", 587)))
-app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", str(app.config.get("MAIL_USE_TLS", True))).lower() == "true"
-app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", str(app.config.get("MAIL_USE_SSL", False))).lower() == "true"
-app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME", app.config.get("MAIL_USERNAME"))
-app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", app.config.get("MAIL_PASSWORD"))
+app.config["MAIL_USE_TLS"] = (
+    os.getenv("MAIL_USE_TLS", str(app.config.get("MAIL_USE_TLS", True))).lower()
+    == "true"
+)
+app.config["MAIL_USE_SSL"] = (
+    os.getenv("MAIL_USE_SSL", str(app.config.get("MAIL_USE_SSL", False))).lower()
+    == "true"
+)
+app.config["MAIL_USERNAME"] = os.getenv(
+    "MAIL_USERNAME", app.config.get("MAIL_USERNAME")
+)
+app.config["MAIL_PASSWORD"] = os.getenv(
+    "MAIL_PASSWORD", app.config.get("MAIL_PASSWORD")
+)
 
 logger.info("Email configuration loaded")
 logger.debug(f"MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
@@ -3207,11 +3524,15 @@ def _should_gzip_response(response):
 def _gzip_response(response):
     """Apply gzip compression to the response payload."""
     payload = response.get_data()
-    compressed_payload = gzip.compress(payload, compresslevel=app.config.get("COMPRESS_LEVEL", 6))
+    compressed_payload = gzip.compress(
+        payload, compresslevel=app.config.get("COMPRESS_LEVEL", 6)
+    )
     response.set_data(compressed_payload)
     response.headers["Content-Encoding"] = "gzip"
     vary = response.headers.get("Vary")
-    response.headers["Vary"] = "Accept-Encoding" if not vary else f"{vary}, Accept-Encoding"
+    response.headers["Vary"] = (
+        "Accept-Encoding" if not vary else f"{vary}, Accept-Encoding"
+    )
     response.headers["Content-Length"] = str(len(compressed_payload))
     return response
 
@@ -3545,7 +3866,8 @@ try:
                             sess.query(AdminUser)
                             .filter(
                                 or_(
-                                    func.lower(AdminUser.username) == identifier.lower(),
+                                    func.lower(AdminUser.username)
+                                    == identifier.lower(),
                                     func.lower(AdminUser.email) == identifier.lower(),
                                 )
                             )
@@ -3559,7 +3881,11 @@ try:
                 pw_ok = False
                 try:
                     if user_obj and password:
-                        pw_ok = bool(getattr(user_obj, "check_password", lambda p: False)(password))
+                        pw_ok = bool(
+                            getattr(user_obj, "check_password", lambda p: False)(
+                                password
+                            )
+                        )
                 except Exception:
                     pw_ok = False
 
@@ -3601,7 +3927,9 @@ if socketio:
     def handle_connect():
         """Handle client connection"""
         if not is_realtime_feature_enabled("websocket"):
-            app.logger.info("Rejecting SocketIO connection because websocket feature is disabled")
+            app.logger.info(
+                "Rejecting SocketIO connection because websocket feature is disabled"
+            )
             return False
         app.logger.info(f"Client connected: {request.sid}")
         socketio.emit("connected", {"status": "success", "sid": request.sid})
@@ -3633,7 +3961,9 @@ if socketio:
     @socketio.on("join_analytics")
     def handle_join_analytics(data):
         """Handle joining analytics room for real-time updates"""
-        if not is_realtime_feature_enabled("websocket") or not is_realtime_feature_enabled("charts"):
+        if not is_realtime_feature_enabled(
+            "websocket"
+        ) or not is_realtime_feature_enabled("charts"):
             app.logger.debug("join_analytics ignored because charts feature disabled")
             return
         room = data.get("room", "analytics")
@@ -3651,7 +3981,9 @@ if socketio:
     @socketio.on("request_analytics_update")
     def handle_analytics_update():
         """Handle request for analytics data update"""
-        if not is_realtime_feature_enabled("websocket") or not is_realtime_feature_enabled("charts"):
+        if not is_realtime_feature_enabled(
+            "websocket"
+        ) or not is_realtime_feature_enabled("charts"):
             app.logger.debug("Analytics update skipped (charts feature disabled)")
             return
         try:
@@ -3677,7 +4009,9 @@ if socketio:
                 "requests_today": dashboard_data.get("totals", {}).get("requests", 0),
                 "success_rate": 85.5,
                 "avg_response_time": 2.3,
-                "active_volunteers": dashboard_data.get("totals", {}).get("volunteers", 0),
+                "active_volunteers": dashboard_data.get("totals", {}).get(
+                    "volunteers", 0
+                ),
                 "timestamp": datetime.now().isoformat(),
             }
 
@@ -3871,7 +4205,9 @@ if socketio:
             )
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
-        app.logger.info(f"Request {request_id} status updated from {old_status} to {new_status}")
+        app.logger.info(
+            f"Request {request_id} status updated from {old_status} to {new_status}"
+        )
 
     @socketio.on("volunteer_assigned")
     def handle_volunteer_assigned(data):
@@ -3927,7 +4263,9 @@ if socketio:
                         "timestamp": datetime.now().isoformat(),
                     }
 
-                    socketio.emit("volunteer_location_updated", location_data, room="requests")
+                    socketio.emit(
+                        "volunteer_location_updated", location_data, room="requests"
+                    )
                     socketio.emit(
                         "volunteer_location_updated",
                         location_data,
@@ -3941,8 +4279,12 @@ if socketio:
     @socketio.on("subscribe_analytics")
     def handle_subscribe_analytics(data):
         """Subscribe to specific analytics updates"""
-        if not is_realtime_feature_enabled("websocket") or not is_realtime_feature_enabled("charts"):
-            app.logger.debug("subscribe_analytics ignored due to charts feature disabled")
+        if not is_realtime_feature_enabled(
+            "websocket"
+        ) or not is_realtime_feature_enabled("charts"):
+            app.logger.debug(
+                "subscribe_analytics ignored due to charts feature disabled"
+            )
             return
         metrics = data.get("metrics", [])
         user_id = data.get("user_id")
@@ -3972,10 +4314,14 @@ if socketio:
                         "labels": ["Sofia", "Plovdiv", "Varna", "Burgas", "Other"],
                         "data": [45, 23, 18, 12, 8],
                     },
-                    "requests_today": dashboard_data.get("totals", {}).get("requests", 0),
+                    "requests_today": dashboard_data.get("totals", {}).get(
+                        "requests", 0
+                    ),
                     "success_rate": 85.5,
                     "avg_response_time": 2.3,
-                    "active_volunteers": dashboard_data.get("totals", {}).get("volunteers", 0),
+                    "active_volunteers": dashboard_data.get("totals", {}).get(
+                        "volunteers", 0
+                    ),
                     "timestamp": datetime.now().isoformat(),
                 }
 
@@ -4010,7 +4356,9 @@ if socketio:
     @socketio.on("request_live_metrics")
     def handle_request_live_metrics():
         """Send live metrics update"""
-        if not is_realtime_feature_enabled("websocket") or not is_realtime_feature_enabled("charts"):
+        if not is_realtime_feature_enabled(
+            "websocket"
+        ) or not is_realtime_feature_enabled("charts"):
             app.logger.debug("Live metrics request ignored; charts feature disabled")
             return
         try:
@@ -4190,7 +4538,9 @@ _template_dirs = [
 _loaders = [FileSystemLoader(d) for d in _template_dirs if os.path.isdir(d)]
 # ð┤ð¥ð▒ð░ð▓ÐÅð╝ðÁ ÐéðÁð║ÐâÐëð©ÐÅ loader ð▓ ð║ÐÇð░ÐÅ (ð░ð║ð¥ ð©ð╝ð░)
 if _loaders:
-    app.jinja_loader = ChoiceLoader(_loaders + ([app.jinja_loader] if getattr(app, "jinja_loader", None) else []))
+    app.jinja_loader = ChoiceLoader(
+        _loaders + ([app.jinja_loader] if getattr(app, "jinja_loader", None) else [])
+    )
 
 if app.config.get("ENV") == "production" and not app.config.get("TESTING", False):
     app.config["TEMPLATES_AUTO_RELOAD"] = False
@@ -4236,7 +4586,9 @@ def strptime_filter(date_string, format="%Y-%m-%dT%H:%M:%S.%f"):
 @app.before_request
 def log_request():
     try:
-        app.logger.info(f"Request: {request.method} {request.url} - Path: {request.path}")
+        app.logger.info(
+            f"Request: {request.method} {request.url} - Path: {request.path}"
+        )
         print(f"DEBUG: Request: {request.method} {request.url} - Path: {request.path}")
     except Exception as e:
         print(f"DEBUG: Error in before_request: {e}")
@@ -4269,7 +4621,9 @@ def _force_clear_session_language():
         try:
             # If the current request is the named endpoint for set_language,
             # skip clearing so the handler can persist the value.
-            if request.endpoint == "set_language" or (request.path or "").startswith("/set_language"):
+            if request.endpoint == "set_language" or (request.path or "").startswith(
+                "/set_language"
+            ):
                 return
         except Exception:
             pass
@@ -4288,7 +4642,9 @@ def _force_clear_session_language():
         except Exception:
             # Be defensive: do not interrupt request processing
             try:
-                app.logger.debug("Failed to clear session language: %s", traceback.format_exc())
+                app.logger.debug(
+                    "Failed to clear session language: %s", traceback.format_exc()
+                )
             except Exception:
                 pass
     except Exception:
@@ -4408,7 +4764,10 @@ def forbidden(error):
             ),
             403,
         )
-    flash("ðØÐÅð╝ð░ÐéðÁ ð┐ÐÇð░ð▓ð░ ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ Ðéð░ðÀð© ÐüÐéÐÇð░ð¢ð©Ðåð░.", "error")
+    flash(
+        "ðØÐÅð╝ð░ÐéðÁ ð┐ÐÇð░ð▓ð░ ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ Ðéð░ðÀð© ÐüÐéÐÇð░ð¢ð©Ðåð░.",
+        "error",
+    )
     return redirect(url_for("index"))
 
 
@@ -4447,7 +4806,10 @@ def unprocessable_entity(error):
             ),
             422,
         )
-    flash("ðöð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð¢ðÁð▓ð░ð╗ð©ð┤ð¢ð©. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ Ðäð¥ÐÇð╝ð░Ðéð░ ð© ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+    flash(
+        "ðöð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð¢ðÁð▓ð░ð╗ð©ð┤ð¢ð©. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ Ðäð¥ÐÇð╝ð░Ðéð░ ð© ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+        "error",
+    )
     return redirect(request.referrer or url_for("index"))
 
 
@@ -4487,7 +4849,10 @@ def request_entity_too_large(error):
             ),
             413,
         )
-    flash("ðñð░ð╣ð╗ÐèÐé ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð│ð¥ð╗ÐÅð╝. ð£ð░ð║Ðüð©ð╝ð░ð╗ð¢ð©ÐÅÐé ÐÇð░ðÀð╝ðÁÐÇ ðÁ 5MB.", "error")
+    flash(
+        "ðñð░ð╣ð╗ÐèÐé ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð│ð¥ð╗ÐÅð╝. ð£ð░ð║Ðüð©ð╝ð░ð╗ð¢ð©ÐÅÐé ÐÇð░ðÀð╝ðÁÐÇ ðÁ 5MB.",
+        "error",
+    )
     return redirect(request.referrer or url_for("index"))
 
 
@@ -4642,7 +5007,10 @@ def handle_database_error(error):
             ),
             500,
         )
-    flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ÐéðÁÐàð¢ð©ÐçðÁÐüð║ð░ ð│ÐÇðÁÐêð║ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥ ð┐ð¥-ð║ÐèÐüð¢ð¥.", "error")
+    flash(
+        "ðÆÐèðÀð¢ð©ð║ð¢ð░ ÐéðÁÐàð¢ð©ÐçðÁÐüð║ð░ ð│ÐÇðÁÐêð║ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥ ð┐ð¥-ð║ÐèÐüð¢ð¥.",
+        "error",
+    )
     return redirect(url_for("index"))
 
 
@@ -4682,7 +5050,10 @@ def handle_validation_error(error):
             ),
             400,
         )
-    flash("ðöð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð¢ðÁð▓ð░ð╗ð©ð┤ð¢ð©. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ Ðäð¥ÐÇð╝ð░Ðéð░ ð© ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+    flash(
+        "ðöð░ð¢ð¢ð©ÐéðÁ Ðüð░ ð¢ðÁð▓ð░ð╗ð©ð┤ð¢ð©. ð£ð¥ð╗ÐÅ, ð┐ÐÇð¥ð▓ðÁÐÇðÁÐéðÁ Ðäð¥ÐÇð╝ð░Ðéð░ ð© ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+        "error",
+    )
     return redirect(request.referrer or url_for("index"))
 
 
@@ -4733,7 +5104,9 @@ def index():
     # Render the new landing page via Jinja so we can use url_for/i18n
     volunteer_id = 1  # Example ID, replace with dynamic logic as needed
     category = "general"  # Example category, replace with dynamic logic as needed
-    return render_template("home_new.html", volunteer_id=volunteer_id, category=category)
+    return render_template(
+        "home_new.html", volunteer_id=volunteer_id, category=category
+    )
 
 
 # Explicit redirect if ð¢ÐÅð║ð¥ð╣ ð▓ð╗ðÁðÀðÁ ð║Ðèð╝ ÐüÐéð░ÐÇð©ÐÅ ÐüÐéð░Ðéð©ÐçðÁð¢ ð┐ÐÇðÁð│ð╗ðÁð┤
@@ -4749,11 +5122,15 @@ def legacy_static_landing_redirect():
 def admin_login():
     logger.info("Admin login route called")
     email_2fa_flag = app.config.get("EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED)
-    logger.debug(f"Request method: {request.method}, EMAIL_2FA_ENABLED = {email_2fa_flag}")
+    logger.debug(
+        f"Request method: {request.method}, EMAIL_2FA_ENABLED = {email_2fa_flag}"
+    )
     # Session diagnostics
     logger.info(f"admin_login called - session keys: {list(session.keys())}")
     logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
-    logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
+    logger.info(
+        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
+    )
     logger.info(f"Session object id: {id(session)}")
 
     error = None
@@ -4790,20 +5167,33 @@ def admin_login():
 
         # Diagnostics to mirror user logs
         try:
-            logger.info(f"admin_login diagnostic: sys.modules['appy'] id={id(sys.modules.get('appy', None))}")
+            logger.info(
+                f"admin_login diagnostic: sys.modules['appy'] id={id(sys.modules.get('appy', None))}"
+            )
         except Exception:
             pass
         try:
             logger.info(f"admin_login diagnostic: found_admin={bool(found_admin)}")
             logger.info(f"admin_login diagnostic: db.engine id={id(db.engine)}")
-            logger.info(f"admin_login diagnostic: db.session.bind id={id(db.session.bind) if db.session.bind else None}")
-            logger.info(f"admin_login diagnostic: AdminUser class id={id(AdminUser)} module={getattr(AdminUser, '__module__', None)}")
-            logger.info(f"admin_login diagnostic: AdminUser.count() = {sess.query(AdminUser).count()}")
+            logger.info(
+                f"admin_login diagnostic: db.session.bind id={id(db.session.bind) if db.session.bind else None}"
+            )
+            logger.info(
+                f"admin_login diagnostic: AdminUser class id={id(AdminUser)} module={getattr(AdminUser, '__module__', None)}"
+            )
+            logger.info(
+                f"admin_login diagnostic: AdminUser.count() = {sess.query(AdminUser).count()}"
+            )
             try:
-                raw_count = sess.execute(select(func.count()).select_from(AdminUser)).scalar() or 0
+                raw_count = (
+                    sess.execute(select(func.count()).select_from(AdminUser)).scalar()
+                    or 0
+                )
             except Exception:
                 raw_count = None
-            logger.info(f"admin_login diagnostic: raw session count(admin_users) = {raw_count}")
+            logger.info(
+                f"admin_login diagnostic: raw session count(admin_users) = {raw_count}"
+            )
         except Exception:
             pass
 
@@ -4820,7 +5210,9 @@ def admin_login():
             app.logger.error(f"Password check raised: {_e}")
 
         print("DIAGNOSTIC_ADMIN_LOGIN:", getattr(user_obj, "username", None), pw_ok)
-        logger.info(f"Diagnostic: chosen_user.username={getattr(user_obj, 'username', None)}, pw_ok={pw_ok}")
+        logger.info(
+            f"Diagnostic: chosen_user.username={getattr(user_obj, 'username', None)}, pw_ok={pw_ok}"
+        )
 
         # Accept login if identifier matches username/email of the located user
         ident_ok = False
@@ -4841,19 +5233,28 @@ def admin_login():
             session.pop("volunteer_name", None)
 
             # Email 2FA when enabled or under TESTING
-            if app.config.get("EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED) or app.config.get("TESTING"):
+            if app.config.get("EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED) or app.config.get(
+                "TESTING"
+            ):
                 logger.info("Email 2FA enabled; sending verification code")
                 code = generate_email_2fa_code()
                 session["pending_email_2fa"] = True
                 session["pending_admin_id"] = user_obj.id
                 session["email_2fa_code"] = code
-                session["email_2fa_expires"] = (datetime.now() + timedelta(minutes=10)).timestamp()
+                session["email_2fa_expires"] = (
+                    datetime.now() + timedelta(minutes=10)
+                ).timestamp()
 
                 remote_addr = request.remote_addr or "0.0.0.0"
                 user_agent = request.headers.get("User-Agent", "Unknown")
                 if not send_email_2fa_code(code, remote_addr, user_agent):
-                    logger.warning("Failed to dispatch email 2FA code; fallback engaged")
-                flash("ðÿðÀð┐ÐÇð░ÐéðÁð¢ ðÁ ð║ð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ð¢ð░ ð©ð╝ðÁð╣ð╗ð░.", "info")
+                    logger.warning(
+                        "Failed to dispatch email 2FA code; fallback engaged"
+                    )
+                flash(
+                    "ðÿðÀð┐ÐÇð░ÐéðÁð¢ ðÁ ð║ð¥ð┤ ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ð¢ð░ ð©ð╝ðÁð╣ð╗ð░.",
+                    "info",
+                )
                 return redirect(url_for("admin_email_2fa"))
 
             # TOTP 2FA
@@ -4869,12 +5270,20 @@ def admin_login():
             session["admin_username"] = user_obj.username
             session["user_id"] = user_obj.id
             session.permanent = True
-            logger.info(f"Session set: admin_logged_in={session.get('admin_logged_in')}, admin_user_id={session.get('admin_user_id')}")
+            logger.info(
+                f"Session set: admin_logged_in={session.get('admin_logged_in')}, admin_user_id={session.get('admin_user_id')}"
+            )
             return redirect(url_for("admin_dashboard"))
         else:
-            logger.warning(f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}")
-            error = "ðôÐÇðÁÐêð¢ð¥ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥ ð©ð╝ðÁ ð©ð╗ð© ð┐ð░ÐÇð¥ð╗ð░!"
-            app.logger.warning(f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}")
+            logger.warning(
+                f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}"
+            )
+            error = (
+                "ðôÐÇðÁÐêð¢ð¥ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥ ð©ð╝ðÁ ð©ð╗ð© ð┐ð░ÐÇð¥ð╗ð░!"
+            )
+            app.logger.warning(
+                f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}"
+            )
     return render_template("admin_login.html", error=error)
 
 
@@ -4896,7 +5305,12 @@ def seed_admin():
         admin_user = initialize_default_admin()
         if not admin_user:
             return (
-                jsonify({"success": False, "error": "ðØðÁÐâÐüð┐ðÁÐêð¢ð¥ ÐüÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ."}),
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "ðØðÁÐâÐüð┐ðÁÐêð¢ð¥ ÐüÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð¥ÐÇ.",
+                    }
+                ),
                 500,
             )
         try:
@@ -4923,10 +5337,19 @@ def admin_set_password(new_pw):
     try:
         admin_user = AdminUser.query.filter_by(username="admin").first()
         if not admin_user:
-            return jsonify({"success": False, "error": "ðÉð┤ð╝ð©ð¢ÐèÐé ð╗ð©ð┐Ðüð▓ð░"}), 404
+            return (
+                jsonify({"success": False, "error": "ðÉð┤ð╝ð©ð¢ÐèÐé ð╗ð©ð┐Ðüð▓ð░"}),
+                404,
+            )
         admin_user.set_password(new_pw)
         db.session.commit()
-        return jsonify({"success": True, "message": "ðƒð░ÐÇð¥ð╗ð░Ðéð░ ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢ð░", "password": new_pw})
+        return jsonify(
+            {
+                "success": True,
+                "message": "ðƒð░ÐÇð¥ð╗ð░Ðéð░ ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢ð░",
+                "password": new_pw,
+            }
+        )
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -4936,7 +5359,10 @@ def admin_force_login():
     try:
         admin_user = AdminUser.query.filter_by(username="admin").first()
         if not admin_user:
-            return jsonify({"success": False, "error": "ðÉð┤ð╝ð©ð¢ÐèÐé ð╗ð©ð┐Ðüð▓ð░"}), 404
+            return (
+                jsonify({"success": False, "error": "ðÉð┤ð╝ð©ð¢ÐèÐé ð╗ð©ð┐Ðüð▓ð░"}),
+                404,
+            )
         session["admin_logged_in"] = True
         session["admin_user_id"] = admin_user.id
         session["admin_username"] = admin_user.username
@@ -4974,7 +5400,10 @@ def admin_root():
         # Fallback: render login template directly instead of raising
         try:
             return (
-                render_template("admin_login.html", error="ðÆÐèÐéÐÇðÁÐêð¢ð░ ð│ÐÇðÁÐêð║ð░, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð┐ð░ð║."),
+                render_template(
+                    "admin_login.html",
+                    error="ðÆÐèÐéÐÇðÁÐêð¢ð░ ð│ÐÇðÁÐêð║ð░, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð┐ð░ð║.",
+                ),
                 500,
             )
         except Exception:
@@ -5082,17 +5511,35 @@ def admin_requests_api():
                     "id": req.id,
                     "name": getattr(req, "name", None),
                     "status": req.status,
-                    "priority": (req.priority.name if hasattr(req, "priority") and req.priority is not None else None),
+                    "priority": (
+                        req.priority.name
+                        if hasattr(req, "priority") and req.priority is not None
+                        else None
+                    ),
                     "request_type": getattr(req, "request_type", None),
                     "city": getattr(req, "city", None),
                     "location": getattr(req, "location_text", None),
                     "volunteer": {
-                        "id": (getattr(req.assigned_volunteer, "id", None) if hasattr(req, "assigned_volunteer") else None),
-                        "name": (getattr(req.assigned_volunteer, "name", None) if hasattr(req, "assigned_volunteer") else None),
-                        "email": (getattr(req.assigned_volunteer, "email", None) if hasattr(req, "assigned_volunteer") else None),
+                        "id": (
+                            getattr(req.assigned_volunteer, "id", None)
+                            if hasattr(req, "assigned_volunteer")
+                            else None
+                        ),
+                        "name": (
+                            getattr(req.assigned_volunteer, "name", None)
+                            if hasattr(req, "assigned_volunteer")
+                            else None
+                        ),
+                        "email": (
+                            getattr(req.assigned_volunteer, "email", None)
+                            if hasattr(req, "assigned_volunteer")
+                            else None
+                        ),
                     },
                     "created_at": _format_datetime_for_response(req.created_at),
-                    "completed_at": _format_datetime_for_response(getattr(req, "completed_at", None)),
+                    "completed_at": _format_datetime_for_response(
+                        getattr(req, "completed_at", None)
+                    ),
                 },
             )
         )
@@ -5105,13 +5552,16 @@ def admin_requests_api():
                     "id": r.id,
                     "name": getattr(r, "name", None),
                     "status": r.status,
-                    "priority": getattr(r, "urgency", None) or getattr(r, "priority", None),
+                    "priority": getattr(r, "urgency", None)
+                    or getattr(r, "priority", None),
                     "request_type": getattr(r, "category", None),
                     "city": None,
                     "location": getattr(r, "location", None),
                     "volunteer": {"id": None, "name": None, "email": None},
                     "created_at": _format_datetime_for_response(r.created_at),
-                    "completed_at": _format_datetime_for_response(getattr(r, "completed_at", None)),
+                    "completed_at": _format_datetime_for_response(
+                        getattr(r, "completed_at", None)
+                    ),
                 },
             )
         )
@@ -5164,14 +5614,18 @@ def admin_dashboard():
     app.logger.info(f"admin_logged_in: {session.get('admin_logged_in')}")
     app.logger.info(f"admin_user_id: {session.get('admin_user_id')}")
     app.logger.info(f"admin_username: {session.get('admin_username')}")
-    app.logger.info(f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}")
+    app.logger.info(
+        f"Session cookie from request: {request.cookies.get('session', 'NO_COOKIE')}"
+    )
     app.logger.info(f"Session object id: {id(session)}")
     app.logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
     try:
         from flask_login import current_user
 
         extra_diag = {
-            "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+            "current_user_authenticated": getattr(
+                current_user, "is_authenticated", False
+            ),
             "current_user_repr": getattr(current_user, "get_id", lambda: None)(),
         }
         try:
@@ -5181,7 +5635,11 @@ def admin_dashboard():
             extra_diag["db_engine_id"] = None
         try:
             _d = get_db()
-            extra_diag["db_session_bind_id"] = id(_d.session.bind) if getattr(_d, "session", None) and getattr(_d.session, "bind", None) else None
+            extra_diag["db_session_bind_id"] = (
+                id(_d.session.bind)
+                if getattr(_d, "session", None) and getattr(_d.session, "bind", None)
+                else None
+            )
         except Exception:
             extra_diag["db_session_bind_id"] = None
         app.logger.info("admin_dashboard extra diagnostics: %s", extra_diag)
@@ -5197,8 +5655,16 @@ def admin_dashboard():
     try:
         # Check if HelpRequest model is available
         total_requests = db.session.query(HelpRequest).count()
-        pending_requests = db.session.query(HelpRequest).filter(HelpRequest.status == "pending").count()
-        completed_requests = db.session.query(HelpRequest).filter(HelpRequest.status == "completed").count()
+        pending_requests = (
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.status == "pending")
+            .count()
+        )
+        completed_requests = (
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.status == "completed")
+            .count()
+        )
         total_volunteers = db.session.query(Volunteer).count()
     except Exception as e:
         # If any DB access fails (common in early test setups where the
@@ -5214,16 +5680,24 @@ def admin_dashboard():
     # Get filtered requests based on filter parameter
     try:
         if filter_param == "pending":
-            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "pending")
+            requests_query = db.session.query(HelpRequest).filter(
+                HelpRequest.status == "pending"
+            )
         elif filter_param == "completed":
-            requests_query = db.session.query(HelpRequest).filter(HelpRequest.status == "completed")
+            requests_query = db.session.query(HelpRequest).filter(
+                HelpRequest.status == "completed"
+            )
         else:  # "all" or default
             requests_query = db.session.query(HelpRequest)
 
-        requests_query = requests_query.options(joinedload(HelpRequest.assigned_volunteer))
+        requests_query = requests_query.options(
+            joinedload(HelpRequest.assigned_volunteer)
+        )
 
         # Limit to recent requests for dashboard display
-        requests = requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
+        requests = (
+            requests_query.order_by(HelpRequest.created_at.desc()).limit(10).all()
+        )
 
         # Convert to the expected format for template
         requests_data = []
@@ -5237,8 +5711,16 @@ def admin_dashboard():
                     "city": req.city,
                     "location": getattr(req, "location_text", None),
                     "volunteer_name": getattr(req.assigned_volunteer, "name", None),
-                    "created_at": (req.created_at.strftime("%Y-%m-%d %H:%M") if req.created_at else "ðØÐÅð╝ð░ ð┤ð░Ðéð░"),
-                    "completed_at": (req.completed_at.strftime("%Y-%m-%d %H:%M") if req.completed_at else None),
+                    "created_at": (
+                        req.created_at.strftime("%Y-%m-%d %H:%M")
+                        if req.created_at
+                        else "ðØÐÅð╝ð░ ð┤ð░Ðéð░"
+                    ),
+                    "completed_at": (
+                        req.completed_at.strftime("%Y-%m-%d %H:%M")
+                        if req.completed_at
+                        else None
+                    ),
                 }
             )
 
@@ -5335,7 +5817,9 @@ def admin_list_tasks():
 def admin_trigger_task(task_name):
     """Trigger a background admin task; legacy endpoint maintained for tests."""
     payload = request.get_json(silent=True) or {}
-    app.logger.info("Admin task trigger requested: task=%s payload=%s", task_name, payload)
+    app.logger.info(
+        "Admin task trigger requested: task=%s payload=%s", task_name, payload
+    )
     return jsonify({"success": True, "task": task_name, "queued": True})
 
 
@@ -5362,7 +5846,9 @@ def admin_find_matches(request_id):
                 }
             )
     except Exception as error:  # pragma: no cover - defensive logging
-        app.logger.warning("Unable to load volunteer matches for request %s: %s", request_id, error)
+        app.logger.warning(
+            "Unable to load volunteer matches for request %s: %s", request_id, error
+        )
 
     return jsonify({"request_id": request_id, "matches": matches})
 
@@ -5390,7 +5876,12 @@ def admin_approve_request(request_id):
 
         if request_obj.status != "pending":
             return (
-                jsonify({"success": False, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð¥ð▒ÐÇð░ð▒ð¥ÐéðÁð¢ð░"}),
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð¥ð▒ÐÇð░ð▒ð¥ÐéðÁð¢ð░",
+                    }
+                ),
                 400,
             )
 
@@ -5410,13 +5901,23 @@ def admin_approve_request(request_id):
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-        return jsonify({"success": True, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð¥ð┤ð¥ð▒ÐÇðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥"})
+        return jsonify(
+            {
+                "success": True,
+                "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð¥ð┤ð¥ð▒ÐÇðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥",
+            }
+        )
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error approving request {request_id}: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð┤ð¥ð▒ÐÇÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð┤ð¥ð▒ÐÇÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░",
+                }
+            ),
             500,
         )
 
@@ -5434,7 +5935,12 @@ def admin_reject_request(request_id):
 
         if request_obj.status != "pending":
             return (
-                jsonify({"success": False, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð¥ð▒ÐÇð░ð▒ð¥ÐéðÁð¢ð░"}),
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð¥ð▒ÐÇð░ð▒ð¥ÐéðÁð¢ð░",
+                    }
+                ),
                 400,
             )
 
@@ -5458,13 +5964,23 @@ def admin_reject_request(request_id):
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-        return jsonify({"success": True, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð¥ÐéÐàð▓ÐèÐÇð╗ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥"})
+        return jsonify(
+            {
+                "success": True,
+                "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð¥ÐéÐàð▓ÐèÐÇð╗ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥",
+            }
+        )
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error rejecting request {request_id}: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ÐéÐàð▓ÐèÐÇð╗ÐÅð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ÐéÐàð▓ÐèÐÇð╗ÐÅð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░",
+                }
+            ),
             500,
         )
 
@@ -5480,7 +5996,12 @@ def admin_assign_volunteer(request_id):
 
         if not volunteer_id:
             return (
-                jsonify({"success": False, "message": "ðØðÁ ðÁ ð┐ð¥Ðüð¥ÐçðÁð¢ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå"}),
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "ðØðÁ ðÁ ð┐ð¥Ðüð¥ÐçðÁð¢ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå",
+                    }
+                ),
                 400,
             )
 
@@ -5528,7 +6049,12 @@ def admin_assign_volunteer(request_id):
         db.session.rollback()
         app.logger.error(f"Error assigning volunteer to request {request_id}: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┐ÐÇð©Ðüð▓ð¥ÐÅð▓ð░ð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┐ÐÇð©Ðüð▓ð¥ÐÅð▓ð░ð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå",
+                }
+            ),
             500,
         )
 
@@ -5572,7 +6098,12 @@ def admin_delete_request(request_id):
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-        return jsonify({"success": True, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð©ðÀÐéÐÇð©Ðéð░ ÐâÐüð┐ðÁÐêð¢ð¥"})
+        return jsonify(
+            {
+                "success": True,
+                "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ðÁ ð©ðÀÐéÐÇð©Ðéð░ ÐâÐüð┐ðÁÐêð¢ð¥",
+            }
+        )
 
     except Exception as e:
         try:
@@ -5581,9 +6112,16 @@ def admin_delete_request(request_id):
             db.session.rollback()
         except Exception:
             pass
-        app.logger.error(f"Error deleting request {request_id}: {e}\n{traceback.format_exc()}")
+        app.logger.error(
+            f"Error deleting request {request_id}: {e}\n{traceback.format_exc()}"
+        )
         return (
-            jsonify({"success": False, "message": f"ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀÐéÐÇð©ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░: {e}"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": f"ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀÐéÐÇð©ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░: {e}",
+                }
+            ),
             500,
         )
 
@@ -5604,7 +6142,9 @@ def admin_request_details(request_id):
         # Get available volunteers for assignment (if request is approved)
         available_volunteers = []
         if request_obj.status == "approved":
-            available_volunteers = db.session.query(Volunteer).filter_by(is_active=True).all()
+            available_volunteers = (
+                db.session.query(Volunteer).filter_by(is_active=True).all()
+            )
 
         return render_template(
             "admin_request_details.html",
@@ -5615,7 +6155,10 @@ def admin_request_details(request_id):
 
     except Exception as e:
         app.logger.error(f"Error loading request details {request_id}: {e}")
-        flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁ ð¢ð░ ð┤ðÁÐéð░ð╣ð╗ð©ÐéðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░", "error")
+        flash(
+            "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁ ð¢ð░ ð┤ðÁÐéð░ð╣ð╗ð©ÐéðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░",
+            "error",
+        )
         return redirect(url_for("admin_dashboard"))
 
 
@@ -5633,7 +6176,9 @@ def admin_edit_request(request_id):
             request_obj.email = request.form.get("email", request_obj.email)
             request_obj.message = request.form.get("message", request_obj.message)
             request_obj.title = request.form.get("category", request_obj.title)
-            request_obj.location_text = request.form.get("location", request_obj.location_text)
+            request_obj.location_text = request.form.get(
+                "location", request_obj.location_text
+            )
 
             db.session.commit()
 
@@ -5645,12 +6190,16 @@ def admin_edit_request(request_id):
         if session.get("admin_user_id"):
             current_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
-        return render_template("admin_edit_request.html", request=request_obj, current_user=current_user)
+        return render_template(
+            "admin_edit_request.html", request=request_obj, current_user=current_user
+        )
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error editing request {request_id}: {e}")
-        flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ÐÇðÁð┤ð░ð║Ðéð©ÐÇð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░", "error")
+        flash(
+            "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ÐÇðÁð┤ð░ð║Ðéð©ÐÇð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░", "error"
+        )
         return redirect(url_for("admin_request_details", request_id=request_id))
 
 
@@ -5680,14 +6229,24 @@ def admin_profile():
             return render_template("admin_profile.html", current_user=admin_user)
 
         # Check if username is already taken by another admin
-        existing_admin = db.session.query(AdminUser).filter(AdminUser.username == username, AdminUser.id != admin_user.id).first()
+        existing_admin = (
+            db.session.query(AdminUser)
+            .filter(AdminUser.username == username, AdminUser.id != admin_user.id)
+            .first()
+        )
 
         if existing_admin:
-            flash("ðƒð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥Ðéð¥ ð©ð╝ðÁ ð▓ðÁÐçðÁ ðÁ ðÀð░ðÁÐéð¥.", "error")
+            flash(
+                "ðƒð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥Ðéð¥ ð©ð╝ðÁ ð▓ðÁÐçðÁ ðÁ ðÀð░ðÁÐéð¥.", "error"
+            )
             return render_template("admin_profile.html", current_user=admin_user)
 
         # Check if email is already taken by another admin
-        existing_email = db.session.query(AdminUser).filter(AdminUser.email == email, AdminUser.id != admin_user.id).first()
+        existing_email = (
+            db.session.query(AdminUser)
+            .filter(AdminUser.email == email, AdminUser.id != admin_user.id)
+            .first()
+        )
 
         if existing_email:
             flash("ðÿð╝ðÁð╣ð╗ÐèÐé ð▓ðÁÐçðÁ ðÁ ðÀð░ðÁÐé.", "error")
@@ -5725,7 +6284,9 @@ def admin_settings():
     return render_template("admin_settings.html", current_user=admin_user)
 
 
-@app.route("/notification_dashboard", methods=["GET"], endpoint="notification_dashboard")
+@app.route(
+    "/notification_dashboard", methods=["GET"], endpoint="notification_dashboard"
+)
 @require_admin_login
 def notification_dashboard():
     # Get current admin user
@@ -5788,7 +6349,10 @@ def admin_email_2fa():
         session.pop("pending_admin_id", None)
         session.pop("email_2fa_code", None)
         session.pop("email_2fa_expires", None)
-        flash("ðÜð¥ð┤ÐèÐé ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ðÁ ð©ðÀÐéðÁð║Ðèð╗. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+        flash(
+            "ðÜð¥ð┤ÐèÐé ðÀð░ ð▓ðÁÐÇð©Ðäð©ð║ð░Ðåð©ÐÅ ðÁ ð©ðÀÐéðÁð║Ðèð╗. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+            "error",
+        )
         return redirect(url_for("admin_login"))
 
     if request.method == "POST":
@@ -5830,12 +6394,18 @@ def admin_email_2fa():
 @app.route("/admin/email_2fa/resend", methods=["GET", "POST"])
 def admin_email_2fa_resend():
     if not session.get("pending_email_2fa"):
-        flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "warning")
+        flash(
+            "ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+            "warning",
+        )
         return redirect(url_for("admin_login"))
 
     admin_id = session.get("pending_admin_id")
     if not admin_id:
-        flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "warning")
+        flash(
+            "ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+            "warning",
+        )
         session.pop("pending_email_2fa", None)
         return redirect(url_for("admin_login"))
 
@@ -5863,7 +6433,10 @@ def admin_2fa():
         # Get admin user
         admin_id = session.get("pending_admin_id")
         if not admin_id:
-            flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð╗ð¥ð│ð¢ðÁÐéðÁ ÐüðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+            flash(
+                "ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð╗ð¥ð│ð¢ðÁÐéðÁ ÐüðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+                "error",
+            )
             return redirect(url_for("admin_login"))
 
         db = get_db()
@@ -5932,18 +6505,32 @@ def admin_volunteers():
 
         # Apply filters
         if search:
-            query = query.filter((Volunteer.name.ilike(f"%{search}%")) | (Volunteer.email.ilike(f"%{search}%")) | (Volunteer.phone.ilike(f"%{search}%")))
+            query = query.filter(
+                (Volunteer.name.ilike(f"%{search}%"))
+                | (Volunteer.email.ilike(f"%{search}%"))
+                | (Volunteer.phone.ilike(f"%{search}%"))
+            )
 
         if location_filter:
             query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
 
         # Apply sorting
         if sort_by == "name":
-            query = query.order_by(Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc())
+            query = query.order_by(
+                Volunteer.name.asc() if sort_order == "asc" else Volunteer.name.desc()
+            )
         elif sort_by == "location":
-            query = query.order_by(Volunteer.location.asc() if sort_order == "asc" else Volunteer.location.desc())
+            query = query.order_by(
+                Volunteer.location.asc()
+                if sort_order == "asc"
+                else Volunteer.location.desc()
+            )
         elif sort_by == "created_at":
-            query = query.order_by(Volunteer.created_at.asc() if sort_order == "asc" else Volunteer.created_at.desc())
+            query = query.order_by(
+                Volunteer.created_at.asc()
+                if sort_order == "asc"
+                else Volunteer.created_at.desc()
+            )
         else:
             query = query.order_by(Volunteer.id.asc())
 
@@ -5987,11 +6574,16 @@ def admin_volunteers():
 
             pagination = SimplePagination(page, per_page, total_volunteers, volunteers)
 
-        app.logger.info(f"Admin volunteers query successful: {len(volunteers)} volunteers returned, page {page}/{total_pages}")
+        app.logger.info(
+            f"Admin volunteers query successful: {len(volunteers)} volunteers returned, page {page}/{total_pages}"
+        )
 
     except Exception as e:
         app.logger.error(f"Error in admin_volunteers: {e}", exc_info=app.debug)
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©ÐéðÁ", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©ÐéðÁ",
+            "error",
+        )
         # Return empty results on error
         volunteers = []
         total_volunteers = 0
@@ -6069,7 +6661,10 @@ def add_volunteer():
         # Check if email already exists
         existing_volunteer = Volunteer.query.filter_by(email=email).first()
         if existing_volunteer:
-            flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå Ðü Ðéð¥ðÀð© ð©ð╝ðÁð╣ð╗ ð▓ðÁÐçðÁ ÐüÐèÐëðÁÐüÐéð▓Ðâð▓ð░!", "error")
+            flash(
+                "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå Ðü Ðéð¥ðÀð© ð©ð╝ðÁð╣ð╗ ð▓ðÁÐçðÁ ÐüÐèÐëðÁÐüÐéð▓Ðâð▓ð░!",
+                "error",
+            )
             return render_template("add_volunteer.html")
 
         try:
@@ -6081,12 +6676,17 @@ def add_volunteer():
             )
             db.session.add(volunteer)
             db.session.commit()
-            flash("ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ðÁ ð┤ð¥ð▒ð░ð▓ðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥!", "success")
+            flash(
+                "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ðÁ ð┤ð¥ð▒ð░ð▓ðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥!", "success"
+            )
             return redirect(url_for("admin_volunteers"))
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error adding volunteer: {e}")
-            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┤ð¥ð▒ð░ð▓ÐÅð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå. ð×ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+            flash(
+                "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┤ð¥ð▒ð░ð▓ÐÅð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå. ð×ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+                "error",
+            )
             return render_template("add_volunteer.html")
 
     return render_template("add_volunteer.html")
@@ -6108,7 +6708,9 @@ def submit_request():
         # Validate required fields
         errors = []
         if not name or len(name) < 2:
-            errors.append("ðÿð╝ðÁÐéð¥ ÐéÐÇÐÅð▒ð▓ð░ ð┤ð░ ð▒Ðèð┤ðÁ ð┐ð¥ð¢ðÁ 2 Ðüð©ð╝ð▓ð¥ð╗ð░")
+            errors.append(
+                "ðÿð╝ðÁÐéð¥ ÐéÐÇÐÅð▒ð▓ð░ ð┤ð░ ð▒Ðèð┤ðÁ ð┐ð¥ð¢ðÁ 2 Ðüð©ð╝ð▓ð¥ð╗ð░"
+            )
         if not email or "@" not in email:
             errors.append("ðÆÐèð▓ðÁð┤ðÁÐéðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ð©ð╝ðÁð╣ð╗ ð░ð┤ÐÇðÁÐü")
         if not category:
@@ -6116,7 +6718,9 @@ def submit_request():
         if not location:
             errors.append("ðÆÐèð▓ðÁð┤ðÁÐéðÁ ð╗ð¥ð║ð░Ðåð©ÐÅ")
         if not problem or len(problem) < 10:
-            errors.append("ð×ð┐ð©ÐêðÁÐéðÁ ð┐ÐÇð¥ð▒ð╗ðÁð╝ð░ Ðüð© ð┐ð¥-ð┐ð¥ð┤ÐÇð¥ð▒ð¢ð¥ (ð╝ð©ð¢ð©ð╝Ðâð╝ 10 Ðüð©ð╝ð▓ð¥ð╗ð░)")
+            errors.append(
+                "ð×ð┐ð©ÐêðÁÐéðÁ ð┐ÐÇð¥ð▒ð╗ðÁð╝ð░ Ðüð© ð┐ð¥-ð┐ð¥ð┤ÐÇð¥ð▒ð¢ð¥ (ð╝ð©ð¢ð©ð╝Ðâð╝ 10 Ðüð©ð╝ð▓ð¥ð╗ð░)"
+            )
         if captcha != "7G5K":
             errors.append("ðôÐÇðÁÐêðÁð¢ ð║ð¥ð┤ ðÀð░ ðÀð░Ðëð©Ðéð░")
 
@@ -6136,14 +6740,20 @@ def submit_request():
             flash("ðøð¥ð║ð░Ðåð©ÐÅÐéð░ ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð┤Ðèð╗ð│ð░", "error")
             return render_template("submit_request.html")
         if len(problem) > 2000:
-            flash("ð×ð┐ð©Ðüð░ð¢ð©ðÁÐéð¥ ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð┤Ðèð╗ð│ð¥ (ð╝ð░ð║Ðüð©ð╝Ðâð╝ 2000 Ðüð©ð╝ð▓ð¥ð╗ð░)", "error")
+            flash(
+                "ð×ð┐ð©Ðüð░ð¢ð©ðÁÐéð¥ ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð┤Ðèð╗ð│ð¥ (ð╝ð░ð║Ðüð©ð╝Ðâð╝ 2000 Ðüð©ð╝ð▓ð¥ð╗ð░)",
+                "error",
+            )
             return render_template("submit_request.html")
 
         # Check for suspicious content
         suspicious_patterns = ["<script", "javascript:", "onload=", "onclick="]
         combined_input = (name + email + location + problem).lower()
         if any(pattern in combined_input for pattern in suspicious_patterns):
-            flash("ð×Ðéð║ÐÇð©Ðéð¥ ðÁ ð┐ð¥ð┤ð¥ðÀÐÇð©ÐéðÁð╗ð¢ð¥ ÐüÐèð┤ÐèÐÇðÂð░ð¢ð©ðÁ ð▓Ðèð▓ Ðäð¥ÐÇð╝ð░Ðéð░", "error")
+            flash(
+                "ð×Ðéð║ÐÇð©Ðéð¥ ðÁ ð┐ð¥ð┤ð¥ðÀÐÇð©ÐéðÁð╗ð¢ð¥ ÐüÐèð┤ÐèÐÇðÂð░ð¢ð©ðÁ ð▓Ðèð▓ Ðäð¥ÐÇð╝ð░Ðéð░",
+                "error",
+            )
             return render_template("submit_request.html")
 
         file = request.files.get("file")
@@ -6151,7 +6761,10 @@ def submit_request():
         filename = None
         if file and file.filename:
             if not allowed_file(file.filename):
-                flash("ðƒð¥ðÀð▓ð¥ð╗ðÁð¢ð© Ðüð░ Ðüð░ð╝ð¥ ð©ðÀð¥ð▒ÐÇð░ðÂðÁð¢ð©ÐÅ ð© PDF Ðäð░ð╣ð╗ð¥ð▓ðÁ!", "error")
+                flash(
+                    "ðƒð¥ðÀð▓ð¥ð╗ðÁð¢ð© Ðüð░ Ðüð░ð╝ð¥ ð©ðÀð¥ð▒ÐÇð░ðÂðÁð¢ð©ÐÅ ð© PDF Ðäð░ð╣ð╗ð¥ð▓ðÁ!",
+                    "error",
+                )
                 return render_template("submit_request.html")
 
             # Enhanced file validation
@@ -6165,7 +6778,9 @@ def submit_request():
             file_size = file.tell()
             file.seek(0)  # Reset to beginning
             if file_size > 5 * 1024 * 1024:  # 5MB
-                flash("ðñð░ð╣ð╗ÐèÐé ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð│ð¥ð╗ÐÅð╝ (ð╝ð░ð║Ðü. 5MB)!", "error")
+                flash(
+                    "ðñð░ð╣ð╗ÐèÐé ðÁ Ðéð▓ÐèÐÇð┤ðÁ ð│ð¥ð╗ÐÅð╝ (ð╝ð░ð║Ðü. 5MB)!", "error"
+                )
                 return render_template("submit_request.html")
 
             # Basic antivirus check (placeholder - integrate with real AV service)
@@ -6181,7 +6796,10 @@ def submit_request():
             file_content_start = file.read(1024)
             file.seek(0)  # Reset
             if any(sig in file_content_start.lower() for sig in dangerous_signatures):
-                flash("ðñð░ð╣ð╗ÐèÐé ÐüÐèð┤ÐèÐÇðÂð░ ð┐ð¥ð┤ð¥ðÀÐÇð©ÐéðÁð╗ð¢ð¥ ÐüÐèð┤ÐèÐÇðÂð░ð¢ð©ðÁ!", "error")
+                flash(
+                    "ðñð░ð╣ð╗ÐèÐé ÐüÐèð┤ÐèÐÇðÂð░ ð┐ð¥ð┤ð¥ðÀÐÇð©ÐéðÁð╗ð¢ð¥ ÐüÐèð┤ÐèÐÇðÂð░ð¢ð©ðÁ!",
+                    "error",
+                )
                 return render_template("submit_request.html")
 
             filename = secure_filename(file.filename)
@@ -6194,7 +6812,9 @@ def submit_request():
             "email": email[:3] + "***",  # Sanitize PII
             "category": category,
             "location": location,
-            "problem": (problem[:50] + "..." if len(problem) > 50 else problem),  # Truncate
+            "problem": (
+                problem[:50] + "..." if len(problem) > 50 else problem
+            ),  # Truncate
             "filename": filename,
         }
         app.logger.info("submit_request received: %s", request_data)
@@ -6204,7 +6824,11 @@ def submit_request():
             # Ensure `title` is provided (DB schema requires it). Use the
             # provided category as a short title when available, otherwise
             # derive a concise title from the problem description.
-            title_val = category if category else (problem[:100] if problem else "ðùð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë")
+            title_val = (
+                category
+                if category
+                else (problem[:100] if problem else "ðùð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë")
+            )
             help_request = HelpRequest(
                 title=title_val,
                 name=name,
@@ -6227,11 +6851,16 @@ def submit_request():
 
             db.session.add(help_request)
             db.session.commit()
-            app.logger.info("Help request saved to database with ID: %s", help_request.id)
+            app.logger.info(
+                "Help request saved to database with ID: %s", help_request.id
+            )
         except Exception as e:
             db.session.rollback()
             app.logger.error("Error saving help request to database: %s", str(e))
-            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+            flash(
+                "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ÐÅð▓ð║ð░Ðéð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+                "error",
+            )
             return render_template("submit_request.html")
 
         return render_template("submit_success.html")
@@ -6272,13 +6901,19 @@ def volunteer_register():
 
         email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, email):
-            flash("ð£ð¥ð╗ÐÅ, ð▓Ðèð▓ðÁð┤ðÁÐéðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ð©ð╝ðÁð╣ð╗ ð░ð┤ÐÇðÁÐü.", "error")
+            flash(
+                "ð£ð¥ð╗ÐÅ, ð▓Ðèð▓ðÁð┤ðÁÐéðÁ ð▓ð░ð╗ð©ð┤ðÁð¢ ð©ð╝ðÁð╣ð╗ ð░ð┤ÐÇðÁÐü.",
+                "error",
+            )
             return redirect(url_for("volunteer_register"))
 
         # ðƒÐÇð¥ð▓ðÁÐÇð© ð┤ð░ð╗ð© ð©ð╝ðÁð╣ð╗ÐèÐé ð▓ðÁÐçðÁ ÐüÐèÐëðÁÐüÐéð▓Ðâð▓ð░
         existing_volunteer = Volunteer.query.filter_by(email=email).first()
         if existing_volunteer:
-            flash("ðóð¥ðÀð© ð©ð╝ðÁð╣ð╗ ð▓ðÁÐçðÁ ðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "error")
+            flash(
+                "ðóð¥ðÀð© ð©ð╝ðÁð╣ð╗ ð▓ðÁÐçðÁ ðÁ ÐÇðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.",
+                "error",
+            )
             return redirect(url_for("volunteer_register"))
 
         try:
@@ -6355,7 +6990,9 @@ def volunteer_register():
             },
         )
 
-        flash("ðúÐüð┐ðÁÐêð¢ð░ ÐÇðÁð│ð©ÐüÐéÐÇð░Ðåð©ÐÅ! ð®ðÁ ÐüðÁ Ðüð▓ÐèÐÇðÂðÁð╝ Ðü ð▓ð░Ðü ð┐ÐÇð© ð¢ÐâðÂð┤ð░.")
+        flash(
+            "ðúÐüð┐ðÁÐêð¢ð░ ÐÇðÁð│ð©ÐüÐéÐÇð░Ðåð©ÐÅ! ð®ðÁ ÐüðÁ Ðüð▓ÐèÐÇðÂðÁð╝ Ðü ð▓ð░Ðü ð┐ÐÇð© ð¢ÐâðÂð┤ð░."
+        )
         return redirect(url_for("volunteer_register"))
     return render_template("volunteer_register.html")
 
@@ -6386,15 +7023,25 @@ def volunteer_login():
             logger.warning("Volunteer found: %s", volunteer is not None)
             app.logger.info(f"Volunteer found: {volunteer is not None}")
             if volunteer:
-                app.logger.info(f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, Email={volunteer.email}")
+                app.logger.info(
+                    f"Volunteer details: ID={volunteer.id}, Name={volunteer.name}, Email={volunteer.email}"
+                )
 
-                otp_bypassed = DISABLE_VOLUNTEER_OTP or email.lower() in VOLUNTEER_OTP_BYPASS_EMAILS
+                otp_bypassed = (
+                    DISABLE_VOLUNTEER_OTP
+                    or email.lower() in VOLUNTEER_OTP_BYPASS_EMAILS
+                )
 
                 if otp_bypassed:
-                    app.logger.info("Volunteer OTP disabled; granting access without code")
+                    app.logger.info(
+                        "Volunteer OTP disabled; granting access without code"
+                    )
                     _activate_volunteer_session(volunteer)
                     session.pop("pending_volunteer_login", None)
-                    flash("ðúÐüð┐ðÁÐêðÁð¢ ð▓Ðàð¥ð┤ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "success")
+                    flash(
+                        "ðúÐüð┐ðÁÐêðÁð¢ ð▓Ðàð¥ð┤ ð║ð░Ðéð¥ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.",
+                        "success",
+                    )
                     return redirect(url_for("volunteer_dashboard"))
 
                 # Generate 6-digit access code
@@ -6426,7 +7073,12 @@ HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░
 """
 
                     # Send as a Message positional arg so tests can inspect call_args[0][0]
-                    msg = Message(subject="HelpChain - ðÜð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐", recipients=[email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
+                    msg = Message(
+                        subject="HelpChain - ðÜð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐",
+                        recipients=[email],
+                        body=email_body,
+                        sender=app.config.get("MAIL_DEFAULT_SENDER"),
+                    )
                     mail.send(msg)
                     logger.warning("Access code sent to %s", email)
                     app.logger.info(f"Access code sent to {email}")
@@ -6468,7 +7120,9 @@ HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░
                 app.logger.warning(f"No volunteer found with email: {email}")
         except Exception as e:
             error = f"Database error: {e}"
-            app.logger.error(f"Database error during volunteer login: {e}", exc_info=app.debug)
+            app.logger.error(
+                f"Database error during volunteer login: {e}", exc_info=app.debug
+            )
     return render_template("volunteer_login.html", error=error)
 
 
@@ -6502,7 +7156,10 @@ def volunteer_verify_code():
     # Check if there's a pending login
     pending = session.get("pending_volunteer_login")
     if not pending:
-        flash("ðØÐÅð╝ð░ Ðçð░ð║ð░Ðë ð┐ÐÇð¥ÐåðÁÐü ð¢ð░ ð▓Ðàð¥ð┤. ð£ð¥ð╗ÐÅ, ðÀð░ð┐ð¥Ðçð¢ðÁÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+        flash(
+            "ðØÐÅð╝ð░ Ðçð░ð║ð░Ðë ð┐ÐÇð¥ÐåðÁÐü ð¢ð░ ð▓Ðàð¥ð┤. ð£ð¥ð╗ÐÅ, ðÀð░ð┐ð¥Ðçð¢ðÁÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+            "error",
+        )
         return redirect(url_for("volunteer_login"))
 
     pending_email = (pending.get("email") or "").lower()
@@ -6513,10 +7170,18 @@ def volunteer_verify_code():
         from backend.extensions import db as _db
 
         try:
-            admin_exists = _db.session.query(AdminUser).filter(_db.func.lower(AdminUser.email) == pending_email).first() is not None
+            admin_exists = (
+                _db.session.query(AdminUser)
+                .filter(_db.func.lower(AdminUser.email) == pending_email)
+                .first()
+                is not None
+            )
         except Exception:
             # Fallback using ORM attribute if direct func not available
-            admin_exists = AdminUser.query.filter(AdminUser.email.ilike(pending_email)).first() is not None
+            admin_exists = (
+                AdminUser.query.filter(AdminUser.email.ilike(pending_email)).first()
+                is not None
+            )
         if admin_exists:
             # Clear pending state and instruct user to use admin login
             session.pop("pending_volunteer_login", None)
@@ -6532,7 +7197,10 @@ def volunteer_verify_code():
     # Check if code has expired
     if datetime.now().timestamp() > pending.get("expires", 0):
         session.pop("pending_volunteer_login", None)
-        flash("ðÜð¥ð┤ÐèÐé ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ðÁ ð©ðÀÐéðÁð║Ðèð╗. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+        flash(
+            "ðÜð¥ð┤ÐèÐé ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ðÁ ð©ðÀÐéðÁð║Ðèð╗. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+            "error",
+        )
         return redirect(url_for("volunteer_login"))
 
     if DISABLE_VOLUNTEER_OTP or pending_email in VOLUNTEER_OTP_BYPASS_EMAILS:
@@ -6639,7 +7307,12 @@ def resend_volunteer_code():
         volunteer = _load_volunteer_by_id(pending["volunteer_id"])
         if not volunteer:
             return (
-                jsonify({"success": False, "message": "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢"}),
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢",
+                    }
+                ),
                 404,
             )
 
@@ -6648,7 +7321,9 @@ def resend_volunteer_code():
 
         # Update session with new code and extended expiration
         session["pending_volunteer_login"]["access_code"] = access_code
-        session["pending_volunteer_login"]["expires"] = datetime.now().timestamp() + 900  # 15 minutes
+        session["pending_volunteer_login"]["expires"] = (
+            datetime.now().timestamp() + 900
+        )  # 15 minutes
 
         # Send email with new access code
         try:
@@ -6666,10 +7341,20 @@ def resend_volunteer_code():
 HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░
 """
 
-            msg = Message(subject="HelpChain - ðØð¥ð▓ ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐", recipients=[volunteer.email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
+            msg = Message(
+                subject="HelpChain - ðØð¥ð▓ ð║ð¥ð┤ ðÀð░ ð┤ð¥ÐüÐéÐèð┐",
+                recipients=[volunteer.email],
+                body=email_body,
+                sender=app.config.get("MAIL_DEFAULT_SENDER"),
+            )
             mail.send(msg)
 
-            return jsonify({"success": True, "message": "ðØð¥ð▓ ð║ð¥ð┤ ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ ð¢ð░ ð▓ð░Ðêð©ÐÅ ð©ð╝ðÁð╣ð╗."})
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "ðØð¥ð▓ ð║ð¥ð┤ ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ ð¢ð░ ð▓ð░Ðêð©ÐÅ ð©ð╝ðÁð╣ð╗.",
+                }
+            )
 
         except Exception as e:
             app.logger.error(f"Error resending volunteer code: {e}")
@@ -6686,7 +7371,9 @@ HelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░
                         "ðí Ðâð▓ð░ðÂðÁð¢ð©ðÁ,\nHelpChain Ðüð©ÐüÐéðÁð╝ð░Ðéð░\n\n"
                         f"{'=' * 50}\n"
                     )
-                app.logger.info("New access code saved to file as fallback after failure")
+                app.logger.info(
+                    "New access code saved to file as fallback after failure"
+                )
                 return jsonify(
                     {
                         "success": True,
@@ -6734,7 +7421,10 @@ def volunteer_dashboard():
         if not volunteer_id:
             app.logger.warning("Missing volunteer_id in session")
             session.clear()
-            flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+            flash(
+                "ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+                "error",
+            )
             return redirect(url_for("volunteer_login"))
 
         volunteer = _load_volunteer_by_id(volunteer_id)
@@ -6755,7 +7445,13 @@ def volunteer_dashboard():
 
         # Count urgent tasks nearby (simplified - all urgent pending requests)
         try:
-            urgent_tasks_raw = db.session.query(db.func.count(HelpRequest.id)).filter(HelpRequest.status == "pending", HelpRequest.priority == "urgent").scalar()
+            urgent_tasks_raw = (
+                db.session.query(db.func.count(HelpRequest.id))
+                .filter(
+                    HelpRequest.status == "pending", HelpRequest.priority == "urgent"
+                )
+                .scalar()
+            )
         except Exception as exc:
             app.logger.debug("Urgent task lookup failed: %s", exc)
             urgent_tasks_raw = 0
@@ -6775,8 +7471,13 @@ def volunteer_dashboard():
 
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Critical error in volunteer dashboard: {e}", exc_info=app.debug)
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ð░ð¢ðÁð╗ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+        app.logger.error(
+            f"Critical error in volunteer dashboard: {e}", exc_info=app.debug
+        )
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ð░ð¢ðÁð╗ð░. ð£ð¥ð╗ÐÅ, ð¥ð┐ð©Ðéð░ð╣ÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+            "error",
+        )
         return redirect(url_for("index"))
 
 
@@ -6791,7 +7492,10 @@ def _require_volunteer_session():
         volunteer_id = int(volunteer_id)
     except (TypeError, ValueError):
         session.clear()
-        flash("ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.", "error")
+        flash(
+            "ðíðÁÐüð©ÐÅÐéð░ ðÁ ð©ðÀÐéðÁð║ð╗ð░. ð£ð¥ð╗ÐÅ, ð▓ð╗ðÁðÀÐéðÁ ð¥Ðéð¢ð¥ð▓ð¥.",
+            "error",
+        )
         return None, redirect(url_for("volunteer_login"))
 
     return volunteer_id, None
@@ -6855,7 +7559,9 @@ def _resolve_volunteer_for_display(volunteer_id):
     if volunteer:
         return volunteer
 
-    placeholder_name = session.get("volunteer_name") or f"ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå #{volunteer_id}"
+    placeholder_name = (
+        session.get("volunteer_name") or f"ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå #{volunteer_id}"
+    )
     return SimpleNamespace(
         id=volunteer_id,
         name=placeholder_name,
@@ -6965,9 +7671,15 @@ def volunteer_profile():
             except Exception as exc:
                 db.session.rollback()
                 app.logger.error("Failed to update volunteer profile: %s", exc)
-                flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ÐÇð¥Ðäð©ð╗ð░.", "error")
+                flash(
+                    "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ÐÇð¥Ðäð©ð╗ð░.",
+                    "error",
+                )
         else:
-            flash("ðØÐÅð╝ð░ ð┐ð¥ð┤ð░ð┤ðÁð¢ð© ð┐ÐÇð¥ð╝ðÁð¢ð© ðÀð░ ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ.", "info")
+            flash(
+                "ðØÐÅð╝ð░ ð┐ð¥ð┤ð░ð┤ðÁð¢ð© ð┐ÐÇð¥ð╝ðÁð¢ð© ðÀð░ ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ.",
+                "info",
+            )
 
         return redirect(url_for("volunteer_profile"))
 
@@ -7021,15 +7733,21 @@ def volunteer_settings():
 
     if request.method == "POST":
         updated_settings = current_settings.copy()
-        updated_settings["notification_email"] = request.form.get("notification_email") in {"1", "true", "on", "yes"}
+        updated_settings["notification_email"] = request.form.get(
+            "notification_email"
+        ) in {"1", "true", "on", "yes"}
         updated_settings["notification_sms"] = request.form.get("notification_sms") in {
             "1",
             "true",
             "on",
             "yes",
         }
-        updated_settings["language"] = request.form.get("language", current_settings.get("language", "bg"))
-        updated_settings["timezone"] = request.form.get("timezone", current_settings.get("timezone", "Europe/Sofia"))
+        updated_settings["language"] = request.form.get(
+            "language", current_settings.get("language", "bg")
+        )
+        updated_settings["timezone"] = request.form.get(
+            "timezone", current_settings.get("timezone", "Europe/Sofia")
+        )
 
         session["volunteer_settings"] = updated_settings
         session.modified = True
@@ -7068,7 +7786,9 @@ def _get_volunteer_stats_safe(volunteer_id):
 
         task_stats = (
             db.session.query(
-                db.func.sum(case((Task.status == "completed", 1), else_=0)).label("completed"),
+                db.func.sum(case((Task.status == "completed", 1), else_=0)).label(
+                    "completed"
+                ),
                 db.func.sum(
                     case(
                         (Task.status.in_(["assigned", "in_progress"]), 1),
@@ -7176,8 +7896,13 @@ def _get_active_tasks_safe(volunteer_id):
                 {
                     "id": task_id,
                     "title": title,
-                    "location": location_text or "ðØðÁ ðÁ ð┐ð¥Ðüð¥ÐçðÁð¢ð░ ð╗ð¥ð║ð░Ðåð©ÐÅ",
-                    "date": (created_at.strftime("%Y-%m-%d") if created_at else "ðØÐÅð╝ð░ ð┤ð░Ðéð░"),
+                    "location": location_text
+                    or "ðØðÁ ðÁ ð┐ð¥Ðüð¥ÐçðÁð¢ð░ ð╗ð¥ð║ð░Ðåð©ÐÅ",
+                    "date": (
+                        created_at.strftime("%Y-%m-%d")
+                        if created_at
+                        else "ðØÐÅð╝ð░ ð┤ð░Ðéð░"
+                    ),
                     "time_remaining": time_remaining,
                     "description": description or "ðØÐÅð╝ð░ ð¥ð┐ð©Ðüð░ð¢ð©ðÁ",
                     "priority": priority or "medium",
@@ -7188,7 +7913,9 @@ def _get_active_tasks_safe(volunteer_id):
         return active_tasks
 
     except Exception as e:
-        app.logger.error(f"Error fetching active tasks for volunteer {volunteer_id}: {e}")
+        app.logger.error(
+            f"Error fetching active tasks for volunteer {volunteer_id}: {e}"
+        )
         return []
 
 
@@ -7199,11 +7926,19 @@ def _get_gamification_data_safe(volunteer):
             "points": volunteer.points,
             "level": volunteer.level,
             "experience": volunteer.experience,
-            "level_progress": (volunteer.get_level_progress() if hasattr(volunteer, "get_level_progress") else 0),
-            "next_level_exp": ((volunteer.level * 100) if hasattr(volunteer, "level") else 100),
+            "level_progress": (
+                volunteer.get_level_progress()
+                if hasattr(volunteer, "get_level_progress")
+                else 0
+            ),
+            "next_level_exp": (
+                (volunteer.level * 100) if hasattr(volunteer, "level") else 100
+            ),
         }
     except Exception as e:
-        app.logger.error(f"Error getting gamification data for volunteer {volunteer.id}: {e}")
+        app.logger.error(
+            f"Error getting gamification data for volunteer {volunteer.id}: {e}"
+        )
         return {
             "points": 0,
             "level": 1,
@@ -7216,7 +7951,12 @@ def _get_gamification_data_safe(volunteer):
 def _get_available_task_count():
     """Return count of currently available (open) tasks."""
     try:
-        return db.session.query(db.func.count(Task.id)).filter(Task.status == "open").scalar() or 0
+        return (
+            db.session.query(db.func.count(Task.id))
+            .filter(Task.status == "open")
+            .scalar()
+            or 0
+        )
     except Exception as exc:
         app.logger.warning("Error counting available tasks: %s", exc)
         return 0
@@ -7328,10 +8068,22 @@ def api_volunteers_nearby():
             candidate_list = list(volunteers_query)
             # For test-time debugging print to stdout so pytest -s captures it
             try:
-                print("NEARBY CANDIDATES:", [{"id": getattr(v, "id", None), "lat": getattr(v, "latitude", None), "lng": getattr(v, "longitude", None)} for v in candidate_list])
+                print(
+                    "NEARBY CANDIDATES:",
+                    [
+                        {
+                            "id": getattr(v, "id", None),
+                            "lat": getattr(v, "latitude", None),
+                            "lng": getattr(v, "longitude", None),
+                        }
+                        for v in candidate_list
+                    ],
+                )
             except Exception:
                 try:
-                    print("NEARBY CANDIDATES (repr):", [repr(v) for v in candidate_list])
+                    print(
+                        "NEARBY CANDIDATES (repr):", [repr(v) for v in candidate_list]
+                    )
                 except Exception:
                     pass
         except Exception:
@@ -7374,7 +8126,9 @@ def api_volunteers_nearby():
                 "volunteers": results,
                 "count": len(results),
                 "radius_km": radius_km,
-                "search_location": request.args.get("location", f"{latitude:.4f}, {longitude:.4f}"),
+                "search_location": request.args.get(
+                    "location", f"{latitude:.4f}, {longitude:.4f}"
+                ),
             }
         )
     except Exception as exc:
@@ -7426,7 +8180,9 @@ def api_update_volunteer_location(volunteer_id):
                 "lng": volunteer.longitude,
                 "text": volunteer.location,
             },
-            "updated_at": (volunteer.updated_at.isoformat() if volunteer.updated_at else None),
+            "updated_at": (
+                volunteer.updated_at.isoformat() if volunteer.updated_at else None
+            ),
         }
     )
 
@@ -7452,7 +8208,9 @@ def chatbot_message():
             return jsonify({"error": "No message provided"}), 400
 
         if ai_service is None:
-            app.logger.error("AI service is not configured; cannot process chatbot message")
+            app.logger.error(
+                "AI service is not configured; cannot process chatbot message"
+            )
             return (
                 jsonify(
                     {
@@ -7571,7 +8329,13 @@ def api_volunteer_tasks():
         volunteer_id = session.get("volunteer_id")
 
         # Get assigned tasks
-        assigned_tasks = db.session.query(Task).filter_by(assigned_to=volunteer_id).filter(Task.status.in_(["assigned", "in_progress"])).order_by(Task.created_at.desc()).all()
+        assigned_tasks = (
+            db.session.query(Task)
+            .filter_by(assigned_to=volunteer_id)
+            .filter(Task.status.in_(["assigned", "in_progress"]))
+            .order_by(Task.created_at.desc())
+            .all()
+        )
 
         # Get available tasks (not assigned to anyone)
         available_tasks = (
@@ -7596,7 +8360,9 @@ def api_volunteer_tasks():
                 "estimated_hours": task.estimated_hours,
                 "deadline": task.deadline.isoformat() if task.deadline else None,
                 "created_at": task.created_at.isoformat(),
-                "assigned_at": (task.assigned_at.isoformat() if task.assigned_at else None),
+                "assigned_at": (
+                    task.assigned_at.isoformat() if task.assigned_at else None
+                ),
             }
 
         return jsonify(
@@ -7639,7 +8405,12 @@ def admin_delete_volunteer(volunteer_id):
 
         # Optional: Check if volunteer can be deleted (not assigned to active tasks, etc.)
         # Check if volunteer has active tasks
-        active_tasks = db.session.query(Task).filter_by(assigned_to=volunteer_id).filter(Task.status.in_(["assigned", "in_progress"])).count()
+        active_tasks = (
+            db.session.query(Task)
+            .filter_by(assigned_to=volunteer_id)
+            .filter(Task.status.in_(["assigned", "in_progress"]))
+            .count()
+        )
 
         if active_tasks > 0:
             return (
@@ -7668,13 +8439,23 @@ def admin_delete_volunteer(volunteer_id):
         except Exception as analytics_error:
             app.logger.warning(f"Analytics tracking failed: {analytics_error}")
 
-        return jsonify({"success": True, "message": "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ðÁ ð©ðÀÐéÐÇð©Ðé ÐâÐüð┐ðÁÐêð¢ð¥"})
+        return jsonify(
+            {
+                "success": True,
+                "message": "ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåÐèÐé ðÁ ð©ðÀÐéÐÇð©Ðé ÐâÐüð┐ðÁÐêð¢ð¥",
+            }
+        )
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error deleting volunteer {volunteer_id}: {e}")
         return (
-            jsonify({"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀÐéÐÇð©ð▓ð░ð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåð░"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀÐéÐÇð©ð▓ð░ð¢ðÁ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐåð░",
+                }
+            ),
             500,
         )
 
@@ -7704,7 +8485,12 @@ def admin_tasks():
         total_tasks = query.count()
 
         # Apply pagination and ordering
-        tasks = query.order_by(Task.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+        tasks = (
+            query.order_by(Task.created_at.desc())
+            .offset((page - 1) * per_page)
+            .limit(per_page)
+            .all()
+        )
 
         total_pages = (total_tasks + per_page - 1) // per_page
 
@@ -7717,9 +8503,15 @@ def admin_tasks():
         stats = {
             "total_tasks": db.session.query(Task).count(),
             "open_tasks": db.session.query(Task).filter_by(status="open").count(),
-            "assigned_tasks": db.session.query(Task).filter_by(status="assigned").count(),
-            "in_progress_tasks": db.session.query(Task).filter(Task.status == "in_progress").count(),
-            "completed_tasks": db.session.query(Task).filter_by(status="completed").count(),
+            "assigned_tasks": db.session.query(Task)
+            .filter_by(status="assigned")
+            .count(),
+            "in_progress_tasks": db.session.query(Task)
+            .filter(Task.status == "in_progress")
+            .count(),
+            "completed_tasks": db.session.query(Task)
+            .filter_by(status="completed")
+            .count(),
         }
 
         return render_template(
@@ -7736,7 +8528,10 @@ def admin_tasks():
 
     except Exception as e:
         app.logger.error(f"Error loading admin tasks: {e}")
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ðÀð░ð┤ð░Ðçð©ÐéðÁ", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ðÀð░ð┤ð░Ðçð©ÐéðÁ",
+            "error",
+        )
         return redirect(url_for("admin_dashboard"))
 
 
@@ -7752,13 +8547,20 @@ def create_task():
             category = request.form.get("category", "").strip()
             priority = request.form.get("priority", "medium")
             location_required = request.form.get("location_required") == "on"
-            location_text = request.form.get("location_text", "").strip() if location_required else None
+            location_text = (
+                request.form.get("location_text", "").strip()
+                if location_required
+                else None
+            )
             estimated_hours = request.form.get("estimated_hours")
             deadline_str = request.form.get("deadline", "").strip()
 
             # Validation
             if not title or not description or not category:
-                flash("ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð¥ð╗ðÁÐéð░", "error")
+                flash(
+                    "ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð¥ð╗ðÁÐéð░",
+                    "error",
+                )
                 return redirect(url_for("create_task"))
 
             # Parse deadline
@@ -7769,7 +8571,10 @@ def create_task():
 
                     deadline = datetime.strptime(deadline_str, "%Y-%m-%dT%H:%M")
                 except ValueError:
-                    flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ Ðäð¥ÐÇð╝ð░Ðé ð¢ð░ ð║ÐÇð░ðÁð¢ ÐüÐÇð¥ð║", "error")
+                    flash(
+                        "ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ Ðäð¥ÐÇð╝ð░Ðé ð¢ð░ ð║ÐÇð░ðÁð¢ ÐüÐÇð¥ð║",
+                        "error",
+                    )
                     return redirect(url_for("create_task"))
 
             # Parse estimated hours
@@ -7805,7 +8610,9 @@ def create_task():
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error creating task: {e}")
-            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ÐüÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
+            flash(
+                "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ÐüÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error"
+            )
             return redirect(url_for("create_task"))
 
     # Get current admin user
@@ -7830,7 +8637,11 @@ def edit_task(task_id):
             task.category = request.form.get("category", "").strip()
             task.priority = request.form.get("priority", "medium")
             task.location_required = request.form.get("location_required") == "on"
-            task.location_text = request.form.get("location_text", "").strip() if task.location_required else None
+            task.location_text = (
+                request.form.get("location_text", "").strip()
+                if task.location_required
+                else None
+            )
 
             estimated_hours = request.form.get("estimated_hours")
             if estimated_hours:
@@ -7851,14 +8662,20 @@ def edit_task(task_id):
 
                     task.deadline = datetime.strptime(deadline_str, "%Y-%m-%dT%H:%M")
                 except ValueError:
-                    flash("ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ Ðäð¥ÐÇð╝ð░Ðé ð¢ð░ ð║ÐÇð░ðÁð¢ ÐüÐÇð¥ð║", "error")
+                    flash(
+                        "ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ Ðäð¥ÐÇð╝ð░Ðé ð¢ð░ ð║ÐÇð░ðÁð¢ ÐüÐÇð¥ð║",
+                        "error",
+                    )
                     return redirect(url_for("edit_task", task_id=task_id))
             else:
                 task.deadline = None
 
             # Validation
             if not task.title or not task.description or not task.category:
-                flash("ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð¥ð╗ðÁÐéð░", "error")
+                flash(
+                    "ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð¥ð╗ðÁÐéð░",
+                    "error",
+                )
                 return redirect(url_for("edit_task", task_id=task_id))
 
             db.session.commit()
@@ -7869,7 +8686,10 @@ def edit_task(task_id):
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error updating task {task_id}: {e}")
-            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
+            flash(
+                "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░",
+                "error",
+            )
             return redirect(url_for("edit_task", task_id=task_id))
 
     # Get current admin user
@@ -7890,7 +8710,10 @@ def delete_task(task_id):
 
         # Check if task is assigned
         if task.assigned_to:
-            flash("ðØðÁ ð╝ð¥ðÂðÁ ð┤ð░ ð©ðÀÐéÐÇð©ðÁÐéðÁ ðÀð░ð┤ð░Ðçð░, ð║ð¥ÐÅÐéð¥ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå", "error")
+            flash(
+                "ðØðÁ ð╝ð¥ðÂðÁ ð┤ð░ ð©ðÀÐéÐÇð©ðÁÐéðÁ ðÀð░ð┤ð░Ðçð░, ð║ð¥ÐÅÐéð¥ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå",
+                "error",
+            )
             return redirect(url_for("admin_tasks"))
 
         db.session.delete(task)
@@ -7923,7 +8746,10 @@ def assign_task(task_id):
         try:
             volunteer = db.session.query(Volunteer).get(volunteer_id)
             if not volunteer:
-                flash("ðÿðÀð▒ÐÇð░ð¢ð©ÐÅÐé ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢", "error")
+                flash(
+                    "ðÿðÀð▒ÐÇð░ð¢ð©ÐÅÐé ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢",
+                    "error",
+                )
                 return redirect(url_for("assign_task", task_id=task_id))
 
             # Assign task to volunteer
@@ -7939,13 +8765,19 @@ def assign_task(task_id):
 
             db.session.commit()
 
-            flash(f"ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥ ð¢ð░ {volunteer.name}!", "success")
+            flash(
+                f"ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥ ð¢ð░ {volunteer.name}!",
+                "success",
+            )
             return redirect(url_for("admin_tasks"))
 
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Error assigning task {task_id}: {e}")
-            flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┐ÐÇð©Ðüð▓ð¥ÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
+            flash(
+                "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð┐ÐÇð©Ðüð▓ð¥ÐÅð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░",
+                "error",
+            )
             return redirect(url_for("assign_task", task_id=task_id))
 
     # Get available volunteers
@@ -7956,7 +8788,9 @@ def assign_task(task_id):
     if session.get("admin_user_id"):
         current_user = db.session.get(AdminUser, session.get("admin_user_id"))
 
-    return render_template("assign_task.html", task=task, volunteers=volunteers, current_user=current_user)
+    return render_template(
+        "assign_task.html", task=task, volunteers=volunteers, current_user=current_user
+    )
 
 
 @app.route("/admin_tasks/<int:task_id>/unassign", methods=["POST"])
@@ -7968,7 +8802,10 @@ def unassign_task(task_id):
         task = db.session.query(Task).get_or_404(task_id)
 
         if not task.assigned_to:
-            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ð¢ðÁ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð¢ð©ð║ð¥ð│ð¥", "warning")
+            flash(
+                "ðùð░ð┤ð░Ðçð░Ðéð░ ð¢ðÁ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð¢ð©ð║ð¥ð│ð¥",
+                "warning",
+            )
             return redirect(url_for("admin_tasks"))
 
         # Update task
@@ -7986,7 +8823,10 @@ def unassign_task(task_id):
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error unassigning task {task_id}: {e}")
-        flash("ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥Ðüð▓ð¥ð▒ð¥ðÂð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░", "error")
+        flash(
+            "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥Ðüð▓ð¥ð▒ð¥ðÂð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ðÀð░ð┤ð░Ðçð░Ðéð░",
+            "error",
+        )
 
     return redirect(url_for("admin_tasks"))
 
@@ -8003,13 +8843,26 @@ def admin_update_request_status():
 
         if not request_id or not new_status:
             return (
-                jsonify({"success": False, "message": "ðøð©ð┐Ðüð▓ð░Ðé ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð░ÐÇð░ð╝ðÁÐéÐÇð©"}),
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "ðøð©ð┐Ðüð▓ð░Ðé ðÀð░ð┤Ðèð╗ðÂð©ÐéðÁð╗ð¢ð© ð┐ð░ÐÇð░ð╝ðÁÐéÐÇð©",
+                    }
+                ),
                 400,
             )
 
         request_obj = db.session.query(HelpRequest).get(request_id)
         if not request_obj:
-            return jsonify({"success": False, "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢ð░"}), 404
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "message": "ðùð░ÐÅð▓ð║ð░Ðéð░ ð¢ðÁ ðÁ ð¢ð░ð╝ðÁÐÇðÁð¢ð░",
+                    }
+                ),
+                404,
+            )
 
         # Validate status
         valid_statuses = [
@@ -8020,7 +8873,12 @@ def admin_update_request_status():
             "cancelled",
         ]
         if new_status not in valid_statuses:
-            return jsonify({"success": False, "message": "ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ÐüÐéð░ÐéÐâÐü"}), 400
+            return (
+                jsonify(
+                    {"success": False, "message": "ðØðÁð▓ð░ð╗ð©ð┤ðÁð¢ ÐüÐéð░ÐéÐâÐü"}
+                ),
+                400,
+            )
 
         old_status = request_obj.status
         if new_status == "completed":
@@ -8030,7 +8888,9 @@ def admin_update_request_status():
             request_obj.completed_at = None
         db.session.commit()
 
-        app.logger.info(f"Request {request_id} status changed from {old_status} to {new_status}")
+        app.logger.info(
+            f"Request {request_id} status changed from {old_status} to {new_status}"
+        )
 
         return jsonify(
             {
@@ -8065,7 +8925,11 @@ def export_volunteers():
     query = db.session.query(Volunteer)
 
     if search:
-        query = query.filter((Volunteer.name.ilike(f"%{search}%")) | (Volunteer.email.ilike(f"%{search}%")) | (Volunteer.phone.ilike(f"%{search}%")))
+        query = query.filter(
+            (Volunteer.name.ilike(f"%{search}%"))
+            | (Volunteer.email.ilike(f"%{search}%"))
+            | (Volunteer.phone.ilike(f"%{search}%"))
+        )
 
     if location_filter:
         query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
@@ -8211,7 +9075,16 @@ def export_volunteers_pdf(volunteers):
     elements.append(Spacer(1, 20))
 
     # Table data
-    data = [["ID", "ðÿð╝ðÁ", "ðÿð╝ðÁð╣ð╗", "ðóðÁð╗ðÁÐäð¥ð¢", "ðøð¥ð║ð░Ðåð©ÐÅ", "ðáðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢"]]
+    data = [
+        [
+            "ID",
+            "ðÿð╝ðÁ",
+            "ðÿð╝ðÁð╣ð╗",
+            "ðóðÁð╗ðÁÐäð¥ð¢",
+            "ðøð¥ð║ð░Ðåð©ÐÅ",
+            "ðáðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢",
+        ]
+    ]
 
     for v in volunteers:
         data.append(
@@ -8266,7 +9139,11 @@ def export_volunteers_pdf(volunteers):
     return Response(
         buffer.getvalue(),
         mimetype="application/pdf",
-        headers={"Content-Disposition": (f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")},
+        headers={
+            "Content-Disposition": (
+                f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            )
+        },
     )
 
 
@@ -8290,7 +9167,9 @@ def feedback():
 
         # Basic input validation
         if not all([name, email, message]) or len(message) < 10:
-            flash("ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ð┐ð¥ð╗ðÁÐéð░ ð║ð¥ÐÇðÁð║Ðéð¢ð¥!")
+            flash(
+                "ð£ð¥ð╗ÐÅ, ð┐ð¥ð┐Ðèð╗ð¢ðÁÐéðÁ ð▓Ðüð©Ðçð║ð© ð┐ð¥ð╗ðÁÐéð░ ð║ð¥ÐÇðÁð║Ðéð¢ð¥!"
+            )
             return redirect(url_for("feedback"))
 
         # Detect language of feedback message
@@ -8342,7 +9221,11 @@ def category_help(category):
 
     # ðñð©ð╗ÐéÐÇð©ÐÇð░ð╝ðÁ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð© ð║ð¥ð©Ðéð¥ ð©ð╝ð░Ðé Ðéð░ðÀð© ð║ð░ÐéðÁð│ð¥ÐÇð©ÐÅ ð▓ skills
     # ðóÐèÐÇÐüð©ð╝ case-insensitive ð▓ skills ð┐ð¥ð╗ðÁÐéð¥
-    volunteers = db.session.query(Volunteer).filter(Volunteer.skills.ilike(f"%{category}%")).all()
+    volunteers = (
+        db.session.query(Volunteer)
+        .filter(Volunteer.skills.ilike(f"%{category}%"))
+        .all()
+    )
 
     # ðÉð║ð¥ ð¢ÐÅð╝ð░ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©, ð┐ð¥ð║ð░ðÀð▓ð░ð╝ðÁ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ
     no_volunteers = len(volunteers) == 0
@@ -8393,7 +9276,9 @@ def category_help(category):
         )
 
         # Title
-        title = Paragraph("ðíð┐ð©ÐüÐèð║ Ðü ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð© - HelpChain", title_style)
+        title = Paragraph(
+            "ðíð┐ð©ÐüÐèð║ Ðü ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð© - HelpChain", title_style
+        )
         elements.append(title)
         elements.append(Spacer(1, 12))
 
@@ -8404,7 +9289,16 @@ def category_help(category):
         elements.append(Spacer(1, 20))
 
         # Table data
-        data = [["ID", "ðÿð╝ðÁ", "ðÿð╝ðÁð╣ð╗", "ðóðÁð╗ðÁÐäð¥ð¢", "ðøð¥ð║ð░Ðåð©ÐÅ", "ðáðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢"]]
+        data = [
+            [
+                "ID",
+                "ðÿð╝ðÁ",
+                "ðÿð╝ðÁð╣ð╗",
+                "ðóðÁð╗ðÁÐäð¥ð¢",
+                "ðøð¥ð║ð░Ðåð©ÐÅ",
+                "ðáðÁð│ð©ÐüÐéÐÇð©ÐÇð░ð¢",
+            ]
+        ]
 
         for v in volunteers:
             data.append(
@@ -8459,7 +9353,11 @@ def category_help(category):
         return Response(
             buffer.getvalue(),
             mimetype="application/pdf",
-            headers={"Content-Disposition": (f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")},
+            headers={
+                "Content-Disposition": (
+                    f"attachment;filename=volunteers_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+                )
+            },
         )
 
     except ImportError:
@@ -8471,7 +9369,12 @@ def chat():
     """Main chat page - shows available chat rooms"""
     try:
         # Get public chat rooms
-        public_rooms = db.session.query(ChatRoom).filter_by(room_type="public", is_active=True).order_by(ChatRoom.created_at.desc()).all()
+        public_rooms = (
+            db.session.query(ChatRoom)
+            .filter_by(room_type="public", is_active=True)
+            .order_by(ChatRoom.created_at.desc())
+            .all()
+        )
 
         # Get user's private rooms if logged in
         private_rooms = []
@@ -8512,7 +9415,10 @@ def chat():
 
     except Exception as e:
         app.logger.error(f"Error loading chat page: {e}")
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ Ðçð░Ðéð░", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ Ðçð░Ðéð░",
+            "error",
+        )
         return redirect(url_for("index"))
 
 
@@ -8528,7 +9434,11 @@ def chat_room(room_id):
             has_access = False
             if session.get("volunteer_logged_in"):
                 volunteer_id = session.get("volunteer_id")
-                participant = db.session.query(ChatParticipant).filter_by(room_id=room_id, volunteer_id=volunteer_id).first()
+                participant = (
+                    db.session.query(ChatParticipant)
+                    .filter_by(room_id=room_id, volunteer_id=volunteer_id)
+                    .first()
+                )
                 has_access = participant is not None
             elif session.get("user_id"):
                 # Admin has access to all rooms
@@ -8557,14 +9467,20 @@ def chat_room(room_id):
             if room.room_type == "public":
                 user_info = {"type": "guest", "id": 0, "name": "ðôð¥ÐüÐé"}
             else:
-                flash("ðóÐÇÐÅð▒ð▓ð░ ð┤ð░ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðéð© ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ Ðéð░ðÀð© ÐüÐéð░ÐÅ", "error")
+                flash(
+                    "ðóÐÇÐÅð▒ð▓ð░ ð┤ð░ ÐüÐéðÁ ð╗ð¥ð│ð¢ð░Ðéð© ðÀð░ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ Ðéð░ðÀð© ÐüÐéð░ÐÅ",
+                    "error",
+                )
                 return redirect(url_for("chat"))
 
         return render_template("chat_room.html", room=room, user_info=user_info)
 
     except Exception as e:
         app.logger.error(f"Error loading chat room {room_id}: {e}")
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ÐüÐéð░ÐÅÐéð░", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ÐüÐéð░ÐÅÐéð░",
+            "error",
+        )
         return redirect(url_for("chat"))
 
 
@@ -8575,7 +9491,12 @@ def api_get_chat_rooms():
         room_type = request.args.get("type", "public")
 
         if room_type == "public":
-            rooms = db.session.query(ChatRoom).filter_by(room_type="public", is_active=True).order_by(ChatRoom.created_at.desc()).all()
+            rooms = (
+                db.session.query(ChatRoom)
+                .filter_by(room_type="public", is_active=True)
+                .order_by(ChatRoom.created_at.desc())
+                .all()
+            )
         else:
             # For private rooms, check user permissions
             rooms = []
@@ -8598,7 +9519,11 @@ def api_get_chat_rooms():
         rooms_data = []
         for room in rooms:
             # Count online participants
-            online_count = db.session.query(ChatParticipant).filter_by(room_id=room.id, is_online=True).count()
+            online_count = (
+                db.session.query(ChatParticipant)
+                .filter_by(room_id=room.id, is_online=True)
+                .count()
+            )
 
             rooms_data.append(
                 {
@@ -8630,7 +9555,11 @@ def api_get_room_messages(room_id):
             has_access = False
             if session.get("volunteer_logged_in"):
                 volunteer_id = session.get("volunteer_id")
-                participant = db.session.query(ChatParticipant).filter_by(room_id=room_id, volunteer_id=volunteer_id).first()
+                participant = (
+                    db.session.query(ChatParticipant)
+                    .filter_by(room_id=room_id, volunteer_id=volunteer_id)
+                    .first()
+                )
                 has_access = participant is not None
             elif session.get("user_id"):
                 has_access = True
@@ -8642,7 +9571,14 @@ def api_get_room_messages(room_id):
         limit = int(request.args.get("limit", 50))
         offset = int(request.args.get("offset", 0))
 
-        messages = db.session.query(ChatMessage).filter_by(room_id=room_id, is_deleted=False).order_by(ChatMessage.created_at.desc()).offset(offset).limit(limit).all()
+        messages = (
+            db.session.query(ChatMessage)
+            .filter_by(room_id=room_id, is_deleted=False)
+            .order_by(ChatMessage.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
         messages_data = []
         for msg in reversed(messages):
@@ -8813,7 +9749,10 @@ def accept_task(task_id):
 
         # Check if task is still available
         if task.assigned_to is not None:
-            flash("ðùð░ð┤ð░Ðçð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð┤ÐÇÐâð│ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.", "warning")
+            flash(
+                "ðùð░ð┤ð░Ðçð░Ðéð░ ð▓ðÁÐçðÁ ðÁ ð┐ÐÇð©Ðüð▓ð¥ðÁð¢ð░ ð¢ð░ ð┤ÐÇÐâð│ ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗ðÁÐå.",
+                "warning",
+            )
             return redirect(url_for("available_tasks"))
 
         # Check if task is open
@@ -8833,13 +9772,19 @@ def accept_task(task_id):
         # db.session.add(assignment)
 
         db.session.commit()
-        flash(f"ðúÐüð┐ðÁÐêð¢ð¥ ÐüðÁ ðÀð░ð┐ð©Ðüð░ÐàÐéðÁ ðÀð░ ðÀð░ð┤ð░Ðçð░Ðéð░ '{task.title}'!", "success")
+        flash(
+            f"ðúÐüð┐ðÁÐêð¢ð¥ ÐüðÁ ðÀð░ð┐ð©Ðüð░ÐàÐéðÁ ðÀð░ ðÀð░ð┤ð░Ðçð░Ðéð░ '{task.title}'!",
+            "success",
+        )
         return redirect(url_for("my_tasks"))
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error accepting task {task_id}: {e}")
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð©Ðüð▓ð░ð¢ðÁÐéð¥ ðÀð░ ðÀð░ð┤ð░Ðçð░Ðéð░.", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð©Ðüð▓ð░ð¢ðÁÐéð¥ ðÀð░ ðÀð░ð┤ð░Ðçð░Ðéð░.",
+            "error",
+        )
         return redirect(url_for("available_tasks"))
 
 
@@ -8867,7 +9812,10 @@ def cancel_task(task_id):
 
         # Check if task can be cancelled (not completed)
         if task.status == "completed":
-            flash("ðùð░ð▓ÐèÐÇÐêðÁð¢ð©ÐéðÁ ðÀð░ð┤ð░Ðçð© ð¢ðÁ ð╝ð¥ð│ð░Ðé ð┤ð░ ð▒Ðèð┤ð░Ðé ð¥Ðéð║ð░ðÀð░ð¢ð©.", "warning")
+            flash(
+                "ðùð░ð▓ÐèÐÇÐêðÁð¢ð©ÐéðÁ ðÀð░ð┤ð░Ðçð© ð¢ðÁ ð╝ð¥ð│ð░Ðé ð┤ð░ ð▒Ðèð┤ð░Ðé ð¥Ðéð║ð░ðÀð░ð¢ð©.",
+                "warning",
+            )
             return redirect(url_for("my_tasks"))
 
         # Update task
@@ -8880,13 +9828,19 @@ def cancel_task(task_id):
 
         db.session.commit()
 
-        flash(f"ðúÐüð┐ðÁÐêð¢ð¥ ÐüðÁ ð¥Ðéð║ð░ðÀð░ÐàÐéðÁ ð¥Ðé ðÀð░ð┤ð░Ðçð░Ðéð░ '{task.title}'.", "info")
+        flash(
+            f"ðúÐüð┐ðÁÐêð¢ð¥ ÐüðÁ ð¥Ðéð║ð░ðÀð░ÐàÐéðÁ ð¥Ðé ðÀð░ð┤ð░Ðçð░Ðéð░ '{task.title}'.",
+            "info",
+        )
         return redirect(url_for("my_tasks"))
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error cancelling task {task_id}: {e}")
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥Ðéð║ð░ðÀð▓ð░ð¢ðÁÐéð¥ ð¥Ðé ðÀð░ð┤ð░Ðçð░Ðéð░.", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥Ðéð║ð░ðÀð▓ð░ð¢ðÁÐéð¥ ð¥Ðé ðÀð░ð┤ð░Ðçð░Ðéð░.",
+            "error",
+        )
         return redirect(url_for("my_tasks"))
 
 
@@ -8949,13 +9903,19 @@ def update_task_progress(task_id):
             "completed": "ðùð░ð┤ð░Ðçð░Ðéð░ ðÁ ðÀð░ð▓ÐèÐÇÐêðÁð¢ð░ ÐâÐüð┐ðÁÐêð¢ð¥!",
         }
 
-        flash(status_messages.get(new_status, "ðíÐéð░ÐéÐâÐüÐèÐé ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢."), "success")
+        flash(
+            status_messages.get(new_status, "ðíÐéð░ÐéÐâÐüÐèÐé ðÁ ð¥ð▒ð¢ð¥ð▓ðÁð¢."),
+            "success",
+        )
         return redirect(url_for("my_tasks"))
 
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error updating task progress {task_id}: {e}")
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ÐÇð¥ð│ÐÇðÁÐüð░.", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥ð▒ð¢ð¥ð▓ÐÅð▓ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ÐÇð¥ð│ÐÇðÁÐüð░.",
+            "error",
+        )
         return redirect(url_for("my_tasks"))
 
 
@@ -8999,10 +9959,18 @@ def admin_analytics():
 
         period_days = max(1, min(period_days, 365))
 
-        dashboard_stats = AnalyticsEngine.get_dashboard_stats(days=period_days, start_date=custom_start, end_date=custom_end)
+        dashboard_stats = AnalyticsEngine.get_dashboard_stats(
+            days=period_days, start_date=custom_start, end_date=custom_end
+        )
 
         # ðöð¥ð┐Ðèð╗ð¢ð©ÐéðÁð╗ð¢ð░ ð░ð¢ð░ð╗ð©Ðéð©ð║ð░ ð¥Ðé advanced services, ð░ð║ð¥ ðÁ ð¢ð░ð╗ð©Ðçð¢ð░
-        advanced_analytics = analytics_service.get_dashboard_analytics(days=period_days, start_date=custom_start, end_date=custom_end) if analytics_service else {}
+        advanced_analytics = (
+            analytics_service.get_dashboard_analytics(
+                days=period_days, start_date=custom_start, end_date=custom_end
+            )
+            if analytics_service
+            else {}
+        )
 
         geo_data = AnalyticsEngine.get_geo_data()
         trends_data = AnalyticsEngine.get_trends_data(months=12)
@@ -9033,7 +10001,10 @@ def admin_analytics():
 
     except Exception as e:
         app.logger.error(f"Error loading analytics dashboard: {e}")
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð░ð¢ð░ð╗ð©Ðéð©ð║ð░Ðéð░", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð░ð¢ð░ð╗ð©Ðéð©ð║ð░Ðéð░",
+            "error",
+        )
         return redirect(url_for("admin_dashboard"))
 
 
@@ -9120,14 +10091,19 @@ def achievements():
 
     except Exception as e:
         app.logger.error(f"Error loading achievements page: {e}")
-        flash("ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ð¥ÐüÐéð©ðÂðÁð¢ð©ÐÅÐéð░.", "error")
+        flash(
+            "ðÆÐèðÀð¢ð©ð║ð¢ð░ ð│ÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁÐéð¥ ð¢ð░ ð┐ð¥ÐüÐéð©ðÂðÁð¢ð©ÐÅÐéð░.",
+            "error",
+        )
         return redirect(url_for("volunteer_dashboard"))
 
 
 @app.route("/favicon.ico")
 def favicon():
     """Serve favicon"""
-    return send_from_directory(app.static_folder, "hands-heart.png", mimetype="image/png")
+    return send_from_directory(
+        app.static_folder, "hands-heart.png", mimetype="image/png"
+    )
 
 
 @app.route("/_routes")

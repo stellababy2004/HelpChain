@@ -41,7 +41,9 @@ def main():
         if user is None:
             print(f"User {args.username} not found — will create (dry-run)")
             if args.commit:
-                user = models.User(username=args.username, email=f"{args.username}@example.test")
+                user = models.User(
+                    username=args.username, email=f"{args.username}@example.test"
+                )
                 try:
                     user.set_password(args.password)
                 except Exception:

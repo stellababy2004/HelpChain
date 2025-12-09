@@ -37,7 +37,9 @@ def test_admin_login_session():
     login_data = {"username": "admin", "password": "Admin123"}
 
     try:
-        response = session.post(f"{base_url}/admin/login", data=login_data, allow_redirects=False)
+        response = session.post(
+            f"{base_url}/admin/login", data=login_data, allow_redirects=False
+        )
         print(f"Login POST status: {response.status_code}")
         print(f"Login POST headers: {dict(response.headers)}")
 

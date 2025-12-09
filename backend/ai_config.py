@@ -112,7 +112,9 @@ class AIConfig:
         """Get AI configuration status"""
         return {
             "ai_enabled": self.is_ai_enabled(),
-            "active_provider": (self.get_active_provider().name if self.get_active_provider() else None),
+            "active_provider": (
+                self.get_active_provider().name if self.get_active_provider() else None
+            ),
             "providers": {
                 name: {
                     "name": provider.name,

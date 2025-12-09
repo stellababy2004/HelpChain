@@ -31,10 +31,18 @@ def create_test_database():
     from backend.models_with_analytics import AnalyticsEvent, Feedback
 
     with app.app_context():
-        Volunteer.query.filter(Volunteer.email.like("%@helpchain-test.%")).delete(synchronize_session=False)
-        Feedback.query.filter(Feedback.email.like("%@helpchain-test.%")).delete(synchronize_session=False)
-        HelpRequest.query.filter(HelpRequest.email.like("%@helpchain-test.%")).delete(synchronize_session=False)
-        AnalyticsEvent.query.filter(AnalyticsEvent.user_session.like("test_session_%")).delete(synchronize_session=False)
+        Volunteer.query.filter(Volunteer.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        Feedback.query.filter(Feedback.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        HelpRequest.query.filter(HelpRequest.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        AnalyticsEvent.query.filter(
+            AnalyticsEvent.user_session.like("test_session_%")
+        ).delete(synchronize_session=False)
         db.session.commit()
         print("Ô£à ðÆÐüð©Ðçð║ð© ÐéðÁÐüÐéð¥ð▓ð© ð┤ð░ð¢ð¢ð© Ðüð░ ð©ðÀÐéÐÇð©Ðéð©.")
         print("­ƒôØ ðíÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐéð¥ð▓ð© Feedback ðÀð░ð┐ð©Ðüð©...")
@@ -79,7 +87,9 @@ def create_test_database():
             feedback_samples.append(fb)
             db.session.add(fb)
         db.session.commit()
-        print(f"Ô£à ðíÐèðÀð┤ð░ð┤ðÁð¢ð© {len(feedback_samples)} ÐéðÁÐüÐéð¥ð▓ð© Feedback ðÀð░ð┐ð©Ðüð░")
+        print(
+            f"Ô£à ðíÐèðÀð┤ð░ð┤ðÁð¢ð© {len(feedback_samples)} ÐéðÁÐüÐéð¥ð▓ð© Feedback ðÀð░ð┐ð©Ðüð░"
+        )
     """ðíÐèðÀð┤ð░ð▓ð░ ÐéðÁÐüÐéð¥ð▓ð░ ð▒ð░ðÀð░ ð┤ð░ð¢ð¢ð© Ðü ÐÇð░ðÀð¢ð¥ð¥ð▒ÐÇð░ðÀð¢ð© ð┤ð░ð¢ð¢ð©"""
 
     with app.app_context():
@@ -162,9 +172,13 @@ def create_test_database():
             db.session.add(volunteer)
 
         db.session.commit()
-        print(f"Ô£à ðíÐèðÀð┤ð░ð┤ðÁð¢ð© {len(volunteers)} ÐéðÁÐüÐéð¥ð▓ð© ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©")
+        print(
+            f"Ô£à ðíÐèðÀð┤ð░ð┤ðÁð¢ð© {len(volunteers)} ÐéðÁÐüÐéð¥ð▓ð© ð┤ð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©"
+        )
 
-        print("­ƒôØ ðíÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐéð¥ð▓ð© ðÀð░ÐÅð▓ð║ð© ðÀð░ ð┐ð¥ð╝ð¥Ðë...")
+        print(
+            "­ƒôØ ðíÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐéð¥ð▓ð© ðÀð░ÐÅð▓ð║ð© ðÀð░ ð┐ð¥ð╝ð¥Ðë..."
+        )
 
         # ðíÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐéð¥ð▓ð© ðÀð░ÐÅð▓ð║ð© ðÀð░ ð┐ð¥ð╝ð¥Ðë
         help_requests = []
@@ -237,7 +251,9 @@ def create_test_database():
                 ],
             }
 
-            title = random.choice(titles_by_category.get(category, ["ð×ð▒Ðëð░ ð┐ð¥ð╝ð¥Ðë"]))
+            title = random.choice(
+                titles_by_category.get(category, ["ð×ð▒Ðëð░ ð┐ð¥ð╝ð¥Ðë"])
+            )
 
             help_request = HelpRequest(
                 name=f"[TEST] {fake.first_name()} {fake.last_name()}",
@@ -252,7 +268,9 @@ def create_test_database():
             db.session.add(help_request)
 
         db.session.commit()
-        print(f"Ô£à ðíÐèðÀð┤ð░ð┤ðÁð¢ð© {len(help_requests)} ÐéðÁÐüÐéð¥ð▓ð© ðÀð░ÐÅð▓ð║ð© ðÀð░ ð┐ð¥ð╝ð¥Ðë")
+        print(
+            f"Ô£à ðíÐèðÀð┤ð░ð┤ðÁð¢ð© {len(help_requests)} ÐéðÁÐüÐéð¥ð▓ð© ðÀð░ÐÅð▓ð║ð© ðÀð░ ð┐ð¥ð╝ð¥Ðë"
+        )
 
         print("­ƒôè ðíÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐéð¥ð▓ð© analytics ÐüÐèð▒ð©Ðéð©ÐÅ...")
 
@@ -343,11 +361,15 @@ def create_test_database():
                 user_type=random.choice(user_types),
                 user_ip=fake.ipv4(),
                 user_agent="TestUserAgent/1.0",
-                referrer=random.choice([None, "https://google.com", "https://facebook.com", "direct"]),
+                referrer=random.choice(
+                    [None, "https://google.com", "https://facebook.com", "direct"]
+                ),
                 page_url=random.choice(popular_pages),
                 page_title=f"Test Page - {random.choice(popular_pages).replace('/', '')}",
                 load_time=random.uniform(0.2, 3.0),
-                screen_resolution=random.choice(["1920x1080", "1366x768", "1440x900", "1536x864"]),
+                screen_resolution=random.choice(
+                    ["1920x1080", "1366x768", "1440x900", "1536x864"]
+                ),
                 device_type=random.choice(["desktop", "mobile", "tablet"]),
                 created_at=event_time,
             )
@@ -356,10 +378,14 @@ def create_test_database():
             db.session.add(analytics_event)
 
         db.session.commit()
-        print(f"Ô£à ðíÐèðÀð┤ð░ð┤ðÁð¢ð© {len(analytics_events)} ÐéðÁÐüÐéð¥ð▓ð© analytics ÐüÐèð▒ð©Ðéð©ÐÅ")
+        print(
+            f"Ô£à ðíÐèðÀð┤ð░ð┤ðÁð¢ð© {len(analytics_events)} ÐéðÁÐüÐéð¥ð▓ð© analytics ÐüÐèð▒ð©Ðéð©ÐÅ"
+        )
 
         # ðíÐéð░Ðéð©ÐüÐéð©ð║ð░ ðÀð░ ÐüÐèðÀð┤ð░ð┤ðÁð¢ð©ÐéðÁ ð┤ð░ð¢ð¢ð©
-        print("\n­ƒôê ð×ð▒ð¥ð▒ÐëðÁð¢ð©ðÁ ð¢ð░ ÐüÐèðÀð┤ð░ð┤ðÁð¢ð©ÐéðÁ ÐéðÁÐüÐéð¥ð▓ð© ð┤ð░ð¢ð¢ð©:")
+        print(
+            "\n­ƒôê ð×ð▒ð¥ð▒ÐëðÁð¢ð©ðÁ ð¢ð░ ÐüÐèðÀð┤ð░ð┤ðÁð¢ð©ÐéðÁ ÐéðÁÐüÐéð¥ð▓ð© ð┤ð░ð¢ð¢ð©:"
+        )
         print(f"  ­ƒæÑ ðöð¥ð▒ÐÇð¥ð▓ð¥ð╗Ðåð©: {len(volunteers)}")
         print(f"  ­ƒôØ ðùð░ÐÅð▓ð║ð© ðÀð░ ð┐ð¥ð╝ð¥Ðë: {len(help_requests)}")
         print(f"  ­ƒôè Analytics ÐüÐèð▒ð©Ðéð©ÐÅ: {len(analytics_events)}")
@@ -383,11 +409,17 @@ def create_test_database():
             print(f"  ÔÇó {status}: {count} ðÀð░ÐÅð▓ð║ð©")
 
         print("\n­ƒÄ» ðóðÁÐüÐéð¥ð▓ð░Ðéð░ ð▒ð░ðÀð░ ð┤ð░ð¢ð¢ð© ðÁ ð│ð¥Ðéð¥ð▓ð░!")
-        print("­ƒÆí ðÆÐüð©Ðçð║ð© ÐéðÁÐüÐéð¥ð▓ð© ðÀð░ð┐ð©Ðüð© Ðüð░ ð╝ð░ÐÇð║ð©ÐÇð░ð¢ð© Ðü '[TEST]' ð▓ ð©ð╝ðÁÐéð¥/ð¥ð┐ð©Ðüð░ð¢ð©ðÁÐéð¥")
-        print("­ƒöì ðíðÁð│ð░ ð╝ð¥ðÂðÁÐéðÁ ð┤ð░ ÐéðÁÐüÐéð▓ð░ÐéðÁ Ðäð©ð╗ÐéÐÇð©ÐéðÁ ð▓ Analytics Dashboard!")
+        print(
+            "­ƒÆí ðÆÐüð©Ðçð║ð© ÐéðÁÐüÐéð¥ð▓ð© ðÀð░ð┐ð©Ðüð© Ðüð░ ð╝ð░ÐÇð║ð©ÐÇð░ð¢ð© Ðü '[TEST]' ð▓ ð©ð╝ðÁÐéð¥/ð¥ð┐ð©Ðüð░ð¢ð©ðÁÐéð¥"
+        )
+        print(
+            "­ƒöì ðíðÁð│ð░ ð╝ð¥ðÂðÁÐéðÁ ð┤ð░ ÐéðÁÐüÐéð▓ð░ÐéðÁ Ðäð©ð╗ÐéÐÇð©ÐéðÁ ð▓ Analytics Dashboard!"
+        )
 
 
 if __name__ == "__main__":
-    print("­ƒÜÇ ðíÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐéð¥ð▓ð░ ð▒ð░ðÀð░ ð┤ð░ð¢ð¢ð© ðÀð░ HelpChain Analytics...")
+    print(
+        "­ƒÜÇ ðíÐèðÀð┤ð░ð▓ð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐéð¥ð▓ð░ ð▒ð░ðÀð░ ð┤ð░ð¢ð¢ð© ðÀð░ HelpChain Analytics..."
+    )
     create_test_database()
     print("Ô£à ðùð░ð▓ÐèÐÇÐêðÁð¢ð¥ ÐâÐüð┐ðÁÐêð¢ð¥!")

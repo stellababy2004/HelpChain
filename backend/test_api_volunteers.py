@@ -77,7 +77,9 @@ class TestVolunteerAPI:
             db.session.commit()
 
             # Test nearby search from Sofia center
-            response = self.client.get("/api/volunteers/nearby?lat=42.6977&lng=23.3219&radius=50")
+            response = self.client.get(
+                "/api/volunteers/nearby?lat=42.6977&lng=23.3219&radius=50"
+            )
             assert response.status_code == 200
 
             data = response.get_json()
@@ -114,7 +116,9 @@ class TestVolunteerAPI:
             db.session.add(vol)
             db.session.commit()
 
-            response = self.client.get("/api/volunteers/nearby?lat=42.6977&lng=23.3219&radius=10")
+            response = self.client.get(
+                "/api/volunteers/nearby?lat=42.6977&lng=23.3219&radius=10"
+            )
             assert response.status_code == 200
 
             data = response.get_json()
@@ -124,23 +128,31 @@ class TestVolunteerAPI:
     def test_get_nearby_volunteers_invalid_params(self):
         """Test nearby search with invalid parameters."""
         # Invalid latitude
-        response = self.client.get("/api/volunteers/nearby?lat=invalid&lng=23.3219&radius=10")
+        response = self.client.get(
+            "/api/volunteers/nearby?lat=invalid&lng=23.3219&radius=10"
+        )
         assert response.status_code == 400
         assert "error" in response.get_json()
 
         # Invalid longitude
-        response = self.client.get("/api/volunteers/nearby?lat=42.6977&lng=invalid&radius=10")
+        response = self.client.get(
+            "/api/volunteers/nearby?lat=42.6977&lng=invalid&radius=10"
+        )
         assert response.status_code == 400
 
         # Invalid radius
-        response = self.client.get("/api/volunteers/nearby?lat=42.6977&lng=23.3219&radius=invalid")
+        response = self.client.get(
+            "/api/volunteers/nearby?lat=42.6977&lng=23.3219&radius=invalid"
+        )
         assert response.status_code == 400
 
     def test_update_volunteer_location_success(self):
         """Test successful update of volunteer location."""
         with self.app.app_context():
             # Create test volunteer
-            vol = Volunteer(name="Тест Доброволец", email="test@example.com", skills="Тест умения")
+            vol = Volunteer(
+                name="Тест Доброволец", email="test@example.com", skills="Тест умения"
+            )
             db.session.add(vol)
             db.session.commit()
             vol_id = vol.id
@@ -151,7 +163,9 @@ class TestVolunteerAPI:
                 "longitude": 23.3219,
                 "location": "София",
             }
-            response = self.client.put(f"/api/volunteers/{vol_id}/location", json=update_data)
+            response = self.client.put(
+                f"/api/volunteers/{vol_id}/location", json=update_data
+            )
             assert response.status_code == 200
 
             data = response.get_json()
@@ -182,7 +196,9 @@ class TestVolunteerAPI:
 
             # Update only coordinates
             update_data = {"latitude": 42.5, "longitude": 25.6}
-            response = self.client.put(f"/api/volunteers/{vol_id}/location", json=update_data)
+            response = self.client.put(
+                f"/api/volunteers/{vol_id}/location", json=update_data
+            )
             assert response.status_code == 200
 
             # Verify location string is preserved
@@ -208,11 +224,15 @@ class TestVolunteerAPI:
             vol_id = vol.id
 
             # Missing latitude
-            response = self.client.put(f"/api/volunteers/{vol_id}/location", json={"longitude": 23.3219})
+            response = self.client.put(
+                f"/api/volunteers/{vol_id}/location", json={"longitude": 23.3219}
+            )
             assert response.status_code == 400
 
             # Missing longitude
-            response = self.client.put(f"/api/volunteers/{vol_id}/location", json={"latitude": 42.6977})
+            response = self.client.put(
+                f"/api/volunteers/{vol_id}/location", json={"latitude": 42.6977}
+            )
             assert response.status_code == 400
 
             # Invalid latitude type
