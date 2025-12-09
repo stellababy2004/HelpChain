@@ -163,6 +163,8 @@ jobs:
               touch "$BASE_DIR/REQUESTED" || true
               mkdir -p "$BASE_DIR/licenses" || true
               touch "$BASE_DIR/licenses/LICENSE" || true
+              # include top_level.txt to satisfy tools that lstat it
+              touch "$BASE_DIR/top_level.txt" || true
             done < .vercel/output/installed_dist_info.txt || true
           fi
 
@@ -172,6 +174,8 @@ jobs:
           touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/INSTALLER || true
           touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/METADATA || true
           touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/RECORD || true
+          # ensure top_level.txt too (Vercel CLI sometimes checks this)
+          touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/top_level.txt || true
           mkdir -p .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/licenses || true
           touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/licenses/LICENSE || true
 
@@ -180,6 +184,13 @@ jobs:
           touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py || true
           touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/code.py || true
           touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/source.py || true
+
+          # Ensure any generated .vercel/python vendored placeholders are
+          # included in the artifact so they are present at deploy time.
+          if [ -d .vercel/python ]; then
+            mkdir -p .vercel/output
+            cp -a .vercel/python .vercel/output/ || true
+          fi
 
           tar -C .vercel -czf output.tgz output || true
 
@@ -384,6 +395,8 @@ jobs:
                 touch "$BASE_DIR/RECORD" || true
                 mkdir -p "$BASE_DIR/licenses" || true
                 touch "$BASE_DIR/licenses/LICENSE" || true
+                # include top_level.txt to satisfy tools that lstat it
+                touch "$BASE_DIR/top_level.txt" || true
               done < .vercel/output/installed_dist_info.txt || true
             fi
             # Pragmatic fallback: ensure common problematic dist-info (alembic) exists
@@ -451,6 +464,16 @@ jobs:
           fi
           rm -rf "$PKG_TMP" || true
           set -e
+
+          # If the prebuild copied a vendored .vercel/python tree into the artifact
+          # under .vercel/output/python, restore it to .vercel/python so the Vercel
+          # CLI can access expected files during deploy.
+          if [ -d .vercel/output/python ]; then
+            echo "Restoring vendored .vercel/python from .vercel/output/python"
+            rm -rf .vercel/python || true
+            mkdir -p .vercel
+            mv .vercel/output/python .vercel/python || true
+          fi
 
           npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes --archive=tgz
 
