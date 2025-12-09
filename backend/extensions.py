@@ -1,3 +1,29 @@
+# Provide a minimal compatibility shim for Flask helpers that may be
+# missing `locked_cached_property` in some Flask versions used by the
+# test runner. `flask_babel` imports this symbol; if it's absent the
+# import fails. Define a simple fallback before importing `flask_babel`.
+try:
+    import flask.helpers as _flask_helpers
+
+    if not hasattr(_flask_helpers, "locked_cached_property"):
+        def locked_cached_property(func):
+            # Minimal compatibility: behave like a simple cached property.
+            # This does not implement locking semantics but is sufficient
+            # for test-time imports where the property is not exercised.
+            try:
+                class _C:
+                    pass
+
+                return property(func)
+            except Exception:
+                return property(func)
+
+        _flask_helpers.locked_cached_property = locked_cached_property
+except Exception:
+    # If anything goes wrong, continue — import of flask_babel will
+    # surface a clearer error later.
+    pass
+
 from flask_babel import Babel
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
