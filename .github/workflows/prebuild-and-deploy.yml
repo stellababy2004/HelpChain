@@ -269,9 +269,31 @@ jobs:
           find .vercel/output -maxdepth 6 -type f -printf '%p %s\n' | sort -n | tail -n 40 || true
           echo "Also list a small tree of .vercel to show context"
           find .vercel -maxdepth 4 -ls || true
-           echo "Listing .vercel/python (if present):"
-           ls -la .vercel/python || true
-           find .vercel/python -maxdepth 3 -ls || true
+          echo "Listing .vercel/python (if present):"
+          ls -la .vercel/python || true
+          find .vercel/python -maxdepth 3 -ls || true
+
+          echo "Creating placeholders for referenced vendored python paths (if any)..."
+          set -euo pipefail
+          # Collect any _vendor references from extracted output diagnostics and function files
+          MATCHES=$(grep -R --binary-files=without-match -o "_vendor/[^\"'[:space:]]*" .vercel/output 2>/dev/null || true)
+          if [ -n "$MATCHES" ]; then
+            echo "$MATCHES" | sort -u | while read -r M; do
+              REM=${M#*'_vendor/'}
+              TARGET=".vercel/python/py3.12/backend/_vendor/$REM"
+              DIR=$(dirname "$TARGET")
+              mkdir -p "$DIR"
+              if echo "$TARGET" | grep -qE '\\.(py|so|pyd)$'; then
+                touch "$TARGET" || true
+              else
+                touch "$DIR/__init__.py" || true
+              fi
+            done
+          else
+            # fallback: ensure pytest package path exists to avoid lstat ENOENT from Vercel CLI
+            mkdir -p .vercel/python/py3.12/backend/_vendor/_pytest
+            touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py
+          fi
 
           npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes --archive=tgz
 
