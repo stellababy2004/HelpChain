@@ -57,25 +57,11 @@ jobs:
           set -euo pipefail
           # create placeholder for _pytest if referenced in .vercel output (after artifact extraction)
           if [ -d ".vercel/output" ] || [ -d ".vercel/python" ]; then
-            python - <<'PY'
-            import json, glob, os
-            paths = set()
-            for fn in glob.glob('.vercel/output/diagnostics/*.json'):
-                try:
-                    j = json.load(open(fn))
-                except Exception:
-                    continue
-                s = str(j)
-                for part in ["_vendor/_pytest", "/_vendor/_pytest", "\\_vendor\\_pytest"]:
-                    if part in s:
-                        p = os.path.join('.vercel','python','py3.12','backend','_vendor','_pytest')
-                        paths.add(p)
-            for p in paths:
-                os.makedirs(p, exist_ok=True)
-                init = os.path.join(p,'__init__.py')
-                if not os.path.exists(init):
-                    open(init,'w').write('# placeholder created by CI to avoid ENOENT\n')
-            PY
+            # If any diagnostics or build files reference _vendor/_pytest, create a minimal placeholder
+            if grep -R --line-number "_vendor/_pytest" .vercel/output 2>/dev/null | grep -q .; then
+              mkdir -p .vercel/python/py3.12/backend/_vendor/_pytest
+              touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py
+            fi
           fi
 
       - name: Ensure expected vendored python paths exist
@@ -84,25 +70,10 @@ jobs:
           set -euo pipefail
           # create placeholder for _pytest if referenced in .vercel output
           if [ -d ".vercel/output" ] || [ -d ".vercel/python" ]; then
-            python - <<'PY'
-            import json, glob, os
-            paths = set()
-            for fn in glob.glob('.vercel/output/diagnostics/*.json'):
-              try:
-                j = json.load(open(fn))
-              except Exception:
-                continue
-              s = str(j)
-              for part in ["_vendor/_pytest", "/_vendor/_pytest", "\\_vendor\\_pytest"]:
-                if part in s:
-                  p = os.path.join('.vercel','python','py3.12','backend','_vendor','_pytest')
-                  paths.add(p)
-            for p in paths:
-              os.makedirs(p, exist_ok=True)
-              init = os.path.join(p,'__init__.py')
-              if not os.path.exists(init):
-                open(init,'w').write('# placeholder created by CI to avoid ENOENT\n')
-            PY
+            if grep -R --line-number "_vendor/_pytest" .vercel/output 2>/dev/null | grep -q .; then
+              mkdir -p .vercel/python/py3.12/backend/_vendor/_pytest
+              touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py
+            fi
           fi
 
       - name: Run Vercel build (create .vercel/output)
