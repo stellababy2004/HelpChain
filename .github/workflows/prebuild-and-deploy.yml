@@ -145,6 +145,37 @@ jobs:
             fi
           fi
 
+          # --- Ensure minimal vendored placeholders are included in the artifact ---
+          # Create a tiny .vercel/python/_vendor tree containing common .dist-info
+          # members that the Vercel CLI sometimes lstat's (e.g. INSTALLER, METADATA, RECORD).
+          # This makes sure the produced artifact contains these files so the
+          # deploy step doesn't need to synthesise them later.
+          if [ -f .vercel/output/installed_dist_info.txt ]; then
+            echo "Creating vendored .dist-info placeholders from installed_dist_info.txt"
+            while IFS= read -r DI; do
+              BASE_DIR=".vercel/python/py3.12/backend/_vendor/$DI"
+              mkdir -p "$(dirname "$BASE_DIR")"
+              mkdir -p "$BASE_DIR"
+              touch "$BASE_DIR/entry_points.txt" || true
+              touch "$BASE_DIR/INSTALLER" || true
+              touch "$BASE_DIR/METADATA" || true
+              touch "$BASE_DIR/RECORD" || true
+            done < .vercel/output/installed_dist_info.txt || true
+          fi
+
+          # Pragmatic fallback for library we saw in logs (alembic): ensure minimal dist-info exists
+          mkdir -p .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info || true
+          touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/entry_points.txt || true
+          touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/INSTALLER || true
+          touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/METADATA || true
+          touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/RECORD || true
+
+          # Minimal pytest placeholder to avoid lstat ENOENT when Vercel CLI references _pytest internals
+          mkdir -p .vercel/python/py3.12/backend/_vendor/_pytest/_code || true
+          touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py || true
+          touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/code.py || true
+          touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/source.py || true
+
           tar -C .vercel -czf output.tgz output || true
 
       - name: Local function size check
@@ -350,7 +381,11 @@ jobs:
             fi
             # Pragmatic fallback: ensure common problematic dist-info (alembic) exists
             mkdir -p .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info || true
+            # create a small set of metadata files Vercel CLI sometimes lstat's
             touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/entry_points.txt || true
+            touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/INSTALLER || true
+            touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/METADATA || true
+            touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/RECORD || true
           # Collect any _vendor references from extracted output diagnostics and function files
           MATCHES=$(grep -R --binary-files=without-match -o '_vendor/[^[:space:]]*' .vercel/output 2>/dev/null || true)
           if [ -n "$MATCHES" ]; then
