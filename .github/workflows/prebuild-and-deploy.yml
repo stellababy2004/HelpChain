@@ -170,6 +170,15 @@ jobs:
             exit 1
           fi
 
+      - name: Record installed Python distributions
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p .vercel/output
+          echo "Recording installed distributions to .vercel/output/installed_dist_info.txt"
+              # Use importlib.metadata to enumerate installed distributions and write their .dist-info directory names
+              python -c 'from importlib.metadata import distributions; out=[f"{d.metadata.get("Name")}-{d.version}.dist-info" for d in distributions() if (hasattr(d, "metadata") and d.metadata.get("Name") and getattr(d, "version", None))]; print("\n".join(out))' > .vercel/output/installed_dist_info.txt || true
+
       - name: Upload function-size diagnostics
         if: always()
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
@@ -314,6 +323,20 @@ jobs:
           touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/code.py || true
           # ensure source.py is present when Vercel CLI references it
           touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/source.py || true
+            # If the prebuild recorded installed distributions, create placeholders for their .dist-info members
+            if [ -f .vercel/output/installed_dist_info.txt ]; then
+              echo "Creating placeholders for installed distributions listed in .vercel/output/installed_dist_info.txt"
+              while IFS= read -r DI; do
+                # create entry_points.txt and common metadata placeholders
+                BASE_DIR=".vercel/python/py3.12/backend/_vendor/$DI"
+                mkdir -p "$(dirname "$BASE_DIR")"
+                mkdir -p "$BASE_DIR"
+                touch "$BASE_DIR/entry_points.txt" || true
+                touch "$BASE_DIR/INSTALLER" || true
+                touch "$BASE_DIR/METADATA" || true
+                touch "$BASE_DIR/RECORD" || true
+              done < .vercel/output/installed_dist_info.txt || true
+            fi
           # Collect any _vendor references from extracted output diagnostics and function files
           MATCHES=$(grep -R --binary-files=without-match -o '_vendor/[^[:space:]]*' .vercel/output 2>/dev/null || true)
           if [ -n "$MATCHES" ]; then
