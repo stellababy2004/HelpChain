@@ -2039,7 +2039,16 @@ def _pytest_force_admin_login():
                         diag["db_engine_id"] = id(get_db().engine)
                     except Exception:
                         diag["db_engine_id"] = None
-                    app.logger.info("_pytest_force_admin_login: falling back to session shim (no DB admin) %s", diag)
+                    # Avoid log-injection by sanitizing and JSON-serializing untrusted input
+                    try:
+                        import json
+
+                        safe_diag = json.dumps(diag, default=str, separators=(',', ':'), ensure_ascii=False)
+                        # Escape newlines and carriage-returns to prevent log injection
+                        safe_diag = safe_diag.replace('\n', '\\n').replace('\r', '\\r')
+                    except Exception:
+                        safe_diag = str({k: ('[error]' if k != 'db_engine_id' else diag.get('db_engine_id')) for k in diag})
+                    app.logger.info("_pytest_force_admin_login: falling back to session shim (no DB admin) diag=%s", safe_diag)
                 except Exception:
                     app.logger.info("_pytest_force_admin_login: falling back to session shim (no DB admin)")
                 return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
