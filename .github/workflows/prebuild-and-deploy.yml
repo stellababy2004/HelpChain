@@ -160,6 +160,7 @@ jobs:
               touch "$BASE_DIR/INSTALLER" || true
               touch "$BASE_DIR/METADATA" || true
               touch "$BASE_DIR/RECORD" || true
+              touch "$BASE_DIR/REQUESTED" || true
               mkdir -p "$BASE_DIR/licenses" || true
               touch "$BASE_DIR/licenses/LICENSE" || true
             done < .vercel/output/installed_dist_info.txt || true
@@ -392,6 +393,7 @@ jobs:
             touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/INSTALLER || true
             touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/METADATA || true
             touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/RECORD || true
+            touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/REQUESTED || true
             mkdir -p .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/licenses || true
             touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/licenses/LICENSE || true
           # Collect any _vendor references from extracted output diagnostics and function files
