@@ -303,5 +303,28 @@ jobs:
             touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py
           fi
 
+          # If many pytest internals are referenced, create placeholders for the actual pytest package
+          # by downloading the wheel (no deps) and unpacking its files to mirror structure.
+          set +e
+          PKG_TMP=$(mktemp -d)
+          echo "Downloading pytest wheel to generate placeholders..."
+          python -m pip download --no-deps --dest "$PKG_TMP" pytest==7.4.3 > /dev/null 2>&1 || true
+          WHEEL=$(find "$PKG_TMP" -maxdepth 1 -type f -name "pytest*whl" -print -quit || true)
+          if [ -n "$WHEEL" ]; then
+            UNPACK_DIR="$PKG_TMP/unpack"
+            mkdir -p "$UNPACK_DIR"
+            unzip -q "$WHEEL" -d "$UNPACK_DIR" || true
+            # find files under _pytest in the wheel and create placeholders
+            find "$UNPACK_DIR" -type f -path "*/_pytest/*" -name "*.py" -print0 | while IFS= read -r -d '' F; do
+              REL=${F#*"/_pytest/"}
+              TARGET_DIR=".vercel/python/py3.12/backend/_vendor/_pytest/$(dirname "$REL")"
+              mkdir -p "$TARGET_DIR"
+              TARGET_FILE="$TARGET_DIR/$(basename "$REL")"
+              touch "$TARGET_FILE" || true
+            done
+          fi
+          rm -rf "$PKG_TMP" || true
+          set -e
+
           npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes --archive=tgz
 
