@@ -307,15 +307,16 @@ jobs:
             touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py
           fi
 
-          # Create placeholders for any referenced .dist-info/entry_points.txt files (e.g. alembic)
-          DIST_ENTRIES=$(grep -R --binary-files=without-match -o '_vendor/[^[:space:]]*\.dist-info/entry_points.txt' .vercel/output 2>/dev/null || true)
-          if [ -n "$DIST_ENTRIES" ]; then
-            echo "$DIST_ENTRIES" | sort -u | while read -r DE; do
-              REM_DE=${DE#*_vendor/}
-              TARGET_DE=".vercel/python/py3.12/backend/_vendor/$REM_DE"
-              DIR_DE=$(dirname "$TARGET_DE")
-              mkdir -p "$DIR_DE"
-              touch "$TARGET_DE" || true
+          # Create placeholders for any referenced .dist-info files (ENTRY_POINTS, INSTALLER, METADATA, RECORD, etc.)
+          DIST_FILES=$(grep -R --binary-files=without-match -o '_vendor/[^[:space:]]*\.dist-info/[^[:space:]]*' .vercel/output 2>/dev/null || true)
+          if [ -n "$DIST_FILES" ]; then
+            echo "$DIST_FILES" | sort -u | while read -r DF; do
+              REM_DF=${DF#*_vendor/}
+              TARGET_DF=".vercel/python/py3.12/backend/_vendor/$REM_DF"
+              DIR_DF=$(dirname "$TARGET_DF")
+              mkdir -p "$DIR_DF"
+              # Create an empty placeholder file for the referenced dist-info member
+              touch "$TARGET_DF" || true
             done
           fi
 
