@@ -6,11 +6,13 @@ try:
     import flask.helpers as _flask_helpers
 
     if not hasattr(_flask_helpers, "locked_cached_property"):
+
         def locked_cached_property(func):
             # Minimal compatibility: behave like a simple cached property.
             # This does not implement locking semantics but is sufficient
             # for test-time imports where the property is not exercised.
             try:
+
                 class _C:
                     pass
 
