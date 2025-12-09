@@ -278,6 +278,8 @@ jobs:
           mkdir -p .vercel/python/py3.12/backend/_vendor/_pytest
           touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py || true
           touch .vercel/python/py3.12/backend/_vendor/_pytest/_argcomplete.py || true
+          # ensure typed marker file exists if referenced
+          touch .vercel/python/py3.12/backend/_vendor/_pytest/py.typed || true
           # also ensure common nested pytest internals exist (e.g. _code/code.py)
           mkdir -p .vercel/python/py3.12/backend/_vendor/_pytest/_code
           touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/code.py || true
