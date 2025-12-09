@@ -381,6 +381,8 @@ jobs:
                 touch "$BASE_DIR/INSTALLER" || true
                 touch "$BASE_DIR/METADATA" || true
                 touch "$BASE_DIR/RECORD" || true
+                mkdir -p "$BASE_DIR/licenses" || true
+                touch "$BASE_DIR/licenses/LICENSE" || true
               done < .vercel/output/installed_dist_info.txt || true
             fi
             # Pragmatic fallback: ensure common problematic dist-info (alembic) exists
@@ -390,6 +392,8 @@ jobs:
             touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/INSTALLER || true
             touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/METADATA || true
             touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/RECORD || true
+            mkdir -p .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/licenses || true
+            touch .vercel/python/py3.12/backend/_vendor/alembic-1.17.1.dist-info/licenses/LICENSE || true
           # Collect any _vendor references from extracted output diagnostics and function files
           MATCHES=$(grep -R --binary-files=without-match -o '_vendor/[^[:space:]]*' .vercel/output 2>/dev/null || true)
           if [ -n "$MATCHES" ]; then
