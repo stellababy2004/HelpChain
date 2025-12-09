@@ -26,6 +26,12 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Ensure repository fetched (retry helper)
+        if: always()
+        run: |
+          echo "Running retry-fetch helper"
+          bash .github/scripts/retry-fetch.sh
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
         with:
