@@ -51,6 +51,60 @@ jobs:
         run: |
           npm install -g vercel@latest
 
+      - name: Ensure expected vendored python paths exist
+        if: always()
+        run: |
+          set -euo pipefail
+          # create placeholder for _pytest if referenced in .vercel output (after artifact extraction)
+          if [ -d ".vercel/output" ] || [ -d ".vercel/python" ]; then
+            python - <<'PY'
+            import json, glob, os
+            paths = set()
+            for fn in glob.glob('.vercel/output/diagnostics/*.json'):
+                try:
+                    j = json.load(open(fn))
+                except Exception:
+                    continue
+                s = str(j)
+                for part in ["_vendor/_pytest", "/_vendor/_pytest", "\\_vendor\\_pytest"]:
+                    if part in s:
+                        p = os.path.join('.vercel','python','py3.12','backend','_vendor','_pytest')
+                        paths.add(p)
+            for p in paths:
+                os.makedirs(p, exist_ok=True)
+                init = os.path.join(p,'__init__.py')
+                if not os.path.exists(init):
+                    open(init,'w').write('# placeholder created by CI to avoid ENOENT\n')
+            PY
+          fi
+
+      - name: Ensure expected vendored python paths exist
+        if: always()
+        run: |
+          set -euo pipefail
+          # create placeholder for _pytest if referenced in .vercel output
+          if [ -d ".vercel/output" ] || [ -d ".vercel/python" ]; then
+            python - <<'PY'
+            import json, glob, os
+            paths = set()
+            for fn in glob.glob('.vercel/output/diagnostics/*.json'):
+              try:
+                j = json.load(open(fn))
+              except Exception:
+                continue
+              s = str(j)
+              for part in ["_vendor/_pytest", "/_vendor/_pytest", "\\_vendor\\_pytest"]:
+                if part in s:
+                  p = os.path.join('.vercel','python','py3.12','backend','_vendor','_pytest')
+                  paths.add(p)
+            for p in paths:
+              os.makedirs(p, exist_ok=True)
+              init = os.path.join(p,'__init__.py')
+              if not os.path.exists(init):
+                open(init,'w').write('# placeholder created by CI to avoid ENOENT\n')
+            PY
+          fi
+
       - name: Run Vercel build (create .vercel/output)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
