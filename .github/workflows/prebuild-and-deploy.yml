@@ -288,14 +288,14 @@ jobs:
           # ensure source.py is present when Vercel CLI references it
           touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/source.py || true
           # Collect any _vendor references from extracted output diagnostics and function files
-          MATCHES=$(grep -R --binary-files=without-match -o "_vendor/[^\"'[:space:]]*" .vercel/output 2>/dev/null || true)
+          MATCHES=$(grep -R --binary-files=without-match -o '_vendor/[^[:space:]]*' .vercel/output 2>/dev/null || true)
           if [ -n "$MATCHES" ]; then
             echo "$MATCHES" | sort -u | while read -r M; do
-              REM=${M#*'_vendor/'}
+              REM=${M#*_vendor/}
               TARGET=".vercel/python/py3.12/backend/_vendor/$REM"
               DIR=$(dirname "$TARGET")
               mkdir -p "$DIR"
-              if echo "$TARGET" | grep -qE '\\.(py|so|pyd)$'; then
+              if echo "$TARGET" | grep -qE '\.(py|so|pyd)$'; then
                 touch "$TARGET" || true
               else
                 touch "$DIR/__init__.py" || true
@@ -308,10 +308,10 @@ jobs:
           fi
 
           # Create placeholders for any referenced .dist-info/entry_points.txt files (e.g. alembic)
-          DIST_ENTRIES=$(grep -R --binary-files=without-match -o "_vendor/[^"]*\\.dist-info/entry_points.txt" .vercel/output 2>/dev/null || true)
+          DIST_ENTRIES=$(grep -R --binary-files=without-match -o '_vendor/[^[:space:]]*\.dist-info/entry_points.txt' .vercel/output 2>/dev/null || true)
           if [ -n "$DIST_ENTRIES" ]; then
             echo "$DIST_ENTRIES" | sort -u | while read -r DE; do
-              REM_DE=${DE#*'_vendor/'}
+              REM_DE=${DE#*_vendor/}
               TARGET_DE=".vercel/python/py3.12/backend/_vendor/$REM_DE"
               DIR_DE=$(dirname "$TARGET_DE")
               mkdir -p "$DIR_DE"
