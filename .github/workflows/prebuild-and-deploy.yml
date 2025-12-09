@@ -281,6 +281,8 @@ jobs:
           # also ensure common nested pytest internals exist (e.g. _code/code.py)
           mkdir -p .vercel/python/py3.12/backend/_vendor/_pytest/_code
           touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/code.py || true
+          # ensure source.py is present when Vercel CLI references it
+          touch .vercel/python/py3.12/backend/_vendor/_pytest/_code/source.py || true
           # Collect any _vendor references from extracted output diagnostics and function files
           MATCHES=$(grep -R --binary-files=without-match -o "_vendor/[^\"'[:space:]]*" .vercel/output 2>/dev/null || true)
           if [ -n "$MATCHES" ]; then
