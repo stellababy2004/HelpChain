@@ -72,7 +72,9 @@ def init_performance_optimizations(app):
 
     # Set default config if not already set
     app.config.setdefault("CACHE_TYPE", PerformanceConfig.CACHE_TYPE)
-    app.config.setdefault("CACHE_DEFAULT_TIMEOUT", PerformanceConfig.CACHE_DEFAULT_TIMEOUT)
+    app.config.setdefault(
+        "CACHE_DEFAULT_TIMEOUT", PerformanceConfig.CACHE_DEFAULT_TIMEOUT
+    )
     # For production, you may want to use Redis:
     # app.config["CACHE_TYPE"] = "redis"
     # app.config["CACHE_REDIS_HOST"] = PerformanceConfig.CACHE_REDIS_HOST
@@ -92,7 +94,9 @@ def init_performance_optimizations(app):
     try:
         from flask_compress import Compress
 
-        app.config.setdefault("COMPRESS_MIMETYPES", PerformanceConfig.COMPRESS_MIMETYPES)
+        app.config.setdefault(
+            "COMPRESS_MIMETYPES", PerformanceConfig.COMPRESS_MIMETYPES
+        )
         app.config.setdefault("COMPRESS_LEVEL", PerformanceConfig.COMPRESS_LEVEL)
         app.config.setdefault("COMPRESS_MIN_SIZE", PerformanceConfig.COMPRESS_MIN_SIZE)
         compress = Compress()
@@ -170,7 +174,9 @@ def cache_analytics_data(timeout=None, key_prefix="analytics"):
                 params = sorted(request.args.items())
                 cache_key += f"_{'_'.join([f'{k}_{v}' for k, v in params])}"
 
-            cache_timeout = timeout or PerformanceConfig.CACHE_TIMEOUTS.get("stats_overview", 300)
+            cache_timeout = timeout or PerformanceConfig.CACHE_TIMEOUTS.get(
+                "stats_overview", 300
+            )
             # Опитай да вземеш от cache
             result = cache.get(cache_key)
             if result is None:
@@ -443,7 +449,11 @@ class PerformanceMonitor:
                     "average_time": round(avg_time, 3),
                     "max_time": round(metrics["max_time"], 3),
                     "min_time": round(metrics["min_time"], 3),
-                    "status": ("good" if avg_time < 0.5 else "warning" if avg_time < 1.0 else "slow"),
+                    "status": (
+                        "good"
+                        if avg_time < 0.5
+                        else "warning" if avg_time < 1.0 else "slow"
+                    ),
                 }
 
         return report

@@ -34,14 +34,22 @@ def main():
 
         print(f"👤 Намерен администратор: {admin.username}")
         print(f"📧 Имейл: {admin.email}")
-        print(f"🔐 2FA статус: {'АКТИВИРАН' if admin.two_factor_enabled else 'ДЕАКТИВИРАН'}")
+        print(
+            f"🔐 2FA статус: {'АКТИВИРАН' if admin.two_factor_enabled else 'ДЕАКТИВИРАН'}"
+        )
         print("")
 
         if not admin.two_factor_enabled:
             print("ℹ️ 2FA вече е деактивиран за този потребител.")
             return
 
-        confirm = input(f"Сигурни ли сте че искате да ДЕАКТИВИРАТЕ 2FA за {username}? (да/не): ").strip().lower()
+        confirm = (
+            input(
+                f"Сигурни ли сте че искате да ДЕАКТИВИРАТЕ 2FA за {username}? (да/не): "
+            )
+            .strip()
+            .lower()
+        )
 
         if confirm not in ["да", "yes", "y"]:
             print("❌ Операцията е отменена.")
@@ -55,7 +63,9 @@ def main():
         print("✅ 2FA е успешно деактивиран!")
         print(f"🔓 Администраторът {username} вече може да влиза без 2FA код.")
         print("")
-        print("⚠️  Препоръчваме да активирате 2FA отново след като възстановите достъпа до устройството си!")
+        print(
+            "⚠️  Препоръчваме да активирате 2FA отново след като възстановите достъпа до устройството си!"
+        )
 
 
 if __name__ == "__main__":

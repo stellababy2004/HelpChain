@@ -70,8 +70,12 @@ class TestPushNotifications(unittest.TestCase):
         self.app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
         # VAPID configuration
-        self.app.config["VAPID_PUBLIC_KEY"] = os.getenv("VAPID_PUBLIC_KEY", "test_public_key")
-        self.app.config["VAPID_PRIVATE_KEY"] = os.getenv("VAPID_PRIVATE_KEY", "test_private_key")
+        self.app.config["VAPID_PUBLIC_KEY"] = os.getenv(
+            "VAPID_PUBLIC_KEY", "test_public_key"
+        )
+        self.app.config["VAPID_PRIVATE_KEY"] = os.getenv(
+            "VAPID_PRIVATE_KEY", "test_private_key"
+        )
 
         # Import models after app creation
         try:
@@ -141,7 +145,9 @@ class TestPushNotifications(unittest.TestCase):
             print(f"VAPID_PRIVATE_KEY in config: {bool(config_private)}")
 
             self.assertIsNotNone(config_public, "VAPID public key should be configured")
-            self.assertIsNotNone(config_private, "VAPID private key should be configured")
+            self.assertIsNotNone(
+                config_private, "VAPID private key should be configured"
+            )
 
     def test_02_vapid_endpoint(self):
         """Test VAPID public key endpoint"""
@@ -200,7 +206,9 @@ class TestPushNotifications(unittest.TestCase):
             db.session.commit()
 
             # Query it back
-            saved = self.NotificationTemplate.query.filter_by(name="test_template").first()
+            saved = self.NotificationTemplate.query.filter_by(
+                name="test_template"
+            ).first()
             self.assertIsNotNone(saved, "Template should be saved")
             self.assertEqual(saved.title, "Test Notification")
             self.assertEqual(saved.content, "This is a test notification")
@@ -233,7 +241,9 @@ class TestPushNotifications(unittest.TestCase):
 
         # Verify in database
         with self.app.app_context():
-            saved = self.PushSubscription.query.filter_by(endpoint="https://fcm.googleapis.com/fcm/send/test").first()
+            saved = self.PushSubscription.query.filter_by(
+                endpoint="https://fcm.googleapis.com/fcm/send/test"
+            ).first()
             self.assertIsNotNone(saved, "Subscription should be saved in database")
 
     def test_06_push_unsubscribe_endpoint(self):
@@ -255,7 +265,9 @@ class TestPushNotifications(unittest.TestCase):
         )
 
         # Then unsubscribe
-        unsubscribe_data = {"endpoint": "https://fcm.googleapis.com/fcm/send/test_unsubscribe"}
+        unsubscribe_data = {
+            "endpoint": "https://fcm.googleapis.com/fcm/send/test_unsubscribe"
+        }
 
         response = self.client.post(
             "/api/notification/unsubscribe-push",
@@ -272,7 +284,9 @@ class TestPushNotifications(unittest.TestCase):
 
         # Verify in database
         with self.app.app_context():
-            saved = self.PushSubscription.query.filter_by(endpoint="https://fcm.googleapis.com/fcm/send/test_unsubscribe").first()
+            saved = self.PushSubscription.query.filter_by(
+                endpoint="https://fcm.googleapis.com/fcm/send/test_unsubscribe"
+            ).first()
             self.assertIsNotNone(saved, "Subscription should still exist")
             self.assertFalse(saved.is_active, "Subscription should be deactivated")
 
@@ -301,7 +315,9 @@ class TestPushNotifications(unittest.TestCase):
 
             if server_running:
                 # Test VAPID endpoint
-                vapid_response = requests.get("http://127.0.0.1:8000/api/notification/vapid-public-key", timeout=5)
+                vapid_response = requests.get(
+                    "http://127.0.0.1:8000/api/notification/vapid-public-key", timeout=5
+                )
                 print(f"VAPID endpoint status: {vapid_response.status_code}")
                 print(f"VAPID response: {vapid_response.json()}")
 
@@ -321,7 +337,9 @@ class TestPushNotifications(unittest.TestCase):
         print("\n=== Testing Frontend Files ===")
 
         # Check notification_service.js
-        js_path = os.path.join(os.path.dirname(__file__), "static", "js", "notification_service.js")
+        js_path = os.path.join(
+            os.path.dirname(__file__), "static", "js", "notification_service.js"
+        )
         self.assertTrue(os.path.exists(js_path), "notification_service.js should exist")
 
         # Check index.html has push notification elements
@@ -383,7 +401,9 @@ class TestPushNotifications(unittest.TestCase):
             try:
                 print("DEBUG: User class module:", self.User.__module__)
                 print("DEBUG: User class id:", id(self.User))
-                print("DEBUG: User.query repr:", repr(getattr(self.User, "query", None)))
+                print(
+                    "DEBUG: User.query repr:", repr(getattr(self.User, "query", None))
+                )
                 print("DEBUG: db.session id:", id(db.session))
                 try:
                     print("DEBUG: db.engine:", getattr(db, "engine", None))
@@ -395,7 +415,10 @@ class TestPushNotifications(unittest.TestCase):
                 except Exception:
                     pass
                 try:
-                    print("DEBUG: session.query(User).all():", db.session.query(self.User).all())
+                    print(
+                        "DEBUG: session.query(User).all():",
+                        db.session.query(self.User).all(),
+                    )
                 except Exception as _e:
                     print("DEBUG: session.query(User) raised:", _e)
             except Exception:
@@ -408,7 +431,9 @@ class TestPushNotifications(unittest.TestCase):
             try:
                 if hasattr(saved_user, "notification_preferences"):
                     prefs = saved_user.notification_preferences
-                    self.assertIsNotNone(prefs, "User should have notification preferences")
+                    self.assertIsNotNone(
+                        prefs, "User should have notification preferences"
+                    )
                     print("User-NotificationPreference relationship works")
             except Exception:
                 print("User-NotificationPreference relationship not implemented yet")

@@ -22,14 +22,20 @@ out_dir = Path(__file__).resolve().parent
 # Helper to extract CSRF token from HTML
 def extract_csrf(html: str):
     # Try common hidden input names
-    m = re.search(r"<input[^>]+name=[\"']csrf_token[\"'][^>]*value=[\"']([^\"']+)[\"']", html)
+    m = re.search(
+        r"<input[^>]+name=[\"']csrf_token[\"'][^>]*value=[\"']([^\"']+)[\"']", html
+    )
     if m:
         return m.group(1)
-    m = re.search(r"<input[^>]+name=[\"']token[\"'][^>]*value=[\"']([^\"']+)[\"']", html)
+    m = re.search(
+        r"<input[^>]+name=[\"']token[\"'][^>]*value=[\"']([^\"']+)[\"']", html
+    )
     if m:
         return m.group(1)
     # Fallback: meta tag
-    m = re.search(r"<meta[^>]+name=[\"']csrf-token[\"'][^>]*content=[\"']([^\"']+)[\"']", html)
+    m = re.search(
+        r"<meta[^>]+name=[\"']csrf-token[\"'][^>]*content=[\"']([^\"']+)[\"']", html
+    )
     if m:
         return m.group(1)
     return None
@@ -75,7 +81,11 @@ def main():
     (out_dir / "admin_dashboard_response.html").write_text(rdash.text, encoding="utf-8")
 
     # Basic heuristics: check if the login page still present
-    if "Вход" in final_html or "admin_login" in final_html or "login" in final_html.lower():
+    if (
+        "Вход" in final_html
+        or "admin_login" in final_html
+        or "login" in final_html.lower()
+    ):
         print("POST appears to have returned login page (login likely failed)")
     else:
         print("POST did not return obvious login page; check saved HTML files")

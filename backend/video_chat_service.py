@@ -26,7 +26,9 @@ class VideoChatService:
     """Service for managing video chat sessions"""
 
     @staticmethod
-    def create_session(initiator_id: int, participant_id: int) -> VideoChatSession | None:
+    def create_session(
+        initiator_id: int, participant_id: int
+    ) -> VideoChatSession | None:
         """Create a new video chat session"""
         try:
             # Check if users exist
@@ -34,7 +36,9 @@ class VideoChatService:
             participant = db.session.get(User, participant_id)
 
             if not initiator or not participant:
-                logger.error(f"User not found: initiator={initiator_id}, participant={participant_id}")
+                logger.error(
+                    f"User not found: initiator={initiator_id}, participant={participant_id}"
+                )
                 return None
 
             # Generate unique session ID
@@ -110,7 +114,9 @@ class VideoChatService:
             session.status = "completed"
             session.ended_at = utc_now()
             if session.started_at:
-                session.duration = int((session.ended_at - session.started_at).total_seconds())
+                session.duration = int(
+                    (session.ended_at - session.started_at).total_seconds()
+                )
             db.session.commit()
 
             # Remove from active sessions

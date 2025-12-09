@@ -30,7 +30,12 @@ def main():
             rows = cur.fetchall()
             print("  COLUMNS:", cols)
             for r in rows:
-                print("  ", dict(zip(cols, r)))
+                try:
+                    print("  ", dict(zip(cols, r, strict=True)))
+                except TypeError:
+                    # Older Python or uneven row length: fall back to non-strict zip
+                    # Use explicit strict=False to satisfy linters (B905)
+                    print("  ", dict(zip(cols, r, strict=False)))
     except Exception as e:
         print("Could not read admin_users:", e)
 

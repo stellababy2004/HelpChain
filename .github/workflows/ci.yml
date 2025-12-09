@@ -22,6 +22,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure repository fetched (retry helper)
+        if: always()
+        run: |
+          echo "Running retry-fetch helper"
+          bash .github/scripts/retry-fetch.sh
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
@@ -56,8 +65,17 @@ jobs:
           pytest -v --maxfail=1 --disable-warnings --junitxml=pytest-report.xml
         continue-on-error: false
 
+      - name: Check for pytest report
+        id: check_pytest_report
+        run: |
+          if [ -f pytest-report.xml ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload Pytest Report
-        if: always()
+        if: steps.check_pytest_report.outputs.exists == 'true'
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
         with:
           name: pytest-report-${{ matrix.python-version }}

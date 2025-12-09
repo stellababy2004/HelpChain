@@ -23,7 +23,9 @@ app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
 app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", "False").lower() == "true"
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "noreply@helpchain.live")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
+    "MAIL_DEFAULT_SENDER", "noreply@helpchain.live"
+)
 
 mail = Mail(app)
 
@@ -177,7 +179,9 @@ def submit():
     # Mock request object
     class MockRequest:
         def __init__(self, form_data):
-            self.id = 1000 + int(datetime.datetime.now().timestamp() % 1000)  # Simple ID generation
+            self.id = 1000 + int(
+                datetime.datetime.now().timestamp() % 1000
+            )  # Simple ID generation
             self.name = form_data.get("name")
             self.email = form_data.get("email")
             self.phone = form_data.get("phone")

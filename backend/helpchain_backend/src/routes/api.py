@@ -10,7 +10,11 @@ controller = HelpChainController()
 @api_bp.route("/some_endpoint", methods=["GET"])
 def some_endpoint():
     # опитваме се да използваме подходящ method от контролера, ако има
-    fn = getattr(controller, "some_endpoint", None) or getattr(controller, "ping", None) or getattr(controller, "status", None)
+    fn = (
+        getattr(controller, "some_endpoint", None)
+        or getattr(controller, "ping", None)
+        or getattr(controller, "status", None)
+    )
     if callable(fn):
         try:
             out = fn()
@@ -92,10 +96,15 @@ def dashboard():
 @api_bp.route("/export", methods=["GET"])
 def export():
     fmt = (request.args.get("format") or "excel").lower()
-    filters = {k: request.args.get(k) for k in ("date_from", "date_to", "status", "region", "volunteer_id")}
+    filters = {
+        k: request.args.get(k)
+        for k in ("date_from", "date_to", "status", "region", "volunteer_id")
+    }
     try:
         path, mimetype, filename = controller.export_requests(filters, fmt)
-        return send_file(path, mimetype=mimetype, as_attachment=True, download_name=filename)
+        return send_file(
+            path, mimetype=mimetype, as_attachment=True, download_name=filename
+        )
     except NotImplementedError:
         return jsonify({"error": "format not supported"}), 400
     except RuntimeError as e:
@@ -202,13 +211,18 @@ def get_nearby_volunteers():
             R = 6371  # Earth radius in km
             dlat = radians(lat2 - lat1)
             dlon = radians(lon2 - lon1)
-            a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+            a = (
+                sin(dlat / 2) ** 2
+                + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+            )
             c = 2 * atan2(sqrt(a), sqrt(1 - a))
             return R * c
 
         from ..models import Volunteer
 
-        volunteers = Volunteer.query.filter(Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)).all()
+        volunteers = Volunteer.query.filter(
+            Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)
+        ).all()
 
         nearby = []
         for vol in volunteers:

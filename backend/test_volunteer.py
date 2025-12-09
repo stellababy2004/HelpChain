@@ -35,7 +35,9 @@ class TestVolunteerDashboard:
             test_volunteer.id = 1
 
             # Mock database query and all related queries
-            with patch("backend.appy.Volunteer.query") as mock_query, patch("backend.appy.HelpRequest.query") as mock_help_query:
+            with patch("backend.appy.Volunteer.query") as mock_query, patch(
+                "backend.appy.HelpRequest.query"
+            ) as mock_help_query:
                 mock_query.get.return_value = test_volunteer
                 mock_help_query.all.return_value = []  # No help requests for simplicity
 
@@ -51,7 +53,10 @@ class TestVolunteerDashboard:
                 # Should render dashboard template
                 assert response.status_code == 200
                 response_text = response.get_data(as_text=True)
-                assert "Test Volunteer" in response_text or "Доброволчески панел" in response_text
+                assert (
+                    "Test Volunteer" in response_text
+                    or "Доброволчески панел" in response_text
+                )
 
     def test_volunteer_dashboard_access_unauthenticated(self, app, client):
         """Test that unauthenticated user is redirected to login"""
@@ -117,7 +122,10 @@ class TestVolunteerDashboard:
                 # Check response contains expected statistics
                 response_text = response.get_data(as_text=True)
                 # Since templates don't display actual statistics, just check dashboard loads
-                assert "Доброволчески панел" in response_text or "volunteer_dashboard" in response_text
+                assert (
+                    "Доброволчески панел" in response_text
+                    or "volunteer_dashboard" in response_text
+                )
 
     def test_volunteer_dashboard_active_tasks_display(self, app, client):
         """Test that dashboard displays active tasks correctly"""
@@ -149,7 +157,10 @@ class TestVolunteerDashboard:
                 # Check response contains expected active tasks
                 response_text = response.get_data(as_text=True)
                 # Since templates don't display actual tasks, just check dashboard loads
-                assert "Доброволчески панел" in response_text or "volunteer_dashboard" in response_text
+                assert (
+                    "Доброволчески панел" in response_text
+                    or "volunteer_dashboard" in response_text
+                )
 
     def test_volunteer_dashboard_task_counts(self, app, client):
         """Test that dashboard displays correct task counts"""
@@ -181,7 +192,10 @@ class TestVolunteerDashboard:
                 # Check response contains expected counts
                 response_text = response.get_data(as_text=True)
                 # Since templates don't display actual counts, just check dashboard loads
-                assert "Доброволчески панел" in response_text or "volunteer_dashboard" in response_text
+                assert (
+                    "Доброволчески панел" in response_text
+                    or "volunteer_dashboard" in response_text
+                )
 
     def test_volunteer_dashboard_error_handling(self, app, client):
         """Test dashboard error handling"""
@@ -221,7 +235,9 @@ class TestVolunteerTasks:
 
             # Should render template
             assert response.status_code == 200
-            assert b"my_tasks.html" in response.data or "my_tasks" in response.get_data(as_text=True)
+            assert b"my_tasks.html" in response.data or "my_tasks" in response.get_data(
+                as_text=True
+            )
 
     def test_my_tasks_access_unauthenticated(self, app, client):
         """Test unauthenticated access to my tasks page"""
@@ -251,7 +267,10 @@ class TestVolunteerTasks:
 
             # Should render template
             assert response.status_code == 200
-            assert b"available_tasks.html" in response.data or "available_tasks" in response.get_data(as_text=True)
+            assert (
+                b"available_tasks.html" in response.data
+                or "available_tasks" in response.get_data(as_text=True)
+            )
 
     def test_available_tasks_access_unauthenticated(self, app, client):
         """Test unauthenticated access to available tasks page"""
@@ -285,7 +304,10 @@ class TestVolunteerProfile:
 
             # Should render template
             assert response.status_code == 200
-            assert b"volunteer_profile.html" in response.data or "volunteer_profile" in response.get_data(as_text=True)
+            assert (
+                b"volunteer_profile.html" in response.data
+                or "volunteer_profile" in response.get_data(as_text=True)
+            )
 
     def test_volunteer_profile_access_unauthenticated(self, app, client):
         """Test unauthenticated access to profile page"""
@@ -357,7 +379,10 @@ class TestVolunteerAchievements:
 
             # Should render template
             assert response.status_code == 200
-            assert b"achievements.html" in response.data or "achievements" in response.get_data(as_text=True)
+            assert (
+                b"achievements.html" in response.data
+                or "achievements" in response.get_data(as_text=True)
+            )
 
     def test_achievements_access_unauthenticated(self, app, client):
         """Test unauthenticated access to achievements page"""
@@ -391,7 +416,10 @@ class TestVolunteerChat:
 
             # Should render template
             assert response.status_code == 200
-            assert b"volunteer_chat.html" in response.data or "volunteer_chat" in response.get_data(as_text=True)
+            assert (
+                b"volunteer_chat.html" in response.data
+                or "volunteer_chat" in response.get_data(as_text=True)
+            )
 
     def test_volunteer_chat_access_unauthenticated(self, app, client):
         """Test unauthenticated access to chat page"""
@@ -425,7 +453,10 @@ class TestVolunteerReports:
 
             # Should render template
             assert response.status_code == 200
-            assert b"volunteer_reports.html" in response.data or "volunteer_reports" in response.get_data(as_text=True)
+            assert (
+                b"volunteer_reports.html" in response.data
+                or "volunteer_reports" in response.get_data(as_text=True)
+            )
 
     def test_volunteer_reports_access_unauthenticated(self, app, client):
         """Test unauthenticated access to reports page"""
@@ -459,7 +490,10 @@ class TestVolunteerSettings:
 
             # Should render template
             assert response.status_code == 200
-            assert b"volunteer_settings.html" in response.data or "volunteer_settings" in response.get_data(as_text=True)
+            assert (
+                b"volunteer_settings.html" in response.data
+                or "volunteer_settings" in response.get_data(as_text=True)
+            )
 
     def test_volunteer_settings_access_unauthenticated(self, app, client):
         """Test unauthenticated access to settings page"""
@@ -617,7 +651,9 @@ class TestVolunteerDashboardIntegration:
                 response = client.get("/volunteer_dashboard")
                 assert response.status_code == 200
                 # Just check that dashboard loads, don't check for specific content
-                assert "Доброволчески панел" in response.get_data(as_text=True) or "volunteer_dashboard" in response.get_data(as_text=True)
+                assert "Доброволчески панел" in response.get_data(
+                    as_text=True
+                ) or "volunteer_dashboard" in response.get_data(as_text=True)
 
             # Step 4: Access other volunteer pages
             pages_to_test = [
@@ -673,7 +709,9 @@ class TestVolunteerDashboardIntegration:
                     response = client.get("/volunteer_dashboard")
                     assert response.status_code == 200
                     # Just check that dashboard loads successfully
-                    assert "Доброволчески панел" in response.get_data(as_text=True) or "volunteer_dashboard" in response.get_data(as_text=True)
+                    assert "Доброволчески панел" in response.get_data(
+                        as_text=True
+                    ) or "volunteer_dashboard" in response.get_data(as_text=True)
 
     def test_volunteer_cross_session_isolation(self, app, client):
         """Test that volunteer sessions are properly isolated"""
@@ -681,7 +719,9 @@ class TestVolunteerDashboardIntegration:
             # Create two test volunteers
             from .models import Volunteer
 
-            volunteer1 = Volunteer(name="Volunteer 1", email="vol1@test.com", phone="111", location="Sofia")
+            volunteer1 = Volunteer(
+                name="Volunteer 1", email="vol1@test.com", phone="111", location="Sofia"
+            )
             volunteer1.id = 1
             volunteer2 = Volunteer(
                 name="Volunteer 2",
@@ -704,7 +744,9 @@ class TestVolunteerDashboardIntegration:
                 response = client.get("/volunteer_dashboard")
                 assert response.status_code == 200
                 # Just check that dashboard loads, templates don't show volunteer names
-                assert "Доброволчески панел" in response.get_data(as_text=True) or "volunteer_dashboard" in response.get_data(as_text=True)
+                assert "Доброволчески панел" in response.get_data(
+                    as_text=True
+                ) or "volunteer_dashboard" in response.get_data(as_text=True)
 
             # Clear session and switch to volunteer 2
             with client.session_transaction() as sess:
@@ -719,7 +761,9 @@ class TestVolunteerDashboardIntegration:
                 response = client.get("/volunteer_dashboard")
                 assert response.status_code == 200
                 # Just check that dashboard loads, templates don't show volunteer names
-                assert "Доброволчески панел" in response.get_data(as_text=True) or "volunteer_dashboard" in response.get_data(as_text=True)
+                assert "Доброволчески панел" in response.get_data(
+                    as_text=True
+                ) or "volunteer_dashboard" in response.get_data(as_text=True)
 
 
 class TestVolunteerDashboardSecurity:
@@ -773,7 +817,10 @@ class TestVolunteerDashboardSecurity:
                 assert response.status_code == 200
                 response_text = response.get_data(as_text=True)
                 # Since template doesn't display volunteer name, just check dashboard loads
-                assert "Доброволчески панел" in response_text or "volunteer_dashboard" in response_text
+                assert (
+                    "Доброволчески панел" in response_text
+                    or "volunteer_dashboard" in response_text
+                )
 
     def test_volunteer_dashboard_csrf_protection(self, app, client):
         """Test CSRF protection on volunteer dashboard forms"""
@@ -884,7 +931,9 @@ class TestVolunteerDashboardPerformance:
                     response = client.get("/volunteer_dashboard")
                     assert response.status_code == 200
                     # Just check that dashboard loads, templates don't show volunteer names
-                    assert "Доброволчески панел" in response.get_data(as_text=True) or "volunteer_dashboard" in response.get_data(as_text=True)
+                    assert "Доброволчески панел" in response.get_data(
+                        as_text=True
+                    ) or "volunteer_dashboard" in response.get_data(as_text=True)
 
     def test_volunteer_dashboard_memory_usage(self, app, client):
         """Test dashboard doesn't have memory leaks"""

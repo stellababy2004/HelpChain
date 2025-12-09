@@ -25,7 +25,9 @@ def find_asgi(root: str) -> list[str]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Намира всички asgi.py файлове в дадена директория.")
+    parser = argparse.ArgumentParser(
+        description="Намира всички asgi.py файлове в дадена директория."
+    )
     parser.add_argument(
         "path",
         nargs="?",

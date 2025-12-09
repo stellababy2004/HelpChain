@@ -78,7 +78,9 @@ class AdminUser(Base):
         try:
             from werkzeug.security import check_password_hash
 
-            return bool(self.password_hash and check_password_hash(self.password_hash, password))
+            return bool(
+                self.password_hash and check_password_hash(self.password_hash, password)
+            )
         except Exception:
             return self.password_hash == password
 
@@ -140,7 +142,9 @@ class AdminUser(Base):
             import pyotp
 
             totp = pyotp.TOTP(self.two_factor_secret)
-            return totp.provisioning_uri(name=self.email or self.username, issuer_name=issuer_name)
+            return totp.provisioning_uri(
+                name=self.email or self.username, issuer_name=issuer_name
+            )
         except Exception:
             return f"otpauth://totp/{issuer_name}:{self.email or self.username}?secret={self.two_factor_secret}&issuer={issuer_name}"
         finally:
@@ -200,7 +204,9 @@ class AdminLog(Base):
 
     id = Column(Integer, primary_key=True)
     admin_user_id = Column(Integer, ForeignKey("admin_users.id"), nullable=False)
-    action = Column(String(100), nullable=False)  # "approved_request", "rejected_request", etc.
+    action = Column(
+        String(100), nullable=False
+    )  # "approved_request", "rejected_request", etc.
     details = Column(Text, nullable=True)  # JSON или описание на действието
     entity_type = Column(String(50), nullable=True)  # "help_request", "volunteer", etc.
 
@@ -280,80 +286,15 @@ def get_query_for(model):
     except Exception:
         pass
     # Final fallback: raise so callers notice configuration issue early.
-    raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
+    raise RuntimeError(
+        "Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app"
+    )
 
-    @permission.setter
-    def permission(self, value):
-        # Allow assigning by codename string or by Permission instance.
-        try:
-            logger.debug(f"RolePermission.permission setter called with value={value!r}")
-        except Exception:
-            pass
-        if isinstance(value, str):
-            try:
-                # Try model-level query first (works when query proxy is attached)
-                p = None
-                try:
-                    p = Permission.query.filter_by(codename=value).first()
-                except Exception:
-                    p = None
-
-                if p is None:
-                    # Fallback: try to resolve using a session associated with
-                    # this RolePermission or its Role (object_session), then
-                    # try the Flask-SQLAlchemy session if available. This
-                    # covers test fixtures that add objects via a different
-                    # session than the models module's query proxy.
-                    try:
-                        from sqlalchemy.orm import object_session
-
-                        sess = object_session(self) or (object_session(self.role) if getattr(self, "role", None) is not None else None)
-                    except Exception:
-                        sess = None
-
-                    if sess is not None:
-                        try:
-                            p = sess.query(Permission).filter_by(codename=value).first()
-                        except Exception:
-                            p = None
-
-                    if p is None:
-                        try:
-                            from backend.extensions import db as _ext_db
-
-                            p = _ext_db.session.query(Permission).filter_by(codename=value).first()
-                        except Exception:
-                            p = None
-
-                if p is not None:
-                    self.permission_id = p.id
-                    self._permission = p
-                    try:
-                        logger.debug(f"Resolved permission codename '{value}' -> id={p.id}")
-                    except Exception:
-                        pass
-                else:
-                    # No matching Permission found; clear relation
-                    self.permission_id = None
-                    self._permission = None
-            except Exception:
-                self.permission_id = None
-                self._permission = None
-        elif value is None:
-            self.permission_id = None
-            self._permission = None
-        else:
-            # Assume a Permission instance-like object
-            try:
-                self._permission = value
-                self.permission_id = getattr(value, "id", None)
-                try:
-                    logger.debug(f"Assigned Permission instance -> id={self.permission_id}")
-                except Exception:
-                    pass
-            except Exception:
-                self._permission = None
-                self.permission_id = None
+    # NOTE: A permisssion setter helper was previously embedded here by mistake
+    # (it belonged to the RolePermission model). The setter method has been
+    # removed from this function scope to avoid syntax and lint errors. If a
+    # project-specific setter is required for RolePermission it should be
+    # implemented as an instance method on `RolePermission` below.
 
 
 class User(Base):
@@ -392,7 +333,9 @@ class User(Base):
         try:
             from werkzeug.security import check_password_hash
 
-            return bool(self.password_hash and check_password_hash(self.password_hash, password))
+            return bool(
+                self.password_hash and check_password_hash(self.password_hash, password)
+            )
         except Exception:
             return self.password_hash == password
 
@@ -556,7 +499,9 @@ class Volunteer(Base):
         # record
         self.total_tasks_completed = int(self.total_tasks_completed or 0) + 1
         try:
-            self.total_hours_volunteered = float(self.total_hours_volunteered or 0) + hrs
+            self.total_hours_volunteered = (
+                float(self.total_hours_volunteered or 0) + hrs
+            )
         except Exception:
             self.total_hours_volunteered = hrs
         # update last activity timestamp
@@ -1026,7 +971,11 @@ try:
                 if new_id is None:
                     # Try to select any existing placeholder user
                     try:
-                        sel = connection.execute(select(users_tbl.c.id).where(users_tbl.c.username == "__auto_user__")).first()
+                        sel = connection.execute(
+                            select(users_tbl.c.id).where(
+                                users_tbl.c.username == "__auto_user__"
+                            )
+                        ).first()
                         if sel:
                             new_id = sel[0]
                     except Exception:
@@ -1051,6 +1000,7 @@ try:
             # Never let the listener raise; tests will observe DB errors
             # if placeholder creation fails.
             pass
+
 except Exception:
     pass
 
@@ -1336,13 +1286,24 @@ logger = logging.getLogger(__name__)
 module_db_url = os.getenv("HELPCHAIN_MODULE_DB_URL", "")
 if module_db_url:
     try:
-        logger.debug(f"HELPCHAIN_MODULE_DB_URL set, creating module engine {module_db_url}")
-        engine = create_engine(module_db_url, connect_args={"check_same_thread": False} if module_db_url.startswith("sqlite") else {})
+        logger.debug(
+            f"HELPCHAIN_MODULE_DB_URL set, creating module engine {module_db_url}"
+        )
+        engine = create_engine(
+            module_db_url,
+            connect_args=(
+                {"check_same_thread": False}
+                if module_db_url.startswith("sqlite")
+                else {}
+            ),
+        )
         try:
             db.configure(bind=engine)
         except Exception:
             # some older SQLAlchemy versions may require replacement of scoped_session
-            db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+            db = scoped_session(
+                sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            )
             db_session = db
             Base.query = db_session.query_property()
 
@@ -1370,7 +1331,9 @@ try:
             # prefer it for module-level queries to avoid divergence between
             # the module-scoped session and the app session used in tests.
             if ext_engine is not None:
-                logger.debug("Creating metadata on Flask-SQLAlchemy engine for compatibility")
+                logger.debug(
+                    "Creating metadata on Flask-SQLAlchemy engine for compatibility"
+                )
                 Base.metadata.create_all(bind=ext_engine)
             try:
                 # Attempt to switch the module session to use the Flask app's
@@ -1404,7 +1367,9 @@ try:
                 # Non-fatal: best-effort binding; ignore failures
                 pass
         except Exception:
-            logger.debug("Could not create metadata on Flask-SQLAlchemy engine (skipping)")
+            logger.debug(
+                "Could not create metadata on Flask-SQLAlchemy engine (skipping)"
+            )
 except Exception:
     # backend.extensions may not be importable at module import time
     pass
@@ -1425,10 +1390,16 @@ try:
     # of hard-to-debug failure while preserving the original behavior for
     # consumers who set `HELPCHAIN_ALLOW_MODULE_ENGINE=1`.
     allow_module_engine = os.environ.get("HELPCHAIN_ALLOW_MODULE_ENGINE") == "1"
-    if allow_module_engine and engine is None and (os.environ.get("PYTEST_CURRENT_TEST") or "pytest" in sys.modules):
+    if (
+        allow_module_engine
+        and engine is None
+        and (os.environ.get("PYTEST_CURRENT_TEST") or "pytest" in sys.modules)
+    ):
         import tempfile
 
-        tf = tempfile.NamedTemporaryFile(prefix="hc_pytest_", suffix=".db", delete=False)
+        tf = tempfile.NamedTemporaryFile(
+            prefix="hc_pytest_", suffix=".db", delete=False
+        )
         tf.close()
         try:
             tmp_url = f"sqlite:///{tf.name}"
@@ -1436,7 +1407,9 @@ try:
             try:
                 db.configure(bind=engine)
             except Exception:
-                db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+                db = scoped_session(
+                    sessionmaker(autocommit=False, autoflush=False, bind=engine)
+                )
                 db_session = db
             try:
                 Base.metadata.create_all(bind=engine)

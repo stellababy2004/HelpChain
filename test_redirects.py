@@ -10,7 +10,9 @@ try:
     print(f"Admin login page: {response.status_code}")
 
     # Test analytics redirect
-    response = requests.get("http://127.0.0.1:5000/analytics", allow_redirects=False, timeout=5)
+    response = requests.get(
+        "http://127.0.0.1:5000/analytics", allow_redirects=False, timeout=5
+    )
     print(f"Analytics redirect: {response.status_code}")
     if "Location" in response.headers:
         location = response.headers["Location"]
@@ -29,13 +31,17 @@ try:
         print("? Admin analytics page loads but data format unclear")
 
     # Test admin dashboard access without login (should redirect)
-    response = requests.get("http://127.0.0.1:5000/admin/dashboard", allow_redirects=False, timeout=5)
+    response = requests.get(
+        "http://127.0.0.1:5000/admin/dashboard", allow_redirects=False, timeout=5
+    )
     print(f"Admin dashboard without login: {response.status_code}")
     if response.status_code == 302 and "Location" in response.headers:
         location = response.headers["Location"]
         print(f"Redirects to: {location}")
         if "/admin/login" in location:
-            print("✓ Admin dashboard correctly redirects to login when not authenticated")
+            print(
+                "✓ Admin dashboard correctly redirects to login when not authenticated"
+            )
         else:
             print("✗ Admin dashboard redirect incorrect")
 

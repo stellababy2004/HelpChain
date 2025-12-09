@@ -161,9 +161,13 @@ def create_app(config_object=None):
     def send_email_notification(req):
         import os
 
-        DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "..", "notifications.db")
+        DB_PATH = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "notifications.db"
+        )
 
-        def save_notification_to_db(recipient, subject, content, status="saved", smtp_error=None):
+        def save_notification_to_db(
+            recipient, subject, content, status="saved", smtp_error=None
+        ):
             with sqlite3.connect(DB_PATH) as conn:
                 c = conn.cursor()
                 c.execute(
@@ -204,7 +208,9 @@ ID: {req.id}
 
         try:
             with open(
-                os.path.join(os.path.dirname(__file__), "..", "..", "..", "sent_emails.txt"),
+                os.path.join(
+                    os.path.dirname(__file__), "..", "..", "..", "sent_emails.txt"
+                ),
                 "a",
                 encoding="utf-8",
             ) as f:
@@ -239,7 +245,9 @@ ID: {req.id}
             print(f"⚠️  Email send failed, but saved to database: {e}")
 
         try:
-            save_notification_to_db("contact@helpchain.live", subject, content, status, smtp_error)
+            save_notification_to_db(
+                "contact@helpchain.live", subject, content, status, smtp_error
+            )
             print(f"✅ Notification saved to database for request ID {req.id}")
         except Exception as e:
             print(f"❌ Failed to save to database: {e}")
@@ -249,9 +257,13 @@ ID: {req.id}
     def send_volunteer_notification(volunteer):
         import os
 
-        DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "..", "notifications.db")
+        DB_PATH = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "notifications.db"
+        )
 
-        def save_notification_to_db(recipient, subject, content, status="saved", smtp_error=None):
+        def save_notification_to_db(
+            recipient, subject, content, status="saved", smtp_error=None
+        ):
             with sqlite3.connect(DB_PATH) as conn:
                 c = conn.cursor()
                 c.execute(
@@ -290,7 +302,9 @@ ID: {volunteer.id}
 
         try:
             with open(
-                os.path.join(os.path.dirname(__file__), "..", "..", "..", "sent_emails.txt"),
+                os.path.join(
+                    os.path.dirname(__file__), "..", "..", "..", "sent_emails.txt"
+                ),
                 "a",
                 encoding="utf-8",
             ) as f:
@@ -325,7 +339,9 @@ ID: {volunteer.id}
             print(f"⚠️  Email send failed, but saved to database: {e}")
 
         try:
-            save_notification_to_db("contact@helpchain.live", subject, content, status, smtp_error)
+            save_notification_to_db(
+                "contact@helpchain.live", subject, content, status, smtp_error
+            )
             print(f"✅ Notification saved to database for volunteer ID {volunteer.id}")
         except Exception as e:
             print(f"❌ Failed to save to database: {e}")

@@ -14,9 +14,22 @@ from backend.extensions import db
 
 # Import models similar to test
 try:
-    from models_with_analytics import NotificationPreference, NotificationTemplate, PushSubscription, Task, TaskAssignment, TaskPerformance, User
+    from models_with_analytics import (
+        NotificationPreference,
+        NotificationTemplate,
+        PushSubscription,
+        Task,
+        TaskAssignment,
+        TaskPerformance,
+        User,
+    )
 except Exception:
-    from models import NotificationPreference, NotificationTemplate, PushSubscription, User
+    from models import (
+        NotificationPreference,
+        NotificationTemplate,
+        PushSubscription,
+        User,
+    )
 
 print("Imported User from module:", User.__module__)
 

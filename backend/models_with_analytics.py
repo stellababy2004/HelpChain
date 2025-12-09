@@ -28,7 +28,7 @@ AdminUser = None
 User = None
 Volunteer = None
 try:
-    from models import AdminUser, User, Volunteer
+    from backend.models import AdminUser, User, Volunteer
 except Exception:
     AdminUser = User = Volunteer = None
 
@@ -56,7 +56,16 @@ except Exception:
 if db is None:
     # Fallback: build a minimal db-like namespace using SQLAlchemy primitives
     try:
-        from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
+        from sqlalchemy import (
+            Boolean,
+            Column,
+            DateTime,
+            Float,
+            ForeignKey,
+            Integer,
+            String,
+            Text,
+        )
         from sqlalchemy.orm import declarative_base, relationship
 
         _Base = declarative_base()
@@ -87,7 +96,7 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
         # Prefer importing the canonical backend.models module to ensure
         # we reference the single shared AdminUser class object.
         try:
-            from models import AdminUser as RealAdminUser
+            from backend.models import AdminUser as RealAdminUser
 
             AdminUser = RealAdminUser
         except Exception:
@@ -99,7 +108,7 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
             except Exception:
                 # Final fallback: try old top-level layout if present
                 try:
-                    from models import AdminUser as RealAdminUser
+                    from backend.models import AdminUser as RealAdminUser
 
                     AdminUser = RealAdminUser
                 except Exception:
@@ -114,15 +123,17 @@ def utc_now() -> datetime:
 
 
 class AdminRole(Enum):
-    """Роли в административната система"""
+    """ðáð¥ð╗ð© ð▓ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð©ð▓ð¢ð░Ðéð░ Ðüð©ÐüÐéðÁð╝ð░"""
 
-    SUPER_ADMIN = "super_admin"  # Пълен достъп до всичко
-    ADMIN = "admin"  # Стандартен админ достъп
-    MODERATOR = "moderator"  # Ограничен достъп само за модерация
+    SUPER_ADMIN = "super_admin"  # ðƒÐèð╗ðÁð¢ ð┤ð¥ÐüÐéÐèð┐ ð┤ð¥ ð▓Ðüð©Ðçð║ð¥
+    ADMIN = "admin"  # ðíÐéð░ð¢ð┤ð░ÐÇÐéðÁð¢ ð░ð┤ð╝ð©ð¢ ð┤ð¥ÐüÐéÐèð┐
+    MODERATOR = (
+        "moderator"  # ð×ð│ÐÇð░ð¢ð©ÐçðÁð¢ ð┤ð¥ÐüÐéÐèð┐ Ðüð░ð╝ð¥ ðÀð░ ð╝ð¥ð┤ðÁÐÇð░Ðåð©ÐÅ
+    )
 
 
 class AdminLog(db.Model):
-    """Модел за проследяване на административни действия"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ ð┐ÐÇð¥Ðüð╗ðÁð┤ÐÅð▓ð░ð¢ðÁ ð¢ð░ ð░ð┤ð╝ð©ð¢ð©ÐüÐéÐÇð░Ðéð©ð▓ð¢ð© ð┤ðÁð╣ÐüÐéð▓ð©ÐÅ"""
 
     __tablename__ = "admin_logs"
     __table_args__ = {"extend_existing": True}
@@ -132,11 +143,17 @@ class AdminLog(db.Model):
     # during test collection where models may be defined under different
     # declarative registries. The numeric id is sufficient for tests.
     admin_user_id = db.Column(db.Integer, nullable=False)
-    action = db.Column(db.String(100), nullable=False)  # "approved_request", "rejected_request", etc.
-    details = db.Column(db.Text, nullable=True)  # JSON или описание на действието
-    entity_type = db.Column(db.String(50), nullable=True)  # "help_request", "volunteer", etc.
-    entity_id = db.Column(db.Integer, nullable=True)  # ID на обекта
-    ip_address = db.Column(db.String(45), nullable=True)  # IP адрес
+    action = db.Column(
+        db.String(100), nullable=False
+    )  # "approved_request", "rejected_request", etc.
+    details = db.Column(
+        db.Text, nullable=True
+    )  # JSON ð©ð╗ð© ð¥ð┐ð©Ðüð░ð¢ð©ðÁ ð¢ð░ ð┤ðÁð╣ÐüÐéð▓ð©ðÁÐéð¥
+    entity_type = db.Column(
+        db.String(50), nullable=True
+    )  # "help_request", "volunteer", etc.
+    entity_id = db.Column(db.Integer, nullable=True)  # ID ð¢ð░ ð¥ð▒ðÁð║Ðéð░
+    ip_address = db.Column(db.String(45), nullable=True)  # IP ð░ð┤ÐÇðÁÐü
     user_agent = db.Column(db.String(500), nullable=True)  # Browser info
     timestamp = db.Column(db.DateTime, default=utc_now)
 
@@ -150,7 +167,7 @@ class AdminLog(db.Model):
 
 
 class TwoFactorAuth(db.Model):
-    """Модел за 2FA токени и сесии"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ 2FA Ðéð¥ð║ðÁð¢ð© ð© ÐüðÁÐüð©ð©"""
 
     __tablename__ = "two_factor_auth"
     __table_args__ = {"extend_existing": True}
@@ -172,7 +189,7 @@ class TwoFactorAuth(db.Model):
 
 
 class AdminSession(db.Model):
-    """Модел за следене на активни админ сесии"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ Ðüð╗ðÁð┤ðÁð¢ðÁ ð¢ð░ ð░ð║Ðéð©ð▓ð¢ð© ð░ð┤ð╝ð©ð¢ ÐüðÁÐüð©ð©"""
 
     __tablename__ = "admin_sessions"
     __table_args__ = {"extend_existing": True}
@@ -206,8 +223,12 @@ class Feedback(db.Model):
     timestamp = db.Column(db.DateTime, default=utc_now)
 
     # Sentiment analysis fields
-    sentiment_score = db.Column(db.Float, nullable=True)  # -1.0 to 1.0 (negative to positive)
-    sentiment_label = db.Column(db.String(20), nullable=True)  # positive, negative, neutral
+    sentiment_score = db.Column(
+        db.Float, nullable=True
+    )  # -1.0 to 1.0 (negative to positive)
+    sentiment_label = db.Column(
+        db.String(20), nullable=True
+    )  # positive, negative, neutral
     sentiment_confidence = db.Column(db.Float, nullable=True)  # 0.0 to 1.0
     ai_processed = db.Column(db.Boolean, default=False)
     ai_processing_time = db.Column(db.Float, nullable=True)  # in seconds
@@ -234,7 +255,7 @@ class SuccessStory(db.Model):
 
 
 # class VideoChatSession(db.Model):
-#     """Модел за видео чат сесии между потребители"""
+#     """ð£ð¥ð┤ðÁð╗ ðÀð░ ð▓ð©ð┤ðÁð¥ Ðçð░Ðé ÐüðÁÐüð©ð© ð╝ðÁðÂð┤Ðâ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗ð©"""
 
 #     __tablename__ = "video_chat_sessions"
 #     __table_args__ = {"extend_existing": True}
@@ -250,7 +271,7 @@ class SuccessStory(db.Model):
 #     )  # pending, active, completed, cancelled
 #     started_at = db.Column(db.DateTime, nullable=True)
 #     ended_at = db.Column(db.DateTime, nullable=True)
-#     duration = db.Column(db.Integer, nullable=True)  # в секунди
+#     duration = db.Column(db.Integer, nullable=True)  # ð▓ ÐüðÁð║Ðâð¢ð┤ð©
 #     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 #     updated_at = db.Column(
 #         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
@@ -269,14 +290,18 @@ class SuccessStory(db.Model):
 
 
 class AnalyticsEvent(db.Model):
-    """Модел за проследяване на събития за аналитика"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ ð┐ÐÇð¥Ðüð╗ðÁð┤ÐÅð▓ð░ð¢ðÁ ð¢ð░ ÐüÐèð▒ð©Ðéð©ÐÅ ðÀð░ ð░ð¢ð░ð╗ð©Ðéð©ð║ð░"""
 
     __tablename__ = "analytics_events"
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    event_type = db.Column(db.String(100), nullable=False)  # page_view, button_click, etc.
-    event_category = db.Column(db.String(100), nullable=True)  # navigation, engagement, etc.
+    event_type = db.Column(
+        db.String(100), nullable=False
+    )  # page_view, button_click, etc.
+    event_category = db.Column(
+        db.String(100), nullable=True
+    )  # navigation, engagement, etc.
     event_action = db.Column(db.String(100), nullable=True)  # specific action
     event_label = db.Column(db.String(255), nullable=True)  # additional info
     event_value = db.Column(db.Integer, nullable=True)  # numeric value
@@ -306,7 +331,7 @@ class AnalyticsEvent(db.Model):
 
 
 class UserBehavior(db.Model):
-    """Модел за проследяване на потребителското поведение"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ ð┐ÐÇð¥Ðüð╗ðÁð┤ÐÅð▓ð░ð¢ðÁ ð¢ð░ ð┐ð¥ÐéÐÇðÁð▒ð©ÐéðÁð╗Ðüð║ð¥Ðéð¥ ð┐ð¥ð▓ðÁð┤ðÁð¢ð©ðÁ"""
 
     __tablename__ = "user_behaviors"
     __table_args__ = {"extend_existing": True}
@@ -333,7 +358,9 @@ class UserBehavior(db.Model):
 
     # Behavior flags
     bounce_rate = db.Column(db.Boolean, default=False)  # left after one page
-    conversion_action = db.Column(db.String(100), nullable=True)  # registration, request_help, etc.
+    conversion_action = db.Column(
+        db.String(100), nullable=True
+    )  # registration, request_help, etc.
 
     # Page sequence (JSON array of visited pages)
     pages_sequence = db.Column(db.Text, nullable=True)  # JSON string
@@ -343,13 +370,15 @@ class UserBehavior(db.Model):
 
 
 class PerformanceMetrics(db.Model):
-    """Модел за метрики на производителността"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ ð╝ðÁÐéÐÇð©ð║ð© ð¢ð░ ð┐ÐÇð¥ð©ðÀð▓ð¥ð┤ð©ÐéðÁð╗ð¢ð¥ÐüÐéÐéð░"""
 
     __tablename__ = "performance_metrics"
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
-    metric_type = db.Column(db.String(100), nullable=False)  # response_time, db_query_time, etc.
+    metric_type = db.Column(
+        db.String(100), nullable=False
+    )  # response_time, db_query_time, etc.
     metric_name = db.Column(db.String(100), nullable=False)  # specific metric name
     metric_value = db.Column(db.Float, nullable=False)
     unit = db.Column(db.String(20), nullable=True)  # ms, seconds, bytes, etc.
@@ -372,7 +401,7 @@ class PerformanceMetrics(db.Model):
 
 
 class ChatbotConversation(db.Model):
-    """Модел за разговори с чатбота"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ ÐÇð░ðÀð│ð¥ð▓ð¥ÐÇð© Ðü Ðçð░Ðéð▒ð¥Ðéð░"""
 
     __tablename__ = "chatbot_conversations"
     __table_args__ = {"extend_existing": True}
@@ -409,7 +438,7 @@ class ChatbotConversation(db.Model):
 
 
 class Task(db.Model):
-    """Модел за задачи в Smart Matching System"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ ðÀð░ð┤ð░Ðçð© ð▓ Smart Matching System"""
 
     __tablename__ = "tasks"
     __table_args__ = {"extend_existing": True}
@@ -417,9 +446,13 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    category = db.Column(db.String(100), nullable=True)  # здраве, образование, социална помощ, etc.
+    category = db.Column(
+        db.String(100), nullable=True
+    )  # ðÀð┤ÐÇð░ð▓ðÁ, ð¥ð▒ÐÇð░ðÀð¥ð▓ð░ð¢ð©ðÁ, Ðüð¥Ðåð©ð░ð╗ð¢ð░ ð┐ð¥ð╝ð¥Ðë, etc.
     priority = db.Column(db.String(20), default="medium")  # low, medium, high, urgent
-    status = db.Column(db.String(50), default="open")  # open, assigned, in_progress, completed, cancelled
+    status = db.Column(
+        db.String(50), default="open"
+    )  # open, assigned, in_progress, completed, cancelled
 
     # Location requirements
     location_required = db.Column(db.Boolean, default=False)
@@ -429,7 +462,9 @@ class Task(db.Model):
 
     # Skills requirements
     required_skills = db.Column(db.Text, nullable=True)  # JSON array of required skills
-    preferred_skills = db.Column(db.Text, nullable=True)  # JSON array of preferred skills
+    preferred_skills = db.Column(
+        db.Text, nullable=True
+    )  # JSON array of preferred skills
 
     # Time requirements
     estimated_hours = db.Column(db.Integer, nullable=True)
@@ -459,7 +494,7 @@ class Task(db.Model):
 
 
 class TaskAssignment(db.Model):
-    """Модел за проследяване на task assignments и matching scores"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ ð┐ÐÇð¥Ðüð╗ðÁð┤ÐÅð▓ð░ð¢ðÁ ð¢ð░ task assignments ð© matching scores"""
 
     __tablename__ = "task_assignments"
     __table_args__ = {"extend_existing": True}
@@ -477,7 +512,9 @@ class TaskAssignment(db.Model):
 
     # Assignment details
     assigned_at = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(50), default="suggested")  # suggested, assigned, rejected, completed
+    status = db.Column(
+        db.String(50), default="suggested"
+    )  # suggested, assigned, rejected, completed
     assigned_by = db.Column(db.String(50), default="auto")  # auto, manual, admin
 
     # Feedback and ratings
@@ -499,7 +536,7 @@ class TaskAssignment(db.Model):
 
 
 class TaskPerformance(db.Model):
-    """Модел за проследяване на task performance metrics"""
+    """ð£ð¥ð┤ðÁð╗ ðÀð░ ð┐ÐÇð¥Ðüð╗ðÁð┤ÐÅð▓ð░ð¢ðÁ ð¢ð░ task performance metrics"""
 
     __tablename__ = "task_performance"
     __table_args__ = {"extend_existing": True}

@@ -123,7 +123,9 @@ def create_test_data():
                 # User behavior for this session
                 user_type = random.choice(["guest", "user", "volunteer"])
                 device_type = random.choice(["desktop", "mobile", "tablet"])
-                entry_page = random.choice(["/", "/analytics", "/volunteer_register", "/submit_request"])
+                entry_page = random.choice(
+                    ["/", "/analytics", "/volunteer_register", "/submit_request"]
+                )
 
                 # Create UserBehavior record
                 user_behavior = UserBehavior(
@@ -131,20 +133,34 @@ def create_test_data():
                     user_type=user_type,
                     device_info=device_type,
                     user_agent=f"Chrome/{random.randint(90, 120)}.0.0.0 Mobile Safari/537.36",
-                    location=random.choice(["София", "Пловдив", "Варна", "Бургас", "Русе"]),
+                    location=random.choice(
+                        ["София", "Пловдив", "Варна", "Бургас", "Русе"]
+                    ),
                     entry_page=entry_page,
-                    exit_page=random.choice(["/", "/analytics", "/volunteer_register", "/submit_request"]),
+                    exit_page=random.choice(
+                        ["/", "/analytics", "/volunteer_register", "/submit_request"]
+                    ),
                     session_start=current_date + timedelta(hours=random.randint(0, 23)),
                     total_time_spent=random.randint(30, 1800),  # 30 sec to 30 min
                     pages_visited=random.randint(1, 10),
                     bounce_rate=random.random() < 0.3,  # 30% bounce rate
-                    conversion_action=(random.choice([None, "registration", "help_request", "chatbot_use"]) if random.random() > 0.7 else None),
+                    conversion_action=(
+                        random.choice(
+                            [None, "registration", "help_request", "chatbot_use"]
+                        )
+                        if random.random() > 0.7
+                        else None
+                    ),
                 )
 
                 # Set session start time properly
-                session_start = current_date + timedelta(hours=random.randint(0, 23), minutes=random.randint(0, 59))
+                session_start = current_date + timedelta(
+                    hours=random.randint(0, 23), minutes=random.randint(0, 59)
+                )
                 user_behavior.session_start = session_start
-                user_behavior.last_activity = session_start + timedelta(seconds=user_behavior.total_time_spent)
+                user_behavior.last_activity = session_start + timedelta(
+                    seconds=user_behavior.total_time_spent
+                )
 
                 db.session.add(user_behavior)
 
@@ -164,7 +180,9 @@ def create_test_data():
                         ]
                     )
 
-                    event_time = session_start + timedelta(seconds=random.randint(0, user_behavior.total_time_spent))
+                    event_time = session_start + timedelta(
+                        seconds=random.randint(0, user_behavior.total_time_spent)
+                    )
 
                     event = AnalyticsEvent(
                         event_type="page_view",
@@ -185,11 +203,14 @@ def create_test_data():
                         interaction_event = AnalyticsEvent(
                             event_type="user_interaction",
                             event_category="engagement",
-                            event_action=random.choice(["click", "scroll", "form_start", "form_submit"]),
+                            event_action=random.choice(
+                                ["click", "scroll", "form_start", "form_submit"]
+                            ),
                             user_session=session_id,
                             user_type=user_type,
                             page_url=page_url,
-                            created_at=event_time + timedelta(seconds=random.randint(1, 30)),
+                            created_at=event_time
+                            + timedelta(seconds=random.randint(1, 30)),
                         )
                         db.session.add(interaction_event)
 
@@ -218,10 +239,18 @@ def create_test_data():
                 ),
                 bot_response="Благодаря за съобщението ви. Ще се свържем с вас скоро.",
                 response_type=random.choice(response_types),
-                ai_confidence=(random.uniform(0.7, 0.95) if random.random() > 0.3 else None),
-                processing_time=(random.uniform(0.1, 2.0) if random.random() > 0.3 else None),
-                ai_tokens_used=(random.randint(50, 200) if random.random() > 0.3 else None),
-                user_rating=(random.choice([None, 3, 4, 5]) if random.random() > 0.6 else None),
+                ai_confidence=(
+                    random.uniform(0.7, 0.95) if random.random() > 0.3 else None
+                ),
+                processing_time=(
+                    random.uniform(0.1, 2.0) if random.random() > 0.3 else None
+                ),
+                ai_tokens_used=(
+                    random.randint(50, 200) if random.random() > 0.3 else None
+                ),
+                user_rating=(
+                    random.choice([None, 3, 4, 5]) if random.random() > 0.6 else None
+                ),
                 page_url=random.choice(["/", "/analytics", "/contact"]),
                 user_type=random.choice(["user", "volunteer", "guest"]),
             )
@@ -246,9 +275,17 @@ def create_test_data():
             metric_date = datetime.now() - timedelta(days=random.randint(0, 30))
 
             metric = PerformanceMetrics(
-                metric_type=random.choice(["response_time", "cpu_usage", "memory_usage", "db_query_time"]),
-                metric_name=(f"endpoint_{random.choice(endpoints)}" if random.random() > 0.3 else "system_load"),
-                metric_value=random.uniform(0.1, 5.0),  # response time in seconds or percentage
+                metric_type=random.choice(
+                    ["response_time", "cpu_usage", "memory_usage", "db_query_time"]
+                ),
+                metric_name=(
+                    f"endpoint_{random.choice(endpoints)}"
+                    if random.random() > 0.3
+                    else "system_load"
+                ),
+                metric_value=random.uniform(
+                    0.1, 5.0
+                ),  # response time in seconds or percentage
                 endpoint=random.choice(endpoints) if random.random() > 0.5 else None,
                 created_at=metric_date,
             )
