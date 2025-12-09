@@ -275,6 +275,10 @@ jobs:
 
           echo "Creating placeholders for referenced vendored python paths (if any)..."
           set -euo pipefail
+          # Create explicit pytest placeholders (common missing files observed in logs)
+          mkdir -p .vercel/python/py3.12/backend/_vendor/_pytest
+          touch .vercel/python/py3.12/backend/_vendor/_pytest/__init__.py || true
+          touch .vercel/python/py3.12/backend/_vendor/_pytest/_argcomplete.py || true
           # Collect any _vendor references from extracted output diagnostics and function files
           MATCHES=$(grep -R --binary-files=without-match -o "_vendor/[^\"'[:space:]]*" .vercel/output 2>/dev/null || true)
           if [ -n "$MATCHES" ]; then
