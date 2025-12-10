@@ -333,6 +333,16 @@ jobs:
                 rm -rf .vercel/python || true
                 mkdir -p .vercel
                 mv "$TMPDIR/.vercel/python" .vercel/python || true
+              else
+                # Also handle archives which contain a top-level `python/` directory
+                # (uploading the contents of `.vercel/output` can produce this layout).
+                FOUND_PY_TOP=$(find "$TMPDIR" -maxdepth 2 -type d -name 'python' -print -quit || true)
+                if [ -n "$FOUND_PY_TOP" ]; then
+                  echo "Found top-level python directory at: $FOUND_PY_TOP"
+                  rm -rf .vercel/python || true
+                  mkdir -p .vercel
+                  mv "$FOUND_PY_TOP" .vercel/python || true
+                fi
               fi
 
               if [ "$FOUND_ANY" -eq 0 ]; then
