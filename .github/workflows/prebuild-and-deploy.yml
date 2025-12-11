@@ -1,6 +1,7 @@
 name: Prebuild and Deploy to Vercel (prebuilt)
 
 on:
+  workflow_dispatch: {}
   push:
     branches:
       - main
