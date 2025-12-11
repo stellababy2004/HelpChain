@@ -125,7 +125,7 @@ jobs:
           fi
 
       - name: Run gitleaks secrets scan (fail on detection)
-        uses: zricethezav/gitleaks-action@v2
+        uses: zricethezav/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
         with:
           args: --path=. --exit-code 1
 
