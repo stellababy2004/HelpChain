@@ -1,6 +1,4 @@
 name: Prebuild and Deploy to Vercel (prebuilt)
-# Note: all external actions in this workflow are pinned to full commit SHAs
-# (ensure actions/download-artifact and similar are pinned to avoid org policy rejections)
 
 on:
   push:
