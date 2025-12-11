@@ -123,6 +123,10 @@ jobs:
           else
             echo ".vercel/output not present; skipping dist-info cleanup"
           fi
+          echo "Removing legacy 'artifacts' directory if present to avoid scanning packaged artifacts"
+          if [ -d artifacts ]; then
+            rm -rf artifacts || true
+          fi
 
       - name: Run gitleaks secrets scan (fail on detection)
         uses: zricethezav/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
@@ -136,7 +140,7 @@ jobs:
           find .vercel/output -type f -size +100M -print0 | xargs -0 du -b 2>/dev/null | sort -nr | tee large-files-to-remove.txt || true
           if [ -s large-files-to-remove.txt ]; then
             echo "Removing files >100MB from .vercel/output"
-            find .vercel/output -type f -size +100M -print0 | xargs -0 rm -v || true
+            find .vercel/output -type f -size +100M -print0 | xargs -0 -r rm -v || true
           else
             echo "No large files >100MB found in .vercel/output"
           fi
