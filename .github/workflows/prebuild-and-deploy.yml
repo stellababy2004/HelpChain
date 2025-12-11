@@ -208,6 +208,20 @@ jobs:
             mkdir -p .vercel/python
             cp -a .vercel/output/python/* .vercel/python/ || true
           fi
+          # Also check for the variant where the venv was placed under .vercel/output/.vercel_python
+          if [ -d .vercel/output/.vercel_python ]; then
+            echo "Found .vercel/output/.vercel_python — copying contents to .vercel/python"
+            mkdir -p .vercel/python
+            cp -a .vercel/output/.vercel_python/* .vercel/python/ || true
+          fi
+
+          # If the venv ended up directly under the root of the artifact
+          if [ -d .vercel/output/.venv ]; then
+            echo "Found .vercel/output/.venv — copying to .vercel/python/.venv"
+            mkdir -p .vercel/python
+            cp -a .vercel/output/.venv .vercel/python/.venv || true
+          fi
+
           if [ -d .vercel/python/.venv ]; then
             echo ".vercel/python restored successfully"
           else
