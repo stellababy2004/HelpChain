@@ -1,96 +1,139 @@
-# December 5–15 Ramp-up Plan — Day-by-day
+# December 5–15 Ramp-up Plan — Professional Release Readiness
 
-Цел: Завършване на критичните елементи (2FA, секрети, CI/CD, AI интеграция, UI фиксове, тестове и подготовка за публичен launch) до и включително 15 декември 2025.
+Версия: 1.1 — обновено на 11 декември 2025
 
-Кратко резюме: планът е оптимизиран за малък екип (1-3 разработчика + 1 QA/DevOps), при наличие на тестова и staging среда.
+Цел
+ - Осигуряване на стабилна, сигурна и тествана версия на HelpChain за публичен launch. Фокус през периода: 2FA стабилност, секрети/CI, AI интеграция, финални UI фиксове и тестове.
 
-Общо време: 9–11 работни дни (5–15 декември). Всяка задача има приблизителен времеви ангажимент.
+Кратко резюме
+ - Планът е създаден за малък екип (1–3 разработчика + 1 QA/DevOps). Включва ясни deliverables, критерии за приемане и рискове.
 
-Legend:
-- Owner: suggested role (Backend/DevOps/Frontend/QA/Docs)
-- Est: est. hours
+Ключови deliverables
+ - Сигурен и тестван 2FA поток (admin + user flows)
+ - Сигурно управление на секрети и CI, работещ prebuilt Vercel pipeline
+ - Работеща AI интеграция със fallback механизъм
+ - UI/UX корекции и базова достъпност за админ/volunteer панели
+ - Тестови suite: unit, integration и E2E проверки, smoke тестове в staging
 
----
+Legend
+ - Owner: препоръчана роля (Backend / DevOps / Frontend / QA / Docs)
+ - Est: приблизително време (ч)
 
-Day 1 — 2025-12-05 (днес)
-- Owner: Backend
-- Tasks:
-  - Finalize and merge minimal 2FA fixes PR (session key unification, commits on enable/disable, login redirect). Est: 3h
-  - Add `docs/admin_2fa_README.md` and share with team. Est: 1h
-  - Quick smoke test in local test env / run `pytest -k admin` (fix any immediate breakages). Est: 2h
+Приемни критерии (по задача)
+ - 2FA: успешен е2е тест (login → 2FA → dashboard) в staging за 2 различни браузъра
+ - CI/CD: prebuilt pipeline в Actions, `.vercel/output` артефакт и успешен `npx vercel deploy --prebuilt` в preview/стaging
+ - AI: заявка към модел с fallback и наблюдавани успешни отговори за стандартни промптове
+ - UI: критични UX проблеми затворени, основни aria-labels присъстват
 
-Day 2 — 2025-12-06
-- Owner: Backend + QA
-- Tasks:
-  - Harden login flow: ensure email-2fa and totp-2fa flows do not conflict. Est: 3h
-  - Add/adjust unit tests and integration tests (edge cases: expired TOTP, replay tokens). Est: 3h
-  - QA runs tests in staging. Est: 2h
-
-Day 3 — 2025-12-07
-- Owner: DevOps + Backend
-- Tasks:
-  - Secrets plan: choose solution (GitHub Secrets + Vault roadmap or `sops` for repo encryption). Est: 2h
-  - Implement short-term encrypted `.env` approach or document steps for Vault integration. Est: 4h
-  - Update CI to read secrets from chosen mechanism for staging. Est: 2h
-
-Day 4 — 2025-12-08
-- Owner: Backend + Frontend
-- Tasks:
-  - UX polish for 2FA setup pages: show QR, copy secret, instructions for authenticator apps. Est: 4h
-  - Add recovery codes generator stub (store/display) — implementation minimal. Est: 3h
-
-Day 5 — 2025-12-09
-- Owner: Backend + QA
-- Tasks:
-  - End-to-end tests: login→2FA→dashboard for multiple browsers/clients. Est: 4h
-  - Fix any bugs found. Est: 2–3h
-
-Day 6 — 2025-12-10
-- Owner: Backend + DevOps
-- Tasks:
-  - CI/CD: add pipeline stage for deploying to staging and running smoke tests. Est: 4h
-  - Run full test suite in CI (resolve failures unrelated to 2FA as time permits). Est: 3h
-
-Day 7 — 2025-12-11
-- Owner: AI Team + Backend
-- Tasks:
-  - Finalize AI integration (provider config, model endpoint, fallback). Est: 6h
-  - Run AI load/self-test on staging. Est: 2h
-
-Day 8 — 2025-12-12
-- Owner: Frontend + QA
-- Tasks:
-  - UI/UX fixes for admin and volunteer dashboards (responsive checks ≤375px). Est: 6h
-  - Accessibility quick audit for admin flows. Est: 2h
-
-Day 9 — 2025-12-13
-- Owner: QA + Backend
-- Tasks:
-  - Security review: confirm 2FA persistence, secrets not in logs, session keys rotated where necessary. Est: 4h
-  - Run penetration quick-check (simple auth brute-force tests, confirm rate-limiting/locks if implemented). Est: 3h
-
-Day 10 — 2025-12-14
-- Owner: Marketing + Project Lead
-- Tasks:
-  - Prepare launch material: release notes, changelog (`docs/changes.md`), social copy. Est: 4h
-  - Prepare rollback plan and post-deploy checklist. Est: 2h
-
-Day 11 — 2025-12-15
-- Owner: All (release day rehearsal)
-- Tasks:
-  - Final staging deploy and smoke tests. Est: 2–3h
-  - Code freeze + final sign-offs (security, QA, product). Est: 2h
-  - If all green — deploy to production (or schedule exact deploy window). Est: 1–2h
+Рискове и мерки за смекчаване
+ - Забавяне в AI интеграцията → приоритизира се сигурността и CI; AI се пуска като частична/feature-flagged функционалност
+ - Flaky тестове в CI → отделяне на време за стабилизиране (паралелно с fixes)
+ - Secrets leak: използване на GitHub Secrets за production, временен `sops`/encrypted .env за dev/staging
 
 ---
 
-Notes & Recommendations
+## План (ден по ден)
 
-- Triage: keep a daily 30–45 minute sync (standup) to unblock cross-team dependencies.
-- Scope control: if AI integration slips, prioritize security and CI/CD first — you can delay public AI features but not core security.
-- Parallelization: secrets work and UI fixes can run in parallel across 2 engineers.
-- Testing: reserve time for fixing flaky tests discovered in CI; test flakiness is typical when integrating session changes.
+Day 1 — 2025-12-05 (Owner: Backend)
+ - Tasks:
+   - Finalize and merge minimal 2FA fixes PR (session key unification, enable/disable flows, login redirect). Est: 3h
+   - Add `docs/admin_2fa_README.md` with setup + troubleshooting. Est: 1h
+   - Quick smoke test locally / run `pytest -k admin`. Est: 2h
+ - Acceptance: PR merged, smoke tests green locally
 
-If тази схема изглежда добре, мога:
-- да създам GitHub PR с документацията и PR description, и
-- да добавя задачите в issues (one issue per day or per deliverable) или в project board, за да проследим статуса.
+Day 2 — 2025-12-06 (Owner: Backend + QA)
+ - Tasks:
+   - Harden login flow and reconcile email-2fa and totp-2fa branches. Est: 3h
+   - Add/adjust unit & integration tests (expired TOTP, replay, edge cases). Est: 3h
+   - QA runs test cases in staging. Est: 2h
+ - Acceptance: automated tests added + passing in CI or documented failures tracked as issues
+
+Day 3 — 2025-12-07 (Owner: DevOps + Backend)
+ - Tasks:
+   - Define secrets strategy (GitHub Secrets + Vault plan or `sops`). Est: 2h
+   - Implement short-term encrypted `.env` or document Vault steps. Est: 4h
+   - Update CI to consume chosen secret mechanism for staging. Est: 2h
+ - Acceptance: secrets consumed in staging pipeline; no plaintext secrets in repo
+
+Day 4 — 2025-12-08 (Owner: Backend + Frontend)
+ - Tasks:
+   - UX polish for 2FA setup (QR, copy secret, instructions). Est: 4h
+   - Add recovery codes generation + display/store stub. Est: 3h
+ - Acceptance: 2FA setup UI available and manual test passes
+
+Day 5 — 2025-12-09 (Owner: Backend + QA)
+ - Tasks:
+   - E2E tests: login→2FA→dashboard on multiple browsers. Est: 4h
+   - Triage and fix critical bugs. Est: 2–3h
+ - Acceptance: E2E green or documented failures with issues assigned
+
+Day 6 — 2025-12-10 (Owner: Backend + DevOps) — COMPLETED
+ - Tasks:
+   - CI/CD: add prebuilt pipeline (GitHub Actions + Vercel prebuilt) and size checks. Est: 4h
+   - Run full test suite in CI and address blocking failures. Est: 3h
+ - Status: ✅ Done — pipeline added and prebuild diagnostics available
+
+Day 7 — 2025-12-11 (Owner: AI Team + Backend)
+ - Tasks:
+   - Finalize AI provider configuration, endpoint, and fallback logic. Est: 6h
+   - Run AI load/self-test on staging (basic throughput & correctness). Est: 2h
+ - Acceptance: AI service responds to canonical prompts and fallback triggers when needed
+
+Day 8 — 2025-12-12 (Owner: Frontend + QA)
+ - Tasks:
+   - UI/UX fixes for admin and volunteer dashboards (responsive ≤375px). Est: 6h
+   - Accessibility quick audit (key admin flows). Est: 2h
+ - Acceptance: Critical responsive issues fixed; accessibility blockers documented/resolved
+
+Day 9 — 2025-12-13 (Owner: QA + Backend)
+ - Tasks:
+   - Security review: confirm 2FA persistence, remove secrets from logs, verify session key rotation. Est: 4h
+   - Run light penetration checks (auth brute-force, rate-limiting). Est: 3h
+ - Acceptance: No high-severity findings; open items tracked
+
+Day 10 — 2025-12-14 (Owner: Marketing + Project Lead)
+ - Tasks:
+   - Prepare release notes, changelog (`docs/changes.md`) and announcement copy. Est: 4h
+   - Finalize rollback plan and post-deploy checklist. Est: 2h
+ - Acceptance: Release assets ready and reviewed
+
+Day 11 — 2025-12-15 (Owner: All)
+ - Tasks:
+   - Final staging deploy + smoke tests. Est: 2–3h
+   - Code freeze and sign-offs (security, QA, product). Est: 2h
+   - Production deploy (if green) or schedule window. Est: 1–2h
+ - Acceptance: Production deploy succeeded or rollback plan ready
+
+---
+
+Communication & Rituals
+ - Daily short sync (20–30 min) — recommended: 09:30 CET (adjust if needed)
+ - Use Issues for task tracking; label with `release/dec-2025` and owners
+ - Post daily status in the `#release` channel with 3 lines: Done / In progress / Blockers
+
+Action items to finalize plan
+ - Create PR `docs/DECEMBER_RAMPUP_PLAN.md` with this updated plan (title: "Release ramp-up: Dec 5–15 — finalized plan")
+ - Create issues for each day/deliverable (template included below)
+ - Assign owners and estimate times in GitHub issues
+
+Issue template (use for each deliverable)
+ - Title: [Day X] Short deliverable title
+ - Body:
+   - Owner: @username
+   - Description: Clear task description and acceptance criteria
+   - Est: Xh
+   - Dependencies: (other issues / secrets / infra)
+
+Contacts
+ - Release lead: @project-lead (assign real GitHub username)
+ - DevOps: @devops
+ - QA: @qa
+
+Next steps (recommended)
+ 1. Create PR with this file and request review from Release lead + DevOps (auto-merge after approvals).
+ 2. Create GitHub issues for Day 7–11 and assign owners.
+ 3. Schedule daily standups in calendar and pin the channel for release updates.
+
+---
+
+If искате, мога да създам PR и отделни GitHub issues за всяка задача/ден — кажете кои да създам автоматично и с какви assignees.
