@@ -161,6 +161,17 @@ jobs:
           unzip -q vercel-output.zip -d .vercel || true
           mv .vercel/output .vercel/output || true
 
+      - name: Ensure backend build files for deploy
+        run: |
+          echo "Ensuring backend/build/lib/helpchain_backend exists for Vercel deploy"
+          mkdir -p backend/build/lib/helpchain_backend
+          if [ -d backend/helpchain_backend ]; then
+            cp -r backend/helpchain_backend/* backend/build/lib/helpchain_backend/ || true
+          fi
+          if [ ! -f backend/build/lib/helpchain_backend/__init__.py ]; then
+            echo "# packaging placeholder" > backend/build/lib/helpchain_backend/__init__.py
+          fi
+
       - name: Install Vercel CLI
         run: |
           npm install -g vercel@latest
