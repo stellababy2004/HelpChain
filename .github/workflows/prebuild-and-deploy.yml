@@ -62,13 +62,17 @@ jobs:
             deactivate || true
 
             # Ensure each installed package has an INSTALLER file under its .dist-info
-            SITE_PKGS_DIR=".vercel/python/.venv/lib/python*/site-packages"
-            for d in $SITE_PKGS_DIR/*.dist-info; do
-              if [ -d "$d" ]; then
-                if [ ! -f "$d/INSTALLER" ]; then
-                  echo "pip" > "$d/INSTALLER" || true
-                fi
+            for site_dir in .vercel/python/.venv/lib/*/site-packages; do
+              if [ ! -d "$site_dir" ]; then
+                continue
               fi
+              for d in "$site_dir"/*.dist-info; do
+                if [ -d "$d" ]; then
+                  if [ ! -f "$d/INSTALLER" ]; then
+                    echo "pip" > "$d/INSTALLER" || true
+                  fi
+                fi
+              done
             done
           else
             echo "No requirements file found to install into venv"
