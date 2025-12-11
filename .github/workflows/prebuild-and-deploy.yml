@@ -100,6 +100,19 @@ jobs:
             exit 1
           fi
 
+      - name: Include Python venv in prebuilt output
+        if: always()
+        run: |
+          echo "Including .vercel/python into .vercel/output if present"
+          if [ -d .vercel/python ]; then
+            mkdir -p .vercel/output
+            echo "Copying .vercel/python -> .vercel/output/.vercel_python/"
+            # copy entire venv; place under a safe name inside output
+            cp -a .vercel/python .vercel/output/.vercel_python || true
+          else
+            echo "No .vercel/python found to include"
+          fi
+
       - name: Cleanup large files from .vercel/output
         if: always()
         run: |
