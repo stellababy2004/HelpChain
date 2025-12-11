@@ -28,11 +28,11 @@
 
 ### ⚙️ Vercel Prebuilt & CI Size Safeguards
 
-- [ ] **Prebuilt deploy flow**: Use Vercel prebuilt on CI: run `npx vercel build` on the runner to produce `.vercel/output` and then `npx vercel deploy --prebuilt` for the preview/production deploy.
-- [ ] **.vercelignore rules**: Ensure `.vercelignore` contains `/.git` and `/.vercel/python/**/_vendor` to avoid uploading vendorized Python binaries (torch, nvidia, triton, etc.).
+- [x] **Prebuilt deploy flow**: Use Vercel prebuilt on CI: run `npx vercel build` on the runner to produce `.vercel/output` and then `npx vercel deploy --prebuilt` for the preview/production deploy.
+- [x] **.vercelignore rules**: Ensure `.vercelignore` contains `/.git` and `/.vercel/python/**/_vendor` to avoid uploading vendorized Python binaries (torch, nvidia, triton, etc.).
 - [ ] **Upload size target**: Keep prebuilt upload well under the 4 GiB service limit — recommended target: < 3.5 GiB.
-- [ ] **Split heavy ML deps**: Document and enforce that heavy ML packages live in `requirements-ml.txt` and are NOT installed during the prebuild step.
-- [ ] **Early-fail CI check**: Add a lightweight CI job or step that inspects `.vercel/output` size and lists files >100MB; fail the job if total > 3.5G and notify the team.
+- [x] **Split heavy ML deps**: Document and enforce that heavy ML packages live in `requirements-ml.txt` and are NOT installed during the prebuild step.
+- [x] **Early-fail CI check**: Add a lightweight CI job or step that inspects `.vercel/output` size and lists files >100MB; fail the job if total > 3.5G and notify the team.
 
 Example GitHub Actions check (add as a small job step):
 

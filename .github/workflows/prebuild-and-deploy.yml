@@ -180,6 +180,27 @@ jobs:
           path: .vercel/output
         continue-on-error: true
 
+      - name: Restore prebuilt Python venv from artifact
+        if: always()
+        run: |
+          echo "Attempting to restore .vercel/python from downloaded artifact"
+          # artifact may contain .vercel/python under different roots; try common locations
+          if [ -d .vercel/output/.vercel/python ]; then
+            echo "Found .vercel/output/.vercel/python — copying to .vercel/python"
+            mkdir -p .vercel/python
+            cp -a .vercel/output/.vercel/python/* .vercel/python/ || true
+          fi
+          if [ -d .vercel/output/python ]; then
+            echo "Found .vercel/output/python — copying to .vercel/python"
+            mkdir -p .vercel/python
+            cp -a .vercel/output/python/* .vercel/python/ || true
+          fi
+          if [ -d .vercel/python/.venv ]; then
+            echo ".vercel/python restored successfully"
+          else
+            echo "No .vercel/python found inside artifact — deploy may still fail if venv missing"
+          fi
+
       - name: Fallback - download artifact via GitHub API
         if: failure()
         run: |
