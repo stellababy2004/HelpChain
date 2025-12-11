@@ -198,5 +198,11 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
+          # ensure uv.lock exists (Vercel CLI may expect it during deploy)
+          mkdir -p backend
+          if [ ! -f backend/uv.lock ]; then
+            echo "" > backend/uv.lock
+          fi
+
           npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes --archive=tgz
 
