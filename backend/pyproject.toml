@@ -8,3 +8,6 @@ version = "0.0.0"
 description = "Placeholder pyproject to satisfy Vercel prebuilt deploy checks"
 authors = [{ name = "CI", email = "ci@example.com" }]
 license = { text = "MIT" }
+
+[tool.setuptools.packages.find]
+include = ["helpchain_backend*"]
