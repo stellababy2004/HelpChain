@@ -182,6 +182,14 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install -e backend/ || true
 
+      - name: Create egg-info placeholders
+        run: |
+          echo "Creating placeholder .egg-info files expected by Vercel CLI"
+          mkdir -p backend/helpchain_backend_placeholder.egg-info
+          # ensure minimal files exist so Vercel doesn't crash on lstat
+          touch backend/helpchain_backend_placeholder.egg-info/requires.txt || echo "" > backend/helpchain_backend_placeholder.egg-info/requires.txt
+          touch backend/helpchain_backend_placeholder.egg-info/dependency_links.txt || echo "" > backend/helpchain_backend_placeholder.egg-info/dependency_links.txt
+
       - name: Install Vercel CLI
         run: |
           npm install -g vercel@latest
