@@ -47,6 +47,23 @@ jobs:
             pip install --prefer-binary -r requirements-dev-minimal.txt
           fi
 
+      - name: Create venv and install backend dependencies (for prebuilt artifact)
+        run: |
+          echo "Creating .vercel/python/.venv and installing backend requirements if present"
+          if [ -f backend/requirements.txt ] || [ -f requirements.txt ]; then
+            python -m venv .vercel/python/.venv
+            . .vercel/python/.venv/bin/activate
+            python -m pip install --upgrade pip setuptools wheel
+            if [ -f backend/requirements.txt ]; then
+              pip install --prefer-binary -r backend/requirements.txt || true
+            else
+              pip install --prefer-binary -r requirements.txt || true
+            fi
+            deactivate || true
+          else
+            echo "No requirements file found to install into venv"
+          fi
+
       - name: Install Vercel CLI
         run: |
           npm install -g vercel@latest
