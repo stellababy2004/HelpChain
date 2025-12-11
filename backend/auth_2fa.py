@@ -3,6 +3,7 @@ import os
 try:
     import pyotp  # type: ignore
     from cryptography.fernet import Fernet  # type: ignore
+
     _AUTH_2FA_AVAILABLE = True
 except Exception:  # pragma: no cover - optional deps may be missing in test env
     pyotp = None  # type: ignore
@@ -14,7 +15,9 @@ from backend.models import User
 
 def _get_fernet() -> "Fernet":
     if not _AUTH_2FA_AVAILABLE:
-        raise RuntimeError("Optional 2FA dependencies not installed (pyotp/cryptography)")
+        raise RuntimeError(
+            "Optional 2FA dependencies not installed (pyotp/cryptography)"
+        )
     key = os.getenv("FERNET_KEY")
     if not key:
         raise RuntimeError(
@@ -33,7 +36,8 @@ def generate_2fa_secret_for_user(user: User) -> tuple[str, str]:
         raise RuntimeError("2FA support is not available in this environment")
     secret = pyotp.random_base32()  # type: ignore
     uri = pyotp.totp.TOTP(secret).provisioning_uri(
-        name=user.email, issuer_name="HelpChain"  # type: ignore
+        name=user.email,
+        issuer_name="HelpChain",  # type: ignore
     )
     fernet = _get_fernet()
     user.twofa_secret_encrypted = fernet.encrypt(secret.encode()).decode()

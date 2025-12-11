@@ -1,0 +1,202 @@
+
+run_20011642331.log:1:Prebuild on GitHub runner and deploy (preview)	Set up job	﻿2025-12-07T22:57:49.7078215Z Current runner version: '2.329.0'
+run_20011642331.log:2:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7102855Z ##[group]Runner Image Provisioner
+run_20011642331.log:3:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7103631Z Hosted Compute Agent
+run_20011642331.log:4:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7104316Z Version: 20251124.448
+run_20011642331.log:5:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7104945Z Commit: fda5086b43ec66ade217e5fcd18146c879571177
+run_20011642331.log:6:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7105620Z Build Date: 2025-11-24T21:16:26Z
+run_20011642331.log:7:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7106289Z ##[endgroup]
+run_20011642331.log:8:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7106870Z ##[group]Operating System
+run_20011642331.log:9:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7107695Z Ubuntu
+run_20011642331.log:10:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7108273Z 24.04.3
+run_20011642331.log:11:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7108722Z LTS
+run_20011642331.log:12:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7109212Z ##[endgroup]
+run_20011642331.log:13:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7109803Z ##[group]Runner Image
+run_20011642331.log:14:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7110364Z Image: ubuntu-24.04
+run_20011642331.log:15:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7110898Z Version: 20251126.144.1
+run_20011642331.log:16:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7111987Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20251126.144/images/ubuntu/Ubuntu2404-Readme.md
+run_20011642331.log:17:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7113373Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20251126.144
+run_20011642331.log:18:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7114721Z ##[endgroup]
+run_20011642331.log:19:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7117451Z ##[group]GITHUB_TOKEN Permissions
+run_20011642331.log:20:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7119636Z Actions: write
+run_20011642331.log:21:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7120217Z ArtifactMetadata: write
+run_20011642331.log:22:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7120893Z Attestations: write
+run_20011642331.log:23:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7121438Z Checks: write
+run_20011642331.log:24:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7121992Z Contents: write
+run_20011642331.log:25:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7122910Z Deployments: write
+run_20011642331.log:26:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7123488Z Discussions: write
+run_20011642331.log:27:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7124034Z Issues: write
+run_20011642331.log:28:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7124507Z Metadata: read
+run_20011642331.log:29:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7125104Z Models: read
+run_20011642331.log:30:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7125655Z Packages: write
+run_20011642331.log:31:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7126140Z Pages: write
+run_20011642331.log:32:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7126742Z PullRequests: write
+run_20011642331.log:33:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7127433Z RepositoryProjects: write
+run_20011642331.log:34:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7128134Z SecurityEvents: write
+run_20011642331.log:35:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7128793Z Statuses: write
+run_20011642331.log:36:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7129289Z ##[endgroup]
+run_20011642331.log:37:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7131740Z Secret source: Actions
+run_20011642331.log:38:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7132856Z Prepare workflow directory
+run_20011642331.log:39:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7448389Z Prepare all required actions
+run_20011642331.log:40:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:49.7485557Z Getting action download info
+run_20011642331.log:41:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:50.0686406Z Download action repository 'actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+run_20011642331.log:42:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:50.2998732Z Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+run_20011642331.log:43:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:50.3909619Z Download action repository 'actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c' (SHA:7f4fc3e22c37d6ff65e88745f38bd3157c663f7c)
+run_20011642331.log:44:Prebuild on GitHub runner and deploy (preview)	Set up job	2025-12-07T22:57:50.6487580Z Complete job name: Prebuild on GitHub runner and deploy (preview)
+run_20011642331.log:45:Prebuild on GitHub runner and deploy (preview)	Checkout repository	﻿2025-12-07T22:57:50.7295724Z ##[group]Run actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+run_20011642331.log:46:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7297716Z with:
+run_20011642331.log:47:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7298468Z   submodules: false
+run_20011642331.log:48:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7299326Z   repository: stellababy2004/HelpChain.bg
+run_20011642331.log:49:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7300534Z   token: ***
+run_20011642331.log:50:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7301211Z   ssh-strict: true
+run_20011642331.log:51:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7301917Z   ssh-user: git
+run_20011642331.log:52:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7302639Z   persist-credentials: true
+run_20011642331.log:53:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7303430Z   clean: true
+run_20011642331.log:54:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7304143Z   sparse-checkout-cone-mode: true
+run_20011642331.log:55:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7305021Z   fetch-depth: 1
+run_20011642331.log:56:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7305728Z   fetch-tags: false
+run_20011642331.log:57:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7306617Z   show-progress: true
+run_20011642331.log:58:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7307574Z   lfs: false
+run_20011642331.log:59:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7308289Z   set-safe-directory: true
+run_20011642331.log:60:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.7309412Z ##[endgroup]
+run_20011642331.log:61:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8375435Z Syncing repository: stellababy2004/HelpChain.bg
+run_20011642331.log:62:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8378311Z ##[group]Getting Git version info
+run_20011642331.log:63:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8379632Z Working directory is '/home/runner/work/HelpChain.bg/HelpChain.bg'
+run_20011642331.log:64:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8381503Z [command]/usr/bin/git version
+run_20011642331.log:65:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8439692Z git version 2.52.0
+run_20011642331.log:66:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8466286Z ##[endgroup]
+run_20011642331.log:67:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8480095Z Temporarily overriding HOME='/home/runner/work/_temp/28982036-9b25-496b-9086-9db7d26e9408' before making global git config changes
+run_20011642331.log:68:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8483192Z Adding repository directory to the temporary git global config as a safe directory
+run_20011642331.log:69:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8493046Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/HelpChain.bg/HelpChain.bg
+run_20011642331.log:70:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8529349Z Deleting the contents of '/home/runner/work/HelpChain.bg/HelpChain.bg'
+run_20011642331.log:71:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8532237Z ##[group]Initializing the repository
+run_20011642331.log:72:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8536367Z [command]/usr/bin/git init /home/runner/work/HelpChain.bg/HelpChain.bg
+run_20011642331.log:73:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8622799Z hint: Using 'master' as the name for the initial branch. This default branch name
+run_20011642331.log:74:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8624572Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+run_20011642331.log:75:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8626214Z hint: to use in all of your new repositories, which will suppress this warning,
+run_20011642331.log:76:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8628267Z hint: call:
+run_20011642331.log:77:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8628927Z hint:
+run_20011642331.log:78:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8629774Z hint: 	git config --global init.defaultBranch <name>
+run_20011642331.log:79:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8630818Z hint:
+run_20011642331.log:80:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8631796Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+run_20011642331.log:81:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8633673Z hint: 'development'. The just-created branch can be renamed via this command:
+run_20011642331.log:82:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8634967Z hint:
+run_20011642331.log:83:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8635670Z hint: 	git branch -m <name>
+run_20011642331.log:84:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8636451Z hint:
+run_20011642331.log:85:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8637873Z hint: Disable this message with "git config set advice.defaultBranchName false"
+run_20011642331.log:86:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8639947Z Initialized empty Git repository in /home/runner/work/HelpChain.bg/HelpChain.bg/.git/
+run_20011642331.log:87:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8642901Z [command]/usr/bin/git remote add origin https://github.com/stellababy2004/HelpChain.bg
+run_20011642331.log:88:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8674921Z ##[endgroup]
+run_20011642331.log:89:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8676350Z ##[group]Disabling automatic garbage collection
+run_20011642331.log:90:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8678199Z [command]/usr/bin/git config --local gc.auto 0
+run_20011642331.log:91:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8706101Z ##[endgroup]
+run_20011642331.log:92:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8707553Z ##[group]Setting up auth
+run_20011642331.log:93:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8712249Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+run_20011642331.log:94:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.8742219Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+run_20011642331.log:95:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.9061241Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+run_20011642331.log:96:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.9093218Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+run_20011642331.log:97:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.9305586Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+run_20011642331.log:98:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.9334804Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+run_20011642331.log:99:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.9567076Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+run_20011642331.log:100:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.9604127Z ##[endgroup]
+run_20011642331.log:101:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.9606156Z ##[group]Fetching the repository
+run_20011642331.log:102:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:50.9614307Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +121c49635f30abc6007e533d29266dbd81b5a579:refs/remotes/origin/main
+run_20011642331.log:103:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3789771Z From https://github.com/stellababy2004/HelpChain.bg
+run_20011642331.log:104:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3790941Z  * [new ref]         121c49635f30abc6007e533d29266dbd81b5a579 -> origin/main
+run_20011642331.log:105:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3820813Z ##[endgroup]
+run_20011642331.log:106:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3821923Z ##[group]Determining the checkout info
+run_20011642331.log:107:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3823278Z ##[endgroup]
+run_20011642331.log:108:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3828941Z [command]/usr/bin/git sparse-checkout disable
+run_20011642331.log:109:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3869325Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+run_20011642331.log:110:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3894387Z ##[group]Checking out the ref
+run_20011642331.log:111:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.3898803Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+run_20011642331.log:112:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.4471932Z Switched to a new branch 'main'
+run_20011642331.log:113:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.4474251Z branch 'main' set up to track 'origin/main'.
+run_20011642331.log:114:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.4484876Z ##[endgroup]
+run_20011642331.log:115:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.4518756Z [command]/usr/bin/git log -1 --format=%H
+run_20011642331.log:116:Prebuild on GitHub runner and deploy (preview)	Checkout repository	2025-12-07T22:57:51.4539690Z 121c49635f30abc6007e533d29266dbd81b5a579
+run_20011642331.log:117:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	﻿2025-12-07T22:57:51.4773052Z ##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+run_20011642331.log:118:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:51.4773782Z with:
+run_20011642331.log:119:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:51.4774238Z   node-version: 20
+run_20011642331.log:120:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:51.4774727Z   always-auth: false
+run_20011642331.log:121:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:51.4775212Z   check-latest: false
+run_20011642331.log:122:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:51.4775841Z   token: ***
+run_20011642331.log:123:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:51.4776304Z ##[endgroup]
+run_20011642331.log:124:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:51.6501376Z Found in cache @ /opt/hostedtoolcache/node/20.19.6/x64
+run_20011642331.log:125:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:51.6507913Z ##[group]Environment details
+run_20011642331.log:126:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:53.9572915Z node: v20.19.6
+run_20011642331.log:127:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:53.9573329Z npm: 10.8.2
+run_20011642331.log:128:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:53.9573611Z yarn: 1.22.22
+run_20011642331.log:129:Prebuild on GitHub runner and deploy (preview)	Set up Node.js	2025-12-07T22:57:53.9574902Z ##[endgroup]
+run_20011642331.log:130:Prebuild on GitHub runner and deploy (preview)	Set up Python	﻿2025-12-07T22:57:53.9696368Z ##[group]Run actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c
+run_20011642331.log:131:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:53.9696757Z with:
+run_20011642331.log:132:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:53.9696940Z   python-version: 3.12
+run_20011642331.log:133:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:53.9697618Z   check-latest: false
+run_20011642331.log:134:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:53.9698013Z   token: ***
+run_20011642331.log:135:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:53.9698205Z   update-environment: true
+run_20011642331.log:136:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:53.9698425Z   allow-prereleases: false
+run_20011642331.log:137:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:53.9760856Z ##[endgroup]
+run_20011642331.log:138:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:54.1425795Z ##[group]Installed versions
+run_20011642331.log:139:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:54.1541482Z Successfully set up CPython (3.12.12)
+run_20011642331.log:140:Prebuild on GitHub runner and deploy (preview)	Set up Python	2025-12-07T22:57:54.1542338Z ##[endgroup]
+run_20011642331.log:141:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	﻿2025-12-07T22:57:54.1644729Z ##[group]Run python -m pip install --upgrade pip
+run_20011642331.log:142:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1645164Z python -m pip install --upgrade pip
+run_20011642331.log:143:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1740675Z shell: /usr/bin/bash -e {0}
+run_20011642331.log:144:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1740936Z env:
+run_20011642331.log:145:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1741176Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.12/x64
+run_20011642331.log:146:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1741598Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib/pkgconfig
+run_20011642331.log:147:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1742018Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+run_20011642331.log:148:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1742358Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+run_20011642331.log:149:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1742697Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+run_20011642331.log:150:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1743041Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib
+run_20011642331.log:151:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:54.1743317Z ##[endgroup]
+run_20011642331.log:152:Prebuild on GitHub runner and deploy (preview)	Upgrade pip	2025-12-07T22:57:56.4712988Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages (25.3)
+run_20011642331.log:153:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	﻿2025-12-07T22:57:56.7137755Z ##[group]Run python -m pip install --upgrade pip setuptools wheel
+run_20011642331.log:154:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7138289Z python -m pip install --upgrade pip setuptools wheel
+run_20011642331.log:155:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7138762Z # Prefer the slim root requirements file for prebuild to avoid heavy ML deps
+run_20011642331.log:156:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7139184Z if [ -f requirements.txt ]; then
+run_20011642331.log:157:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7139524Z   echo "Installing requirements.txt (slimmed root requirements)"
+run_20011642331.log:158:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7139945Z   pip install --prefer-binary -r requirements.txt
+run_20011642331.log:159:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7140273Z elif [ -f backend/requirements.txt ]; then
+run_20011642331.log:160:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7140634Z   echo "Installing backend/requirements.txt (slim runtime deps)"
+run_20011642331.log:161:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7141042Z   pip install --prefer-binary -r backend/requirements.txt
+run_20011642331.log:162:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7141407Z elif [ -f requirements-dev-minimal.txt ]; then
+run_20011642331.log:163:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7141740Z   echo "Installing requirements-dev-minimal.txt"
+run_20011642331.log:164:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7142143Z   pip install --prefer-binary -r requirements-dev-minimal.txt
+run_20011642331.log:165:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7142460Z fi
+run_20011642331.log:166:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7175402Z shell: /usr/bin/bash -e {0}
+run_20011642331.log:167:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7175641Z env:
+run_20011642331.log:168:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7175883Z   pythonLocation: /opt/hostedtoolcache/Python/3.12.12/x64
+run_20011642331.log:169:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7176299Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib/pkgconfig
+run_20011642331.log:170:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7176689Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+run_20011642331.log:171:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7177481Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+run_20011642331.log:172:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7177857Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.12.12/x64
+run_20011642331.log:173:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7178210Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.12/x64/lib
+run_20011642331.log:174:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:56.7178503Z ##[endgroup]
+run_20011642331.log:175:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.0693927Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages (25.3)
+run_20011642331.log:176:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.3131472Z Collecting setuptools
+run_20011642331.log:177:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.3699069Z   Downloading setuptools-80.9.0-py3-none-any.whl.metadata (6.6 kB)
+run_20011642331.log:178:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.4001158Z Collecting wheel
+run_20011642331.log:179:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.4036096Z   Downloading wheel-0.45.1-py3-none-any.whl.metadata (2.3 kB)
+run_20011642331.log:180:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.4123675Z Downloading setuptools-80.9.0-py3-none-any.whl (1.2 MB)
+run_20011642331.log:181:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.4465208Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 89.2 MB/s  0:00:00
+run_20011642331.log:182:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.4501347Z Downloading wheel-0.45.1-py3-none-any.whl (72 kB)
+run_20011642331.log:183:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:57.4725272Z Installing collected packages: wheel, setuptools
+run_20011642331.log:184:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.2848464Z 
+run_20011642331.log:185:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.2859259Z Successfully installed setuptools-80.9.0 wheel-0.45.1
+run_20011642331.log:186:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.3341565Z Installing requirements.txt (slimmed root requirements)
+run_20011642331.log:187:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.7696555Z Collecting Flask==3.1.2 (from -r requirements.txt (line 1))
+run_20011642331.log:188:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.8234442Z   Downloading flask-3.1.2-py3-none-any.whl.metadata (3.2 kB)
+run_20011642331.log:189:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.8371152Z Collecting Flask-Login==0.6.3 (from -r requirements.txt (line 2))
+run_20011642331.log:190:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.8405818Z   Downloading Flask_Login-0.6.3-py3-none-any.whl.metadata (5.8 kB)
+run_20011642331.log:191:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.8567602Z Collecting Flask-WTF==1.2.2 (from -r requirements.txt (line 3))
+run_20011642331.log:192:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.8604676Z   Downloading flask_wtf-1.2.2-py3-none-any.whl.metadata (3.4 kB)
+run_20011642331.log:193:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.8740548Z Collecting Flask-Mail==0.9.1 (from -r requirements.txt (line 4))
+run_20011642331.log:194:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.8794658Z   Downloading Flask-Mail-0.9.1.tar.gz (45 kB)
+run_20011642331.log:195:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:58.9002477Z   Installing build dependencies: started
+run_20011642331.log:196:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:59.5928412Z   Installing build dependencies: finished with status 'done'
+run_20011642331.log:197:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:59.5934255Z   Getting requirements to build wheel: started
+run_20011642331.log:198:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:59.9842804Z   Getting requirements to build wheel: finished with status 'done'
+run_20011642331.log:199:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:57:59.9851847Z   Preparing metadata (pyproject.toml): started
+run_20011642331.log:200:Prebuild on GitHub runner and deploy (preview)	Install Python dependencies (wheelhouse)	2025-12-07T22:58:00.1800060Z   Preparing metadata (pyproject.toml): finished with status 'done'
+

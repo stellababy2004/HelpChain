@@ -7,6 +7,7 @@ Usage examples:
 This script is intentionally conservative: by default it runs in dry-run mode
 and only prints actions. Use `--commit` to apply changes to the database.
 """
+
 import argparse
 import os
 import sys
@@ -40,7 +41,9 @@ def main():
         if user is None:
             print(f"User {args.username} not found — will create (dry-run)")
             if args.commit:
-                user = models.User(username=args.username, email=f"{args.username}@example.test")
+                user = models.User(
+                    username=args.username, email=f"{args.username}@example.test"
+                )
                 try:
                     user.set_password(args.password)
                 except Exception:
@@ -62,7 +65,7 @@ def main():
                 print("Run with --commit to actually create the user and set password.")
             return
 
-        print(f"Found user {args.username} (id={getattr(user,'id',None)})")
+        print(f"Found user {args.username} (id={getattr(user, 'id', None)})")
         print("Current password_hash:", getattr(user, "password_hash", None))
         try:
             ok = user.check_password(args.password)

@@ -1,3 +1,31 @@
+# Provide a minimal compatibility shim for Flask helpers that may be
+# missing `locked_cached_property` in some Flask versions used by the
+# test runner. `flask_babel` imports this symbol; if it's absent the
+# import fails. Define a simple fallback before importing `flask_babel`.
+try:
+    import flask.helpers as _flask_helpers
+
+    if not hasattr(_flask_helpers, "locked_cached_property"):
+
+        def locked_cached_property(func):
+            # Minimal compatibility: behave like a simple cached property.
+            # This does not implement locking semantics but is sufficient
+            # for test-time imports where the property is not exercised.
+            try:
+
+                class _C:
+                    pass
+
+                return property(func)
+            except Exception:
+                return property(func)
+
+        _flask_helpers.locked_cached_property = locked_cached_property
+except Exception:
+    # If anything goes wrong, continue — import of flask_babel will
+    # surface a clearer error later.
+    pass
+
 from flask_babel import Babel
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
@@ -17,14 +45,16 @@ except ImportError:
 # would otherwise create two distinct SQLAlchemy() instances.
 import os
 import sys
-from sqlalchemy.pool import StaticPool
 
 # Test-only: make module-level queries during collection tolerant of
 # unbound sessions by returning None instead of raising. This is a
 # pragmatic shim to unblock pytest collection for tests that perform
 # DB queries at import time before the Flask app has bound the session.
 try:
-    if os.environ.get("HELPCHAIN_TEST_DB_PATH") or os.environ.get("HELPCHAIN_TESTING") == "1":
+    if (
+        os.environ.get("HELPCHAIN_TEST_DB_PATH")
+        or os.environ.get("HELPCHAIN_TESTING") == "1"
+    ):
         try:
             import sqlalchemy
             from sqlalchemy.orm.query import Query as _SQLAQuery
@@ -37,7 +67,10 @@ try:
                         return _orig_query_first(self, *args, **kwargs)
                 except Exception as _e:
                     try:
-                        if isinstance(_e, getattr(sqlalchemy.exc, "UnboundExecutionError", Exception)):
+                        if isinstance(
+                            _e,
+                            getattr(sqlalchemy.exc, "UnboundExecutionError", Exception),
+                        ):
                             return None
                     except Exception:
                         return None
@@ -55,12 +88,12 @@ except Exception:
 # Ensure this module is available under both the short name `extensions`
 # and the package name `backend.extensions` so imports from tests that
 # use either path resolve to the same module object.
-# NOTE: Do not alias this module into `sys.modules['extensions']` here while
-# the module is still initializing. Doing so can create a partially
-# initialized top-level module object that collides with other packages that
-# import a submodule named `extensions` (for example SQLAlchemy internals).
-# The tests' `conftest.py` will perform safe aliasing when appropriate once
-# the app's `backend.extensions` has been fully imported during test setup.
+try:
+    if sys.modules.get(__name__) is not None:
+        sys.modules.setdefault("extensions", sys.modules.get(__name__))
+        sys.modules.setdefault("backend.extensions", sys.modules.get(__name__))
+except Exception:
+    pass
 _existing = sys.modules.get("extensions")
 if _existing is not None:
     try:
@@ -85,7 +118,10 @@ if _existing_db is not None:
             # testing, ensure the SQLAlchemy session has a bind during pytest
             # collection so module-level queries don't raise UnboundExecutionError.
             try:
-                if os.environ.get("HELPCHAIN_TEST_DB_PATH") or os.environ.get("HELPCHAIN_TESTING") == "1":
+                if (
+                    os.environ.get("HELPCHAIN_TEST_DB_PATH")
+                    or os.environ.get("HELPCHAIN_TESTING") == "1"
+                ):
                     try:
                         from sqlalchemy import create_engine
 
@@ -96,16 +132,8 @@ if _existing_db is not None:
                             # Fall back to a file-based DB in the current working dir
                             _uri = "sqlite:///helpchain_pytest.db"
 
-                        # Use StaticPool for the test engine so keyword args like
-                        # `pool_size`/`max_overflow` (passed elsewhere) don't
-                        # conflict with NullPool defaults when tests create
-                        # engines or when Flask-SQLAlchemy interacts with the
-                        # engine. StaticPool keeps connections in-memory and
-                        # works well for a file-backed SQLite test DB.
                         _engine = create_engine(
-                            _uri,
-                            connect_args={"check_same_thread": False},
-                            poolclass=StaticPool,
+                            _uri, connect_args={"check_same_thread": False}
                         )
 
                         # If Flask-SQLAlchemy hasn't set an engine yet, attach ours.
@@ -145,7 +173,10 @@ if _existing_db is not None:
                                         mod_session = getattr(mod_db, "session", None)
                                         if mod_session is not None:
                                             try:
-                                                if getattr(mod_session, "bind", None) is None:
+                                                if (
+                                                    getattr(mod_session, "bind", None)
+                                                    is None
+                                                ):
                                                     mod_session.bind = _engine
                                             except Exception:
                                                 pass
@@ -160,7 +191,10 @@ if _existing_db is not None:
                                     except Exception:
                                         pass
                                     try:
-                                        if hasattr(mod_db, "metadata") and mod_db.metadata is not None:
+                                        if (
+                                            hasattr(mod_db, "metadata")
+                                            and mod_db.metadata is not None
+                                        ):
                                             try:
                                                 mod_db.metadata.bind = _engine
                                             except Exception:
@@ -174,7 +208,9 @@ if _existing_db is not None:
 
                         if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
                             try:
-                                print(f"[EXT TEST BIND] bound session to engine id={id(_engine)} uri={_uri}")
+                                print(
+                                    f"[EXT TEST BIND] bound session to engine id={id(_engine)} uri={_uri}"
+                                )
                             except Exception:
                                 pass
                     except Exception:
@@ -188,16 +224,26 @@ if _existing_db is not None:
             # can still run against the Flask app engine. This is a best-effort shim
             # and only active in testing/debug flows.
             try:
-                if os.environ.get("HELPCHAIN_TEST_DB_PATH") or os.environ.get("HELPCHAIN_TESTING") == "1":
+                if (
+                    os.environ.get("HELPCHAIN_TEST_DB_PATH")
+                    or os.environ.get("HELPCHAIN_TESTING") == "1"
+                ):
                     try:
                         from sqlalchemy.orm.session import Session as _SQLASession
 
                         _orig_get_bind = getattr(_SQLASession, "get_bind", None)
 
-                        def _pytest_get_bind(self, mapper=None, clause=None, **bind_arguments):
+                        def _pytest_get_bind(
+                            self, mapper=None, clause=None, **bind_arguments
+                        ):
                             try:
                                 if _orig_get_bind is not None:
-                                    return _orig_get_bind(self, mapper=mapper, clause=clause, **bind_arguments)
+                                    return _orig_get_bind(
+                                        self,
+                                        mapper=mapper,
+                                        clause=clause,
+                                        **bind_arguments,
+                                    )
                             except Exception:
                                 pass
                             try:
@@ -214,7 +260,9 @@ if _existing_db is not None:
                                 pass
                             # Fall back to raising the original error if nothing matched
                             if _orig_get_bind is not None:
-                                return _orig_get_bind(self, mapper=mapper, clause=clause, **bind_arguments)
+                                return _orig_get_bind(
+                                    self, mapper=mapper, clause=clause, **bind_arguments
+                                )
 
                         try:
                             _SQLASession.get_bind = _pytest_get_bind
@@ -261,7 +309,9 @@ try:
         # import problems in tests.
         try:
             if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                print(f"[EXT DEBUG] init_app called. sys.modules contains: models={'models' in sys.modules}, backend.models={'backend.models' in sys.modules}, db_id={id(db)}")
+                print(
+                    f"[EXT DEBUG] init_app called. sys.modules contains: models={'models' in sys.modules}, backend.models={'backend.models' in sys.modules}, db_id={id(db)}"
+                )
         except Exception:
             pass
 
@@ -316,7 +366,10 @@ try:
                                     mod_session = getattr(mod_db, "session", None)
                                     if mod_session is not None:
                                         try:
-                                            if getattr(mod_session, "bind", None) is None:
+                                            if (
+                                                getattr(mod_session, "bind", None)
+                                                is None
+                                            ):
                                                 mod_session.bind = engine
                                         except Exception:
                                             pass
@@ -331,7 +384,10 @@ try:
                                 except Exception:
                                     pass
                                 try:
-                                    if hasattr(mod_db, "metadata") and mod_db.metadata is not None:
+                                    if (
+                                        hasattr(mod_db, "metadata")
+                                        and mod_db.metadata is not None
+                                    ):
                                         try:
                                             mod_db.metadata.bind = engine
                                         except Exception:
@@ -366,7 +422,9 @@ try:
                                 except Exception:
                                     pass
                                 try:
-                                    _models.Base.query = getattr(db, "session", None).query_property()
+                                    _models.Base.query = getattr(
+                                        db, "session", None
+                                    ).query_property()
                                 except Exception:
                                     pass
                             except Exception:
@@ -411,12 +469,18 @@ try:
                             def __getattr__(self, name):
                                 try:
                                     if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                                        print(f"[EXT DEBUG] _FlaskQueryProxy __getattr__ called for {getattr(self._model, '__name__', None)} (module={getattr(self._model, '__module__', None)}) using session id={id(_ext_db.session)}")
+                                        print(
+                                            f"[EXT DEBUG] _FlaskQueryProxy __getattr__ called for {getattr(self._model, '__name__', None)} (module={getattr(self._model, '__module__', None)}) using session id={id(_ext_db.session)}"
+                                        )
                                 except Exception:
                                     pass
                                 return getattr(_ext_db.session.query(self._model), name)
 
-                        for mod_name in ("backend.models", "models", "models_with_analytics"):
+                        for mod_name in (
+                            "backend.models",
+                            "models",
+                            "models_with_analytics",
+                        ):
                             try:
                                 m = None
                                 if mod_name in sys.modules:
@@ -438,17 +502,23 @@ try:
                                     pass
                                 try:
                                     if hasattr(m, "NotificationTemplate"):
-                                        m.NotificationTemplate.query = _FlaskQueryProxy(m.NotificationTemplate)
+                                        m.NotificationTemplate.query = _FlaskQueryProxy(
+                                            m.NotificationTemplate
+                                        )
                                 except Exception:
                                     pass
                                 try:
                                     if hasattr(m, "NotificationPreference"):
-                                        m.NotificationPreference.query = _FlaskQueryProxy(m.NotificationPreference)
+                                        m.NotificationPreference.query = (
+                                            _FlaskQueryProxy(m.NotificationPreference)
+                                        )
                                 except Exception:
                                     pass
                                 try:
                                     if hasattr(m, "PushSubscription"):
-                                        m.PushSubscription.query = _FlaskQueryProxy(m.PushSubscription)
+                                        m.PushSubscription.query = _FlaskQueryProxy(
+                                            m.PushSubscription
+                                        )
                                 except Exception:
                                     pass
 
@@ -457,8 +527,13 @@ try:
                                     try:
                                         user_cls = getattr(m, "User", None)
                                         user_query = getattr(user_cls, "query", None)
-                                        if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                                            print(f"[EXT DEBUG] attached proxies for module '{mod_name}': User id={id(user_cls) if user_cls else None}, User.query id={id(user_query) if user_query else None}")
+                                        if (
+                                            os.environ.get("HELPCHAIN_TEST_DEBUG")
+                                            == "1"
+                                        ):
+                                            print(
+                                                f"[EXT DEBUG] attached proxies for module '{mod_name}': User id={id(user_cls) if user_cls else None}, User.query id={id(user_query) if user_query else None}"
+                                            )
                                     except Exception:
                                         pass
                                 except Exception:
@@ -491,29 +566,41 @@ try:
                             def __getattr__(self, name):
                                 try:
                                     if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                                        print(f"[EXT DEBUG] _FlaskQueryProxy __getattr__ called for {getattr(self._model, '__name__', None)} (module={getattr(self._model, '__module__', None)}) using session id={id(_ext_db.session)}")
+                                        print(
+                                            f"[EXT DEBUG] _FlaskQueryProxy __getattr__ called for {getattr(self._model, '__name__', None)} (module={getattr(self._model, '__module__', None)}) using session id={id(_ext_db.session)}"
+                                        )
                                 except Exception:
                                     pass
                                 return getattr(_ext_db.session.query(self._model), name)
 
                         # Attach common proxies
                         try:
-                            if _models is not None and hasattr(_models, 'User'):
+                            if _models is not None and hasattr(_models, "User"):
                                 _models.User.query = _FlaskQueryProxy(_models.User)
                                 if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                                    print("[EXT] Attached User.query proxy to Flask DB session (module: {} )".format(getattr(_models,'__name__', None)))
+                                    print(
+                                        "[EXT] Attached User.query proxy to Flask DB session (module: {} )".format(
+                                            getattr(_models, "__name__", None)
+                                        )
+                                    )
                         except Exception:
                             pass
                         try:
-                            _models.NotificationTemplate.query = _FlaskQueryProxy(_models.NotificationTemplate)
+                            _models.NotificationTemplate.query = _FlaskQueryProxy(
+                                _models.NotificationTemplate
+                            )
                         except Exception:
                             pass
                         try:
-                            _models.NotificationPreference.query = _FlaskQueryProxy(_models.NotificationPreference)
+                            _models.NotificationPreference.query = _FlaskQueryProxy(
+                                _models.NotificationPreference
+                            )
                         except Exception:
                             pass
                         try:
-                            _models.PushSubscription.query = _FlaskQueryProxy(_models.PushSubscription)
+                            _models.PushSubscription.query = _FlaskQueryProxy(
+                                _models.PushSubscription
+                            )
                         except Exception:
                             pass
                     except Exception:

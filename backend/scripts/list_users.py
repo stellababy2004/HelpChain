@@ -3,6 +3,7 @@
 Run from repository root:
   python backend/scripts/list_users.py
 """
+
 from __future__ import annotations
 
 import os
@@ -40,7 +41,9 @@ def main() -> int:
             else:
                 print(f"Found {len(users)} users:")
                 for u in users:
-                    print(f" - {getattr(u, 'id', '?')}: {getattr(u, 'username', '')} <{getattr(u, 'email', '')}>")
+                    print(
+                        f" - {getattr(u, 'id', '?')}: {getattr(u, 'username', '')} <{getattr(u, 'email', '')}>"
+                    )
     except Exception as exc:
         print("Error querying users:", exc)
         return 2

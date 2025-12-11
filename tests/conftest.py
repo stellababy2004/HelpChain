@@ -348,6 +348,7 @@ os.environ.setdefault("HELPCHAIN_TEST_DB_PATH", _tmp_db.name)
 
 import pytest
 
+
 # Simple external admin stub server for tests that POST to 127.0.0.1:3000.
 # This avoids ConnectionRefused errors from tests expecting an external admin
 # service. It is lightweight and only used during pytest session runs.
@@ -440,6 +441,7 @@ def external_admin_stub():
                 thread.join(timeout=1)
         except Exception:
             pass
+
 
 # Добавяме helpchain-backend (родител на папката src) в началото на sys.path,
 # за да може `import src` да работи
@@ -801,6 +803,7 @@ except Exception as e:
 try:
     import os
     import importlib
+
     db_path = os.environ.get("HELPCHAIN_TEST_DB_PATH")
     if db_path:
         bm = importlib.import_module("backend.models")
@@ -1206,10 +1209,16 @@ def db_session(app):
                                         bind_url = getattr(bind, "url", None)
                                     except Exception:
                                         bind_url = None
-                            print(f"[TEST DIAG] session.commit session_id={id(session_obj)} bind_id={id(bind) if bind else None} bind_url={bind_url}")
+                            print(
+                                f"[TEST DIAG] session.commit session_id={id(session_obj)} bind_id={id(bind) if bind else None} bind_url={bind_url}"
+                            )
                         except Exception:
                             pass
-                        return orig_commit(*args, **kwargs) if callable(orig_commit) else None
+                        return (
+                            orig_commit(*args, **kwargs)
+                            if callable(orig_commit)
+                            else None
+                        )
 
                     def _diag_flush(*args, **kwargs):
                         try:
@@ -1229,10 +1238,16 @@ def db_session(app):
                                         bind_url = getattr(bind, "url", None)
                                     except Exception:
                                         bind_url = None
-                            print(f"[TEST DIAG] session.flush session_id={id(session_obj)} bind_id={id(bind) if bind else None} bind_url={bind_url}")
+                            print(
+                                f"[TEST DIAG] session.flush session_id={id(session_obj)} bind_id={id(bind) if bind else None} bind_url={bind_url}"
+                            )
                         except Exception:
                             pass
-                        return orig_flush(*args, **kwargs) if callable(orig_flush) else None
+                        return (
+                            orig_flush(*args, **kwargs)
+                            if callable(orig_flush)
+                            else None
+                        )
 
                     # Monkeypatch session methods
                     try:
@@ -1286,9 +1301,14 @@ def db_session(app):
                             if Base is not None:
                                 try:
                                     Base.metadata.create_all(bind=engine_candidate)
-                                    print(f"[TEST DIAG] ensured Base.metadata.create_all on engine id={id(engine_candidate)} url={getattr(getattr(engine_candidate,'url',None),'__str__',lambda:engine_candidate)() if engine_candidate is not None else None}")
+                                    print(
+                                        f"[TEST DIAG] ensured Base.metadata.create_all on engine id={id(engine_candidate)} url={getattr(getattr(engine_candidate,'url',None),'__str__',lambda:engine_candidate)() if engine_candidate is not None else None}"
+                                    )
                                 except Exception as _e:
-                                    print("[TEST DIAG] Base.metadata.create_all failed:", _e)
+                                    print(
+                                        "[TEST DIAG] Base.metadata.create_all failed:",
+                                        _e,
+                                    )
                         except Exception:
                             pass
                 except Exception:
@@ -1614,7 +1634,9 @@ def session_db(app):
 
             # Only run if admin role is missing
             try:
-                admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
+                admin_role = (
+                    _db.session.query(Role).filter_by(name="Администратор").first()
+                )
             except Exception:
                 admin_role = None
 
@@ -1624,7 +1646,10 @@ def session_db(app):
                     ("Преглед на профил", PermissionEnum.VIEW_PROFILE.value),
                     ("Редактиране на профил", PermissionEnum.EDIT_PROFILE.value),
                     ("Преглед на доброволци", PermissionEnum.VIEW_VOLUNTEERS.value),
-                    ("Управление на доброволци", PermissionEnum.MANAGE_VOLUNTEERS.value),
+                    (
+                        "Управление на доброволци",
+                        PermissionEnum.MANAGE_VOLUNTEERS.value,
+                    ),
                     ("Админ достъп", PermissionEnum.ADMIN_ACCESS.value),
                     ("Управление на потребители", PermissionEnum.MANAGE_USERS.value),
                     ("Управление на роли", PermissionEnum.MANAGE_ROLES.value),
@@ -1632,7 +1657,11 @@ def session_db(app):
 
                 created_perms = {}
                 for name, codename in perms:
-                    p = _db.session.query(Permission).filter_by(codename=codename).first()
+                    p = (
+                        _db.session.query(Permission)
+                        .filter_by(codename=codename)
+                        .first()
+                    )
                     if not p:
                         p = Permission(name=name, codename=codename)
                         _db.session.add(p)
@@ -1670,9 +1699,17 @@ def session_db(app):
                         for codename, perm_obj in created_perms.items():
                             if perm_obj is None:
                                 continue
-                            exists = _db.session.query(RolePermission).filter_by(role_id=admin_r.id, permission=perm_obj.codename).first()
+                            exists = (
+                                _db.session.query(RolePermission)
+                                .filter_by(
+                                    role_id=admin_r.id, permission=perm_obj.codename
+                                )
+                                .first()
+                            )
                             if not exists:
-                                rp = RolePermission(role_id=admin_r.id, permission=perm_obj.codename)
+                                rp = RolePermission(
+                                    role_id=admin_r.id, permission=perm_obj.codename
+                                )
                                 _db.session.add(rp)
                 except Exception:
                     pass
@@ -1738,19 +1775,19 @@ def clear_tables_per_test(app):
             bm = importlib.import_module("backend.models")
             other_engine = getattr(bm, "engine", None)
             if other_engine is not None:
-                    try:
-                        from sqlalchemy import text
+                try:
+                    from sqlalchemy import text
 
-                        with other_engine.connect() as conn:
+                    with other_engine.connect() as conn:
+                        try:
+                            conn.execute(text("DELETE FROM volunteers"))
+                        except Exception:
                             try:
-                                conn.execute(text("DELETE FROM volunteers"))
+                                conn.execute("DELETE FROM volunteers")
                             except Exception:
-                                try:
-                                    conn.execute("DELETE FROM volunteers")
-                                except Exception:
-                                    pass
-                    except Exception:
-                        pass
+                                pass
+                except Exception:
+                    pass
         except Exception:
             pass
 

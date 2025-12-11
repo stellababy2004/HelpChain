@@ -1,0 +1,3 @@
+# .gitmodules
+# This file intentionally left minimal to remove a stale/broken submodule entry.
+# Removed submodule: hc-merge-pr35 (was causing CI: "No url found for submodule path")

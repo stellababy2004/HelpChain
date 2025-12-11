@@ -78,7 +78,9 @@ class AdminUser(Base):
         try:
             from werkzeug.security import check_password_hash
 
-            return bool(self.password_hash and check_password_hash(self.password_hash, password))
+            return bool(
+                self.password_hash and check_password_hash(self.password_hash, password)
+            )
         except Exception:
             return self.password_hash == password
 
@@ -140,7 +142,9 @@ class AdminUser(Base):
             import pyotp
 
             totp = pyotp.TOTP(self.two_factor_secret)
-            return totp.provisioning_uri(name=self.email or self.username, issuer_name=issuer_name)
+            return totp.provisioning_uri(
+                name=self.email or self.username, issuer_name=issuer_name
+            )
         except Exception:
             return f"otpauth://totp/{issuer_name}:{self.email or self.username}?secret={self.two_factor_secret}&issuer={issuer_name}"
         finally:
@@ -205,6 +209,7 @@ class AdminLog(Base):
     )  # "approved_request", "rejected_request", etc.
     details = Column(Text, nullable=True)  # JSON или описание на действието
     entity_type = Column(String(50), nullable=True)  # "help_request", "volunteer", etc.
+
 
 # Backwards-compatible alias: some modules import `AuditLog` from backend.models
 # Option 2: defer all session/engine ownership to Flask-SQLAlchemy.
@@ -281,13 +286,15 @@ def get_query_for(model):
     except Exception:
         pass
     # Final fallback: raise so callers notice configuration issue early.
-    raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
+    raise RuntimeError(
+        "Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app"
+    )
 
-# NOTE: Previously there was a `@permission.setter` block here that appeared
-# to be misplaced at module scope (likely intended for a RolePermission
-# class). It has been removed to avoid runtime and linter errors. If the
-# setter is required, restore it inside the appropriate class definition
-# (e.g. `RolePermission`) so the decorator and name `permission` are valid.
+    # NOTE: A permisssion setter helper was previously embedded here by mistake
+    # (it belonged to the RolePermission model). The setter method has been
+    # removed from this function scope to avoid syntax and lint errors. If a
+    # project-specific setter is required for RolePermission it should be
+    # implemented as an instance method on `RolePermission` below.
 
 
 class User(Base):
@@ -326,9 +333,12 @@ class User(Base):
         try:
             from werkzeug.security import check_password_hash
 
-            return bool(self.password_hash and check_password_hash(self.password_hash, password))
+            return bool(
+                self.password_hash and check_password_hash(self.password_hash, password)
+            )
         except Exception:
             return self.password_hash == password
+
 
 # (Dynamic `.query` descriptor will be attached after the descriptor is defined.)
 
@@ -489,7 +499,9 @@ class Volunteer(Base):
         # record
         self.total_tasks_completed = int(self.total_tasks_completed or 0) + 1
         try:
-            self.total_hours_volunteered = float(self.total_hours_volunteered or 0) + hrs
+            self.total_hours_volunteered = (
+                float(self.total_hours_volunteered or 0) + hrs
+            )
         except Exception:
             self.total_hours_volunteered = hrs
         # update last activity timestamp
@@ -578,6 +590,7 @@ class Volunteer(Base):
                 self.achievements = ""
         elif a is None:
             self.achievements = ""
+
     @property
     def achievements_list(self):
         return [a for a in (self.achievements or "").split(",") if a]
@@ -680,7 +693,7 @@ class PushSubscription(Base):
                 self.user_id = value
             except Exception:
                 pass
-    
+
     def __init__(self, *args, **kwargs):
         """Compatibility constructor.
 
@@ -694,6 +707,7 @@ class PushSubscription(Base):
 
             from backend import models as _models
             from backend.extensions import db as _ext_db
+
             try:
                 engine = _ext_db.get_engine(current_app)
             except Exception:
@@ -958,7 +972,9 @@ try:
                     # Try to select any existing placeholder user
                     try:
                         sel = connection.execute(
-                            select(users_tbl.c.id).where(users_tbl.c.username == "__auto_user__")
+                            select(users_tbl.c.id).where(
+                                users_tbl.c.username == "__auto_user__"
+                            )
                         ).first()
                         if sel:
                             new_id = sel[0]
@@ -984,6 +1000,7 @@ try:
             # Never let the listener raise; tests will observe DB errors
             # if placeholder creation fails.
             pass
+
 except Exception:
     pass
 
@@ -1179,6 +1196,7 @@ db = scoped_session(sessionmaker(autocommit=False, autoflush=False))
 db_session = db
 Base.query = db_session.query_property()
 
+
 # Provide a thin compatibility wrapper so that modules which expect a
 # Flask-SQLAlchemy `db` object (with `init_app` and `.session`) can import
 # `db` from this module or from `extensions` without failing when tests
@@ -1197,6 +1215,7 @@ class _DBShim:
 
     def __getattr__(self, name):
         return getattr(self._scoped, name)
+
 
 # Replace `db` with shim while keeping `db_session` as the actual scoped_session
 _scoped = db
@@ -1267,13 +1286,24 @@ logger = logging.getLogger(__name__)
 module_db_url = os.getenv("HELPCHAIN_MODULE_DB_URL", "")
 if module_db_url:
     try:
-        logger.debug(f"HELPCHAIN_MODULE_DB_URL set, creating module engine {module_db_url}")
-        engine = create_engine(module_db_url, connect_args={"check_same_thread": False} if module_db_url.startswith("sqlite") else {})
+        logger.debug(
+            f"HELPCHAIN_MODULE_DB_URL set, creating module engine {module_db_url}"
+        )
+        engine = create_engine(
+            module_db_url,
+            connect_args=(
+                {"check_same_thread": False}
+                if module_db_url.startswith("sqlite")
+                else {}
+            ),
+        )
         try:
             db.configure(bind=engine)
         except Exception:
             # some older SQLAlchemy versions may require replacement of scoped_session
-            db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+            db = scoped_session(
+                sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            )
             db_session = db
             Base.query = db_session.query_property()
 
@@ -1301,7 +1331,9 @@ try:
             # prefer it for module-level queries to avoid divergence between
             # the module-scoped session and the app session used in tests.
             if ext_engine is not None:
-                logger.debug("Creating metadata on Flask-SQLAlchemy engine for compatibility")
+                logger.debug(
+                    "Creating metadata on Flask-SQLAlchemy engine for compatibility"
+                )
                 Base.metadata.create_all(bind=ext_engine)
             try:
                 # Attempt to switch the module session to use the Flask app's
@@ -1335,7 +1367,9 @@ try:
                 # Non-fatal: best-effort binding; ignore failures
                 pass
         except Exception:
-            logger.debug("Could not create metadata on Flask-SQLAlchemy engine (skipping)")
+            logger.debug(
+                "Could not create metadata on Flask-SQLAlchemy engine (skipping)"
+            )
 except Exception:
     # backend.extensions may not be importable at module import time
     pass
@@ -1363,7 +1397,9 @@ try:
     ):
         import tempfile
 
-        tf = tempfile.NamedTemporaryFile(prefix="hc_pytest_", suffix=".db", delete=False)
+        tf = tempfile.NamedTemporaryFile(
+            prefix="hc_pytest_", suffix=".db", delete=False
+        )
         tf.close()
         try:
             tmp_url = f"sqlite:///{tf.name}"
@@ -1371,7 +1407,9 @@ try:
             try:
                 db.configure(bind=engine)
             except Exception:
-                db = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+                db = scoped_session(
+                    sessionmaker(autocommit=False, autoflush=False, bind=engine)
+                )
                 db_session = db
             try:
                 Base.metadata.create_all(bind=engine)

@@ -6,29 +6,32 @@ This prevents test-time imports like `from permissions import ...`
 from accidentally loading a missing top-level module and ensures the
 seeding and helper functions are the same implementation the app uses.
 """
+
 try:
-    # Prefer the backend package implementation
-    from backend.permissions import *  # noqa: F401,F403
+    # Prefer the backend package implementation; import module and re-export
+    import importlib
+
+    _bp = importlib.import_module("backend.permissions")
+    for _name in dir(_bp):
+        if _name.startswith("_"):
+            continue
+        globals()[_name] = getattr(_bp, _name)
 except Exception:
-    # Fallback: dynamically import the backend.permissions module and
-    # copy public symbols into this module's globals to preserve the
-    # compatibility shim without using a star-relative import.
+    # Fallback: try to import a local module if present and re-export
     try:
         import importlib
 
-        _mod = importlib.import_module("backend.permissions")
-        for _name in dir(_mod):
-            if not _name.startswith("_"):
-                try:
-                    globals()[_name] = getattr(_mod, _name)
-                except Exception:
-                    pass
+        _bp = importlib.import_module("backend.permissions")
+        for _name in dir(_bp):
+            if _name.startswith("_"):
+                continue
+            globals()[_name] = getattr(_bp, _name)
     except Exception:
-        # As a last resort, re-raise so test imports fail loudly.
+        # As a last resort, re-raise the import error so tests fail loudly
         raise
 
 __all__ = [
     name
-    for name in dir()
+    for name in globals().keys()
     if not name.startswith("_") and name not in ("__name__", "__doc__")
 ]

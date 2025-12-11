@@ -1,0 +1,75 @@
+name: "Check Vercel Function Sizes (reusable)"
+
+on:
+  workflow_call:
+    inputs:
+      max_size_mb:
+        required: false
+        type: number
+        default: 250
+      artifact_name:
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  check-sizes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Download .vercel/output artifact (optional)
+        if: ${{ inputs.artifact_name != '' }}
+        uses: actions/download-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: .vercel/output
+
+      - name: Ensure .vercel/output exists
+        id: verify
+        run: |
+          if [ ! -d .vercel/output ]; then
+            echo ".vercel/output not found. This reusable workflow should be called after the prebuild step that creates .vercel/output." >&2
+            exit 1
+          fi
+
+      - name: Compute function sizes and fail if any > limit
+        env:
+          MAX_SIZE_MB: ${{ inputs.max_size_mb }}
+        run: |
+          echo "Generating function size listing..."
+          # Top files in .vercel/output to help diagnostics
+          du -ah .vercel/output 2>/dev/null | sort -rh | head -n 200 > function-size-listing.txt || true
+
+          echo "Function sizes (MB):" > function-sizes.txt
+          FOUND=0
+          if [ -d .vercel/output/functions ]; then
+            for d in .vercel/output/functions/*; do
+              if [ -d "$d" ]; then
+                sz_bytes=$(du -sb "$d" | awk '{print $1}')
+                sz_mb=$((sz_bytes / 1024 / 1024))
+                echo "$sz_mb $d" >> function-sizes.txt
+                if [ "$sz_mb" -gt "$MAX_SIZE_MB" ]; then
+                  echo "ERROR: Function too large: $d (${sz_mb}MB) > ${MAX_SIZE_MB}MB" >&2
+                  FOUND=1
+                fi
+              fi
+            done
+          else
+            echo ".vercel/output/functions not found; no functions to check." >> function-sizes.txt
+          fi
+
+          cat function-sizes.txt
+          if [ "$FOUND" -eq 1 ]; then
+            echo "One or more functions exceed ${MAX_SIZE_MB}MB. Failing check." >&2
+            exit 1
+          fi
+
+      - name: Upload artifacts (function sizes)
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
+        with:
+          name: function-sizes
+          path: |
+            function-size-listing.txt
+            function-sizes.txt

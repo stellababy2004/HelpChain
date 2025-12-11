@@ -18,7 +18,7 @@
 ### **1. Стартиране на системата:**
 
 ```bash
-cd "C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\backend"
+cd backend
 python appy.py
 ```
 
@@ -50,11 +50,21 @@ python appy.py
 
 ### **Получаване на dashboard данни:**
 
+PowerShell example:
+
 ```powershell
 Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/analytics/dashboard?days=7" -Method Get
 ```
 
+curl example (cross-platform):
+
+```bash
+curl -sS "http://127.0.0.1:5000/api/analytics/dashboard?days=7"
+```
+
 ### **Проследяване на събитие:**
+
+PowerShell example:
 
 ```powershell
 $event = @{
@@ -70,6 +80,14 @@ $event = @{
 } | ConvertTo-Json -Depth 3
 
 Invoke-RestMethod -Uri "http://127.0.0.1:5000/api/analytics/track" -Method Post -Body $event -ContentType "application/json"
+```
+
+curl example:
+
+```bash
+curl -X POST "http://127.0.0.1:5000/api/analytics/track" \
+  -H 'Content-Type: application/json' \
+  -d '{"event_type":"user_action","event_category":"volunteer","event_action":"registration","event_label":"new_volunteer","context":{"session_id":"abc123","user_type":"guest","page_url":"/register"}}'
 ```
 
 ---

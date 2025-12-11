@@ -102,6 +102,7 @@ migrate = Migrate(app, db)
 db.init_app(app)
 migrate = Migrate(app, db)
 
+
 # Test-only: force an admin login for pytest runs. Mirrors the helper in
 # the lightweight `appy.py` module but avoids calling `login_user()` so
 # it's safe for test AdminUser variants that don't implement Flask-Login
@@ -143,9 +144,15 @@ def _pytest_force_admin_login():
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
 
-        return jsonify({"success": True, "admin_id": admin.id, "username": admin.username}), 200
+        return (
+            jsonify(
+                {"success": True, "admin_id": admin.id, "username": admin.username}
+            ),
+            200,
+        )
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
+
 
 # -----------------------------------------------------------------------------
 # I18N / Babel
@@ -962,10 +969,20 @@ def login():
     return render_template("login.html")
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():
     logout_user()
+    # Clear admin-related session keys if present (generic logout)
+    session.pop("admin_id", None)
+    session.pop("admin_logged_in", None)
+    session.pop("admin_user_id", None)
+    session.pop("admin_username", None)
+    session.pop("user_id", None)
+    session.pop("pending_admin_id", None)
+    session.pop("pending_2fa", None)
+    session.pop("email_2fa_code", None)
+    session.pop("email_2fa_expires", None)
     return redirect(url_for("index"))
 
 

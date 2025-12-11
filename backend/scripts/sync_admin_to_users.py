@@ -10,6 +10,7 @@ The script will, for each `AdminUser` row, ensure there is a corresponding
 `User` row with the same `username` (creates if missing). It will not
 overwrite existing user passwords. By default it runs as a dry-run.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -69,7 +70,9 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     # Determine dry-run / commit precedence: --commit wins if provided.
     if args.commit and args.dry_run:
-        logging.warning("Both --commit and --dry-run provided; --commit takes precedence")
+        logging.warning(
+            "Both --commit and --dry-run provided; --commit takes precedence"
+        )
     if args.commit:
         dry_run = False
     elif args.dry_run:
@@ -108,7 +111,10 @@ def main(argv: list[str] | None = None) -> int:
             username = getattr(au, "username", None)
             email = getattr(au, "email", None)
             if not username:
-                logging.warning("Skipping AdminUser with missing username (id=%s)", getattr(au, "id", "?"))
+                logging.warning(
+                    "Skipping AdminUser with missing username (id=%s)",
+                    getattr(au, "id", "?"),
+                )
                 skipped += 1
                 continue
 
@@ -122,7 +128,11 @@ def main(argv: list[str] | None = None) -> int:
             if existing:
                 # Update email if missing and admin has one
                 if (not getattr(existing, "email", None)) and email:
-                    msg = f"Would set email for user {username} -> {email}" if dry_run else f"Setting email for user {username} -> {email}"
+                    msg = (
+                        f"Would set email for user {username} -> {email}"
+                        if dry_run
+                        else f"Setting email for user {username} -> {email}"
+                    )
                     logging.info(msg)
                     if not dry_run:
                         try:
@@ -139,7 +149,12 @@ def main(argv: list[str] | None = None) -> int:
                 continue
 
             # Create new User row for admin
-            logging.info("Creating User for admin: %s (email=%s) %s", username, email, "(dry-run)" if dry_run else "")
+            logging.info(
+                "Creating User for admin: %s (email=%s) %s",
+                username,
+                email,
+                "(dry-run)" if dry_run else "",
+            )
             if dry_run:
                 created += 1
                 logging.info("(dry-run) would create user %s", username)
@@ -179,7 +194,9 @@ def main(argv: list[str] | None = None) -> int:
                 db.session.add(new_user)
                 db.session.commit()
                 created += 1
-                logging.info("Created user %s (id=%s)", username, getattr(new_user, "id", "?"))
+                logging.info(
+                    "Created user %s (id=%s)", username, getattr(new_user, "id", "?")
+                )
 
                 # If commit and log file requested, append username:password line
                 if log_file_path:
@@ -187,7 +204,9 @@ def main(argv: list[str] | None = None) -> int:
                         with open(log_file_path, "a", encoding="utf-8") as fh:
                             fh.write(f"{username}:{pw}\n")
                     except Exception:
-                        logging.exception("Failed to write password log to %s", log_file_path)
+                        logging.exception(
+                            "Failed to write password log to %s", log_file_path
+                        )
             except Exception:
                 db.session.rollback()
                 logging.exception("Failed to create user for admin %s", username)

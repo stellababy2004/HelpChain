@@ -36,7 +36,7 @@ def get_db():
         return db
 
 
-from models import PushSubscription, User
+from backend.models import PushSubscription, User
 
 notification_bp = Blueprint("notification", __name__)
 
@@ -76,14 +76,20 @@ def notification_settings():
             # )
 
             return jsonify(
-                {"success": True, "message": "Настройките са запазени успешно"}
+                {
+                    "success": True,
+                    "message": "ðØð░ÐüÐéÐÇð¥ð╣ð║ð©ÐéðÁ Ðüð░ ðÀð░ð┐ð░ðÀðÁð¢ð© ÐâÐüð┐ðÁÐêð¢ð¥",
+                }
             )
 
     except Exception as e:
         current_app.logger.error(f"Error updating notification settings: {e}")
         return (
             jsonify(
-                {"success": False, "message": "Грешка при запазване на настройките"}
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ð┐ð░ðÀð▓ð░ð¢ðÁ ð¢ð░ ð¢ð░ÐüÐéÐÇð¥ð╣ð║ð©ÐéðÁ",
+                }
             ),
             500,
         )
@@ -144,7 +150,12 @@ def subscribe_push():
                 # Create or get placeholder user with id=0
                 placeholder = db_instance.session.get(User, 0)
                 if not placeholder:
-                    placeholder = User(id=0, username="anonymous", email="anonymous@example.com", password_hash="")
+                    placeholder = User(
+                        id=0,
+                        username="anonymous",
+                        email="anonymous@example.com",
+                        password_hash="",
+                    )
                     # add directly to Flask DB session
                     db_instance.session.add(placeholder)
                     db_instance.session.commit()
@@ -183,7 +194,7 @@ def subscribe_push():
             jsonify(
                 {
                     "success": False,
-                    "message": "Грешка при абониране за push нотификации",
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð░ð▒ð¥ð¢ð©ÐÇð░ð¢ðÁ ðÀð░ push ð¢ð¥Ðéð©Ðäð©ð║ð░Ðåð©ð©",
                 }
             ),
             500,
@@ -203,8 +214,10 @@ def vapid_public_key():
         # hit the server can retrieve a usable key.
         if not public_key:
             test_key = current_app.config.get("TEST_VAPID_PUBLIC_KEY")
-            if test_key or current_app.config.get("TESTING") or (
-                current_app.config.get("HELPCHAIN_TEST_DEBUG")
+            if (
+                test_key
+                or current_app.config.get("TESTING")
+                or (current_app.config.get("HELPCHAIN_TEST_DEBUG"))
             ):
                 fallback = test_key or "BTestPublicKeyForLocalTests-ReplaceMe"
                 current_app.logger.info("Using test VAPID public key for tests")
@@ -307,7 +320,7 @@ def unsubscribe_push():
             jsonify(
                 {
                     "success": False,
-                    "message": "Грешка при отписване от push нотификации",
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð¥Ðéð┐ð©Ðüð▓ð░ð¢ðÁ ð¥Ðé push ð¢ð¥Ðéð©Ðäð©ð║ð░Ðåð©ð©",
                 }
             ),
             500,
@@ -324,13 +337,13 @@ def test_email():
         # Send test email
         # success = send_notification_email(
         #     recipient=current_user.email,
-        #     subject="HelpChain - Тест имейл",
+        #     subject="HelpChain - ðóðÁÐüÐé ð©ð╝ðÁð╣ð╗",
         #     template="email_template.html",
         #     context={
         #         "notification_type": "test",
         #         "recipient_name": current_user.name,
-        #         "subject": "HelpChain - Тест имейл",
-        #         "content": "Това е тестов имейл за проверка на нотификационната система.",
+        #         "subject": "HelpChain - ðóðÁÐüÐé ð©ð╝ðÁð╣ð╗",
+        #         "content": "ðóð¥ð▓ð░ ðÁ ÐéðÁÐüÐéð¥ð▓ ð©ð╝ðÁð╣ð╗ ðÀð░ ð┐ÐÇð¥ð▓ðÁÐÇð║ð░ ð¢ð░ ð¢ð¥Ðéð©Ðäð©ð║ð░Ðåð©ð¥ð¢ð¢ð░Ðéð░ Ðüð©ÐüÐéðÁð╝ð░.",
         #         "action_url": current_app.config["FRONTEND_URL"]
         #         + "/notification_preferences",
         #     },
@@ -345,12 +358,15 @@ def test_email():
         # )
 
         return jsonify(
-            {"success": True, "message": "Тестовият имейл е изпратен успешно"}
+            {
+                "success": True,
+                "message": "ðóðÁÐüÐéð¥ð▓ð©ÐÅÐé ð©ð╝ðÁð╣ð╗ ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ ÐâÐüð┐ðÁÐêð¢ð¥",
+            }
         )
         # else:
         #     return (
         #         jsonify(
-        #             {"success": False, "message": "Грешка при изпращане на тест имейл"}
+        #             {"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐé ð©ð╝ðÁð╣ð╗"}
         #         ),
         #         500,
         #     )
@@ -359,7 +375,10 @@ def test_email():
         current_app.logger.error(f"Error sending test email: {e}")
         return (
             jsonify(
-                {"success": False, "message": "Грешка при изпращане на тест имейл"}
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐé ð©ð╝ðÁð╣ð╗",
+                }
             ),
             500,
         )
@@ -375,7 +394,7 @@ def test_sms():
         # Send test SMS
         # success = send_notification_sms(
         #     phone=current_user.phone,
-        #     message="HelpChain: Това е тестово SMS съобщение. Нотификационната система работи!",
+        #     message="HelpChain: ðóð¥ð▓ð░ ðÁ ÐéðÁÐüÐéð¥ð▓ð¥ SMS ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ. ðØð¥Ðéð©Ðäð©ð║ð░Ðåð©ð¥ð¢ð¢ð░Ðéð░ Ðüð©ÐüÐéðÁð╝ð░ ÐÇð░ð▒ð¥Ðéð©!",
         # )
 
         # if success:
@@ -387,12 +406,15 @@ def test_sms():
         # )
 
         return jsonify(
-            {"success": True, "message": "Тестовото SMS е изпратено успешно"}
+            {
+                "success": True,
+                "message": "ðóðÁÐüÐéð¥ð▓ð¥Ðéð¥ SMS ðÁ ð©ðÀð┐ÐÇð░ÐéðÁð¢ð¥ ÐâÐüð┐ðÁÐêð¢ð¥",
+            }
         )
         # else:
         #     return (
         #         jsonify(
-        #             {"success": False, "message": "Грешка при изпращане на тест SMS"}
+        #             {"success": False, "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐé SMS"}
         #         ),
         #         500,
         #     )
@@ -400,7 +422,12 @@ def test_sms():
     except Exception as e:
         current_app.logger.error(f"Error sending test SMS: {e}")
         return (
-            jsonify({"success": False, "message": "Грешка при изпращане на тест SMS"}),
+            jsonify(
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ÐéðÁÐüÐé SMS",
+                }
+            ),
             500,
         )
 
@@ -475,7 +502,7 @@ def send_notification():
             {
                 "success": True,
                 "sent_count": sent_count,
-                "message": f"Изпратени са {sent_count} нотификации",
+                "message": f"ðÿðÀð┐ÐÇð░ÐéðÁð¢ð© Ðüð░ {sent_count} ð¢ð¥Ðéð©Ðäð©ð║ð░Ðåð©ð©",
             }
         )
 
@@ -483,7 +510,10 @@ def send_notification():
         current_app.logger.error(f"Error sending notification: {e}")
         return (
             jsonify(
-                {"success": False, "message": "Грешка при изпращане на нотификация"}
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ð©ðÀð┐ÐÇð░Ðëð░ð¢ðÁ ð¢ð░ ð¢ð¥Ðéð©Ðäð©ð║ð░Ðåð©ÐÅ",
+                }
             ),
             500,
         )
@@ -496,7 +526,7 @@ def _send_new_request_email(recipient, context):
 
         send_notification_email(
             recipient=recipient.email,
-            subject="Нова заявка за помощ наблизо - HelpChain",
+            subject="ðØð¥ð▓ð░ ðÀð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë ð¢ð░ð▒ð╗ð©ðÀð¥ - HelpChain",
             template="email_template.html",
             context={
                 "notification_type": "new_request",
@@ -518,7 +548,7 @@ def _send_urgent_request_email(recipient, context):
 
         send_notification_email(
             recipient=recipient.email,
-            subject="СПЕШНА заявка за помощ! - HelpChain",
+            subject="ðíðƒðòð¿ðØðÉ ðÀð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë! - HelpChain",
             template="email_template.html",
             context={
                 "notification_type": "urgent_request",
@@ -541,7 +571,7 @@ def _send_message_email(recipient, context):
 
         send_notification_email(
             recipient=recipient.email,
-            subject="Ново съобщение - HelpChain",
+            subject="ðØð¥ð▓ð¥ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ - HelpChain",
             template="email_template.html",
             context={
                 "notification_type": "message_received",
@@ -562,7 +592,7 @@ def _send_new_request_sms(recipient, context):
         from sms_service import send_notification_sms
 
         request = context.get("request", {})
-        message = f"HelpChain: Нова заявка - {request.get('category', '')} ул.{request.get('address', '')}. {request.get('distance', '')}km от вас."
+        message = f"HelpChain: ðØð¥ð▓ð░ ðÀð░ÐÅð▓ð║ð░ - {request.get('category', '')} Ðâð╗.{request.get('address', '')}. {request.get('distance', '')}km ð¥Ðé ð▓ð░Ðü."
 
         send_notification_sms(recipient.phone, message)
     except Exception as e:
@@ -575,7 +605,7 @@ def _send_urgent_request_sms(recipient, context):
         from sms_service import send_notification_sms
 
         request = context.get("request", {})
-        message = f"СПЕШНО HelpChain: {request.get('category', '')} ул.{request.get('address', '')}. Тел:{request.get('emergency_phone', '')}"
+        message = f"ðíðƒðòð¿ðØð× HelpChain: {request.get('category', '')} Ðâð╗.{request.get('address', '')}. ðóðÁð╗:{request.get('emergency_phone', '')}"
 
         send_notification_sms(recipient.phone, message)
     except Exception as e:
@@ -602,18 +632,18 @@ def _send_push_notification(recipient, notification_type, context):
         if notification_type == "new_request":
             push_data.update(
                 {
-                    "title": "Нова заявка за помощ",
+                    "title": "ðØð¥ð▓ð░ ðÀð░ÐÅð▓ð║ð░ ðÀð░ ð┐ð¥ð╝ð¥Ðë",
                     "body": (
-                        f"{context.get('request', {}).get('category', '')} - {context.get('request', {}).get('distance', '')}km от вас"
+                        f"{context.get('request', {}).get('category', '')} - {context.get('request', {}).get('distance', '')}km ð¥Ðé ð▓ð░Ðü"
                     ),
                 }
             )
         elif notification_type == "urgent_request":
             push_data.update(
                 {
-                    "title": "СПЕШНА заявка!",
+                    "title": "ðíðƒðòð¿ðØðÉ ðÀð░ÐÅð▓ð║ð░!",
                     "body": (
-                        f"{context.get('request', {}).get('category', '')} - Нужда от незабавна помощ!"
+                        f"{context.get('request', {}).get('category', '')} - ðØÐâðÂð┤ð░ ð¥Ðé ð¢ðÁðÀð░ð▒ð░ð▓ð¢ð░ ð┐ð¥ð╝ð¥Ðë!"
                     ),
                     "urgent": True,
                 }
@@ -621,7 +651,7 @@ def _send_push_notification(recipient, notification_type, context):
         elif notification_type == "message":
             push_data.update(
                 {
-                    "title": f"Ново съобщение от {context.get('sender', {}).get('name', '')}",
+                    "title": f"ðØð¥ð▓ð¥ ÐüÐèð¥ð▒ÐëðÁð¢ð©ðÁ ð¥Ðé {context.get('sender', {}).get('name', '')}",
                     "body": context.get("message", {}).get("content", "")[:100],
                 }
             )
@@ -669,7 +699,10 @@ def notification_stats():
         current_app.logger.error(f"Error getting notification stats: {e}")
         return (
             jsonify(
-                {"success": False, "message": "Грешка при зареждане на статистики"}
+                {
+                    "success": False,
+                    "message": "ðôÐÇðÁÐêð║ð░ ð┐ÐÇð© ðÀð░ÐÇðÁðÂð┤ð░ð¢ðÁ ð¢ð░ ÐüÐéð░Ðéð©ÐüÐéð©ð║ð©",
+                }
             ),
             500,
         )

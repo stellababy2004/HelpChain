@@ -19,6 +19,7 @@ sys.path.insert(0, src_dir)
 # the process and only runs before importing the app.
 try:
     import werkzeug.urls as _werkzeug_urls
+
     if not hasattr(_werkzeug_urls, "url_quote"):
         from urllib.parse import quote as _qp
 
@@ -37,6 +38,7 @@ except Exception:
 # extensions that import `app_ctx` keep working.
 try:
     import flask.globals as _flask_globals
+
     if not hasattr(_flask_globals, "app_ctx"):
         from werkzeug.local import LocalProxy
 
@@ -45,7 +47,19 @@ except Exception:
     # If this fails, continue and let the import error surface later.
     pass
 
-from backend.app import app
+try:
+    from backend.app import app
+except Exception:
+    # Fallback: some developer environments use `backend.appy` (legacy
+    # or alternate entrypoint) which registers additional routes such as
+    # `/logout`. Attempt to import it when `backend.app` doesn't expose
+    # the expected application object.
+    try:
+        from backend.appy import app
+    except Exception:
+        # Re-raise the original error to preserve the traceback when
+        # both imports fail.
+        raise
 
 # Disabled Flask auto-reloader to prevent incorrect restart behavior
 if __name__ == "__main__":

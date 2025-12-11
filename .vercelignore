@@ -1,87 +1,30 @@
-# Vercel ignore - exclude large local artifacts and dev-only files
+# ML/model files
+models/
+data/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
 
-# Python virtualenvs and caches
-venv/
+# envs & caches
 .venv/
-env/
-ENV/
+venv/
+.env
+.cache/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
 
-# Local instance data / databases / logs
-instance/
-*.db
-*.sqlite
-*.sqlite3
-*.db-journal
-*.log
-.coverage
-.pytest_cache/
+/.git
 
-# Node / frontend build artifacts
+# Prevent vendorized Python packages from being included in .vercel/output
+/.vercel/python/**/_vendor
+
+# build / dev
 node_modules/
 dist/
 build/
-coverage/
-.next/
-/.vercel/
-
-# Editor / OS
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
-
-# Dev-only scripts and large assets
 dev_scripts/
-tests/local_data/
-sent_emails.txt
-*.bak
-
-# Large binary artifacts
-*.tar
-*.zip
-*.egg
-*.whl
-
-# Exclude any venv-like directories nested anywhere
-**/venv/**
-**/.venv/**
-# Ignore virtualenvs and caches
-venv/
-.venv/
-env/
-*.pyc
-__pycache__/
-.pytest_cache/
-
-# Ignore local instance DBs and exports
-instance/
-*.db
-
-# Node and build artifacts
-node_modules/
-dist/
-build/
-coverage/
-
-# Dev scripts and local tools
-dev_scripts/
-*.log
-
-# Avoid uploading large test artifacts, caches, and VCS metadata
-.git/
-.gitignore
-.github/
-/.vercel
-
-# Templates and local IDE files
-.vscode/
-*.swp
-*.swo
-
-# Any other heavy folders we don't want in the deployment
-tests/tmp/
-tmp/
+tests/
+.vercel/
+vercel_inspect.json
+vercel_logs.json

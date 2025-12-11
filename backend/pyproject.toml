@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "helpchain-backend-placeholder"
+version = "0.0.0"
+description = "Placeholder pyproject to satisfy Vercel prebuilt deploy checks"
+authors = [{ name = "CI", email = "ci@example.com" }]
+license = { text = "MIT" }

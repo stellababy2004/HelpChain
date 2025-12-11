@@ -1,20 +1,20 @@
 import re
 
-p='c:/dev/HelpChain/HelpChain.bg/backend/extensions.py'
-lines = open(p, encoding='utf-8').read().splitlines()
+p = "c:/dev/HelpChain/HelpChain.bg/backend/extensions.py"
+lines = open(p, encoding="utf-8").read().splitlines()
 stack = []
 for i, line in enumerate(lines, start=1):
-    s = line.lstrip('\t ')
+    s = line.lstrip("\t ")
     indent = len(line) - len(s)
-    if s.startswith('try:'):
+    if s.startswith("try:"):
         stack.append((i, indent))
-    elif s.startswith('except') or s.startswith('finally'):
+    elif s.startswith("except") or s.startswith("finally"):
         # find latest try with same indent
         for j in range(len(stack) - 1, -1, -1):
             if stack[j][1] == indent:
                 stack.pop(j)
                 break
 
-print('remaining unmatched try blocks:')
+print("remaining unmatched try blocks:")
 for t in stack:
-    print('line', t[0], 'indent', t[1], '->', lines[t[0]-1].strip())
+    print("line", t[0], "indent", t[1], "->", lines[t[0] - 1].strip())
