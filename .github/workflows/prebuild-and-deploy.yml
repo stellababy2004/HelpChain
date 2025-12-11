@@ -143,7 +143,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Download vercel-output artifact (try action)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
         with:
           name: vercel-output
           path: .vercel/output
