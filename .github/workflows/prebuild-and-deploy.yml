@@ -113,6 +113,21 @@ jobs:
             echo "No .vercel/python found to include"
           fi
 
+      - name: Remove Python metadata and run secrets scan
+        if: always()
+        run: |
+          echo "Removing any '*.dist-info' directories from .vercel/output to avoid leaking package metadata"
+          if [ -d .vercel/output ]; then
+            find .vercel/output -type d -name "*.dist-info" -prune -print0 | xargs -0 -r rm -rf || true
+          else
+            echo ".vercel/output not present; skipping dist-info cleanup"
+          fi
+
+      - name: Run gitleaks secrets scan (fail on detection)
+        uses: zricethezav/gitleaks-action@v2
+        with:
+          args: --path=. --exit-code 1
+
       - name: Cleanup large files from .vercel/output
         if: always()
         run: |
