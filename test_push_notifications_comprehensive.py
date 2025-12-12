@@ -172,7 +172,7 @@ class TestPushNotifications(unittest.TestCase):
             subscription = self.PushSubscription(
                 volunteer_id=1,
                 endpoint="https://fcm.googleapis.com/fcm/send/test",
-                p256dh_key="test_p256dh_key",
+                p256dh_key="REDACTED_TEST_KEY",
                 auth_key="test_auth_key",
                 user_agent="test_user_agent",
             )
@@ -221,7 +221,7 @@ class TestPushNotifications(unittest.TestCase):
 
         subscription_data = {
             "endpoint": "https://fcm.googleapis.com/fcm/send/test",
-            "p256dh": "test_p256dh_key",
+            "p256dh": "REDACTED_TEST_KEY",
             "auth": "test_auth_key",
             "userAgent": "Test Browser",
         }
@@ -253,7 +253,7 @@ class TestPushNotifications(unittest.TestCase):
         # First subscribe
         subscription_data = {
             "endpoint": "https://fcm.googleapis.com/fcm/send/test_unsubscribe",
-            "p256dh": "test_p256dh_key",
+            "p256dh": "REDACTED_TEST_KEY",
             "auth": "test_auth_key",
             "userAgent": "Test Browser",
         }

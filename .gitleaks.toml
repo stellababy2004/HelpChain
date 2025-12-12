@@ -12,8 +12,19 @@ paths = [
 ]
 
 # Optional: allowlist common low-entropy vendor patterns to reduce false positives.
-[allowlist.rules]
+# Explicitly allow `generic-api-key` only for vendor/artifact paths to avoid hiding
+# real leaks in repository source files.
+[[allowlist.rules]]
 ids = ["generic-api-key"]
+paths = [
+  "backend/_vendor/**",
+  "**/site-packages/**",
+  "**/.venv/**",
+  "**/venv/**",
+  "**/*.dist-info/**",
+  ".vercel/**",
+  "artifacts/**"
+]
 
 [options]
 # Keep archives from failing scans (we already allow artifact paths above)
