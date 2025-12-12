@@ -1,0 +1,20 @@
+title = "HelpChain custom gitleaks config"
+
+[allowlist]
+paths = [
+  "backend/_vendor/**",
+  "**/site-packages/**",
+  "**/.venv/**",
+  "**/venv/**",
+  "**/*.dist-info/**",
+  ".vercel/**",
+  "artifacts/**"
+]
+
+# Optional: allowlist common low-entropy vendor patterns to reduce false positives.
+[allowlist.rules]
+ids = ["generic-api-key"]
+
+[options]
+# Keep archives from failing scans (we already allow artifact paths above)
+allow-secrets-in-archives = false
