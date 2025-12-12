@@ -115,27 +115,29 @@ jobs:
             echo "No .vercel/python found to include"
           fi
 
-      - name: Remove Python metadata and run secrets scan
+      - name: Prepare sanitized copy for secrets scan
         if: always()
         run: |
-          echo "Removing any '*.dist-info' directories from .vercel/output to avoid leaking package metadata"
+          echo "Creating sanitized copy .vercel/output-scrubbed for gitleaks scanning"
           if [ -d .vercel/output ]; then
-            find .vercel/output -type d -name "*.dist-info" -prune -print0 | xargs -0 -r rm -rf || true
+            rm -rf .vercel/output-scrubbed || true
+            cp -a .vercel/output .vercel/output-scrubbed || true
+            echo "Removing any '*.dist-info' directories from scrubbed copy"
+            find .vercel/output-scrubbed -type d -name "*.dist-info" -prune -print0 | xargs -0 -r rm -rf || true
           else
-            echo ".vercel/output not present; skipping dist-info cleanup"
+            echo ".vercel/output not present; skipping scrubbed copy creation"
           fi
-          echo "Removing legacy 'artifacts' directory if present to avoid scanning packaged artifacts"
-          if [ -d artifacts ]; then
-            rm -rf artifacts || true
+          echo "Removing legacy 'artifacts' directory from scrubbed copy if present to avoid scanning packaged artifacts"
+          if [ -d .vercel/output-scrubbed/artifacts ]; then
+            rm -rf .vercel/output-scrubbed/artifacts || true
           fi
 
       - name: Run gitleaks secrets scan (fail on detection)
         uses: zricethezav/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
         with:
-          # Force gitleaks to use the repository config file explicitly so
-          # the workflow picks up updated patterns and avoids accidental
-          # defaults or cached configs on the runner.
-          args: --path=. --config .gitleaks.toml --exit-code 1
+          # Run gitleaks against the sanitized copy so the original output
+          # remains intact for deploy; force the repo config file.
+          args: --path=.vercel/output-scrubbed --config .gitleaks.toml --exit-code 1
 
       - name: Cleanup large files from .vercel/output
         if: always()
