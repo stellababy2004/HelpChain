@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - chore/vercel-ignore-extra
+      - chore/remove-distinfo-and-add-gitleaks
   pull_request:
     branches:
       - main
