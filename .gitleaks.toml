@@ -2,13 +2,13 @@ title = "HelpChain custom gitleaks config"
 
 [allowlist]
 paths = [
-  "backend/_vendor/**",
-  "**/site-packages/**",
-  "**/.venv/**",
-  "**/venv/**",
-  "**/*.dist-info/**",
-  ".vercel/**",
-  "artifacts/**"
+  "^backend/_vendor/.*",
+  ".*/site-packages/.*",
+  ".*/\\.venv/.*",
+  ".*/venv/.*",
+  ".*\\.dist-info/.*",
+  ".*/\\.vercel/.*",
+  "artifacts/.*"
 ]
 
 # Optional: allowlist common low-entropy vendor patterns to reduce false positives.
@@ -17,13 +17,13 @@ paths = [
 [[allowlist.rules]]
 ids = ["generic-api-key"]
 paths = [
-  "backend/_vendor/**",
-  "**/site-packages/**",
-  "**/.venv/**",
-  "**/venv/**",
-  "**/*.dist-info/**",
-  ".vercel/**",
-  "artifacts/**"
+  "^backend/_vendor/.*",
+  ".*/site-packages/.*",
+  ".*/\\.venv/.*",
+  ".*/venv/.*",
+  ".*\\.dist-info/.*",
+  ".*/\\.vercel/.*",
+  "artifacts/.*"
 ]
 
 [options]
