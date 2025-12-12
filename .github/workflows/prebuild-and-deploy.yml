@@ -131,7 +131,10 @@ jobs:
       - name: Run gitleaks secrets scan (fail on detection)
         uses: zricethezav/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc
         with:
-          args: --path=. --exit-code 1
+          # Force gitleaks to use the repository config file explicitly so
+          # the workflow picks up updated patterns and avoids accidental
+          # defaults or cached configs on the runner.
+          args: --path=. --config .gitleaks.toml --exit-code 1
 
       - name: Cleanup large files from .vercel/output
         if: always()
