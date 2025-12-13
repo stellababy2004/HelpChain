@@ -3,6 +3,7 @@ import os
 try:
     import pyotp  # type: ignore
     from cryptography.fernet import Fernet  # type: ignore
+
     _AUTH_2FA_AVAILABLE = True
 except Exception:  # pragma: no cover - optional deps may be missing in test env
     pyotp = None  # type: ignore
@@ -14,7 +15,9 @@ from backend.models import User
 
 def _get_fernet() -> "Fernet":
     if not _AUTH_2FA_AVAILABLE:
-        raise RuntimeError("Optional 2FA dependencies not installed (pyotp/cryptography)")
+        raise RuntimeError(
+            "Optional 2FA dependencies not installed (pyotp/cryptography)"
+        )
     key = os.getenv("FERNET_KEY")
     if not key:
         raise RuntimeError(

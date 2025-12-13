@@ -1,0 +1,1802 @@
+[
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.env.local",
+    "Line": 2,
+    "Match": "VERCEL_OIDC_TOKEN"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 62,
+    "Match": "eyJjc3JmX3Rva2VuIjoiNDM3MzhiNTQxMzQxMGFjODA0NTU2MThiZmMxMTJlNzRiODJhYTQ2ZCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 62,
+    "Match": "eyJjc3JmX3Rva2VuIjoiNDM3MzhiNTQxMzQxMGFjODA0NTU2MThiZmMxMTJlNzRiODJhYTQ2ZCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 73,
+    "Match": "eyJjc3JmX3Rva2VuIjoiNjhmMDAwM2MzZGQ4ZTY3MWY4MzkxNDRlYTYzYTEyMzc2ZWZhN2QzMCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 73,
+    "Match": "eyJjc3JmX3Rva2VuIjoiNjhmMDAwM2MzZGQ4ZTY3MWY4MzkxNDRlYTYzYTEyMzc2ZWZhN2QzMCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 83,
+    "Match": "eyJjc3JmX3Rva2VuIjoiMWI4NWZmMDVlYmI2ZDc5MTFlZjdmOTNhM2Q2MjlmNzI3ZWY1NmM0NiJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 83,
+    "Match": "eyJjc3JmX3Rva2VuIjoiMWI4NWZmMDVlYmI2ZDc5MTFlZjdmOTNhM2Q2MjlmNzI3ZWY1NmM0NiJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 87,
+    "Match": "eyJjc3JmX3Rva2VuIjoiMWI4NWZmMDVlYmI2ZDc5MTFlZjdmOTNhM2Q2MjlmNzI3ZWY1NmM0NiJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 87,
+    "Match": "eyJjc3JmX3Rva2VuIjoiMWI4NWZmMDVlYmI2ZDc5MTFlZjdmOTNhM2Q2MjlmNzI3ZWY1NmM0NiJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 100,
+    "Match": "eyJjc3JmX3Rva2VuIjoiZDRiOTY5MTI5ZDNlNzYwNzc4NTk0ZjU3Y2RkOGY2NjNlODI5NzdjMSJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 100,
+    "Match": "eyJjc3JmX3Rva2VuIjoiZDRiOTY5MTI5ZDNlNzYwNzc4NTk0ZjU3Y2RkOGY2NjNlODI5NzdjMSJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 104,
+    "Match": "eyJjc3JmX3Rva2VuIjoiZDRiOTY5MTI5ZDNlNzYwNzc4NTk0ZjU3Y2RkOGY2NjNlODI5NzdjMSJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\error.log",
+    "Line": 104,
+    "Match": "eyJjc3JmX3Rva2VuIjoiZDRiOTY5MTI5ZDNlNzYwNzc4NTk0ZjU3Y2RkOGY2NjNlODI5NzdjMSJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 108,
+    "Match": "vercel-python-debug"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 108,
+    "Match": "vercel-python-debug"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 110,
+    "Match": "vercel-python-artifact"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 110,
+    "Match": "vercel-python-artifact"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 1437,
+    "Match": "vercel-python-debug"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 1437,
+    "Match": "vercel-python-debug"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 1439,
+    "Match": "vercel-python-artifact"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 1439,
+    "Match": "vercel-python-artifact"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 1441,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run_20081169811.log",
+    "Line": 1441,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20132846677.log",
+    "Line": 104,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20132846677.log",
+    "Line": 106,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20132846677.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20132846677.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20132846677.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20132846677.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20132846677.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133102370.log",
+    "Line": 104,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133102370.log",
+    "Line": 106,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133102370.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133102370.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133102370.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133102370.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133102370.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133520571.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133520571.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133520571.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133520571.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133520571.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133520571.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133520571.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133749612.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133749612.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133749612.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133749612.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133749612.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133749612.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133749612.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 1366,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 1368,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 1375,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 1375,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 1377,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133821093.log",
+    "Line": 1377,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 1365,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 1367,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 1374,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 1374,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 1375,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133919569.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 104,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 106,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 1367,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 1369,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 1377,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 1378,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20133987130.log",
+    "Line": 1378,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 104,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 106,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 1367,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 1369,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 1377,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 1378,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134156292.log",
+    "Line": 1378,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 104,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 106,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 1367,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 1369,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 1376,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 1377,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 1378,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134230503.log",
+    "Line": 1378,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 1649,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 1651,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 1658,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 1658,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 1659,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 1660,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134469972.log",
+    "Line": 1660,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 1659,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 1661,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 1668,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 1668,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 1669,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 1670,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20134600878.log",
+    "Line": 1670,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 1664,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 1666,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 1673,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 1673,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 1674,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 1675,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135278992.log",
+    "Line": 1675,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 104,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 106,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 710,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 715,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 716,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 717,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 1404,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 1675,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 1677,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 1684,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 1684,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 1685,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 1686,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135492175.log",
+    "Line": 1686,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 104,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 106,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 115,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 710,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 715,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 716,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 717,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 1404,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 1676,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 1678,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 1685,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 1685,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 1686,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 1687,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135552382.log",
+    "Line": 1687,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 741,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 746,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 747,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 748,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 1594,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 1880,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 1882,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 1889,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 1889,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 1890,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 1891,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135656099.log",
+    "Line": 1891,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 103,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 105,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 112,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 113,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 114,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 741,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 746,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 747,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 748,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 1594,
+    "Match": "vercel-output-20135278992"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 1881,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 1883,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 1890,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 1890,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 1891,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 1892,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\run20135764576.log",
+    "Line": 1892,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 5,
+    "Match": "eyJjc3JmX3Rva2VuIjoiNDM3MzhiNTQxMzQxMGFjODA0NTU2MThiZmMxMTJlNzRiODJhYTQ2ZCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 10,
+    "Match": "eyJjc3JmX3Rva2VuIjoiNDM3MzhiNTQxMzQxMGFjODA0NTU2MThiZmMxMTJlNzRiODJhYTQ2ZCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 15,
+    "Match": "eyJjc3JmX3Rva2VuIjoiNjhmMDAwM2MzZGQ4ZTY3MWY4MzkxNDRlYTYzYTEyMzc2ZWZhN2QzMCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 20,
+    "Match": "eyJjc3JmX3Rva2VuIjoiNjhmMDAwM2MzZGQ4ZTY3MWY4MzkxNDRlYTYzYTEyMzc2ZWZhN2QzMCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 25,
+    "Match": "eyJjc3JmX3Rva2VuIjoiMWI4NWZmMDVlYmI2ZDc5MTFlZjdmOTNhM2Q2MjlmNzI3ZWY1NmM0NiJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 30,
+    "Match": "eyJjc3JmX3Rva2VuIjoiMWI4NWZmMDVlYmI2ZDc5MTFlZjdmOTNhM2Q2MjlmNzI3ZWY1NmM0NiJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 35,
+    "Match": "eyJjc3JmX3Rva2VuIjoiMWI4NWZmMDVlYmI2ZDc5MTFlZjdmOTNhM2Q2MjlmNzI3ZWY1NmM0NiJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 40,
+    "Match": "eyJjc3JmX3Rva2VuIjoiMWI4NWZmMDVlYmI2ZDc5MTFlZjdmOTNhM2Q2MjlmNzI3ZWY1NmM0NiJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 45,
+    "Match": "eyJjc3JmX3Rva2VuIjoiZDRiOTY5MTI5ZDNlNzYwNzc4NTk0ZjU3Y2RkOGY2NjNlODI5NzdjMSJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 50,
+    "Match": "eyJjc3JmX3Rva2VuIjoiZDRiOTY5MTI5ZDNlNzYwNzc4NTk0ZjU3Y2RkOGY2NjNlODI5NzdjMSJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 55,
+    "Match": "eyJjc3JmX3Rva2VuIjoiZDRiOTY5MTI5ZDNlNzYwNzc4NTk0ZjU3Y2RkOGY2NjNlODI5NzdjMSJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 60,
+    "Match": "eyJjc3JmX3Rva2VuIjoiZDRiOTY5MTI5ZDNlNzYwNzc4NTk0ZjU3Y2RkOGY2NjNlODI5NzdjMSJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 65,
+    "Match": "sk-Kamchatski-standaardtydr"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 70,
+    "Match": "sk-Kamchatski-somertydr"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 75,
+    "Match": "sk-Kamtsjatski-standerttiidra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 80,
+    "Match": "sk-Kamtsjatski-simmertiidrb"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 85,
+    "Match": "sk-Kamtsjatski-standaardtijdr3"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 90,
+    "Match": "sk-Kamtsjatski-zomertijdr4"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 95,
+    "Match": "sk-SOYk5OUkbMXWWr_tEInOqPboNYs"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 100,
+    "Match": "EyjFtSbquT1_rmzYPnru2SM"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 105,
+    "Match": "EyJEaWdpQ2VydCBIaWdoIEFzc3VyYW5j"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 110,
+    "Match": "eyj9CYpKlBWTrT3JTW"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 115,
+    "Match": "eyJ9rQPOLXiZNwlz6bb65pc"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 120,
+    "Match": "EyJ43pdSVR6DtVQgA"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 125,
+    "Match": "Eyjq7hmFxLXs9rHmoJ0iKpEsdeV31zVmSAhHqT5Am5EM2fKifh"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 130,
+    "Match": "EyJTZWN1cml0eSBDb21tdW5pY2F0aW9uIEVDQyBSb290Q0ExMB4XDTE2MDYx"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 135,
+    "Match": "eYjjlwE8R4HyDqKYDZ4"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 140,
+    "Match": "eyJpZCI6NSwibmFtZSI6Iml0c2Rhbmdlcm91cyJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 145,
+    "Match": "EyJSK7KK53m4RRxOd00"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 150,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 155,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 160,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 165,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 170,
+    "Match": "EyJEaWdpQ2VydCBIaWdoIEFzc3VyYW5j"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 175,
+    "Match": "eyj9CYpKlBWTrT3JTW"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 180,
+    "Match": "eyJ9rQPOLXiZNwlz6bb65pc"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 185,
+    "Match": "EyJ43pdSVR6DtVQgA"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 190,
+    "Match": "Eyjq7hmFxLXs9rHmoJ0iKpEsdeV31zVmSAhHqT5Am5EM2fKifh"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 195,
+    "Match": "EyJTZWN1cml0eSBDb21tdW5pY2F0aW9uIEVDQyBSb290Q0ExMB4XDTE2MDYx"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 200,
+    "Match": "eYjjlwE8R4HyDqKYDZ4"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 205,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 210,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 215,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 220,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 225,
+    "Match": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 230,
+    "Match": "eyJzb21lIjoicGF5bG9hZCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 235,
+    "Match": "eyjfHaVRDV4QNY_Mg"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 240,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 245,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 250,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 255,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 260,
+    "Match": "EYjcgwEbLt0dXwz2ukjr18DiCzC0sraQqJ-Ww"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 265,
+    "Match": "EyJDx42tgSwS4LzHix3mY"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 270,
+    "Match": "EYjcgwEbLt0dXwz2ukjr18DiCzC0sraQqJ-Ww"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 275,
+    "Match": "EyjTgonUc0XGwgsrI5cgm1kkwulz_w"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\scan_results.json",
+    "Line": 280,
+    "Match": "sk-REPLACE_WITH_REAL_KEY"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.github\\scripts\\dispatch_and_wait.ps1",
+    "Line": 2,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.github\\scripts\\dispatch_and_wait.ps1",
+    "Line": 7,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.github\\workflows\\prebuild-and-deploy.yml",
+    "Line": 8,
+    "Match": "vercel-ignore-extra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\babel\\locale-data\\af.dat",
+    "Line": 172,
+    "Match": "sk-Kamchatski-standaardtydr"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\babel\\locale-data\\af.dat",
+    "Line": 172,
+    "Match": "sk-Kamchatski-somertydr"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\babel\\locale-data\\fy.dat",
+    "Line": 454,
+    "Match": "sk-Kamtsjatski-standerttiidra"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\babel\\locale-data\\fy.dat",
+    "Line": 454,
+    "Match": "sk-Kamtsjatski-simmertiidrb"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\babel\\locale-data\\nl.dat",
+    "Line": 926,
+    "Match": "sk-Kamtsjatski-standaardtijdr3"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\babel\\locale-data\\nl.dat",
+    "Line": 928,
+    "Match": "sk-Kamtsjatski-zomertijdr4"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\babel-2.17.0.dist-info\\RECORD",
+    "Line": 169,
+    "Match": "sk-SOYk5OUkbMXWWr_tEInOqPboNYs"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\babel-2.17.0.dist-info\\RECORD",
+    "Line": 1035,
+    "Match": "EyjFtSbquT1_rmzYPnru2SM"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\certifi\\cacert.pem",
+    "Line": 194,
+    "Match": "EyJEaWdpQ2VydCBIaWdoIEFzc3VyYW5j"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\certifi\\cacert.pem",
+    "Line": 199,
+    "Match": "eyj9CYpKlBWTrT3JTW"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\certifi\\cacert.pem",
+    "Line": 1343,
+    "Match": "eyJ9rQPOLXiZNwlz6bb65pc"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\certifi\\cacert.pem",
+    "Line": 1492,
+    "Match": "EyJ43pdSVR6DtVQgA"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\certifi\\cacert.pem",
+    "Line": 2301,
+    "Match": "Eyjq7hmFxLXs9rHmoJ0iKpEsdeV31zVmSAhHqT5Am5EM2fKifh"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\certifi\\cacert.pem",
+    "Line": 3892,
+    "Match": "EyJTZWN1cml0eSBDb21tdW5pY2F0aW9uIEVDQyBSb290Q0ExMB4XDTE2MDYx"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\certifi\\cacert.pem",
+    "Line": 3918,
+    "Match": "eYjjlwE8R4HyDqKYDZ4"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\itsdangerous-2.2.0.dist-info\\METADATA",
+    "Line": 44,
+    "Match": "eyJpZCI6NSwibmFtZSI6Iml0c2Rhbmdlcm91cyJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\mako-1.3.10.dist-info\\RECORD",
+    "Line": 1,
+    "Match": "EyJSK7KK53m4RRxOd00"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\packaging\\licenses\\_spdx.py",
+    "Line": 690,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\packaging\\licenses\\_spdx.py",
+    "Line": 690,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\packaging\\licenses\\__pycache__\\_spdx.cpython-311.pyc",
+    "Line": 854,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\packaging\\licenses\\__pycache__\\_spdx.cpython-311.pyc",
+    "Line": 854,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\certifi\\cacert.pem",
+    "Line": 194,
+    "Match": "EyJEaWdpQ2VydCBIaWdoIEFzc3VyYW5j"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\certifi\\cacert.pem",
+    "Line": 199,
+    "Match": "eyj9CYpKlBWTrT3JTW"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\certifi\\cacert.pem",
+    "Line": 1343,
+    "Match": "eyJ9rQPOLXiZNwlz6bb65pc"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\certifi\\cacert.pem",
+    "Line": 1492,
+    "Match": "EyJ43pdSVR6DtVQgA"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\certifi\\cacert.pem",
+    "Line": 2301,
+    "Match": "Eyjq7hmFxLXs9rHmoJ0iKpEsdeV31zVmSAhHqT5Am5EM2fKifh"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\certifi\\cacert.pem",
+    "Line": 3892,
+    "Match": "EyJTZWN1cml0eSBDb21tdW5pY2F0aW9uIEVDQyBSb290Q0ExMB4XDTE2MDYx"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\certifi\\cacert.pem",
+    "Line": 3918,
+    "Match": "eYjjlwE8R4HyDqKYDZ4"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\packaging\\licenses\\_spdx.py",
+    "Line": 690,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\packaging\\licenses\\_spdx.py",
+    "Line": 690,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\packaging\\licenses\\__pycache__\\_spdx.cpython-311.pyc",
+    "Line": 854,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\pip\\_vendor\\packaging\\licenses\\__pycache__\\_spdx.cpython-311.pyc",
+    "Line": 854,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\PyJWT-2.10.1.dist-info\\METADATA",
+    "Line": 89,
+    "Match": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\PyJWT-2.10.1.dist-info\\METADATA",
+    "Line": 89,
+    "Match": "eyJzb21lIjoicGF5bG9hZCJ9"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\python_socketio-5.15.0.dist-info\\RECORD",
+    "Line": 54,
+    "Match": "eyjfHaVRDV4QNY_Mg"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\setuptools\\_vendor\\packaging\\licenses\\_spdx.py",
+    "Line": 690,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\setuptools\\_vendor\\packaging\\licenses\\_spdx.py",
+    "Line": 690,
+    "Match": "sk-linking-protocols-exception"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\setuptools\\_vendor\\packaging\\licenses\\__pycache__\\_spdx.cpython-311.pyc",
+    "Line": 854,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\setuptools\\_vendor\\packaging\\licenses\\__pycache__\\_spdx.cpython-311.pyc",
+    "Line": 854,
+    "Match": "sk-linking-protocols-exceptionz"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\setuptools\\_vendor\\packaging-24.2.dist-info\\RECORD",
+    "Line": 16,
+    "Match": "EYjcgwEbLt0dXwz2ukjr18DiCzC0sraQqJ-Ww"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\setuptools-80.9.0.dist-info\\RECORD",
+    "Line": 176,
+    "Match": "EyJDx42tgSwS4LzHix3mY"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\setuptools-80.9.0.dist-info\\RECORD",
+    "Line": 462,
+    "Match": "EYjcgwEbLt0dXwz2ukjr18DiCzC0sraQqJ-Ww"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\.venv311\\Lib\\site-packages\\setuptools-80.9.0.dist-info\\RECORD",
+    "Line": 867,
+    "Match": "EyjTgonUc0XGwgsrI5cgm1kkwulz_w"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\backend\\AI_INTEGRATION_GUIDE.md",
+    "Line": 203,
+    "Match": "sk-REPLACE_WITH_REAL_KEY"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\reports\\20011642331_vercel_output_report.txt",
+    "Line": 75,
+    "Match": "vercel_output_report"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\.vc-config.json",
+    "Line": 5569,
+    "Match": "vercel_output_report"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\.vc-config.json",
+    "Line": 5569,
+    "Match": "vercel_output_report"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\.vc-config.json",
+    "Line": 5783,
+    "Match": "vercel_deploy_excerpt_20011642331"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\.vc-config.json",
+    "Line": 5783,
+    "Match": "vercel_deploy_excerpt_20011642331"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 268,
+    "Match": "vercel-internal-"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 309,
+    "Match": "vercel-internal-invocation-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 312,
+    "Match": "vercel-internal-request-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 315,
+    "Match": "vercel-internal-span-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 315,
+    "Match": "vercel-internal-trace-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 424,
+    "Match": "vercel-internal-invocation-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 425,
+    "Match": "vercel-internal-request-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 426,
+    "Match": "vercel-internal-invocation-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 427,
+    "Match": "vercel-internal-request-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 428,
+    "Match": "vercel-internal-span-id"
+  },
+  {
+    "Path": "C:\\dev\\HelpChain\\HelpChain.bg\\temp_artifact\\functions\\backend\\appy.py.func\\vc__handler__python.py",
+    "Line": 429,
+    "Match": "vercel-internal-trace-id"
+  }
+]

@@ -487,7 +487,11 @@ def admin_dashboard():
     except Exception:
         total_requests = 0
     try:
-        pending_requests = sum(1 for r in requests if getattr(r, "status", None) not in ("completed", "done", None))
+        pending_requests = sum(
+            1
+            for r in requests
+            if getattr(r, "status", None) not in ("completed", "done", None)
+        )
     except Exception:
         pending_requests = 0
     try:
@@ -506,7 +510,12 @@ def admin_dashboard():
         import logging as _logging
 
         _log = _logging.getLogger(__name__)
-        _log.info("admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s", stats, total_requests, total_volunteers)
+        _log.info(
+            "admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s",
+            stats,
+            total_requests,
+            total_volunteers,
+        )
     except Exception:
         pass
 

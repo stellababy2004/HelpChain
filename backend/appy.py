@@ -116,7 +116,9 @@ def require_admin_login(f):
 
         # Allow a config-based bypass (used in some test fixtures)
         try:
-            if current_app and getattr(current_app, "config", {}).get("BYPASS_ADMIN_AUTH", False):
+            if current_app and getattr(current_app, "config", {}).get(
+                "BYPASS_ADMIN_AUTH", False
+            ):
                 return f(*args, **kwargs)
         except Exception:
             pass
@@ -181,9 +183,12 @@ def require_admin_login(f):
             # return 401 for non-GET methods (so GETs may redirect to login).
             is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
             accepts_json = request.accept_mimetypes.best == "application/json"
-            path = (request.path or "")
-            if is_ajax or accepts_json or path.startswith("/admin/api/") or (
-                request.method != "GET" and path.startswith("/api/")
+            path = request.path or ""
+            if (
+                is_ajax
+                or accepts_json
+                or path.startswith("/admin/api/")
+                or (request.method != "GET" and path.startswith("/api/"))
             ):
                 try:
                     return jsonify({"error": "Unauthorized"}), 401
@@ -260,14 +265,17 @@ import sys as _early_sys
 try:
     # alias analytics_service
     import backend.analytics_service as _backend_analytics
+
     _early_sys.modules.setdefault("analytics_service", _backend_analytics)
 
     # alias extensions
     import backend.extensions as _backend_extensions
+
     _early_sys.modules.setdefault("extensions", _backend_extensions)
 
     # alias dispatch helper
     import backend._dispatch_email as _backend_dispatch
+
     _early_sys.modules.setdefault("_dispatch_email", _backend_dispatch)
 except Exception:
     # If anything fails here, fall back to existing behaviour and allow
@@ -294,7 +302,12 @@ try:
                     body = getattr(msg, "body", kwargs.get("body", None))
                     _dispatch_func(subject=subj, recipients=recips, body=body, **kwargs)
                 else:
-                    _dispatch_func(subject=kwargs.get("subject"), recipients=kwargs.get("recipients"), body=kwargs.get("body"), **kwargs)
+                    _dispatch_func(
+                        subject=kwargs.get("subject"),
+                        recipients=kwargs.get("recipients"),
+                        body=kwargs.get("body"),
+                        **kwargs,
+                    )
             except TypeError:
                 # Fallback: try best-effort positional mapping
                 try:
@@ -304,6 +317,7 @@ try:
 
     mail = _MailProxy()
 except Exception:
+
     class _NoopMail:
         def send(self, *a, **k):
             return None
@@ -372,9 +386,22 @@ def safe_url_for(endpoint: str, **values) -> str:
         except Exception:
             pass
         try:
-            log_path = os.path.join(getattr(app, "instance_path", app.root_path), "safe_url_for_fallbacks.log")
+            log_path = os.path.join(
+                getattr(app, "instance_path", app.root_path),
+                "safe_url_for_fallbacks.log",
+            )
             with open(log_path, "a", encoding="utf-8") as fh:
-                fh.write(json.dumps({"ts": int(datetime.now().timestamp()), "endpoint": endpoint, "values": values, "error": str(e)}) + "\n")
+                fh.write(
+                    json.dumps(
+                        {
+                            "ts": int(datetime.now().timestamp()),
+                            "endpoint": endpoint,
+                            "values": values,
+                            "error": str(e),
+                        }
+                    )
+                    + "\n"
+                )
         except Exception:
             pass
         return "#"
@@ -397,7 +424,10 @@ if str(_appy_os.environ.get("HELPCHAIN_TESTING", "")).lower() in ("1", "true", "
         # pytest session can control the temporary DB file location.
         try:
             app.config["_TEST_DB_PATH"] = _test_db_path
-            logger.info("TESTING: Using HELPCHAIN_TEST_DB_PATH from environment: %s", _test_db_path)
+            logger.info(
+                "TESTING: Using HELPCHAIN_TEST_DB_PATH from environment: %s",
+                _test_db_path,
+            )
         except Exception:
             # Best-effort: continue if logging or config assignment fails
             app.config.setdefault("_TEST_DB_PATH", _test_db_path)
@@ -494,10 +524,9 @@ def _testing_admin_request_shim():
             # blanket-block all `/api/` non-GET requests because many public
             # API endpoints (e.g. volunteer location updates) are meant to be
             # accessible without admin authentication in tests.
-            if (
-                (request.path or "").startswith("/admin/api/")
-                and request.method != "GET"
-            ):
+            if (request.path or "").startswith(
+                "/admin/api/"
+            ) and request.method != "GET":
                 return jsonify({"error": "Unauthorized"}), 401
     except Exception:
         # Don't break normal request flow if shim fails
@@ -550,11 +579,19 @@ def admin_dashboard_alias():
             try:
                 # Detect API/AJAX callers similarly to other shims
                 is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
-                accepts_json = request.accept_mimetypes.best == "application/json" or "application/json" in (request.headers.get("Accept", "") or "")
+                accepts_json = (
+                    request.accept_mimetypes.best == "application/json"
+                    or "application/json" in (request.headers.get("Accept", "") or "")
+                )
                 path = request.path or ""
                 # If this appears to be an API/AJAX call, let the shim fall
                 # through so other handlers can return JSON 401 as appropriate.
-                if is_ajax or accepts_json or path.startswith("/admin/api/") or (request.method != "GET" and path.startswith("/api/")):
+                if (
+                    is_ajax
+                    or accepts_json
+                    or path.startswith("/admin/api/")
+                    or (request.method != "GET" and path.startswith("/api/"))
+                ):
                     # Let the normal flow handle API responses
                     pass
                 else:
@@ -651,7 +688,9 @@ def _testing_admin_dashboard_after_request(response):
             try:
                 from flask import make_response
 
-                return make_response(render_template("admin_login.html", error=None), 200)
+                return make_response(
+                    render_template("admin_login.html", error=None), 200
+                )
             except Exception:
                 try:
                     from flask import make_response
@@ -1608,7 +1647,11 @@ def initialize_default_admin():
                         role_value = None
                     if role_value is None:
                         # Try common alternatives
-                        role_value = getattr(RoleEnum, "ADMIN", None) or getattr(RoleEnum, "SuperAdmin", None) or getattr(RoleEnum, "SUPERADMIN", None)
+                        role_value = (
+                            getattr(RoleEnum, "ADMIN", None)
+                            or getattr(RoleEnum, "SuperAdmin", None)
+                            or getattr(RoleEnum, "SUPERADMIN", None)
+                        )
                     if role_value is None:
                         # As a last resort, pick the first enum member
                         try:
@@ -1953,24 +1996,36 @@ def _test_bypass_admin_header():
                 # Diagnostic: log minimal session/header/cookie state to help pytest tracing
                 try:
                     from flask_login import current_user
+
                     dn = {
                         "session_keys": list(session.keys()),
                         "session_admin_logged_in": bool(session.get("admin_logged_in")),
                         "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                         "cookies": list(request.cookies.keys()),
-                        "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                        "current_user_authenticated": getattr(
+                            current_user, "is_authenticated", False
+                        ),
                     }
                     try:
                         dn["db_engine_id"] = id(get_db().engine)
                     except Exception:
                         dn["db_engine_id"] = None
                     try:
-                        dn["db_session_bind_id"] = id(db.session.bind) if getattr(db, "session", None) and getattr(db.session, "bind", None) else None
+                        dn["db_session_bind_id"] = (
+                            id(db.session.bind)
+                            if getattr(db, "session", None)
+                            and getattr(db.session, "bind", None)
+                            else None
+                        )
                     except Exception:
                         dn["db_session_bind_id"] = None
-                    current_app.logger.debug("_test_bypass_admin_header: applied BYPASS_ADMIN_AUTH %s", dn)
+                    current_app.logger.debug(
+                        "_test_bypass_admin_header: applied BYPASS_ADMIN_AUTH %s", dn
+                    )
                 except Exception:
-                    current_app.logger.debug("_test_bypass_admin_header: applied BYPASS_ADMIN_AUTH")
+                    current_app.logger.debug(
+                        "_test_bypass_admin_header: applied BYPASS_ADMIN_AUTH"
+                    )
             return
 
         # Honor the X-Admin-Bypass header used by test clients
@@ -1978,7 +2033,9 @@ def _test_bypass_admin_header():
             if request.headers.get("X-Admin-Bypass") == "1":
                 session["admin_logged_in"] = True
                 session["admin_user_id"] = session.get("admin_user_id") or 1
-                session["admin_username"] = session.get("admin_username") or "test_admin"
+                session["admin_username"] = (
+                    session.get("admin_username") or "test_admin"
+                )
                 try:
                     session.modified = True
                 except Exception:
@@ -1986,21 +2043,30 @@ def _test_bypass_admin_header():
                 # Diagnostic info when header bypass applied
                 try:
                     from flask_login import current_user
+
                     hdr_dn = {
                         "session_keys": list(session.keys()),
                         "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                         "cookies": list(request.cookies.keys()),
-                        "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                        "current_user_authenticated": getattr(
+                            current_user, "is_authenticated", False
+                        ),
                     }
                     try:
                         hdr_dn["db_engine_id"] = id(get_db().engine)
                     except Exception:
                         hdr_dn["db_engine_id"] = None
-                    current_app.logger.debug("_test_bypass_admin_header: applied header bypass %s", hdr_dn)
+                    current_app.logger.debug(
+                        "_test_bypass_admin_header: applied header bypass %s", hdr_dn
+                    )
                 except Exception:
-                    current_app.logger.debug("_test_bypass_admin_header: applied header bypass")
+                    current_app.logger.debug(
+                        "_test_bypass_admin_header: applied header bypass"
+                    )
         except Exception:
-            current_app.logger.exception("_test_bypass_admin_header header check failed")
+            current_app.logger.exception(
+                "_test_bypass_admin_header header check failed"
+            )
     except Exception:
         # Never raise during a request; this is only a test shim.
         current_app.logger.exception("_test_bypass_admin_header failed")
@@ -2013,26 +2079,35 @@ def _test_bypass_admin_header():
 def _global_request_diagnostics():
     try:
         from flask_login import current_user
+
         dn = {
             "path": request.path,
             "method": request.method,
             "session_keys": list(session.keys()),
             "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
             "cookies": list(request.cookies.keys()),
-            "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+            "current_user_authenticated": getattr(
+                current_user, "is_authenticated", False
+            ),
         }
         try:
             dn["db_engine_id"] = id(get_db().engine)
         except Exception:
             dn["db_engine_id"] = None
         try:
-            dn["db_session_bind_id"] = id(db.session.bind) if getattr(db, "session", None) and getattr(db.session, "bind", None) else None
+            dn["db_session_bind_id"] = (
+                id(db.session.bind)
+                if getattr(db, "session", None) and getattr(db.session, "bind", None)
+                else None
+            )
         except Exception:
             dn["db_session_bind_id"] = None
         app.logger.debug("_global_request_diagnostics: %s", dn)
     except Exception:
         try:
-            app.logger.debug("_global_request_diagnostics: failed to collect diagnostics")
+            app.logger.debug(
+                "_global_request_diagnostics: failed to collect diagnostics"
+            )
         except Exception:
             pass
 
@@ -2076,9 +2151,13 @@ def _pytest_force_admin_login():
             username = request.args.get("username") or "admin"
             try:
                 if db_sess is not None:
-                    admin = db_sess.query(AdminUser).filter_by(username=username).first()
+                    admin = (
+                        db_sess.query(AdminUser).filter_by(username=username).first()
+                    )
                 else:
-                    admin = db.session.query(AdminUser).filter_by(username=username).first()
+                    admin = (
+                        db.session.query(AdminUser).filter_by(username=username).first()
+                    )
             except Exception:
                 admin = None
 
@@ -2109,23 +2188,43 @@ def _pytest_force_admin_login():
                 # Diagnostic: show session/header/cookie so tests can correlate
                 try:
                     from flask_login import current_user
+
                     diag = {
                         "session_keys": list(session.keys()),
                         "session_admin_logged_in": bool(session.get("admin_logged_in")),
                         "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                         "cookies": list(request.cookies.keys()),
-                        "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                        "current_user_authenticated": getattr(
+                            current_user, "is_authenticated", False
+                        ),
                     }
                     try:
                         diag["db_engine_id"] = id(get_db().engine)
                     except Exception:
                         diag["db_engine_id"] = None
-                    app.logger.info("_pytest_force_admin_login: falling back to session shim (no DB admin) %s", diag)
+                    app.logger.info(
+                        "_pytest_force_admin_login: falling back to session shim (no DB admin) %s",
+                        diag,
+                    )
                 except Exception:
-                    app.logger.info("_pytest_force_admin_login: falling back to session shim (no DB admin)")
-                return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
+                    app.logger.info(
+                        "_pytest_force_admin_login: falling back to session shim (no DB admin)"
+                    )
+                return (
+                    jsonify(
+                        {
+                            "success": True,
+                            "admin_id": session["admin_user_id"],
+                            "username": session["admin_username"],
+                        }
+                    ),
+                    200,
+                )
             except Exception as e:
-                return jsonify({"success": False, "error": f"session shim failed: {e}"}), 500
+                return (
+                    jsonify({"success": False, "error": f"session shim failed: {e}"}),
+                    500,
+                )
 
         # Set session flags and perform a deterministic Flask-Login login.
         # We prefer to call `login_user` first (so Flask-Login internal
@@ -2179,7 +2278,12 @@ def _pytest_force_admin_login():
             # If any unexpected error occurs, return a JSON error for the test
             return jsonify({"success": False, "error": str(e)}), 500
 
-        return jsonify({"success": True, "admin_id": admin.id, "username": admin.username}), 200
+        return (
+            jsonify(
+                {"success": True, "admin_id": admin.id, "username": admin.username}
+            ),
+            200,
+        )
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
 
@@ -2216,8 +2320,19 @@ def _admin_force_login():
                 session.modified = True
             except Exception:
                 pass
-            current_app.logger.debug("_admin_force_login: applied session shim (no DB admin)")
-            return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
+            current_app.logger.debug(
+                "_admin_force_login: applied session shim (no DB admin)"
+            )
+            return (
+                jsonify(
+                    {
+                        "success": True,
+                        "admin_id": session["admin_user_id"],
+                        "username": session["admin_username"],
+                    }
+                ),
+                200,
+            )
 
         # If admin exists, perform deterministic login via Flask-Login
         try:
@@ -2246,25 +2361,42 @@ def _admin_force_login():
         except Exception:
             pass
 
-        current_app.logger.debug("_admin_force_login: performed login for admin id=%s", admin.id if admin else "<shim>")
+        current_app.logger.debug(
+            "_admin_force_login: performed login for admin id=%s",
+            admin.id if admin else "<shim>",
+        )
         try:
             # Additional diagnostics to help trace why later requests may see unauthenticated state
             from flask_login import current_user
+
             diag2 = {
                 "session_keys": list(session.keys()),
                 "session_admin_logged_in": bool(session.get("admin_logged_in")),
                 "header_X-Admin-Bypass": request.headers.get("X-Admin-Bypass"),
                 "cookies": list(request.cookies.keys()),
-                "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+                "current_user_authenticated": getattr(
+                    current_user, "is_authenticated", False
+                ),
             }
             try:
                 diag2["db_engine_id"] = id(get_db().engine)
             except Exception:
                 diag2["db_engine_id"] = None
-            current_app.logger.debug("_admin_force_login: post-login diagnostics %s", diag2)
+            current_app.logger.debug(
+                "_admin_force_login: post-login diagnostics %s", diag2
+            )
         except Exception:
             pass
-        return jsonify({"success": True, "admin_id": session["admin_user_id"], "username": session["admin_username"]}), 200
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "admin_id": session["admin_user_id"],
+                    "username": session["admin_username"],
+                }
+            ),
+            200,
+        )
     except Exception as exc:
         current_app.logger.exception("_admin_force_login failed")
         return jsonify({"success": False, "error": str(exc)}), 500
@@ -2293,8 +2425,17 @@ def _test_diag():
             "testing": app.config.get("TESTING"),
             "test_db_path": app.config.get("_TEST_DB_PATH"),
             "sqlalchemy_uri": app.config.get("SQLALCHEMY_DATABASE_URI"),
-            "current_user_is_authenticated": getattr(current_user, "is_authenticated", False),
-            "session": {k: (v if k in ("admin_username", "admin_user_id", "admin_logged_in") else "<redacted>") for k, v in session.items()},
+            "current_user_is_authenticated": getattr(
+                current_user, "is_authenticated", False
+            ),
+            "session": {
+                k: (
+                    v
+                    if k in ("admin_username", "admin_user_id", "admin_logged_in")
+                    else "<redacted>"
+                )
+                for k, v in session.items()
+            },
         }
         try:
             # Engine and bind diagnostics
@@ -2594,7 +2735,9 @@ elif app.config.get("TESTING"):
     # Provide test VAPID keys so push-related tests receive a configured key.
     try:
         test_pub = os.environ.get("VAPID_PUBLIC_KEY") or "BTEST_PUBLIC_KEY_1234567890"
-        test_priv = os.environ.get("VAPID_PRIVATE_KEY") or "BTEST_PRIVATE_KEY_0987654321"
+        test_priv = (
+            os.environ.get("VAPID_PRIVATE_KEY") or "BTEST_PRIVATE_KEY_0987654321"
+        )
         app.config.setdefault("VAPID_PUBLIC_KEY", test_pub)
         app.config.setdefault("VAPID_PRIVATE_KEY", test_priv)
         # Also export to environment for modules that read os.getenv
@@ -2694,18 +2837,18 @@ def _apply_static_cache_headers(response):
             if should_override:
                 # Fingerprinted assets (with a short hash) should be immutable for a long TTL
                 if re.search(r"-[a-f0-9]{8,}\.[a-z0-9]+$", req_path):
-                    response.headers["Cache-Control"] = (
-                        "public, max-age=31536000, immutable"
-                    )
+                    response.headers[
+                        "Cache-Control"
+                    ] = "public, max-age=31536000, immutable"
                 else:
                     max_age = int(app.config.get("SEND_FILE_MAX_AGE_DEFAULT", 86400))
                     response.headers["Cache-Control"] = f"public, max-age={max_age}"
 
         # Protect admin routes explicitly: never allow public caching
         if req_path.startswith("/admin"):
-            response.headers["Cache-Control"] = (
-                "no-store, no-cache, must-revalidate, max-age=0"
-            )
+            response.headers[
+                "Cache-Control"
+            ] = "no-store, no-cache, must-revalidate, max-age=0"
 
     except Exception:
         # Don't break responses on header-setting failures
@@ -2965,7 +3108,11 @@ try:
     else:
         # If running in TESTING or development, enable aggressive clearing
         # by default to preserve the previous developer experience.
-        if app.config.get("TESTING") or app.config.get("ENV") == "development" or os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
+        if (
+            app.config.get("TESTING")
+            or app.config.get("ENV") == "development"
+            or os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True")
+        ):
             app.config["FORCE_CLEAR_SESSION_LANGUAGE"] = True
 except Exception:
     # Be defensive: keep the conservative default if anything goes wrong
@@ -3445,7 +3592,6 @@ except Exception as e:
 # Initialize analytics service with database session (skip during tests so
 # test fixtures can control DB setup and avoid early engine binding).
 try:
-
     if not app.config.get("TESTING", False):
         init_analytics_service(db.session)
         app.logger.info("Analytics service initialized successfully")
@@ -3689,7 +3835,8 @@ try:
                             sess.query(AdminUser)
                             .filter(
                                 or_(
-                                    func.lower(AdminUser.username) == identifier.lower(),
+                                    func.lower(AdminUser.username)
+                                    == identifier.lower(),
                                     func.lower(AdminUser.email) == identifier.lower(),
                                 )
                             )
@@ -3703,7 +3850,11 @@ try:
                 pw_ok = False
                 try:
                     if user_obj and password:
-                        pw_ok = bool(getattr(user_obj, "check_password", lambda p: False)(password))
+                        pw_ok = bool(
+                            getattr(user_obj, "check_password", lambda p: False)(
+                                password
+                            )
+                        )
                 except Exception:
                     pw_ok = False
 
@@ -3805,7 +3956,6 @@ if socketio:
             app.logger.debug("Analytics update skipped (charts feature disabled)")
             return
         try:
-
             # Get latest analytics data
             dashboard_data = analytics_service.get_dashboard_analytics()
 
@@ -4440,7 +4590,9 @@ def _force_clear_session_language():
         try:
             # If the current request is the named endpoint for set_language,
             # skip clearing so the handler can persist the value.
-            if request.endpoint == "set_language" or (request.path or "").startswith("/set_language"):
+            if request.endpoint == "set_language" or (request.path or "").startswith(
+                "/set_language"
+            ):
                 return
         except Exception:
             pass
@@ -4459,7 +4611,9 @@ def _force_clear_session_language():
         except Exception:
             # Be defensive: do not interrupt request processing
             try:
-                app.logger.debug("Failed to clear session language: %s", traceback.format_exc())
+                app.logger.debug(
+                    "Failed to clear session language: %s", traceback.format_exc()
+                )
             except Exception:
                 pass
     except Exception:
@@ -4904,7 +5058,9 @@ def index():
     # Render the new landing page via Jinja so we can use url_for/i18n
     volunteer_id = 1  # Example ID, replace with dynamic logic as needed
     category = "general"  # Example category, replace with dynamic logic as needed
-    return render_template("home_new.html", volunteer_id=volunteer_id, category=category)
+    return render_template(
+        "home_new.html", volunteer_id=volunteer_id, category=category
+    )
 
 
 # Explicit redirect if някой влезе към стария статичен преглед
@@ -5400,8 +5556,11 @@ def admin_dashboard():
     app.logger.info(f"Current SECRET_KEY: {app.config.get('SECRET_KEY', 'NOT_SET')}")
     try:
         from flask_login import current_user
+
         extra_diag = {
-            "current_user_authenticated": getattr(current_user, "is_authenticated", False),
+            "current_user_authenticated": getattr(
+                current_user, "is_authenticated", False
+            ),
             "current_user_repr": getattr(current_user, "get_id", lambda: None)(),
         }
         try:
@@ -5411,7 +5570,11 @@ def admin_dashboard():
             extra_diag["db_engine_id"] = None
         try:
             _d = get_db()
-            extra_diag["db_session_bind_id"] = id(_d.session.bind) if getattr(_d, "session", None) and getattr(_d.session, "bind", None) else None
+            extra_diag["db_session_bind_id"] = (
+                id(_d.session.bind)
+                if getattr(_d, "session", None) and getattr(_d.session, "bind", None)
+                else None
+            )
         except Exception:
             extra_diag["db_session_bind_id"] = None
         app.logger.info("admin_dashboard extra diagnostics: %s", extra_diag)
@@ -6502,7 +6665,11 @@ def submit_request():
             # Ensure `title` is provided (DB schema requires it). Use the
             # provided category as a short title when available, otherwise
             # derive a concise title from the problem description.
-            title_val = category if category else (problem[:100] if problem else "Заявка за помощ")
+            title_val = (
+                category
+                if category
+                else (problem[:100] if problem else "Заявка за помощ")
+            )
             help_request = HelpRequest(
                 title=title_val,
                 name=name,
@@ -6733,7 +6900,12 @@ HelpChain системата
 """
 
                     # Send as a Message positional arg so tests can inspect call_args[0][0]
-                    msg = Message(subject="HelpChain - Код за достъп", recipients=[email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
+                    msg = Message(
+                        subject="HelpChain - Код за достъп",
+                        recipients=[email],
+                        body=email_body,
+                        sender=app.config.get("MAIL_DEFAULT_SENDER"),
+                    )
                     mail.send(msg)
                     logger.warning("Access code sent to %s", email)
                     app.logger.info(f"Access code sent to {email}")
@@ -6820,6 +6992,7 @@ def volunteer_verify_code():
     try:
         from backend.models import AdminUser
         from backend.extensions import db as _db
+
         try:
             admin_exists = (
                 _db.session.query(AdminUser)
@@ -6984,7 +7157,12 @@ def resend_volunteer_code():
 HelpChain системата
 """
 
-            msg = Message(subject="HelpChain - Нов код за достъп", recipients=[volunteer.email], body=email_body, sender=app.config.get("MAIL_DEFAULT_SENDER"))
+            msg = Message(
+                subject="HelpChain - Нов код за достъп",
+                recipients=[volunteer.email],
+                body=email_body,
+                sender=app.config.get("MAIL_DEFAULT_SENDER"),
+            )
             mail.send(msg)
 
             return jsonify(
@@ -7685,13 +7863,22 @@ def api_volunteers_nearby():
             candidate_list = list(volunteers_query)
             # For test-time debugging print to stdout so pytest -s captures it
             try:
-                print("NEARBY CANDIDATES:", [
-                    {"id": getattr(v, 'id', None), "lat": getattr(v, 'latitude', None), "lng": getattr(v, 'longitude', None)}
-                    for v in candidate_list
-                ])
+                print(
+                    "NEARBY CANDIDATES:",
+                    [
+                        {
+                            "id": getattr(v, "id", None),
+                            "lat": getattr(v, "latitude", None),
+                            "lng": getattr(v, "longitude", None),
+                        }
+                        for v in candidate_list
+                    ],
+                )
             except Exception:
                 try:
-                    print("NEARBY CANDIDATES (repr):", [repr(v) for v in candidate_list])
+                    print(
+                        "NEARBY CANDIDATES (repr):", [repr(v) for v in candidate_list]
+                    )
                 except Exception:
                     pass
         except Exception:

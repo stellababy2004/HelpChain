@@ -40,7 +40,9 @@ def main() -> int:
             else:
                 print(f"Found {len(users)} users:")
                 for u in users:
-                    print(f" - {getattr(u, 'id', '?')}: {getattr(u, 'username', '')} <{getattr(u, 'email', '')}>")
+                    print(
+                        f" - {getattr(u, 'id', '?')}: {getattr(u, 'username', '')} <{getattr(u, 'email', '')}>"
+                    )
     except Exception as exc:
         print("Error querying users:", exc)
         return 2

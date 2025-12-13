@@ -1450,12 +1450,38 @@ def _minimal_analytics() -> dict:
             "conversions": 0,
             "conversion_rate": 0.0,
         },
-        "user_engagement": {"top_pages": [], "device_breakdown": [], "hourly_activity": [{"hour": h, "activity": 0} for h in range(24)]},
-        "chatbot_analytics": {"total_conversations": 0, "response_types": {}, "ai_statistics": {}, "average_rating": 0, "rated_conversations": 0},
+        "user_engagement": {
+            "top_pages": [],
+            "device_breakdown": [],
+            "hourly_activity": [{"hour": h, "activity": 0} for h in range(24)],
+        },
+        "chatbot_analytics": {
+            "total_conversations": 0,
+            "response_types": {},
+            "ai_statistics": {},
+            "average_rating": 0,
+            "rated_conversations": 0,
+        },
         "performance_metrics": {"endpoint_performance": [], "daily_performance": []},
-        "conversion_funnel": {"total_visitors": 0, "visited_register": 0, "started_registration": 0, "completed_registration": 0, "chatbot_users": 0, "conversion_rates": {}},
-        "user_journey": {"top_entry_pages": [], "top_exit_pages": [], "common_user_paths": []},
-        "real_time": {"active_users_now": 0, "page_views_last_hour": 0, "chatbot_messages_last_hour": 0, "timestamp": utc_now().isoformat()},
+        "conversion_funnel": {
+            "total_visitors": 0,
+            "visited_register": 0,
+            "started_registration": 0,
+            "completed_registration": 0,
+            "chatbot_users": 0,
+            "conversion_rates": {},
+        },
+        "user_journey": {
+            "top_entry_pages": [],
+            "top_exit_pages": [],
+            "common_user_paths": [],
+        },
+        "real_time": {
+            "active_users_now": 0,
+            "page_views_last_hour": 0,
+            "chatbot_messages_last_hour": 0,
+            "timestamp": utc_now().isoformat(),
+        },
         "is_sample_data": True,
     }
 
@@ -1470,7 +1496,8 @@ class _NoopAnalytics:
 
 class _LazyAnalytics:
     """Lazy wrapper that delegates to a real analytics service if available,
-    otherwise returns no-op data when running in TESTING mode or when not initialized."""
+    otherwise returns no-op data when running in TESTING mode or when not initialized.
+    """
 
     def get_dashboard_analytics(self, *a, **k):
         try:

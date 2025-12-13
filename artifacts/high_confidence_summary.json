@@ -1,0 +1,88 @@
+{
+  "total_candidates": 15550,
+  "category_counts": {
+    "other": 6025
+  },
+  "top_20": [
+    {
+      "count": 293,
+      "value": "www.opensource.org"
+    },
+    {
+      "count": 176,
+      "value": "M3.2.0"
+    },
+    {
+      "count": 176,
+      "value": "M11.1.0"
+    },
+    {
+      "count": 160,
+      "value": "M10.5.0"
+    },
+    {
+      "count": 154,
+      "value": "M3.5.0"
+    },
+    {
+      "count": 109,
+      "value": "self.__class__.__name__"
+    },
+    {
+      "count": 85,
+      "value": "os.environ.get"
+    },
+    {
+      "count": 79,
+      "value": "dns.immutable.immutable"
+    },
+    {
+      "count": 65,
+      "value": "2.16.0"
+    },
+    {
+      "count": 64,
+      "value": "os.path.join"
+    },
+    {
+      "count": 56,
+      "value": "dns.rdata.Rdata"
+    },
+    {
+      "count": 51,
+      "value": "docs.python.org"
+    },
+    {
+      "count": 47,
+      "value": "M4.1.0"
+    },
+    {
+      "count": 45,
+      "value": "os.path.dirname"
+    },
+    {
+      "count": 44,
+      "value": "os.path.exists"
+    },
+    {
+      "count": 44,
+      "value": "kombu.utils.encoding"
+    },
+    {
+      "count": 41,
+      "value": "dd.MM.y"
+    },
+    {
+      "count": 40,
+      "value": "hosted.weblate.org"
+    },
+    {
+      "count": 38,
+      "value": "celery.utils.log"
+    },
+    {
+      "count": 37,
+      "value": "kombu.utils.objects"
+    }
+  ]
+}

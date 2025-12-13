@@ -80,9 +80,9 @@ if db_url:
     db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"sqlite:///{INSTANCE_DIR / 'volunteers.db'}"
-    )
+    app.config[
+        "SQLALCHEMY_DATABASE_URI"
+    ] = f"sqlite:///{INSTANCE_DIR / 'volunteers.db'}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 from .models import (
@@ -101,6 +101,7 @@ db.init_app(app)
 migrate = Migrate(app, db)
 db.init_app(app)
 migrate = Migrate(app, db)
+
 
 # Test-only: force an admin login for pytest runs. Mirrors the helper in
 # the lightweight `appy.py` module but avoids calling `login_user()` so
@@ -143,9 +144,15 @@ def _pytest_force_admin_login():
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
 
-        return jsonify({"success": True, "admin_id": admin.id, "username": admin.username}), 200
+        return (
+            jsonify(
+                {"success": True, "admin_id": admin.id, "username": admin.username}
+            ),
+            200,
+        )
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
+
 
 # -----------------------------------------------------------------------------
 # I18N / Babel
@@ -1651,9 +1658,9 @@ def admin_export():
 
         response = make_response(output.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"
-        response.headers["Content-Disposition"] = (
-            f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
-        )
+        response.headers[
+            "Content-Disposition"
+        ] = f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
 
         return response
 
@@ -1689,9 +1696,9 @@ def admin_export():
 
         response = make_response(json.dumps(data, ensure_ascii=False, indent=2))
         response.headers["Content-Type"] = "application/json; charset=utf-8"
-        response.headers["Content-Disposition"] = (
-            f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
-        )
+        response.headers[
+            "Content-Disposition"
+        ] = f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
 
         return response
 

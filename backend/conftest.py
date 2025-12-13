@@ -25,6 +25,7 @@ os.environ.setdefault("HELPCHAIN_TESTING", "1")
 # before session fixtures run (avoids ordering/timing issues on CI/Windows).
 try:
     import requests
+
     _requests_orig_request = requests.Session.request
 
     def _requests_intercept(self, method, url, *args, **kwargs):
@@ -40,9 +41,7 @@ try:
                 return resp
             if url.endswith("/admin/roles") and m == "GET":
                 resp.status_code = 200
-                resp._content = "<html><body>Роли и Права</body></html>".encode(
-                    "utf-8"
-                )
+                resp._content = "<html><body>Роли и Права</body></html>".encode("utf-8")
                 return resp
             resp.status_code = 200
             resp._content = b"OK"
@@ -129,7 +128,6 @@ def prepare_database():
             except Exception:
                 pass
 
-
     @pytest.fixture(scope="session", autouse=True)
     def external_admin_stub_backend():
         """Start a tiny HTTP server on 127.0.0.1:3000 for backend tests.
@@ -183,7 +181,9 @@ def prepare_database():
                     ready = False
                     for _ in range(8):
                         try:
-                            with socket.create_connection(("127.0.0.1", 3000), timeout=0.2):
+                            with socket.create_connection(
+                                ("127.0.0.1", 3000), timeout=0.2
+                            ):
                                 ready = True
                                 break
                         except Exception:
@@ -220,8 +220,6 @@ def prepare_database():
             except Exception:
                 pass
 
-
-
     @pytest.fixture(scope="session", autouse=True)
     def patch_requests_for_backend_admin():
         """Intercept outbound requests to 127.0.0.1:3000 and return predictable responses.
@@ -248,7 +246,9 @@ def prepare_database():
                         return resp
                     if url.endswith("/admin/roles") and m == "GET":
                         resp.status_code = 200
-                        resp._content = "<html><body>Роли и Права</body></html>".encode("utf-8")
+                        resp._content = "<html><body>Роли и Права</body></html>".encode(
+                            "utf-8"
+                        )
                         return resp
                     # Default stub for other admin endpoints
                     resp.status_code = 200

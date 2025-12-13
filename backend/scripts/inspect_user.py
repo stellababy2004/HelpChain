@@ -16,14 +16,14 @@ from backend.app import app
 with app.app_context():
     u = models.User.query.filter_by(username="testuser").first()
     if not u:
-        print('User testuser не е намерен')
+        print("User testuser не е намерен")
     else:
-        print('id=', getattr(u, 'id', None))
-        print('username=', getattr(u, 'username', None))
-        print('email=', getattr(u, 'email', None))
-        print('role=', getattr(u, 'role', None))
-        print('password_hash=', getattr(u, 'password_hash', None))
+        print("id=", getattr(u, "id", None))
+        print("username=", getattr(u, "username", None))
+        print("email=", getattr(u, "email", None))
+        print("role=", getattr(u, "role", None))
+        print("password_hash=", getattr(u, "password_hash", None))
         try:
-            print('check_password("secret123")=', u.check_password('secret123'))
+            print('check_password("secret123")=', u.check_password("secret123"))
         except Exception as exc:
-            print('check_password raised:', exc)
+            print("check_password raised:", exc)
