@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "routes": [
+    {
+      "src": "^(.*)$",
+      "dest": "backend/appy.py"
+    }
+  ],
+  "crons": []
+}

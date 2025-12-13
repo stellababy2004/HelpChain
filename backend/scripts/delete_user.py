@@ -56,9 +56,16 @@ def main(argv: Optional[list[str]] = None) -> int:
             logging.info("No User with username '%s' found.", args.username)
             return 0
 
-        logging.info("Found User: id=%s username=%s email=%s", getattr(user, "id", "?"), getattr(user, "username", ""), getattr(user, "email", ""))
+        logging.info(
+            "Found User: id=%s username=%s email=%s",
+            getattr(user, "id", "?"),
+            getattr(user, "username", ""),
+            getattr(user, "email", ""),
+        )
         if dry_run:
-            logging.info("Dry-run: would delete this User. Re-run with --commit to apply.")
+            logging.info(
+                "Dry-run: would delete this User. Re-run with --commit to apply."
+            )
             return 0
 
         try:

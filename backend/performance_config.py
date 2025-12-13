@@ -452,7 +452,9 @@ class PerformanceMonitor:
                     "status": (
                         "good"
                         if avg_time < 0.5
-                        else "warning" if avg_time < 1.0 else "slow"
+                        else "warning"
+                        if avg_time < 1.0
+                        else "slow"
                     ),
                 }
 

@@ -16,9 +16,9 @@ from backend.models import AdminUser, db
 
 # Create a minimal app for testing
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    r"sqlite:///C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db"
-)
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = r"sqlite:///C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "test-key"  # pragma: allowlist secret
 

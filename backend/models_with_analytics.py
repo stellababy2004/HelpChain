@@ -42,6 +42,7 @@ try:
     # Prefer the canonical `backend.extensions` db instance first so all
     # modules reference the same SQLAlchemy() object during tests.
     from backend.extensions import db as _db
+
     db = _db
 except Exception:
     try:
@@ -55,7 +56,16 @@ except Exception:
 if db is None:
     # Fallback: build a minimal db-like namespace using SQLAlchemy primitives
     try:
-        from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, Float, ForeignKey
+        from sqlalchemy import (
+            Column,
+            Integer,
+            String,
+            Text,
+            Boolean,
+            DateTime,
+            Float,
+            ForeignKey,
+        )
         from sqlalchemy.orm import declarative_base, relationship
 
         _Base = declarative_base()

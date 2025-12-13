@@ -1,0 +1,14 @@
+Security incident: potential artifact secret exposure (2025-12-12)
+
+Summary:
+- A CI prebuilt artifact produced by 
+px vercel build was flagged by a secrets scanner.
+- Immediate remediation performed: tokens rotated/revoked, redaction commits applied, artifacts removed where public.
+- CI hardening added: .gitleaks.toml and workflow changes to scan a sanitized copy of .vercel/output.
+
+Verification:
+- CI run 20165870895 completed; gitleaks SARIF shows no findings.
+
+Details & full report: https://github.com/stellababy2004/HelpChain.bg/blob/main/docs/INCIDENT-2025-12-12.md
+
+If you have questions or see related activity, please contact the repository owner.
