@@ -2,7 +2,7 @@
 """Преглед на таблиците admin_users и users в локалната SQLite база.
 
 Използване:
-  python backend/scripts/check_admin_db.py
+    python backend/scripts/check_admin_db.py
 """
 
 import os
@@ -30,7 +30,7 @@ def main():
             rows = cur.fetchall()
             print("  COLUMNS:", cols)
             for r in rows:
-                print("  ", dict(zip(cols, r)))
+                print("  ", dict(zip(cols, r, strict=False)))
     except Exception as e:
         print("Could not read admin_users:", e)
 

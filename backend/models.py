@@ -282,79 +282,6 @@ def get_query_for(model):
     # Final fallback: raise so callers notice configuration issue early.
     raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
 
-    @permission.setter
-    def permission(self, value):
-        # Allow assigning by codename string or by Permission instance.
-        try:
-            logger.debug(f"RolePermission.permission setter called with value={value!r}")
-        except Exception:
-            pass
-        if isinstance(value, str):
-            try:
-                # Try model-level query first (works when query proxy is attached)
-                p = None
-                try:
-                    p = Permission.query.filter_by(codename=value).first()
-                except Exception:
-                    p = None
-
-                if p is None:
-                    # Fallback: try to resolve using a session associated with
-                    # this RolePermission or its Role (object_session), then
-                    # try the Flask-SQLAlchemy session if available. This
-                    # covers test fixtures that add objects via a different
-                    # session than the models module's query proxy.
-                    try:
-                        from sqlalchemy.orm import object_session
-
-                        sess = object_session(self) or (object_session(self.role) if getattr(self, "role", None) is not None else None)
-                    except Exception:
-                        sess = None
-
-                    if sess is not None:
-                        try:
-                            p = sess.query(Permission).filter_by(codename=value).first()
-                        except Exception:
-                            p = None
-
-                    if p is None:
-                        try:
-                            from backend.extensions import db as _ext_db
-
-                            p = _ext_db.session.query(Permission).filter_by(codename=value).first()
-                        except Exception:
-                            p = None
-
-                if p is not None:
-                    self.permission_id = p.id
-                    self._permission = p
-                    try:
-                        logger.debug(f"Resolved permission codename '{value}' -> id={p.id}")
-                    except Exception:
-                        pass
-                else:
-                    # No matching Permission found; clear relation
-                    self.permission_id = None
-                    self._permission = None
-            except Exception:
-                self.permission_id = None
-                self._permission = None
-        elif value is None:
-            self.permission_id = None
-            self._permission = None
-        else:
-            # Assume a Permission instance-like object
-            try:
-                self._permission = value
-                self.permission_id = getattr(value, "id", None)
-                try:
-                    logger.debug(f"Assigned Permission instance -> id={self.permission_id}")
-                except Exception:
-                    pass
-            except Exception:
-                self._permission = None
-                self.permission_id = None
-
 
 class User(Base):
     """Модел за потребители"""
@@ -1110,6 +1037,82 @@ class RolePermission(Base):
         permission = relationship("Permission", backref="role_permissions")
     except Exception:
         permission = None
+    try:
+        @permission.setter
+        def permission(self, value):
+            # Allow assigning by codename string or by Permission instance.
+            try:
+                logger.debug(f"RolePermission.permission setter called with value={value!r}")
+            except Exception:
+                pass
+            if isinstance(value, str):
+                try:
+                    # Try model-level query first (works when query proxy is attached)
+                    p = None
+                    try:
+                        p = Permission.query.filter_by(codename=value).first()
+                    except Exception:
+                        p = None
+
+                    if p is None:
+                        # Fallback: try to resolve using a session associated with
+                        # this RolePermission or its Role (object_session), then
+                        # try the Flask-SQLAlchemy session if available. This
+                        # covers test fixtures that add objects via a different
+                        # session than the models module's query proxy.
+                        try:
+                            from sqlalchemy.orm import object_session
+
+                            sess = object_session(self) or (object_session(self.role) if getattr(self, "role", None) is not None else None)
+                        except Exception:
+                            sess = None
+
+                        if sess is not None:
+                            try:
+                                p = sess.query(Permission).filter_by(codename=value).first()
+                            except Exception:
+                                p = None
+
+                        if p is None:
+                            try:
+                                from backend.extensions import db as _ext_db
+
+                                p = _ext_db.session.query(Permission).filter_by(codename=value).first()
+                            except Exception:
+                                p = None
+
+                    if p is not None:
+                        self.permission_id = p.id
+                        self._permission = p
+                        try:
+                            logger.debug(f"Resolved permission codename '{value}' -> id={p.id}")
+                        except Exception:
+                            pass
+                    else:
+                        # No matching Permission found; clear relation
+                        self.permission_id = None
+                        self._permission = None
+                except Exception:
+                    self.permission_id = None
+                    self._permission = None
+            elif value is None:
+                self.permission_id = None
+                self._permission = None
+            else:
+                # Assume a Permission instance-like object
+                try:
+                    self._permission = value
+                    self.permission_id = getattr(value, "id", None)
+                    try:
+                        logger.debug(f"Assigned Permission instance -> id={self.permission_id}")
+                    except Exception:
+                        pass
+                except Exception:
+                    self._permission = None
+                    self.permission_id = None
+    except Exception:
+        # If @permission isn't valid in this environment, silently ignore.
+        pass
 
 
 # Minimal chat models

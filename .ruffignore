@@ -1,0 +1,5 @@
+# Ignore generated artifacts and caches
+.github/artifacts
+artifacts
+__pycache__
+*.pyc
