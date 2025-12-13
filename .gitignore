@@ -115,3 +115,7 @@ verify_pack_raw.txt
 object_sizes_raw.txt
 large_blobs.txt
 vercel_excerpt_*.txt
+
+# CI / extraction artifacts
+artifacts/
+.github/artifacts/
