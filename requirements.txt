@@ -150,4 +150,4 @@ wrapt==2.0.1
 wsproto==1.2.0
 WTForms==3.2.1
 flask-compress==1.13
-flask-caching==2.0.0
+flask-caching==2.1.0
