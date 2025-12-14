@@ -3,5 +3,13 @@ name = "helpchain-bg"
 version = "0.0.0"
 requires-python = ">=3.12,<3.13"
 
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["backend*"]
+
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
