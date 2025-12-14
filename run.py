@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 
 # Ensure repository root is on sys.path so top-level imports like `from models import ...`
 # resolve when Vercel runs the function from the deployed package root.
@@ -7,71 +8,80 @@ ROOT = os.path.dirname(__file__)
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-# Import the Flask app from the backend package
-try:
-    # Preferred: import the production entrypoint if available
-    from backend.app import app
-except Exception:
-    # Fallback to legacy appy module used by some deployments/tests
-    from backend.appy import app
+# Change to backend directory to make it the working directory if available
+backend_dir = os.path.join(ROOT, "backend")
+if os.path.isdir(backend_dir):
+    try:
+        os.chdir(backend_dir)
+    except Exception:
+        pass
+    if backend_dir not in sys.path:
+        sys.path.insert(0, backend_dir)
 
-# Expose WSGI app variable expected by some servers
-application = app
-
-if __name__ == "__main__":
-    # Local development fallback
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-import os
-import sys
-
-# Change to backend directory to make it the working directory
-backend_dir = os.path.join(os.path.dirname(__file__), "backend")
-os.chdir(backend_dir)
-
-# Add the backend directory to Python path so we can import modules
-sys.path.insert(0, backend_dir)
-
-# Also add the src directory for direct imports
+# Also add the src directory for direct imports (some layouts use helpchain-backend/src)
 src_dir = os.path.join(backend_dir, "helpchain-backend", "src")
-sys.path.insert(0, src_dir)
+if os.path.isdir(src_dir) and src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
 
-# Import and run the app
-# Workaround: ensure older Flask/extension imports that expect
-# `werkzeug.urls.url_quote` don't fail if the installed Werkzeug
-# version exposes a renamed function. This monkeypatch is local to
-# the process and only runs before importing the app.
+# --- Pre-import monkeypatches ---
+# Apply compatibility shims before importing Flask/werkzeug so imports that
+# expect older helper names (e.g. `url_quote`) don't fail during module import.
 try:
     import werkzeug.urls as _werkzeug_urls
 
     if not hasattr(_werkzeug_urls, "url_quote"):
         from urllib.parse import quote as _qp
 
-        def url_quote(value: str) -> str:  # simple alias with safe=""
+        def url_quote(value: str) -> str:
             return _qp(value, safe="")
 
         _werkzeug_urls.url_quote = url_quote  # type: ignore[attr-defined]
 except Exception:
-    # If anything goes wrong here, fall back to normal import and let
-    # the original ImportError surface so it can be handled upstream.
+    # Not critical; continue and let the real import error surface later
     pass
 
-# Workaround for Flask-SQLAlchemy expecting `flask.globals.app_ctx`.
-# Newer Flask versions don't expose `app_ctx` directly; create a
-# LocalProxy alias pointing at the app context top so older
-# extensions that import `app_ctx` keep working.
 try:
     import flask.globals as _flask_globals
-
     if not hasattr(_flask_globals, "app_ctx"):
         from werkzeug.local import LocalProxy
 
         _flask_globals.app_ctx = LocalProxy(lambda: _flask_globals._app_ctx_stack.top)  # type: ignore[attr-defined]
 except Exception:
-    # If this fails, continue and let the import error surface later.
     pass
 
-from backend.app import app
+# Compatibility shim: some older extensions (Flask-SQLAlchemy, older plugins)
+# import `_app_ctx_stack` directly from the `flask` package. Flask 3 removed
+# that symbol; provide a LocalStack on `flask._app_ctx_stack` so those imports
+# succeed and code that reads `._app_ctx_stack.top` works in a best-effort way.
+try:
+    import importlib
+    _flask_mod = importlib.import_module("flask")
+    from werkzeug.local import LocalStack
 
-# Disabled Flask auto-reloader to prevent incorrect restart behavior
+    if not hasattr(_flask_mod, "_app_ctx_stack"):
+        _flask_mod._app_ctx_stack = LocalStack()
+except Exception:
+    pass
+
+# Import the application (try modern entrypoint first, then legacy fallback)
+app = None
+try:
+    from backend.app import app as _app
+
+    app = _app
+except Exception:
+    # Print traceback to stderr to aid diagnostics in logs
+    traceback.print_exc()
+    try:
+        from backend.appy import app as _app
+
+        app = _app
+    except Exception:
+        traceback.print_exc()
+        raise
+
+# Expose WSGI app variable expected by some servers
+application = app
+
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True, use_reloader=False)
