@@ -1,6 +1,29 @@
 import os
 import sys
 
+# Ensure repository root is on sys.path so top-level imports like `from models import ...`
+# resolve when Vercel runs the function from the deployed package root.
+ROOT = os.path.dirname(__file__)
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+# Import the Flask app from the backend package
+try:
+    # Preferred: import the production entrypoint if available
+    from backend.app import app
+except Exception:
+    # Fallback to legacy appy module used by some deployments/tests
+    from backend.appy import app
+
+# Expose WSGI app variable expected by some servers
+application = app
+
+if __name__ == "__main__":
+    # Local development fallback
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+import os
+import sys
+
 # Change to backend directory to make it the working directory
 backend_dir = os.path.join(os.path.dirname(__file__), "backend")
 os.chdir(backend_dir)
