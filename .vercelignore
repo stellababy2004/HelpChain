@@ -21,8 +21,6 @@ logs/
 backup*/
 *.sqlite
 *.db
-venv/
-.venv/
 /.venv
 /.venv/*
 /.cache
@@ -35,3 +33,26 @@ uploads/
 data/
 models_cache/
 /.git/
+/vendor
+/vendor/**
+/backend/_vendor
+/backend/_vendor/**
+*.ckpt
+.vercel
+.vercel/**
+
+# Exclude heavy local virtualenv, build artifacts and backups that broke Vercel build
+.venv/**
+*.zip
+backend.zip
+backups/**
+backups/*
+*.log
+pytest-full.log
+logs/**
+artifacts/**
+*.dll
+*.lib
+*.pyd
+.git.zip
+.git.zip/**
