@@ -5,7 +5,8 @@
       "src": "run.py",
       "use": "@vercel/python",
       "config": {
-        "installCommand": "python -m pip install --upgrade pip && python -m pip install -r requirements.txt --target vendor --no-cache-dir --prefer-binary"
+        "runtime": "python3.12",
+        "installCommand": "python -m pip install --upgrade pip && python -m pip install -r requirements.base.txt --no-cache-dir --prefer-binary && python -m pip install Jinja2 PyJWT --no-cache-dir --prefer-binary"
       }
     }
   ],
