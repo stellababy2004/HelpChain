@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   test-fast:
-    name: Quick tests (matrix: 3.12)
+    name: "Quick tests (matrix: 3.12)"
     runs-on: ubuntu-latest
     strategy:
       matrix:
