@@ -6,7 +6,7 @@
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.12",
-        "installCommand": "python -m pip install --upgrade pip && python -m pip install -r requirements.base.txt --no-cache-dir --prefer-binary && python -m pip install Jinja2 PyJWT --no-cache-dir --prefer-binary"
+        "installCommand": "python -m pip install --upgrade pip && echo '== VERCEL INSTALL: installing requirements.base.txt' && python -m pip install -r requirements.base.txt --no-cache-dir --prefer-binary || (echo 'pip install failed' && exit 1) && echo '== VERCEL INSTALL: forcing Jinja2 PyJWT install' && python -m pip install Jinja2 PyJWT --no-cache-dir --prefer-binary || echo 'force-install failed' && echo '== VERCEL INSTALL: pip freeze output' && python -m pip freeze"
       }
     }
   ],
