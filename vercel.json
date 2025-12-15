@@ -6,7 +6,7 @@
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.12",
-        "installCommand": "python -m pip install --upgrade pip && echo '== VERCEL INSTALL: installing requirements.base.txt' && python -m pip install -r requirements.base.txt --no-cache-dir --prefer-binary || (echo 'pip install failed' && exit 1) && echo '== VERCEL INSTALL: forcing Jinja2 PyJWT SQLAlchemy install' && python -m pip install Jinja2 PyJWT SQLAlchemy --no-cache-dir --prefer-binary || echo 'force-install failed' && echo '== VERCEL INSTALL: pip freeze output' && python -m pip freeze"
+        "installCommand": "python -m pip install --upgrade pip && echo '== VERCEL INSTALL: installing requirements.base.txt into system' && python -m pip install -r requirements.base.txt --no-cache-dir --prefer-binary || (echo 'pip install failed' && exit 1) && echo '== VERCEL INSTALL: vendoring requirements into _vendor' && python -m pip install -t _vendor -r requirements.base.txt --no-cache-dir --prefer-binary || echo 'vendor install failed' && echo '== VERCEL INSTALL: forcing Jinja2 PyJWT SQLAlchemy into _vendor' && python -m pip install -t _vendor Jinja2 PyJWT SQLAlchemy --no-cache-dir --prefer-binary || echo 'force-install failed' && echo '== VERCEL INSTALL: pip freeze (system)' && python -m pip freeze && echo '== VERCEL INSTALL: ls _vendor (top entries)' && (ls -1 _vendor | head -n 60 || true)"
       }
     }
   ],

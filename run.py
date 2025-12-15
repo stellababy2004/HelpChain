@@ -8,6 +8,13 @@ ROOT = os.path.dirname(__file__)
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
+# Add vendored dependencies (if present) before other imports so they shadow missing system packages
+# Support both `_vendor` (our vendored packages) and legacy `vendor` folder.
+vendor_dirs = [os.path.join(ROOT, "_vendor"), os.path.join(ROOT, "vendor")]
+for vendor_dir in vendor_dirs:
+    if os.path.isdir(vendor_dir) and vendor_dir not in sys.path:
+        sys.path.insert(0, vendor_dir)
+
 # Change to backend directory to make it the working directory if available
 backend_dir = os.path.join(ROOT, "backend")
 if os.path.isdir(backend_dir):
