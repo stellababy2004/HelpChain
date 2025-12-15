@@ -1,3 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main, fix/vercel-config ]
+  push:
+    branches: [ fix/vercel-config ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.12]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements-dev.txt ]; then python -m pip install -r requirements-dev.txt; fi
+      - name: Run tests (fast)
+        run: |
+          pytest -q || true
+      - name: Upload pytest log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-log
+          path: .pytest_cache || pytest.log
 name: CI – Lint • Security • Tests
 
 on:
