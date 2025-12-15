@@ -5,7 +5,7 @@
       "src": "run.py",
       "use": "@vercel/python",
       "config": {
-        "installCommand": "python -m pip install -r requirements.txt --target vendor"
+        "installCommand": "python -m pip install --upgrade pip && python -m pip install -r requirements.txt --target vendor --no-cache-dir --prefer-binary"
       }
     }
   ],
