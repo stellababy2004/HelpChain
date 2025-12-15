@@ -1,13 +1,18 @@
-name: CI
+name: CI – Lint • Security • Tests
 
 on:
+  push:
+    branches: [ main, fix/vercel-config ]
   pull_request:
     branches: [ main, fix/vercel-config ]
-  push:
-    branches: [ fix/vercel-config ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  test-fast:
+    name: Quick tests (matrix: 3.12)
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -31,20 +36,9 @@ jobs:
         with:
           name: pytest-log
           path: .pytest_cache || pytest.log
-name: CI – Lint • Security • Tests
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-jobs:
   build-test:
+    name: Full Lint/Security/Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -54,10 +48,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
@@ -71,7 +65,7 @@ jobs:
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           fi
-          # ensure tools even if не са в requirements
+          # ensure tools even if not present in requirements
           pip install ruff black bandit pytest
 
       - name: Ruff Lint
@@ -91,7 +85,7 @@ jobs:
 
       - name: Upload Pytest Report
         if: always()
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
+        uses: actions/upload-artifact@v4
         with:
           name: pytest-report-${{ matrix.python-version }}
           path: pytest-report.xml
