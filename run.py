@@ -81,6 +81,44 @@ except Exception:
 
 # Import the application (try modern entrypoint first, then legacy fallback)
 app = None
+# Extra diagnostics: check whether key runtime packages are importable and list installed packages
+try:
+    print("DEBUG run.py: checking runtime imports for jwt and jinja2", flush=True)
+    try:
+        import jwt as _jwt
+
+        print("DEBUG run.py: jwt module available at", getattr(_jwt, "__file__", "<built-in>"), flush=True)
+    except Exception as _e:
+        print("DEBUG run.py: jwt import failed:", _e, flush=True)
+    try:
+        import jinja2 as _jinja
+
+        print("DEBUG run.py: jinja2 module available at", getattr(_jinja, "__file__", "<built-in>"), flush=True)
+    except Exception as _e:
+        print("DEBUG run.py: jinja2 import failed:", _e, flush=True)
+    # Try to list installed distributions and pip freeze for extra context
+    try:
+        import importlib.metadata as _ilm
+
+        dists = [d.metadata.get('Name') for d in _ilm.distributions()][:60]
+        print("DEBUG run.py: installed distributions (sample):", dists, flush=True)
+    except Exception:
+        try:
+            import pkg_resources as _pr
+
+            dists = [d.project_name for d in _pr.working_set][:60]
+            print("DEBUG run.py: installed distributions (sample via pkg_resources):", dists, flush=True)
+        except Exception:
+            pass
+    try:
+        import subprocess as _sub
+
+        _pf = _sub.run([sys.executable, "-m", "pip", "freeze"], capture_output=True, text=True, timeout=20)
+        print("DEBUG run.py: pip freeze (truncated):\n", (_pf.stdout or "<no output>")[:2000], flush=True)
+    except Exception as _e:
+        print("DEBUG run.py: pip freeze failed:", _e, flush=True)
+except Exception:
+    traceback.print_exc()
 try:
     from backend.app import app as _app
 
