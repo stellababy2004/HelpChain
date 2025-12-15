@@ -23,6 +23,22 @@ src_dir = os.path.join(backend_dir, "helpchain-backend", "src")
 if os.path.isdir(src_dir) and src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
+# Debug: print sys.path and deployed files to help Vercel logs diagnose missing packages/files
+try:
+    print("DEBUG run.py: cwd=", os.getcwd(), flush=True)
+    print("DEBUG run.py: ROOT=", ROOT, flush=True)
+    print("DEBUG run.py: sys.path=", sys.path, flush=True)
+    try:
+        print("DEBUG run.py: root files=", sorted(os.listdir(ROOT)), flush=True)
+    except Exception as _e:
+        print("DEBUG run.py: listdir(ROOT) failed:", _e, flush=True)
+    try:
+        print("DEBUG run.py: cwd files=", sorted(os.listdir(os.getcwd())), flush=True)
+    except Exception as _e:
+        print("DEBUG run.py: listdir(cwd) failed:", _e, flush=True)
+except Exception:
+    traceback.print_exc()
+
 # --- Pre-import monkeypatches ---
 # Apply compatibility shims before importing Flask/werkzeug so imports that
 # expect older helper names (e.g. `url_quote`) don't fail during module import.
