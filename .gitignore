@@ -1,4 +1,12 @@
-# Ignore virtual environment
+vendor/
+/.venv
+.env
+*.pyc
+__pycache__/
+.pytest_cache/
+instance/
+*.sqlite
+*.log# Ignore virtual environment
 venv/
 
 # Byte-compiled / cache files
@@ -72,3 +80,5 @@ instance/*.db
 
 # local backups
 backend/backups/*
+.vercel
+.env*.local
