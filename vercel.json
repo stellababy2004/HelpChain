@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "run.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "installCommand": "python -m pip install -r requirements.txt --target vendor"
+      }
     }
   ],
   "routes": [
