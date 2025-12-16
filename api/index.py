@@ -6,8 +6,8 @@ ROOT = os.path.dirname(os.path.dirname(__file__))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-# Import the existing Vercel entry app
-from run import app as app  # WSGI-compatible app
+# Import the wrapped WSGI application that short-circuits health/admin routes
+from run import application as app  # Vercel expects `app` symbol
 
 # For local debug
 if __name__ == "__main__":
