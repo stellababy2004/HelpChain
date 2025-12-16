@@ -1,6 +1,8 @@
 param(
   [Parameter(Mandatory=$true)]
-  [string]$Url
+  [string]$Url,
+  [Parameter(Mandatory=$false)]
+  [string]$BypassToken
 )
 
 $ErrorActionPreference = 'Stop'
@@ -20,7 +22,14 @@ try {
 function Test-EndPoint {
   param([string]$Path)
   try {
-    $resp = Invoke-WebRequest -UseBasicParsing ($base.TrimEnd('/') + $Path) -MaximumRedirection 5 -ErrorAction Stop
+    $headers = @{}
+    if ($BypassToken -and $BypassToken.Length -gt 0) {
+      # Use Vercel Protection Bypass for Automation header
+      $headers['x-vercel-protection-bypass'] = $BypassToken
+      # Optionally ask Vercel to set a bypass cookie for browser follow-ups
+      $headers['x-vercel-set-bypass-cookie'] = 'true'
+    }
+    $resp = Invoke-WebRequest -UseBasicParsing ($base.TrimEnd('/') + $Path) -MaximumRedirection 5 -ErrorAction Stop -Headers $headers
     $code = $resp.StatusCode
     Write-Host "$Path -> $code"
   } catch {
@@ -30,14 +39,22 @@ function Test-EndPoint {
       $status = [int]$_.Exception.Response.StatusCode
     }
     if ($status) {
-      Write-Host "$Path -> ERROR ($status): $msg"
+      if ($status -eq 401) {
+        Write-Host "$Path -> ERROR (401): Preview Protection active. Use -BypassToken with the project 'Protection Bypass for Automation' secret, or open the Shareable Link in a browser to set the cookie." -ForegroundColor Yellow
+      } else {
+        Write-Host "$Path -> ERROR ($status): $msg"
+      }
     } else {
       Write-Host "$Path -> ERROR: $msg"
     }
   }
 }
 
-"Running smoke checks for $Url"
+if ($BypassToken) {
+  Write-Host "Running smoke checks for $Url (with bypass token)"
+} else {
+  Write-Host "Running smoke checks for $Url"
+}
 Test-EndPoint '/'
 Test-EndPoint '/health'
 Test-EndPoint '/admin/login'
