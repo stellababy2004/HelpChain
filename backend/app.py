@@ -26,13 +26,14 @@ from flask import (
     session,
     url_for,
 )
-from flask_babel import _
+from flask_babel import Babel, _
 from flask_socketio import SocketIO
 from flask_wtf import CSRFProtect
 from sqlalchemy import literal_column, text
 from sqlalchemy.exc import OperationalError
 
 from dependencies import require_role
+from backend.extensions import db
 
 # --- Flask app init ---
 app = Flask(__name__)
@@ -211,10 +212,7 @@ def admin_analytics():
     )
 
 
-# Setup logging at the top
-logging.basicConfig(
-    level=logging.DEBUG,
-
+# Remove duplicate/broken logging setup block (consolidated earlier at top)
 
 # Minimal analytics stub for smoke checks in preview (non-breaking for full analytics)
 @app.get("/api/analytics")
@@ -223,12 +221,6 @@ def api_analytics_stub():
         return jsonify(status="ok", source="stub", message="analytics service reachable")
     except Exception:
         return Response("ok", mimetype="text/plain")
-    format="%(asctime)s %(levelname)s %(name)s %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("error.log", encoding="utf-8"),
-    ],
-)
 
 
 @app.route("/admin/api/requests")
@@ -410,7 +402,18 @@ def get_locale():
     return "fr"
 
 
-babel.locale_selector_func = get_locale
+# Initialize Flask-Babel with locale selector
+try:
+    babel = Babel(app, locale_selector=get_locale)
+except Exception:
+    try:
+        babel = Babel(app)
+        try:
+            babel.locale_selector_func = get_locale
+        except Exception:
+            pass
+    except Exception:
+        babel = None
 instance_dir = os.path.join(basedir, "instance")
 os.makedirs(instance_dir, exist_ok=True)
 db_path = os.path.join(instance_dir, "volunteers.db")
