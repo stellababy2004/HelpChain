@@ -394,3 +394,83 @@ make k8s-deploy
 ---
 
 **Кой от тези следващи стъпки те интересува най-много?** 🤔
+
+---
+
+## 🔒 Vercel Security & Compliance Baseline
+
+- Build Logs & Source Protection: Enabled
+- Git Fork Protection: Enabled
+- Deployment Retention Policy:
+  - Canceled: 1 week
+  - Errored: 2 weeks
+  - Pre‑Production: 30 days
+  - Production: 90 days
+- SAML SSO (Team → Security → SAML): Require SAML after testing login works for at least two admins; NameID=email; attributes email, name; optional groups/roles. Note: Available on Enterprise plan; not visible on Hobby/Personal or basic Team plans.
+- Directory Sync (SCIM): Use SCIM Base URL + Token from Vercel in IdP; enable provision/deprovision on assignment; map userName→email, active→status. Note: Enterprise plan required.
+- Two‑Factor Authentication Enforcement: Enabled for all members; warn that user‑bound tokens without 2FA will stop working.
+- IP Address Visibility: Off for Dashboard and Log Drains.
+- IP Blocking: Configure rules if on Enterprise; verify blocked IP returns 403 and not billed.
+
+Validation:
+- Perform SAML test login and confirm 2 distinct admin accounts can access.
+- Assign and unassign a test user in IdP; verify auto provision/deprovision in Team Members.
+- Run smoke on preview using bypass link when Preview Protection is on.
+
+---
+
+## 🔐 SAML / SCIM / 2FA – Step‑by‑Step
+
+### SAML SSO (Okta)
+1. Vercel → Team Settings → Security → SAML → Copy `ACS URL` and `Entity ID`.
+2. Okta Admin → Applications → Create App Integration → SAML 2.0.
+3. Basic SAML Settings:
+  - Single sign on URL: paste Vercel `ACS URL` (POST, use exactly).
+  - Audience URI (SP Entity ID): paste Vercel `Entity ID`.
+  - NameID format: EmailAddress; Application username: Email.
+4. Attributes:
+  - `email` → `user.email`
+  - `name` → `user.firstName` + `user.lastName` (or `user.displayName`)
+  - Optional `groups` → `Matches regex.*` (for future mapping).
+5. Assign the app to the HelpChain group/admins.
+6. Vercel → SAML → Upload IdP metadata (or paste URLs), click Save.
+7. Test: “Test SAML Login” in Vercel; verify at least two admins can sign in.
+8. Enable “Require SAML to access this Team”.
+
+### SAML SSO (Azure AD)
+1. Vercel → Team Settings → Security → SAML → copy `ACS URL` and `Entity ID`.
+2. Azure Portal → Entra ID → Enterprise applications → New application → Create your own → Non‑gallery → SAML.
+3. Set up Single Sign‑On:
+  - Identifier (Entity ID): Vercel `Entity ID`.
+  - Reply URL (ACS): Vercel `ACS URL`.
+  - Sign‑on URL: leave empty.
+4. Attributes & Claims:
+  - NameID: `user.userprincipalname` (or `user.mail`) as email.
+  - `email`: `user.mail`
+  - `name`: `user.displayname`
+5. Users and groups → assign the HelpChain group/admins.
+6. Download Federation Metadata XML; upload in Vercel SAML settings; Save.
+7. Test SSO; then enable “Require SAML”.
+
+### Directory Sync (SCIM)
+1. Vercel → Team Settings → Security → Directory Sync → copy `SCIM Base URL` and `Bearer Token`.
+2. Okta: Application → Provisioning → Configure API Integration → paste Base URL/Token → Enable Create/Update/Deactivate.
+  - Mappings: `userName → email`, `active → status`, `displayName → full name`.
+3. Azure AD: Enterprise app → Provisioning → Automatic → Admin Credentials (Tenant URL = Base URL; Secret Token = Bearer Token) → Test Connection → Save.
+  - Mappings: ensure `userPrincipalName/mail → userName`, `accountEnabled → active`.
+4. Assign test user to the app/group → wait sync → verify user appears in Vercel Team Members.
+5. Remove assignment → verify de‑provisioning.
+
+### Enforce 2FA (Team wide)
+1. Team Settings → Security → Two‑Factor Authentication Enforcement → Enable.
+2. Notify members that user‑bound tokens without 2FA will stop working.
+3. Verify in Team Members list that all show “2FA enabled”.
+
+### IP Address Visibility
+1. Team Settings → Security → IP Address Visibility.
+2. Toggle OFF for Dashboard and Log Drains; Save.
+
+### Preview Protection – Smoke
+1. Project → Settings → Deployment Protection → Preview → ensure protection is ON.
+2. Use “Enable bypass link” to generate preview link for smoke tests.
+3. Run local smoke script against the bypass URL.
