@@ -37,6 +37,8 @@ models_cache/
 /vendor/**
 /backend/_vendor
 /backend/_vendor/**
+/_vendor
+/_vendor/**
 *.ckpt
 .vercel
 .vercel/**
