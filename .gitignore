@@ -82,3 +82,5 @@ instance/*.db
 backend/backups/*
 .vercel
 .env*.local
+deploy-output.txt
+vercel-logs.txt
