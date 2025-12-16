@@ -163,12 +163,12 @@ def _health_wsgi_wrapper(inner_app):
             method = (environ.get('REQUEST_METHOD') or 'GET').upper()
             if path in ('/health', '/api/_health'):
                 body = b"ok"
-                headers = [(b'Content-Type', b'text/plain; charset=utf-8'), (b'Content-Length', str(len(body)).encode())]
+                headers = [('Content-Type', 'text/plain; charset=utf-8'), ('Content-Length', str(len(body)))]
                 start_response('200 OK', headers)
                 return [body]
             if path == '/api/analytics':
                 body = b'{"status":"ok","source":"wsgi-stub"}'
-                headers = [(b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', str(len(body)).encode())]
+                headers = [('Content-Type', 'application/json; charset=utf-8'), ('Content-Length', str(len(body)))]
                 start_response('200 OK', headers)
                 return [body]
             if path == '/admin/login' and method == 'GET':
@@ -182,7 +182,7 @@ def _health_wsgi_wrapper(inner_app):
                     b"<button type=\"submit\">Login</button>"
                     b"</form></body></html>"
                 )
-                headers = [(b'Content-Type', b'text/html; charset=utf-8'), (b'Content-Length', str(len(body)).encode())]
+                headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(body)))]
                 start_response('200 OK', headers)
                 return [body]
         except Exception:
