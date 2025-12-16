@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "run.py",
+      "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.12",
@@ -12,7 +12,7 @@
   ],
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/run.py" }
+    { "src": "/(.*)", "dest": "/api/index.py" }
   ],
   "env": {
     "PYTHONPATH": "_vendor:."
