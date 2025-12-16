@@ -24,8 +24,17 @@ function Test-EndPoint {
   try {
     $headers = @{}
     if ($BypassToken -and $BypassToken.Length -gt 0) {
+      # Sanitize common quoting/whitespace mistakes
+      $cleanToken = ($BypassToken).Trim().Trim('"', "'")
+      # Mask for console logging (first/last 4 chars)
+      $masked = if ($cleanToken.Length -ge 8) { $cleanToken.Substring(0,4) + '…' + $cleanToken.Substring($cleanToken.Length-4) } else { 'len<' + $cleanToken.Length + '>' }
+      # Emit once per run
+      if (-not (Get-Variable -Name __BypassEchoed -Scope Script -ErrorAction SilentlyContinue)) {
+        Set-Variable -Name __BypassEchoed -Value $true -Scope Script
+        Write-Host ("Using bypass header token (masked): " + $masked)
+      }
       # Use Vercel Protection Bypass for Automation header
-      $headers['x-vercel-protection-bypass'] = $BypassToken
+      $headers['x-vercel-protection-bypass'] = [string]$cleanToken
       # Optionally ask Vercel to set a bypass cookie for browser follow-ups
       $headers['x-vercel-set-bypass-cookie'] = 'true'
     }
