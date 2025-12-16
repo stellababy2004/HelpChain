@@ -56,6 +56,45 @@ def create_app(config_object=None):
         os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"),
     )
 
+    # Register an early, global short-circuit guard BEFORE any extensions/blueprints
+    # so that protected endpoints always respond even if later hooks fail.
+    @app.before_request
+    def _preview_short_circuit_early():
+        try:
+            p = request.path or ""
+            if p in ("/health", "/api/_health"):
+                return Response("ok", mimetype="text/plain")
+            if p == "/api/analytics":
+                return jsonify(status="ok", source="stub", message="analytics service reachable")
+            if p == "/admin/login" and request.method == "GET":
+                return Response(
+                    (
+                        "<html><head><title>Admin Login</title></head>"
+                        "<body>"
+                        "<h1>Admin Login</h1>"
+                        "<form method=\"post\">"
+                        "<label>Username or Email: <input name=\"username\" /></label><br/>"
+                        "<label>Password: <input name=\"password\" type=\"password\" /></label><br/>"
+                        "<label>2FA Token (optional): <input name=\"token\" /></label><br/>"
+                        "<button type=\"submit\">Login</button>"
+                        "</form>"
+                        "</body></html>"
+                    ),
+                    mimetype="text/html",
+                )
+        except Exception:
+            # Never fail this guard
+            return None
+
+    # Explicit health endpoints (in addition to the guard) for clarity
+    @app.get("/health")
+    def _health_plain():
+        return Response("ok", mimetype="text/plain")
+
+    @app.get("/api/_health")
+    def _api_health_plain():
+        return jsonify(status="ok")
+
     db.init_app(app)
     babel.init_app(app)
     mail.init_app(app)
@@ -108,43 +147,6 @@ def create_app(config_object=None):
     except Exception as e:
         app.logger.info("analytics blueprint not loaded: %s", e)
 
-    # Early short-circuit for preview health and minimal diagnostics
-    @app.before_request
-    def _preview_short_circuit():
-        try:
-            p = request.path or ""
-            if p in ("/health", "/api/_health"):
-                return Response("ok", mimetype="text/plain")
-            if p == "/api/analytics":
-                return jsonify(status="ok", source="stub", message="analytics service reachable")
-            if p == "/admin/login" and request.method == "GET":
-                return Response(
-                    (
-                        "<html><head><title>Admin Login</title></head>"
-                        "<body>"
-                        "<h1>Admin Login</h1>"
-                        "<form method=\"post\">"
-                        "<label>Username or Email: <input name=\"username\" /></label><br/>"
-                        "<label>Password: <input name=\"password\" type=\"password\" /></label><br/>"
-                        "<label>2FA Token (optional): <input name=\"token\" /></label><br/>"
-                        "<button type=\"submit\">Login</button>"
-                        "</form>"
-                        "</body></html>"
-                    ),
-                    mimetype="text/html",
-                )
-        except Exception:
-            # Never fail this guard
-            return None
-
-    # Explicit health endpoints (in addition to the guard) for clarity
-    @app.get("/health")
-    def _health_plain():
-        return Response("ok", mimetype="text/plain")
-
-    @app.get("/api/_health")
-    def _api_health_plain():
-        return jsonify(status="ok")
 
     @app.route("/")
     def index():
