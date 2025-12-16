@@ -11,12 +11,10 @@
     }
   ],
   "routes": [
-    {
-      "src": "(.*)",
-      "dest": "run.py"
-    }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/run.py" }
   ],
   "env": {
-    "PYTHONPATH": "."
+    "PYTHONPATH": "_vendor:."
   }
 }

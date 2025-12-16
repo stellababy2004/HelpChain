@@ -1346,6 +1346,12 @@ def api_health():
     return jsonify(status="ok", ok=True, uptime_seconds=uptime)
 
 
+@app.get("/health")
+def health_alias():
+    """Alias to api health for external probes (no auth)."""
+    return api_health()
+
+
 def _seed_if_empty():
     with app.app_context():
         # Ensure a default admin user exists for local testing
