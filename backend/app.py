@@ -94,14 +94,17 @@ def set_language_post(language):
     return resp
 
 
-# Setup logging at the top
+# Setup logging (avoid file writes in serverless environments like Vercel)
+_log_handlers = [logging.StreamHandler()]
+try:
+    if os.getenv("HELPCHAIN_FILE_LOG", "0") == "1":
+        _log_handlers.append(logging.FileHandler("error.log", encoding="utf-8"))
+except Exception:
+    pass
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s %(levelname)s %(name)s %(message)s",
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler("error.log", encoding="utf-8"),
-    ],
+    handlers=_log_handlers,
 )
 
 
@@ -135,7 +138,6 @@ def _write_admin_debug(entry: dict):
 
 
 # Local imports (strictly sorted, all at top-level)
-from extensions import babel, db
 from models import (
     AdminRole,
     AdminUser,
@@ -414,6 +416,36 @@ except Exception:
             pass
     except Exception:
         babel = None
+
+
+# Short-circuit health/analytics endpoints early to avoid any side effects
+@app.before_request
+def _early_preview_short_circuit():
+    try:
+        p = request.path or ""
+        if p in ("/health", "/api/_health"):
+            return Response("ok", mimetype="text/plain")
+        if p == "/api/analytics":
+            return jsonify(status="ok", source="early", message="analytics ok")
+        if p == "/admin/login" and request.method == "GET":
+            return Response(
+                """
+                <html><head><title>Admin Login</title></head>
+                <body>
+                  <h1>Admin Login</h1>
+                  <form method=\"post\">
+                    <label>Username or Email: <input name=\"username\" /></label><br/>
+                    <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
+                    <label>2FA Token (optional): <input name=\"token\" /></label><br/>
+                    <button type=\"submit\">Login</button>
+                  </form>
+                </body></html>
+                """,
+                mimetype="text/html",
+            )
+    except Exception:
+        # Never fail this guard
+        return None
 instance_dir = os.path.join(basedir, "instance")
 os.makedirs(instance_dir, exist_ok=True)
 db_path = os.path.join(instance_dir, "volunteers.db")
