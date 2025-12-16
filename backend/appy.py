@@ -348,6 +348,22 @@ except Exception:
 
 # Единствена инстанция на app
 app = Flask(__name__, static_folder="static", template_folder="templates")
+
+# Lightweight health endpoint for deployment monitoring
+@app.route("/health", methods=["GET"])
+def health():
+    try:
+        import sqlalchemy as _sa
+        sa_ok = True
+        sa_ver = getattr(_sa, "__version__", "unknown")
+    except Exception:
+        sa_ok = False
+        sa_ver = None
+    return {
+        "status": "ok",
+        "sqlalchemy": sa_ok,
+        "sqlalchemy_version": sa_ver,
+    }, 200
 app.config["PROPAGATE_EXCEPTIONS"] = True
 # Note: Jinja builtin exposures were removed to keep template globals minimal.
 # Templates should be written to not depend on Python builtins being present

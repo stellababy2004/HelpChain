@@ -146,3 +146,10 @@ application = app
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True, use_reloader=False)
+
+# Emit SQLAlchemy version in logs for verification
+try:
+    import sqlalchemy as _sa
+    print("DEBUG run.py: SQLALCHEMY_VERSION:", getattr(_sa, "__version__", "unknown"), flush=True)
+except Exception as _e:
+    print("DEBUG run.py: SQLAlchemy not available:", _e, flush=True)
