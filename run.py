@@ -30,17 +30,29 @@ src_dir = os.path.join(backend_dir, "helpchain-backend", "src")
 if os.path.isdir(src_dir) and src_dir not in sys.path:
     sys.path.insert(0, src_dir)
 
-# Debug: print sys.path and deployed files to help Vercel logs diagnose missing packages/files
+# Debug: print limited diagnostics; guard verbosity via env to avoid oversized logs on Vercel
 try:
+    _verbose = os.getenv("VERBOSE_LOGS", "0") == "1"
+    def _truncate_list(lst, max_items=20):
+        try:
+            lst = list(lst)
+            if len(lst) > max_items:
+                return lst[:max_items] + [f"...(+{len(lst) - max_items} more)"]
+            return lst
+        except Exception:
+            return lst
     print("DEBUG run.py: cwd=", os.getcwd(), flush=True)
     print("DEBUG run.py: ROOT=", ROOT, flush=True)
-    print("DEBUG run.py: sys.path=", sys.path, flush=True)
+    if _verbose:
+        print("DEBUG run.py: sys.path=", _truncate_list(sys.path, 30), flush=True)
     try:
-        print("DEBUG run.py: root files=", sorted(os.listdir(ROOT)), flush=True)
+        files_root = _truncate_list(sorted(os.listdir(ROOT)), 50 if _verbose else 20)
+        print("DEBUG run.py: root files=", files_root, flush=True)
     except Exception as _e:
         print("DEBUG run.py: listdir(ROOT) failed:", _e, flush=True)
     try:
-        print("DEBUG run.py: cwd files=", sorted(os.listdir(os.getcwd())), flush=True)
+        files_cwd = _truncate_list(sorted(os.listdir(os.getcwd())), 50 if _verbose else 20)
+        print("DEBUG run.py: cwd files=", files_cwd, flush=True)
     except Exception as _e:
         print("DEBUG run.py: listdir(cwd) failed:", _e, flush=True)
 except Exception:
@@ -104,26 +116,25 @@ try:
     except Exception as _e:
         print("DEBUG run.py: jinja2 import failed:", _e, flush=True)
     # Try to list installed distributions and pip freeze for extra context
-    try:
-        import importlib.metadata as _ilm
-
-        dists = [d.metadata.get('Name') for d in _ilm.distributions()][:60]
-        print("DEBUG run.py: installed distributions (sample):", dists, flush=True)
-    except Exception:
+    if os.getenv("VERBOSE_LOGS", "0") == "1":
         try:
-            import pkg_resources as _pr
-
-            dists = [d.project_name for d in _pr.working_set][:60]
-            print("DEBUG run.py: installed distributions (sample via pkg_resources):", dists, flush=True)
+            import importlib.metadata as _ilm
+            dists = [d.metadata.get('Name') for d in _ilm.distributions()][:40]
+            print("DEBUG run.py: installed distributions (sample):", dists, flush=True)
         except Exception:
-            pass
-    try:
-        import subprocess as _sub
-
-        _pf = _sub.run([sys.executable, "-m", "pip", "freeze"], capture_output=True, text=True, timeout=20)
-        print("DEBUG run.py: pip freeze (truncated):\n", (_pf.stdout or "<no output>")[:2000], flush=True)
-    except Exception as _e:
-        print("DEBUG run.py: pip freeze failed:", _e, flush=True)
+            try:
+                import pkg_resources as _pr
+                dists = [d.project_name for d in _pr.working_set][:40]
+                print("DEBUG run.py: installed distributions (sample via pkg_resources):", dists, flush=True)
+            except Exception:
+                pass
+        try:
+            import subprocess as _sub
+            _pf = _sub.run([sys.executable, "-m", "pip", "freeze"], capture_output=True, text=True, timeout=10)
+            out = (_pf.stdout or "<no output>")
+            print("DEBUG run.py: pip freeze (truncated):\n", out[:1000], flush=True)
+        except Exception as _e:
+            print("DEBUG run.py: pip freeze failed:", _e, flush=True)
 except Exception:
     traceback.print_exc()
 try:
