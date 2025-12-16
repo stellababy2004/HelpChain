@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "routes": [
-    { "src": "/(health|api/_health|admin/login|api/analytics)$", "dest": "/api/health.py" },
-    { "src": "/(.*)", "dest": "/api/index.py" }
+  "rewrites": [
+    { "source": "/(health|api/_health|admin/login|api/analytics)", "destination": "/api/health.py" },
+    { "source": "/(.*)", "destination": "/api/index.py" }
   ],
   "env": {
     "PYTHONPATH": "_vendor:."
