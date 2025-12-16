@@ -159,19 +159,26 @@ def _health_wsgi_wrapper(inner_app):
 
     def _wsgi(environ, start_response: Callable):
         try:
-            path = (environ.get('PATH_INFO') or '').strip()
+            # Derive original request path. Some platforms rewrite PATH_INFO
+            # to the function file (e.g. "/api/index.py"). Prefer forwarded
+            # headers when available, else fall back to PATH_INFO.
+            path = (environ.get('HTTP_X_FORWARDED_URI') or environ.get('REQUEST_URI') or environ.get('RAW_PATH') or environ.get('PATH_INFO') or '').strip()
+            if not path:
+                path = '/'
             method = (environ.get('REQUEST_METHOD') or 'GET').upper()
-            if path in ('/health', '/api/_health'):
+            # Match by exact path or by suffix to tolerate rewrites (e.g., 
+            # original path exposed via forwarded headers).
+            if path.endswith('/health') or path.endswith('/api/_health'):
                 body = b"ok"
                 headers = [('Content-Type', 'text/plain; charset=utf-8'), ('Content-Length', str(len(body)))]
                 start_response('200 OK', headers)
                 return [body]
-            if path == '/api/analytics':
+            if path.endswith('/api/analytics'):
                 body = b'{"status":"ok","source":"wsgi-stub"}'
                 headers = [('Content-Type', 'application/json; charset=utf-8'), ('Content-Length', str(len(body)))]
                 start_response('200 OK', headers)
                 return [body]
-            if path == '/admin/login' and method == 'GET':
+            if (path.endswith('/admin/login') or path.endswith('/admin/login/')) and method == 'GET':
                 body = (
                     b"<html><head><title>Admin Login</title></head>"
                     b"<body><h1>Admin Login</h1>"
