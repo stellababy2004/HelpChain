@@ -147,8 +147,8 @@ from models import (
 from models_with_analytics import AnalyticsEvent, Feedback
 from permissions import require_admin_login
 
-# Initialize CSRF protection
-csrf = CSRFProtect(app)
+# Initialize CSRF (defer binding until after SECRET_KEY is set)
+csrf = CSRFProtect()
 
 # --- Define basedir and instance_dir for later use (must be before use) ---
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -166,9 +166,16 @@ def apply_filters(query, for_event_type=None, for_language=None):
     return query
 
 
-# --- Set secret key for CSRF and sessions (must be before CSRFProtect) ---
+# --- Set secret key for CSRF and sessions (must be before CSRFProtect.init_app) ---
 app.config["SECRET_KEY"] = os.getenv("HELPCHAIN_SECRET_KEY", os.getenv("SECRET_KEY", "change-me-please"))
 app.secret_key = app.config["SECRET_KEY"]
+
+# Now bind CSRF after SECRET_KEY is configured
+try:
+    csrf.init_app(app)
+except Exception:
+    # Non-fatal in preview; health routes should still work
+    pass
 
 
 # --- ADMIN ANALYTICS DASHBOARD ---
