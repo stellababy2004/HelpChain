@@ -38,11 +38,27 @@ function Test-EndPoint {
     if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
       $status = [int]$_.Exception.Response.StatusCode
     }
+    $body = $null
+    try {
+      if ($_.Exception.Response -and $_.Exception.Response.GetResponseStream) {
+        $stream = $_.Exception.Response.GetResponseStream()
+        if ($stream) {
+          $reader = New-Object System.IO.StreamReader($stream)
+          $body = $reader.ReadToEnd()
+          if ($body -and $body.Length -gt 800) { $body = $body.Substring(0,800) + ' ...<truncated>' }
+        }
+      }
+    } catch { }
     if ($status) {
       if ($status -eq 401) {
         Write-Host "$Path -> ERROR (401): Preview Protection active. Use -BypassToken with the project 'Protection Bypass for Automation' secret, or open the Shareable Link in a browser to set the cookie." -ForegroundColor Yellow
       } else {
-        Write-Host "$Path -> ERROR ($status): $msg"
+        if ($body) {
+          Write-Host "$Path -> ERROR ($status): $msg" -ForegroundColor Red
+          Write-Host ("Body: " + $body)
+        } else {
+          Write-Host "$Path -> ERROR ($status): $msg"
+        }
       }
     } else {
       Write-Host "$Path -> ERROR: $msg"
@@ -57,5 +73,6 @@ if ($BypassToken) {
 }
 Test-EndPoint '/'
 Test-EndPoint '/health'
+Test-EndPoint '/api/_health'
 Test-EndPoint '/admin/login'
 Test-EndPoint '/api/analytics'
