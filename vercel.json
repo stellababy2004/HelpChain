@@ -1,9 +1,5 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/(health|api/_health|admin/login|api/analytics)", "destination": "/api/health.py" },
-    { "source": "/(.*)", "destination": "/api/index.py" }
-  ],
   "env": {
     "PYTHONPATH": "_vendor:."
   }

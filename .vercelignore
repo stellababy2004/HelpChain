@@ -58,3 +58,7 @@ artifacts/**
 *.pyd
 .git.zip
 .git.zip/**
+
+# Avoid build path conflicts: prefer Node handlers for probes
+api/analytics.py
+api/_health.py
