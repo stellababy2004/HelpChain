@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = function (req, res) {
   try {
     const body = JSON.stringify({ status: 'ok', source: 'api-node' });
     res.statusCode = 200;
