@@ -42,6 +42,10 @@ function Test-EndPoint {
         $headers['x-vercel-set-bypass-cookie'] = 'true'
         if ($Path -notmatch '\?') { $Path = $Path + '?x-vercel-set-bypass-cookie=true' } else { $Path = $Path + '&x-vercel-set-bypass-cookie=true' }
       }
+      # Also include bypass token in query (per Vercel docs) to ensure automation access in protected previews
+      $tokenParam = 'x-vercel-protection-bypass=' + [System.Web.HttpUtility]::UrlEncode($cleanToken)
+      if ($Path -notmatch '\?') { $Path = $Path + '?' + $tokenParam }
+      else { $Path = $Path + '&' + $tokenParam }
     }
     $resp = Invoke-WebRequest -UseBasicParsing ($base.TrimEnd('/') + $Path) -MaximumRedirection 5 -ErrorAction Stop -Headers $headers
     $code = $resp.StatusCode
