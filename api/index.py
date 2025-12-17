@@ -17,11 +17,38 @@ def _load_inner_app():
         _cached_inner = _application
     return _cached_inner
 
+def _derive_path(environ: dict) -> str:
+    """Best-effort original path detection across multiple reverse-proxy headers.
+    Falls back to scanning the environ values to catch rewrites that hide the
+    original path (e.g. mapping everything to /api/index.py).
+    """
+    keys = (
+        'HTTP_X_FORWARDED_URI',
+        'HTTP_X_FORWARDED_PATH',
+        'HTTP_X_ORIGINAL_URI',
+        'HTTP_X_ORIGINAL_URL',
+        'HTTP_X_REWRITE_URL',
+        'REQUEST_URI',
+        'RAW_PATH',
+        'PATH_INFO',
+    )
+    for k in keys:
+        v = environ.get(k)
+        if isinstance(v, str) and v.strip():
+            return v.strip()
+    # Fallback: scan for common probe substrings in all string values
+    try:
+        joined = " \n ".join(str(v) for v in environ.values() if isinstance(v, (str, bytes)))
+        for probe in ('/health', '/api/_health', '/admin/login', '/api/analytics'):
+            if probe in joined:
+                return probe
+    except Exception:
+        pass
+    return '/'
+
 def app(environ, start_response: Callable):
     try:
-        path = (environ.get('HTTP_X_FORWARDED_URI') or environ.get('REQUEST_URI') or environ.get('RAW_PATH') or environ.get('PATH_INFO') or '').strip()
-        if not path:
-            path = '/'
+        path = _derive_path(environ)
         method = (environ.get('REQUEST_METHOD') or 'GET').upper()
         if path.endswith('/health') or path.endswith('/api/_health'):
             body = b"ok"
