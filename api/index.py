@@ -55,6 +55,21 @@ def app(environ, start_response: Callable):
     try:
         path = _derive_path(environ)
         method = (environ.get('REQUEST_METHOD') or 'GET').upper()
+        # Serve favicon directly to avoid invoking backend on assets
+        try:
+            if path.endswith('/favicon.ico') or path.endswith('/favicon.png'):
+                import base64
+                png_b64 = b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAuMB9D7rWqkAAAAASUVORK5CYII="
+                buf = base64.b64decode(png_b64)
+                headers = [
+                    ('Content-Type', 'image/png'),
+                    ('Cache-Control', 'public, max-age=3600'),
+                    ('Content-Length', str(len(buf)))
+                ]
+                start_response('200 OK', headers)
+                return [buf]
+        except Exception:
+            pass
         # In Vercel preview, serve a minimal HTML for any non-probe GET to avoid 500s
         try:
             if os.getenv('VERCEL_ENV') == 'preview' and method == 'GET':
@@ -87,6 +102,19 @@ def app(environ, start_response: Callable):
                 "<li><a href=\"/api/analytics\">/api/analytics</a></li>"
                 "</ul>"
                 "<p>Ако виждате това в production, свържете се с екипа.</p>"
+                "</body></html>"
+            )
+            body = html.encode('utf-8')
+            headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(body)))]
+            start_response('200 OK', headers)
+            return [body]
+        # Handle /api/root explicitly in case project-level routing points here
+        if method == 'GET' and (path == '/api/root' or path == '/api/root/'):
+            html = (
+                "<html><head><title>HelpChain Preview</title></head>"
+                "<body style=\"font-family: Arial, sans-serif; padding:24px\">"
+                "<h1>HelpChain Preview</h1>"
+                "<p>Лек fallback за /api/root.</p>"
                 "</body></html>"
             )
             body = html.encode('utf-8')
