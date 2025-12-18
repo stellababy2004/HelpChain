@@ -170,23 +170,43 @@ def _health_wsgi_wrapper(inner_app):
             if method == 'GET':
                 p = path or '/'
                 if p == '/' or p.endswith('/index') or p.endswith('/index.html'):
-                    body = (
-                        b"<html><head><title>HelpChain Preview</title></head>"
-                        b"<body style=\"font-family: Arial, sans-serif; padding:24px\">"
-                        b"<h1>HelpChain Preview</h1>"
-                        b"<p>Добре дошли! Това е лека fallback начална страница за преглед.</p>"
-                        b"<ul>"
-                        b"<li><a href=\"/admin/login\">Admin Login</a></li>"
-                        b"<li><a href=\"/health\">/health</a></li>"
-                        b"<li><a href=\"/api/_health\">/api/_health</a></li>"
-                        b"<li><a href=\"/api/analytics\">/api/analytics</a></li>"
-                        b"</ul>"
-                        b"<p>Ако виждате това в production, свържете се с екипа.</p>"
-                        b"</body></html>"
+                    html = (
+                        "<html><head><title>HelpChain Preview</title></head>"
+                        "<body style=\"font-family: Arial, sans-serif; padding:24px\">"
+                        "<h1>HelpChain Preview</h1>"
+                        "<p>Добре дошли! Това е лека fallback начална страница за преглед.</p>"
+                        "<ul>"
+                        "<li><a href=\"/admin/login\">Admin Login</a></li>"
+                        "<li><a href=\"/health\">/health</a></li>"
+                        "<li><a href=\"/api/_health\">/api/_health</a></li>"
+                        "<li><a href=\"/api/analytics\">/api/analytics</a></li>"
+                        "</ul>"
+                        "<p>Ако виждате това в production, свържете се с екипа.</p>"
+                        "</body></html>"
                     )
+                    body = html.encode('utf-8')
                     headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(body)))]
                     start_response('200 OK', headers)
                     return [body]
+            # In Vercel preview, serve a minimal HTML for any non-probe GET to avoid 500s
+            try:
+                import os as _os
+                if _os.getenv('VERCEL_ENV') == 'preview' and method == 'GET':
+                    p = path or '/'
+                    if not (p.endswith('/health') or p.endswith('/api/_health') or p.endswith('/api/analytics')):
+                        html = (
+                            "<html><head><title>HelpChain Preview</title></head>"
+                            "<body style=\"font-family: Arial, sans-serif; padding:24px\">"
+                            "<h1>HelpChain Preview</h1>"
+                            "<p>Лека начална страница за преглед. Пробите са активни.</p>"
+                            "</body></html>"
+                        )
+                        body = html.encode('utf-8')
+                        headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(body)))]
+                        start_response('200 OK', headers)
+                        return [body]
+            except Exception:
+                pass
             # Match by exact path or by suffix to tolerate rewrites (e.g., 
             # original path exposed via forwarded headers).
             if path.endswith('/health') or path.endswith('/api/_health'):
