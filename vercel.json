@@ -2,5 +2,12 @@
   "version": 2,
   "env": {
     "PYTHONPATH": "_vendor:."
-  }
+  },
+  "rewrites": [
+    { "source": "/health", "destination": "/api/_health.js" },
+    { "source": "/api/_health", "destination": "/api/_health.js" },
+    { "source": "/api/analytics", "destination": "/api/analytics.js" },
+    { "source": "/admin/login", "destination": "/admin/login/index.html" },
+    { "source": "/(.*)", "destination": "/api/index.py" }
+  ]
 }
