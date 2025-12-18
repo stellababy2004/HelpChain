@@ -70,44 +70,8 @@ def app(environ, start_response: Callable):
                 return [buf]
         except Exception:
             pass
-        # In Vercel preview, serve a minimal HTML for any non-probe GET to avoid 500s
-        try:
-            if os.getenv('VERCEL_ENV') == 'preview' and method == 'GET':
-                p = path or '/'
-                if not (p.endswith('/health') or p.endswith('/api/_health') or p.endswith('/api/analytics')):
-                    html = (
-                        "<html><head><title>HelpChain Preview</title></head>"
-                        "<body style=\"font-family: Arial, sans-serif; padding:24px\">"
-                        "<h1>HelpChain Preview</h1>"
-                        "<p>Лека начална страница за преглед. Пробите са активни.</p>"
-                        "</body></html>"
-                    )
-                    body = html.encode('utf-8')
-                    headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(body)))]
-                    start_response('200 OK', headers)
-                    return [body]
-        except Exception:
-            pass
-        # Minimal fallback homepage to avoid 500s in previews while backend stabilizes
-        if method == 'GET' and (path == '/' or path.endswith('/index') or path.endswith('/index.html')):
-            html = (
-                "<html><head><title>HelpChain Preview</title></head>"
-                "<body style=\"font-family: Arial, sans-serif; padding:24px\">"
-                "<h1>HelpChain Preview</h1>"
-                "<p>Добре дошли! Това е лека fallback начална страница за преглед.</p>"
-                "<ul>"
-                "<li><a href=\"/admin/login\">Admin Login</a></li>"
-                "<li><a href=\"/health\">/health</a></li>"
-                "<li><a href=\"/api/_health\">/api/_health</a></li>"
-                "<li><a href=\"/api/analytics\">/api/analytics</a></li>"
-                "</ul>"
-                "<p>Ако виждате това в production, свържете се с екипа.</p>"
-                "</body></html>"
-            )
-            body = html.encode('utf-8')
-            headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(body)))]
-            start_response('200 OK', headers)
-            return [body]
+        # Delegate HTML routes to Flask; avoid placeholder pages for preview
+        # Do not short-circuit root; delegate to Flask to render templates
         # Handle /api/root explicitly in case project-level routing points here
         if method == 'GET' and (path == '/api/root' or path == '/api/root/'):
             html = (
@@ -131,20 +95,7 @@ def app(environ, start_response: Callable):
             headers = [('Content-Type', 'application/json; charset=utf-8'), ('Content-Length', str(len(body)))]
             start_response('200 OK', headers)
             return [body]
-        if (path.endswith('/admin/login') or path.endswith('/admin/login/')) and method == 'GET':
-            body = (
-                b"<html><head><title>Admin Login</title></head>"
-                b"<body><h1>Admin Login</h1>"
-                b"<form method=\"post\">"
-                b"<label>Username or Email: <input name=\"username\" /></label><br/>"
-                b"<label>Password: <input name=\"password\" type=\"password\" /></label><br/>"
-                b"<label>2FA Token (optional): <input name=\"token\" /></label><br/>"
-                b"<button type=\"submit\">Login</button>"
-                b"</form></body></html>"
-            )
-            headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(body)))]
-            start_response('200 OK', headers)
-            return [body]
+        # Delegate admin/login and other HTML routes to Flask to render templates
     except Exception:
         # Fall through to the inner app on any wrapper error
         pass

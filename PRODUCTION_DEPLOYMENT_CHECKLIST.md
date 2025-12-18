@@ -1,5 +1,7 @@
 # 🚀 HelpChain Production Deployment Checklist
 
+Legend: [x] Done • [ ] Pending • Notes may include (in progress)
+
 ## Pre-Deployment Verification
 
 ### 🔒 Security Readiness
@@ -19,8 +21,7 @@
 - [ ] **Environment Variables**: All secrets configured
 
 ### 🔍 Security Monitoring
-
-- [ ] **GitHub Security**: CodeQL, Bandit, pip-audit enabled
+- [x] **GitHub Security**: CodeQL, Bandit, pip-audit enabled (Bandit/pip-audit CI добавени; CodeQL вече активен)
 - [ ] **OWASP ZAP**: Baseline scan passing
 - [ ] **Trivy**: IaC and repository scans clean
 - [ ] **Sentry**: Error monitoring configured
@@ -29,10 +30,11 @@
 ### ⚙️ Vercel Prebuilt & CI Size Safeguards
 
 - [ ] **Prebuilt deploy flow**: Use Vercel prebuilt on CI: run `npx vercel build` on the runner to produce `.vercel/output` and then `npx vercel deploy --prebuilt` for the preview/production deploy.
-- [ ] **.vercelignore rules**: Ensure `.vercelignore` contains `/.git` and `/.vercel/python/**/_vendor` to avoid uploading vendorized Python binaries (torch, nvidia, triton, etc.).
+- [x] **.vercelignore rules**: Ensure `.vercelignore` contains `/.git` and `/.vercel/python/**/_vendor` to avoid uploading vendorized Python binaries (torch, nvidia, triton, etc.). (present in repo)
 - [ ] **Upload size target**: Keep prebuilt upload well under the 4 GiB service limit — recommended target: < 3.5 GiB.
-- [ ] **Split heavy ML deps**: Document and enforce that heavy ML packages live in `requirements-ml.txt` and are NOT installed during the prebuild step.
+- [x] **Split heavy ML deps**: Document and enforce that heavy ML packages live in `requirements-ml.txt` and are NOT installed during the prebuild step. (done)
 - [ ] **Early-fail CI check**: Add a lightweight CI job or step that inspects `.vercel/output` size and lists files >100MB; fail the job if total > 3.5G and notify the team.
+- [x] **Early-fail CI check**: Add a lightweight CI job or step that inspects `.vercel/output` size and lists files >100MB; fail the job if total > 3.5G and notify the team. (Added as `prebuilt-size-guard` job in [.github/workflows/preview-smoke.yml](.github/workflows/preview-smoke.yml))
 
 Example GitHub Actions check (add as a small job step):
 
@@ -50,6 +52,27 @@ Example GitHub Actions check (add as a small job step):
 ```
 
 Note: adjust the snippet for Windows/PowerShell runners if used; the above is a compact Linux runner example.
+
+### 🔎 Preview Protection Smokes (Vercel)
+
+- [ ] **Preview URL**: Use the public preview domain from Vercel Deployments (the `*.vercel.app` link shown as “Preview”). Example: `https://your-app-abcdefg-your-team.vercel.app`.
+- [ ] **Bypass Token**: If Preview Protection is enabled, get the bypass token from the deployment page (or copy the `vercel-protection-bypass` cookie value after unlocking once).
+- [ ] **Run smokes against Preview**: From repo root, run:
+
+```powershell
+pwsh -NoProfile -File .\scripts\start-and-smoke.ps1 \
+   -Port 443 \
+   -BaseUrl "https://<preview>.vercel.app" \
+   -UseExisting \
+   -Strict \
+   -HealthTimeoutSec 180 \
+   -BypassToken "<token>"
+```
+
+- [ ] **Expected**: Health OK, admin smoke 200 (dashboard marker present in Strict), submit-request smoke passes, and overall “All smokes passed.”
+- [ ] **Troubleshooting**:
+   - Adjust `-HealthPath` if the health endpoint is routed differently.
+   - If protected preview still blocks, confirm the token and browser protection toggle, and re-copy the token.
 
 ## Deployment Steps
 
