@@ -4,7 +4,7 @@
     "PYTHONPATH": "_vendor:."
   },
   "routes": [
-    { "src": "^/$", "dest": "/public/index.html" },
+    { "src": "^/$", "dest": "/api/root.js" },
     { "src": "^/health$", "dest": "/public/health/index.html" },
     { "src": "^/admin/login$", "dest": "/public/admin/login/index.html" },
     { "handle": "filesystem" },
