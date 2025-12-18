@@ -95,10 +95,13 @@ if ($BypassToken) {
   Write-Host "Running smoke checks for $Url"
 }
 Test-EndPoint '/'
+Test-EndPoint '/api/root'
+Test-EndPoint '/api/index.py'
 Test-EndPoint '/health'
 Test-EndPoint '/api/_health'
 Test-EndPoint '/admin/login'
 Test-EndPoint '/api/analytics'
+Test-EndPoint '/favicon.ico'
 
 # Soft summary: if home is 200 but probes failed, mark warning instead of blocking
 if ((Get-Variable -Name __RootStatus -Scope Script -ErrorAction SilentlyContinue) -and (Get-Variable -Name __ProbeError -Scope Script -ErrorAction SilentlyContinue)) {

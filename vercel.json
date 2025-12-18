@@ -4,7 +4,10 @@
     "PYTHONPATH": "_vendor:."
   },
   "routes": [
+    { "src": "^/favicon.ico$", "dest": "/api/favicon.js" },
+    { "src": "^/favicon.png$", "dest": "/api/favicon.js" },
     { "src": "^/$", "dest": "/api/root.js" },
+    { "src": "^/api/root$", "dest": "/api/root.js" },
     { "src": "^/health$", "dest": "/public/health/index.html" },
     { "src": "^/admin/login$", "dest": "/public/admin/login/index.html" },
     { "handle": "filesystem" },
