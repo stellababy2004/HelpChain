@@ -155,8 +155,18 @@ csrf = CSRFProtect()
 
 # --- Define basedir and instance_dir for later use (must be before use) ---
 basedir = os.path.abspath(os.path.dirname(__file__))
-instance_dir = os.path.join(basedir, "instance")
-os.makedirs(instance_dir, exist_ok=True)
+# Instance directory: prefer env, then local folder, else /tmp; tolerate read-only FS
+_instance_dir_env = os.getenv("HELPCHAIN_INSTANCE_DIR")
+instance_dir = _instance_dir_env or os.path.join(basedir, "instance")
+try:
+    os.makedirs(instance_dir, exist_ok=True)
+except Exception:
+    try:
+        instance_dir = os.path.join("/tmp", "helpchain-instance")
+        os.makedirs(instance_dir, exist_ok=True)
+    except Exception:
+        # As a last resort, leave instance_dir unset; DB will use in-memory
+        instance_dir = None
 
 
 # --- Minimal stub for apply_filters to prevent NameError ---
@@ -446,10 +456,19 @@ def _early_preview_short_circuit():
     except Exception:
         # Never fail this guard
         return None
-instance_dir = os.path.join(basedir, "instance")
-os.makedirs(instance_dir, exist_ok=True)
-db_path = os.path.join(instance_dir, "volunteers.db")
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+# Database configuration: allow override via env; else file DB under instance_dir; else in-memory
+_db_uri_env = os.getenv("SQLALCHEMY_DATABASE_URI")
+if _db_uri_env:
+    app.config["SQLALCHEMY_DATABASE_URI"] = _db_uri_env
+else:
+    try:
+        if instance_dir:
+            db_path = os.path.join(instance_dir, "volunteers.db")
+            app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+        else:
+            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+    except Exception:
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 

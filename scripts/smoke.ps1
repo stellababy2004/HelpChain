@@ -43,7 +43,7 @@ function Test-EndPoint {
         if ($Path -notmatch '\?') { $Path = $Path + '?x-vercel-set-bypass-cookie=true' } else { $Path = $Path + '&x-vercel-set-bypass-cookie=true' }
       }
       # Also include bypass token in query (per Vercel docs) to ensure automation access in protected previews
-      $tokenParam = 'x-vercel-protection-bypass=' + [System.Web.HttpUtility]::UrlEncode($cleanToken)
+      $tokenParam = 'x-vercel-protection-bypass=' + [System.Net.WebUtility]::UrlEncode($cleanToken)
       if ($Path -notmatch '\?') { $Path = $Path + '?' + $tokenParam }
       else { $Path = $Path + '&' + $tokenParam }
     }
