@@ -1521,11 +1521,34 @@ def _seed_if_empty():
 
 @app.get("/")
 def index():
-    from flask import request
+    from flask import request, Response
 
     lang_cookie = (request.cookies.get("language") or "fr").strip().lower()
     current_locale = lang_cookie if lang_cookie in ["fr", "en", "bg"] else "fr"
-    return render_template("home_new.html", current_locale=current_locale)
+    try:
+        return render_template("home_new.html", current_locale=current_locale)
+    except Exception:
+        try:
+            app.logger.exception("index(): failed to render home_new.html; serving preview fallback")
+        except Exception:
+            pass
+        html = (
+            """
+            <html><head><title>HelpChain Preview</title></head>
+            <body style="font-family: Arial, sans-serif; padding:24px">
+              <h1>HelpChain Preview</h1>
+              <p>Добре дошли! Това е лека fallback начална страница за преглед.</p>
+              <ul>
+                <li><a href="/admin/login">Admin Login</a></li>
+                <li><a href="/health">/health</a></li>
+                <li><a href="/api/_health">/api/_health</a></li>
+                <li><a href="/api/analytics">/api/analytics</a></li>
+              </ul>
+              <p class="muted">Ако виждате това в production, свържете се с екипа.</p>
+            </body></html>
+            """
+        )
+        return Response(html, mimetype="text/html")
 
 
 # Redirect legacy static preview URL към новата начална страница
