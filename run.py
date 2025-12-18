@@ -98,63 +98,50 @@ try:
 except Exception:
     pass
 
-# Import the application (try modern entrypoint first, then legacy fallback)
-app = None
-# Extra diagnostics: check whether key runtime packages are importable and list installed packages
-try:
-    print("DEBUG run.py: checking runtime imports for jwt and jinja2", flush=True)
-    try:
-        import jwt as _jwt
+_cached_inner_app = None
 
-        print("DEBUG run.py: jwt module available at", getattr(_jwt, "__file__", "<built-in>"), flush=True)
-    except Exception as _e:
-        print("DEBUG run.py: jwt import failed:", _e, flush=True)
+def _load_inner_app():
+    """Lazily import the Flask application to avoid import-time 500s.
+    Tries `backend.app` first, then falls back to `backend.appy`.
+    Caches the result once successfully imported.
+    """
+    global _cached_inner_app
+    if _cached_inner_app is not None:
+        return _cached_inner_app
+    # Extra diagnostics: check a couple of runtime packages (lightweight)
     try:
-        import jinja2 as _jinja
-
-        print("DEBUG run.py: jinja2 module available at", getattr(_jinja, "__file__", "<built-in>"), flush=True)
-    except Exception as _e:
-        print("DEBUG run.py: jinja2 import failed:", _e, flush=True)
-    # Try to list installed distributions and pip freeze for extra context
-    if os.getenv("VERBOSE_LOGS", "0") == "1":
+        print("DEBUG run.py: lazy-loading Flask app; quick runtime checks", flush=True)
         try:
-            import importlib.metadata as _ilm
-            dists = [d.metadata.get('Name') for d in _ilm.distributions()][:40]
-            print("DEBUG run.py: installed distributions (sample):", dists, flush=True)
-        except Exception:
-            try:
-                import pkg_resources as _pr
-                dists = [d.project_name for d in _pr.working_set][:40]
-                print("DEBUG run.py: installed distributions (sample via pkg_resources):", dists, flush=True)
-            except Exception:
-                pass
-        try:
-            import subprocess as _sub
-            _pf = _sub.run([sys.executable, "-m", "pip", "freeze"], capture_output=True, text=True, timeout=10)
-            out = (_pf.stdout or "<no output>")
-            print("DEBUG run.py: pip freeze (truncated):\n", out[:1000], flush=True)
+            import jwt as _jwt  # noqa: F401
         except Exception as _e:
-            print("DEBUG run.py: pip freeze failed:", _e, flush=True)
-except Exception:
-    traceback.print_exc()
-try:
-    from backend.app import app as _app
-
-    app = _app
-except Exception:
-    # Print traceback to stderr to aid diagnostics in logs
-    traceback.print_exc()
+            print("DEBUG run.py: jwt not available:", _e, flush=True)
+        try:
+            import jinja2 as _jinja  # noqa: F401
+        except Exception as _e:
+            print("DEBUG run.py: jinja2 not available:", _e, flush=True)
+    except Exception:
+        pass
+    # Try modern app first
     try:
-        from backend.appy import app as _app
-
-        app = _app
+        from backend.app import app as _app
+        _cached_inner_app = _app
+        return _cached_inner_app
     except Exception:
         traceback.print_exc()
-        raise
+        # Fallback to legacy lightweight app
+        try:
+            from backend.appy import app as _app
+            _cached_inner_app = _app
+            return _cached_inner_app
+        except Exception:
+            traceback.print_exc()
+            # Re-raise to surface a proper 500 only if we couldn't short-circuit earlier
+            raise
 
-def _health_wsgi_wrapper(inner_app):
-    """Very-early WSGI wrapper to guarantee health/admin GET routes return 200,
-    regardless of downstream Flask hooks or blueprint errors."""
+def _health_wsgi_wrapper():
+    """Very-early WSGI app to guarantee root/health/admin GET routes return 200,
+    regardless of downstream Flask import errors. Lazily loads the Flask app
+    only when needed after handling short-circuits."""
     from typing import Callable
 
     def _wsgi(environ, start_response: Callable):
@@ -207,13 +194,21 @@ def _health_wsgi_wrapper(inner_app):
                         return [body]
             except Exception:
                 pass
-            # Match by exact path or by suffix to tolerate rewrites (e.g., 
+            # Match by exact path or by suffix to tolerate rewrites (e.g.,
             # original path exposed via forwarded headers).
             if path.endswith('/health') or path.endswith('/api/_health'):
                 body = b"ok"
                 headers = [('Content-Type', 'text/plain; charset=utf-8'), ('Content-Length', str(len(body)))]
                 start_response('200 OK', headers)
                 return [body]
+            # Favicon early short-circuit to keep Python out of the path
+            if path.endswith('/favicon.ico') or path.endswith('/favicon.png'):
+                import base64
+                png_b64 = b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAuMB9D7rWqkAAAAASUVORK5CYII="
+                buf = base64.b64decode(png_b64)
+                headers = [('Content-Type', 'image/png'), ('Cache-Control', 'public, max-age=3600'), ('Content-Length', str(len(buf)))]
+                start_response('200 OK', headers)
+                return [buf]
             if path.endswith('/api/analytics'):
                 body = b'{"status":"ok","source":"wsgi-stub"}'
                 headers = [('Content-Type', 'application/json; charset=utf-8'), ('Content-Length', str(len(body)))]
@@ -236,13 +231,13 @@ def _health_wsgi_wrapper(inner_app):
         except Exception:
             # Fall through to the app on any wrapper error
             pass
-        # Default: delegate to the wrapped application
-        return inner_app(environ, start_response)
+        # Default: delegate; inner app is lazy-imported here
+        return _load_inner_app()(environ, start_response)
 
     return _wsgi
 
 # Expose WSGI app variable expected by some servers, wrapped with health guard
-application = _health_wsgi_wrapper(app)
+application = _health_wsgi_wrapper()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True, use_reloader=False)
