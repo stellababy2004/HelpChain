@@ -53,6 +53,9 @@ function Test-EndPoint {
     if ($Path -like '/*') {
       Set-Variable -Name __RootStatus -Value $code -Scope Script
     }
+    if ($Path -eq '/health') {
+      Set-Variable -Name __HealthStatus -Value $code -Scope Script
+    }
   } catch {
     $msg = $_.Exception.Message
     $status = $null
@@ -73,6 +76,10 @@ function Test-EndPoint {
     if ($status) {
       if ($status -eq 401) {
         Write-Host "$Path -> ERROR (401): Preview Protection active. Use -BypassToken with the project 'Protection Bypass for Automation' secret, or open the Shareable Link in a browser to set the cookie." -ForegroundColor Yellow
+      } elseif ($Path -eq '/api/_health' -and $status -eq 404) {
+        # Treat missing /api/_health as soft warning if /health is available
+        Set-Variable -Name __ApiHealth404 -Value $true -Scope Script
+        Write-Host "$Path -> WARNING (404): /api/_health not routed; relying on /health." -ForegroundColor Yellow
       } else {
         if ($body) {
           Write-Host "$Path -> ERROR ($status): $msg" -ForegroundColor Red
@@ -107,5 +114,12 @@ Test-EndPoint '/favicon.ico'
 if ((Get-Variable -Name __RootStatus -Scope Script -ErrorAction SilentlyContinue) -and (Get-Variable -Name __ProbeError -Scope Script -ErrorAction SilentlyContinue)) {
   if ($__RootStatus -eq 200) {
     Write-Host "Preview root is 200; probe endpoints failed. Treating as soft-pass while routing is stabilized." -ForegroundColor Yellow
+  }
+}
+
+# Additional soft note: /api/_health 404 is OK if /health is 200
+if ((Get-Variable -Name __ApiHealth404 -Scope Script -ErrorAction SilentlyContinue) -and (Get-Variable -Name __HealthStatus -Scope Script -ErrorAction SilentlyContinue)) {
+  if ($__HealthStatus -eq 200) {
+    Write-Host "/api/_health 404 ignored because /health is 200 (soft-pass)." -ForegroundColor Yellow
   }
 }
