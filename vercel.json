@@ -4,10 +4,10 @@
     "PYTHONPATH": "_vendor:."
   },
   "rewrites": [
-    { "source": "/health", "destination": "/api/_health.js" },
+    { "source": "/health", "destination": "/public/health/index.html" },
     { "source": "/api/_health", "destination": "/api/_health.js" },
     { "source": "/api/analytics", "destination": "/api/analytics.js" },
-    { "source": "/admin/login", "destination": "/admin/login/index.html" },
+    { "source": "/admin/login", "destination": "/public/admin/login/index.html" },
     { "source": "/(.*)", "destination": "/api/index.py" }
   ]
 }
