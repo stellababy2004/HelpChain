@@ -152,7 +152,6 @@ def require_admin_login(f):
             if (
                 current_app
                 and getattr(current_app, "config", {}).get("TESTING")
-                and os.environ.get("HELPCHAIN_LEGACY_ADMIN_ALIAS") == "1"
                 and request.headers.get("X-Legacy-Admin-Alias") == "1"
                 and request.method == "GET"
                 and (request.path or "") == "/admin_dashboard"
@@ -525,7 +524,6 @@ def _testing_admin_request_shim():
                     # the legacy-200 behavior opt-in per-request.
                     if not (
                         current_app.config.get("TESTING")
-                        and os.environ.get("HELPCHAIN_LEGACY_ADMIN_ALIAS") == "1"
                         and request.headers.get("X-Legacy-Admin-Alias") == "1"
                     ):
                         return redirect(url_for("admin_login"))
@@ -694,7 +692,6 @@ def _testing_admin_dashboard_after_request(response):
         if (
             current_app
             and current_app.config.get("TESTING")
-            and os.environ.get("HELPCHAIN_LEGACY_ADMIN_ALIAS") == "1"
             and request.headers.get("X-Legacy-Admin-Alias") == "1"
             and (request.path or "") == "/admin_dashboard"
             and response is not None
