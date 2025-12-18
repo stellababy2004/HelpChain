@@ -50,6 +50,25 @@ def app(environ, start_response: Callable):
     try:
         path = _derive_path(environ)
         method = (environ.get('REQUEST_METHOD') or 'GET').upper()
+        # Minimal fallback homepage to avoid 500s in previews while backend stabilizes
+        if method == 'GET' and (path == '/' or path.endswith('/index') or path.endswith('/index.html')):
+            body = (
+                b"<html><head><title>HelpChain Preview</title></head>"
+                b"<body style=\"font-family: Arial, sans-serif; padding:24px\">"
+                b"<h1>HelpChain Preview</h1>"
+                b"<p>Добре дошли! Това е лека fallback начална страница за преглед.</p>"
+                b"<ul>"
+                b"<li><a href=\"/admin/login\">Admin Login</a></li>"
+                b"<li><a href=\"/health\">/health</a></li>"
+                b"<li><a href=\"/api/_health\">/api/_health</a></li>"
+                b"<li><a href=\"/api/analytics\">/api/analytics</a></li>"
+                b"</ul>"
+                b"<p>Ако виждате това в production, свържете се с екипа.</p>"
+                b"</body></html>"
+            )
+            headers = [('Content-Type', 'text/html; charset=utf-8'), ('Content-Length', str(len(body)))]
+            start_response('200 OK', headers)
+            return [body]
         if path.endswith('/health') or path.endswith('/api/_health'):
             body = b"ok"
             headers = [('Content-Type', 'text/plain; charset=utf-8'), ('Content-Length', str(len(body)))]
