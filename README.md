@@ -329,6 +329,14 @@ gunicorn -w 4 -b 0.0.0.0:8000 backend.helpchain-backend.src.asgi:app
 uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
+### Preview здравни проверки (Vercel)
+
+- Каноничен health endpoint за прегледи: `/health`.
+- `/api/_health` може да бъде 404, ако Project-level Routes в Vercel засенчват repo `vercel.json`.
+- Smoke скриптът (`scripts/smoke.ps1`) третира `/api/_health = 404` като soft warning, когато `/health = 200`.
+- Ако желаете и `/api/_health` да е 200, добавете в Project Settings → Routing (Vercel): правило най-отгоре `^/api/_health$ → api/_health.js`.
+
+
 ## 🤝 Принос
 
 1. Fork-нете проекта
