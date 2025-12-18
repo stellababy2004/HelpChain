@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HelpChain Preview</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 24px; }
+      .wrap { max-width: 760px; margin: 0 auto; }
+      a { color: #4f46e5; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .ok { color: #16a34a; }
+      .muted { color: #6b7280; }
+      .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; margin: 12px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>HelpChain Preview</h1>
+      <p class="muted">Лек статичен начален екран за прегледите (Vercel Preview).</p>
+      <div class="card">
+        <h3>Бързи връзки</h3>
+        <ul>
+          <li><a href="/admin/login">Admin Login</a></li>
+          <li><a href="/health">/health</a> <span class="ok">(200)</span></li>
+          <li><a href="/api/_health">/api/_health</a> <span class="ok">(200)</span></li>
+          <li><a href="/api/analytics">/api/analytics</a> <span class="ok">(200)</span></li>
+        </ul>
+      </div>
+      <p class="muted">Ако сте виждали 500 тук, това го елиминира за прегледите. Истинският UI остава достъпен чрез Python рутовете извън root-а.</p>
+    </div>
+  </body>
+</html>

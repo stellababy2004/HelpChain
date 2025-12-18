@@ -4,6 +4,7 @@
     "PYTHONPATH": "_vendor:."
   },
   "rewrites": [
+    { "source": "/", "destination": "/public/index.html" },
     { "source": "/health", "destination": "/public/health/index.html" },
     { "source": "/api/_health", "destination": "/api/_health.js" },
     { "source": "/api/analytics", "destination": "/api/analytics.js" },
