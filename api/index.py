@@ -35,7 +35,11 @@ def _derive_path(environ: dict) -> str:
     for k in keys:
         v = environ.get(k)
         if isinstance(v, str) and v.strip():
-            return v.strip()
+            val = v.strip()
+            # If platform rewrites to this file path, treat as root
+            if val.endswith('/api/index.py') or val.endswith('/api/index'):
+                return '/'
+            return val
     # Fallback: scan for common probe substrings in all string values
     try:
         joined = " \n ".join(str(v) for v in environ.values() if isinstance(v, (str, bytes)))
