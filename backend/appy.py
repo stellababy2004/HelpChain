@@ -1861,7 +1861,11 @@ HelpChain системата
 
 
 # Създай папката instance ако не съществува
-os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
+try:
+    os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
+except OSError:
+    # Read-only filesystem on serverless; skip creating instance directory
+    pass
 
 # Задаваме явни папки за шаблони и статични файлове (адаптирай пътищата ако е нужно)
 _templates = os.path.join(os.path.dirname(__file__), "templates")
