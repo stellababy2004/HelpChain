@@ -30,6 +30,12 @@ Legend: [x] Done • [ ] Pending • Notes may include (in progress)
 ### ⚙️ Vercel Prebuilt & CI Size Safeguards
 
 - [ ] **Prebuilt deploy flow**: Use Vercel prebuilt on CI: run `npx vercel build` on the runner to produce `.vercel/output` and then `npx vercel deploy --prebuilt` for the preview/production deploy.
+   - Windows tip (local prebuilt): Install Python 3.11 and ensure the `python3` command resolves. Either enable the launcher alias during install or add a small shim `python3.cmd` that runs `py -3.11 %*`. Also ensure the runtime is set to Python 3.11 in vercel.json (added under `functions: { "api/**/*.py": { "runtime": "python3.11" } }`).
+    - Windows known limitation: Local `vercel build` for Python functions may fail on Windows. Prefer one of:
+     1) Remote build via `npx vercel deploy --yes` (no prebuilt), or
+     2) Build from Linux runner in CI (Ubuntu), or
+     3) Use WSL2 Ubuntu locally.
+       Runtime is configured as `python3.11` in vercel.json for compatibility.
 - [x] **.vercelignore rules**: Ensure `.vercelignore` contains `/.git` and `/.vercel/python/**/_vendor` to avoid uploading vendorized Python binaries (torch, nvidia, triton, etc.). (present in repo)
 - [ ] **Upload size target**: Keep prebuilt upload well under the 4 GiB service limit — recommended target: < 3.5 GiB.
 - [x] **Split heavy ML deps**: Document and enforce that heavy ML packages live in `requirements-ml.txt` and are NOT installed during the prebuild step. (done)
