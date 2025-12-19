@@ -99,8 +99,25 @@ def app(environ, start_response: Callable):
     except Exception:
         # Fall through to the inner app on any wrapper error
         pass
-    # Delegate everything else
-    return _load_inner_app()(environ, start_response)
+    # Delegate everything else, but surface a concise error in preview envs
+    try:
+        return _load_inner_app()(environ, start_response)
+    except Exception as e:
+        try:
+            if os.getenv("VERCEL_ENV", "preview") in ("preview", "development"):
+                import traceback
+                tb = traceback.format_exc()
+                msg = ("Application import/dispatch failed.\n" +
+                       str(e) + "\n\n" +
+                       "--- Traceback (truncated) ---\n" +
+                       "\n".join(tb.splitlines()[-15:]))
+                body = msg.encode("utf-8", "ignore")
+                headers = [("Content-Type", "text/plain; charset=utf-8"), ("Content-Length", str(len(body)))]
+                start_response("500 Internal Server Error", headers)
+                return [body]
+        except Exception:
+            pass
+        raise
 
 # For local debug
 if __name__ == "__main__":
