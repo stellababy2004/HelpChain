@@ -2,4 +2,4 @@
 name = "helpchain-bg"
 version = "0.0.0"
 description = "HelpChain BG app"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11,<3.13"

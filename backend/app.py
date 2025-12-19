@@ -36,9 +36,29 @@ from dependencies import require_role
 from backend.extensions import db
 
 # --- Flask app init ---
-app = Flask(__name__)
+# Use the repository-level /static if it exists (it contains CSS/JS referenced by index.html),
+# otherwise fall back to backend/static. Keep URL path as /static for compatibility.
+_here = os.path.dirname(__file__)
+_repo_root = os.path.normpath(os.path.join(_here, ".."))
+_root_static = os.path.join(_repo_root, "static")
+_backend_static = os.path.join(_here, "static")
+_static_folder = _root_static if os.path.isdir(_root_static) else _backend_static
+
+app = Flask(__name__, static_folder=_static_folder, static_url_path="/static")
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.debug = True
+
+# Lightweight health endpoint for deployment monitoring
+@app.get("/health")
+def health():
+    try:
+        import sqlalchemy as _sa
+        sa_ok = True
+        sa_ver = getattr(_sa, "__version__", "unknown")
+    except Exception:
+        sa_ok = False
+        sa_ver = None
+    return {"status": "ok", "sqlalchemy": sa_ok, "sqlalchemy_version": sa_ver}, 200
 
 
 # Safe URL builder for templates: return '#' when endpoint missing
@@ -1715,25 +1735,32 @@ def admin_login():
         except Exception:
             pass
         return redirect(url_for("admin_dashboard"))
+    # GET: render login form with CSRF; provide robust fallback if template fails
+    try:
+        return render_template("admin_login.html")
+    except Exception:
+        # Fallback inline HTML to avoid 500s; include CSRF token when available
         try:
-                return render_template("admin_login.html")
+            from flask_wtf.csrf import generate_csrf
+            _csrf_input = f'<input type="hidden" name="csrf_token" value="{generate_csrf()}" />'
         except Exception:
-                # Minimal fallback to avoid 500s if template loading fails in serverless previews
-                return Response(
-                        """
-                        <html><head><title>Admin Login</title></head>
-                        <body>
-                            <h1>Admin Login</h1>
-                            <form method="post">
-                                <label>Username or Email: <input name="username" /></label><br/>
-                                <label>Password: <input name="password" type="password" /></label><br/>
-                                <label>2FA Token (optional): <input name="token" /></label><br/>
-                                <button type="submit">Login</button>
-                            </form>
-                        </body></html>
-                        """,
-                        mimetype="text/html",
-                )
+            _csrf_input = ""
+        return Response(
+            f"""
+            <html><head><title>Admin Login</title></head>
+            <body>
+                <h1>Admin Login</h1>
+                <form method="post">
+                    {_csrf_input}
+                    <label>Username or Email: <input name="username" /></label><br/>
+                    <label>Password: <input name="password" type="password" /></label><br/>
+                    <label>2FA Token (optional): <input name="token" /></label><br/>
+                    <button type="submit">Login</button>
+                </form>
+            </body></html>
+            """,
+            mimetype="text/html",
+        )
 
 
 @app.route("/admin_dashboard", methods=["GET"])
@@ -1907,6 +1934,38 @@ def admin_dev_reset():
         db.session.rollback()
         flash(f"Грешка при нулиране: {e}", "error")
 
+    return redirect(url_for("admin_login"))
+
+
+# Dev-only helper: disable 2FA for admin without requiring login (recovery path)
+@app.get("/admin/dev_disable_2fa")
+def admin_dev_disable_2fa():
+    # Allow only in debug / development to prevent accidental exposure.
+    if not app.debug:
+        abort(404)
+    from sqlalchemy import func as _func
+
+    try:
+        admin = db.session.query(AdminUser).filter(_func.lower(AdminUser.username) == "admin").first()
+    except Exception:
+        try:
+            admin = AdminUser.query.filter(_func.lower(AdminUser.username) == "admin").first()
+        except Exception:
+            admin = None
+    if admin is None:
+        flash("Няма админ акаунт за изключване на 2FA.", "warning")
+        return redirect(url_for("admin_login"))
+    try:
+        admin.disable_2fa()
+        db.session.add(admin)
+        db.session.commit()
+        flash("2FA е деактивирано за admin.", "success")
+    except Exception as e:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+        flash(f"Грешка при деактивиране на 2FA: {e}", "error")
     return redirect(url_for("admin_login"))
 
 

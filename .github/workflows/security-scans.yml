@@ -1,3 +1,90 @@
+name: Security Scans (Bandit & pip-audit)
+
+on:
+  push:
+    branches: [ main, vercel-setup-health ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: security-scans-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bandit:
+    name: Bandit (SAST)
+    runs-on: ubuntu-latest
+    continue-on-error: true  # временно не-блокиращ, докато отработим находките
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Bandit
+        run: pip install --upgrade pip bandit
+
+      - name: Run Bandit (SARIF)
+        run: |
+          bandit -r . -x tests,.venv,venv,env,.git -f sarif -o bandit.sarif || true
+
+      - name: Upload SARIF (Bandit)
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bandit.sarif
+
+  pip-audit:
+    name: pip-audit (Dependencies)
+    runs-on: ubuntu-latest
+    continue-on-error: true  # временно не-блокиращ за да видим пълния отчет
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install pip-audit
+        run: pip install --upgrade pip pip-audit
+
+      - name: Audit requirements (SARIF)
+        shell: bash
+        run: |
+          set -e
+          OUTPUTS=()
+          if [ -f requirements.txt ]; then
+            pip-audit -r requirements.txt -f sarif -o pip-audit.requirements.sarif --progress-spinner off || true
+            OUTPUTS+=(pip-audit.requirements.sarif)
+          fi
+          if [ -f requirements-dev.txt ]; then
+            pip-audit -r requirements-dev.txt -f sarif -o pip-audit.dev.sarif --progress-spinner off || true
+            OUTPUTS+=(pip-audit.dev.sarif)
+          fi
+          if [ -f requirements-dev-minimal.txt ]; then
+            pip-audit -r requirements-dev-minimal.txt -f sarif -o pip-audit.dev-min.sarif --progress-spinner off || true
+            OUTPUTS+=(pip-audit.dev-min.sarif)
+          fi
+          if [ ${#OUTPUTS[@]} -eq 0 ]; then
+            echo "No requirements files found; auditing installed env"
+            pip-audit -f sarif -o pip-audit.env.sarif --progress-spinner off || true
+          fi
+
+      - name: Upload SARIF (pip-audit requirements)
+        if: hashFiles('pip-audit.*.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: .
 name: Security Scans (Python)
 
 on:

@@ -30,13 +30,22 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
 
-    # Stop any existing Python processes
-    print("📋 [1/3] Stopping existing Python processes...")
-    if platform.system() == "Windows":
-        subprocess.run(["taskkill", "/f", "/im", "python.exe"], capture_output=True)
+    # Stop any existing Python processes (optional)
+    # Skippable via HELPCHAIN_SKIP_KILL=1 to avoid killing unrelated Python tasks
+    skip_kill = os.environ.get("HELPCHAIN_SKIP_KILL") in ("1", "true", "True")
+    if skip_kill:
+        print("⏭️  [1/3] Skipping mass-kill of Python processes (HELPCHAIN_SKIP_KILL=1)")
     else:
-        subprocess.run(["pkill", "-f", "python"], capture_output=True)
-    time.sleep(1)
+        print("📋 [1/3] Stopping existing Python processes...")
+        try:
+            if platform.system() == "Windows":
+                subprocess.run(["taskkill", "/f", "/im", "python.exe"], capture_output=True)
+            else:
+                subprocess.run(["pkill", "-f", "python"], capture_output=True)
+            time.sleep(1)
+        except Exception:
+            # Non-fatal; continue starting server
+            pass
 
     # Check if we can import the app
     print("🔍 [2/3] Checking application...")

@@ -377,3 +377,5 @@ uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port 8000 -
 ---
 
 ⭐ Ако харесвате проекта, не забравяйте да го звездайте!
+
+<!-- chore: trigger vercel preview build (no-op) -->

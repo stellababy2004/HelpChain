@@ -21,15 +21,37 @@ from flask import current_app
 from sqlalchemy import and_, case, func, text
 from sqlalchemy.orm import Session
 
-from models import (
-    AnalyticsEvent,
-    ChatbotConversation,
-    PerformanceMetrics,
-    User,
-    UserBehavior,
-    Volunteer,
-    utc_now,
-)
+try:
+    from backend.models_with_analytics import (
+        AnalyticsEvent,
+        ChatbotConversation,
+        PerformanceMetrics,
+        User,
+        UserBehavior,
+        Volunteer,
+        utc_now,
+    )
+except Exception:
+    try:
+        from models_with_analytics import (
+            AnalyticsEvent,
+            ChatbotConversation,
+            PerformanceMetrics,
+            User,
+            UserBehavior,
+            Volunteer,
+            utc_now,
+        )
+    except Exception:
+        from models import (
+            AnalyticsEvent,
+            ChatbotConversation,
+            PerformanceMetrics,
+            User,
+            UserBehavior,
+            Volunteer,
+            utc_now,
+        )
 
 logger = logging.getLogger(__name__)
 

@@ -100,7 +100,8 @@ try {
     do {
         try {
             $resp = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing -TimeoutSec 5 -WebSession $healthSession
-            if ($resp.StatusCode -eq 200) { $healthy = $true; break }
+            $body = ($resp.Content ?? '').Trim()
+            if ($resp.StatusCode -eq 200 -and $body -eq 'ok') { $healthy = $true; break }
         } catch {
             Start-Sleep -Seconds 2
         }
@@ -112,7 +113,8 @@ try {
         do {
             try {
                 $resp2 = Invoke-WebRequest -Uri $altHealthUrl -UseBasicParsing -TimeoutSec 5 -WebSession $healthSession
-                if ($resp2.StatusCode -eq 200) { $healthy = $true; break }
+                $body2 = ($resp2.Content ?? '').Trim()
+                if ($resp2.StatusCode -eq 200 -and $body2 -eq 'ok') { $healthy = $true; break }
             } catch {
                 Start-Sleep -Seconds 2
             }

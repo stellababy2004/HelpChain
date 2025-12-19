@@ -346,7 +346,13 @@ except Exception:
 # Създаваме само една инстанция на app и всички маршрути се регистрират върху нея
 
 # Единствена инстанция на app
-app = Flask(__name__, static_folder="static", template_folder="templates")
+# Use repository-level /static if present to serve CSS/JS referenced by index.html
+_here = os.path.dirname(__file__)
+_repo_root = os.path.normpath(os.path.join(_here, ".."))
+_root_static = os.path.join(_repo_root, "static")
+_backend_static = os.path.join(_here, "static")
+_static_folder = _root_static if os.path.isdir(_root_static) else _backend_static
+app = Flask(__name__, static_folder=_static_folder, static_url_path="/static", template_folder="templates")
 
 # Lightweight health endpoint for deployment monitoring
 @app.route("/health", methods=["GET"])
@@ -370,14 +376,18 @@ app.config["PROPAGATE_EXCEPTIONS"] = True
 import os as _appy_os
 
 
-# Minimal CSRF token shim for legacy templates calling {{ csrf_token() }}.
-# The main production entry point (app.py) attaches real CSRFProtect; tests that
-# import backend.appy get this shim to avoid 500 errors in templates expecting
-# the callable.
+# CSRF token helper for templates calling {{ csrf_token() }}.
+# Prefer a real token via Flask-WTF; fall back to empty string if unavailable.
 @app.context_processor
 def _inject_csrf_token():
-    def csrf_token():  # noqa: D401 - simple placeholder
-        return ""
+    def csrf_token():  # noqa: D401 - returns a CSRF token string
+        try:
+            # Lazily import to avoid hard dependency during minimal boots
+            from flask_wtf.csrf import generate_csrf  # type: ignore
+
+            return generate_csrf()
+        except Exception:
+            return ""
 
     return {"csrf_token": csrf_token}
 
@@ -479,7 +489,11 @@ def print_all_routes():
     print("=== КРАЙ НА СПИСЪКА ===\n")
 
 
-print_all_routes()
+# Печатът на маршрути е шумаст и създава encoding проблеми на Windows конзола.
+# Активирай само с HELPCHAIN_PRINT_ROUTES=1 за локално дебъгване.
+import os as _appy_os  # локален псевдоним за да избегнем сенчест импорт
+if str(_appy_os.environ.get("HELPCHAIN_PRINT_ROUTES", "")).lower() in ("1", "true", "yes"):
+    print_all_routes()
 
 
 # Test-only: before_request shim to make legacy admin/dashboard behavior
@@ -1995,7 +2009,17 @@ def _hydrate_flask_login_from_session():
 @app.before_request
 def _test_bypass_admin_header():
     try:
-        if not app.config.get("TESTING"):
+        # Enable bypass when:
+        # - TESTING is True (pytest/dev)
+        # - or explicit smoke mode is enabled via config or env var
+        import os as _os
+
+        _smoke_mode = bool(
+            app.config.get("SMOKE_MODE")
+            or (_os.environ.get("HELPCHAIN_SMOKE") in ("1", "true", "True"))
+        )
+
+        if not (app.config.get("TESTING") or _smoke_mode):
             return
         # If the server-side bypass flag is set on the app, respect it
         if app.config.get("BYPASS_ADMIN_AUTH"):
@@ -2041,7 +2065,7 @@ def _test_bypass_admin_header():
                     )
             return
 
-        # Honor the X-Admin-Bypass header used by test clients
+        # Honor the X-Admin-Bypass header used by test/smoke clients
         try:
             if request.headers.get("X-Admin-Bypass") == "1":
                 session["admin_logged_in"] = True
@@ -5246,7 +5270,31 @@ def admin_login():
             app.logger.warning(
                 f"Failed login attempt for identifier: {identifier}, IP: {request.remote_addr}"
             )
-    return render_template("admin_login.html", error=error)
+    try:
+        return render_template("admin_login.html", error=error)
+    except Exception:
+        # Robust fallback: inline HTML with CSRF token to avoid 400 on POST
+        try:
+            from flask_wtf.csrf import generate_csrf
+            _csrf_input = f'<input type="hidden" name="csrf_token" value="{generate_csrf()}" />'
+        except Exception:
+            _csrf_input = ""
+        return Response(
+            f"""
+            <html><head><title>Admin Login</title></head>
+            <body>
+                <h1>Admin Login</h1>
+                <form method=\"post\">
+                    {_csrf_input}
+                    <label>Username or Email: <input name=\"username\" /></label><br/>
+                    <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
+                    <label>2FA Token (optional): <input name=\"token\" /></label><br/>
+                    <button type=\"submit\">Login</button>
+                </form>
+            </body></html>
+            """,
+            mimetype="text/html",
+        )
 
 
 @app.route("/admin/login", methods=["GET", "POST"])
