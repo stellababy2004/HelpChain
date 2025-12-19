@@ -2797,9 +2797,18 @@ elif database_url and use_postgres:
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     logger.info("Using PostgreSQL database from environment")
 else:
-    # Локално development - използвайме instance директория в backend папката
-    instance_dir = os.path.join(basedir, "instance")
-    os.makedirs(instance_dir, exist_ok=True)
+    # Локално development/preview – използвайме instance директория
+    # На serverless файловата система е read‑only, затова пренасочваме към /tmp
+    if _is_serverless:
+        tmp_base = os.environ.get("TMPDIR") or "/tmp"
+        instance_dir = os.path.join(tmp_base, "helpchain-instance")
+    else:
+        instance_dir = os.path.join(basedir, "instance")
+    try:
+        os.makedirs(instance_dir, exist_ok=True)
+    except OSError:
+        # В краен случай ползвай /tmp директно
+        instance_dir = os.environ.get("TMPDIR") or "/tmp"
     db_path = os.path.join(instance_dir, "volunteers.db")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
     logger.info(f"Using SQLite database: {db_path}")
