@@ -42,6 +42,23 @@ try {
 
   if (-not $Token) { $Token = $env:VERCEL_TOKEN }
   if (-not $Token) { Write-Err 'Missing Vercel API token. Set $env:VERCEL_TOKEN or pass -Token.'; exit 2 }
+  # Sanitize token to avoid non-ASCII/header errors caused by copy-paste
+  try {
+    $Token = [string]$Token
+    $Token = $Token.Trim()
+    if ($Token.StartsWith('"') -and $Token.EndsWith('"')) { $Token = $Token.Substring(1, $Token.Length - 2) }
+    if ($Token.StartsWith("'") -and $Token.EndsWith("'")) { $Token = $Token.Substring(1, $Token.Length - 2) }
+    # Remove CR/LF and tabs
+    $Token = $Token -replace "\r|\n|\t", ''
+    # Validate ASCII
+    if ([System.Text.Encoding]::UTF8.GetByteCount($Token) -ne $Token.Length) {
+      Write-Err 'Vercel API token contains non-ASCII characters. Re-copy as plain text (no quotes).'
+      exit 2
+    }
+  } catch {
+    Write-Err ("Failed to sanitize token: {0}" -f $_.Exception.Message)
+    exit 2
+  }
 
   $headers = @{ Authorization = "Bearer $Token" }
   $api = 'https://api.vercel.com'
