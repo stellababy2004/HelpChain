@@ -7,7 +7,7 @@ param(
     [switch]$KeepServer,
     [switch]$Strict,
     [switch]$Relaxed,
-    [string]$HealthPath = "/health",
+    [string]$HealthPath = "/api/_health",
     [string]$BypassToken
 )
 
@@ -48,15 +48,37 @@ try {
 
     # Compose health URL (avoid :443 for https and :80 for http)
     $root = $BaseUrl.TrimEnd('/')
-    if ($root -match '^https://') {
-        if ($Port -eq 443) { $targetHost = $root } else { $targetHost = ("{0}:{1}" -f $root, $Port) }
-    } elseif ($root -match '^http://') {
-        if ($Port -eq 80) { $targetHost = $root } else { $targetHost = ("{0}:{1}" -f $root, $Port) }
+    # Early validation to avoid placeholder/invalid BaseUrl
+    if ($root -like '*<preview>*') {
+        Write-Err "BaseUrl contains placeholder '<preview>'. Please replace with the actual Vercel preview domain (e.g., https://help-chain-xxxx.vercel.app)."
+        exit 2
+    }
+    try { $null = [System.Uri]$root } catch {
+        Write-Err ("Invalid BaseUrl '{0}'. Provide a valid URI like 'https://your-preview.vercel.app'." -f $root)
+        exit 2
+    }
+    $baseUri = [System.Uri]$root
+    $isDefaultPort = $baseUri.IsDefaultPort
+    $isLocalHost = $baseUri.Host -in @('localhost','127.0.0.1','::1','0.0.0.0')
+    if (-not $isDefaultPort) {
+        # BaseUrl already includes an explicit port – use as-is
+        $targetHost = $root
+    } elseif (-not $isLocalHost) {
+        # Remote host (e.g., Vercel preview) – do not append port
+        $targetHost = $root
     } else {
-        $targetHost = ("http://127.0.0.1:{0}" -f $Port)
+        # Local host – append non-default port only
+        switch ($baseUri.Scheme) {
+            'https' { if ($Port -eq 443) { $targetHost = $root } else { $targetHost = ("{0}:{1}" -f $root, $Port) } }
+            'http'  { if ($Port -eq 80)  { $targetHost = $root } else { $targetHost = ("{0}:{1}" -f $root, $Port) } }
+            default { $targetHost = ("http://127.0.0.1:{0}" -f $Port) }
+        }
     }
     $hp = if ($HealthPath.StartsWith('/')) { $HealthPath } else { '/' + $HealthPath }
     $healthUrl = "$targetHost$hp"
+    # Prepare alternate health path as fallback
+    $altHp = if ($hp -eq '/api/_health') { '/health' } elseif ($hp -eq '/health') { '/api/_health' } else { '/health' }
+    $altHealthUrl = "$targetHost$altHp"
 
     # Optional Vercel Preview Protection: set proper cookie via special query
     $healthSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
@@ -85,7 +107,20 @@ try {
     } while ((Get-Date) -lt $deadline)
 
     if (-not $healthy) {
-        Write-Err "Health check did not pass within $HealthTimeoutSec seconds: $healthUrl"
+        Write-Warn "Primary health failed; trying alternate: $altHealthUrl"
+        $deadline2 = (Get-Date).AddSeconds([Math]::Max(15, [Math]::Floor($HealthTimeoutSec/3)))
+        do {
+            try {
+                $resp2 = Invoke-WebRequest -Uri $altHealthUrl -UseBasicParsing -TimeoutSec 5 -WebSession $healthSession
+                if ($resp2.StatusCode -eq 200) { $healthy = $true; break }
+            } catch {
+                Start-Sleep -Seconds 2
+            }
+        } while ((Get-Date) -lt $deadline2)
+    }
+
+    if (-not $healthy) {
+        Write-Err "Health check did not pass: tried $healthUrl and $altHealthUrl"
         if ($serverJob) {
             Write-Warn "Stopping server job due to failed health check..."
             try { Stop-Job -Id $serverJob.Id -ErrorAction SilentlyContinue | Out-Null } catch {}

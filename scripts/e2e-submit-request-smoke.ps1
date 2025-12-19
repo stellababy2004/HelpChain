@@ -35,8 +35,9 @@ function Get-Status($url) {
   }
 }
 
-# 1) Health check
-$h = Get-Status "$base/health"
+# 1) Health check (prefer Node health on Vercel)
+$h = Get-Status "$base/api/_health"
+if ($h.code -ne 200) { $h = Get-Status "$base/health" }
 Write-Host "Health: $($h.code)"
 if ($h.code -ne 200) { Write-Warning "Health not OK, aborting."; exit 1 }
 

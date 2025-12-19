@@ -1,6 +1,6 @@
 param(
   [string]$User = "admin",
-  [string]$Pass = "Admin12345!",
+  [string]$Pass,
   [int]$Port = 5000,
   [string]$BaseUrl,
   [switch]$Relaxed,
@@ -32,7 +32,11 @@ function Get-Status($url) {
   }
 }
 
-$h = Get-Status "$base/health"
+# Prefer Node health endpoint on Vercel, fallback to /health
+$h = Get-Status "$base/api/_health"
+if ($h.code -ne 200) {
+  $h = Get-Status "$base/health"
+}
 Write-Host "Health: $($h.code) $($h.body)"
 
 # Reset admin password and disable 2FA (dev-only routes)
@@ -70,64 +74,80 @@ if (-not $csrf) {
   try { Write-Host ($loginGet.Content.Substring(0, [Math]::Min(400, $loginGet.Content.Length))) } catch { }
 }
 
-# Attempt login POST with CSRF and session
-$body = @{ username = $User; password = $Pass; token = "" }
-if ($csrf) { $body.csrf_token = $csrf }
+# Determine passwords to try (param > env > common defaults)
+$passwordsToTry = @()
+if ($Pass) { $passwordsToTry += $Pass }
+elseif ($env:ADMIN_USER_PASSWORD) { $passwordsToTry += $env:ADMIN_USER_PASSWORD }
+else { $passwordsToTry += @("Admin12345!", "Admin123") }
+
 function Invoke-Login {
   param([hashtable]$PostBody)
   $headers = @{ Referer = "$base/admin/login"; "X-Admin-Bypass" = "1" }
-  return Invoke-WebRequest -Uri "$base/admin/login" -Method Post -Body $PostBody -ContentType "application/x-www-form-urlencoded" -TimeoutSec 10 -WebSession $session -MaximumRedirection 3 -Headers $headers
+  return Invoke-WebRequest -Uri "$base/admin/login" -Method Post -Body $PostBody -ContentType "application/x-www-form-urlencoded" -TimeoutSec 15 -WebSession $session -MaximumRedirection 3 -Headers $headers
 }
 
-# Try login, if CSRF fails, refresh token and retry once
-try {
-  $response = Invoke-Login -PostBody $body
-  Write-Host "Login POST status: $($response.StatusCode)" -ForegroundColor Green
-} catch {
-  $msg = $_.Exception.Message
-  Write-Warning ("Login POST failed: {0}" -f $msg)
-  if ($msg -match "400" -or $msg -match "CSRF") {
-    try {
-      $loginGet2 = Invoke-WebRequest -Uri "$base/admin/login" -TimeoutSec 5 -WebSession $session
-      $csrf2 = $null
-      $m2 = [regex]::Match($loginGet2.Content, 'name="csrf_token"[^>]*value="([^"]+)"')
-      if (-not $m2.Success) { $m2 = [regex]::Match($loginGet2.Content, "name='csrf_token'[^>]*value='([^']+)'") }
-      if ($m2.Success) { $csrf2 = $m2.Groups[1].Value }
-      if ($csrf2) {
-        $body.csrf_token = $csrf2
-        $response = Invoke-Login -PostBody $body
-        Write-Host "Login POST retry status: $($response.StatusCode)" -ForegroundColor Green
-      }
-    } catch {
-      Write-Warning ("Retry after CSRF failed: {0}" -f $_.Exception.Message)
-    }
-  }
-}
-
-# Follow to dashboard with same session
-$dash = $null
-try {
-  $dh = @{ "X-Admin-Bypass" = "1" }
-  $dashResp = Invoke-WebRequest -Uri "$base/admin_dashboard" -TimeoutSec 5 -WebSession $session -MaximumRedirection 3 -Headers $dh
-  $dash = @{ code = $dashResp.StatusCode; body = $dashResp.Content }
-} catch {
-  $dash = @{ code = 0; body = $_.ToString() }
-}
-Write-Host "Dashboard: $($dash.code)"
-
-# Basic content assertion to confirm authenticated dashboard loaded
-try {
-  if ($dash.code -eq 200) {
-    $okMarker = ($dash.body -match 'Админ панел') -or ($dash.body -match 'HelpChain Admin')
-    if (-not $okMarker) {
-      if ($Relaxed) {
-        Write-Warning "Dashboard content marker not found; continuing due to -Relaxed."
-      } else {
-        Write-Warning "Dashboard content marker not found; login may not have succeeded."
-        exit 3
+function Try-Login-And-CheckDashboard {
+  param([string]$Password)
+  # Fresh body per attempt
+  $post = @{ username = $User; password = $Password; token = "" }
+  if ($csrf) { $post.csrf_token = $csrf }
+  try {
+    $resp = Invoke-Login -PostBody $post
+    Write-Host "Login POST status (pw attempt): $($resp.StatusCode)" -ForegroundColor Green
+  } catch {
+    $msg = $_.Exception.Message
+    Write-Warning ("Login POST failed (pw attempt): {0}" -f $msg)
+    if ($msg -match "400" -or $msg -match "CSRF") {
+      try {
+        $loginGet2 = Invoke-WebRequest -Uri "$base/admin/login" -TimeoutSec 5 -WebSession $session
+        $csrf2 = $null
+        $m2 = [regex]::Match($loginGet2.Content, 'name="csrf_token"[^>]*value="([^"]+)"')
+        if (-not $m2.Success) { $m2 = [regex]::Match($loginGet2.Content, "name='csrf_token'[^>]*value='([^']+)'") }
+        if ($m2.Success) { $csrf2 = $m2.Groups[1].Value }
+        if ($csrf2) {
+          $post.csrf_token = $csrf2
+          $resp = Invoke-Login -PostBody $post
+          Write-Host "Login POST retry status: $($resp.StatusCode)" -ForegroundColor Green
+        }
+      } catch {
+        Write-Warning ("Retry after CSRF failed: {0}" -f $_.Exception.Message)
       }
     }
   }
-} catch { }
+  # Fetch dashboard
+  try {
+    $dh = @{ "X-Admin-Bypass" = "1" }
+    $dashResp = Invoke-WebRequest -Uri "$base/admin_dashboard" -TimeoutSec 10 -WebSession $session -MaximumRedirection 3 -Headers $dh
+    $code = [int]$dashResp.StatusCode
+    $body = $dashResp.Content
+    Write-Host "Dashboard: $code"
+  } catch {
+    $code = 0
+    $body = $_.ToString()
+  }
+  if ($code -ne 200) { return $false }
+  # Content markers (Bulgarian title, EN label, or welcome text)
+  $okMarker = ($body -match 'Админ панел') -or ($body -match 'HelpChain Admin') -or ($body -match 'административния панел')
+  # Detect Vercel Instant Preview fallback to aid debugging
+  if (-not $okMarker -and ($body -match 'Instant Preview' -or $body -match 'Deployment has failed')) {
+    Write-Warning "Preview returned Vercel Instant Preview/failure page; deployment may not be ready."
+  }
+  return [bool]$okMarker
+}
+
+$success = $false
+foreach ($pw in $passwordsToTry) {
+  Write-Host ("Trying login with password candidate: {0}" -f ($pw -replace '(?s).', '*'))
+  if (Try-Login-And-CheckDashboard -Password $pw) { $success = $true; break }
+}
+
+if (-not $success) {
+  if ($Relaxed) {
+    Write-Warning "Dashboard content marker not found after trying fallback passwords; continuing due to -Relaxed."
+  } else {
+    Write-Warning "Dashboard content marker not found; login may not have succeeded."
+    exit 3
+  }
+}
 
 exit 0

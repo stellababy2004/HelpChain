@@ -3,6 +3,10 @@
   "env": {
     "PYTHONPATH": "_vendor:."
   },
+  "functions": {
+    "api/**/*.py": { "runtime": "python3.11" },
+    "api/**/*.js": { "runtime": "nodejs20.x" }
+  },
   "routes": [
     { "src": "^/favicon.ico$", "dest": "/api/favicon.js" },
     { "src": "^/favicon.png$", "dest": "/api/favicon.js" },
