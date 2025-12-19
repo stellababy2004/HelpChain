@@ -5,7 +5,9 @@ param(
   [string]$ProjectId,
   [string]$Token,
   [switch]$ForceV6,
-  [switch]$VerboseErrors
+  [switch]$VerboseErrors,
+  [int]$WaitReadySeconds = 0,
+  [int]$PollIntervalSeconds = 10
 )
 
 $ErrorActionPreference = 'Stop'
@@ -108,6 +110,24 @@ try {
   if (-not $state) { $state = $deploy.state }
   $urlOut = if ($url) { $url } else { '(n/a)' }
   Write-Info ("Deployment: id={0} state={1} url={2}" -f $id, $state, $urlOut)
+
+  # Optional wait until deployment leaves BUILDING/QUEUED and becomes READY/ERROR
+  if ($WaitReadySeconds -gt 0) {
+    $deadline = (Get-Date).AddSeconds($WaitReadySeconds)
+    while ((Get-Date) -lt $deadline) {
+      try {
+        $uriState = "$api/v13/deployments/$id"
+        $d = Invoke-Api -Uri $uriState
+        $state = $d.readyState
+        if (-not $state) { $state = $d.state }
+        Write-Info ("State: {0}" -f $state)
+        if ($state -in @('READY','ERROR','CANCELED','FAILED')) { break }
+      } catch {
+        Write-Warn ("state poll failed: {0}" -f $_.Exception.Message)
+      }
+      Start-Sleep -Seconds ([Math]::Max(2, $PollIntervalSeconds))
+    }
+  }
 
   # Try v13 events first, then v6 (or force v6)
   $events = $null
