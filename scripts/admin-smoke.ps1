@@ -13,6 +13,9 @@ if ([string]::IsNullOrWhiteSpace($BaseUrl)) { $base = "http://127.0.0.1:$Port" }
 # Web session (used for cookies including Vercel preview bypass)
 $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
+# If no explicit token, read from env
+if (-not $BypassToken -and $env:VERCEL_PROTECTION_BYPASS) { $BypassToken = $env:VERCEL_PROTECTION_BYPASS }
+
 # If preview protection token provided, set signed cookie via official flow
 if ($BypassToken) {
   try {

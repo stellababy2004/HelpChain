@@ -27,6 +27,11 @@ try {
 
     $serverJob = $null
 
+    # If no explicit bypass token was provided, read from env
+    if (-not $BypassToken -and $env:VERCEL_PROTECTION_BYPASS) {
+        $BypassToken = $env:VERCEL_PROTECTION_BYPASS
+    }
+
     if (-not $UseExisting) {
         Write-Info "Starting HelpChain server as background job..."
         $serverJob = Start-Job -Name "HelpChainServer" -ScriptBlock {
@@ -139,7 +144,7 @@ try {
     if ($BaseUrl -match '^https://') { $commonParams['BaseUrl'] = $BaseUrl }
     # Default behavior: relaxed unless -Strict is provided. If -Relaxed is explicitly supplied, honor it.
     if ($Relaxed -or (-not $Strict)) { $commonParams['Relaxed'] = $true }
-    if ($BypassToken) { $commonParams['BypassToken'] = $BypassToken }
+    if ($BypassToken) { $commonParams['BypassToken'] = $BypassToken } elseif ($env:VERCEL_PROTECTION_BYPASS) { $commonParams['BypassToken'] = $env:VERCEL_PROTECTION_BYPASS }
 
     # Run admin smoke
     $adminSmoke = Join-Path $scriptDir 'admin-smoke.ps1'
