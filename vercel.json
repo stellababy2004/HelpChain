@@ -3,10 +3,10 @@
   "env": {
     "PYTHONPATH": "_vendor:."
   },
-  "functions": {
-    "api/**/*.py": { "runtime": "python3.11" },
-    "api/**/*.js": { "runtime": "nodejs18.x" }
-  },
+  "builds": [
+    { "src": "api/**/*.py", "use": "@vercel/python" },
+    { "src": "api/**/*.js", "use": "@vercel/node" }
+  ],
   "routes": [
     { "src": "^/api/_health$", "dest": "/api/_health.js" },
     { "src": "^/health$", "dest": "/api/_health.js" },
