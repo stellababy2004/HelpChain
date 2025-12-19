@@ -4,7 +4,7 @@
     "PYTHONPATH": "_vendor:."
   },
   "functions": {
-    "api/**/*.py": { "runtime": "python3.11" },
+    "api/**/*.py": { "runtime": "vercel-python@3.11" },
     "api/**/*.js": { "runtime": "nodejs20.x" }
   },
   "routes": [
