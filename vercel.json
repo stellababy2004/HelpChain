@@ -15,9 +15,9 @@
     { "src": "^/favicon.png$", "dest": "/api/favicon.js" },
     { "src": "^/$", "dest": "/index.html" },
     { "src": "^/api/root$", "dest": "/api/root.js" },
-    { "src": "^/admin/(.*)$", "dest": "/api/index.py" },
-    { "src": "^/(admin/.*)$", "dest": "/api/index.py" },
-    { "src": "^/submit_request$", "dest": "/api/index.py" },
+    { "src": "^/admin/(.*)$", "dest": "/api/index.py", "methods": ["GET", "POST"] },
+    { "src": "^/(admin/.*)$", "dest": "/api/index.py", "methods": ["GET", "POST"] },
+    { "src": "^/submit_request$", "dest": "/api/index.py", "methods": ["GET", "POST"] },
     { "handle": "filesystem" }
   ]
 }
