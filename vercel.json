@@ -3,21 +3,21 @@
   "env": {
     "PYTHONPATH": "_vendor:."
   },
-  "builds": [
-    { "src": "api/**/*.py", "use": "@vercel/python" },
-    { "src": "api/**/*.js", "use": "@vercel/node" }
-  ],
+  "functions": {
+    "api/**/*.py": { "runtime": "python3.11" },
+    "api/**/*.js": { "runtime": "nodejs18.x" }
+  },
   "routes": [
+    { "src": "^/api/_health$", "dest": "/api/_health.js" },
+    { "src": "^/health$", "dest": "/api/_health.js" },
+    { "src": "^/api/analytics$", "dest": "/api/analytics.js" },
     { "src": "^/favicon.ico$", "dest": "/api/favicon.js" },
     { "src": "^/favicon.png$", "dest": "/api/favicon.js" },
     { "src": "^/$", "dest": "/index.html" },
     { "src": "^/api/root$", "dest": "/api/root.js" },
-    { "src": "^/health$", "dest": "/api/_health.js" },
     { "src": "^/admin/(.*)$", "dest": "/api/index.py" },
+    { "src": "^/(admin/.*)$", "dest": "/api/index.py" },
     { "src": "^/submit_request$", "dest": "/api/index.py" },
-    { "handle": "filesystem" },
-    { "src": "^/api/_health$", "dest": "/api/_health.js" },
-    { "src": "^/api/analytics$", "dest": "/api/analytics.js" },
-    { "src": "^/(admin/.*)$", "dest": "/api/index.py" }
+    { "handle": "filesystem" }
   ]
 }
