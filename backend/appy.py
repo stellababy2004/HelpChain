@@ -1100,6 +1100,7 @@ except ImportError:
 # Sentry for error monitoring
 
 # Настройка на logging преди всичко друго
+_is_serverless = bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_VERSION"))
 if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
     # In test mode avoid opening file handlers (pytest will capture output
     # and leaving file descriptors open across many tests triggers
@@ -1110,13 +1111,20 @@ if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
         handlers=[logging.StreamHandler(sys.stdout)],
     )
 else:
-    logging.basicConfig(
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler("helpchain.log", encoding="utf-8"),
-        ],
-    )
+    if _is_serverless:
+        # Read-only filesystem on serverless platforms; log to stdout only
+        logging.basicConfig(
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            handlers=[logging.StreamHandler(sys.stdout)],
+        )
+    else:
+        logging.basicConfig(
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            handlers=[
+                logging.StreamHandler(sys.stdout),
+                logging.FileHandler("helpchain.log", encoding="utf-8"),
+            ],
+        )
 
 
 # Enhanced logging configuration
@@ -1142,7 +1150,7 @@ def setup_logging():
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(simple_formatter)
     root_logger.addHandler(console_handler)
-    if not is_testing:
+    if not is_testing and not _is_serverless:
         # File handler for all logs
         file_handler = logging.FileHandler("helpchain.log", encoding="utf-8")
         file_handler.setLevel(logging.INFO)
@@ -1158,9 +1166,7 @@ def setup_logging():
         # Security logger for sensitive operations
         security_logger = logging.getLogger("security")
         security_logger.setLevel(logging.INFO)
-        security_handler = logging.FileHandler(
-            "helpchain_security.log", encoding="utf-8"
-        )
+        security_handler = logging.FileHandler("helpchain_security.log", encoding="utf-8")
         security_handler.setFormatter(detailed_formatter)
         security_logger.addHandler(security_handler)
         security_logger.propagate = False  # Don't propagate to root logger
