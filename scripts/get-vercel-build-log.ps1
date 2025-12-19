@@ -3,7 +3,9 @@ param(
   [int]$Limit = 400,
   [string]$OrgId,
   [string]$ProjectId,
-  [string]$Token
+  [string]$Token,
+  [switch]$ForceV6,
+  [switch]$VerboseErrors
 )
 
 $ErrorActionPreference = 'Stop'
@@ -43,39 +45,56 @@ try {
   $api = 'https://api.vercel.com'
 
   Write-Info "Fetching latest preview deployment for branch '$Branch'..."
-  # Try v13 deployments API first
   $deploy = $null
-  try {
-    $q = @{
-      projectId = $ProjectId
-      limit     = 1
-      target    = 'preview'
-      'meta-git-branch' = $Branch
+  function Invoke-Api {
+    param([string]$Uri)
+    try {
+      return Invoke-RestMethod -Uri $Uri -Headers $headers -Method Get -ErrorAction Stop
+    } catch {
+      if ($VerboseErrors -and $_.ErrorDetails -and $_.ErrorDetails.Message) {
+        Write-Warn ("API error body: {0}" -f $_.ErrorDetails.Message)
+      }
+      throw
     }
-    $parts = $q.GetEnumerator() |
-      ForEach-Object { '{0}={1}' -f $_.Key, [System.Uri]::EscapeDataString([string]$_.Value) } |
-      Sort-Object
-    $uri = "$api/v13/deployments?" + ($parts -join '&')
-    $resp = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get -ErrorAction Stop
-    if ($resp.deployments -and $resp.deployments.Count -gt 0) { $deploy = $resp.deployments[0] }
-  } catch {
-    Write-Warn ("v13 deployments query failed: {0}" -f $_.Exception.Message)
   }
 
-  if (-not $deploy) {
-    # Fallback to v6 API
-    $q = @{
-      projectId = $ProjectId
-      limit     = 1
-      target    = 'preview'
-      'meta-git-branch' = $Branch
+  $q = @{
+    projectId = $ProjectId
+    limit     = 1
+    target    = 'preview'
+    'meta-git-branch' = $Branch
+  }
+  $parts = $q.GetEnumerator() |
+    ForEach-Object { '{0}={1}' -f $_.Key, [System.Uri]::EscapeDataString([string]$_.Value) } |
+    Sort-Object
+
+  if ($ForceV6) {
+    try {
+      $uri = "$api/v6/deployments?" + ($parts -join '&')
+      $resp = Invoke-Api -Uri $uri
+      if ($resp.deployments -and $resp.deployments.Count -gt 0) { $deploy = $resp.deployments[0] }
+    } catch {
+      Write-Err ("v6 deployments query failed: {0}" -f $_.Exception.Message)
+      exit 4
     }
-    $parts = $q.GetEnumerator() |
-      ForEach-Object { '{0}={1}' -f $_.Key, [System.Uri]::EscapeDataString([string]$_.Value) } |
-      Sort-Object
-    $uri = "$api/v6/deployments?" + ($parts -join '&')
-    $resp = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get -ErrorAction Stop
-    if ($resp.deployments -and $resp.deployments.Count -gt 0) { $deploy = $resp.deployments[0] }
+  } else {
+    try {
+      $uri13 = "$api/v13/deployments?" + ($parts -join '&')
+      $resp13 = Invoke-Api -Uri $uri13
+      if ($resp13.deployments -and $resp13.deployments.Count -gt 0) { $deploy = $resp13.deployments[0] }
+    } catch {
+      Write-Warn ("v13 deployments query failed: {0}" -f $_.Exception.Message)
+    }
+    if (-not $deploy) {
+      try {
+        $uri6 = "$api/v6/deployments?" + ($parts -join '&')
+        $resp6 = Invoke-Api -Uri $uri6
+        if ($resp6.deployments -and $resp6.deployments.Count -gt 0) { $deploy = $resp6.deployments[0] }
+      } catch {
+        Write-Err ("v6 deployments query failed: {0}" -f $_.Exception.Message)
+        exit 4
+      }
+    }
   }
 
   if (-not $deploy) { Write-Err "No preview deployment found for branch '$Branch'."; exit 3 }
@@ -90,18 +109,24 @@ try {
   $urlOut = if ($url) { $url } else { '(n/a)' }
   Write-Info ("Deployment: id={0} state={1} url={2}" -f $id, $state, $urlOut)
 
-  # Try v13 events first, then v6
+  # Try v13 events first, then v6 (or force v6)
   $events = $null
-  try {
-    $uri = "$api/v13/deployments/$id/events?limit=$Limit"
-    $events = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get -ErrorAction Stop
-  } catch { Write-Warn ("v13 events fetch failed: {0}" -f $_.Exception.Message) }
-
-  if (-not $events) {
+  if ($ForceV6) {
     try {
       $uri = "$api/v6/deployments/$id/events?limit=$Limit"
-      $events = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get -ErrorAction Stop
+      $events = Invoke-Api -Uri $uri
     } catch { Write-Err ("v6 events fetch failed: {0}" -f $_.Exception.Message); exit 4 }
+  } else {
+    try {
+      $uri = "$api/v13/deployments/$id/events?limit=$Limit"
+      $events = Invoke-Api -Uri $uri
+    } catch { Write-Warn ("v13 events fetch failed: {0}" -f $_.Exception.Message) }
+    if (-not $events) {
+      try {
+        $uri = "$api/v6/deployments/$id/events?limit=$Limit"
+        $events = Invoke-Api -Uri $uri
+      } catch { Write-Err ("v6 events fetch failed: {0}" -f $_.Exception.Message); exit 4 }
+    }
   }
 
   Write-Info "Last $Limit build events (most recent last):"
