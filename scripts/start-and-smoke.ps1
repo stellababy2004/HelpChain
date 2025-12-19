@@ -6,6 +6,7 @@ param(
     [switch]$UseExisting,
     [switch]$KeepServer,
     [switch]$Strict,
+    [switch]$Relaxed,
     [string]$HealthPath = "/health",
     [string]$BypassToken
 )
@@ -99,7 +100,8 @@ try {
     $commonParams = @{ Port = $Port }
     # Pass BaseUrl only for HTTPS previews; local runs use http://127.0.0.1:$Port
     if ($BaseUrl -match '^https://') { $commonParams['BaseUrl'] = $BaseUrl }
-    if (-not $Strict) { $commonParams['Relaxed'] = $true }
+    # Default behavior: relaxed unless -Strict is provided. If -Relaxed is explicitly supplied, honor it.
+    if ($Relaxed -or (-not $Strict)) { $commonParams['Relaxed'] = $true }
     if ($BypassToken) { $commonParams['BypassToken'] = $BypassToken }
 
     # Run admin smoke
