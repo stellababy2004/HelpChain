@@ -3594,12 +3594,20 @@ app.config["SESSION_COOKIE_HTTPONLY"] = False  # Changed to False for testing
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Lax works for localhost HTTP
 # app.config["SESSION_COOKIE_DOMAIN"] = "localhost"  # Not set for localhost development
 
-# Upload folder configuration
-app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
+# Upload folder configuration (use /tmp on serverless)
+if _is_serverless:
+    _tmp_base = os.environ.get("TMPDIR") or "/tmp"
+    app.config["UPLOAD_FOLDER"] = os.path.join(_tmp_base, "uploads")
+else:
+    app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB limit
 
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-    os.makedirs(app.config["UPLOAD_FOLDER"])
+    try:
+        os.makedirs(app.config["UPLOAD_FOLDER"])
+    except OSError:
+        # On read-only filesystems just skip creating the directory
+        pass
 
 # Initialize security extensions
 limiter = Limiter(
