@@ -13,13 +13,18 @@
     { "src": "^/api/analytics$", "dest": "/api/analytics.js" },
     { "src": "^/favicon.ico$", "dest": "/api/favicon.js" },
     { "src": "^/favicon.png$", "dest": "/api/favicon.js" },
-    { "src": "^/$", "dest": "/index.html" },
     { "src": "^/api/root$", "dest": "/api/root.js" },
+
+    { "src": "^/$", "dest": "/index.html" },
+
     { "src": "^/admin/login$", "dest": "/api/index.py", "methods": ["GET", "POST"] },
     { "src": "^/admin_login$", "dest": "/api/index.py", "methods": ["GET", "POST"] },
     { "src": "^/admin/(.*)$", "dest": "/api/index.py", "methods": ["GET", "POST"] },
     { "src": "^/(admin/.*)$", "dest": "/api/index.py", "methods": ["GET", "POST"] },
     { "src": "^/submit_request$", "dest": "/api/index.py", "methods": ["GET", "POST"] },
-    { "handle": "filesystem" }
+
+    { "handle": "filesystem" },
+
+    { "src": "^/(.*)$", "dest": "/api/index.py", "methods": ["GET", "POST"] }
   ]
 }
