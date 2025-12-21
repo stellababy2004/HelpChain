@@ -1100,7 +1100,6 @@ except ImportError:
 # Sentry for error monitoring
 
 # Настройка на logging преди всичко друго
-_is_serverless = bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_VERSION"))
 if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
     # In test mode avoid opening file handlers (pytest will capture output
     # and leaving file descriptors open across many tests triggers
@@ -1111,20 +1110,13 @@ if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
         handlers=[logging.StreamHandler(sys.stdout)],
     )
 else:
-    if _is_serverless:
-        # Read-only filesystem on serverless platforms; log to stdout only
-        logging.basicConfig(
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            handlers=[logging.StreamHandler(sys.stdout)],
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            handlers=[
-                logging.StreamHandler(sys.stdout),
-                logging.FileHandler("helpchain.log", encoding="utf-8"),
-            ],
-        )
+    logging.basicConfig(
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler("helpchain.log", encoding="utf-8"),
+        ],
+    )
 
 
 # Enhanced logging configuration
@@ -1150,7 +1142,7 @@ def setup_logging():
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(simple_formatter)
     root_logger.addHandler(console_handler)
-    if not is_testing and not _is_serverless:
+    if not is_testing:
         # File handler for all logs
         file_handler = logging.FileHandler("helpchain.log", encoding="utf-8")
         file_handler.setLevel(logging.INFO)
@@ -1166,7 +1158,9 @@ def setup_logging():
         # Security logger for sensitive operations
         security_logger = logging.getLogger("security")
         security_logger.setLevel(logging.INFO)
-        security_handler = logging.FileHandler("helpchain_security.log", encoding="utf-8")
+        security_handler = logging.FileHandler(
+            "helpchain_security.log", encoding="utf-8"
+        )
         security_handler.setFormatter(detailed_formatter)
         security_logger.addHandler(security_handler)
         security_logger.propagate = False  # Don't propagate to root logger
@@ -1861,11 +1855,7 @@ HelpChain системата
 
 
 # Създай папката instance ако не съществува
-try:
-    os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
-except OSError:
-    # Read-only filesystem on serverless; skip creating instance directory
-    pass
+os.makedirs(os.path.join(os.path.dirname(__file__), "instance"), exist_ok=True)
 
 # Задаваме явни папки за шаблони и статични файлове (адаптирай пътищата ако е нужно)
 _templates = os.path.join(os.path.dirname(__file__), "templates")
@@ -2797,18 +2787,9 @@ elif database_url and use_postgres:
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     logger.info("Using PostgreSQL database from environment")
 else:
-    # Локално development/preview – използвайме instance директория
-    # На serverless файловата система е read‑only, затова пренасочваме към /tmp
-    if _is_serverless:
-        tmp_base = os.environ.get("TMPDIR") or "/tmp"
-        instance_dir = os.path.join(tmp_base, "helpchain-instance")
-    else:
-        instance_dir = os.path.join(basedir, "instance")
-    try:
-        os.makedirs(instance_dir, exist_ok=True)
-    except OSError:
-        # В краен случай ползвай /tmp директно
-        instance_dir = os.environ.get("TMPDIR") or "/tmp"
+    # Локално development - използвайме instance директория в backend папката
+    instance_dir = os.path.join(basedir, "instance")
+    os.makedirs(instance_dir, exist_ok=True)
     db_path = os.path.join(instance_dir, "volunteers.db")
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
     logger.info(f"Using SQLite database: {db_path}")
@@ -3594,20 +3575,12 @@ app.config["SESSION_COOKIE_HTTPONLY"] = False  # Changed to False for testing
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Lax works for localhost HTTP
 # app.config["SESSION_COOKIE_DOMAIN"] = "localhost"  # Not set for localhost development
 
-# Upload folder configuration (use /tmp on serverless)
-if _is_serverless:
-    _tmp_base = os.environ.get("TMPDIR") or "/tmp"
-    app.config["UPLOAD_FOLDER"] = os.path.join(_tmp_base, "uploads")
-else:
-    app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
+# Upload folder configuration
+app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(__file__), "uploads")
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5MB limit
 
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-    try:
-        os.makedirs(app.config["UPLOAD_FOLDER"])
-    except OSError:
-        # On read-only filesystems just skip creating the directory
-        pass
+    os.makedirs(app.config["UPLOAD_FOLDER"])
 
 # Initialize security extensions
 limiter = Limiter(
