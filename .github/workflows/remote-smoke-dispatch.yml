@@ -1,0 +1,78 @@
+name: Remote Preview Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Preview base URL (e.g., https://helpchain-preview.vercel.app)"
+        required: true
+        type: string
+      bypass_token:
+        description: "Protection bypass token (if preview is protected)"
+        required: false
+        type: string
+
+jobs:
+  remote-smoke:
+    runs-on: ubuntu-latest
+    env:
+      BYPASS_TOKEN: ${{ inputs.bypass_token }}
+    steps:
+      - name: Ensure jq is available
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Version + health + root checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ inputs.base_url }}'
+          token='${{ inputs.bypass_token }}'
+          jar=$(mktemp)
+          trap 'rm -f "$jar"' EXIT
+          if [ -n "$token" ]; then
+            curl -fsSL -c "$jar" -b "$jar" "$base/?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=$token" >/dev/null
+          fi
+          ver_json=$(curl -fsSL -b "$jar" "$base/api/_version")
+          echo "Version JSON: $ver_json"
+          commit=$(echo "$ver_json" | jq -r '.commit // ""')
+          branch=$(echo "$ver_json" | jq -r '.branch // ""')
+          time=$(echo "$ver_json" | jq -r '.time // ""')
+          [ -n "$commit" ] && [ -n "$branch" ] && [ -n "$time" ]
+          headers=$(curl -fsSL -D - -o /dev/null -b "$jar" "$base/health")
+          echo "$headers"
+          header_commit=$(echo "$headers" | awk -F': ' 'tolower($1)=="x-app-commit" {gsub(/\r/,"",$2); print $2}' | tail -n1)
+          [ -n "$header_commit" ]
+          [ "$header_commit" = "$commit" ]
+          code=$(curl -fsSL -o /dev/null -w "%{http_code}" -b "$jar" "$base")
+          echo "Root HTTP $code"
+          [ "$code" = "200" ]
+
+      - name: Admin strict smoke (inline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ inputs.base_url }}'
+          token='${{ inputs.bypass_token }}'
+          jar=$(mktemp)
+          trap 'rm -f "$jar"' EXIT
+          if [ -n "$token" ]; then
+            curl -fsSL -c "$jar" -b "$jar" "$base/?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=$token" >/dev/null
+          fi
+          login_html=$(curl -fsSL -c "$jar" "$base/admin/login")
+          csrf=$(echo "$login_html" | sed -n 's/.*name=["\']csrf_token["\'][^>]*value=["\']\([^"\']]*\)["\'].*/\1/p')
+          if [ -z "$csrf" ]; then
+            echo "Strict: CSRF token not found in login form" >&2
+            exit 1
+          fi
+          post_code=$(curl -fsSL -b "$jar" -c "$jar" -o /dev/null -w "%{http_code}" \
+            -X POST "$base/admin/login" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            --data "username=admin&password=Admin12345!&csrf_token=$csrf")
+          echo "Login POST HTTP $post_code"
+          if [ "$post_code" = "400" ]; then
+            echo "Strict: POST returned 400 (likely CSRF validation failure)" >&2
+            exit 1
+          fi
+          dash_code=$(curl -fsSL -b "$jar" -o /dev/null -w "%{http_code}" "$base/admin_dashboard")
+          echo "Dashboard HTTP $dash_code"
+          [ "$dash_code" = "200" ]
