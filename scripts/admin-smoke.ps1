@@ -9,13 +9,25 @@ param(
 )
 
 Write-Host "=== Admin Smoke ===" -ForegroundColor Cyan
-if ([string]::IsNullOrWhiteSpace($BaseUrl)) { $base = "http://127.0.0.1:$Port" } else { $base = $BaseUrl.TrimEnd('/') }
+if ([string]::IsNullOrWhiteSpace($BaseUrl)) {
+  $base = "http://127.0.0.1:$Port"
+} else {
+  $base = $BaseUrl.TrimEnd('/')
+  # Basic validation to avoid malformed inputs like "https:80"
+  if ($base -notmatch '^(https?://)') {
+    Write-Error "BaseUrl must include scheme, e.g., https://your-preview.vercel.app"
+    exit 1
+  }
+}
 
 # Web session (used for cookies including Vercel preview bypass)
 $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 
-# If no explicit token, read from env
-if (-not $BypassToken -and $env:VERCEL_PROTECTION_BYPASS) { $BypassToken = $env:VERCEL_PROTECTION_BYPASS }
+# If no explicit token, read from env (support both common env names)
+if (-not $BypassToken) {
+  if ($env:BYPASS_TOKEN) { $BypassToken = $env:BYPASS_TOKEN }
+  elseif ($env:VERCEL_PROTECTION_BYPASS) { $BypassToken = $env:VERCEL_PROTECTION_BYPASS }
+}
 
 # If preview protection token provided, set signed cookie via official flow
 if ($BypassToken) {

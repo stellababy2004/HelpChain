@@ -2,14 +2,118 @@ name: Preview Smoke Checks
 
 on:
   push:
-    branches: [ main, vercel-setup-health ]
+    branches:
+      - main
+      - vercel-setup-health
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+      - vercel-setup-health
   workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Preview base URL (e.g., https://helpchain-preview.vercel.app)"
+        required: false
+        type: string
+      bypass_token:
+        description: "Protection bypass token (if preview is protected)"
+        required: false
+        type: string
 
 jobs:
+  prebuilt-size-guard:
+    if: ${{ hashFiles('vercel.json') != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@^33
+
+      - name: Build prebuilt output
+        env:
+          VERCEL_TELEMETRY_DISABLED: '1'
+        run: |
+          npx vercel build --yes
+
+      - name: Check .vercel/output size
+        run: |
+          set -e
+          if [ ! -d .vercel/output ]; then
+            echo ".vercel/output not found; ensure vercel build succeeded." >&2
+            exit 1
+          fi
+          du -sh .vercel/output || true
+          find .vercel/output -type f -size +100M -exec ls -lh {} \; || true
+          total=$(du -sb .vercel/output | awk '{print $1}' || echo 0)
+          if [ "$total" -gt 3758096384 ]; then
+            echo "Prebuilt output too large: $total bytes" >&2
+            exit 1
+          fi
+          echo "Prebuilt size OK: $total bytes"
+
+  local-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Start server (background)
+        shell: pwsh
+        run: |
+          $job = Start-Job -ScriptBlock { python start_server.py }
+          echo "Started background job: $($job.Id)"
+        id: start
+
+      - name: Health check
+        shell: pwsh
+        run: |
+          $base = "http://127.0.0.1:5000"
+          $ok = $false
+          for ($i=0; $i -lt 40; $i++) {
+            Start-Sleep -Milliseconds 500
+            try {
+              $r = Invoke-WebRequest -Uri "$base/health" -TimeoutSec 3 -ErrorAction Stop
+              if ($r.StatusCode -eq 200) { $ok = $true; break }
+            } catch {}
+          }
+          if (-not $ok) { throw "Health failed" }
+
+      - name: Admin smoke
+        shell: pwsh
+        run: pwsh -File scripts/admin-smoke.ps1 -Port 5000
+
+      - name: Submit-request E2E smoke
+        shell: pwsh
+        run: pwsh -File scripts/e2e-submit-request-smoke.ps1 -Port 5000
+
+      - name: Stop server
+        if: always()
+        shell: pwsh
+        run: |
+          Get-Job | Stop-Job -Force
+          Get-Job | Receive-Job -Keep
+
   smoke:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       BYPASS_TOKEN: ${{ secrets.BYPASS_TOKEN }}
@@ -30,10 +134,8 @@ jobs:
             echo "VERCEL_TOKEN secret is missing" >&2
             exit 1
           fi
-          # Determine branch for this workflow (PR head for pull_request, ref_name for push)
           branch="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
           echo "Looking for READY preview on branch: $branch"
-          # Fetch latest deployments and pick first READY matching project prefix
           resp=$(curl -fsSL -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v6/deployments?limit=20")
           url=$(echo "$resp" | jq -r --arg p "$PROJECT_PREFIX" --arg b "$branch" '
             [.deployments[]
@@ -56,7 +158,6 @@ jobs:
           set -euo pipefail
           base='${{ steps.geturl.outputs.url }}'
           expected_sha='${{ github.sha }}'
-          # Fetch version JSON
           ver_json=$(curl -fsSL -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/api/_version")
           echo "Version JSON: $ver_json"
           commit=$(echo "$ver_json" | jq -r '.commit // ""')
@@ -66,13 +167,11 @@ jobs:
             echo "Missing fields in /api/_version (commit/branch/time)" >&2
             exit 1
           fi
-          # Optional: ensure version branch matches the workflow branch
           wf_branch='${{ steps.geturl.outputs.branch }}'
           if [ -n "$wf_branch" ] && [ "$branch" != "$wf_branch" ]; then
             echo "Branch mismatch: /api/_version=$branch vs workflow=$wf_branch" >&2
             exit 1
           fi
-          # Fetch /health headers and compare X-App-Commit
           headers=$(curl -fsSL -D - -o /dev/null -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/health")
           echo "$headers"
           header_commit=$(echo "$headers" | awk -F': ' 'tolower($1)=="x-app-commit" {gsub(/\r/,"",$2); print $2}' | tail -n1)
@@ -84,7 +183,6 @@ jobs:
             echo "Commit mismatch: /api/_version=$commit vs /health header=$header_commit" >&2
             exit 1
           fi
-          # Also ensure the preview commit matches this workflow's commit (prefix-friendly)
           if [ -n "$expected_sha" ]; then
             short12=${expected_sha:0:12}
             short7=${expected_sha:0:7}
@@ -121,119 +219,12 @@ jobs:
         run: |
           $base = '${{ steps.geturl.outputs.url }}'
           pwsh -File scripts/admin-smoke.ps1 -BaseUrl $base -Strict -BypassToken $env:BYPASS_TOKEN
-name: Preview Smoke Checks
-
-on:
-  workflow_dispatch:
-    inputs:
-      base_url:
-        description: "Base URL of deployed preview (e.g., https://helpchain-preview.vercel.app)"
-        required: false
-        type: string
-  pull_request:
-    branches:
-      - main
-      - vercel-setup-health
-
-jobs:
-  prebuilt-size-guard:
-    # Only run if vercel.json exists (indicates Vercel project)
-    if: ${{ hashFiles('vercel.json') != '' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@^33
-
-      - name: Build prebuilt output
-        env:
-          # Optional: pick up .env if needed via Vercel; build generally works offline
-          VERCEL_TELEMETRY_DISABLED: '1'
-        run: |
-          # Build with local config to produce .vercel/output
-          npx vercel build --yes
-
-      - name: Check .vercel/output size
-        run: |
-          set -e
-          if [ ! -d .vercel/output ]; then
-            echo ".vercel/output not found; ensure vercel build succeeded." >&2
-            exit 1
-          fi
-          du -sh .vercel/output || true
-          find .vercel/output -type f -size +100M -exec ls -lh {} \; || true
-          total=$(du -sb .vercel/output | awk '{print $1}' || echo 0)
-          # 3758096384 bytes == 3.5 GiB
-          if [ "$total" -gt 3758096384 ]; then
-            echo "Prebuilt output too large: $total bytes" >&2
-            exit 1
-          fi
-          echo "Prebuilt size OK: $total bytes"
-
-  local-smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
-      - name: Start server (background)
-        shell: pwsh
-        run: |
-          $job = Start-Job -ScriptBlock { python start_server.py }
-          echo "Started background job: $($job.Id)"
-          echo "::set-output name=jobId::$($job.Id)"
-        id: start
-
-      - name: Health check
-        shell: pwsh
-        run: |
-          $base = "http://127.0.0.1:5000"
-          $ok = $false
-          for ($i=0; $i -lt 40; $i++) {
-            Start-Sleep -Milliseconds 500
-            try {
-              $r = Invoke-WebRequest -Uri "$base/health" -TimeoutSec 3 -ErrorAction Stop
-              if ($r.StatusCode -eq 200) { $ok = $true; break }
-            } catch {}
-          }
-          if (-not $ok) { throw "Health failed" }
-
-      - name: Admin smoke
-        shell: pwsh
-        run: pwsh -File scripts/admin-smoke.ps1 -Port 5000
-
-      - name: Submit-request E2E smoke
-        shell: pwsh
-        run: pwsh -File scripts/e2e-submit-request-smoke.ps1 -Port 5000
-
-      - name: Stop server
-        if: always()
-        shell: pwsh
-        run: |
-          Get-Job | Stop-Job -Force
-          Get-Job | Receive-Job -Keep
 
   remote-smoke:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.base_url != '' }}
     runs-on: ubuntu-latest
+    env:
+      BYPASS_TOKEN: ${{ inputs.bypass_token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -246,7 +237,7 @@ jobs:
         run: |
           set -euo pipefail
           base='${{ inputs.base_url }}'
-          ver_json=$(curl -fsSL "$base/api/_version")
+          ver_json=$(curl -fsSL -H "x-vercel-protection-bypass: ${BYPASS_TOKEN:-}" "$base/api/_version")
           echo "Version JSON: $ver_json"
           commit=$(echo "$ver_json" | jq -r '.commit // ""')
           branch=$(echo "$ver_json" | jq -r '.branch // ""')
@@ -255,7 +246,7 @@ jobs:
             echo "Missing fields in /api/_version (commit/branch/time)" >&2
             exit 1
           fi
-          headers=$(curl -fsSL -D - -o /dev/null "$base/health")
+          headers=$(curl -fsSL -D - -o /dev/null -H "x-vercel-protection-bypass: ${BYPASS_TOKEN:-}" "$base/health")
           echo "$headers"
           header_commit=$(echo "$headers" | awk -F': ' 'tolower($1)=="x-app-commit" {gsub(/\r/,"",$2); print $2}' | tail -n1)
           if [ -z "$header_commit" ]; then
@@ -269,7 +260,7 @@ jobs:
 
       - name: Admin smoke (preview)
         shell: pwsh
-        run: pwsh -File scripts/admin-smoke.ps1 -BaseUrl "${{ inputs.base_url }}"
+        run: pwsh -File scripts/admin-smoke.ps1 -BaseUrl "${{ inputs.base_url }}" -BypassToken "$env:BYPASS_TOKEN"
 
       - name: Submit-request smoke (preview)
         shell: pwsh
