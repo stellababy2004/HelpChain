@@ -27,4 +27,5 @@ dependencies = [
 	"click==8.1.7",
 	"requests==2.31.0",
 	"beautifulsoup4==4.12.2"
+    ,"PyJWT==2.8.0"
 ]

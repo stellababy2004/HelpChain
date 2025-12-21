@@ -1100,7 +1100,14 @@ except ImportError:
 # Sentry for error monitoring
 
 # Настройка на logging преди всичко друго
-if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
+_is_serverless = bool(
+    os.environ.get("VERCEL")
+    or os.environ.get("VERCEL_REGION")
+    or os.environ.get("AWS_LAMBDA_FUNCTION_NAME")
+    or os.environ.get("LAMBDA_TASK_ROOT")
+)
+
+if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True") or _is_serverless:
     # In test mode avoid opening file handlers (pytest will capture output
     # and leaving file descriptors open across many tests triggers
     # ResourceWarning: unclosed file). Use a simple stream handler only.
@@ -1110,12 +1117,20 @@ if os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True"):
         handlers=[logging.StreamHandler(sys.stdout)],
     )
 else:
+    # Use file handlers only in writable environments (local dev)
+    handlers = [logging.StreamHandler(sys.stdout)]
+    try:
+        _test_path = os.path.join(os.getcwd(), ".helpchain_write_test")
+        with open(_test_path, "w", encoding="utf-8") as _fh:
+            _fh.write("")
+        os.remove(_test_path)
+        handlers.append(logging.FileHandler("helpchain.log", encoding="utf-8"))
+    except Exception:
+        # Read-only filesystem: skip file handlers
+        pass
     logging.basicConfig(
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-            logging.FileHandler("helpchain.log", encoding="utf-8"),
-        ],
+        handlers=handlers,
     )
 
 
@@ -1123,6 +1138,7 @@ else:
 def setup_logging():
     """Setup comprehensive logging configuration"""
     is_testing = os.environ.get("HELPCHAIN_TESTING") in ("1", "true", "True")
+    is_serverless = _is_serverless
     # Clear existing handlers to avoid duplicates
     root_logger = logging.getLogger()
     for handler in root_logger.handlers[:]:
@@ -1142,7 +1158,7 @@ def setup_logging():
     console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(simple_formatter)
     root_logger.addHandler(console_handler)
-    if not is_testing:
+    if not (is_testing or is_serverless):
         # File handler for all logs
         file_handler = logging.FileHandler("helpchain.log", encoding="utf-8")
         file_handler.setLevel(logging.INFO)
