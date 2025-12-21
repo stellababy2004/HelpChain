@@ -22,7 +22,6 @@ on:
 
 jobs:
   prebuilt-size-guard:
-    if: ${{ hashFiles('vercel.json') != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
