@@ -332,7 +332,7 @@ except Exception:
 # --- Flask app и публични заявки ---
 from flask import Flask, request, jsonify, Response, render_template
 import traceback
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 try:
     import requests as _req
@@ -5111,6 +5111,39 @@ def legacy_static_landing_redirect():
 @app.route("/admin/login", methods=["GET", "POST"])
 @app.route("/admin_login", methods=["GET", "POST"], endpoint="admin_login_legacy")
 def admin_login():
+    # Fast-path GET to avoid crashing due to any upstream middleware issues
+    try:
+        if request.method == "GET":
+            try:
+                return render_template("admin_login.html", error=None)
+            except Exception:
+                # Minimal fallback HTML if template rendering fails
+                try:
+                    from flask_wtf.csrf import generate_csrf
+                    _csrf_input = f'<input type="hidden" name="csrf_token" value="{generate_csrf()}" />'
+                except Exception:
+                    _csrf_input = ""
+                return Response(
+                    f"""
+                    <html><head><title>Admin Login</title></head>
+                    <body>
+                        <h1>Admin Login</h1>
+                        <form method=\"post\">{_csrf_input}
+                            <label>Username or Email: <input name=\"username\" /></label><br/>
+                            <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
+                            <label>2FA Token (optional): <input name=\"token\" /></label><br/>
+                            <button type=\"submit\">Login</button>
+                        </form>
+                    </body></html>
+                    """,
+                    mimetype="text/html",
+                )
+    except Exception:
+        # As a last resort, return a minimal HTML to avoid 500s on preview
+        return Response(
+            "<html><body>Admin login</body></html>", mimetype="text/html"
+        )
+
     logger.info("Admin login route called")
     email_2fa_flag = app.config.get("EMAIL_2FA_ENABLED", EMAIL_2FA_ENABLED)
     logger.debug(
