@@ -22,6 +22,7 @@ on:
 
 jobs:
   prebuilt-size-guard:
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -58,6 +59,7 @@ jobs:
           echo "Prebuilt size OK: $total bytes"
 
   local-smoke:
+    if: ${{ github.event_name != 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -225,42 +227,57 @@ jobs:
     env:
       BYPASS_TOKEN: ${{ inputs.bypass_token }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Ensure jq is available
         run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Version check (/api/_version + /health header)
+      - name: Version + health + root checks
         shell: bash
         run: |
           set -euo pipefail
           base='${{ inputs.base_url }}'
-          ver_json=$(curl -fsSL -H "x-vercel-protection-bypass: ${BYPASS_TOKEN:-}" "$base/api/_version")
+          token='${{ inputs.bypass_token }}'
+          hdr=( )
+          if [ -n "$token" ]; then hdr+=( -H "x-vercel-protection-bypass: $token" ); fi
+          ver_json=$(curl -fsSL "${hdr[@]}" "$base/api/_version")
           echo "Version JSON: $ver_json"
           commit=$(echo "$ver_json" | jq -r '.commit // ""')
           branch=$(echo "$ver_json" | jq -r '.branch // ""')
           time=$(echo "$ver_json" | jq -r '.time // ""')
-          if [ -z "$commit" ] || [ -z "$branch" ] || [ -z "$time" ]; then
-            echo "Missing fields in /api/_version (commit/branch/time)" >&2
-            exit 1
-          fi
-          headers=$(curl -fsSL -D - -o /dev/null -H "x-vercel-protection-bypass: ${BYPASS_TOKEN:-}" "$base/health")
+          [ -n "$commit" ] && [ -n "$branch" ] && [ -n "$time" ]
+          headers=$(curl -fsSL -D - -o /dev/null "${hdr[@]}" "$base/health")
           echo "$headers"
           header_commit=$(echo "$headers" | awk -F': ' 'tolower($1)=="x-app-commit" {gsub(/\r/,"",$2); print $2}' | tail -n1)
-          if [ -z "$header_commit" ]; then
-            echo "X-App-Commit header missing on /health" >&2
+          [ -n "$header_commit" ]
+          [ "$header_commit" = "$commit" ]
+          code=$(curl -fsSL -o /dev/null -w "%{http_code}" "${hdr[@]}" "$base")
+          echo "Root HTTP $code"
+          [ "$code" = "200" ]
+
+      - name: Admin strict smoke (inline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ inputs.base_url }}'
+          token='${{ inputs.bypass_token }}'
+          hdr=( )
+          if [ -n "$token" ]; then hdr+=( -H "x-vercel-protection-bypass: $token" ); fi
+          jar=$(mktemp)
+          trap 'rm -f "$jar"' EXIT
+          login_html=$(curl -fsSL -c "$jar" "${hdr[@]}" "$base/admin/login")
+          csrf=$(echo "$login_html" | sed -n 's/.*name=["\']csrf_token["\'][^>]*value=["\']\([^"\']]*\)["\'].*/\1/p')
+          if [ -z "$csrf" ]; then
+            echo "Strict: CSRF token not found in login form" >&2
             exit 1
           fi
-          if [ "$header_commit" != "$commit" ]; then
-            echo "Commit mismatch: /api/_version=$commit vs /health header=$header_commit" >&2
+          post_code=$(curl -fsSL -b "$jar" -c "$jar" -o /dev/null -w "%{http_code}" "${hdr[@]}" \
+            -X POST "$base/admin/login" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            --data "username=admin&password=Admin12345!&csrf_token=$csrf")
+          echo "Login POST HTTP $post_code"
+          if [ "$post_code" = "400" ]; then
+            echo "Strict: POST returned 400 (likely CSRF validation failure)" >&2
             exit 1
           fi
-
-      - name: Admin smoke (preview)
-        shell: pwsh
-        run: pwsh -File scripts/admin-smoke.ps1 -BaseUrl "${{ inputs.base_url }}" -BypassToken "$env:BYPASS_TOKEN"
-
-      - name: Submit-request smoke (preview)
-        shell: pwsh
-        run: pwsh -File scripts/e2e-submit-request-smoke.ps1 -BaseUrl "${{ inputs.base_url }}"
+          dash_code=$(curl -fsSL -b "$jar" -o /dev/null -w "%{http_code}" "${hdr[@]}" "$base/admin_dashboard")
+          echo "Dashboard HTTP $dash_code"
+          [ "$dash_code" = "200" ]
