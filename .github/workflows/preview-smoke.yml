@@ -1,6 +1,93 @@
 name: Preview Smoke Checks
 
 on:
+  push:
+    branches: [ main, vercel-setup-health ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      BYPASS_TOKEN: ${{ secrets.X_VERCEL_PROTECTION_BYPASS }}
+      PROJECT_PREFIX: helpchainlive
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure jq is available
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Find latest READY preview URL
+        id: geturl
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "VERCEL_TOKEN secret is missing" >&2
+            exit 1
+          fi
+          # Fetch latest deployments and pick first READY matching project prefix
+          resp=$(curl -fsSL -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v6/deployments?limit=20")
+          url=$(echo "$resp" | jq -r --arg p "$PROJECT_PREFIX" '[.deployments[] | select(.name|startswith($p)) | select(.state=="READY")] | if length>0 then .[0].url else null end')
+          if [ -z "$url" ] || [ "$url" = "null" ]; then
+            echo "No READY preview found for prefix $PROJECT_PREFIX" >&2
+            echo "$resp" | jq -r '.deployments | map({name,state,url})'
+            exit 1
+          fi
+          echo "Preview URL: https://$url"
+          echo "url=https://$url" >> "$GITHUB_OUTPUT"
+
+      - name: Health check (/api/_health)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ steps.geturl.outputs.url }}'
+          if [ -z "${BYPASS_TOKEN:-}" ]; then
+            echo "BYPASS_TOKEN secret is missing" >&2
+            exit 1
+          fi
+          body=$(curl -fsSL -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/api/_health")
+          echo "Body: $body"
+          [ "$body" = "ok" ]
+
+      - name: Root check (/)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ steps.geturl.outputs.url }}'
+          code=$(curl -fsSL -o /dev/null -w "%{http_code}" -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base")
+          echo "HTTP $code"
+          [ "$code" = "200" ]
+
+      - name: Admin GET (/admin/login)
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          base='${{ steps.geturl.outputs.url }}'
+          code=$(curl -fsSL -o /dev/null -w "%{http_code}" -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/admin/login")
+          echo "HTTP $code"
+          # Expect 200, allow failure during stabilization
+          [ "$code" = "200" ]
+
+      - name: Admin POST (/admin/login)
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          base='${{ steps.geturl.outputs.url }}'
+          code=$(curl -fsSL -o /dev/null -w "%{http_code}" -H "x-vercel-protection-bypass: $BYPASS_TOKEN" -X POST -d "username=admin&password=wrong" "$base/admin/login")
+          echo "HTTP $code"
+          # Expect redirect on invalid creds; tolerate 500 during stabilization
+          if [ "$code" = "500" ]; then exit 1; fi
+          if [ "$code" != "302" ] && [ "$code" != "303" ]; then exit 1; fi
+name: Preview Smoke Checks
+
+on:
   workflow_dispatch:
     inputs:
       base_url:
