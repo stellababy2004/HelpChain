@@ -30,9 +30,17 @@ jobs:
             echo "VERCEL_TOKEN secret is missing" >&2
             exit 1
           fi
+          # Determine branch for this workflow (PR head for pull_request, ref_name for push)
+          branch="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          echo "Looking for READY preview on branch: $branch"
           # Fetch latest deployments and pick first READY matching project prefix
           resp=$(curl -fsSL -H "Authorization: Bearer $VERCEL_TOKEN" "https://api.vercel.com/v6/deployments?limit=20")
-          url=$(echo "$resp" | jq -r --arg p "$PROJECT_PREFIX" '[.deployments[] | select(.name|startswith($p)) | select(.state=="READY")] | if length>0 then .[0].url else null end')
+          url=$(echo "$resp" | jq -r --arg p "$PROJECT_PREFIX" --arg b "$branch" '
+            [.deployments[]
+              | select(.name|startswith($p))
+              | select(.state=="READY")
+              | select((.meta.githubCommitRef // .meta.gitlabCommitRef // .meta.bitbucketCommitRef // "") == $b)
+            ] | if length>0 then .[0].url else null end')
           if [ -z "$url" ] || [ "$url" = "null" ]; then
             echo "No READY preview found for prefix $PROJECT_PREFIX" >&2
             echo "$resp" | jq -r '.deployments | map({name,state,url})'
@@ -40,12 +48,14 @@ jobs:
           fi
           echo "Preview URL: https://$url"
           echo "url=https://$url" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
       - name: Version check (/api/_version + /health header)
         shell: bash
         run: |
           set -euo pipefail
           base='${{ steps.geturl.outputs.url }}'
+          expected_sha='${{ github.sha }}'
           # Fetch version JSON
           ver_json=$(curl -fsSL -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/api/_version")
           echo "Version JSON: $ver_json"
@@ -54,6 +64,12 @@ jobs:
           time=$(echo "$ver_json" | jq -r '.time // ""')
           if [ -z "$commit" ] || [ -z "$branch" ] || [ -z "$time" ]; then
             echo "Missing fields in /api/_version (commit/branch/time)" >&2
+            exit 1
+          fi
+          # Optional: ensure version branch matches the workflow branch
+          wf_branch='${{ steps.geturl.outputs.branch }}'
+          if [ -n "$wf_branch" ] && [ "$branch" != "$wf_branch" ]; then
+            echo "Branch mismatch: /api/_version=$branch vs workflow=$wf_branch" >&2
             exit 1
           fi
           # Fetch /health headers and compare X-App-Commit
@@ -67,6 +83,15 @@ jobs:
           if [ "$header_commit" != "$commit" ]; then
             echo "Commit mismatch: /api/_version=$commit vs /health header=$header_commit" >&2
             exit 1
+          fi
+          # Also ensure the preview commit matches this workflow's commit (prefix-friendly)
+          if [ -n "$expected_sha" ]; then
+            short12=${expected_sha:0:12}
+            short7=${expected_sha:0:7}
+            if [ "$commit" != "$expected_sha" ] && [ "$commit" != "$short12" ] && [ "$commit" != "$short7" ]; then
+              echo "Commit mismatch vs workflow SHA: version=$commit expected=$expected_sha" >&2
+              exit 1
+            fi
           fi
 
       - name: Health check (/api/_health)
