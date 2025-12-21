@@ -5,7 +5,8 @@
   },
   "builds": [
     { "src": "api/**/*.py", "use": "@vercel/python" },
-    { "src": "api/**/*.js", "use": "@vercel/node" }
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "index.html", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "^/api/_health$", "dest": "/api/_health.js" },
