@@ -13,20 +13,24 @@ on:
     inputs:
       base_url:
         description: "Preview base URL (e.g., https://helpchain-preview.vercel.app)"
-        required: false
-        type: string
-      bypass_token:
+          # Establish preview bypass cookie if a token is provided
+          jar=$(mktemp)
+          trap 'rm -f "$jar"' EXIT
+          if [ -n "$token" ]; then
+            curl -fsSL -c "$jar" -b "$jar" "$base/?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=$token" >/dev/null
+          fi
+          ver_json=$(curl -fsSL -b "$jar" "$base/api/_version")
         description: "Protection bypass token (if preview is protected)"
         required: false
         type: string
 
 jobs:
-  prebuilt-size-guard:
+          headers=$(curl -fsSL -D - -o /dev/null -b "$jar" "$base/health")
     if: ${{ github.event_name != 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+          code=$(curl -fsSL -o /dev/null -w "%{http_code}" -b "$jar" "$base")
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,18 +40,19 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@^33
 
-      - name: Build prebuilt output
-        env:
           VERCEL_TELEMETRY_DISABLED: '1'
         run: |
-          npx vercel build --yes
+          # Ensure bypass cookie before fetching login
+          if [ -n "$token" ]; then
+            curl -fsSL -c "$jar" -b "$jar" "$base/?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=$token" >/dev/null
+          fi
+          login_html=$(curl -fsSL -c "$jar" "$base/admin/login")
 
       - name: Check .vercel/output size
         run: |
           set -e
           if [ ! -d .vercel/output ]; then
             echo ".vercel/output not found; ensure vercel build succeeded." >&2
-            exit 1
           fi
           du -sh .vercel/output || true
           find .vercel/output -type f -size +100M -exec ls -lh {} \; || true
@@ -56,7 +61,7 @@ jobs:
             echo "Prebuilt output too large: $total bytes" >&2
             exit 1
           fi
-          echo "Prebuilt size OK: $total bytes"
+          dash_code=$(curl -fsSL -b "$jar" -o /dev/null -w "%{http_code}" "$base/admin_dashboard")
 
   local-smoke:
     if: ${{ github.event_name != 'workflow_dispatch' }}
