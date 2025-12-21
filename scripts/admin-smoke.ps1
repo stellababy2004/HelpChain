@@ -4,6 +4,7 @@ param(
   [int]$Port = 5000,
   [string]$BaseUrl,
   [switch]$Relaxed,
+  [switch]$Strict = $true,
   [string]$BypassToken
 )
 
@@ -63,18 +64,38 @@ try {
   exit 1
 }
 
-# Extract CSRF token from hidden input (tolerate different quote/spacing)
+# Extract CSRF token (robust):
+# - input name/value in any order
+# - double or single quotes
+# - optional meta tag fallback
+# - final fallback: CSRF-like cookie names
 $csrf = $null
 try {
-  $m = [regex]::Match($loginGet.Content, 'name="csrf_token"[^>]*value="([^"]+)"')
-  if (-not $m.Success) {
-    $m = [regex]::Match($loginGet.Content, "name='csrf_token'[^>]*value='([^']+)'")
+  $patterns = @(
+    'name=["'']csrf_token["''][^>]*value=["'']([^"'']+)["'']',
+    'value=["'']([^"'']+)["''][^>]*name=["'']csrf_token["'']',
+    '<meta[^>]*name=["'']csrf[-_]?token["''][^>]*content=["'']([^"'']+)["'']'
+  )
+  foreach ($pat in $patterns) {
+    $m = [regex]::Match($loginGet.Content, $pat, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    if ($m.Success) { $csrf = $m.Groups[1].Value; break }
   }
-  if ($m.Success) { $csrf = $m.Groups[1].Value }
+  if (-not $csrf) {
+    $cookieNames = @('csrf_token','XSRF-TOKEN','CSRF-TOKEN','_csrf')
+    foreach ($c in $session.Cookies) {
+      if ($cookieNames -contains $c.Name) { $csrf = $c.Value; break }
+    }
+  }
 } catch { }
 if (-not $csrf) {
-  Write-Warning "CSRF token not found in login form; POST may fail."
-  try { Write-Host ($loginGet.Content.Substring(0, [Math]::Min(400, $loginGet.Content.Length))) } catch { }
+  if ($Strict -and -not $Relaxed) {
+    Write-Error "Strict mode: CSRF token not found in login form (fallback form likely missing hidden csrf input)."
+    try { Write-Host ($loginGet.Content.Substring(0, [Math]::Min(600, $loginGet.Content.Length))) } catch { }
+    exit 2
+  } else {
+    Write-Warning "CSRF token not found in login form; continuing (Relaxed)."
+    try { Write-Host ($loginGet.Content.Substring(0, [Math]::Min(400, $loginGet.Content.Length))) } catch { }
+  }
 }
 
 # Determine passwords to try (param > env > common defaults)
@@ -96,25 +117,37 @@ function Try-Login-And-CheckDashboard {
   if ($csrf) { $post.csrf_token = $csrf }
   try {
     $resp = Invoke-Login -PostBody $post
-    Write-Host "Login POST status (pw attempt): $($resp.StatusCode)" -ForegroundColor Green
+    $code = [int]$resp.StatusCode
+    Write-Host "Login POST status: $code" -ForegroundColor Green
+    if ($Strict -and -not $Relaxed) {
+      if ($code -eq 400) { Write-Error "Strict mode: POST returned 400 (likely CSRF validation failure)."; return $false }
+      if ($code -ne 302 -and $code -ne 303 -and $code -ne 200) {
+        Write-Error ("Strict mode: Unexpected login response code: {0}" -f $code); return $false
+      }
+    }
   } catch {
     $msg = $_.Exception.Message
-    Write-Warning ("Login POST failed (pw attempt): {0}" -f $msg)
-    if ($msg -match "400" -or $msg -match "CSRF") {
-      try {
-        $loginGet2 = Invoke-WebRequest -Uri "$base/admin/login" -TimeoutSec 5 -WebSession $session
-        $csrf2 = $null
-        $m2 = [regex]::Match($loginGet2.Content, 'name="csrf_token"[^>]*value="([^"]+)"')
-        if (-not $m2.Success) { $m2 = [regex]::Match($loginGet2.Content, "name='csrf_token'[^>]*value='([^']+)'") }
-        if ($m2.Success) { $csrf2 = $m2.Groups[1].Value }
-        if ($csrf2) {
-          $post.csrf_token = $csrf2
-          $resp = Invoke-Login -PostBody $post
-          Write-Host "Login POST retry status: $($resp.StatusCode)" -ForegroundColor Green
-        }
-      } catch {
-        Write-Warning ("Retry after CSRF failed: {0}" -f $_.Exception.Message)
+    Write-Warning ("Login POST failed: {0}" -f $msg)
+    if ($Strict -and -not $Relaxed) { return $false }
+    # Relaxed path: attempt one retry after refreshing CSRF
+    try {
+      $loginGet2 = Invoke-WebRequest -Uri "$base/admin/login" -TimeoutSec 5 -WebSession $session
+      $csrf2 = $null
+      $pats = @(
+        'name=["'']csrf_token["''][^>]*value=["'']([^"'']+)["'']',
+        'value=["'']([^"'']+)["''][^>]*name=["'']csrf_token["'']'
+      )
+      foreach ($pat in $pats) {
+        $m2 = [regex]::Match($loginGet2.Content, $pat, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+        if ($m2.Success) { $csrf2 = $m2.Groups[1].Value; break }
       }
+      if ($csrf2) {
+        $post.csrf_token = $csrf2
+        $resp = Invoke-Login -PostBody $post
+        Write-Host "Login POST retry status: $($resp.StatusCode)" -ForegroundColor Green
+      }
+    } catch {
+      Write-Warning ("Retry after CSRF failed: {0}" -f $_.Exception.Message)
     }
   }
   # Fetch dashboard
@@ -145,11 +178,11 @@ foreach ($pw in $passwordsToTry) {
 }
 
 if (-not $success) {
-  if ($Relaxed) {
-    Write-Warning "Dashboard content marker not found after trying fallback passwords; continuing due to -Relaxed."
-  } else {
-    Write-Warning "Dashboard content marker not found; login may not have succeeded."
+  if ($Strict -and -not $Relaxed) {
+    Write-Error "Strict mode: Dashboard marker not found or login flow failed."
     exit 3
+  } else {
+    Write-Warning "Dashboard content marker not found; continuing due to Relaxed mode."
   }
 }
 

@@ -330,7 +330,7 @@ except Exception:
 
 
 # --- Flask app и публични заявки ---
-from flask import Flask, request, jsonify, Response, render_template
+from flask import Flask, request, jsonify, Response, render_template, render_template_string, send_from_directory
 import traceback
 from sqlalchemy import func, or_
 
@@ -2850,6 +2850,35 @@ except Exception:
 app.config.setdefault("SEND_FILE_MAX_AGE_DEFAULT", _static_max_age)
 
 
+# Serve static files from backend/static first, then fall back to repo /static
+# This avoids test flakiness when both folders exist and tests create files
+# under backend/static while the app defaulted to repo-level /static.
+@app.route("/static/<path:filename>")
+def _static_combined(filename: str):
+    try:
+        # Prefer backend/static
+        backend_static = os.path.join(os.path.dirname(__file__), "static")
+        path1 = os.path.join(backend_static, filename)
+        if os.path.isfile(path1):
+            return send_from_directory(backend_static, filename)
+        # Fallback to repo root /static
+        repo_root = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+        root_static = os.path.join(repo_root, "static")
+        path2 = os.path.join(root_static, filename)
+        if os.path.isfile(path2):
+            return send_from_directory(root_static, filename)
+    except Exception:
+        pass
+    # Let Flask handle as usual (may return 404)
+    return Response(status=404)
+
+# Ensure Flask's built-in 'static' endpoint uses our combined handler
+try:
+    app.view_functions["static"] = _static_combined
+except Exception:
+    pass
+
+
 # Install a lightweight after_request hook to ensure Cache-Control is present
 # for common static asset types. This is safe: it only sets headers when the
 # request path appears to target static assets and doesn't override existing
@@ -5133,27 +5162,41 @@ def admin_login():
             try:
                 return render_template("admin_login.html", error=None)
             except Exception:
-                # Minimal fallback HTML if template rendering fails
+                # Robust fallback HTML rendered via Jinja to ensure CSRF token is present
                 try:
-                    from flask_wtf.csrf import generate_csrf
-                    _csrf_input = f'<input type="hidden" name="csrf_token" value="{generate_csrf()}" />'
+                    html = render_template_string(
+                        """
+                        <html><head><title>Admin Login</title></head>
+                        <body>
+                            <h1>Admin Login</h1>
+                            <form method=\"post\">
+                                <input type=\"hidden\" name=\"csrf_token\" value=\"{{ csrf_token() }}\" />
+                                <label>Username or Email: <input name=\"username\" /></label><br/>
+                                <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
+                                <label>2FA Token (optional): <input name=\"token\" /></label><br/>
+                                <button type=\"submit\">Login</button>
+                            </form>
+                        </body></html>
+                        """
+                    )
+                    return Response(html, mimetype="text/html")
                 except Exception:
-                    _csrf_input = ""
-                return Response(
-                    f"""
-                    <html><head><title>Admin Login</title></head>
-                    <body>
-                        <h1>Admin Login</h1>
-                        <form method=\"post\">{_csrf_input}
-                            <label>Username or Email: <input name=\"username\" /></label><br/>
-                            <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
-                            <label>2FA Token (optional): <input name=\"token\" /></label><br/>
-                            <button type=\"submit\">Login</button>
-                        </form>
-                    </body></html>
-                    """,
-                    mimetype="text/html",
-                )
+                    # Last-resort minimal fallback (no CSRF)
+                    return Response(
+                        """
+                        <html><head><title>Admin Login</title></head>
+                        <body>
+                            <h1>Admin Login</h1>
+                            <form method=\"post\">
+                                <label>Username or Email: <input name=\"username\" /></label><br/>
+                                <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
+                                <label>2FA Token (optional): <input name=\"token\" /></label><br/>
+                                <button type=\"submit\">Login</button>
+                            </form>
+                        </body></html>
+                        """,
+                        mimetype="text/html",
+                    )
     except Exception:
         # As a last resort, return a minimal HTML to avoid 500s on preview
         return Response(
@@ -5322,28 +5365,40 @@ def admin_login():
     try:
         return render_template("admin_login.html", error=error)
     except Exception:
-        # Robust fallback: inline HTML with CSRF token to avoid 400 on POST
+        # Robust fallback: render via Jinja to include CSRF regardless of direct import availability
         try:
-            from flask_wtf.csrf import generate_csrf
-            _csrf_input = f'<input type="hidden" name="csrf_token" value="{generate_csrf()}" />'
+            html = render_template_string(
+                """
+                <html><head><title>Admin Login</title></head>
+                <body>
+                    <h1>Admin Login</h1>
+                    <form method=\"post\">
+                        <input type=\"hidden\" name=\"csrf_token\" value=\"{{ csrf_token() }}\" />
+                        <label>Username or Email: <input name=\"username\" /></label><br/>
+                        <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
+                        <label>2FA Token (optional): <input name=\"token\" /></label><br/>
+                        <button type=\"submit\">Login</button>
+                    </form>
+                </body></html>
+                """
+            )
+            return Response(html, mimetype="text/html")
         except Exception:
-            _csrf_input = ""
-        return Response(
-            f"""
-            <html><head><title>Admin Login</title></head>
-            <body>
-                <h1>Admin Login</h1>
-                <form method=\"post\">
-                    {_csrf_input}
-                    <label>Username or Email: <input name=\"username\" /></label><br/>
-                    <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
-                    <label>2FA Token (optional): <input name=\"token\" /></label><br/>
-                    <button type=\"submit\">Login</button>
-                </form>
-            </body></html>
-            """,
-            mimetype="text/html",
-        )
+            return Response(
+                """
+                <html><head><title>Admin Login</title></head>
+                <body>
+                    <h1>Admin Login</h1>
+                    <form method=\"post\">
+                        <label>Username or Email: <input name=\"username\" /></label><br/>
+                        <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
+                        <label>2FA Token (optional): <input name=\"token\" /></label><br/>
+                        <button type=\"submit\">Login</button>
+                    </form>
+                </body></html>
+                """,
+                mimetype="text/html",
+            )
 
 
 @app.route("/admin/login", methods=["GET", "POST"])
@@ -6429,6 +6484,25 @@ def admin_2fa():
         if admin_user.verify_totp(token):
             # 2FA successful, complete login
             session["admin_logged_in"] = True
+
+        # Track feedback submission analytics (non-blocking)
+        try:
+            from backend.analytics_service import analytics_service
+
+            analytics_service.track_event(
+                event_type="user_feedback",
+                event_category="engagement",
+                event_action="submit_feedback",
+                context={
+                    "feedback_length": len(message or ""),
+                    "has_email": bool(email),
+                    "user_agent": request.headers.get("User-Agent"),
+                    "ip_address": request.remote_addr,
+                    "page_url": request.referrer or "/feedback",
+                },
+            )
+        except Exception as analytics_error:
+            app.logger.warning(f"Analytics tracking failed: {analytics_error}")
             session["admin_user_id"] = admin_user.id
             session["admin_username"] = admin_user.username
             session.pop("pending_2fa", None)
