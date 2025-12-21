@@ -331,6 +331,7 @@ except Exception:
 
 # --- Flask app и публични заявки ---
 from flask import Flask, request, jsonify, Response, render_template, render_template_string, send_from_directory
+from datetime import datetime
 import traceback
 from sqlalchemy import func, or_
 
@@ -364,11 +365,43 @@ def health():
     except Exception:
         sa_ok = False
         sa_ver = None
-    return {
+
+    commit = (
+        os.environ.get("VERCEL_GIT_COMMIT_SHA")
+        or os.environ.get("GIT_COMMIT")
+        or os.environ.get("COMMIT_SHA")
+        or ""
+    )
+    payload = {
         "status": "ok",
         "sqlalchemy": sa_ok,
         "sqlalchemy_version": sa_ver,
-    }, 200
+        "commit": commit,
+        "time": datetime.utcnow().isoformat() + "Z",
+    }
+    resp = jsonify(payload)
+    if commit:
+        resp.headers["X-App-Commit"] = commit
+    return resp, 200
+
+# Version metadata for smoke tests and preview verification
+@app.route("/api/_version", methods=["GET"])
+def version_info():
+    data = {
+        "commit": os.environ.get("VERCEL_GIT_COMMIT_SHA")
+        or os.environ.get("GIT_COMMIT")
+        or os.environ.get("COMMIT_SHA")
+        or "",
+        "branch": os.environ.get("VERCEL_GIT_COMMIT_REF")
+        or os.environ.get("GIT_BRANCH")
+        or "",
+        "vercel_url": os.environ.get("VERCEL_URL") or "",
+        "time": datetime.utcnow().isoformat() + "Z",
+    }
+    resp = jsonify(data)
+    if data.get("commit"):
+        resp.headers["X-App-Commit"] = data["commit"]
+    return resp, 200
 app.config["PROPAGATE_EXCEPTIONS"] = True
 # Note: Jinja builtin exposures were removed to keep template globals minimal.
 # Templates should be written to not depend on Python builtins being present

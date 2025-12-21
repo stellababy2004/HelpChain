@@ -41,6 +41,34 @@ jobs:
           echo "Preview URL: https://$url"
           echo "url=https://$url" >> "$GITHUB_OUTPUT"
 
+      - name: Version check (/api/_version + /health header)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ steps.geturl.outputs.url }}'
+          # Fetch version JSON
+          ver_json=$(curl -fsSL -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/api/_version")
+          echo "Version JSON: $ver_json"
+          commit=$(echo "$ver_json" | jq -r '.commit // ""')
+          branch=$(echo "$ver_json" | jq -r '.branch // ""')
+          time=$(echo "$ver_json" | jq -r '.time // ""')
+          if [ -z "$commit" ] || [ -z "$branch" ] || [ -z "$time" ]; then
+            echo "Missing fields in /api/_version (commit/branch/time)" >&2
+            exit 1
+          fi
+          # Fetch /health headers and compare X-App-Commit
+          headers=$(curl -fsSL -D - -o /dev/null -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/health")
+          echo "$headers"
+          header_commit=$(echo "$headers" | awk -F': ' 'tolower($1)=="x-app-commit" {gsub(/\r/,"",$2); print $2}' | tail -n1)
+          if [ -z "$header_commit" ]; then
+            echo "X-App-Commit header missing on /health" >&2
+            exit 1
+          fi
+          if [ "$header_commit" != "$commit" ]; then
+            echo "Commit mismatch: /api/_version=$commit vs /health header=$header_commit" >&2
+            exit 1
+          fi
+
       - name: Health check (/api/_health)
         shell: bash
         run: |
@@ -63,28 +91,11 @@ jobs:
           echo "HTTP $code"
           [ "$code" = "200" ]
 
-      - name: Admin GET (/admin/login)
-        shell: bash
-        continue-on-error: true
+      - name: Admin strict smoke (preview)
+        shell: pwsh
         run: |
-          set -euo pipefail
-          base='${{ steps.geturl.outputs.url }}'
-          code=$(curl -fsSL -o /dev/null -w "%{http_code}" -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/admin/login")
-          echo "HTTP $code"
-          # Expect 200, allow failure during stabilization
-          [ "$code" = "200" ]
-
-      - name: Admin POST (/admin/login)
-        shell: bash
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          base='${{ steps.geturl.outputs.url }}'
-          code=$(curl -fsSL -o /dev/null -w "%{http_code}" -H "x-vercel-protection-bypass: $BYPASS_TOKEN" -X POST -d "username=admin&password=wrong" "$base/admin/login")
-          echo "HTTP $code"
-          # Expect redirect on invalid creds; tolerate 500 during stabilization
-          if [ "$code" = "500" ]; then exit 1; fi
-          if [ "$code" != "302" ] && [ "$code" != "303" ]; then exit 1; fi
+          $base = '${{ steps.geturl.outputs.url }}'
+          pwsh -File scripts/admin-smoke.ps1 -BaseUrl $base -Strict -BypassToken $env:BYPASS_TOKEN
 name: Preview Smoke Checks
 
 on:
@@ -201,6 +212,35 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Ensure jq is available
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Version check (/api/_version + /health header)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='${{ inputs.base_url }}'
+          ver_json=$(curl -fsSL "$base/api/_version")
+          echo "Version JSON: $ver_json"
+          commit=$(echo "$ver_json" | jq -r '.commit // ""')
+          branch=$(echo "$ver_json" | jq -r '.branch // ""')
+          time=$(echo "$ver_json" | jq -r '.time // ""')
+          if [ -z "$commit" ] || [ -z "$branch" ] || [ -z "$time" ]; then
+            echo "Missing fields in /api/_version (commit/branch/time)" >&2
+            exit 1
+          fi
+          headers=$(curl -fsSL -D - -o /dev/null "$base/health")
+          echo "$headers"
+          header_commit=$(echo "$headers" | awk -F': ' 'tolower($1)=="x-app-commit" {gsub(/\r/,"",$2); print $2}' | tail -n1)
+          if [ -z "$header_commit" ]; then
+            echo "X-App-Commit header missing on /health" >&2
+            exit 1
+          fi
+          if [ "$header_commit" != "$commit" ]; then
+            echo "Commit mismatch: /api/_version=$commit vs /health header=$header_commit" >&2
+            exit 1
+          fi
 
       - name: Admin smoke (preview)
         shell: pwsh
