@@ -99,8 +99,20 @@ def app(environ, start_response: Callable):
     except Exception:
         # Fall through to the inner app on any wrapper error
         pass
-    # Delegate everything else
-    return _load_inner_app()(environ, start_response)
+    # Delegate everything else, with preview-safe traceback on failure
+    try:
+        return _load_inner_app()(environ, start_response)
+    except Exception:
+        import traceback
+        tb = traceback.format_exc()
+        body = tb.encode('utf-8', errors='replace')
+        headers = [
+            ('Content-Type', 'text/plain; charset=utf-8'),
+            ('Cache-Control', 'no-store'),
+            ('Content-Length', str(len(body)))
+        ]
+        start_response('500 Internal Server Error', headers)
+        return [body]
 
 # For local debug
 if __name__ == "__main__":
