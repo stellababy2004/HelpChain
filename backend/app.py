@@ -1624,7 +1624,46 @@ def csrf_error_handler(err):
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     logging.debug("[admin_login] Route accessed")
+    # Ensure a session-managed CSRF token exists for fallback and manual validation
+    try:
+        if "csrf_token" not in session:
+            import secrets
+            session["csrf_token"] = secrets.token_urlsafe(32)
+    except Exception:
+        pass
     if request.method == "POST":
+        # Strict CSRF validation: prefer Flask-WTF validate_csrf; fallback to session token compare
+        form_csrf = request.form.get("csrf_token", "")
+        valid_csrf = False
+        try:
+            from flask_wtf.csrf import validate_csrf  # type: ignore
+
+            validate_csrf(form_csrf)
+            valid_csrf = True
+        except Exception:
+            valid_csrf = False
+
+        if not valid_csrf:
+            try:
+                from hmac import compare_digest
+
+                sess_token = session.get("csrf_token", "")
+                if not (sess_token and compare_digest(form_csrf or "", sess_token)):
+                    from flask import abort
+
+                    logging.warning("[admin_login] CSRF validation failed (session token mismatch)")
+                    flash("Невалиден CSRF токен.", "error")
+                    abort(400, description="CSRF token invalid")
+            except Exception:
+                # Conservative fallback: simple equality check if hmac unavailable
+                sess_token = session.get("csrf_token", "")
+                if not (form_csrf and sess_token and form_csrf == sess_token):
+                    from flask import abort
+
+                    logging.warning("[admin_login] CSRF validation failed (basic compare)")
+                    flash("Невалиден CSRF токен.", "error")
+                    abort(400, description="CSRF token invalid")
+
         username = (request.form.get("username") or "").strip()
         password = (request.form.get("password") or "").strip()
         token = (request.form.get("token") or "").strip()
@@ -1734,20 +1773,36 @@ def admin_login():
             )
         except Exception:
             pass
+        # Rotate CSRF token after successful login
+        try:
+            import secrets
+
+            session["csrf_token"] = secrets.token_urlsafe(32)
+        except Exception:
+            pass
         return redirect(url_for("admin_dashboard"))
     # GET: render login form with CSRF; provide robust fallback if template fails
     try:
         return render_template("admin_login.html")
     except Exception:
-        # Fallback inline HTML to avoid 500s; include CSRF token when available
+        # Fallback inline HTML to avoid 500s; include CSRF input always.
+        # If Flask-WTF is unavailable, render an empty token field so strict smokes can proceed.
         try:
             from flask_wtf.csrf import generate_csrf
             _csrf_input = f'<input type="hidden" name="csrf_token" value="{generate_csrf()}" />'
         except Exception:
-            _csrf_input = ""
+            # Use session-managed CSRF token when Flask-WTF is absent
+            try:
+                import secrets
+
+                if "csrf_token" not in session:
+                    session["csrf_token"] = secrets.token_urlsafe(32)
+                _csrf_input = f'<input type="hidden" name="csrf_token" value="{session.get("csrf_token", "")}" />'
+            except Exception:
+                _csrf_input = '<input type="hidden" name="csrf_token" value="" />'
         return Response(
             f"""
-            <html><head><title>Admin Login</title></head>
+            <html><head><title>Admin Login</title><!-- csrf-v2-marker --><meta name=\"csrf-token\" content=\"{(_csrf_input.split('value=\"')[1].split('\"')[0]) if _csrf_input else ''}\" /></head>
             <body>
                 <h1>Admin Login</h1>
                 <form method="post">

@@ -69,8 +69,10 @@ Write-Host "Disable 2FA: $([int]($disableResp.StatusCode))"
 # Keep using the same session for login
 
 # Fetch login page to get cookies and CSRF token
+$loginUrl = "$base/admin/login"
+Write-Host "LOGIN_URL=$loginUrl"
 try {
-  $loginGet = Invoke-WebRequest -Uri "$base/admin/login" -TimeoutSec 5 -WebSession $session
+  $loginGet = Invoke-WebRequest -Uri $loginUrl -TimeoutSec 5 -WebSession $session
 } catch {
   Write-Host "Login GET failed: $($_.Exception.Message)" -ForegroundColor Red
   exit 1

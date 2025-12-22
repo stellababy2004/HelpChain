@@ -139,6 +139,30 @@ def admin_login():
             pass
 
     if request.method == "POST":
+        # CSRF validation: use Flask-WTF when available, otherwise compare with session token
+        form_csrf = request.form.get("csrf_token", "")
+        valid_csrf = False
+        try:
+            from flask_wtf.csrf import validate_csrf  # type: ignore
+            validate_csrf(form_csrf)
+            valid_csrf = True
+        except Exception:
+            valid_csrf = False
+
+        if not valid_csrf:
+            try:
+                from hmac import compare_digest
+                sess_token = session.get("csrf_token", "")
+                if not (sess_token and compare_digest(form_csrf or "", sess_token)):
+                    from flask import abort
+                    flash("Невалиден CSRF токен.", "error")
+                    abort(400, description="CSRF token invalid")
+            except Exception:
+                sess_token = session.get("csrf_token", "")
+                if not (form_csrf and sess_token and form_csrf == sess_token):
+                    from flask import abort
+                    flash("Невалиден CSRF токен.", "error")
+                    abort(400, description="CSRF token invalid")
         username = request.form.get("username")
         password = request.form.get("password")
         admin_user = AdminUser.query.filter_by(username=username).first()
@@ -349,6 +373,12 @@ def admin_login():
                 from flask_login import login_user
 
                 login_user(admin_user)
+                # Rotate CSRF token after successful login
+                try:
+                    import secrets
+                    session["csrf_token"] = secrets.token_urlsafe(32)
+                except Exception:
+                    pass
                 return redirect(url_for("admin.admin_dashboard"))
         # Use the same user-visible wording tests expect so handlers
         # that reach this blueprint return a consistent message.

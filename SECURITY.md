@@ -28,7 +28,10 @@ If you discover a security vulnerability, please:
 - **Content Security Policy (CSP)**: Strict policy with violation reporting
 - **HTTPS Only**: All traffic forced to HTTPS with HSTS
 - **Secure Headers**: Comprehensive security headers via Talisman
-- **CSRF Protection**: Flask-WTF CSRF tokens on all forms
+- **CSRF Protection**: CSRF enforced on all forms.
+   - When Flask-WTF is available: standard CSRF tokens and validation.
+   - When Flask-WTF is unavailable (e.g., minimal preview/serverless boots): app-managed CSRF token stored in session and rendered into hidden input; POST requests validate this token before credentials are processed.
+   - CSRF token is rotated after successful login.
 - **Rate Limiting**: Progressive rate limits on sensitive endpoints
 
 ### Authentication & Authorization
@@ -103,3 +106,8 @@ For critical security incidents requiring immediate attention:
 
 **Last Updated**: October 2025
 **Version**: 1.0
+
+## 🔐 Preview/CI Security Notes
+
+- Preview BYPASS_TOKEN grants environment access but does not disable CSRF on admin login or other sensitive routes.
+- Stable sessions require `SECRET_KEY` set via environment in serverless/preview deployments to avoid token invalidation.

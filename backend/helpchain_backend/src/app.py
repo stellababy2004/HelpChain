@@ -67,16 +67,28 @@ def create_app(config_object=None):
             if p == "/api/analytics":
                 return jsonify(status="ok", source="stub", message="analytics service reachable")
             if p == "/admin/login" and request.method == "GET":
+                # Ensure a session CSRF token exists; prefer Flask-WTF generate_csrf when available
+                try:
+                    from flask_wtf.csrf import generate_csrf  # type: ignore
+                    token = generate_csrf()
+                except Exception:
+                    try:
+                        import secrets
+                        if "csrf_token" not in session:
+                            session["csrf_token"] = secrets.token_urlsafe(32)
+                        token = session.get("csrf_token", "")
+                    except Exception:
+                        token = ""
                 return Response(
                     (
-                        "<html><head><title>Admin Login</title></head>"
+                        f"<html><head><title>Admin Login</title><!-- csrf-v2-marker --><meta name=\\\"csrf-token\\\" content=\\\"{token}\\\" /></head>"
                         "<body>"
                         "<h1>Admin Login</h1>"
-                        "<form method=\"post\">"
-                        "<label>Username or Email: <input name=\"username\" /></label><br/>"
-                        "<label>Password: <input name=\"password\" type=\"password\" /></label><br/>"
-                        "<label>2FA Token (optional): <input name=\"token\" /></label><br/>"
-                        "<button type=\"submit\">Login</button>"
+                        f"<form method=\\\"post\\\">\n<input type=\\\"hidden\\\" name=\\\"csrf_token\\\" value=\\\"{token}\\\" />"
+                        "<label>Username or Email: <input name=\\\"username\\\" /></label><br/>"
+                        "<label>Password: <input name=\\\"password\\\" type=\\\"password\\\" /></label><br/>"
+                        "<label>2FA Token (optional): <input name=\\\"token\\\" /></label><br/>"
+                        "<button type=\\\"submit\\\">Login</button>"
                         "</form>"
                         "</body></html>"
                     ),
@@ -123,6 +135,24 @@ def create_app(config_object=None):
     app.jinja_env.globals["get_locale"] = _safe_get_locale
     app.jinja_env.globals["str"] = str
     app.jinja_env.globals["getattr"] = getattr
+
+    # CSRF token helper for templates: prefer Flask-WTF, fallback to session-managed token
+    @app.context_processor
+    def _inject_csrf_token():
+        def csrf_token():
+            try:
+                from flask_wtf.csrf import generate_csrf  # type: ignore
+                return generate_csrf()
+            except Exception:
+                try:
+                    import secrets
+                    if "csrf_token" not in session:
+                        session["csrf_token"] = secrets.token_urlsafe(32)
+                    return session.get("csrf_token", "")
+                except Exception:
+                    return ""
+
+        return {"csrf_token": csrf_token}
 
     app.register_blueprint(api_bp, url_prefix="/api")
 
