@@ -1,10 +1,13 @@
+
 param(
   [Parameter(Mandatory=$true)]
   [string]$Url,
   [Parameter(Mandatory=$false)]
   [string]$BypassToken,
   [Parameter(Mandatory=$false)]
-  [bool]$SetBypassCookie = $true
+  [bool]$SetBypassCookie = $true,
+  [Parameter(Mandatory=$false)]
+  [string]$CookieJar = "cookie.txt"
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,34 +25,26 @@ try {
 }
 
 function Test-EndPoint {
-  param([string]$Path)
+  param([string]$Path, [object]$WebSession = $null)
   try {
     $headers = @{}
+    $useSession = $false
     if ($BypassToken -and $BypassToken.Length -gt 0) {
-      # Sanitize common quoting/whitespace mistakes
       $cleanToken = ($BypassToken).Trim().Trim('"', "'")
-      # Mask for console logging (first/last 4 chars)
-      $masked = if ($cleanToken.Length -ge 8) { $cleanToken.Substring(0,4) + '…' + $cleanToken.Substring($cleanToken.Length-4) } else { 'len<' + $cleanToken.Length + '>' }
-      # Emit once per run
-      if (-not (Get-Variable -Name __BypassEchoed -Scope Script -ErrorAction SilentlyContinue)) {
-        Set-Variable -Name __BypassEchoed -Value $true -Scope Script
-        Write-Host ("Using bypass header token (masked): " + $masked)
-      }
-      # Use Vercel Protection Bypass for Automation header
+      # Никога не принтирай токена или masked value в CI/production
       $headers['x-vercel-protection-bypass'] = [string]$cleanToken
-      if ($SetBypassCookie) {
-        # Ask Vercel to set a bypass cookie (header + query for broader compatibility)
-        $headers['x-vercel-set-bypass-cookie'] = 'true'
-        if ($Path -notmatch '\?') { $Path = $Path + '?x-vercel-set-bypass-cookie=true' } else { $Path = $Path + '&x-vercel-set-bypass-cookie=true' }
-      }
-      # Also include bypass token in query (per Vercel docs) to ensure automation access in protected previews
-      $tokenParam = 'x-vercel-protection-bypass=' + [System.Net.WebUtility]::UrlEncode($cleanToken)
-      if ($Path -notmatch '\?') { $Path = $Path + '?' + $tokenParam }
-      else { $Path = $Path + '&' + $tokenParam }
+      # Ако имаме WebSession (cookie jar), нека го използваме
+      if ($WebSession) { $useSession = $true }
     }
-    $resp = Invoke-WebRequest -UseBasicParsing ($base.TrimEnd('/') + $Path) -MaximumRedirection 5 -ErrorAction Stop -Headers $headers
+    $uri = $base.TrimEnd('/') + $Path
+    $uriSafe = $uri -replace '\?.*','' # Премахни query параметрите за логване
+    if ($useSession) {
+      $resp = Invoke-WebRequest -UseBasicParsing $uri -MaximumRedirection 5 -ErrorAction Stop -Headers $headers -WebSession $WebSession
+    } else {
+      $resp = Invoke-WebRequest -UseBasicParsing $uri -MaximumRedirection 5 -ErrorAction Stop -Headers $headers
+    }
     $code = $resp.StatusCode
-    Write-Host "$Path -> $code"
+    Write-Host "$uriSafe -> $code"
     if ($Path -like '/*') {
       Set-Variable -Name __RootStatus -Value $code -Scope Script
     }
@@ -96,19 +91,44 @@ function Test-EndPoint {
   }
 }
 
+
+# --- Cookie jar logic for Vercel Preview Protection ---
+$webSession = $null
 if ($BypassToken) {
-  Write-Host "Running smoke checks for $Url (with bypass token)"
+  Write-Host "Running smoke checks for $Url (cookie jar mode)"
+  # 1. Set bypass cookie and save session
+  $cleanToken = ($BypassToken).Trim().Trim('"', "'")
+  $cookiePath = Join-Path $PSScriptRoot $CookieJar
+  $headers = @{
+    'x-vercel-protection-bypass' = $cleanToken
+    'x-vercel-set-bypass-cookie' = 'true'
+  }
+  $bypassUrl = $base.TrimEnd('/') + "/api/_health?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=[MASKED]"
+  $webSession = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+  try {
+    # Истинският URL с токен се използва само за заявката, не се логва
+    $realBypassUrl = $base.TrimEnd('/') + "/api/_health?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=" + [System.Net.WebUtility]::UrlEncode($cleanToken)
+    $resp = Invoke-WebRequest -UseBasicParsing $realBypassUrl -MaximumRedirection 5 -ErrorAction Stop -Headers $headers -WebSession $webSession
+    # Save cookies to file for debug/CI
+    $webSession.Cookies | Export-Clixml -Path $cookiePath
+    Write-Host "Bypass cookie set and saved to $cookiePath"
+  } catch {
+    Write-Host "Failed to set bypass cookie (details masked)" -ForegroundColor Red
+    exit 1
+  }
 } else {
   Write-Host "Running smoke checks for $Url"
 }
-Test-EndPoint '/'
-Test-EndPoint '/api/root'
-Test-EndPoint '/api/index.py'
-Test-EndPoint '/health'
-Test-EndPoint '/api/_health'
-Test-EndPoint '/admin/login'
-Test-EndPoint '/api/analytics'
-Test-EndPoint '/favicon.ico'
+
+# 2. Use session (cookie jar) for all subsequent requests if available
+Test-EndPoint '/' $webSession
+Test-EndPoint '/api/root' $webSession
+Test-EndPoint '/api/index.py' $webSession
+Test-EndPoint '/health' $webSession
+Test-EndPoint '/api/_health' $webSession
+Test-EndPoint '/admin/login' $webSession
+Test-EndPoint '/api/analytics' $webSession
+Test-EndPoint '/favicon.ico' $webSession
 
 # Soft summary: if home is 200 but probes failed, mark warning instead of blocking
 if ((Get-Variable -Name __RootStatus -Scope Script -ErrorAction SilentlyContinue) -and (Get-Variable -Name __ProbeError -Scope Script -ErrorAction SilentlyContinue)) {

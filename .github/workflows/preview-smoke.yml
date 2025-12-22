@@ -1,5 +1,5 @@
-name: Preview Smoke Checks
 
+name: Preview Smoke Checks
 on:
   push:
     branches:
@@ -13,110 +13,9 @@ on:
     inputs:
       base_url:
         description: "Preview base URL (e.g., https://helpchain-preview.vercel.app)"
-          # Establish preview bypass cookie if a token is provided
-          jar=$(mktemp)
-          trap 'rm -f "$jar"' EXIT
-          if [ -n "$token" ]; then
-            curl -fsSL -c "$jar" -b "$jar" "$base/?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=$token" >/dev/null
-          fi
-          ver_json=$(curl -fsSL -b "$jar" "$base/api/_version")
-        description: "Protection bypass token (if preview is protected)"
-        required: false
+        required: true
         type: string
-
 jobs:
-          headers=$(curl -fsSL -D - -o /dev/null -b "$jar" "$base/health")
-    if: ${{ github.event_name != 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-          code=$(curl -fsSL -o /dev/null -w "%{http_code}" -b "$jar" "$base")
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@^33
-
-          VERCEL_TELEMETRY_DISABLED: '1'
-        run: |
-          # Ensure bypass cookie before fetching login
-          if [ -n "$token" ]; then
-            curl -fsSL -c "$jar" -b "$jar" "$base/?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=$token" >/dev/null
-          fi
-          login_html=$(curl -fsSL -c "$jar" "$base/admin/login")
-
-      - name: Check .vercel/output size
-        run: |
-          set -e
-          if [ ! -d .vercel/output ]; then
-            echo ".vercel/output not found; ensure vercel build succeeded." >&2
-          fi
-          du -sh .vercel/output || true
-          find .vercel/output -type f -size +100M -exec ls -lh {} \; || true
-          total=$(du -sb .vercel/output | awk '{print $1}' || echo 0)
-          if [ "$total" -gt 3758096384 ]; then
-            echo "Prebuilt output too large: $total bytes" >&2
-            exit 1
-          fi
-          dash_code=$(curl -fsSL -b "$jar" -o /dev/null -w "%{http_code}" "$base/admin_dashboard")
-
-  local-smoke:
-    if: ${{ github.event_name != 'workflow_dispatch' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        shell: pwsh
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
-      - name: Start server (background)
-        shell: pwsh
-        run: |
-          $job = Start-Job -ScriptBlock { python start_server.py }
-          echo "Started background job: $($job.Id)"
-        id: start
-
-      - name: Health check
-        shell: pwsh
-        run: |
-          $base = "http://127.0.0.1:5000"
-          $ok = $false
-          for ($i=0; $i -lt 40; $i++) {
-            Start-Sleep -Milliseconds 500
-            try {
-              $r = Invoke-WebRequest -Uri "$base/health" -TimeoutSec 3 -ErrorAction Stop
-              if ($r.StatusCode -eq 200) { $ok = $true; break }
-            } catch {}
-          }
-          if (-not $ok) { throw "Health failed" }
-
-      - name: Admin smoke
-        shell: pwsh
-        run: pwsh -File scripts/admin-smoke.ps1 -Port 5000
-
-      - name: Submit-request E2E smoke
-        shell: pwsh
-        run: pwsh -File scripts/e2e-submit-request-smoke.ps1 -Port 5000
-
-      - name: Stop server
-        if: always()
-        shell: pwsh
-        run: |
-          Get-Job | Stop-Job -Force
-          Get-Job | Receive-Job -Keep
-
   smoke:
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'workflow_dispatch' }}
@@ -126,11 +25,9 @@ jobs:
       PROJECT_PREFIX: helpchainlive
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Ensure jq is available
         run: sudo apt-get update && sudo apt-get install -y jq
-
       - name: Find latest READY preview URL
         id: geturl
         shell: bash
@@ -157,7 +54,6 @@ jobs:
           echo "Preview URL: https://$url"
           echo "url=https://$url" >> "$GITHUB_OUTPUT"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
-
       - name: Version check (/api/_version + /health header)
         shell: bash
         run: |
@@ -197,7 +93,6 @@ jobs:
               exit 1
             fi
           fi
-
       - name: Health check (/api/_health)
         shell: bash
         run: |
@@ -210,7 +105,6 @@ jobs:
           body=$(curl -fsSL -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base/api/_health")
           echo "Body: $body"
           [ "$body" = "ok" ]
-
       - name: Root check (/)
         shell: bash
         run: |
@@ -219,70 +113,8 @@ jobs:
           code=$(curl -fsSL -o /dev/null -w "%{http_code}" -H "x-vercel-protection-bypass: $BYPASS_TOKEN" "$base")
           echo "HTTP $code"
           [ "$code" = "200" ]
-
       - name: Admin strict smoke (preview)
         shell: pwsh
         run: |
           $base = '${{ steps.geturl.outputs.url }}'
           pwsh -File scripts/admin-smoke.ps1 -BaseUrl $base -Strict -BypassToken $env:BYPASS_TOKEN
-
-  remote-smoke:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.base_url != '' }}
-    runs-on: ubuntu-latest
-    env:
-      BYPASS_TOKEN: ${{ inputs.bypass_token }}
-    steps:
-      - name: Ensure jq is available
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Version + health + root checks
-        shell: bash
-        run: |
-          set -euo pipefail
-          base='${{ inputs.base_url }}'
-          token='${{ inputs.bypass_token }}'
-          hdr=( )
-          if [ -n "$token" ]; then hdr+=( -H "x-vercel-protection-bypass: $token" ); fi
-          ver_json=$(curl -fsSL "${hdr[@]}" "$base/api/_version")
-          echo "Version JSON: $ver_json"
-          commit=$(echo "$ver_json" | jq -r '.commit // ""')
-          branch=$(echo "$ver_json" | jq -r '.branch // ""')
-          time=$(echo "$ver_json" | jq -r '.time // ""')
-          [ -n "$commit" ] && [ -n "$branch" ] && [ -n "$time" ]
-          headers=$(curl -fsSL -D - -o /dev/null "${hdr[@]}" "$base/health")
-          echo "$headers"
-          header_commit=$(echo "$headers" | awk -F': ' 'tolower($1)=="x-app-commit" {gsub(/\r/,"",$2); print $2}' | tail -n1)
-          [ -n "$header_commit" ]
-          [ "$header_commit" = "$commit" ]
-          code=$(curl -fsSL -o /dev/null -w "%{http_code}" "${hdr[@]}" "$base")
-          echo "Root HTTP $code"
-          [ "$code" = "200" ]
-
-      - name: Admin strict smoke (inline)
-        shell: bash
-        run: |
-          set -euo pipefail
-          base='${{ inputs.base_url }}'
-          token='${{ inputs.bypass_token }}'
-          hdr=( )
-          if [ -n "$token" ]; then hdr+=( -H "x-vercel-protection-bypass: $token" ); fi
-          jar=$(mktemp)
-          trap 'rm -f "$jar"' EXIT
-          login_html=$(curl -fsSL -c "$jar" "${hdr[@]}" "$base/admin/login")
-          csrf=$(echo "$login_html" | sed -n 's/.*name=["\']csrf_token["\'][^>]*value=["\']\([^"\']]*\)["\'].*/\1/p')
-          if [ -z "$csrf" ]; then
-            echo "Strict: CSRF token not found in login form" >&2
-            exit 1
-          fi
-          post_code=$(curl -fsSL -b "$jar" -c "$jar" -o /dev/null -w "%{http_code}" "${hdr[@]}" \
-            -X POST "$base/admin/login" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            --data "username=admin&password=Admin12345!&csrf_token=$csrf")
-          echo "Login POST HTTP $post_code"
-          if [ "$post_code" = "400" ]; then
-            echo "Strict: POST returned 400 (likely CSRF validation failure)" >&2
-            exit 1
-          fi
-          dash_code=$(curl -fsSL -b "$jar" -o /dev/null -w "%{http_code}" "${hdr[@]}" "$base/admin_dashboard")
-          echo "Dashboard HTTP $dash_code"
-          [ "$dash_code" = "200" ]

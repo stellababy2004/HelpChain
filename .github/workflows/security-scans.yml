@@ -21,10 +21,10 @@ jobs:
     continue-on-error: true  # временно не-блокиращ, докато отработим находките
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -37,7 +37,7 @@ jobs:
           bandit -r . -x tests,.venv,venv,env,.git -f sarif -o bandit.sarif || true
 
       - name: Upload SARIF (Bandit)
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0 # v3
         with:
           sarif_file: bandit.sarif
 
@@ -47,10 +47,10 @@ jobs:
     continue-on-error: true  # временно не-блокиращ за да видим пълния отчет
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -80,73 +80,3 @@ jobs:
             pip-audit -f sarif -o pip-audit.env.sarif --progress-spinner off || true
           fi
 
-      - name: Upload SARIF (pip-audit requirements)
-        if: hashFiles('pip-audit.*.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: .
-name: Security Scans (Python)
-
-on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  security-events: write # нужно за SARIF към Code Scanning
-
-jobs:
-  bandit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
-        with:
-          python-version: "3.11"
-
-      - name: Install bandit and sarif formatter
-        run: pip install bandit bandit-sarif-formatter
-
-      - name: Run Bandit (JSON)
-        run: bandit -r . -f json -o bandit.json || true
-
-      - name: Convert to SARIF
-        run: bandit-sarif bandit.json bandit.sarif || true
-
-      - name: Upload Bandit SARIF
-        if: hashFiles('bandit.sarif') != ''
-        uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0
-        with:
-          sarif_file: bandit.sarif
-
-  pip-audit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
-        with:
-          python-version: "3.11"
-
-      - name: Install pip-audit
-        run: pip install pip-audit
-
-      - name: Resolve deps (optional if you already use requirements.txt)
-        run: |
-          if [ -f "requirements.txt" ]; then
-            pip install -r requirements.txt
-          fi
-
-      - name: Run pip-audit (SARIF)
-        run: |
-          pip-audit -r requirements.txt -f sarif -o pip-audit.sarif || true
-
-      - name: Upload pip-audit SARIF
-        if: hashFiles('pip-audit.sarif') != ''
-        uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0
-        with:
-          sarif_file: pip-audit.sarif

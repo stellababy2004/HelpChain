@@ -1,0 +1,33 @@
+name: Vercel Preview Smoke (Cookie Jar)
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Preview base URL (e.g., https://helpchainlive-git-vercel-set-xxxx.vercel.app)"
+        required: true
+        type: string
+
+jobs:
+  smoke-cookiejar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: smoke-${{ inputs.base_url }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Run PowerShell smoke with cookie jar
+        shell: pwsh
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          BYPASS_TOKEN: ${{ secrets.BYPASS_TOKEN }}
+        run: |
+          if [ -z "$env:BYPASS_TOKEN" ]; then
+            echo "BYPASS_TOKEN secret is missing!" >&2
+            exit 1
+          fi
+          pwsh -File scripts/smoke.ps1 -Url $env:BASE_URL -BypassToken $env:BYPASS_TOKEN

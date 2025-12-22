@@ -150,7 +150,8 @@ GEMINI_TEMPERATURE=0.7
 
 ---
 
-## 🧪 Development helpers (mock, sanitization и тестове)
+
+## 🧪 Development helpers (mock, sanitization, тестове и smoke с cookie jar)
 
 ### Sanitization & extraction на OpenAI ключа
 
@@ -184,6 +185,46 @@ $env:AI_DEV_MOCK = '1'
 - `ai_service.generate_response()` връща кратък canned отговор `{ 'response': 'Това е mock отговор...' }`
 
 Mock режимът трябва да се използва само за локална разработка и тестове. Не го включвай в production.
+
+
+### Вариант B: Автоматизиран smoke тест с cookie jar (препоръчително)
+
+За да валидирате защитени endpoints (например с Vercel Preview Protection) автоматизирано, без браузър или SSO, използвайте cookie jar подход:
+
+1. **Извикайте endpoint-а, който сетва bypass cookie** (например `/api/_health?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=ВАШИЯТ_ТОКЕН`).
+2. **Запазете получената cookie** (cookie jar файл).
+3. **Използвайте тази cookie** за всички следващи smoke тестове към защитените endpoints.
+
+#### Пример с curl (PowerShell):
+
+```powershell
+# 1. Вземи bypass cookie и я запази в cookie.txt
+curl -c cookie.txt "https://YOUR-URL/api/_health?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=ВАШИЯТ_ТОКЕН"
+
+# 2. Използвай cookie.txt за smoke тест
+curl -b cookie.txt "https://YOUR-URL/api/_health"
+curl -b cookie.txt "https://YOUR-URL/health"
+```
+
+#### Пример с Python requests:
+
+```python
+import requests
+
+session = requests.Session()
+url = "https://YOUR-URL/api/_health?x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=ВАШИЯТ_ТОКЕН"
+session.get(url)
+
+# Следващите заявки автоматично използват получената cookie
+resp = session.get("https://YOUR-URL/api/_health")
+print(resp.status_code, resp.text)
+```
+
+**Забележка:**
+- Не е необходим браузър или SSO – cookie jar подходът работи изцяло автоматизирано.
+- Може да се интегрира във всеки CI/CD pipeline за smoke тестове.
+
+---
 
 ### `scripts/test_ai.py`
 

@@ -303,6 +303,31 @@ pip install locust
 locust -f tests/locustfile.py
 ```
 
+
+## 🚦 Routing & Deployment Policy
+
+> Source of truth: виж vercel.json в корена на репото.
+
+**Routing policy (canonical):**
+
+- explicit-only endpoints
+- 404 by default
+- контролирано добавяне на нови маршрути
+- детерминирано поведение (без ghost bugs)
+
+**Препоръка за употреба:**
+- Остави този текст във vercel.json като коментар (source of truth).
+- Копирай 1:1 в README.md или docs/deployment.md под секция “Routing & Deployment Policy”.
+- Ако имаш PR – сложи го и в PR description (като context, не като шум).
+
+**Checklist за стабилност:**
+- /api/_health → 200
+- /health → 200
+- unknown route → 404
+
+**Твърдо мнение:**
+Преместваме “поведение” от имплицитно към договорно. Това е разликата между “работи сега” и “работи след 6 месеца без драма”.
+
 ## 🚀 Деплоймънт
 
 ### Render (препоръчително)
@@ -351,6 +376,24 @@ uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port 8000 -
 - Ruff за linting
 - Pre-commit hooks за автоматична проверка
 - Пишете тестове за нов функционал
+
+## Acceptance Checklist — Vercel Protected Preview Smoke (Production-grade)
+
+- [x] **No browser required**: Smoke runs fully automated via cookie-jar flow in `smoke.ps1` (no SSO/manual steps).
+- [x] **Canonical health OK**: `GET /health` returns **200**.
+- [x] **Deterministic 404**: A clearly invalid route (e.g. `/__smoke_404__`) returns **404**.
+- [x] **Secret hygiene**: Bypass token is stored as a **GitHub Actions secret** (not a workflow input) and is never printed in logs.
+- [x] **URL redaction**: Logs do not include bypass query parameters used to set the cookie.
+- [x] **Workflow resilience**: The job has a sensible **timeout** and uses **concurrency** to avoid overlapping runs.
+- [x] *(Optional policy)* **`/api/_health` behavior**: Treated as optional (**200 or 404**) as long as `/health` is **200**.
+
+Pinning Actions by SHA — next step (what “done” looks like)
+
+Критериите за “supply-chain done”:
+
+- uses: actions/checkout@v4 → pinned full SHA
+- setup-python, cache, и всякакви други uses: → pinned full SHA
+- (ако имаш composite actions) → pinned versions or SHAs
 
 ## 📞 Контакт
 

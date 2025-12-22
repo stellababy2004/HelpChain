@@ -80,6 +80,9 @@ pwsh -NoProfile -File .\scripts\start-and-smoke.ps1 \
    - Adjust `-HealthPath` if the health endpoint is routed differently.
    - If protected preview still blocks, confirm the token and browser protection toggle, and re-copy the token.
 
+- [ ] **/health endpoint returns 200** (using Preview Protection bypass token if enabled)
+- [ ] **/api/_health endpoint returns 200** (using Preview Protection bypass token if enabled)
+
 ## Deployment Steps
 
 ### Phase 1: Infrastructure

@@ -18,6 +18,30 @@ def _load_inner_app():
         _cached_inner = _application
     return _cached_inner
 
+def _commit_sha() -> str:
+    """Best-effort commit SHA detection for previews and CI.
+    Checks common environment variables set by Vercel/GitHub and finally
+    looks for a COMMIT_SHA file at the repo root.
+    """
+    for key in (
+        "VERCEL_GIT_COMMIT_SHA",
+        "VERCEL_GIT_COMMIT_REF",
+        "GITHUB_SHA",
+        "COMMIT_SHA",
+    ):
+        v = os.getenv(key)
+        if v:
+            return str(v)
+    try:
+        root = os.path.dirname(os.path.dirname(__file__))
+        p = os.path.join(root, "COMMIT_SHA")
+        if os.path.isfile(p):
+            with open(p, "r", encoding="utf-8") as fh:
+                return fh.read().strip()
+    except Exception:
+        pass
+    return "unknown"
+
 def _derive_path(environ: dict) -> str:
     """Best-effort original path detection across multiple reverse-proxy headers.
     Falls back to scanning the environ values to catch rewrites that hide the
@@ -70,6 +94,34 @@ def app(environ, start_response: Callable):
                 return [buf]
         except Exception:
             pass
+        # Lightweight version endpoint for smokes and diagnostics
+        if path.endswith('/_version') or path.endswith('/api/_version'):
+            import json
+            sha = _commit_sha()
+            # Attempt to detect inner app module/name
+            app_obj = None
+            inner_name = None
+            try:
+                app_obj = _load_inner_app()
+                # Flask app exposes import_name; WSGI callable may be wrapper
+                inner_name = getattr(app_obj, 'import_name', None) or getattr(app_obj, '__name__', None)
+            except Exception:
+                inner_name = None
+            data = {
+                'status': 'ok',
+                'commit': sha,
+                'inner_app': inner_name or 'unknown',
+                'source': 'api/index.py'
+            }
+            body = json.dumps(data, ensure_ascii=False).encode('utf-8')
+            headers = [
+                ('Content-Type', 'application/json; charset=utf-8'),
+                ('X-App-Commit', sha),
+                ('Cache-Control', 'no-store'),
+                ('Content-Length', str(len(body)))
+            ]
+            start_response('200 OK', headers)
+            return [body]
         # Delegate HTML routes to Flask; avoid placeholder pages for preview
         # Do not short-circuit root; delegate to Flask to render templates
         # Handle /api/root explicitly in case project-level routing points here

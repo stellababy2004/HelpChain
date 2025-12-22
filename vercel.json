@@ -1,3 +1,8 @@
+// Routing policy
+// All application endpoints must be explicitly declared in vercel.json.
+// Any unspecified application route returns 404 (static assets are handled by Vercel automatically).
+// New endpoints must be added via an explicit routing rule.
+// This ensures deterministic routing and prevents ghost bugs caused by implicit fallbacks.
 {
   "version": 2,
   "env": {
@@ -26,6 +31,7 @@
 
     { "handle": "filesystem" },
 
-    { "src": "^/(.*)$", "dest": "/api/index.py", "methods": ["GET", "POST"] }
+    // Removed catch-all Python route to avoid Flask dependency issues in preview
+    { "src": "/.*", "status": 404, "dest": "/404" }
   ]
 }
