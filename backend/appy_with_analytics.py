@@ -66,9 +66,9 @@ if db_url:
     db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"sqlite:///{INSTANCE_DIR / 'volunteers.db'}"
-    )
+    app.config[
+        "SQLALCHEMY_DATABASE_URI"
+    ] = f"sqlite:///{INSTANCE_DIR / 'volunteers.db'}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 try:
@@ -1594,9 +1594,9 @@ def admin_export():
 
         response = make_response(output.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"
-        response.headers["Content-Disposition"] = (
-            f'attachment; filename=helpchain_requests_{datetime.now().strftime("%Y%m%d_%H%M")}.csv'
-        )
+        response.headers[
+            "Content-Disposition"
+        ] = f'attachment; filename=helpchain_requests_{datetime.now().strftime("%Y%m%d_%H%M")}.csv'
 
         return response
 
@@ -1632,9 +1632,9 @@ def admin_export():
 
         response = make_response(json.dumps(data, ensure_ascii=False, indent=2))
         response.headers["Content-Type"] = "application/json; charset=utf-8"
-        response.headers["Content-Disposition"] = (
-            f'attachment; filename=helpchain_requests_{datetime.now().strftime("%Y%m%d_%H%M")}.json'
-        )
+        response.headers[
+            "Content-Disposition"
+        ] = f'attachment; filename=helpchain_requests_{datetime.now().strftime("%Y%m%d_%H%M")}.json'
 
         return response
 

@@ -38,7 +38,6 @@ class TestVolunteerDashboard:
             with patch("backend.appy.Volunteer.query") as mock_query, patch(
                 "backend.appy.HelpRequest.query"
             ) as mock_help_query:
-
                 mock_query.get.return_value = test_volunteer
                 mock_help_query.all.return_value = []  # No help requests for simplicity
 

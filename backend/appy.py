@@ -3574,9 +3574,9 @@ def admin_login():
                 session["admin_logged_in"] = True
                 session["admin_user_id"] = admin_user.id
                 session["admin_username"] = admin_user.username
-                session["user_id"] = (
-                    admin_user.id
-                )  # For permission system compatibility
+                session[
+                    "user_id"
+                ] = admin_user.id  # For permission system compatibility
                 session.permanent = True  # Make session persistent
                 logger.info(
                     f"Session set: admin_logged_in={session.get('admin_logged_in')}, "

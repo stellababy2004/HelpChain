@@ -72,3 +72,5 @@ instance/*.db
 
 # local backups
 backend/backups/*
+.vercel
+.env*.local

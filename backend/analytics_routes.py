@@ -184,7 +184,6 @@ async def analytics_data():
                 from appy import async_session
 
                 async with async_session() as session:
-
                     # Count HelpRequest
                     _res = await session.execute(select(func.count(HelpRequest.id)))
                     try:
@@ -338,7 +337,6 @@ async def analytics_simple_data():
         from appy import async_session
 
         async with async_session() as session:
-
             # Count HelpRequest
             _res = await session.execute(select(func.count(HelpRequest.id)))
             try:
@@ -1455,9 +1453,9 @@ async def export_analytics():
 
         if format_type == "json":
             response = jsonify(data)
-            response.headers["Content-Disposition"] = (
-                f'attachment; filename=helpchain_analytics_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
-            )
+            response.headers[
+                "Content-Disposition"
+            ] = f'attachment; filename=helpchain_analytics_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
             return response
 
         elif format_type == "csv":

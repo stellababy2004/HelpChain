@@ -94,9 +94,9 @@ app = Flask(__name__, template_folder=_templates, static_folder=_static)
 
 # Абсолютен път до базата за по-голяма сигурност
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    f"sqlite:///{os.path.join(basedir, 'instance', 'volunteers.db')}"
-)
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = f"sqlite:///{os.path.join(basedir, 'instance', 'volunteers.db')}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
