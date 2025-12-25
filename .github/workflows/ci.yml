@@ -52,9 +52,9 @@ on:
           bandit -r . -x tests,.venv,venv,node_modules,frontend --severity-level medium --exit-zero
 
       - name: Pytest
+        continue-on-error: false
         run: |
           pytest -v --maxfail=1 --disable-warnings --junitxml=pytest-report.xml
-        continue-on-error: false
 
       - name: Upload Pytest Report
         if: always()
