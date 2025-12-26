@@ -1801,12 +1801,6 @@ def admin_login():
             except Exception:
                 _csrf_input = '<input type="hidden" name="csrf_token" value="" />'
         return Response(
-            <html><head><title>Admin Login</title><!-- csrf-v2-marker --><meta name=\"csrf-token\" content=\"{(_csrf_input.split('value=\"')[1].split('\"')[0]) if _csrf_input else ''}\" /></head>
-            <body>
-                <h1>Admin Login</h1>
-                <form method="post">
-                    {_csrf_input}
-                    <label>Username or Email: <input name="username" /></label><br/>
             f"""
             <html><head><title>Admin Login</title><!-- csrf-v2-marker -->
             <meta name=\"csrf-token\" content=\"{session.get('csrf_token', '')}\" /></head>
@@ -1815,9 +1809,9 @@ def admin_login():
                 <form method=\"post\">
                     {_csrf_input}
                     <label>Username or Email: <input name=\"username\" /></label><br/>
-                    <label>Password: <input name="password" type="password" /></label><br/>
-                    <label>2FA Token (optional): <input name="token" /></label><br/>
-                    <button type="submit">Login</button>
+                    <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
+                    <label>2FA Token (optional): <input name=\"token\" /></label><br/>
+                    <button type=\"submit\">Login</button>
                 </form>
             </body></html>
             """,

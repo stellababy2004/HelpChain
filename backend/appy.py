@@ -5827,7 +5827,6 @@ def admin_logout():
     session.pop("email_2fa_expires", None)
     return redirect(url_for("admin_login"))
 
-
 def admin_requests_api():
 
 
