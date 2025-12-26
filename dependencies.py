@@ -3,7 +3,7 @@
 # the current working directory is the repository root.
 
 try:
-    from backend.dependencies import *  # type: ignore
+    from backend.dependencies import require_role, require_admin_login  # type: ignore # noqa: F403
 except Exception:
     # Minimal fallback: define no-op decorators to avoid import errors
     def require_role(*roles):

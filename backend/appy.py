@@ -360,14 +360,7 @@ def admin_dashboard():
         return redirect(url_for("admin_login"))
     return Response("<html><body><h1>Admin Dashboard</h1></body></html>", mimetype="text/html")
 
-        try:
-            from flask_login import current_user
-        except Exception:
-            current_user = None
 
-        # Allow a config-based bypass (used in some test fixtures)
-        try:
-            if current_app and getattr(current_app, "config", {}).get(
                 "BYPASS_ADMIN_AUTH", False
             ):
                 return f(*args, **kwargs)
@@ -457,6 +450,7 @@ def admin_dashboard():
             return ("Unauthorized", 302)
 
     return wrapper
+
 
 
 class Request:
@@ -5834,36 +5828,9 @@ def admin_logout():
     return redirect(url_for("admin_login"))
 
 
-                    # Last-resort minimal fallback with session CSRF
-                    try:
-                        token = session.get("csrf_token", "")
-                        html = f"""
-                        <html><head><title>Admin Login</title></head>
-                        <body>
-                            <h1>Admin Login</h1>
-                            <form method=\"post\">\n                                <input type=\"hidden\" name=\"csrf_token\" value=\"{token}\" />\n                                <label>Username or Email: <input name=\"username\" /></label><br/>
-                                <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
-                                <label>2FA Token (optional): <input name=\"token\" /></label><br/>
-                                <button type=\"submit\">Login</button>
-                            </form>
-                        </body></html>
-                        """
-                        return Response(html, mimetype="text/html")
-                    except Exception:
-                        return Response(
-                            """
-                            <html><head><title>Admin Login</title></head>
-                            <body>
-                                <h1>Admin Login</h1>
-                                <form method=\"post\">\n                                <input type=\"hidden\" name=\"csrf_token\" value=\"\" />\n                                <label>Username or Email: <input name=\"username\" /></label><br/>
-                                <label>Password: <input name=\"password\" type=\"password\" /></label><br/>
-                                <label>2FA Token (optional): <input name=\"token\" /></label><br/>
-                                <button type=\"submit\">Login</button>
-                                </form>
-                            </body></html>
-                            """,
-                            mimetype="text/html",
-                        )
+def admin_requests_api():
+
+
 @app.route("/admin/api/requests", methods=["GET"])
 @require_admin_login
 def admin_requests_api():
