@@ -29,3 +29,12 @@ dependencies = [
 	"beautifulsoup4==4.12.2"
     ,"PyJWT==2.8.0"
 ]
+[tool.ruff]
+exclude = [
+	"vendor",
+	"backend/vendor",
+	"backend/helpchain-backend/vendor",
+	".venv",
+	"venv",
+	"_vendor",
+]
