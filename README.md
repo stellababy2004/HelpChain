@@ -277,7 +277,7 @@ pytest tests/test_email.py
 За тестване на admin панела използвайте следните credentials:
 
 - **Username:** `admin`
-- **Password:** стойността на `ADMIN_PASSWORD` от `.env` файла (по подразбиране: `Admin123`)
+- **Password:** стойността на `ADMIN_PASSWORD` от `.env` файла (по подразбиране: ``)
 
 **Пример за тестване на login:**
 
