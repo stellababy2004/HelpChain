@@ -4,13 +4,19 @@
 line-length = 200
 target-version = "py311"
 
-# Изключвания (backup-и и т.н.)
+# Изключвания (backup-и, vendor, venv и т.н.)
 extend-exclude = [
   "backend/backups/*",
   "**/*.backup*.py",
   "**/appy.backup*.py",
   "migrations/**",
-  "tests/**"
+  "tests/**",
+  "vendor",
+  "backend/vendor",
+  "backend/helpchain-backend/vendor",
+  ".venv",
+  "venv",
+  "_vendor",
 ]
 
 # Линт правила
