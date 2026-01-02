@@ -1,3 +1,8 @@
+import os
+from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from werkzeug.exceptions import TooManyRequests
 from __future__ import annotations
 import datetime
 import os
@@ -5,6 +10,7 @@ import sqlite3
 import uuid
 import secrets
 from flask import Flask, Response, flash, jsonify, redirect, render_template, request, session, url_for
+from .copy import get_copy
 from backend.helpchain_backend.src.category_data import CATEGORIES, COMMON
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
@@ -29,6 +35,25 @@ def validate_request_form(data, valid_categories):
         return False, "Невалидна категория. Моля, презаредете страницата."
     return True, None
 
+@app.context_processor
+def inject_copy():
+    # Най-прост вариант: ?lang=fr или ?lang=bg
+    lang = request.args.get("lang")
+    return {"COPY": get_copy(lang)}
+
+# Jinja helper for lang-persistent URLs
+
+# Language helpers
+def current_lang(default="bg") -> str:
+    return (request.args.get("lang") or request.form.get("lang") or default).lower()
+
+@app.context_processor
+def inject_lang_helpers():
+    def url_lang(endpoint, **values):
+        lang = values.pop("lang", None) or current_lang()
+        values.setdefault("lang", lang)
+        return url_for(endpoint, **values)
+    return {"url_lang": url_lang}
 # ...existing code...
 import uuid
 from flask import Flask, Response, flash, jsonify, redirect, render_template, request, session, url_for
@@ -75,6 +100,36 @@ def create_app(config_object=None):
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../static"))
     app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
+    # 1) Trust proxy headers for real client IP
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+    # 2) Limiter storage (Redis preferred, fallback to memory)
+    storage_uri = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
+    limiter = Limiter(
+        key_func=get_remote_address,
+        app=app,
+        storage_uri=storage_uri,
+        strategy="fixed-window",
+        default_limits=[],
+    )
+    app.extensions["limiter"] = limiter
+
+    # 3) Emergency email cooldown (MVP, in-memory)
+    import time
+    def can_send_emergency_email(app):
+        now = time.time()
+        last = app.config.get("EMERGENCY_EMAIL_LAST_SENT_AT", 0)
+        cooldown = int(app.config.get("EMERGENCY_EMAIL_COOLDOWN_SECONDS", 300))
+        if now - last < cooldown:
+            return False
+        app.config["EMERGENCY_EMAIL_LAST_SENT_AT"] = now
+        return True
+    app.can_send_emergency_email = lambda: can_send_emergency_email(app)
+    # 4) 429 error handler with COPY
+    @app.errorhandler(TooManyRequests)
+    def ratelimit_handler(e):
+        return render_template("errors/429.html"), 429
+
     # Debug route: показва абсолютния път до static директорията и файловете вътре
     @app.route("/_static_debug")
     def _static_debug():
@@ -109,6 +164,12 @@ def create_app(config_object=None):
         os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:///:memory:"),
     )
     # ...existing code...
+    from .copy import get_copy
+
+    @app.context_processor
+    def inject_copy():
+        # Ако имаш set_language, можеш да подадеш текущия lang
+        return {"COPY": get_copy()}
 
 
     # Debug: Изведи всички route-ове при стартиране
@@ -235,8 +296,8 @@ def create_app(config_object=None):
 
     @app.route("/static/previews/new-page.html")
     def legacy_preview_redirect():
-        from flask import redirect, url_for
-        return redirect(url_for("index"), code=301)
+        from flask import redirect
+        return redirect(url_lang("index"), code=301)
 
     # ...set_language премахнат, остава само във blueprint-а (main_bp)...
 

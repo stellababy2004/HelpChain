@@ -1,3 +1,8 @@
+from flask import current_app
+
+# Limiter decorator helper (safe for blueprints)
+def limiter():
+    return current_app.extensions["limiter"]
 
 
 from flask import Blueprint
@@ -6,6 +11,7 @@ main_bp = Blueprint("main", __name__)
 
 
 @main_bp.get("/request")
+@limiter().limit("30 per minute")
 def request_category():
     from flask import request, render_template, current_app
     from ..category_data import CATEGORIES, ALIASES, COMMON
@@ -106,9 +112,15 @@ def about():
 
 
 @main_bp.route("/submit_request", methods=["GET", "POST"])
+@limiter().limit("5 per minute; 30 per hour")
 def submit_request():
     """Подаване на заявка за помощ"""
     if request.method == "POST":
+        # Honeypot anti-bot field
+        website = (request.form.get("website") or "").strip()
+        if website:
+            # Bot fill – fail silently (no DB insert, no email)
+            return redirect(url_lang("main.request_success"))
         try:
             req = Request(
                 name=request.form.get("name"),
