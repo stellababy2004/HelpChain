@@ -41,13 +41,13 @@ def request_category():
 def request_form():
     slug = request.args.get("category")
     if not slug:
-        return redirect(url_for("main.categories_index"))
+        return redirect(url_lang("main.categories_index"))
     from ..category_data import CATEGORIES, ALIASES, COMMON
     canonical = ALIASES.get(slug, slug)
     category = CATEGORIES.get(canonical)
     if not category:
         current_app.logger.warning(f"Invalid category slug for form: {slug}")
-        return redirect(url_for("main.categories_index"))
+        return redirect(url_lang("main.categories_index"))
     # Тук ще се използва универсален template за формата (request_form.html)
     return render_template(
         "request_form.html",
@@ -126,7 +126,7 @@ def submit_request():
                 "Благодарим ви че се свързахте с екипа ни! Ще се свържем с вас скоро.",
                 "success",
             )
-            return redirect(url_for("main.index"))
+            return redirect(url_lang("main.index"))
         except Exception as e:
             flash(f"Грешка при подаване на заявката: {str(e)}", "error")
 
@@ -151,7 +151,7 @@ def become_volunteer():
                 "Благодарим ви че се записахте като доброволец! Ще се свържем с вас скоро.",
                 "success",
             )
-            return redirect(url_for("main.index"))
+            return redirect(url_lang("main.index"))
         except Exception as e:
             flash(f"Грешка при записване като доброволец: {str(e)}", "error")
 
@@ -164,7 +164,7 @@ def feedback():
     if request.method == "POST":
         # Обработка на feedback
         flash("Благодарим ви за обратната връзка!", "success")
-        return redirect(url_for("main.about"))
+        return redirect(url_lang("main.about"))
 
     return render_template("feedback.html")
 

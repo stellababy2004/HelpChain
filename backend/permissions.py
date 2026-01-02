@@ -1,3 +1,15 @@
+from flask import request, url_for
+
+def url_lang(endpoint: str, **values):
+    # keep lang from query or POST hidden input
+    lang = (
+        request.args.get("lang")
+        or request.form.get("lang")
+        or request.values.get("lang")
+    )
+    if lang and "lang" not in values:
+        values["lang"] = lang
+    return url_for(endpoint, **values)
 """
 Permission-based access control decorators and utilities for HelpChain
 """
@@ -131,7 +143,7 @@ def require_permission(permission_codename, redirect_url="index"):
         def wrapped_function(*args, **kwargs):
             if not has_permission(permission_codename):
                 flash("Нямате достатъчни права за достъп до тази страница.", "danger")
-                return redirect(url_for(redirect_url))
+                return redirect(url_lang(redirect_url))
             return f(*args, **kwargs)
 
         return wrapped_function
@@ -156,7 +168,7 @@ def require_any_permission(*permission_codenames, redirect_url="index"):
         def wrapped_function(*args, **kwargs):
             if not has_any_permission(*permission_codenames):
                 flash("Нямате достатъчни права за достъп до тази страница.", "danger")
-                return redirect(url_for(redirect_url))
+                return redirect(url_lang(redirect_url))
             return f(*args, **kwargs)
 
         return wrapped_function
@@ -181,7 +193,7 @@ def require_all_permissions(*permission_codenames, redirect_url="index"):
         def wrapped_function(*args, **kwargs):
             if not has_all_permissions(*permission_codenames):
                 flash("Нямате достатъчни права за достъп до тази страница.", "danger")
-                return redirect(url_for(redirect_url))
+                return redirect(url_lang(redirect_url))
             return f(*args, **kwargs)
 
         return wrapped_function
@@ -205,7 +217,7 @@ def require_login(redirect_url="login"):
         def wrapped_function(*args, **kwargs):
             if "user_id" not in session:
                 flash("Моля, влезте в системата.", "warning")
-                return redirect(url_for(redirect_url))
+                return redirect(url_lang(redirect_url))
             return f(*args, **kwargs)
 
         return wrapped_function
@@ -265,14 +277,14 @@ def require_admin_login(redirect_url="admin_login"):
                         try:
                             return render_template("admin_login.html", error=None)
                         except Exception:
-                            return redirect(url_for(redirect_url))
+                            return redirect(url_lang(redirect_url))
 
                     # API/AJAX or non-browser: return JSON 401
                     if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.best == "application/json" or request.path.startswith("/admin/api/"):
                         return jsonify({"error": "Unauthorized"}), 401
 
                     flash("Моля, влезте като администратор.", "warning")
-                    return redirect(url_for(redirect_url))
+                    return redirect(url_lang(redirect_url))
 
                 return await f(*args, **kwargs)
 
@@ -292,13 +304,13 @@ def require_admin_login(redirect_url="admin_login"):
                         try:
                             return render_template("admin_login.html", error=None)
                         except Exception:
-                            return redirect(url_for(redirect_url))
+                            return redirect(url_lang(redirect_url))
 
                     if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.best == "application/json" or request.path.startswith("/admin/api/"):
                         return jsonify({"error": "Unauthorized"}), 401
 
                     flash("Моля, влезте като администратор.", "warning")
-                    return redirect(url_for(redirect_url))
+                    return redirect(url_lang(redirect_url))
 
                 return f(*args, **kwargs)
 

@@ -247,7 +247,7 @@ def test_notification():
     send_email_notification(req)
 
     flash("✅ Тестова нотификация е добавена!", "success")
-    return redirect(url_for("dashboard"))
+    return redirect(url_lang("dashboard"))
 
 
 if __name__ == "__main__":

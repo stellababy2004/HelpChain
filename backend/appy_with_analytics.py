@@ -767,7 +767,7 @@ def volunteer_register():
         location = request.form.get("location", "").strip()
         if Volunteer.query.filter_by(email=email).first():
             flash("Този имейл вече е регистриран!", "danger")
-            return redirect(url_for("volunteer_register"))
+            return redirect(url_lang("volunteer_register"))
         volunteer = Volunteer(
             name=name,
             email=email,
@@ -776,7 +776,7 @@ def volunteer_register():
         )
         db.session.add(volunteer)
         db.session.commit()
-        return redirect(url_for("index"))
+        return redirect(url_lang("index"))
     return render_template("volunteer_register.html")
 
 
@@ -885,11 +885,11 @@ def register():
 
         if not email or not password:
             flash("Попълни имейл и парола", "danger")
-            return redirect(url_for("register"))
+            return redirect(url_lang("register"))
 
         if User.query.filter_by(email=email).first():
             flash("Имейлът вече е регистриран", "warning")
-            return redirect(url_for("register"))
+            return redirect(url_lang("register"))
 
         user = User(
             username=username,
@@ -908,12 +908,12 @@ def register():
             db.session.add(user)
             db.session.commit()
             flash("Регистрацията е успешна. Влез с данните си.", "success")
-            return redirect(url_for("login"))
+            return redirect(url_lang("login"))
         except Exception as exc:
             db.session.rollback()
             app.logger.exception("register error: %s", exc)
             flash("Грешка при регистрацията. Опитай по-късно.", "danger")
-            return redirect(url_for("register"))
+            return redirect(url_lang("register"))
 
     return render_template("register.html")
 
@@ -927,9 +927,9 @@ def login():
         if user and getattr(user, "check_password", None) and user.check_password(password):
             login_user(user)
             flash("Влязохте успешно", "success")
-            return redirect(url_for("index"))
+            return redirect(url_lang("index"))
         flash("Грешен имейл или парола", "warning")
-        return redirect(url_for("login"))
+        return redirect(url_lang("login"))
     return render_template("login.html")
 
 
@@ -937,7 +937,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("index"))
+    return redirect(url_lang("index"))
 
 
 @app.route("/volunteer_dashboard", methods=["GET", "POST"])
@@ -972,7 +972,7 @@ def take_request(id):
     req.status = "Активен"
     db.session.commit()
     flash("Заявката е поета!", "success")
-    return redirect(url_for("volunteer_dashboard"))
+    return redirect(url_lang("volunteer_dashboard"))
 
 
 @app.route("/edit_request/<int:id>", methods=["GET", "POST"])
