@@ -107,7 +107,8 @@ migrate = Migrate(app, db)
 # attributes. Sets server-side session keys which fixtures rely on.
 @app.route("/_pytest_force_admin_login", methods=["GET"])  # test-only
 def _pytest_force_admin_login():
-    if not app.config.get("TESTING"):
+    import os
+    if not app.config.get("TESTING") or not os.environ.get("PYTEST_CURRENT_TEST"):
         return ("Not Found", 404)
     try:
         admin_id = session.get("admin_user_id") or request.args.get("admin_id")

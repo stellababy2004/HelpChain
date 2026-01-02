@@ -1,8 +1,71 @@
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
-from ..models import Request, Volunteer, db
+
+from flask import Blueprint
 
 main_bp = Blueprint("main", __name__)
+
+
+@main_bp.get("/request")
+def request_category():
+    from flask import request, render_template, current_app
+    from ..category_data import CATEGORIES, ALIASES, COMMON
+    slug = request.args.get("category")
+    canonical = ALIASES.get(slug, slug) if slug else None
+    category = CATEGORIES.get(canonical) if canonical else None
+    if not category:
+        return render_template(
+            "request_category.html",
+            category=None,
+            COMMON=COMMON,
+            not_found=True,
+            requested_slug=slug,
+        ), 404
+    # Покажи 112 ако severity е critical
+    show_emergency = category["ui"].get("severity") == "critical"
+    return render_template(
+        "request_category.html",
+        category=category,
+        COMMON=COMMON,
+        show_emergency=show_emergency,
+        emergency_number=COMMON.get("emergency_number"),
+        requested_slug=slug,
+    )
+
+    # MVP: логване на заявката (може да се замени с база/имейл)
+    current_app.logger.info(f"New help request: category={canonical}, desc={description}, contact={contact}, city={city}")
+
+    # TODO: save to DB, send email, etc.
+    flash("Заявката е изпратена успешно! Ще се свържем с вас при първа възможност.", "success")
+    return redirect(url_for("main.request_category", category=canonical))
+@main_bp.route("/request/form", methods=["GET"])
+def request_form():
+    slug = request.args.get("category")
+    if not slug:
+        return redirect(url_for("main.categories_index"))
+    from ..category_data import CATEGORIES, ALIASES, COMMON
+    canonical = ALIASES.get(slug, slug)
+    category = CATEGORIES.get(canonical)
+    if not category:
+        current_app.logger.warning(f"Invalid category slug for form: {slug}")
+        return redirect(url_for("main.categories_index"))
+    # Тук ще се използва универсален template за формата (request_form.html)
+    return render_template(
+        "request_form.html",
+        category=category,
+        COMMON=COMMON
+    )
+
+
+
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for, current_app
+from ..models import Request, Volunteer, db
+from ..category_data import CATEGORIES, ALIASES, COMMON, CATEGORIES_SCHEMA_VERSION
+main_bp = Blueprint("main", __name__)
+
+# Временен тестов handler за /request
+@main_bp.get("/request")
+def request_category():
+    return "OK /request"
 
 
 @main_bp.route("/")
@@ -24,7 +87,7 @@ def index():
 
     resp = make_response(
         render_template(
-            "home_new.html",
+            "index.html",
             volunteers_count=volunteers_count,
             requests_count=requests_count,
             open_requests=open_requests,

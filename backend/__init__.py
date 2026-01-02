@@ -18,17 +18,5 @@ This lazy approach prevents import-order races while remaining
 backwards-compatible.
 """
 
-import sys
 
-# If `backend.models` already loaded, make sure `models` points to it.
-if "backend.models" in sys.modules:
-    bm = sys.modules["backend.models"]
-    if sys.modules.get("models") is not bm:
-        sys.modules.setdefault("models", bm)
-else:
-    # If a top-level `models` module exists (older layouts), register it as
-    # `backend.models` so imports like `from backend.models import X` succeed.
-    if "models" in sys.modules:
-        sys.modules.setdefault("backend.models", sys.modules["models"])
-
-__all__ = ["models"]
+__all__ = []
