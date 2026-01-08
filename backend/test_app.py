@@ -22,3 +22,5 @@ def test_feedback_route():
 
     # Should redirect (status code 302)
     assert response.status_code == 302
+
+

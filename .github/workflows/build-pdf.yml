@@ -1,0 +1,28 @@
+name: Build and Upload Institutional PDFs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      - name: Build institutional PDFs
+        run: |
+          pandoc docs/institutions/HelpChain_Overview_FR.md -o docs/institutions/HelpChain_Overview_FR.pdf
+          pandoc docs/institutions/HelpChain_Overview_BG.md -o docs/institutions/HelpChain_Overview_BG.pdf
+          pandoc docs/institutions/HelpChain_Overview_EN.md -o docs/institutions/HelpChain_Overview_EN.pdf
+
+      - name: Upload PDFs as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: institutional-pdfs
+          path: docs/institutions/*.pdf

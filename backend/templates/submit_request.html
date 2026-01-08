@@ -1,159 +1,216 @@
-{% extends "base.html" %} {% block title %}Подай сигнал за помощ |
-HelpChain.live{% endblock %} {% block content %}
+{% extends "base.html" %}
+
+{% block title %}Подай сигнал за помощ | HelpChain.live{% endblock %}
+
+{# Ако base.html има head_extra – супер. Ако няма, имаме fallback долу в content. #}
+{% block head_extra %}
+<style>
+  .req-star {
+    color: #dc3545;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  /* Inline error (phone OR email) */
+  .error-inline {
+    display: none;
+    margin-top: 8px;
+    font-size: 0.92rem;
+    color: #dc3545;
+  }
+  .error-inline.is-shown {
+    display: block;
+  }
+
+  /* make validation feel nicer */
+  .form-control.is-valid,
+  .form-select.is-valid {
+    border-color: #198754;
+  }
+  .form-control.is-invalid,
+  .form-select.is-invalid {
+    border-color: #dc3545;
+  }
+
+  /* submit button UX */
+  #sr-submit-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="container mt-5">
   <div class="row justify-content-center">
     <div class="col-lg-8 col-md-10">
       <div class="mb-2">
-        <a
-          href="/static/previews/new-page.html"
-          class="text-decoration-none"
-          id="sr-back"
-          ><small> ← Обратно към демо началната страница </small></a
-        >
+        <a href="/static/previews/new-page.html" class="text-decoration-none" id="sr-back">
+          <small> ← Обратно към демо началната страница </small>
+        </a>
       </div>
-      <h2 class="mb-3 text-primary text-center" id="sr-title">
-        Подай сигнал за помощ
-      </h2>
+
+      <h2 class="mb-3 text-primary text-center" id="sr-title">Подай сигнал за помощ</h2>
+
       <div class="mb-3">
         <strong id="sr-examples-title">Примерни ситуации:</strong>
         <ul class="list-unstyled">
           <li class="mb-2">
-            <i class="fas fa-heartbeat text-danger me-2"></i
-            ><span id="sr-ex1">Нужда от медицинска</span>
-            помощ
+            <i class="fas fa-heartbeat text-danger me-2"></i>
+            <span id="sr-ex1">Нужда от медицинска</span> помощ
           </li>
           <li class="mb-2">
-            <i class="fas fa-users text-info me-2"></i
-            ><span id="sr-ex2">Социална подкрепа</span>
+            <i class="fas fa-users text-info me-2"></i>
+            <span id="sr-ex2">Социална подкрепа</span>
           </li>
           <li class="mb-2">
-            <i class="fas fa-tools text-warning me-2"></i
-            ><span id="sr-ex3">Технически проблем</span>
+            <i class="fas fa-tools text-warning me-2"></i>
+            <span id="sr-ex3">Технически проблем</span>
           </li>
         </ul>
       </div>
+
+      {# ✅ Fallback CSS ако base.html няма head_extra #}
+      <style>
+        .req-star { color:#dc3545; font-weight:700; margin-left:4px; }
+        .error-inline { display:none; margin-top:8px; font-size:.92rem; color:#dc3545; }
+        .error-inline.is-shown { display:block; }
+        .form-control.is-valid, .form-select.is-valid { border-color:#198754; }
+        .form-control.is-invalid, .form-select.is-invalid { border-color:#dc3545; }
+        #sr-submit-btn:disabled { opacity:.65; cursor:not-allowed; }
+      </style>
+
       <div class="glass p-4">
         <form
+          id="sr-form"
           method="POST"
-          action="{{ safe_url_for('submit_request') }}"
+          action="{{ safe_url_for('main.submit_request') }}"
           enctype="multipart/form-data"
+          novalidate
         >
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+          {# ✅ Honeypot (трябва да остане празно) #}
+          <div style="position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+          </div>
+
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label for="name" class="form-label" id="sr-name-label"
-                >Вашето име:</label
-              >
+              <label for="name" class="form-label" id="sr-name-label">
+                <span class="label-text">Вашето име:</span><span class="req-star">*</span>
+              </label>
               <input
                 type="text"
                 class="form-control"
                 id="name"
                 name="name"
                 required
+                minlength="2"
               />
+              <div class="invalid-feedback">Моля, въведете име (поне 2 символа).</div>
             </div>
+
             <div class="col-md-6 mb-3">
-              <label for="email" class="form-label" id="sr-email-label"
-                >Имейл адрес:</label
-              >
+              <label for="phone" class="form-label" id="sr-phone-label">
+                Телефон:
+              </label>
+              <input
+                type="tel"
+                class="form-control"
+                id="phone"
+                name="phone"
+                placeholder="+359… / +33…"
+                autocomplete="tel"
+                inputmode="tel"
+              />
+              <div class="invalid-feedback">Моля, въведете валиден телефон.</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="email" class="form-label" id="sr-email-label">Имейл адрес:</label>
               <input
                 type="email"
                 class="form-control"
                 id="email"
                 name="email"
-                required
+                autocomplete="email"
               />
+              <div class="invalid-feedback">Моля, въведете валиден имейл.</div>
+
+              <div class="error-inline" id="err-contact">
+                Моля, въведете поне телефон или имейл.
+              </div>
             </div>
-          </div>
-          <div class="row">
+
             <div class="col-md-6 mb-3">
-              <label for="category" class="form-label" id="sr-category-label"
-                >Категория на проблема:</label
-              >
-              <select
-                class="form-select"
-                id="category"
-                name="category"
-                required
-              >
+              <label for="category" class="form-label" id="sr-category-label">
+                Категория на проблема:
+              </label>
+              <select class="form-select" id="category" name="category">
                 <option value="" id="sr-opt-choose">Изберете...</option>
                 <option value="health" id="sr-opt-health">Здраве</option>
-                <option value="social" id="sr-opt-social">
-                  Социална помощ
-                </option>
-                <option value="technical" id="sr-opt-technical">
-                  Техническа помощ
-                </option>
+                <option value="social" id="sr-opt-social">Социална помощ</option>
+                <option value="technical" id="sr-opt-technical">Техническа помощ</option>
               </select>
             </div>
-            <div class="col-md-6 mb-3">
-              <label for="location" class="form-label" id="sr-location-label"
-                >Локация/адрес:</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="location"
-                name="location"
-              />
+          </div>
+
+          <div class="row">
+            <div class="col-md-12 mb-3">
+              <label for="location" class="form-label" id="sr-location-label">Локация/адрес:</label>
+              <input type="text" class="form-control" id="location" name="location" />
             </div>
           </div>
+
           <div class="mb-3">
-            <label for="problem" class="form-label" id="sr-problem-label"
-              >Описание на проблема:</label
-            >
+            <label for="description" class="form-label" id="sr-problem-label">
+              Описание на проблема:<span class="req-star">*</span>
+            </label>
+
             <textarea
               class="form-control"
-              id="problem"
-              name="problem"
+              id="description"
+              name="description"
               rows="4"
               required
+              minlength="10"
+              placeholder="Опиши с 1–2 изречения (поне 10 символа)"
             ></textarea>
+            <div class="invalid-feedback">Опиши проблема с поне 10 символа.</div>
           </div>
+
           <div class="mb-3">
-            <label for="file" class="form-label" id="sr-file-label"
-              >Прикачете файл/снимка (по желание):</label
-            >
+            <label for="file" class="form-label" id="sr-file-label">
+              Прикачете файл/снимка (по желание):
+            </label>
             <input type="file" class="form-control" id="file" name="file" />
           </div>
+
           <div class="form-check mb-3">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="terms"
-              name="terms"
-              required
-            />
+            <input class="form-check-input" type="checkbox" id="terms" name="terms" required />
             <label class="form-check-label" for="terms" id="sr-terms-label">
               Съгласен съм с
-              <a href="/terms" target="_blank" id="sr-terms-link"
-                >условията за ползване</a
-              >
+              <a href="/terms" target="_blank" id="sr-terms-link">условията за ползване</a>
               и
-              <a href="/privacy" target="_blank" id="sr-privacy-link"
-                >политиката за поверителност</a
-              >.
+              <a href="/privacy" target="_blank" id="sr-privacy-link">политиката за поверителност</a>.
             </label>
+            <div class="invalid-feedback">Трябва да приемеш условията.</div>
           </div>
+
           <div class="mb-3">
-            <!-- Примерен Captcha (не работещ, само визуално) -->
-            <label for="captcha" class="form-label" id="sr-captcha-label"
-              >Въведете кода: <strong>7G5K</strong></label
-            >
-            <input
-              type="text"
-              class="form-control"
-              id="captcha"
-              name="captcha"
-              required
-            />
+            <label for="captcha" class="form-label" id="sr-captcha-label">
+              <span class="label-text">Въведете кода:</span> <strong>7G5K</strong>
+            </label>
+            <input type="text" class="form-control" id="captcha" name="captcha" required />
+            <div class="invalid-feedback">Моля, въведете кода.</div>
           </div>
+
           <div class="d-grid">
-            <button
-              type="submit"
-              class="btn btn-primary btn-lg"
-              id="sr-submit-btn"
-            >
+            <button type="submit" class="btn btn-primary btn-lg" id="sr-submit-btn" disabled>
               Изпрати
             </button>
           </div>
@@ -162,19 +219,97 @@ HelpChain.live{% endblock %} {% block content %}
     </div>
   </div>
 </div>
-{% endblock %} {% block scripts %}
+{% endblock %}
+
+{% block scripts %}
 <script>
-  // JS валидация за Captcha
-  document.querySelector("form").addEventListener("submit", function (e) {
-    var captcha = document.getElementById("captcha").value.trim();
-    if (captcha !== "7G5K") {
-      e.preventDefault();
-      alert("Моля, въведете правилния код за сигурност.");
-      document.getElementById("captcha").focus();
+  // --- Captcha + UX validation (inline errors + disable submit) ---
+  (function () {
+    const form = document.getElementById("sr-form");
+    if (!form) return;
+
+    const btn = document.getElementById("sr-submit-btn");
+    const nameEl = document.getElementById("name");
+    const phoneEl = document.getElementById("phone");
+    const emailEl = document.getElementById("email");
+    const problemEl = document.getElementById("description"); // ← updated to match canonical field
+    const termsEl = document.getElementById("terms");
+    const captchaEl = document.getElementById("captcha");
+    const errContact = document.getElementById("err-contact");
+
+    function setInvalid(el, on) {
+      if (!el) return;
+      el.classList.toggle("is-invalid", !!on);
+      const hasValue = (el.value || "").trim().length > 0;
+      el.classList.toggle("is-valid", !on && hasValue);
     }
-  });
+
+    function hasContact() {
+      const phone = (phoneEl?.value || "").trim();
+      const email = (emailEl?.value || "").trim();
+      return phone.length > 0 || email.length > 0;
+    }
+
+    function validate() {
+      const nameOk = nameEl.checkValidity();
+      const problemOk = problemEl.checkValidity();
+      const termsOk = termsEl.checked === true;
+      const captchaOk = captchaEl.value.trim().length > 0;
+      const contactOk = hasContact();
+
+      setInvalid(nameEl, !nameOk);
+      setInvalid(problemEl, !problemOk);
+
+      const emailVal = (emailEl.value || "").trim();
+      if (emailVal.length > 0) setInvalid(emailEl, !emailEl.checkValidity());
+      else emailEl.classList.remove("is-invalid", "is-valid");
+
+      const phoneVal = (phoneEl.value || "").trim();
+      if (phoneVal.length > 0 && phoneVal.length < 6) setInvalid(phoneEl, true);
+      else {
+        phoneEl.classList.remove("is-invalid");
+        if (phoneVal.length > 0) phoneEl.classList.add("is-valid");
+        else phoneEl.classList.remove("is-valid");
+      }
+
+      termsEl.classList.toggle("is-invalid", !termsOk);
+      captchaEl.classList.toggle("is-invalid", !captchaOk);
+
+      if (errContact) errContact.classList.toggle("is-shown", !contactOk);
+
+      const allOk = nameOk && problemOk && termsOk && captchaOk && contactOk;
+      if (btn) btn.disabled = !allOk;
+      return allOk;
+    }
+
+    ["input", "change", "blur"].forEach((evt) => {
+      form.addEventListener(evt, validate, true);
+    });
+
+    form.addEventListener("submit", function (e) {
+      const ok = validate();
+      if (!ok) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+      const captcha = captchaEl.value.trim();
+      if (captcha !== "7G5K") {
+        e.preventDefault();
+        alert("Моля, въведете правилния код за сигурност.");
+        captchaEl.classList.add("is-invalid");
+        captchaEl.focus();
+        if (btn) btn.disabled = true;
+      }
+    });
+
+    validate();
+  })();
 </script>
+
 <script>
+  // --- i18n labels (safe for labels containing extra elements) ---
   (function () {
     const T = {
       bg: {
@@ -185,6 +320,7 @@ HelpChain.live{% endblock %} {% block content %}
         ex2: "Социална подкрепа",
         ex3: "Технически проблем",
         name: "Вашето име:",
+        phone: "Телефон:",
         email: "Имейл адрес:",
         category: "Категория на проблема:",
         location: "Локация/адрес:",
@@ -194,20 +330,18 @@ HelpChain.live{% endblock %} {% block content %}
         opt_health: "Здраве",
         opt_social: "Социална помощ",
         opt_technical: "Техническа помощ",
-        terms: "Съгласен съм с",
-        terms_link: "условията за ползване",
-        privacy_link: "политиката за поверителност",
         captcha: "Въведете кода:",
         submit: "Изпрати",
       },
       fr: {
         back: "← Retour à la page d’accueil démo",
         title: "Envoyer une demande d’aide",
-        examples: "Exemples de situations:",
+        examples: "Exemples de ситуации:",
         ex1: "Besoin médical",
         ex2: "Soutien social",
         ex3: "Problème technique",
         name: "Votre nom:",
+        phone: "Téléphone:",
         email: "Adresse e-mail:",
         category: "Catégorie du problème:",
         location: "Localisation/adresse:",
@@ -217,9 +351,6 @@ HelpChain.live{% endblock %} {% block content %}
         opt_health: "Santé",
         opt_social: "Aide sociale",
         opt_technical: "Assistance technique",
-        terms: "J’accepte",
-        terms_link: "les conditions d’utilisation",
-        privacy_link: "la politique de confidentialité",
         captcha: "Entrez le code:",
         submit: "Envoyer",
       },
@@ -231,6 +362,7 @@ HelpChain.live{% endblock %} {% block content %}
         ex2: "Social support",
         ex3: "Technical issue",
         name: "Your name:",
+        phone: "Phone:",
         email: "Email address:",
         category: "Problem category:",
         location: "Location/address:",
@@ -240,63 +372,71 @@ HelpChain.live{% endblock %} {% block content %}
         opt_health: "Health",
         opt_social: "Social support",
         opt_technical: "Technical support",
-        terms: "I agree to the",
-        terms_link: "terms of use",
-        privacy_link: "privacy policy",
         captcha: "Enter code:",
         submit: "Send",
       },
     };
+
     function pickLang() {
       try {
-        var qp = new URL(window.location.href).searchParams.get("lang");
+        const qp = new URL(window.location.href).searchParams.get("lang");
         if (qp && ["bg", "fr", "en"].includes(qp)) return qp;
       } catch (_) {}
-      var ls = localStorage.getItem("hc_lang");
+      const ls = localStorage.getItem("hc_lang");
       return ls && ["bg", "fr", "en"].includes(ls) ? ls : "bg";
     }
 
+    function setLabelText(labelId, text) {
+      const label = document.getElementById(labelId);
+      if (!label) return;
+
+      const span = label.querySelector(".label-text");
+      if (span) span.textContent = text;
+      else label.textContent = text;
+    }
+
     function applyI18n() {
-      var t = T[pickLang()] || T.bg;
-      function setText(id, val) {
-        var el = document.getElementById(id);
+      const t = T[pickLang()] || T.bg;
+
+      const setText = (id, val) => {
+        const el = document.getElementById(id);
         if (el) el.textContent = val;
-      }
+      };
+
       setText("sr-back", t.back);
       setText("sr-title", t.title);
       setText("sr-examples-title", t.examples);
       setText("sr-ex1", t.ex1);
       setText("sr-ex2", t.ex2);
       setText("sr-ex3", t.ex3);
-      setText("sr-name-label", t.name);
+
+      setLabelText("sr-name-label", t.name);
+      setText("sr-phone-label", t.phone);
       setText("sr-email-label", t.email);
       setText("sr-category-label", t.category);
       setText("sr-location-label", t.location);
-      setText("sr-problem-label", t.problem);
+      setLabelText("sr-problem-label", t.problem);
+
       setText("sr-file-label", t.file);
       setText("sr-opt-choose", t.opt_choose);
       setText("sr-opt-health", t.opt_health);
       setText("sr-opt-social", t.opt_social);
       setText("sr-opt-technical", t.opt_technical);
-      setText("sr-terms-label", t.terms + " ");
-      setText("sr-terms-link", t.terms_link);
-      setText("sr-privacy-link", t.privacy_link);
-      setText("sr-captcha-label", t.captcha + " ");
+
+      setLabelText("sr-captcha-label", t.captcha);
+
       setText("sr-submit-btn", t.submit);
-      try {
-        document.documentElement.lang = pickLang();
-      } catch (_) {}
+
+      try { document.documentElement.lang = pickLang(); } catch (_) {}
     }
 
     function init() {
       applyI18n();
       setTimeout(applyI18n, 0);
     }
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", init);
-    } else {
-      init();
-    }
+
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+    else init();
   })();
 </script>
 {% endblock %}

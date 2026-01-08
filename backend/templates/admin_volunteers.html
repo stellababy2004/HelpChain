@@ -1,5 +1,4 @@
-{% extends "base.html" %} {% block title %}Управление на доброволци |
-HelpChain.live{% endblock %} {% block content %}
+{% extends "base.html" %} {% block title %}{{ _('Управление на доброволци') }} | HelpChain.live{% endblock %} {% block content %}
 <div class="container mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-users"></i> {{ _('Управление на доброволци') }}</h2>
@@ -18,7 +17,7 @@ HelpChain.live{% endblock %} {% block content %}
     <div class="card-body">
       <form
         method="get"
-        action="{{ url_for('admin_volunteers') }}"
+        action="{{ url_lang('admin_volunteers') }}"
         class="row g-3"
       >
         <div class="col-md-4">

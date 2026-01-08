@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Admin • Requests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Requests</h2>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_dashboard') if safe_url_for else '/admin/' }}">
+      Dashboard
+    </a>
+  </div>
+
+  <form class="row g-2 mb-3" method="GET" action="{{ url_for('admin.admin_requests') }}">
+    <div class="col-md-3">
+      <select class="form-select" name="status">
+        <option value="">All statuses</option>
+        {% for s in ["pending","approved","in_progress","done","rejected"] %}
+          <option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-7">
+      <input class="form-control" name="q" value="{{ q or '' }}" placeholder="Search: title, name, email, phone, description…" />
+    </div>
+    <div class="col-md-2 d-grid">
+      <button class="btn btn-primary" type="submit">Filter</button>
+    </div>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Category</th>
+          <th class="text-end">Open</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+          <tr>
+            <td>{{ r.id }}</td>
+            <td>{{ r.title }}</td>
+            <td>{{ r.name }}</td>
+            <td><span class="badge bg-secondary">{{ r.status }}</span></td>
+            <td>{{ r.priority }}</td>
+            <td>{{ r.category }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">
+                Details
+              </a>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-center text-muted py-4">No requests found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

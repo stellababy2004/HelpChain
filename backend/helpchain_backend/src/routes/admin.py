@@ -1,19 +1,130 @@
+from __future__ import annotations
+
+from flask_login import login_required
+from datetime import datetime
+from functools import wraps
+from urllib.parse import urlparse, urljoin
+
 from flask import (
-    Blueprint,
-    flash,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
+    Blueprint, render_template, request, redirect, url_for,
+    flash, session, current_app, jsonify
 )
-from flask_login import current_user, login_required
 
-from backend.extensions import db
-from backend.models import AdminUser, Request, RequestLog, Volunteer
+from ..extensions import db
+from ..models import AdminUser, Request, RequestLog, Volunteer
+from sqlalchemy.orm import joinedload
 
-admin_bp = Blueprint("admin", __name__)
+admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+
+
+def is_safe_url(target: str) -> bool:
+    if not target:
+        return False
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ("http", "https") and ref_url.netloc == test_url.netloc
+
+
+def admin_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            return redirect(url_for("admin.admin_login", next=request.path))
+        return view(*args, **kwargs)
+    return wrapped
+
+
+
+
+# Emergency Requests (read-only, filtered, paginated)
+
+from datetime import datetime, timedelta
+from flask import current_app
+
+@admin_bp.route("/emergency-requests", methods=["GET"])
+def emergency_requests():
+    # Admin guard (same as admin_dashboard)
+    if not getattr(current_user, "is_admin", False):
+        flash("Нямате достъп.", "error")
+        return redirect(url_for("main.index"))
+
+    q = (request.args.get("q") or "").strip()
+    days = int(request.args.get("days") or 7)
+    days = max(1, min(days, 90))
+    page = int(request.args.get("page") or 1)
+    page = max(page, 1)
+    per_page = int(request.args.get("per_page") or 25)
+    per_page = max(10, min(per_page, 100))
+    since = datetime.utcnow() - timedelta(days=days)
+
+    # Emergency filter: category=="emergency" only (no urgency field)
+    query = HelpRequest.query.filter(
+        HelpRequest.created_at >= since,
+        HelpRequest.category == "emergency"
+    ).order_by(HelpRequest.created_at.desc())
+
+    if q:
+        # Search in city/contact/priority only
+        query = query.filter(
+            (HelpRequest.city.ilike(f"%{q}%")) |
+            (HelpRequest.email.ilike(f"%{q}%")) |
+            (HelpRequest.phone.ilike(f"%{q}%")) |
+            (HelpRequest.priority.ilike(f"%{q}%"))
+        )
+
+    total = query.count()
+    items = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    return render_template(
+        "admin_emergency_requests.html",
+        items=items,
+        total=total,
+        page=page,
+        per_page=per_page,
+        q=q,
+        days=days,
+    )
+    # Admin guard (same as admin_dashboard)
+    if not getattr(current_user, "is_admin", False):
+        flash("Нямате достъп.", "error")
+        return redirect(url_for("main.index"))
+
+    q = (request.args.get("q") or "").strip()
+    days = int(request.args.get("days") or 7)
+    days = max(1, min(days, 90))
+    page = int(request.args.get("page") or 1)
+    page = max(page, 1)
+    per_page = int(request.args.get("per_page") or 25)
+    per_page = max(10, min(per_page, 100))
+    since = datetime.utcnow() - timedelta(days=days)
+
+    # Emergency filter: category=="emergency" only (no urgency field)
+    query = HelpRequest.query.filter(
+        HelpRequest.created_at >= since,
+        HelpRequest.category == "emergency"
+    ).order_by(HelpRequest.created_at.desc())
+
+    if q:
+        # Search in city/contact/priority only
+        query = query.filter(
+            (HelpRequest.city.ilike(f"%{q}%")) |
+            (HelpRequest.email.ilike(f"%{q}%")) |
+            (HelpRequest.phone.ilike(f"%{q}%")) |
+            (HelpRequest.priority.ilike(f"%{q}%"))
+        )
+
+    total = query.count()
+    items = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    return render_template(
+        "admin_emergency_requests.html",
+        items=items,
+        total=total,
+        page=page,
+        per_page=per_page,
+        q=q,
+        days=days,
+    )
 
 
 # API endpoint за заявки с филтри (status, date)
@@ -84,26 +195,11 @@ def api_volunteers():
     return jsonify(data)
 
 
-from datetime import UTC
-
-from flask import (
-    Blueprint,
-    flash,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-)
-from flask_login import current_user, login_required
-
-admin_bp = Blueprint("admin", __name__)
 
 
 # Детайли за доброволец
 @admin_bp.route("/admin_volunteers/<int:id>")
-@login_required
+@admin_required
 def volunteer_detail(id):
     if not current_user.is_admin:
         flash("Нямате достъп.", "error")
@@ -118,277 +214,34 @@ def volunteer_detail(id):
 
 @admin_bp.route("/login", methods=["GET", "POST"])
 def admin_login():
-    """Админ вход"""
-    try:
-        import logging as _logging
+    def is_safe_url(target: str) -> bool:
+        if not target:
+            return False
+        ref_url = urlparse(request.host_url)
+        test_url = urlparse(urljoin(request.host_url, target))
+        return (test_url.scheme in ("http", "https")) and (ref_url.netloc == test_url.netloc)
 
-        _log = _logging.getLogger(__name__)
-        _log.info("admin_login called - method=%s", request.method)
-    except Exception:
-        pass
+    next_url = request.args.get("next") or request.form.get("next") or url_for("admin.admin_requests")
+    if not is_safe_url(next_url):
+        next_url = url_for("admin.admin_requests")
 
-    # Fast-path for GET: render the login template immediately. This avoids
-    # unexpected None returns when other initialization steps are deferred
-    # and keeps the GET behavior simple and stable for tests.
     if request.method == "GET":
-        try:
-            return render_template("admin_login.html")
-        except Exception:
-            # If template rendering fails for some reason, fall through to
-            # the POST-handling logic which will surface a clearer error.
-            pass
+        return render_template("admin/login.html", next=next_url), 200
 
-    if request.method == "POST":
-        # CSRF validation: use Flask-WTF when available, otherwise compare with session token
-        form_csrf = request.form.get("csrf_token", "")
-        valid_csrf = False
-        try:
-            from flask_wtf.csrf import validate_csrf  # type: ignore
-            validate_csrf(form_csrf)
-            valid_csrf = True
-        except Exception:
-            valid_csrf = False
+    # POST
+    username = (request.form.get("username") or "").strip()
+    password = (request.form.get("password") or "").strip()
 
-        if not valid_csrf:
-            try:
-                from hmac import compare_digest
-                sess_token = session.get("csrf_token", "")
-                if not (sess_token and compare_digest(form_csrf or "", sess_token)):
-                    from flask import abort
-                    flash("Невалиден CSRF токен.", "error")
-                    abort(400, description="CSRF token invalid")
-            except Exception:
-                sess_token = session.get("csrf_token", "")
-                if not (form_csrf and sess_token and form_csrf == sess_token):
-                    from flask import abort
-                    flash("Невалиден CSRF токен.", "error")
-                    abort(400, description="CSRF token invalid")
-        username = request.form.get("username")
-        password = request.form.get("password")
-        admin_user = AdminUser.query.filter_by(username=username).first()
-        # No fallback seeding here; rely on fixtures (conftest) to create the
-        # canonical AdminUser in the same DB/engine that the application uses.
-        # Creating a user here previously could mask fixture/import-order issues
-        # and hide root-cause problems. Keep the handler pure and let tests
-        # prepare the DB state.
-        # Diagnostic: log whether user found and password check result
-        try:
-            import logging as _logging
+    cfg_user = (current_app.config.get("ADMIN_USERNAME") or "").strip()
+    cfg_pass = (current_app.config.get("ADMIN_PASSWORD") or "").strip()
 
-            _log = _logging.getLogger(__name__)
-            # Additional diagnostics: module/app/db identity for tracing test fixture vs request context
-            try:
-                import sys as _sys
+    if username == cfg_user and password == cfg_pass:
+        session["admin_logged_in"] = True
+        flash("Успешен вход.", "success")
+        return redirect(next_url)
 
-                _log.info(
-                    "admin_login diagnostic: sys.modules['appy'] id=%s",
-                    id(_sys.modules.get("appy")),
-                )
-            except Exception:
-                pass
-            _log.info("admin_login diagnostic: found_admin=%s", bool(admin_user))
-            if admin_user:
-                try:
-                    _log.info(
-                        "admin_login diagnostic: password_hash=%s",
-                        getattr(admin_user, "password_hash", None),
-                    )
-                except Exception:
-                    pass
-                try:
-                    _log.info(
-                        "admin_login diagnostic: check_password(Admin123)=%s",
-                        admin_user.check_password("Admin123"),
-                    )
-                except Exception:
-                    _log.exception("admin_login diagnostic: check_password raised")
-            try:
-                # Also log how many AdminUser rows are visible to this db/session
-                from backend.extensions import db as _db
-
-                try:
-                    _log.info("admin_login diagnostic: db.engine id=%s", id(_db.engine))
-                except Exception:
-                    pass
-                try:
-                    _log.info(
-                        "admin_login diagnostic: db.session.bind id=%s",
-                        id(_db.session.bind),
-                    )
-                except Exception:
-                    pass
-                try:
-                    _log.info(
-                        "admin_login diagnostic: AdminUser class id=%s module=%s",
-                        id(AdminUser),
-                        getattr(AdminUser, "__module__", None),
-                    )
-                except Exception:
-                    pass
-                count = _db.session.query(AdminUser).count()
-                _log.info("admin_login diagnostic: AdminUser.count() = %s", count)
-                try:
-                    # Use the session-bound execute instead of opening a fresh
-                    # engine connection. This avoids creating a raw DBAPI
-                    # connection for diagnostic checks and reduces connection
-                    # churn while providing the same information.
-                    from sqlalchemy import text as _text
-
-                    # Write a lightweight trace marker before executing via
-                    # the session. This won't raise on failure.
-                    try:
-                        import os
-                        from datetime import datetime, timezone
-
-                        # Write markers to the canonical backend/tools path so
-                        # this file can be correlated with the test-time
-                        # DBAPI traces generated by conftest.py.
-                        marker_path = os.path.join(
-                            os.path.dirname(__file__),
-                            "..",
-                            "..",
-                            "..",
-                            "tools",
-                            "connection_markers.txt",
-                        )
-                        marker_path = os.path.normpath(marker_path)
-                        try:
-                            with open(marker_path, "a", encoding="utf-8") as _mf:
-                                _mf.write(f"{datetime.now(UTC).isoformat()} MARKER admin_login before session.execute\n")
-                        except Exception:
-                            pass
-                    except Exception:
-                        pass
-
-                    try:
-                        _res = _db.session.execute(_text("SELECT count(*) FROM admin_users"))
-                        try:
-                            _count = _res.scalar()
-                        finally:
-                            try:
-                                if hasattr(_res, "close"):
-                                    _res.close()
-                            except Exception:
-                                pass
-
-                        _log.info(
-                            "admin_login diagnostic: raw session count(admin_users) = %s",
-                            _count,
-                        )
-                    except Exception:
-                        # Trace marker: session.execute failed and the
-                        # fallback path will run. Record this so tests can
-                        # correlate which path opened DB connections.
-                        try:
-                            import os
-                            from datetime import datetime, timezone
-
-                            # Same canonical backend/tools destination for fallback markers
-                            marker_path = os.path.join(
-                                os.path.dirname(__file__),
-                                "..",
-                                "..",
-                                "..",
-                                "tools",
-                                "connection_markers.txt",
-                            )
-                            marker_path = os.path.normpath(marker_path)
-                            try:
-                                with open(marker_path, "a", encoding="utf-8") as _mf:
-                                    _mf.write(f"{datetime.now(UTC).isoformat()} MARKER admin_login session.execute failed - before ORM fallback\n")
-                            except Exception:
-                                pass
-                        except Exception:
-                            pass
-
-                        # If session execute fails, fall back to the ORM count
-                        try:
-                            _count = _db.session.query(AdminUser).count()
-                            _log.info(
-                                "admin_login diagnostic: fallback ORM count(admin_users) = %s",
-                                _count,
-                            )
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
-            except Exception:
-                pass
-        except Exception:
-            pass
-
-        if admin_user and admin_user.check_password(password):
-            # Support app-level email 2FA (tests set this via monkeypatch/app config).
-            # If EMAIL_2FA_ENABLED is set in the current Flask app config or in the
-            # imported appy module, trigger the email 2FA flow which uses the
-            # shared handlers under /admin/email_2fa.
-            use_email_2fa = False
-            try:
-                from flask import current_app
-
-                if current_app.config.get("EMAIL_2FA_ENABLED"):
-                    use_email_2fa = True
-            except Exception:
-                pass
-
-            try:
-                # Import appy module (tests monkeypatch this module)
-                import appy as appy_mod
-
-                if getattr(appy_mod, "EMAIL_2FA_ENABLED", False):
-                    use_email_2fa = True
-            except Exception:
-                appy_mod = None
-
-            if use_email_2fa:
-                # Begin email 2FA flow (mirror the behavior in appy.py)
-                try:
-                    from datetime import datetime, timedelta
-
-                    # Generate a code using appy (monkeypatched in tests)
-                    code = None
-                    if appy_mod and hasattr(appy_mod, "generate_email_2fa_code"):
-                        code = appy_mod.generate_email_2fa_code()
-                    else:
-                        # Fallback deterministic code
-                        code = "000000"
-
-                    session["pending_email_2fa"] = True
-                    session["email_2fa_code"] = code
-                    session["email_2fa_expires"] = (datetime.now() + timedelta(minutes=10)).timestamp()
-
-                    # Attempt to send via appy (monkeypatched send_email_2fa_code in tests)
-                    if appy_mod and hasattr(appy_mod, "send_email_2fa_code"):
-                        try:
-                            appy_mod.send_email_2fa_code(code, request.remote_addr, request.user_agent.string)
-                        except Exception:
-                            # Don't fail login flow if sending fails during tests
-                            pass
-                except Exception:
-                    # Defensive: ensure we don't crash the login path
-                    session["pending_email_2fa"] = True
-                    session["email_2fa_code"] = "000000"
-                return redirect(url_for("admin_email_2fa"))
-            else:
-                from flask_login import login_user
-
-                login_user(admin_user)
-                # Rotate CSRF token after successful login
-                try:
-                    import secrets
-                    session["csrf_token"] = secrets.token_urlsafe(32)
-                except Exception:
-                    pass
-                return redirect(url_for("admin.admin_dashboard"))
-        # Use the same user-visible wording tests expect so handlers
-        # that reach this blueprint return a consistent message.
-        error_msg = "Грешно потребителско име или парола"
-        flash(error_msg, "error")
-        try:
-            _log.info("admin_login returning error template")
-        except Exception:
-            pass
-        return render_template("admin_login.html", error=error_msg)
+    flash("Грешно потребителско име или парола.", "danger")
+    return render_template("admin/login.html", next=next_url), 200
 
 
 @admin_bp.route("/2fa", methods=["GET", "POST"])
@@ -417,7 +270,7 @@ def admin_2fa():
 
 
 @admin_bp.route("/2fa/setup", methods=["GET", "POST"])
-@login_required
+@admin_required
 def admin_2fa_setup():
     """Настройка на 2FA за админ"""
     if not isinstance(current_user, AdminUser):
@@ -438,7 +291,7 @@ def admin_2fa_setup():
 
 
 @admin_bp.route("/2fa/disable", methods=["POST"])
-@login_required
+@admin_required
 def admin_2fa_disable():
     """Деактивиране на 2FA за админ"""
     if not isinstance(current_user, AdminUser):
@@ -451,7 +304,7 @@ def admin_2fa_disable():
 
 
 @admin_bp.route("/")
-@login_required
+@admin_required
 def admin_dashboard():
     """Админ панел"""
 
@@ -542,7 +395,7 @@ def admin_dashboard():
 
 
 @admin_bp.route("/admin_volunteers")
-@login_required
+@admin_required
 def admin_volunteers():
     """Управление на доброволци"""
 
@@ -560,7 +413,7 @@ def admin_volunteers():
 
 
 @admin_bp.route("/admin_volunteers/add", methods=["GET", "POST"])
-@login_required
+@admin_required
 def add_volunteer():
     """Добавяне на доброволец"""
     if not current_user.is_admin:
@@ -584,7 +437,7 @@ def add_volunteer():
 
 
 @admin_bp.route("/delete_volunteer/<int:id>", methods=["POST"])
-@login_required
+@admin_required
 def delete_volunteer(id):
     """Изтриване на доброволец"""
     if not current_user.is_admin:
@@ -603,7 +456,7 @@ def delete_volunteer(id):
 
 
 @admin_bp.route("/admin_volunteers/edit/<int:id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_volunteer(id):
     """Редактиране на доброволец"""
     if not current_user.is_admin:
@@ -635,7 +488,7 @@ def edit_volunteer(id):
 
 
 @admin_bp.route("/export_volunteers")
-@login_required
+@admin_required
 def export_volunteers():
     """Експорт на доброволци като CSV"""
     if not current_user.is_admin:
@@ -663,7 +516,7 @@ def export_volunteers():
 
 
 @admin_bp.route("/update_status/<int:req_id>", methods=["POST"])
-@login_required
+@admin_required
 def update_status(req_id):
     """Обновяване статуса на заявка"""
     from flask import current_app
@@ -718,3 +571,138 @@ def update_status(req_id):
             logging.warning(f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}")
 
     return jsonify({"success": True})
+
+
+from flask import render_template, request, redirect, url_for, flash, current_app
+from sqlalchemy import or_
+from ..models import db, Request
+
+ALLOWED_STATUSES = {"pending", "approved", "in_progress", "done", "rejected"}
+
+STATUS_LABELS_BG = {
+    "pending": "Нова",
+    "approved": "Одобрена",
+    "in_progress": "В работа",
+    "done": "Завършена",
+    "rejected": "Отхвърлена",
+}
+
+@admin_bp.get("/requests")
+@admin_required
+def admin_requests():
+    status = (request.args.get("status") or "").strip()
+    q = (request.args.get("q") or "").strip()
+
+    query = Request.query
+
+    if status in ALLOWED_STATUSES:
+        query = query.filter(Request.status == status)
+
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            or_(
+                Request.title.ilike(like),
+                Request.name.ilike(like),
+                Request.email.ilike(like) if hasattr(Request, "email") else False,
+                Request.phone.ilike(like) if hasattr(Request, "phone") else False,
+                Request.description.ilike(like),
+            )
+        )
+
+    rows = query.order_by(Request.id.desc()).limit(200).all()
+
+    return render_template(
+        "admin/requests.html",
+        requests=rows,
+        status=status,
+        q=q,
+        STATUS_LABELS_BG=STATUS_LABELS_BG,
+    ), 200
+
+
+
+@admin_bp.get("/requests/<int:req_id>")
+@admin_required
+def admin_request_details(req_id: int):
+    req = (
+        Request.query
+        .options(joinedload(Request.logs))
+        .get_or_404(req_id)
+    )
+    volunteers = Volunteer.query.order_by(Volunteer.id.desc()).limit(200).all()
+    # ✅ бетон: activity log от relationship
+    logs = req.logs  # already sorted by relationship order_by
+    return render_template(
+        "admin/request_details.html",
+        req=req,
+        volunteers=volunteers,
+        logs=logs,
+        STATUS_LABELS_BG=STATUS_LABELS_BG,
+    ), 200
+
+
+# --- Assign owner to request ---
+@admin_bp.post("/requests/<int:req_id>/assign", endpoint="admin_request_assign")
+@admin_required
+def admin_request_assign(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    owner_id_raw = (request.form.get("owner_id") or "").strip()
+    if not owner_id_raw.isdigit():
+        flash("Моля, избери доброволец.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req_id))
+    owner_id = int(owner_id_raw)
+    volunteer = Volunteer.query.get(owner_id)
+    if not volunteer:
+        flash("Невалиден доброволец.", "danger")
+        return redirect(url_for("admin.admin_request_details", req_id=req_id))
+    prev_owner_id = req.owner_id
+    prev_owned_at = req.owned_at
+    req.owner_id = volunteer.id
+    req.owned_at = datetime.utcnow()
+    ip, ua = client_meta()
+    log_action(
+        admin_user_id=admin_id(),
+        action="assign_owner",
+        details={
+            "from_owner_id": prev_owner_id,
+            "to_owner_id": volunteer.id,
+            "prev_owned_at": prev_owned_at.isoformat() if prev_owned_at else None,
+            "owned_at": req.owned_at.isoformat(),
+        },
+        entity_type="help_request",
+        entity_id=req.id,
+        ip_address=ip,
+        user_agent=ua,
+    )
+    db.session.commit()
+    flash(f"Заявката е поета от: {volunteer.name}", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+@admin_bp.post("/requests/<int:req_id>/unassign", endpoint="admin_request_unassign")
+@admin_required
+def admin_request_unassign(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    prev_owner_id = req.owner_id
+    prev_owned_at = req.owned_at
+    req.owner_id = None
+    req.owned_at = None
+    ip, ua = client_meta()
+    log_action(
+        admin_user_id=admin_id(),
+        action="unassign_owner",
+        details={
+            "from_owner_id": prev_owner_id,
+            "to_owner_id": None,
+            "prev_owned_at": prev_owned_at.isoformat() if prev_owned_at else None,
+        },
+        entity_type="help_request",
+        entity_id=req.id,
+        ip_address=ip,
+        user_agent=ua,
+    )
+    db.session.commit()
+    flash("Заявката е освободена (няма отговорник).", "info")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+

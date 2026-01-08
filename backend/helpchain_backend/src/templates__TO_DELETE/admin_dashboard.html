@@ -3,6 +3,14 @@ endblock %} {% block content %}
 <div class="container mt-5">
   <h2 class="mb-4">Админ панел</h2>
 
+  <nav class="mb-4">
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('admin.emergency_requests') }}">Emergency requests</a>
+      </li>
+    </ul>
+  </nav>
+
   <!-- 2FA Settings -->
   <div class="mb-3">
     <h4>Настройки за сигурност</h4>
@@ -35,7 +43,7 @@ endblock %} {% block content %}
         </tr>
       </thead>
       <tbody>
-        {% for req in requests.items %}
+        {% for req in requests %}
         <tr>
           <td>{{ req.id }}</td>
           <td>{{ req.name }}</td>
@@ -73,4 +81,5 @@ endblock %} {% block content %}
       </tbody>
     </table>
   </div>
-</div>
+ </div>
+{% endblock %}

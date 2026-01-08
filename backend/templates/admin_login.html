@@ -14,8 +14,10 @@
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
   {% endif %}
-  <form method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+  <form method="POST" action="{{ url_for('admin.admin_login', next=next) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next or '' }}">
+
     <div class="mb-3">
       <label for="username" class="form-label"
         >{{ _('Потребителско име или имейл:') }}</label

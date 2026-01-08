@@ -1,0 +1,16 @@
+
+backend\templates\admin_tasks.html:4:<!-- Include Dashboard Navigation -->
+backend\templates\admin_tasks.html:5:{% include 'dashboard_nav.html' %}
+backend\templates\admin_tasks.html:10:{% include 'breadcrumbs.html' %}
+backend\templates\dashboard_nav.html:343:<!-- Include Global Search Modal -->
+backend\templates\dashboard_nav.html:344:{% include 'global_search.html' %}
+backend\templates\my_tasks.html:77:<!-- Include Dashboard Navigation -->
+backend\templates\my_tasks.html:78:{% include 'dashboard_nav.html' %}
+backend\templates\my_tasks.html:83:include 'breadcrumbs.html' %}
+backend\templates\volunteer_dashboard.html:555:<!-- Include Dashboard Navigation -->
+backend\templates\volunteer_dashboard.html:556:{% include 'dashboard_nav.html' %}
+backend\templates\volunteer_dashboard.html:560:include 'breadcrumbs.html' %}
+backend\templates\volunteer_profile.html:4:<!-- Include Dashboard Navigation -->
+backend\templates\volunteer_profile.html:5:{% include 'dashboard_nav.html' %}
+backend\templates\volunteer_profile.html:10:include 'breadcrumbs.html' %}
+

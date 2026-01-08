@@ -6,24 +6,3 @@ import pytest
 _app_factory = None
 
 
-@pytest.fixture(scope="session")
-def app():
-    if _app_factory is not None:
-        try:
-            return _app_factory()
-        except Exception:
-            pass
-
-    # Fallback to importing the real app object
-    try:
-        from backend.appy import app as _app  # type: ignore
-
-        _app.config.setdefault("TESTING", True)
-        return _app
-    except Exception:
-        # Final minimal fallback
-        from flask import Flask
-
-        _app = Flask(__name__)
-        _app.config["TESTING"] = True
-        return _app

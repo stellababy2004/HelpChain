@@ -17,7 +17,9 @@ endblock %} {% block content %}
     ></button>
   </div>
   {% endfor %} {% endif %} {% endwith %}
-  <form action="/submit_request" method="post">
+  {% from "_macros.html" import lang_hidden %}
+  <form action="{{ url_lang('main.submit_request') }}" method="post">
+    {{ lang_hidden() }}
     <div class="mb-3">
       <label for="name" class="form-label">Име</label>
       <input type="text" class="form-control" id="name" name="name" required />
@@ -37,12 +39,12 @@ endblock %} {% block content %}
       />
     </div>
     <div class="mb-3">
-      <label for="location" class="form-label">Локация</label>
+      <label for="location_text" class="form-label">Локация</label>
       <input
         type="text"
         class="form-control"
-        id="location"
-        name="location"
+        id="location_text"
+        name="location_text"
         required
       />
     </div>

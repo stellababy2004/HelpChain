@@ -274,7 +274,7 @@
 
       <form
         method="POST"
-        action="{{ url_for('delete_volunteer', id=volunteer.id) }}"
+        action="{{ url_lang('delete_volunteer', id=volunteer.id) }}"
         class="d-inline"
         onsubmit="return confirm('Сигурни ли сте, че искате да изтриете {{ volunteer.name }}? Това действие е необратимо!')"
       >

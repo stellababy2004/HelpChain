@@ -2,7 +2,7 @@
 %} {% block head %}
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/admin_volunteers.css') }}"
+  href="{{ url_lang('static', filename='css/admin_volunteers.css') }}"
 />
 <style>
   .filters-section {
@@ -74,7 +74,7 @@
   <div class="filters-section">
     <form
       method="GET"
-      action="{{ url_for('admin_volunteers') }}"
+      action="{{ url_lang('admin_volunteers') }}"
       class="row g-3"
     >
       <div class="col-md-4">
@@ -261,7 +261,7 @@
               </a>
               <form
                 method="POST"
-                action="{{ url_for('admin.delete_volunteer', id=volunteer.id) }}"
+                action="{{ url_lang('admin.delete_volunteer', id=volunteer.id) }}"
                 class="d-inline"
                 onsubmit="return confirm('Сигурни ли сте, че искате да изтриете {{ volunteer.name }}?')"
               >

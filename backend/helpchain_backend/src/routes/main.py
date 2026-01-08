@@ -1,213 +1,302 @@
-from flask import current_app
+from flask import (
+    Blueprint,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+    current_app,
+)
 
-# Limiter decorator helper (safe for blueprints)
-def limiter():
-    return current_app.extensions["limiter"]
-
-
-from flask import Blueprint
+from ..extensions import limiter
+from ..models import Request, Volunteer, db
+from ..category_data import CATEGORIES, ALIASES, COMMON
 
 main_bp = Blueprint("main", __name__)
 
 
+# ✅ url_lang + safe_url_for in ALL templates rendered by this blueprint
+@main_bp.app_context_processor
+def inject_template_helpers():
+    def url_lang(endpoint: str, **values):
+        return url_for(endpoint, **values)
+
+    def safe_url_for(endpoint: str, **values):
+        try:
+            return url_for(endpoint, **values)
+        except Exception:
+            return "#"
+
+    return {"url_lang": url_lang, "safe_url_for": safe_url_for}
+
+
+@main_bp.route("/", methods=["GET"])
+def index():
+    """Главна страница"""
+    return render_template("home_new.html"), 200
+
+
+@main_bp.route("/categories", methods=["GET"])
+def categories():
+    """Списък с всички категории"""
+    items = []
+    for key, value in CATEGORIES.items():
+        items.append(
+            {
+                "slug": key,
+                "name": value["content"]["title"]["bg"],
+                "description": value["content"]["intro"]["bg"],
+                "icon": value["ui"].get("icon", "fa-solid fa-question-circle text-secondary"),
+                "color": "primary" if value["ui"].get("severity") != "critical" else "danger",
+            }
+        )
+    return render_template("all_categories.html", categories=items)
+
+
+@main_bp.route("/achievements", methods=["GET"])
+def achievements():
+    if not session.get("volunteer_logged_in"):
+        return redirect(url_for("main.volunteer_login"))
+
+    achievements_data = [
+        {"title": "First login", "points": 10, "status": "unlocked"},
+        {"title": "First request handled", "points": 20, "status": "locked"},
+    ]
+    return render_template("achievements.html", achievements=achievements_data), 200
+
+
+@main_bp.route("/volunteer_login", methods=["GET", "POST"])
+def volunteer_login():
+    return render_template("volunteer_login.html"), 200
+
+
 @main_bp.get("/request")
-@limiter().limit("30 per minute")
+@limiter.limit("30 per minute")
 def request_category():
-    from flask import request, render_template, current_app
-    from ..category_data import CATEGORIES, ALIASES, COMMON
     slug = request.args.get("category")
     canonical = ALIASES.get(slug, slug) if slug else None
     category = CATEGORIES.get(canonical) if canonical else None
+
+    if not slug:
+        return (
+            render_template(
+                "request_category.html",
+                category=None,
+                COMMON=COMMON,
+                categories=CATEGORIES,
+                not_found=False,
+                requested_slug=None,
+            ),
+            200,
+        )
+
     if not category:
-        return render_template(
-            "request_category.html",
-            category=None,
-            COMMON=COMMON,
-            not_found=True,
-            requested_slug=slug,
-        ), 404
-    # Покажи 112 ако severity е critical
+        return (
+            render_template(
+                "request_category.html",
+                category=None,
+                COMMON=COMMON,
+                categories=CATEGORIES,
+                not_found=True,
+                requested_slug=slug,
+            ),
+            404,
+        )
+
     show_emergency = category["ui"].get("severity") == "critical"
-    return render_template(
-        "request_category.html",
-        category=category,
-        COMMON=COMMON,
-        show_emergency=show_emergency,
-        emergency_number=COMMON.get("emergency_number"),
-        requested_slug=slug,
+    return (
+        render_template(
+            "request_category.html",
+            category=category,
+            COMMON=COMMON,
+            show_emergency=show_emergency,
+            emergency_number=COMMON.get("emergency_number"),
+            requested_slug=slug,
+        ),
+        200,
     )
 
-    # MVP: логване на заявката (може да се замени с база/имейл)
-    current_app.logger.info(f"New help request: category={canonical}, desc={description}, contact={contact}, city={city}")
 
-    # TODO: save to DB, send email, etc.
-    flash("Заявката е изпратена успешно! Ще се свържем с вас при първа възможност.", "success")
-    return redirect(url_for("main.request_category", category=canonical))
-@main_bp.route("/request/form", methods=["GET"])
+@main_bp.get("/request/form")
 def request_form():
     slug = request.args.get("category")
+    canonical = ALIASES.get(slug, slug) if slug else None
+    category = CATEGORIES.get(canonical) if canonical else None
+
     if not slug:
-        return redirect(url_lang("main.categories_index"))
-    from ..category_data import CATEGORIES, ALIASES, COMMON
-    canonical = ALIASES.get(slug, slug)
-    category = CATEGORIES.get(canonical)
+        return redirect(url_for("main.request_category"))
+
     if not category:
-        current_app.logger.warning(f"Invalid category slug for form: {slug}")
-        return redirect(url_lang("main.categories_index"))
-    # Тук ще се използва универсален template за формата (request_form.html)
-    return render_template(
-        "request_form.html",
-        category=category,
-        COMMON=COMMON
-    )
+        current_app.logger.warning("Invalid category slug for form: %s", slug)
+        return redirect(url_for("main.request_category", category=slug))
+
+    return render_template("request_form.html", category=category, COMMON=COMMON)
 
 
-
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for, current_app
-from ..models import Request, Volunteer, db
-from ..category_data import CATEGORIES, ALIASES, COMMON, CATEGORIES_SCHEMA_VERSION
-main_bp = Blueprint("main", __name__)
-
-# Временен тестов handler за /request
-@main_bp.get("/request")
-def request_category():
-    return "OK /request"
-
-
-@main_bp.route("/")
-def index():
-    """Начална страница – unified към нов шаблон `home_new.html`."""
-    try:
-        volunteers_count = Volunteer.query.count()
-        requests_count = Request.query.count()
-    except Exception:
-        volunteers_count = requests_count = 0
-
-    # Open requests count се пази ако решим да го покажем по-късно
-    try:
-        open_requests = Request.query.filter(Request.status != "completed").count()
-    except Exception:
-        open_requests = 0
-
-    from flask import make_response, render_template
-
-    resp = make_response(
-        render_template(
-            "index.html",
-            volunteers_count=volunteers_count,
-            requests_count=requests_count,
-            open_requests=open_requests,
-        )
-    )
-    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    resp.headers["Pragma"] = "no-cache"
-    resp.headers["Expires"] = "0"
-    return resp
+@main_bp.get("/chat")
+def chat_page():
+    return render_template("chat/chat.html"), 200
 
 
 @main_bp.route("/about")
 def about():
-    """За нас страница"""
     return render_template("about.html")
 
 
+def normalize_request_form(form):
+    """
+    Canonical mapping from HTML form fields -> backend variables.
+
+    Accepts:
+      - category OR type (optional)
+      - urgency OR priority (optional)
+      - description OR problem OR message (your HTML uses "problem")
+    """
+    category = (form.get("category") or form.get("type") or "").strip().lower()
+    urgency = (form.get("urgency") or form.get("priority") or "").strip().lower()
+    description = (form.get("description") or form.get("problem") or form.get("message") or "").strip()
+    return category, urgency, description
+
+
 @main_bp.route("/submit_request", methods=["GET", "POST"])
-@limiter().limit("5 per minute; 30 per hour")
+@limiter.limit("5 per minute; 30 per hour")
 def submit_request():
     """Подаване на заявка за помощ"""
     if request.method == "POST":
-        # Honeypot anti-bot field
+        current_app.logger.warning("SUBMIT_REQUEST POST hit")
+        current_app.logger.warning("Form keys=%s", list(request.form.keys()))
+        current_app.logger.warning("website(honeypot)='%s'", (request.form.get("website") or "").strip())
+        # Honeypot anti-bot field (ако се задейства, искам да го ВИДИШ)
         website = (request.form.get("website") or "").strip()
         if website:
-            # Bot fill – fail silently (no DB insert, no email)
-            return redirect(url_lang("main.request_success"))
+            current_app.logger.warning("Honeypot triggered on submit_request: website=%r", website)
+            flash("Формата беше отхвърлена (анти-бот). Опитай пак.", "error")
+            return redirect(url_for("main.submit_request"))
+
+        category, urgency, description = normalize_request_form(request.form)
+
+        # urgency -> priority (DB expects low/medium/high)
+        priority_map = {
+            "low": "low",
+            "medium": "medium",
+            "normal": "medium",
+            "urgent": "high",
+            "critical": "high",
+            "emergency": "high",
+        }
+        priority = priority_map.get(urgency, "medium")
+
+        name = (request.form.get("name") or "").strip()
+        phone = (request.form.get("phone") or "").strip()
+        email = (request.form.get("email") or "").strip()
+        location_text = (request.form.get("location_text") or request.form.get("location") or "").strip()
+        title = (request.form.get("title") or "").strip()
+
+        current_app.logger.warning(
+            "Parsed: name=%r(len=%s) phone=%r(len=%s) email=%r(len=%s) category=%r urgency=%r desc_len=%s title=%r",
+            name, len(name or ""),
+            phone, len(phone or ""),
+            email, len(email or ""),
+            category, urgency,
+            len(description or ""),
+            title,
+        )
+
+        # ✅ Server-side validation (точно както UX-а)
+        if len(name) < 2:
+            current_app.logger.warning("VALIDATION FAIL: name < 2")
+            flash("Моля, въведете име (поне 2 символа).", "error")
+            return redirect(url_for("main.submit_request"))
+
+        if len(description) < 10:
+            current_app.logger.warning("VALIDATION FAIL: description < 10")
+            flash("Моля, опишете проблема (поне 10 символа).", "error")
+            return redirect(url_for("main.submit_request"))
+
+        if not phone and not email:
+            current_app.logger.warning("VALIDATION FAIL: no phone and no email")
+            flash("Моля, въведете поне телефон или имейл.", "error")
+            return redirect(url_for("main.submit_request"))
+
+        # ✅ title is NOT NULL in DB
+        if not title:
+            title = f"Заявка: {category}" if category else "Заявка за помощ"
+
+        # ✅ category default (DB показва default general)
+        if not category:
+            category = "general"
+
         try:
             req = Request(
-                name=request.form.get("name"),
-                phone=request.form.get("phone"),
-                email=request.form.get("email"),
-                location=request.form.get("location"),
-                category=request.form.get("category"),
-                description=request.form.get("problem"),
-                urgency=request.form.get("urgency", "normal"),
+                title=title,
+                description=description,
+                name=name,
+                phone=phone or None,
+                email=email or None,
+                location_text=location_text or None,
                 status="pending",
+                priority=priority,
+                category=category,
             )
+
+            current_app.logger.warning(
+                "About to INSERT: title=%r name=%r phone=%r email=%r category=%r priority=%r",
+                title, name, phone, email, category, priority
+            )
+
             db.session.add(req)
             db.session.commit()
-            flash(
-                "Благодарим ви че се свързахте с екипа ни! Ще се свържем с вас скоро.",
-                "success",
+
+            current_app.logger.warning("INSERT OK id=%s", req.id)
+
+            # Optional emergency triggers (ако ги имаш)
+            is_emergency = (
+                category in ("emergency", "urgent")
+                or urgency in ("critical", "emergency", "urgent")
             )
-            return redirect(url_lang("main.index"))
+
+            app = current_app._get_current_object()
+            if is_emergency and hasattr(app, "can_send_emergency_email") and app.can_send_emergency_email():
+                if hasattr(app, "send_emergency_email"):
+                    app.send_emergency_email(req)
+                if hasattr(app, "mark_emergency_email_sent"):
+                    app.mark_emergency_email_sent()
+
+            flash("Заявката е изпратена успешно.", "success")
+            return redirect(url_for("main.index"))
+
         except Exception as e:
+            current_app.logger.exception("SUBMIT_REQUEST FAILED: %s", e)
+            db.session.rollback()
             flash(f"Грешка при подаване на заявката: {str(e)}", "error")
+            return redirect(url_for("main.submit_request"))
 
     return render_template("submit_request.html")
 
 
-@main_bp.route("/become_volunteer", methods=["GET", "POST"])
-def become_volunteer():
-    """Регистрация на доброволец"""
-    if request.method == "POST":
-        try:
-            volunteer = Volunteer(
-                name=request.form.get("name"),
-                email=request.form.get("email"),
-                phone=request.form.get("phone"),
-                skills=request.form.get("skills"),
-                location=request.form.get("location"),
-            )
-            db.session.add(volunteer)
-            db.session.commit()
-            flash(
-                "Благодарим ви че се записахте като доброволец! Ще се свържем с вас скоро.",
-                "success",
-            )
-            return redirect(url_lang("main.index"))
-        except Exception as e:
-            flash(f"Грешка при записване като доброволец: {str(e)}", "error")
-
-    return render_template("become_volunteer.html")
-
-
-@main_bp.route("/feedback", methods=["GET", "POST"])
-def feedback():
-    """Обратна връзка"""
-    if request.method == "POST":
-        # Обработка на feedback
-        flash("Благодарим ви за обратната връзка!", "success")
-        return redirect(url_lang("main.about"))
-
-    return render_template("feedback.html")
-
-
 @main_bp.route("/faq")
 def faq():
-    """Често задавани въпроси"""
     return render_template("faq.html")
 
 
 @main_bp.route("/success_stories")
 def success_stories():
-    """Успешни истории"""
     return render_template("success_stories.html")
 
 
 @main_bp.route("/privacy")
 def privacy():
-    """Политика за поверителност"""
     return render_template("privacy.html")
 
 
 @main_bp.route("/terms")
 def terms():
-    """Общи условия"""
     return render_template("terms.html")
 
 
 @main_bp.route("/set_language", methods=["POST"])
 def set_language():
-    """Смяна на език"""
     lang = request.form.get("language", "bg")
     resp = redirect(request.referrer or url_for("main.index"))
     resp.set_cookie("language", lang, max_age=30 * 24 * 3600)
@@ -216,8 +305,6 @@ def set_language():
 
 @main_bp.route("/category_help/<category>")
 def category_help(category):
-    """Показва доброволци в дадена категория"""
-    # Дефинираме mapping на категориите
     category_names = {
         "food": "Храна",
         "medical": "Медицинска помощ",
@@ -227,14 +314,9 @@ def category_help(category):
 
     category_display = category_names.get(category, category.title())
 
-    # Филтрираме доброволци които имат тази категория в skills
-    # Предполагаме че skills съдържа категории разделени със запетаи или като текст
     volunteers = Volunteer.query.filter(Volunteer.skills.ilike(f"%{category}%")).all()
-
-    # Ако няма доброволци, показваме съобщение
     no_volunteers = len(volunteers) == 0
 
-    # Проверяваме дали потребителят е администратор
     is_admin = session.get("admin_logged_in", False)
 
     return render_template(

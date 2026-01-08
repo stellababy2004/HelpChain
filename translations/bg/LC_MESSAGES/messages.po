@@ -1,1987 +1,1853 @@
 # Bulgarian translations for HelpChain
 msgid ""
 msgstr ""
-"Project-Id-Version: HelpChain\n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
+"Project-Id-Version:  HelpChain\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-01-04 12:01+0100\n"
+"PO-Revision-Date: 2026-01-04 12:00+0000\n"
 "Last-Translator: \n"
-"Language-Team: \n"
 "Language: bg\n"
 "Language-Team: bg <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.8\n"
+"Generated-By: Babel 2.17.0\n"
 
-#: appy_with_analytics.py:559
+#: backend/appy_with_analytics.py:593
 msgid "Доброволецът е добавен успешно!"
 msgstr "Доброволецът е добавен успешно!"
 
-#: templates/admin_analytics_professional.html:399
-msgid "HelpChain Analytics"
-msgstr "Аналитика на HelpChain"
-
-#: templates/admin_analytics_professional.html:416
-msgid "Dashboard"
-msgstr "Табло"
-
-#: templates/admin_analytics_professional.html:424
-msgid "Analytics"
-msgstr "Аналитика"
-
-#: templates/admin_analytics_professional.html:429
-msgid "Доброволци"
-msgstr "Доброволци"
-
-#: templates/admin_analytics_professional.html:437
-msgid "Роли"
-msgstr "Роли"
-
-#: templates/admin_analytics_professional.html:445
-msgid "Изход"
-msgstr "Изход"
-
-#: templates/admin_analytics_professional.html:462
-#: templates/dashboard_nav.html:251
-msgid "Админ панел"
-msgstr "Админ панел"
-
-#: templates/admin_analytics_professional.html:466
-#: templates/dashboard_nav.html:115
-msgid "Аналитика"
-msgstr "Аналитика"
-
-#: templates/admin_analytics_professional.html:478
-msgid "Advanced Analytics"
-msgstr "Разширени анализи"
-
-#: templates/admin_analytics_professional.html:481
-msgid "Real-time аналитика и прогнози за HelpChain"
-msgstr "Real-time аналитика и прогнози за HelpChain"
-
-#: templates/admin_analytics_professional.html:484
-msgid "Live"
-msgstr "наживо"
-
-#: templates/admin_analytics_professional.html:490
-msgid "Export JSON"
-msgstr "Експортиране на JSON"
-
-#: templates/admin_analytics_professional.html:493
-msgid "Export CSV"
-msgstr "Експортиране на CSV"
-
-#: templates/admin_analytics_professional.html:503
-msgid "Филтри"
-msgstr "Филтри"
-
-#: templates/admin_analytics_professional.html:507
-msgid "Период"
-msgstr "Period"
-
-#: templates/admin_analytics_professional.html:514
-msgid "Последните 7 дни"
-msgstr "Last 7 days"
-
-#: templates/admin_analytics_professional.html:515
-msgid "Последните 30 дни"
-msgstr "Last 30 days"
-
-#: templates/admin_analytics_professional.html:516
-msgid "Последните 3 месеца"
-msgstr "Last 3 months"
-
-#: templates/admin_analytics_professional.html:517
-msgid "Последната година"
-msgstr "Категория"
-
-#: templates/admin_analytics_professional.html:522
-msgid "Категория"
-msgstr "Категория"
-
-#: templates/admin_analytics_professional.html:529
-msgid "Всички категории"
-msgstr "Всички категории"
-
-#: templates/admin_analytics_professional.html:530
-msgid "Медицинска помощ"
-msgstr "Медицинска помощ"
-
-#: templates/admin_analytics_professional.html:531
-msgid "Транспорт"
-msgstr "Транспорт"
-
-#: templates/admin_analytics_professional.html:532
-msgid "Домакинска помощ"
-msgstr "Домакинска помощ"
-
-#: templates/admin_analytics_professional.html:533
-msgid "Образование"
-msgstr "Образование"
-
-#: templates/admin_analytics_professional.html:538
-msgid "Регион"
-msgstr "Регион"
-
-#: templates/admin_analytics_professional.html:545
-msgid "Всички региони"
-msgstr "Всички региони"
-
-#: templates/admin_analytics_professional.html:546
-msgid "София"
-msgstr "София"
-
-#: templates/admin_analytics_professional.html:547
-msgid "Пловдив"
-msgstr "Пловдив"
-
-#: templates/admin_analytics_professional.html:548
-msgid "Варна"
-msgstr "Варна"
-
-#: templates/admin_analytics_professional.html:549
-msgid "Бургас"
-msgstr "Бургас"
-
-#: templates/admin_analytics_professional.html:555
-#: templates/volunteer_dashboard.html:733
-msgid "Обнови"
-msgstr "Обнови"
-
-#: templates/admin_analytics_professional.html:567
-msgid "Общо заявки"
-msgstr "Общо заявки"
-
-#: templates/admin_analytics_professional.html:578
-msgid "Успеваемост"
-msgstr "Успеваемост"
-
-#: templates/admin_analytics_professional.html:590
-msgid "Средно време за отговор (дни)"
-msgstr "Средно време за отговор (дни)"
-
-#: templates/admin_analytics_professional.html:601
-#: templates/admin_analytics_professional.html:717
-msgid "Активни доброволци"
-msgstr "Активни доброволци"
-
-#: templates/admin_analytics_professional.html:615
-msgid ""
-"Трендове през\n"
-"                времето"
-msgstr "Трендове през времето"
-
-#: templates/admin_analytics_professional.html:623
-msgid "Select trend period"
-msgstr "Избери период за тренд"
-
-#: templates/admin_analytics_professional.html:625
-msgid "6 месеца"
-msgstr "6 месеца"
-
-#: templates/admin_analytics_professional.html:626
-msgid "12 месеца"
-msgstr "12 месеца"
-
-#: templates/admin_analytics_professional.html:627
-msgid "24 месеца"
-msgstr "24 месеца"
-
-#: templates/admin_analytics_professional.html:639
-msgid ""
-"Разпределение по\n"
-"                категории"
-msgstr ""
-"Разпределение по\n"
-"                категории"
-
-#: templates/admin_analytics_professional.html:654
-msgid ""
-"Географско\n"
-"                разпределение"
-msgstr ""
-"Географско\n"
-"                разпределение"
-
-#: templates/admin_analytics_professional.html:666
-msgid ""
-"Прогнози за\n"
-"                следващите 3 месеца"
-msgstr ""
-"Прогнози за\n"
-"                следващите 3 месеца"
-
-#: templates/admin_analytics_professional.html:679
-msgid ""
-"Performance\n"
-"            Metrics"
-msgstr ""
-"Показатели за\n"
-"производителност        Metrics"
-
-#: templates/admin_analytics_professional.html:690
-msgid "Utilization Rate"
-msgstr "Степен на използваемост"
-
-#: templates/admin_analytics_professional.html:699
-msgid "Завършени заявки"
-msgstr "Завършени заявки"
-
-#: templates/admin_analytics_professional.html:708
-msgid "Активни заявки"
-msgstr "Активни заявки"
-
-#: templates/admin_analytics_professional.html:729
-msgid "AI/ML Insights"
-msgstr "Информация от AI/ML"
-
-#: templates/admin_analytics_professional.html:736
-msgid ""
-"Открити\n"
-"                аномалии"
-msgstr ""
-"Открити\n"
-"                аномалии"
-
-#: templates/admin_analytics_professional.html:752
-msgid ""
-"Няма открити\n"
-"                аномалии в данните"
-msgstr ""
-"Няма открити\n"
-"                аномалии в данните"
-
-#: templates/admin_analytics_professional.html:757
-msgid ""
-"User Behavior\n"
-"                Predictions"
-msgstr ""
-"поведението на потребителите\n"
-"                Прогнози"
-
-#: templates/admin_analytics_professional.html:763
-msgid "Оптимално време за ангажиране:"
-msgstr "Оптимално време за ангажиране:"
-
-#: templates/admin_analytics_professional.html:766
-#, python-format
-msgid "%(count)s взаимодействия"
-msgstr "%(count)s взаимодействия"
-
-#: templates/admin_analytics_professional.html:773
-msgid "Риск от churn:"
-msgstr "Риск от отпадане"
-
-#: templates/admin_analytics_professional.html:780
-#, python-format
-msgid "(%(days)s дни без активност)"
-msgstr "(%(days)s дни без активност)"
-
-#: templates/admin_analytics_professional.html:786
-msgid ""
-"ML insights не са\n"
-"                налични в момента"
-msgstr ""
-"ML анализи не са\n"
-"                налични в момента"
-
-#: templates/admin_analytics_professional.html:798
-msgid ""
-"Препоръки за\n"
-"                оптимизация"
-msgstr ""
-"Препоръки за\n"
-"                оптимизация"
-
-#: templates/admin_analytics_professional.html:823
-msgid "Няма налични препоръки в момента"
-msgstr "Няма налични препоръки в момента"
-
-#: templates/admin_analytics_professional.html:852
-msgid "Live (WebSocket)"
-msgstr "В реално време (WebSocket)"
-
-#: templates/admin_analytics_professional.html:853
-#, fuzzy
-msgid "Live (Polling)"
-msgstr "На живо (периодично обновяване)"
-
-#: templates/base.html:450
-msgid "Инсталирай HelpChain като мобилно приложение"
-msgstr "Инсталирай HelpChain като мобилно приложение"
-
-#: templates/base.html:451
-msgid "Инсталирай приложението за по-добро изживяване"
-msgstr "Инсталирай приложението за по-добро изживяване"
-
-#: templates/base.html:454
-msgid "Инсталирай приложението"
-msgstr "Инсталирай приложението"
-
-#: templates/base.html:463 templates/base.html:464 templates/base.html:465
-msgid "Превключи към тъмна тема"
-msgstr "Превключи към тъмна тема"
-
-#: templates/base.html:466
-msgid "Превключи към светла тема"
-msgstr "Превключи към светла тема"
-
-#: templates/base.html:480
-#, fuzzy
-msgid "Email"
-msgstr "Email"
-
-#: templates/base.html:481
-msgid "Facebook"
-msgstr "Facebook"
-
-#: templates/base.html:482
-msgid "Условия за ползване"
-msgstr "Условия за ползване"
-
-#: templates/base.html:484
-msgid "Политика за поверителност"
-msgstr "Политика за поверителност"
-
-#: templates/base.html:487
-msgid "Истории на успеха"
-msgstr "Истории на успеха"
-
-#: templates/base.html:488 templates/index.html:397
-msgid "Обратна връзка"
-msgstr "Обратна връзка"
-
-#: templates/base.html:611
-msgid "Нова версия на HelpChain е налична!"
-msgstr "Нова версия на HelpChain е налична!"
-
-#: templates/base.html:617
-msgid "Обнови сега"
-msgstr "Обнови сега"
-
-#: templates/base.html:620
-msgid "По-късно"
-msgstr "По-късно"
-
-#: templates/dashboard_nav.html:59
-msgid ""
-"Моите\n"
-"            задачи"
-msgstr ""
-"Моите\n"
-"            задачи"
-
-#: templates/dashboard_nav.html:69 templates/volunteer_dashboard.html:829
-msgid ""
-"Налични\n"
-"            задачи"
-msgstr ""
-"Налични\n"
-"            задачи"
-
-#: templates/dashboard_nav.html:79 templates/dashboard_nav.html:223
-msgid "Профил"
-msgstr "Профил"
-
-#: templates/dashboard_nav.html:89 templates/volunteer_dashboard.html:669
-#: templates/volunteer_dashboard.html:807
-msgid "Постижения"
-msgstr "Постижения"
-
-#: templates/dashboard_nav.html:99
-msgid "Табло"
-msgstr "Табло"
-
-#: templates/dashboard_nav.html:130 templates/dashboard_nav.html:131
-msgid "Избор на език"
-msgstr "Избор на език"
-
-#: templates/dashboard_nav.html:148
-msgid "Български"
-msgstr "Български"
-
-#: templates/dashboard_nav.html:175 templates/dashboard_nav.html:176
-msgid "Глобално търсене"
-msgstr "Глобално търсене"
-
-#: templates/dashboard_nav.html:231
-msgid "Настройки"
-msgstr "Настройки"
-
-#: templates/home.html:13
-msgid "Добре дошли в HelpChain"
-msgstr "Добре дошли в HelpChain"
-
-#: templates/home.html:15
-msgid ""
-"Свързваме хора в нужда с доброволци, готови да помогнат – бързо\n"
-"          и сигурно."
-msgstr ""
-"Свързваме хора в нужда с доброволци, готови да помогнат – бързо\n"
-"          и сигурно."
-
-#: templates/home.html:23 templates/index.html:162
-msgid "Подай сигнал за помощ"
-msgstr "Подай сигнал за помощ"
-
-#: templates/home.html:30 templates/index.html:175
-msgid "Вход за доброволци"
-msgstr "Вход за доброволци"
-
-#: templates/home.html:45 templates/index.html:265
-msgid "Подадени сигнали"
-msgstr "Подадени сигнали"
-
-#: templates/home.html:52
-msgid "Как работи?"
-msgstr "Как работи?"
-
-#: templates/home.html:55
-msgid "Подай сигнал с няколко клика."
-msgstr "Подай сигнал с няколко клика."
-
-#: templates/home.html:57
-msgid "Най-близкият доброволец получава уведомление."
-msgstr "Най-близкият доброволец получава уведомление."
-
-#: templates/home.html:59
-msgid "Получаваш помощ и обратна връзка."
-msgstr "Получаваш помощ и обратна връзка."
-
-#: templates/home.html:68
-msgid ""
-"Стани доброволец и промени нечий\n"
-"          живот днес!"
-msgstr ""
-"Стани доброволец и промени нечий\n"
-"          живот днес!"
-
-#: templates/home_new.html:5
-msgid "HelpChain – Свързваме хората, които помагат"
-msgstr "HelpChain – Свързваме хората, които помагат"
-
-#: templates/home_new.html:17
+#: backend/helpchain_backend/src/copy.py:37
+#: backend/helpchain_backend/src/copy.py:109
 msgid "HelpChain"
 msgstr "HelpChain"
 
-#: templates/home_new.html:20
-msgid "Как работи"
-msgstr "Как работи"
-
-#: templates/home_new.html:21
-msgid "Истории"
-msgstr "Истории"
-
-#: templates/home_new.html:23 templates/home_new.html:92
-#: templates/index.html:382 templates/index.html:413
-msgid "Стани доброволец"
-msgstr "Стани доброволец"
-
-#: templates/home_new.html:26 templates/home_new.html:98
-msgid "Имам нужда от помощ"
-msgstr "Имам нужда от помощ"
-
-#: templates/home_new.html:30
-msgid "Включи се във веригата"
-msgstr "Включи се във веригата"
-
-#: templates/home_new.html:75
-msgid "В реално време свързваме помощ с нужда"
-msgstr "В реално време свързваме помощ с нужда"
-
-#: templates/home_new.html:79
-msgid "Превръщаме"
-msgstr "Превръщаме"
-
-#: templates/home_new.html:79
-msgid "добротата"
-msgstr "добротата"
-
-#: templates/home_new.html:79
-msgid "в организирана сила."
-msgstr "в организирана сила."
-
-#: templates/index.html:75
-msgid "Сърце с ръце"
-msgstr "Сърце с ръце"
-
-#: templates/index.html:139
-msgid "Добре дошли!"
-msgstr "Добре дошли!"
-
-#: templates/index.html:146
-msgid "свързва хора в нужда с доброволци, готови да помогнат."
-msgstr "свързва хора в нужда с доброволци, готови да помогнат."
-
-#: templates/index.html:148
-msgid "Заедно изграждаме общество, в което всеки има значение."
-msgstr "Заедно изграждаме общество, в което всеки има значение."
-
-#: templates/index.html:166
-msgid "NEW"
-msgstr "NEW"
-
-#: templates/index.html:181
-msgid "Регистрация на доброволец"
-msgstr "Регистрация на доброволец"
-
-#: templates/index.html:191
-msgid "Подай сигнал"
-msgstr "Подай сигнал"
-
-#: templates/index.html:192
-msgid "Сподели проблема си лесно и бързо."
-msgstr "Сподели проблема си лесно и бързо."
-
-#: templates/index.html:200
-msgid "Доброволец откликва"
-msgstr "Доброволец откликва"
-
-#: templates/index.html:201
-msgid "Нашите доброволци са винаги готови да помогнат."
-msgstr "Нашите доброволци са винаги готови да помогнат."
-
-#: templates/index.html:209
-msgid "Получаваш помощ"
-msgstr "Получаваш помощ"
-
-#: templates/index.html:210
-msgid "Реална подкрепа за теб и твоите близки."
-msgstr "Реална подкрепа за теб и твоите близки."
-
-#: templates/index.html:248
-msgid "Защо да се включа?"
-msgstr "Защо да се включа?"
-
-#: templates/index.html:274 templates/index.html:319
-msgid "Мария"
-msgstr "Мария"
-
-#: templates/index.html:277 templates/index.html:323
-msgid "„Благодарение на helpchain.live най-много имах нужда!“"
-msgstr "„Благодарение на helpchain.live най-много имах нужда!“"
-
-#: templates/index.html:278 templates/index.html:312 templates/index.html:326
-msgid "Мария, София"
-msgstr "Мария, София"
-
-#: templates/index.html:284
-msgid "Стани доброволец днес и промени нечий живот!"
-msgstr "Стани доброволец днес и промени нечий живот!"
-
-#: templates/index.html:287
-msgid "Заедно можем повече!"
-msgstr "Заедно можем повече!"
-
-#: templates/index.html:290
-msgid "Имате идея или проблем?"
-msgstr "Имате идея или проблем?"
-
-#: templates/index.html:292
-msgid "Пишете ни"
-msgstr "Пишете ни"
-
-#: templates/index.html:311
-msgid ""
-"„Благодарение на helpchain.live\n"
-"най-много имах нужда!“"
+#: backend/helpchain_backend/src/copy.py:38
+msgid "Изпрати"
 msgstr ""
-"„Благодарение на helpchain.live\n"
-"най-много имах нужда!“"
 
-#: templates/index.html:312
-msgid ""
-"„Екипът\n"
-"реагира бързо и професионално!“"
+#: backend/helpchain_backend/src/copy.py:39
+#, fuzzy
+msgid "Продължи"
+msgstr "Роли"
+
+#: backend/helpchain_backend/src/copy.py:40
+msgid "Назад"
 msgstr ""
-"„Екипът\n"
-"реагира бързо и професионално!“"
 
-#: templates/index.html:313
-msgid "Георги, Пловдив"
-msgstr "Георги, Пловдив"
-
-#: templates/index.html:314
-msgid "„Чувствам се подкрепен и разбран!“"
-msgstr "„Чувствам се подкрепен и разбран!“"
-
-#: templates/index.html:314
-msgid "Иван, Варна"
-msgstr "Иван, Варна"
-
-#: templates/index.html:367
-msgid "Меню"
-msgstr "Меню"
-
-#: templates/index.html:377 templates/index.html:405 templates/index.html:462
-msgid "Новини"
-msgstr "Новини"
-
-#: templates/index.html:387 templates/index.html:425
-msgid "Полезни връзки"
-msgstr "Полезни връзки"
-
-#: templates/index.html:392 templates/index.html:442
-msgid "Контакти"
-msgstr "Контакти"
-
-#: templates/index.html:408
-msgid "HelpChain стартира нова кампания за подкрепа на възрастни хора!"
-msgstr "HelpChain стартира нова кампания за подкрепа на възрастни хора!"
-
-#: templates/index.html:416
-msgid "Регистрирай се и помогни на хора в нужда – всеки може да бъде герой!"
-msgstr "Регистрирай се и помогни на хора в нужда – всеки може да бъде герой!"
-
-#: templates/index.html:420
-msgid "Регистрирай се като доброволец"
-msgstr "Регистрирай се като доброволец"
-
-#: templates/index.html:430
-msgid "БЧК"
-msgstr "БЧК"
-
-#: templates/index.html:435
-msgid "Държавни услуги"
-msgstr "Държавни услуги"
-
-#: templates/index.html:445
-msgid "Пиши ни на"
-msgstr "Пиши ни на"
-
-#: templates/index.html:468
+#: backend/helpchain_backend/src/copy.py:41
 msgid "Затвори"
 msgstr "Затвори"
 
-#: templates/index.html:473
-msgid ""
-"HelpChain стартира нова кампания за подкрепа на възрастни\n"
-"          хора!"
-msgstr ""
-"HelpChain стартира нова кампания за подкрепа на възрастни\n"
-"          хора!"
-
-#: templates/index.html:477
-msgid ""
-"От 1 август 2025 г. доброволците ни ще посещават домове на\n"
-"          възрастни хора и ще оказват помощ с пазаруване, лекарства и социална\n"
-"          подкрепа."
-msgstr ""
-"От 1 август 2025 г. доброволците ни ще посещават домове на\n"
-"          възрастни хора и ще оказват помощ с пазаруване, лекарства и социална\n"
-"          подкрепа."
-
-#: templates/index.html:482
-msgid "Публикувано на: 23 юли 2025 г."
-msgstr "Публикувано на: 23 юли 2025 г."
-
-#: templates/volunteer_dashboard.html:1
-msgid ""
-"Доброволчески панел -\n"
-"HelpChain"
-msgstr ""
-"Доброволчески панел -\n"
-"HelpChain"
-
-#: templates/volunteer_dashboard.html:559
-msgid "Доброволчески панел"
-msgstr "Доброволчески панел"
-
-#: templates/volunteer_dashboard.html:569
-msgid "Доброволец"
-msgstr "Доброволец"
-
-#: templates/volunteer_dashboard.html:571
-#, python-format
-msgid "Добре дошли, %(name)s! 👋"
-msgstr "Добре дошли, %(name)s! 👋"
-
-#: templates/volunteer_dashboard.html:574
-#, python-format
-msgid ""
-"Благодарим ви за доброволчеството! Днес можете да помогнете на\n"
-"            още %(count)s души."
-msgstr ""
-"Благодарим ви за доброволчеството! Днес можете да помогнете на\n"
-"            още %(count)s души."
-
-#: templates/volunteer_dashboard.html:595
-msgid "Завършени задачи"
-msgstr "Завършени задачи"
-
-#: templates/volunteer_dashboard.html:604
-#: templates/volunteer_dashboard.html:773
-msgid "Активни задачи"
-msgstr "Активни задачи"
-
-#: templates/volunteer_dashboard.html:606
-msgid "В момента работите по тези задачи"
-msgstr "В момента работите по тези задачи"
-
-#: templates/volunteer_dashboard.html:616
-msgid "Средна оценка"
-msgstr "Средна оценка"
-
-#: templates/volunteer_dashboard.html:618
-#, python-format
-msgid "%(count)s спешни задачи наблизо!"
-msgstr "%(count)s спешни задачи наблизо!"
-
-#: templates/volunteer_dashboard.html:628
-msgid "Помогнати хора"
-msgstr "Помогнати хора"
-
-#: templates/volunteer_dashboard.html:639
-#, python-format
-msgid ""
-"Ниво\n"
-"            %(level)s"
-msgstr ""
-"Ниво\n"
-"            %(level)s"
-
-#: templates/volunteer_dashboard.html:644
-msgid "Общо XP"
-msgstr "Общо XP"
-
-#: templates/volunteer_dashboard.html:648
-msgid "Прогрес към следващо ниво"
-msgstr "Прогрес към следващо ниво"
-
-#: templates/volunteer_dashboard.html:659
-#, python-format
-msgid "Още %(xp)s опит до ниво %(next_level)s"
-msgstr "Още %(xp)s опит до ниво %(next_level)s"
-
-#: templates/volunteer_dashboard.html:675
-msgid "Нови постижения скоро!"
-msgstr "Нови постижения скоро!"
-
-#: templates/volunteer_dashboard.html:685
-msgid ""
-"Вашите активни\n"
-"        задачи"
-msgstr ""
-"Вашите активни\n"
-"        задачи"
-
-#: templates/volunteer_dashboard.html:689
-msgid "Задачи, по които работите в момента"
-msgstr "Задачи, по които работите в момента"
-
-#: templates/volunteer_dashboard.html:715
-msgid "Прогрес"
-msgstr "Прогрес"
-
-#: templates/volunteer_dashboard.html:731
-msgid "Обнови прогреса"
-msgstr "Обнови прогреса"
-
-#: templates/volunteer_dashboard.html:738
-msgid "Завърши задачата"
-msgstr "Завърши задачата"
-
-#: templates/volunteer_dashboard.html:740
-msgid "Завърши"
-msgstr "Завърши"
-
-#: templates/volunteer_dashboard.html:749
-msgid "Нямате активни задачи"
-msgstr "Нямате активни задачи"
-
-#: templates/volunteer_dashboard.html:751
-msgid "Приемете нова задача от секцията „Налични задачи“ по-долу."
-msgstr "Приемете нова задача от секцията „Налични задачи“ по-долу."
-
-#: templates/volunteer_dashboard.html:763
-msgid "Налични задачи"
-msgstr "Налични задачи"
-
-#: templates/volunteer_dashboard.html:765
-#, python-format
-msgid "%(count)s задачи чакат помощ"
-msgstr "%(count)s задачи чакат помощ"
-
-#: templates/volunteer_dashboard.html:775
-msgid "Прегледай текущите си ангажименти"
-msgstr "Прегледай текущите си ангажименти"
-
-#: templates/volunteer_dashboard.html:783
-msgid "Актуализирай локация"
-msgstr "Актуализирай локация"
-
-#: templates/volunteer_dashboard.html:785
-msgid "Намери близки заявки за помощ"
-msgstr "Намери близки заявки за помощ"
-
-#: templates/volunteer_dashboard.html:796
-msgid "Редактирай профил"
-msgstr "Редактирай профил"
-
-#: templates/volunteer_dashboard.html:797
-msgid "Обнови информацията си"
-msgstr "Обнови информацията си"
-
-#: templates/volunteer_dashboard.html:808
-msgid "Виж своите значки и XP"
-msgstr "Виж своите значки и XP"
-
-#: templates/volunteer_dashboard.html:818
-msgid "Поддръжка"
-msgstr "Поддръжка"
-
-#: templates/volunteer_dashboard.html:819
-msgid "Свържи се с нас"
-msgstr "Свържи се с нас"
-
-#: templates/volunteer_dashboard.html:833
-msgid "Задачи, които се нуждаят от доброволци"
-msgstr "Задачи, които се нуждаят от доброволци"
-
-#: templates/volunteer_dashboard.html:838
-msgid "Общо:"
-msgstr "Общо:"
-
-#: templates/volunteer_dashboard.html:842
-msgid "Спешни:"
-msgstr "Спешни:"
-
-#: templates/volunteer_dashboard.html:846
-msgid "Високи:"
-msgstr "Високи:"
-
-#: templates/volunteer_dashboard.html:850
-msgid "Средни:"
-msgstr "Средни:"
-
-#: templates/volunteer_dashboard.html:854
-msgid "Ниски:"
-msgstr "Ниски:"
-
-#: templates/volunteer_dashboard.html:867
-msgid "Търси задачи..."
-msgstr "Търси задачи..."
-
-#: templates/volunteer_dashboard.html:874
-msgid "Филтрирай по приоритет"
-msgstr "Филтрирай по приоритет"
-
-#: templates/volunteer_dashboard.html:876
-msgid "Всички приоритети"
-msgstr "Всички приоритети"
-
-#: templates/volunteer_dashboard.html:877
-msgid "Само спешни"
-msgstr "Само спешни"
-
-#: templates/volunteer_dashboard.html:878
-msgid "Висок приоритет"
-msgstr "Висок приоритет"
-
-#: templates/volunteer_dashboard.html:879
-msgid "Среден приоритет"
-msgstr "Среден приоритет"
-
-#: templates/volunteer_dashboard.html:880
-msgid "Нисък приоритет"
-msgstr "Нисък приоритет"
-
-#: templates/volunteer_dashboard.html:885
-msgid "Подреди наличните задачи"
-msgstr "Подреди наличните задачи"
-
-#: templates/volunteer_dashboard.html:887
-msgid "Най-нови"
-msgstr "Най-нови"
-
-#: templates/volunteer_dashboard.html:888
-msgid "Най-стари"
-msgstr "Най-стари"
-
-#: templates/volunteer_dashboard.html:890
-msgid "Най-кратка продължителност"
-msgstr "Най-кратка продължителност"
-
-#: templates/volunteer_dashboard.html:893
-msgid "Най-дълга продължителност"
-msgstr "Най-дълга продължителност"
-
-#: templates/volunteer_dashboard.html:902
-msgid "Бързи филтри по приоритет"
-msgstr "Бързи филтри по приоритет"
-
-#: templates/volunteer_dashboard.html:909
-msgid "Всички"
-msgstr "Всички"
-
-#: templates/volunteer_dashboard.html:917
-msgid "Спешни"
-msgstr "Спешни"
-
-#: templates/volunteer_dashboard.html:925
-msgid "Високи"
-msgstr "Високи"
-
-#: templates/volunteer_dashboard.html:935
-msgid "Средни"
-msgstr "Средни"
-
-#: templates/volunteer_dashboard.html:945
-msgid "Ниски"
-msgstr "Ниски"
-
-#: templates/volunteer_dashboard.html:1054
-msgid "Спешна"
-msgstr "Спешна"
-
-#: templates/volunteer_dashboard.html:1055
-msgid "Висока"
-msgstr "Висока"
-
-#: templates/volunteer_dashboard.html:1056
-msgid "Средна"
-msgstr "Средна"
-
-#: templates/volunteer_dashboard.html:1057
-msgid "Ниска"
-msgstr "Ниска"
-
-#: templates/volunteer_dashboard.html:1081
-msgid "Грешка при зареждане на задачите"
-msgstr "Грешка при зареждане на задачите"
-
-#: templates/volunteer_dashboard.html:1094
-#: templates/volunteer_dashboard.html:1387
-#: templates/volunteer_dashboard.html:1418
-#: templates/volunteer_dashboard.html:1447
-msgid "Грешка при свързване със сървъра"
-msgstr "Грешка при свързване със сървъра"
-
-#: templates/volunteer_dashboard.html:1147
-msgid "Няма намерени задачи"
-msgstr "Няма намерени задачи"
-
-#: templates/volunteer_dashboard.html:1148
-msgid "Опитайте с други критерии за търсене."
-msgstr "Опитайте с други критерии за търсене."
-
-#: templates/volunteer_dashboard.html:1160
-msgid "ч"
-msgstr "ч"
-
-#: templates/volunteer_dashboard.html:1161
-msgid "Няма"
-msgstr "Няма"
-
-#: templates/volunteer_dashboard.html:1162
-msgid "Не е посочена"
-msgstr "Не е посочена"
-
-#: templates/volunteer_dashboard.html:1163
-msgid "Няма описание"
-msgstr "Няма описание"
-
-#: templates/volunteer_dashboard.html:1187
-msgid "Преглед на детайлите"
-msgstr "Преглед на детайлите"
-
-#: templates/volunteer_dashboard.html:1188
-msgid "Детайли"
-msgstr "Детайли"
-
-#: templates/volunteer_dashboard.html:1192
-msgid "Приеми задачата"
-msgstr "Приеми задачата"
-
-#: templates/volunteer_dashboard.html:1193
-msgid "Приеми"
-msgstr "Приеми"
-
-#: templates/volunteer_dashboard.html:1362
-msgid "Сигурни ли сте, че искате да приемете тази задача?"
-msgstr "Сигурни ли сте, че искате да приемете тази задача?"
-
-#: templates/volunteer_dashboard.html:1377
-msgid "Задачата е приета успешно!"
-msgstr "Задачата е приета успешно!"
-
-#: templates/volunteer_dashboard.html:1381
-msgid "Грешка при приемане на задачата: "
-msgstr "Грешка при приемане на задачата: "
-
-#: templates/volunteer_dashboard.html:1393
-msgid "Детайлите за задачата ще бъдат показани в модален прозорец"
-msgstr "Детайлите за задачата ще бъдат показани в модален прозорец"
-
-#: templates/volunteer_dashboard.html:1408
-msgid "Прогресът е обновен!"
-msgstr "Прогресът е обновен!"
-
-#: templates/volunteer_dashboard.html:1412
-msgid "Грешка при обновяване на прогреса"
-msgstr "Грешка при обновяване на прогреса"
-
-#: templates/volunteer_dashboard.html:1423
-msgid "Сигурни ли сте, че задачата е завършена?"
-msgstr "Сигурни ли сте, че задачата е завършена?"
-
-#: templates/volunteer_dashboard.html:1435
-msgid "Задачата е отбелязана като завършена!"
-msgstr "Задачата е отбелязана като завършена!"
-
-#: templates/volunteer_dashboard.html:1441
-msgid "Грешка при завършване на задачата"
-msgstr "Грешка при завършване на задачата"
-
-#: templates/volunteer_dashboard.html:1455
-msgid "Зареждане..."
+#: backend/helpchain_backend/src/copy.py:42
+#, fuzzy
+msgid "Зареждане…"
 msgstr "Зареждане..."
 
-#: templates/volunteer_dashboard.html:1481
-msgid "Локацията е получена успешно!"
-msgstr "Локацията е получена успешно!"
-
-#: templates/volunteer_dashboard.html:1489
-msgid "Не можахме да получим вашата локация. Моля, въведете я ръчно."
-msgstr "Не можахме да получим вашата локация. Моля, въведете я ръчно."
-
-#: templates/volunteer_dashboard.html:1498
-msgid "Вашият браузър не поддържа геолокация."
-msgstr "Вашият браузър не поддържа геолокация."
-
-#: templates/volunteer_dashboard.html:1511
-msgid "Моля, въведете валидни координати."
-msgstr "Моля, въведете валидни координати."
-
-#: templates/volunteer_dashboard.html:1519
-msgid "Запазване..."
-msgstr "Запазване..."
-
-#: templates/volunteer_dashboard.html:1540
-msgid "Локацията е актуализирана успешно!"
-msgstr "Локацията е актуализирана успешно!"
-
-#: templates/volunteer_dashboard.html:1546
-msgid "Грешка при актуализиране на локацията: "
-msgstr "Грешка при актуализиране на локацията: "
-
-#: templates/volunteer_dashboard.html:1554
-msgid "Грешка при свързване със сървъра."
-msgstr "Грешка при свързване със сървъра."
-
-#: venv/Lib/site-packages/click/_termui_impl.py:518
-#, python-brace-format
-msgid "{editor}: Editing failed"
-msgstr "{editor}: Редактирането не бе успешно"
-
-#: venv/Lib/site-packages/click/_termui_impl.py:522
-#, python-brace-format
-msgid "{editor}: Editing failed: {e}"
+#: backend/helpchain_backend/src/copy.py:43
+msgid "Полета с * са задължителни."
 msgstr ""
 
-#: venv/Lib/site-packages/click/core.py:1120
-#: venv/Lib/site-packages/typer/core.py:249
-msgid "Aborted!"
-msgstr "Прекратено!"
+#: backend/helpchain_backend/src/copy.py:44
+msgid "Нещо се обърка. Опитай отново след малко."
+msgstr ""
 
-#: venv/Lib/site-packages/click/core.py:1309
-#: venv/Lib/site-packages/click/decorators.py:559
-msgid "Show this message and exit."
-msgstr "Покажи това съобщение и прекрати работата."
+#: backend/helpchain_backend/src/copy.py:45
+msgid "Провери маркираните полета и опитай отново."
+msgstr ""
 
-#: venv/Lib/site-packages/click/core.py:1340
-#: venv/Lib/site-packages/click/core.py:1370
-#, python-brace-format
-msgid "(Deprecated) {text}"
-msgstr "(Премахнато) {text}"
+#: backend/helpchain_backend/src/copy.py:50
+#, fuzzy
+msgid "Подай заявка за помощ"
+msgstr "Подай сигнал за помощ"
 
-#: venv/Lib/site-packages/click/core.py:1387
-#: venv/Lib/site-packages/typer/core.py:633
-#: venv/Lib/site-packages/typer/rich_utils.py:96
-msgid "Options"
-msgstr "Опции"
-
-#: venv/Lib/site-packages/click/core.py:1413
-#, python-brace-format
-msgid "Got unexpected extra argument ({args})"
-msgid_plural "Got unexpected extra arguments ({args})"
-msgstr[0] "Получен е неочакван допълнителен параметър ({args})"
-msgstr[1] "Получени са неочаквани допълнителни параметри ({args})"
-
-#: venv/Lib/site-packages/click/core.py:1429
-#, python-brace-format
-msgid "DeprecationWarning: The command {name!r} is deprecated."
-msgstr "Предупреждение: Командата {name!r} е премахната/остаряла."
-
-#: venv/Lib/site-packages/click/core.py:1636
-#: venv/Lib/site-packages/typer/rich_utils.py:97
-msgid "Commands"
-msgstr "Команди"
-
-#: venv/Lib/site-packages/click/core.py:1668
-msgid "Missing command."
-msgstr "Командата липсва."
-
-#: venv/Lib/site-packages/click/core.py:1746
-#, python-brace-format
-msgid "No such command {name!r}."
-msgstr "Няма такава команда {name!r}."
-
-#: venv/Lib/site-packages/click/core.py:2310
-msgid "Value must be an iterable."
-msgstr "Стойността трябва да е итерируем обект."
-
-#: venv/Lib/site-packages/click/core.py:2331
-#, python-brace-format
-msgid "Takes {nargs} values but 1 was given."
-msgid_plural "Takes {nargs} values but {len} were given."
-msgstr[0] "Трябва да получи {nargs} стойности, но е подадена само една."
-msgstr[1] "Трябва да получи {nargs} стойности, но са подадени {len}."
-
-#: venv/Lib/site-packages/click/core.py:2778
-#: venv/Lib/site-packages/typer/core.py:553
-#, python-brace-format
-msgid "env var: {var}"
-msgstr "системна променлива: {var}"
-
-#: venv/Lib/site-packages/click/core.py:2808
-#: venv/Lib/site-packages/typer/core.py:114
-msgid "(dynamic)"
-msgstr "(динамично)"
-
-#: venv/Lib/site-packages/click/core.py:2821
-#: venv/Lib/site-packages/typer/core.py:366
-#: venv/Lib/site-packages/typer/core.py:574
-#, python-brace-format
-msgid "default: {default}"
-msgstr "по подразбиране: {default}"
-
-#: venv/Lib/site-packages/click/core.py:2834
-#: venv/Lib/site-packages/typer/core.py:368
-#: venv/Lib/site-packages/typer/core.py:583
-msgid "required"
-msgstr "задължително"
-
-#: venv/Lib/site-packages/click/decorators.py:465
-#, python-format
-msgid "%(prog)s, version %(version)s"
-msgstr "%(prog)s, версия %(version)s"
-
-#: venv/Lib/site-packages/click/decorators.py:528
-msgid "Show the version and exit."
-msgstr "Покажи версията и излез."
-
-#: venv/Lib/site-packages/click/exceptions.py:44
-#: venv/Lib/site-packages/click/exceptions.py:80
-#, python-brace-format
-msgid "Error: {message}"
-msgstr "Грешка: {message}"
-
-#: venv/Lib/site-packages/click/exceptions.py:72
-#, python-brace-format
-msgid "Try '{command} {option}' for help."
-msgstr "Опитайте с '{command} {option}' за помощ."
-
-#: venv/Lib/site-packages/click/exceptions.py:121
-#, python-brace-format
-msgid "Invalid value: {message}"
-msgstr "Невалидна стойност: {message}"
-
-#: venv/Lib/site-packages/click/exceptions.py:123
-#, python-brace-format
-msgid "Invalid value for {param_hint}: {message}"
-msgstr "Невалидна стойност за {param_hint}: {message}"
-
-#: venv/Lib/site-packages/click/exceptions.py:179
-msgid "Missing argument"
-msgstr "Липсващ параметър"
-
-#: venv/Lib/site-packages/click/exceptions.py:181
-msgid "Missing option"
-msgstr "Опцията липсва"
-
-#: venv/Lib/site-packages/click/exceptions.py:183
-msgid "Missing parameter"
-msgstr "Липсващ параметър"
-
-#: venv/Lib/site-packages/click/exceptions.py:185
-#, python-brace-format
-msgid "Missing {param_type}"
-msgstr "Липсващ {param_type}"
-
-#: venv/Lib/site-packages/click/exceptions.py:192
-#, python-brace-format
-msgid "Missing parameter: {param_name}"
-msgstr "Липсващ параметър: {param_name}"
-
-#: venv/Lib/site-packages/click/exceptions.py:212
-#, python-brace-format
-msgid "No such option: {name}"
-msgstr "Няма такава опция: {name}"
-
-#: venv/Lib/site-packages/click/exceptions.py:224
-#, python-brace-format
-msgid "Did you mean {possibility}?"
-msgid_plural "(Possible options: {possibilities})"
-msgstr[0] "Може би имахте предвид{possibilities}?"
-msgstr[1] "Възможни варианти:{possibilities}."
-
-#: venv/Lib/site-packages/click/exceptions.py:262
-msgid "unknown error"
-msgstr "неизвестна грешка"
-
-#: venv/Lib/site-packages/click/exceptions.py:269
-#, python-brace-format
-msgid "Could not open file {filename!r}: {message}"
-msgstr "Не може да се отвори файлът {filename!r}: {message}"
-
-#: venv/Lib/site-packages/click/formatting.py:156
-msgid "Usage:"
-msgstr "Употреба:"
-
-#: venv/Lib/site-packages/click/parser.py:231
-#, python-brace-format
-msgid "Argument {name!r} takes {nargs} values."
-msgstr "Параметърът {name!r} изисква {nargs} стойности."
-
-#: venv/Lib/site-packages/click/parser.py:413
-#, python-brace-format
-msgid "Option {name!r} does not take a value."
-msgstr "Опцията {name!r} не изисква стойност."
-
-#: venv/Lib/site-packages/click/parser.py:474
-#, python-brace-format
-msgid "Option {name!r} requires an argument."
-msgid_plural "Option {name!r} requires {nargs} arguments."
-msgstr[0] "Опцията {name!r} изисква стойност."
-msgstr[1] "Опцията {name!r} изисква {nargs} аргумента."
-
-#: venv/Lib/site-packages/click/shell_completion.py:319
-msgid "Shell completion is not supported for Bash versions older than 4.4."
-msgstr "Автоматичното допълване в shell не се поддържа за Bash версии по-стари от 4.4."
-
-#: venv/Lib/site-packages/click/shell_completion.py:326
-msgid "Couldn't detect Bash version, shell completion is not supported."
-msgstr "Не можа да се открие версията на Bash, автоматичното допълване в shell не се поддържа."
-
-#: venv/Lib/site-packages/click/termui.py:158
-msgid "Repeat for confirmation"
-msgstr "Повторете за потвърждение"
-
-#: venv/Lib/site-packages/click/termui.py:174
-msgid "Error: The value you entered was invalid."
-msgstr "Грешка: Въведената стойност е невалидна."
-
-#: venv/Lib/site-packages/click/termui.py:176
-#, python-brace-format
-msgid "Error: {e.message}"
-msgstr "Грешка: {e.message}"
-
-#: venv/Lib/site-packages/click/termui.py:187
-msgid "Error: The two entered values do not match."
-msgstr "Грешка: Двете въведени стойности не съвпадат."
-
-#: venv/Lib/site-packages/click/termui.py:243
-msgid "Error: invalid input"
-msgstr "Грешка: невалиден вход"
-
-#: venv/Lib/site-packages/click/termui.py:773
-msgid "Press any key to continue..."
-msgstr "Натиснете произволен клавиш, за да продължите..."
-
-#: venv/Lib/site-packages/click/types.py:266
-#, python-brace-format
+#: backend/helpchain_backend/src/copy.py:51
 msgid ""
-"Choose from:\n"
-"\t{choices}"
-msgstr "Изберете от: {choices}"
+"Избери категория и попълни кратко описание. Ако случаят е спешен, "
+"отбележи това ясно."
+msgstr ""
 
-#: venv/Lib/site-packages/click/types.py:298
-#, python-brace-format
-msgid "{value!r} is not {choice}."
-msgid_plural "{value!r} is not one of {choices}."
-msgstr[0] "{value!r} не е {choice}."
-msgstr[1] "{value!r} не е сред {choices}."
+#: backend/helpchain_backend/src/copy.py:52
+msgid "Категория"
+msgstr "Категория"
 
-#: venv/Lib/site-packages/click/types.py:392
-#, python-brace-format
-msgid "{value!r} does not match the format {format}."
-msgid_plural "{value!r} does not match the formats {formats}."
-msgstr[0] "{value!r} не отговаря на формата {format}."
-msgstr[1] "{value!r} не отговаря на форматите {formats}."
+#: backend/helpchain_backend/src/copy.py:53
+#, fuzzy
+msgid "Избери категория…"
+msgstr "Категория"
 
-#: venv/Lib/site-packages/click/types.py:414
-#, python-brace-format
-msgid "{value!r} is not a valid {number_type}."
-msgstr "{value!r} не е валиден {number_type}."
+#: backend/helpchain_backend/src/copy.py:54
+msgid "Описание на ситуацията"
+msgstr ""
 
-#: venv/Lib/site-packages/click/types.py:470
-#, fuzzy, python-brace-format
-msgid "{value} is not in the range {range}."
-msgstr "{редактор}:Грешка при редактиране:{e}"
+#: backend/helpchain_backend/src/copy.py:55
+msgid "Напиши накратко какво се случва и от какво имаш нужда."
+msgstr ""
 
-#: venv/Lib/site-packages/click/types.py:611
-#, python-brace-format
-msgid "{value!r} is not a valid boolean."
-msgstr "{value!r} не е валидна булева стойност."
+#: backend/helpchain_backend/src/copy.py:56
+#, fuzzy
+msgid "Контакт за връзка"
+msgstr "Обратна връзка"
 
-#: venv/Lib/site-packages/click/types.py:635
-#, python-brace-format
-msgid "{value!r} is not a valid UUID."
-msgstr "{value!r} не е валиден UUID."
+#: backend/helpchain_backend/src/copy.py:57
+msgid "Телефон или имейл, за да можем да се свържем."
+msgstr ""
 
-#: venv/Lib/site-packages/click/types.py:822
-msgid "file"
-msgstr "файл"
+#: backend/helpchain_backend/src/copy.py:58
+msgid "Локация"
+msgstr ""
 
-#: venv/Lib/site-packages/click/types.py:824
-msgid "directory"
+#: backend/helpchain_backend/src/copy.py:59
+msgid "Град/квартал (без точен адрес на този етап)."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:60
+msgid "Съгласен/на съм данните да се използват само за обработка на заявката."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:61
+msgid "Не споделяй чувствителни данни, които не са нужни."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:62
+#, fuzzy
+msgid "СПЕШНО"
+msgstr "Спешни"
+
+#: backend/helpchain_backend/src/copy.py:63
+msgid "Ако има непосредствен риск за живот/здраве, звънни на 112."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:64
+#, fuzzy
+msgid "Спешен случай"
+msgstr "Спешна"
+
+#: backend/helpchain_backend/src/copy.py:66
+msgid ""
+"Ако има непосредствена опасност, обади се на 112. HelpChain не е спешна "
+"служба, но ще обработим заявката приоритетно."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:69
+msgid "Заявката е изпратена"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:70
+msgid "Получихме заявката ти. Ще се свържем при първа възможност."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:71
+msgid "Можеш да подадеш нова заявка или да се върнеш към началото."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:75
+msgid "Моля, избери категория."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:76
+msgid "Невалидна категория. Избери от списъка."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:77
+msgid "Моля, опиши накратко ситуацията."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:78
+msgid "Описанието е твърде кратко. Добави още малко контекст."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:79
+msgid "Моля, остави контакт за връзка."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:80
+msgid "Контактът изглежда невалиден. Провери телефон/имейл."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:81
+msgid "Трябва да потвърдиш съгласието, за да изпратиш заявката."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:82
+msgid "Твърде много опити за кратко време. Опитай отново след малко."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:86
+#, fuzzy
+msgid "Храна"
+msgstr "Варна"
+
+#: backend/helpchain_backend/src/copy.py:86
+msgid "Нужда от хранителни продукти, доставка или подкрепа за изхранване."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:88
+#, fuzzy
+msgid "Спешно"
+msgstr "Спешни"
+
+#: backend/helpchain_backend/src/copy.py:89
+msgid "Непосредствен риск или ситуация, изискваща бърза реакция."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:91
+#: backend/helpchain_backend/src/copy.py:163
+msgid "112"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:92
+msgid "При непосредствен риск звънни на 112."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:94
+msgid "Медицинска помощ"
+msgstr "Медицинска помощ"
+
+#: backend/helpchain_backend/src/copy.py:94
+msgid "Навигация към услуги, придружаване, административна помощ."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:95
+#, fuzzy
+msgid "Правна помощ"
+msgstr "Получаваш помощ"
+
+#: backend/helpchain_backend/src/copy.py:95
+msgid "Насоки, документи, консултация, институции."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:96
+msgid "Подслон"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:96
+msgid "Временно настаняване, кризисен център, базова подкрепа."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:97
+msgid "Образование"
+msgstr "Образование"
+
+#: backend/helpchain_backend/src/copy.py:97
+msgid "Записване, подкрепа за ученици/студенти, документи."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:98
+msgid "Психологическа подкрепа"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:98
+msgid "Подкрепа при стрес, тревожност, кризисни ситуации."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:99
+#, fuzzy
+msgid "Социална помощ"
+msgstr "Медицинска помощ"
+
+#: backend/helpchain_backend/src/copy.py:99
+msgid "Социални услуги, помощи, придружаване, административни въпроси."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:100
+msgid "Подкрепа за възрастни"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:100
+msgid "Грижа, пазаруване, придружаване, услуги."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:101
+msgid "Хора с увреждания"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:101
+msgid "Достъпност, услуги, документи, помощни средства."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:110
+msgid "Envoyer"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:111
+msgid "Continuer"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:112
+#, fuzzy
+msgid "Retour"
 msgstr "директория"
 
-#: venv/Lib/site-packages/click/types.py:826
-msgid "path"
-msgstr "път"
-
-#: venv/Lib/site-packages/click/types.py:877
-#, python-brace-format
-msgid "{name} {filename!r} does not exist."
-msgstr "{name} {filename!r} не съществува."
-
-#: venv/Lib/site-packages/click/types.py:886
-#, python-brace-format
-msgid "{name} {filename!r} is a file."
-msgstr "{name} {filename!r} е файл."
-
-#: venv/Lib/site-packages/click/types.py:894
-#, python-brace-format
-msgid "{name} '{filename}' is a directory."
-msgstr "{name} '{filename}' е директория."
-
-#: venv/Lib/site-packages/click/types.py:903
-#, python-brace-format
-msgid "{name} {filename!r} is not readable."
-msgstr "{name} {filename!r} не може да бъде прочетен."
-
-#: venv/Lib/site-packages/click/types.py:912
-#, python-brace-format
-msgid "{name} {filename!r} is not writable."
-msgstr "{name} {filename!r} не може да бъде записан."
-
-#: venv/Lib/site-packages/click/types.py:921
-#, python-brace-format
-msgid "{name} {filename!r} is not executable."
-msgstr "{name} {filename!r} не може да бъде изпълнен."
-
-#: venv/Lib/site-packages/click/types.py:988
-#, python-brace-format
-msgid "{len_type} values are required, but {len_value} was given."
-msgid_plural "{len_type} values are required, but {len_value} were given."
-msgstr[0] "Изискват се {len_type} стойности, но е подадена {len_value}."
-msgstr[1] "Изискват се {len_type} стойности, но са подадени {len_value}."
-
-#: venv/Lib/site-packages/flask_admin/contrib/rediscli.py:113
-msgid "Cli: Invalid command."
-msgstr "Cli: Невалидна команда."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:374
-msgid "File required."
-msgstr "Файлът е задължителен."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:379
-msgid "Invalid file type."
-msgstr "Невалидно име"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:404
-msgid "Invalid name"
-msgstr "Невалидно име"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:774
-#, python-format
-msgid "File \"%(name)s\" already exists."
-msgstr "Файлът \"%(name)s\" вече съществува."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:819
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:916
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:978
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1031
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1078
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1130
-#: venv/Lib/site-packages/flask_admin/model/base.py:2290
-msgid "Permission denied."
-msgstr "Достъпът е отказан."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:912
-msgid "File uploading is disabled."
-msgstr "Качването на файлове е изключено."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:923
-#, python-format
-msgid "Successfully saved file: %(name)s"
-msgstr "Файлът беше успешно запазен: %(name)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:927
-#, python-format
-msgid "Failed to save file: %(error)s"
-msgstr "Неуспешно запазване на файла: %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:935
-msgid "Upload File"
-msgstr "Качи файл"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:974
-msgid "Directory creation is disabled."
-msgstr "Създаването на директории е изключено."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:987
-#, python-format
-msgid "Successfully created directory: %(directory)s"
-msgstr "Директорията беше успешно създадена: %(directory)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:991
-#, python-format
-msgid "Failed to create directory: %(error)s"
-msgstr "Неуспешно създаване на директория: %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1001
-msgid "Create Directory"
-msgstr "Създаване на директория"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1027
-msgid "Deletion is disabled."
-msgstr "Изтриването е изключено."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1036
-msgid "Directory deletion is disabled."
-msgstr "Изтриването на директории е изключено."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1042
-#, python-format
-msgid "Directory \"%(path)s\" was successfully deleted."
-msgstr "Директорията \"%(path)s\" беше успешно изтрита."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1044
-#, python-format
-msgid "Failed to delete directory: %(error)s"
-msgstr "Неуспешно изтриване на директория: %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1050
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1205
-#, python-format
-msgid "File \"%(name)s\" was successfully deleted."
-msgstr "Файлът \"%(name)s\" беше успешно изтрит."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1052
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1207
-#, python-format
-msgid "Failed to delete file: %(name)s"
-msgstr "Неуспешно изтриване на файл: %(name)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1074
-msgid "Renaming is disabled."
-msgstr "Преименуването е изключено."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1082
-msgid "Path does not exist."
-msgstr "Посоченият път не съществува."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1091
-#, python-format
-msgid "Successfully renamed \"%(src)s\" to \"%(dst)s\""
-msgstr "Успешно преименуване на \"%(src)s\" на \"%(dst)s\""
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1095
-#, python-format
-msgid "Failed to rename: %(error)s"
-msgstr "Неуспешно преименуване: %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1108
-#, python-format
-msgid "Rename %(name)s"
-msgstr "Преименувай %(name)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1145
-#, python-format
-msgid "Error saving changes to %(name)s."
-msgstr "Грешка при запазване на промените в %(name)s."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1149
-#, python-format
-msgid "Changes to %(name)s saved successfully."
-msgstr "Промените в %(name)s бяха успешно запазени."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1157
-#, python-format
-msgid "Error reading %(name)s."
-msgstr "Грешка при четене на %(name)s."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1160
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1169
-#, python-format
-msgid "Unexpected error while reading from %(name)s"
-msgstr "Неочаквана грешка при четене от %(name)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1166
-#, python-format
-msgid "Cannot edit %(name)s."
-msgstr "Не може да се редактира %(name)s."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1184
-#, python-format
-msgid "Editing %(path)s"
-msgstr "Редактиране на %(path)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/__init__.py:1196
-msgid "File deletion is disabled."
-msgstr "Изтриването на файлове е изключено."
-
-#: venv/Lib/site-packages/flask_admin/contrib/fileadmin/s3.py:156
-msgid "Cannot operate on non empty directories"
-msgstr "Операцията не може да се извърши върху непразни директории"
-
-#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:558
-#, python-format
-msgid "Failed to get model. %(error)s"
-msgstr "Неуспешно получаване на модела. %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:577
-#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:462
-#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:317
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1166
-#, python-format
-msgid "Failed to create record. %(error)s"
-msgstr "Неуспешно създаване на запис. %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:603
-#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:481
-#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:342
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1192
-#: venv/Lib/site-packages/flask_admin/model/base.py:2427
-#: venv/Lib/site-packages/flask_admin/model/base.py:2434
-#: venv/Lib/site-packages/flask_admin/model/base.py:2437
-#, python-format
-msgid "Failed to update record. %(error)s"
-msgstr "Неуспешно обновяване на запис. %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:626
-#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:496
-#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:367
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1217
-#, python-format
-msgid "Failed to delete record. %(error)s"
-msgstr "Неуспешно изтриване на запис. %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:676
-#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:532
-#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:396
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1254
-#: venv/Lib/site-packages/flask_admin/model/base.py:2238
-#, python-format
-msgid "Record was successfully deleted."
-msgid_plural "%(count)s records were successfully deleted."
-msgstr[0] "Записът беше успешно изтрит."
-msgstr[1] "%(count)s записа бяха успешно изтрити."
-
-#: venv/Lib/site-packages/flask_admin/contrib/mongoengine/view.py:682
-#: venv/Lib/site-packages/flask_admin/contrib/peewee/view.py:538
-#: venv/Lib/site-packages/flask_admin/contrib/pymongo/view.py:401
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1262
-#, python-format
-msgid "Failed to delete records. %(error)s"
-msgstr "Неуспешно изтриване на записи. %(error)s"
-
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:127
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:177
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/fields.py:182
-#: venv/Lib/site-packages/flask_admin/model/fields.py:178
-#: venv/Lib/site-packages/flask_admin/model/fields.py:227
-msgid "Not a valid choice"
-msgstr "Невалиден избор"
-
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:44
-msgid "Already exists."
-msgstr "Вече съществува."
-
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:64
-#, python-format
-msgid "At least %(num)d item is required"
-msgid_plural "At least %(num)d items are required"
-msgstr[0] "Изисква се поне %(num)d елемент"
-msgstr[1] "Изискват се поне %(num)d елемента"
-
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:79
-msgid "Not a valid ISO currency code (e.g. USD, EUR, CNY)."
-msgstr "Невалиден ISO код на валута (напр. USD, EUR, CNY)."
-
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/validators.py:87
-msgid "Not a valid color (e.g. \"red\", \"#f00\", \"#ff0000\")."
-msgstr "Невалиден цвят (напр. \"red\", \"#f00\", \"#ff0000\")."
-
-#: venv/Lib/site-packages/flask_admin/contrib/sqla/view.py:1130
-#, python-format
-msgid "Integrity error. %(message)s"
-msgstr "Грешка в целостта. %(message)s"
-
-#: venv/Lib/site-packages/flask_admin/form/fields.py:98
-msgid "Invalid time format"
-msgstr "Невалиден формат на време"
-
-#: venv/Lib/site-packages/flask_admin/form/fields.py:147
-msgid "Invalid Choice: could not coerce"
-msgstr "Невалиден избор: не може да се преобразува"
-
-#: venv/Lib/site-packages/flask_admin/form/fields.py:221
-msgid "Invalid JSON"
-msgstr "Невалиден JSON"
-
-#: venv/Lib/site-packages/flask_admin/form/upload.py:213
-msgid "Invalid file extension"
-msgstr "Невалидно разширение на файла"
-
-#: venv/Lib/site-packages/flask_admin/form/upload.py:220
-#: venv/Lib/site-packages/flask_admin/form/upload.py:290
-#, python-format
-msgid "File \"%s\" already exists."
-msgstr "Файлът \"%s\" вече съществува."
-
-#: venv/Lib/site-packages/flask_admin/form/validators.py:16
-msgid "This field requires at least one item."
-msgstr "Това поле изисква поне един елемент."
-
-#: venv/Lib/site-packages/flask_admin/model/base.py:1702
-msgid "There are no items in the table."
-msgstr "Няма елементи в таблицата."
-
-#: venv/Lib/site-packages/flask_admin/model/base.py:1711
-#, python-format
-msgid "Invalid Filter Value: %(value)s"
-msgstr "Невалидна стойност на филтъра: %(value)s"
-
-#: venv/Lib/site-packages/flask_admin/model/base.py:2102
-msgid "Record was successfully created."
-msgstr "Записът беше успешно създаден."
-
-#: venv/Lib/site-packages/flask_admin/model/base.py:2146
-#: venv/Lib/site-packages/flask_admin/model/base.py:2198
-#: venv/Lib/site-packages/flask_admin/model/base.py:2231
-#: venv/Lib/site-packages/flask_admin/model/base.py:2419
-msgid "Record does not exist."
-msgstr "Записът не съществува."
-
-#: venv/Lib/site-packages/flask_admin/model/base.py:2155
-#: venv/Lib/site-packages/flask_admin/model/base.py:2423
-msgid "Record was successfully saved."
-msgstr "Записът беше успешно запазен."
-
-#: venv/Lib/site-packages/flask_admin/model/base.py:2344
-msgid "Tablib dependency not installed."
-msgstr "Зависимостта Tablib не е инсталирана."
-
-#: venv/Lib/site-packages/flask_admin/model/base.py:2371
-#, python-format
-msgid "Export type \"%(type)s not supported."
-msgstr "Export type \"%(type)s not supported."
-
-#: venv/Lib/site-packages/flask_admin/model/template.py:79
-#: venv/Lib/site-packages/flask_admin/model/template.py:86
-msgid "View Record"
-msgstr "Преглед на запис"
-
-#: venv/Lib/site-packages/flask_admin/model/template.py:93
-#: venv/Lib/site-packages/flask_admin/model/template.py:100
-msgid "Edit Record"
-msgstr "Редактирай записа"
-
-#: venv/Lib/site-packages/flask_admin/model/template.py:107
-msgid "Delete Record"
-msgstr "Изтрий записа"
-
-#: venv/Lib/site-packages/flask_admin/model/widgets.py:62
-msgid "Please select model"
-msgstr "Моля, изберете модел"
-
-#: venv/Lib/site-packages/flask_admin/model/widgets.py:116
-msgid "No"
-msgstr "Не"
-
-#: venv/Lib/site-packages/flask_admin/model/widgets.py:117
-msgid "Yes"
-msgstr "Да"
-
-#: venv/Lib/site-packages/flask_wtf/file.py:55
-#: venv/Lib/site-packages/wtforms/validators.py:293
-#: venv/Lib/site-packages/wtforms/validators.py:323
-msgid "This field is required."
-msgstr "Това поле е задължително."
-
-#: venv/Lib/site-packages/flask_wtf/file.py:94
-#, python-brace-format
-msgid "File does not have an approved extension: {extensions}"
-msgstr "Файлът няма одобрено разширение: {extensions}"
-
-#: venv/Lib/site-packages/flask_wtf/file.py:101
-msgid "File does not have an approved extension."
-msgstr "Файлът няма одобрено разширение."
-
-#: venv/Lib/site-packages/httplib2/__init__.py:407
-#, python-format
-msgid "Content purported to be compressed with %s but failed to decompress."
-msgstr "Съдържанието е маркирано като компресирано с %s, но декомпресирането не бе успешно."
-
-#: venv/Lib/site-packages/httplib2/__init__.py:571
-#, python-format
-msgid "Unsupported value for qop: %s."
-msgstr "Неподдържана стойност за qop: %s."
-
-#: venv/Lib/site-packages/httplib2/__init__.py:575
-#: venv/Lib/site-packages/httplib2/__init__.py:653
-#, python-format
-msgid "Unsupported value for algorithm: %s.algorithm"
-msgstr "Неподдържана стойност за алгоритъм: %s.algorithm"
-
-#: venv/Lib/site-packages/httplib2/__init__.py:648
-msgid "The challenge doesn't contain a server nonce, or this one is empty."
-msgstr "Неподдържана стойност за алгоритъм: %s.algorithm"
-
-#: venv/Lib/site-packages/httplib2/__init__.py:658
-#, python-format
-msgid "Unsupported value for pw-algorithm: %s.pw-algorithm"
-msgstr "Неподдържана стойност за pw-алгоритъм: %s.pw-algorithm"
-
-#: venv/Lib/site-packages/httplib2/__init__.py:1471
-msgid "Redirected but the response is missing a Location: header."
-msgstr "Пренасочено, но в отговора липсва Location: заглавие."
-
-#: venv/Lib/site-packages/isort/main.py:160
-msgid "show this help message and exit"
-msgstr "покажи това помощно съобщение и излез"
-
-#: venv/Lib/site-packages/kombu/transport/qpid.py:1311
-#, python-format
-msgid "Attempting to connect to qpid with SASL mechanism %s"
-msgstr "Опит за свързване с qpid чрез SASL механизъм %s"
-
-#: venv/Lib/site-packages/kombu/transport/qpid.py:1316
-#, python-format
-msgid "Connected to qpid with SASL mechanism %s"
-msgstr "Свързан с qpid чрез SASL механизъм %s"
-
-#: venv/Lib/site-packages/kombu/transport/qpid.py:1334
-#, python-format
-msgid "Unable to connect to qpid with SASL mechanism %s"
-msgstr "Неуспешно свързване с qpid чрез SASL механизъм %s"
-
-#: venv/Lib/site-packages/semantic_version/django_fields.py:50
-msgid "Enter a valid version number in X.Y.Z format."
-msgstr "Въведете валиден номер на версия във формат X.Y.Z."
-
-#: venv/Lib/site-packages/semantic_version/django_fields.py:52
-msgid "Version"
-msgstr "Версия"
-
-#: venv/Lib/site-packages/semantic_version/django_fields.py:86
-msgid "Enter a valid version number spec list in ==X.Y.Z,>=A.B.C format."
-msgstr "Въведете валиден списък със спецификации за версия във формат ==X.Y.Z,>=A.B.C."
-
-#: venv/Lib/site-packages/semantic_version/django_fields.py:88
-msgid "Version specification list"
-msgstr "Списък със спецификации за версия"
-
-#: venv/Lib/site-packages/typer/core.py:630
-#: venv/Lib/site-packages/typer/rich_utils.py:95
-msgid "Arguments"
+#: backend/helpchain_backend/src/copy.py:113
+msgid "Fermer"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:114
+#, fuzzy
+msgid "Chargement…"
 msgstr "Аргументи"
 
-#: venv/Lib/site-packages/typer/rich_utils.py:89
-msgid "(deprecated) "
-msgstr "(остарял)"
+#: backend/helpchain_backend/src/copy.py:115
+msgid "Les champs avec * sont obligatoires."
+msgstr ""
 
-#: venv/Lib/site-packages/typer/rich_utils.py:90
-#, python-brace-format
-msgid "[default: {}]"
-msgstr "[по подразбиране: {}]"
+#: backend/helpchain_backend/src/copy.py:116
+msgid "Une erreur s’est produite. Réessaie dans un instant."
+msgstr ""
 
-#: venv/Lib/site-packages/typer/rich_utils.py:91
-#, python-brace-format
-msgid "[env var: {}]"
-msgstr "[променлива на средата: {}]"
+#: backend/helpchain_backend/src/copy.py:117
+msgid "Vérifie les champs signalés et réessaie."
+msgstr ""
 
-#: venv/Lib/site-packages/typer/rich_utils.py:93
-msgid "[required]"
-msgstr "[задължително]"
+#: backend/helpchain_backend/src/copy.py:122
+msgid "Soumettre une demande d’aide"
+msgstr ""
 
-#: venv/Lib/site-packages/typer/rich_utils.py:98
-msgid "Error"
-msgstr "Грешка"
+#: backend/helpchain_backend/src/copy.py:123
+msgid ""
+"Choisis une catégorie et décris brièvement la situation. Si c’est urgent,"
+" indique-le clairement."
+msgstr ""
 
-#: venv/Lib/site-packages/typer/rich_utils.py:99
-msgid "Aborted."
-msgstr "Прекратено."
+#: backend/helpchain_backend/src/copy.py:124
+msgid "Catégorie"
+msgstr ""
 
-#: venv/Lib/site-packages/typer/rich_utils.py:100
-#, python-brace-format
-msgid "Try [blue]'{command_path} {help_option}'[/] for help."
-msgstr "Опитайте [blue]'{command_path} {help_option}'[/] за помощ."
+#: backend/helpchain_backend/src/copy.py:125
+msgid "Choisir une catégorie…"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:86
-#, python-format
-msgid "Invalid field name '%s'."
-msgstr "Невалидно име на поле '%s'."
+#: backend/helpchain_backend/src/copy.py:126
+msgid "Description de la situation"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:99
-#, python-format
-msgid "Field must be equal to %(other_name)s."
-msgstr "Полето трябва да е равно на %(other_name)s."
+#: backend/helpchain_backend/src/copy.py:127
+msgid "Explique en quelques mots ce qui se passe et ce dont tu as besoin."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:146
-#, python-format
-msgid "Field must be at least %(min)d character long."
-msgid_plural "Field must be at least %(min)d characters long."
-msgstr[0] "Полето трябва да е поне %(min)d знак."
-msgstr[1] "Полето трябва да е поне %(min)d знака."
+#: backend/helpchain_backend/src/copy.py:128
+msgid "Contact"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:152
-#, python-format
-msgid "Field cannot be longer than %(max)d character."
-msgid_plural "Field cannot be longer than %(max)d characters."
-msgstr[0] "Полето не може да е по-дълго от %(max)d знак."
-msgstr[1] "Полето не може да е по-дълго от %(max)d знака."
+#: backend/helpchain_backend/src/copy.py:129
+msgid "Téléphone ou e-mail afin que nous puissions te recontacter."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:158
-#, python-format
-msgid "Field must be exactly %(max)d character long."
-msgid_plural "Field must be exactly %(max)d characters long."
-msgstr[0] "Полето трябва да е точно %(max)d знак."
-msgstr[1] "Полето трябва да е точно %(max)d знака."
+#: backend/helpchain_backend/src/copy.py:130
+msgid "Localisation"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:164
-#, python-format
-msgid "Field must be between %(min)d and %(max)d characters long."
-msgstr "Полето трябва да е между %(min)d и %(max)d знака."
+#: backend/helpchain_backend/src/copy.py:131
+msgid "Ville/quartier (sans adresse exacte à ce stade)."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:216
-#, python-format
-msgid "Number must be at least %(min)s."
-msgstr "Числото трябва да е поне %(min)s."
+#: backend/helpchain_backend/src/copy.py:132
+msgid ""
+"J’accepte que mes données soient utilisées uniquement pour traiter cette "
+"demande."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:219
-#, python-format
-msgid "Number must be at most %(max)s."
-msgstr "Числото трябва да е най-много %(max)s."
+#: backend/helpchain_backend/src/copy.py:133
+msgid "Ne partage pas de données sensibles inutiles."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:222
-#, python-format
-msgid "Number must be between %(min)s and %(max)s."
-msgstr "Числото трябва да е между %(min)s и %(max)s."
+#: backend/helpchain_backend/src/copy.py:134
+#, fuzzy
+msgid "URGENT"
+msgstr "Аргументи"
 
-#: venv/Lib/site-packages/wtforms/validators.py:358
-msgid "Invalid input."
-msgstr "Невалиден вход."
+#: backend/helpchain_backend/src/copy.py:135
+msgid "En cas de danger immédiat pour la vie/la santé, appelle le 112."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:422
-msgid "Invalid email address."
-msgstr "Невалиден имейл адрес."
+#: backend/helpchain_backend/src/copy.py:136
+#, fuzzy
+msgid "Situation urgente"
+msgstr "Степен на използваемост"
 
-#: venv/Lib/site-packages/wtforms/validators.py:460
-msgid "Invalid IP address."
-msgstr "Невалиден IP адрес."
+#: backend/helpchain_backend/src/copy.py:138
+msgid ""
+"En cas de danger immédiat, appelle le 112. HelpChain n’est pas un service"
+" d’urgence, mais nous traiterons ta demande en priorité."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:503
-msgid "Invalid Mac address."
-msgstr "Невалиден MAC адрес."
+#: backend/helpchain_backend/src/copy.py:141
+msgid "Demande envoyée"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:540
-msgid "Invalid URL."
-msgstr "Невалиден URL адрес."
+#: backend/helpchain_backend/src/copy.py:142
+msgid "Nous avons bien reçu ta demande. Nous te recontacterons dès que possible."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:561
-msgid "Invalid UUID."
-msgstr "Невалиден UUID."
+#: backend/helpchain_backend/src/copy.py:143
+msgid "Tu peux soumettre une nouvelle demande ou revenir à l’accueil."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:595
-#, python-format
-msgid "Invalid value, must be one of: %(values)s."
-msgstr "Невалидна стойност, трябва да е една от: %(values)s."
+#: backend/helpchain_backend/src/copy.py:147
+msgid "Merci de choisir une catégorie."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:631
-#, python-format
-msgid "Invalid value, can't be any of: %(values)s."
-msgstr "Невалидна стойност, не може да е някоя от: %(values)s."
+#: backend/helpchain_backend/src/copy.py:148
+msgid "Catégorie invalide. Choisis dans la liste."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:700
-msgid "This field cannot be edited."
-msgstr "Това поле не може да се редактира."
+#: backend/helpchain_backend/src/copy.py:149
+msgid "Merci de décrire brièvement la situation."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/validators.py:716
-msgid "This field is disabled and cannot have a value."
-msgstr "Това поле е деактивирано и не може да има стойност."
+#: backend/helpchain_backend/src/copy.py:150
+msgid "La description est trop courte. Ajoute un peu de contexte."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/csrf/core.py:96
-msgid "Invalid CSRF Token."
-msgstr "Невалиден CSRF токен."
+#: backend/helpchain_backend/src/copy.py:151
+msgid "Merci de laisser un moyen de contact."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/csrf/session.py:64
-msgid "CSRF token missing."
-msgstr "Липсва CSRF токен."
+#: backend/helpchain_backend/src/copy.py:152
+msgid "Le contact semble invalide. Vérifie téléphone/e-mail."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/csrf/session.py:72
-msgid "CSRF failed."
-msgstr "CSRF неуспешен."
+#: backend/helpchain_backend/src/copy.py:153
+msgid "Tu dois confirmer ton accord pour envoyer la demande."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/csrf/session.py:77
-msgid "CSRF token expired."
-msgstr "CSRF токенът е изтекъл."
+#: backend/helpchain_backend/src/copy.py:154
+msgid "Trop de tentatives en peu de temps. Réessaie dans un instant."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/choices.py:142
-msgid "Invalid Choice: could not coerce."
-msgstr "Невалиден избор: не може да се преобразува."
+#: backend/helpchain_backend/src/copy.py:158
+msgid "Alimentation"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/choices.py:149
-#: venv/Lib/site-packages/wtforms/fields/choices.py:203
-msgid "Choices cannot be None."
-msgstr "Изборите не могат да бъдат None."
+#: backend/helpchain_backend/src/copy.py:158
+msgid "Besoin de courses, livraison ou soutien alimentaire."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/choices.py:155
-msgid "Not a valid choice."
-msgstr "Невалиден избор."
+#: backend/helpchain_backend/src/copy.py:160
+msgid "Urgence"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/choices.py:194
-msgid "Invalid choice(s): one or more data inputs could not be coerced."
-msgstr "Невалиден избор: един или повече входни данни не могат да бъдат преобразувани."
+#: backend/helpchain_backend/src/copy.py:161
+msgid "Risque immédiat ou situation nécessitant une réaction rapide."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/choices.py:212
-#, python-format
-msgid "'%(value)s' is not a valid choice for this field."
-msgid_plural "'%(value)s' are not valid choices for this field."
-msgstr[0] "'%(value)s' не е валиден избор за това поле."
-msgstr[1] "'%(value)s' не са валидни избори за това поле."
+#: backend/helpchain_backend/src/copy.py:164
+msgid "En cas de danger immédiat, appelle le 112."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/datetime.py:52
-msgid "Not a valid datetime value."
-msgstr "Невалидна стойност за дата и час."
+#: backend/helpchain_backend/src/copy.py:166
+msgid "Aide médicale"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/datetime.py:78
-msgid "Not a valid date value."
-msgstr "Невалидна стойност за дата."
+#: backend/helpchain_backend/src/copy.py:166
+msgid "Orientation, accompagnement, aide administrative liée aux soins."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/datetime.py:104
-msgid "Not a valid time value."
-msgstr "Невалидна стойност за час."
+#: backend/helpchain_backend/src/copy.py:167
+msgid "Aide juridique"
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/datetime.py:149
-msgid "Not a valid week value."
-msgstr "Невалидна стойност за седмица."
+#: backend/helpchain_backend/src/copy.py:167
+msgid "Conseils, documents, démarches, institutions."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/numeric.py:82
-#: venv/Lib/site-packages/wtforms/fields/numeric.py:92
-msgid "Not a valid integer value."
-msgstr "Невалидна стойност за цяло число."
+#: backend/helpchain_backend/src/copy.py:168
+#, fuzzy
+msgid "Hébergement"
+msgstr "Аргументи"
 
-#: venv/Lib/site-packages/wtforms/fields/numeric.py:168
-msgid "Not a valid decimal value."
-msgstr "Невалидна стойност за десетично число."
+#: backend/helpchain_backend/src/copy.py:168
+msgid "Solution temporaire, centre d’accueil, soutien de base."
+msgstr ""
 
-#: venv/Lib/site-packages/wtforms/fields/numeric.py:197
-msgid "Not a valid float value."
-msgstr "Невалидна стойност за число с плаваща запетая."
+#: backend/helpchain_backend/src/copy.py:169
+msgid "Éducation"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:169
+msgid "Inscription, soutien scolaire/études, documents."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:170
+msgid "Soutien psychologique"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:170
+msgid "Aide en cas de stress, anxiété, situations de crise."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:171
+msgid "Aide sociale"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:171
+msgid "Services sociaux, aides, accompagnement, démarches."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:172
+msgid "Soutien aux personnes âgées"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:172
+msgid "Aide à domicile, courses, accompagnement, services."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:173
+msgid "Handicap"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:173
+msgid "Accessibilité, services, démarches, aides techniques."
+msgstr ""
+
+#~ msgid "HelpChain Analytics"
+#~ msgstr "Аналитика на HelpChain"
+
+#~ msgid "Dashboard"
+#~ msgstr "Табло"
+
+#~ msgid "Analytics"
+#~ msgstr "Аналитика"
+
+#~ msgid "Доброволци"
+#~ msgstr "Доброволци"
+
+#~ msgid "Изход"
+#~ msgstr "Изход"
+
+#~ msgid "Админ панел"
+#~ msgstr "Админ панел"
+
+#~ msgid "Аналитика"
+#~ msgstr "Аналитика"
+
+#~ msgid "Advanced Analytics"
+#~ msgstr "Разширени анализи"
+
+#~ msgid "Real-time аналитика и прогнози за HelpChain"
+#~ msgstr "Real-time аналитика и прогнози за HelpChain"
+
+#~ msgid "Live"
+#~ msgstr "наживо"
+
+#~ msgid "Export JSON"
+#~ msgstr "Експортиране на JSON"
+
+#~ msgid "Export CSV"
+#~ msgstr "Експортиране на CSV"
+
+#~ msgid "Филтри"
+#~ msgstr "Филтри"
+
+#~ msgid "Период"
+#~ msgstr "Period"
+
+#~ msgid "Последните 7 дни"
+#~ msgstr "Last 7 days"
+
+#~ msgid "Последните 30 дни"
+#~ msgstr "Last 30 days"
+
+#~ msgid "Последните 3 месеца"
+#~ msgstr "Last 3 months"
+
+#~ msgid "Последната година"
+#~ msgstr "Категория"
+
+#~ msgid "Всички категории"
+#~ msgstr "Всички категории"
+
+#~ msgid "Транспорт"
+#~ msgstr "Транспорт"
+
+#~ msgid "Домакинска помощ"
+#~ msgstr "Домакинска помощ"
+
+#~ msgid "Регион"
+#~ msgstr "Регион"
+
+#~ msgid "Всички региони"
+#~ msgstr "Всички региони"
+
+#~ msgid "София"
+#~ msgstr "София"
+
+#~ msgid "Пловдив"
+#~ msgstr "Пловдив"
+
+#~ msgid "Бургас"
+#~ msgstr "Бургас"
+
+#~ msgid "Обнови"
+#~ msgstr "Обнови"
+
+#~ msgid "Общо заявки"
+#~ msgstr "Общо заявки"
+
+#~ msgid "Успеваемост"
+#~ msgstr "Успеваемост"
+
+#~ msgid "Средно време за отговор (дни)"
+#~ msgstr "Средно време за отговор (дни)"
+
+#~ msgid "Активни доброволци"
+#~ msgstr "Активни доброволци"
+
+#~ msgid ""
+#~ "Трендове през\n"
+#~ "                времето"
+#~ msgstr "Трендове през времето"
+
+#~ msgid "Select trend period"
+#~ msgstr "Избери период за тренд"
+
+#~ msgid "6 месеца"
+#~ msgstr "6 месеца"
+
+#~ msgid "12 месеца"
+#~ msgstr "12 месеца"
+
+#~ msgid "24 месеца"
+#~ msgstr "24 месеца"
+
+#~ msgid ""
+#~ "Разпределение по\n"
+#~ "                категории"
+#~ msgstr ""
+#~ "Разпределение по\n"
+#~ "                категории"
+
+#~ msgid ""
+#~ "Географско\n"
+#~ "                разпределение"
+#~ msgstr ""
+#~ "Географско\n"
+#~ "                разпределение"
+
+#~ msgid ""
+#~ "Прогнози за\n"
+#~ "                следващите 3 месеца"
+#~ msgstr ""
+#~ "Прогнози за\n"
+#~ "                следващите 3 месеца"
+
+#~ msgid ""
+#~ "Performance\n"
+#~ "            Metrics"
+#~ msgstr ""
+#~ "Показатели за\n"
+#~ "производителност        Metrics"
+
+#~ msgid "Завършени заявки"
+#~ msgstr "Завършени заявки"
+
+#~ msgid "Активни заявки"
+#~ msgstr "Активни заявки"
+
+#~ msgid "AI/ML Insights"
+#~ msgstr "Информация от AI/ML"
+
+#~ msgid ""
+#~ "Открити\n"
+#~ "                аномалии"
+#~ msgstr ""
+#~ "Открити\n"
+#~ "                аномалии"
+
+#~ msgid ""
+#~ "Няма открити\n"
+#~ "                аномалии в данните"
+#~ msgstr ""
+#~ "Няма открити\n"
+#~ "                аномалии в данните"
+
+#~ msgid ""
+#~ "User Behavior\n"
+#~ "                Predictions"
+#~ msgstr ""
+#~ "поведението на потребителите\n"
+#~ "                Прогнози"
+
+#~ msgid "Оптимално време за ангажиране:"
+#~ msgstr "Оптимално време за ангажиране:"
+
+#~ msgid "%(count)s взаимодействия"
+#~ msgstr "%(count)s взаимодействия"
+
+#~ msgid "Риск от churn:"
+#~ msgstr "Риск от отпадане"
+
+#~ msgid "(%(days)s дни без активност)"
+#~ msgstr "(%(days)s дни без активност)"
+
+#~ msgid ""
+#~ "ML insights не са\n"
+#~ "                налични в момента"
+#~ msgstr ""
+#~ "ML анализи не са\n"
+#~ "                налични в момента"
+
+#~ msgid ""
+#~ "Препоръки за\n"
+#~ "                оптимизация"
+#~ msgstr ""
+#~ "Препоръки за\n"
+#~ "                оптимизация"
+
+#~ msgid "Няма налични препоръки в момента"
+#~ msgstr "Няма налични препоръки в момента"
+
+#~ msgid "Live (WebSocket)"
+#~ msgstr "В реално време (WebSocket)"
+
+#~ msgid "Live (Polling)"
+#~ msgstr "На живо (периодично обновяване)"
+
+#~ msgid "Инсталирай HelpChain като мобилно приложение"
+#~ msgstr "Инсталирай HelpChain като мобилно приложение"
+
+#~ msgid "Инсталирай приложението за по-добро изживяване"
+#~ msgstr "Инсталирай приложението за по-добро изживяване"
+
+#~ msgid "Инсталирай приложението"
+#~ msgstr "Инсталирай приложението"
+
+#~ msgid "Превключи към тъмна тема"
+#~ msgstr "Превключи към тъмна тема"
+
+#~ msgid "Превключи към светла тема"
+#~ msgstr "Превключи към светла тема"
+
+#~ msgid "Email"
+#~ msgstr "Email"
+
+#~ msgid "Facebook"
+#~ msgstr "Facebook"
+
+#~ msgid "Условия за ползване"
+#~ msgstr "Условия за ползване"
+
+#~ msgid "Политика за поверителност"
+#~ msgstr "Политика за поверителност"
+
+#~ msgid "Истории на успеха"
+#~ msgstr "Истории на успеха"
+
+#~ msgid "Нова версия на HelpChain е налична!"
+#~ msgstr "Нова версия на HelpChain е налична!"
+
+#~ msgid "Обнови сега"
+#~ msgstr "Обнови сега"
+
+#~ msgid "По-късно"
+#~ msgstr "По-късно"
+
+#~ msgid ""
+#~ "Моите\n"
+#~ "            задачи"
+#~ msgstr ""
+#~ "Моите\n"
+#~ "            задачи"
+
+#~ msgid ""
+#~ "Налични\n"
+#~ "            задачи"
+#~ msgstr ""
+#~ "Налични\n"
+#~ "            задачи"
+
+#~ msgid "Профил"
+#~ msgstr "Профил"
+
+#~ msgid "Постижения"
+#~ msgstr "Постижения"
+
+#~ msgid "Табло"
+#~ msgstr "Табло"
+
+#~ msgid "Избор на език"
+#~ msgstr "Избор на език"
+
+#~ msgid "Български"
+#~ msgstr "Български"
+
+#~ msgid "Глобално търсене"
+#~ msgstr "Глобално търсене"
+
+#~ msgid "Настройки"
+#~ msgstr "Настройки"
+
+#~ msgid "Добре дошли в HelpChain"
+#~ msgstr "Добре дошли в HelpChain"
+
+#~ msgid ""
+#~ "Свързваме хора в нужда с доброволци, готови да помогнат – бързо\n"
+#~ "          и сигурно."
+#~ msgstr ""
+#~ "Свързваме хора в нужда с доброволци, готови да помогнат – бързо\n"
+#~ "          и сигурно."
+
+#~ msgid "Вход за доброволци"
+#~ msgstr "Вход за доброволци"
+
+#~ msgid "Подадени сигнали"
+#~ msgstr "Подадени сигнали"
+
+#~ msgid "Как работи?"
+#~ msgstr "Как работи?"
+
+#~ msgid "Подай сигнал с няколко клика."
+#~ msgstr "Подай сигнал с няколко клика."
+
+#~ msgid "Най-близкият доброволец получава уведомление."
+#~ msgstr "Най-близкият доброволец получава уведомление."
+
+#~ msgid "Получаваш помощ и обратна връзка."
+#~ msgstr "Получаваш помощ и обратна връзка."
+
+#~ msgid ""
+#~ "Стани доброволец и промени нечий\n"
+#~ "          живот днес!"
+#~ msgstr ""
+#~ "Стани доброволец и промени нечий\n"
+#~ "          живот днес!"
+
+#~ msgid "HelpChain – Свързваме хората, които помагат"
+#~ msgstr "HelpChain – Свързваме хората, които помагат"
+
+#~ msgid "Как работи"
+#~ msgstr "Как работи"
+
+#~ msgid "Истории"
+#~ msgstr "Истории"
+
+#~ msgid "Стани доброволец"
+#~ msgstr "Стани доброволец"
+
+#~ msgid "Имам нужда от помощ"
+#~ msgstr "Имам нужда от помощ"
+
+#~ msgid "Включи се във веригата"
+#~ msgstr "Включи се във веригата"
+
+#~ msgid "В реално време свързваме помощ с нужда"
+#~ msgstr "В реално време свързваме помощ с нужда"
+
+#~ msgid "Превръщаме"
+#~ msgstr "Превръщаме"
+
+#~ msgid "добротата"
+#~ msgstr "добротата"
+
+#~ msgid "в организирана сила."
+#~ msgstr "в организирана сила."
+
+#~ msgid "Сърце с ръце"
+#~ msgstr "Сърце с ръце"
+
+#~ msgid "Добре дошли!"
+#~ msgstr "Добре дошли!"
+
+#~ msgid "свързва хора в нужда с доброволци, готови да помогнат."
+#~ msgstr "свързва хора в нужда с доброволци, готови да помогнат."
+
+#~ msgid "Заедно изграждаме общество, в което всеки има значение."
+#~ msgstr "Заедно изграждаме общество, в което всеки има значение."
+
+#~ msgid "NEW"
+#~ msgstr "NEW"
+
+#~ msgid "Регистрация на доброволец"
+#~ msgstr "Регистрация на доброволец"
+
+#~ msgid "Подай сигнал"
+#~ msgstr "Подай сигнал"
+
+#~ msgid "Сподели проблема си лесно и бързо."
+#~ msgstr "Сподели проблема си лесно и бързо."
+
+#~ msgid "Доброволец откликва"
+#~ msgstr "Доброволец откликва"
+
+#~ msgid "Нашите доброволци са винаги готови да помогнат."
+#~ msgstr "Нашите доброволци са винаги готови да помогнат."
+
+#~ msgid "Реална подкрепа за теб и твоите близки."
+#~ msgstr "Реална подкрепа за теб и твоите близки."
+
+#~ msgid "Защо да се включа?"
+#~ msgstr "Защо да се включа?"
+
+#~ msgid "Мария"
+#~ msgstr "Мария"
+
+#~ msgid "„Благодарение на helpchain.live най-много имах нужда!“"
+#~ msgstr "„Благодарение на helpchain.live най-много имах нужда!“"
+
+#~ msgid "Мария, София"
+#~ msgstr "Мария, София"
+
+#~ msgid "Стани доброволец днес и промени нечий живот!"
+#~ msgstr "Стани доброволец днес и промени нечий живот!"
+
+#~ msgid "Заедно можем повече!"
+#~ msgstr "Заедно можем повече!"
+
+#~ msgid "Имате идея или проблем?"
+#~ msgstr "Имате идея или проблем?"
+
+#~ msgid "Пишете ни"
+#~ msgstr "Пишете ни"
+
+#~ msgid ""
+#~ "„Благодарение на helpchain.live\n"
+#~ "най-много имах нужда!“"
+#~ msgstr ""
+#~ "„Благодарение на helpchain.live\n"
+#~ "най-много имах нужда!“"
+
+#~ msgid ""
+#~ "„Екипът\n"
+#~ "реагира бързо и професионално!“"
+#~ msgstr ""
+#~ "„Екипът\n"
+#~ "реагира бързо и професионално!“"
+
+#~ msgid "Георги, Пловдив"
+#~ msgstr "Георги, Пловдив"
+
+#~ msgid "„Чувствам се подкрепен и разбран!“"
+#~ msgstr "„Чувствам се подкрепен и разбран!“"
+
+#~ msgid "Иван, Варна"
+#~ msgstr "Иван, Варна"
+
+#~ msgid "Меню"
+#~ msgstr "Меню"
+
+#~ msgid "Новини"
+#~ msgstr "Новини"
+
+#~ msgid "Полезни връзки"
+#~ msgstr "Полезни връзки"
+
+#~ msgid "Контакти"
+#~ msgstr "Контакти"
+
+#~ msgid "HelpChain стартира нова кампания за подкрепа на възрастни хора!"
+#~ msgstr "HelpChain стартира нова кампания за подкрепа на възрастни хора!"
+
+#~ msgid "Регистрирай се и помогни на хора в нужда – всеки може да бъде герой!"
+#~ msgstr "Регистрирай се и помогни на хора в нужда – всеки може да бъде герой!"
+
+#~ msgid "Регистрирай се като доброволец"
+#~ msgstr "Регистрирай се като доброволец"
+
+#~ msgid "БЧК"
+#~ msgstr "БЧК"
+
+#~ msgid "Държавни услуги"
+#~ msgstr "Държавни услуги"
+
+#~ msgid "Пиши ни на"
+#~ msgstr "Пиши ни на"
+
+#~ msgid ""
+#~ "HelpChain стартира нова кампания за подкрепа на възрастни\n"
+#~ "          хора!"
+#~ msgstr ""
+#~ "HelpChain стартира нова кампания за подкрепа на възрастни\n"
+#~ "          хора!"
+
+#~ msgid ""
+#~ "От 1 август 2025 г. доброволците ни ще посещават домове на\n"
+#~ "          възрастни хора и ще оказват"
+#~ " помощ с пазаруване, лекарства и "
+#~ "социална\n"
+#~ "          подкрепа."
+#~ msgstr ""
+#~ "От 1 август 2025 г. доброволците ни ще посещават домове на\n"
+#~ "          възрастни хора и ще оказват"
+#~ " помощ с пазаруване, лекарства и "
+#~ "социална\n"
+#~ "          подкрепа."
+
+#~ msgid "Публикувано на: 23 юли 2025 г."
+#~ msgstr "Публикувано на: 23 юли 2025 г."
+
+#~ msgid ""
+#~ "Доброволчески панел -\n"
+#~ "HelpChain"
+#~ msgstr ""
+#~ "Доброволчески панел -\n"
+#~ "HelpChain"
+
+#~ msgid "Доброволчески панел"
+#~ msgstr "Доброволчески панел"
+
+#~ msgid "Доброволец"
+#~ msgstr "Доброволец"
+
+#~ msgid "Добре дошли, %(name)s! 👋"
+#~ msgstr "Добре дошли, %(name)s! 👋"
+
+#~ msgid ""
+#~ "Благодарим ви за доброволчеството! Днес можете да помогнете на\n"
+#~ "            още %(count)s души."
+#~ msgstr ""
+#~ "Благодарим ви за доброволчеството! Днес можете да помогнете на\n"
+#~ "            още %(count)s души."
+
+#~ msgid "Завършени задачи"
+#~ msgstr "Завършени задачи"
+
+#~ msgid "Активни задачи"
+#~ msgstr "Активни задачи"
+
+#~ msgid "В момента работите по тези задачи"
+#~ msgstr "В момента работите по тези задачи"
+
+#~ msgid "Средна оценка"
+#~ msgstr "Средна оценка"
+
+#~ msgid "%(count)s спешни задачи наблизо!"
+#~ msgstr "%(count)s спешни задачи наблизо!"
+
+#~ msgid "Помогнати хора"
+#~ msgstr "Помогнати хора"
+
+#~ msgid ""
+#~ "Ниво\n"
+#~ "            %(level)s"
+#~ msgstr ""
+#~ "Ниво\n"
+#~ "            %(level)s"
+
+#~ msgid "Общо XP"
+#~ msgstr "Общо XP"
+
+#~ msgid "Прогрес към следващо ниво"
+#~ msgstr "Прогрес към следващо ниво"
+
+#~ msgid "Още %(xp)s опит до ниво %(next_level)s"
+#~ msgstr "Още %(xp)s опит до ниво %(next_level)s"
+
+#~ msgid "Нови постижения скоро!"
+#~ msgstr "Нови постижения скоро!"
+
+#~ msgid ""
+#~ "Вашите активни\n"
+#~ "        задачи"
+#~ msgstr ""
+#~ "Вашите активни\n"
+#~ "        задачи"
+
+#~ msgid "Задачи, по които работите в момента"
+#~ msgstr "Задачи, по които работите в момента"
+
+#~ msgid "Прогрес"
+#~ msgstr "Прогрес"
+
+#~ msgid "Обнови прогреса"
+#~ msgstr "Обнови прогреса"
+
+#~ msgid "Завърши задачата"
+#~ msgstr "Завърши задачата"
+
+#~ msgid "Завърши"
+#~ msgstr "Завърши"
+
+#~ msgid "Нямате активни задачи"
+#~ msgstr "Нямате активни задачи"
+
+#~ msgid "Приемете нова задача от секцията „Налични задачи“ по-долу."
+#~ msgstr "Приемете нова задача от секцията „Налични задачи“ по-долу."
+
+#~ msgid "Налични задачи"
+#~ msgstr "Налични задачи"
+
+#~ msgid "%(count)s задачи чакат помощ"
+#~ msgstr "%(count)s задачи чакат помощ"
+
+#~ msgid "Прегледай текущите си ангажименти"
+#~ msgstr "Прегледай текущите си ангажименти"
+
+#~ msgid "Актуализирай локация"
+#~ msgstr "Актуализирай локация"
+
+#~ msgid "Намери близки заявки за помощ"
+#~ msgstr "Намери близки заявки за помощ"
+
+#~ msgid "Редактирай профил"
+#~ msgstr "Редактирай профил"
+
+#~ msgid "Обнови информацията си"
+#~ msgstr "Обнови информацията си"
+
+#~ msgid "Виж своите значки и XP"
+#~ msgstr "Виж своите значки и XP"
+
+#~ msgid "Поддръжка"
+#~ msgstr "Поддръжка"
+
+#~ msgid "Свържи се с нас"
+#~ msgstr "Свържи се с нас"
+
+#~ msgid "Задачи, които се нуждаят от доброволци"
+#~ msgstr "Задачи, които се нуждаят от доброволци"
+
+#~ msgid "Общо:"
+#~ msgstr "Общо:"
+
+#~ msgid "Спешни:"
+#~ msgstr "Спешни:"
+
+#~ msgid "Високи:"
+#~ msgstr "Високи:"
+
+#~ msgid "Средни:"
+#~ msgstr "Средни:"
+
+#~ msgid "Ниски:"
+#~ msgstr "Ниски:"
+
+#~ msgid "Търси задачи..."
+#~ msgstr "Търси задачи..."
+
+#~ msgid "Филтрирай по приоритет"
+#~ msgstr "Филтрирай по приоритет"
+
+#~ msgid "Всички приоритети"
+#~ msgstr "Всички приоритети"
+
+#~ msgid "Само спешни"
+#~ msgstr "Само спешни"
+
+#~ msgid "Висок приоритет"
+#~ msgstr "Висок приоритет"
+
+#~ msgid "Среден приоритет"
+#~ msgstr "Среден приоритет"
+
+#~ msgid "Нисък приоритет"
+#~ msgstr "Нисък приоритет"
+
+#~ msgid "Подреди наличните задачи"
+#~ msgstr "Подреди наличните задачи"
+
+#~ msgid "Най-нови"
+#~ msgstr "Най-нови"
+
+#~ msgid "Най-стари"
+#~ msgstr "Най-стари"
+
+#~ msgid "Най-кратка продължителност"
+#~ msgstr "Най-кратка продължителност"
+
+#~ msgid "Най-дълга продължителност"
+#~ msgstr "Най-дълга продължителност"
+
+#~ msgid "Бързи филтри по приоритет"
+#~ msgstr "Бързи филтри по приоритет"
+
+#~ msgid "Всички"
+#~ msgstr "Всички"
+
+#~ msgid "Високи"
+#~ msgstr "Високи"
+
+#~ msgid "Средни"
+#~ msgstr "Средни"
+
+#~ msgid "Ниски"
+#~ msgstr "Ниски"
+
+#~ msgid "Висока"
+#~ msgstr "Висока"
+
+#~ msgid "Средна"
+#~ msgstr "Средна"
+
+#~ msgid "Ниска"
+#~ msgstr "Ниска"
+
+#~ msgid "Грешка при зареждане на задачите"
+#~ msgstr "Грешка при зареждане на задачите"
+
+#~ msgid "Грешка при свързване със сървъра"
+#~ msgstr "Грешка при свързване със сървъра"
+
+#~ msgid "Няма намерени задачи"
+#~ msgstr "Няма намерени задачи"
+
+#~ msgid "Опитайте с други критерии за търсене."
+#~ msgstr "Опитайте с други критерии за търсене."
+
+#~ msgid "ч"
+#~ msgstr "ч"
+
+#~ msgid "Няма"
+#~ msgstr "Няма"
+
+#~ msgid "Не е посочена"
+#~ msgstr "Не е посочена"
+
+#~ msgid "Няма описание"
+#~ msgstr "Няма описание"
+
+#~ msgid "Преглед на детайлите"
+#~ msgstr "Преглед на детайлите"
+
+#~ msgid "Детайли"
+#~ msgstr "Детайли"
+
+#~ msgid "Приеми задачата"
+#~ msgstr "Приеми задачата"
+
+#~ msgid "Приеми"
+#~ msgstr "Приеми"
+
+#~ msgid "Сигурни ли сте, че искате да приемете тази задача?"
+#~ msgstr "Сигурни ли сте, че искате да приемете тази задача?"
+
+#~ msgid "Задачата е приета успешно!"
+#~ msgstr "Задачата е приета успешно!"
+
+#~ msgid "Грешка при приемане на задачата: "
+#~ msgstr "Грешка при приемане на задачата: "
+
+#~ msgid "Детайлите за задачата ще бъдат показани в модален прозорец"
+#~ msgstr "Детайлите за задачата ще бъдат показани в модален прозорец"
+
+#~ msgid "Прогресът е обновен!"
+#~ msgstr "Прогресът е обновен!"
+
+#~ msgid "Грешка при обновяване на прогреса"
+#~ msgstr "Грешка при обновяване на прогреса"
+
+#~ msgid "Сигурни ли сте, че задачата е завършена?"
+#~ msgstr "Сигурни ли сте, че задачата е завършена?"
+
+#~ msgid "Задачата е отбелязана като завършена!"
+#~ msgstr "Задачата е отбелязана като завършена!"
+
+#~ msgid "Грешка при завършване на задачата"
+#~ msgstr "Грешка при завършване на задачата"
+
+#~ msgid "Локацията е получена успешно!"
+#~ msgstr "Локацията е получена успешно!"
+
+#~ msgid "Не можахме да получим вашата локация. Моля, въведете я ръчно."
+#~ msgstr "Не можахме да получим вашата локация. Моля, въведете я ръчно."
+
+#~ msgid "Вашият браузър не поддържа геолокация."
+#~ msgstr "Вашият браузър не поддържа геолокация."
+
+#~ msgid "Моля, въведете валидни координати."
+#~ msgstr "Моля, въведете валидни координати."
+
+#~ msgid "Запазване..."
+#~ msgstr "Запазване..."
+
+#~ msgid "Локацията е актуализирана успешно!"
+#~ msgstr "Локацията е актуализирана успешно!"
+
+#~ msgid "Грешка при актуализиране на локацията: "
+#~ msgstr "Грешка при актуализиране на локацията: "
+
+#~ msgid "Грешка при свързване със сървъра."
+#~ msgstr "Грешка при свързване със сървъра."
+
+#~ msgid "{editor}: Editing failed"
+#~ msgstr "{editor}: Редактирането не бе успешно"
+
+#~ msgid "{editor}: Editing failed: {e}"
+#~ msgstr ""
+
+#~ msgid "Aborted!"
+#~ msgstr "Прекратено!"
+
+#~ msgid "Show this message and exit."
+#~ msgstr "Покажи това съобщение и прекрати работата."
+
+#~ msgid "(Deprecated) {text}"
+#~ msgstr "(Премахнато) {text}"
+
+#~ msgid "Options"
+#~ msgstr "Опции"
+
+#~ msgid "Got unexpected extra argument ({args})"
+#~ msgid_plural "Got unexpected extra arguments ({args})"
+#~ msgstr[0] "Получен е неочакван допълнителен параметър ({args})"
+#~ msgstr[1] "Получени са неочаквани допълнителни параметри ({args})"
+
+#~ msgid "DeprecationWarning: The command {name!r} is deprecated."
+#~ msgstr "Предупреждение: Командата {name!r} е премахната/остаряла."
+
+#~ msgid "Commands"
+#~ msgstr "Команди"
+
+#~ msgid "Missing command."
+#~ msgstr "Командата липсва."
+
+#~ msgid "No such command {name!r}."
+#~ msgstr "Няма такава команда {name!r}."
+
+#~ msgid "Value must be an iterable."
+#~ msgstr "Стойността трябва да е итерируем обект."
+
+#~ msgid "Takes {nargs} values but 1 was given."
+#~ msgid_plural "Takes {nargs} values but {len} were given."
+#~ msgstr[0] "Трябва да получи {nargs} стойности, но е подадена само една."
+#~ msgstr[1] "Трябва да получи {nargs} стойности, но са подадени {len}."
+
+#~ msgid "env var: {var}"
+#~ msgstr "системна променлива: {var}"
+
+#~ msgid "(dynamic)"
+#~ msgstr "(динамично)"
+
+#~ msgid "default: {default}"
+#~ msgstr "по подразбиране: {default}"
+
+#~ msgid "required"
+#~ msgstr "задължително"
+
+#~ msgid "%(prog)s, version %(version)s"
+#~ msgstr "%(prog)s, версия %(version)s"
+
+#~ msgid "Show the version and exit."
+#~ msgstr "Покажи версията и излез."
+
+#~ msgid "Error: {message}"
+#~ msgstr "Грешка: {message}"
+
+#~ msgid "Try '{command} {option}' for help."
+#~ msgstr "Опитайте с '{command} {option}' за помощ."
+
+#~ msgid "Invalid value: {message}"
+#~ msgstr "Невалидна стойност: {message}"
+
+#~ msgid "Invalid value for {param_hint}: {message}"
+#~ msgstr "Невалидна стойност за {param_hint}: {message}"
+
+#~ msgid "Missing argument"
+#~ msgstr "Липсващ параметър"
+
+#~ msgid "Missing option"
+#~ msgstr "Опцията липсва"
+
+#~ msgid "Missing parameter"
+#~ msgstr "Липсващ параметър"
+
+#~ msgid "Missing {param_type}"
+#~ msgstr "Липсващ {param_type}"
+
+#~ msgid "Missing parameter: {param_name}"
+#~ msgstr "Липсващ параметър: {param_name}"
+
+#~ msgid "No such option: {name}"
+#~ msgstr "Няма такава опция: {name}"
+
+#~ msgid "Did you mean {possibility}?"
+#~ msgid_plural "(Possible options: {possibilities})"
+#~ msgstr[0] "Може би имахте предвид{possibilities}?"
+#~ msgstr[1] "Възможни варианти:{possibilities}."
+
+#~ msgid "unknown error"
+#~ msgstr "неизвестна грешка"
+
+#~ msgid "Could not open file {filename!r}: {message}"
+#~ msgstr "Не може да се отвори файлът {filename!r}: {message}"
+
+#~ msgid "Usage:"
+#~ msgstr "Употреба:"
+
+#~ msgid "Argument {name!r} takes {nargs} values."
+#~ msgstr "Параметърът {name!r} изисква {nargs} стойности."
+
+#~ msgid "Option {name!r} does not take a value."
+#~ msgstr "Опцията {name!r} не изисква стойност."
+
+#~ msgid "Option {name!r} requires an argument."
+#~ msgid_plural "Option {name!r} requires {nargs} arguments."
+#~ msgstr[0] "Опцията {name!r} изисква стойност."
+#~ msgstr[1] "Опцията {name!r} изисква {nargs} аргумента."
+
+#~ msgid "Shell completion is not supported for Bash versions older than 4.4."
+#~ msgstr ""
+#~ "Автоматичното допълване в shell не се"
+#~ " поддържа за Bash версии по-стари от"
+#~ " 4.4."
+
+#~ msgid "Couldn't detect Bash version, shell completion is not supported."
+#~ msgstr ""
+#~ "Не можа да се открие версията на"
+#~ " Bash, автоматичното допълване в shell "
+#~ "не се поддържа."
+
+#~ msgid "Repeat for confirmation"
+#~ msgstr "Повторете за потвърждение"
+
+#~ msgid "Error: The value you entered was invalid."
+#~ msgstr "Грешка: Въведената стойност е невалидна."
+
+#~ msgid "Error: {e.message}"
+#~ msgstr "Грешка: {e.message}"
+
+#~ msgid "Error: The two entered values do not match."
+#~ msgstr "Грешка: Двете въведени стойности не съвпадат."
+
+#~ msgid "Error: invalid input"
+#~ msgstr "Грешка: невалиден вход"
+
+#~ msgid "Press any key to continue..."
+#~ msgstr "Натиснете произволен клавиш, за да продължите..."
+
+#~ msgid ""
+#~ "Choose from:\n"
+#~ "\t{choices}"
+#~ msgstr "Изберете от: {choices}"
+
+#~ msgid "{value!r} is not {choice}."
+#~ msgid_plural "{value!r} is not one of {choices}."
+#~ msgstr[0] "{value!r} не е {choice}."
+#~ msgstr[1] "{value!r} не е сред {choices}."
+
+#~ msgid "{value!r} does not match the format {format}."
+#~ msgid_plural "{value!r} does not match the formats {formats}."
+#~ msgstr[0] "{value!r} не отговаря на формата {format}."
+#~ msgstr[1] "{value!r} не отговаря на форматите {formats}."
+
+#~ msgid "{value!r} is not a valid {number_type}."
+#~ msgstr "{value!r} не е валиден {number_type}."
+
+#~ msgid "{value} is not in the range {range}."
+#~ msgstr "{редактор}:Грешка при редактиране:{e}"
+
+#~ msgid "{value!r} is not a valid boolean."
+#~ msgstr "{value!r} не е валидна булева стойност."
+
+#~ msgid "{value!r} is not a valid UUID."
+#~ msgstr "{value!r} не е валиден UUID."
+
+#~ msgid "file"
+#~ msgstr "файл"
+
+#~ msgid "path"
+#~ msgstr "път"
+
+#~ msgid "{name} {filename!r} does not exist."
+#~ msgstr "{name} {filename!r} не съществува."
+
+#~ msgid "{name} {filename!r} is a file."
+#~ msgstr "{name} {filename!r} е файл."
+
+#~ msgid "{name} '{filename}' is a directory."
+#~ msgstr "{name} '{filename}' е директория."
+
+#~ msgid "{name} {filename!r} is not readable."
+#~ msgstr "{name} {filename!r} не може да бъде прочетен."
+
+#~ msgid "{name} {filename!r} is not writable."
+#~ msgstr "{name} {filename!r} не може да бъде записан."
+
+#~ msgid "{name} {filename!r} is not executable."
+#~ msgstr "{name} {filename!r} не може да бъде изпълнен."
+
+#~ msgid "{len_type} values are required, but {len_value} was given."
+#~ msgid_plural "{len_type} values are required, but {len_value} were given."
+#~ msgstr[0] "Изискват се {len_type} стойности, но е подадена {len_value}."
+#~ msgstr[1] "Изискват се {len_type} стойности, но са подадени {len_value}."
+
+#~ msgid "Cli: Invalid command."
+#~ msgstr "Cli: Невалидна команда."
+
+#~ msgid "File required."
+#~ msgstr "Файлът е задължителен."
+
+#~ msgid "Invalid file type."
+#~ msgstr "Невалидно име"
+
+#~ msgid "Invalid name"
+#~ msgstr "Невалидно име"
+
+#~ msgid "File \"%(name)s\" already exists."
+#~ msgstr "Файлът \"%(name)s\" вече съществува."
+
+#~ msgid "Permission denied."
+#~ msgstr "Достъпът е отказан."
+
+#~ msgid "File uploading is disabled."
+#~ msgstr "Качването на файлове е изключено."
+
+#~ msgid "Successfully saved file: %(name)s"
+#~ msgstr "Файлът беше успешно запазен: %(name)s"
+
+#~ msgid "Failed to save file: %(error)s"
+#~ msgstr "Неуспешно запазване на файла: %(error)s"
+
+#~ msgid "Upload File"
+#~ msgstr "Качи файл"
+
+#~ msgid "Directory creation is disabled."
+#~ msgstr "Създаването на директории е изключено."
+
+#~ msgid "Successfully created directory: %(directory)s"
+#~ msgstr "Директорията беше успешно създадена: %(directory)s"
+
+#~ msgid "Failed to create directory: %(error)s"
+#~ msgstr "Неуспешно създаване на директория: %(error)s"
+
+#~ msgid "Create Directory"
+#~ msgstr "Създаване на директория"
+
+#~ msgid "Deletion is disabled."
+#~ msgstr "Изтриването е изключено."
+
+#~ msgid "Directory deletion is disabled."
+#~ msgstr "Изтриването на директории е изключено."
+
+#~ msgid "Directory \"%(path)s\" was successfully deleted."
+#~ msgstr "Директорията \"%(path)s\" беше успешно изтрита."
+
+#~ msgid "Failed to delete directory: %(error)s"
+#~ msgstr "Неуспешно изтриване на директория: %(error)s"
+
+#~ msgid "File \"%(name)s\" was successfully deleted."
+#~ msgstr "Файлът \"%(name)s\" беше успешно изтрит."
+
+#~ msgid "Failed to delete file: %(name)s"
+#~ msgstr "Неуспешно изтриване на файл: %(name)s"
+
+#~ msgid "Renaming is disabled."
+#~ msgstr "Преименуването е изключено."
+
+#~ msgid "Path does not exist."
+#~ msgstr "Посоченият път не съществува."
+
+#~ msgid "Successfully renamed \"%(src)s\" to \"%(dst)s\""
+#~ msgstr "Успешно преименуване на \"%(src)s\" на \"%(dst)s\""
+
+#~ msgid "Failed to rename: %(error)s"
+#~ msgstr "Неуспешно преименуване: %(error)s"
+
+#~ msgid "Rename %(name)s"
+#~ msgstr "Преименувай %(name)s"
+
+#~ msgid "Error saving changes to %(name)s."
+#~ msgstr "Грешка при запазване на промените в %(name)s."
+
+#~ msgid "Changes to %(name)s saved successfully."
+#~ msgstr "Промените в %(name)s бяха успешно запазени."
+
+#~ msgid "Error reading %(name)s."
+#~ msgstr "Грешка при четене на %(name)s."
+
+#~ msgid "Unexpected error while reading from %(name)s"
+#~ msgstr "Неочаквана грешка при четене от %(name)s"
+
+#~ msgid "Cannot edit %(name)s."
+#~ msgstr "Не може да се редактира %(name)s."
+
+#~ msgid "Editing %(path)s"
+#~ msgstr "Редактиране на %(path)s"
+
+#~ msgid "File deletion is disabled."
+#~ msgstr "Изтриването на файлове е изключено."
+
+#~ msgid "Cannot operate on non empty directories"
+#~ msgstr "Операцията не може да се извърши върху непразни директории"
+
+#~ msgid "Failed to get model. %(error)s"
+#~ msgstr "Неуспешно получаване на модела. %(error)s"
+
+#~ msgid "Failed to create record. %(error)s"
+#~ msgstr "Неуспешно създаване на запис. %(error)s"
+
+#~ msgid "Failed to update record. %(error)s"
+#~ msgstr "Неуспешно обновяване на запис. %(error)s"
+
+#~ msgid "Failed to delete record. %(error)s"
+#~ msgstr "Неуспешно изтриване на запис. %(error)s"
+
+#~ msgid "Record was successfully deleted."
+#~ msgid_plural "%(count)s records were successfully deleted."
+#~ msgstr[0] "Записът беше успешно изтрит."
+#~ msgstr[1] "%(count)s записа бяха успешно изтрити."
+
+#~ msgid "Failed to delete records. %(error)s"
+#~ msgstr "Неуспешно изтриване на записи. %(error)s"
+
+#~ msgid "Not a valid choice"
+#~ msgstr "Невалиден избор"
+
+#~ msgid "Already exists."
+#~ msgstr "Вече съществува."
+
+#~ msgid "At least %(num)d item is required"
+#~ msgid_plural "At least %(num)d items are required"
+#~ msgstr[0] "Изисква се поне %(num)d елемент"
+#~ msgstr[1] "Изискват се поне %(num)d елемента"
+
+#~ msgid "Not a valid ISO currency code (e.g. USD, EUR, CNY)."
+#~ msgstr "Невалиден ISO код на валута (напр. USD, EUR, CNY)."
+
+#~ msgid "Not a valid color (e.g. \"red\", \"#f00\", \"#ff0000\")."
+#~ msgstr "Невалиден цвят (напр. \"red\", \"#f00\", \"#ff0000\")."
+
+#~ msgid "Integrity error. %(message)s"
+#~ msgstr "Грешка в целостта. %(message)s"
+
+#~ msgid "Invalid time format"
+#~ msgstr "Невалиден формат на време"
+
+#~ msgid "Invalid Choice: could not coerce"
+#~ msgstr "Невалиден избор: не може да се преобразува"
+
+#~ msgid "Invalid JSON"
+#~ msgstr "Невалиден JSON"
+
+#~ msgid "Invalid file extension"
+#~ msgstr "Невалидно разширение на файла"
+
+#~ msgid "File \"%s\" already exists."
+#~ msgstr "Файлът \"%s\" вече съществува."
+
+#~ msgid "This field requires at least one item."
+#~ msgstr "Това поле изисква поне един елемент."
+
+#~ msgid "There are no items in the table."
+#~ msgstr "Няма елементи в таблицата."
+
+#~ msgid "Invalid Filter Value: %(value)s"
+#~ msgstr "Невалидна стойност на филтъра: %(value)s"
+
+#~ msgid "Record was successfully created."
+#~ msgstr "Записът беше успешно създаден."
+
+#~ msgid "Record does not exist."
+#~ msgstr "Записът не съществува."
+
+#~ msgid "Record was successfully saved."
+#~ msgstr "Записът беше успешно запазен."
+
+#~ msgid "Tablib dependency not installed."
+#~ msgstr "Зависимостта Tablib не е инсталирана."
+
+#~ msgid "Export type \"%(type)s not supported."
+#~ msgstr "Export type \"%(type)s not supported."
+
+#~ msgid "View Record"
+#~ msgstr "Преглед на запис"
+
+#~ msgid "Edit Record"
+#~ msgstr "Редактирай записа"
+
+#~ msgid "Delete Record"
+#~ msgstr "Изтрий записа"
+
+#~ msgid "Please select model"
+#~ msgstr "Моля, изберете модел"
+
+#~ msgid "No"
+#~ msgstr "Не"
+
+#~ msgid "Yes"
+#~ msgstr "Да"
+
+#~ msgid "This field is required."
+#~ msgstr "Това поле е задължително."
+
+#~ msgid "File does not have an approved extension: {extensions}"
+#~ msgstr "Файлът няма одобрено разширение: {extensions}"
+
+#~ msgid "File does not have an approved extension."
+#~ msgstr "Файлът няма одобрено разширение."
+
+#~ msgid "Content purported to be compressed with %s but failed to decompress."
+#~ msgstr ""
+#~ "Съдържанието е маркирано като компресирано "
+#~ "с %s, но декомпресирането не бе "
+#~ "успешно."
+
+#~ msgid "Unsupported value for qop: %s."
+#~ msgstr "Неподдържана стойност за qop: %s."
+
+#~ msgid "Unsupported value for algorithm: %s.algorithm"
+#~ msgstr "Неподдържана стойност за алгоритъм: %s.algorithm"
+
+#~ msgid "The challenge doesn't contain a server nonce, or this one is empty."
+#~ msgstr "Неподдържана стойност за алгоритъм: %s.algorithm"
+
+#~ msgid "Unsupported value for pw-algorithm: %s.pw-algorithm"
+#~ msgstr "Неподдържана стойност за pw-алгоритъм: %s.pw-алгоритъм"
+
+#~ msgid "Redirected but the response is missing a Location: header."
+#~ msgstr "Пренасочено, но в отговора липсва Location: заглавие."
+
+#~ msgid "show this help message and exit"
+#~ msgstr "покажи това помощно съобщение и излез"
+
+#~ msgid "Attempting to connect to qpid with SASL mechanism %s"
+#~ msgstr "Опит за свързване с qpid чрез SASL механизъм %s"
+
+#~ msgid "Connected to qpid with SASL mechanism %s"
+#~ msgstr "Свързан с qpid чрез SASL механизъм %s"
+
+#~ msgid "Unable to connect to qpid with SASL mechanism %s"
+#~ msgstr "Неуспешно свързване с qpid чрез SASL механизъм %s"
+
+#~ msgid "Enter a valid version number in X.Y.Z format."
+#~ msgstr "Въведете валиден номер на версия във формат X.Y.Z."
+
+#~ msgid "Version"
+#~ msgstr "Версия"
+
+#~ msgid "Enter a valid version number spec list in ==X.Y.Z,>=A.B.C format."
+#~ msgstr ""
+#~ "Въведете валиден списък със спецификации "
+#~ "за версия във формат ==X.Y.Z,>=A.B.C."
+
+#~ msgid "Version specification list"
+#~ msgstr "Списък със спецификации за версия"
+
+#~ msgid "(deprecated) "
+#~ msgstr "(остарял)"
+
+#~ msgid "[default: {}]"
+#~ msgstr "[по подразбиране: {}]"
+
+#~ msgid "[env var: {}]"
+#~ msgstr "[променлива на средата: {}]"
+
+#~ msgid "[required]"
+#~ msgstr "[задължително]"
+
+#~ msgid "Error"
+#~ msgstr "Грешка"
+
+#~ msgid "Aborted."
+#~ msgstr "Прекратено."
+
+#~ msgid "Try [blue]'{command_path} {help_option}'[/] for help."
+#~ msgstr "Опитайте [blue]'{command_path} {help_option}'[/] за помощ."
+
+#~ msgid "Invalid field name '%s'."
+#~ msgstr "Невалидно име на поле '%s'."
+
+#~ msgid "Field must be equal to %(other_name)s."
+#~ msgstr "Полето трябва да е равно на %(other_name)s."
+
+#~ msgid "Field must be at least %(min)d character long."
+#~ msgid_plural "Field must be at least %(min)d characters long."
+#~ msgstr[0] "Полето трябва да е поне %(min)d знак."
+#~ msgstr[1] "Полето трябва да е поне %(min)d знака."
+
+#~ msgid "Field cannot be longer than %(max)d character."
+#~ msgid_plural "Field cannot be longer than %(max)d characters."
+#~ msgstr[0] "Полето не може да е по-дълго от %(max)d знак."
+#~ msgstr[1] "Полето не може да е по-дълго от %(max)d знака."
+
+#~ msgid "Field must be exactly %(max)d character long."
+#~ msgid_plural "Field must be exactly %(max)d characters long."
+#~ msgstr[0] "Полето трябва да е точно %(max)d знак."
+#~ msgstr[1] "Полето трябва да е точно %(max)d знака."
+
+#~ msgid "Field must be between %(min)d and %(max)d characters long."
+#~ msgstr "Полето трябва да е между %(min)d и %(max)d знака."
+
+#~ msgid "Number must be at least %(min)s."
+#~ msgstr "Числото трябва да е поне %(min)s."
+
+#~ msgid "Number must be at most %(max)s."
+#~ msgstr "Числото трябва да е най-много %(max)s."
+
+#~ msgid "Number must be between %(min)s and %(max)s."
+#~ msgstr "Числото трябва да е между %(min)s и %(max)s."
+
+#~ msgid "Invalid input."
+#~ msgstr "Невалиден вход."
+
+#~ msgid "Invalid email address."
+#~ msgstr "Невалиден имейл адрес."
+
+#~ msgid "Invalid IP address."
+#~ msgstr "Невалиден IP адрес."
+
+#~ msgid "Invalid Mac address."
+#~ msgstr "Невалиден MAC адрес."
+
+#~ msgid "Invalid URL."
+#~ msgstr "Невалиден URL адрес."
+
+#~ msgid "Invalid UUID."
+#~ msgstr "Невалиден UUID."
+
+#~ msgid "Invalid value, must be one of: %(values)s."
+#~ msgstr "Невалидна стойност, трябва да е една от: %(values)s."
+
+#~ msgid "Invalid value, can't be any of: %(values)s."
+#~ msgstr "Невалидна стойност, не може да е някоя от: %(values)s."
+
+#~ msgid "This field cannot be edited."
+#~ msgstr "Това поле не може да се редактира."
+
+#~ msgid "This field is disabled and cannot have a value."
+#~ msgstr "Това поле е деактивирано и не може да има стойност."
+
+#~ msgid "Invalid CSRF Token."
+#~ msgstr "Невалиден CSRF токен."
+
+#~ msgid "CSRF token missing."
+#~ msgstr "Липсва CSRF токен."
+
+#~ msgid "CSRF failed."
+#~ msgstr "CSRF неуспешен."
+
+#~ msgid "CSRF token expired."
+#~ msgstr "CSRF токенът е изтекъл."
+
+#~ msgid "Invalid Choice: could not coerce."
+#~ msgstr "Невалиден избор: не може да се преобразува."
+
+#~ msgid "Choices cannot be None."
+#~ msgstr "Изборите не могат да бъдат None."
+
+#~ msgid "Not a valid choice."
+#~ msgstr "Невалиден избор."
+
+#~ msgid "Invalid choice(s): one or more data inputs could not be coerced."
+#~ msgstr ""
+#~ "Невалиден избор: един или повече входни"
+#~ " данни не могат да бъдат "
+#~ "преобразувани."
+
+#~ msgid "'%(value)s' is not a valid choice for this field."
+#~ msgid_plural "'%(value)s' are not valid choices for this field."
+#~ msgstr[0] "'%(value)s' не е валиден избор за това поле."
+#~ msgstr[1] "'%(value)s' не са валидни избори за това поле."
+
+#~ msgid "Not a valid datetime value."
+#~ msgstr "Невалидна стойност за дата и час."
+
+#~ msgid "Not a valid date value."
+#~ msgstr "Невалидна стойност за дата."
+
+#~ msgid "Not a valid time value."
+#~ msgstr "Невалидна стойност за час."
+
+#~ msgid "Not a valid week value."
+#~ msgstr "Невалидна стойност за седмица."
+
+#~ msgid "Not a valid integer value."
+#~ msgstr "Невалидна стойност за цяло число."
+
+#~ msgid "Not a valid decimal value."
+#~ msgstr "Невалидна стойност за десетично число."
+
+#~ msgid "Not a valid float value."
+#~ msgstr "Невалидна стойност за число с плаваща запетая."
+

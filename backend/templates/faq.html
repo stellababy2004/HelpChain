@@ -1,43 +1,21 @@
-{% extends "base.html" %} {% block title %}Често задавани въпроси{% endblock %}
+{% extends "base.html" %}
+{% block title %}{{ _("FAQ") }}{% endblock %}
+
 {% block content %}
-<div class="container mt-5 faq-container">
-  <h2 class="mb-4 text-primary">Често задавани въпроси</h2>
-  <div class="accordion" id="faqAccordion">
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="q1">
-        <button
-          class="accordion-button"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#a1"
-          aria-expanded="true"
-          aria-controls="a1"
-        >
-          Как мога да стана доброволец?
-        </button>
-      </h2>
-      <div
-        id="a1"
-        class="accordion-collapse collapse show"
-        aria-labelledby="q1"
-        data-bs-parent="#faqAccordion"
-      >
-        <div class="accordion-body">
-          Попълнете формата за регистрация и наш екип ще се свърже с вас.
-        </div>
-      </div>
-    </div>
-    <div class="accordion-item">
-      <h2 class="accordion-header" id="q2">
-        <button
-          class="accordion-button collapsed"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#a2"
-          aria-expanded="false"
-          aria-controls="a2"
-        >
-          Какви са условията за участие?
+<section class="hc-page">
+  <h1>{{ _("FAQ") }}</h1>
+
+  <div class="hc-faq">
+    <h3>{{ _("What is HelpChain?") }}</h3>
+    <p>{{ _("HelpChain connects people in need with volunteers and professionals.") }}</p>
+
+    <h3>{{ _("How do I request help?") }}</h3>
+    <p>{{ _("Go to Categories and choose the type of help you need.") }}</p>
+
+    <h3>{{ _("How can I volunteer?") }}</h3>
+    <p>{{ _("Use the Login page and follow the volunteer onboarding steps.") }}</p>
+  </div>
+</section>
         </button>
       </h2>
       <div
@@ -47,7 +25,7 @@
         data-bs-parent="#faqAccordion"
       >
         <div class="accordion-body">
-          Всеки може да се включи, стига да има желание да помага!
+        {% trans %}Всеки може да се включи, стига да има желание да помага!{% endtrans %}
         </div>
       </div>
     </div>

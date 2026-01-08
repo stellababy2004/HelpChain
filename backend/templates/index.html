@@ -71,7 +71,7 @@ content %}
   <div class="row justify-content-center">
     <div class="col-12 col-md-8 text-center glass py-4 mb-5">
       <img
-        src="{{ url_for('static', filename='hands-heart.png') }}"
+        src="{{ url_lang('static', filename='hands-heart.png') }}"
         alt="{{ _('Сърце с ръце') }}"
         class="heart-img mb-4 mt-2"
       />
@@ -214,7 +214,7 @@ content %}
       </div>
       <!-- Добави снимка на доброволци тук -->
       <img
-        src="{{ url_for('static', filename='volunteers.jpg') }}"
+        src="{{ url_lang('static', filename='volunteers.jpg') }}"
         alt="{{ _('Доброволци') }}"
         class="img-fluid rounded shadow mb-5 volunteers-img"
       />
@@ -270,7 +270,7 @@ content %}
 <div class="mt-5 mb-5">
   <blockquote class="blockquote mb-4">
     <img
-      src="{{ url_for('static', filename='volunteers.jpg') }}"
+      src="{{ url_lang('static', filename='volunteers.jpg') }}"
       alt="{{ _('Мария') }}"
       class="rounded-circle me-2 testimonial-img"
     />
@@ -315,7 +315,7 @@ _('„Чувствам се подкрепен и разбран!“'), "author"
 <div id="testimonials" class="mt-5 mb-5">
   <blockquote class="blockquote mb-4">
     <img
-      src="{{ url_for('static', filename='volunteers.jpg') }}"
+      src="{{ url_lang('static', filename='volunteers.jpg') }}"
       alt="{{ _('Мария') }}"
       class="rounded-circle me-2 testimonial-img"
     />
@@ -516,3 +516,4 @@ _('„Чувствам се подкрепен и разбран!“'), "author"
   });
 </script>
 {% endblock %}
+

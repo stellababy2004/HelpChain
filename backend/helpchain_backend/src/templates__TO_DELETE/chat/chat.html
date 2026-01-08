@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="chat-wrap">
+  <h2>HelpChain Помощен чат</h2>
+
+  <div class="chat-row">
+    <input
+      type="text"
+      id="userInput"
+      placeholder="Задай въпрос или сподели нужда..."
+      autocomplete="off"
+    />
+    <button type="button" id="sendBtn">Изпрати</button>
+  </div>
+
+  <pre id="chatLog" class="chat-log"></pre>
+</section>
+
+<script>
+  async function sendMessage() {
+    const input = document.getElementById("userInput");
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    // пишем съобщението на потребителя
+    const log = document.getElementById("chatLog");
+    log.innerText += `> ${msg}\n`;
+    input.value = "";
+
+    // Вземаме context от URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const context = urlParams.get("context") || null;
+
+    try {
+      // Викаме HelpChain backend endpoint
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, context }),
+      });
+
+      const data = await res.json();
+      const reply = data.reply ?? data.response ?? "No response";
+      log.innerText += `${reply}\n\n`;
+    } catch (e) {
+      log.innerText += `System: network error\n\n`;
+    }
+
+    log.scrollTop = log.scrollHeight;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+    document.getElementById("userInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  });
+</script>
+
+<style>
+  /* Минимален стил, за да изглежда прилично, без да пипаме още base.html */
+  .chat-wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+  .chat-row { display: flex; gap: 10px; margin: 12px 0; }
+  .chat-row input {
+    flex: 1; padding: 10px; border-radius: 10px;
+    border: 1px solid rgba(0,255,0,.35);
+    background: #0b0b0b; color: #0f0;
+  }
+  .chat-row button {
+    padding: 10px 14px; border-radius: 10px;
+    border: 1px solid rgba(0,255,0,.35);
+    background: #111; color: #0f0; cursor: pointer;
+  }
+  .chat-log {
+    min-height: 50vh; padding: 12px; border-radius: 12px;
+    border: 1px solid rgba(0,255,0,.35);
+    background: rgba(0,0,0,.25);
+    overflow: auto;
+  }
+</style>
+
+{% endblock %}

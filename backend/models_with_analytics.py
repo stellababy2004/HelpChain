@@ -57,12 +57,10 @@ if db is None:
     # Fallback: build a minimal db-like namespace using SQLAlchemy primitives
     try:
         from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
-        from sqlalchemy.orm import declarative_base, relationship
-
-        _Base = declarative_base()
+        from sqlalchemy.orm import relationship
 
         class _FakeDB:
-            Model = _Base
+            Model = object
             Column = Column
             Integer = Integer
             String = String

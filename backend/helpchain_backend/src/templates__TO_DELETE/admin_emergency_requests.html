@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Emergency requests</h1>
+
+<form method="get" class="admin-filters">
+  <label>
+    Last
+    <select name="days">
+      {% for d in [1,3,7,14,30,60,90] %}
+        <option value="{{ d }}" {% if d==days %}selected{% endif %}>{{ d }} days</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>
+    Search
+    <input type="text" name="q" value="{{ q }}" placeholder="city / contact / urgency">
+  </label>
+
+  <input type="hidden" name="per_page" value="{{ per_page }}">
+  <button type="submit">Filter</button>
+</form>
+
+<p class="muted">
+  Total: <strong>{{ total }}</strong> · Showing page {{ page }}
+</p>
+
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>Time (UTC)</th>
+      <th>City</th>
+      <th>Contact</th>
+      <th>Urgency</th>
+      <th>Category</th>
+      <th>ID</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for r in items %}
+    <tr>
+      <td>{{ r.created_at }}</td>
+      <td>{{ r.city or "-" }}</td>
+      <td>{{ r.contact or "-" }}</td>
+      <td><strong>{{ r.urgency or "-" }}</strong></td>
+      <td>{{ r.category or "-" }}</td>
+      <td><code>{{ r.id }}</code></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6">No emergency requests found.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="pagination">
+  {% set last_page = (total // per_page) + (1 if total % per_page else 0) %}
+  {% if page > 1 %}
+    <a href="?days={{days}}&q={{q}}&per_page={{per_page}}&page={{page-1}}">← Prev</a>
+  {% endif %}
+  {% if page < last_page %}
+    <a href="?days={{days}}&q={{q}}&per_page={{per_page}}&page={{page+1}}">Next →</a>
+  {% endif %}
+</div>
+
+{% endblock %}

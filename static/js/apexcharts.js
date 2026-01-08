@@ -5637,10 +5637,7 @@
       composite: Ai(["in", "in2", "operator"]),
       convolveMatrix: function (t) {
         (t = new Dt(t).toString()),
-          this.attr({
-            order: Math.sqrt(t.split(" ").length),
-            kernelMatrix: t,
-          });
+          this.attr({ order: Math.sqrt(t.split(" ").length), kernelMatrix: t });
       },
       diffuseLighting: Ai([
         "surfaceScale",
@@ -18017,10 +18014,7 @@
                 (e.globals.yLabelsCoords = []),
                 (e.globals.yTitleCoords = []),
                 e.config.yaxis.map(function (t, i) {
-                  e.globals.yLabelsCoords.push({
-                    width: a[i].width,
-                    index: i,
-                  }),
+                  e.globals.yLabelsCoords.push({ width: a[i].width, index: i }),
                     e.globals.yTitleCoords.push({
                       width: s[i].width,
                       index: i,
@@ -26118,12 +26112,7 @@
                   r.attr("data:pieClicked", "true");
                 var o = parseInt(r.attr("data:startAngle"), 10),
                   l = parseInt(r.attr("data:angle"), 10);
-                (e = a.getPiePath({
-                  me: a,
-                  startAngle: o,
-                  angle: l,
-                  size: s,
-                })),
+                (e = a.getPiePath({ me: a, startAngle: o, angle: l, size: s })),
                   360 !== l && r.plot(e);
               } else {
                 r.attr({ "data:pieClicked": "false" }),
@@ -29277,11 +29266,7 @@
                   ? u(
                       u({}, e),
                       {},
-                      {
-                        value: t.value,
-                        minute: t.minute,
-                        second: t.second,
-                      },
+                      { value: t.value, minute: t.minute, second: t.second },
                     )
                   : t;
               });

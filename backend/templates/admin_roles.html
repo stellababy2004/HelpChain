@@ -75,7 +75,7 @@
       <!-- Roles Section -->
       <div class="row mb-5">
         <div class="col-md-12">
-          <h3><i class="fas fa-user-tag"></i> {{ _('Роли') }}</h3>
+          <h3><i class="fas fa-user-tag"></i> {{ _("Roles") }}</h3>
           <div class="table-responsive">
             <table class="table table-striped">
               <thead>
@@ -129,7 +129,7 @@
                     </a>
                     <form
                       method="post"
-                      action="{{ url_for('admin_roles.delete_role', role_id=role.id) }}"
+                      action="{{ url_lang('admin_roles.delete_role', role_id=role.id) }}"
                       style="display: inline"
                     >
                       <button
@@ -157,7 +157,7 @@
       <!-- Users Section -->
       <div class="row">
         <div class="col-md-12">
-          <h3><i class="fas fa-users"></i> {{ _('Потребители') }}</h3>
+          <h3><i class="fas fa-users"></i> {{ _("Users") }}</h3>
           <div class="table-responsive">
             <table class="table table-striped">
               <thead>
@@ -197,7 +197,7 @@
                     </a>
                     <form
                       method="post"
-                      action="{{ url_for('admin_roles.toggle_user_status', user_id=user.id) }}"
+                      action="{{ url_lang('admin_roles.toggle_user_status', user_id=user.id) }}"
                       style="display: inline"
                     >
                       {% if user.is_active %}

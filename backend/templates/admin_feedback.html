@@ -4,7 +4,7 @@ HelpChain.bg{% endblock %} {% block content %}
   <!-- Header -->
   <div class="row mb-4">
     <div class="col-12">
-      <h1 class="h3 mb-0">📬 Център за управление на обратна връзка</h1>
+      <h1 class="h3 mb-0">📬 {{ _("Feedback management center") }}</h1>
       <p class="text-muted">
         Управление на обратни връзки и съобщения от потребители
       </p>
@@ -17,7 +17,7 @@ HelpChain.bg{% endblock %} {% block content %}
       <div class="card bg-primary text-white mb-2">
         <div class="card-body text-center">
           <div class="h4 mb-0">{{ stats.total }}</div>
-          <div class="text-xs">Общо</div>
+          <div class="text-xs">{{ _("Total") }}</div>
         </div>
       </div>
     </div>
@@ -25,7 +25,7 @@ HelpChain.bg{% endblock %} {% block content %}
       <div class="card bg-danger text-white mb-2">
         <div class="card-body text-center">
           <div class="h4 mb-0">{{ stats.new }}</div>
-          <div class="text-xs">Нови</div>
+          <div class="text-xs">{{ _("New") }}</div>
         </div>
       </div>
     </div>
@@ -33,7 +33,7 @@ HelpChain.bg{% endblock %} {% block content %}
       <div class="card bg-warning text-white mb-2">
         <div class="card-body text-center">
           <div class="h4 mb-0">{{ stats.read }}</div>
-          <div class="text-xs">Прочетени</div>
+          <div class="text-xs">{{ _("Read") }}</div>
         </div>
       </div>
     </div>
@@ -41,7 +41,7 @@ HelpChain.bg{% endblock %} {% block content %}
       <div class="card bg-success text-white mb-2">
         <div class="card-body text-center">
           <div class="h4 mb-0">{{ stats.replied }}</div>
-          <div class="text-xs">Отговорени</div>
+          <div class="text-xs">{{ _("Replied") }}</div>
         </div>
       </div>
     </div>
@@ -49,7 +49,7 @@ HelpChain.bg{% endblock %} {% block content %}
       <div class="card bg-info text-white mb-2">
         <div class="card-body text-center">
           <div class="h4 mb-0">{{ stats.high_priority }}</div>
-          <div class="text-xs">Спешни</div>
+          <div class="text-xs">{{ _("Urgent") }}</div>
         </div>
       </div>
     </div>
@@ -68,7 +68,7 @@ HelpChain.bg{% endblock %} {% block content %}
     <div class="col-12">
       <form method="get" class="form-inline">
         <div class="form-group mr-3">
-          <label for="status" class="mr-2">Статус:</label>
+          <label for="status" class="mr-2">{{ _("Status") }}:</label>
           <select
             name="status"
             id="status"
@@ -138,7 +138,7 @@ HelpChain.bg{% endblock %} {% block content %}
           </select>
         </div>
         <div class="form-group mr-3">
-          <label for="priority" class="mr-2">Приоритет:</label>
+          <label for="priority" class="mr-2">{{ _("Priority") }}:</label>
           <select
             name="priority"
             id="priority"
@@ -225,17 +225,17 @@ HelpChain.bg{% endblock %} {% block content %}
             <strong>#{{ feedback.id }} - {{ feedback.name }}</strong>
             <span class="ml-2">
               {% if feedback.status == 'new' %}
-              <span class="badge badge-danger">Ново</span>
+              <span class="badge badge-danger">{{ _("New") }}</span>
               {% elif feedback.status == 'read' %}
-              <span class="badge badge-warning">Прочетено</span>
+              <span class="badge badge-warning">{{ _("Read") }}</span>
               {% elif feedback.status == 'replied' %}
-              <span class="badge badge-success">Отговорено</span>
+              <span class="badge badge-success">{{ _("Replied") }}</span>
               {% elif feedback.status == 'archived' %}
-              <span class="badge badge-secondary">Архивирано</span>
+              <span class="badge badge-secondary">{{ _("Archived") }}</span>
               {% endif %} {% if feedback.priority == 'high' %}
-              <span class="badge badge-danger">Висок приоритет</span>
+              <span class="badge badge-danger">{{ _("High priority") }}</span>
               {% elif feedback.priority == 'urgent' %}
-              <span class="badge badge-danger blink">🚨 СПЕШНО</span>
+              <span class="badge badge-danger blink">🚨 {{ _("URGENT") }}</span>
               {% endif %}
             </span>
           </div>
@@ -246,13 +246,13 @@ HelpChain.bg{% endblock %} {% block content %}
         <div class="card-body">
           <div class="row">
             <div class="col-md-8">
-              <p><strong>От:</strong> {{ feedback.email }}</p>
+              <p><strong>{{ _("From") }}:</strong> {{ feedback.email }}</p>
               <div class="border-left border-primary pl-3">
                 <p>{{ feedback.message }}</p>
               </div>
               {% if feedback.admin_notes %}
               <div class="mt-3 p-2 bg-light rounded">
-                <small><strong>Админ бележки:</strong></small
+                <small><strong>{{ _("Admin notes") }}:</strong></small
                 ><br />
                 <small>{{ feedback.admin_notes }}</small>
               </div>
@@ -262,10 +262,10 @@ HelpChain.bg{% endblock %} {% block content %}
               <!-- Quick Actions -->
               <form
                 method="post"
-                action="{{ url_for('update_feedback_status', feedback_id=feedback.id) }}"
+                action="{{ url_lang('update_feedback_status', feedback_id=feedback.id) }}"
               >
                 <div class="form-group">
-                  <label>Статус:</label>
+                  <label>{{ _("Status") }}:</label>
                   <select name="status" class="form-control form-control-sm">
                     <option
                       value="new"
@@ -318,7 +318,7 @@ HelpChain.bg{% endblock %} {% block content %}
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>Приоритет:</label>
+                  <label>{{ _("Priority") }}:</label>
                   <select name="priority" class="form-control form-control-sm">
                     <option
                       value="low"
@@ -371,7 +371,7 @@ HelpChain.bg{% endblock %} {% block content %}
                   </select>
                 </div>
                 <div class="form-group">
-                  <label>Бележки:</label>
+                  <label>{{ _("Notes") }}:</label>
                   <textarea
                     name="admin_notes"
                     class="form-control form-control-sm"
@@ -388,13 +388,12 @@ HelpChain.bg{% endblock %} {% block content %}
                   <a
                     href="mailto:{{ feedback.email }}?subject=Re: Вашата обратна връзка&body=Здравейте {{ feedback.name }},%0A%0AБлагодарим за обратната връзка..."
                     class="btn btn-sm btn-success"
-                    >📧 Отговори</a
-                  >
+                  >📧 {{ _("Reply") }}</a>
                 </div>
               </form>
               <form
                 method="post"
-                action="{{ url_for('delete_feedback', feedback_id=feedback.id) }}"
+                action="{{ url_lang('delete_feedback', feedback_id=feedback.id) }}"
                 class="mt-2"
                 onsubmit="return confirm('Сигурни ли сте, че искате да изтриете това съобщение?')"
               >

@@ -1,3 +1,30 @@
+import pytest
+import requests
+
+# Block all requests to localhost/127.0.0.1 during tests (priority #1)
+@pytest.fixture(autouse=True)
+def _block_requests_to_localhost(monkeypatch):
+    real_request = requests.sessions.Session.request
+
+    def guarded(self, method, url, *args, **kwargs):
+        if isinstance(url, str) and ("localhost" in url or "127.0.0.1" in url):
+            raise RuntimeError(f"Blocked external HTTP call during tests: {method} {url}")
+        return real_request(self, method, url, *args, **kwargs)
+
+    monkeypatch.setattr(requests.sessions.Session, "request", guarded)
+
+import pytest
+
+# Canonical fixture for authenticated volunteer client
+@pytest.fixture
+def authenticated_volunteer_client(real_app, test_volunteer):
+    client = real_app.test_client()
+    client.get("/")
+    with client.session_transaction() as sess:
+        sess["volunteer_logged_in"] = True
+        sess["volunteer_id"] = test_volunteer.id
+    return client
+
 """
 Early canonicalization guard: attempt to ensure the top-level name `extensions`
 resolves to the package-qualified `backend.extensions` module before any other
@@ -50,28 +77,96 @@ except Exception:
     pass
 
 import importlib
-import os
-import sys
-import builtins
 
-# Install a short-lived import wrapper that forces the name 'extensions' to
-# resolve to the canonical package-qualified module when present. This avoids
-# the import system creating a separate top-level module object that would
-# hold its own SQLAlchemy() instance. It's only active during test collection
-# and module import phases; it's safe for test use here.
-_orig_import = builtins.__import__
+import pytest
+from backend.helpchain_backend.src.app import create_app
+from backend.extensions import db
+print(f"[DB DIAG] conftest.py: id(db)={id(db)}, db.__module__={getattr(db, '__module__', None)}")
+print(f"[DB DIAG] conftest.py: id(db)={id(db)}, db.__module__={getattr(db, '__module__', None)}")
 
-
-def _import_hook(name, globals=None, locals=None, fromlist=(), level=0):
-    try:
-        if name == "extensions" and "backend.extensions" in sys.modules:
-            return sys.modules["backend.extensions"]
-    except Exception:
-        pass
-    return _orig_import(name, globals, locals, fromlist, level)
+# Diagnostics: Ensure only one app and one db instance
+_app_instance = None
+_db_instance = None
 
 
-builtins.__import__ = _import_hook
+import pytest
+from backend.helpchain_backend.src.app import create_app
+from backend.extensions import db
+
+@pytest.fixture(scope="function")
+def real_app():
+    from backend.helpchain_backend.src.app import create_app
+    app = create_app({"TESTING": True})
+    app.config.setdefault("SECRET_KEY", "test-secret-key")
+    # Маркер за fail-fast: каноничен app factory ли е?
+    assert app.config.get("APP_FACTORY_MARKER") == "CANONICAL_helpchain_backend_src_app"
+    with app.app_context():
+        from backend.extensions import db
+        db.create_all()
+        # --- ROUTE DIAGNOSTICS ---
+        print("[ROUTE CHECK] /achievements exists?:", any(r.rule == "/achievements" for r in app.url_map.iter_rules()))
+        for r in app.url_map.iter_rules():
+            if "achiev" in r.rule:
+                print("[ROUTE]", r.rule, "->", r.endpoint)
+        # --- END DIAGNOSTICS ---
+        yield app
+        db.session.remove()
+        db.drop_all()
+
+
+@pytest.fixture(scope="function")
+def client(real_app):
+    print(f"[TEST DIAG] session_interface type: {type(real_app.session_interface)}")
+    return real_app.test_client(use_cookies=True)
+
+@pytest.fixture(scope="function")
+def db_session(real_app):
+    from backend.extensions import db
+    with real_app.app_context():
+        yield db.session
+        db.session.rollback()
+
+# --- Fix #3B: Seed users ---
+import datetime
+from backend.models import Volunteer, AdminUser, User
+
+@pytest.fixture(scope="function")
+def seed_volunteer(db_session):
+    volunteer = Volunteer(
+        name="Test Volunteer",
+        email="vol@test.bg",
+        is_active=True,
+        created_at=datetime.datetime.utcnow(),
+    )
+    db_session.add(volunteer)
+    db_session.commit()
+    return volunteer
+
+@pytest.fixture(scope="function")
+def seed_admin(db_session):
+    admin = AdminUser(
+        username="admin",
+        email="admin@test.bg",
+        password_hash="pbkdf2:sha256:260000$test$testhash",  # use a real hash in prod
+        is_active=True,
+        two_factor_enabled=False,
+    )
+    db_session.add(admin)
+    db_session.commit()
+    return admin
+
+# --- Fix #3C: Login helpers ---
+@pytest.fixture(scope="function")
+def login_volunteer(client, seed_volunteer):
+    client.post("/volunteer_login", data={"email": seed_volunteer.email}, follow_redirects=True)
+    return client
+
+@pytest.fixture(scope="function")
+def login_admin(client, seed_admin):
+    client.post("/admin/login", data={"email": seed_admin.email, "password": "test"}, follow_redirects=True)
+    return client
+
+ 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -631,865 +726,6 @@ except Exception:
     pass
 
 
-@pytest.fixture
-def app():
-    """Create and configure a test app instance."""
-    try:
-        # Prefer the richer app variant (which registers the public index route)
-        # when available. Fall back to the base `appy` module otherwise.
-        try:
-            from appy_with_analytics import app
-        except Exception:
-            from appy import app
-
-        app.config["TESTING"] = True
-        app.config["WTF_CSRF_ENABLED"] = False  # Disable CSRF for testing
-        # Do not override the app's DB URI here. The application module
-        # reads HELPCHAIN_TEST_DB_PATH (set by the tests) and configures
-        # `app.config["SQLALCHEMY_DATABASE_URI"]` accordingly. Overriding
-        # it here with an in-memory URI can create two different engines
-        # and lead to "no such table" OperationalError at request time.
-        # Keep engine options only if not already configured by the app.
-        if not app.config.get("SQLALCHEMY_DATABASE_URI"):
-            app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-        if not app.config.get("SQLALCHEMY_ENGINE_OPTIONS"):
-            app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-                "poolclass": StaticPool,
-                "connect_args": {"check_same_thread": False},
-            }
-        # Ensure admin authentication is enforced during tests by default.
-        # Tests that need to bypass admin auth for public routes may override
-        # this by setting `app.config['BYPASS_ADMIN_AUTH'] = True` explicitly.
-        app.config["BYPASS_ADMIN_AUTH"] = False
-
-        # For tests, prefer Bulgarian locale by default so localized
-        # flashed messages and templates render in Bulgarian. Tests that
-        # expect English or other locales may override this.
-        try:
-            if app.config.get("TESTING"):
-                app.config.setdefault("BABEL_DEFAULT_LOCALE", "bg")
-        except Exception:
-            pass
-
-        # Ensure the application's database schema exists for tests that
-        # don't explicitly request a DB session fixture. This prevents
-        # OperationalError in endpoints that query tables like admin_users.
-        try:
-            with app.app_context():
-                try:
-                    import importlib
-
-                    be_ext = importlib.import_module("backend.extensions")
-                    _db = getattr(be_ext, "db", None)
-                    if _db is not None:
-                        # Ensure the extension is initialized for this app
-                        if hasattr(_db, "init_app"):
-                            try:
-                                _db.init_app(app)
-                            except Exception:
-                                pass
-
-                        # Aggressive compatibility: immediately try to force schema
-                        # recreation on the actual engine used by the Flask-SQLAlchemy
-                        # extension so the app's DB reflects current model definitions.
-                        try:
-                            engine = None
-                            try:
-                                engine = _db.get_engine(app)
-                            except Exception:
-                                engine = getattr(_db, "engine", None)
-
-                            # Fallback: try to extract from engines mapping when
-                            # present (Flask-SQLAlchemy 3.x exposes engines dict)
-                            if engine is None and hasattr(_db, "engines"):
-                                try:
-                                    engines_map = getattr(_db, "engines")
-                                    if isinstance(engines_map, dict) and engines_map:
-                                        engine = list(engines_map.values())[0]
-                                except Exception:
-                                    engine = None
-
-                            if engine is not None:
-                                try:
-                                    bm = importlib.import_module("backend.models")
-                                    Base = getattr(bm, "Base", None)
-                                except Exception:
-                                    Base = None
-                                if Base is not None:
-                                    try:
-                                        Base.metadata.drop_all(bind=engine)
-                                    except Exception:
-                                        pass
-                                    try:
-                                        Base.metadata.create_all(bind=engine)
-                                    except Exception:
-                                        pass
-                        except Exception:
-                            pass
-
-                        # Try to create all tables on the app's DB engine
-                        try:
-                            _db.create_all()
-                        except Exception:
-                            # Fallback: if Flask-SQLAlchemy metadata create_all
-                            # fails, try any Declarative Base in backend.models
-                            try:
-                                bm = importlib.import_module("backend.models")
-                                Base = getattr(bm, "Base", None)
-                                if Base is not None and hasattr(_db, "engine"):
-                                    Base.metadata.create_all(bind=_db.engine)
-                            except Exception:
-                                pass
-                        # Additional robust attempt: create Base.metadata on the
-                        # actual engine used by the Flask-SQLAlchemy extension.
-                        try:
-                            bm = importlib.import_module("backend.models")
-                            Base = getattr(bm, "Base", None)
-                            if Base is not None and _db is not None:
-                                engine = None
-                                try:
-                                    # Preferred: get_engine(app) when available
-                                    engine = _db.get_engine(app)
-                                except Exception:
-                                    engine = getattr(_db, "engine", None)
-                                if engine is not None:
-                                    Base.metadata.create_all(bind=engine)
-                        except Exception:
-                            # Best-effort: ignore failures here to avoid blocking tests
-                            pass
-                except Exception:
-                    # best-effort; if schema creation isn't possible here,
-                    # let tests that depend on DB use the db_session fixture.
-                    pass
-        except Exception:
-            pass
-        # Ensure default roles/permissions seeded for this app instance.
-        try:
-            from backend.permissions import initialize_default_roles_and_permissions
-            from backend.extensions import db as _db
-
-            try:
-                with app.app_context():
-                    # Defensive: ensure any open/invalid transaction is rolled back
-                    # before running seeder to avoid 'Can't reconnect until
-                    # invalid transaction is rolled back' errors.
-                    try:
-                        _db.session.rollback()
-                    except Exception:
-                        pass
-                    try:
-                        _db.session.remove()
-                    except Exception:
-                        pass
-                    try:
-                        initialize_default_roles_and_permissions()
-                    except Exception:
-                        # Non-fatal: seeder may skip if metadata not ready; session
-                        # fixtures will provide fallbacks. Ignore errors here.
-                        pass
-            except Exception:
-                pass
-        except Exception:
-            pass
-        return app
-    except ImportError:
-        # Fallback if appy import fails
-        from flask import Flask
-
-        app = Flask(__name__)
-        app.config["TESTING"] = True
-        app.config["SECRET_KEY"] = "test_key"
-        return app
-
-
-@pytest.fixture
-def client(app):
-    """A test client for the app."""
-    return app.test_client()
-
-
-@pytest.fixture
-def db_session(app):
-    """Create a database session for testing."""
-    from appy import _ensure_db_engine_registration, db
-
-    # Ensure the canonical extensions module is aliased so model imports use
-    # the same SQLAlchemy() instance that the app provides. This prevents
-    # models from being bound to a different `db` object and ensures
-    # `db.create_all()` will create the expected tables.
-    try:
-        try:
-            canonical_ext = importlib.import_module("backend.extensions")
-        except Exception:
-            canonical_ext = None
-        if canonical_ext is not None:
-            for alias in ("extensions", "backend.extensions"):
-                if alias not in sys.modules:
-                    sys.modules[alias] = canonical_ext
-
-    except Exception:
-        # best-effort; fall through to normal imports
-        pass
-
-    # Import models to ensure SQLAlchemy is aware of all tables before create_all()
-    try:
-        importlib.import_module("backend.models")
-    except ModuleNotFoundError:  # pragma: no cover - fallback when package path differs
-        importlib.import_module("models")
-
-    # Lightweight aliasing to ensure short import names resolve to the
-    # canonical backend.models module. Avoid clearing mappers here.
-    try:
-        _bm = importlib.import_module("backend.models")
-        sys.modules.setdefault("models", _bm)
-        sys.modules.setdefault("helpchain_backend.src.models", _bm)
-    except Exception:
-        pass
-
-    # Ensure mappers are configured after importing models so relationships
-    # are resolved before any instances or relationship accesses occur.
-    try:
-        from sqlalchemy.orm import configure_mappers
-
-        try:
-            configure_mappers()
-        except Exception:
-            # If configure_mappers fails, we'll let subsequent code fail in a
-            # clearer place; continue for now.
-            pass
-    except Exception:
-        pass
-
-    try:
-        GamificationService = getattr(
-            importlib.import_module("backend.gamification_service"),
-            "GamificationService",
-        )
-    except ModuleNotFoundError:  # pragma: no cover - fallback
-        GamificationService = getattr(
-            importlib.import_module("gamification_service"),
-            "GamificationService",
-        )
-
-    # Ensure the session-level test database/schema is prepared once per test
-    # session by the `session_db` fixture (see below). Rely on that fixture to
-    # create the schema and perform any global seeding so this function can
-    # focus on per-test transactional isolation.
-    with app.app_context():
-        _ensure_db_engine_registration()
-        # Debug: print metadata before create_all to help CI diagnostics
-        try:
-            print(
-                "[TEST DEBUG] SQLAlchemy metadata tables before create_all:",
-                sorted(db.metadata.tables.keys()),
-            )
-        except Exception as _err:
-            print("[TEST DEBUG] Could not list metadata before create_all:", _err)
-        # Per-fixture diagnostic: wrap session.commit/flush to log bind info
-        try:
-            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                try:
-                    session_obj = db.session
-                    # Keep originals for later restore
-                    orig_commit = getattr(session_obj, "commit", None)
-                    orig_flush = getattr(session_obj, "flush", None)
-
-                    def _diag_commit(*args, **kwargs):
-                        try:
-                            bind = getattr(session_obj, "bind", None)
-                            # attempt to get bound engine/url via common accessors
-                            bind_url = None
-                            if bind is None:
-                                try:
-                                    bind = session_obj.get_bind()
-                                except Exception:
-                                    bind = None
-                            if bind is not None:
-                                try:
-                                    engine = getattr(bind, "engine", bind)
-                                    bind_url = getattr(engine, "url", None)
-                                except Exception:
-                                    try:
-                                        bind_url = getattr(bind, "url", None)
-                                    except Exception:
-                                        bind_url = None
-                            print(f"[TEST DIAG] session.commit session_id={id(session_obj)} bind_id={id(bind) if bind else None} bind_url={bind_url}")
-                        except Exception:
-                            pass
-                        return orig_commit(*args, **kwargs) if callable(orig_commit) else None
-
-                    def _diag_flush(*args, **kwargs):
-                        try:
-                            bind = getattr(session_obj, "bind", None)
-                            bind_url = None
-                            if bind is None:
-                                try:
-                                    bind = session_obj.get_bind()
-                                except Exception:
-                                    bind = None
-                            if bind is not None:
-                                try:
-                                    engine = getattr(bind, "engine", bind)
-                                    bind_url = getattr(engine, "url", None)
-                                except Exception:
-                                    try:
-                                        bind_url = getattr(bind, "url", None)
-                                    except Exception:
-                                        bind_url = None
-                            print(f"[TEST DIAG] session.flush session_id={id(session_obj)} bind_id={id(bind) if bind else None} bind_url={bind_url}")
-                        except Exception:
-                            pass
-                        return orig_flush(*args, **kwargs) if callable(orig_flush) else None
-
-                    # Monkeypatch session methods
-                    try:
-                        session_obj.commit = _diag_commit
-                        session_obj.flush = _diag_flush
-                        # store originals so teardown can restore them
-                        setattr(session_obj, "_orig_commit", orig_commit)
-                        setattr(session_obj, "_orig_flush", orig_flush)
-                    except Exception:
-                        pass
-                except Exception:
-                    pass
-        except Exception:
-            pass
-        # Ensure Base.metadata exists on the engine that the session will use
-        try:
-            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                try:
-                    engine_candidate = None
-                    # Prefer the session's bind if available
-                    try:
-                        sess = db.session
-                        try:
-                            engine_candidate = sess.get_bind()
-                        except Exception:
-                            engine_candidate = getattr(db, "engine", None)
-                    except Exception:
-                        engine_candidate = None
-
-                    # Fallback: try db.get_engine(app) or engines map
-                    if engine_candidate is None:
-                        try:
-                            engine_candidate = db.get_engine(app)
-                        except Exception:
-                            try:
-                                engine_candidate = getattr(db, "engine", None)
-                            except Exception:
-                                engine_candidate = None
-                    if engine_candidate is None and hasattr(db, "engines"):
-                        try:
-                            emap = getattr(db, "engines")
-                            if isinstance(emap, dict) and emap:
-                                engine_candidate = list(emap.values())[0]
-                        except Exception:
-                            engine_candidate = None
-
-                    if engine_candidate is not None:
-                        try:
-                            bm = importlib.import_module("backend.models")
-                            Base = getattr(bm, "Base", None)
-                            if Base is not None:
-                                try:
-                                    Base.metadata.create_all(bind=engine_candidate)
-                                    print(f"[TEST DIAG] ensured Base.metadata.create_all on engine id={id(engine_candidate)} url={getattr(getattr(engine_candidate,'url',None),'__str__',lambda:engine_candidate)() if engine_candidate is not None else None}")
-                                except Exception as _e:
-                                    print("[TEST DIAG] Base.metadata.create_all failed:", _e)
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
-        except Exception:
-            pass
-        # Defensive reconciliation: ensure any top-level 'extensions' module
-        # references the canonical db instance before per-test create_all()
-        try:
-            try:
-                canonical_ext = importlib.import_module("backend.extensions")
-            except Exception:
-                canonical_ext = None
-            if canonical_ext is not None and "extensions" in sys.modules:
-                dup = sys.modules.get("extensions")
-                if dup is not None and dup is not canonical_ext:
-                    try:
-                        # Align attributes so the short-name module uses the
-                        # canonical SQLAlchemy instance and related helpers.
-                        for attr in ("db", "babel", "mail", "cache"):
-                            try:
-                                if hasattr(canonical_ext, attr):
-                                    setattr(dup, attr, getattr(canonical_ext, attr))
-                            except Exception:
-                                pass
-                        sys.modules["extensions"] = canonical_ext
-                    except Exception:
-                        pass
-        except Exception:
-            pass
-        # Extra diagnostic: check whether AdminUser.__table__ is bound to the
-        # same MetaData object as the app's db.metadata. This helps detect
-        # models imported against a different SQLAlchemy instance.
-        try:
-            if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                try:
-                    from backend.models import AdminUser  # type: ignore
-
-                    admin_tbl = getattr(AdminUser, "__table__", None)
-                    if admin_tbl is not None:
-                        print(
-                            "[TEST DEBUG] AdminUser.__table__.metadata is db.metadata?:",
-                            id(getattr(admin_tbl, "metadata", None)) == id(db.metadata),
-                        )
-                        print(
-                            "[TEST DEBUG] id(db.metadata):",
-                            id(db.metadata),
-                            "id(AdminUser.__table__.metadata):",
-                            id(getattr(admin_tbl, "metadata", None)),
-                        )
-                        try:
-                            print(
-                                "[TEST DEBUG] AdminUser metadata tables:",
-                                sorted(
-                                    [
-                                        t.name
-                                        for t in getattr(
-                                            admin_tbl, "metadata"
-                                        ).tables.keys()
-                                    ]
-                                ),
-                            )
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
-
-                # If some mapped classes are bound to a different MetaData object
-                # (common when a shim module created its own SQLAlchemy instance),
-                # attempt to move their Table objects into the canonical app
-                # metadata so db.create_all() can see all referenced tables.
-                try:
-                    if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1":
-                        # Collect candidate Table objects from loaded model classes
-                        other_tables = []
-                        for mod in list(sys.modules.values()):
-                            if not mod:
-                                continue
-                            try:
-                                for attr_name in dir(mod):
-                                    try:
-                                        attr = getattr(mod, attr_name)
-                                    except Exception:
-                                        continue
-                                    if isinstance(attr, type) and hasattr(
-                                        attr, "__table__"
-                                    ):
-                                        tbl = getattr(attr, "__table__", None)
-                                        if tbl is None:
-                                            continue
-                                        # If the table's metadata is different, record it
-                                        if id(getattr(tbl, "metadata", None)) != id(
-                                            db.metadata
-                                        ):
-                                            other_tables.append(tbl)
-                            except Exception:
-                                continue
-                        # Attempt to relocate each table into the canonical metadata
-                        relocated = []
-                        for tbl in other_tables:
-                            try:
-                                if tbl.name not in db.metadata.tables:
-                                    tbl.tometadata(db.metadata)
-                                    relocated.append(tbl.name)
-                                    print(
-                                        f"[TEST DEBUG] tometadata: moved table {tbl.name} into app db.metadata"
-                                    )
-                            except Exception as _e:
-                                print(
-                                    f"[TEST DEBUG] tometadata failed for {getattr(tbl, 'name', None)}: {_e}"
-                                )
-                        if relocated:
-                            try:
-                                print(
-                                    "[TEST DEBUG] relocated tables into app metadata:",
-                                    relocated,
-                                )
-                            except Exception:
-                                pass
-                        # Re-run mapper configuration after moving tables so relationships
-                        # and ForeignKeys resolve against the canonical metadata.
-                        try:
-                            from sqlalchemy.orm import configure_mappers
-
-                            try:
-                                configure_mappers()
-                                print(
-                                    "[TEST DEBUG] configure_mappers() ran after tometadata"
-                                )
-                            except Exception as _e:
-                                print(
-                                    "[TEST DEBUG] configure_mappers() failed after tometadata:",
-                                    _e,
-                                )
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
-        except Exception:
-            pass
-
-        # (Per-test transactional setup follows.)
-        # Diagnostic: enumerate any loaded classes named 'AuditLog' to detect
-        # duplicate model registrations coming from different module paths.
-        try:
-            found = []
-            for mname, mod in list(sys.modules.items()):
-                if not mod:
-                    continue
-                try:
-                    for attr_name in dir(mod):
-                        try:
-                            attr = getattr(mod, attr_name)
-                        except Exception:
-                            continue
-                        if (
-                            isinstance(attr, type)
-                            and getattr(attr, "__name__", None) == "AuditLog"
-                        ):
-                            found.append(
-                                (
-                                    mname,
-                                    attr,
-                                    id(attr),
-                                    getattr(attr, "__module__", None),
-                                )
-                            )
-                except Exception:
-                    continue
-            if found:
-                print("[TEST DEBUG] Found AuditLog class definitions in modules:")
-                for mname, cls, cid, modpath in found:
-                    print(
-                        "  module=",
-                        mname,
-                        "cls=",
-                        cls,
-                        "id=",
-                        cid,
-                        "__module__=",
-                        modpath,
-                    )
-            else:
-                print("[TEST DEBUG] No AuditLog class objects found in sys.modules")
-        except Exception as _err:
-            print("[TEST DEBUG] Could not enumerate AuditLog classes:", _err)
-        # Diagnostic: inspect Achievement class to verify mapped attributes
-        try:
-            m = importlib.import_module("backend.models")
-            Ach = getattr(m, "Achievement", None)
-            print(
-                "[TEST DEBUG] Achievement class:",
-                Ach,
-                "__module__:",
-                getattr(Ach, "__module__", None),
-            )
-            print("[TEST DEBUG] hasattr(Achievement, 'id'):", hasattr(Ach, "id"))
-            try:
-                print(
-                    "[TEST DEBUG] Achievement.id attr repr:",
-                    repr(getattr(Ach, "id", None)),
-                )
-            except Exception as _e:
-                print("[TEST DEBUG] Could not repr Achievement.id:", _e)
-            # list some representative attributes
-            try:
-                attrs = [a for a in dir(Ach) if not a.startswith("__")][:40]
-                print("[TEST DEBUG] Achievement attributes sample:", attrs)
-            except Exception:
-                pass
-        except Exception as _err:
-            print("[TEST DEBUG] Could not inspect Achievement class:", _err)
-
-        # Ensure default achievements exist for gamification tests. The
-        # session-level `session_db` fixture is responsible for running the
-        # global seeding once; calling initialize here is harmless but not
-        # required. Proceed to provide a per-test transactional session that
-        # rolls back changes after each test.
-        try:
-            yield db.session
-        finally:
-            # Rollback and remove the session used by the test to avoid leaking
-            # transactional state between tests. The session-level fixture will
-            # handle final schema teardown once the entire test session ends.
-            try:
-                # If we monkeypatched commit/flush for diagnostics, restore originals
-                try:
-                    s = db.session
-                    orig_commit = getattr(s, "_orig_commit", None)
-                    orig_flush = getattr(s, "_orig_flush", None)
-                    if orig_commit is not None:
-                        try:
-                            s.commit = orig_commit
-                        except Exception:
-                            pass
-                    if orig_flush is not None:
-                        try:
-                            s.flush = orig_flush
-                        except Exception:
-                            pass
-                    try:
-                        if hasattr(s, "_orig_commit"):
-                            delattr(s, "_orig_commit")
-                        if hasattr(s, "_orig_flush"):
-                            delattr(s, "_orig_flush")
-                    except Exception:
-                        pass
-                except Exception:
-                    pass
-            finally:
-                try:
-                    db.session.remove()
-                except Exception:
-                    pass
-
-
-@pytest.fixture(scope="session")
-def session_db(app):
-    """Prepare the database schema and global seed once per test session.
-
-    This fixture creates the schema (drop/create), runs global seeding such
-    as gamification achievements, and leaves the schema in place for the
-    duration of the pytest session. At session end the schema is dropped to
-    leave a clean environment.
-    """
-    from appy import _ensure_db_engine_registration, db
-
-    with app.app_context():
-        _ensure_db_engine_registration()
-        try:
-            db.drop_all()
-        except Exception:
-            pass
-        db.create_all()
-
-        # Extra safeguard: ensure the Declarative Base metadata includes any
-        # recently-added columns (e.g. volunteers.latitude/longitude) is
-        # created on the actual engine used by the Flask-SQLAlchemy extension.
-        try:
-            engine = None
-            try:
-                engine = _db.get_engine(app)
-            except Exception:
-                engine = getattr(_db, "engine", None)
-
-            if engine is not None:
-                try:
-                    bm = importlib.import_module("backend.models")
-                    Base = getattr(bm, "Base", None)
-                    if Base is not None:
-                        # Best-effort: drop then create to reconcile schema changes
-                        try:
-                            Base.metadata.drop_all(bind=engine)
-                        except Exception:
-                            pass
-                        try:
-                            Base.metadata.create_all(bind=engine)
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
-        except Exception:
-            pass
-
-        # Seed global data required by many tests (achievements, default lookups)
-        try:
-            GamificationService = getattr(
-                importlib.import_module("backend.gamification_service"),
-                "GamificationService",
-            )
-        except ModuleNotFoundError:
-            GamificationService = getattr(
-                importlib.import_module("gamification_service"), "GamificationService"
-            )
-        # Ensure default roles and permissions are present for admin-related tests.
-        # If the application-level seeder (initialize_default_roles_and_permissions)
-        # decides to skip (due to engine/metadata introspection), create the
-        # minimal set of permissions and roles directly here against the
-        # app's DB so admin-related tests have the expected data.
-        try:
-            from backend.extensions import db as _db
-            from backend.models import Permission, Role, RolePermission, PermissionEnum
-
-            # Only run if admin role is missing
-            try:
-                admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
-            except Exception:
-                admin_role = None
-
-            if not admin_role:
-                # Minimal permissions list used by admin tests
-                perms = [
-                    ("Преглед на профил", PermissionEnum.VIEW_PROFILE.value),
-                    ("Редактиране на профил", PermissionEnum.EDIT_PROFILE.value),
-                    ("Преглед на доброволци", PermissionEnum.VIEW_VOLUNTEERS.value),
-                    ("Управление на доброволци", PermissionEnum.MANAGE_VOLUNTEERS.value),
-                    ("Админ достъп", PermissionEnum.ADMIN_ACCESS.value),
-                    ("Управление на потребители", PermissionEnum.MANAGE_USERS.value),
-                    ("Управление на роли", PermissionEnum.MANAGE_ROLES.value),
-                ]
-
-                created_perms = {}
-                for name, codename in perms:
-                    p = _db.session.query(Permission).filter_by(codename=codename).first()
-                    if not p:
-                        p = Permission(name=name, codename=codename)
-                        _db.session.add(p)
-                        try:
-                            _db.session.flush()
-                        except Exception:
-                            # If flush fails, continue and commit later
-                            pass
-                    created_perms[codename] = p
-
-                # Create default roles
-                roles = [
-                    ("Потребител", "Потребител"),
-                    ("Доброволец", "Доброволец"),
-                    ("Модератор", "Модератор"),
-                    ("Администратор", "Администратор"),
-                    ("Супер администратор", "Супер администратор"),
-                ]
-                created_roles = {}
-                for rname, _ in roles:
-                    r = _db.session.query(Role).filter_by(name=rname).first()
-                    if not r:
-                        r = Role(name=rname, description=rname, is_system_role=True)
-                        _db.session.add(r)
-                        try:
-                            _db.session.flush()
-                        except Exception:
-                            pass
-                    created_roles[rname] = r
-
-                # Assign a subset of permissions to Администратор
-                try:
-                    admin_r = created_roles.get("Администратор")
-                    if admin_r is not None:
-                        for codename, perm_obj in created_perms.items():
-                            if perm_obj is None:
-                                continue
-                            exists = _db.session.query(RolePermission).filter_by(role_id=admin_r.id, permission=perm_obj.codename).first()
-                            if not exists:
-                                rp = RolePermission(role_id=admin_r.id, permission=perm_obj.codename)
-                                _db.session.add(rp)
-                except Exception:
-                    pass
-
-                try:
-                    _db.session.commit()
-                except Exception:
-                    try:
-                        _db.session.rollback()
-                    except Exception:
-                        pass
-        except Exception:
-            # Non-fatal: tests will surface missing data if this fails
-            pass
-        try:
-            GamificationService.initialize_achievements()
-        except Exception:
-            # Seeding is best-effort; tests can still proceed if seeding fails
-            # (diagnostics will appear in CI logs).
-            pass
-
-        yield
-
-        # Final session teardown: drop all tables to leave workspace clean
-        try:
-            db.drop_all()
-        except Exception:
-            pass
-
-
-@pytest.fixture(autouse=True)
-def clear_tables_per_test(app):
-    """Autouse fixture for top-level tests: clear rows before and after each test.
-
-    This mirrors the behavior in backend/tests/conftest.py so tests using the
-    top-level `tests/` directory run cleanly against the same file-backed DB.
-    """
-    try:
-        from backend.extensions import db as _db
-    except Exception:
-        # If backend.extensions isn't importable, allow the test to run and let
-        # the normal fixtures raise clearer errors later.
-        yield
-        return
-
-    try:
-        try:
-            engine = _db.get_engine(app)
-        except Exception:
-            engine = getattr(_db, "engine", None)
-
-        if engine is None:
-            yield
-            return
-
-        # Best-effort: also clear rows from any standalone models' engine
-        # (some tests/modules may have created Volunteers against the
-        # backend.models' local engine). This tries to delete volunteer rows
-        # from that engine too to avoid cross-engine leakage.
-        try:
-            import importlib
-
-            bm = importlib.import_module("backend.models")
-            other_engine = getattr(bm, "engine", None)
-            if other_engine is not None:
-                    try:
-                        from sqlalchemy import text
-
-                        with other_engine.connect() as conn:
-                            try:
-                                conn.execute(text("DELETE FROM volunteers"))
-                            except Exception:
-                                try:
-                                    conn.execute("DELETE FROM volunteers")
-                                except Exception:
-                                    pass
-                    except Exception:
-                        pass
-        except Exception:
-            pass
-
-        conn = engine.connect()
-        try:
-            for table in reversed(list(getattr(_db.metadata, "sorted_tables", []))):
-                conn.execute(table.delete())
-        finally:
-            try:
-                conn.close()
-            except Exception:
-                pass
-
-        try:
-            yield
-        finally:
-            conn2 = engine.connect()
-            try:
-                for table in reversed(list(getattr(_db.metadata, "sorted_tables", []))):
-                    conn2.execute(table.delete())
-            finally:
-                try:
-                    conn2.close()
-                except Exception:
-                    pass
-            try:
-                _db.session.remove()
-            except Exception:
-                pass
-    except Exception:
-        # Best-effort: don't block tests if cleanup cannot run
-        yield
 
 
 @pytest.fixture
@@ -1604,22 +840,22 @@ def test_help_request(db_session, test_volunteer):
 
 
 @pytest.fixture
-def authenticated_admin_client(app, test_admin_user):
+def authenticated_admin_client(real_app, test_admin_user):
     """Create a test client with authenticated admin user."""
     from flask_login import login_user
 
-    admin_client = app.test_client()
+    admin_client = real_app.test_client()
     # Ensure bypass is set early so any setup requests from the fixture
     # are allowed to bypass the admin auth decorator and persist session.
     try:
-        app.config["BYPASS_ADMIN_AUTH"] = True
+        real_app.config["BYPASS_ADMIN_AUTH"] = True
     except Exception:
         pass
     # When testing, disable analytics hooks/views that may be None or unavailable
     # so admin views do not error during tests. This is a safe test-only toggle.
     try:
-        if app.config.get("TESTING"):
-            app.config.setdefault("ANALYTICS_DISABLED", True)
+        if real_app.config.get("TESTING"):
+            real_app.config.setdefault("ANALYTICS_DISABLED", True)
     except Exception:
         pass
     # Set legacy session flags (used by some code paths) and Flask-Login
@@ -1737,16 +973,6 @@ def authenticated_admin_client(app, test_admin_user):
     return admin_client
 
 
-@pytest.fixture
-def authenticated_volunteer_client(app, test_volunteer):
-    """Create a test client with authenticated volunteer user."""
-    volunteer_client = app.test_client()
-    with app.test_request_context():
-        with volunteer_client.session_transaction() as sess:
-            sess["volunteer_logged_in"] = True
-            sess["volunteer_id"] = test_volunteer.id
-            sess["volunteer_name"] = test_volunteer.name
-    return volunteer_client
 
 
 @pytest.fixture

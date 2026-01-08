@@ -6,7 +6,7 @@
     <title>Dashboard - HelpChain</title>
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}"
+      href="{{ url_lang('static', filename='css/style.css') }}"
     />
     <link
       rel="stylesheet"
@@ -449,7 +449,7 @@
         <div class="profile-card">
           {% if current_user.profile_picture %}
           <img
-            src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) }}"
+            src="{{ url_lang('static', filename='uploads/' + current_user.profile_picture) }}"
             alt="Профилна снимка"
             class="profile-pic"
           />

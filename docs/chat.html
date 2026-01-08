@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mistral CyberSec Chat</title>
+</head>
+<body style="background-color:#111; color:#0f0; font-family:monospace;">
+  <h2>Mistral Cyber Security Chat</h2>
+  <input type="text" id="userInput" placeholder="Ask a cybersecurity question..." style="width:70%">
+  <button onclick="sendMessage()">Send</button>
+  <pre id="chatLog"></pre>
+
+<script>
+  async function sendMessage() {
+    const msg = document.getElementById('userInput').value;
+    const res = await fetch('http://localhost:8000/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg })
+    });
+    const data = await res.json();
+    document.getElementById('chatLog').innerText += `> ${msg}\n${data.response}\n\n`;
+  }
+</script>
+</body>
+</html>

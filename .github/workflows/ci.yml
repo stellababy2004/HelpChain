@@ -23,10 +23,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
           cache: "pip"
 
       - name: Install dependencies
@@ -50,6 +50,28 @@ jobs:
       - name: Bandit Security Scan
         run: |
           bandit -r . -x tests,.venv,venv,node_modules,frontend --severity-level medium --exit-zero
+
+
+      - name: Init test DB (sqlite)
+        shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python - <<'PY'
+          from backend.helpchain_backend.src.app import create_app
+          from backend.extensions import db
+
+          app = create_app()
+          with app.app_context():
+              db.create_all()
+              print("DB create_all OK")
+          PY
+
+      - name: Schema drift guard
+        run: python scripts/schema_drift_guard.py
+
+      - name: DB CRUD smoke (rollback)
+        run: python scripts/db_crud_smoke.py
 
       - name: Pytest
         run: |

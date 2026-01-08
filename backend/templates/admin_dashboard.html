@@ -332,6 +332,11 @@ HelpChain.live{% endblock %} {% block content %} {% macro status_badge(status)
 </div>
 
 <script>
+    const I18N_STATUS = {
+      completed: {{ _("Completed")|tojson }},
+      rejected: {{ _("Rejected")|tojson }},
+      unknown: {{ _("Unknown")|tojson }},
+    };
   // Ensure a global `stats` object exists for legacy client-side scripts.
   // This avoids "stats is undefined" JS runtime errors when analytics
   // or dashboard data isn't available during tests.
@@ -494,10 +499,10 @@ HelpChain.live{% endblock %} {% block content %} {% macro status_badge(status)
     if (s === "in_progress")
       return '<span class="badge bg-warning text-dark"><i class="bi bi-tools me-1"></i>В процес</span>';
     if (s === "completed")
-      return '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Завършена</span>';
+      return `<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>${I18N_STATUS.completed}</span>`;
     if (s === "cancelled")
-      return '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Отказана</span>';
-    return '<span class="badge bg-light text-dark"><i class="bi bi-question-circle me-1"></i>Неизвестен</span>';
+      return `<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>${I18N_STATUS.rejected}</span>`;
+    return `<span class="badge bg-light text-dark"><i class="bi bi-question-circle me-1"></i>${I18N_STATUS.unknown}</span>`;
   }
 
   function filterRequestsTable() {
@@ -547,7 +552,7 @@ HelpChain.live{% endblock %} {% block content %} {% macro status_badge(status)
     toastEl.innerHTML = `
     <div class="d-flex">
       <div class="toast-body">${message}</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="{{ _('Затвори') }}"></button>
     </div>`;
     wrap.appendChild(toastEl);
     const t = new bootstrap.Toast(toastEl, { delay: 1800 });

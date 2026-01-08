@@ -2,8 +2,10 @@ import os
 import tempfile
 from datetime import UTC, datetime, timedelta
 
-from ..extensions import db
-from ..models import Request
+from backend.extensions import db
+from backend.models import Request
+from flask import render_template
+
 
 
 def utc_now() -> datetime:
@@ -14,18 +16,18 @@ def utc_now() -> datetime:
 # опитваме се да намерим моделите; ако липсват - не вдигаме ImportError при зареждане
 MODELS_AVAILABLE = True
 try:
-    from ..models.help_request import HelpRequest
-    from ..models.volunteer import Volunteer
+    from backend.models import HelpRequest
+    from backend.models import Volunteer
 except Exception:
     try:
-        from ..models import HelpRequest, Volunteer
+        from backend.models import HelpRequest, Volunteer
     except Exception:
         HelpRequest = None
         Volunteer = None
         MODELS_AVAILABLE = False
 
 try:
-    from ..models.audit import AuditLog
+    from backend.models import AuditLog
 except Exception:
     AuditLog = None
 
@@ -214,3 +216,12 @@ class HelpChainController:
         db.session.commit()
         print(f"Created request with id: {req.id}")  # Debug log
         return {"success": True, "id": req.id}
+
+    def render_category_template(self, category, COMMON):
+        show_emergency = category["ui"].get("severity") == "critical"
+        return render_template(
+            "request_category.html",
+            category=category,
+            COMMON=COMMON,
+            show_emergency=show_emergency,
+        )

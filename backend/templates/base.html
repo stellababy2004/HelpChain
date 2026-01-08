@@ -438,7 +438,10 @@
     </style>
   </head>
 
-  <body data-socket-transports="{{ socketio_transports|join(',') }}">
+  <body class="{% block body_class %}{% endblock %}" data-socket-transports="{{ socketio_transports|join(',') }}">
+    {% block navbar %}
+      {% include "partials/navbar_public.html" %}
+    {% endblock %}
     <div id="loader">
       <div class="spinner-border text-primary" role="status"></div>
     </div>
@@ -475,16 +478,7 @@
       {% endfor %} {% endif %} {% endwith %} {% block content %}
       <!-- ...текст... -->
       {% endblock %}
-      <footer class="text-center mt-5">
-        <div class="footer-links mb-4">
-          <a href="mailto:contact@helpchain.live">{{ _('Email') }}</a>
-          <a href="https://facebook.com">{{ _('Facebook') }}</a>
-          <a href="/terms" target="_blank">{{ _('Условия за ползване') }}</a>
-          <a href="/privacy" target="_blank"
-            >{{ _('Политика за поверителност') }}</a
-          >
-          <a href="/faq">FAQ</a>
-          <a href="/success_stories">{{ _('Истории на успеха') }}</a>
+      {% include "partials/footer.html" %}
           <a href="/feedback">{{ _('Обратна връзка') }}</a>
         </div>
         <div class="d-flex justify-content-center align-items-center gap-2">

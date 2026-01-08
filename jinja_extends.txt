@@ -1,0 +1,35 @@
+
+backend\templates\add_volunteer.html:1:{% extends "base.html" %} {% block content %}
+backend\templates\admin_dashboard.html:1:{% extends "base.html" %} {% block title %}{{ _('Админ панел') }} |
+backend\templates\admin_feedback.html:1:{% extends "base.html" %} {% block title %}Управление на обратна връзка |
+backend\templates\admin_login.html:1:{% extends "base.html" %} {% block title %}{{ _('Вход за админ') }}{% endblock
+backend\templates\admin_tasks.html:1:{% extends "base.html" %} {% block title %}Управление на задачи |
+backend\templates\admin_volunteers.html:1:{% extends "base.html" %} {% block title %}Управление на доброволци |
+backend\templates\ai_admin_dashboard.html:1:{% extends "base.html" %} {% block title %}Управление на AI чатбот - HelpChain
+backend\templates\contact.html:1:{% extends "base.html" %} {% block content %}
+backend\templates\dashboard.html:1:{% extends "base.html" %} {% block title %}Доброволческо табло{% endblock %} {%
+backend\templates\edit_volunteer.html:1:{% extends "base.html" %} {% block content %}
+backend\templates\facebook.html:1:{% extends "base.html" %} {% block title %}HelpChain.bg във Facebook{% endblock
+backend\templates\faq.html:1:{% extends "base.html" %} {% block title %}Често задавани въпроси{% endblock %}
+backend\templates\feedback.html:1:{% extends "base.html" %} {% block title %}Обратна връзка{% endblock %} {% block
+backend\templates\help_request.html:1:{% extends "base.html" %} {% block title %}Подай сигнал за помощ{% endblock %}
+backend\templates\index.html:1:{% extends "base.html" %} {% block title %}HelpChain{% endblock %} {% block
+backend\templates\login.html:1:{% extends "base.html" %} {% block title %}Вход | HelpChain{% endblock %} {%
+backend\templates\my_tasks.html:1:{% extends "base.html" %} {% block title %}Моите задачи - HelpChain{% endblock
+backend\templates\notifications_dashboard.html:1:{% extends "base.html" %} {% block title %}Notifications Dashboard - HelpChain{%
+backend\templates\privacy.html:1:{% extends "base.html" %} {% block title %}Политика за поверителност |
+backend\templates\register.html:1:{% extends "base.html" %} {% block title %}Регистрация | HelpChain{% endblock %}
+backend\templates\submit_request.html:1:{% extends "base.html" %} {% block title %}Подай сигнал за помощ |
+backend\templates\submit_success.html:1:{% extends "base.html" %} {% block title %}Успешно изпратена заявка{% endblock
+backend\templates\success_stories.html:1:{% extends "base.html" %} {% block title %}Истории на успеха{% endblock %} {%
+backend\templates\terms.html:1:{% extends "base.html" %} {% block title %}Условия за ползване |
+backend\templates\thank_you.html:1:{% extends "base.html" %} {% block title %}Благодарим!{% endblock %} {% block
+backend\templates\update_translations.html:1:{% extends "base.html" %} {% block title %}Обновяване на преводи{% endblock %}
+backend\templates\volunteer_dashboard.html:1:{% extends "base.html" %} {% block title %}{{ _('Доброволчески панел -
+backend\templates\volunteer_detail.html:1:{% extends "base.html" %} {% block content %}
+backend\templates\volunteer_login.html:1:{% extends "base.html" %} {% block title %}Вход за доброволци{% endblock %} {%
+backend\templates\volunteer_profile.html:1:{% extends "base.html" %} {% block title %}Моят профил - HelpChain{% endblock %}
+backend\templates\volunteer_register.html:1:{% extends "base.html" %} {% block title %}Регистрация доброволец{% endblock %}
+backend\templates\volunteer_verify_code.html:1:{% extends "base.html" %} {% block title %}Верификация на код{% endblock %} {%
+backend\templates\admin\update_translations.html:1:{% extends "base.html" %} {% block title %}{{ _('Обновяване на преводи') }}{%
+

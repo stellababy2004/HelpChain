@@ -1,0 +1,5 @@
+{# Shared template macros #}
+
+{% macro lang_hidden() -%}
+  <input type="hidden" name="lang" value="{{ request.args.get('lang', 'bg') }}">
+{%- endmacro %}

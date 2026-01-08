@@ -1,0 +1,59 @@
+/* Общ стил за всички елементи */
+* {
+  margin: 0;
+  padding: 0;
+  font-family:
+    Comic Sans MS,
+    cursive;
+}
+
+body {
+  background-color: #f8f9fa;
+}
+.custom-max-width {
+  max-width: 800px;
+}
+footer {
+  font-size: 0.9rem;
+  padding: 15px 10px;
+  text-align: center;
+}
+/* Добави още твои стилове тук */
+
+#feedback-popup {
+  display: none;
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  right: auto;
+  z-index: 9999;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px #1976d244;
+  padding: 1.2em 1.5em;
+  max-width: 320px;
+  font-size: 1rem;
+}
+
+@media (max-width: 600px) {
+  #feedback-popup {
+    bottom: 10px;
+    left: 10px;
+    right: auto;
+    max-width: 90vw;
+    font-size: 0.95rem;
+    padding: 0.7em 0.8em;
+  }
+  #feedback-popup .btn,
+  #feedback-popup .btn-sm,
+  #feedback-popup button {
+    font-size: 1rem;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  #feedback-popup {
+    display: none !important;
+  }
+}

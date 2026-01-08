@@ -50,7 +50,7 @@ except ImportError:
     from backend.mail_service import send_notification_email
 
 try:
-    from ai_service import ai_service
+    from ai_service_clean import ai_service
 except ImportError:
     from backend.ai_service import ai_service
 

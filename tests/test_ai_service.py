@@ -9,7 +9,7 @@ import os
 os.environ["AI_DEV_MOCK"] = "1"
 
 try:
-    from backend.ai_service import ai_service
+    from backend.ai_service_clean import ai_service
 
     print("AI Status:", ai_service.get_ai_status())
 

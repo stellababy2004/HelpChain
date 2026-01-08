@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-15 18:06+0200\n"
+"POT-Creation-Date: 2026-01-04 12:01+0100\n"
 "PO-Revision-Date: 2025-07-15 18:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,319 +18,686 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: backend/venv/Lib/site-packages/click/_termui_impl.py:600
-#, python-brace-format
-msgid "{editor}: Editing failed"
+#: backend/appy_with_analytics.py:593
+msgid "Доброволецът е добавен успешно!"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/_termui_impl.py:604
-#, python-brace-format
-msgid "{editor}: Editing failed: {e}"
+#: backend/helpchain_backend/src/copy.py:37
+#: backend/helpchain_backend/src/copy.py:109
+msgid "HelpChain"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:1084
-#: backend/venv/Lib/site-packages/click/core.py:1121
-#, python-brace-format
-msgid "{text} {deprecated_message}"
+#: backend/helpchain_backend/src/copy.py:38
+msgid "Изпрати"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:1140
-msgid "Options"
+#: backend/helpchain_backend/src/copy.py:39
+msgid "Продължи"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:1202
-#, python-brace-format
-msgid "Got unexpected extra argument ({args})"
-msgid_plural "Got unexpected extra arguments ({args})"
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/core.py:1221
-#, python-brace-format
-msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
+#: backend/helpchain_backend/src/copy.py:40
+msgid "Назад"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:1405
-msgid "Aborted!"
+#: backend/helpchain_backend/src/copy.py:41
+msgid "Затвори"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:1779
-msgid "Commands"
+#: backend/helpchain_backend/src/copy.py:42
+msgid "Зареждане…"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:1810
-msgid "Missing command."
+#: backend/helpchain_backend/src/copy.py:43
+msgid "Полета с * са задължителни."
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:1888
-#, python-brace-format
-msgid "No such command {name!r}."
+#: backend/helpchain_backend/src/copy.py:44
+msgid "Нещо се обърка. Опитай отново след малко."
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:2303
-msgid "Value must be an iterable."
+#: backend/helpchain_backend/src/copy.py:45
+msgid "Провери маркираните полета и опитай отново."
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:2324
-#, python-brace-format
-msgid "Takes {nargs} values but 1 was given."
-msgid_plural "Takes {nargs} values but {len} were given."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2404
-#, python-brace-format
-msgid ""
-"DeprecationWarning: The {param_type} {name!r} is "
-"deprecated.{extra_message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2807
-#, python-brace-format
-msgid "env var: {var}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2810
-#, python-brace-format
-msgid "default: {default}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2814
-msgid "required"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2870
-msgid "(dynamic)"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/decorators.py:465
-#, python-format
-msgid "%(prog)s, version %(version)s"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/decorators.py:522
-msgid "Show the version and exit."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/decorators.py:548
-msgid "Show this message and exit."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:50
-#: backend/venv/Lib/site-packages/click/exceptions.py:89
-#, python-brace-format
-msgid "Error: {message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:81
-#, python-brace-format
-msgid "Try '{command} {option}' for help."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:130
-#, python-brace-format
-msgid "Invalid value: {message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:132
-#, python-brace-format
-msgid "Invalid value for {param_hint}: {message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:190
-msgid "Missing argument"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:192
-msgid "Missing option"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:194
-msgid "Missing parameter"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:196
-#, python-brace-format
-msgid "Missing {param_type}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:203
-#, python-brace-format
-msgid "Missing parameter: {param_name}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:223
-#, python-brace-format
-msgid "No such option: {name}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:235
-#, python-brace-format
-msgid "Did you mean {possibility}?"
-msgid_plural "(Possible options: {possibilities})"
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:282
-msgid "unknown error"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:289
-#, python-brace-format
-msgid "Could not open file {filename!r}: {message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/formatting.py:156
-msgid "Usage:"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/parser.py:200
-#, python-brace-format
-msgid "Argument {name!r} takes {nargs} values."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/parser.py:383
-#, python-brace-format
-msgid "Option {name!r} does not take a value."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/parser.py:444
-#, python-brace-format
-msgid "Option {name!r} requires an argument."
-msgid_plural "Option {name!r} requires {nargs} arguments."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/shell_completion.py:326
-msgid "Shell completion is not supported for Bash versions older than 4.4."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/shell_completion.py:333
-msgid "Couldn't detect Bash version, shell completion is not supported."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:162
-msgid "Repeat for confirmation"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:178
-msgid "Error: The value you entered was invalid."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:180
-#, python-brace-format
-msgid "Error: {e.message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:191
-msgid "Error: The two entered values do not match."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:247
-msgid "Error: invalid input"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:866
-msgid "Press any key to continue..."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:332
-#, python-brace-format
-msgid ""
-"Choose from:\n"
-"\t{choices}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:369
-#, python-brace-format
-msgid "{value!r} is not {choice}."
-msgid_plural "{value!r} is not one of {choices}."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/types.py:460
-#, python-brace-format
-msgid "{value!r} does not match the format {format}."
-msgid_plural "{value!r} does not match the formats {formats}."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/types.py:482
-#, python-brace-format
-msgid "{value!r} is not a valid {number_type}."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:538
-#, python-brace-format
-msgid "{value} is not in the range {range}."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:679
-#, python-brace-format
-msgid "{value!r} is not a valid boolean."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:703
-#, python-brace-format
-msgid "{value!r} is not a valid UUID."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:893
-msgid "file"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:895
-msgid "directory"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:897
-msgid "path"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:944
-#, python-brace-format
-msgid "{name} {filename!r} does not exist."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:953
-#, python-brace-format
-msgid "{name} {filename!r} is a file."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:961
-#, python-brace-format
-msgid "{name} {filename!r} is a directory."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:970
-#, python-brace-format
-msgid "{name} {filename!r} is not readable."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:979
-#, python-brace-format
-msgid "{name} {filename!r} is not writable."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:988
-#, python-brace-format
-msgid "{name} {filename!r} is not executable."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:1055
-#, python-brace-format
-msgid "{len_type} values are required, but {len_value} was given."
-msgid_plural "{len_type} values are required, but {len_value} were given."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/types.py:1111
-#, python-brace-format
-msgid "Админ панел"
-msgstr "Panneau d'administration"
-
-msgid "Подай сигнал за помощ"
+#: backend/helpchain_backend/src/copy.py:50
+#, fuzzy
+msgid "Подай заявка за помощ"
 msgstr "Soumettre une demande d'aide"
 
-msgid "Вашата заявка беше успешно изпратена."
+#: backend/helpchain_backend/src/copy.py:51
+msgid ""
+"Избери категория и попълни кратко описание. Ако случаят е спешен, "
+"отбележи това ясно."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:52
+msgid "Категория"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:53
+msgid "Избери категория…"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:54
+msgid "Описание на ситуацията"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:55
+msgid "Напиши накратко какво се случва и от какво имаш нужда."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:56
+msgid "Контакт за връзка"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:57
+msgid "Телефон или имейл, за да можем да се свържем."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:58
+msgid "Локация"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:59
+msgid "Град/квартал (без точен адрес на този етап)."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:60
+msgid "Съгласен/на съм данните да се използват само за обработка на заявката."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:61
+msgid "Не споделяй чувствителни данни, които не са нужни."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:62
+msgid "СПЕШНО"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:63
+msgid "Ако има непосредствен риск за живот/здраве, звънни на 112."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:64
+msgid "Спешен случай"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:66
+msgid ""
+"Ако има непосредствена опасност, обади се на 112. HelpChain не е спешна "
+"служба, но ще обработим заявката приоритетно."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:69
+#, fuzzy
+msgid "Заявката е изпратена"
 msgstr "Votre demande a été envoyée avec succès."
+
+#: backend/helpchain_backend/src/copy.py:70
+msgid "Получихме заявката ти. Ще се свържем при първа възможност."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:71
+msgid "Можеш да подадеш нова заявка или да се върнеш към началото."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:75
+msgid "Моля, избери категория."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:76
+msgid "Невалидна категория. Избери от списъка."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:77
+msgid "Моля, опиши накратко ситуацията."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:78
+msgid "Описанието е твърде кратко. Добави още малко контекст."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:79
+msgid "Моля, остави контакт за връзка."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:80
+msgid "Контактът изглежда невалиден. Провери телефон/имейл."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:81
+msgid "Трябва да потвърдиш съгласието, за да изпратиш заявката."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:82
+msgid "Твърде много опити за кратко време. Опитай отново след малко."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:86
+msgid "Храна"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:86
+msgid "Нужда от хранителни продукти, доставка или подкрепа за изхранване."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:88
+msgid "Спешно"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:89
+msgid "Непосредствен риск или ситуация, изискваща бърза реакция."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:91
+#: backend/helpchain_backend/src/copy.py:163
+msgid "112"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:92
+msgid "При непосредствен риск звънни на 112."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:94
+msgid "Медицинска помощ"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:94
+msgid "Навигация към услуги, придружаване, административна помощ."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:95
+#, fuzzy
+msgid "Правна помощ"
+msgstr "Soumettre une demande d'aide"
+
+#: backend/helpchain_backend/src/copy.py:95
+msgid "Насоки, документи, консултация, институции."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:96
+msgid "Подслон"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:96
+msgid "Временно настаняване, кризисен център, базова подкрепа."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:97
+msgid "Образование"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:97
+msgid "Записване, подкрепа за ученици/студенти, документи."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:98
+msgid "Психологическа подкрепа"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:98
+msgid "Подкрепа при стрес, тревожност, кризисни ситуации."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:99
+#, fuzzy
+msgid "Социална помощ"
+msgstr "Soumettre une demande d'aide"
+
+#: backend/helpchain_backend/src/copy.py:99
+msgid "Социални услуги, помощи, придружаване, административни въпроси."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:100
+msgid "Подкрепа за възрастни"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:100
+msgid "Грижа, пазаруване, придружаване, услуги."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:101
+msgid "Хора с увреждания"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:101
+msgid "Достъпност, услуги, документи, помощни средства."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:110
+msgid "Envoyer"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:111
+msgid "Continuer"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:112
+msgid "Retour"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:113
+msgid "Fermer"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:114
+msgid "Chargement…"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:115
+msgid "Les champs avec * sont obligatoires."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:116
+msgid "Une erreur s’est produite. Réessaie dans un instant."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:117
+msgid "Vérifie les champs signalés et réessaie."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:122
+msgid "Soumettre une demande d’aide"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:123
+msgid ""
+"Choisis une catégorie et décris brièvement la situation. Si c’est urgent,"
+" indique-le clairement."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:124
+msgid "Catégorie"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:125
+msgid "Choisir une catégorie…"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:126
+msgid "Description de la situation"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:127
+msgid "Explique en quelques mots ce qui se passe et ce dont tu as besoin."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:128
+msgid "Contact"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:129
+msgid "Téléphone ou e-mail afin que nous puissions te recontacter."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:130
+msgid "Localisation"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:131
+msgid "Ville/quartier (sans adresse exacte à ce stade)."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:132
+msgid ""
+"J’accepte que mes données soient utilisées uniquement pour traiter cette "
+"demande."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:133
+msgid "Ne partage pas de données sensibles inutiles."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:134
+msgid "URGENT"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:135
+msgid "En cas de danger immédiat pour la vie/la santé, appelle le 112."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:136
+msgid "Situation urgente"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:138
+msgid ""
+"En cas de danger immédiat, appelle le 112. HelpChain n’est pas un service"
+" d’urgence, mais nous traiterons ta demande en priorité."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:141
+msgid "Demande envoyée"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:142
+msgid "Nous avons bien reçu ta demande. Nous te recontacterons dès que possible."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:143
+msgid "Tu peux soumettre une nouvelle demande ou revenir à l’accueil."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:147
+msgid "Merci de choisir une catégorie."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:148
+msgid "Catégorie invalide. Choisis dans la liste."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:149
+msgid "Merci de décrire brièvement la situation."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:150
+msgid "La description est trop courte. Ajoute un peu de contexte."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:151
+msgid "Merci de laisser un moyen de contact."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:152
+msgid "Le contact semble invalide. Vérifie téléphone/e-mail."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:153
+msgid "Tu dois confirmer ton accord pour envoyer la demande."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:154
+msgid "Trop de tentatives en peu de temps. Réessaie dans un instant."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:158
+msgid "Alimentation"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:158
+msgid "Besoin de courses, livraison ou soutien alimentaire."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:160
+msgid "Urgence"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:161
+msgid "Risque immédiat ou situation nécessitant une réaction rapide."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:164
+msgid "En cas de danger immédiat, appelle le 112."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:166
+msgid "Aide médicale"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:166
+msgid "Orientation, accompagnement, aide administrative liée aux soins."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:167
+msgid "Aide juridique"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:167
+msgid "Conseils, documents, démarches, institutions."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:168
+msgid "Hébergement"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:168
+msgid "Solution temporaire, centre d’accueil, soutien de base."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:169
+msgid "Éducation"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:169
+msgid "Inscription, soutien scolaire/études, documents."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:170
+msgid "Soutien psychologique"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:170
+msgid "Aide en cas de stress, anxiété, situations de crise."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:171
+msgid "Aide sociale"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:171
+msgid "Services sociaux, aides, accompagnement, démarches."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:172
+msgid "Soutien aux personnes âgées"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:172
+msgid "Aide à domicile, courses, accompagnement, services."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:173
+msgid "Handicap"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:173
+msgid "Accessibilité, services, démarches, aides techniques."
+msgstr ""
+
+#~ msgid "{editor}: Editing failed"
+#~ msgstr ""
+
+#~ msgid "{editor}: Editing failed: {e}"
+#~ msgstr ""
+
+#~ msgid "{text} {deprecated_message}"
+#~ msgstr ""
+
+#~ msgid "Options"
+#~ msgstr ""
+
+#~ msgid "Got unexpected extra argument ({args})"
+#~ msgid_plural "Got unexpected extra arguments ({args})"
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
+#~ msgstr ""
+
+#~ msgid "Aborted!"
+#~ msgstr ""
+
+#~ msgid "Commands"
+#~ msgstr ""
+
+#~ msgid "Missing command."
+#~ msgstr ""
+
+#~ msgid "No such command {name!r}."
+#~ msgstr ""
+
+#~ msgid "Value must be an iterable."
+#~ msgstr ""
+
+#~ msgid "Takes {nargs} values but 1 was given."
+#~ msgid_plural "Takes {nargs} values but {len} were given."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid ""
+#~ "DeprecationWarning: The {param_type} {name!r} "
+#~ "is deprecated.{extra_message}"
+#~ msgstr ""
+
+#~ msgid "env var: {var}"
+#~ msgstr ""
+
+#~ msgid "default: {default}"
+#~ msgstr ""
+
+#~ msgid "required"
+#~ msgstr ""
+
+#~ msgid "(dynamic)"
+#~ msgstr ""
+
+#~ msgid "%(prog)s, version %(version)s"
+#~ msgstr ""
+
+#~ msgid "Show the version and exit."
+#~ msgstr ""
+
+#~ msgid "Show this message and exit."
+#~ msgstr ""
+
+#~ msgid "Error: {message}"
+#~ msgstr ""
+
+#~ msgid "Try '{command} {option}' for help."
+#~ msgstr ""
+
+#~ msgid "Invalid value: {message}"
+#~ msgstr ""
+
+#~ msgid "Invalid value for {param_hint}: {message}"
+#~ msgstr ""
+
+#~ msgid "Missing argument"
+#~ msgstr ""
+
+#~ msgid "Missing option"
+#~ msgstr ""
+
+#~ msgid "Missing parameter"
+#~ msgstr ""
+
+#~ msgid "Missing {param_type}"
+#~ msgstr ""
+
+#~ msgid "Missing parameter: {param_name}"
+#~ msgstr ""
+
+#~ msgid "No such option: {name}"
+#~ msgstr ""
+
+#~ msgid "Did you mean {possibility}?"
+#~ msgid_plural "(Possible options: {possibilities})"
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "unknown error"
+#~ msgstr ""
+
+#~ msgid "Could not open file {filename!r}: {message}"
+#~ msgstr ""
+
+#~ msgid "Usage:"
+#~ msgstr ""
+
+#~ msgid "Argument {name!r} takes {nargs} values."
+#~ msgstr ""
+
+#~ msgid "Option {name!r} does not take a value."
+#~ msgstr ""
+
+#~ msgid "Option {name!r} requires an argument."
+#~ msgid_plural "Option {name!r} requires {nargs} arguments."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "Shell completion is not supported for Bash versions older than 4.4."
+#~ msgstr ""
+
+#~ msgid "Couldn't detect Bash version, shell completion is not supported."
+#~ msgstr ""
+
+#~ msgid "Repeat for confirmation"
+#~ msgstr ""
+
+#~ msgid "Error: The value you entered was invalid."
+#~ msgstr ""
+
+#~ msgid "Error: {e.message}"
+#~ msgstr ""
+
+#~ msgid "Error: The two entered values do not match."
+#~ msgstr ""
+
+#~ msgid "Error: invalid input"
+#~ msgstr ""
+
+#~ msgid "Press any key to continue..."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Choose from:\n"
+#~ "\t{choices}"
+#~ msgstr ""
+
+#~ msgid "{value!r} is not {choice}."
+#~ msgid_plural "{value!r} is not one of {choices}."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "{value!r} does not match the format {format}."
+#~ msgid_plural "{value!r} does not match the formats {formats}."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "{value!r} is not a valid {number_type}."
+#~ msgstr ""
+
+#~ msgid "{value} is not in the range {range}."
+#~ msgstr ""
+
+#~ msgid "{value!r} is not a valid boolean."
+#~ msgstr ""
+
+#~ msgid "{value!r} is not a valid UUID."
+#~ msgstr ""
+
+#~ msgid "file"
+#~ msgstr ""
+
+#~ msgid "directory"
+#~ msgstr ""
+
+#~ msgid "path"
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} does not exist."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is a file."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is a directory."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not readable."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not writable."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not executable."
+#~ msgstr ""
+
+#~ msgid "{len_type} values are required, but {len_value} was given."
+#~ msgid_plural "{len_type} values are required, but {len_value} were given."
+#~ msgstr[0] ""
+#~ msgstr[1] ""
+
+#~ msgid "Админ панел"
+#~ msgstr "Panneau d'administration"
+

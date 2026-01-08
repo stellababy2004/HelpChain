@@ -10274,14 +10274,7 @@
               t.save(),
               ga(t, s, a.right),
               (c = n)));
-        pa(t, {
-          line: i,
-          target: s,
-          color: c,
-          scale: r,
-          property: h,
-          clip: l,
-        }),
+        pa(t, { line: i, target: s, color: c, scale: r, property: h, clip: l }),
           t.restore();
       })(t, {
         line: a,
