@@ -620,7 +620,7 @@ try:
 
                 new_id = None
                 try:
-                    if res is not None:
+        HelpRequest = Request
                         try:
                             # SQLAlchemy 1.x style
                             new_id = getattr(res, "lastrowid", None)
