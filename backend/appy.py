@@ -8,8 +8,9 @@ the real app factory + registered blueprints.
 
 from backend.helpchain_backend.src.app import create_app  # canonical
 from backend.ai_service import ai_service
+from backend._dispatch_email import _dispatch_email
 
 # Create the Flask app at import time for legacy entrypoints
 app = create_app()
 
-__all__ = ["create_app", "ai_service", "app"]
+__all__ = ["create_app", "ai_service", "app", "_dispatch_email"]
