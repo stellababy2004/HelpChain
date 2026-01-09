@@ -1,16 +1,9 @@
-"""
-Compatibility shim for legacy tests/imports.
+import os
+from backend.helpchain_backend.src.app import create_app
 
-Some tests import `appy` directly. We re-export the canonical create_app
-from backend.helpchain_backend.src.app so the test suite always uses
-the real app factory + registered blueprints.
-"""
-
-from backend.helpchain_backend.src.app import create_app  # canonical
-from backend.ai_service import ai_service
-from backend._dispatch_email import _dispatch_email
-
-# Create the Flask app at import time for legacy entrypoints
 app = create_app()
 
-__all__ = ["create_app", "ai_service", "app", "_dispatch_email"]
+# За Render health: ако искаш бърз sanity
+@app.get("/health")
+def health():
+	return {"ok": True}, 200
