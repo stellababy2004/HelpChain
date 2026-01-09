@@ -568,10 +568,10 @@ class Request(db.Model):
         order_by="RequestLog.timestamp.desc()",
         lazy=True,
     )
-    [blank line]
-    # Backwards-compatible alias: older modules/tests import `HelpRequest`
-    # Keep `HelpRequest` pointing to the legacy `Request` model.
-    HelpRequest = Request
+    
+
+# Backward-compat alias (legacy code expects HelpRequest)
+HelpRequest = Request
 
 
 
@@ -588,9 +588,7 @@ class RequestLog(db.Model):
     request = db.relationship("Request", back_populates="logs")
 
 
-# Backwards-compatible alias: older modules/tests import `HelpRequest`
-# Keep `HelpRequest` pointing to the legacy `Request` model.
-HelpRequest = Request
+ 
 
 # Ensure requests created without an explicit `user_id` get a minimal
 # placeholder user so older tests that create HelpRequest objects without
@@ -620,7 +618,6 @@ try:
 
                 new_id = None
                 try:
-        HelpRequest = Request
                         try:
                             # SQLAlchemy 1.x style
                             new_id = getattr(res, "lastrowid", None)
@@ -918,8 +915,5 @@ class PriorityEnum(Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-
-
-app = create_app()
 
 
