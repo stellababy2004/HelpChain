@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ _(category_info.name) }} - HelpChain</title>
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -12,17 +13,16 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
+
     <style>
       .hero-section {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 60px 0;
       }
-
       .volunteer-card {
         transition: transform 0.3s;
       }
-
       .volunteer-card:hover {
         transform: translateY(-5px);
       }
@@ -32,9 +32,10 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">
-        <a class="navbar-brand" href="/"
-          ><i class="fas fa-hand-holding-heart me-2"></i>HelpChain</a
-        >
+        <a class="navbar-brand" href="{{ safe_url_for('index') }}">
+          <i class="fas fa-hand-holding-heart me-2"></i>HelpChain
+        </a>
+
         <button
           class="navbar-toggler"
           type="button"
@@ -44,21 +45,25 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
           <div class="navbar-nav ms-auto">
-            <a class="nav-link" href="{{ safe_url_for('index') }}"
-              ><i class="fas fa-home me-1"></i>{{ _('Начало') }}</a
-            >
-            <a class="nav-link" href="{{ safe_url_for('all_categories') }}"
-              ><i class="fas fa-list me-1"></i>{{ _('Категории') }}</a
-            >
-            <a class="nav-link" href="{{ safe_url_for('volunteer_register') }}"
-              ><i class="fas fa-user-plus me-1"></i>{{ _('Стани доброволец')
-              }}</a
-            >
-            <a class="nav-link" href="{{ safe_url_for('admin_login') }}"
-              ><i class="fas fa-user-shield me-1"></i>{{ _('Админ вход') }}</a
-            >
+            <a class="nav-link" href="{{ safe_url_for('index') }}">
+              <i class="fas fa-home me-1"></i>{{ _('Начало') }}
+            </a>
+
+            <a class="nav-link" href="{{ safe_url_for('all_categories') }}">
+              <i class="fas fa-list me-1"></i>{{ _('Категории') }}
+            </a>
+
+            <a class="nav-link" href="{{ safe_url_for('volunteer_register') }}">
+              <i class="fas fa-user-plus me-1"></i>{{ _('Стани доброволец') }}
+            </a>
+
+            <!-- IMPORTANT: admin is a blueprint endpoint -->
+            <a class="nav-link" href="{{ url_for('admin.admin_login') }}">
+              <i class="fas fa-user-shield me-1"></i>{{ _('Админ вход') }}
+            </a>
           </div>
         </div>
       </div>
@@ -70,13 +75,10 @@
         <i class="{{ category_info.icon }} fa-4x mb-3"></i>
         <h1 class="display-5 fw-bold">{{ _(category_info.name) }}</h1>
         <p class="lead fs-5">
-          {{ _('Намерете доброволци, които могат да ви помогнат в тази
-          категория') }}
+          {{ _('Намерете доброволци, които могат да ви помогнат в тази категория') }}
         </p>
-        <a
-          href="{{ safe_url_for('submit_request') }}"
-          class="btn btn-light btn-lg px-4"
-        >
+
+        <a href="{{ safe_url_for('submit_request') }}" class="btn btn-light btn-lg px-4">
           <i class="fas fa-plus-circle me-2"></i>{{ _('Подайте заявка') }}
         </a>
       </div>
@@ -97,31 +99,28 @@
                   <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
                   <div>
                     <h5 class="card-title mb-0">{{ volunteer.name }}</h5>
-                    <small class="text-muted"
-                      >{{ volunteer.location or _('Не е посочена локация')
-                      }}</small
-                    >
+                    <small class="text-muted">
+                      {{ volunteer.location or _('Не е посочена локация') }}
+                    </small>
                   </div>
                 </div>
 
                 <div class="mb-3">
                   <p class="mb-1">
-                    <i class="fas fa-envelope text-muted me-2"></i>{{
-                    volunteer.email }}
+                    <i class="fas fa-envelope text-muted me-2"></i>{{ volunteer.email }}
                   </p>
                   {% if volunteer.phone %}
                   <p class="mb-1">
-                    <i class="fas fa-phone text-muted me-2"></i>{{
-                    volunteer.phone }}
+                    <i class="fas fa-phone text-muted me-2"></i>{{ volunteer.phone }}
                   </p>
                   {% endif %}
                 </div>
 
                 {% if volunteer.skills %}
                 <div class="mb-3">
-                  <span class="badge bg-{{ category_info.color }} me-1"
-                    >{{ volunteer.skills }}</span
-                  >
+                  <span class="badge bg-{{ category_info.color }} me-1 text-wrap">
+                    {{ volunteer.skills }}
+                  </span>
                 </div>
                 {% endif %}
 
@@ -132,6 +131,7 @@
                   >
                     <i class="fas fa-envelope me-1"></i>{{ _('Имейл') }}
                   </a>
+
                   {% if volunteer.phone %}
                   <a
                     href="tel:{{ volunteer.phone }}"
@@ -146,6 +146,7 @@
           </div>
           {% endfor %}
         </div>
+
         {% else %}
         <div class="text-center py-5">
           <i class="fas fa-users fa-4x text-muted mb-3"></i>
@@ -153,20 +154,18 @@
           <p class="text-muted">
             {{ _('В момента няма регистрирани доброволци в тази категория.') }}
           </p>
+
           <a href="{{ safe_url_for('volunteer_register') }}" class="btn btn-primary">
-            <i class="fas fa-user-plus me-2"></i>{{ _('Стани първият
-            доброволец') }}
+            <i class="fas fa-user-plus me-2"></i>{{ _('Стани първият доброволец') }}
           </a>
         </div>
         {% endif %}
 
         <div class="text-center mt-5">
-          <a
-            href="{{ safe_url_for('all_categories') }}"
-            class="btn btn-outline-primary me-2"
-          >
+          <a href="{{ safe_url_for('all_categories') }}" class="btn btn-outline-primary me-2">
             <i class="fas fa-arrow-left me-1"></i>{{ _('Всички категории') }}
           </a>
+
           <a href="{{ safe_url_for('index') }}" class="btn btn-primary">
             <i class="fas fa-home me-1"></i>{{ _('Към началната страница') }}
           </a>
@@ -180,35 +179,30 @@
         <div class="row">
           <div class="col-md-6">
             <h5>HelpChain</h5>
-            <p>
-              {{ _('Свързваме нуждаещи се с доброволци за по-добро бъдеще.') }}
-            </p>
+            <p>{{ _('Свързваме нуждаещи се с доброволци за по-добро бъдеще.') }}</p>
           </div>
+
           <div class="col-md-3">
             <h5>{{ _('Връзки') }}</h5>
             <ul class="list-unstyled">
               <li>
-                <a href="{{ safe_url_for('privacy') }}" class="text-light"
-                  >{{ _('Политика за поверителност') }}</a
-                >
+                <a href="{{ safe_url_for('privacy') }}" class="text-light">{{ _('Политика за поверителност') }}</a>
               </li>
               <li>
-                <a href="{{ safe_url_for('terms') }}" class="text-light"
-                  >{{ _('Условия за ползване') }}</a
-                >
+                <a href="{{ safe_url_for('terms') }}" class="text-light">{{ _('Условия за ползване') }}</a>
               </li>
               <li>
-                <a href="{{ safe_url_for('faq') }}" class="text-light"
-                  >{{ _('ЧЗВ') }}</a
-                >
+                <a href="{{ safe_url_for('faq') }}" class="text-light">{{ _('ЧЗВ') }}</a>
               </li>
             </ul>
           </div>
+
           <div class="col-md-3">
             <h5>{{ _('Контакти') }}</h5>
             <p><i class="fas fa-envelope me-2"></i>contact@helpchain.live</p>
           </div>
         </div>
+
         <hr />
         <div class="text-center">
           <p>&copy; 2025 HelpChain. {{ _('Всички права запазени.') }}</p>
