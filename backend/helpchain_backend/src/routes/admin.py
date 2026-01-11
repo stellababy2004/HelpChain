@@ -596,32 +596,40 @@ def admin_requests():
     status = (request.args.get("status") or "").strip()
     q = (request.args.get("q") or "").strip()
 
-    query = Request.query
+    try:
+        query = Request.query
 
-    if status in ALLOWED_STATUSES:
-        query = query.filter(Request.status == status)
+        if status in ALLOWED_STATUSES:
+            query = query.filter(Request.status == status)
 
-    if q:
-        like = f"%{q}%"
-        query = query.filter(
-            or_(
-                Request.title.ilike(like),
-                Request.name.ilike(like),
-                Request.email.ilike(like) if hasattr(Request, "email") else False,
-                Request.phone.ilike(like) if hasattr(Request, "phone") else False,
-                Request.description.ilike(like),
+        if q:
+            like = f"%{q}%"
+            query = query.filter(
+                or_(
+                    Request.title.ilike(like),
+                    Request.name.ilike(like),
+                    Request.email.ilike(like) if hasattr(Request, "email") else False,
+                    Request.phone.ilike(like) if hasattr(Request, "phone") else False,
+                    Request.description.ilike(like),
+                )
             )
+
+        rows = query.order_by(Request.id.desc()).limit(200).all()
+
+        return render_template(
+            "admin/requests.html",
+            requests=rows,
+            status=status,
+            q=q,
+            STATUS_LABELS_BG=STATUS_LABELS_BG,
+        ), 200
+    except Exception as e:
+        # Surface DB/template errors directly to aid Render diagnostics
+        return (
+            f"<h1>admin_requests failed</h1><pre>{type(e).__name__}: {e}</pre>",
+            500,
+            {"Content-Type": "text/html; charset=utf-8"},
         )
-
-    rows = query.order_by(Request.id.desc()).limit(200).all()
-
-    return render_template(
-        "admin/requests.html",
-        requests=rows,
-        status=status,
-        q=q,
-        STATUS_LABELS_BG=STATUS_LABELS_BG,
-    ), 200
 
 
 
