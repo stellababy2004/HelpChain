@@ -583,7 +583,7 @@
             <li class="nav-item">
               <a
                 class="nav-link active"
-                href="{{ safe_url_for('admin_dashboard') }}"
+                  href="{{ safe_url_for('admin.admin_dashboard') }}"
               >
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
@@ -594,10 +594,10 @@
                 href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
               >
                 <i class="fas fa-users-cog me-1"></i>Роли и права
-              </a>
+                  href="{{ safe_url_for('admin.admin_volunteers') }}"
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_volunteers') }}">
                 <i class="fas fa-hand-holding-heart me-1"></i>Доброволци
               </a>
             </li>
@@ -797,7 +797,7 @@
           <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
         </h4>
         <div class="action-grid">
-          <a href="{{ safe_url_for('admin_volunteers') }}" class="action-card">
+          <a href="{{ safe_url_for('admin.admin_volunteers') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-user-plus"></i>
             </div>

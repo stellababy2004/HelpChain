@@ -3,7 +3,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-users"></i> {{ _('Управление на доброволци') }}</h2>
     <div>
-      <a href="{{ safe_url_for('admin_dashboard') }}" class="btn btn-secondary">
+      <a href="{{ safe_url_for('admin.admin_dashboard') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> {{ _('Назад към админ панел') }}
       </a>
       <a href="{{ safe_url_for('add_volunteer') }}" class="btn btn-success">
@@ -57,7 +57,7 @@
             <i class="fas fa-search"></i> {{ _('Търси') }}
           </button>
           <a
-            href="{{ safe_url_for('admin_volunteers') }}"
+            href="{{ safe_url_for('admin.admin_volunteers') }}"
             class="btn btn-outline-secondary"
           >
             <i class="fas fa-times"></i> {{ _('Изчисти') }}
@@ -234,7 +234,7 @@
           <li class="page-item">
             <a
               class="page-link"
-              href="{{ safe_url_for('admin_volunteers', page=pagination.prev_num,
+              href="{{ safe_url_for('admin.admin_volunteers', page=pagination.prev_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
               aria-label="{{ _('Предишна страница') }}"
@@ -261,7 +261,7 @@
           >
             <a
               class="page-link"
-              href="{{ safe_url_for('admin_volunteers', page=page_num,
+              href="{{ safe_url_for('admin.admin_volunteers', page=page_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
               aria-label="{{ _('Страница') }} {{ page_num }}"
@@ -274,7 +274,7 @@
           <li class="page-item">
             <a
               class="page-link"
-              href="{{ safe_url_for('admin_volunteers', page=pagination.next_num,
+              href="{{ safe_url_for('admin.admin_volunteers', page=pagination.next_num,
                                                   search=search, location_filter=location_filter,
                                                   per_page=per_page) }}"
               aria-label="{{ _('Следваща страница') }}"

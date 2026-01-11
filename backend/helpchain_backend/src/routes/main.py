@@ -312,7 +312,26 @@ def category_help(category):
         "other": "Друго",
     }
 
+    # Display name fallback
     category_display = category_names.get(category, category.title())
+
+    # Build category_info from CATEGORIES (with alias support)
+    canonical = ALIASES.get(category, category)
+    data = CATEGORIES.get(canonical)
+    if data:
+        category_info = {
+            "slug": canonical,
+            "name": data["content"]["title"].get("bg", category_display),
+            "icon": data["ui"].get("icon", "fa-solid fa-question-circle text-secondary"),
+            "color": "primary" if data["ui"].get("severity") != "critical" else "danger",
+        }
+    else:
+        category_info = {
+            "slug": category,
+            "name": category_display,
+            "icon": "fa-solid fa-question-circle text-secondary",
+            "color": "primary",
+        }
 
     volunteers = Volunteer.query.filter(Volunteer.skills.ilike(f"%{category}%")).all()
     no_volunteers = len(volunteers) == 0
@@ -323,6 +342,7 @@ def category_help(category):
         "category_help.html",
         category=category,
         category_display=category_display,
+        category_info=category_info,
         volunteers=volunteers,
         no_volunteers=no_volunteers,
         is_admin=is_admin,

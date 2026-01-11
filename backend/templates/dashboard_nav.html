@@ -94,7 +94,7 @@
         <li class="nav-item">
           <a
             class="nav-link d-flex align-items-center px-3 py-2 rounded transition-fast {{ 'active bg-primary text-white' if request.endpoint == 'admin_dashboard' else 'text-gray-700 hover-primary' }}"
-            href="{{ safe_url_for('admin_dashboard') }}"
+            href="{{ safe_url_for('admin.admin_dashboard') }}"
           >
             <i class="fas fa-tachometer-alt me-2"></i>{{ _('Табло') }}
           </a>
@@ -245,7 +245,7 @@
             <li>
               <a
                 class="dropdown-item d-flex align-items-center py-2 px-3 rounded transition-fast hover-bg-gray-50"
-                href="{{ safe_url_for('admin_dashboard') }}"
+                href="{{ safe_url_for('admin.admin_dashboard') }}"
               >
                 <i class="fas fa-tachometer-alt me-3 text-primary"></i>{{
                 _('Админ панел') }}

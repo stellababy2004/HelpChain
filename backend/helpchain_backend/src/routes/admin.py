@@ -16,22 +16,24 @@ from sqlalchemy.orm import joinedload
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
-
 def is_safe_url(target: str) -> bool:
     if not target:
         return False
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
-    return test_url.scheme in ("http", "https") and ref_url.netloc == test_url.netloc
+    return (test_url.scheme in ("http", "https")) and (ref_url.netloc == test_url.netloc)
 
 
-def admin_required(view):
-    @wraps(view)
-    def wrapped(*args, **kwargs):
+def admin_required(view_func):
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
         if not session.get("admin_logged_in"):
-            return redirect(url_for("admin.admin_login", next=request.path))
-        return view(*args, **kwargs)
-    return wrapped
+            nxt = request.full_path if request.query_string else request.path
+            if not is_safe_url(nxt):
+                nxt = url_for("admin.admin_requests")
+            return redirect(url_for("admin.admin_login", next=nxt))
+        return view_func(*args, **kwargs)
+    return wrapper
 
 
 
@@ -42,6 +44,7 @@ from datetime import datetime, timedelta
 from flask import current_app
 
 @admin_bp.route("/emergency-requests", methods=["GET"])
+@admin_required
 def emergency_requests():
     # Admin guard (same as admin_dashboard)
     if not getattr(current_user, "is_admin", False):
@@ -214,13 +217,6 @@ def volunteer_detail(id):
 
 @admin_bp.route("/login", methods=["GET", "POST"])
 def admin_login():
-    def is_safe_url(target: str) -> bool:
-        if not target:
-            return False
-        ref_url = urlparse(request.host_url)
-        test_url = urlparse(urljoin(request.host_url, target))
-        return (test_url.scheme in ("http", "https")) and (ref_url.netloc == test_url.netloc)
-
     next_url = request.args.get("next") or request.form.get("next") or url_for("admin.admin_requests")
     if not is_safe_url(next_url):
         next_url = url_for("admin.admin_requests")
@@ -245,6 +241,7 @@ def admin_login():
 
 
 @admin_bp.route("/2fa", methods=["GET", "POST"])
+@admin_required
 def admin_2fa():
     """2FA верификация за админ"""
     user_id = session.get("pending_admin_user_id")
@@ -394,7 +391,7 @@ def admin_dashboard():
     )
 
 
-@admin_bp.route("/admin_volunteers")
+@admin_bp.route("/volunteers", methods=["GET"])
 @admin_required
 def admin_volunteers():
     """Управление на доброволци"""
@@ -410,6 +407,12 @@ def admin_volunteers():
 
     volunteers = Volunteer.query.all()
     return render_template("admin_volunteers.html", volunteers=volunteers)
+
+
+@admin_bp.route("/admin_volunteers", methods=["GET"])
+@admin_required
+def admin_volunteers_compat():
+    return redirect(url_for("admin.admin_volunteers"), code=302)
 
 
 @admin_bp.route("/admin_volunteers/add", methods=["GET", "POST"])

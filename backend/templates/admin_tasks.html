@@ -6,7 +6,7 @@ HelpChain.live{% endblock %} {% block content %}
 
 <!-- Breadcrumbs -->
 {% set breadcrumbs = [ {'title': 'Админ панел', 'url':
-url_for('admin_dashboard')}, {'title': 'Управление на задачи', 'url': None} ] %}
+safe_url_for('admin.admin_dashboard')}, {'title': 'Управление на задачи', 'url': None} ] %}
 {% include 'breadcrumbs.html' %}
 
 <div class="container mt-5">
