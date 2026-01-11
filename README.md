@@ -107,6 +107,14 @@ CI order:
 uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port $PORT
 ```
 
+### Environment (Render)
+- Core: `SECRET_KEY`
+- Admin: `ADMIN_USERNAME`, `ADMIN_PASSWORD`
+- Database: `SQLALCHEMY_DATABASE_URI` or `DATABASE_URL` (preferred on Render)
+- Mail: `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USE_TLS`, `MAIL_USE_SSL`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_DEFAULT_SENDER`
+
+Config loads `.env` and supports dict overrides in `create_app()`; overrides are applied before `db.init_app(app)` to ensure SQLAlchemy initializes correctly.
+
 📄 License
 
 MIT License – see LICENSE

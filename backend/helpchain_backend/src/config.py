@@ -22,18 +22,20 @@ class Config:
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
-    # ✅ Flask-canonical DB location → instance/app.db
-    # If env var exists, we respect it (prod / CI),
-    # otherwise Flask will resolve sqlite:///app.db → instance/app.db
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        "SQLALCHEMY_DATABASE_URI",
-        "sqlite:///app.db"
+    # ✅ Database
+    # Prefer explicit SQLALCHEMY_DATABASE_URI; fall back to Render's DATABASE_URL; else sqlite app.db.
+    _db_url = (
+        os.getenv("SQLALCHEMY_DATABASE_URI")
+        or os.getenv("DATABASE_URL")
+        or "sqlite:///app.db"
     )
+    SQLALCHEMY_DATABASE_URI = _db_url
 
     # --- Mail ---
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.mailtrap.io")
     MAIL_PORT = int(os.getenv("MAIL_PORT", 2525))
     MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "true").lower() in ("true", "1")
+    MAIL_USE_SSL = os.getenv("MAIL_USE_SSL", "false").lower() in ("true", "1")
     MAIL_USERNAME = os.getenv("MAIL_USERNAME", os.getenv("MAILTRAP_USERNAME"))
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", os.getenv("MAILTRAP_PASSWORD"))
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "contact@helpchain.live")
