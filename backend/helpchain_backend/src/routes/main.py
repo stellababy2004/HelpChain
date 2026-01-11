@@ -12,6 +12,7 @@ from flask import (
 from ..extensions import limiter
 from ..models import Request, Volunteer, db
 from ..category_data import CATEGORIES, ALIASES, COMMON
+from sqlalchemy import or_
 
 main_bp = Blueprint("main", __name__)
 
@@ -303,47 +304,90 @@ def set_language():
     return resp
 
 
-@main_bp.route("/category_help/<category>")
-def category_help(category):
+@main_bp.route("/category_help/<category>", methods=["GET"])
+def category_help(category: str):
+    # Display name fallback (ако нямаме CATEGORIES)
     category_names = {
         "food": "Храна",
         "medical": "Медицинска помощ",
         "transport": "Транспорт",
         "other": "Друго",
     }
+    category_display = category_names.get(category, (category or "").title())
 
-    # Display name fallback
-    category_display = category_names.get(category, category.title())
-
-    # Build category_info from CATEGORIES (with alias support)
+    # Canonical slug (alias support)
     canonical = ALIASES.get(category, category)
+
+    # Category info (from CATEGORIES)
     data = CATEGORIES.get(canonical)
     if data:
+        title_bg = (
+            data.get("content", {})
+                .get("title", {})
+                .get("bg")
+        )
+        icon = data.get("ui", {}).get("icon") or "fa-solid fa-circle-question text-secondary"
+        severity = data.get("ui", {}).get("severity")
+        color = "danger" if severity == "critical" else "primary"
+
         category_info = {
             "slug": canonical,
-            "name": data["content"]["title"].get("bg", category_display),
-            "icon": data["ui"].get("icon", "fa-solid fa-question-circle text-secondary"),
-            "color": "primary" if data["ui"].get("severity") != "critical" else "danger",
+            "name": title_bg or category_display,
+            "icon": icon,
+            "color": color,
         }
     else:
         category_info = {
-            "slug": category,
+            "slug": canonical,
             "name": category_display,
-            "icon": "fa-solid fa-question-circle text-secondary",
+            "icon": "fa-solid fa-circle-question text-secondary",
             "color": "primary",
         }
 
-    volunteers = Volunteer.query.filter(Volunteer.skills.ilike(f"%{category}%")).all()
-    no_volunteers = len(volunteers) == 0
+    # Volunteers query (SAFE)
+    volunteers = []
+    no_volunteers = True
+    db_error = None
 
-    is_admin = session.get("admin_logged_in", False)
+    try:
+        # Търсим по canonical (и по оригиналния slug като резервен)
+        # + по display name, ако някой е въвел "Храна" в skills.
+        patterns = [
+            f"%{canonical}%",
+            f"%{category}%",
+            f"%{category_info['name']}%",
+        ]
 
+        # махаме дубликати/празни
+        patterns = [p for p in dict.fromkeys(patterns) if p and p != "%%"]
+
+        filters = [Volunteer.skills.ilike(p) for p in patterns]
+
+        # ако нямаме никакви patterns, просто не удряме DB с безсмислена заявка
+        if filters:
+            volunteers = Volunteer.query.filter(or_(*filters)).all()
+        else:
+            volunteers = []
+
+        no_volunteers = (len(volunteers) == 0)
+
+    except Exception as e:
+        # НЕ чупим страницата на production
+        current_app.logger.exception("category_help: Volunteer query failed")
+        db_error = str(e)
+        volunteers = []
+        no_volunteers = True
+
+    is_admin = bool(session.get("admin_logged_in", False))
+
+    # По желание: можеш да покажеш db_error само в debug (не в production UI)
     return render_template(
         "category_help.html",
-        category=category,
-        category_display=category_display,
+        category=canonical,                 # важно: canonical, не raw
+        category_display=category_display,  # ако още го ползваш някъде
         category_info=category_info,
         volunteers=volunteers,
         no_volunteers=no_volunteers,
         is_admin=is_admin,
+        # debug_db_error=db_error if current_app.debug else None,
     )
