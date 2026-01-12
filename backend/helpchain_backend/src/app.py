@@ -40,7 +40,13 @@ def create_app(config_object=None) -> Flask:
     templates_backend = os.path.join(base, "backend", "templates")
 
     app = Flask(__name__, static_folder=static_dir, template_folder=templates_root, instance_relative_config=True)
-    app.config.from_object(config_object or Config)
+    # Load base config first
+    app.config.from_object(Config)
+    # Allow dict/object overrides (tests, scripts)
+    if isinstance(config_object, dict):
+        app.config.update(config_object)
+    elif config_object:
+        app.config.from_object(config_object)
 
     # --- CSRFProtect (единствена инициализация!) ---
     csrf = CSRFProtect()
@@ -95,7 +101,7 @@ def create_app(config_object=None) -> Flask:
     # If SQLALCHEMY_DATABASE_URI is not set, Flask-SQLAlchemy will default to instance/app.db.
     # That's OK and consistent.
 
-    # --- Init extensions (ONLY here) ---
+    # --- Init extensions (ONLY here; after config overrides) ---
     db.init_app(app)
     babel.init_app(app)
     mail.init_app(app)

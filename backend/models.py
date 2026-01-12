@@ -1,27 +1,31 @@
-# Импорт на db и relationship най-отгоре
-from backend.extensions import db
-from sqlalchemy.orm import relationship
-# Placeholder for AdminUser (real mapped class is injected in create_app())
-class AdminUser:  # noqa: D101
-    pass
-
 from datetime import datetime, timezone
+from backend.extensions import db
+
 
 def utc_now():
     return datetime.now(timezone.utc)
-# --- SQLAlchemy core imports (REQUIRED for legacy Base models) ---
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Text,
-    Float,
-    Index,
-    UniqueConstraint,
-)
+
+# Unified ORM style: alias common SQLAlchemy names to Flask-SQLAlchemy `db.*`
+# This lets existing declarations using Column/Integer/... work without mixing registries.
+Column = db.Column
+Integer = db.Integer
+String = db.String
+Boolean = db.Boolean
+DateTime = db.DateTime
+ForeignKey = db.ForeignKey
+Text = db.Text
+Float = db.Float
+Index = db.Index
+UniqueConstraint = db.UniqueConstraint
+relationship = db.relationship
+
+# Реален AdminUser модел за да съществува таблицата `admin_users`
+class AdminUser(db.Model):  # noqa: D101
+    __tablename__ = "admin_users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
 
 
 
@@ -38,11 +42,17 @@ class AdminLog(db.Model):
     __tablename__ = "admin_logs"
     __table_args__ = {"extend_existing": True}
 
-    id = Column(Integer, primary_key=True)
-    admin_user_id = Column(Integer, ForeignKey("admin_users.id"), nullable=False)
-    action = Column(String(100), nullable=False)  # "approved_request", "rejected_request", etc.
-    details = Column(Text, nullable=True)  # JSON или описание на действието
-    entity_type = Column(String(50), nullable=True)  # "help_request", "volunteer", etc.
+    id = db.Column(db.Integer, primary_key=True)
+    admin_user_id = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=False)
+    action = db.Column(db.String(120), nullable=False)
+    details = db.Column(db.Text, nullable=True)
+    entity_type = db.Column(db.String(80), nullable=True)
+    entity_id = db.Column(db.Integer, nullable=True)
+    ip_address = db.Column(db.String(64), nullable=True)
+    user_agent = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
+
+    admin_user = db.relationship("AdminUser", backref="logs")
 
 
 # Backwards-compatible alias: some modules import `AuditLog` from backend.models
