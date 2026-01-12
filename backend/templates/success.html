@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Заявката е получена</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  </head>
+  <body class="bg-light">
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="alert alert-success shadow-sm" role="alert">
+            <h4 class="alert-heading">Благодарим ви!</h4>
+            <p>Получихме заявката ви и ще се свържем с вас възможно най-скоро.</p>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{{ safe_url_for('main.index') }}" class="btn btn-primary">Начало</a>
+            <a href="{{ safe_url_for('main.categories') }}" class="btn btn-outline-primary">Виж категории</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

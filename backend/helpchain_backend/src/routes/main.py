@@ -264,8 +264,11 @@ def submit_request():
                 if hasattr(app, "mark_emergency_email_sent"):
                     app.mark_emergency_email_sent()
 
-            flash("Заявката е изпратена успешно.", "success")
-            return redirect(url_for("main.index"))
+            flash(
+                "Благодарим ви, получихме заявката! Ще се свържем с вас възможно най-скоро.",
+                "success",
+            )
+            return redirect(url_for("main.success"))
 
         except Exception as e:
             current_app.logger.exception("SUBMIT_REQUEST FAILED: %s", e)
@@ -274,6 +277,11 @@ def submit_request():
             return redirect(url_for("main.submit_request"))
 
     return render_template("submit_request.html")
+
+
+@main_bp.get("/success")
+def success():
+    return render_template("success.html"), 200
 
 
 @main_bp.route("/faq")
