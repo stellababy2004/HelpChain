@@ -743,18 +743,20 @@ class HelpChainNotificationService {
   }
 }
 
-// Global notification service instance
-const notificationService = new HelpChainNotificationService();
+// Global notification service instance (guard against double-declare)
+if (!window.notificationService) {
+  const notificationService = new HelpChainNotificationService();
 
-// Initialize when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () =>
-    notificationService.initialize(),
-  );
-} else {
-  notificationService.initialize();
+  // Initialize when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () =>
+      notificationService.initialize(),
+    );
+  } else {
+    notificationService.initialize();
+  }
+
+  // Export for global access
+  window.HelpChainNotificationService = HelpChainNotificationService;
+  window.notificationService = notificationService;
 }
-
-// Export for global access
-window.HelpChainNotificationService = HelpChainNotificationService;
-window.notificationService = notificationService;

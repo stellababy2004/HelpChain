@@ -842,8 +842,8 @@
       // Initialize feedback system
       const feedback = new HelpChainFeedback();
 
-      // Initialize push notifications
-      const notificationService = new NotificationService();
+      // Initialize push notifications (use global singleton)
+      window.notificationService = window.notificationService || new HelpChainNotificationService();
 
       // Theme Toggle Functionality
       const themeToggle = document.getElementById("themeToggle");
