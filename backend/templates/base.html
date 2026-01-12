@@ -472,10 +472,18 @@
     </button>
 
     <div class="container">
-      {% with messages = get_flashed_messages() %} {% if messages %} {% for
-      message in messages %}
-      <div class="alert alert-warning">{{ message }}</div>
-      {% endfor %} {% endif %} {% endwith %} {% block content %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="container mt-3">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'success' if category=='success' else category }} mb-2">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}
       <!-- ...текст... -->
       {% endblock %}
       {% include "partials/footer.html" %}
