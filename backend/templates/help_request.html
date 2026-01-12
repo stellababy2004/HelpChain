@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container mt-4">
   <h2>Подай сигнал за помощ</h2>
-  <form method="POST" action="{{ url_lang('submit_request') }}">
+  <form method="POST" action="{{ safe_url_for('main.submit_request') }}">
     <div class="mb-3">
       <label for="name" class="form-label">Име:</label>
       <input

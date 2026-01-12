@@ -65,7 +65,12 @@
       {% endif %}
       <div class="divider"></div>
       <h2 class="text-center mb-3">{{ category.content.cta.bg }}</h2>
-      <a href="/submit_request?category={{ category.canonical_slug }}" class="btn btn-primary cta-btn">{{ category.content.cta.bg }}</a>
+      <a
+        href="{{ safe_url_for('main.submit_request', category=category.canonical_slug) }}"
+        class="btn btn-primary cta-btn"
+      >
+        {{ category.content.cta.bg }}
+      </a>
       <div class="microcopy text-center">{{ COMMON.cta_microcopy }}</div>
     {% else %}
       <div class="text-center mb-4">
