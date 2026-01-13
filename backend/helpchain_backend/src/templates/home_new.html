@@ -1,0 +1,1017 @@
+<!doctype html>
+<html lang="bg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HelpChain - Свързваме нуждаещи се с доброволци</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- HelpChain Design System -->
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/design-system.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/performance-optimizations.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/accessibility.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/mobile-responsiveness.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/user-feedback.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/navigation-improvements.css') }}">
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+        --shadow: var(--shadow-dark);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      * {
+        transition: all 0.3s ease;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        overflow-x: hidden;
+      }
+
+      /* Animated Background */
+      .hero-section {
+        position: relative;
+        min-height: 100vh;
+        background: var(--primary-gradient);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(
+            circle at 20% 80%,
+            rgba(120, 119, 198, 0.3) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(255, 119, 198, 0.3) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 40% 40%,
+            rgba(120, 219, 255, 0.3) 0%,
+            transparent 50%
+          );
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+
+        33% {
+          transform: translateY(-20px) rotate(120deg);
+        }
+
+        66% {
+          transform: translateY(10px) rotate(240deg);
+        }
+      }
+
+      /* Floating Elements */
+      .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .shape {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: floatShape 8s ease-in-out infinite;
+      }
+
+      .shape:nth-child(1) {
+        width: 80px;
+        height: 80px;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+
+      .shape:nth-child(2) {
+        width: 60px;
+        height: 60px;
+        top: 20%;
+        right: 10%;
+        animation-delay: 2s;
+      }
+
+      .shape:nth-child(3) {
+        width: 100px;
+        height: 100px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 4s;
+      }
+
+      .shape:nth-child(4) {
+        width: 40px;
+        height: 40px;
+        bottom: 10%;
+        right: 20%;
+        animation-delay: 6s;
+      }
+
+      @keyframes floatShape {
+        0%,
+        100% {
+          transform: translateY(0px) scale(1);
+          opacity: 0.7;
+        }
+
+        50% {
+          transform: translateY(-30px) scale(1.1);
+          opacity: 1;
+        }
+      }
+
+      /* Hero Content */
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: white;
+        max-width: 800px;
+        padding: 0 20px;
+      }
+
+      .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        animation: slideUp 1s ease-out;
+      }
+
+      .hero-subtitle {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        animation: slideUp 1s ease-out 0.2s both;
+      }
+
+      .hero-buttons {
+        animation: slideUp 1s ease-out 0.4s both;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Modern Buttons */
+      .btn-modern {
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 10px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn-modern:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary-modern {
+        background: var(--secondary-gradient);
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success-modern {
+        background: var(--success-gradient);
+        color: white;
+        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+      }
+
+      .btn-success-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(79, 172, 254, 0.4);
+      }
+
+      /* Navigation */
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Stats Section */
+      .stats-section {
+        padding: 80px 0;
+        background: var(--bg-color);
+      }
+
+      .stat-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+      }
+
+      .stat-label {
+        font-size: 1.1rem;
+        color: var(--text-color);
+        opacity: 0.8;
+      }
+
+      /* Features Section */
+      .features-section {
+        padding: 80px 0;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.05) 0%,
+          rgba(118, 75, 162, 0.05) 100%
+        );
+      }
+
+      [data-theme="dark"] .features-section {
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+      }
+
+      .feature-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        height: 100%;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      }
+
+      .feature-icon {
+        font-size: 3rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 20px;
+      }
+
+      .feature-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--text-color);
+      }
+
+      .feature-description {
+        color: var(--text-color);
+        opacity: 0.8;
+        line-height: 1.6;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .hero-title {
+          font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+          font-size: 1.1rem;
+        }
+
+        .btn-modern {
+          display: block;
+          margin: 10px 0;
+          width: 100%;
+        }
+
+        .stat-number {
+          font-size: 2.5rem;
+        }
+      }
+
+      /* Scroll Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+      }
+
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .gradient-text {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    </style>
+  </head>
+
+  <body data-theme="light">
+    <!-- Skip to main content -->
+    <a href="#main-content" class="skip-link">Отиди към основното съдържание</a>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+      <div class="spinner-light"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav
+      class="navbar-light main-nav"
+      role="navigation"
+      aria-label="Основна навигация"
+    >
+      <div class="container">
+        <a class="navbar-brand-light" href="/">HelpChain</a>
+
+        <button
+          class="navbar-toggler d-md-none"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-expanded="false"
+          aria-controls="navbarNav"
+          title="Отвори меню"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
+          <ul class="nav-menu">
+            <li><a class="nav-link-light" href="#features">Функции</a></li>
+            <li>
+              <a class="nav-link-light" href="{{ url_for('main.categories') }}"
+                >Категории</a
+              >
+            </li>
+            <li>
+              <a class="nav-link-light" href="{{ url_for('main.faq') }}">ЧЗВ</a>
+            </li>
+            <li>
+              <a class="nav-link-light" href="{{ url_for('admin.admin_login') }}">Вход</a>
+            </li>
+            <li>
+              <a class="nav-link-light" href="{{ safe_url_for('volunteer_register') }}"
+                >Регистрация</a
+              >
+            </li>
+            <li>
+              <a class="nav-link-light" href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
+                >Вход за доброволци</a
+              >
+            </li>
+            <li>
+              <button
+                class="btn btn-sm ms-3 focus-visible"
+                id="themeToggle"
+                title="Превключи тема"
+                aria-label="Превключи между светла и тъмна тема"
+              >
+                <i class="fas fa-moon" aria-hidden="true"></i>
+              </button>
+            </li>
+            <li>
+              <button
+                class="btn btn-sm ms-2 focus-visible push-notifications"
+                id="pushNotifications"
+                title="Управление на push известия"
+                aria-label="Управление на push известия"
+              >
+                <i class="fas fa-bell" aria-hidden="true"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Search Container -->
+        <div class="search-container d-none d-md-block ms-3">
+          <div class="search-input-group">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Търси в HelpChain..."
+              aria-label="Търсене"
+            />
+            <button class="search-button" aria-label="Търси">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-light" role="banner" aria-labelledby="hero-title">
+      <div class="hero-shapes" aria-hidden="true">
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+      </div>
+
+      <div class="container">
+        <div class="hero-content text-center">
+          <h1 id="hero-title" class="hero-title">Добре дошли в HelpChain!</h1>
+          <p class="hero-subtitle">
+            Свързваме нуждаещи се хора с доброволци за бърза и ефективна помощ.
+            Заедно можем да направим света по-добро място.
+          </p>
+
+          <div
+            class="hero-buttons d-flex justify-content-center gap-3 flex-wrap"
+          >
+            <a
+              class="btn-light btn-primary focus-visible"
+              href="{{ url_for('main.submit_request') }}"
+            >
+              <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>Подай
+              заявка за помощ
+            </a>
+            <a
+              class="btn-light btn-success focus-visible"
+              href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
+            >
+              <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i
+              >Стани доброволец
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main
+      id="main-content"
+      class="main-content"
+      role="main"
+      aria-label="Основно съдържание"
+    >
+      <!-- Stats Section -->
+      <section class="stats-section">
+        <div class="container">
+          <div class="stats-grid">
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="volunteersCount">
+                {{ volunteers_count }}
+              </div>
+              <div class="stat-label-light">Активни доброволци</div>
+            </div>
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="requestsCount">
+                {{ requests_count }}
+              </div>
+              <div class="stat-label-light">Помогнати хора</div>
+            </div>
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="openRequestsCount">
+                {{ open_requests }}
+              </div>
+              <div class="stat-label-light">Отворени заявки</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="features-section" id="features">
+        <div class="container">
+          <div class="text-center mb-5">
+            <h2 class="h1 mb-3">Защо да изберете HelpChain?</h2>
+            <p class="lead text-muted">
+              Ние предлагаме модерна платформа за свързване на хората, които се
+              нуждаят от помощ, с тези, които искат да помогнат.
+            </p>
+          </div>
+
+          <div class="features-grid">
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-bolt"></i>
+              </div>
+              <h3 class="feature-title-light">Бърза помощ</h3>
+              <p class="feature-description-light">
+                Нашата платформа свързва нуждаещите се с доброволци в рамките на
+                минути, осигурявайки бърза и ефективна помощ.
+              </p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <h3 class="feature-title-light">Сигурност</h3>
+              <p class="feature-description-light">
+                Всички потребители преминават през верификация, а комуникацията
+                е защитена с най-съвременни технологии за сигурност.
+              </p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3 class="feature-title-light">Общност</h3>
+              <p class="feature-description-light">
+                Присъединете се към растящата общност от доброволци и хора,
+                които вярват, че заедно можем да направим света по-добро място.
+              </p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <h3 class="feature-title-light">Мобилна достъпност</h3>
+              <p class="feature-description-light">
+                Нашата платформа работи перфектно на всички устройства - от
+                смартфони до десктоп компютри.
+              </p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-clock"></i>
+              </div>
+              <h3 class="feature-title-light">24/7 поддръжка</h3>
+              <p class="feature-description-light">
+                Нашият екип е винаги на разположение да помогне. Независимо от
+                часа, можете да разчитате на нашата поддръжка.
+              </p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-heart"></i>
+              </div>
+              <h3 class="feature-title-light">Безплатно</h3>
+              <p class="feature-description-light">
+                HelpChain е напълно безплатна платформа. Ние вярваме, че помощта
+                трябва да бъде достъпна за всички.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer
+        class="footer bg-dark text-light py-5 mt-5"
+        role="contentinfo"
+        aria-label="Информация за сайта"
+      >
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4">
+              <h5>HelpChain</h5>
+              <p>Свързваме нуждаещи се с доброволци за по-добър свят.</p>
+            </div>
+            <div class="col-md-4">
+              <h5>Бързи връзки</h5>
+              <ul class="list-unstyled">
+                <li>
+                  <a href="{{ url_for('main.categories') }}" class="text-light"
+                    >Категории помощ</a
+                  >
+                <li>
+                  <a href="{{ url_for('main.categories') }}" class="text-light"
+                    >Категории помощ</a
+                  >
+                </li>
+                </li>
+                <li>
+                  <a href="{{ url_for('main.privacy') }}" class="text-light"
+                    >Поверителност</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.terms') }}" class="text-light"
+                    >Условия за ползване</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h5>Контакти</h5>
+              <p>
+                <i class="fas fa-envelope me-2" aria-hidden="true"></i
+                >contact@helpchain.live
+              </p>
+              <p>
+                <i class="fas fa-phone me-2" aria-hidden="true"></i>+359 XX XXX
+                XXX
+              </p>
+              <div class="social-links mt-3">
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="Facebook"
+                  aria-label="Посети ни във Facebook"
+                >
+                  <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="Twitter"
+                  aria-label="Посети ни в Twitter"
+                >
+                  <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="Instagram"
+                  aria-label="Посети ни в Instagram"
+                >
+                  <i class="fab fa-instagram" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light"
+                  title="LinkedIn"
+                  aria-label="Посети ни в LinkedIn"
+                >
+                  <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <hr class="my-4" />
+          <div class="text-center">
+            <p>&copy; 2025 HelpChain. Всички права запазени.</p>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Back to Top Button -->
+    <button
+      class="back-to-top"
+      aria-label="Обратно към началото на страницата"
+      title="Обратно към началото"
+    >
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_lang('static', filename='js/feedback.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/navigation.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/notification_service.js') }}"></script>
+    <script>
+      // Initialize feedback system
+      const feedback = new HelpChainFeedback();
+
+      // Initialize push notifications (use global singleton)
+      window.notificationService = window.notificationService || new HelpChainNotificationService();
+
+      // Theme Toggle Functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const html = document.documentElement;
+      const themeIcon = themeToggle.querySelector("i");
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "light";
+      html.setAttribute("data-theme", savedTheme);
+      updateThemeIcon(savedTheme);
+
+      themeToggle.addEventListener("click", () => {
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        html.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+
+        // Show toast notification for theme change
+        feedback.showToast(
+          `Темата е превключена на ${
+            newTheme === "light" ? "светла" : "тъмна"
+          }`,
+          "success",
+          3000,
+        );
+      });
+
+      function updateThemeIcon(theme) {
+        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
+        themeToggle.setAttribute(
+          "aria-label",
+          `Превключи към ${theme === "light" ? "тъмна" : "светла"} тема`,
+        );
+      }
+
+      // Intercept all AJAX requests with loading states
+      const originalFetch = window.fetch;
+      window.fetch = function (...args) {
+        feedback.showLoading("Зареждане...");
+        return originalFetch
+          .apply(this, args)
+          .then((response) => {
+            feedback.hideLoading();
+            return response;
+          })
+          .catch((error) => {
+            feedback.hideLoading();
+            feedback.showToast(
+              "Възникна грешка при зареждането",
+              "error",
+              5000,
+            );
+            throw error;
+          });
+      };
+
+      // Smooth Scrolling with focus management
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+
+            // Focus the target element for keyboard navigation
+            target.focus({ preventScroll: true });
+          }
+        });
+      });
+
+      // Keyboard navigation improvements
+      document.addEventListener("keydown", function (e) {
+        // Close mobile menu with Escape key
+        if (e.key === "Escape") {
+          const navbarCollapse = document.getElementById("navbarNav");
+          if (navbarCollapse.classList.contains("show")) {
+            navbarCollapse.classList.remove("show");
+            themeToggle.focus();
+          }
+        }
+      });
+
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add click animations to buttons with accessibility
+        document.querySelectorAll(".btn-light").forEach((btn) => {
+          btn.addEventListener("click", function (e) {
+            this.style.transform = "scale(0.95)";
+            setTimeout(() => {
+              this.style.transform = "";
+            }, 150);
+          });
+        });
+
+        // Push notification button handler
+        const pushNotificationsBtn =
+          document.getElementById("pushNotifications");
+        if (pushNotificationsBtn) {
+          pushNotificationsBtn.addEventListener("click", async () => {
+            try {
+              const result = await notificationService.init();
+              if (result) {
+                feedback.showToast(
+                  "Push известията са активирани!",
+                  "success",
+                  3000,
+                );
+              } else {
+                feedback.showToast(
+                  "Push известията са деактивирани.",
+                  "info",
+                  3000,
+                );
+              }
+            } catch (error) {
+              feedback.showToast(
+                "Грешка при настройката на push известия",
+                "error",
+                5000,
+              );
+            }
+          });
+        }
+
+        // Navbar scroll effect with reduced motion support
+        const navbar = document.querySelector(".navbar-light");
+        if (navbar) {
+          window.addEventListener("scroll", function () {
+            if (window.scrollY > 50) {
+              navbar.style.background = "rgba(255, 255, 255, 0.98)";
+              navbar.style.backdropFilter = "blur(20px)";
+            } else {
+              navbar.style.background = "rgba(255, 255, 255, 0.95)";
+              navbar.style.backdropFilter = "blur(8px)";
+            }
+          });
+        }
+
+        // Show welcome toast
+        setTimeout(() => {
+          feedback.showToast("Добре дошли в HelpChain! 🚀", "info", 4000);
+        }, 1000);
+      });
+
+      // Handle reduced motion preference
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        // Disable smooth scrolling
+        document.documentElement.style.scrollBehavior = "auto";
+
+        // Disable animations
+        document.querySelectorAll("*").forEach((el) => {
+          el.style.animation = "none";
+          el.style.transition = "none";
+        });
+      }
+    </script>
+  </body>
+</html>
+
+
+@app.route('/')
+def home():
+    return render_template('home_new.html')

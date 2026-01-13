@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:720px;margin:24px auto;padding:16px;">
+  <h2>Backup кодове за MFA</h2>
+
+  {% if codes %}
+    <div style="padding:12px;border:1px solid #2b2b2b;border-radius:12px;margin:12px 0;">
+      <p><strong>Показват се само веднъж.</strong> Запази ги сега.</p>
+      <pre id="codesBox" style="white-space:pre-wrap;line-height:1.8;">{% for c in codes %}{{ c }}{% if not loop.last %}\n{% endif %}{% endfor %}</pre>
+      <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('codesBox').innerText)">Copy</button>
+    </div>
+  {% else %}
+    {% if has_codes %}
+      <p>Имаш активни backup кодове{% if generated_at %} (генерирани: {{ generated_at }}){% endif %}.</p>
+      <p>По съображения за сигурност не се показват отново.</p>
+    {% else %}
+      <p>Нямаш backup кодове.</p>
+    {% endif %}
+  {% endif %}
+
+  <form method="post" style="margin-top:16px;">
+    <button type="submit">
+      {% if has_codes %}Regenerate (инвалидира старите){% else %}Generate backup codes{% endif %}
+    </button>
+  </form>
+
+  <p style="margin-top:12px;">
+    <a href="{{ url_for('admin.admin_requests') }}">← Обратно към Requests</a>
+  </p>
+</div>
+{% endblock %}

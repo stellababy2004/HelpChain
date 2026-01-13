@@ -2,18 +2,20 @@ from __future__ import annotations
 
 import os
 from dotenv import load_dotenv
+from backend.extensions import db, migrate
 
 from flask import Flask, redirect, request, session, url_for
 from flask_babel import get_locale, refresh
 from flask_login import LoginManager
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 
 from jinja2 import ChoiceLoader, FileSystemLoader
 
 from .config import Config
 from .controllers.helpchain_controller import HelpChainController
-from .extensions import babel, db, mail, migrate, csrf
+
+from backend.models import AdminUser  # was: from backend.models_with_analytics import AdminUser
 
 
 login_manager = LoginManager()
@@ -30,27 +32,61 @@ def load_user(user_id: str):
         return None
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv()  # load .env at startup
+
+
 def create_app(config_object=None) -> Flask:
-    # --- Resolve project base + load .env early ---
-    base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-    load_dotenv(dotenv_path=os.path.join(base, ".env"))
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(BASE_DIR, "templates"),
+        static_folder=os.path.join(BASE_DIR, "static"),
+    )
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.setdefault("PROPAGATE_EXCEPTIONS", True)
 
-    static_dir = os.path.join(base, "backend", "static")
-    templates_root = os.path.join(base, "backend", "templates")
-    templates_backend = os.path.join(base, "backend", "templates")
-
-    app = Flask(__name__, static_folder=static_dir, template_folder=templates_root, instance_relative_config=True)
-    # Load base config first
-    app.config.from_object(Config)
-    # Allow dict/object overrides (tests, scripts)
+    # Config from caller, then env, then sane defaults
     if isinstance(config_object, dict):
         app.config.update(config_object)
-    elif config_object:
-        app.config.from_object(config_object)
+    app.config["PROPAGATE_EXCEPTIONS"] = True
+    if not app.config.get("SECRET_KEY"):
+        app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-only-change-me-please")
+    app.secret_key = app.config.get("SECRET_KEY")
+    app.config.setdefault(
+        "SQLALCHEMY_DATABASE_URI",
+        os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///helpchain.db"),
+    )
+    app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
+
+    # SECRET_KEY: env/.env > config > DEV fallback
+    if not app.config.get("SECRET_KEY"):
+        secret = os.environ.get("SECRET_KEY")
+        if not secret:
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+                secret = os.environ.get("SECRET_KEY")
+            except Exception:
+                secret = None
+        if not secret:
+            secret = "dev-only-change-me-please"
+            app.logger.warning("SECRET_KEY missing. Using DEV fallback. Set SECRET_KEY via env/instance config.")
+        app.config["SECRET_KEY"] = secret
+
+    # DB + Migrate
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    # Ensure models are imported so Alembic sees them
+    with app.app_context():
+        import backend.models  # noqa
+        import backend.models_with_analytics  # noqa
 
     # --- CSRFProtect (единствена инициализация!) ---
     csrf = CSRFProtect()
     csrf.init_app(app)
+    # Make {{ csrf_token() }} available in Jinja
+    app.jinja_env.globals["csrf_token"] = generate_csrf
 
     # --- Templates: /templates + /backend/templates ---
     app.jinja_loader = ChoiceLoader(
@@ -112,8 +148,16 @@ def create_app(config_object=None) -> Flask:
         pass
 
     # --- Login manager ---
+    login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = "login"
+    login_manager.login_view = "admin.admin_login"
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        try:
+            return AdminUser.query.get(int(user_id))
+        except Exception:
+            return None
 
     # --- SocketIO ---
     socketio.init_app(app, cors_allowed_origins="*")
@@ -186,6 +230,7 @@ def create_app(config_object=None) -> Flask:
         except Exception as e:
             app.logger.warning("db.create_all failed: %s", e)
 
+    app.config["PROPAGATE_EXCEPTIONS"] = True
     return app
 
 
@@ -194,18 +239,98 @@ if __name__ == "__main__":
     socketio.run(app, debug=True)
 
 import os
+from flask import Flask
+from flask_login import LoginManager
+from flask_wtf.csrf import generate_csrf
+from backend.extensions import db, migrate
+from backend.models import AdminUser  # единственият източник
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-BACKEND_DIR = os.path.join(PROJECT_ROOT, "backend")
 
-TEMPLATES_DIR = os.path.join(BACKEND_DIR, "templates")
-STATIC_DIR = os.path.join(BACKEND_DIR, "static")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv()  # load .env at startup
 
-app = Flask(
-    __name__,
-    template_folder=TEMPLATES_DIR,
-    static_folder=STATIC_DIR,
-    static_url_path="/static",
-)
+
+def create_app(config_object=None):
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(BASE_DIR, "templates"),
+        static_folder=os.path.join(BASE_DIR, "static"),
+    )
+    app = Flask(__name__, instance_relative_config=True)
+
+    # Config from caller, then env, then sane defaults
+    if isinstance(config_object, dict):
+        app.config.update(config_object)
+    app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config.setdefault(
+        "SQLALCHEMY_DATABASE_URI",
+        os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///helpchain.db"),
+    )
+    app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
+
+    # SECRET_KEY: env/.env > config > DEV fallback
+    if not app.config.get("SECRET_KEY"):
+        secret = os.environ.get("SECRET_KEY")
+        if not secret:
+            try:
+                from dotenv import load_dotenv
+                load_dotenv()
+                secret = os.environ.get("SECRET_KEY")
+            except Exception:
+                secret = None
+        if not secret:
+            secret = "dev-only-change-me-please"
+            app.logger.warning("SECRET_KEY missing. Using DEV fallback. Set SECRET_KEY via env/instance config.")
+        app.config["SECRET_KEY"] = secret
+
+    # DB + Migrate
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+    # Ensure models are imported so Alembic sees them
+    with app.app_context():
+        import backend.models  # noqa
+        import backend.models_with_analytics  # noqa
+
+    # CSRF helper for Jinja (if templates call {{ csrf_token() }})
+    app.jinja_env.globals["csrf_token"] = generate_csrf
+
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = "admin.admin_login"
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        try:
+            return AdminUser.query.get(int(user_id))
+        except Exception:
+            return None
+
+    # --- Blueprints (single source of truth for routes) ---
+    try:
+        from .routes.api import api_bp
+        app.register_blueprint(api_bp, url_prefix="/api")
+    except Exception as e:
+        app.logger.info("api blueprint not loaded: %s", e)
+
+    try:
+        from .routes.analytics import analytics_bp
+        app.register_blueprint(analytics_bp)
+    except Exception:
+        pass
+
+    try:
+        from .routes.main import main_bp
+        app.register_blueprint(main_bp)
+    except Exception as e:
+        app.logger.info("main blueprint not loaded: %s", e)
+
+    try:
+        from .routes.admin import admin_bp
+        app.register_blueprint(admin_bp)
+    except Exception as e:
+        app.logger.info("admin blueprint not loaded: %s", e)
+
+    return app
 
 

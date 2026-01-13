@@ -23,6 +23,8 @@ for _mod in _CANDIDATE_MODEL_MODULES:
     # Pick only the names you want to re-export if they exist in that module.
     for _name in (
         "AdminUser",
+        "RequestActivity",
+        "RequestMetric",
         "Request",
         "RequestLog",
         "User",

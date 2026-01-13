@@ -7,6 +7,7 @@ from flask import (
     session,
     url_for,
     current_app,
+    send_from_directory,
 )
 
 from ..extensions import limiter
@@ -29,7 +30,11 @@ def inject_template_helpers():
         except Exception:
             return "#"
 
-    return {"url_lang": url_lang, "safe_url_for": safe_url_for}
+    return {
+        "url_lang": url_lang,
+        "safe_url_for": safe_url_for,
+        "_": lambda text: text,  # no-op i18n stub
+    }
 
 
 @main_bp.route("/", methods=["GET"])
@@ -250,6 +255,9 @@ def submit_request():
             db.session.commit()
 
             current_app.logger.warning("INSERT OK id=%s", req.id)
+            new_request_id = req.id
+            # keep in session as a fallback for success page
+            session["last_request_id"] = new_request_id
 
             # Optional emergency triggers (ако ги имаш)
             is_emergency = (
@@ -264,11 +272,7 @@ def submit_request():
                 if hasattr(app, "mark_emergency_email_sent"):
                     app.mark_emergency_email_sent()
 
-            flash(
-                "Благодарим ви, получихме заявката! Ще се свържем с вас възможно най-скоро.",
-                "success",
-            )
-            return redirect(url_for("main.success"))
+            return redirect(url_for("main.success", request_id=new_request_id))
 
         except Exception as e:
             current_app.logger.exception("SUBMIT_REQUEST FAILED: %s", e)
@@ -281,7 +285,9 @@ def submit_request():
 
 @main_bp.get("/success")
 def success():
-    return render_template("success.html"), 200
+    request_id = request.args.get("request_id") or session.get("last_request_id")
+    is_admin = bool(session.get("admin_logged_in"))
+    return render_template("success.html", request_id=request_id, is_admin=is_admin), 200
 
 
 @main_bp.route("/faq")
@@ -302,6 +308,11 @@ def privacy():
 @main_bp.route("/terms")
 def terms():
     return render_template("terms.html")
+
+
+@main_bp.get("/video-chat")
+def video_chat():
+    return render_template("video_chat.html")
 
 
 @main_bp.route("/set_language", methods=["POST"])
@@ -399,3 +410,9 @@ def category_help(category: str):
         is_admin=is_admin,
         # debug_db_error=db_error if current_app.debug else None,
     )
+
+
+@main_bp.get("/sw.js")
+def service_worker():
+    # Serve /sw.js from src/static/sw.js
+    return send_from_directory(current_app.static_folder, "sw.js")

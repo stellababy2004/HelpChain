@@ -1,20 +1,33 @@
 from __future__ import annotations
 
-from flask_login import login_required
-from datetime import datetime
+from flask_login import login_user, login_required, logout_user, current_user
+from datetime import datetime, timedelta
 from functools import wraps
 from urllib.parse import urlparse, urljoin
 
 from flask import (
     Blueprint, render_template, request, redirect, url_for,
-    flash, session, current_app, jsonify
+    flash, session, current_app, jsonify, abort
 )
+import time
+import json
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
 
 from ..extensions import db
-from ..models import AdminUser, Request, RequestLog, Volunteer
+from ..models import AdminUser, Request, RequestActivity, RequestLog, RequestMetric, Volunteer
+from backend.models import utc_now
+from ..config import Config
 from sqlalchemy.orm import joinedload
+from sqlalchemy import func
+from backend.helpchain_backend.src.utils.mfa import (
+    generate_totp_secret,
+    build_totp_uri,
+    qr_png_base64,
+    verify_totp_code,
+)
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
+admin_bp = Blueprint("admin", __name__, url_prefix="/admin")  # single templates path via app.py
 
 def is_safe_url(target: str) -> bool:
     if not target:
@@ -36,6 +49,157 @@ def admin_required(view_func):
     return wrapper
 
 
+def log_request_activity(req_obj, action, old=None, new=None, actor_admin_id=None):
+    """Append a RequestActivity row; swallow errors so UI flows stay smooth."""
+    try:
+        actor_id = actor_admin_id
+        if actor_id is None and getattr(current_user, "is_authenticated", False):
+            actor_id = getattr(current_user, "id", None)
+        activity = RequestActivity(
+            request_id=getattr(req_obj, "id", req_obj),
+            actor_admin_id=actor_id,
+            action=action,
+            old_value=str(old) if old is not None else None,
+            new_value=str(new) if new is not None else None,
+            created_at=utc_now(),
+        )
+        db.session.add(activity)
+    except Exception:
+        pass
+
+
+def _mfa_ok_set(ttl_min: int | None = None):
+    ttl = ttl_min or current_app.config.get("MFA_SESSION_TTL_MIN", 720)
+    session[current_app.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+    try:
+        session["mfa_ok_until"] = (utc_now() + timedelta(minutes=ttl)).isoformat()
+    except Exception:
+        session["mfa_ok_until"] = None
+
+
+def _mfa_ok_clear():
+    session.pop(current_app.config.get("MFA_SESSION_KEY", "mfa_ok"), None)
+    session.pop("mfa_ok_until", None)
+
+
+def _mfa_ok_is_valid() -> bool:
+    if not session.get(current_app.config.get("MFA_SESSION_KEY", "mfa_ok")):
+        return False
+    until = session.get("mfa_ok_until")
+    if not until:
+        return False
+    try:
+        return utc_now() <= datetime.fromisoformat(until)
+    except Exception:
+        return False
+
+
+def _mfa_lock_is_active() -> tuple[bool, int]:
+    lock_until = session.get("mfa_lock_until")
+    if not lock_until:
+        return (False, 0)
+    try:
+        dt = datetime.fromisoformat(lock_until)
+        if utc_now() >= dt:
+            session.pop("mfa_lock_until", None)
+            session.pop("mfa_attempts", None)
+            return (False, 0)
+        return (True, int((dt - utc_now()).total_seconds()))
+    except Exception:
+        session.pop("mfa_lock_until", None)
+        session.pop("mfa_attempts", None)
+        return (False, 0)
+
+
+def _mfa_attempt_fail():
+    max_attempts = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8)
+    lock_min = current_app.config.get("MFA_VERIFY_LOCK_MIN", 10)
+    session["mfa_attempts"] = int(session.get("mfa_attempts", 0)) + 1
+    if session["mfa_attempts"] >= max_attempts:
+        try:
+            session["mfa_lock_until"] = (utc_now() + timedelta(minutes=lock_min)).isoformat()
+        except Exception:
+            session["mfa_lock_until"] = None
+
+
+def _mfa_attempt_reset():
+    session.pop("mfa_attempts", None)
+    session.pop("mfa_lock_until", None)
+
+
+def _generate_backup_codes(n: int = 10) -> list[str]:
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    codes = []
+    for _ in range(n):
+        code = "".join(secrets.choice(alphabet) for _ in range(10))
+        codes.append(code)
+    return codes
+
+
+def _hash_codes(codes: list[str]) -> list[str]:
+    return [generate_password_hash(c) for c in codes]
+
+
+def _load_hashes(user) -> list[str]:
+    raw = getattr(user, "backup_codes_hashes", None)
+    if not raw:
+        return []
+    try:
+        return json.loads(raw)
+    except Exception:
+        return []
+
+
+def _save_hashes(user, hashes: list[str]):
+    user.backup_codes_hashes = json.dumps(hashes)
+    user.backup_codes_generated_at = utc_now()
+    db.session.commit()
+
+
+def can_edit_request(req_obj, user) -> bool:
+    """Owner or super_admin can edit; if no owner, only super_admin."""
+    if getattr(user, "role", None) == "super_admin":
+        return True
+    owner_id = getattr(req_obj, "owner_id", None)
+    user_id = getattr(user, "id", None)
+    return owner_id is not None and owner_id == user_id
+
+
+
+
+def is_stale(req_obj, minutes: int = 30) -> bool:
+    """Return True if owned_at is older than `minutes`."""
+    owned_at = getattr(req_obj, "owned_at", None)
+    if not owned_at:
+        return False
+    try:
+        return (utc_now() - owned_at).total_seconds() > minutes * 60
+    except Exception:
+        return False
+
+
+@admin_bp.before_request
+def enforce_admin_mfa():
+    if not current_app.config.get("MFA_ENABLED", False):
+        return None
+    allowed = {
+        "admin.admin_login",
+        "admin.admin_logout",
+        "admin.admin_mfa_setup",
+        "admin.admin_mfa_verify",
+        "admin.admin_mfa_backup_codes",
+        "static",
+    }
+    if request.endpoint in allowed or (request.endpoint and request.endpoint.startswith("static")):
+        return None
+    if not current_user.is_authenticated:
+        return None
+    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+        return None
+    if _mfa_ok_is_valid():
+        return None
+    nxt = request.full_path if request.query_string else request.path
+    return redirect(url_for("admin.admin_mfa_verify", next=nxt))
 
 
 # Emergency Requests (read-only, filtered, paginated)
@@ -217,28 +381,163 @@ def volunteer_detail(id):
 
 @admin_bp.route("/login", methods=["GET", "POST"])
 def admin_login():
-    next_url = request.args.get("next") or request.form.get("next") or url_for("admin.admin_requests")
-    if not is_safe_url(next_url):
-        next_url = url_for("admin.admin_requests")
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        user = AdminUser.query.filter_by(username=username).first()
+        if not user:
+            flash("Admin user not found in database.", "danger")
+            return redirect(url_for("admin.admin_login"))
+        login_user(user, remember=False)
+        session.pop(Config.MFA_SESSION_KEY, None)
+        session.pop("mfa_required", None)
+        mfa_globally_enabled = bool(Config.MFA_ENABLED)
+        user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(getattr(user, "totp_secret", None))
+        if mfa_globally_enabled and user_has_mfa:
+            session["mfa_required"] = True
+            return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next") or url_for("admin.admin_requests")))
+        else:
+            _mfa_ok_set()
+        return redirect(request.args.get("next") or url_for("admin.admin_requests"))
+    return render_template("admin/login.html")
 
+@admin_bp.get("/logout")
+def admin_logout():
+    _mfa_ok_clear()
+    _mfa_attempt_reset()
+    session.pop("mfa_required", None)
+    session.pop("mfa_pending_secret", None)
+    session.pop("backup_codes_plain", None)
+    logout_user()
+    flash("Logged out.", "info")
+    return redirect(url_for("admin.admin_login"))
+
+
+MFA_PENDING_SECRET_KEY = "mfa_pending_secret"
+MFA_SESSION_KEY = "mfa_ok"
+
+
+@admin_bp.route("/mfa/setup", methods=["GET", "POST"])
+@login_required
+def admin_mfa_setup():
+    if getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None):
+        flash("MFA вече е активиран.", "info")
+        return redirect(url_for("admin.admin_mfa_verify"))
+
+    pending_secret = session.get(MFA_PENDING_SECRET_KEY)
+    if not pending_secret:
+        pending_secret = generate_totp_secret()
+        session[MFA_PENDING_SECRET_KEY] = pending_secret
+
+    issuer = "HelpChain"
+    username = getattr(current_user, "username", f"admin-{current_user.id}")
+    uri = build_totp_uri(pending_secret, username=username, issuer=issuer)
+    qr_b64 = qr_png_base64(uri)
+
+    if request.method == "POST":
+        code = (request.form.get("code") or "").strip().replace(" ", "")
+        if not code:
+            flash("Въведи 6-цифрения код от приложението.", "danger")
+            return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
+
+        if not verify_totp_code(pending_secret, code):
+            flash("Невалиден код. Провери часовника на телефона и опитай пак.", "danger")
+            return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
+
+        user = db.session.get(AdminUser, current_user.id)
+        user.totp_secret = pending_secret
+        user.mfa_enabled = True
+        user.mfa_enrolled_at = utc_now()
+        db.session.commit()
+
+        _mfa_ok_set()
+        session.pop(MFA_PENDING_SECRET_KEY, None)
+        flash("✅ MFA е активиран успешно.", "success")
+        flash("Сега си генерирай backup codes (спасителният пояс).", "info")
+        return redirect(url_for("admin.admin_mfa_backup_codes"))
+
+    return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
+
+
+@admin_bp.route("/mfa/verify", methods=["GET", "POST"])
+@login_required
+def admin_mfa_verify():
+    if not current_app.config.get("MFA_ENABLED", False):
+        abort(404)
+
+    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+        _mfa_ok_set()
+        return redirect(request.args.get("next") or url_for("admin.admin_requests"))
+
+    locked, remaining = _mfa_lock_is_active()
     if request.method == "GET":
-        return render_template("admin/login.html", next=next_url), 200
+        return render_template("admin/mfa_verify.html", locked=locked, remaining=remaining, next=request.args.get("next") or "")
 
-    # POST
-    username = (request.form.get("username") or "").strip()
-    password = (request.form.get("password") or "").strip()
+    if locked:
+        flash(f"Твърде много опити. Опитай след {max(1, remaining//60)} мин.", "danger")
+        return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next", "")))
 
-    cfg_user = (current_app.config.get("ADMIN_USERNAME") or "").strip()
-    cfg_pass = (current_app.config.get("ADMIN_PASSWORD") or "").strip()
+    code = (request.form.get("code") or "").strip().replace(" ", "").upper()
+    totp_ok = False
+    try:
+        totp_ok = verify_totp_code(current_user.totp_secret, code)
+    except Exception:
+        totp_ok = False
 
-    if username == cfg_user and password == cfg_pass:
-        session["admin_logged_in"] = True
-        flash("Успешен вход.", "success")
-        return redirect(next_url)
+    backup_ok = False
+    if not totp_ok:
+        hashes = _load_hashes(current_user)
+        for i, h in enumerate(hashes):
+            if check_password_hash(h, code):
+                backup_ok = True
+                hashes.pop(i)
+                _save_hashes(current_user, hashes)
+                break
 
-    flash("Грешно потребителско име или парола.", "danger")
-    return render_template("admin/login.html", next=next_url), 200
+    if totp_ok or backup_ok:
+        _mfa_attempt_reset()
+        _mfa_ok_set()
+        flash("✅ MFA потвърдено.", "success")
+        nxt = request.args.get("next")
+        if nxt and nxt.startswith("/"):
+            return redirect(nxt)
+        return redirect(url_for("admin.admin_requests"))
 
+    _mfa_attempt_fail()
+    locked, remaining = _mfa_lock_is_active()
+    if locked:
+        flash(f"Грешен код. Заключено за ~{max(1, remaining//60)} мин.", "danger")
+    else:
+        left = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8) - int(session.get("mfa_attempts", 0))
+        flash(f"Грешен код. Оставащи опити: {max(left,0)}.", "danger")
+
+    return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next", "")))
+
+
+@admin_bp.route("/mfa/backup-codes", methods=["GET", "POST"])
+@login_required
+def admin_mfa_backup_codes():
+    if not current_app.config.get("MFA_ENABLED", False):
+        abort(404)
+    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+        flash("Първо активирай MFA от Setup.", "warning")
+        return redirect(url_for("admin.admin_mfa_setup"))
+
+    if request.method == "POST":
+        codes = _generate_backup_codes(10)
+        _save_hashes(current_user, _hash_codes(codes))
+        session["backup_codes_plain"] = codes
+        flash("Backup кодовете са генерирани. Запази ги сега — няма да се покажат втори път.", "success")
+        return redirect(url_for("admin.admin_mfa_backup_codes"))
+
+    codes_plain = session.pop("backup_codes_plain", None)
+    hashes = _load_hashes(current_user)
+    has_codes = len(hashes) > 0
+    return render_template(
+        "admin/mfa_backup_codes.html",
+        codes=codes_plain,
+        has_codes=has_codes,
+        generated_at=getattr(current_user, "backup_codes_generated_at", None),
+    )
 
 @admin_bp.route("/2fa", methods=["GET", "POST"])
 @admin_required
@@ -536,10 +835,12 @@ def update_status(req_id):
         req = db.session.get(Request, req_id)
         if not req:
             return jsonify({"error": "Request not found"}), 404
+        if not can_edit_request(req, current_user):
+            abort(403)
+        old_status = req.status
         req.status = new_status
-        db.session.commit()
-
-        # Log the status change
+        # Activity + legacy request log (single commit)
+        log_request_activity(req, "status_change", old=old_status, new=new_status, actor_admin_id=getattr(current_user, "id", None))
         log_entry = RequestLog(
             request_id=req_id,
             new_status=new_status,
@@ -547,6 +848,16 @@ def update_status(req_id):
             action="status_update",
         )
         db.session.add(log_entry)
+        # metrics
+        metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
+        if metric is None:
+            metric = RequestMetric(request_id=req.id)
+            db.session.add(metric)
+        if new_status == "done" and metric.time_to_complete is None and req.created_at:
+            try:
+                metric.time_to_complete = int((utc_now() - req.created_at).total_seconds())
+            except Exception:
+                pass
         db.session.commit()
 
         # Изпращане на email при промяна на статус
@@ -577,8 +888,8 @@ def update_status(req_id):
 
 
 from flask import render_template, request, redirect, url_for, flash, current_app
-from sqlalchemy import or_
-from ..models import db, Request
+from sqlalchemy import or_, func
+from ..models import db, Request, RequestActivity
 
 ALLOWED_STATUSES = {"pending", "approved", "in_progress", "done", "rejected"}
 
@@ -591,46 +902,48 @@ STATUS_LABELS_BG = {
 }
 
 @admin_bp.get("/requests")
-@admin_required
+@login_required
 def admin_requests():
     status = (request.args.get("status") or "").strip()
     q = (request.args.get("q") or "").strip()
+    STATUS_LABELS_BG = {
+        "new": "Нови",
+        "pending": "Чакащи",
+        "approved": "Одобрени",
+        "in_progress": "В процес",
+        "done": "Завършени",
+        "rejected": "Отхвърлени",
+    }
 
-    try:
-        query = Request.query
-
-        if status in ALLOWED_STATUSES:
-            query = query.filter(Request.status == status)
-
-        if q:
-            like = f"%{q}%"
-            query = query.filter(
-                or_(
-                    Request.title.ilike(like),
-                    Request.name.ilike(like),
-                    Request.email.ilike(like) if hasattr(Request, "email") else False,
-                    Request.phone.ilike(like) if hasattr(Request, "phone") else False,
-                    Request.description.ilike(like),
-                )
+    query = (
+        db.session.query(Request, func.max(RequestActivity.created_at).label("last_activity"))
+        .outerjoin(RequestActivity, RequestActivity.request_id == Request.id)
+        .group_by(Request.id)
+    )
+    if status:
+        internal = "pending" if status == "new" else status
+        query = query.filter(Request.status == internal)
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            or_(
+                Request.title.ilike(like),
+                Request.name.ilike(like),
+                Request.email.ilike(like),
+                Request.phone.ilike(like),
+                Request.description.ilike(like),
             )
-
-        rows = query.order_by(Request.id.desc()).limit(200).all()
-
-        return render_template(
-            "admin/requests.html",
-            requests=rows,
-            status=status,
-            q=q,
-            STATUS_LABELS_BG=STATUS_LABELS_BG,
-        ), 200
-    except Exception as e:
-        # Surface DB/template errors directly to aid Render diagnostics
-        return (
-            f"<h1>admin_requests failed</h1><pre>{type(e).__name__}: {e}</pre>",
-            500,
-            {"Content-Type": "text/html; charset=utf-8"},
         )
 
+    requests = query.order_by(Request.id.desc()).all()
+
+    return render_template(
+        "admin/requests.html",
+        STATUS_LABELS_BG=STATUS_LABELS_BG,
+        requests=requests,
+        status=status,
+        q=q,
+    )
 
 
 @admin_bp.get("/requests/<int:req_id>")
@@ -638,82 +951,70 @@ def admin_requests():
 def admin_request_details(req_id: int):
     req = (
         Request.query
-        .options(joinedload(Request.logs))
+        .options(joinedload(Request.logs), joinedload(Request.activities))
         .get_or_404(req_id)
     )
-    volunteers = Volunteer.query.order_by(Volunteer.id.desc()).limit(200).all()
-    # ✅ бетон: activity log от relationship
     logs = req.logs  # already sorted by relationship order_by
     return render_template(
         "admin/request_details.html",
         req=req,
-        volunteers=volunteers,
         logs=logs,
         STATUS_LABELS_BG=STATUS_LABELS_BG,
+        is_stale=is_stale,
     ), 200
 
 
 # --- Assign owner to request ---
 @admin_bp.post("/requests/<int:req_id>/assign", endpoint="admin_request_assign")
-@admin_required
+@login_required
 def admin_request_assign(req_id: int):
     req = Request.query.get_or_404(req_id)
-    owner_id_raw = (request.form.get("owner_id") or "").strip()
-    if not owner_id_raw.isdigit():
-        flash("Моля, избери доброволец.", "warning")
-        return redirect(url_for("admin.admin_request_details", req_id=req_id))
-    owner_id = int(owner_id_raw)
-    volunteer = Volunteer.query.get(owner_id)
-    if not volunteer:
-        flash("Невалиден доброволец.", "danger")
-        return redirect(url_for("admin.admin_request_details", req_id=req_id))
-    prev_owner_id = req.owner_id
-    prev_owned_at = req.owned_at
-    req.owner_id = volunteer.id
-    req.owned_at = datetime.utcnow()
-    ip, ua = client_meta()
-    log_action(
-        admin_user_id=admin_id(),
-        action="assign_owner",
-        details={
-            "from_owner_id": prev_owner_id,
-            "to_owner_id": volunteer.id,
-            "prev_owned_at": prev_owned_at.isoformat() if prev_owned_at else None,
-            "owned_at": req.owned_at.isoformat(),
-        },
-        entity_type="help_request",
-        entity_id=req.id,
-        ip_address=ip,
-        user_agent=ua,
-    )
+    takeover = False
+    if req.owner_id and req.owner_id != getattr(current_user, "id", None):
+        if getattr(current_user, "role", None) != "super_admin" and not is_stale(req):
+            abort(403)
+        takeover = True
+    old_owner = req.owner_id
+    req.owner_id = current_user.id
+    req.owned_at = utc_now()
+    metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
+    if metric is None:
+        metric = RequestMetric(request_id=req.id)
+        db.session.add(metric)
+    if metric.time_to_assign is None and req.created_at:
+        try:
+            metric.time_to_assign = int((utc_now() - req.created_at).total_seconds())
+        except Exception:
+            pass
+    action_name = "takeover" if takeover else "assign"
+    reason = None
+    if takeover and req.owned_at:
+        try:
+            hours = (utc_now() - req.owned_at).total_seconds() / 3600
+            reason = f"stale: {hours:.1f}h"
+        except Exception:
+            reason = "stale"
+    new_val = f"{current_user.id}" if reason is None else f"{current_user.id} ({reason})"
+    log_request_activity(req, action_name, old=old_owner, new=new_val, actor_admin_id=current_user.id)
     db.session.commit()
-    flash(f"Заявката е поета от: {volunteer.name}", "success")
+    flash("Заявката е assign-ната към теб.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
+
 @admin_bp.post("/requests/<int:req_id>/unassign", endpoint="admin_request_unassign")
-@admin_required
+@login_required
 def admin_request_unassign(req_id: int):
     req = Request.query.get_or_404(req_id)
-    prev_owner_id = req.owner_id
-    prev_owned_at = req.owned_at
+    if not can_edit_request(req, current_user):
+        abort(403)
+    old_owner = req.owner_id
     req.owner_id = None
     req.owned_at = None
-    ip, ua = client_meta()
-    log_action(
-        admin_user_id=admin_id(),
-        action="unassign_owner",
-        details={
-            "from_owner_id": prev_owner_id,
-            "to_owner_id": None,
-            "prev_owned_at": prev_owned_at.isoformat() if prev_owned_at else None,
-        },
-        entity_type="help_request",
-        entity_id=req.id,
-        ip_address=ip,
-        user_agent=ua,
-    )
+    log_request_activity(req, "unassign", old=old_owner, new=None, actor_admin_id=getattr(current_user, "id", None))
     db.session.commit()
-    flash("Заявката е освободена (няма отговорник).", "info")
+    flash("Owner е премахнат.", "info")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
 
 

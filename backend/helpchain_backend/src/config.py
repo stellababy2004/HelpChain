@@ -11,8 +11,9 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 class Config:
     # --- Core ---
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+    PROPAGATE_EXCEPTIONS = True  # Enable full tracebacks during MFA debug
     WTF_CSRF_ENABLED = True
-    WTF_CSRF_TIME_LIMIT = None  # DEV: no expiry (fixes “token expired”)
+    WTF_CSRF_TIME_LIMIT = None  # DEV: no expiry (fixes "token expired")
     SESSION_PERMANENT = True
     DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1")
 
@@ -46,4 +47,11 @@ class Config:
     ALLOWED_HOSTS = (
         [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()]
     )
+
+    # --- MFA ---
+    MFA_ENABLED = os.getenv("MFA_ENABLED", "true").lower() in ("true", "1", "yes")
+    MFA_SESSION_KEY = os.getenv("MFA_SESSION_KEY", "mfa_ok")
+    MFA_SESSION_TTL_MIN = int(os.getenv("MFA_SESSION_TTL_MIN", 30))
+    MFA_VERIFY_MAX_ATTEMPTS = int(os.getenv("MFA_VERIFY_MAX_ATTEMPTS", 8))
+    MFA_VERIFY_LOCK_MIN = int(os.getenv("MFA_VERIFY_LOCK_MIN", 10))
 

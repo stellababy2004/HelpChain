@@ -1,27 +1,59 @@
-body {
-  font-family: Arial, sans-serif;
+/* Общ стил за всички елементи */
+* {
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
+  font-family:
+    Comic Sans MS,
+    cursive;
 }
 
-header {
-  background-color: #007bff;
-  color: white;
-  padding: 1rem;
-  text-align: center;
+body {
+  background-color: #f8f9fa;
 }
-
-main {
-  padding: 2rem;
+.custom-max-width {
+  max-width: 800px;
 }
-
 footer {
-  background-color: #333;
-  color: white;
+  font-size: 0.9rem;
+  padding: 15px 10px;
   text-align: center;
-  padding: 1rem;
+}
+/* Добави още твои стилове тук */
+
+#feedback-popup {
+  display: none;
   position: fixed;
-  bottom: 0;
-  width: 100%;
+  bottom: 30px;
+  left: 30px;
+  right: auto;
+  z-index: 9999;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px #1976d244;
+  padding: 1.2em 1.5em;
+  max-width: 320px;
+  font-size: 1rem;
+}
+
+@media (max-width: 600px) {
+  #feedback-popup {
+    bottom: 10px;
+    left: 10px;
+    right: auto;
+    max-width: 90vw;
+    font-size: 0.95rem;
+    padding: 0.7em 0.8em;
+  }
+  #feedback-popup .btn,
+  #feedback-popup .btn-sm,
+  #feedback-popup button {
+    font-size: 1rem;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  #feedback-popup {
+    display: none !important;
+  }
 }
