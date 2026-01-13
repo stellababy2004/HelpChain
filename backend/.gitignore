@@ -1,136 +1,31 @@
-# 1. Създавам/допълвам .gitignore
-@"
-# virtual environments
-.venv/
-backend/.venv/
-venv/
-
-# python
+# === Python ===
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-
-# test / coverage
-.pytest_cache/
-coverage.xml
-htmlcov/
-.coverage
-
-# distribution / packaging
-*.egg-info/
-dist/
-build/
-
-# local settings, secrets
-.env
-.env.*
-instance/
-uploads/
-
-# editor temp
-.vscode/
-"@ >> .gitignore
-
-git add .gitignore
-git commit -m "chore: add p# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual environments
-.venv/
-venv/
-venv_old/
-ENV/
-env/
-.env
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-instance/
-uploads/
-
-# Coverage reports
-.coverage
-htmlcov/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Application specific
-apminsightdata/
-NB/
-frontend/
-HelpChain.bg/
-*.log
-*.bak
-
-# Temporary files
-*.tmp
-*.temp
-
-# virtualenv
 .venv/
 venv/
 env/
 
-# Python cache
-__pycache__/
-*.py[cod]
-*$py.class
-
-# env
-.env
-.env.local
-instance/config.py
-
-# local DB, uploads, logs
-*.sqlite3
+# === Flask / instance ===
+instance/
 instance/*.db
-uploads/
-old_db/
-logs/
-*.log
+*.db
 
-# IDE
-.vscode/
-.idea/
+# === Migrations / cache ===
+.mypy_cache/
+.pytest_cache/
+.cache/
 
-# OS
+# === Static build / previews ===
+static/previews/
+backend/static/previews/
+**/previews/
+
+# === Temp / local scripts ===
+temp.txt
+scripts/_tmp_*.py
+
+# === OS ===
 .DS_Store
 Thumbs.db
-
-# pyenv/other
-.python-version
-
-# Ignore prettier cache
-node_modules/.cache/prettier/
-.git_clean_backup/
