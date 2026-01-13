@@ -142,3 +142,12 @@ artifacts/
 *.db
 instance/*.db
 
+# Local previews / temp
+static/previews/
+backend/static/previews/
+**/previews/
+
+# Temp scripts/files
+scripts/_tmp_*.py
+temp.txt
+
