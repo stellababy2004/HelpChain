@@ -2,10 +2,27 @@
 {% block content %}
 <div class="container py-5">
   <div class="alert alert-success">
-    <h4 class="mb-2">Благодарим ви!</h4>
-    <p class="mb-0">Получихме заявката ви. Ще се свържем с вас възможно най-скоро.</p>
+    <h4 class="alert-heading">✅ Благодарим ви!</h4>
+    <p>Получихме заявката ви и ще се свържем с вас възможно най-скоро.</p>
+
+    {% if request_id %}
+      <hr>
+      <p class="mb-0"><strong>ID на заявката:</strong> {{ request_id }}</p>
+    {% endif %}
   </div>
-  <a class="btn btn-primary mt-3" href="{{ safe_url_for('main.index') }}">Към началото</a>
-  <a class="btn btn-outline-primary mt-3 ms-2" href="{{ safe_url_for('main.categories') }}">Виж категории</a>
+
+  <div class="d-flex gap-2">
+    <a class="btn btn-primary" href="{{ safe_url_for('main.submit_request') }}">
+      Подай нова заявка
+    </a>
+    <a class="btn btn-outline-secondary" href="{{ safe_url_for('main.index') }}">
+      Към началото
+    </a>
+    {% if is_admin and request_id %}
+    <a class="btn btn-outline-dark" href="{{ safe_url_for('admin.admin_requests', status='new', highlight=request_id) }}">
+      <i class="fas fa-user-shield me-2"></i>Виж в админ
+    </a>
+    {% endif %}
   </div>
+</div>
 {% endblock %}

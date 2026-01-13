@@ -131,11 +131,12 @@
               <th scope="col">{{ _('Ниво') }}</th>
               <th scope="col">{{ _('Регистриран') }}</th>
               <th scope="col">{{ _('Действия') }}</th>
+              <th scope="col" style="width:120px;">{{ _('Детайли') }}</th>
             </tr>
           </thead>
           <tbody id="table-body">
             {% for volunteer in volunteers %}
-            <tr>
+            <tr onclick="window.location='{{ safe_url_for('admin.volunteer_detail', id=volunteer.id) }}'" style="cursor:pointer">
               <td>{{ volunteer.id }}</td>
               <td>
                 <strong>{{ volunteer.name }}</strong>
@@ -219,6 +220,13 @@
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
+              </td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-light"
+                   onclick="event.stopPropagation()"
+                   href="{{ safe_url_for('admin.volunteer_detail', id=volunteer.id) }}">
+                  {{ _('Детайли') }}
+                </a>
               </td>
             </tr>
             {% endfor %}

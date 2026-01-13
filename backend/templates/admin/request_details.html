@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Admin • Request #{{ req.id }}{% endblock %}
+{% block title %}Admin · Request #{{ req.id }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -8,15 +8,15 @@
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">← Back</a>
   </div>
 
-  <!-- One-click contact buttons -->
-  <div class="d-flex gap-2 flex-wrap mb-3">
-    {% if req.email %}
-      <a class="btn btn-outline-primary btn-sm" href="mailto:{{ req.email }}?subject=HelpChain%20-%20Request%20#{{ req.id }}">Email</a>
-      <button class="btn btn-outline-secondary btn-sm" type="button" onclick="navigator.clipboard.writeText('{{ req.email }}')">Copy email</button>
-    {% endif %}
+  <div class="contact-actions d-flex gap-2 flex-wrap mb-3">
     {% if req.phone %}
-      <a class="btn btn-outline-primary btn-sm" href="tel:{{ req.phone }}">Call</a>
-      <button class="btn btn-outline-secondary btn-sm" type="button" onclick="navigator.clipboard.writeText('{{ req.phone }}')">Copy phone</button>
+      <a href="tel:{{ req.phone }}" class="btn btn-outline-primary">📞 Обади се</a>
+      <button onclick="copyText('{{ req.phone }}')" class="btn btn-outline-secondary">📋 Копирай телефон</button>
+    {% endif %}
+
+    {% if req.email %}
+      <a href="mailto:{{ req.email }}" class="btn btn-outline-success">✉️ Имейл</a>
+      <button onclick="copyText('{{ req.email }}')" class="btn btn-outline-secondary">📋 Копирай имейл</button>
     {% endif %}
   </div>
 
@@ -24,7 +24,7 @@
     <div class="card-body">
       <h5 class="card-title mb-1">{{ req.title }}</h5>
       <div class="text-muted small mb-3">
-        Status: <strong>{{ req.status }}</strong> • Priority: <strong>{{ req.priority }}</strong> • Category: <strong>{{ req.category }}</strong>
+        Status: <strong>{{ req.status }}</strong> · Priority: <strong>{{ req.priority }}</strong> · Category: <strong>{{ req.category }}</strong>
       </div>
 
       <p class="mb-3" style="white-space: pre-wrap;">{{ req.description }}</p>
@@ -55,107 +55,122 @@
 
       <hr class="my-3" />
 
+      {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
       <!-- Status buttons -->
       <div class="d-flex flex-wrap gap-2">
-        {% set actions = [
-          ("approved","Approve","success"),
-          ("in_progress","In Progress","primary"),
-          ("done","Done","dark"),
-          ("rejected","Reject","danger")
-        ] %}
+        {% if can_edit %}
+          {% set actions = [
+            ("approved","Approve","success"),
+            ("in_progress","In Progress","primary"),
+            ("done","Done","dark"),
+            ("rejected","Reject","danger")
+          ] %}
 
-        {% for val,label,color in actions %}
-        <form method="POST" action="{{ url_for('admin.admin_request_set_status', req_id=req.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <input type="hidden" name="status" value="{{ val }}" />
-          <button class="btn btn-{{ color }} btn-sm" type="submit">
-            {{ label }}
-          </button>
-        </form>
-        {% endfor %}
+          {% for val,label,color in actions %}
+          <form method="POST" action="{{ url_for('admin.update_status', req_id=req.id) }}">
+            <input type="hidden" name="status" value="{{ val }}" />
+            <button class="btn btn-{{ color }} btn-sm" type="submit">
+              {{ label }}
+            </button>
+          </form>
+          {% endfor %}
+        {% else %}
+          <div class="alert alert-info py-1 px-2 mb-0">
+            Само owner или super_admin може да променя статуса.
+          </div>
+        {% endif %}
       </div>
 
-<hr class="my-3" />
+      <hr class="my-3" />
 
-<h5 class="mb-2">Owner</h5>
+      <h5 class="mb-2">Owner</h5>
 
-<div class="row g-2 align-items-end">
-  <div class="col-md-6">
-    <div class="small text-muted mb-1">Текущ отговорник</div>
-    <div>
-      {% if req.owner %}
-        <span class="badge bg-success">#{{ req.owner.id }}</span>
-        {{ req.owner.name or req.owner.email or "Volunteer" }}
-        {% if req.owned_at %}
-          <div class="small text-muted">Owned at: {{ req.owned_at }}</div>
-        {% endif %}
-      {% else %}
-        <span class="text-muted">Няма</span>
-      {% endif %}
-    </div>
-  </div>
-
-  <div class="col-md-6">
-    <form method="POST" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}" class="d-flex gap-2">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      <select class="form-select" name="owner_id" required>
-        <option value="">Избери доброволец…</option>
-        {% for v in volunteers %}
-          <option value="{{ v.id }}">{{ v.name or v.email or ("Volunteer #" ~ v.id) }}</option>
-        {% endfor %}
-      </select>
-      <button class="btn btn-primary" type="submit">Assign</button>
-    </form>
-
-    <form method="POST" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}" class="mt-2">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-      <button class="btn btn-outline-danger btn-sm" type="submit" {% if not req.owner_id %}disabled{% endif %}>
-        Unassign
-      </button>
-    </form>
-  </div>
-
-<hr class="my-4">
-
-<h5 class="mt-4">Activity log</h5>
-
-{% if logs and logs|length %}
-  <div class="list-group">
-    {% for l in logs %}
-      <div class="list-group-item">
-        <div class="d-flex justify-content-between">
-          <strong>{{ l.action }}</strong>
-          <small class="text-muted">{{ l.timestamp }}</small>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin: 12px 0;">
+        <div>
+          <strong>Owner:</strong>
+          {% if req.owner %}
+            {{ req.owner.username }} (id={{ req.owner.id }})
+            {% if req.owned_at %}<span style="opacity:.7;">(since {{ req.owned_at }})</span>{% endif %}
+          {% elif req.owner_id %}
+            id={{ req.owner_id }} <span style="opacity:.7;">(no user loaded)</span>
+            {% if req.owned_at %}<span style="opacity:.7;">(since {{ req.owned_at }})</span>{% endif %}
+          {% else %}
+            <span style="opacity:.7;">None</span>
+          {% endif %}
         </div>
 
-        {% if l.admin_user_id %}
-          <div><small class="text-muted">admin_user_id: {{ l.admin_user_id }}</small></div>
-        {% endif %}
-
-        {% if l.details %}
-          <details class="mt-2">
-            <summary>details</summary>
-            <pre class="mt-2 mb-0" style="white-space: pre-wrap;">{{ l.details }}</pre>
-          </details>
-        {% endif %}
+        <div style="margin-left:auto; display:flex; gap:10px;">
+          {% if not req.owner_id %}
+            <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
+              <button type="submit" class="btn btn-success">Assign to me</button>
+            </form>
+          {% elif can_edit %}
+            <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
+              <button type="submit" class="btn btn-outline-danger">Unassign</button>
+            </form>
+          {% elif req.owner_id and req.owner_id != current_user.id and is_stale(req) %}
+            <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
+              <button type="submit" class="btn btn-warning">⚠️ Take over</button>
+            </form>
+          {% else %}
+            <div class="text-muted small">Само owner или super_admin може да освободи заявката.</div>
+          {% endif %}
+        </div>
       </div>
-    {% endfor %}
-  </div>
-{% else %}
-  <p class="text-muted">No activity yet.</p>
-{% endif %}
 
-</div>
+      <hr class="my-4">
+
+      <h3>История</h3>
+      {% set activities = req.activities or [] %}
+      <ul class="activity-log list-unstyled">
+        {% if activities %}
+          {% set icons = {'assign':'🟢','unassign':'🔴','status_change':'🔄','takeover':'⚠️'} %}
+          {% for a in activities|sort(attribute='created_at', reverse=True) %}
+            {% set cls = 'activity-' ~ a.action %}
+            <li class="activity {{ cls }}">
+              <span class="activity-badge {{ cls }}">{{ icons.get(a.action, 'ℹ️') }} {{ a.action|upper }}</span>
+              {% if a.old_value or a.new_value %}
+                <span class="activity-change">{{ a.old_value or '' }} → {{ a.new_value or '' }}</span>
+              {% endif %}
+              <div class="activity-meta">
+                <span class="me-2">by {{ a.actor.username if a.actor else 'system' }}</span>
+                <span>{{ a.created_at.strftime('%d.%m.%Y %H:%M') if a.created_at else '' }}</span>
+              </div>
+            </li>
+          {% endfor %}
+        {% else %}
+          <li class="text-muted">Няма активност</li>
+        {% endif %}
+      </ul>
     </div>
   </div>
 </div>
 
 <script>
+  // Minimal styling for activity log (kept inline to avoid touching global CSS)
+  const style = document.createElement('style');
+  style.textContent = `
+    .activity-log { padding: 0; }
+    .activity { padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #e5e7eb; background: #f9fafb; }
+    .activity-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-right: 8px; background: #e5e7eb; }
+    .activity-change { font-weight: 500; margin-left: 4px; }
+    .activity-meta { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .activity-assign { border-left-color: #10b981; background: #e6fffa; }
+    .activity-assign .activity-badge { background: #d1fae5; color: #065f46; }
+    .activity-unassign { border-left-color: #ef4444; background: #fff5f5; }
+    .activity-unassign .activity-badge { background: #fee2e2; color: #991b1b; }
+    .activity-status_change { border-left-color: #3b82f6; background: #eff6ff; }
+    .activity-status_change .activity-badge { background: #dbeafe; color: #1e3a8a; }
+    .activity-takeover { border-left-color: #f59e0b; background: #fff7ed; }
+    .activity-takeover .activity-badge { background: #fef3c7; color: #92400e; }
+  `;
+  document.head.appendChild(style);
+
   function copyText(text){
     navigator.clipboard.writeText(text).then(()=>{
-      alert("Copied ✅");
+      alert("Копирано");
     }).catch(()=>{
-      alert("Copy failed ❌");
+      alert("Copy failed");
     });
   }
 </script>

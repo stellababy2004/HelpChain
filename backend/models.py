@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from flask_login import UserMixin
 from backend.extensions import db
 
 
@@ -20,39 +21,32 @@ UniqueConstraint = db.UniqueConstraint
 relationship = db.relationship
 
 # Реален AdminUser модел за да съществува таблицата `admin_users`
-class AdminUser(db.Model):  # noqa: D101
+class AdminUser(db.Model, UserMixin):
     __tablename__ = "admin_users"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(32), default="admin")
+    is_active = db.Column(db.Boolean, default=True)
+    totp_secret = db.Column(db.String(32), nullable=True)
+    mfa_enabled = db.Column(db.Boolean, default=False)
+    mfa_enrolled_at = db.Column(db.DateTime, nullable=True)
+    backup_codes_hashes = db.Column(db.Text, nullable=True)  # JSON list of password hashes
+    backup_codes_generated_at = db.Column(db.DateTime, nullable=True)
 
-
+    logs = db.relationship(
+        "AdminLog",
+        back_populates="admin_user",
+        cascade="all, delete-orphan",
+    )
 
 
 import os
 import sys
 from datetime import datetime
 from enum import Enum
-
-
-class AdminLog(db.Model):
-    """Модел за проследяване на административни действия"""
-
-    __tablename__ = "admin_logs"
-    __table_args__ = {"extend_existing": True}
-
-    id = db.Column(db.Integer, primary_key=True)
-    admin_user_id = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=False)
-    action = db.Column(db.String(120), nullable=False)
-    details = db.Column(db.Text, nullable=True)
-    entity_type = db.Column(db.String(80), nullable=True)
-    entity_id = db.Column(db.Integer, nullable=True)
-    ip_address = db.Column(db.String(64), nullable=True)
-    user_agent = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
-
-    admin_user = db.relationship("AdminUser", backref="logs")
 
 
 # Backwards-compatible alias: some modules import `AuditLog` from backend.models
@@ -568,14 +562,21 @@ class Request(db.Model):
         assigned_volunteer = None
 
     # Нови полета за собственик (owner) на заявката
-    owner_id = Column(Integer, ForeignKey("volunteers.id"), nullable=True)
+    owner_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
     owned_at = Column(DateTime, nullable=True)
-    owner = relationship("Volunteer", backref="owned_requests", lazy=True)
+    owner = relationship("AdminUser", foreign_keys=[owner_id], lazy="joined")
     logs = db.relationship(
         "RequestLog",
         back_populates="request",
         cascade="all, delete-orphan",
         order_by="RequestLog.timestamp.desc()",
+        lazy=True,
+    )
+    activities = db.relationship(
+        "RequestActivity",
+        back_populates="request",
+        cascade="all, delete-orphan",
+        order_by="RequestActivity.created_at.desc()",
         lazy=True,
     )
     
@@ -596,6 +597,37 @@ class RequestLog(db.Model):
     timestamp = db.Column(db.DateTime, default=utc_now)
 
     request = db.relationship("Request", back_populates="logs")
+
+
+class RequestActivity(db.Model):
+    """History of request changes (status/owner/etc)."""
+
+    __tablename__ = "request_activities"
+
+    id = Column(Integer, primary_key=True)
+    request_id = Column(Integer, ForeignKey("requests.id"), nullable=False, index=True)
+    actor_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    action = Column(String(50), nullable=False)
+    old_value = Column(Text, nullable=True)
+    new_value = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+
+    request = relationship("Request", back_populates="activities")
+    actor = relationship("AdminUser", foreign_keys=[actor_admin_id], lazy="joined")
+
+
+class RequestMetric(db.Model):
+    """Metrics for request lifecycle timings."""
+
+    __tablename__ = "request_metrics"
+
+    id = Column(Integer, primary_key=True)
+    request_id = Column(Integer, index=True, nullable=False)
+    time_to_assign = Column(Integer, nullable=True)  # seconds
+    time_to_complete = Column(Integer, nullable=True)  # seconds
+
+
+
 
 
  

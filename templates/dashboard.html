@@ -524,7 +524,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('submit_request') }}">
+              <a class="nav-link" href="{{ safe_url_for('main.submit_request') }}">
                 <i class="fas fa-plus-circle me-1"></i>Нова заявка
               </a>
             </li>
@@ -655,7 +655,7 @@
           <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
         </h4>
         <div class="action-grid">
-          <a href="{{ safe_url_for('submit_request') }}" class="action-card">
+          <a href="{{ safe_url_for('main.submit_request') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-plus-circle"></i>
             </div>
@@ -765,7 +765,7 @@
             Подайте първата си заявка за помощ и ние ще се погрижим за вас
           </p>
           <a
-            href="{{ safe_url_for('submit_request') }}"
+            href="{{ safe_url_for('main.submit_request') }}"
             class="btn btn-primary-modern btn-modern"
           >
             <i class="fas fa-plus-circle me-1"></i>Подай заявка
