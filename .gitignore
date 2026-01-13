@@ -139,3 +139,6 @@ vercel_excerpt_*.txt
 # CI / extraction artifacts
 artifacts/
 .github/artifacts/
+*.db
+instance/*.db
+
