@@ -2,9 +2,12 @@ from flask import Blueprint, jsonify, request, send_file
 from backend.ai_service import ai_service
 import asyncio
 
+from datetime import datetime, timedelta
+
 from ..controllers.helpchain_controller import HelpChainController
 from ..models import Request, RequestLog, db
 from ..extensions import csrf
+from sqlalchemy import func
 
 
 api_bp = Blueprint("api", __name__)
@@ -105,16 +108,72 @@ def reject_help(help_id):
 
 @api_bp.route("/dashboard", methods=["GET"])
 def dashboard():
-    filters = {
-        "date_from": request.args.get("date_from"),
-        "date_to": request.args.get("date_to"),
-        "status": request.args.get("status"),
-        "region": request.args.get("region"),
-        "volunteer_id": request.args.get("volunteer_id"),
-    }
     try:
-        data = controller.get_dashboard_stats(filters)
-        return jsonify(data), 200
+        try:
+            days = int(request.args.get("days", 30))
+        except Exception:
+            days = 30
+
+        since_dt = datetime.utcnow() - timedelta(days=days)
+
+        # 1) counts by status
+        status_rows = (
+            db.session.query(
+                func.coalesce(Request.status, "unknown").label("status"),
+                func.count(Request.id).label("cnt"),
+            )
+            .group_by("status")
+            .all()
+        )
+        counts_by_status = {status: int(cnt) for status, cnt in status_rows}
+        total_requests = int(sum(counts_by_status.values()))
+
+        # 2) requests by city (top 10) with fallback chain city -> region -> "unknown"
+        city_expr = func.coalesce(
+            func.nullif(Request.city, ""),
+            func.nullif(Request.region, ""),
+            "unknown",
+        )
+        city_rows = (
+            db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt"))
+            .group_by("city")
+            .order_by(func.count(Request.id).desc())
+            .limit(10)
+            .all()
+        )
+        requests_by_city = [{"city": c, "count": int(cnt)} for c, cnt in city_rows]
+
+        # 3) timeseries (daily) from created_at
+        ts_rows = (
+            db.session.query(
+                func.date(Request.created_at).label("day"),
+                func.count(Request.id).label("cnt"),
+            )
+            .filter(Request.created_at.isnot(None))
+            .filter(Request.created_at >= since_dt)
+            .group_by("day")
+            .order_by("day")
+            .all()
+        )
+        timeseries = [{"date": str(day), "count": int(cnt)} for day, cnt in ts_rows]
+
+        # Volunteer count (safe fallback)
+        try:
+            from backend.models import Volunteer  # local import to avoid import issues
+
+            total_volunteers = db.session.query(Volunteer).count()
+        except Exception:
+            total_volunteers = 0
+
+        return jsonify(
+            {
+                "total_requests": total_requests,
+                "total_volunteers": total_volunteers,
+                "counts_by_status": counts_by_status,
+                "requests_by_city": requests_by_city,
+                "timeseries": timeseries,
+            }
+        ), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

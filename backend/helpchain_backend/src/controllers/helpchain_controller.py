@@ -16,7 +16,7 @@ def utc_now() -> datetime:
 # опитваме се да намерим моделите; ако липсват - не вдигаме ImportError при зареждане
 MODELS_AVAILABLE = True
 try:
-    from backend.models import HelpRequest
+    from backend.models import HelpRequest  # alias към Request
     from backend.models import Volunteer
 except Exception:
     try:
@@ -87,41 +87,47 @@ class HelpChainController:
         if not MODELS_AVAILABLE:
             return q
         if filters.get("date_from"):
-            q = q.filter(HelpRequest.created_at >= datetime.fromisoformat(filters["date_from"]))
+            q = q.filter(Request.created_at >= datetime.fromisoformat(filters["date_from"]))
         if filters.get("date_to"):
-            q = q.filter(HelpRequest.created_at <= datetime.fromisoformat(filters["date_to"]))
+            q = q.filter(Request.created_at <= datetime.fromisoformat(filters["date_to"]))
         if filters.get("status"):
-            q = q.filter(HelpRequest.status == filters["status"])
+            q = q.filter(Request.status == filters["status"])
         if filters.get("region"):
-            q = q.filter(HelpRequest.region == filters["region"])
-        if filters.get("volunteer_id"):
-            q = q.filter(HelpRequest.volunteer_id == int(filters["volunteer_id"]))
+            q = q.filter(Request.region == filters["region"])
+        # volunteer_id липсва в Request; пропускаме
         return q
 
     def get_dashboard_stats(self, filters):
         if not MODELS_AVAILABLE:
             return {
                 "counts_by_status": [],
-                "volunteers_by_city": [],
+                "requests_by_city": [],
                 "top_request_types": [],
                 "timeseries": [],
                 "warning": "Models HelpRequest/Volunteer not found - implement src/models/help_request.py and src/models/volunteer.py to enable DB stats.",
             }
 
         out = {}
-        q = db.session.query(HelpRequest)
+        q = db.session.query(Request)
         q = self._apply_filters_query(q, filters)
 
         # counts by status
-        status_counts = db.session.query(HelpRequest.status, db.func.count(HelpRequest.id)).group_by(HelpRequest.status).all()
+        status_counts = db.session.query(Request.status, db.func.count(Request.id)).group_by(Request.status).all()
         out["counts_by_status"] = [{"status": s, "count": c} for s, c in status_counts]
 
-        # volunteers by city
-        vol_by_city = db.session.query(Volunteer.city, db.func.count(Volunteer.id)).group_by(Volunteer.city).order_by(db.func.count(Volunteer.id).desc()).limit(50).all()
-        out["volunteers_by_city"] = [{"city": c, "count": n} for c, n in vol_by_city]
+        # requests by city (top 10)
+        city_rows = (
+            db.session.query(Request.city, db.func.count(Request.id))
+            .filter(Request.city.isnot(None), Request.city != "")
+            .group_by(Request.city)
+            .order_by(db.func.count(Request.id).desc())
+            .limit(10)
+            .all()
+        )
+        out["requests_by_city"] = [{"city": city, "count": cnt} for city, cnt in city_rows]
 
-        # top request types
-        types = db.session.query(HelpRequest.type, db.func.count(HelpRequest.id)).group_by(HelpRequest.type).order_by(db.func.count(HelpRequest.id).desc()).limit(10).all()
+        # top request categories
+        types = db.session.query(Request.category, db.func.count(Request.id)).group_by(Request.category).order_by(db.func.count(Request.id).desc()).limit(10).all()
         out["top_request_types"] = [{"type": t, "count": cnt} for t, cnt in types]
 
         # time series active vs completed (simple last 30 days)
@@ -131,10 +137,13 @@ class HelpChainController:
             day = today - timedelta(days=29 - i)
             start = datetime.combine(day, datetime.min.time())
             end = datetime.combine(day, datetime.max.time())
-            active = db.session.query(HelpRequest).filter(HelpRequest.created_at <= end, HelpRequest.status != "completed").count()
-            completed = db.session.query(HelpRequest).filter(HelpRequest.updated_at >= start, HelpRequest.status == "completed").count()
+            active = db.session.query(Request).filter(Request.created_at <= end, Request.status != "completed").count()
+            completed = db.session.query(Request).filter(Request.updated_at >= start, Request.status == "completed").count()
             series.append({"date": day.isoformat(), "active": active, "completed": completed})
         out["timeseries"] = series
+
+        out["total_requests"] = db.session.query(Request).count()
+        out["total_volunteers"] = db.session.query(Volunteer).count() if Volunteer else 0
 
         return out
 

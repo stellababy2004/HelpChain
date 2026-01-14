@@ -126,6 +126,10 @@ staged_changes.patch
 .venv/
 .venv311/
 
+# Legacy templates quarantine
+backend/_legacy_templates/
+backend/_legacy_src_templates/
+
 # Local scanner outputs
 all_objects.txt
 all_hashes.txt

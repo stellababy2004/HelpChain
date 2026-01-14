@@ -397,6 +397,7 @@ def admin_login():
             return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next") or url_for("admin.admin_requests")))
         else:
             _mfa_ok_set()
+            session["admin_logged_in"] = True
         return redirect(request.args.get("next") or url_for("admin.admin_requests"))
     return render_template("admin/login.html")
 
@@ -407,6 +408,7 @@ def admin_logout():
     session.pop("mfa_required", None)
     session.pop("mfa_pending_secret", None)
     session.pop("backup_codes_plain", None)
+    session.pop("admin_logged_in", None)
     logout_user()
     flash("Logged out.", "info")
     return redirect(url_for("admin.admin_login"))
@@ -466,6 +468,7 @@ def admin_mfa_verify():
 
     if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
         _mfa_ok_set()
+        session["admin_logged_in"] = True
         return redirect(request.args.get("next") or url_for("admin.admin_requests"))
 
     locked, remaining = _mfa_lock_is_active()
@@ -496,6 +499,7 @@ def admin_mfa_verify():
     if totp_ok or backup_ok:
         _mfa_attempt_reset()
         _mfa_ok_set()
+        session["admin_logged_in"] = True
         flash("✅ MFA потвърдено.", "success")
         nxt = request.args.get("next")
         if nxt and nxt.startswith("/"):
@@ -623,20 +627,26 @@ def admin_dashboard():
         logs_dict[log.request_id].append(log)
 
     # Convert to JSON serializable format
-    requests_dict = [
-        {
-            "id": r.id,
-            "name": r.name,
-            "phone": r.phone,
-            "email": r.email,
-            "location": r.location,
-            "category": r.category,
-            "description": r.description,
-            "status": r.status,
-            "urgency": r.urgency,
-        }
-        for r in requests
-    ]
+    requests_dict = []
+    for r in requests:
+        # Fallback location using location_text -> city/region
+        loc = getattr(r, "location_text", None) or ", ".join(
+            [val for val in (getattr(r, "city", None), getattr(r, "region", None)) if val]
+        ) or ""
+        requests_dict.append(
+            {
+                "id": r.id,
+                "name": r.name,
+                "phone": r.phone,
+                "email": r.email,
+                "location": loc,
+                "category": r.category,
+                "description": r.description,
+                "status": r.status,
+                # Map urgency to priority if urgency field is missing
+                "urgency": getattr(r, "urgency", None) or getattr(r, "priority", None),
+            }
+        )
 
     volunteers_dict = [
         {
@@ -841,13 +851,6 @@ def update_status(req_id):
         req.status = new_status
         # Activity + legacy request log (single commit)
         log_request_activity(req, "status_change", old=old_status, new=new_status, actor_admin_id=getattr(current_user, "id", None))
-        log_entry = RequestLog(
-            request_id=req_id,
-            new_status=new_status,
-            user_id=current_user.id if hasattr(current_user, "id") else None,
-            action="status_update",
-        )
-        db.session.add(log_entry)
         # metrics
         metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
         if metric is None:
@@ -860,7 +863,7 @@ def update_status(req_id):
                 pass
         db.session.commit()
 
-        # Изпращане на email при промяна на статус
+        # Изпращане на email при промяна на статус (graceful fallback)
         try:
             from mail_service import send_notification_email
 
@@ -879,12 +882,20 @@ def update_status(req_id):
             }
             if recipient:
                 send_notification_email(recipient, subject, "email_template.html", context)
+        except ModuleNotFoundError:
+            import logging
+
+            logging.info("[EMAIL] mail_service not configured; email sending skipped (dev mode)")
         except Exception as e:
             import logging
 
             logging.warning(f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}")
 
-    return jsonify({"success": True})
+    # Ако е JSON/AJAX – връщаме JSON; иначе redirect за формата
+    if request.is_json or (request.accept_mimetypes and request.accept_mimetypes.best == "application/json"):
+        return jsonify({"success": True, "status": new_status or req.status})
+    flash("Статусът е обновен.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 
 from flask import render_template, request, redirect, url_for, flash, current_app

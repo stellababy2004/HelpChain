@@ -1,1285 +1,596 @@
-<!doctype html>
-<html lang="bg">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Админ панел - HelpChain</title>
-
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Chart.js for analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-      :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-        --light-bg: #f8f9fa;
-        --dark-bg: #1a1a1a;
-        --dark-card: #2d2d2d;
-        --text-light: #ffffff;
-        --text-dark: #333333;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
-        --border-radius: 15px;
-      }
-
-      [data-theme="dark"] {
-        --bg-color: var(--dark-bg);
-        --card-bg: var(--dark-card);
-        --text-color: var(--text-light);
-        --shadow: var(--shadow-dark);
-      }
-
-      [data-theme="light"] {
-        --bg-color: var(--light-bg);
-        --card-bg: white;
-        --text-color: var(--text-dark);
-      }
-
-      .stats-card.clickable-card {
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .stats-card.clickable-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-      }
-
-      .stats-card.clickable-card:active {
-        transform: translateY(-2px);
-      }
-
-      .stats-card.clickable-card:focus {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-        min-height: 100vh;
-      }
-
-      /* Modern Navigation */
-      .navbar-modern {
-        background: rgba(255, 255, 255, 0.95);
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow);
-      }
-
-      [data-theme="dark"] .navbar-modern {
-        background: rgba(45, 45, 45, 0.95);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .navbar-brand-modern {
-        font-weight: 700;
-        font-size: 1.5rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      /* Theme Toggle */
-      .theme-toggle {
-        background: none;
-        border: none;
-        color: var(--text-color);
-        font-size: 1.2rem;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-      }
-
-      .theme-toggle:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: rotate(180deg);
-      }
-
-      /* Stats Cards */
-      .stats-card {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        border: none;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .stats-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: var(--primary-gradient);
-      }
-
-      .stats-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-      }
-
-      .stats-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-      }
-
-      .stats-value {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-      }
-
-      .stats-label {
-        color: #6c757d;
-        font-size: 0.9rem;
-        margin: 0;
-      }
-
-      /* Charts Container */
-      .chart-container {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        margin-bottom: 2rem;
-      }
-
-      .chart-header {
-        display: flex;
-        justify-content: between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-      }
-
-      .chart-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 0;
-      }
-
-      /* Tables */
-      .table-modern {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        overflow: hidden;
-        box-shadow: var(--shadow);
-      }
-
-      .table-modern thead th {
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-      }
-
-      .table-modern tbody td {
-        padding: 1rem;
-        border-bottom: 1px solid #e1e5e9;
-        vertical-align: middle;
-      }
-
-      [data-theme="dark"] .table-modern tbody td {
-        border-bottom-color: #495057;
-      }
-
-      /* Status Badges */
-      .status-badge {
-        padding: 0.375rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
-      .status-pending {
-        background: var(--warning-gradient);
-        color: white;
-      }
-
-      .status-active {
-        background: var(--success-gradient);
-        color: white;
-      }
-
-      .status-completed {
-        background: #28a745;
-        color: white;
-      }
-
-      .status-cancelled {
-        background: var(--danger-gradient);
-        color: white;
-      }
-
-      /* Action Buttons */
-      .btn-modern {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        display: inline-block;
-        margin: 0.125rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-      }
-
-      .btn-primary-modern {
-        background: var(--primary-gradient);
-        color: white;
-      }
-
-      .btn-primary-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-      }
-
-      .btn-success-modern {
-        background: var(--success-gradient);
-        color: white;
-      }
-
-      .btn-warning-modern {
-        background: var(--warning-gradient);
-        color: white;
-      }
-
-      .btn-danger-modern {
-        background: var(--danger-gradient);
-        color: white;
-      }
-
-      /* Quick Actions */
-      .quick-actions {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        margin-bottom: 2rem;
-      }
-
-      .action-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-      }
-
-      .action-card {
-        background: var(--card-bg);
-        border: 2px solid #e1e5e9;
-        border-radius: 12px;
-        padding: 1.5rem;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        color: var(--text-color);
-      }
-
-      [data-theme="dark"] .action-card {
-        border-color: #495057;
-      }
-
-      .action-card:hover {
-        border-color: #667eea;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
-      }
-
-      .action-icon {
-        font-size: 2rem;
-        color: #667eea;
-        margin-bottom: 1rem;
-      }
-
-      .action-title {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-      }
-
-      .action-description {
-        color: #6c757d;
-        font-size: 0.9rem;
-      }
-
-      /* Recent Activity */
-      .activity-feed {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        max-height: 500px;
-        overflow-y: auto;
-      }
-
-      .activity-item {
-        display: flex;
-        align-items: center;
-        padding: 1rem 0;
-        border-bottom: 1px solid #e1e5e9;
-      }
-
-      [data-theme="dark"] .activity-item {
-        border-bottom-color: #495057;
-      }
-
-      .activity-item:last-child {
-        border-bottom: none;
-      }
-
-      .activity-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 1rem;
-        font-size: 1.2rem;
-      }
-
-      .activity-content {
-        flex: 1;
-      }
-
-      .activity-title {
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-      }
-
-      .activity-meta {
-        color: #6c757d;
-        font-size: 0.8rem;
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .stats-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-
-        .action-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .chart-container {
-          padding: 1rem;
-        }
-      }
-
-      /* Mobile-first responsive design for screens ≤375px */
-      @media (max-width: 375px) {
-        .navbar-brand-modern {
-          font-size: 1.2rem;
-        }
-
-        .stats-card {
-          padding: 1rem;
-          margin-bottom: 1rem;
-        }
-
-        .stats-value {
-          font-size: 1.5rem;
-        }
-
-        .stats-icon {
-          width: 40px;
-          height: 40px;
-          font-size: 1.2rem;
-        }
-
-        .action-card {
-          padding: 1rem;
-        }
-
-        .action-icon {
-          font-size: 1.8rem;
-        }
-
-        .action-title {
-          font-size: 0.9rem;
-        }
-
-        .action-description {
-          font-size: 0.8rem;
-        }
-
-        .chart-container {
-          padding: 0.75rem;
-          margin-bottom: 1rem;
-        }
-
-        .chart-title {
-          font-size: 1.2rem;
-        }
-
-        .table-responsive {
-          font-size: 0.85rem;
-        }
-
-        .btn-modern {
-          padding: 0.4rem 0.8rem;
-          font-size: 0.8rem;
-        }
-
-        .activity-feed {
-          padding: 1rem;
-        }
-
-        .activity-title {
-          font-size: 0.9rem;
-        }
-
-        .activity-meta {
-          font-size: 0.75rem;
-        }
-
-        /* Stack buttons vertically on very small screens */
-        .d-flex.gap-2 {
-          flex-direction: column;
-          gap: 0.5rem !important;
-        }
-
-        .d-flex.gap-2 .btn-modern {
-          width: 100%;
-        }
-
-        /* Adjust navbar for mobile */
-        .navbar-nav .nav-link {
-          padding: 0.5rem 1rem;
-          font-size: 0.9rem;
-        }
-
-        /* Make dropdown menu full width on mobile */
-        .dropdown-menu {
-          width: 100%;
-          margin-top: 0.5rem;
-        }
-
-        /* Adjust breadcrumbs for mobile */
-        .breadcrumb {
-          font-size: 0.8rem;
-        }
-
-        .breadcrumb-item + .breadcrumb-item::before {
-          content: "/";
-          padding: 0 0.5rem;
-        }
-      }
-
-      /* Loading States */
-      .loading-spinner {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 9999;
-      }
-
-      .spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Animations */
-      .fade-in {
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.6s ease-out forwards;
-      }
-
-      @keyframes fadeInUp {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    </style>
-  </head>
-
-  <body data-theme="light">
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loadingSpinner">
-      <div class="spinner"></div>
+{% extends "base.html" %}
+{% block title %}{{ _('Админ панел') }} | HelpChain{% endblock %}
+
+{% macro status_badge(status) -%}
+  {%- set s = (status or '').lower() -%}
+  {%- if s == 'pending' -%}
+    <span class="badge bg-secondary"><i class="bi bi-hourglass-split me-1"></i>{{ _('Чакащи') }}</span>
+  {%- elif s == 'in_progress' -%}
+    <span class="badge bg-warning text-dark"><i class="bi bi-tools me-1"></i>{{ _('В процес') }}</span>
+  {%- elif s == 'completed' -%}
+    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>{{ _('Завършени') }}</span>
+  {%- elif s == 'cancelled' -%}
+    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>{{ _('Отказани') }}</span>
+  {%- else -%}
+    <span class="badge bg-light text-dark"><i class="bi bi-question-circle me-1"></i>{{ _('Неизвестни') }}</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">{{ _('Админ панел') }}</h2>
+    <div class="small text-muted">
+      <i class="bi bi-shield-lock me-1"></i> HelpChain Admin
     </div>
+  </div>
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
-      <div class="container-fluid">
-        <a class="navbar-brand navbar-brand-modern" href="/">
-          <i class="fas fa-crown me-2"></i>HelpChain Admin
-        </a>
-
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a
-                class="nav-link active"
-                  href="{{ safe_url_for('admin.admin_dashboard') }}"
-              >
-                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-              </a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
-              >
-                <i class="fas fa-users-cog me-1"></i>Роли и права
-                  href="{{ safe_url_for('admin.admin_volunteers') }}"
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin.admin_volunteers') }}">
-                <i class="fas fa-hand-holding-heart me-1"></i>Доброволци
-              </a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                href="{{ safe_url_for('analytics_main.admin_analytics') }}"
-              >
-                <i class="fas fa-chart-line me-1"></i>Аналитика
-              </a>
-            </li>
-            <li class="nav-item">
-              <a
-                class="nav-link"
-                href="{{ safe_url_for('notification_dashboard') }}"
-              >
-                <i class="fas fa-bell me-1"></i>Нотификации
-              </a>
-            </li>
-          </ul>
-
-          <ul class="navbar-nav">
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-              >
-                <i class="fas fa-user-circle me-1"></i>{{ current_user.username
-                if current_user else 'Admin' }}
-              </a>
-              <ul class="dropdown-menu">
-                <li>
-                  <a class="dropdown-item" href="{{ safe_url_for('profile') }}">
-                    <i class="fas fa-user me-2"></i>Профил
-                  </a>
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="{{ safe_url_for('admin_settings') }}"
-                  >
-                    <i class="fas fa-cog me-2"></i>Настройки
-                  </a>
-                </li>
-                <li>
-                  <hr class="dropdown-divider" />
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#" onclick="logout()">
-                    <i class="fas fa-sign-out-alt me-2"></i>Изход
-                  </a>
-                </li>
-              </ul>
-            </li>
-            <li class="nav-item">
-              <button
-                class="theme-toggle"
-                id="themeToggle"
-                title="Превключи тема"
-              >
-                <i class="fas fa-moon"></i>
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Spacer for fixed navbar -->
-    <div style="height: 80px"></div>
-
-    <div class="container-fluid">
-      <!-- Welcome Header -->
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h1 class="h2 mb-1">
-                <i class="fas fa-tachometer-alt text-primary me-2"></i>Админ
-                Dashboard
-              </h1>
-              <p class="text-muted mb-0">
-                Добре дошли в административния панел на HelpChain
-              </p>
-            </div>
-            <div class="d-flex gap-2">
-              <button
-                class="btn btn-primary-modern btn-modern"
-                onclick="refreshData()"
-              >
-                <i class="fas fa-sync-alt me-1"></i>Обнови
-              </button>
-              <button
-                class="btn btn-success-modern btn-modern"
-                onclick="exportData()"
-              >
-                <i class="fas fa-download me-1"></i>Експорт
-              </button>
-            </div>
+  <!-- === Dashboard KPIs === -->
+  <div class="container my-4">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="text-muted small">Общо заявки</div>
+            <div class="fs-2 fw-bold kpi-value" data-kpi="total_requests">0</div>
           </div>
         </div>
       </div>
 
-      <!-- Stats Overview -->
-      <div class="row mb-4">
-        <div class="col-xl-3 col-md-6">
-          <div
-            class="stats-card fade-in clickable-card"
-            onclick="viewAllRequests()"
-            role="button"
-            tabindex="0"
-            aria-label="Виж всички заявки"
-          >
-            <div class="stats-icon" style="background: var(--primary-gradient)">
-              <i class="fas fa-clipboard-list text-white"></i>
-            </div>
-            <div class="stats-value" id="totalRequests">
-              {{ stats.total_requests|default(0) }}
-            </div>
-            <p class="stats-label">Общо заявки</p>
-            <small class="text-success">
-              <i class="fas fa-arrow-up me-1"></i>+12% от миналата седмица
-            </small>
-          </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <div
-            class="stats-card fade-in clickable-card"
-            onclick="viewVolunteers()"
-            role="button"
-            tabindex="0"
-            aria-label="Управление на доброволци"
-          >
-            <div class="stats-icon" style="background: var(--success-gradient)">
-              <i class="fas fa-users text-white"></i>
-            </div>
-            <div class="stats-value" id="totalVolunteers">
-              {{ stats.total_volunteers|default(0) }}
-            </div>
-            <p class="stats-label">Активни доброволци</p>
-            <small class="text-success">
-              <i class="fas fa-arrow-up me-1"></i>+8% от миналата седмица
-            </small>
-          </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <div
-            class="stats-card fade-in clickable-card"
-            onclick="viewPendingRequests()"
-            role="button"
-            tabindex="0"
-            aria-label="Виж чакащите заявки"
-          >
-            <div class="stats-icon" style="background: var(--warning-gradient)">
-              <i class="fas fa-clock text-white"></i>
-            </div>
-            <div class="stats-value" id="pendingRequests">
-              {{ stats.pending_requests|default(0) }}
-            </div>
-            <p class="stats-label">Чакащи заявки</p>
-            <small class="text-warning">
-              <i class="fas fa-exclamation-triangle me-1"></i>Изисква внимание
-            </small>
-          </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <div
-            class="stats-card fade-in clickable-card"
-            onclick="viewCompletedRequests()"
-            role="button"
-            tabindex="0"
-            aria-label="Виж завършените заявки"
-          >
-            <div class="stats-icon" style="background: var(--info-gradient)">
-              <i class="fas fa-check-circle text-white"></i>
-            </div>
-            <div class="stats-value" id="completedRequests">
-              {{ stats.completed_requests|default(0) }}
-            </div>
-            <p class="stats-label">Завършени заявки</p>
-            <small class="text-info">
-              <i class="fas fa-star me-1"></i>95% удовлетвореност
-            </small>
+      <div class="col-12 col-md-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="text-muted small">Чакащи</div>
+            <div class="fs-2 fw-bold kpi-value" data-kpi="pending_requests">0</div>
           </div>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="quick-actions mb-4">
-        <h4 class="mb-3">
-          <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
-        </h4>
-        <div class="action-grid">
-          <a href="{{ safe_url_for('admin.admin_volunteers') }}" class="action-card">
-            <div class="action-icon">
-              <i class="fas fa-user-plus"></i>
-            </div>
-            <div class="action-title">Добави доброволец</div>
-            <div class="action-description">
-              Регистрирай нов доброволец в системата
-            </div>
-          </a>
-
-          <a
-            href="{{ safe_url_for('admin_roles.create_role') }}"
-            class="action-card"
-          >
-            <div class="action-icon">
-              <i class="fas fa-shield-alt"></i>
-            </div>
-            <div class="action-title">Създай роля</div>
-            <div class="action-description">
-              Добави нова роля с определени права
-            </div>
-          </a>
-
-          <a
-            href="{{ safe_url_for('analytics_main.admin_analytics') }}"
-            class="action-card"
-          >
-            <div class="action-icon">
-              <i class="fas fa-chart-bar"></i>
-            </div>
-            <div class="action-title">Аналитика</div>
-            <div class="action-description">
-              Разгледай детайлни статистики и отчети
-            </div>
-          </a>
-
-          <a href="{{ safe_url_for('notification_dashboard') }}" class="action-card">
-            <div class="action-icon">
-              <i class="fas fa-envelope"></i>
-            </div>
-            <div class="action-title">Нотификации</div>
-            <div class="action-description">Управлявай имейл нотификациите</div>
-          </a>
-
-          <a href="{{ safe_url_for('admin_settings') }}" class="action-card">
-            <div class="action-icon">
-              <i class="fas fa-cog"></i>
-            </div>
-            <div class="action-title">Настройки</div>
-            <div class="action-description">
-              Конфигурирай системните настройки
-            </div>
-          </a>
-
-          <a href="{{ safe_url_for('export_data') }}" class="action-card">
-            <div class="action-icon">
-              <i class="fas fa-file-export"></i>
-            </div>
-            <div class="action-title">Експорт данни</div>
-            <div class="action-description">
-              Изтегли данни в различни формати
-            </div>
-          </a>
+      <div class="col-12 col-md-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="text-muted small">Доброволци</div>
+            <div class="fs-2 fw-bold kpi-value" data-kpi="total_volunteers">0</div>
+          </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="row">
-        <!-- Recent Requests -->
-        <div class="col-xl-8 mb-4">
-          <div class="chart-container">
-            <div class="chart-header">
-              <h3 class="chart-title">
-                <i class="fas fa-list-ul me-2"></i>Последни заявки
-              </h3>
-              <div class="dropdown">
-                <button
-                  class="btn btn-outline-secondary btn-sm dropdown-toggle"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                >
-                  <i class="fas fa-filter me-1"></i>Филтър
-                </button>
-                <ul class="dropdown-menu">
+  <!-- === Status chart === -->
+  <div class="container my-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <h5 class="mb-0">Заявки по статус</h5>
+          <span id="dash-warning" class="text-warning small" style="display:none;">Няма данни</span>
+        </div>
+        <div id="chart-status" style="min-height: 320px;"></div>
+        <div class="text-muted small mt-2" id="dashboard-updated">Последно обновяване: —</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <h5 class="card-title mb-2">Заявки по град (Top 10)</h5>
+      <div id="chart-by-city" style="min-height: 320px;"></div>
+      <div id="chart-by-city-empty" class="text-muted small" style="display:none;">
+        Няма данни.
+      </div>
+      <div id="chart-by-city-error" class="alert alert-warning mt-2" style="display:none;">
+        Неуспешно зареждане на данните (липса на достъп или грешка).
+      </div>
+    </div>
+  </div>
+
+  <section class="card mt-4">
+    <div class="card-body">
+      <h3 class="h5 mb-3">📈 Тренд на заявки (последни 30 дни)</h3>
+      <div id="chart-trend"></div>
+      <div id="chart-trend-empty" class="text-muted mt-2" style="display:none;">
+        Няма данни за периода.
+      </div>
+      <div id="chart-trend-error" class="alert alert-warning mt-2" style="display:none;">
+        Нямаш достъп или възникна грешка.
+      </div>
+    </div>
+  </section>
+
+  <div class="mb-4">
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body py-3 d-flex align-items-center">
+            <i class="bi bi-collection me-2"></i> {{ _('Общо заявки') }}
+            <span class="badge bg-primary ms-auto">{{ stats.total_requests|default(0) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body py-3 d-flex align-items-center">
+            <i class="bi bi-hourglass-split me-2"></i> {{ _('Чакащи') }}
+            <span class="badge bg-secondary ms-auto">{{ stats.pending_requests|default(0) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body py-3 d-flex align-items-center">
+            <i class="bi bi-tools me-2"></i> {{ _('В процес') }}
+            <span class="badge bg-warning text-dark ms-auto">{{ stats.in_progress|default(0) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm">
+          <div class="card-body py-3 d-flex align-items-center">
+            <i class="bi bi-person-hearts me-2"></i> {{ _('Доброволци') }}
+            <span class="badge bg-success ms-auto">{{ stats.total_volunteers|default(0) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="h5 mb-2">{{ _('Заявки') }}</h3>
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>{{ _('Име') }}</th>
+          <th>{{ _('Описание') }}</th>
+          <th>{{ _('Статус') }}</th>
+          <th>{{ _('История') }}</th>
+          <th class="actions-col">{{ _('Действия') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set req_items = requests.get('items') if requests else [] %}
+        {% if req_items %}
+          {% for req in req_items %}
+          <tr>
+            <td>{{ req.id }}</td>
+            <td>{{ req.name or _('Без име') }}</td>
+            <td class="text-truncate truncate-desc">{{ req.description or _('Без описание') }}</td>
+            <td>{{ status_badge(req.status) | safe }}</td>
+            <td>
+              {% set req_logs = logs_dict.get(req.id) if logs_dict else [] %}
+              {% if req_logs %}
+                <ul class="mb-0 ps-3 small">
+                  {% for log in req_logs %}
                   <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      onclick="filterRequests('all')"
-                      >Всички</a
-                    >
+                    <span class="log-badge">{{ status_badge(log.status) | safe }}</span>
+                    {% if log.changed_at %}<span class="text-muted"> - {{ log.changed_at }}</span>{% endif %}
                   </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      onclick="filterRequests('pending')"
-                      >Чакащи</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      onclick="filterRequests('active')"
-                      >Активни</a
-                    >
-                  </li>
-                  <li>
-                    <a
-                      class="dropdown-item"
-                      href="#"
-                      onclick="filterRequests('completed')"
-                      >Завършени</a
-                    >
-                  </li>
+                  {% endfor %}
                 </ul>
+              {% else %}
+                <em class="text-muted">{{ _('Няма история') }}</em>
+              {% endif %}
+            </td>
+            <td>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Действия за заявка {{ req.id }}">
+                <a class="btn btn-info" href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">
+                  <i class="bi bi-eye"></i>
+                </a>
               </div>
-            </div>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">{{ _('Няма намерени заявки') }}</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
 
-            <div class="table-responsive">
-              <table class="table table-modern">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Име</th>
-                    <th>Телефон</th>
-                    <th>Локация</th>
-                    <th>Категория</th>
-                    <th>Статус</th>
-                    <th>Спешност</th>
-                    <th>Действия</th>
-                  </tr>
-                </thead>
-                <tbody id="requestsTable">
-                  {% if requests.items %} {% for req in requests.items %}
-                  <tr>
-                    <td>{{ req.id }}</td>
-                    <td>{{ req.name }}</td>
-                    <td>{{ req.phone }}</td>
-                    <td>{{ req.location }}</td>
-                    <td>{{ req.category }}</td>
-                    <td>
-                      <span
-                        class="status-badge status-{{ req.status|lower }}"
-                      >
-                        {{ req.status }}
-                      </span>
-                    </td>
-                    <td>
-                      {% if req.urgency == 'high' %}
-                      <span class="badge bg-danger">Висока</span>
-                      {% elif req.urgency == 'medium' %}
-                      <span class="badge bg-warning">Средна</span>
-                      {% else %}
-                      <span class="badge bg-success">Ниска</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      <div class="btn-group" role="group">
-                        <button
-                          class="btn btn-primary-modern btn-modern btn-sm"
-                          onclick="viewRequest({{ req.id }})"
-                        >
-                          <i class="fas fa-eye"></i>
-                        </button>
-                        <button
-                          class="btn btn-success-modern btn-modern btn-sm"
-                          onclick="assignVolunteer({{ req.id }})"
-                        >
-                          <i class="fas fa-user-plus"></i>
-                        </button>
-                        <button
-                          class="btn btn-warning-modern btn-modern btn-sm"
-                          onclick="updateStatus({{ req.id }}, 'completed')"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %} {% else %}
-                  <tr>
-                    <td colspan="8" class="text-center py-4">
-                      <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
-                      <p class="text-muted">Няма заявки в момента</p>
-                    </td>
-                  </tr>
-                  {% endif %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+  <h3 class="h5 mt-4 mb-2">{{ _('Доброволци') }}</h3>
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>{{ _('Име') }}</th>
+          <th>{{ _('Имейл') }}</th>
+          <th>{{ _('Телефон') }}</th>
+          <th>{{ _('Локация') }}</th>
+          <th>{{ _('Умения') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if volunteers %}
+          {% for vol in volunteers %}
+          <tr>
+            <td>{{ vol.id }}</td>
+            <td>{{ vol.name }}</td>
+            <td>{{ vol.email }}</td>
+            <td>{{ vol.phone }}</td>
+            <td>{{ vol.location }}</td>
+            <td>
+              {% if vol.skills %}
+                {% for sk in (vol.skills.split(',') if vol.skills is string else vol.skills) %}
+                  <span class="badge bg-light text-dark me-1 mb-1"><i class="bi bi-tag me-1"></i>{{ sk|trim }}</span>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted">{{ _('Няма') }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">{{ _('Няма намерени доброволци') }}</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
 
-        <!-- Activity Feed & Quick Stats -->
-        <div class="col-xl-4">
-          <!-- Activity Feed -->
-          <div class="activity-feed mb-4">
-            <h4 class="mb-3">
-              <i class="fas fa-history text-info me-2"></i>Последна активност
-            </h4>
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/apexcharts.js') }}"></script>
+<script>
+(function () {
+  const alertEl = document.getElementById("dash-alert");
 
-            <div id="activityFeed">
-              <div class="activity-item">
-                <div
-                  class="activity-icon"
-                  style="background: var(--primary-gradient)"
-                >
-                  <i class="fas fa-plus text-white"></i>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Нова заявка #1234</div>
-                  <div class="activity-meta">преди 5 минути • София</div>
-                </div>
-              </div>
+  function showAlert(type, html) {
+    if (!alertEl) return;
+    alertEl.className = "alert alert-" + type;
+    alertEl.innerHTML = html;
+    alertEl.classList.remove("d-none");
+  }
 
-              <div class="activity-item">
-                <div
-                  class="activity-icon"
-                  style="background: var(--success-gradient)"
-                >
-                  <i class="fas fa-user-plus text-white"></i>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Нов доброволец се регистрира</div>
-                  <div class="activity-meta">преди 12 минути • Пловдив</div>
-                </div>
-              </div>
+  function hideAlert() {
+    if (!alertEl) return;
+    alertEl.classList.add("d-none");
+  }
 
-              <div class="activity-item">
-                <div
-                  class="activity-icon"
-                  style="background: var(--warning-gradient)"
-                >
-                  <i class="fas fa-exclamation-triangle text-white"></i>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Спешна заявка #1229</div>
-                  <div class="activity-meta">преди 18 минути • Варна</div>
-                </div>
-              </div>
+  function setEmpty(chartId, emptyId, isEmpty) {
+    const chart = document.getElementById(chartId);
+    const empty = document.getElementById(emptyId);
+    if (!chart || !empty) return;
+    if (isEmpty) {
+      chart.style.display = "none";
+      empty.classList.remove("d-none");
+    } else {
+      chart.style.display = "block";
+      empty.classList.add("d-none");
+    }
+  }
 
-              <div class="activity-item">
-                <div
-                  class="activity-icon"
-                  style="background: var(--info-gradient)"
-                >
-                  <i class="fas fa-check text-white"></i>
-                </div>
-                <div class="activity-content">
-                  <div class="activity-title">Завършена заявка #1225</div>
-                  <div class="activity-meta">преди 25 минути • Бургас</div>
-                </div>
-              </div>
-            </div>
-          </div>
+  async function fetchDashboard() {
+    try {
+      const res = await fetch("/api/dashboard", { credentials: "same-origin" });
 
-          <!-- Quick Stats Chart -->
-          <div class="chart-container">
-            <h4 class="chart-title mb-3">
-              <i class="fas fa-chart-pie text-success me-2"></i>Разпределение по
-              категории
-            </h4>
-            <canvas id="categoryChart" width="300" height="300"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Common HelpChain utilities -->
-    <script src="{{ url_lang('static', filename='js/common.js') }}"></script>
-
-    <!-- Custom JavaScript -->
-    <script>
-      // Chart.js initialization
-      document.addEventListener("DOMContentLoaded", function () {
-        // Category distribution chart
-        const ctx = document.getElementById("categoryChart").getContext("2d");
-        new Chart(ctx, {
-          type: "doughnut",
-          data: {
-            labels: [
-              "Медицинска помощ",
-              "Транспорт",
-              "Домакинска помощ",
-              "Образование",
-              "Храна",
-              "Други",
-            ],
-            datasets: [
-              {
-                data: [35, 25, 15, 10, 10, 5],
-                backgroundColor: [
-                  "#667eea",
-                  "#764ba2",
-                  "#f093fb",
-                  "#f5576c",
-                  "#4facfe",
-                  "#00f2fe",
-                ],
-                borderWidth: 0,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: "bottom",
-                labels: {
-                  padding: 20,
-                  usePointStyle: true,
-                },
-              },
-            },
-          },
-        });
-      });
-
-      // Action functions
-      function refreshData() {
-        window.helpChainUtils.showLoading();
-        // Simulate data refresh
-        setTimeout(() => {
-          window.helpChainUtils.hideLoading();
-          // In real implementation, this would fetch new data from server
-          console.log("Data refreshed");
-        }, 1500);
+      if (res.status === 401 || res.status === 403) {
+        showAlert("warning", "Нямаш достъп до dashboard данните (трябва login / права).");
+        return null;
       }
 
-      function exportData() {
-        // In real implementation, this would trigger a download
-        window.helpChainUtils.showAlert(
-          "Експорт на данни ще бъде достъпен скоро!",
-        );
+      if (!res.ok) {
+        showAlert("danger", "Грешка при зареждане на dashboard данните. (" + res.status + ")");
+        return null;
       }
 
-      function viewRequest(id) {
-        window.location.href = `/admin/request/${id}`;
+      hideAlert();
+      return await res.json();
+    } catch (e) {
+      showAlert("danger", "Грешка при зареждане на dashboard данните.");
+      return null;
+    }
+  }
+
+  function renderKPIs(data) {
+    const tr = document.getElementById("kpi-total-requests");
+    const tv = document.getElementById("kpi-total-volunteers");
+
+    const totalReq = data && (data.total_requests ?? data.totalRequests);
+    const totalVol = data && (data.total_volunteers ?? data.totalVolunteers);
+
+    if (tr) tr.textContent = totalReq != null ? totalReq : 0;
+    if (tv) tv.textContent = totalVol != null ? totalVol : 0;
+  }
+
+  function renderStatusChart(data) {
+    const counts = data?.counts_by_status || data?.countsByStatus || {};
+    const labels = Object.keys(counts);
+    const series = labels.map(k => Number(counts[k] || 0));
+
+    const isEmpty = labels.length === 0 || series.every(v => v === 0);
+    setEmpty("chart-status", "empty-status", isEmpty);
+    if (isEmpty) return;
+
+    const options = {
+      chart: { type: "pie", height: 260 },
+      labels,
+      series,
+      legend: { position: "bottom" }
+    };
+
+    new ApexCharts(document.querySelector("#chart-status"), options).render();
+  }
+
+  function renderCityChart(data) {
+    const rows = data?.requests_by_city || data?.requestsByCity || [];
+    const labels = rows.map(r => r.city || "—");
+    const series = rows.map(r => Number(r.count || 0));
+
+    const isEmpty = rows.length === 0 || series.every(v => v === 0);
+    setEmpty("chart-city", "empty-city", isEmpty);
+    if (isEmpty) return;
+
+    const options = {
+      chart: { type: "bar", height: 320 },
+      series: [{ name: "Заявки", data: series }],
+      xaxis: { categories: labels },
+      plotOptions: { bar: { distributed: true } }
+    };
+
+    new ApexCharts(document.querySelector("#chart-city"), options).render();
+  }
+
+  function renderTimeseries(data) {
+    const ts = data?.timeseries || data?.timeSeries || null;
+    let labels = [];
+    let values = [];
+
+    if (Array.isArray(ts)) {
+      labels = ts.map(x => x.date || x.label || "");
+      values = ts.map(x => Number(x.count || x.value || 0));
+    } else if (ts && Array.isArray(ts.labels) && Array.isArray(ts.data)) {
+      labels = ts.labels;
+      values = ts.data.map(v => Number(v || 0));
+    }
+
+    const isEmpty = labels.length === 0 || values.every(v => v === 0);
+    setEmpty("chart-ts", "empty-ts", isEmpty);
+    if (isEmpty) return;
+
+    const options = {
+      chart: { type: "area", height: 320 },
+      series: [{ name: "Заявки", data: values }],
+      xaxis: { categories: labels },
+      dataLabels: { enabled: false }
+    };
+
+    new ApexCharts(document.querySelector("#chart-ts"), options).render();
+  }
+
+  (async function init() {
+    const data = await fetchDashboard();
+    if (!data) return;
+    renderKPIs(data);
+    renderStatusChart(data);
+    renderCityChart(data);
+    renderTimeseries(data);
+  })();
+})();
+</script>
+
+<script>
+(function () {
+  // Ако ApexCharts не е зареден, не правим нищо
+  if (typeof ApexCharts === "undefined") return;
+
+  const elTotal = document.getElementById("kpi-total-requests");
+  const elWarn = document.getElementById("dash-warning");
+  const cityEmpty = document.getElementById("chart-by-city-empty");
+  const cityErr = document.getElementById("chart-by-city-error");
+  const lastUpdatedEl = document.getElementById("dashboard-updated");
+
+  const STATUS_LABELS_BG = {
+    new: "Нова",
+    pending: "Чакаща",
+    approved: "Одобрена",
+    in_progress: "В процес",
+    done: "Завършена",
+    rejected: "Отхвърлена",
+    unknown: "Неизвестен"
+  };
+
+  const STATUS_COLORS = {
+    pending: "#f59e0b",
+    approved: "#0ea5e9",
+    in_progress: "#8b5cf6",
+    done: "#22c55e",
+    rejected: "#ef4444",
+    unknown: "#9ca3af"
+  };
+
+  function showNoData(msg) {
+    if (elWarn) {
+      elWarn.textContent = msg || "Няма данни";
+      elWarn.style.display = "inline";
+    }
+  }
+
+  function safeNum(v) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function animateKPI(el, to, duration = 800) {
+    if (!el) return;
+    const start = 0;
+    const startTime = performance.now();
+    function tick(now) {
+      const p = Math.min((now - startTime) / duration, 1);
+      el.textContent = Math.floor(start + p * (to - start));
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function setLastUpdated() {
+    if (!lastUpdatedEl) return;
+    lastUpdatedEl.textContent = "Последно обновяване: " + new Date().toLocaleString("bg-BG");
+  }
+
+  function renderByCityBar(data) {
+    const el = document.querySelector("#chart-by-city");
+    if (!el) return;
+    if (cityEmpty) cityEmpty.style.display = "none";
+    if (cityErr) cityErr.style.display = "none";
+
+    const items = (data && data.requests_by_city) ? data.requests_by_city : [];
+    if (!items.length) {
+      el.innerHTML = "";
+      if (cityEmpty) cityEmpty.style.display = "block";
+      return;
+    }
+
+    const labels = items.map(x => x.city || "unknown");
+    const counts = items.map(x => Number(x.count || 0));
+
+    const options = {
+      chart: { type: "bar", height: 320, toolbar: { show: false } },
+      series: [{ name: "Заявки", data: counts }],
+      xaxis: {
+        categories: labels,
+        labels: { rotate: -35, trim: true, hideOverlappingLabels: true }
+      },
+      plotOptions: { bar: { borderRadius: 6, columnWidth: "45%" } },
+      dataLabels: { enabled: false },
+      tooltip: { y: { formatter: (v) => `${v}` } }
+    };
+
+    el.innerHTML = "";
+    const chart = new ApexCharts(el, options);
+    chart.render();
+  }
+
+  fetch("/api/dashboard", { credentials: "same-origin" })
+    .then(async (res) => {
+      if (res.status === 401 || res.status === 403) {
+        showNoData("Нямаш достъп / трябва login");
+        throw new Error("unauthorized");
+      }
+      if (!res.ok) throw new Error("dashboard api error " + res.status);
+      return res.json();
+    })
+    .then((data) => {
+      const stats = data.stats || data || {};
+      const kpiTotal = document.querySelector('[data-kpi="total_requests"]');
+      const kpiPending = document.querySelector('[data-kpi="pending_requests"]');
+      const kpiVols = document.querySelector('[data-kpi="total_volunteers"]');
+
+      animateKPI(kpiTotal, safeNum(stats.total_requests));
+      animateKPI(kpiPending, safeNum(stats.pending_requests));
+      animateKPI(kpiVols, safeNum(stats.total_volunteers));
+
+      const counts = data.counts_by_status || data.countsByStatus || stats.counts_by_status || {};
+      const keys = Object.keys(counts);
+      if (!keys.length) {
+        showNoData("Няма данни");
+        renderByCityBar(data);
+        return;
       }
 
-      function assignVolunteer(requestId) {
-        // In real implementation, this would open a modal or redirect to assignment page
-        window.helpChainUtils.showAlert(
-          `Присвояване на доброволец за заявка #${requestId}`,
-        );
+      const labels = keys.map(k => STATUS_LABELS_BG[k] || k);
+      const series = keys.map(k => safeNum(counts[k]));
+
+      // ако всичко е 0 -> няма данни
+      if (series.every(x => x === 0)) {
+        showNoData("Няма данни");
+        renderByCityBar(data);
+        return;
       }
 
-      function updateStatus(requestId, status) {
-        if (
-          window.helpChainUtils.confirmAction(
-            `Сигурни ли сте, че искате да промените статуса на заявка #${requestId}?`,
-          )
-        ) {
-          // In real implementation, this would make an AJAX call
-          window.helpChainUtils.showAlert(
-            `Статусът на заявка #${requestId} е променен на "${status}"`,
-          );
+      const options = {
+        chart: { type: "donut", height: 320 },
+        labels,
+        series,
+        legend: { position: "bottom" },
+        colors: keys.map(k => STATUS_COLORS[k] || STATUS_COLORS.unknown)
+      };
+
+      new ApexCharts(document.querySelector("#chart-status"), options).render();
+      renderByCityBar(data);
+      setLastUpdated();
+    })
+    .catch((err) => {
+      // тихо: не искаме да чупим UI-то
+      console.warn("[dashboard] failed:", err);
+      showNoData("Няма данни");
+      if (cityErr) cityErr.style.display = "block";
+    });
+})();
+</script>
+
+<script>
+// Trend chart (timeseries)
+document.addEventListener("DOMContentLoaded", async function renderTrendChart() {
+  const chartEl = document.querySelector("#chart-trend");
+  const emptyEl = document.querySelector("#chart-trend-empty");
+  const errorEl = document.querySelector("#chart-trend-error");
+
+  if (!chartEl) return;
+  if (typeof ApexCharts === "undefined") return;
+
+  try {
+    const res = await fetch("/api/dashboard");
+
+    if (res.status === 401 || res.status === 403) {
+      if (errorEl) errorEl.style.display = "block";
+      return;
+    }
+
+    const data = await res.json();
+    const seriesData = data.timeseries || [];
+
+    if (!seriesData.length) {
+      if (emptyEl) emptyEl.style.display = "block";
+      return;
+    }
+
+    const options = {
+      chart: {
+        type: "area",
+        height: 300,
+        toolbar: { show: false }
+      },
+      series: [{
+        name: "Заявки",
+        data: seriesData.map(p => p.count)
+      }],
+      xaxis: {
+        categories: seriesData.map(p => p.date),
+        labels: { rotate: -45 }
+      },
+      yaxis: {
+        title: { text: "Брой заявки" }
+      },
+      stroke: {
+        curve: "smooth",
+        width: 3
+      },
+      fill: {
+        type: "gradient",
+        gradient: {
+          shadeIntensity: 0.4,
+          opacityFrom: 0.6,
+          opacityTo: 0.05
         }
-      }
+      },
+      tooltip: {
+        x: { format: "yyyy-MM-dd" }
+      },
+      colors: ["#4f46e5"]
+    };
 
-      function filterRequests(status) {
-        // In real implementation, this would filter the table
-        window.helpChainUtils.showAlert(`Филтриране по статус: ${status}`);
-      }
+    new ApexCharts(chartEl, options).render();
 
-      // Real-time updates simulation
-      window.helpChainUtils.startRealtimeUpdates(() => {
-        // Simulate real-time updates
-        const statsElements = [
-          "totalRequests",
-          "totalVolunteers",
-          "pendingRequests",
-          "completedRequests",
-        ];
-        statsElements.forEach((id) => {
-          const element = document.getElementById(id);
-          if (element && Math.random() > 0.95) {
-            // 5% chance to update
-            const currentValue = parseInt(element.textContent);
-            const newValue = currentValue + Math.floor(Math.random() * 3) - 1; // -1, 0, or +1
-            if (newValue >= 0) {
-              element.textContent = newValue;
-            }
-          }
-        });
-      }, 30000); // Update every 30 seconds
-    </script>
-    <script>
-      // Функции за навигация на кликаемите карти
-      function viewAllRequests() {
-        window.location.href = "/admin_dashboard?filter=all";
-      }
-
-      function viewVolunteers() {
-        window.location.href = "/admin_volunteers";
-      }
-
-      function viewPendingRequests() {
-        window.location.href = "/admin_dashboard?filter=pending";
-      }
-
-      function viewCompletedRequests() {
-        window.location.href = "/admin_dashboard?filter=completed";
-      }
-
-      // Функции за управление на заявките
-      function viewRequest(requestId) {
-        window.location.href = "/admin_request_details/" + requestId;
-      }
-
-      function assignVolunteer(requestId) {
-        // Отваря модал или пренасочва към страница за присвояване
-        window.location.href = "/admin_assign_volunteer/" + requestId;
-      }
-
-      function updateStatus(requestId, status) {
-        if (
-          confirm(
-            "Сигурни ли сте, че искате да промените статуса на тази заявка?",
-          )
-        ) {
-          fetch("/admin_update_request_status", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              request_id: requestId,
-              status: status,
-            }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                location.reload();
-              } else {
-                alert("Грешка при обновяване на статуса: " + data.message);
-              }
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("Възникна грешка при обновяване на статуса");
-            });
-        }
-      }
-    </script>
-    <script>
-      window.addEventListener("pageshow", function (event) {
-        if (event.persisted) {
-          // Page was restored from bfcache
-          // Re-establish the connection to the extension here
-          console.log(
-            "Page restored from bfcache, re-establishing extension connection.",
-          );
-          // Example: chrome.runtime.connect(...) or chrome.runtime.sendMessage(...)
-        }
-      });
-
-      // Also, handle the initial connection when the page loads normally
-      // ... establish initial extension connection ...
-    </script>
-
-    <script>
-      // Logout function
-      function logout() {
-        if (
-          confirm(
-            "Сигурни ли сте, че искате да излезете от администраторския панел?",
-          )
-        ) {
-          // Create and submit logout form
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action = "/admin_logout";
-          document.body.appendChild(form);
-          form.submit();
-        }
-      }
-    </script>
-  </body>
-</html>
+  } catch (e) {
+    console.error(e);
+    if (errorEl) errorEl.style.display = "block";
+  }
+});
+</script>
+{% endblock %}

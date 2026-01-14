@@ -519,15 +519,15 @@
           <ul class="nav-menu">
             <li><a class="nav-link-light" href="#features">Функции</a></li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('all_categories') }}"
+              <a class="nav-link-light" href="{{ url_for('main.categories') }}"
                 >Категории</a
               >
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('faq') }}">ЧЗВ</a>
+              <a class="nav-link-light" href="{{ url_for('main.faq') }}">ЧЗВ</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('admin.admin_login') }}">Вход</a>
+              <a class="nav-link-light" href="{{ url_for('admin.admin_login') }}">Вход</a>
             </li>
             <li>
               <a class="nav-link-light" href="{{ safe_url_for('volunteer_register') }}"
@@ -600,7 +600,7 @@
           >
             <a
               class="btn-light btn-primary focus-visible"
-              href="{{ safe_url_for('main.submit_request') }}"
+              href="{{ url_for('main.submit_request') }}"
             >
               <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>Подай
               заявка за помощ
@@ -747,22 +747,22 @@
               <h5>Бързи връзки</h5>
               <ul class="list-unstyled">
                 <li>
-                  <a href="{{ safe_url_for('all_categories') }}" class="text-light"
+                  <a href="{{ url_for('main.categories') }}" class="text-light"
                     >Категории помощ</a
                   >
                 <li>
-                  <a href="{{ safe_url_for('all_categories') }}" class="text-light"
+                  <a href="{{ url_for('main.categories') }}" class="text-light"
                     >Категории помощ</a
                   >
                 </li>
                 </li>
                 <li>
-                  <a href="{{ safe_url_for('privacy') }}" class="text-light"
+                  <a href="{{ url_for('main.privacy') }}" class="text-light"
                     >Поверителност</a
                   >
                 </li>
                 <li>
-                  <a href="{{ safe_url_for('terms') }}" class="text-light"
+                  <a href="{{ url_for('main.terms') }}" class="text-light"
                     >Условия за ползване</a
                   >
                 </li>
@@ -842,8 +842,8 @@
       // Initialize feedback system
       const feedback = new HelpChainFeedback();
 
-      // Initialize push notifications
-      const notificationService = new NotificationService();
+      // Initialize push notifications (use global singleton)
+      window.notificationService = window.notificationService || new HelpChainNotificationService();
 
       // Theme Toggle Functionality
       const themeToggle = document.getElementById("themeToggle");

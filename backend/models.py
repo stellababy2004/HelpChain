@@ -42,6 +42,11 @@ class AdminUser(db.Model, UserMixin):
         cascade="all, delete-orphan",
     )
 
+    @property
+    def is_admin(self) -> bool:
+        # Treat both admin and super_admin as admins
+        return getattr(self, "role", None) in ("admin", "super_admin")
+
 
 import os
 import sys

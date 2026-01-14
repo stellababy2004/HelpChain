@@ -251,12 +251,11 @@ load_dotenv()  # load .env at startup
 
 
 def create_app(config_object=None):
-    app = Flask(
-        __name__,
-        template_folder=os.path.join(BASE_DIR, "templates"),
-        static_folder=os.path.join(BASE_DIR, "static"),
-    )
-    app = Flask(__name__, instance_relative_config=True)
+    # Use project-level templates/static (root /templates, /static)
+    root_templates = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "..", "templates"))
+    root_static = os.path.abspath(os.path.join(BASE_DIR, "..", "..", "..", "static"))
+
+    app = Flask(__name__, instance_relative_config=True, template_folder=root_templates, static_folder=root_static)
 
     # Config from caller, then env, then sane defaults
     if isinstance(config_object, dict):

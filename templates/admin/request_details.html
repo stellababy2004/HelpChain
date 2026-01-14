@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Admin · Request #{{ req.id }}{% endblock %}
+{% block title %}Admin • Request #{{ req.id }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -24,7 +24,7 @@
     <div class="card-body">
       <h5 class="card-title mb-1">{{ req.title }}</h5>
       <div class="text-muted small mb-3">
-        Status: <strong>{{ req.status }}</strong> · Priority: <strong>{{ req.priority }}</strong> · Category: <strong>{{ req.category }}</strong>
+        Status: <strong>{{ req.status }}</strong> • Priority: <strong>{{ req.priority }}</strong> • Category: <strong>{{ req.category }}</strong>
       </div>
 
       <p class="mb-3" style="white-space: pre-wrap;">{{ req.description }}</p>
@@ -76,7 +76,7 @@
           {% endfor %}
         {% else %}
           <div class="alert alert-info py-1 px-2 mb-0">
-            Само owner или super_admin може да променя статуса.
+            Само owner или super_admin може да сменя статус.
           </div>
         {% endif %}
       </div>
@@ -113,7 +113,7 @@
               <button type="submit" class="btn btn-warning">⚠️ Take over</button>
             </form>
           {% else %}
-            <div class="text-muted small">Само owner или super_admin може да освободи заявката.</div>
+            <div class="text-muted small">Само owner или super_admin може да освобождава.</div>
           {% endif %}
         </div>
       </div>
@@ -128,7 +128,7 @@
           {% for a in activities|sort(attribute='created_at', reverse=True) %}
             {% set cls = 'activity-' ~ a.action %}
             <li class="activity {{ cls }}">
-              <span class="activity-badge {{ cls }}">{{ icons.get(a.action, 'ℹ️') }} {{ a.action|upper }}</span>
+              <span class="activity-badge {{ cls }}">{{ icons.get(a.action, '⬤') }} {{ a.action|upper }}</span>
               {% if a.old_value or a.new_value %}
                 <span class="activity-change">{{ a.old_value or '' }} → {{ a.new_value or '' }}</span>
               {% endif %}
