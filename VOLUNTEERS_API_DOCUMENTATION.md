@@ -4,6 +4,13 @@
 
 API-то за доброволци предоставя функционалност за намиране и управление на локациите на доброволците в системата HelpChain. Всички endpoints са достъпни под префикса `/api/volunteers/`.
 
+## Privacy & Contact Data
+
+By default, the `GET /api/volunteers/nearby` endpoint returns **public fields only**. Personal contact data (email, phone) is returned **only** when explicitly requested via `include_contacts=true` and only for authorized roles (`admin`, `coordinator`).
+
+For details, see:
+- [`docs/api/volunteers-nearby-privacy.md`](docs/api/volunteers-nearby-privacy.md)
+
 ## Endpoints
 
 ### 1. Намиране на доброволци в радиус
