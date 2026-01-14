@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta, timezone
+import time
 
 import jwt
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, g
 from werkzeug.security import check_password_hash
 
 from ..models import AdminUser
+from ..security.api_authz import require_api_auth
 
 api_auth_bp = Blueprint("api_auth", __name__, url_prefix="/api/auth")
 
@@ -24,7 +26,28 @@ def _make_token(admin_user: AdminUser) -> str:
         "iss": "helpchain",
         "typ": "access",
     }
-    return jwt.encode(payload, _jwt_secret(), algorithm="HS256")
+    token = jwt.encode(payload, _jwt_secret(), algorithm="HS256")
+    if isinstance(token, bytes):
+        token = token.decode("utf-8")
+    return token
+
+
+# Very lightweight in-memory throttle: 10 attempts / 60s per IP (dev-friendly)
+_login_attempts = {}
+_MAX_ATTEMPTS = 10
+_WINDOW_SEC = 60
+
+
+def _too_many_attempts(ip: str) -> bool:
+    now = time.time()
+    window = _login_attempts.get(ip, [])
+    window = [ts for ts in window if now - ts < _WINDOW_SEC]
+    if len(window) >= _MAX_ATTEMPTS:
+        _login_attempts[ip] = window
+        return True
+    window.append(now)
+    _login_attempts[ip] = window
+    return False
 
 
 @api_auth_bp.post("/login")
@@ -35,6 +58,10 @@ def api_login():
 
     if not email or not password:
         return jsonify({"error": "email and password required"}), 400
+
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr) or "unknown"
+    if _too_many_attempts(ip):
+        return jsonify({"error": "Too many attempts, try again later"}), 429
 
     user = AdminUser.query.filter_by(email=email).first()
     if not user or not check_password_hash(user.password_hash, password):
@@ -53,3 +80,19 @@ def api_login():
         ),
         200,
     )
+
+
+@api_auth_bp.get("/me")
+@require_api_auth
+def api_me():
+    claims = getattr(g, "api_claims", {}) or {}
+    return jsonify(
+        {
+            "user_id": claims.get("sub"),
+            "role": claims.get("role"),
+            "is_admin": bool(claims.get("is_admin", False)),
+            "iat": claims.get("iat"),
+            "exp": claims.get("exp"),
+            "iss": claims.get("iss"),
+        }
+    ), 200

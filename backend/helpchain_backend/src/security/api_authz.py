@@ -12,7 +12,9 @@ def _decode_token(token: str):
         token,
         _jwt_secret(),
         algorithms=["HS256"],
-        options={"require": ["exp", "iat", "sub"]},
+        issuer="helpchain",
+        leeway=10,
+        options={"require": ["exp", "iat", "sub", "iss"]},
     )
 
 
