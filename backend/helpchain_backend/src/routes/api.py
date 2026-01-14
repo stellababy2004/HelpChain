@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Blueprint, jsonify, request, send_file, current_app
+from flask import Blueprint, jsonify, request, send_file, current_app, g
 from pywebpush import webpush, WebPushException
 from backend.ai_service import ai_service
 import asyncio
@@ -397,6 +397,8 @@ def get_nearby_volunteers():
         lat = float(request.args.get("lat", 0))
         lng = float(request.args.get("lng", 0))
         radius_km = float(request.args.get("radius", 10))  # default 10km
+        include_contacts = request.args.get("include_contacts", "false").lower() == "true"
+        can_see_contacts = include_contacts and (getattr(g, "api_is_admin", False) or getattr(g, "api_role", None) == "coordinator")
 
         # Simple distance calculation using Haversine formula
         # For production, consider using PostGIS or similar
@@ -419,19 +421,19 @@ def get_nearby_volunteers():
             if vol.latitude and vol.longitude:
                 distance = haversine_distance(lat, lng, vol.latitude, vol.longitude)
                 if distance <= radius_km:
-                    nearby.append(
-                        {
-                            "id": vol.id,
-                            "name": vol.name,
-                            "email": vol.email,
-                            "phone": vol.phone,
-                            "skills": vol.skills,
-                            "location": vol.location,
-                            "latitude": vol.latitude,
-                            "longitude": vol.longitude,
-                            "distance_km": round(distance, 2),
-                        }
-                    )
+                    v_data = {
+                        "id": vol.id,
+                        "name": vol.name,
+                        "skills": vol.skills,
+                        "location": vol.location,
+                        "latitude": vol.latitude,
+                        "longitude": vol.longitude,
+                        "distance_km": round(distance, 2),
+                    }
+                    if can_see_contacts:
+                        v_data["email"] = vol.email
+                        v_data["phone"] = vol.phone
+                    nearby.append(v_data)
 
         # Sort by distance
         nearby.sort(key=lambda x: x["distance_km"])
