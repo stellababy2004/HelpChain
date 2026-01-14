@@ -167,6 +167,12 @@ def create_app(config_object=None) -> Flask:
 
     # --- Blueprints (single source of truth for routes) ---
     try:
+        from .routes.api_auth import api_auth_bp
+        app.register_blueprint(api_auth_bp)
+    except Exception as e:
+        app.logger.info("api_auth blueprint not loaded: %s", e)
+
+    try:
         from .routes.api import api_bp
         app.register_blueprint(api_bp, url_prefix="/api")
     except Exception as e:

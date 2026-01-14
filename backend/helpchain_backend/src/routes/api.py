@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 from ..controllers.helpchain_controller import HelpChainController
 from ..models import Request, RequestLog, db, NotificationSubscription
+from ..security.api_authz import require_api_auth, require_roles
 from ..extensions import csrf
 from sqlalchemy import func
 
@@ -218,6 +219,7 @@ def reject_help(help_id):
 
 
 @api_bp.route("/dashboard", methods=["GET"])
+@require_roles("admin")
 def dashboard():
     try:
         try:
@@ -290,6 +292,7 @@ def dashboard():
 
 
 @api_bp.route("/export", methods=["GET"])
+@require_roles("admin")
 def export():
     fmt = (request.args.get("format") or "excel").lower()
     filters = {k: request.args.get(k) for k in ("date_from", "date_to", "status", "region", "volunteer_id")}
@@ -388,6 +391,7 @@ def delete_request():
 
 
 @api_bp.route("/volunteers/nearby", methods=["GET"])
+@require_roles("admin")
 def get_nearby_volunteers():
     try:
         lat = float(request.args.get("lat", 0))
@@ -451,6 +455,7 @@ def get_nearby_volunteers():
 
 
 @api_bp.route("/volunteers/<int:volunteer_id>/location", methods=["PUT"])
+@require_roles("admin")
 def update_volunteer_location(volunteer_id):
     try:
         data = request.get_json()
