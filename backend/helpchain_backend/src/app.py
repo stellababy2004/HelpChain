@@ -260,6 +260,13 @@ def create_app(config_object=None):
     # Config from caller, then env, then sane defaults
     if isinstance(config_object, dict):
         app.config.update(config_object)
+    # load defaults from Config class
+    try:
+        from .config import Config as _Cfg
+
+        app.config.from_object(_Cfg)
+    except Exception:
+        pass
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config.setdefault(
         "SQLALCHEMY_DATABASE_URI",
@@ -281,6 +288,11 @@ def create_app(config_object=None):
             secret = "dev-only-change-me-please"
             app.logger.warning("SECRET_KEY missing. Using DEV fallback. Set SECRET_KEY via env/instance config.")
         app.config["SECRET_KEY"] = secret
+
+    # Web push (VAPID) defaults
+    app.config.setdefault("VAPID_PUBLIC_KEY", os.getenv("VAPID_PUBLIC_KEY"))
+    app.config.setdefault("VAPID_PRIVATE_KEY", os.getenv("VAPID_PRIVATE_KEY"))
+    app.config.setdefault("VAPID_SUBJECT", os.getenv("VAPID_SUBJECT", "mailto:admin@example.com"))
 
     # DB + Migrate
     db.init_app(app)

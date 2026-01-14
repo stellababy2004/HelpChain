@@ -55,3 +55,8 @@ class Config:
     MFA_VERIFY_MAX_ATTEMPTS = int(os.getenv("MFA_VERIFY_MAX_ATTEMPTS", 8))
     MFA_VERIFY_LOCK_MIN = int(os.getenv("MFA_VERIFY_LOCK_MIN", 10))
 
+    # --- Web Push (VAPID) ---
+    VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY")
+    VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY")
+    VAPID_SUBJECT = os.getenv("VAPID_SUBJECT", "mailto:admin@example.com")
+

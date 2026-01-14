@@ -881,6 +881,24 @@ class Notification(db.Model):
     created_at = Column(DateTime, default=utc_now)
 
 
+class NotificationSubscription(db.Model):
+    __tablename__ = "notification_subscriptions"
+
+    id = Column(Integer, primary_key=True)
+    endpoint = Column(Text, nullable=False)
+    p256dh = Column(Text, nullable=False)
+    auth = Column(Text, nullable=False)
+
+    user_agent = Column(String(255), nullable=True)
+    ip = Column(String(64), nullable=True)
+
+    created_at = Column(DateTime, nullable=False, default=utc_now)
+
+    __table_args__ = (
+        UniqueConstraint("endpoint", name="uq_notification_subscriptions_endpoint"),
+    )
+
+
 # Provide a lightweight Query proxy for modules that call `Model.query`.
 try:
     from backend.extensions import db as _db

@@ -1,11 +1,14 @@
-from flask import Blueprint, jsonify, request, send_file
+import os
+import json
+from flask import Blueprint, jsonify, request, send_file, current_app
+from pywebpush import webpush, WebPushException
 from backend.ai_service import ai_service
 import asyncio
 
 from datetime import datetime, timedelta
 
 from ..controllers.helpchain_controller import HelpChainController
-from ..models import Request, RequestLog, db
+from ..models import Request, RequestLog, db, NotificationSubscription
 from ..extensions import csrf
 from sqlalchemy import func
 
@@ -38,6 +41,114 @@ def chatbot_message():
 @api_bp.route("/ai/status", methods=["GET"])
 def ai_status():
     return {"status": "ok"}, 200
+
+
+@api_bp.get("/notification/vapid-public-key")
+def vapid_public_key():
+    # Try config first, then env
+    key = current_app.config.get("VAPID_PUBLIC_KEY") or os.getenv("VAPID_PUBLIC_KEY")
+    if not key:
+        return jsonify({"enabled": False, "publicKey": None}), 200
+    return jsonify({"enabled": True, "publicKey": key}), 200
+
+
+@api_bp.route("/notification/subscribe", methods=["POST"])
+def notification_subscribe():
+    data = request.get_json(silent=True) or {}
+
+    endpoint = data.get("endpoint")
+    keys = data.get("keys") or {}
+    p256dh = keys.get("p256dh")
+    auth = keys.get("auth")
+
+    if not endpoint or not p256dh or not auth:
+        return jsonify({"error": "invalid subscription payload"}), 400
+
+    ua = request.headers.get("User-Agent")
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+
+    existing = NotificationSubscription.query.filter_by(endpoint=endpoint).first()
+    if existing:
+        existing.p256dh = p256dh
+        existing.auth = auth
+        existing.user_agent = ua
+        existing.ip = ip
+        db.session.commit()
+        return jsonify({"ok": True, "updated": True}), 200
+
+    sub = NotificationSubscription(
+        endpoint=endpoint,
+        p256dh=p256dh,
+        auth=auth,
+        user_agent=ua,
+        ip=ip,
+    )
+    db.session.add(sub)
+    db.session.commit()
+    return jsonify({"ok": True, "created": True}), 201
+
+
+@api_bp.route("/notification/unsubscribe", methods=["POST"])
+def notification_unsubscribe():
+    data = request.get_json(silent=True) or {}
+    endpoint = data.get("endpoint")
+
+    if not endpoint:
+        return jsonify({"error": "missing endpoint"}), 400
+
+    sub = NotificationSubscription.query.filter_by(endpoint=endpoint).first()
+    if not sub:
+        # idempotent success if already removed
+        return jsonify({"ok": True, "deleted": False}), 200
+
+    db.session.delete(sub)
+    db.session.commit()
+    return jsonify({"ok": True, "deleted": True}), 200
+
+
+@api_bp.route("/notification/test", methods=["POST"])
+def notification_test():
+    data = request.get_json(silent=True) or {}
+    endpoint = data.get("endpoint")
+
+    q = NotificationSubscription.query
+    sub = q.filter_by(endpoint=endpoint).first() if endpoint else q.order_by(NotificationSubscription.created_at.desc()).first()
+
+    if not sub:
+        return jsonify({"ok": False, "error": "no subscription"}), 404
+
+    vapid_public = current_app.config.get("VAPID_PUBLIC_KEY")
+    vapid_private = current_app.config.get("VAPID_PRIVATE_KEY")
+    vapid_subject = current_app.config.get("VAPID_SUBJECT", "mailto:admin@localhost")
+
+    if not vapid_public or not vapid_private:
+        return jsonify({"ok": False, "error": "VAPID not configured"}), 500
+
+    subscription_info = {
+        "endpoint": sub.endpoint,
+        "keys": {"p256dh": sub.p256dh, "auth": sub.auth},
+    }
+
+    payload = {
+        "title": "HelpChain",
+        "body": data.get("body") or "Test notification ✅",
+        "url": data.get("url") or "/admin/",
+    }
+
+    try:
+        webpush(
+            subscription_info=subscription_info,
+            data=json.dumps(payload),
+            vapid_private_key=vapid_private,
+            vapid_claims={"sub": vapid_subject},
+        )
+        return jsonify({"ok": True}), 200
+    except WebPushException as e:
+        status = getattr(e.response, "status_code", None)
+        if status == 410:
+            db.session.delete(sub)
+            db.session.commit()
+        return jsonify({"ok": False, "error": str(e), "status": status}), 500
 
 
 @api_bp.route("/some_endpoint", methods=["GET"])

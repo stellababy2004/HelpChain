@@ -31,6 +31,7 @@ for _mod in _CANDIDATE_MODEL_MODULES:
         "Volunteer",
         "PushSubscription",
         "Feedback",
+        "NotificationSubscription",
     ):
         if hasattr(module, _name):
             _IMPORTED[_name] = getattr(module, _name)
