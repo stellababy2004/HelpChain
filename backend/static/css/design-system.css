@@ -1,1 +1,101 @@
 /* Placeholder: design system styles to be added. */
+
+/* =========================
+   HERO readability hotfix
+   ========================= */
+.hero-subtitle,
+.hero .hero-subtitle,
+.hero-light .hero-subtitle {
+  color: rgba(0, 0, 0, 0.82) !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  padding: 10px 14px;
+  border-radius: 10px;
+  display: inline-block;
+  max-width: 780px;
+  margin: 12px auto 0;
+  backdrop-filter: blur(6px);
+}
+
+.hero-content,
+.hero-light .hero-content {
+  text-align: center;
+}
+
+/* =========================
+   Top nav cleanup (remove bullets, align)
+   ========================= */
+nav ul,
+header ul,
+.navbar ul {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+nav li,
+header li,
+.navbar li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+nav a,
+header a,
+.navbar a {
+  text-decoration: none;
+}
+
+/* =========================
+   Hero title polish
+   ========================= */
+.hero-title,
+.hero-light .hero-title {
+  color: #0b1220 !important;
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* =========================
+   Hero CTA buttons polish
+   ========================= */
+.hero-buttons,
+.hero-light .hero-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.hero-buttons a,
+.hero-light .hero-buttons a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(11, 18, 32, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+}
+
+.hero-buttons a:hover,
+.hero-light .hero-buttons a:hover {
+  transform: translateY(-1px);
+}
+
+/* =========================
+   Impact card polish
+   ========================= */
+.impact-card,
+#impact-widget,
+.impact-widget {
+  max-width: 980px;
+  margin: 26px auto 0;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(11, 18, 32, 0.1);
+}
