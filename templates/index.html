@@ -1161,5 +1161,23 @@
         });
       }
     </script>
+    <script>
+      // Debug: confirm template is the served one
+      console.log("IMPACT_DEBUG: index.html loaded", new Date().toISOString());
+    </script>
+    <script>
+      // Debug: force a fetch to /api/public/impact to see it in network/logs
+      (async () => {
+        try {
+          console.log("IMPACT_DEBUG: fetching /api/public/impact ...");
+          const r = await fetch("/api/public/impact", { cache: "no-store" });
+          console.log("IMPACT_DEBUG: status", r.status);
+          const data = await r.json();
+          console.log("IMPACT_DEBUG: data", data);
+        } catch (e) {
+          console.error("IMPACT_DEBUG: failed", e);
+        }
+      })();
+    </script>
   </body>
 </html>
