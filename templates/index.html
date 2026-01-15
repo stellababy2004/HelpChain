@@ -989,8 +989,8 @@
         showLoading: () => {},
         hideLoading: () => {},
       };
-      if (window.HelpChainFeedback) {
-        feedback = new HelpChainFeedback();
+      if (typeof window.HelpChainFeedback === "function") {
+        feedback = new window.HelpChainFeedback();
       } else {
         console.warn("HelpChainFeedback is not defined (skipping init).");
       }

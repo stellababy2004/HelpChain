@@ -46,6 +46,11 @@ class HelpChainNotificationService {
    */
   async registerServiceWorker() {
     if ("serviceWorker" in navigator) {
+      const host = window.location.hostname;
+      if (host === "127.0.0.1" || host === "localhost") {
+        console.info("Service Worker disabled on localhost (dev)");
+        return;
+      }
       try {
         this.swRegistration = await navigator.serviceWorker.register("/sw.js");
         console.log("Service Worker registered successfully");
