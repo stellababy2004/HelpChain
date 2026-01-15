@@ -154,7 +154,8 @@ class AIService:
         if requests is None:
             raise RuntimeError("requests пакетът не е инсталиран. Инсталирайте с 'pip install requests'.")
         try:
-            url = provider.api_url if hasattr(provider, "api_url") and provider.api_url else "http://localhost:11434/api/generate"
+            base_url = os.getenv("OLLAMA_BASE_URL") or "http://localhost:11434"
+            url = f"{base_url.rstrip('/')}/api/generate"
             payload = {
                 "model": getattr(provider, "model", "llama2"),
                 "prompt": context,

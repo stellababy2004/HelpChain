@@ -1,17 +1,16 @@
 import os
 import json
+import asyncio
+from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request, send_file, current_app, g
 from pywebpush import webpush, WebPushException
+from sqlalchemy import func, or_
+
 from backend.ai_service import ai_service
-import asyncio
-
-from datetime import datetime, timedelta
-
 from ..controllers.helpchain_controller import HelpChainController
-from ..models import Request, RequestLog, db, NotificationSubscription
+from ..models import Request, RequestLog, RequestMetric, db, NotificationSubscription
 from ..security.api_authz import require_api_auth, require_roles
 from ..extensions import csrf
-from sqlalchemy import func
 
 
 api_bp = Blueprint("api", __name__)
@@ -497,5 +496,113 @@ def update_volunteer_location(volunteer_id):
 
     except ValueError:
         return jsonify({"error": "Invalid coordinates"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@api_bp.get("/public/impact")
+def public_impact():
+    """Privacy-safe impact stats (no personal data)."""
+    try:
+        now = datetime.utcnow()
+        last_24h_from = now - timedelta(hours=24)
+        last_7d_from = now - timedelta(days=7)
+        last_30d_from = now - timedelta(days=30)
+
+        # Define "active" as not in done/completed/rejected/closed
+        inactive_statuses = ("done", "completed", "rejected", "closed")
+        active_count = (
+            db.session.query(func.count(Request.id))
+            .filter(or_(Request.status.is_(None), ~Request.status.in_(inactive_statuses)))
+            .scalar()
+        )
+
+        new_24h = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.created_at >= last_24h_from)
+            .scalar()
+        )
+
+        matched_24h = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.assigned_volunteer_id.isnot(None))
+            .filter(Request.updated_at.isnot(None))
+            .filter(Request.updated_at >= last_24h_from)
+            .scalar()
+        )
+
+        completed_7d = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.completed_at.isnot(None))
+            .filter(Request.completed_at >= last_7d_from)
+            .scalar()
+        )
+
+        # SLA metrics from RequestMetric if available
+        avg_first_response = (
+            db.session.query(func.avg(RequestMetric.time_to_assign))
+            .join(Request, Request.id == RequestMetric.request_id)
+            .filter(Request.created_at >= last_7d_from)
+            .filter(RequestMetric.time_to_assign.isnot(None))
+            .scalar()
+        )
+        avg_first_response_minutes = None
+        if avg_first_response is not None:
+            avg_first_response_minutes = round(float(avg_first_response) / 60, 1)
+
+        avg_resolution = (
+            db.session.query(func.avg(RequestMetric.time_to_complete))
+            .join(Request, Request.id == RequestMetric.request_id)
+            .filter(Request.created_at >= last_30d_from)
+            .filter(RequestMetric.time_to_complete.isnot(None))
+            .scalar()
+        )
+        avg_resolution_hours = None
+        if avg_resolution is not None:
+            avg_resolution_hours = round(float(avg_resolution) / 3600, 1)
+
+        # Categories last 7d with k-anonymity (k>=3)
+        cat_rows = (
+            db.session.query(Request.category, func.count(Request.id))
+            .filter(Request.created_at >= last_7d_from)
+            .filter(Request.category.isnot(None))
+            .group_by(Request.category)
+            .all()
+        )
+        categories = []
+        other_count = 0
+        for cat, cnt in cat_rows:
+            if cnt < 3:
+                other_count += cnt
+            else:
+                categories.append({"category": cat, "count": int(cnt)})
+        if other_count > 0:
+            categories.append({"category": "other", "count": other_count})
+        categories.sort(key=lambda x: x["count"], reverse=True)
+
+        data = {
+            "generated_at": now.isoformat() + "Z",
+            "window": {
+                "last_24h": {"from": last_24h_from.isoformat() + "Z", "to": now.isoformat() + "Z"},
+                "last_7d": {"from": last_7d_from.isoformat() + "Z", "to": now.isoformat() + "Z"},
+                "last_30d": {"from": last_30d_from.isoformat() + "Z", "to": now.isoformat() + "Z"},
+            },
+            "counts": {
+                "active_requests": int(active_count or 0),
+                "new_last_24h": int(new_24h or 0),
+                "matched_last_24h": int(matched_24h or 0),
+                "completed_last_7d": int(completed_7d or 0),
+            },
+            "sla": {
+                "avg_first_response_minutes_7d": avg_first_response_minutes,
+                "avg_resolution_hours_30d": avg_resolution_hours,
+            },
+            "categories_last_7d": categories,
+            "privacy": {
+                "k_min": 3,
+                "notes": "Counts may be bucketed/hidden when below k to reduce re-identification risk.",
+            },
+        }
+        return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
