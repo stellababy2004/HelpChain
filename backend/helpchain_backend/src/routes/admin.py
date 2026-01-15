@@ -603,6 +603,77 @@ def admin_2fa_disable():
     return redirect(url_for("admin.admin_dashboard"))
 
 
+@admin_bp.get("/api/dashboard")
+@login_required
+def admin_api_dashboard():
+    """Session-based dashboard data for admin UI (bypass JWT)."""
+    if not getattr(current_user, "is_admin", False):
+        return jsonify({"error": "forbidden"}), 403
+
+    try:
+        try:
+            days = int(request.args.get("days", 30))
+        except Exception:
+            days = 30
+
+        since_dt = datetime.utcnow() - timedelta(days=days)
+
+        status_rows = (
+            db.session.query(
+                func.coalesce(Request.status, "unknown").label("status"),
+                func.count(Request.id).label("cnt"),
+            )
+            .group_by("status")
+            .all()
+        )
+        counts_by_status = {status: int(cnt) for status, cnt in status_rows}
+        total_requests = int(sum(counts_by_status.values()))
+
+        city_expr = func.coalesce(
+            func.nullif(Request.city, ""),
+            func.nullif(Request.region, ""),
+            "unknown",
+        )
+        city_rows = (
+            db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt"))
+            .group_by("city")
+            .order_by(func.count(Request.id).desc())
+            .limit(10)
+            .all()
+        )
+        requests_by_city = [{"city": c, "count": int(cnt)} for c, cnt in city_rows]
+
+        ts_rows = (
+            db.session.query(
+                func.date(Request.created_at).label("day"),
+                func.count(Request.id).label("cnt"),
+            )
+            .filter(Request.created_at.isnot(None))
+            .filter(Request.created_at >= since_dt)
+            .group_by("day")
+            .order_by("day")
+            .all()
+        )
+        timeseries = [{"date": str(day), "count": int(cnt)} for day, cnt in ts_rows]
+
+        try:
+            total_volunteers = db.session.query(Volunteer).count()
+        except Exception:
+            total_volunteers = 0
+
+        return jsonify(
+            {
+                "total_requests": total_requests,
+                "total_volunteers": total_volunteers,
+                "counts_by_status": counts_by_status,
+                "requests_by_city": requests_by_city,
+                "timeseries": timeseries,
+            }
+        ), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @admin_bp.route("/")
 @admin_required
 def admin_dashboard():

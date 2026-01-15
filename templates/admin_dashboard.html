@@ -267,7 +267,7 @@
 
   async function fetchDashboard() {
     try {
-      const res = await fetch("/api/dashboard", { credentials: "same-origin" });
+      const res = await fetch("/admin/api/dashboard", { credentials: "same-origin" });
 
       if (res.status === 401 || res.status === 403) {
         showAlert("warning", "Нямаш достъп до dashboard данните (трябва login / права).");
@@ -466,7 +466,7 @@
     chart.render();
   }
 
-  fetch("/api/dashboard", { credentials: "same-origin" })
+  fetch("/admin/api/dashboard", { credentials: "same-origin" })
     .then(async (res) => {
       if (res.status === 401 || res.status === 403) {
         showNoData("Нямаш достъп / трябва login");
@@ -535,7 +535,7 @@ document.addEventListener("DOMContentLoaded", async function renderTrendChart() 
   if (typeof ApexCharts === "undefined") return;
 
   try {
-    const res = await fetch("/api/dashboard");
+    const res = await fetch("/admin/api/dashboard");
 
     if (res.status === 401 || res.status === 403) {
       if (errorEl) errorEl.style.display = "block";
