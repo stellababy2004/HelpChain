@@ -155,3 +155,6 @@ backend/static/previews/
 scripts/_tmp_*.py
 temp.txt
 
+
+# local tooling
+.hintrc
