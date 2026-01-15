@@ -1,1 +1,24 @@
 /* Placeholder: design system styles to be added. */
+
+/* =========================
+   HERO readability hotfix
+   ========================= */
+.hero-subtitle,
+.hero .hero-subtitle,
+.hero-light .hero-subtitle {
+  color: rgba(0, 0, 0, 0.82) !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  padding: 10px 14px;
+  border-radius: 10px;
+  display: inline-block;
+  max-width: 780px;
+  margin: 12px auto 0;
+  backdrop-filter: blur(6px);
+}
+
+.hero-content,
+.hero-light .hero-content {
+  text-align: center;
+}
