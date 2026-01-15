@@ -1078,6 +1078,58 @@
     </script>
 
     <script>
+      // --- Impact KPI animation helpers ---
+      function toInt(val) {
+        const n = Number(val);
+        return Number.isFinite(n) ? Math.trunc(n) : 0;
+      }
+
+      function animateNumber(el, from, to, duration = 650) {
+        from = toInt(from);
+        to = toInt(to);
+
+        if (from === to) {
+          el.textContent = String(to);
+          el.classList.remove("impact-kpi-animate");
+          void el.offsetWidth;
+          el.classList.add("impact-kpi-animate");
+          return;
+        }
+
+        const start = performance.now();
+        const diff = to - from;
+
+        function tick(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          const current = Math.round(from + diff * eased);
+          el.textContent = String(current);
+
+          if (t < 1) {
+            requestAnimationFrame(tick);
+          } else {
+            el.classList.remove("impact-kpi-animate");
+            void el.offsetWidth;
+            el.classList.add("impact-kpi-animate");
+          }
+        }
+
+        requestAnimationFrame(tick);
+      }
+
+      function setKPI(elId, newValue) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        el.classList.add("impact-kpi-number");
+
+        const prevAttr = el.getAttribute("data-prev");
+        const prevVal = prevAttr === null ? toInt(el.textContent) : toInt(prevAttr);
+        const nextVal = toInt(newValue);
+        el.setAttribute("data-prev", String(nextVal));
+
+        animateNumber(el, prevVal, nextVal);
+      }
+
       async function loadImpact() {
         try {
           const card = document.querySelector(".impact-card");
@@ -1105,10 +1157,10 @@
             other: "Друго",
           };
 
-          setText("impact_new_24h", counts.new_last_24h);
-          setText("impact_matched_24h", counts.matched_last_24h);
-          setText("impact_active", counts.active_requests);
-          setText("impact_completed_7d", counts.completed_last_7d);
+          setKPI("impact_new_24h", counts.new_last_24h);
+          setKPI("impact_matched_24h", counts.matched_last_24h);
+          setKPI("impact_active", counts.active_requests);
+          setKPI("impact_completed_7d", counts.completed_last_7d);
 
           const first = sla.avg_first_response_minutes_7d;
           const reso = sla.avg_resolution_hours_30d;
