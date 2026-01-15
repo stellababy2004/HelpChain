@@ -240,3 +240,158 @@ header a,
   opacity: 0.6;
   filter: saturate(0.8);
 }
+
+/* --- HelpChain Sections (Volunteer-friendly) --- */
+.hc-section {
+  padding: 56px 0;
+}
+
+.hc-section:nth-of-type(even) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.hc-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.hc-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+}
+
+.hc-lead {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin: 0;
+  opacity: 0.92;
+}
+
+.hc-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.hc-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.hc-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.hc-card-title {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+.hc-card-text {
+  margin: 0;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.hc-story {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.hc-story-kicker {
+  display: inline-block;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  margin-bottom: 10px;
+}
+
+.hc-story-title {
+  margin: 0 0 8px;
+  font-weight: 750;
+}
+
+.hc-story-text {
+  margin: 0;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.hc-cta {
+  padding-top: 70px;
+  padding-bottom: 70px;
+}
+
+.hc-cta-inner {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 18px;
+  padding: 26px;
+  background: rgba(255, 255, 255, 0.95);
+  text-align: center;
+}
+
+.hc-cta-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.hc-cta-note {
+  margin-top: 14px;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.hc-card:hover,
+.hc-story:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.hc-cta-actions .btn:focus-visible {
+  outline: 3px solid rgba(13, 110, 253, 0.25);
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .hc-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .hc-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Volunteer onboarding mini-cards */
+.vh-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fff;
+}
+
+.vh-bullets {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.vh-bullets li {
+  margin-bottom: 6px;
+}
