@@ -650,6 +650,65 @@
         </div>
       </section>
 
+      <!-- Impact Section (public, privacy-safe) -->
+      <section class="impact-section" aria-labelledby="impact-title">
+        <div class="container">
+          <div class="impact-card">
+            <div class="impact-header">
+              <h2 id="impact-title" class="impact-title">Реален ефект (на живо)</h2>
+              <p class="impact-subtitle">
+                Анонимни обобщени данни за последните 24 часа / 7 дни / 30 дни.
+              </p>
+            </div>
+
+            <div class="impact-grid">
+              <div class="impact-kpi">
+                <div class="impact-kpi-label">Нови заявки (24ч)</div>
+                <div class="impact-kpi-value" id="impact_new_24h">–</div>
+              </div>
+              <div class="impact-kpi">
+                <div class="impact-kpi-label">Съпоставени (24ч)</div>
+                <div class="impact-kpi-value" id="impact_matched_24h">–</div>
+              </div>
+              <div class="impact-kpi">
+                <div class="impact-kpi-label">Активни заявки</div>
+                <div class="impact-kpi-value" id="impact_active">–</div>
+              </div>
+              <div class="impact-kpi">
+                <div class="impact-kpi-label">Завършени (7д)</div>
+                <div class="impact-kpi-value" id="impact_completed_7d">–</div>
+              </div>
+            </div>
+
+            <div class="impact-row">
+              <div class="impact-box">
+                <div class="impact-box-title">SLA</div>
+                <div class="impact-box-body">
+                  <div class="impact-sla-line">
+                    Първи отговор (7д): <strong id="impact_sla_first">–</strong>
+                  </div>
+                  <div class="impact-sla-line">
+                    Решаване (30д): <strong id="impact_sla_resolution">–</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="impact-box">
+                <div class="impact-box-title">Категории (7д)</div>
+                <div class="impact-box-body">
+                  <div id="impact_categories" class="impact-chips">–</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="impact-footer">
+              <span class="impact-privacy" id="impact_privacy_note"></span>
+              <span class="impact-updated" id="impact_updated_at"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Features Section -->
       <section class="features-section" id="features">
         <div class="container">
@@ -840,7 +899,16 @@
     <script src="{{ url_lang('static', filename='js/notification_service.js') }}"></script>
     <script>
       // Initialize feedback system
-      const feedback = new HelpChainFeedback();
+      let feedback = {
+        showToast: () => {},
+        showLoading: () => {},
+        hideLoading: () => {},
+      };
+      if (typeof window.HelpChainFeedback === "function") {
+        feedback = new window.HelpChainFeedback();
+      } else {
+        console.warn("HelpChainFeedback is not defined (skipping init).");
+      }
 
       // Initialize push notifications (use global singleton)
       window.notificationService = window.notificationService || new HelpChainNotificationService();
@@ -994,11 +1062,11 @@
       });
 
       // Handle reduced motion preference
-      if (
-        window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ) {
-        // Disable smooth scrolling
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      // Disable smooth scrolling
         document.documentElement.style.scrollBehavior = "auto";
 
         // Disable animations
@@ -1008,10 +1076,91 @@
         });
       }
     </script>
+
+    <script>
+      async function loadImpact() {
+        try {
+          const card = document.querySelector(".impact-card");
+          if (card) card.setAttribute("aria-busy", "true");
+          const setText = (id, val, suffix = "") => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent =
+              val === null || val === undefined || val === "" ? "…" : `${val}${suffix}`;
+          };
+
+          const res = await fetch("/api/public/impact", { cache: "no-store" });
+          if (!res.ok) throw new Error("impact fetch failed: " + res.status);
+          const data = await res.json();
+
+          const counts = data.counts || {};
+          const sla = data.sla || {};
+
+          const CATEGORY_LABELS_BG = {
+            medical: "Здраве",
+            legal: "Правна помощ",
+            admin: "Администрация",
+            social: "Социална помощ",
+            psychology: "Психолог",
+            other: "Друго",
+          };
+
+          setText("impact_new_24h", counts.new_last_24h);
+          setText("impact_matched_24h", counts.matched_last_24h);
+          setText("impact_active", counts.active_requests);
+          setText("impact_completed_7d", counts.completed_last_7d);
+
+          const first = sla.avg_first_response_minutes_7d;
+          const reso = sla.avg_resolution_hours_30d;
+          setText(
+            "impact_sla_first",
+            first === null || first === undefined || first === "" ? "– (недостатъчно данни)" : Math.round(first),
+            first === null || first === undefined || first === "" ? "" : " мин",
+          );
+          setText(
+            "impact_sla_resolution",
+            reso === null || reso === undefined || reso === "" ? "– (недостатъчно данни)" : Math.round(reso),
+            reso === null || reso === undefined || reso === "" ? "" : " ч",
+          );
+
+          const catWrap = document.getElementById("impact_categories");
+          if (catWrap) {
+            const cats = data.categories_last_7d || [];
+            catWrap.innerHTML = "";
+            if (!cats.length) {
+              catWrap.textContent = "–";
+            } else {
+              for (const c of cats) {
+                const chip = document.createElement("span");
+                chip.className = "impact-chip";
+                const label = CATEGORY_LABELS_BG[c.category] || c.category;
+                chip.textContent = `${label}: ${c.count}`;
+                catWrap.appendChild(chip);
+              }
+            }
+          }
+
+          const privacy = data.privacy || {};
+          setText(
+            "impact_privacy_note",
+            privacy.notes ? `Privacy: ${privacy.notes}` : "",
+          );
+          setText(
+            "impact_updated_at",
+            data.generated_at ? `Обновено: ${data.generated_at}` : "",
+          );
+          if (card) card.setAttribute("aria-busy", "false");
+        } catch (e) {
+          console.warn("Impact widget error:", e);
+          const footer = document.getElementById("impact_updated_at");
+          if (footer) footer.textContent = "Временно недостъпно";
+          const card = document.querySelector(".impact-card");
+          if (card) card.setAttribute("aria-busy", "false");
+        }
+      }
+
+      loadImpact();
+      setInterval(loadImpact, 10 * 60 * 1000);
+    </script>
   </body>
 </html>
-
-
-@app.route('/')
-def home():
-    return render_template('home_new.html')
