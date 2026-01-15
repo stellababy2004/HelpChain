@@ -938,7 +938,16 @@
     </script>
     <script>
       // Initialize feedback system
-      const feedback = new HelpChainFeedback();
+      let feedback = {
+        showToast: () => {},
+        showLoading: () => {},
+        hideLoading: () => {},
+      };
+      if (window.HelpChainFeedback) {
+        feedback = new HelpChainFeedback();
+      } else {
+        console.warn("HelpChainFeedback is not defined (skipping init).");
+      }
 
       // Initialize push notifications
       const notificationService = new NotificationService();
