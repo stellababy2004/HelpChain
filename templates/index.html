@@ -29,7 +29,7 @@
     <!-- Custom CSS -->
     <link
       rel="stylesheet"
-      href="{{ url_lang('static', filename='css/design-system.css') }}"
+      href="{{ url_lang('static', filename='css/design-system.css') }}?v=20260115-hero"
     />
     <link
       rel="stylesheet"
@@ -504,6 +504,21 @@
   </head>
 
   <body data-theme="light">
+    <div
+      style="
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 99999;
+        background: #ff0;
+        color: #000;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-weight: 700;
+      "
+    >
+      TEMPLATE OK ✅
+    </div>
     <!-- Skip to main content -->
     <a href="#main-content" class="skip-link">Отиди към основното съдържание</a>
 
