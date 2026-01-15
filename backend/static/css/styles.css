@@ -86,3 +86,63 @@ form select.form-select {
 .table-responsive {
   overflow-x: auto;
 }
+
+/* Live Impact widget */
+.impact {
+  padding: 24px 0;
+}
+.impact-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+}
+.impact-head h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+.muted {
+  opacity: 0.75;
+}
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.kpi {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px;
+}
+.kpi .k {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.kpi .v {
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.impact-sla {
+  margin-top: 14px;
+  display: grid;
+  gap: 6px;
+}
+.impact-cats {
+  margin-top: 14px;
+}
+.impact-cats ul {
+  margin: 8px 0 0;
+  padding-left: 16px;
+}
+.impact-foot {
+  margin-top: 14px;
+  font-size: 12px;
+}
+@media (max-width: 900px) {
+  .impact-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

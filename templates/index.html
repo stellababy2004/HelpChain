@@ -749,6 +749,35 @@
         </div>
       </section>
 
+      <!-- Live Impact (public, privacy-safe) -->
+      <section class="impact" id="impact">
+        <div class="impact-card">
+          <div class="impact-head">
+            <h2>Реален ефект (на живо)</h2>
+            <p class="muted">Анонимни, агрегирани данни — без лична информация.</p>
+          </div>
+
+          <div class="impact-grid">
+            <div class="kpi"><div class="k">Активни заявки</div><div class="v" id="kpiActive">–</div></div>
+            <div class="kpi"><div class="k">Нови (24ч)</div><div class="v" id="kpiNew24h">–</div></div>
+            <div class="kpi"><div class="k">Свързани (24ч)</div><div class="v" id="kpiMatched24h">–</div></div>
+            <div class="kpi"><div class="k">Приключени (7 дни)</div><div class="v" id="kpiDone7d">–</div></div>
+          </div>
+
+          <div class="impact-sla">
+            <div><span class="muted">Средно време до първа реакция (7 дни):</span> <b id="slaFirst">–</b></div>
+            <div><span class="muted">Средно време до решаване (30 дни):</span> <b id="slaResolution">–</b></div>
+          </div>
+
+          <div class="impact-cats">
+            <div class="muted">Топ категории (7 дни)</div>
+            <ul id="impactCats"></ul>
+          </div>
+
+          <div class="impact-foot muted" id="impactUpdated">Обновено: –</div>
+        </div>
+      </section>
+
       <!-- Footer -->
       <footer
         class="footer bg-dark text-light py-5 mt-5"
@@ -856,6 +885,57 @@
     <script src="{{ url_lang('static', filename='js/feedback.js') }}"></script>
     <script src="{{ url_lang('static', filename='js/navigation.js') }}"></script>
     <script src="{{ url_lang('static', filename='js/notification_service.js') }}"></script>
+    <script>
+      (function () {
+        async function loadImpact() {
+          try {
+            const res = await fetch("/api/public/impact", {
+              headers: { Accept: "application/json" },
+            });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            const data = await res.json();
+
+            document.getElementById("kpiActive").textContent =
+              data.counts?.active_requests ?? "–";
+            document.getElementById("kpiNew24h").textContent =
+              data.counts?.new_last_24h ?? "–";
+            document.getElementById("kpiMatched24h").textContent =
+              data.counts?.matched_last_24h ?? "–";
+            document.getElementById("kpiDone7d").textContent =
+              data.counts?.completed_last_7d ?? "–";
+
+            const fr = data.sla?.avg_first_response_minutes_7d;
+            document.getElementById("slaFirst").textContent =
+              fr == null || fr === "" ? "–" : fr + " мин";
+
+            const rr = data.sla?.avg_resolution_hours_30d;
+            document.getElementById("slaResolution").textContent =
+              rr == null || rr === "" ? "–" : rr + " ч";
+
+            const ul = document.getElementById("impactCats");
+            if (ul) {
+              ul.innerHTML = "";
+              (data.categories_last_7d || []).forEach((c) => {
+                const li = document.createElement("li");
+                li.textContent = `${c.category}: ${c.count}`;
+                ul.appendChild(li);
+              });
+            }
+
+            const ts = data.generated_at ? new Date(data.generated_at) : null;
+            document.getElementById("impactUpdated").textContent =
+              "Обновено: " + (ts ? ts.toLocaleString() : "–");
+          } catch (e) {
+            console.error("Impact widget error:", e);
+          }
+        }
+
+        if (document.getElementById("impact")) {
+          loadImpact();
+          setInterval(loadImpact, 10 * 60 * 1000);
+        }
+      })();
+    </script>
     <script>
       // Initialize feedback system
       const feedback = new HelpChainFeedback();
