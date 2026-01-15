@@ -904,20 +904,33 @@
             document.getElementById("kpiDone7d").textContent =
               data.counts?.completed_last_7d ?? "–";
 
+            const catLabel = (c) =>
+              ({
+                medical: "Медицинска",
+                admin: "Административна",
+                transport: "Транспорт",
+                food: "Храна",
+                other: "Друго",
+              }[c] || c);
+
             const fr = data.sla?.avg_first_response_minutes_7d;
             document.getElementById("slaFirst").textContent =
-              fr == null || fr === "" ? "–" : fr + " мин";
+              fr == null || fr === ""
+                ? "– (недостатъчно данни)"
+                : fr + " мин";
 
             const rr = data.sla?.avg_resolution_hours_30d;
             document.getElementById("slaResolution").textContent =
-              rr == null || rr === "" ? "–" : rr + " ч";
+              rr == null || rr === ""
+                ? "– (недостатъчно данни)"
+                : rr + " ч";
 
             const ul = document.getElementById("impactCats");
             if (ul) {
               ul.innerHTML = "";
               (data.categories_last_7d || []).forEach((c) => {
                 const li = document.createElement("li");
-                li.textContent = `${c.category}: ${c.count}`;
+                li.textContent = `${catLabel(c.category)}: ${c.count}`;
                 ul.appendChild(li);
               });
             }
