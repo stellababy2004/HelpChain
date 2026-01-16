@@ -241,117 +241,1409 @@ header a,
   filter: saturate(0.8);
 }
 
-/* Sticky volunteer CTA bar */
-.hc-sticky-cta {
+/* === Sticky CTA (Modern NGO / Airy) === */
+.hc-sticky-cta{
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 12px;
-  z-index: 9999;
+  bottom: 14px;
+  z-index: 999;
+  display: none; /* JS toggles */
+  padding: 0 14px;
+}
+
+.hc-sticky-cta.is-visible{
+  display: block;
+}
+
+.hc-sticky-cta__inner{
+  max-width: 1080px;
+  margin: 0 auto;
   display: flex;
-  justify-content: center;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 220ms ease, transform 220ms ease;
-}
-
-.hc-sticky-cta.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.hc-sticky-cta__inner {
-  width: min(1040px, calc(100% - 24px));
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-  padding: 12px 14px;
-  display: grid;
-  grid-template-columns: 1fr auto auto;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 14px;
+
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(15,23,42,0.14);
+  border-radius: 16px;
+  box-shadow: 0 16px 44px rgba(2, 6, 23, 0.10);
+  backdrop-filter: blur(10px);
+
+  padding: 12px 12px;
 }
 
-.hc-sticky-cta__title {
-  font-weight: 800;
-  font-size: 14px;
-  line-height: 1.1;
-}
-
-.hc-sticky-cta__subtitle {
-  font-size: 13px;
-  opacity: 0.8;
-  margin-top: 2px;
-}
-
-.hc-sticky-cta__actions {
+.hc-sticky-cta__copy{
   display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 220px;
+}
+
+.hc-sticky-cta__title{
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.hc-sticky-cta__subtitle{
+  color: rgba(15,23,42,0.72);
+  font-size: 12.5px;
+  line-height: 1.3;
+}
+
+.hc-sticky-cta__actions{
+  display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
-.hc-sticky-cta__close {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  background: transparent;
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
+.hc-sticky-cta .hc-btn{
+  appearance: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid rgba(15,23,42,0.14);
+  background: rgba(255,255,255,0.60);
+  color: #0f172a;
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
 }
 
-.hc-sticky-cta__close:focus-visible {
-  outline: 3px solid rgba(0, 0, 0, 0.25);
+.hc-sticky-cta .hc-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.08);
+  border-color: rgba(2,132,199,0.22);
+}
+
+.hc-sticky-cta .hc-btn:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.28);
   outline-offset: 2px;
 }
 
-/* Buttons */
-.hc-btn {
+.hc-sticky-cta .hc-btn--primary{
+  background: rgba(2,132,199,0.16);
+  border-color: rgba(2,132,199,0.28);
+  color: #075985;
+}
+
+.hc-sticky-cta .hc-btn--primary:hover{
+  background: rgba(2,132,199,0.20);
+}
+
+.hc-sticky-cta__close{
+  border: 1px solid rgba(15,23,42,0.14);
+  background: rgba(255,255,255,0.55);
+  color: rgba(15,23,42,0.75);
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  flex: 0 0 auto;
+}
+
+.hc-sticky-cta__close:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.08);
+  border-color: rgba(2,132,199,0.22);
+}
+
+@media (max-width: 720px){
+  .hc-sticky-cta__inner{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .hc-sticky-cta__actions{
+    justify-content: stretch;
+  }
+  .hc-sticky-cta .hc-btn{
+    width: 100%;
+    text-align: center;
+  }
+.hc-sticky-cta__close{
+  width: 100%;
+  height: 40px;
+}
+}
+
+/* === Hero focus (Modern NGO) === */
+.hc-hero{
+  padding: 72px 0 56px;
+  text-align: center;
+}
+
+.hc-hero h1{
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.15;
+}
+
+.hc-hero .hc-lead{
+  max-width: 720px;
+  margin: 16px auto 28px;
+  font-size: 1.15rem;
+  opacity: 0.9;
+}
+
+.hc-hero .hc-btn{
+  min-width: 200px;
+}
+
+/* === E22: Quick nav (Modern NGO) === */
+.hc-quicknav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:14px;
+}
+
+.hc-quicknav__btn{
+  appearance:none;
+  border:1px solid rgba(15,23,42,0.14);
+  background: rgba(255,255,255,0.72);
+  color: rgba(15,23,42,0.82);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 650;
+  cursor:pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.hc-quicknav__btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(2,6,23,0.08);
+  border-color: rgba(2,132,199,0.22);
+  background: rgba(255,255,255,0.92);
+}
+
+.hc-quicknav__btn:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.25);
+  outline-offset: 2px;
+}
+
+.hc-acc__text{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hc-acc__summaryline{
+  font-size: 0.9rem;
+  color: var(--hc-muted, rgba(15,23,42,0.72));
+}
+
+/* === E24: Why section grid (Modern NGO) === */
+.hc-why-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.hc-why-card{
+  background: rgba(255,255,255,0.75);
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.06);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.hc-why-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(2, 6, 23, 0.10);
+  border-color: rgba(2,132,199,0.22);
+}
+
+.hc-why-ic{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(2,132,199,0.10);
+  border: 1px solid rgba(2,132,199,0.18);
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.hc-why-card h3{
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: rgba(15,23,42,0.92);
+}
+
+.hc-why-card p{
+  margin: 0;
+  color: rgba(15,23,42,0.72);
+  line-height: 1.55;
+}
+
+@media (max-width: 900px){
+  .hc-why-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px){
+  .hc-why-grid{ grid-template-columns: 1fr; }
+}
+
+/* === E27: Why-choose visual hierarchy (Modern NGO) === */
+/* 1) Featured (top 3) */
+.hc-why-card.hc-featured{
+  border-color: rgba(2, 132, 199, 0.28);
+  box-shadow: 0 18px 45px rgba(2, 6, 23, 0.10);
+}
+
+/* 2) Support (bottom 3) - slightly quieter */
+.hc-why-card:not(.hc-featured){
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.06);
+}
+
+/* 3) Hover parity */
+.hc-why-card:hover{
+  box-shadow: 0 18px 45px rgba(2, 6, 23, 0.10);
+  border-color: rgba(2, 132, 199, 0.22);
+}
+
+/* 4) More breathing room before footer */
+#why-choose{
+  padding-bottom: 72px;
+}
+
+/* === E28: Vertical rhythm + Modern NGO flow (no content cuts) === */
+
+/* Slightly tighter section rhythm */
+.hc-section{
+  padding: 44px 0;
+}
+
+/* Better separation between blocks without heavy lines */
+.hc-section + .hc-section{
+  border-top: 1px solid rgba(15,23,42,0.06);
+}
+
+/* Cards: a bit more breathing room */
+.hc-card{
+  border-radius: 16px;
+}
+
+/* Grids: keep elegant on smaller screens */
+@media (max-width: 920px){
+  .hc-grid-3{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 640px){
+  .hc-grid-2, .hc-grid-3{ grid-template-columns: 1fr; }
+}
+
+/* Hero: reduce “too much air” on tall screens (override safely) */
+.hc-hero{
+  min-height: auto;
+  padding: 42px 0 18px;
+}
+
+/* === E29: Hero + Impact premium landing (Modern NGO) === */
+
+/* Hero container feels like a “soft card” section */
+.hc-hero{
+  background: radial-gradient(1200px 420px at 50% -120px, rgba(2,132,199,0.10), transparent 60%),
+              linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
+  border-bottom: 1px solid rgba(15,23,42,0.06);
+}
+
+.hc-hero .hero-content{
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.hc-hero .hero-title{
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.hc-hero .hero-subtitle{
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  color: rgba(15,23,42,0.78);
+}
+
+/* Buttons a bit more “NGO premium” */
+.hc-hero .hero-buttons .btn{
+  border-radius: 999px;
+  padding: 12px 18px;
+  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+}
+.hc-hero .hero-buttons .btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(2,6,23,0.08);
+}
+
+/* Impact: visually closer to hero, centered, premium card */
+#impact{
+  margin-top: -18px;
+  padding-top: 24px;
+}
+#impact .impact-card{
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: 0 18px 44px rgba(2,6,23,0.08);
+}
+
+/* Keep alternating section backgrounds subtle with new tokens */
+.hc-section:nth-of-type(even){
+  background: rgba(2,6,23,0.02);
+}
+
+/* Mobile: avoid negative margin weirdness */
+@media (max-width: 720px){
+  #impact{ margin-top: 0; }
+}
+
+/* === E30: Modern NGO Nav polish === */
+.navbar, .hc-nav, header nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar, .hc-nav, header {
+  background: rgba(244, 246, 251, 0.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--hc-border);
+}
+
+.navbar a, .hc-nav a, header a {
+  text-decoration: none;
+}
+
+.navbar .nav-link, .hc-nav .nav-link, header nav a {
+  color: rgba(15, 23, 42, 0.82);
+  font-weight: 600;
+}
+
+.navbar .nav-link:hover, .hc-nav .nav-link:hover, header nav a:hover {
+  color: rgba(2, 132, 199, 0.95);
+}
+
+.navbar .nav-link:focus-visible, .hc-nav .nav-link:focus-visible, header nav a:focus-visible {
+  outline: 3px solid rgba(2,132,199,0.25);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* === E30.2: Nav spacing + container === */
+.navbar .container, header .container, .hc-nav .container {
+  max-width: 1040px;
+}
+
+.navbar, header, .hc-nav {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+main {
+  padding-top: 8px;
+}
+
+/* === E30.6: Hard-attach nav styling (failsafe) === */
+header, header nav, nav {
+  background: rgba(244, 246, 251, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--hc-border);
+}
+
+header nav, nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+header nav a, nav a {
+  color: rgba(15, 23, 42, 0.82);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+header nav a:hover, nav a:hover {
+  color: rgba(2, 132, 199, 0.95);
+}
+
+/* === E30.6: Modern NGO Nav polish (real classes) === */
+nav.main-nav{
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+
+  background: rgba(244, 246, 251, 0.92);
+  backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+}
+
+nav.main-nav .container{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Brand */
+nav.main-nav .navbar-brand-light{
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgba(15, 23, 42, 0.92);
+  text-decoration: none;
+}
+
+/* Menu layout */
+nav.main-nav .nav-menu{
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Links */
+nav.main-nav .nav-link-light{
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
+  padding: 8px 10px;
   border-radius: 12px;
-  font-weight: 700;
+
+  color: rgba(15, 23, 42, 0.78);
   text-decoration: none;
-  border: 1px solid rgba(0, 0, 0, 0.10);
+  font-weight: 600;
+
+  transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease, color .18s ease;
 }
 
-.hc-btn-primary {
-  background: #0d6efd;
-  color: #fff;
-  border-color: rgba(13, 110, 253, 0.6);
+nav.main-nav .nav-link-light:hover{
+  background: rgba(2, 132, 199, 0.08);
+  color: rgba(2, 132, 199, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.06);
 }
 
-.hc-btn-primary:focus-visible,
-.hc-btn-ghost:focus-visible {
-  outline: 3px solid rgba(13, 110, 253, 0.35);
+nav.main-nav .nav-link-light:focus-visible{
+  outline: 3px solid rgba(2, 132, 199, 0.35);
   outline-offset: 2px;
 }
 
-.hc-btn-ghost {
-  background: rgba(255, 255, 255, 0.6);
-  color: #111;
+/* Right-side search: airy pill */
+nav.main-nav .search-container{
+  margin-left: auto;
 }
 
-@media (max-width: 640px) {
-  .hc-sticky-cta__inner {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "copy close"
-      "actions actions";
+nav.main-nav .search-input-group{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.05);
+}
+
+nav.main-nav .search-input{
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 6px 10px;
+  min-width: 220px;
+  color: rgba(15, 23, 42, 0.85);
+}
+
+nav.main-nav .search-input::placeholder{
+  color: rgba(15, 23, 42, 0.55);
+}
+
+nav.main-nav .search-button{
+  border: 1px solid rgba(2, 132, 199, 0.18);
+  background: rgba(2, 132, 199, 0.10);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+nav.main-nav .search-button:hover{
+  transform: translateY(-1px);
+  background: rgba(2, 132, 199, 0.14);
+  box-shadow: 0 12px 26px rgba(2, 6, 23, 0.06);
+}
+
+/* Mobile: give breathing room */
+@media (max-width: 768px){
+  nav.main-nav .container{
+    padding-top: 12px;
+    padding-bottom: 12px;
   }
-  .hc-sticky-cta__copy { grid-area: copy; }
-  .hc-sticky-cta__actions { grid-area: actions; justify-content: flex-start; }
-  .hc-sticky-cta__close { grid-area: close; justify-self: end; }
 }
 
+/* === E30.6: Modern NGO Nav polish (real classes) === */
+nav.main-nav{
+  position: sticky;
+  top: 0;
+  z-index: 1100;
+
+  background: rgba(244, 246, 251, 0.92);
+  backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+}
+
+nav.main-nav .container{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Brand */
+nav.main-nav .navbar-brand-light{
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgba(15, 23, 42, 0.92);
+  text-decoration: none;
+}
+
+/* Menu layout */
+nav.main-nav .nav-menu{
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+}
+
+/* Links */
+nav.main-nav .nav-link-light{
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 12px;
+
+  color: rgba(15, 23, 42, 0.78);
+  text-decoration: none;
+  font-weight: 600;
+
+  transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease, color .18s ease;
+}
+
+nav.main-nav .nav-link-light:hover{
+  background: rgba(2, 132, 199, 0.08);
+  color: rgba(2, 132, 199, 0.95);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.06);
+}
+
+nav.main-nav .nav-link-light:focus-visible{
+  outline: 3px solid rgba(2, 132, 199, 0.35);
+  outline-offset: 2px;
+}
+
+/* Right-side search: airy pill */
+nav.main-nav .search-container{
+  margin-left: auto;
+}
+
+nav.main-nav .search-input-group{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 999px;
+
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.05);
+}
+
+nav.main-nav .search-input{
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 6px 10px;
+  min-width: 220px;
+  color: rgba(15, 23, 42, 0.85);
+}
+
+nav.main-nav .search-input::placeholder{
+  color: rgba(15, 23, 42, 0.55);
+}
+
+nav.main-nav .search-button{
+  border: 1px solid rgba(2, 132, 199, 0.18);
+  background: rgba(2, 132, 199, 0.10);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+nav.main-nav .search-button:hover{
+  transform: translateY(-1px);
+  background: rgba(2, 132, 199, 0.14);
+  box-shadow: 0 12px 26px rgba(2, 6, 23, 0.06);
+}
+
+/* Mobile: give breathing room */
+@media (max-width: 768px){
+  nav.main-nav .container{
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
+/* === E30.6: Hard-attach nav styling (failsafe) === */
+header, header nav, nav {
+  background: rgba(244, 246, 251, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--hc-border);
+}
+
+header nav, nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+header nav a, nav a {
+  color: rgba(15, 23, 42, 0.82);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+header nav a:hover, nav a:hover {
+  color: rgba(2, 132, 199, 0.95);
+}
+
+/* === E30: Modern NGO Nav polish === */
+.navbar, .hc-nav, header nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.navbar, .hc-nav, header {
+  background: rgba(244, 246, 251, 0.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--hc-border);
+}
+
+.navbar a, .hc-nav a, header a {
+  text-decoration: none;
+}
+
+.navbar .nav-link, .hc-nav .nav-link, header nav a {
+  color: rgba(15, 23, 42, 0.82);
+  font-weight: 600;
+}
+
+.navbar .nav-link:hover, .hc-nav .nav-link:hover, header nav a:hover {
+  color: rgba(2, 132, 199, 0.95);
+}
+
+.navbar .nav-link:focus-visible, .hc-nav .nav-link:focus-visible, header nav a:focus-visible {
+  outline: 3px solid rgba(2,132,199,0.25);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* === E30.2: Nav spacing + container === */
+.navbar .container, header .container, .hc-nav .container {
+  max-width: 1040px;
+}
+
+.navbar, header, .hc-nav {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+main {
+  padding-top: 8px;
+}
+
+/* === E29: Hero + Impact premium landing (Modern NGO) === */
+
+/* Hero container feels like a “soft card” section */
+.hc-hero{
+  background: radial-gradient(1200px 420px at 50% -120px, rgba(2,132,199,0.10), transparent 60%),
+              linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
+  border-bottom: 1px solid rgba(15,23,42,0.06);
+}
+
+.hc-hero .hero-content{
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.hc-hero .hero-title{
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.hc-hero .hero-subtitle{
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  color: rgba(15,23,42,0.78);
+}
+
+/* Buttons a bit more “NGO premium” */
+.hc-hero .hero-buttons .btn{
+  border-radius: 999px;
+  padding: 12px 18px;
+  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+}
+.hc-hero .hero-buttons .btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(2,6,23,0.08);
+}
+
+/* Impact: visually closer to hero, centered, premium card */
+#impact{
+  margin-top: -18px;
+  padding-top: 24px;
+}
+#impact .impact-card{
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: 0 18px 44px rgba(2,6,23,0.08);
+}
+
+/* Keep alternating section backgrounds subtle with new tokens */
+.hc-section:nth-of-type(even){
+  background: rgba(2,6,23,0.02);
+}
+
+/* Mobile: avoid negative margin weirdness */
+@media (max-width: 720px){
+  #impact{ margin-top: 0; }
+}
+
+/* === E28: Vertical rhythm + Modern NGO flow (no content cuts) === */
+
+/* Slightly tighter section rhythm */
+.hc-section{
+  padding: 44px 0;
+}
+
+/* Better separation between blocks without heavy lines */
+.hc-section + .hc-section{
+  border-top: 1px solid rgba(15,23,42,0.06);
+}
+
+/* Cards: a bit more breathing room */
+.hc-card{
+  border-radius: 16px;
+}
+
+/* Grids: keep elegant on smaller screens */
+@media (max-width: 920px){
+  .hc-grid-3{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 640px){
+  .hc-grid-2, .hc-grid-3{ grid-template-columns: 1fr; }
+}
+
+/* Hero: reduce “too much air” on tall screens (override safely) */
+.hc-hero{
+  min-height: auto;
+  padding: 42px 0 18px;
+}
+
+/* === E27: Why-choose visual hierarchy (Modern NGO) === */
+/* 1) Featured (top 3) */
+.hc-why-card.hc-featured{
+  border-color: rgba(2, 132, 199, 0.28);
+  box-shadow: 0 18px 45px rgba(2, 6, 23, 0.10);
+}
+
+/* 2) Support (bottom 3) - slightly quieter */
+.hc-why-card:not(.hc-featured){
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.06);
+}
+
+/* 3) Hover parity */
+.hc-why-card:hover{
+  box-shadow: 0 18px 45px rgba(2, 6, 23, 0.10);
+  border-color: rgba(2, 132, 199, 0.22);
+}
+
+/* 4) More breathing room before footer */
+#why-choose{
+  padding-bottom: 72px;
+}
+
+/* === E25: Airy footer (Modern NGO) === */
+.site-footer, footer{
+  background: rgba(255,255,255,0.82);
+  border-top: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  color: rgba(15,23,42,0.72);
+}
+
+.site-footer a, footer a{
+  color: rgba(15,23,42,0.78);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(2,132,199,0.35);
+  padding-bottom: 1px;
+}
+
+.site-footer a:hover, footer a:hover{
+  color: rgba(2,132,199,0.95);
+  border-bottom-color: rgba(2,132,199,0.65);
+}
+
+.site-footer .footer-inner,
+footer .footer-inner{
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 22px 16px;
+}
+
+.site-footer .footer-grid,
+footer .footer-grid{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.site-footer h4, footer h4{
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: rgba(15,23,42,0.88);
+  letter-spacing: -0.01em;
+}
+
+.site-footer p, footer p{
+  margin: 0;
+  line-height: 1.6;
+}
+
+.site-footer .footer-links,
+footer .footer-links{
+  display: grid;
+  gap: 8px;
+}
+
+.site-footer .footer-bottom,
+footer .footer-bottom{
+  border-top: 1px solid rgba(15,23,42,0.10);
+  margin-top: 18px;
+  padding-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+  color: rgba(15,23,42,0.62);
+}
+
+.site-footer .footer-social,
+footer .footer-social{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.site-footer .footer-social a,
+footer .footer-social a{
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.75);
+  border-radius: 999px;
+  padding: 8px 10px;
+  line-height: 1;
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.site-footer .footer-social a:hover,
+footer .footer-social a:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.08);
+  border-color: rgba(2,132,199,0.25);
+}
+
+@media (max-width: 840px){
+  .site-footer .footer-grid,
+  footer .footer-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === E25: Airy footer (Modern NGO) === */
+.site-footer, footer{
+  background: rgba(255,255,255,0.82);
+  border-top: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  color: rgba(15,23,42,0.72);
+}
+
+.site-footer a, footer a{
+  color: rgba(15,23,42,0.78);
+  text-decoration: none;
+  border-bottom: 1px dashed rgba(2,132,199,0.35);
+  padding-bottom: 1px;
+}
+
+.site-footer a:hover, footer a:hover{
+  color: rgba(2,132,199,0.95);
+  border-bottom-color: rgba(2,132,199,0.65);
+}
+
+.site-footer .footer-inner,
+footer .footer-inner{
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 22px 16px;
+}
+
+.site-footer .footer-grid,
+footer .footer-grid{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.site-footer h4, footer h4{
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: rgba(15,23,42,0.88);
+  letter-spacing: -0.01em;
+}
+
+.site-footer p, footer p{
+  margin: 0;
+  line-height: 1.6;
+}
+
+.site-footer .footer-links,
+footer .footer-links{
+  display: grid;
+  gap: 8px;
+}
+
+.site-footer .footer-bottom,
+footer .footer-bottom{
+  border-top: 1px solid rgba(15,23,42,0.10);
+  margin-top: 18px;
+  padding-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+  color: rgba(15,23,42,0.62);
+}
+
+.site-footer .footer-social,
+footer .footer-social{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.site-footer .footer-social a,
+footer .footer-social a{
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.75);
+  border-radius: 999px;
+  padding: 8px 10px;
+  line-height: 1;
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.site-footer .footer-social a:hover,
+footer .footer-social a:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.08);
+  border-color: rgba(2,132,199,0.25);
+}
+
+@media (max-width: 840px){
+  .site-footer .footer-grid,
+  footer .footer-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === E24: Why section grid (Modern NGO) === */
+.hc-why-grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.hc-why-card{
+  background: rgba(255,255,255,0.75);
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.06);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.hc-why-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(2, 6, 23, 0.10);
+  border-color: rgba(2,132,199,0.22);
+}
+
+.hc-why-ic{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(2,132,199,0.10);
+  border: 1px solid rgba(2,132,199,0.18);
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.hc-why-card h3{
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: rgba(15,23,42,0.92);
+}
+
+.hc-why-card p{
+  margin: 0;
+  color: rgba(15,23,42,0.72);
+  line-height: 1.55;
+}
+
+@media (max-width: 900px){
+  .hc-why-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 560px){
+  .hc-why-grid{ grid-template-columns: 1fr; }
+}
+
+.hc-acc__text{
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hc-acc__summaryline{
+  font-size: 0.9rem;
+  color: var(--hc-muted, rgba(15,23,42,0.72));
+}
+
+/* === E22: Quick nav (Modern NGO) === */
+.hc-quicknav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:14px;
+}
+
+.hc-quicknav__btn{
+  appearance:none;
+  border:1px solid rgba(15,23,42,0.14);
+  background: rgba(255,255,255,0.72);
+  color: rgba(15,23,42,0.82);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 650;
+  cursor:pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.hc-quicknav__btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(2,6,23,0.08);
+  border-color: rgba(2,132,199,0.22);
+  background: rgba(255,255,255,0.92);
+}
+
+.hc-quicknav__btn:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.25);
+  outline-offset: 2px;
+}
+
+.hc-hero__hint{
+  margin-top: 24px;
+  font-size: .9rem;
+  opacity: .6;
+}
+
+/* === Hero polish (Modern NGO) === */
+.hc-hero .hero-shapes {
+  opacity: 0.35;
+  filter: blur(0.3px);
+}
+
+.hc-hero .hero-shape {
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-hero .hero-shapes,
+  .hc-hero .hero-shape {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* CTA buttons - calmer, more premium */
+.hc-hero .hero-buttons .btn-light {
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-weight: 700;
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.08);
+  border: 1px solid rgba(15,23,42,0.12);
+}
+
+.hc-hero .hero-buttons .btn-light:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(2, 6, 23, 0.12);
+}
+
+/* === Volunteer Accordion (Modern NGO) === */
+.hc-accordion{
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.hc-acc{
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  background: rgba(255,255,255,0.92);
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.06);
+  overflow: hidden;
+}
+
+.hc-acc__summary{
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.hc-acc__summary::-webkit-details-marker{ display:none; }
+
+.hc-acc__title{
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: rgba(15,23,42,0.92);
+}
+
+.hc-acc__meta{
+  font-size: 0.9rem;
+  color: rgba(15,23,42,0.65);
+  border: 1px dashed rgba(2,132,199,0.22);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(2,132,199,0.05);
+  flex: 0 0 auto;
+}
+
+.hc-acc__body{
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(15,23,42,0.08);
+}
+
+.hc-acc[open]{
+  box-shadow: 0 16px 40px rgba(2, 6, 23, 0.08);
+}
+
+/* === E21: Progressive stories (Modern NGO) === */
+.hc-stories[data-collapsed="true"] .hc-story--extra{
+  display: none;
+}
+
+.hc-linkbtn{
+  margin-top: 10px;
+  background: transparent;
+  border: 1px dashed rgba(15,23,42,0.18);
+  color: rgba(15,23,42,0.78);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.hc-linkbtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.06);
+  border-color: rgba(2,132,199,0.22);
+}
+
+.hc-linkbtn:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.28);
+  outline-offset: 2px;
+}
+
+/* === E21: Progressive stories (Modern NGO) === */
+.hc-stories[data-collapsed="true"] .hc-story--extra{
+  display: none;
+}
+
+.hc-linkbtn{
+  margin-top: 10px;
+  background: transparent;
+  border: 1px dashed rgba(15,23,42,0.18);
+  color: rgba(15,23,42,0.78);
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.hc-linkbtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.06);
+  border-color: rgba(2,132,199,0.22);
+}
+
+.hc-linkbtn:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.28);
+  outline-offset: 2px;
+}
+
+/* === Volunteer Accordion (Modern NGO) === */
+.hc-accordion{
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.hc-acc{
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  background: rgba(255,255,255,0.92);
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.06);
+  overflow: hidden;
+}
+
+.hc-acc__summary{
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.hc-acc__summary::-webkit-details-marker{ display:none; }
+
+.hc-acc__title{
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: rgba(15,23,42,0.92);
+}
+
+.hc-acc__meta{
+  font-size: 0.9rem;
+  color: rgba(15,23,42,0.65);
+  border: 1px dashed rgba(2,132,199,0.22);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(2,132,199,0.05);
+  flex: 0 0 auto;
+}
+
+.hc-acc__body{
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(15,23,42,0.08);
+}
+
+.hc-acc[open]{
+  box-shadow: 0 16px 40px rgba(2, 6, 23, 0.08);
+}
+
+/* === Hero polish (Modern NGO) === */
+.hc-hero .hero-shapes {
+  opacity: 0.35;
+  filter: blur(0.3px);
+}
+
+.hc-hero .hero-shape {
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-hero .hero-shapes,
+  .hc-hero .hero-shape {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* CTA buttons - calmer, more premium */
+.hc-hero .hero-buttons .btn-light {
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-weight: 700;
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.08);
+  border: 1px solid rgba(15,23,42,0.12);
+}
+
+.hc-hero .hero-buttons .btn-light:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(2, 6, 23, 0.12);
+}
+
+.hc-hero__hint{
+  margin-top: 24px;
+  font-size: .9rem;
+  opacity: .6;
+}
+
+/* === Hero focus (Modern NGO) === */
+.hc-hero{
+  padding: 72px 0 56px;
+  text-align: center;
+}
+
+.hc-hero h1{
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.15;
+}
+
+.hc-hero .hc-lead{
+  max-width: 720px;
+  margin: 16px auto 28px;
+  font-size: 1.15rem;
+  opacity: 0.9;
+}
+
+.hc-hero .hc-btn{
+  min-width: 200px;
+}
 /* --- HelpChain Sections (Volunteer-friendly) --- */
 .hc-section {
   padding: 56px 0;
@@ -407,18 +1699,146 @@ header a,
   font-weight: 700;
 }
 
+/* === Airy sections === */
+.hc-section{
+  padding: 56px 0;
+}
+
+.hc-section .container{
+  padding-left: var(--hc-pad);
+  padding-right: var(--hc-pad);
+}
+
+.hc-section__title{
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.hc-section__subtitle{
+  color: var(--hc-muted);
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+.hc-section--soft{
+  background: rgba(255,255,255,0.35);
+  border-top: 1px solid rgba(18,24,40,0.05);
+  border-bottom: 1px solid rgba(18,24,40,0.05);
+}
+
+/* === Modern NGO typography === */
+.hc-section__title{
+  color: var(--hc-text);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  position: relative;
+  display: inline-block;
+}
+
+.hc-section__subtitle{
+  color: rgba(15,23,42,0.78);
+}
+
+/* === Section accent line === */
+.hc-section__title:after{
+  content: "";
+  display: block;
+  height: 4px;
+  width: 44px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: rgba(2,132,199,0.45);
+}
+
+/* === Airy chips === */
+.hc-chip,
+.impact-chip,
+.request-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.05);
+  border: 1px solid rgba(15,23,42,0.06);
+  color: rgba(15,23,42,0.78);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* === Airy chips === */
+.hc-chip,
+.impact-chip,
+.request-chip{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.05);
+  border: 1px solid rgba(15,23,42,0.06);
+  color: rgba(15,23,42,0.78);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* === Airy sections === */
+.hc-section{
+  padding: 56px 0;
+}
+
+.hc-section .container{
+  padding-left: var(--hc-pad);
+  padding-right: var(--hc-pad);
+}
+
+.hc-section__title{
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.hc-section__subtitle{
+  color: var(--hc-muted);
+  max-width: 72ch;
+  margin: 0 auto;
+}
+
+.hc-section--soft{
+  background: rgba(255,255,255,0.35);
+  border-top: 1px solid rgba(18,24,40,0.05);
+  border-bottom: 1px solid rgba(18,24,40,0.05);
+}
+
 .hc-card-text {
   margin: 0;
   line-height: 1.6;
   opacity: 0.9;
 }
 
-.hc-story {
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
-  padding: 18px;
-  background: rgba(255, 255, 255, 0.9);
-  transition: transform 180ms ease, box-shadow 180ms ease;
+/* === Airy cards === */
+.hc-card,
+.hc-story,
+.hc-request-preview,
+.impact-card,
+.vh-card{
+  background: var(--hc-surface);
+  border: 1px solid var(--hc-border);
+  border-radius: var(--hc-radius);
+  box-shadow: var(--hc-shadow-soft);
+  backdrop-filter: blur(10px);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.hc-card:hover,
+.hc-story:hover,
+.hc-request-preview:hover,
+.impact-card:hover,
+.vh-card:hover{
+  transform: translateY(-2px);
+  box-shadow: var(--hc-shadow);
+  border-color: rgba(2,132,199,0.22);
 }
 
 .hc-story-kicker {
@@ -569,6 +1989,19 @@ header a,
   color: rgba(0, 0, 0, 0.92);
 }
 
+.hc-demo-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.08);
+  font-weight: 700;
+  font-size: 12px;
+  color: rgba(20,20,20,0.75);
+  margin-bottom: 8px;
+}
+
 /* Request Preview */
 .hc-request-preview .hc-section-head {
   max-width: 980px;
@@ -597,11 +2030,12 @@ header a,
 }
 
 .hc-request-card {
-  border-radius: 20px;
-  border: 1px solid rgba(0,0,0,0.06);
-  background: rgba(255,255,255,0.96);
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(6px);
 }
 
 .hc-request-top {
@@ -772,11 +2206,12 @@ header a,
 }
 
 .hc-request-card {
-  border-radius: 20px;
-  border: 1px solid rgba(0,0,0,0.06);
-  background: rgba(255,255,255,0.96);
-  padding: 20px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(6px);
 }
 
 .hc-request-top {
@@ -951,4 +2386,72 @@ header a,
   .hc-grid-3 {
     grid-template-columns: 1fr;
   }
+}
+/* === HelpChain Airy UI Tokens (ETAP 15) === */
+:root{
+  --hc-bg: #f4f6fb;
+  --hc-surface: rgba(255,255,255,0.92);
+  --hc-surface-strong: #ffffff;
+  --hc-border: rgba(15, 23, 42, 0.14);
+  --hc-border-soft: rgba(15, 23, 42, 0.10);
+  --hc-text: #0f172a;
+  --hc-muted: rgba(15, 23, 42, 0.72);
+  --hc-muted-2: rgba(15, 23, 42, 0.55);
+
+  --hc-radius: 18px;
+  --hc-radius-sm: 14px;
+  --hc-shadow: 0 16px 44px rgba(2, 6, 23, 0.10);
+  --hc-shadow-soft: 0 10px 28px rgba(2, 6, 23, 0.08);
+
+  --hc-max: 1120px;
+  --hc-pad: 20px;
+  --hc-gap: 14px;
+}
+
+/* === Airy base === */
+body{
+  color: var(--hc-text);
+  background: var(--hc-bg);
+}
+
+.container{
+  max-width: var(--hc-max);
+}
+
+a{
+  text-underline-offset: 3px;
+}
+
+/* === Airy base === */
+body{
+  color: var(--hc-text);
+  background: var(--hc-bg);
+}
+
+.container{
+  max-width: var(--hc-max);
+}
+
+a{
+  text-underline-offset: 3px;
+}
+/* === HelpChain Airy UI Tokens (ETAP 15) === */
+:root{
+  --hc-bg: #f7f8fb;
+  --hc-surface: rgba(255,255,255,0.82);
+  --hc-surface-strong: #ffffff;
+  --hc-border: rgba(18, 24, 40, 0.10);
+  --hc-border-soft: rgba(18, 24, 40, 0.08);
+  --hc-text: #0f172a;
+  --hc-muted: rgba(15, 23, 42, 0.72);
+  --hc-muted-2: rgba(15, 23, 42, 0.55);
+
+  --hc-radius: 18px;
+  --hc-radius-sm: 14px;
+  --hc-shadow: 0 14px 40px rgba(2, 6, 23, 0.08);
+  --hc-shadow-soft: 0 10px 28px rgba(2, 6, 23, 0.06);
+
+  --hc-max: 1120px;
+  --hc-pad: 20px;
+  --hc-gap: 14px;
 }

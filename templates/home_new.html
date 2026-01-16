@@ -1,9 +1,9 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="bg">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HelpChain - Свързваме нуждаещи се с доброволци</title>
+    <title>HelpChain — помощ без хаос и без натиск</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -527,7 +527,9 @@
               <a class="nav-link-light" href="{{ url_for('main.faq') }}">ЧЗВ</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ url_for('admin.admin_login') }}">Вход</a>
+              <a class="hc-btn hc-btn--primary" href="/volunteer/signup">
+                Стани доброволец
+              </a>
             </li>
             <li>
               <a class="nav-link-light" href="{{ safe_url_for('volunteer_register') }}"
@@ -580,7 +582,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-light" role="banner" aria-labelledby="hero-title">
+    <section class="hero-light hc-hero" role="banner" aria-labelledby="hero-title">
       <div class="hero-shapes" aria-hidden="true">
         <div class="hero-shape"></div>
         <div class="hero-shape"></div>
@@ -591,8 +593,7 @@
         <div class="hero-content text-center">
           <h1 id="hero-title" class="hero-title">Добре дошли в HelpChain!</h1>
           <p class="hero-subtitle">
-            Свързваме нуждаещи се хора с доброволци за бърза и ефективна помощ.
-            Заедно можем да направим света по-добро място.
+            Помощ без хаос и без натиск. Свързваме реални нужди с доброволци — спокойно, сигурно и човешки.
           </p>
 
           <div
@@ -613,6 +614,8 @@
               >Стани доброволец
             </a>
           </div>
+
+          <div class="hc-hero__hint">👇 Скролни за повече</div>
         </div>
       </div>
     </section>
@@ -651,7 +654,7 @@
       </section>
 
       <!-- Impact Section (public, privacy-safe) -->
-      <section class="impact-section" aria-labelledby="impact-title">
+      <section class="impact-section" id="impact" aria-labelledby="impact-title">
         <div class="container">
           <div class="impact-card">
             <div class="impact-header">
@@ -709,55 +712,39 @@
         </div>
       </section>
 
-      <!-- For Who -->
-      <section id="for-who" class="hc-section">
-        <div class="hc-container">
-          <h2 class="hc-title">HelpChain е за хора, които искат да помагат — по човешки начин.</h2>
-          <p class="hc-lead">
-            За хора, които искат да бъдат полезни, но не искат хаос, натиск или празни обещания.
-            Тук ти избираш как, кога и в какво да се включиш. Ние се грижим останалото да работи.
-          </p>
+      
         </div>
-      </section>
+      </details>
+
+      <!-- ITEM 2 -->
+      <details class="hc-acc">
+        <summary class="hc-acc__summary">
+          <span class="hc-acc__title">Как работи участието</span>
+          <span class="hc-acc__meta">1 мин</span>
+        </summary>
+        <div class="hc-acc__body">
+    
+        </div>
+      </details>
+
+      <!-- ITEM 3 -->
+      <details class="hc-acc">
+        <summary class="hc-acc__summary">
+          <span class="hc-acc__title">Как изглежда помощта на практика</span>
+          <span class="hc-acc__meta">1–2 мин</span>
+        </summary>
+        <div class="hc-acc__body">
+    
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
 
       <!-- How it works -->
-      <section id="how-it-works" class="hc-section">
-        <div class="hc-container">
-          <h2 class="hc-title">Как работи участието</h2>
+      
 
-          <div class="hc-grid-2">
-            <div class="hc-card">
-              <h3 class="hc-card-title">Помагаш, когато можеш</h3>
-              <p class="hc-card-text">
-                Ти избираш кога и в какво да се включиш. Няма дежурства. Няма задължения.
-              </p>
-            </div>
-
-            <div class="hc-card">
-              <h3 class="hc-card-title">Ясни и реални заявки</h3>
-              <p class="hc-card-text">
-                Виждаш конкретни нужди от реални хора. Без шум. Без фалшиви каузи.
-              </p>
-            </div>
-
-            <div class="hc-card">
-              <h3 class="hc-card-title">Данните ти са защитени</h3>
-              <p class="hc-card-text">
-                Личната ти информация не е публична и се използва само когато е необходимо.
-              </p>
-            </div>
-
-            <div class="hc-card">
-              <h3 class="hc-card-title">Свобода без натиск</h3>
-              <p class="hc-card-text">
-                Можеш да откажеш или да спреш по всяко време. Доброволчеството е избор, не дълг.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="hc-section" id="volunteer-roles">
+      <section class="hc-section hc-section--soft" id="volunteer-roles">
         <div class="container">
           <h2 class="hc-section-title">Как можеш да помагаш</h2>
           <p class="hc-section-subtitle">Три начина. Избираш според времето и стила си.</p>
@@ -793,38 +780,140 @@
         </div>
       </section>
 
-      <!-- In practice -->
-      <section id="in-practice" class="hc-section">
+      <section class="hc-section" id="volunteer-onboarding">
         <div class="hc-container">
-          <h2 class="hc-title">Как изглежда помощта на практика</h2>
+          <h2 class="hc-section__title">За доброволци — ясно, спокойно, човешки</h2>
+          <p class="hc-section__subtitle">
+            Няма натиск. Няма хаос. Разгъни само това, което ти е нужно.
+          </p>
 
-          <div class="hc-grid-3">
-            <article class="hc-story">
-              <div class="hc-story-kicker">Администрация</div>
-              <h3 class="hc-story-title">Кратка дистанционна помощ</h3>
-              <p class="hc-story-text">
-                Доброволец помага с насоки и попълване на документ. Заявката се решава в рамките на деня.
-              </p>
-            </article>
+          
+          <div class="hc-quicknav" role="navigation" aria-label="Бърза навигация">
+            <button type="button" class="hc-quicknav__btn" data-acc-open="for-who">За кого е</button>
+            <button type="button" class="hc-quicknav__btn" data-acc-open="how-it-works">Как работи</button>
+            <button type="button" class="hc-quicknav__btn" data-acc-open="in-practice">На практика</button>
+          </div>
 
-            <article class="hc-story">
-              <div class="hc-story-kicker">Ориентация</div>
-              <h3 class="hc-story-title">Правилната институция, без лутане</h3>
-              <p class="hc-story-text">
-                Доброволец насочва към точната услуга и процедура. Подадена е коректна заявка.
-              </p>
-            </article>
+<div class="hc-accordion">
 
-            <article class="hc-story">
-              <div class="hc-story-kicker">Подкрепа</div>
-              <h3 class="hc-story-title">20 минути, които дават яснота</h3>
-              <p class="hc-story-text">
-                Кратък разговор онлайн. Човекът остава с яснота и следващи стъпки.
-              </p>
-            </article>
+            <details class="hc-acc" open id="for-who">
+              <summary class="hc-acc__summary">
+                <span class="hc-acc__text">
+                  <span class="hc-acc__title">За кого е HelpChain?</span>
+                  <span class="hc-acc__summaryline">За хора, които искат да помагат спокойно</span>
+                </span>
+                <span class="hc-acc__meta">30 сек</span>
+              </summary>
+              <div class="hc-acc__body">
+                                      <div class="hc-container">
+                              <h2 class="hc-title">HelpChain е за хора, които искат да помагат — по човешки начин.</h2>
+                              <p class="hc-lead">
+                                За хора, които искат да бъдат полезни, но не искат хаос, натиск или празни обещания.
+                                Тук ти избираш как, кога и в какво да се включиш. Ние се грижим останалото да работи.
+                              </p>
+                            </div>
+          
+              </div>
+            </details>
+
+            <details class="hc-acc" id="how-it-works">
+              <summary class="hc-acc__summary">
+                <span class="hc-acc__text">
+                  <span class="hc-acc__title">Как работи участието</span>
+                  <span class="hc-acc__summaryline">Кратки стъпки, без дежурства и натиск</span>
+                </span>
+                <span class="hc-acc__meta">1 мин</span>
+              </summary>
+              <div class="hc-acc__body">
+                                  <div class="hc-container">
+                          <h2 class="hc-title">Как работи участието</h2>
+
+                          <div class="hc-grid-2">
+                            <div class="hc-card">
+                              <h3 class="hc-card-title">Помагаш, когато можеш</h3>
+                              <p class="hc-card-text">
+                                Ти избираш кога и в какво да се включиш. Няма дежурства. Няма задължения.
+                              </p>
+                            </div>
+
+                            <div class="hc-card">
+                              <h3 class="hc-card-title">Ясни и реални заявки</h3>
+                              <p class="hc-card-text">
+                                Виждаш конкретни нужди от реални хора. Без шум. Без фалшиви каузи.
+                              </p>
+                            </div>
+
+                            <div class="hc-card">
+                              <h3 class="hc-card-title">Данните ти са защитени</h3>
+                              <p class="hc-card-text">
+                                Личната ти информация не е публична и се използва само когато е необходимо.
+                              </p>
+                            </div>
+
+                            <div class="hc-card">
+                              <h3 class="hc-card-title">Свобода без натиск</h3>
+                              <p class="hc-card-text">
+                                Можеш да откажеш или да спреш по всяко време. Доброволчеството е избор, не дълг.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+      
+              </div>
+            </details>
+
+            <details class="hc-acc" id="in-practice">
+              <summary class="hc-acc__summary">
+                <span class="hc-acc__text">
+                  <span class="hc-acc__title">Как изглежда помощта на практика</span>
+                  <span class="hc-acc__summaryline">Кратки примери от реални ситуации</span>
+                </span>
+                <span class="hc-acc__meta">1–2 мин</span>
+              </summary>
+              <div class="hc-acc__body">
+                                  <div class="hc-container">
+                          <h2 class="hc-title">Как изглежда помощта на практика</h2>
+
+                          <div class="hc-stories" data-collapsed="true">
+                            <article class="hc-story">
+                              <div class="hc-story-kicker">Администрация</div>
+                              <h3 class="hc-story-title">Кратка дистанционна помощ</h3>
+                              <p class="hc-story-text">
+                                Доброволец помага с насоки и попълване на документ. Заявката се решава в рамките на деня.
+                              </p>
+                            </article>
+
+                            <article class="hc-story hc-story--extra">
+                              <div class="hc-story-kicker">Ориентация</div>
+                              <h3 class="hc-story-title">Правилната институция, без лутане</h3>
+                              <p class="hc-story-text">
+                                Доброволец насочва към точната услуга и процедура. Подадена е коректна заявка.
+                              </p>
+                            </article>
+
+                            <article class="hc-story hc-story--extra">
+                              <div class="hc-story-kicker">Подкрепа</div>
+                              <h3 class="hc-story-title">20 минути, които дават яснота</h3>
+                              <p class="hc-story-text">
+                                Кратък разговор онлайн. Човекът остава с яснота и следващи стъпки.
+                              </p>
+                            </article>
+                          
+
+                            <!-- E21_MARKER_20260116 -->
+                            <button type="button" class="hc-linkbtn" data-stories-toggle>Покажи още примери</button>
+</div>
+                        </div>
+      
+              </div>
+            </details>
+
           </div>
         </div>
       </section>
+
+      <!-- In practice -->
+      
 
       <section class="hc-proof" aria-label="Доверие и защита">
         <h3 class="hc-proof-title">Спокойствие, не обещания</h3>
@@ -850,9 +939,10 @@
         </div>
       </section>
 
-      <section class="hc-section hc-request-preview" aria-label="Примерна заявка за помощ">
+      <section class="hc-section hc-section--soft hc-request-preview" aria-label="Примерна заявка за помощ">
         <div class="hc-container">
           <div class="hc-section-head">
+            <div class="hc-demo-label">Примерен формат</div>
             <h2 class="hc-section-title">Как изглежда една заявка</h2>
             <p class="hc-section-subtitle">
               Без лични данни. Само ясна нужда, контекст и очаквано време.
@@ -860,46 +950,35 @@
           </div>
 
           <div class="hc-preview-grid">
-            <article class="hc-request-card" aria-label="Примерна заявка">
-              <header class="hc-request-top">
-                <span class="hc-chip hc-chip--type">Дистанционно</span>
-                <span class="hc-chip hc-chip--time">~20–30 мин</span>
-                <span class="hc-chip hc-chip--urgency">Ниска спешност</span>
-              </header>
+            <article class="hc-request-card" aria-label="Примерна заявка (демо)">
+              <div class="hc-request-head">
+                <div class="hc-request-title">
+                  <span class="hc-request-icon" aria-hidden="true">📄</span>
+                  <div>
+                    <div class="hc-request-name">Административна помощ</div>
+                    <div class="hc-request-sub">Дистанционно · София</div>
+                  </div>
+                </div>
 
-              <h3 class="hc-request-title">Насоки за административна услуга</h3>
-              <p class="hc-request-desc">
-                Човек търси информация към коя институция да се обърне и какви документи са нужни.
-                Няма нужда от лични данни — само ориентация и линкове.
-              </p>
-
-              <div class="hc-request-meta">
-                <div class="hc-meta-row">
-                  <span class="hc-meta-label">Категория</span>
-                  <span class="hc-meta-value">Администрация</span>
-                </div>
-                <div class="hc-meta-row">
-                  <span class="hc-meta-label">Кога</span>
-                  <span class="hc-meta-value">Когато ти е удобно</span>
-                </div>
-                <div class="hc-meta-row">
-                  <span class="hc-meta-label">Как помагаш</span>
-                  <span class="hc-meta-value">С кратки стъпки + линкове</span>
-                </div>
+                <span class="hc-demo-pill" aria-label="Демо">Примерен формат</span>
               </div>
 
-              <footer class="hc-request-actions">
-                <a class="hc-btn hc-btn--primary" href="{{ safe_url_for('volunteer_login') }}">
-                  Включи се като доброволец
-                </a>
-                <a class="hc-btn hc-btn--ghost" href="{{ safe_url_for('main.submit_request') }}">
-                  Имам нужда от помощ
-                </a>
-              </footer>
+              <div class="hc-request-chips" aria-label="Мета информация">
+                <span class="hc-chip">🕒 ~20 мин</span>
+                <span class="hc-chip">🏠 Дистанционно</span>
+                <span class="hc-chip">📂 Администрация</span>
+              </div>
 
-              <p class="hc-request-note">
-                * Това е примерен формат. Реалните заявки са структурирани и без “изненади”.
+              <p class="hc-request-desc">
+                Нужна е помощ за попълване на онлайн формуляр към институция. Човекът има нужда от ясни стъпки и проверка на данни.
               </p>
+
+              <div class="hc-request-actions">
+                <button class="hc-btn hc-btn-primary" type="button" disabled aria-disabled="true">
+                  Виж детайли
+                </button>
+                <a class="hc-btn-link" href="#how-it-works">Как протича?</a>
+              </div>
             </article>
 
             <div class="hc-preview-side">
@@ -924,7 +1003,7 @@
       </section>
 
       <!-- CTA volunteer -->
-      <section id="cta-volunteer" class="hc-section hc-cta">
+      <section id="cta-volunteer" class="hc-section hc-section--soft hc-cta">
         <div class="hc-container hc-cta-inner">
           <h2 class="hc-title">Лесно е да започнеш</h2>
           <p class="hc-lead">
@@ -946,85 +1025,52 @@
       </section>
 
       <!-- Features Section -->
-      <section class="features-section" id="features">
-        <div class="container">
-          <div class="text-center mb-5">
-            <h2 class="h1 mb-3">Защо да изберете HelpChain?</h2>
-            <p class="lead text-muted">
-              Ние предлагаме модерна платформа за свързване на хората, които се
-              нуждаят от помощ, с тези, които искат да помогнат.
-            </p>
-          </div>
+      <section class="features-section" id="why-choose">
+  <div class="hc-container">
+    <header class="hc-section__header text-center">
+      <h2 class="hc-section__title">Защо да изберете HelpChain?</h2>
+      <p class="hc-section__subtitle">Спокойна платформа за реална помощ — без хаос, без шум.</p>
+    </header>
 
-          <div class="features-grid">
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-bolt"></i>
-              </div>
-              <h3 class="feature-title-light">Бърза помощ</h3>
-              <p class="feature-description-light">
-                Нашата платформа свързва нуждаещите се с доброволци в рамките на
-                минути, осигурявайки бърза и ефективна помощ.
-              </p>
-            </div>
+    <div class="hc-why-grid">
+      <article class="hc-why-card hc-featured">
+        <div class="hc-why-ic">⚡</div>
+        <h3>Бърза помощ</h3>
+        <p>Ясни заявки и директен път към действие.</p>
+      </article>
 
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-shield-alt"></i>
-              </div>
-              <h3 class="feature-title-light">Сигурност</h3>
-              <p class="feature-description-light">
-                Всички потребители преминават през верификация, а комуникацията
-                е защитена с най-съвременни технологии за сигурност.
-              </p>
-            </div>
+      <article class="hc-why-card hc-featured">
+        <div class="hc-why-ic">🛡️</div>
+        <h3>Сигурност</h3>
+        <p>Данните са защитени и се показват само когато е нужно.</p>
+      </article>
 
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-users"></i>
-              </div>
-              <h3 class="feature-title-light">Общност</h3>
-              <p class="feature-description-light">
-                Присъединете се към растящата общност от доброволци и хора,
-                които вярват, че заедно можем да направим света по-добро място.
-              </p>
-            </div>
+      <article class="hc-why-card hc-featured">
+        <div class="hc-why-ic">🤝</div>
+        <h3>Общност</h3>
+        <p>Хора, които помагат по човешки начин — спокойно и уважително.</p>
+      </article>
 
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-mobile-alt"></i>
-              </div>
-              <h3 class="feature-title-light">Мобилна достъпност</h3>
-              <p class="feature-description-light">
-                Нашата платформа работи перфектно на всички устройства - от
-                смартфони до десктоп компютри.
-              </p>
-            </div>
+      <article class="hc-why-card">
+        <div class="hc-why-ic">📱</div>
+        <h3>Мобилно удобно</h3>
+        <p>Работи добре на телефон, таблет и компютър.</p>
+      </article>
 
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-clock"></i>
-              </div>
-              <h3 class="feature-title-light">24/7 поддръжка</h3>
-              <p class="feature-description-light">
-                Нашият екип е винаги на разположение да помогне. Независимо от
-                часа, можете да разчитате на нашата поддръжка.
-              </p>
-            </div>
+      <article class="hc-why-card">
+        <div class="hc-why-ic">🕒</div>
+        <h3>Гъвкавост</h3>
+        <p>Помагаш, когато можеш — без графици и без натиск.</p>
+      </article>
 
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-heart"></i>
-              </div>
-              <h3 class="feature-title-light">Безплатно</h3>
-              <p class="feature-description-light">
-                HelpChain е напълно безплатна платформа. Ние вярваме, че помощта
-                трябва да бъде достъпна за всички.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <article class="hc-why-card">
+        <div class="hc-why-ic">💙</div>
+        <h3>Безплатно</h3>
+        <p>Достъпно за всички. Помощта не трябва да е лукс.</p>
+      </article>
+    </div>
+  </div>
+</section>
 
       <!-- Footer -->
       <footer
@@ -1032,89 +1078,41 @@
         role="contentinfo"
         aria-label="Информация за сайта"
       >
-        <div class="container">
-          <div class="row">
-            <div class="col-md-4">
-              <h5>HelpChain</h5>
-              <p>Свързваме нуждаещи се с доброволци за по-добър свят.</p>
-            </div>
-            <div class="col-md-4">
-              <h5>Бързи връзки</h5>
-              <ul class="list-unstyled">
-                <li>
-                  <a href="{{ url_for('main.categories') }}" class="text-light"
-                    >Категории помощ</a
-                  >
-                <li>
-                  <a href="{{ url_for('main.categories') }}" class="text-light"
-                    >Категории помощ</a
-                  >
-                </li>
-                </li>
-                <li>
-                  <a href="{{ url_for('main.privacy') }}" class="text-light"
-                    >Поверителност</a
-                  >
-                </li>
-                <li>
-                  <a href="{{ url_for('main.terms') }}" class="text-light"
-                    >Условия за ползване</a
-                  >
-                </li>
-              </ul>
-            </div>
-            <div class="col-md-4">
-              <h5>Контакти</h5>
-              <p>
-                <i class="fas fa-envelope me-2" aria-hidden="true"></i
-                >contact@helpchain.live
-              </p>
-              <p>
-                <i class="fas fa-phone me-2" aria-hidden="true"></i>+359 XX XXX
-                XXX
-              </p>
-              <div class="social-links mt-3">
-                <a
-                  href="#"
-                  class="text-light me-3"
-                  title="Facebook"
-                  aria-label="Посети ни във Facebook"
-                >
-                  <i class="fab fa-facebook-f" aria-hidden="true"></i>
-                </a>
-                <a
-                  href="#"
-                  class="text-light me-3"
-                  title="Twitter"
-                  aria-label="Посети ни в Twitter"
-                >
-                  <i class="fab fa-twitter" aria-hidden="true"></i>
-                </a>
-                <a
-                  href="#"
-                  class="text-light me-3"
-                  title="Instagram"
-                  aria-label="Посети ни в Instagram"
-                >
-                  <i class="fab fa-instagram" aria-hidden="true"></i>
-                </a>
-                <a
-                  href="#"
-                  class="text-light"
-                  title="LinkedIn"
-                  aria-label="Посети ни в LinkedIn"
-                >
-                  <i class="fab fa-linkedin-in" aria-hidden="true"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-          <hr class="my-4" />
-          <div class="text-center">
-            <p>&copy; 2025 HelpChain. Всички права запазени.</p>
-          </div>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div>
+        <h4>HelpChain</h4>
+        <p>Свързваме нуждаещи се с доброволци — по човешки и сигурен начин.</p>
+      </div>
+
+      <div>
+        <h4>Бързи връзки</h4>
+        <div class="footer-links">
+          <a href="/categories">Категории помощ</a>
+          <a href="/faq">ЧЗВ</a>
+          <a href="/privacy">Поверителност</a>
+          <a href="/terms">Условия</a>
         </div>
-      </footer>
+      </div>
+
+      <div>
+        <h4>Контакти</h4>
+        <div class="footer-links">
+          <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
+        </div>
+        <div class="footer-social" style="margin-top:12px;">
+          <a href="#" aria-label="Facebook">f</a>
+          <a href="#" aria-label="LinkedIn">in</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 HelpChain</span>
+      <span>Помощ без хаос. Без натиск.</span>
+    </div>
+  </div>
+</footer>
     </main>
 
     <!-- Back to Top Button -->
@@ -1450,6 +1448,112 @@
       loadImpact();
       setInterval(loadImpact, 10 * 60 * 1000);
     </script>
+  <!-- === Sticky CTA (Modern NGO / Airy) === -->
+  <div class="hc-sticky-cta" id="hcStickyCta" aria-hidden="true">
+    <div class="hc-sticky-cta__inner">
+      <div class="hc-sticky-cta__copy">
+        <div class="hc-sticky-cta__title">Искаш да помогнеш?</div>
+        <div class="hc-sticky-cta__subtitle">Избери начин — без натиск, без графици.</div>
+      </div>
+
+      <div class="hc-sticky-cta__actions">
+        <a class="hc-btn hc-btn--primary" href="/volunteer_login">Стани доброволец</a>
+        <a class="hc-btn" href="/all_categories">Виж заявки</a>
+
+        <button class="hc-sticky-cta__close" type="button" aria-label="Затвори">
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    const el = document.getElementById("hcStickyCta");
+    if (!el) return;
+
+    const KEY = "hcStickyCtaDismissed";
+    const dismissed = localStorage.getItem(KEY) === "1";
+
+    function setVisible(v) {
+      el.classList.toggle("is-visible", v);
+      el.setAttribute("aria-hidden", v ? "false" : "true");
+    }
+
+    function onScroll() {
+      if (localStorage.getItem(KEY) === "1") return setVisible(false);
+      setVisible(window.scrollY > 220);
+    }
+
+    const closeBtn = el.querySelector(".hc-sticky-cta__close");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        localStorage.setItem(KEY, "1");
+        setVisible(false);
+      });
+    }
+
+    if (!dismissed) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    }
+  })();
+  </script>
+
+  <script>
+    (function () {
+      const acc = document.querySelectorAll("#volunteer-onboarding details.hc-acc");
+      if (!acc.length) return;
+
+      acc.forEach((d) => {
+        d.addEventListener("toggle", () => {
+          if (!d.open) return;
+          acc.forEach((other) => {
+            if (other !== d) other.removeAttribute("open");
+          });
+        });
+      });
+    })();
+  </script>
+  <script>
+  (function(){
+    const buttons = document.querySelectorAll("[data-acc-open]");
+    if(!buttons.length) return;
+
+    function openAndScroll(id){
+      const target = document.getElementById(id);
+      if(!target) return;
+
+      document.querySelectorAll('details.hc-acc[open]').forEach(d => {
+        if(d !== target) d.removeAttribute('open');
+      });
+
+      target.setAttribute("open", "open");
+
+      setTimeout(() => {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 30);
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => openAndScroll(btn.getAttribute("data-acc-open")));
+    });
+  })();
+  </script>
+  <script>
+    (function () {
+      const root = document.querySelector(".hc-stories");
+      const btn = document.querySelector("[data-stories-toggle]");
+      if (!root || !btn) return;
+
+      btn.addEventListener("click", () => {
+        const isCollapsed = root.getAttribute("data-collapsed") === "true";
+        root.setAttribute("data-collapsed", isCollapsed ? "false" : "true");
+        btn.textContent = isCollapsed ? "Скрий примерите" : "Покажи още примери";
+      });
+    })();
+  </script>
   </body>
 </html>
+
 
