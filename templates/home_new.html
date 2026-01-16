@@ -757,6 +757,42 @@
         </div>
       </section>
 
+      <section class="hc-section" id="volunteer-roles">
+        <div class="container">
+          <h2 class="hc-section-title">Как можеш да помагаш</h2>
+          <p class="hc-section-subtitle">Три начина. Избираш според времето и стила си.</p>
+
+          <div class="hc-grid-3">
+            <div class="hc-card">
+              <div class="hc-chip">Дистанционно</div>
+              <h3 class="hc-card-title">10–20 мин онлайн</h3>
+              <p class="hc-card-text">
+                Кратка помощ: насоки, попълване, ориентация, проверка на документ.
+              </p>
+              <div class="hc-muted">Кога: когато ти е удобно</div>
+            </div>
+
+            <div class="hc-card">
+              <div class="hc-chip">Администрация</div>
+              <h3 class="hc-card-title">Правилната стъпка</h3>
+              <p class="hc-card-text">
+                Насочваш към точната институция и процедура. Без лутане.
+              </p>
+              <div class="hc-muted">Без “дежурства”</div>
+            </div>
+
+            <div class="hc-card">
+              <div class="hc-chip">На място (по избор)</div>
+              <h3 class="hc-card-title">С човешко присъствие</h3>
+              <p class="hc-card-text">
+                Само ако е близо до теб и ти е комфортно. Можеш да откажеш винаги.
+              </p>
+              <div class="hc-muted">Ти контролираш участието</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- In practice -->
       <section id="in-practice" class="hc-section">
         <div class="hc-container">
@@ -790,11 +826,111 @@
         </div>
       </section>
 
+      <section class="hc-proof" aria-label="Доверие и защита">
+        <h3 class="hc-proof-title">Спокойствие, не обещания</h3>
+
+        <ul class="hc-proof-list">
+          <li class="hc-proof-item">
+            <span class="hc-proof-icon">✓</span>
+            <span>Личните ти данни не са публични и се използват само при нужда.</span>
+          </li>
+          <li class="hc-proof-item">
+            <span class="hc-proof-icon">✓</span>
+            <span>Можеш да откажеш по всяко време — без обяснения.</span>
+          </li>
+          <li class="hc-proof-item">
+            <span class="hc-proof-icon">✓</span>
+            <span>Виждаш ясни заявки, не “каузи в мъгла”.</span>
+          </li>
+        </ul>
+
+        <div class="hc-proof-links">
+          <a href="/privacy">Политика за поверителност</a>
+          <a href="/terms">Условия</a>
+        </div>
+      </section>
+
+      <section class="hc-section hc-request-preview" aria-label="Примерна заявка за помощ">
+        <div class="hc-container">
+          <div class="hc-section-head">
+            <h2 class="hc-section-title">Как изглежда една заявка</h2>
+            <p class="hc-section-subtitle">
+              Без лични данни. Само ясна нужда, контекст и очаквано време.
+            </p>
+          </div>
+
+          <div class="hc-preview-grid">
+            <article class="hc-request-card" aria-label="Примерна заявка">
+              <header class="hc-request-top">
+                <span class="hc-chip hc-chip--type">Дистанционно</span>
+                <span class="hc-chip hc-chip--time">~20–30 мин</span>
+                <span class="hc-chip hc-chip--urgency">Ниска спешност</span>
+              </header>
+
+              <h3 class="hc-request-title">Насоки за административна услуга</h3>
+              <p class="hc-request-desc">
+                Човек търси информация към коя институция да се обърне и какви документи са нужни.
+                Няма нужда от лични данни — само ориентация и линкове.
+              </p>
+
+              <div class="hc-request-meta">
+                <div class="hc-meta-row">
+                  <span class="hc-meta-label">Категория</span>
+                  <span class="hc-meta-value">Администрация</span>
+                </div>
+                <div class="hc-meta-row">
+                  <span class="hc-meta-label">Кога</span>
+                  <span class="hc-meta-value">Когато ти е удобно</span>
+                </div>
+                <div class="hc-meta-row">
+                  <span class="hc-meta-label">Как помагаш</span>
+                  <span class="hc-meta-value">С кратки стъпки + линкове</span>
+                </div>
+              </div>
+
+              <footer class="hc-request-actions">
+                <a class="hc-btn hc-btn--primary" href="{{ safe_url_for('volunteer_login') }}">
+                  Включи се като доброволец
+                </a>
+                <a class="hc-btn hc-btn--ghost" href="{{ safe_url_for('main.submit_request') }}">
+                  Имам нужда от помощ
+                </a>
+              </footer>
+
+              <p class="hc-request-note">
+                * Това е примерен формат. Реалните заявки са структурирани и без “изненади”.
+              </p>
+            </article>
+
+            <div class="hc-preview-side">
+              <div class="hc-mini-card">
+                <h4 class="hc-mini-title">Защо това работи</h4>
+                <ul class="hc-mini-list">
+                  <li>Виждаш нуждата преди да поемеш ангажимент.</li>
+                  <li>Можеш да кажеш “не” без обяснения.</li>
+                  <li>Контактни данни се виждат само при нужда и права.</li>
+                </ul>
+              </div>
+
+              <div class="hc-mini-card">
+                <h4 class="hc-mini-title">Искаш само дистанционно?</h4>
+                <p class="hc-mini-text">
+                  Няма проблем — има заявки, които се решават изцяло онлайн за 10–30 минути.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- CTA volunteer -->
       <section id="cta-volunteer" class="hc-section hc-cta">
         <div class="hc-container hc-cta-inner">
           <h2 class="hc-title">Лесно е да започнеш</h2>
-          <p class="hc-lead">Регистрацията отнема под 2 минути. Можеш да се откажеш по всяко време.</p>
+          <p class="hc-lead">
+            Регистрацията отнема под 2 минути.
+            Не поемаш ангажимент — просто получаваш достъп до заявките.
+          </p>
 
           <div class="hc-cta-actions">
             <a class="btn btn-primary btn-lg" href="{{ safe_url_for('volunteer_login') }}">
@@ -1316,3 +1452,4 @@
     </script>
   </body>
 </html>
+
