@@ -20,6 +20,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
@@ -501,84 +502,112 @@
       aria-label="Основна навигация"
     >
       <div class="container">
-        <a class="navbar-brand-light" href="/">HelpChain</a>
+  <div class="hc-nav-row">
+    <div class="hc-nav-left">
+      <a class="navbar-brand-light" href="/">HelpChain</a>
 
-        <button
-          class="navbar-toggler d-md-none"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-expanded="false"
-          aria-controls="navbarNav"
-          title="Отвори меню"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
-          <ul class="nav-menu">
-            <li><a class="nav-link-light" href="#features">Функции</a></li>
-            <li>
-              <a class="nav-link-light" href="{{ url_for('main.categories') }}"
-                >Категории</a
-              >
-            </li>
-            <li>
-              <a class="nav-link-light" href="{{ url_for('main.faq') }}">ЧЗВ</a>
-            </li>
-            <li>
-              <a class="hc-btn hc-btn--primary" href="/volunteer/signup">
-                Стани доброволец
-              </a>
-            </li>
-            <li>
-              <a class="nav-link-light" href="{{ safe_url_for('volunteer_register') }}"
-                >Регистрация</a
-              >
-            </li>
-            <li>
-              <a class="nav-link-light" href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
-                >Вход за доброволци</a
-              >
-            </li>
-            <li>
-              <button
-                class="btn btn-sm ms-3 focus-visible"
-                id="themeToggle"
-                title="Превключи тема"
-                aria-label="Превключи между светла и тъмна тема"
-              >
-                <i class="fas fa-moon" aria-hidden="true"></i>
+      <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
+        
+          <!-- E32.3: Mobile-only search + account shortcuts -->
+          <div class="hc-nav-mobile d-md-none">
+            <div class="hc-nav-mobile__search">
+              <label class="visually-hidden" for="hcMobileSearch">Търсене</label>
+              <input
+                id="hcMobileSearch"
+                class="hc-nav-search__input"
+                type="text"
+                placeholder="Търси в HelpChain..."
+                aria-label="Търсене"
+              />
+              <button class="hc-nav-search__btn" type="button" aria-label="Търси">
+                <i class="fas fa-search" aria-hidden="true"></i>
               </button>
-            </li>
-            <li>
-              <button
-                class="btn btn-sm ms-2 focus-visible push-notifications"
-                id="pushNotifications"
-                title="Управление на push известия"
-                aria-label="Управление на push известия"
-              >
-                <i class="fas fa-bell" aria-hidden="true"></i>
-              </button>
-            </li>
-          </ul>
-        </div>
+            </div>
 
-        <!-- Search Container -->
-        <div class="search-container d-none d-md-block ms-3">
-          <div class="search-input-group">
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Търси в HelpChain..."
-              aria-label="Търсене"
-            />
-            <button class="search-button" aria-label="Търси">
-              <i class="fas fa-search" aria-hidden="true"></i>
-            </button>
+            <a class="hc-btn hc-btn--primary hc-nav-mobile__cta" href="/volunteer/signup">
+              Стани доброволец
+            </a>
+
+
+            <div class="hc-nav-mobile__account">
+              <a class="nav-link-light" href="/volunteer/login">Вход доброволец</a>
+              <a class="nav-link-light" href="/volunteer/signup">Регистрация</a>
+              <a class="nav-link-light" href="/admin/login">Админ вход</a>
+            </div>
           </div>
+<ul class="nav-menu">
+          <li><a class="nav-link-light" href="#features">Функции</a></li>
+          <li><a class="nav-link-light" href="/categories">Категории</a></li>
+          <li><a class="nav-link-light" href="/faq">ЧЗВ</a></li>
+          <li>
+            <a class="hc-btn hc-btn--primary hc-btn--sm" href="/volunteer/signup">Стани доброволец</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="hc-nav-right">
+      <!-- Search Container -->
+      <div class="search-container d-none d-md-block">
+        <div class="search-input-group">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Търси в HelpChain..."
+            aria-label="Търсене"
+          />
+          <button class="search-button" aria-label="Търси">
+            <i class="fas fa-search" aria-hidden="true"></i>
+          </button>
         </div>
       </div>
+
+      <button
+        class="btn btn-sm ms-2 focus-visible"
+        id="themeToggle"
+        title="Превключи тема"
+        aria-label="Превключи между светла и тъмна тема"
+      >
+        <i class="fas fa-moon" aria-hidden="true"></i>
+      </button>
+
+      <button
+        class="btn btn-sm ms-2 focus-visible push-notifications"
+        id="pushNotifications"
+        title="Управление на push известия"
+        aria-label="Управление на push известия"
+      >
+        <i class="fas fa-bell" aria-hidden="true"></i>
+      </button>
+
+      <!-- Account dropdown (E31.3) -->
+      <li class="hc-nav-dd">
+        <button type="button" class="hc-nav-dd__btn hc-nav-dd__toggle" aria-haspopup="true" aria-expanded="false">
+          Профил
+          <span class="hc-nav-dd__chev" aria-hidden="true">▾</span>
+        </button>
+        <div class="hc-nav-dd__menu" role="menu">
+          <a class="hc-nav-dd__item" href="/volunteer/login" role="menuitem">Вход за доброволци</a>
+          <a class="hc-nav-dd__item" href="/volunteer/signup" role="menuitem">Регистрация</a>
+          <div class="hc-nav-dd__sep" aria-hidden="true"></div>
+          <a class="hc-nav-dd__item" href="/admin/login" role="menuitem">Admin вход</a>
+        </div>
+      </li>
+
+      <button
+        class="navbar-toggler d-md-none"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-expanded="false"
+        aria-controls="navbarNav"
+        title="Отвори меню"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </div>
+</div>
     </nav>
 
     <!-- Hero Section -->
@@ -595,28 +624,113 @@
           <p class="hero-subtitle">
             Помощ без хаос и без натиск. Свързваме реални нужди с доброволци — спокойно, сигурно и човешки.
           </p>
+          <p class="hc-hero__micro">
+            ✅ Регистрация ~2 мин · 🔒 Данните са защитени · 🤝 Няма графици и натиск
+          </p>
 
           <div
             class="hero-buttons d-flex justify-content-center gap-3 flex-wrap"
           >
             <a
-              class="btn-light btn-primary focus-visible"
+              class="hc-btn hc-btn--primary"
               href="{{ url_for('main.submit_request') }}"
             >
               <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>Подай
               заявка за помощ
             </a>
             <a
-              class="btn-light btn-success focus-visible"
+              class="hc-btn hc-btn--ghost"
               href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
             >
               <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i
               >Стани доброволец
             </a>
-          </div>
+          
 
+          <!-- E41.1: Trust micro-badges (Modern NGO) -->
+          <div class="hc-trust-badges" aria-label="Сигнали за доверие">
+            <span class="hc-badge"><i class="fas fa-shield-alt" aria-hidden="true"></i> Данните са защитени</span>
+            <span class="hc-badge"><i class="fas fa-user-check" aria-hidden="true"></i> Без натиск</span>
+            <span class="hc-badge"><i class="fas fa-clock" aria-hidden="true"></i> ~2 мин. регистрация</span>
+          </div>
+</div>
+          <div class="hc-hero__helper">
+            Можеш да разгледаш заявки първо — без регистрация.
+          </div>
+          <div class="hc-hero__proof" aria-label="Гаранции за доброволците">
+            <span class="hc-proofchip">Без графици</span>
+            <span class="hc-proofchip">Можеш да откажеш</span>
+            <span class="hc-proofchip">Данните са защитени</span>
+          </div>
           <div class="hc-hero__hint">👇 Скролни за повече</div>
         </div>
+      </div>
+    </section>
+
+    <section class="hc-section hc-quickstart" id="quickstart" aria-label="Бързо начало за доброволци">
+      <div class="hc-container">
+        <header class="hc-section__header text-center">
+          <h2 class="hc-section__title">Започни за 30 секунди</h2>
+          <p class="hc-section__subtitle">Няма графици. Няма натиск. Само ясни стъпки.</p>
+        </header>
+
+        <div class="hc-qs__grid">
+          <a class="hc-qs__card" href="/volunteer/signup" aria-label="Регистрация като доброволец">
+            <div class="hc-qs__icon" aria-hidden="true">🫶</div>
+            <div class="hc-qs__body">
+              <div class="hc-qs__title">1) Регистрация</div>
+              <div class="hc-qs__text">Под 2 мин. Само най-нужното.</div>
+            </div>
+            <div class="hc-qs__go" aria-hidden="true">→</div>
+          </a>
+
+          <a class="hc-qs__card" href="/volunteer/login" aria-label="Вход за доброволци">
+            <div class="hc-qs__icon" aria-hidden="true">🔑</div>
+            <div class="hc-qs__body">
+              <div class="hc-qs__title">2) Вход</div>
+              <div class="hc-qs__text">Виж заявки и избери кога да помогнеш.</div>
+            </div>
+            <div class="hc-qs__go" aria-hidden="true">→</div>
+          </a>
+
+          <a class="hc-qs__card" href="#request-preview" aria-label="Виж примерна заявка">
+            <div class="hc-qs__icon" aria-hidden="true">🧾</div>
+            <div class="hc-qs__body">
+              <div class="hc-qs__title">3) Виж пример</div>
+              <div class="hc-qs__text">Как изглежда заявка, преди да се включиш.</div>
+            </div>
+            <div class="hc-qs__go" aria-hidden="true">→</div>
+          </a>
+        </div>
+
+        <div class="hc-qs__return" id="hcReturnHook" aria-live="polite">
+          <div class="hc-qs__return-left">
+            <span class="hc-qs__badge" id="hcSavedBadge" hidden>Запазен филтър</span>
+            <span class="hc-qs__return-text" id="hcReturnText">
+              Връщаш се? Запази си предпочитание — ще го приложим автоматично.
+            </span>
+          </div>
+
+          <div class="hc-qs__return-actions">
+            <button type="button" class="hc-btn hc-btn--ghost" data-save-filter="remote">
+              Дистанционно
+            </button>
+            <button type="button" class="hc-btn hc-btn--ghost" data-save-filter="onsite">
+              На място
+            </button>
+            <button type="button" class="hc-btn hc-btn--ghost" data-save-filter="all">
+              Всички
+            </button>
+            <button type="button" class="hc-btn hc-btn--link" id="hcClearSaved" hidden>
+              Изчисти
+            </button>
+          </div>
+        </div>
+
+
+        <p class="hc-qs__fineprint">
+          * Можеш да откажеш по всяко време. Данните ти не са публични.
+        </p>
       </div>
     </section>
 
@@ -798,34 +912,47 @@
 
             <details class="hc-acc" open id="for-who">
               <summary class="hc-acc__summary">
-                <span class="hc-acc__text">
-                  <span class="hc-acc__title">За кого е HelpChain?</span>
-                  <span class="hc-acc__summaryline">За хора, които искат да помагат спокойно</span>
-                </span>
-                <span class="hc-acc__meta">30 сек</span>
-              </summary>
+  <span class="hc-acc__left">
+    <span class="hc-acc__icon" aria-hidden="true">🫶</span>
+    <span class="hc-acc__text">
+      <span class="hc-acc__title">За кого е HelpChain?</span>
+      <span class="hc-acc__summaryline">За хора, които искат да помагат спокойно</span>
+    </span>
+  </span>
+
+  <span class="hc-acc__right">
+    <span class="hc-acc__meta">30 сек</span>
+    <span class="hc-acc__chev" aria-hidden="true">▾</span>
+  </span>
+</summary>
               <div class="hc-acc__body">
-                                      <div class="hc-container">
+
                               <h2 class="hc-title">HelpChain е за хора, които искат да помагат — по човешки начин.</h2>
                               <p class="hc-lead">
                                 За хора, които искат да бъдат полезни, но не искат хаос, натиск или празни обещания.
                                 Тук ти избираш как, кога и в какво да се включиш. Ние се грижим останалото да работи.
                               </p>
-                            </div>
-          
-              </div>
+                            
+</div>
             </details>
 
             <details class="hc-acc" id="how-it-works">
               <summary class="hc-acc__summary">
-                <span class="hc-acc__text">
-                  <span class="hc-acc__title">Как работи участието</span>
-                  <span class="hc-acc__summaryline">Кратки стъпки, без дежурства и натиск</span>
-                </span>
-                <span class="hc-acc__meta">1 мин</span>
-              </summary>
+  <span class="hc-acc__left">
+    <span class="hc-acc__icon" aria-hidden="true">✅</span>
+    <span class="hc-acc__text">
+      <span class="hc-acc__title">Как работи участието</span>
+      <span class="hc-acc__summaryline">Кратки стъпки, без дежурства и натиск</span>
+    </span>
+  </span>
+
+  <span class="hc-acc__right">
+    <span class="hc-acc__meta">1 мин</span>
+    <span class="hc-acc__chev" aria-hidden="true">▾</span>
+  </span>
+</summary>
               <div class="hc-acc__body">
-                                  <div class="hc-container">
+
                           <h2 class="hc-title">Как работи участието</h2>
 
                           <div class="hc-grid-2">
@@ -855,8 +982,8 @@
                               <p class="hc-card-text">
                                 Можеш да откажеш или да спреш по всяко време. Доброволчеството е избор, не дълг.
                               </p>
-                            </div>
-                          </div>
+                            
+</div>
                         </div>
       
               </div>
@@ -864,14 +991,21 @@
 
             <details class="hc-acc" id="in-practice">
               <summary class="hc-acc__summary">
-                <span class="hc-acc__text">
-                  <span class="hc-acc__title">Как изглежда помощта на практика</span>
-                  <span class="hc-acc__summaryline">Кратки примери от реални ситуации</span>
-                </span>
-                <span class="hc-acc__meta">1–2 мин</span>
-              </summary>
+  <span class="hc-acc__left">
+    <span class="hc-acc__icon" aria-hidden="true">✨</span>
+    <span class="hc-acc__text">
+      <span class="hc-acc__title">Как изглежда помощта на практика</span>
+      <span class="hc-acc__summaryline">Кратки примери от реални ситуации</span>
+    </span>
+  </span>
+
+  <span class="hc-acc__right">
+    <span class="hc-acc__meta">1–2 мин</span>
+    <span class="hc-acc__chev" aria-hidden="true">▾</span>
+  </span>
+</summary>
               <div class="hc-acc__body">
-                                  <div class="hc-container">
+
                           <h2 class="hc-title">Как изглежда помощта на практика</h2>
 
                           <div class="hc-stories" data-collapsed="true">
@@ -902,8 +1036,8 @@
 
                             <!-- E21_MARKER_20260116 -->
                             <button type="button" class="hc-linkbtn" data-stories-toggle>Покажи още примери</button>
+
 </div>
-                        </div>
       
               </div>
             </details>
@@ -939,7 +1073,7 @@
         </div>
       </section>
 
-      <section class="hc-section hc-section--soft hc-request-preview" aria-label="Примерна заявка за помощ">
+      <section class="hc-section hc-section--soft hc-request-preview" id="request-preview" aria-label="Примерна заявка за помощ">
         <div class="hc-container">
           <div class="hc-section-head">
             <div class="hc-demo-label">Примерен формат</div>
@@ -1012,12 +1146,8 @@
           </p>
 
           <div class="hc-cta-actions">
-            <a class="btn btn-primary btn-lg" href="{{ safe_url_for('volunteer_login') }}">
-              Стани доброволец
-            </a>
-            <a class="btn btn-outline-secondary btn-lg" href="{{ safe_url_for('main.submit_request') }}">
-              Подай заявка за помощ
-            </a>
+            <a class="hc-btn hc-btn--primary" href="/volunteer/signup">Стани доброволец</a>
+            <a class="hc-btn hc-btn--ghost" href="/submit_request">Подай заявка за помощ</a>
           </div>
 
           <p class="hc-cta-note">Без публични лични данни. Без натиск. Само реална, ясна помощ.</p>
@@ -1071,6 +1201,31 @@
     </div>
   </div>
 </section>
+
+    <section class="hc-promise" aria-label="Обещание към доброволците">
+      <div class="hc-container hc-promise__inner">
+        <ul class="hc-promise__list">
+          <li>
+            <span class="hc-promise__icon">✓</span>
+            Без графици и дежурства
+          </li>
+          <li>
+            <span class="hc-promise__icon">✓</span>
+            Данните ти не са публични
+          </li>
+          <li>
+            <span class="hc-promise__icon">✓</span>
+            Можеш да откажеш по всяко време
+          </li>
+        </ul>
+
+        <div class="hc-promise__cta">
+          <a href="/volunteer/signup" class="hc-btn hc-btn--primary">
+            Стани доброволец
+          </a>
+        </div>
+      </div>
+    </section>
 
       <!-- Footer -->
       <footer
@@ -1128,9 +1283,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom JavaScript -->
-    <script src="{{ url_lang('static', filename='js/feedback.js') }}"></script>
-    <script src="{{ url_lang('static', filename='js/navigation.js') }}"></script>
-    <script src="{{ url_lang('static', filename='js/notification_service.js') }}"></script>
+    <script defer src="{{ url_lang('static', filename='js/feedback.js') }}"></script>
+    <script defer src="{{ url_lang('static', filename='js/navigation.js') }}"></script>
+    <script defer src="{{ url_lang('static', filename='js/notification_service.js') }}"></script>
     <script>
       // Initialize feedback system
       let feedback = {
@@ -1398,14 +1553,15 @@
 
           const first = sla.avg_first_response_minutes_7d;
           const reso = sla.avg_resolution_hours_30d;
+          const NO_DATA = "— (още няма достатъчно данни)";
           setText(
             "impact_sla_first",
-            first === null || first === undefined || first === "" ? "– (недостатъчно данни)" : Math.round(first),
+            first === null || first === undefined || first === "" ? NO_DATA : Math.round(first),
             first === null || first === undefined || first === "" ? "" : " мин",
           );
           setText(
             "impact_sla_resolution",
-            reso === null || reso === undefined || reso === "" ? "– (недостатъчно данни)" : Math.round(reso),
+            reso === null || reso === undefined || reso === "" ? NO_DATA : Math.round(reso),
             reso === null || reso === undefined || reso === "" ? "" : " ч",
           );
 
@@ -1457,10 +1613,10 @@
       </div>
 
       <div class="hc-sticky-cta__actions">
-        <a class="hc-btn hc-btn--primary" href="/volunteer_login">Стани доброволец</a>
-        <a class="hc-btn" href="/all_categories">Виж заявки</a>
+        <a class="hc-btn hc-btn--primary" href="/volunteer/signup">Стани доброволец</a>
+        <a class="hc-btn hc-btn--ghost" href="/categories">Виж заявки</a>
 
-        <button class="hc-sticky-cta__close" type="button" aria-label="Затвори">
+        <button class="hc-sticky-cta__close" type="button" aria-label="Затвори лентата">
           ✕
         </button>
       </div>
@@ -1553,7 +1709,117 @@
       });
     })();
   </script>
-  </body>
+  
+    <!-- E31.3: Nav account dropdown JS -->
+    <script>
+      (function () {
+        const dd = document.querySelector(".hc-nav-dd");
+        if (!dd) return;
+
+        const btn = dd.querySelector(".hc-nav-dd__toggle");
+        const close = () => {
+          dd.classList.remove("is-open");
+          btn?.setAttribute("aria-expanded", "false");
+        };
+        const open = () => {
+          dd.classList.add("is-open");
+          btn?.setAttribute("aria-expanded", "true");
+        };
+
+        btn?.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          dd.classList.contains("is-open") ? close() : open();
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!dd.contains(e.target)) close();
+        });
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") close();
+        });
+      })();
+    </script>
+
+
+    <script>
+      // === E33.1: Nav active link marker (Modern NGO) ===
+      (function () {
+        const path = (window.location && window.location.pathname) || "/";
+        const links = document.querySelectorAll(".main-nav a.nav-link-light, .nav-menu a.nav-link-light");
+        links.forEach(a => {
+          const href = a.getAttribute("href") || "";
+          // Mark exact route matches only (avoid #anchors)
+          if (href && href.startsWith("/") && href === path) {
+            a.classList.add("is-active");
+            a.setAttribute("aria-current", "page");
+          }
+        });
+      })();
+    </script>
+
+
+<script>
+/* === E37: Return hook (Modern NGO) === */
+(function () {
+  const key = "hc_vol_filter_pref";
+  const btns = Array.from(document.querySelectorAll("[data-save-filter]"));
+  const badge = document.getElementById("hcSavedBadge");
+  const text = document.getElementById("hcReturnText");
+  const clearBtn = document.getElementById("hcClearSaved");
+
+  if (!btns.length || !text) return;
+
+  const label = (v) => {
+    if (v === "remote") return "Дистанционно";
+    if (v === "onsite") return "На място";
+    return "Всички";
+  };
+
+  const setActive = (v) => {
+    btns.forEach(b => b.classList.toggle("is-active", b.dataset.saveFilter === v));
+  };
+
+  const applyUI = (v) => {
+    if (!v) {
+      badge && (badge.hidden = true);
+      clearBtn && (clearBtn.hidden = true);
+      text.textContent = "Връщаш се? Запази си предпочитание — ще го приложим автоматично.";
+      setActive("all");
+      return;
+    }
+    badge && (badge.hidden = false);
+    clearBtn && (clearBtn.hidden = false);
+    text.textContent = `Запазено: ${label(v)}. Следващия път ще ти го покажем първо.`;
+    setActive(v);
+  };
+
+  const saved = localStorage.getItem(key);
+  applyUI(saved);
+
+  btns.forEach((b) => {
+    b.addEventListener("click", () => {
+      const v = b.dataset.saveFilter || "all";
+      localStorage.setItem(key, v);
+      applyUI(v);
+
+      const target = document.querySelector("#tasks-list, #requests, #open-requests");
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      localStorage.removeItem(key);
+      applyUI(null);
+    });
+  }
+})();
+</script>
+</body>
 </html>
+
+
 
 

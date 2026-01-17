@@ -2455,3 +2455,1400 @@ a{
   --hc-pad: 20px;
   --hc-gap: 14px;
 }
+
+/* === E31.3: Nav account dropdown (Modern NGO) === */
+.hc-nav-dd{ position: relative; }
+
+.hc-nav-dd__toggle{
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  background: rgba(255,255,255,0.92);
+  border-radius: 999px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.hc-nav-dd__toggle:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(2,6,23,0.08);
+  border-color: rgba(2,132,199,0.22);
+}
+
+.hc-nav-dd__toggle:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.25);
+  outline-offset: 2px;
+}
+
+.hc-nav-dd__menu{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 220px;
+  background: rgba(255,255,255,0.98);
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(2,6,23,0.12);
+  padding: 8px;
+  display: none;
+  z-index: 9999;
+}
+
+.hc-nav-dd.is-open .hc-nav-dd__menu{ display: block; }
+
+.hc-nav-dd__item{
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: rgba(15,23,42,0.92);
+  transition: background .12s ease, transform .12s ease;
+}
+
+.hc-nav-dd__item:hover{
+  background: rgba(2,132,199,0.08);
+  transform: translateX(1px);
+}
+
+.hc-nav-dd__sep{
+  height: 1px;
+  background: rgba(15,23,42,0.10);
+  margin: 6px 6px;
+}
+
+/* === E31.4: Nav search pill (Modern NGO) === */
+.main-nav .search-container{
+  margin-left: 12px;
+}
+
+.main-nav .search-input-group{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.14));
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 10px 28px rgba(2,6,23,0.05);
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+}
+
+.main-nav .search-input-group:focus-within{
+  border-color: rgba(2,132,199,0.32);
+  box-shadow: 0 18px 44px rgba(2,6,23,0.10);
+  transform: translateY(-1px);
+}
+
+.main-nav .search-input{
+  border: 0 !important;
+  outline: none !important;
+  background: transparent !important;
+  min-width: 240px;
+  padding: 0 6px !important;
+  color: rgba(15,23,42,0.92);
+}
+
+.main-nav .search-input::placeholder{
+  color: rgba(15,23,42,0.45);
+}
+
+.main-nav .search-button{
+  border: 1px solid rgba(2,132,199,0.18);
+  background: rgba(2,132,199,0.10);
+  color: rgba(15,23,42,0.82);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+
+.main-nav .search-button:hover{
+  transform: translateY(-1px);
+  background: rgba(2,132,199,0.14);
+  border-color: rgba(2,132,199,0.28);
+  box-shadow: 0 10px 28px rgba(2,6,23,0.08);
+}
+
+.main-nav .search-button:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.25);
+  outline-offset: 2px;
+}
+
+@media (max-width: 980px){
+  .main-nav .search-input{ min-width: 180px; }
+}
+
+@media (max-width: 768px){
+  .main-nav .search-container{ display: none !important; }
+}
+
+/* === E32.1: Nav row layout (Modern NGO) === */
+.main-nav .hc-nav-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.main-nav .hc-nav-left{
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.main-nav .hc-nav-right{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.main-nav .nav-menu{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-nav .nav-link-light{
+  padding: 10px 10px;
+  border-radius: 10px;
+  color: rgba(15,23,42,0.82);
+  text-decoration: none;
+  transition: background .15s ease, color .15s ease;
+}
+
+.main-nav .nav-link-light:hover{
+  background: rgba(2,132,199,0.08);
+  color: rgba(15,23,42,0.92);
+}
+
+/* === E32.2: Nav mobile behavior (Modern NGO) === */
+@media (max-width: 767px){
+  .main-nav .hc-nav-row{
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* left/right become one row: brand + hamburger */
+  .main-nav .hc-nav-left{
+    flex: 1 1 auto;
+    gap: 10px;
+  }
+
+  .main-nav .hc-nav-right{
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+
+  /* hide desktop search + icons on mobile (we'll re-add inside collapse later if needed) */
+  .main-nav .search-container.d-none.d-md-block{
+    display: none !important;
+  }
+
+  /* collapse must be visible on mobile when opened */
+  .main-nav #navbarNav{
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .main-nav #navbarNav .nav-menu{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 8px 0 2px;
+  }
+
+  .main-nav #navbarNav .nav-menu > li{
+    width: 100%;
+  }
+
+  .main-nav #navbarNav .nav-link-light{
+    display: block;
+    width: 100%;
+    padding: 12px 12px;
+    border-radius: 12px;
+  }
+
+  .main-nav #navbarNav .hc-btn{
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* === E32.3: Mobile nav search + account (Modern NGO) === */
+.hc-nav-mobile{
+  display: grid;
+  gap: 10px;
+  padding: 10px 0 2px;
+}
+
+.hc-nav-mobile__search{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--hc-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.7);
+  box-shadow: var(--hc-shadow-sm);
+}
+
+.hc-nav-mobile__account{
+  display: grid;
+  gap: 6px;
+}
+
+@media (max-width: 767px){
+  /* keep same input styles used by the desktop pill */
+  .hc-nav-search__input{
+    width: 100%;
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-size: 0.98rem;
+    color: rgba(15,23,42,0.86);
+  }
+
+  .hc-nav-search__btn{
+    border: 1px solid rgba(2,132,199,0.22);
+    background: rgba(2,132,199,0.10);
+    color: rgba(2,132,199,0.92);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+
+  .hc-nav-search__btn:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(2,6,23,0.08);
+    border-color: rgba(2,132,199,0.28);
+  }
+
+  .hc-nav-search__btn:focus-visible{
+    outline: 3px solid rgba(2,132,199,0.28);
+    outline-offset: 2px;
+  }
+}
+
+/* === E32.4: Mobile primary CTA in nav (Modern NGO) === */
+.hc-nav-mobile__cta{
+  width: 100%;
+  justify-content: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  box-shadow: 0 16px 30px rgba(2, 6, 23, 0.10);
+}
+
+/* === E33.2: Nav links states (Modern NGO) === */
+.main-nav .nav-link-light{
+  position: relative;
+  border-radius: 12px;
+  padding: 8px 10px;
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+
+.main-nav .nav-link-light:hover{
+  background: rgba(2,132,199,0.08);
+}
+
+.main-nav .nav-link-light:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.28);
+  outline-offset: 2px;
+}
+
+.main-nav .nav-link-light.is-active{
+  background: rgba(2,132,199,0.12);
+  color: rgba(2, 6, 23, 0.92);
+  box-shadow: 0 10px 20px rgba(2,6,23,0.06);
+}
+
+.main-nav .nav-link-light.is-active::after{
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 99px;
+  background: rgba(2,132,199,0.50);
+}
+
+/* === E33.3: Nav dropdown premium surface (Modern NGO) === */
+.hc-nav-dd__menu{
+  border: 1px solid rgba(15,23,42,0.14);
+  border-radius: 14px;
+  box-shadow: 0 24px 50px rgba(2,6,23,0.10);
+  overflow: hidden;
+}
+
+.hc-nav-dd__menu a{
+  padding: 10px 12px;
+}
+
+.hc-nav-dd__menu a:hover{
+  background: rgba(2,132,199,0.08);
+}
+
+/* === E34: Hero micro-promise (Modern NGO) === */
+.hc-hero .hc-hero__micro{
+  margin: 10px 0 0;
+  font-size: 0.98rem;
+  color: rgba(15,23,42,0.78);
+}
+
+.hc-hero .hc-hero__helper{
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: rgba(15,23,42,0.70);
+}
+
+/* === E35: Hero proof chips (Modern NGO) === */
+.hc-hero__proof{
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.hc-proofchip{
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(15,23,42,0.12);
+  box-shadow: 0 8px 22px rgba(2,6,23,0.06);
+  color: rgba(15,23,42,0.78);
+  font-size: 0.92rem;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+}
+@media (max-width: 720px){
+  .hc-proofchip{ width: auto; }
+}
+
+/* === E36: Volunteer Quick Start (Modern NGO) === */
+.hc-quickstart{
+  padding-top: 34px;
+  padding-bottom: 34px;
+}
+.hc-qs__grid{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.hc-qs__card{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(15,23,42,0.12);
+  box-shadow: 0 10px 28px rgba(2,6,23,0.06);
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.hc-qs__card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 16px 38px rgba(2,6,23,0.10);
+  border-color: rgba(2,132,199,0.22);
+}
+.hc-qs__card:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.35);
+  outline-offset: 3px;
+}
+.hc-qs__icon{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(2,132,199,0.08);
+  border: 1px solid rgba(2,132,199,0.14);
+  flex: 0 0 auto;
+  font-size: 1.2rem;
+}
+.hc-qs__title{
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: rgba(15,23,42,0.90);
+}
+.hc-qs__text{
+  margin-top: 2px;
+  color: rgba(15,23,42,0.72);
+  font-size: 0.96rem;
+  line-height: 1.35;
+}
+.hc-qs__go{
+  margin-left: auto;
+  color: rgba(15,23,42,0.55);
+  font-weight: 800;
+}
+.hc-qs__fineprint{
+  margin: 12px 0 0;
+  text-align: center;
+  color: rgba(15,23,42,0.62);
+  font-size: 0.95rem;
+}
+@media (max-width: 980px){
+  .hc-qs__grid{ grid-template-columns: 1fr; }
+}
+
+/* === E37: Return hook (Modern NGO) === */
+.hc-qs__return{
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.78);
+  border: 1px solid rgba(15,23,42,0.10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hc-qs__return-left{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.hc-qs__return-text{
+  color: rgba(15,23,42,0.70);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hc-qs__badge{
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(2,132,199,0.10);
+  border: 1px solid rgba(2,132,199,0.18);
+  color: rgba(2,132,199,0.92);
+  font-weight: 800;
+  font-size: 0.85rem;
+  flex: 0 0 auto;
+}
+.hc-qs__return-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.hc-btn.hc-btn--ghost{
+  background: rgba(2,6,23,0.03);
+  border: 1px solid rgba(15,23,42,0.10);
+  color: rgba(15,23,42,0.84);
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+.hc-btn.hc-btn--ghost:hover{
+  border-color: rgba(2,132,199,0.22);
+  box-shadow: 0 10px 28px rgba(2,6,23,0.06);
+  transform: translateY(-1px);
+}
+.hc-btn.hc-btn--ghost.is-active{
+  background: rgba(2,132,199,0.12);
+  border-color: rgba(2,132,199,0.28);
+  color: rgba(2,132,199,0.95);
+}
+.hc-btn.hc-btn--link{
+  background: transparent;
+  border: 0;
+  padding: 9px 10px;
+  border-radius: 999px;
+  color: rgba(2,132,199,0.92);
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 3px;
+}
+@media (max-width: 860px){
+  .hc-qs__return{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hc-qs__return-actions{
+    justify-content: flex-start;
+  }
+  .hc-qs__return-text{
+    white-space: normal;
+  }
+}
+
+/* === E38: Volunteer Promise Bar (Modern NGO) === */
+.hc-promise{
+  margin-top: 36px;
+  padding: 20px 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(244,246,251,0.92),
+    rgba(255,255,255,0.96)
+  );
+  border-top: 1px solid rgba(15,23,42,0.08);
+}
+
+.hc-promise__inner{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.hc-promise__list{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hc-promise__list li{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(15,23,42,0.78);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.hc-promise__icon{
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(2,132,199,0.12);
+  color: rgba(2,132,199,0.95);
+  font-weight: 900;
+  font-size: 0.9rem;
+  flex: 0 0 auto;
+}
+
+.hc-promise__cta{
+  flex: 0 0 auto;
+}
+
+@media (max-width: 860px){
+  .hc-promise__inner{
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  .hc-promise__list{
+    justify-content: center;
+  }
+  .hc-promise__cta{
+    width: 100%;
+  }
+  .hc-promise__cta .hc-btn{
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* === E39.1: Focus + link hygiene (Modern NGO) === */
+:focus { outline: none; }
+
+:focus-visible{
+  outline: 3px solid rgba(2,132,199,0.35);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+a{
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+a:hover{
+  text-decoration-thickness: 2px;
+}
+
+/* === E39.2: Anchor offset (Modern NGO) === */
+:root{
+  scroll-padding-top: 88px;
+}
+
+[id]{
+  scroll-margin-top: 88px;
+}
+
+/* === E39.3: Reduced motion global guard (Modern NGO) === */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* === E39.4: Button states polish (Modern NGO) === */
+.hc-btn{
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+}
+
+.hc-btn:active{
+  transform: translateY(0px);
+  box-shadow: none;
+}
+
+.hc-btn--primary:hover{
+  box-shadow: 0 14px 34px rgba(2, 6, 23, 0.10);
+}
+
+.hc-btn--primary:active{
+  transform: translateY(1px);
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.10);
+}
+
+/* === E40.3: Hero layout stability (Modern NGO) === */
+.hc-hero{
+  min-height: 92vh;
+}
+
+/* === E41.2: Trust micro-badges (Modern NGO) === */
+.hc-trust-badges{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.hc-badge{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.78);
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.12));
+  color: rgba(15,23,42,0.82);
+  font-size: 0.92rem;
+  line-height: 1;
+  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+
+.hc-badge i{
+  color: rgba(2,132,199,0.9);
+}
+
+.hc-badge:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(2,6,23,0.08);
+  border-color: rgba(2,132,199,0.25);
+}
+
+@media (max-width: 720px){
+  .hc-badge{ font-size: 0.9rem; }
+}
+
+/* === E41.3: Soft ring hover for hc cards (Modern NGO) === */
+.hc-card:hover,
+.hc-story:hover,
+.impact-card:hover{
+  box-shadow: 0 18px 44px rgba(2,6,23,0.10);
+  border-color: rgba(2,132,199,0.22);
+}
+
+/* === E42.1: Smooth anchors (Modern NGO) === */
+html{
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior: auto; }
+}
+
+/* === E42.2: Anchor offset failsafe (Modern NGO) === */
+:target{
+  scroll-margin-top: 86px;
+}
+
+/* === E42.3: Hero scroll cue polish (Modern NGO) === */
+.hc-hero__hint{
+  margin-top: 14px;
+  font-size: 0.95rem;
+  color: rgba(15,23,42,0.70);
+  opacity: 0.95;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.66);
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: 0 10px 26px rgba(2,6,23,0.06);
+}
+
+.hc-hero__hint::before{
+  content: "↓";
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(2,132,199,0.10);
+  border: 1px solid rgba(2,132,199,0.18);
+  color: rgba(2,132,199,0.95);
+}
+
+/* === E43.1: Button system unification (Modern NGO) === */
+:root{
+  --hc-btn-radius: 999px;
+  --hc-btn-pad-y: 12px;
+  --hc-btn-pad-x: 18px;
+  --hc-btn-font: 600;
+  --hc-btn-shadow: 0 10px 26px rgba(2,6,23,0.10);
+  --hc-btn-shadow-hover: 0 14px 34px rgba(2,6,23,0.14);
+  --hc-btn-ring: 0 0 0 4px rgba(2,132,199,0.16);
+}
+
+/* Base for all premium buttons */
+.hc-btn,
+a.hc-btn,
+button.hc-btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: var(--hc-btn-pad-y) var(--hc-btn-pad-x);
+  border-radius: var(--hc-btn-radius);
+  font-weight: var(--hc-btn-font);
+  text-decoration: none;
+  border: 1px solid rgba(15,23,42,0.12);
+  box-shadow: var(--hc-btn-shadow);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+  will-change: transform;
+}
+
+.hc-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: var(--hc-btn-shadow-hover);
+  border-color: rgba(2,132,199,0.22);
+}
+
+.hc-btn:active{
+  transform: translateY(0px);
+  box-shadow: 0 8px 18px rgba(2,6,23,0.10);
+}
+
+.hc-btn:focus-visible{
+  outline: none;
+  box-shadow: var(--hc-btn-shadow), var(--hc-btn-ring);
+}
+
+/* Primary */
+.hc-btn--primary{
+  background: rgba(2,132,199,0.96);
+  color: #fff;
+  border-color: rgba(2,132,199,0.38);
+}
+
+.hc-btn--primary:hover{
+  background: rgba(2,132,199,1);
+}
+
+/* Secondary (light) */
+.hc-btn--ghost{
+  background: rgba(255,255,255,0.82);
+  color: rgba(15,23,42,0.92);
+}
+
+.hc-btn--ghost:hover{
+  background: rgba(255,255,255,0.92);
+}
+
+/* Small variant */
+.hc-btn--sm{
+  padding: 9px 14px;
+  font-size: 0.95rem;
+}
+
+/* === E44: CTA actions unify (Modern NGO) === */
+.hc-cta-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  margin-top:16px;
+}
+
+.hc-cta-actions .hc-btn{
+  min-width: 220px;
+}
+
+@media (max-width: 520px){
+  .hc-cta-actions .hc-btn{
+    width:100%;
+    min-width: 0;
+  }
+}
+
+/* === E45: Accordion header density + iconography (Modern NGO) === */
+.hc-accordion{ margin-top: 14px; }
+
+.hc-acc{
+  border-radius: 18px;
+  overflow: clip;
+}
+
+.hc-acc__summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding: 14px 16px;
+  cursor:pointer;
+}
+
+.hc-acc__left{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.hc-acc__icon{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  font-size: 18px;
+  background: rgba(2,132,199,0.08);
+  border: 1px solid rgba(2,132,199,0.18);
+  flex: 0 0 auto;
+}
+
+.hc-acc__text{ min-width:0; }
+
+.hc-acc__title{
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.hc-acc__summaryline{
+  display:block;
+  margin-top: 2px;
+  color: rgba(15,23,42,0.72);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-acc__right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex: 0 0 auto;
+}
+
+.hc-acc__meta{
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.06);
+  border: 1px solid rgba(15,23,42,0.10);
+  color: rgba(15,23,42,0.78);
+}
+
+.hc-acc__chev{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  border: 1px solid rgba(15,23,42,0.12);
+  background: rgba(255,255,255,0.7);
+  transition: transform .18s ease;
+}
+
+details.hc-acc[open] .hc-acc__chev{
+  transform: rotate(180deg);
+}
+
+@media (max-width: 520px){
+  .hc-acc__summary{ padding: 12px 14px; }
+  .hc-acc__meta{ display:none; }
+}
+
+/* === E46: Accordion body readability (Modern NGO) === */
+
+.hc-acc__body{
+  padding: 14px 16px 18px;
+}
+
+.hc-acc__body .hc-title{
+  font-size: 1.25rem;
+  margin: 4px 0 10px;
+}
+
+.hc-acc__body .hc-lead{
+  max-width: 72ch;
+  color: rgba(15,23,42,0.82);
+  font-size: 1.02rem;
+  line-height: 1.75;
+}
+
+.hc-acc__body .hc-grid-2,
+.hc-acc__body .hc-grid-3{
+  margin-top: 14px;
+}
+
+.hc-acc__body .hc-card{
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.12));
+  background: rgba(255,255,255,0.82);
+}
+
+.hc-acc__body .hc-card-title{
+  margin-bottom: 6px;
+}
+
+.hc-acc__body .hc-card-text{
+  color: rgba(15,23,42,0.78);
+  line-height: 1.65;
+}
+
+/* Stories: по-ефирно и подравнено */
+.hc-acc__body .hc-stories{
+  margin-top: 12px;
+}
+
+.hc-acc__body .hc-story{
+  background: rgba(255,255,255,0.82);
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.12));
+}
+
+/* На мобилно: по-малко padding */
+@media (max-width: 520px){
+  .hc-acc__body{ padding: 12px 14px 16px; }
+  .hc-acc__body .hc-lead{ font-size: 1rem; }
+}
+/* === E47: Impact + KPI readability (Modern NGO) === */
+
+/* Impact section head */
+#impact .hc-section__title{
+  margin-bottom: 6px;
+}
+
+#impact .hc-section__subtitle{
+  max-width: 74ch;
+  margin: 0 auto;
+}
+
+/* KPI grid: равни карти */
+#impact .impact-kpis{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+@media (max-width: 980px){
+  #impact .impact-kpis{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px){
+  #impact .impact-kpis{ grid-template-columns: 1fr; }
+}
+
+/* KPI cards */
+#impact .impact-kpi{
+  background: rgba(255,255,255,0.86);
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.12));
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.06);
+}
+
+#impact .impact-kpi__label{
+  font-size: 0.92rem;
+  color: rgba(15,23,42,0.70);
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+#impact .impact-kpi__value{
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: rgba(15,23,42,0.92);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+#impact .impact-kpi__hint{
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: rgba(15,23,42,0.66);
+}
+
+/* Secondary block (SLA + categories): повече въздух */
+#impact .impact-meta{
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 12px;
+}
+
+@media (max-width: 980px){
+  #impact .impact-meta{ grid-template-columns: 1fr; }
+}
+
+#impact .impact-panel{
+  background: rgba(255,255,255,0.86);
+  border: 1px solid var(--hc-border, rgba(15,23,42,0.12));
+  border-radius: 16px;
+  padding: 14px;
+}
+
+#impact .impact-panel__title{
+  font-weight: 800;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+  color: rgba(15,23,42,0.90);
+}
+
+#impact .impact-sla{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 520px){
+  #impact .impact-sla{ grid-template-columns: 1fr; }
+}
+
+#impact .impact-sla__item{
+  border: 1px dashed rgba(2,132,199,0.22);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(2,132,199,0.06);
+}
+
+#impact .impact-sla__label{
+  font-size: 0.9rem;
+  color: rgba(15,23,42,0.70);
+  margin: 0 0 6px;
+}
+
+#impact .impact-sla__value{
+  font-weight: 800;
+  font-size: 1.12rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Categories chips: по-тихи */
+#impact .impact-chip{
+  background: rgba(15,23,42,0.04);
+  border: 1px solid rgba(15,23,42,0.10);
+  color: rgba(15,23,42,0.80);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Footer note */
+#impact .impact-footer{
+  margin-top: 10px;
+  font-size: 0.92rem;
+  color: rgba(15,23,42,0.62);
+}
+/* === E48: Impact empty-state + chips + SLA tone (Modern NGO) === */
+
+.impact-card .impact-kpi {
+  font-variant-numeric: tabular-nums;
+}
+
+.impact-card .impact-kpi__label,
+.impact-card .impact-kpi__title,
+.impact-card .impact-kpi-label {
+  line-height: 1.2;
+}
+
+.impact-card .impact-kpi__value,
+.impact-card .impact-kpi-value,
+.impact-card .impact-kpi-number {
+  letter-spacing: -0.02em;
+}
+
+.impact-card .impact-chip,
+#impact_categories .impact-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  margin: .25rem .35rem .0 0;
+  white-space: nowrap;
+}
+
+#impact_categories {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .35rem .45rem;
+}
+
+/* SLA rows: make "no data" look intentional */
+.impact-card .impact-sla-row,
+.impact-card .impact-sla {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: .5rem 1rem;
+  align-items: baseline;
+}
+
+.impact-card [id^="impact_sla_"] {
+  font-weight: 600;
+}
+
+/* If we print "(недостатъчно данни)" – soften it */
+.impact-card .impact-muted,
+.impact-card .impact-note,
+.impact-card small {
+  opacity: .8;
+}
+
+/* Footer line readability */
+.impact-card .impact-footer,
+.impact-card .impact-foot,
+#impact_updated_at,
+#impact_privacy_note {
+  font-size: .95rem;
+  opacity: .75;
+}
+/* === E49: Impact + KPI layout refinement (Modern NGO) === */
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.impact-kpi,
+.impact-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 128px;
+}
+
+.impact-kpi-number {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.impact-kpi-label {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--hc-muted);
+}
+
+.impact-kpi-hint {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--hc-muted-soft);
+}
+
+@media (max-width: 640px) {
+  .impact-grid {
+    gap: 12px;
+  }
+
+  .impact-kpi,
+  .impact-card {
+    min-height: auto;
+  }
+}
+/* === E49: Impact + KPI layout refinement (Modern NGO) === */
+
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.impact-kpi,
+.impact-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 128px;
+}
+
+.impact-kpi-number {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.impact-kpi-label {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--hc-muted);
+}
+
+.impact-kpi-hint {
+  margin-top: auto;
+  font-size: 12px;
+  color: var(--hc-muted-soft);
+}
+
+@media (max-width: 640px) {
+  .impact-grid {
+    gap: 12px;
+  }
+
+  .impact-kpi,
+  .impact-card {
+    min-height: auto;
+  }
+}
+/* E49.a: Accordion body mobile spacing */
+.hc-acc__body {
+  padding-top: 12px;
+}
+
+/* E49.b: Sticky CTA mobile offset */
+@media (max-width: 720px){
+  .hc-sticky-cta{
+    bottom: 12px;
+  }
+}
+/* E49.a: Accordion body mobile spacing */
+.hc-acc__body {
+  padding-top: 12px;
+}
+
+/* E49.b: Sticky CTA mobile offset */
+@media (max-width: 720px){
+  .hc-sticky-cta{
+    bottom: 12px;
+  }
+}
+/* E50.1: Text micro-contrast */
+.hc-section__subtitle,
+.hc-lead,
+.hc-card-text,
+.hc-story-text {
+  color: rgba(15, 23, 42, 0.82);
+}
+
+.hc-muted,
+.hc-acc__summaryline {
+  color: rgba(15, 23, 42, 0.62);
+}
+
+/* E50.2: Card edge lift */
+.hc-card,
+.hc-story,
+.hc-request-card {
+  transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+}
+
+.hc-card:hover,
+.hc-story:hover,
+.hc-request-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(2, 6, 23, 0.08);
+  border-color: rgba(2, 132, 199, 0.25);
+}
+
+/* E50.3: Soft section separators */
+.hc-section + .hc-section::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(15,23,42,0.06),
+    transparent
+  );
+  margin-bottom: 32px;
+}
+
+/* E50.4: Focus-visible polish */
+:focus-visible {
+  outline: 2px solid rgba(2,132,199,0.6);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+/* E50.1: Text micro-contrast */
+.hc-section__subtitle,
+.hc-lead,
+.hc-card-text,
+.hc-story-text {
+  color: rgba(15, 23, 42, 0.82);
+}
+
+.hc-muted,
+.hc-acc__summaryline {
+  color: rgba(15, 23, 42, 0.62);
+}
+
+/* E50.2: Card edge lift */
+.hc-card,
+.hc-story,
+.hc-request-card {
+  transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+}
+
+.hc-card:hover,
+.hc-story:hover,
+.hc-request-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(2, 6, 23, 0.08);
+  border-color: rgba(2, 132, 199, 0.25);
+}
+
+/* E50.3: Soft section separators */
+.hc-section + .hc-section::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(15,23,42,0.06),
+    transparent
+  );
+  margin-bottom: 32px;
+}
+
+/* E50.4: Focus-visible polish */
+:focus-visible {
+  outline: 2px solid rgba(2,132,199,0.6);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
