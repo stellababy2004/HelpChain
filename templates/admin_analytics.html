@@ -456,10 +456,10 @@
             </div>
             <div class="d-flex gap-2">
               <button class="export-btn" onclick="exportData('json')">
-                <i class="fas fa-download me-1"></i>Export JSON
+                <i class="fas fa-download me-1"></i>{{ _('Export JSON') }}
               </button>
-              <button class="export-btn" onclick="exportData('csv')">
-                <i class="fas fa-file-csv me-1"></i>Export CSV
+              <button class="export-btn" onclick="if(confirm({{ export_confirm|tojson }})) exportData('csv')">
+                <i class="fas fa-file-csv me-1"></i>{{ _('Export CSV') }}
               </button>
             </div>
           </div>
@@ -1004,6 +1004,14 @@
           window.location.reload();
         }, 1000);
       }
+
+      // Localized export confirmation (stable multiline msgids)
+      {% set export_confirm = '\n'.join([
+        _('⚠️ This export contains personal data.'),
+        _('Internal use only.'),
+        '',
+        _('Are you sure you want to continue?')
+      ]) %}
 
       function exportData(format) {
         const url = `/api/analytics/export?format=${format}&type=dashboard`;

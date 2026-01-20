@@ -3852,3 +3852,129 @@ details.hc-acc[open] .hc-acc__chev{
   outline-offset: 2px;
   border-radius: 6px;
 }
+
+@media (max-width: 480px) {
+  #cgw_action_btn { display: none !important; }
+}
+
+
+@media (max-width: 480px) {
+  #cgw_action_btn { display: none !important; }
+}
+
+
+/* === E52.x: Mobile overflow hard-stop === */
+html, body { max-width: 100%; overflow-x: clip; }
+@supports not (overflow: clip) {
+  html, body { overflow-x: hidden; }
+}
+img, svg, video, canvas { max-width: 100%; height: auto; }
+pre, code { max-width: 100%; overflow-x: auto; }
+
+
+/* === E52.x: Mobile overflow hard-stop === */
+html, body { max-width: 100%; overflow-x: clip; }
+@supports not (overflow: clip) {
+  html, body { overflow-x: hidden; }
+}
+img, svg, video, canvas { max-width: 100%; height: auto; }
+pre, code { max-width: 100%; overflow-x: auto; }
+
+
+/* === E52.4: Mobile overflow fix — accordion (hc-acc) === */
+.hc-acc,
+.hc-acc__summary,
+.hc-acc__body {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  /* details container must never exceed viewport */
+  details.hc-acc {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden; /* kills accidental inner overflow */
+  }
+
+  /* summary line: allow wrapping instead of pushing width */
+  .hc-acc__summary {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* the right block (time + chevron) must not force width */
+  .hc-acc__right {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  /* body content must not create horizontal scroll */
+  .hc-acc__body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  /* any grids inside accordion must wrap on mobile */
+  .hc-acc__body .hc-grid-2,
+  .hc-acc__body .hc-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* === E52.4: Mobile overflow fix — accordion (hc-acc) === */
+.hc-acc,
+.hc-acc__summary,
+.hc-acc__body {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+@media (max-width: 480px) {
+  /* details container must never exceed viewport */
+  details.hc-acc {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden; /* kills accidental inner overflow */
+  }
+
+  /* summary line: allow wrapping instead of pushing width */
+  .hc-acc__summary {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* the right block (time + chevron) must not force width */
+  .hc-acc__right {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  /* body content must not create horizontal scroll */
+  .hc-acc__body {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  /* any grids inside accordion must wrap on mobile */
+  .hc-acc__body .hc-grid-2,
+  .hc-acc__body .hc-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+

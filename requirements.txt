@@ -21,6 +21,7 @@ Werkzeug==2.3.7
 pyotp
 qrcode[pil]
 pywebpush
+openpyxl==3.1.5
 
 # NOTE: Heavy ML/AI packages (torch, transformers, opencv, etc.) have been moved to
 # `requirements-ml.txt` to keep the server runtime light for Vercel prebuilt deploys.

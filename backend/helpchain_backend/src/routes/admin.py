@@ -7,10 +7,12 @@ from urllib.parse import urlparse, urljoin
 
 from flask import (
     Blueprint, render_template, request, redirect, url_for,
-    flash, session, current_app, jsonify, abort
+    flash, session, current_app, jsonify, abort, Response, send_file
 )
 import time
 import json
+import csv
+from io import StringIO, BytesIO
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 
@@ -751,6 +753,126 @@ def admin_dashboard():
         "total_volunteers": total_volunteers,
     }
 
+    try:
+        now = utc_now()
+        week_ago = now - timedelta(days=7)
+
+        total_requests_cnt = db.session.query(func.count(Request.id)).scalar() or 0
+
+        open_requests_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .scalar()
+            or 0
+        )
+
+        closed_requests_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.in_(["done", "rejected"]))
+            .scalar()
+            or 0
+        )
+
+        closed_last_7d_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.completed_at.isnot(None), Request.completed_at >= week_ago)
+            .scalar()
+            or 0
+        )
+
+        avg_resolution_hours = (
+            db.session.query(
+                func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0
+            )
+            .filter(Request.completed_at.isnot(None), Request.created_at.isnot(None))
+            .scalar()
+        )
+        avg_resolution_hours = float(avg_resolution_hours) if avg_resolution_hours is not None else None
+
+        unassigned_over_2d_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(
+                Request.owner_id.is_(None),
+                Request.status.notin_(["done", "rejected"]),
+                Request.created_at <= (now - timedelta(days=2)),
+            )
+            .scalar()
+            or 0
+        )
+
+        high_open_count = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .filter(Request.priority == "high")
+            .scalar()
+            or 0
+        )
+
+        stale_open_count = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .filter(Request.created_at <= (now - timedelta(days=7)))
+            .scalar()
+            or 0
+        )
+
+        # --- Requests per day (last 14 days) ---
+        since_dt = now - timedelta(days=14)
+        rows = (
+            db.session.query(func.date(Request.created_at), func.count(Request.id))
+            .filter(Request.created_at.isnot(None))
+            .filter(Request.created_at >= since_dt)
+            .group_by(func.date(Request.created_at))
+            .order_by(func.date(Request.created_at))
+            .all()
+        )
+        impact_dates = [str(r[0]) for r in rows]
+        impact_counts = [int(r[1]) for r in rows]
+
+        # --- Requests by category ---
+        cat_rows = (
+            db.session.query(Request.category, func.count(Request.id))
+            .group_by(Request.category)
+            .order_by(func.count(Request.id).desc())
+            .all()
+        )
+        impact_cat_labels = [r[0] or "unknown" for r in cat_rows]
+        impact_cat_counts = [int(r[1]) for r in cat_rows]
+
+        impact = {
+            "total": total_requests_cnt,
+            "open": open_requests_cnt,
+            "closed": closed_requests_cnt,
+            "closed_last_7d": closed_last_7d_cnt,
+            "avg_resolution_hours": avg_resolution_hours,
+            "unassigned_over_2d": unassigned_over_2d_cnt,
+            "open_requests": int(open_requests_cnt or 0),
+            "unassigned_48h": int(unassigned_over_2d_cnt or 0),
+            "requests_dates": impact_dates,
+            "requests_counts": impact_counts,
+            "cat_labels": impact_cat_labels,
+            "cat_counts": impact_cat_counts,
+            "high_open": int(high_open_count or 0),
+            "stale_open": int(stale_open_count or 0),
+        }
+    except Exception:
+        impact = {
+            "total": 0,
+            "open": 0,
+            "closed": 0,
+            "closed_last_7d": 0,
+            "avg_resolution_hours": None,
+            "unassigned_over_2d": 0,
+            "open_requests": 0,
+            "unassigned_48h": 0,
+            "requests_dates": [],
+            "requests_counts": [],
+            "cat_labels": [],
+            "cat_counts": [],
+            "high_open": 0,
+            "stale_open": 0,
+        }
+
     # Log the final template context summary for diagnostics during tests
     try:
         import logging as _logging
@@ -768,6 +890,7 @@ def admin_dashboard():
         volunteers=volunteers,
         volunteers_json=volunteers_dict,
         stats=stats,
+        impact=impact,
     )
 
 
@@ -920,6 +1043,11 @@ def update_status(req_id):
             abort(403)
         old_status = req.status
         req.status = new_status
+        closing_statuses = {"done", "rejected"}
+        if new_status in closing_statuses:
+            req.completed_at = utc_now()
+        else:
+            req.completed_at = None
         # Activity + legacy request log (single commit)
         log_request_activity(req, "status_change", old=old_status, new=new_status, actor_admin_id=getattr(current_user, "id", None))
         # metrics
@@ -976,38 +1104,66 @@ from ..models import db, Request, RequestActivity
 ALLOWED_STATUSES = {"pending", "approved", "in_progress", "done", "rejected"}
 
 STATUS_LABELS_BG = {
-    "pending": "Нова",
-    "approved": "Одобрена",
-    "in_progress": "В работа",
-    "done": "Завършена",
-    "rejected": "Отхвърлена",
+    "pending": "Чакащи",
+    "approved": "Одобрени",
+    "in_progress": "В процес",
+    "done": "Приключени",
+    "rejected": "Отхвърлени",
+}
+
+# Canonical EN msgids for status labels - passed to templates for localization
+STATUS_LABELS = {
+    "pending": "Pending",
+    "approved": "Approved",
+    "in_progress": "In progress",
+    "done": "Completed",
+    "rejected": "Rejected",
 }
 
 @admin_bp.get("/requests")
 @login_required
 def admin_requests():
-    status = (request.args.get("status") or "").strip()
-    q = (request.args.get("q") or "").strip()
     STATUS_LABELS_BG = {
         "new": "Нови",
         "pending": "Чакащи",
         "approved": "Одобрени",
         "in_progress": "В процес",
-        "done": "Завършени",
+        "done": "Приключени",
         "rejected": "Отхвърлени",
     }
 
-    query = (
-        db.session.query(Request, func.max(RequestActivity.created_at).label("last_activity"))
-        .outerjoin(RequestActivity, RequestActivity.request_id == Request.id)
-        .group_by(Request.id)
+    query = Request.query
+    query, status, q = build_requests_query(query, request.args)
+    requests = query.all()
+    now_aware = utc_now()
+    now_naive = datetime.utcnow()
+    SLA_WARN_NO_OWNER_DAYS = 2
+    SLA_STALE_DAYS = 7
+
+    return render_template(
+        "admin/requests.html",
+        STATUS_LABELS_BG=STATUS_LABELS_BG,
+        STATUS_LABELS=STATUS_LABELS,
+        requests=requests,
+        status=status,
+        q=q,
+        now_aware=now_aware,
+        now_naive=now_naive,
+        SLA_WARN_NO_OWNER_DAYS=SLA_WARN_NO_OWNER_DAYS,
+        SLA_STALE_DAYS=SLA_STALE_DAYS,
     )
+
+
+def build_requests_query(base_query, request_args):
+    status = (request_args.get("status") or "").strip()
+    q = (request_args.get("q") or "").strip()
+
     if status:
         internal = "pending" if status == "new" else status
-        query = query.filter(Request.status == internal)
+        base_query = base_query.filter(Request.status == internal)
     if q:
         like = f"%{q}%"
-        query = query.filter(
+        base_query = base_query.filter(
             or_(
                 Request.title.ilike(like),
                 Request.name.ilike(like),
@@ -1017,14 +1173,173 @@ def admin_requests():
             )
         )
 
-    requests = query.order_by(Request.id.desc()).all()
+    base_query = base_query.order_by(Request.id.desc())
+    return base_query, status, q
 
-    return render_template(
-        "admin/requests.html",
-        STATUS_LABELS_BG=STATUS_LABELS_BG,
-        requests=requests,
-        status=status,
-        q=q,
+
+@admin_bp.get("/requests/export.csv")
+@admin_required
+def admin_requests_export_csv():
+    query, _status, _q = build_requests_query(Request.query, request.args)
+    rows = query.limit(5000).all()
+
+    out = StringIO()
+    writer = csv.writer(out)
+    writer.writerow([
+        "id", "created_at", "status", "priority", "category",
+        "title", "name", "email", "phone", "owner_id", "owned_at",
+        "completed_at",
+    ])
+
+    for r in rows:
+        writer.writerow([
+            r.id,
+            getattr(r, "created_at", "") or "",
+            getattr(r, "status", "") or "",
+            getattr(r, "priority", "") or "",
+            getattr(r, "category", "") or "",
+            getattr(r, "title", "") or "",
+            getattr(r, "name", "") or "",
+            getattr(r, "email", "") or "",
+            getattr(r, "phone", "") or "",
+            getattr(r, "owner_id", "") or "",
+            getattr(r, "owned_at", "") or "",
+            getattr(r, "completed_at", "") or "",
+        ])
+
+    filename = f"helpchain_requests_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        out.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@admin_bp.get("/requests/export.xlsx")
+@admin_required
+def admin_requests_export_xlsx():
+    try:
+        from openpyxl import Workbook
+    except Exception:
+        return Response("openpyxl is not installed", status=500)
+
+    query, _status, _q = build_requests_query(Request.query, request.args)
+    rows = query.limit(5000).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Requests"
+    headers = [
+        "id", "created_at", "status", "priority", "category",
+        "title", "name", "email", "phone", "owner_id", "owned_at",
+        "completed_at",
+    ]
+    ws.append(headers)
+
+    for r in rows:
+        ws.append([
+            r.id,
+            getattr(r, "created_at", None),
+            getattr(r, "status", None),
+            getattr(r, "priority", None),
+            getattr(r, "category", None),
+            getattr(r, "title", None),
+            getattr(r, "name", None),
+            getattr(r, "email", None),
+            getattr(r, "phone", None),
+            getattr(r, "owner_id", None),
+            getattr(r, "owned_at", None),
+            getattr(r, "completed_at", None),
+        ])
+
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+
+    filename = f"helpchain_requests_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        bio,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@admin_bp.get("/requests/export_anonymized.csv")
+@admin_required
+def admin_requests_export_csv_anonymized():
+    query, _status, _q = build_requests_query(Request.query, request.args)
+    rows = query.limit(5000).all()
+
+    out = StringIO()
+    writer = csv.writer(out)
+    writer.writerow([
+        "id", "created_at", "status", "priority", "category",
+        "owner_id", "owned_at", "completed_at",
+    ])
+
+    for r in rows:
+        writer.writerow([
+            r.id,
+            getattr(r, "created_at", "") or "",
+            getattr(r, "status", "") or "",
+            getattr(r, "priority", "") or "",
+            getattr(r, "category", "") or "",
+            getattr(r, "owner_id", "") or "",
+            getattr(r, "owned_at", "") or "",
+            getattr(r, "completed_at", "") or "",
+        ])
+
+    filename = f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        out.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@admin_bp.get("/requests/export_anonymized.xlsx")
+@admin_required
+def admin_requests_export_xlsx_anonymized():
+    try:
+        from openpyxl import Workbook
+    except Exception:
+        return Response("openpyxl is not installed", status=500)
+
+    query, _status, _q = build_requests_query(Request.query, request.args)
+    rows = query.limit(5000).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Requests (Anon)"
+    headers = [
+        "id", "created_at", "status", "priority", "category",
+        "owner_id", "owned_at", "completed_at",
+    ]
+    ws.append(headers)
+
+    for r in rows:
+        ws.append([
+            r.id,
+            getattr(r, "created_at", None),
+            getattr(r, "status", None),
+            getattr(r, "priority", None),
+            getattr(r, "category", None),
+            getattr(r, "owner_id", None),
+            getattr(r, "owned_at", None),
+            getattr(r, "completed_at", None),
+        ])
+
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+
+    filename = f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        bio,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
 
@@ -1037,9 +1352,15 @@ def admin_request_details(req_id: int):
         .get_or_404(req_id)
     )
     logs = req.logs  # already sorted by relationship order_by
+    activities = sorted(
+        (req.activities or []),
+        key=lambda a: a.created_at or datetime.min,
+        reverse=True,
+    )[:50]
     return render_template(
         "admin/request_details.html",
         req=req,
+        activities=activities,
         logs=logs,
         STATUS_LABELS_BG=STATUS_LABELS_BG,
         is_stale=is_stale,
@@ -1096,6 +1417,32 @@ def admin_request_unassign(req_id: int):
     db.session.commit()
     flash("Owner е премахнат.", "info")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+@admin_bp.post("/requests/<int:req_id>/note")
+@login_required
+def admin_request_add_note(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    note = (request.form.get("note") or "").strip()
+    if not note:
+        flash("Note is empty.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+    if len(note) > 2000:
+        flash("Note is too long (max 2000 chars).", "danger")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    log_request_activity(
+        req,
+        "note",
+        old=None,
+        new=note,
+        actor_admin_id=getattr(current_user, "id", None),
+    )
+    db.session.commit()
+    flash("Note added.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+
 
 
 

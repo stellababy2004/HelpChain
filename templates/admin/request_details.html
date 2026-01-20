@@ -1,177 +1,335 @@
 {% extends "base.html" %}
-{% block title %}Admin • Request #{{ req.id }}{% endblock %}
+{% block title %}Admin - Request #{{ req.id }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="mb-0">Request #{{ req.id }}</h2>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">← Back</a>
+<div class="container my-4">
+
+  <!-- Top bar -->
+  <div class="d-flex align-items-start align-items-md-center justify-content-between gap-3 mb-3">
+    <div>
+      <div class="text-muted small">Admin</div>
+      <h2 class="mb-1 fw-bold">Request #{{ req.id }}</h2>
+      <div class="text-muted small">
+        <span class="me-2">Status:</span>
+        <span class="badge text-bg-secondary">{{ req.status }}</span>
+        <span class="mx-2">|</span>
+        <span class="me-2">Priority:</span>
+        <span class="badge text-bg-light border">{{ req.priority }}</span>
+        <span class="mx-2">|</span>
+        <span class="me-2">Category:</span>
+        <span class="badge text-bg-light border">{{ req.category }}</span>
+        <div class="mt-2">
+          <span class="me-2">Created:</span>
+          <strong>{{ req.created_at.strftime("%d %b %Y, %H:%M") if req.created_at else "-" }}</strong>
+          {% if req.completed_at %}
+            <span class="mx-2">|</span>
+            <span class="me-2">Closed:</span>
+            <strong>{{ req.completed_at.strftime("%d %b %Y, %H:%M") }}</strong>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">
+      <- Back
+    </a>
   </div>
 
-  <div class="contact-actions d-flex gap-2 flex-wrap mb-3">
-    {% if req.phone %}
-      <a href="tel:{{ req.phone }}" class="btn btn-outline-primary">📞 Обади се</a>
-      <button onclick="copyText('{{ req.phone }}')" class="btn btn-outline-secondary">📋 Копирай телефон</button>
-    {% endif %}
-
-    {% if req.email %}
-      <a href="mailto:{{ req.email }}" class="btn btn-outline-success">✉️ Имейл</a>
-      <button onclick="copyText('{{ req.email }}')" class="btn btn-outline-secondary">📋 Копирай имейл</button>
-    {% endif %}
-  </div>
-
-  <div class="card mb-3">
+  <!-- Contact quick actions -->
+  <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
-      <h5 class="card-title mb-1">{{ req.title }}</h5>
-      <div class="text-muted small mb-3">
-        Status: <strong>{{ req.status }}</strong> • Priority: <strong>{{ req.priority }}</strong> • Category: <strong>{{ req.category }}</strong>
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="fw-semibold">Quick actions</div>
+        <div class="text-muted small">One-click contact + copy</div>
       </div>
 
-      <p class="mb-3" style="white-space: pre-wrap;">{{ req.description }}</p>
+      <div class="d-flex gap-2 flex-wrap mt-3">
+        {% if req.phone %}
+          <a href="tel:{{ req.phone }}" class="btn btn-outline-primary btn-sm">Call</a>
+          <button type="button" onclick="copyText('{{ req.phone }}')" class="btn btn-outline-secondary btn-sm">Copy phone</button>
+        {% endif %}
 
-      <div class="row g-2">
-        <div class="col-md-6">
-          <div><strong>Name:</strong> {{ req.name }}</div>
-          <div><strong>Location:</strong> {{ req.location_text or "-" }}</div>
-        </div>
-        <div class="col-md-6">
-          <div class="d-flex align-items-center gap-2">
-            <strong>Email:</strong>
-            {% if req.email %}
-              <a href="mailto:{{ req.email }}">{{ req.email }}</a>
-              <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyText('{{ req.email }}')">Copy</button>
-            {% else %}-{% endif %}
-          </div>
+        {% if req.email %}
+          <a href="mailto:{{ req.email }}" class="btn btn-outline-success btn-sm">Email</a>
+          <button type="button" onclick="copyText('{{ req.email }}')" class="btn btn-outline-secondary btn-sm">Copy email</button>
+        {% endif %}
 
-          <div class="d-flex align-items-center gap-2 mt-1">
-            <strong>Phone:</strong>
-            {% if req.phone %}
-              <a href="tel:{{ req.phone }}">{{ req.phone }}</a>
-              <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyText('{{ req.phone }}')">Copy</button>
-            {% else %}-{% endif %}
-          </div>
-        </div>
-      </div>
-
-      <hr class="my-3" />
-
-      {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
-      <!-- Status buttons -->
-      <div class="d-flex flex-wrap gap-2">
-        {% if can_edit %}
-          {% set actions = [
-            ("approved","Approve","success"),
-            ("in_progress","In Progress","primary"),
-            ("done","Done","dark"),
-            ("rejected","Reject","danger")
-          ] %}
-
-          {% for val,label,color in actions %}
-          <form method="POST" action="{{ url_for('admin.update_status', req_id=req.id) }}">
-            <input type="hidden" name="status" value="{{ val }}" />
-            <button class="btn btn-{{ color }} btn-sm" type="submit">
-              {{ label }}
-            </button>
-          </form>
-          {% endfor %}
-        {% else %}
-          <div class="alert alert-info py-1 px-2 mb-0">
-            Само owner или super_admin може да сменя статус.
-          </div>
+        {% if not req.phone and not req.email %}
+          <div class="text-muted small">No contact details provided.</div>
         {% endif %}
       </div>
-
-      <hr class="my-3" />
-
-      <h5 class="mb-2">Owner</h5>
-
-      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin: 12px 0;">
-        <div>
-          <strong>Owner:</strong>
-          {% if req.owner %}
-            {{ req.owner.username }} (id={{ req.owner.id }})
-            {% if req.owned_at %}<span style="opacity:.7;">(since {{ req.owned_at }})</span>{% endif %}
-          {% elif req.owner_id %}
-            id={{ req.owner_id }} <span style="opacity:.7;">(no user loaded)</span>
-            {% if req.owned_at %}<span style="opacity:.7;">(since {{ req.owned_at }})</span>{% endif %}
-          {% else %}
-            <span style="opacity:.7;">None</span>
-          {% endif %}
-        </div>
-
-        <div style="margin-left:auto; display:flex; gap:10px;">
-          {% if not req.owner_id %}
-            <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
-              <button type="submit" class="btn btn-success">Assign to me</button>
-            </form>
-          {% elif can_edit %}
-            <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
-              <button type="submit" class="btn btn-outline-danger">Unassign</button>
-            </form>
-          {% elif req.owner_id and req.owner_id != current_user.id and is_stale(req) %}
-            <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
-              <button type="submit" class="btn btn-warning">⚠️ Take over</button>
-            </form>
-          {% else %}
-            <div class="text-muted small">Само owner или super_admin може да освобождава.</div>
-          {% endif %}
-        </div>
-      </div>
-
-      <hr class="my-4">
-
-      <h3>История</h3>
-      {% set activities = req.activities or [] %}
-      <ul class="activity-log list-unstyled">
-        {% if activities %}
-          {% set icons = {'assign':'🟢','unassign':'🔴','status_change':'🔄','takeover':'⚠️'} %}
-          {% for a in activities|sort(attribute='created_at', reverse=True) %}
-            {% set cls = 'activity-' ~ a.action %}
-            <li class="activity {{ cls }}">
-              <span class="activity-badge {{ cls }}">{{ icons.get(a.action, '⬤') }} {{ a.action|upper }}</span>
-              {% if a.old_value or a.new_value %}
-                <span class="activity-change">{{ a.old_value or '' }} → {{ a.new_value or '' }}</span>
-              {% endif %}
-              <div class="activity-meta">
-                <span class="me-2">by {{ a.actor.username if a.actor else 'system' }}</span>
-                <span>{{ a.created_at.strftime('%d.%m.%Y %H:%M') if a.created_at else '' }}</span>
-              </div>
-            </li>
-          {% endfor %}
-        {% else %}
-          <li class="text-muted">Няма активност</li>
-        {% endif %}
-      </ul>
     </div>
   </div>
+
+  {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
+
+  <!-- Main grid -->
+  <div class="row g-3">
+
+    <!-- Left: request info -->
+    <div class="col-lg-8">
+
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-start justify-content-between gap-3">
+            <div>
+              <h5 class="card-title mb-1">{{ req.title }}</h5>
+              <div class="text-muted small">
+                <span class="me-2"><strong>Name:</strong> {{ req.name or "-" }}</span>
+                <span class="mx-2">|</span>
+                <span><strong>Location:</strong> {{ req.location_text or "-" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-3" />
+
+          <div class="fw-semibold mb-2">Description</div>
+          <div class="text-body" style="white-space: pre-wrap;">{{ req.description }}</div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between gap-2">
+            <div class="fw-semibold">Contact details</div>
+            <div class="text-muted small">Visible for admins only</div>
+          </div>
+
+          <div class="row g-2 mt-2">
+            <div class="col-md-6">
+              <div class="text-muted small">Email</div>
+              {% if req.email %}
+                <div class="d-flex align-items-center gap-2">
+                  <a href="mailto:{{ req.email }}">{{ req.email }}</a>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyText('{{ req.email }}')">Copy</button>
+                </div>
+              {% else %}
+                <div>-</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <div class="text-muted small">Phone</div>
+              {% if req.phone %}
+                <div class="d-flex align-items-center gap-2">
+                  <a href="tel:{{ req.phone }}">{{ req.phone }}</a>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyText('{{ req.phone }}')">Copy</button>
+                </div>
+              {% else %}
+                <div>-</div>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: controls -->
+    <div class="col-lg-4">
+
+      <!-- Status management -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="fw-semibold">Status</div>
+            {% if can_edit %}
+              <span class="badge text-bg-success">Editable</span>
+            {% else %}
+              <span class="badge text-bg-light border">Read-only</span>
+            {% endif %}
+          </div>
+
+          <div class="text-muted small mt-1">
+            Change status using the buttons below.
+          </div>
+
+          <hr class="my-3" />
+
+          {% if can_edit %}
+            {% set actions = [
+              ("approved","Approve","success"),
+              ("in_progress","In Progress","primary"),
+              ("done","Done","dark"),
+              ("rejected","Reject","danger")
+            ] %}
+
+            <div class="d-flex flex-wrap gap-2">
+              {% for val,label,color in actions %}
+                <form method="POST" action="{{ url_for('admin.update_status', req_id=req.id) }}">
+                  <input type="hidden" name="status" value="{{ val }}" />
+                  <button class="btn btn-{{ color }} btn-sm" type="submit">{{ label }}</button>
+                </form>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="alert alert-info mb-0 py-2">
+              You can edit status only if you are the owner or a super admin.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Ownership -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="fw-semibold mb-1">Owner</div>
+          <div class="text-muted small mb-3">
+            Assigning an owner avoids duplicates and keeps responsibility clear.
+          </div>
+
+          <div class="p-3 bg-light border rounded-3 mb-3">
+            <div class="small text-muted">Current owner</div>
+            <div class="fw-semibold">
+              {% if req.owner %}
+                {{ req.owner.username }} (id={{ req.owner.id }})
+                {% if req.owned_at %}
+                  <span class="text-muted fw-normal">(since {{ req.owned_at }})</span>
+                {% endif %}
+              {% elif req.owner_id %}
+                id={{ req.owner_id }} <span class="text-muted fw-normal">(no user loaded)</span>
+                {% if req.owned_at %}
+                  <span class="text-muted fw-normal">(since {{ req.owned_at }})</span>
+                {% endif %}
+              {% else %}
+                <span class="text-muted">None</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            {% if not req.owner_id %}
+              <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
+                <button type="submit" class="btn btn-success btn-sm">Assign to me</button>
+              </form>
+
+            {% elif can_edit %}
+              <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm">Unassign</button>
+              </form>
+
+            {% elif req.owner_id and req.owner_id != current_user.id and is_stale(req) %}
+              <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
+                <button type="submit" class="btn btn-warning btn-sm">Take over</button>
+              </form>
+
+            {% else %}
+              <div class="text-muted small">
+                Only the owner or a super admin can change ownership.
+              </div>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mt-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="fw-semibold">Internal note</div>
+            <div class="text-muted small">Saved in Activity</div>
+          </div>
+
+          <div class="text-muted small mt-1">
+            Use notes for internal coordination (no personal data).
+          </div>
+
+          <hr class="my-3" />
+
+          <form method="post" action="{{ url_for('admin.admin_request_add_note', req_id=req.id) }}">
+            <textarea
+              name="note"
+              class="form-control"
+              rows="4"
+              maxlength="2000"
+              placeholder="Example: Called the requester, waiting for documents, next follow-up tomorrow..."
+            ></textarea>
+
+            <div class="d-flex align-items-center justify-content-between mt-2">
+              <div class="small text-muted">Max 2000 characters.</div>
+              <button type="submit" class="btn btn-primary btn-sm">Add note</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+    <!-- Activity timeline -->
+  <div class="card border-0 shadow-sm mt-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="fw-semibold">Activity</div>
+        <div class="text-muted small">Last 50 events</div>
+      </div>
+
+      <hr class="my-3" />
+
+      {% if activities and activities|length %}
+        <div class="vstack gap-2">
+          {% for ev in activities %}
+            <div class="p-3 border rounded-3">
+              <div class="d-flex align-items-center justify-content-between gap-2">
+                <div class="fw-semibold">
+                  {% if ev.action == "status_change" %}
+                    Status change
+                  {% elif ev.action == "assign" or ev.action == "takeover" %}
+                    Assigned
+                  {% elif ev.action == "unassign" %}
+                    Unassigned
+                  {% elif ev.action == "note" %}
+                    Note
+                  {% else %}
+                    {{ ev.action }}
+                  {% endif %}
+                </div>
+
+                <div class="text-muted small">
+                  {{ ev.created_at.strftime('%d %b %Y, %H:%M') if ev.created_at else '-' }}
+                </div>
+              </div>
+
+              <div class="text-muted small mt-1">
+                By:
+                {% if ev.actor %}
+                  <strong>{{ ev.actor.username }}</strong>
+                {% else %}
+                  <span class="text-muted">system</span>
+                {% endif %}
+              </div>
+
+              {% if ev.action == "note" and ev.new_value %}
+                <div class="mt-2">{{ ev.new_value }}</div>
+              {% endif %}
+
+              {% if ev.action != "note" and (ev.old_value or ev.new_value) %}
+                <div class="small text-muted mt-2">
+                  {% if ev.old_value %}<span class="me-2">from <code>{{ ev.old_value }}</code></span>{% endif %}
+                  {% if ev.new_value %}<span>to <code>{{ ev.new_value }}</code></span>{% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-muted small">No activity yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
 </div>
 
 <script>
-  // Minimal styling for activity log (kept inline to avoid touching global CSS)
-  const style = document.createElement('style');
-  style.textContent = `
-    .activity-log { padding: 0; }
-    .activity { padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #e5e7eb; background: #f9fafb; }
-    .activity-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-right: 8px; background: #e5e7eb; }
-    .activity-change { font-weight: 500; margin-left: 4px; }
-    .activity-meta { font-size: 12px; color: #6b7280; margin-top: 4px; }
-    .activity-assign { border-left-color: #10b981; background: #e6fffa; }
-    .activity-assign .activity-badge { background: #d1fae5; color: #065f46; }
-    .activity-unassign { border-left-color: #ef4444; background: #fff5f5; }
-    .activity-unassign .activity-badge { background: #fee2e2; color: #991b1b; }
-    .activity-status_change { border-left-color: #3b82f6; background: #eff6ff; }
-    .activity-status_change .activity-badge { background: #dbeafe; color: #1e3a8a; }
-    .activity-takeover { border-left-color: #f59e0b; background: #fff7ed; }
-    .activity-takeover .activity-badge { background: #fef3c7; color: #92400e; }
-  `;
-  document.head.appendChild(style);
-
   function copyText(text){
     navigator.clipboard.writeText(text).then(()=>{
-      alert("Копирано");
+      alert("Copied.");
     }).catch(()=>{
-      alert("Copy failed");
+      alert("Copy failed.");
     });
   }
 </script>
 {% endblock %}
+

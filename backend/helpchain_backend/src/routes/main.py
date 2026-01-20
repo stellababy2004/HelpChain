@@ -8,12 +8,15 @@ from flask import (
     url_for,
     current_app,
     send_from_directory,
+    make_response,
 )
+from flask_babel import get_locale as babel_get_locale
+from datetime import timedelta
 
 from ..extensions import limiter
-from ..models import Request, Volunteer, db
+from ..models import Request, Volunteer, db, utc_now
 from ..category_data import CATEGORIES, ALIASES, COMMON
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 
 main_bp = Blueprint("main", __name__)
 
@@ -33,7 +36,6 @@ def inject_template_helpers():
     return {
         "url_lang": url_lang,
         "safe_url_for": safe_url_for,
-        "_": lambda text: text,  # no-op i18n stub
     }
 
 
@@ -43,16 +45,37 @@ def index():
     return render_template("home_new.html"), 200
 
 
+@main_bp.get("/lang/<locale>")
+def set_lang(locale):
+    locale = (locale or "").lower()
+    if locale not in ("bg", "fr", "en"):
+        locale = "en"
+
+    session["lang"] = locale
+    next_url = request.args.get("next") or url_for("main.index")
+
+    resp = make_response(redirect(next_url))
+    resp.set_cookie("hc_lang", locale, max_age=60 * 60 * 24 * 365, samesite="Lax")
+    return resp
+
+
 @main_bp.route("/categories", methods=["GET"])
 def categories():
     """Списък с всички категории"""
+    locale_code = (str(babel_get_locale()) or "en").split("_", 1)[0].lower()
+
+    def pick_locale(values):
+        if not isinstance(values, dict):
+            return values
+        return values.get(locale_code) or values.get("en") or values.get("bg") or next(iter(values.values()), "")
+
     items = []
     for key, value in CATEGORIES.items():
         items.append(
             {
                 "slug": key,
-                "name": value["content"]["title"]["bg"],
-                "description": value["content"]["intro"]["bg"],
+                "name": pick_locale(value.get("content", {}).get("title", {})),
+                "description": pick_locale(value.get("content", {}).get("intro", {})),
                 "icon": value["ui"].get("icon", "fa-solid fa-question-circle text-secondary"),
                 "color": "primary" if value["ui"].get("severity") != "critical" else "danger",
             }
@@ -233,54 +256,74 @@ def submit_request():
         if not category:
             category = "general"
 
-        try:
-            req = Request(
-                title=title,
-                description=description,
-                name=name,
-                phone=phone or None,
-                email=email or None,
-                location_text=location_text or None,
-                status="pending",
-                priority=priority,
-                category=category,
-            )
+        session["request_draft"] = {
+            "name": name,
+            "phone": phone,
+            "email": email,
+            "category": category,
+            "urgency": urgency,
+            "priority": priority,
+            "title": title,
+            "description": description,
+            "location_text": location_text,
+        }
 
-            current_app.logger.warning(
-                "About to INSERT: title=%r name=%r phone=%r email=%r category=%r priority=%r",
-                title, name, phone, email, category, priority
-            )
-
-            db.session.add(req)
-            db.session.commit()
-
-            current_app.logger.warning("INSERT OK id=%s", req.id)
-            new_request_id = req.id
-            # keep in session as a fallback for success page
-            session["last_request_id"] = new_request_id
-
-            # Optional emergency triggers (ако ги имаш)
-            is_emergency = (
-                category in ("emergency", "urgent")
-                or urgency in ("critical", "emergency", "urgent")
-            )
-
-            app = current_app._get_current_object()
-            if is_emergency and hasattr(app, "can_send_emergency_email") and app.can_send_emergency_email():
-                if hasattr(app, "send_emergency_email"):
-                    app.send_emergency_email(req)
-                if hasattr(app, "mark_emergency_email_sent"):
-                    app.mark_emergency_email_sent()
-
-            return redirect(url_for("main.success", request_id=new_request_id))
-
-        except Exception as e:
-            current_app.logger.exception("SUBMIT_REQUEST FAILED: %s", e)
-            db.session.rollback()
-            flash(f"Грешка при подаване на заявката: {str(e)}", "error")
-            return redirect(url_for("main.submit_request"))
+        return render_template(
+            "request_preview.html",
+            draft=session["request_draft"],
+        )
 
     return render_template("submit_request.html")
+
+
+@main_bp.post("/submit_request/confirm")
+@limiter.limit("5 per minute")
+def submit_request_confirm():
+    draft = session.get("request_draft")
+    if not draft:
+        flash("Сесията изтече. Моля, подай заявката отново.", "error")
+        return redirect(url_for("main.submit_request"))
+
+    try:
+        req = Request(
+            title=draft.get("title"),
+            description=draft.get("description"),
+            name=draft.get("name"),
+            phone=(draft.get("phone") or None),
+            email=(draft.get("email") or None),
+            location_text=(draft.get("location_text") or None),
+            status="pending",
+            priority=draft.get("priority"),
+            category=draft.get("category"),
+        )
+
+        db.session.add(req)
+        db.session.commit()
+
+        session.pop("request_draft", None)
+        session["last_request_id"] = req.id
+
+        category = draft.get("category")
+        urgency = draft.get("urgency")
+        is_emergency = (
+            category in ("emergency", "urgent")
+            or urgency in ("critical", "emergency", "urgent")
+        )
+
+        app = current_app._get_current_object()
+        if is_emergency and hasattr(app, "can_send_emergency_email") and app.can_send_emergency_email():
+            if hasattr(app, "send_emergency_email"):
+                app.send_emergency_email(req)
+            if hasattr(app, "mark_emergency_email_sent"):
+                app.mark_emergency_email_sent()
+
+        return redirect(url_for("main.success", request_id=req.id))
+
+    except Exception as e:
+        current_app.logger.exception("CONFIRM FAILED: %s", e)
+        db.session.rollback()
+        flash("Грешка при записване. Моля, опитай отново.", "error")
+        return redirect(url_for("main.submit_request"))
 
 
 @main_bp.get("/success")
@@ -288,6 +331,103 @@ def success():
     request_id = request.args.get("request_id") or session.get("last_request_id")
     is_admin = bool(session.get("admin_logged_in"))
     return render_template("success.html", request_id=request_id, is_admin=is_admin), 200
+
+
+@main_bp.get("/pilot", endpoint="pilot")
+def pilot_dashboard():
+    now = utc_now()
+    week_ago = now - timedelta(days=7)
+    since_14d = now - timedelta(days=14)
+
+    total_requests = db.session.query(func.count(Request.id)).scalar() or 0
+
+    open_requests = db.session.query(func.count(Request.id)).filter(
+        Request.status.notin_(["done", "rejected"])
+    ).scalar() or 0
+
+    closed_requests = db.session.query(func.count(Request.id)).filter(
+        Request.status.in_(["done", "rejected"])
+    ).scalar() or 0
+
+    closed_last_7d = db.session.query(func.count(Request.id)).filter(
+        Request.completed_at.isnot(None),
+        Request.completed_at >= week_ago
+    ).scalar() or 0
+
+    avg_resolution_hours = db.session.query(
+        func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0
+    ).filter(
+        Request.completed_at.isnot(None),
+        Request.created_at.isnot(None)
+    ).scalar()
+    avg_resolution_hours = float(avg_resolution_hours) if avg_resolution_hours is not None else None
+
+    unassigned_48h = db.session.query(func.count(Request.id)).filter(
+        Request.status.notin_(["done", "rejected"]),
+        Request.owner_id.is_(None),
+        Request.created_at <= (now - timedelta(days=2))
+    ).scalar() or 0
+
+    stale_7d = db.session.query(func.count(Request.id)).filter(
+        Request.status.notin_(["done", "rejected"]),
+        Request.created_at <= (now - timedelta(days=7))
+    ).scalar() or 0
+
+    high_open = db.session.query(func.count(Request.id)).filter(
+        Request.status.notin_(["done", "rejected"]),
+        Request.priority == "high"
+    ).scalar() or 0
+
+    status_rows = (
+        db.session.query(Request.status, func.count(Request.id))
+        .group_by(Request.status)
+        .order_by(func.count(Request.id).desc())
+        .all()
+    )
+    status_labels = [r[0] or "unknown" for r in status_rows]
+    status_counts = [int(r[1]) for r in status_rows]
+
+    cat_rows = (
+        db.session.query(Request.category, func.count(Request.id))
+        .group_by(Request.category)
+        .order_by(func.count(Request.id).desc())
+        .all()
+    )
+    cat_labels = [r[0] or "unknown" for r in cat_rows]
+    cat_counts = [int(r[1]) for r in cat_rows]
+
+    trend_rows = (
+        db.session.query(func.date(Request.created_at), func.count(Request.id))
+        .filter(Request.created_at >= since_14d)
+        .group_by(func.date(Request.created_at))
+        .order_by(func.date(Request.created_at))
+        .all()
+    )
+    trend_dates = [str(r[0]) for r in trend_rows]
+    trend_counts = [int(r[1]) for r in trend_rows]
+
+    impact = {
+        "total": int(total_requests),
+        "open": int(open_requests),
+        "closed": int(closed_requests),
+        "closed_last_7d": int(closed_last_7d),
+        "avg_resolution_hours": avg_resolution_hours,
+        "unassigned_48h": int(unassigned_48h),
+        "stale_7d": int(stale_7d),
+        "high_open": int(high_open),
+        "status_labels": status_labels,
+        "status_counts": status_counts,
+        "cat_labels": cat_labels,
+        "cat_counts": cat_counts,
+        "trend_dates": trend_dates,
+        "trend_counts": trend_counts,
+        "generated_at": now,
+        "window_days": 14,
+    }
+
+    resp = make_response(render_template("pilot_dashboard.html", impact=impact))
+    resp.headers["X-Robots-Tag"] = "noindex, nofollow"
+    return resp
 
 
 @main_bp.route("/faq")
@@ -315,11 +455,20 @@ def video_chat():
     return render_template("video_chat.html")
 
 
-@main_bp.route("/set_language", methods=["POST"])
+@main_bp.post("/set-language")
+@main_bp.post("/set_language")
 def set_language():
-    lang = request.form.get("language", "bg")
-    resp = redirect(request.referrer or url_for("main.index"))
-    resp.set_cookie("language", lang, max_age=30 * 24 * 3600)
+    supported = {"bg", "fr", "en"}
+    lang = (request.form.get("lang") or "").strip().lower()
+    if lang not in supported:
+        lang = "bg"
+
+    session["lang"] = lang
+    session.modified = True
+
+    next_url = request.form.get("next") or request.referrer or url_for("main.index")
+    resp = make_response(redirect(next_url))
+    resp.set_cookie("hc_lang", lang, max_age=60 * 60 * 24 * 365, samesite="Lax")
     return resp
 
 

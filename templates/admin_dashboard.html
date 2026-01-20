@@ -1,25 +1,25 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Админ панел') }} | HelpChain{% endblock %}
+{% block title %}{{ _('Admin panel') }} | HelpChain{% endblock %}
 
 {% macro status_badge(status) -%}
   {%- set s = (status or '').lower() -%}
   {%- if s == 'pending' -%}
-    <span class="badge bg-secondary"><i class="bi bi-hourglass-split me-1"></i>{{ _('Чакащи') }}</span>
+    <span class="badge bg-secondary"><i class="bi bi-hourglass-split me-1"></i>{{ _('Pending') }}</span>
   {%- elif s == 'in_progress' -%}
-    <span class="badge bg-warning text-dark"><i class="bi bi-tools me-1"></i>{{ _('В процес') }}</span>
+    <span class="badge bg-warning text-dark"><i class="bi bi-tools me-1"></i>{{ _('In progress') }}</span>
   {%- elif s == 'completed' -%}
-    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>{{ _('Завършени') }}</span>
+    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>{{ _('Completed') }}</span>
   {%- elif s == 'cancelled' -%}
-    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>{{ _('Отказани') }}</span>
+    <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>{{ _('Cancelled') }}</span>
   {%- else -%}
-    <span class="badge bg-light text-dark"><i class="bi bi-question-circle me-1"></i>{{ _('Неизвестни') }}</span>
+    <span class="badge bg-light text-dark"><i class="bi bi-question-circle me-1"></i>{{ _('Unknown') }}</span>
   {%- endif -%}
 {%- endmacro %}
 
 {% block content %}
 <div class="container mt-5">
   <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="mb-0">{{ _('Админ панел') }}</h2>
+    <h2 class="mb-0">{{ _('Admin dashboard') }}</h2>
     <div class="small text-muted">
       <i class="bi bi-shield-lock me-1"></i> HelpChain Admin
     </div>
@@ -31,7 +31,7 @@
       <div class="col-12 col-md-4">
         <div class="card shadow-sm">
           <div class="card-body">
-            <div class="text-muted small">Общо заявки</div>
+            <div class="text-muted small">{{ _('Total requests') }}</div>
             <div class="fs-2 fw-bold kpi-value" data-kpi="total_requests">0</div>
           </div>
         </div>
@@ -40,7 +40,7 @@
       <div class="col-12 col-md-4">
         <div class="card shadow-sm">
           <div class="card-body">
-            <div class="text-muted small">Чакащи</div>
+            <div class="text-muted small">{{ _('Pending requests') }}</div>
             <div class="fs-2 fw-bold kpi-value" data-kpi="pending_requests">0</div>
           </div>
         </div>
@@ -49,13 +49,113 @@
       <div class="col-12 col-md-4">
         <div class="card shadow-sm">
           <div class="card-body">
-            <div class="text-muted small">Доброволци</div>
+            <div class="text-muted small">{{ _('Total volunteers') }}</div>
             <div class="fs-2 fw-bold kpi-value" data-kpi="total_volunteers">0</div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <h4 class="mt-4 mb-3">Impact (Pilot)</h4>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Total requests</div>
+          <div class="fs-3 fw-bold">{{ impact.total|default(0) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Open requests</div>
+          <div class="fs-3 fw-bold">{{ impact.open_requests|default(0) }}</div>
+          <div class="small text-muted">Not done / not rejected</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Closed</div>
+          <div class="fs-3 fw-bold">{{ impact.closed|default(0) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Closed (last 7 days)</div>
+          <div class="fs-3 fw-bold">{{ impact.closed_last_7d|default(0) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Avg resolution</div>
+          <div class="fs-3 fw-bold">
+            {% if impact.avg_resolution_hours is not none %}
+              {{ impact.avg_resolution_hours|round(1) }} h
+            {% else %}
+              -
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-warning">
+        <div class="card-body">
+          <div class="text-muted small">Unassigned &gt; 48h</div>
+          <div class="fs-3 fw-bold">{{ impact.unassigned_48h|default(0) }}</div>
+          <div class="small text-muted">Open requests without owner</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h5 class="mt-4 mb-3">Top risks</h5>
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-danger">
+        <div class="card-body">
+          <div class="text-muted small">High priority open</div>
+          <div class="fs-3 fw-bold">{{ impact.high_open }}</div>
+          <div class="small text-muted">High + not closed</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm border-warning">
+        <div class="card-body">
+          <div class="text-muted small">Stale &gt; 7 days</div>
+          <div class="fs-3 fw-bold">{{ impact.stale_open }}</div>
+          <div class="small text-muted">Open requests older than 7 days</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm border-warning">
+        <div class="card-body">
+          <div class="text-muted small">Unassigned &gt; 48h</div>
+          <div class="fs-3 fw-bold">{{ impact.unassigned_48h }}</div>
+          <div class="small text-muted">Open without owner</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <!-- === Status chart === -->
   <div class="container my-4">
@@ -70,10 +170,25 @@
       </div>
     </div>
   </div>
+  <div class="card shadow-sm mt-4">
+    <div class="card-body">
+      <h5 class="mb-3">New requests (last 14 days)</h5>
+      <div id="requestsTrendChart"></div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mt-4">
+    <div class="card-body">
+      <h5 class="mb-3">Requests by category</h5>
+      <div id="requestsCategoryChart"></div>
+    </div>
+  </div>
+
+
 
   <div class="card mt-3">
     <div class="card-body">
-      <h5 class="card-title mb-2">Заявки по град (Top 10)</h5>
+      <h5 class="card-title mb-2">{{ _('Requests by city (Top 10)') }}</h5>
       <div id="chart-by-city" style="min-height: 320px;"></div>
       <div id="chart-by-city-empty" class="text-muted small" style="display:none;">
         Няма данни.
@@ -86,7 +201,7 @@
 
   <section class="card mt-4">
     <div class="card-body">
-      <h3 class="h5 mb-3">📈 Тренд на заявки (последни 30 дни)</h3>
+      <h3 class="h5 mb-3">{{ _('📈 Requests trend (last 30 days)') }}</h3>
       <div id="chart-trend"></div>
       <div id="chart-trend-empty" class="text-muted mt-2" style="display:none;">
         Няма данни за периода.
@@ -144,7 +259,7 @@
           <th>{{ _('Описание') }}</th>
           <th>{{ _('Статус') }}</th>
           <th>{{ _('История') }}</th>
-          <th class="actions-col">{{ _('Действия') }}</th>
+          <th class="actions-col">{{ _('Actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -155,7 +270,12 @@
             <td>{{ req.id }}</td>
             <td>{{ req.name or _('Без име') }}</td>
             <td class="text-truncate truncate-desc">{{ req.description or _('Без описание') }}</td>
-            <td>{{ status_badge(req.status) | safe }}</td>
+            <td>
+              {% set s = (req.status or '')|lower %}
+              <span class="badge bg-secondary">
+                {{ _(STATUS_LABELS.get(s, 'Unknown')) }}
+              </span>
+            </td>
             <td>
               {% set req_logs = logs_dict.get(req.id) if logs_dict else [] %}
               {% if req_logs %}
@@ -168,11 +288,11 @@
                   {% endfor %}
                 </ul>
               {% else %}
-                <em class="text-muted">{{ _('Няма история') }}</em>
+                <em class="text-muted">{{ _('No history') }}</em>
               {% endif %}
             </td>
-            <td>
-              <div class="btn-group btn-group-sm" role="group" aria-label="Действия за заявка {{ req.id }}">
+            <td class="actions-col">
+              <div class="btn-group" role="group" aria-label="{{ _('Actions for request %(id)s', id=req.id) }}">
                 <a class="btn btn-info" href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">
                   <i class="bi bi-eye"></i>
                 </a>
@@ -476,9 +596,9 @@
       return res.json();
     })
     .then((data) => {
-      const stats = data.stats || data || {};
-      const kpiTotal = document.querySelector('[data-kpi="total_requests"]');
-      const kpiPending = document.querySelector('[data-kpi="pending_requests"]');
+            <div class="text-muted small">{{ _('Total requests') }}</div>
+            <div class="text-muted small">{{ _('Pending requests') }}</div>
+            <div class="text-muted small">{{ _('Total volunteers') }}</div>
       const kpiVols = document.querySelector('[data-kpi="total_volunteers"]');
 
       animateKPI(kpiTotal, safeNum(stats.total_requests));
@@ -591,6 +711,71 @@ document.addEventListener("DOMContentLoaded", async function renderTrendChart() 
     console.error(e);
     if (errorEl) errorEl.style.display = "block";
   }
+});
+</script>
+
+<script>
+// New requests (last 14 days) chart
+document.addEventListener("DOMContentLoaded", function renderRequests14dChart() {
+  const el = document.querySelector("#requestsTrendChart");
+  if (!el) return;
+  if (typeof ApexCharts === "undefined") return;
+
+  const dates = {{ impact.requests_dates | tojson }};
+  const counts = {{ impact.requests_counts | tojson }};
+
+  if (!dates.length || !counts.length) return;
+
+  const options = {
+    chart: {
+      type: "line",
+      height: 300,
+      toolbar: { show: false }
+    },
+    series: [{
+      name: "New requests",
+      data: counts
+    }],
+    xaxis: {
+      categories: dates
+    },
+    stroke: {
+      curve: "smooth"
+    }
+  };
+
+  new ApexCharts(el, options).render();
+});
+</script>
+
+<script>
+// Requests by category chart
+document.addEventListener("DOMContentLoaded", function renderRequestsCategoryChart() {
+  const el = document.querySelector("#requestsCategoryChart");
+  if (!el) return;
+  if (typeof ApexCharts === "undefined") return;
+
+  const labels = {{ impact.cat_labels | tojson }};
+  const counts = {{ impact.cat_counts | tojson }};
+
+  if (!labels.length || !counts.length) return;
+
+  const options = {
+    chart: {
+      type: "bar",
+      height: 320,
+      toolbar: { show: false }
+    },
+    series: [{
+      name: "Requests",
+      data: counts
+    }],
+    xaxis: {
+      categories: labels
+    }
+  };
+
+  new ApexCharts(el, options).render();
 });
 </script>
 {% endblock %}
