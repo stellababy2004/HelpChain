@@ -4451,14 +4451,42 @@ pre, code { max-width: 100%; overflow-x: auto; }
   opacity: .55;
 }
 
-/* --- Footer legal strip (v1) --- */
-.hc-footer__legal{
+/* === HelpChain v1 – Legal strip (compact) === */
+.hc-footer__legal,
+.hc-legal-strip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 0.85rem;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.72);
+
+  padding: 10px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
   margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.75);
-  font-size: 0.9rem;
-  text-align: center;
+}
+
+.hc-footer__legal a,
+.hc-legal-strip a {
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.hc-footer__legal a:hover,
+.hc-legal-strip a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+  .hc-footer__legal,
+  .hc-legal-strip {
+    flex-wrap: wrap;
+    gap: 8px;
+    text-align: center;
+  }
 }
 
 
