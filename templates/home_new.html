@@ -1096,19 +1096,18 @@
         (async function () {
           try {
             const res = await fetch("/api/pilot-kpi", {
-              headers: { "Accept": "application/json" },
-                          });
+              headers: { Accept: "application/json" },
+            });
             if (!res.ok) return;
             const data = await res.json();
 
-            const v = document.getElementById("kpiVolunteers");
-            const h = document.getElementById("kpiClosed");
-            const c = document.getElementById("kpiCountries");
+            const elVol = document.getElementById("kpiVolunteers");
+            const elHelped = document.getElementById("kpiClosed"); // "requests helped" (done-only)
+            const elCountries = document.getElementById("kpiCountries");
 
-            if (v && Number.isFinite(+data.active_volunteers)) v.textContent = `${data.active_volunteers}`;
-            if (h && Number.isFinite(+data.helped)) h.textContent = `${data.helped}`;
-            else if (h && Number.isFinite(+data.closed)) h.textContent = `${data.closed}`;
-            if (c && Number.isFinite(+data.countries)) c.textContent = `${data.countries}`;
+            if (elVol) elVol.textContent = String(data.active_volunteers ?? 0);
+            if (elHelped) elHelped.textContent = String(data.helped ?? 0);
+            if (elCountries) elCountries.textContent = String(data.countries ?? 0);
           } catch (e) {
             // silent fail: keep fallback numbers
           }
