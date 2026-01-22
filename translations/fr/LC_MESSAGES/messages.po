@@ -601,7 +601,6 @@ msgid "Minimal data. No ads. No resale. GDPR-friendly architecture."
 msgstr "Données minimales. Pas de publicité. Pas de revente. Architecture compatible RGPD."
 
 #: templates/home_new.html:688
-#, fuzzy
 msgid "Help you can trust"
 msgstr "Une aide en toute confiance"
 
