@@ -4562,7 +4562,7 @@ pre, code { max-width: 100%; overflow-x: auto; }
 .hc-fade{
   opacity: 0;
   transform: translateY(12px);
-  animation: hcFadeIn .8s ease-out forwards;
+  animation: hcFadeIn 1s cubic-bezier(.22,.61,.36,1) forwards;
 }
 
 .hc-delay-1{ animation-delay: .15s; }
