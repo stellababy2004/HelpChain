@@ -686,14 +686,14 @@ msgstr ""
 
 #: templates/home_new.html:777
 msgid "Security"
-msgstr "Сигурност и поверителност"
+msgstr "Сигурност по дизайн"
 
 #: templates/home_new.html:778
 msgid ""
 "All users go through verification, and communication is protected with "
 "state-of-the-art security technologies."
 msgstr ""
-"Минимални данни. Никаква реклама. Никаква препродажба на информация. Архитектура, съвместима с GDPR."
+"Минимални данни. Без реклами. Без препродажба. Архитектура, съвместима с GDPR."
 
 #: templates/home_new.html:785
 msgid "Community"
@@ -704,7 +704,7 @@ msgid ""
 "Join a growing community of volunteers and people who believe that "
 "together we can make the world a better place."
 msgstr ""
-"Доброволците могат да бъдат верифицирани. Това намалява злоупотребите и изгражда доверие."
+"Доброволците могат да бъдат верифицирани — по-малко злоупотреби, повече доверие."
 
 #: templates/home_new.html:793
 msgid "Mobile accessibility"
@@ -726,7 +726,7 @@ msgid ""
 "Our team is always available to help. No matter the time, you can rely on"
 " our support."
 msgstr ""
-"Истински хора помагат на истински хора. Без кол центрове. Без автоматични отговори. Без безлични платформи."
+"Истински хора помагат на истински хора. Без кол центрове и автоматични отговори."
 
 #: templates/home_new.html:809
 msgid "Free"
@@ -737,7 +737,7 @@ msgid ""
 "HelpChain is a completely free platform. We believe that help should be "
 "accessible to everyone."
 msgstr ""
-"HelpChain е безплатна платформа. Вярваме, че помощта трябва да е достъпна за всеки."
+"Платформата е безплатна, защото вярваме, че помощта трябва да е достъпна за всеки."
 
 #: templates/home_new.html:820
 msgid "Site information"
