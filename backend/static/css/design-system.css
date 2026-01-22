@@ -4754,3 +4754,77 @@ pre, code { max-width: 100%; overflow-x: auto; }
     animation: none !important;
   }
 }
+
+/* Step 9 — Why HelpChain section polish */
+.hc-why-section,
+.features-section {
+  margin-top: 3.5rem;
+  margin-bottom: 4rem;
+}
+
+.hc-why-section .section-title,
+.features-section .text-center h2 {
+  margin-bottom: 0.75rem;
+}
+
+.hc-why-section .section-subtitle,
+.features-section .text-center p.lead {
+  margin-bottom: 2rem;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0.9;
+}
+
+.hc-why-section .feature-card,
+.features-section .feature-card-light {
+  padding: 1.4rem 1.4rem 1.6rem;
+}
+
+.hc-why-section .feature-card h3,
+.features-section .feature-card-light .feature-title-light {
+  margin-bottom: 0.4rem;
+}
+
+.hc-why-section .feature-card p,
+.features-section .feature-card-light .feature-description-light {
+  line-height: 1.55;
+  opacity: 0.95;
+}
+
+/* Step 9 — Why HelpChain section polish */
+.hc-why-section,
+.features-section {
+  margin-top: 3.5rem;
+  margin-bottom: 4rem;
+}
+
+.hc-why-section .section-title,
+.features-section .text-center h2 {
+  margin-bottom: 0.75rem;
+}
+
+.hc-why-section .section-subtitle,
+.features-section .text-center p.lead {
+  margin-bottom: 2rem;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0.9;
+}
+
+.hc-why-section .feature-card,
+.features-section .feature-card-light {
+  padding: 1.4rem 1.4rem 1.6rem;
+}
+
+.hc-why-section .feature-card h3,
+.features-section .feature-card-light .feature-title-light {
+  margin-bottom: 0.4rem;
+}
+
+.hc-why-section .feature-card p,
+.features-section .feature-card-light .feature-description-light {
+  line-height: 1.55;
+  opacity: 0.95;
+}

@@ -257,6 +257,9 @@ msgstr "Déposez une demande et nous trouverons un bénévole pour vous."
 msgid "Submit a request"
 msgstr "Déposer une demande"
 
+msgid "Request help"
+msgstr "Demander de l’aide"
+
 #: templates/all_categories.html:136
 msgid "Want to help?"
 msgstr "Vous voulez aider ?"

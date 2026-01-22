@@ -256,6 +256,9 @@ msgstr "Подайте заявка и ние ще намерим доброво
 msgid "Submit a request"
 msgstr "Подайте заявка"
 
+msgid "Request help"
+msgstr "Поискай помощ"
+
 #: templates/all_categories.html:136
 msgid "Want to help?"
 msgstr "Искате да помогнете?"
