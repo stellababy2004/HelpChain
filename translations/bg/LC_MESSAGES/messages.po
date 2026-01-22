@@ -966,15 +966,15 @@ msgstr "Какви данни събираме"
 
 #: templates/privacy.html:21
 msgid ""
-"Account and contact details you provide (name, email, phone — if you "
+"Account and contact details you provide (name, email, phone - if you "
 "choose)."
-msgstr ""
+msgstr "Данни за акаунт и контакт, които предоставяте (име, имейл, телефон — по избор)."
 
 #: templates/privacy.html:22
 msgid ""
-"Request information you submit (category, description, location — if "
+"Request information you submit (category, description, location - if "
 "needed for the service)."
-msgstr ""
+msgstr "Информация за заявката, която подавате (категория, описание, местоположение — ако е нужно за услугата)."
 
 #: templates/privacy.html:23
 msgid ""

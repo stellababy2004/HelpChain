@@ -972,15 +972,15 @@ msgstr "Quelles données nous collectons"
 
 #: templates/privacy.html:21
 msgid ""
-"Account and contact details you provide (name, email, phone — if you "
+"Account and contact details you provide (name, email, phone - if you "
 "choose)."
-msgstr ""
+msgstr "Coordonnées et informations de contact que vous fournissez (nom, e-mail, téléphone — si vous le souhaitez)."
 
 #: templates/privacy.html:22
 msgid ""
-"Request information you submit (category, description, location — if "
+"Request information you submit (category, description, location - if "
 "needed for the service)."
-msgstr ""
+msgstr "Informations de demande que vous soumettez (catégorie, description, localisation — si nécessaire au service)."
 
 #: templates/privacy.html:23
 msgid ""
