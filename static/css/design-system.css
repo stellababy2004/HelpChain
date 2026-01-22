@@ -4575,3 +4575,19 @@ pre, code { max-width: 100%; overflow-x: auto; }
     transform: translateY(0);
   }
 }
+
+@media (prefers-reduced-motion: reduce){
+  .hc-fade{
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .hc-fade{
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
