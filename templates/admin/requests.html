@@ -80,7 +80,7 @@
           <td>{{ r.created_at.strftime('%Y-%m-%d') if r.created_at else '-' }}</td>
           <td>{{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}</td>
           <td>
-            {% set age_days = ((now_aware - r.created_at).days) if r.created_at else 0 %}
+            {% set age_days = ((now_naive - r.created_at).days) if r.created_at else 0 %}
             <span class="badge text-bg-secondary" title="{{ _('Created') }}: {{ r.created_at }}">{{ age_days }}d</span>
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
               <span class="badge text-bg-warning ms-1" title="{{ _('No owner assigned') }}">⚠️ {{ _('No owner') }}</span>

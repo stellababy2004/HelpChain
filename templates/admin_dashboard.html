@@ -434,7 +434,9 @@
       legend: { position: "bottom" }
     };
 
-    new ApexCharts(document.querySelector("#chart-status"), options).render();
+    const chartEl = document.querySelector("#chart-status");
+    if (!chartEl || typeof ApexCharts === "undefined") return;
+    new ApexCharts(chartEl, options).render();
   }
 
   function renderCityChart(data) {
@@ -453,7 +455,9 @@
       plotOptions: { bar: { distributed: true } }
     };
 
-    new ApexCharts(document.querySelector("#chart-city"), options).render();
+    const chartEl = document.querySelector("#chart-city");
+    if (!chartEl || typeof ApexCharts === "undefined") return;
+    new ApexCharts(chartEl, options).render();
   }
 
   function renderTimeseries(data) {
@@ -480,7 +484,9 @@
       dataLabels: { enabled: false }
     };
 
-    new ApexCharts(document.querySelector("#chart-ts"), options).render();
+    const chartEl = document.querySelector("#chart-ts");
+    if (!chartEl || typeof ApexCharts === "undefined") return;
+    new ApexCharts(chartEl, options).render();
   }
 
   (async function init() {
@@ -494,155 +500,7 @@
 })();
 </script>
 
-<script>
-(function () {
-  // Ако ApexCharts не е зареден, не правим нищо
-  if (typeof ApexCharts === "undefined") return;
 
-  const elTotal = document.getElementById("kpi-total-requests");
-  const elWarn = document.getElementById("dash-warning");
-  const cityEmpty = document.getElementById("chart-by-city-empty");
-  const cityErr = document.getElementById("chart-by-city-error");
-  const lastUpdatedEl = document.getElementById("dashboard-updated");
-
-  const STATUS_LABELS_BG = {
-    new: "Нова",
-    pending: "Чакаща",
-    approved: "Одобрена",
-    in_progress: "В процес",
-    done: "Завършена",
-    rejected: "Отхвърлена",
-    unknown: "Неизвестен"
-  };
-
-  const STATUS_COLORS = {
-    pending: "#f59e0b",
-    approved: "#0ea5e9",
-    in_progress: "#8b5cf6",
-    done: "#22c55e",
-    rejected: "#ef4444",
-    unknown: "#9ca3af"
-  };
-
-  function showNoData(msg) {
-    if (elWarn) {
-      elWarn.textContent = msg || "Няма данни";
-      elWarn.style.display = "inline";
-    }
-  }
-
-  function safeNum(v) {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function animateKPI(el, to, duration = 800) {
-    if (!el) return;
-    const start = 0;
-    const startTime = performance.now();
-    function tick(now) {
-      const p = Math.min((now - startTime) / duration, 1);
-      el.textContent = Math.floor(start + p * (to - start));
-      if (p < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  }
-
-  function setLastUpdated() {
-    if (!lastUpdatedEl) return;
-    lastUpdatedEl.textContent = "Последно обновяване: " + new Date().toLocaleString("bg-BG");
-  }
-
-  function renderByCityBar(data) {
-    const el = document.querySelector("#chart-by-city");
-    if (!el) return;
-    if (cityEmpty) cityEmpty.style.display = "none";
-    if (cityErr) cityErr.style.display = "none";
-
-    const items = (data && data.requests_by_city) ? data.requests_by_city : [];
-    if (!items.length) {
-      el.innerHTML = "";
-      if (cityEmpty) cityEmpty.style.display = "block";
-      return;
-    }
-
-    const labels = items.map(x => x.city || "unknown");
-    const counts = items.map(x => Number(x.count || 0));
-
-    const options = {
-      chart: { type: "bar", height: 320, toolbar: { show: false } },
-      series: [{ name: "Заявки", data: counts }],
-      xaxis: {
-        categories: labels,
-        labels: { rotate: -35, trim: true, hideOverlappingLabels: true }
-      },
-      plotOptions: { bar: { borderRadius: 6, columnWidth: "45%" } },
-      dataLabels: { enabled: false },
-      tooltip: { y: { formatter: (v) => `${v}` } }
-    };
-
-    el.innerHTML = "";
-    const chart = new ApexCharts(el, options);
-    chart.render();
-  }
-
-  fetch("/admin/api/dashboard", { credentials: "same-origin" })
-    .then(async (res) => {
-      if (res.status === 401 || res.status === 403) {
-        showNoData("Нямаш достъп / трябва login");
-        throw new Error("unauthorized");
-      }
-      if (!res.ok) throw new Error("dashboard api error " + res.status);
-      return res.json();
-    })
-    .then((data) => {
-            <div class="text-muted small">{{ _('Total requests') }}</div>
-            <div class="text-muted small">{{ _('Pending requests') }}</div>
-            <div class="text-muted small">{{ _('Total volunteers') }}</div>
-      const kpiVols = document.querySelector('[data-kpi="total_volunteers"]');
-
-      animateKPI(kpiTotal, safeNum(stats.total_requests));
-      animateKPI(kpiPending, safeNum(stats.pending_requests));
-      animateKPI(kpiVols, safeNum(stats.total_volunteers));
-
-      const counts = data.counts_by_status || data.countsByStatus || stats.counts_by_status || {};
-      const keys = Object.keys(counts);
-      if (!keys.length) {
-        showNoData("Няма данни");
-        renderByCityBar(data);
-        return;
-      }
-
-      const labels = keys.map(k => STATUS_LABELS_BG[k] || k);
-      const series = keys.map(k => safeNum(counts[k]));
-
-      // ако всичко е 0 -> няма данни
-      if (series.every(x => x === 0)) {
-        showNoData("Няма данни");
-        renderByCityBar(data);
-        return;
-      }
-
-      const options = {
-        chart: { type: "donut", height: 320 },
-        labels,
-        series,
-        legend: { position: "bottom" },
-        colors: keys.map(k => STATUS_COLORS[k] || STATUS_COLORS.unknown)
-      };
-
-      new ApexCharts(document.querySelector("#chart-status"), options).render();
-      renderByCityBar(data);
-      setLastUpdated();
-    })
-    .catch((err) => {
-      // тихо: не искаме да чупим UI-то
-      console.warn("[dashboard] failed:", err);
-      showNoData("Няма данни");
-      if (cityErr) cityErr.style.display = "block";
-    });
-})();
-</script>
 
 <script>
 // Trend chart (timeseries)

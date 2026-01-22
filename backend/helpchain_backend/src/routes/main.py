@@ -2,6 +2,7 @@ from flask import (
     Blueprint,
     flash,
     redirect,
+    jsonify,
     render_template,
     request,
     session,
@@ -17,6 +18,8 @@ from ..extensions import limiter
 from ..models import Request, Volunteer, db, utc_now
 from ..category_data import CATEGORIES, ALIASES, COMMON
 from sqlalchemy import or_, func
+
+COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
 main_bp = Blueprint("main", __name__)
 
@@ -406,10 +409,18 @@ def pilot_dashboard():
     trend_dates = [str(r[0]) for r in trend_rows]
     trend_counts = [int(r[1]) for r in trend_rows]
 
+    total_volunteers = db.session.query(func.count(Volunteer.id)).filter(
+        Volunteer.is_active.is_(True)
+    ).scalar() or 0
+    countries = len(COUNTRIES_SUPPORTED)
+
     impact = {
         "total": int(total_requests),
         "open": int(open_requests),
         "closed": int(closed_requests),
+        "volunteers": int(total_volunteers),
+        "active_volunteers": int(total_volunteers),
+        "countries": int(countries),
         "closed_last_7d": int(closed_last_7d),
         "avg_resolution_hours": avg_resolution_hours,
         "unassigned_48h": int(unassigned_48h),
@@ -428,6 +439,60 @@ def pilot_dashboard():
     resp = make_response(render_template("pilot_dashboard.html", impact=impact))
     resp.headers["X-Robots-Tag"] = "noindex, nofollow"
     return resp
+
+
+@main_bp.get("/api/pilot/metrics")
+def pilot_metrics():
+    total_requests = db.session.query(func.count(Request.id)).scalar() or 0
+    open_requests = db.session.query(func.count(Request.id)).filter(
+        Request.status.notin_(["done", "rejected"])
+    ).scalar() or 0
+    closed_requests = db.session.query(func.count(Request.id)).filter(
+        Request.status.in_(["done", "rejected"])
+    ).scalar() or 0
+    total_volunteers = db.session.query(func.count(Volunteer.id)).filter(
+        Volunteer.is_active.is_(True)
+    ).scalar() or 0
+    countries = len(COUNTRIES_SUPPORTED)
+
+    impact = {
+        "total": int(total_requests),
+        "open": int(open_requests),
+        "closed": int(closed_requests),
+        "volunteers": int(total_volunteers),
+        "active_volunteers": int(total_volunteers),
+        "countries": int(countries),
+    }
+    return jsonify(impact), 200
+
+
+@main_bp.get("/api/pilot-kpi")
+def pilot_kpi_api():
+    # v1: marketing-safe counters (read-only)
+    helped_requests = db.session.query(func.count(Request.id)).filter(
+        Request.status == "done"
+    ).scalar() or 0
+
+    closed_requests = db.session.query(func.count(Request.id)).filter(
+        Request.status.in_(["done", "rejected"])
+    ).scalar() or 0
+
+    active_volunteers = db.session.query(func.count(Volunteer.id)).filter(
+        Volunteer.is_active.is_(True)
+    ).scalar() or 0
+
+    countries_count = len(COUNTRIES_SUPPORTED)
+
+    resp = jsonify(
+        {
+            "active_volunteers": int(active_volunteers),
+            "helped": int(helped_requests),
+            "closed": int(closed_requests),
+            "countries": int(countries_count),
+        }
+    )
+    resp.headers["Cache-Control"] = "public, max-age=30"
+    return resp, 200
 
 
 @main_bp.route("/faq")

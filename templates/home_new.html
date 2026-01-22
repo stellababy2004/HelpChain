@@ -497,12 +497,12 @@
 
     <!-- Navigation -->
     <nav
-      class="navbar-light main-nav"
+      class="hc-nav main-nav"
       role="navigation"
       aria-label="{{ _('Main navigation') }}"
     >
       <div class="container">
-        <a class="navbar-brand-light" href="/">{{ _('HelpChain') }}</a>
+        <a class="hc-brand" href="/">{{ _('HelpChain') }}</a>
 
         <button
           class="navbar-toggler d-md-none"
@@ -518,21 +518,21 @@
 
         <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
           <ul class="nav-menu">
-            <li><a class="nav-link-light" href="#features">{{ _('Features') }}</a></li>
+            <li><a class="hc-navlink" href="#features">{{ _('Features') }}</a></li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('main.categories') }}">{{ _('Categories') }}</a>
+              <a class="hc-navlink" href="{{ safe_url_for('main.categories') }}">{{ _('Categories') }}</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('faq') }}">{{ _('FAQ') }}</a>
+              <a class="hc-navlink" href="{{ safe_url_for('faq') }}">{{ _('FAQ') }}</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('admin.admin_login') }}">{{ _('Login') }}</a>
+              <a class="hc-navlink" href="{{ safe_url_for('admin.admin_login') }}">{{ _('Login') }}</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('volunteer_register') }}">{{ _('Register') }}</a>
+              <a class="hc-navlink" href="{{ safe_url_for('volunteer_register') }}">{{ _('Register') }}</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}">{{ _('Volunteer login') }}</a>
+              <a class="hc-navlink nav-link-volunteer" href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}">{{ _('Volunteer login') }}</a>
             </li>
             <li>
               <button
@@ -575,7 +575,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-light" role="banner" aria-labelledby="hero-title">
+    <section class="hc-hero" role="banner" aria-labelledby="hero-title">
       <div class="hero-shapes" aria-hidden="true">
         <div class="hero-shape"></div>
         <div class="hero-shape"></div>
@@ -584,25 +584,138 @@
 
       <div class="container">
         <div class="hero-content text-center">
-          <h1 id="hero-title" class="hero-title">{{ _('Welcome to HelpChain!') }}</h1>
-          <p class="hero-subtitle">{{ _('We connect people in need with volunteers for fast and effective help. Together we can make the world a better place.') }}</p>
+          <h1 id="hero-title" class="hc-hero__title">{{ _('Welcome to HelpChain') }}</h1>
+          <p class="hc-hero__subtitle">{{ _('Together, we make helping others simple, fast and human.') }}</p>
+          <div class="hc-trust" aria-label="{{ _('Trust and compliance') }}">
+            <span class="hc-trust__item">{{ _('France') }}</span>
+            <span class="hc-trust__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-trust__item">{{ _('Switzerland') }}</span>
+            <span class="hc-trust__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-trust__item">{{ _('Canada') }}</span>
+            <span class="hc-trust__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-trust__item hc-trust__item--strong">{{ _('GDPR-friendly') }}</span>
+          </div>
 
           <div
             class="hero-buttons d-flex justify-content-center gap-3 flex-wrap"
           >
               <a
-                class="btn-light btn-primary focus-visible"
+                class="hc-btn hc-btn-primary focus-visible"
                 href="{{ safe_url_for('main.submit_request') }}"
               >
                 <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>{{ _('Submit a request') }}
               </a>
               <a
-                class="btn-light btn-success focus-visible"
+                class="hc-btn hc-btn-secondary focus-visible"
                 href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
               >
                 <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i>{{ _('Become a volunteer') }}
               </a>
           </div>
+          <div class="hc-hero__stats" aria-label="{{ _('Key numbers') }}">
+            <span class="hc-stat">
+              <span class="hc-stat__value" id="kpiVolunteers">+&mdash;</span>
+              <span class="hc-stat__label">{{ _('volunteers') }}</span>
+            </span>
+            <span class="hc-stat__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-stat">
+              <span class="hc-stat__value" id="kpiClosed">+&mdash;</span>
+              <span class="hc-stat__label">{{ _('requests helped') }}</span>
+            </span>
+            <span class="hc-stat__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-stat">
+              <span class="hc-stat__value" id="kpiCountries">&mdash;</span>
+              <span class="hc-stat__label">{{ _('countries') }}</span>
+            </span>
+          </div>
+          <p class="hc-hero__microcopy">
+            🔒 {{ _('We never sell your data.') }}
+            <span class="hc-dot">•</span>
+            🤝 {{ _('Verified community.') }}
+            <span class="hc-dot">•</span>
+            ⚡ {{ _('Fast matching.') }}
+          </p>
+
+          <div class="hc-how" aria-label="{{ _('How it works') }}">
+            <div class="hc-how__item">
+              <span class="hc-how__icon" aria-hidden="true">📝</span>
+              <span class="hc-how__text">{{ _('Post a request') }}</span>
+            </div>
+            <div class="hc-how__sep" aria-hidden="true">&bull;</div>
+            <div class="hc-how__item">
+              <span class="hc-how__icon" aria-hidden="true">🤝</span>
+              <span class="hc-how__text">{{ _('Get matched') }}</span>
+            </div>
+            <div class="hc-how__sep" aria-hidden="true">&bull;</div>
+            <div class="hc-how__item">
+              <span class="hc-how__icon" aria-hidden="true">❤️</span>
+              <span class="hc-how__text">{{ _('Receive help') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="hc-why">
+      <div class="hc-why__container">
+
+        <div class="hc-why__card">
+          <div class="hc-why__icon">🤝</div>
+          <h3>{{ _('Human-first help') }}</h3>
+          <p>{{ _('Real people helping real people — not bots, not call centers.') }}</p>
+        </div>
+
+        <div class="hc-why__card">
+          <div class="hc-why__icon">⚡</div>
+          <h3>{{ _('Fast & simple') }}</h3>
+          <p>{{ _('Post a request in minutes. Get matched without bureaucracy.') }}</p>
+        </div>
+
+        <div class="hc-why__card">
+          <div class="hc-why__icon">🔒</div>
+          <h3>{{ _('Privacy by design') }}</h3>
+          <p>{{ _('Minimal data. No ads. No resale. GDPR-friendly architecture.') }}</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="hc-trust" aria-labelledby="trust-title">
+      <div class="container">
+        <header class="hc-trust__head text-center">
+          <h2 id="trust-title" class="hc-trust__title">
+            {{ _('Help you can trust') }}
+          </h2>
+          <p class="hc-trust__subtitle">
+            {{ _('A safe, human and reliable way to connect with verified volunteers.') }}
+          </p>
+        </header>
+
+        <div class="hc-trust__grid">
+          <article class="hc-card">
+            <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-shield-alt"></i></div>
+            <h3 class="hc-card__title">{{ _('Safety first') }}</h3>
+            <p class="hc-card__text">
+              {{ _('Your requests and messages are protected. We design HelpChain with security in mind.') }}
+            </p>
+          </article>
+
+          <article class="hc-card">
+            <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-user-check"></i></div>
+            <h3 class="hc-card__title">{{ _('Verified volunteers') }}</h3>
+            <p class="hc-card__text">
+              {{ _('Volunteers can be verified to create trust and reduce abuse.') }}
+            </p>
+          </article>
+
+          <article class="hc-card">
+            <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-hand-holding-heart"></i></div>
+            <h3 class="hc-card__title">{{ _('Human, fast, local') }}</h3>
+            <p class="hc-card__text">
+              {{ _('We connect people nearby for quick, compassionate help — not bureaucracy.') }}
+            </p>
+          </article>
         </div>
       </div>
     </section>
@@ -716,15 +829,21 @@
               <h5>{{ _('Quick links') }}</h5>
               <ul class="list-unstyled">
                 <li>
-                  <a href="{{ safe_url_for('all_categories') }}" class="text-light">{{ _('Help categories') }}</a>
-                <li>
-                  <a href="{{ safe_url_for('all_categories') }}" class="text-light">{{ _('Help categories') }}</a>
+                  <a href="{{ safe_url_for('main.categories') }}" class="text-light">
+                    {{ _("Categories") }}
+                  </a>
                 </li>
+
                 <li>
-                  <a href="{{ safe_url_for('privacy') }}" class="text-light">{{ _('Privacy') }}</a>
+                  <a href="{{ safe_url_for('main.privacy') }}" class="text-light">
+                    {{ _("Privacy policy") }}
+                  </a>
                 </li>
+
                 <li>
-                  <a href="{{ safe_url_for('terms') }}" class="text-light">{{ _('Terms of use') }}</a>
+                  <a href="{{ safe_url_for('main.terms') }}" class="text-light">
+                    {{ _("Terms of service") }}
+                  </a>
                 </li>
               </ul>
             </div>
@@ -776,6 +895,9 @@
           <div class="text-center">
             <p>&copy; 2025 {{ _('HelpChain. All rights reserved.') }}</p>
           </div>
+          <div class="hc-footer__legal">
+            {{ _('Data hosted in Europe') }} • {{ _('GDPR compliant') }} • {{ _('Security-first') }}
+          </div>
         </div>
       </footer>
     </main>
@@ -815,23 +937,29 @@
       };
     </script>
     <script>
-      // Initialize feedback system
-      const feedback = new HelpChainFeedback();
+      // Initialize feedback system (guard if script failed to load)
+      const feedback = (typeof HelpChainFeedback === "function")
+        ? new HelpChainFeedback()
+        : { showToast: () => {} };
 
       // Initialize push notifications (use global singleton)
-      window.notificationService = window.notificationService || new HelpChainNotificationService();
+      window.notificationService = window.notificationService
+        || (typeof HelpChainNotificationService === "function"
+          ? new HelpChainNotificationService()
+          : null);
 
       // Theme Toggle Functionality
       const themeToggle = document.getElementById("themeToggle");
       const html = document.documentElement;
-      const themeIcon = themeToggle.querySelector("i");
+      const themeIcon = themeToggle ? themeToggle.querySelector("i") : null;
 
       // Load saved theme
       const savedTheme = localStorage.getItem("theme") || "light";
       html.setAttribute("data-theme", savedTheme);
       updateThemeIcon(savedTheme);
 
-      themeToggle.addEventListener("click", () => {
+      if (themeToggle && themeIcon) {
+        themeToggle.addEventListener("click", () => {
         const currentTheme = html.getAttribute("data-theme");
         const newTheme = currentTheme === "light" ? "dark" : "light";
 
@@ -842,7 +970,8 @@
         // Show toast notification for theme change
         const themeLabel = newTheme === "light" ? window.i18n.home.theme_light : window.i18n.home.theme_dark;
         feedback.showToast(`${window.i18n.home.theme_switched_prefix} ${themeLabel}`, "success", 3000);
-      });
+        });
+      }
 
       function updateThemeIcon(theme) {
         themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
@@ -942,6 +1071,28 @@
             }
           });
         }
+
+        // Load pilot metrics for hero counters (silent fallback)
+        (async function () {
+          try {
+            const res = await fetch("/api/pilot-kpi", {
+              headers: { "Accept": "application/json" },
+                          });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const v = document.getElementById("kpiVolunteers");
+            const h = document.getElementById("kpiClosed");
+            const c = document.getElementById("kpiCountries");
+
+            if (v && Number.isFinite(+data.active_volunteers)) v.textContent = `+${data.active_volunteers}`;
+            if (h && Number.isFinite(+data.helped)) h.textContent = `+${data.helped}`;
+            else if (h && Number.isFinite(+data.closed)) h.textContent = `+${data.closed}`;
+            if (c && Number.isFinite(+data.countries)) c.textContent = `${data.countries}`;
+          } catch (e) {
+            // silent fail: keep fallback numbers
+          }
+        })();
 
         // Show welcome toast
         setTimeout(() => {

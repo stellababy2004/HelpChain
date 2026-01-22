@@ -1,5 +1,443 @@
 /* Placeholder: design system styles to be added. */
 
+:root {
+  /* Neutrals (v1 official) */
+  --hc-bg: #f7f9fc;
+  --hc-surface: #ffffff;
+  --hc-border: #e6ebf2;
+  --hc-text: #0f172a;
+  --hc-text-muted: #475569;
+
+  /* Brand (v1 official) */
+  --hc-primary: #2f6fed;
+  --hc-primary-2: #5a8bff;
+  --hc-primary-soft: #eaf1ff;
+
+  /* States (v1 official) */
+  --hc-success: #16a34a;
+  --hc-warning: #f59e0b;
+  --hc-danger: #dc2626;
+  --hc-info: #0ea5e9;
+
+  /* Focus */
+  --hc-focus: #2563eb;
+
+  /* Layout */
+  --hc-radius: 16px;
+  --hc-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+
+  /* Aliases (legacy usage) */
+  --hc-card: var(--hc-surface);
+  --hc-text-main: var(--hc-text);
+  --hc-text-soft: #94a3b8;
+}
+
+body {
+  background: var(--hc-bg);
+  color: var(--hc-text-main);
+}
+
+.hc-card {
+  background: var(--hc-card);
+  border: 1px solid var(--hc-border);
+  border-radius: var(--hc-radius);
+  box-shadow: var(--hc-shadow);
+}
+
+.hc-muted {
+  color: var(--hc-text-muted);
+}
+
+.hc-soft {
+  color: var(--hc-text-soft);
+}
+
+.hc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: transform 0.08s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.hc-btn:active {
+  transform: translateY(1px);
+}
+
+.hc-btn-primary {
+  background: linear-gradient(135deg, var(--hc-primary), var(--hc-primary-2));
+  box-shadow: 0 12px 26px rgba(47, 111, 237, 0.28);
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.hc-btn-primary:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 18px 34px rgba(47, 111, 237, 0.34);
+  filter: saturate(1.05);
+}
+
+.hc-btn-outline {
+  background: #fff;
+  color: var(--hc-primary);
+  border-color: var(--hc-border);
+}
+
+.hc-btn-outline:hover {
+  background: var(--hc-primary-soft);
+  border-color: rgba(47, 111, 237, 0.25);
+}
+
+/* =========================
+   HelpChain Europe v1 (Official)
+   Navbar + Hero overrides
+   ========================= */
+
+.hc-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--hc-surface);
+  border-bottom: 1px solid var(--hc-border);
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
+.hc-brand {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--hc-text-main);
+  text-decoration: none;
+  font-size: 1.15rem;
+  margin-right: 1.2rem;
+}
+
+.hc-brand:hover {
+  text-decoration: none;
+}
+
+.hc-nav .nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hc-navlink {
+  color: var(--hc-text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.45rem 0.55rem;
+  border-radius: 999px;
+}
+
+.hc-navlink:hover {
+  color: var(--hc-text-main);
+  background: var(--hc-primary-soft);
+}
+
+.hc-navlink.nav-link-volunteer {
+  background: var(--hc-primary-soft);
+  color: var(--hc-primary);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* Search */
+.hc-nav .search-input-group {
+  background: #fff;
+  border: 1px solid var(--hc-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.55rem;
+  box-shadow: var(--hc-shadow);
+}
+
+.hc-nav .search-input {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  padding: 0.35rem 0.5rem;
+  color: var(--hc-text-main);
+}
+
+.hc-nav .search-button {
+  border: 0;
+  background: transparent;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+}
+
+/* Hero */
+.hc-hero {
+  padding: 4.5rem 0 3.5rem;
+  background:
+    radial-gradient(900px 400px at 50% 0%, rgba(47, 111, 237, 0.12), transparent 55%),
+    radial-gradient(700px 320px at 75% 20%, rgba(242, 166, 90, 0.1), transparent 60%),
+    var(--hc-bg);
+  border-bottom: 1px solid var(--hc-border);
+}
+
+.hc-hero__title {
+  font-size: clamp(2.3rem, 4vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+  color: var(--hc-text-main);
+}
+
+.hc-hero__subtitle {
+  max-width: 860px;
+  margin: 0 auto 1.6rem;
+  font-size: 1.12rem;
+  line-height: 1.6;
+  color: var(--hc-text-muted);
+}
+
+/* Keep your existing hero shapes but soften them */
+.hc-hero .hero-shapes {
+  opacity: 0.25;
+  filter: blur(0.2px);
+}
+
+/* Buttons (use the ones we defined before, just ensure sizing here) */
+.hc-hero .hc-btn {
+  min-width: 220px;
+  justify-content: center;
+}
+
+/* Icon buttons (theme/bell) -> make them "quiet" */
+.hc-nav #themeToggle,
+.hc-nav #pushNotifications {
+  border: 1px solid var(--hc-border) !important;
+  background: #fff !important;
+  border-radius: 999px !important;
+}
+
+.hc-nav #themeToggle:hover,
+.hc-nav #pushNotifications:hover {
+  background: var(--hc-primary-soft) !important;
+  border-color: rgba(47, 111, 237, 0.25) !important;
+}
+
+/* Force CTA styles to win over legacy hero button rules */
+.hc-hero .hero-buttons .hc-btn-primary {
+  background: var(--hc-primary) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 10px 24px rgba(47, 111, 237, 0.18) !important;
+}
+
+.hc-hero .hero-buttons .hc-btn-primary i {
+  color: #fff;
+}
+
+.hc-hero .hero-buttons .hc-btn-outline {
+  background: #fff !important;
+  color: var(--hc-primary) !important;
+  border-color: var(--hc-border) !important;
+}
+
+/* ============================
+   HelpChain v1 — HERO LAYOUT
+   Add at END of design-system.css
+   ============================ */
+
+:root {
+  --hc-hero-maxw: 980px;
+  --hc-hero-minh: clamp(560px, 72vh, 820px);
+}
+
+/* Hero container: give it real presence */
+.hero-light,
+.hc-hero {
+  position: relative;
+  background:
+    radial-gradient(1200px 400px at 50% 0%, rgba(47, 111, 237, 0.1), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(247, 249, 252, 1));
+  border-bottom: 1px solid var(--HC_BORDER, #e6ebf2);
+  padding: clamp(40px, 6vh, 72px) 0 clamp(32px, 5vh, 64px);
+  min-height: var(--hc-hero-minh);
+  display: flex;
+  align-items: flex-start;
+}
+
+.hero-light,
+.hc-hero {
+  padding-top: 110px;
+  padding-bottom: 120px;
+}
+
+/* Keep shapes subtle (premium, not disco) */
+.hero-shapes,
+.hc-hero .hero-shapes {
+  opacity: 0.35;
+  filter: blur(0.2px);
+}
+
+/* Content width and spacing */
+.hero-content,
+.hc-hero .hero-content {
+  max-width: var(--hc-hero-maxw);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Typography hierarchy */
+.hero-title,
+.hc-hero__title {
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 0 0 14px 0;
+  font-size: clamp(36px, 5vw, 64px);
+  color: var(--HC_TEXT, #0f172a);
+}
+
+.hero-subtitle,
+.hc-hero__subtitle {
+  margin: 0 auto 26px auto;
+  max-width: 68ch;
+  font-size: clamp(16px, 1.35vw, 20px);
+  line-height: 1.6;
+  color: var(--HC_TEXT_MUTED, #475569);
+}
+
+/* Buttons: larger, cleaner, less “floating in the void” */
+.hero-buttons,
+.hc-hero .hero-buttons {
+  margin-top: 18px;
+  gap: 14px !important;
+}
+
+.hero-buttons a,
+.hc-hero .hero-buttons a {
+  padding: 12px 18px;
+  font-weight: 600;
+  border-radius: 999px;
+  min-width: 220px;
+  justify-content: center;
+}
+
+/* Primary CTA should be hc-btn-primary (your gradient/shadow) */
+.hero-buttons .btn-primary,
+.hero-buttons .btn-success {
+  border: 0;
+}
+
+/* Secondary CTA: soft surface + border (human NGO vibe) */
+.hc-btn-secondary {
+  background: #ffffff;
+  border: 1px solid #e6ebf2;
+  color: var(--hc-text, #0f172a);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.hc-btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.1);
+  background: #f4f8ff;
+}
+
+/* Small screens: reduce empty feeling, keep hierarchy */
+@media (max-width: 768px) {
+  .hero-light {
+    min-height: auto;
+    padding: 44px 0 56px;
+  }
+
+  .hero-buttons a {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* =========================
+   HelpChain v1 — Trust section
+   ========================= */
+
+.hc-trust {
+  padding: clamp(48px, 6vw, 84px) 0;
+  background: var(--HC_SURFACE, #f7f9fc);
+}
+
+.hc-trust__head {
+  max-width: 780px;
+  margin: 0 auto 28px;
+}
+
+.hc-trust__title {
+  font-size: clamp(24px, 3.2vw, 36px);
+  line-height: 1.15;
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.hc-trust__subtitle {
+  font-size: clamp(15px, 1.4vw, 18px);
+  color: rgba(15, 23, 42, 0.75);
+  margin: 0;
+}
+
+.hc-trust__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.hc-card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+}
+
+.hc-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(47, 111, 237, 0.1);
+  color: var(--HC_PRIMARY, #2f6fed);
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.hc-card__title {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.hc-card__text {
+  margin: 0;
+  color: rgba(15, 23, 42, 0.74);
+  line-height: 1.6;
+}
+
+@media (max-width: 992px) {
+  .hc-trust__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hc-card {
+    padding: 16px;
+  }
+}
+
 /* =========================
    HERO readability hotfix
    ========================= */
@@ -54,36 +492,6 @@ header a,
 .hero-light .hero-title {
   color: #0b1220 !important;
   text-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* =========================
-   Hero CTA buttons polish
-   ========================= */
-.hero-buttons,
-.hero-light .hero-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 14px;
-}
-
-.hero-buttons a,
-.hero-light .hero-buttons a {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-weight: 600;
-  border: 1px solid rgba(11, 18, 32, 0.12);
-  background: rgba(255, 255, 255, 0.9);
-  text-decoration: none;
-}
-
-.hero-buttons a:hover,
-.hero-light .hero-buttons a:hover {
-  transform: translateY(-1px);
 }
 
 /* =========================
@@ -1413,20 +1821,6 @@ footer .footer-social a:hover{
   }
 }
 
-/* CTA buttons - calmer, more premium */
-.hc-hero .hero-buttons .btn-light {
-  border-radius: 14px;
-  padding: 12px 16px;
-  font-weight: 700;
-  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.08);
-  border: 1px solid rgba(15,23,42,0.12);
-}
-
-.hc-hero .hero-buttons .btn-light:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 34px rgba(2, 6, 23, 0.12);
-}
-
 /* === Volunteer Accordion (Modern NGO) === */
 .hc-accordion{
   display: grid;
@@ -1601,20 +1995,6 @@ footer .footer-social a:hover{
     animation: none !important;
     transition: none !important;
   }
-}
-
-/* CTA buttons - calmer, more premium */
-.hc-hero .hero-buttons .btn-light {
-  border-radius: 14px;
-  padding: 12px 16px;
-  font-weight: 700;
-  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.08);
-  border: 1px solid rgba(15,23,42,0.12);
-}
-
-.hc-hero .hero-buttons .btn-light:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 34px rgba(2, 6, 23, 0.12);
 }
 
 .hc-hero__hint{
@@ -3929,6 +4309,158 @@ pre, code { max-width: 100%; overflow-x: auto; }
   }
 }
 
+/* Trust badges — refined premium */
+.hc-hero .hc-hero__subtitle{
+  margin-bottom: 8px;
+}
+
+.hc-hero .hc-trust{
+  margin-top: 4px;
+  margin-bottom: 12px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  color: var(--hc-muted, #5b6676);
+  font-size: 0.94rem;
+  letter-spacing: 0.3px;
+}
+
+.hc-hero .hc-trust__item{
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: transparent;
+  font-weight: 600;
+}
+
+.hc-hero .hc-trust__item--strong{
+  border-color: rgba(47,111,237,0.35);
+  background: rgba(47,111,237,0.06);
+  color: var(--hc-text, #0f172a);
+  font-weight: 600;
+}
+
+.hc-hero .hc-trust__dot{
+  opacity: 0.45;
+}
+
+/* Dark mode support (uses your existing theme switch class if present) */
+[data-theme="dark"] .hc-hero .hc-trust{
+  color: rgba(226,232,240,0.78);
+}
+
+[data-theme="dark"] .hc-hero .hc-trust__item{
+  border-color: rgba(226,232,240,0.18);
+  background: transparent;
+}
+
+[data-theme="dark"] .hc-hero .hc-trust__item--strong{
+  border-color: rgba(90,139,255,0.45);
+  background: rgba(90,139,255,0.14);
+  color: rgba(226,232,240,0.92);
+}
+
+/* --- Hero mini counters (v1) --- */
+.hc-hero__stats{
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--hc-text-muted, #6b7280);
+  font-size: 0.95rem;
+}
+
+.hc-stat{
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.6);
+  border: 1px solid rgba(15,23,42,0.08);
+  backdrop-filter: blur(6px);
+}
+
+.hc-stat__value{
+  font-weight: 700;
+  color: var(--hc-text, #0f172a);
+  letter-spacing: -0.02em;
+}
+
+.hc-stat__label{
+  font-weight: 500;
+}
+
+.hc-stat__dot{
+  opacity: 0.55;
+}
+
+/* Dark mode friendly */
+[data-theme="dark"] .hc-stat{
+  background: rgba(15,23,42,0.35);
+  border-color: rgba(255,255,255,0.10);
+}
+
+[data-theme="dark"] .hc-stat__value{
+  color: rgba(255,255,255,0.92);
+}
+
+.hc-how{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 14px;
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--hc-text-muted);
+}
+
+.hc-how__item{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(15,23,42,.08);
+}
+
+.hc-how__icon{
+  font-size: 14px;
+  line-height: 1;
+}
+
+.hc-how__sep{
+  opacity: .45;
+}
+
+.hc-hero__microcopy{
+  margin: 14px auto 0;
+  text-align: center;
+  font-size: 14px;
+  color: var(--hc-muted, #6b7280);
+  max-width: 820px;
+}
+
+.hc-hero__microcopy .hc-dot{
+  margin: 0 10px;
+  opacity: .55;
+}
+
+/* --- Footer legal strip (v1) --- */
+.hc-footer__legal{
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.75);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 
 /* === E52.4: Mobile overflow fix — accordion (hc-acc) === */
 .hc-acc,
@@ -3978,3 +4510,50 @@ pre, code { max-width: 100%; overflow-x: auto; }
   }
 }
 
+
+
+/* --- WHY HELPCHAIN (v1) --- */
+.hc-why{
+  padding: 56px 20px 24px;
+  background: linear-gradient(180deg, rgba(47,111,237,.03), rgba(255,255,255,0));
+}
+
+.hc-why__container{
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.hc-why__card{
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 16px;
+  padding: 22px 20px 24px;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0,0,0,.04);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.hc-why__card:hover{
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.08);
+}
+
+.hc-why__icon{
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.hc-why__card h3{
+  font-size: 18px;
+  margin-bottom: 6px;
+  color: var(--hc-text, #0f172a);
+}
+
+.hc-why__card p{
+  font-size: 14px;
+  color: var(--hc-muted, #6b7280);
+  line-height: 1.5;
+}

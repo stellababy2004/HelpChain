@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-20 10:39+0100\n"
+"POT-Creation-Date: 2026-01-22 12:09+0100\n"
 "PO-Revision-Date: 2025-07-15 18:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -22,7 +22,8 @@ msgstr ""
 msgid "Доброволецът е добавен успешно!"
 msgstr ""
 
-#: backend/helpchain_backend/src/copy.py:12
+#: backend/helpchain_backend/src/copy.py:12 templates/home_new.html:505
+#: templates/home_new.html:825
 msgid "HelpChain"
 msgstr ""
 
@@ -39,7 +40,7 @@ msgstr ""
 msgid "Изпрати заявката"
 msgstr ""
 
-#: backend/helpchain_backend/src/copy.py:20 templates/all_categories.html:86
+#: backend/helpchain_backend/src/copy.py:20
 msgid "Категории помощ"
 msgstr ""
 
@@ -92,16 +93,15 @@ msgstr "Inconnu"
 msgid "Admin dashboard"
 msgstr "Tableau de bord admin"
 
-#: templates/admin_dashboard.html:34 templates/admin_dashboard.html:594
-#: templates/pilot_dashboard.html:29
+#: templates/admin_dashboard.html:34 templates/pilot_dashboard.html:29
 msgid "Total requests"
 msgstr "Total des demandes"
 
-#: templates/admin_dashboard.html:43 templates/admin_dashboard.html:595
+#: templates/admin_dashboard.html:43
 msgid "Pending requests"
 msgstr ""
 
-#: templates/admin_dashboard.html:52 templates/admin_dashboard.html:596
+#: templates/admin_dashboard.html:52
 msgid "Total volunteers"
 msgstr ""
 
@@ -127,7 +127,7 @@ msgstr ""
 msgid "В процес"
 msgstr ""
 
-#: templates/admin_dashboard.html:244 templates/admin_dashboard.html:307
+#: templates/admin_dashboard.html:244 templates/admin_dashboard.html:312
 msgid "Доброволци"
 msgstr ""
 
@@ -135,7 +135,7 @@ msgstr ""
 msgid "Заявки"
 msgstr ""
 
-#: templates/admin_dashboard.html:258 templates/admin_dashboard.html:313
+#: templates/admin_dashboard.html:258 templates/admin_dashboard.html:318
 msgid "Име"
 msgstr ""
 
@@ -166,141 +166,149 @@ msgstr ""
 msgid "Без описание"
 msgstr ""
 
-#: templates/admin_dashboard.html:286
+#: templates/admin_dashboard.html:291
 msgid "No history"
 msgstr ""
 
-#: templates/admin_dashboard.html:290
+#: templates/admin_dashboard.html:295
 #, python-format
 msgid "Actions for request %(id)s"
 msgstr ""
 
-#: templates/admin_dashboard.html:300
+#: templates/admin_dashboard.html:305
 msgid "Няма намерени заявки"
 msgstr ""
 
-#: templates/admin_dashboard.html:314
+#: templates/admin_dashboard.html:319
 msgid "Имейл"
 msgstr ""
 
-#: templates/admin_dashboard.html:315
+#: templates/admin_dashboard.html:320
 msgid "Телефон"
 msgstr ""
 
-#: templates/admin_dashboard.html:316
+#: templates/admin_dashboard.html:321
 msgid "Локация"
 msgstr ""
 
-#: templates/admin_dashboard.html:317
+#: templates/admin_dashboard.html:322
 msgid "Умения"
 msgstr ""
 
-#: templates/admin_dashboard.html:335
+#: templates/admin_dashboard.html:340
 msgid "Няма"
 msgstr ""
 
-#: templates/admin_dashboard.html:342
+#: templates/admin_dashboard.html:347
 msgid "Няма намерени доброволци"
 msgstr ""
 
+# --- templates/all_categories.html (EN msgids) ---
 #: templates/all_categories.html:6
-msgid "Категории помощ - HelpChain"
-msgstr ""
+msgid "Help categories - HelpChain"
+msgstr "Catégories d'aide - HelpChain"
 
-#: templates/all_categories.html:62
-msgid "Начало"
-msgstr ""
+#: templates/all_categories.html:54
+msgid "Toggle navigation"
+msgstr "Basculer la navigation"
 
-#: templates/all_categories.html:66
-msgid "Категории"
-msgstr ""
-
-#: templates/all_categories.html:70 templates/all_categories.html:141
-msgid "Стани доброволец"
-msgstr ""
-
-#: templates/all_categories.html:75
-msgid "Админ вход"
-msgstr ""
-
-#: templates/all_categories.html:88
-msgid "Изберете категорията, в която се нуждаете от помощ"
-msgstr ""
-
-#: templates/all_categories.html:107
-msgid "Виж доброволци"
-msgstr ""
-
-#: templates/all_categories.html:121
-msgid "Нуждаете се от помощ?"
-msgstr ""
-
-#: templates/all_categories.html:123
-msgid "Подайте заявка и ние ще намерим доброволец за вас."
-msgstr ""
-
-#: templates/all_categories.html:126
-#, fuzzy
-msgid "Подайте заявка"
-msgstr "Soumettre une demande d'aide"
-
-#: templates/all_categories.html:136
-msgid "Искате да помогнете?"
-msgstr ""
-
-#: templates/all_categories.html:138
-msgid "Присъединете се към нашата общност от доброволци."
-msgstr ""
-
-#: templates/all_categories.html:150
-msgid "Към началната страница"
-msgstr ""
-
-#: templates/all_categories.html:162
-msgid "Свързваме нуждаещи се с доброволци за по-добро бъдеще."
-msgstr ""
-
-#: templates/all_categories.html:165
-msgid "Връзки"
-msgstr ""
-
-#: templates/all_categories.html:167
-msgid "Политика за поверителност"
-msgstr ""
-
-#: templates/all_categories.html:168
-msgid "Условия за ползване"
-msgstr ""
-
-#: templates/all_categories.html:169
-msgid "ЧЗВ"
-msgstr ""
-
-#: templates/all_categories.html:173
-msgid "Контакти"
-msgstr ""
-
-#: templates/all_categories.html:179
-msgid "Всички права запазени."
-msgstr ""
-
-#: templates/admin/requests.html:18 templates/base.html:44
+#: templates/admin/requests.html:18 templates/all_categories.html:62
+#: templates/base.html:44
 msgid "Home"
 msgstr "Accueil"
 
-#: templates/base.html:49 templates/home_new.html:540
+#: templates/all_categories.html:66 templates/base.html:49
+#: templates/home_new.html:523 templates/home_new.html:833
 msgid "Categories"
 msgstr "Catégories"
+
+#: templates/all_categories.html:70 templates/all_categories.html:141
+#: templates/home_new.html:612
+msgid "Become a volunteer"
+msgstr "Devenir bénévole"
+
+# --- Added admin/requests translations ---
+#: templates/admin/login.html:6 templates/admin/login.html:19
+#: templates/all_categories.html:75
+msgid "Admin login"
+msgstr "Connexion admin"
+
+#: templates/all_categories.html:86
+msgid "Help categories"
+msgstr "Catégories d'aide"
+
+#: templates/all_categories.html:88
+msgid "Choose the category where you need help"
+msgstr "Choisissez la catégorie dans laquelle vous avez besoin d'aide"
+
+#: templates/all_categories.html:107
+msgid "See volunteers"
+msgstr "Voir des bénévoles"
+
+#: templates/all_categories.html:121
+msgid "Need help?"
+msgstr "Besoin d'aide ?"
+
+#: templates/all_categories.html:123
+msgid "Submit a request and we will find a volunteer for you."
+msgstr "Déposez une demande et nous trouverons un bénévole pour vous."
+
+#: templates/all_categories.html:126 templates/home_new.html:606
+msgid "Submit a request"
+msgstr "Déposer une demande"
+
+#: templates/all_categories.html:136
+msgid "Want to help?"
+msgstr "Vous voulez aider ?"
+
+#: templates/all_categories.html:138
+msgid "Join our community of volunteers."
+msgstr "Rejoignez notre communauté de bénévoles."
+
+#: templates/all_categories.html:150
+msgid "Back to home page"
+msgstr "Retour à la page d'accueil"
+
+#: templates/all_categories.html:162
+msgid "Connecting people in need with volunteers for a better future."
+msgstr ""
+"Mettre en relation les personnes dans le besoin avec des bénévoles pour "
+"un avenir meilleur."
+
+#: templates/all_categories.html:165
+msgid "Links"
+msgstr "Liens"
+
+#: templates/all_categories.html:167 templates/home_new.html:839
+#: templates/privacy.html:2 templates/privacy.html:7
+msgid "Privacy policy"
+msgstr "Politique de confidentialité"
+
+#: templates/all_categories.html:168
+msgid "Terms of use"
+msgstr "Conditions d'utilisation"
+
+#: templates/all_categories.html:169 templates/home_new.html:526
+msgid "FAQ"
+msgstr "FAQ"
+
+#: templates/all_categories.html:173
+msgid "Contacts"
+msgstr "Contacts"
+
+#: templates/all_categories.html:179
+msgid "All rights reserved."
+msgstr "Tous droits réservés."
 
 #: templates/base.html:54
 msgid "About"
 msgstr "À propos"
 
-#: templates/base.html:59 templates/home_new.html:544
+#: templates/base.html:59
 msgid "Pilot (KPI)"
 msgstr "Pilote (KPI)"
 
-#: templates/base.html:59 templates/home_new.html:544
+#: templates/base.html:59
 msgid "LIVE"
 msgstr "EN DIRECT"
 
@@ -320,7 +328,7 @@ msgstr "Admin"
 msgid "Pilot (Public)"
 msgstr "Pilote (Public)"
 
-#: templates/base.html:87 templates/home_new.html:591
+#: templates/base.html:87
 msgid "Profile"
 msgstr "Profil"
 
@@ -328,11 +336,11 @@ msgstr "Profil"
 msgid "Logout"
 msgstr "Déconnexion"
 
-#: templates/base.html:98
+#: templates/base.html:98 templates/home_new.html:529
 msgid "Login"
 msgstr "Connexion"
 
-#: templates/base.html:103
+#: templates/base.html:103 templates/home_new.html:532
 msgid "Register"
 msgstr "Inscription"
 
@@ -340,18 +348,17 @@ msgstr "Inscription"
 # These were added manually to ensure UI strings are available before
 # extraction
 # and follow the requested canonical msgid -> FR msgstr mapping.
-#: templates/base.html:114
+#: templates/base.html:114 templates/home_new.html:566
 msgid "Search in HelpChain..."
 msgstr "Rechercher sur HelpChain..."
 
 #: templates/admin/requests.html:36 templates/base.html:115
-#: templates/base.html:117 templates/base.html:119 templates/home_new.html:514
-#: templates/home_new.html:520 templates/home_new.html:522
-#: templates/home_new.html:562 templates/home_new.html:564
+#: templates/base.html:117 templates/base.html:119 templates/home_new.html:567
+#: templates/home_new.html:569
 msgid "Search"
 msgstr "Rechercher"
 
-#: templates/base.html:125 templates/home_new.html:573
+#: templates/base.html:125 templates/home_new.html:541
 msgid "Toggle theme"
 msgstr "Changer de thème"
 
@@ -463,6 +470,12 @@ msgstr "Aperçu"
 msgid "Export"
 msgstr "Exporter"
 
+#: templates/home_new.html:7
+msgid "HelpChain - Connecting people in need with volunteers"
+msgstr ""
+"HelpChain - Mettre en relation les personnes dans le besoin avec des "
+"bénévoles"
+
 #: templates/home_new.html:491
 msgid "Skip to main content"
 msgstr "Aller au contenu principal"
@@ -471,184 +484,384 @@ msgstr "Aller au contenu principal"
 msgid "Main navigation"
 msgstr "Navigation principale"
 
-#: templates/home_new.html:519 templates/home_new.html:561
-msgid "Search HelpChain..."
-msgstr "Rechercher dans HelpChain..."
-
-#: templates/home_new.html:528 templates/home_new.html:548
-#: templates/home_new.html:641
-msgid "Become a volunteer"
-msgstr "Devenir bénévole"
-
-#: templates/home_new.html:532 templates/home_new.html:595
-#: templates/home_new.html:681
-msgid "Volunteer login"
-msgstr "Connexion bénévole"
-
-#: templates/home_new.html:533 templates/home_new.html:596
-msgid "Sign up"
-msgstr "Inscription"
-
-# --- Added admin/requests translations ---
-#: templates/admin/login.html:6 templates/admin/login.html:19
-#: templates/home_new.html:534 templates/home_new.html:598
-msgid "Admin login"
-msgstr "Connexion admin"
-
-#: templates/home_new.html:539
-msgid "Features"
-msgstr "Fonctionnalités"
-
-#: templates/home_new.html:541
-msgid "FAQ"
-msgstr "FAQ"
-
-#: templates/home_new.html:574
-msgid "Toggle light/dark theme"
-msgstr "Basculer entre thème clair et sombre"
-
-#: templates/home_new.html:582 templates/home_new.html:583
-msgid "Manage push notifications"
-msgstr "Gérer les notifications push"
-
-#: templates/home_new.html:609
+#: templates/home_new.html:514
 msgid "Open menu"
 msgstr "Ouvrir le menu"
 
-#: templates/home_new.html:7
-msgid "HelpChain - Connecting people in need with volunteers"
-msgstr "HelpChain - Mettre en relation les personnes dans le besoin avec des bénévoles"
+#: templates/home_new.html:521
+msgid "Features"
+msgstr "Fonctionnalités"
+
+#: templates/home_new.html:535
+msgid "Volunteer login"
+msgstr "Connexion bénévole"
+
+#: templates/home_new.html:542
+msgid "Toggle light/dark theme"
+msgstr "Basculer entre thème clair et sombre"
+
+#: templates/home_new.html:551 templates/home_new.html:552
+msgid "Manage push notifications"
+msgstr "Gérer les notifications push"
+
+#: templates/home_new.html:587
+msgid "Welcome to HelpChain"
+msgstr "Bienvenue sur HelpChain"
+
+#: templates/home_new.html:588
+msgid "Together, we make helping others simple, fast and human."
+msgstr "Ensemble, nous rendons l’entraide simple, rapide et humaine."
+
+#: templates/home_new.html:589
+msgid "Trust and compliance"
+msgstr "Confiance et conformité"
+
+#: templates/home_new.html:590
+msgid "France"
+msgstr "France"
+
+#: templates/home_new.html:592
+msgid "Switzerland"
+msgstr "Suisse"
+
+#: templates/home_new.html:594
+msgid "Canada"
+msgstr "Canada"
+
+#: templates/home_new.html:596
+msgid "GDPR-friendly"
+msgstr "Compatible RGPD"
+
+#: templates/home_new.html:615
+msgid "Key numbers"
+msgstr "Chiffres clés"
+
+#: templates/home_new.html:618
+msgid "volunteers"
+msgstr "bénévoles"
+
+#: templates/home_new.html:623
+msgid "requests helped"
+msgstr "demandes aidées"
 
 #: templates/home_new.html:628
-msgid "Welcome to HelpChain!"
-msgstr "Bienvenue sur HelpChain !"
+msgid "countries"
+msgstr "pays"
 
-#: templates/home_new.html:630
-msgid ""
-"Help without chaos or pressure. We connect real needs with volunteers - "
-"calmly, safely, humanely."
-msgstr ""
-"Aide sans chaos ni pression. Nous mettons en lien des besoins réels avec "
-"des bénévoles - avec calme, sécurité et humanité."
+#: templates/home_new.html:632
+msgid "We never sell your data."
+msgstr "Nous ne vendons jamais vos données."
 
-#: templates/home_new.html:633
-msgid "Registration ~2 min | Data protected | No schedules or pressure"
-msgstr "Inscription ~2 min | Données protégées | Pas d'horaires ni de pression"
+#: templates/home_new.html:634
+msgid "Verified community."
+msgstr "Communauté vérifiée."
 
-#: templates/home_new.html:638
-msgid "Submit a request"
-msgstr "Déposer une demande"
+#: templates/home_new.html:636
+msgid "Fast matching."
+msgstr "Mise en relation rapide."
 
-#: templates/home_new.html:646
-msgid "Trust signals"
-msgstr "Signaux de confiance"
+#: templates/home_new.html:639
+msgid "How it works"
+msgstr "Comment ça marche"
 
-#: templates/home_new.html:647 templates/home_new.html:658
-msgid "Data protected"
-msgstr "Données protégées"
+#: templates/home_new.html:642
+msgid "Post a request"
+msgstr "Publier une demande"
 
-#: templates/home_new.html:648
-msgid "No pressure"
-msgstr "Sans pression"
+#: templates/home_new.html:647
+msgid "Get matched"
+msgstr "Être mis en relation"
 
-#: templates/home_new.html:649
-msgid "Registration ~2 min"
-msgstr "Inscription ~2 min"
-
-#: templates/home_new.html:653
-msgid "You can browse requests first - no registration."
-msgstr "Vous pouvez consulter les demandes d'abord - sans inscription."
-
-#: templates/home_new.html:655
-msgid "Volunteer guarantees"
-msgstr "Garanties pour les bénévoles"
-
-#: templates/home_new.html:656
-msgid "No schedules"
-msgstr "Pas d'horaires"
-
-#: templates/home_new.html:657
-msgid "You can opt out"
-msgstr "Vous pouvez vous désengager"
-
-#: templates/home_new.html:660
-msgid "Scroll for more"
-msgstr "Faites défiler pour en voir plus"
+#: templates/home_new.html:652
+msgid "Receive help"
+msgstr "Recevoir de l’aide"
 
 #: templates/home_new.html:664
-msgid "Quick start for volunteers"
-msgstr "Démarrage rapide pour bénévoles"
+msgid "Human-first help"
+msgstr "Aide centrée sur l’humain"
 
-#: templates/home_new.html:667
-msgid "Start in 30 seconds"
-msgstr "Commencez en 30 secondes"
+#: templates/home_new.html:665
+msgid "Real people helping real people - not bots, not call centers."
+msgstr "De vraies personnes aident de vraies personnes — pas des bots, pas des centres d’appel."
 
-#: templates/home_new.html:668
-msgid "No schedules. No pressure. Just clear steps."
-msgstr "Pas d'horaires. Pas de pression. Des étapes claires."
+#: templates/home_new.html:670
+msgid "Fast & simple"
+msgstr "Rapide et simple"
 
-#: templates/home_new.html:672
-msgid "Volunteer registration"
-msgstr "Inscription bénévole"
-
-#: templates/home_new.html:675
-msgid "1) Sign up"
-msgstr "1) Inscription"
+#: templates/home_new.html:671
+msgid "Post a request in minutes. Get matched without bureaucracy."
+msgstr "Publiez une demande en quelques minutes. Mise en relation sans bureaucratie."
 
 #: templates/home_new.html:676
-msgid "Under 2 min. Only the essentials."
-msgstr "Moins de 2 min. L'essentiel uniquement."
+msgid "Privacy by design"
+msgstr "Confidentialité dès la conception"
 
-#: templates/home_new.html:684
-msgid "2) Log in"
-msgstr "2) Connexion"
+#: templates/home_new.html:677
+msgid "Minimal data. No ads. No resale. GDPR-friendly architecture."
+msgstr "Données minimales. Pas de publicité. Pas de revente. Architecture compatible RGPD."
 
-#: templates/home_new.html:685
-msgid "See requests and choose when to help."
-msgstr "Consultez les demandes et choisissez quand aider."
-
-#: templates/home_new.html:690
-msgid "See a sample request"
-msgstr "Voir un exemple de demande"
-
-#: templates/home_new.html:693
-msgid "3) See an example"
-msgstr "3) Voir un exemple"
-
-#: templates/home_new.html:694
-msgid "See how a request looks before you join."
-msgstr "Voir à quoi ressemble une demande avant de vous engager."
-
-#: templates/home_new.html:702
-msgid "Saved filter"
-msgstr "Filtre enregistré"
-
-#: templates/home_new.html:704
+#: templates/home_new.html:688
 #, fuzzy
-msgid "Coming back? Save a preference — we will apply it automatically."
+msgid "Help you can trust"
+msgstr "Une aide en toute confiance"
+
+#: templates/home_new.html:691
+msgid "A safe, human and reliable way to connect with verified volunteers."
 msgstr ""
-"De retour ? Enregistrez une préférence - nous l'appliquerons "
-"automatiquement."
+"Une manière sûre, humaine et fiable de se connecter à des bénévoles "
+"vérifiés."
 
-#: templates/home_new.html:710
-msgid "Remote"
-msgstr "À distance"
+#: templates/home_new.html:698
+msgid "Safety first"
+msgstr "Sécurité avant tout"
 
-#: templates/home_new.html:713
-msgid "On site"
-msgstr "Sur place"
+#: templates/home_new.html:700
+msgid ""
+"Your requests and messages are protected. We design HelpChain with "
+"security in mind."
+msgstr ""
+
+#: templates/home_new.html:706
+#, fuzzy
+msgid "Verified volunteers"
+msgstr "Bénévoles vérifiés"
+
+#: templates/home_new.html:708
+msgid "Volunteers can be verified to create trust and reduce abuse."
+msgstr ""
+"Les bénévoles peuvent être vérifiés pour instaurer la confiance et "
+"réduire les abus."
+
+#: templates/home_new.html:714
+msgid "Human, fast, local"
+msgstr "Humaine, rapide, locale"
 
 #: templates/home_new.html:716
-msgid "All"
-msgstr "Tous"
+msgid "We connect people nearby for quick, compassionate help — not bureaucracy."
+msgstr ""
 
-#: templates/home_new.html:719
-msgid "Clear"
-msgstr "Effacer"
+# --- templates/home_new.html (EN msgids) ---
+#: templates/home_new.html:728
+msgid "Main content"
+msgstr "Contenu principal"
 
-#: templates/home_new.html:725
-msgid "You can opt out at any time. Your data is not public."
-msgstr "Vous pouvez vous retirer à tout moment. Vos données ne sont pas publiques."
+#: templates/home_new.html:738
+msgid "Active volunteers"
+msgstr "Bénévoles actifs"
+
+#: templates/home_new.html:744
+msgid "People helped"
+msgstr "Personnes aidées"
+
+#: templates/home_new.html:750
+msgid "Open requests"
+msgstr "Demandes ouvertes"
+
+#: templates/home_new.html:760
+msgid "Why choose HelpChain?"
+msgstr "Pourquoi choisir HelpChain ?"
+
+#: templates/home_new.html:761
+msgid ""
+"We offer a modern platform to connect people who need help with those who"
+" want to help."
+msgstr ""
+"Nous proposons une plateforme moderne pour connecter les personnes qui "
+"ont besoin d'aide avec celles qui veulent aider."
+
+#: templates/home_new.html:769
+msgid "Fast help"
+msgstr "Aide rapide"
+
+#: templates/home_new.html:770
+msgid ""
+"Our platform connects people in need with volunteers in minutes, "
+"providing fast and effective help."
+msgstr ""
+"Notre plateforme met en relation les personnes dans le besoin avec des "
+"bénévoles en quelques minutes, offrant une aide rapide et efficace."
+
+#: templates/home_new.html:777
+msgid "Security"
+msgstr "Sécurité"
+
+#: templates/home_new.html:778
+msgid ""
+"All users go through verification, and communication is protected with "
+"state-of-the-art security technologies."
+msgstr ""
+"Tous les utilisateurs sont vérifiés, et la communication est protégée par"
+" des technologies de sécurité de pointe."
+
+#: templates/home_new.html:785
+msgid "Community"
+msgstr "Communauté"
+
+#: templates/home_new.html:786
+msgid ""
+"Join a growing community of volunteers and people who believe that "
+"together we can make the world a better place."
+msgstr ""
+"Rejoignez une communauté grandissante de bénévoles et de personnes qui "
+"croient qu'ensemble nous pouvons rendre le monde meilleur."
+
+#: templates/home_new.html:793
+msgid "Mobile accessibility"
+msgstr "Accessibilité mobile"
+
+#: templates/home_new.html:794
+msgid ""
+"Our platform works perfectly on all devices - from smartphones to desktop"
+" computers."
+msgstr ""
+"Notre plateforme fonctionne parfaitement sur tous les appareils - des "
+"smartphones aux ordinateurs de bureau."
+
+#: templates/home_new.html:801
+msgid "24/7 support"
+msgstr "Support 24/7"
+
+#: templates/home_new.html:802
+msgid ""
+"Our team is always available to help. No matter the time, you can rely on"
+" our support."
+msgstr ""
+"Notre équipe est toujours disponible pour aider. Quelle que soit l'heure,"
+" vous pouvez compter sur notre support."
+
+#: templates/home_new.html:809
+msgid "Free"
+msgstr "Gratuit"
+
+#: templates/home_new.html:810
+msgid ""
+"HelpChain is a completely free platform. We believe that help should be "
+"accessible to everyone."
+msgstr ""
+"HelpChain est une plateforme entièrement gratuite. Nous pensons que "
+"l'aide doit être accessible à tous."
+
+#: templates/home_new.html:820
+msgid "Site information"
+msgstr "Informations du site"
+
+#: templates/home_new.html:826
+msgid "Connecting people in need with volunteers for a better world."
+msgstr ""
+"Mettre en relation les personnes dans le besoin avec des bénévoles pour "
+"un monde meilleur."
+
+#: templates/home_new.html:829
+msgid "Quick links"
+msgstr "Liens rapides"
+
+#: templates/home_new.html:845 templates/terms.html:2 templates/terms.html:7
+msgid "Terms of service"
+msgstr "Conditions d’utilisation"
+
+#: templates/home_new.html:851 templates/privacy.html:49
+#: templates/terms.html:37
+msgid "Contact"
+msgstr "Contact"
+
+#: templates/home_new.html:862
+msgid "Facebook"
+msgstr ""
+
+#: templates/home_new.html:863
+msgid "Visit us on Facebook"
+msgstr "Nous rendre visite sur Facebook"
+
+#: templates/home_new.html:870
+#, fuzzy
+msgid "Twitter"
+msgstr "Titre"
+
+#: templates/home_new.html:871
+msgid "Visit us on Twitter"
+msgstr "Nous rendre visite sur Twitter"
+
+#: templates/home_new.html:878
+#, fuzzy
+msgid "Instagram"
+msgstr "Nous rendre visite sur Instagram"
+
+#: templates/home_new.html:879
+msgid "Visit us on Instagram"
+msgstr "Nous rendre visite sur Instagram"
+
+#: templates/home_new.html:886
+#, fuzzy
+msgid "LinkedIn"
+msgstr "Liens"
+
+#: templates/home_new.html:887
+msgid "Visit us on LinkedIn"
+msgstr "Nous rendre visite sur LinkedIn"
+
+#: templates/home_new.html:896
+msgid "HelpChain. All rights reserved."
+msgstr "HelpChain. Tous droits réservés."
+
+#: templates/home_new.html:899
+msgid "Data hosted in Europe"
+msgstr "Données hébergées en Europe"
+
+#: templates/home_new.html:899
+msgid "GDPR compliant"
+msgstr "Compatible RGPD"
+
+#: templates/home_new.html:899
+msgid "Security-first"
+msgstr "Sécurité avant tout"
+
+#: templates/home_new.html:908 templates/home_new.html:909
+msgid "Back to top"
+msgstr "Retour en haut"
+
+#: templates/home_new.html:925
+msgid "Loading..."
+msgstr "Chargement..."
+
+#: templates/home_new.html:926
+msgid "An error occurred while loading"
+msgstr "Une erreur est survenue lors du chargement"
+
+#: templates/home_new.html:927
+msgid "Push notifications are enabled!"
+msgstr "Les notifications push sont activées !"
+
+#: templates/home_new.html:928
+msgid "Push notifications are disabled."
+msgstr "Les notifications push sont désactivées."
+
+#: templates/home_new.html:929
+msgid "Error setting up push notifications"
+msgstr "Erreur lors de la configuration des notifications push"
+
+#: templates/home_new.html:930
+msgid "Welcome to HelpChain! 🚀"
+msgstr "Bienvenue sur HelpChain ! 🚀"
+
+#: templates/home_new.html:932
+msgid "Theme switched to"
+msgstr "Le thème a été basculé vers"
+
+#: templates/home_new.html:933
+msgid "Switch to"
+msgstr "Passer à"
+
+#: templates/home_new.html:934
+msgid "dark"
+msgstr "sombre"
+
+#: templates/home_new.html:935
+msgid "light"
+msgstr "clair"
+
+#: templates/home_new.html:936
+msgid "theme"
+msgstr "thème"
 
 #: templates/pilot_dashboard.html:2 templates/pilot_dashboard.html:13
 msgid "Pilot Dashboard"
@@ -739,6 +952,174 @@ msgstr "Demandes"
 #: templates/pilot_dashboard.html:124
 msgid "New requests"
 msgstr "Nouvelles demandes"
+
+#: templates/privacy.html:10 templates/terms.html:10
+msgid "Last updated:"
+msgstr "Dernière mise à jour :"
+
+#: templates/privacy.html:14
+msgid ""
+"HelpChain is a solidarity platform. We only collect what is necessary to "
+"connect people who need help with volunteers. We do not sell your data."
+msgstr ""
+"HelpChain est une plateforme solidaire. Nous ne collectons que ce qui est"
+" nécessaire pour connecter les personnes qui ont besoin d’aide avec des "
+"bénévoles. Nous ne vendons pas vos données."
+
+#: templates/privacy.html:19
+msgid "What data we collect"
+msgstr "Quelles données nous collectons"
+
+#: templates/privacy.html:21
+msgid ""
+"Account and contact details you provide (name, email, phone — if you "
+"choose)."
+msgstr ""
+
+#: templates/privacy.html:22
+msgid ""
+"Request information you submit (category, description, location — if "
+"needed for the service)."
+msgstr ""
+
+#: templates/privacy.html:23
+msgid ""
+"Basic technical data for security (e.g., IP address, logs) to prevent "
+"abuse."
+msgstr ""
+"Des données techniques de base pour la sécurité (ex. adresse IP, "
+"journaux) afin de prévenir les abus."
+
+#: templates/privacy.html:26
+msgid "How we use it"
+msgstr "Comment nous l’utilisons"
+
+#: templates/privacy.html:28
+msgid "To operate the service and match requests with volunteers."
+msgstr "Pour faire fonctionner le service et associer les demandes aux bénévoles."
+
+#: templates/privacy.html:29
+msgid "To communicate about your request (updates, messages, notifications)."
+msgstr ""
+"Pour communiquer au sujet de votre demande (mises à jour, messages, "
+"notifications)."
+
+#: templates/privacy.html:30
+msgid "To keep the platform safe (fraud prevention, security monitoring)."
+msgstr ""
+"Pour maintenir la plateforme sécurisée (prévention de la fraude, "
+"surveillance de la sécurité)."
+
+#: templates/privacy.html:33
+msgid "What we do not do"
+msgstr "Ce que nous ne faisons pas"
+
+#: templates/privacy.html:35
+msgid "We do not sell personal data."
+msgstr "Nous ne vendons pas de données personnelles."
+
+#: templates/privacy.html:36
+msgid "We do not run advertising profiling."
+msgstr "Nous ne faisons pas de profilage publicitaire."
+
+#: templates/privacy.html:39
+msgid "Data retention"
+msgstr "Durée de conservation des données"
+
+#: templates/privacy.html:41
+msgid ""
+"We keep data only as long as needed for the service and legal "
+"obligations. You can request deletion of your account data."
+msgstr ""
+"Nous conservons les données uniquement le temps nécessaire au service et "
+"aux obligations légales. Vous pouvez demander la suppression des données "
+"de votre compte."
+
+#: templates/privacy.html:44
+msgid "Your rights"
+msgstr "Vos droits"
+
+#: templates/privacy.html:46
+msgid ""
+"You can request access, correction, or deletion of your personal data. "
+"You can also object to certain processing where applicable."
+msgstr ""
+"Vous pouvez demander l’accès, la correction ou la suppression de vos "
+"données personnelles. Vous pouvez aussi vous opposer à certains "
+"traitements lorsque cela s’applique."
+
+#: templates/privacy.html:51
+msgid "Questions about privacy? Contact us at"
+msgstr "Des questions sur la confidentialité ? Contactez-nous à"
+
+#: templates/terms.html:14
+msgid ""
+"HelpChain helps connect people who need help with volunteers. By using "
+"the platform, you agree to follow these basic rules to keep everyone "
+"safe."
+msgstr ""
+"HelpChain aide à mettre en relation les personnes qui ont besoin d’aide "
+"avec des bénévoles. En utilisant la plateforme, vous acceptez de suivre "
+"ces règles de base pour la sécurité de tous."
+
+#: templates/terms.html:19
+msgid "Use of the platform"
+msgstr "Utilisation de la plateforme"
+
+#: templates/terms.html:21
+msgid "Provide accurate information and use respectful language."
+msgstr "Fournissez des informations exactes et utilisez un langage respectueux."
+
+#: templates/terms.html:22
+msgid "Do not post illegal, harmful, or abusive content."
+msgstr "Ne publiez pas de contenu illégal, nuisible ou abusif."
+
+#: templates/terms.html:23
+msgid "Do not impersonate others or misrepresent your identity."
+msgstr ""
+"Ne vous faites pas passer pour quelqu’un d’autre et ne déformez pas votre"
+" identité."
+
+#: templates/terms.html:26
+msgid "Safety"
+msgstr "Sécurité"
+
+#: templates/terms.html:28
+msgid ""
+"HelpChain is a connection platform, not an emergency service. If there is"
+" immediate danger, contact local emergency services."
+msgstr ""
+"HelpChain est une plateforme de mise en relation, pas un service "
+"d’urgence. En cas de danger immédiat, contactez les services d’urgence "
+"locaux."
+
+#: templates/terms.html:29
+msgid ""
+"We may limit or suspend accounts to prevent abuse or protect the "
+"community."
+msgstr ""
+"Nous pouvons limiter ou suspendre des comptes pour prévenir les abus ou "
+"protéger la communauté."
+
+#: templates/terms.html:32
+msgid "Liability"
+msgstr "Responsabilité"
+
+#: templates/terms.html:34
+msgid ""
+"Volunteering involves human interactions. HelpChain cannot guarantee "
+"outcomes and is not responsible for actions taken by users. We encourage "
+"safe, transparent communication and caution when sharing personal "
+"details."
+msgstr ""
+"Le bénévolat implique des interactions humaines. HelpChain ne peut "
+"garantir les résultats et n’est pas responsable des actions des "
+"utilisateurs. Nous encourageons une communication sûre et transparente et"
+" la prudence lors du partage de données personnelles."
+
+#: templates/terms.html:39
+msgid "Questions about these terms? Contact us at"
+msgstr "Des questions sur ces conditions ? Contactez-nous à"
 
 # --- login.html additions ---
 #: templates/admin/login.html:31 templates/admin/login.html:40
@@ -871,12 +1252,10 @@ msgstr "Aucun résultat."
 #~ msgstr ""
 
 #~ msgid "You can opt out at any time. Your data is not public."
-#~ msgid_plural "{len_type} values are required, but {len_value} were given."
-#~ msgstr[0] ""
+#~ msgstr ""
 #~ "Vous pouvez vous retirer à tout "
 #~ "moment. Vos données ne sont pas "
 #~ "publiques."
-#~ msgstr[1] ""
 
 #~ msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
 #~ msgstr ""
@@ -1466,232 +1845,208 @@ msgstr "Aucun résultat."
 #~ msgid "Няма история"
 #~ msgstr ""
 
-# --- templates/home_new.html (EN msgids) ---
-#: templates/home_new.html
-msgid "Main content"
-msgstr "Contenu principal"
+#~ msgid "Категории помощ - HelpChain"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Active volunteers"
-msgstr "Bénévoles actifs"
+#~ msgid "Начало"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "People helped"
-msgstr "Personnes aidées"
+#~ msgid "Категории"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Open requests"
-msgstr "Demandes ouvertes"
+#~ msgid "Стани доброволец"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Why choose HelpChain?"
-msgstr "Pourquoi choisir HelpChain ?"
+#~ msgid "Админ вход"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "We connect people in need with volunteers for fast and effective help. Together we can make the world a better place."
-msgstr "Nous mettons en relation les personnes dans le besoin avec des bénévoles pour une aide rapide et efficace. Ensemble, nous pouvons rendre le monde meilleur."
+#~ msgid "Изберете категорията, в която се нуждаете от помощ"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "We offer a modern platform to connect people who need help with those who want to help."
-msgstr "Nous proposons une plateforme moderne pour connecter les personnes qui ont besoin d'aide avec celles qui veulent aider."
+#~ msgid "Виж доброволци"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Fast help"
-msgstr "Aide rapide"
+#~ msgid "Нуждаете се от помощ?"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Our platform connects people in need with volunteers in minutes, providing fast and effective help."
-msgstr "Notre plateforme met en relation les personnes dans le besoin avec des bénévoles en quelques minutes, offrant une aide rapide et efficace."
+#~ msgid "Подайте заявка и ние ще намерим доброволец за вас."
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Security"
-msgstr "Sécurité"
+#~ msgid "Подайте заявка"
+#~ msgstr "Soumettre une demande d'aide"
 
-#: templates/home_new.html
-msgid "All users go through verification, and communication is protected with state-of-the-art security technologies."
-msgstr "Tous les utilisateurs sont vérifiés, et la communication est protégée par des technologies de sécurité de pointe."
+#~ msgid "Искате да помогнете?"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Community"
-msgstr "Communauté"
+#~ msgid "Присъединете се към нашата общност от доброволци."
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Join a growing community of volunteers and people who believe that together we can make the world a better place."
-msgstr "Rejoignez une communauté grandissante de bénévoles et de personnes qui croient qu'ensemble nous pouvons rendre le monde meilleur."
+#~ msgid "Към началната страница"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Mobile accessibility"
-msgstr "Accessibilité mobile"
+#~ msgid "Свързваме нуждаещи се с доброволци за по-добро бъдеще."
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Our platform works perfectly on all devices - from smartphones to desktop computers."
-msgstr "Notre plateforme fonctionne parfaitement sur tous les appareils - des smartphones aux ordinateurs de bureau."
+#~ msgid "Връзки"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "24/7 support"
-msgstr "Support 24/7"
+#~ msgid "Политика за поверителност"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Our team is always available to help. No matter the time, you can rely on our support."
-msgstr "Notre équipe est toujours disponible pour aider. Quelle que soit l'heure, vous pouvez compter sur notre support."
+#~ msgid "Условия за ползване"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Free"
-msgstr "Gratuit"
+#~ msgid "ЧЗВ"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "HelpChain is a completely free platform. We believe that help should be accessible to everyone."
-msgstr "HelpChain est une plateforme entièrement gratuite. Nous pensons que l'aide doit être accessible à tous."
+#~ msgid "Контакти"
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Site information"
-msgstr "Informations du site"
+#~ msgid "Всички права запазени."
+#~ msgstr ""
 
-#: templates/home_new.html
-msgid "Connecting people in need with volunteers for a better world."
-msgstr "Mettre en relation les personnes dans le besoin avec des bénévoles pour un monde meilleur."
+#~ msgid "Search HelpChain..."
+#~ msgstr "Rechercher dans HelpChain..."
 
-#: templates/home_new.html
-msgid "Quick links"
-msgstr "Liens rapides"
+#~ msgid "Sign up"
+#~ msgstr "Inscription"
 
-#: templates/home_new.html
-msgid "Help categories"
-msgstr "Catégories d'aide"
+#~ msgid "Welcome to HelpChain!"
+#~ msgstr "Bienvenue sur HelpChain !"
 
-#: templates/home_new.html
-msgid "Privacy"
-msgstr "Confidentialité"
+#~ msgid ""
+#~ "Help without chaos or pressure. We "
+#~ "connect real needs with volunteers - "
+#~ "calmly, safely, humanely."
+#~ msgstr ""
+#~ "Aide sans chaos ni pression. Nous "
+#~ "mettons en lien des besoins réels "
+#~ "avec des bénévoles - avec calme, "
+#~ "sécurité et humanité."
 
-#: templates/home_new.html
-msgid "Terms of use"
-msgstr "Conditions d'utilisation"
+#~ msgid "Registration ~2 min | Data protected | No schedules or pressure"
+#~ msgstr "Inscription ~2 min | Données protégées | Pas d'horaires ni de pression"
 
-#: templates/home_new.html
-msgid "Contact"
-msgstr "Contact"
+#~ msgid "Trust signals"
+#~ msgstr "Signaux de confiance"
 
-#: templates/home_new.html
-msgid "Visit us on Facebook"
-msgstr "Nous rendre visite sur Facebook"
+#~ msgid "Data protected"
+#~ msgstr "Données protégées"
 
-#: templates/home_new.html
-msgid "Visit us on Twitter"
-msgstr "Nous rendre visite sur Twitter"
+#~ msgid "No pressure"
+#~ msgstr "Sans pression"
 
-#: templates/home_new.html
-msgid "Visit us on Instagram"
-msgstr "Nous rendre visite sur Instagram"
+#~ msgid "Registration ~2 min"
+#~ msgstr "Inscription ~2 min"
 
-#: templates/home_new.html
-msgid "Visit us on LinkedIn"
-msgstr "Nous rendre visite sur LinkedIn"
+#~ msgid "You can browse requests first - no registration."
+#~ msgstr "Vous pouvez consulter les demandes d'abord - sans inscription."
 
-#: templates/home_new.html
-msgid "HelpChain. All rights reserved."
-msgstr "HelpChain. Tous droits réservés."
+#~ msgid "Volunteer guarantees"
+#~ msgstr "Garanties pour les bénévoles"
 
-#: templates/home_new.html
-msgid "Back to top"
-msgstr "Retour en haut"
+#~ msgid "No schedules"
+#~ msgstr "Pas d'horaires"
 
-#: templates/home_new.html
-msgid "Loading..."
-msgstr "Chargement..."
+#~ msgid "Scroll for more"
+#~ msgstr "Faites défiler pour en voir plus"
 
-#: templates/home_new.html
-msgid "An error occurred while loading"
-msgstr "Une erreur est survenue lors du chargement"
+#~ msgid "Quick start for volunteers"
+#~ msgstr "Démarrage rapide pour bénévoles"
 
-#: templates/home_new.html
-msgid "Push notifications are enabled!"
-msgstr "Les notifications push sont activées !"
+#~ msgid "Start in 30 seconds"
+#~ msgstr "Commencez en 30 secondes"
 
-#: templates/home_new.html
-msgid "Push notifications are disabled."
-msgstr "Les notifications push sont désactivées."
+#~ msgid "No schedules. No pressure. Just clear steps."
+#~ msgstr "Pas d'horaires. Pas de pression. Des étapes claires."
 
-#: templates/home_new.html
-msgid "Error setting up push notifications"
-msgstr "Erreur lors de la configuration des notifications push"
+#~ msgid "Volunteer registration"
+#~ msgstr "Inscription bénévole"
 
-#: templates/home_new.html
-msgid "Welcome to HelpChain! 🚀"
-msgstr "Bienvenue sur HelpChain ! 🚀"
+#~ msgid "1) Sign up"
+#~ msgstr "1) Inscription"
 
-#: templates/home_new.html
-msgid "Theme switched to"
-msgstr "Le thème a été basculé vers"
+#~ msgid "Under 2 min. Only the essentials."
+#~ msgstr "Moins de 2 min. L'essentiel uniquement."
 
-#: templates/home_new.html
-msgid "Switch to"
-msgstr "Passer à"
+#~ msgid "2) Log in"
+#~ msgstr "2) Connexion"
 
-#: templates/home_new.html
-msgid "dark"
-msgstr "sombre"
+#~ msgid "See requests and choose when to help."
+#~ msgstr "Consultez les demandes et choisissez quand aider."
 
-#: templates/home_new.html
-msgid "light"
-msgstr "clair"
+#~ msgid "See a sample request"
+#~ msgstr "Voir un exemple de demande"
 
-#: templates/home_new.html
-msgid "theme"
-msgstr "thème"
+#~ msgid "3) See an example"
+#~ msgstr "3) Voir un exemple"
 
-# --- templates/all_categories.html (EN msgids) ---
-#: templates/all_categories.html
-msgid "Help categories - HelpChain"
-msgstr "Catégories d'aide - HelpChain"
+#~ msgid "See how a request looks before you join."
+#~ msgstr "Voir à quoi ressemble une demande avant de vous engager."
 
-#: templates/all_categories.html
-msgid "Toggle navigation"
-msgstr "Basculer la navigation"
+#~ msgid "Saved filter"
+#~ msgstr "Filtre enregistré"
 
-#: templates/all_categories.html
-msgid "Choose the category where you need help"
-msgstr "Choisissez la catégorie dans laquelle vous avez besoin d'aide"
+#~ msgid "Coming back? Save a preference — we will apply it automatically."
+#~ msgstr ""
+#~ "De retour ? Enregistrez une préférence"
+#~ " - nous l'appliquerons automatiquement."
 
-#: templates/all_categories.html
-msgid "See volunteers"
-msgstr "Voir des bénévoles"
+#~ msgid "Remote"
+#~ msgstr "À distance"
 
-#: templates/all_categories.html
-msgid "Need help?"
-msgstr "Besoin d'aide ?"
+#~ msgid "On site"
+#~ msgstr "Sur place"
 
-#: templates/all_categories.html
-msgid "Submit a request and we will find a volunteer for you."
-msgstr "Déposez une demande et nous trouverons un bénévole pour vous."
+#~ msgid "All"
+#~ msgstr "Tous"
 
-#: templates/all_categories.html
-msgid "Want to help?"
-msgstr "Vous voulez aider ?"
+#~ msgid "Clear"
+#~ msgstr "Effacer"
 
-#: templates/all_categories.html
-msgid "Join our community of volunteers."
-msgstr "Rejoignez notre communauté de bénévoles."
+#~ msgid ""
+#~ "We connect people in need with "
+#~ "volunteers for fast and effective help."
+#~ " Together we can make the world "
+#~ "a better place."
+#~ msgstr ""
+#~ "Nous mettons en relation les personnes"
+#~ " dans le besoin avec des bénévoles"
+#~ " pour une aide rapide et efficace."
+#~ " Ensemble, nous pouvons rendre le "
+#~ "monde meilleur."
 
-#: templates/all_categories.html
-msgid "Back to home page"
-msgstr "Retour à la page d'accueil"
+#~ msgid ""
+#~ "The solidarity platform that connects "
+#~ "people who need help with those "
+#~ "who want to help."
+#~ msgstr ""
+#~ "La plateforme solidaire qui relie les"
+#~ " personnes en difficulté à celles qui"
+#~ " veulent aider."
 
-#: templates/all_categories.html
-msgid "Connecting people in need with volunteers for a better future."
-msgstr "Mettre en relation les personnes dans le besoin avec des bénévoles pour un avenir meilleur."
+#~ msgid "Privacy"
+#~ msgstr "Confidentialité"
 
-#: templates/all_categories.html
-msgid "Links"
-msgstr "Liens"
+#~ msgid ""
+#~ "Account and contact details you provide"
+#~ " (name, email, phone - if you "
+#~ "choose)."
+#~ msgstr ""
+#~ "Les informations de compte et de "
+#~ "contact que vous fournissez (nom, "
+#~ "e-mail, téléphone — si vous le "
+#~ "souhaitez)."
 
-#: templates/all_categories.html
-msgid "Privacy policy"
-msgstr "Politique de confidentialité"
+#~ msgid ""
+#~ "Request information you submit (category, "
+#~ "description, location - if needed for"
+#~ " the service)."
+#~ msgstr ""
+#~ "Les informations relatives à la demande"
+#~ " que vous soumettez (catégorie, "
+#~ "description, localisation — si nécessaire "
+#~ "au service)."
 
-#: templates/all_categories.html
-msgid "Contacts"
-msgstr "Contacts"
-
-#: templates/all_categories.html
-msgid "All rights reserved."
-msgstr "Tous droits réservés."
+#~ msgid "Impact counters"
+#~ msgstr "Indicateurs d’impact"

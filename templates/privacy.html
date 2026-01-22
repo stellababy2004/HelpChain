@@ -1,14 +1,56 @@
 {% extends "base.html" %}
+{% block title %}{{ _("Privacy policy") }} | HelpChain{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <h1 class="mb-3">Политика за поверителност</h1>
-  <p class="text-muted">
-    Това е временен текст, докато подготвим пълната политика за защита на личните данни.
-  </p>
-  <p>
-    Използваме личните данни единствено за нуждите на платформата. Подробности за съхранение,
-    споделяне и изтриване ще бъдат публикувани тук и в условията за ползване.
-  </p>
-</div>
+<main class="container py-5" role="main">
+  <div class="mx-auto" style="max-width: 860px;">
+    <h1 class="mb-3">{{ _("Privacy policy") }}</h1>
+
+    <p class="text-muted mb-4">
+      {{ _("Last updated:") }} 2026-01-21
+    </p>
+
+    <p class="lead">
+      {{ _("HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with volunteers. We do not sell your data.") }}
+    </p>
+
+    <hr class="my-4" />
+
+    <h2 class="h5 mt-4">{{ _("What data we collect") }}</h2>
+    <ul>
+      <li>{{ _("Account and contact details you provide (name, email, phone — if you choose).") }}</li>
+      <li>{{ _("Request information you submit (category, description, location — if needed for the service).") }}</li>
+      <li>{{ _("Basic technical data for security (e.g., IP address, logs) to prevent abuse.") }}</li>
+    </ul>
+
+    <h2 class="h5 mt-4">{{ _("How we use it") }}</h2>
+    <ul>
+      <li>{{ _("To operate the service and match requests with volunteers.") }}</li>
+      <li>{{ _("To communicate about your request (updates, messages, notifications).") }}</li>
+      <li>{{ _("To keep the platform safe (fraud prevention, security monitoring).") }}</li>
+    </ul>
+
+    <h2 class="h5 mt-4">{{ _("What we do not do") }}</h2>
+    <ul>
+      <li>{{ _("We do not sell personal data.") }}</li>
+      <li>{{ _("We do not run advertising profiling.") }}</li>
+    </ul>
+
+    <h2 class="h5 mt-4">{{ _("Data retention") }}</h2>
+    <p>
+      {{ _("We keep data only as long as needed for the service and legal obligations. You can request deletion of your account data.") }}
+    </p>
+
+    <h2 class="h5 mt-4">{{ _("Your rights") }}</h2>
+    <p>
+      {{ _("You can request access, correction, or deletion of your personal data. You can also object to certain processing where applicable.") }}
+    </p>
+
+    <h2 class="h5 mt-4">{{ _("Contact") }}</h2>
+    <p>
+      {{ _("Questions about privacy? Contact us at") }}
+      <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>.
+    </p>
+  </div>
+</main>
 {% endblock %}

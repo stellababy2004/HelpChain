@@ -891,6 +891,7 @@ def admin_dashboard():
         volunteers_json=volunteers_dict,
         stats=stats,
         impact=impact,
+        STATUS_LABELS=STATUS_LABELS,
     )
 
 
