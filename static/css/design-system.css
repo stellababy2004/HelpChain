@@ -4792,6 +4792,70 @@ pre, code { max-width: 100%; overflow-x: auto; }
   opacity: 0.95;
 }
 
+/* Step 10 — Trust line (premium, minimal) */
+.hc-trustline{
+  margin-top: .9rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+  font-size: .95rem;
+  opacity: .88;
+}
+
+.hc-trustline__item{
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.hc-trustline__dot{
+  opacity: .5;
+}
+
+.hc-trustline__link{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: .95;
+}
+
+.hc-trustline__link:hover{
+  opacity: 1;
+}
+
+/* Step 10 — Trust line (premium, minimal) */
+.hc-trustline{
+  margin-top: .9rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+  font-size: .95rem;
+  opacity: .88;
+}
+
+.hc-trustline__item{
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.hc-trustline__dot{
+  opacity: .5;
+}
+
+.hc-trustline__link{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: .95;
+}
+
+.hc-trustline__link:hover{
+  opacity: 1;
+}
+
 /* Step 9 — Why HelpChain section polish */
 .hc-why-section,
 .features-section {

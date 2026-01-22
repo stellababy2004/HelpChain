@@ -626,6 +626,15 @@
               <span class="hc-stat__label">{{ _('countries') }}</span>
             </span>
           </div>
+          <div class="hc-trustline" role="note" aria-label="{{ _('Trust information') }}">
+            <span class="hc-trustline__item">{{ _('Pilot: France') }}</span>
+            <span class="hc-trustline__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-trustline__item">{{ _('GDPR-friendly exports') }}</span>
+            <span class="hc-trustline__dot" aria-hidden="true">&bull;</span>
+            <a class="hc-trustline__link" href="{{ safe_url_for('main.pilot') }}">
+              {{ _('Impact dashboard (read-only)') }}
+            </a>
+          </div>
           <p class="hc-hero__microcopy">
             <i class="fas fa-lock" aria-hidden="true"></i> {{ _('We never sell your data.') }}
             <span class="hc-dot" aria-hidden="true">&bull;</span>

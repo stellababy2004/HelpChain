@@ -556,6 +556,22 @@ msgstr "обработени заявки"
 msgid "countries"
 msgstr "държави"
 
+#: templates/home_new.html:631
+msgid "Trust information"
+msgstr "Информация за доверие"
+
+#: templates/home_new.html:632
+msgid "Pilot: France"
+msgstr "Пилот: Франция"
+
+#: templates/home_new.html:634
+msgid "GDPR-friendly exports"
+msgstr "Експорт съвместим с GDPR"
+
+#: templates/home_new.html:636
+msgid "Impact dashboard (read-only)"
+msgstr "Impact табло (само за преглед)"
+
 #: templates/home_new.html:632
 msgid "We never sell your data."
 msgstr "Никога не продаваме вашите данни."

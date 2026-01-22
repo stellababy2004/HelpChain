@@ -551,6 +551,22 @@ msgstr "demandes aidées"
 msgid "countries"
 msgstr "pays"
 
+#: templates/home_new.html:631
+msgid "Trust information"
+msgstr "Informations de confiance"
+
+#: templates/home_new.html:632
+msgid "Pilot: France"
+msgstr "Pilote : France"
+
+#: templates/home_new.html:634
+msgid "GDPR-friendly exports"
+msgstr "Exports compatibles RGPD"
+
+#: templates/home_new.html:636
+msgid "Impact dashboard (read-only)"
+msgstr "Tableau d'impact (lecture seule)"
+
 #: templates/home_new.html:632
 msgid "We never sell your data."
 msgstr "Nous ne vendons jamais vos données."
