@@ -619,10 +619,9 @@ msgstr "Sécurité avant tout"
 msgid ""
 "Your requests and messages are protected. We design HelpChain with "
 "security in mind."
-msgstr ""
+msgstr "Vos demandes et vos messages sont protégés. Nous concevons HelpChain avec la sécurité à l’esprit."
 
 #: templates/home_new.html:706
-#, fuzzy
 msgid "Verified volunteers"
 msgstr "Bénévoles vérifiés"
 
@@ -637,8 +636,8 @@ msgid "Human, fast, local"
 msgstr "Humaine, rapide, locale"
 
 #: templates/home_new.html:716
-msgid "We connect people nearby for quick, compassionate help — not bureaucracy."
-msgstr ""
+msgid "We connect people nearby for quick, compassionate help - not bureaucracy."
+msgstr "Nous mettons en relation des personnes proches pour une aide rapide et bienveillante — sans bureaucratie."
 
 # --- templates/home_new.html (EN msgids) ---
 #: templates/home_new.html:728

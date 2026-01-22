@@ -606,44 +606,43 @@ msgid "Minimal data. No ads. No resale. GDPR-friendly architecture."
 msgstr "Минимални данни. Без реклами. Без препродажба. Съвместима с GDPR архитектура."
 
 #: templates/home_new.html:688
-#, fuzzy
 msgid "Help you can trust"
-msgstr "Pomosh, na koyato mozhesh da razchitash"
+msgstr "Помощ, на която можеш да разчиташ"
 
 #: templates/home_new.html:691
 msgid "A safe, human and reliable way to connect with verified volunteers."
 msgstr ""
-"Siguren, choveshki i nadezhden nachin da se svurzesh s provereni "
-"dobrovoltsi."
+"Сигурен, човешки и надежден начин да се свържеш с проверени доброволци."
 
 #: templates/home_new.html:698
 msgid "Safety first"
-msgstr "Sigurnostta e na purvo myasto"
+msgstr "Сигурността е на първо място"
 
 #: templates/home_new.html:700
 msgid ""
 "Your requests and messages are protected. We design HelpChain with "
 "security in mind."
 msgstr ""
+"Вашите заявки и съобщения са защитени. Проектираме HelpChain със "
+"сигурността на първо място."
 
 #: templates/home_new.html:706
-#, fuzzy
 msgid "Verified volunteers"
-msgstr "Provereni dobrovoltsi"
+msgstr "Проверени доброволци"
 
 #: templates/home_new.html:708
 msgid "Volunteers can be verified to create trust and reduce abuse."
 msgstr ""
-"Dobrovoltsite mogat da budat provereni, za da suzdadem doverie i da "
-"namalim zloupotrebite."
+"Доброволците могат да бъдат верифицирани, за да изградим доверие и да "
+"намалим злоупотребите."
 
 #: templates/home_new.html:714
 msgid "Human, fast, local"
-msgstr "Choveshko, burzo, lokalno"
+msgstr "Човешко, бързо, местно"
 
 #: templates/home_new.html:716
-msgid "We connect people nearby for quick, compassionate help — not bureaucracy."
-msgstr ""
+msgid "We connect people nearby for quick, compassionate help - not bureaucracy."
+msgstr "Свързваме хора наблизо за бърза и съпричастна помощ — без бюрокрация."
 
 # --- templates/home_new.html (EN msgids) ---
 #: templates/home_new.html:728
