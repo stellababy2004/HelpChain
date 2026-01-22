@@ -4586,32 +4586,6 @@ pre, code { max-width: 100%; overflow-x: auto; }
   line-height: 1.5;
 }
 
-/* --- Soft fade-in (v1) --- */
-.hc-fade{
-  opacity: 0;
-  transform: translateY(12px);
-  animation: hcFadeIn 1s cubic-bezier(.22,.61,.36,1) forwards;
-}
-
-.hc-delay-1{ animation-delay: .15s; }
-.hc-delay-2{ animation-delay: .3s; }
-.hc-delay-3{ animation-delay: .45s; }
-
-@keyframes hcFadeIn{
-  to{
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce){
-  .hc-fade{
-    opacity: 1;
-    transform: none;
-    animation: none;
-  }
-}
-
 /* =========================
    HERO: KPI COUNTERS (v1)
    ========================= */
@@ -4711,7 +4685,7 @@ pre, code { max-width: 100%; overflow-x: auto; }
   border-radius: 16px;
   padding: 14px 16px;
   max-width: 720px;
-  margin: 14px auto 0;
+  margin: 4px auto 12px;
 }
 
 /* Tighten spacing below CTA */
@@ -4738,4 +4712,45 @@ pre, code { max-width: 100%; overflow-x: auto; }
 .hc-hero .hc-how {
   margin-top: 0.55rem;
   gap: 10px;
+}
+
+
+/* === Step 5: Soft hero fade-in (CSS-only, no libs) === */
+@media (prefers-reduced-motion: no-preference) {
+  .hc-hero .hero-content > * {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: hcFadeUp 520ms ease-out forwards;
+  }
+
+  /* Stagger: title -> subtitle -> badges -> CTAs -> counters -> micro-steps */
+  .hc-hero .hero-content > *:nth-child(1) { animation-delay: 40ms; }
+  .hc-hero .hero-content > *:nth-child(2) { animation-delay: 90ms; }
+  .hc-hero .hero-content > *:nth-child(3) { animation-delay: 140ms; }
+  .hc-hero .hero-content > *:nth-child(4) { animation-delay: 190ms; }
+  .hc-hero .hero-content > *:nth-child(5) { animation-delay: 240ms; }
+  .hc-hero .hero-content > *:nth-child(6) { animation-delay: 290ms; }
+
+  /* Optional: subtle entrance for first section cards right after hero */
+  #features .card,
+  .features-section .card {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: hcFadeUp 520ms ease-out forwards;
+    animation-delay: 260ms;
+  }
+
+  @keyframes hcFadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc-hero .hero-content > *,
+  #features .card,
+  .features-section .card {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
 }

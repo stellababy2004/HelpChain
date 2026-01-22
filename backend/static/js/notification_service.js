@@ -748,6 +748,22 @@ class HelpChainNotificationService {
   }
 }
 
+// Dev safety: if a Service Worker was registered previously, unregister it on localhost
+(function () {
+  try {
+    if (!("serviceWorker" in navigator)) return;
+    const host = window.location.hostname;
+    if (host !== "127.0.0.1" && host !== "localhost") return;
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((regs) => Promise.all(regs.map((r) => r.unregister())))
+      .then(() => console.info("Service Workers unregistered on localhost (dev)"))
+      .catch(() => {});
+  } catch (e) {
+    // ignore
+  }
+})();
+
 // Global notification service instance (guard against double-declare)
 if (!window.notificationService) {
   const notificationService = new HelpChainNotificationService();

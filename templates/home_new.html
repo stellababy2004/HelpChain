@@ -583,10 +583,10 @@
       </div>
 
       <div class="container">
-        <div class="hero-content text-center hc-fade">
+        <div class="hero-content text-center">
           <h1 id="hero-title" class="hc-hero__title">{{ _('Welcome to HelpChain') }}</h1>
           <p class="hc-hero__subtitle">{{ _('Together, we make helping others simple, fast and human.') }}</p>
-          <div class="hc-trust hc-fade hc-delay-1" aria-label="{{ _('Trust and compliance') }}">
+          <div class="hc-trust" aria-label="{{ _('Trust and compliance') }}">
             <span class="hc-trust__item">{{ _('France') }}</span>
             <span class="hc-trust__dot" aria-hidden="true">&bull;</span>
             <span class="hc-trust__item">{{ _('Switzerland') }}</span>
@@ -596,9 +596,7 @@
             <span class="hc-trust__item hc-trust__item--strong">{{ _('GDPR-friendly') }}</span>
           </div>
 
-          <div
-            class="hero-buttons d-flex justify-content-center gap-3 flex-wrap hc-fade hc-delay-2"
-          >
+          <div class="hero-buttons d-flex justify-content-center gap-3 flex-wrap">
               <a
                 class="hc-btn hc-btn-primary focus-visible"
                 href="{{ safe_url_for('main.submit_request') }}"
@@ -612,7 +610,7 @@
                 <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i>{{ _('Become a volunteer') }}
               </a>
           </div>
-          <div class="hc-hero__counters hc-hero__stats hc-fade hc-delay-3" aria-label="{{ _('Key numbers') }}">
+          <div class="hc-hero__counters hc-hero__stats" aria-label="{{ _('Key numbers') }}">
             <span class="hc-counter hc-stat">
               <strong class="hc-stat__value" id="kpiVolunteers">&mdash;</strong>
               <span class="hc-stat__label">{{ _('volunteers') }}</span>
@@ -629,26 +627,26 @@
             </span>
           </div>
           <p class="hc-hero__microcopy">
-            🔒 {{ _('We never sell your data.') }}
-            <span class="hc-dot">•</span>
-            🤝 {{ _('Verified community.') }}
-            <span class="hc-dot">•</span>
-            ⚡ {{ _('Fast matching.') }}
+            <i class="fas fa-lock" aria-hidden="true"></i> {{ _('We never sell your data.') }}
+            <span class="hc-dot" aria-hidden="true">&bull;</span>
+            <i class="fas fa-user-check" aria-hidden="true"></i> {{ _('Verified community.') }}
+            <span class="hc-dot" aria-hidden="true">&bull;</span>
+            <i class="fas fa-bolt" aria-hidden="true"></i> {{ _('Fast matching.') }}
           </p>
 
           <div class="hc-how" aria-label="{{ _('How it works') }}">
             <div class="hc-how__item">
-              <span class="hc-how__icon" aria-hidden="true">📝</span>
+              <span class="hc-how__icon" aria-hidden="true"><i class="fas fa-pen" aria-hidden="true"></i></span>
               <span class="hc-how__text">{{ _('Post a request') }}</span>
             </div>
             <div class="hc-how__sep" aria-hidden="true">&bull;</div>
             <div class="hc-how__item">
-              <span class="hc-how__icon" aria-hidden="true">🤝</span>
+              <span class="hc-how__icon" aria-hidden="true"><i class="fas fa-handshake" aria-hidden="true"></i></span>
               <span class="hc-how__text">{{ _('Get matched') }}</span>
             </div>
             <div class="hc-how__sep" aria-hidden="true">&bull;</div>
             <div class="hc-how__item">
-              <span class="hc-how__icon" aria-hidden="true">❤️</span>
+              <span class="hc-how__icon" aria-hidden="true"><i class="fas fa-heart" aria-hidden="true"></i></span>
               <span class="hc-how__text">{{ _('Receive help') }}</span>
             </div>
           </div>
@@ -656,23 +654,23 @@
       </div>
     </section>
 
-    <section class="hc-why hc-fade hc-delay-2">
+    <section class="hc-why">
       <div class="hc-why__container">
 
         <div class="hc-why__card">
-          <div class="hc-why__icon">🤝</div>
+          <div class="hc-why__icon"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i></div>
           <h3>{{ _('Human-first help') }}</h3>
-          <p>{{ _('Real people helping real people — not bots, not call centers.') }}</p>
+          <p>{{ _('Real people helping real people - not bots, not call centers.') }}</p>
         </div>
 
         <div class="hc-why__card">
-          <div class="hc-why__icon">⚡</div>
+          <div class="hc-why__icon"><i class="fas fa-bolt" aria-hidden="true"></i></div>
           <h3>{{ _('Fast & simple') }}</h3>
           <p>{{ _('Post a request in minutes. Get matched without bureaucracy.') }}</p>
         </div>
 
         <div class="hc-why__card">
-          <div class="hc-why__icon">🔒</div>
+          <div class="hc-why__icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></div>
           <h3>{{ _('Privacy by design') }}</h3>
           <p>{{ _('Minimal data. No ads. No resale. GDPR-friendly architecture.') }}</p>
         </div>
@@ -937,17 +935,32 @@
       };
     </script>
     <script>
-      // Initialize feedback system (guard if script failed to load)
-      const feedback =
-        typeof HelpChainFeedback === "function"
-          ? new HelpChainFeedback()
-          : { showToast: () => {}, showLoading: () => {}, hideLoading: () => {} };
+      // Initialize feedback system (guard if script failed to load OR constructor throws)
+      const feedbackFallback = {
+        showToast: () => {},
+        showLoading: () => {},
+        hideLoading: () => {},
+      };
+      let feedback = feedbackFallback;
+      try {
+        if (typeof window.HelpChainFeedback === "function") {
+          feedback = new window.HelpChainFeedback();
+        }
+      } catch (e) {
+        feedback = feedbackFallback;
+      }
 
-      // Initialize push notifications (use global singleton)
-      window.notificationService = window.notificationService
-        || (typeof HelpChainNotificationService === "function"
-          ? new HelpChainNotificationService()
-          : null);
+      // Initialize push notifications (use global singleton; guard constructor)
+      if (!window.notificationService) {
+        try {
+          window.notificationService =
+            typeof window.HelpChainNotificationService === "function"
+              ? new window.HelpChainNotificationService()
+              : null;
+        } catch (e) {
+          window.notificationService = null;
+        }
+      }
 
       // Theme Toggle Functionality
       const themeToggle = document.getElementById("themeToggle");
@@ -1056,12 +1069,9 @@
         if (pushNotificationsBtn) {
           pushNotificationsBtn.addEventListener("click", async () => {
             try {
-              const result = await notificationService.init();
-              if (result) {
-                feedback.showToast(window.i18n.home.push_enabled, "success", 3000);
-              } else {
-                feedback.showToast(window.i18n.home.push_disabled, "info", 3000);
-              }
+              if (!window.notificationService) return;
+              await window.notificationService.initialize();
+              feedback.showToast(window.i18n.home.push_enabled, "success", 3000);
             } catch (error) {
               feedback.showToast(window.i18n.home.push_error, "error", 5000);
             }

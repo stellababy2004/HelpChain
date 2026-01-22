@@ -447,6 +447,9 @@ def pilot_metrics():
     open_requests = db.session.query(func.count(Request.id)).filter(
         Request.status.notin_(["done", "rejected"])
     ).scalar() or 0
+    helped_requests = db.session.query(func.count(Request.id)).filter(
+        Request.status == "done"
+    ).scalar() or 0
     closed_requests = db.session.query(func.count(Request.id)).filter(
         Request.status.in_(["done", "rejected"])
     ).scalar() or 0
@@ -458,6 +461,7 @@ def pilot_metrics():
     impact = {
         "total": int(total_requests),
         "open": int(open_requests),
+        "helped": int(helped_requests),
         "closed": int(closed_requests),
         "volunteers": int(total_volunteers),
         "active_volunteers": int(total_volunteers),
