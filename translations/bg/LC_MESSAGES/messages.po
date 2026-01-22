@@ -664,87 +664,80 @@ msgstr "Отворени заявки"
 
 #: templates/home_new.html:760
 msgid "Why choose HelpChain?"
-msgstr "Защо да изберете HelpChain?"
+msgstr "Защо хората избират HelpChain?"
 
 #: templates/home_new.html:761
 msgid ""
 "We offer a modern platform to connect people who need help with those who"
 " want to help."
 msgstr ""
-"Ние предлагаме модерна платформа за свързване на хората, които се нуждаят"
-" от помощ, с тези, които искат да помогнат."
+"Свързваме хора в нужда с реални доброволци — бързо, сигурно и без бюрокрация."
 
 #: templates/home_new.html:769
 msgid "Fast help"
-msgstr "Бърза помощ"
+msgstr "Бързо свързване"
 
 #: templates/home_new.html:770
 msgid ""
 "Our platform connects people in need with volunteers in minutes, "
 "providing fast and effective help."
 msgstr ""
-"Нашата платформа свързва нуждаещите се с доброволци в рамките на минути, "
-"осигурявайки бърза и ефективна помощ."
+"Публикувате заявка за минути. Подбираме подходящ доброволец и ви свързваме възможно най-бързо."
 
 #: templates/home_new.html:777
 msgid "Security"
-msgstr "Сигурност"
+msgstr "Сигурност и поверителност"
 
 #: templates/home_new.html:778
 msgid ""
 "All users go through verification, and communication is protected with "
 "state-of-the-art security technologies."
 msgstr ""
-"Всички потребители преминават през верификация, а комуникацията е "
-"защитена с най-съвременни технологии за сигурност."
+"Минимални данни. Никаква реклама. Никаква препродажба на информация. Архитектура, съвместима с GDPR."
 
 #: templates/home_new.html:785
 msgid "Community"
-msgstr "Общност"
+msgstr "Проверена общност"
 
 #: templates/home_new.html:786
 msgid ""
 "Join a growing community of volunteers and people who believe that "
 "together we can make the world a better place."
 msgstr ""
-"Присъединете се към растящата общност от доброволци и хора, които вярват,"
-" че заедно можем да направим света по-добро място."
+"Доброволците могат да бъдат верифицирани. Това намалява злоупотребите и изгражда доверие."
 
 #: templates/home_new.html:793
 msgid "Mobile accessibility"
-msgstr "Мобилна достъпност"
+msgstr "Локална помощ"
 
 #: templates/home_new.html:794
 msgid ""
 "Our platform works perfectly on all devices - from smartphones to desktop"
 " computers."
 msgstr ""
-"Нашата платформа работи перфектно на всички устройства - от смартфони до "
-"десктоп компютри."
+"Свързваме ви с хора близо до вас — по-бързо, по-човешко, по-ефективно."
 
 #: templates/home_new.html:801
 msgid "24/7 support"
-msgstr "24/7 поддръжка"
+msgstr "Човешка помощ, не ботове"
 
 #: templates/home_new.html:802
 msgid ""
 "Our team is always available to help. No matter the time, you can rely on"
 " our support."
 msgstr ""
-"Нашият екип е винаги на разположение да помогне. Независимо от часа, "
-"можете да разчитате на нашата поддръжка."
+"Истински хора помагат на истински хора. Без кол центрове. Без автоматични отговори. Без безлични платформи."
 
 #: templates/home_new.html:809
 msgid "Free"
-msgstr "Безплатно"
+msgstr "Безплатно и с кауза"
 
 #: templates/home_new.html:810
 msgid ""
 "HelpChain is a completely free platform. We believe that help should be "
 "accessible to everyone."
 msgstr ""
-"HelpChain е напълно безплатна платформа. Ние вярваме, че помощта трябва "
-"да бъде достъпна за всички."
+"HelpChain е безплатна платформа. Вярваме, че помощта трябва да е достъпна за всеки."
 
 #: templates/home_new.html:820
 msgid "Site information"
