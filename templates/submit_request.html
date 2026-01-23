@@ -38,6 +38,20 @@
       </div>
 
       <form method="post" action="{{ url_for('main.submit_request') }}" novalidate>
+        <div class="hc-form-intro">
+          <div class="hc-form-steps">
+            <span class="hc-step is-active">1</span>
+            <span class="hc-step">2</span>
+            <span class="hc-step">3</span>
+            <span class="hc-step-label">{{ _('Takes ~1 minute') }}</span>
+          </div>
+
+          <ul class="hc-form-trust" aria-label="{{ _('What happens next') }}">
+            <li>✅ {{ _('A verified volunteer will contact you') }}</li>
+            <li>🔒 {{ _('We never sell your data') }}</li>
+            <li>⚡ {{ _('Fast matching — no bureaucracy') }}</li>
+          </ul>
+        </div>
         {# Honeypot (backend очаква "website") #}
         <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
           <label>Website</label>
@@ -156,6 +170,19 @@
             <button type="submit" class="btn btn-primary">Изпрати заявка</button>
           </div>
 
+        </div>
+
+        <!-- Sticky CTA (mobile + long form) -->
+        <div class="hc-sticky-cta is-visible" role="region" aria-label="{{ _('Quick actions') }}">
+          <div class="hc-sticky-cta__inner">
+            <a class="btn btn-outline-secondary hc-sticky-cta__back" href="{{ url_for('main.index') }}">
+              {{ _('Home') }}
+            </a>
+
+            <button type="submit" class="btn btn-primary hc-sticky-cta__submit">
+              {{ _('Submit a request') }}
+            </button>
+          </div>
         </div>
       </form>
     </div>

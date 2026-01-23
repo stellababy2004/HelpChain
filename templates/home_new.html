@@ -25,7 +25,10 @@
     <meta name="twitter:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
     <meta name="twitter:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
 
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='hands-heart.png') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/icon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <title>{{ _('HelpChain - Connecting people in need with volunteers') }}</title>
 
@@ -525,7 +528,10 @@
       aria-label="{{ _('Main navigation') }}"
     >
       <div class="container">
-        <a class="hc-brand" href="/">{{ _('HelpChain') }}</a>
+        <a class="hc-brand" href="/">
+          <img class="hc-brand__icon" src="{{ url_for('static', filename='icons/icon-32x32.png') }}" width="24" height="24" alt="" aria-hidden="true" />
+          <span class="hc-brand__text">{{ _('HelpChain') }}.live</span>
+        </a>
 
         <button
           class="navbar-toggler d-md-none"
@@ -650,6 +656,11 @@
               <span class="hc-stat__label">{{ _('countries') }}</span>
             </span>
           </div>
+          <p class="hc-micro-cta">
+            {{ _('Need help now?') }}
+            <a href="{{ safe_url_for('main.submit_request') }}">{{ _('Request help') }}</a>
+            {{ _('— it takes less than a minute.') }}
+          </p>
           <div class="hc-trustline" role="note" aria-label="{{ _('Trust information') }}">
             <span class="hc-trustline__item">{{ _('Pilot: France') }}</span>
             <span class="hc-trustline__dot" aria-hidden="true">&bull;</span>

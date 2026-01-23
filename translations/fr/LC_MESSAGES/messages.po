@@ -217,6 +217,10 @@ msgstr "Basculer la navigation"
 msgid "Home"
 msgstr "Accueil"
 
+#: templates/submit_request.html:176
+msgid "Quick actions"
+msgstr "Actions rapides"
+
 #: templates/all_categories.html:66 templates/base.html:49
 #: templates/home_new.html:523 templates/home_new.html:833
 msgid "Categories"
@@ -2095,3 +2099,24 @@ msgstr "Suivez l'avancement en toute transparence."
 
 msgid "Trust badges"
 msgstr "Badges de confiance"
+
+msgid "Need help now?"
+msgstr "Besoin d'aide maintenant ?"
+
+msgid "— it takes less than a minute."
+msgstr "— cela prend moins d’une minute."
+
+msgid "Takes ~1 minute"
+msgstr "Prend ~1 minute"
+
+msgid "What happens next"
+msgstr "Ce qui se passe ensuite"
+
+msgid "A verified volunteer will contact you"
+msgstr "Un bénévole vérifié vous contactera"
+
+msgid "We never sell your data"
+msgstr "Nous ne vendons jamais vos données"
+
+msgid "Fast matching — no bureaucracy"
+msgstr "Mise en relation rapide — sans bureaucratie"

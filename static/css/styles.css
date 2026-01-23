@@ -200,6 +200,128 @@ form select.form-select {
   color: rgba(255, 255, 255, 0.75);
 }
 
+/* --- Submit request: sticky CTA --- */
+.hc-sticky-cta{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+}
+
+.hc-sticky-cta__inner{
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 16px;
+  box-shadow: 0 16px 44px rgba(2, 6, 23, 0.12);
+  padding: 10px;
+}
+
+.hc-sticky-cta__back{
+  flex: 1 1 auto;
+}
+
+.hc-sticky-cta__submit{
+  flex: 2 1 auto;
+}
+
+@media (max-width: 520px){
+  .hc-sticky-cta__inner{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hc-sticky-cta__back,
+  .hc-sticky-cta__submit{
+    width: 100%;
+  }
+}
+
+/* --- Submit request: sticky CTA --- */
+.hc-sticky-cta{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+}
+
+.hc-sticky-cta__inner{
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 16px;
+  box-shadow: 0 16px 44px rgba(2, 6, 23, 0.12);
+  padding: 10px;
+}
+
+.hc-sticky-cta__back{
+  flex: 1 1 auto;
+}
+
+.hc-sticky-cta__submit{
+  flex: 2 1 auto;
+}
+
+@media (max-width: 520px){
+  .hc-sticky-cta__inner{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hc-sticky-cta__back,
+  .hc-sticky-cta__submit{
+    width: 100%;
+  }
+}
+
+/* --- Submit request: intro + steps --- */
+.hc-form-intro{ margin: .25rem 0 1rem; }
+
+.hc-form-steps{
+  display:flex; align-items:center; gap:.4rem;
+  margin: 0 0 .65rem;
+  color: rgba(15,23,42,.72);
+  font-size: .92rem;
+}
+
+.hc-step{
+  width: 28px; height: 28px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(255,255,255,.75);
+}
+
+.hc-step.is-active{
+  border-color: rgba(37,99,235,.35);
+  box-shadow: 0 10px 24px rgba(37,99,235,.12);
+  font-weight: 700;
+}
+
+.hc-step-label{ margin-left:.25rem; }
+
+.hc-form-trust{
+  margin: 0;
+  padding-left: 1.1rem;
+  color: rgba(15,23,42,.78);
+}
+
+.hc-form-trust li{ margin: .22rem 0; }
+
 /* Footer legal strip */
 .hc-footer-legal {
   margin-top: 1.2rem;

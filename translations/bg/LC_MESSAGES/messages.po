@@ -216,6 +216,10 @@ msgstr "Превключи навигацията"
 msgid "Home"
 msgstr "Начало"
 
+#: templates/submit_request.html:176
+msgid "Quick actions"
+msgstr "Бързи действия"
+
 #: templates/all_categories.html:66 templates/base.html:49
 #: templates/home_new.html:523 templates/home_new.html:833
 msgid "Categories"
@@ -3402,6 +3406,27 @@ msgstr "Следи напредъка с пълна прозрачност."
 
 msgid "Trust badges"
 msgstr "Значки за доверие"
+
+msgid "Need help now?"
+msgstr "Имаш нужда от помощ сега?"
+
+msgid "— it takes less than a minute."
+msgstr "— отнема по-малко от минута."
+
+msgid "Takes ~1 minute"
+msgstr "Отнема ~1 минута"
+
+msgid "What happens next"
+msgstr "Какво следва"
+
+msgid "A verified volunteer will contact you"
+msgstr "Проверен доброволец ще се свърже с вас"
+
+msgid "We never sell your data"
+msgstr "Никога не продаваме вашите данни"
+
+msgid "Fast matching — no bureaucracy"
+msgstr "Бързо свързване — без бюрокрация"
 
 #~ msgid "Impact counters"
 #~ msgstr "Показатели за въздействие"
