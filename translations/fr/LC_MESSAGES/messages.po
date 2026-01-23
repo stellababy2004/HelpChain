@@ -826,11 +826,19 @@ msgstr "Données hébergées en Europe"
 
 #: templates/home_new.html:899
 msgid "GDPR compliant"
-msgstr "Compatible RGPD"
+msgstr "Conforme RGPD"
 
 #: templates/home_new.html:899
 msgid "Security-first"
 msgstr "Sécurité avant tout"
+
+#: templates/base.html:179 templates/home_new.html:899
+msgid "Legal information"
+msgstr "Informations légales"
+
+#: templates/base.html:179 templates/home_new.html:899
+msgid "Enhanced security"
+msgstr "Sécurité renforcée"
 
 #: templates/home_new.html:908 templates/home_new.html:909
 msgid "Back to top"

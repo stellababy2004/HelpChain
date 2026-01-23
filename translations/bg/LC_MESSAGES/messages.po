@@ -827,6 +827,14 @@ msgstr "Съвместимо с GDPR"
 msgid "Security-first"
 msgstr "Сигурността е приоритет"
 
+#: templates/base.html:179 templates/home_new.html:899
+msgid "Legal information"
+msgstr "Правна информация"
+
+#: templates/base.html:179 templates/home_new.html:899
+msgid "Enhanced security"
+msgstr "Повишена сигурност"
+
 #: templates/home_new.html:908 templates/home_new.html:909
 msgid "Back to top"
 msgstr "Обратно към началото"

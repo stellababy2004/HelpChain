@@ -188,3 +188,25 @@ form select.form-select {
   cursor: pointer;
   font-size: 12px;
 }
+
+/* Footer legal strip */
+.hc-footer-legal {
+  margin-top: 1.2rem;
+  padding-top: 0.9rem;
+  font-size: 0.9rem;
+  opacity: 0.75;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Footer legal strip */
+.hc-footer-legal {
+  margin-top: 1.2rem;
+  padding-top: 0.9rem;
+  font-size: 0.9rem;
+  opacity: 0.75;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
