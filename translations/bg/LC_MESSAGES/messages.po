@@ -520,6 +520,14 @@ msgstr "Добре дошли в HelpChain"
 msgid "Together, we make helping others simple, fast and human."
 msgstr "Заедно правим помагането на другите просто, бързо и човешко."
 
+#: templates/base.html:8
+msgid "HelpChain connects people in need with verified volunteers — fast, safe and human."
+msgstr "HelpChain свързва хора в нужда с проверени доброволци — бързо, сигурно и човешко."
+
+#: templates/base.html:14 templates/base.html:21
+msgid "HelpChain — Get help, become a volunteer"
+msgstr "HelpChain — Поискай помощ, стани доброволец"
+
 #: templates/home_new.html:589
 msgid "Trust and compliance"
 msgstr "Доверие и съответствие"
