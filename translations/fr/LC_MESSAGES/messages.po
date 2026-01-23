@@ -552,12 +552,24 @@ msgid "Key numbers"
 msgstr "Chiffres clés"
 
 #: templates/home_new.html:618
+msgid "volunteer"
+msgstr "bénévole"
+
+#: templates/home_new.html:618
 msgid "volunteers"
 msgstr "bénévoles"
 
 #: templates/home_new.html:623
+msgid "request helped"
+msgstr "demande aidée"
+
+#: templates/home_new.html:623
 msgid "requests helped"
 msgstr "demandes aidées"
+
+#: templates/home_new.html:628
+msgid "country"
+msgstr "pays"
 
 #: templates/home_new.html:628
 msgid "countries"

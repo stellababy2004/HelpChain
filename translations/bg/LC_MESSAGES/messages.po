@@ -557,12 +557,24 @@ msgid "Key numbers"
 msgstr "Ключови числа"
 
 #: templates/home_new.html:618
+msgid "volunteer"
+msgstr "доброволец"
+
+#: templates/home_new.html:618
 msgid "volunteers"
 msgstr "доброволци"
 
 #: templates/home_new.html:623
+msgid "request helped"
+msgstr "обработена заявка"
+
+#: templates/home_new.html:623
 msgid "requests helped"
 msgstr "обработени заявки"
+
+#: templates/home_new.html:628
+msgid "country"
+msgstr "държава"
 
 #: templates/home_new.html:628
 msgid "countries"

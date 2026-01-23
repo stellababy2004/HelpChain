@@ -643,17 +643,32 @@
           <div class="hc-hero__counters hc-hero__stats hc-kpis" aria-label="{{ _('Key numbers') }}">
             <span class="hc-counter hc-stat">
               <strong class="hc-stat__value" id="kpiVolunteers">&mdash;</strong>
-              <span class="hc-stat__label">{{ _('volunteers') }}</span>
+              <span
+                class="hc-stat__label"
+                id="kpiVolunteersLabel"
+                data-singular="{{ _('volunteer') }}"
+                data-plural="{{ _('volunteers') }}"
+              >{{ _('volunteers') }}</span>
             </span>
             <span class="hc-dot hc-stat__dot" aria-hidden="true">&bull;</span>
             <span class="hc-counter hc-stat">
               <strong class="hc-stat__value" id="kpiClosed">&mdash;</strong>
-              <span class="hc-stat__label">{{ _('requests helped') }}</span>
+              <span
+                class="hc-stat__label"
+                id="kpiHelpedLabel"
+                data-singular="{{ _('request helped') }}"
+                data-plural="{{ _('requests helped') }}"
+              >{{ _('requests helped') }}</span>
             </span>
             <span class="hc-dot hc-stat__dot" aria-hidden="true">&bull;</span>
             <span class="hc-counter hc-stat">
               <strong class="hc-stat__value" id="kpiCountries">&mdash;</strong>
-              <span class="hc-stat__label">{{ _('countries') }}</span>
+              <span
+                class="hc-stat__label"
+                id="kpiCountriesLabel"
+                data-singular="{{ _('country') }}"
+                data-plural="{{ _('countries') }}"
+              >{{ _('countries') }}</span>
             </span>
           </div>
           <p class="hc-micro-cta">
@@ -1162,10 +1177,29 @@
             const elVol = document.getElementById("kpiVolunteers");
             const elHelped = document.getElementById("kpiClosed"); // "requests helped" (done-only)
             const elCountries = document.getElementById("kpiCountries");
+            const elVolLabel = document.getElementById("kpiVolunteersLabel");
+            const elHelpedLabel = document.getElementById("kpiHelpedLabel");
+            const elCountriesLabel = document.getElementById("kpiCountriesLabel");
 
-            if (elVol) elVol.textContent = String(data.active_volunteers ?? 0);
-            if (elHelped) elHelped.textContent = String(data.helped ?? 0);
-            if (elCountries) elCountries.textContent = String(data.countries ?? 0);
+            function setPluralLabel(labelEl, value) {
+              if (!labelEl) return;
+              const n = Number(value);
+              const singular = labelEl.dataset.singular || "";
+              const plural = labelEl.dataset.plural || "";
+              labelEl.textContent = n === 1 ? singular : plural;
+            }
+
+            const volunteers = Number(data.active_volunteers ?? 0);
+            const helped = Number(data.helped ?? 0);
+            const countries = Number(data.countries ?? 0);
+
+            if (elVol) elVol.textContent = String(volunteers);
+            if (elHelped) elHelped.textContent = String(helped);
+            if (elCountries) elCountries.textContent = String(countries);
+
+            setPluralLabel(elVolLabel, volunteers);
+            setPluralLabel(elHelpedLabel, helped);
+            setPluralLabel(elCountriesLabel, countries);
           } catch (e) {
             // silent fail: keep fallback numbers
           }
