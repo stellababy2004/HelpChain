@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "HelpChain - Свързваме нуждаещи се с доброволци",
   "short_name": "HelpChain",
   "description": "Платформа за свързване на хора в нужда с доброволци. Подайте сигнал за помощ или станете доброволец.",
@@ -15,19 +16,32 @@
       "src": "/static/icons/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/static/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/static/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/img/og-home-1200x630.jpg",
+      "sizes": "1200x630",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/static/img/pwa-screenshot-mobile-720x1280.jpg",
+      "sizes": "720x1280",
+      "type": "image/jpeg"
     }
   ],
   "shortcuts": [
