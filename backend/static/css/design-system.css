@@ -4905,6 +4905,34 @@ pre, code { max-width: 100%; overflow-x: auto; }
   }
 }
 
+/* --- HelpChain v1: Trust badges (hero) --- */
+.hc-trust-badges{
+  display:flex;
+  gap:.6rem;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin:.85rem 0 1.1rem;
+}
+
+.hc-badge-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:.45rem;
+  padding:.42rem .72rem;
+  border-radius:999px;
+  font-size:.92rem;
+  line-height:1;
+  color: rgba(15, 23, 42, .75);
+  background: rgba(255, 255, 255, .72);
+  border: 1px solid rgba(15, 23, 42, .08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
+  backdrop-filter: blur(8px);
+}
+
+.hc-badge-pill i{
+  opacity:.85;
+}
+
 /* HC v1 — Mini "How it works" row (hero) */
 .hc-how-mini {
   margin: 18px auto 0;

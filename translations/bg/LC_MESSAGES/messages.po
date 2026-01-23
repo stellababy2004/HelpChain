@@ -3400,5 +3400,8 @@ msgstr "Доверен доброволец поема заявката."
 msgid "Follow progress with full transparency."
 msgstr "Следи напредъка с пълна прозрачност."
 
+msgid "Trust badges"
+msgstr "Значки за доверие"
+
 #~ msgid "Impact counters"
 #~ msgstr "Показатели за въздействие"

@@ -2092,3 +2092,6 @@ msgstr "Un bénévole de confiance prend en charge votre demande."
 
 msgid "Follow progress with full transparency."
 msgstr "Suivez l'avancement en toute transparence."
+
+msgid "Trust badges"
+msgstr "Badges de confiance"

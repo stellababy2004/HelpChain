@@ -609,14 +609,15 @@
         <div class="hero-content text-center">
           <h1 id="hero-title" class="hc-hero__title">{{ _('Welcome to HelpChain') }}</h1>
           <p class="hc-hero__subtitle">{{ _('Together, we make helping others simple, fast and human.') }}</p>
-          <div class="hc-trust" aria-label="{{ _('Trust and compliance') }}">
-            <span class="hc-trust__item">{{ _('France') }}</span>
-            <span class="hc-trust__dot" aria-hidden="true">&bull;</span>
-            <span class="hc-trust__item">{{ _('Switzerland') }}</span>
-            <span class="hc-trust__dot" aria-hidden="true">&bull;</span>
-            <span class="hc-trust__item">{{ _('Canada') }}</span>
-            <span class="hc-trust__dot" aria-hidden="true">&bull;</span>
-            <span class="hc-trust__item hc-trust__item--strong">{{ _('GDPR-friendly') }}</span>
+          <div class="hc-trust-badges" aria-label="{{ _('Trust badges') }}">
+            <span class="hc-badge-pill">
+              <i class="fas fa-globe-europe" aria-hidden="true"></i>
+              {{ _('France') }} &bull; {{ _('Switzerland') }} &bull; {{ _('Canada') }}
+            </span>
+            <span class="hc-badge-pill">
+              <i class="fas fa-shield-alt" aria-hidden="true"></i>
+              {{ _('GDPR-friendly') }}
+            </span>
           </div>
 
           <div class="hero-buttons d-flex justify-content-center gap-3 flex-wrap">
