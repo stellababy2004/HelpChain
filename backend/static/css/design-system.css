@@ -4842,6 +4842,132 @@ pre, code { max-width: 100%; overflow-x: auto; }
   opacity: 0.95;
 }
 
+/* HC v1 — Mini "How it works" row (hero) */
+.hc-how-mini {
+  margin: 18px auto 0;
+  padding: 14px 16px;
+  max-width: 980px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+
+  background: var(--hc-surface, rgba(255,255,255,.7));
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.hc-how-mini__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.hc-how-mini__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(47,111,237,.08);
+  font-size: 18px;
+}
+
+.hc-how-mini__title {
+  font-weight: 700;
+  font-size: 0.98rem;
+  line-height: 1.1;
+}
+
+.hc-how-mini__desc {
+  font-size: 0.9rem;
+  opacity: 0.82;
+  margin-top: 2px;
+}
+
+.hc-how-mini__sep {
+  width: 1px;
+  height: 34px;
+  background: rgba(0,0,0,.10);
+}
+
+@media (max-width: 768px) {
+  .hc-how-mini {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .hc-how-mini__sep {
+    width: 100%;
+    height: 1px;
+  }
+}
+
+/* HC v1 — Mini "How it works" row (hero) */
+.hc-how-mini {
+  margin: 18px auto 0;
+  padding: 14px 16px;
+  max-width: 980px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+
+  background: var(--hc-surface, rgba(255,255,255,.7));
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.hc-how-mini__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.hc-how-mini__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(47,111,237,.08);
+  font-size: 18px;
+}
+
+.hc-how-mini__title {
+  font-weight: 700;
+  font-size: 0.98rem;
+  line-height: 1.1;
+}
+
+.hc-how-mini__desc {
+  font-size: 0.9rem;
+  opacity: 0.82;
+  margin-top: 2px;
+}
+
+.hc-how-mini__sep {
+  width: 1px;
+  height: 34px;
+  background: rgba(0,0,0,.10);
+}
+
+@media (max-width: 768px) {
+  .hc-how-mini {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .hc-how-mini__sep {
+    width: 100%;
+    height: 1px;
+  }
+}
+
 /* Step 10 fix — ensure trustline text stays visible in hero */
 .hc-hero .hc-trustline,
 .hc-hero .hc-trustline__item,

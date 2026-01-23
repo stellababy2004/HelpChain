@@ -595,6 +595,9 @@ msgstr "Comment ça marche"
 msgid "Post a request"
 msgstr "Publier une demande"
 
+msgid "Tell us what you need in under a minute."
+msgstr "Dites-nous ce dont vous avez besoin en moins d'une minute."
+
 #: templates/home_new.html:647
 msgid "Get matched"
 msgstr "Être mis en relation"
@@ -2082,4 +2085,10 @@ msgstr "Aucun résultat."
 #~ "au service)."
 
 #~ msgid "Impact counters"
-#~ msgstr "Indicateurs d’impact"
+#~ msgstr "Indicateurs d'impact"
+
+msgid "A trusted volunteer takes ownership."
+msgstr "Un bénévole de confiance prend en charge votre demande."
+
+msgid "Follow progress with full transparency."
+msgstr "Suivez l'avancement en toute transparence."

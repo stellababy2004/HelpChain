@@ -3391,5 +3391,14 @@ msgstr "Няма резултати."
 #~ "(категория, описание, местоположение – ако "
 #~ "е необходимо за услугата)."
 
+msgid "Tell us what you need in under a minute."
+msgstr "Кажи ни от какво имаш нужда за по-малко от минута."
+
+msgid "A trusted volunteer takes ownership."
+msgstr "Доверен доброволец поема заявката."
+
+msgid "Follow progress with full transparency."
+msgstr "Следи напредъка с пълна прозрачност."
+
 #~ msgid "Impact counters"
 #~ msgstr "Показатели за въздействие"
