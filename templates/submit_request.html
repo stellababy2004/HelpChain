@@ -192,3 +192,8 @@
   <div style="height: 84px;"></div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_lang('static', filename='js/submit_request.js') }}"></script>
+{% endblock %}

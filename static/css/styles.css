@@ -205,9 +205,22 @@ form select.form-select {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 1030;
-  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  bottom: 14px;
+  z-index: 2000;
+  display: block;
+  padding: 0 12px;
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+.hc-sticky-cta.is-hidden{
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+.hc-sticky-cta.is-visible{
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hc-sticky-cta__inner{
@@ -222,51 +235,7 @@ form select.form-select {
   border: 1px solid rgba(15,23,42,0.12);
   border-radius: 16px;
   box-shadow: 0 16px 44px rgba(2, 6, 23, 0.12);
-  padding: 10px;
-}
-
-.hc-sticky-cta__back{
-  flex: 1 1 auto;
-}
-
-.hc-sticky-cta__submit{
-  flex: 2 1 auto;
-}
-
-@media (max-width: 520px){
-  .hc-sticky-cta__inner{
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .hc-sticky-cta__back,
-  .hc-sticky-cta__submit{
-    width: 100%;
-  }
-}
-
-/* --- Submit request: sticky CTA --- */
-.hc-sticky-cta{
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1030;
-  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-}
-
-.hc-sticky-cta__inner{
-  max-width: 760px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-
-  background: rgba(255,255,255,0.96);
-  border: 1px solid rgba(15,23,42,0.12);
-  border-radius: 16px;
-  box-shadow: 0 16px 44px rgba(2, 6, 23, 0.12);
-  padding: 10px;
+  padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
 }
 
 .hc-sticky-cta__back{
