@@ -4927,10 +4927,18 @@ pre, code { max-width: 100%; overflow-x: auto; }
   border: 1px solid rgba(15, 23, 42, .08);
   box-shadow: 0 10px 24px rgba(15, 23, 42, .06);
   backdrop-filter: blur(8px);
+  text-decoration:none;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
 
 .hc-badge-pill i{
   opacity:.85;
+  width: 1.05rem;
+  text-align: center;
+}
+
+.hc-badge-pill:hover{
+  transform: translateY(-1px);
 }
 
 /* HC v1 — Mini "How it works" row (hero) */

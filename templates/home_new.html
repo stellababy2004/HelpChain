@@ -614,10 +614,10 @@
               <i class="fas fa-globe-europe" aria-hidden="true"></i>
               {{ _('France') }} &bull; {{ _('Switzerland') }} &bull; {{ _('Canada') }}
             </span>
-            <span class="hc-badge-pill">
+            <a class="hc-badge-pill" href="{{ safe_url_for('main.privacy') }}">
               <i class="fas fa-shield-alt" aria-hidden="true"></i>
               {{ _('GDPR-friendly') }}
-            </span>
+            </a>
           </div>
 
           <div class="hero-buttons d-flex justify-content-center gap-3 flex-wrap">
