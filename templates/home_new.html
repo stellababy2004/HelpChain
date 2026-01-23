@@ -4,6 +4,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Step 13 - SEO & Social preview -->
+    <meta name="description" content="{{ _('HelpChain connects people in need with verified volunteers — fast, safe and human.') }}">
+    <meta name="robots" content="index,follow">
+
+    <meta property="og:site_name" content="HelpChain">
+    <meta property="og:title" content="{{ _('HelpChain — Get help, become a volunteer') }}">
+    <meta property="og:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ _('HelpChain — Get help, become a volunteer') }}">
+    <meta name="twitter:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
+
+    <link rel="icon" type="image/png" sizes="144x144" href="{{ url_for('static', filename='icons/icon-144x144.png') }}">
     <title>{{ _('HelpChain - Connecting people in need with volunteers') }}</title>
 
     <!-- Bootstrap CSS -->
