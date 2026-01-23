@@ -4813,6 +4813,22 @@ pre, code { max-width: 100%; overflow-x: auto; }
   color: rgba(90, 139, 255, 0.95);
 }
 
+/* Defensive: ensure trustline parts are never hidden */
+.hc-hero .hc-trustline__item,
+.hc-hero .hc-trustline__dot {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1;
+}
+
+/* Defensive: ensure trustline parts are never hidden */
+.hc-hero .hc-trustline__item,
+.hc-hero .hc-trustline__dot {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1;
+}
+
 /* Step 10 fix — ensure trustline text stays visible in hero */
 .hc-hero .hc-trustline,
 .hc-hero .hc-trustline__item,
