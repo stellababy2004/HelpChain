@@ -81,3 +81,4 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - Updated: 2026-01-24  
 - DB: Added `Request.is_archived`, `Request.archived_at`, `Request.deleted_at` + indexes; Alembic head `9c6b7a2b0a77`  
 - Admin: Archive/unarchive + Deleted/restore-deleted flows; admin request list filters include `archived` and `deleted`  
+- KPI: `/pilot`, `/api/pilot/metrics`, `/api/pilot-kpi` ignore deleted requests (`deleted_at IS NULL`)  

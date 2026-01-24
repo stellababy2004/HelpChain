@@ -342,17 +342,22 @@ def pilot_dashboard():
     week_ago = now - timedelta(days=7)
     since_14d = now - timedelta(days=14)
 
-    total_requests = db.session.query(func.count(Request.id)).scalar() or 0
+    not_deleted = Request.deleted_at.is_(None)
+
+    total_requests = db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
 
     open_requests = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status.notin_(["done", "rejected"])
     ).scalar() or 0
 
     closed_requests = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status.in_(["done", "rejected"])
     ).scalar() or 0
 
     closed_last_7d = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.completed_at.isnot(None),
         Request.completed_at >= week_ago
     ).scalar() or 0
@@ -360,29 +365,34 @@ def pilot_dashboard():
     avg_resolution_hours = db.session.query(
         func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0
     ).filter(
+        not_deleted,
         Request.completed_at.isnot(None),
         Request.created_at.isnot(None)
     ).scalar()
     avg_resolution_hours = float(avg_resolution_hours) if avg_resolution_hours is not None else None
 
     unassigned_48h = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status.notin_(["done", "rejected"]),
         Request.owner_id.is_(None),
         Request.created_at <= (now - timedelta(days=2))
     ).scalar() or 0
 
     stale_7d = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status.notin_(["done", "rejected"]),
         Request.created_at <= (now - timedelta(days=7))
     ).scalar() or 0
 
     high_open = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status.notin_(["done", "rejected"]),
         Request.priority == "high"
     ).scalar() or 0
 
     status_rows = (
         db.session.query(Request.status, func.count(Request.id))
+        .filter(not_deleted)
         .group_by(Request.status)
         .order_by(func.count(Request.id).desc())
         .all()
@@ -392,6 +402,7 @@ def pilot_dashboard():
 
     cat_rows = (
         db.session.query(Request.category, func.count(Request.id))
+        .filter(not_deleted)
         .group_by(Request.category)
         .order_by(func.count(Request.id).desc())
         .all()
@@ -401,7 +412,7 @@ def pilot_dashboard():
 
     trend_rows = (
         db.session.query(func.date(Request.created_at), func.count(Request.id))
-        .filter(Request.created_at >= since_14d)
+        .filter(not_deleted, Request.created_at >= since_14d)
         .group_by(func.date(Request.created_at))
         .order_by(func.date(Request.created_at))
         .all()
@@ -443,14 +454,19 @@ def pilot_dashboard():
 
 @main_bp.get("/api/pilot/metrics")
 def pilot_metrics():
-    total_requests = db.session.query(func.count(Request.id)).scalar() or 0
+    not_deleted = Request.deleted_at.is_(None)
+
+    total_requests = db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
     open_requests = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status.notin_(["done", "rejected"])
     ).scalar() or 0
     helped_requests = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status == "done"
     ).scalar() or 0
     closed_requests = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status.in_(["done", "rejected"])
     ).scalar() or 0
     total_volunteers = db.session.query(func.count(Volunteer.id)).filter(
@@ -473,11 +489,15 @@ def pilot_metrics():
 @main_bp.get("/api/pilot-kpi")
 def pilot_kpi_api():
     # v1: marketing-safe counters (read-only)
+    not_deleted = Request.deleted_at.is_(None)
+
     helped_requests = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status == "done"
     ).scalar() or 0
 
     closed_requests = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
         Request.status.in_(["done", "rejected"])
     ).scalar() or 0
 
