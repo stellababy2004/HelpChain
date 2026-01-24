@@ -549,6 +549,8 @@ class Request(db.Model):
     completed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, nullable=True, onupdate=utc_now)
+    is_archived = Column(Boolean, nullable=False, default=False, server_default="0", index=True)
+    archived_at = Column(DateTime, nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
