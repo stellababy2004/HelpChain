@@ -227,6 +227,49 @@
 
       <div class="card border-0 shadow-sm mt-3">
         <div class="card-body">
+          <div class="fw-semibold mb-1">Delete (tombstone)</div>
+          <div class="text-muted small mb-3">
+            Deleted requests are hidden from lists. You can restore later (restored requests stay archived).
+          </div>
+
+          {% if req.deleted_at %}
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <span class="badge bg-danger">Deleted</span>
+                <span class="text-muted small ms-2">{{ req.deleted_at }}</span>
+              </div>
+              {% if can_edit %}
+                <form method="post" action="{{ url_for('admin.admin_request_restore_deleted', req_id=req.id) }}">
+                  <button type="submit" class="btn btn-outline-success btn-sm">
+                    Restore from Deleted
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          {% else %}
+            {% if not req.is_archived %}
+              <div class="alert alert-warning py-2 mb-3">
+                Archive this request first to enable Delete.
+              </div>
+            {% endif %}
+
+            {% if can_edit %}
+              <form
+                method="post"
+                action="{{ url_for('admin.admin_request_delete', req_id=req.id) }}"
+                onsubmit="return confirm('Move to Deleted? You can restore it later.')"
+              >
+                <button type="submit" class="btn btn-outline-danger btn-sm" {% if not req.is_archived %}disabled{% endif %}>
+                  Delete
+                </button>
+              </form>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mt-3">
+        <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div class="fw-semibold">Internal note</div>
             <div class="text-muted small">Saved in Activity</div>

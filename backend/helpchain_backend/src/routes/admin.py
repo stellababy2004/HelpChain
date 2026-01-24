@@ -1133,6 +1133,7 @@ def admin_requests():
         "rejected": "Отхвърлени",
     }
 
+    show_deleted = (request.args.get("deleted") or "").strip() == "1"
     query = Request.query
     query, status, q = build_requests_query(query, request.args)
     requests = query.all()
@@ -1148,6 +1149,7 @@ def admin_requests():
         requests=requests,
         status=status,
         q=q,
+        show_deleted=show_deleted,
         now_aware=now_aware,
         now_naive=now_naive,
         SLA_WARN_NO_OWNER_DAYS=SLA_WARN_NO_OWNER_DAYS,
@@ -1158,6 +1160,12 @@ def admin_requests():
 def build_requests_query(base_query, request_args):
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
+    show_deleted = (request_args.get("deleted") or "").strip() == "1"
+
+    if show_deleted:
+        base_query = base_query.filter(Request.deleted_at.isnot(None))
+    else:
+        base_query = base_query.filter(Request.deleted_at.is_(None))
 
     if status:
         internal = "pending" if status == "new" else status
@@ -1418,6 +1426,61 @@ def admin_request_unassign(req_id: int):
     db.session.commit()
     flash("Owner е премахнат.", "info")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+@admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")
+@login_required
+def admin_request_delete(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    if not getattr(req, "is_archived", False):
+        flash("Archive the request first. Only archived requests can be deleted.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    if getattr(req, "deleted_at", None) is None:
+        req.deleted_at = utc_now()
+        req.is_archived = True
+        if getattr(req, "archived_at", None) is None:
+            req.archived_at = req.deleted_at
+        log_request_activity(
+            req,
+            "delete",
+            old=None,
+            new=str(req.deleted_at),
+            actor_admin_id=getattr(current_user, "id", None),
+        )
+        db.session.commit()
+        flash("Request moved to Deleted.", "success")
+
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+
+@admin_bp.post("/requests/<int:req_id>/restore-deleted", endpoint="admin_request_restore_deleted")
+@login_required
+def admin_request_restore_deleted(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    if getattr(req, "deleted_at", None) is not None:
+        old = req.deleted_at
+        req.deleted_at = None
+        req.is_archived = True
+        if getattr(req, "archived_at", None) is None:
+            req.archived_at = utc_now()
+        log_request_activity(
+            req,
+            "restore_deleted",
+            old=str(old),
+            new=None,
+            actor_admin_id=getattr(current_user, "id", None),
+        )
+        db.session.commit()
+        flash("Request restored from Deleted (kept archived).", "success")
+
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
 @admin_bp.post("/requests/<int:req_id>/note")
