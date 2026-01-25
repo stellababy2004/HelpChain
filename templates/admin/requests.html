@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Requests') }} | HelpChain{% endblock %}
+{% block head %}
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  {{ super() }}
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -13,7 +17,15 @@
   ]) %}
 
   <div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="mb-0">{{ _('Live requests') }}</h2>
+  <h2 class="mb-0">
+    {% if show_deleted %}
+      {{ _('Deleted requests') }}
+    {% elif show_archived %}
+      {{ _('Archived requests') }}
+    {% else %}
+      {{ _('Live requests') }}
+    {% endif %}
+  </h2>
     <a class="btn btn-outline-light btn-sm" href="{{ safe_url_for('main.index') }}">
       {{ _('Home') }}
     </a>
@@ -41,16 +53,30 @@
     </div>
 
     <div class="col-12">
-      <div class="form-check form-switch">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="filterDeleted"
-          name="deleted"
-          value="1"
-          {% if show_deleted %}checked{% endif %}
-        />
-        <label class="form-check-label" for="filterDeleted">{{ _('Show deleted') }}</label>
+      <div class="d-flex flex-wrap gap-3">
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="filterDeleted"
+            name="deleted"
+            value="1"
+            {% if show_deleted %}checked{% endif %}
+          />
+          <label class="form-check-label" for="filterDeleted">{{ _('Show deleted') }}</label>
+        </div>
+
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="filterArchived"
+            name="archived"
+            value="1"
+            {% if show_archived %}checked{% endif %}
+          />
+          <label class="form-check-label" for="filterArchived">{{ _('Show archived') }}</label>
+        </div>
       </div>
     </div>
   </form>
@@ -68,6 +94,7 @@
           <th style="width:120px;">{{ _('Created') }}</th>
           <th style="width:120px;">{{ _('Closed') }}</th>
           <th style="width:130px;">{{ _('SLA') }}</th>
+          <th style="width:140px;">{{ _('Actions') }}</th>
           <th style="width:120px;">{{ _('Details') }}</th>
         </tr>
       </thead>
@@ -107,15 +134,75 @@
             {% endif %}
           </td>
           <td class="text-end">
+            {% if r.deleted_at %}
+              <span class="badge bg-danger">{{ _('Deleted') }}</span>
+            {% else %}
+              {% if r.is_archived %}
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  onclick="event.stopPropagation(); adminRequestToggleArchive('{{ safe_url_for('admin.admin_request_unarchive', req_id=r.id) }}', 'Unarchive this request?');"
+                >
+                  {{ _('Unarchive') }}
+                </button>
+              {% else %}
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  onclick="event.stopPropagation(); adminRequestToggleArchive('{{ safe_url_for('admin.admin_request_archive', req_id=r.id) }}', 'Archive this request?');"
+                >
+                  {{ _('Archive') }}
+                </button>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td class="text-end">
             <a class="btn btn-sm btn-outline-light" onclick="event.stopPropagation()" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="10" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
+        <tr><td colspan="11" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
 </div>
+
+<script>
+  function getCsrfToken(){
+    const el = document.querySelector('meta[name="csrf-token"]');
+    return el ? el.getAttribute("content") : "";
+  }
+
+  async function hcPost(url){
+    const token = getCsrfToken();
+    const resp = await fetch(url, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "X-CSRFToken": token,
+        "X-CSRF-Token": token,
+        "X-Requested-With": "XMLHttpRequest",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+      body: `csrf_token=${encodeURIComponent(token)}`,
+    });
+    return resp.ok;
+  }
+
+  async function adminRequestToggleArchive(url, confirmMsg) {
+    if (!confirm(confirmMsg)) return;
+    try {
+      const ok = await hcPost(url);
+      if (!ok) {
+        alert("Action failed.");
+        return;
+      }
+      window.location.reload();
+    } catch (e) {
+      alert("Network error.");
+    }
+  }
+</script>
 {% endblock %}

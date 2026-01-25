@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Admin - Request #{{ req.id }}{% endblock %}
+{% block head %}
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  {{ super() }}
+{% endblock %}
 
 {% block content %}
 <div class="container my-4">
@@ -227,6 +231,60 @@
 
       <div class="card border-0 shadow-sm mt-3">
         <div class="card-body">
+          <div class="fw-semibold mb-1">Archive</div>
+          <div class="text-muted small mb-3">
+            Archived requests are hidden from the default admin lists. You can unarchive later.
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+              {% if req.deleted_at %}
+                <span class="badge bg-danger">Deleted</span>
+                <span class="badge bg-secondary ms-1">Archived</span>
+              {% elif req.is_archived %}
+                <span class="badge bg-secondary">Archived</span>
+              {% else %}
+                <span class="badge text-bg-light border">Live</span>
+              {% endif %}
+
+              {% if req.archived_at %}
+                <span class="text-muted small ms-2">{{ req.archived_at }}</span>
+              {% endif %}
+            </div>
+
+            {% if can_edit %}
+              {% if req.deleted_at %}
+                <button type="button" class="btn btn-outline-secondary btn-sm" disabled>Unarchive</button>
+              {% elif req.is_archived %}
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  onclick="adminRequestToggleArchive('{{ url_for('admin.admin_request_unarchive', req_id=req.id) }}', 'Unarchive this request? It will reappear in lists.');"
+                >
+                  Unarchive
+                </button>
+              {% else %}
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  onclick="adminRequestToggleArchive('{{ url_for('admin.admin_request_archive', req_id=req.id) }}', 'Archive this request? It will be hidden from lists.');"
+                >
+                  Archive
+                </button>
+              {% endif %}
+            {% endif %}
+          </div>
+
+          {% if req.deleted_at %}
+            <div class="alert alert-warning py-2 mt-3 mb-0">
+              Deleted requests cannot be unarchived. Restore from Deleted first.
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mt-3">
+        <div class="card-body">
           <div class="fw-semibold mb-1">Delete (tombstone)</div>
           <div class="text-muted small mb-3">
             Deleted requests are hidden from lists. You can restore later (restored requests stay archived).
@@ -372,6 +430,41 @@
     }).catch(()=>{
       alert("Copy failed.");
     });
+  }
+
+  function getCsrfToken(){
+    const el = document.querySelector('meta[name="csrf-token"]');
+    return el ? el.getAttribute("content") : "";
+  }
+
+  async function hcPost(url){
+    const token = getCsrfToken();
+    const resp = await fetch(url, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "X-CSRFToken": token,
+        "X-CSRF-Token": token,
+        "X-Requested-With": "XMLHttpRequest",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+      body: `csrf_token=${encodeURIComponent(token)}`,
+    });
+    return resp.ok;
+  }
+
+  async function adminRequestToggleArchive(url, confirmMsg) {
+    if (!confirm(confirmMsg)) return;
+    try {
+      const ok = await hcPost(url);
+      if (!ok) {
+        alert("Action failed.");
+        return;
+      }
+      window.location.reload();
+    } catch (e) {
+      alert("Network error.");
+    }
   }
 </script>
 {% endblock %}

@@ -21,13 +21,19 @@ from ..models import AdminUser, Request, RequestActivity, RequestLog, RequestMet
 from backend.models import utc_now
 from ..config import Config
 from sqlalchemy.orm import joinedload
-from sqlalchemy import func
+from sqlalchemy import func, inspect
 from backend.helpchain_backend.src.utils.mfa import (
     generate_totp_secret,
     build_totp_uri,
     qr_png_base64,
     verify_totp_code,
 )
+
+try:
+    # Canonical admin audit log model (lives in backend/models_with_analytics.py).
+    from backend.models_with_analytics import AdminLog  # type: ignore
+except Exception:
+    AdminLog = None
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")  # single templates path via app.py
 
@@ -66,6 +72,39 @@ def log_request_activity(req_obj, action, old=None, new=None, actor_admin_id=Non
             created_at=utc_now(),
         )
         db.session.add(activity)
+    except Exception:
+        pass
+
+
+def log_admin_audit(action: str, *, request_id: int, user_id: int | None, details: str | None = None):
+    if AdminLog is None or user_id is None:
+        return
+
+    try:
+        cols = {c["name"] for c in inspect(db.engine).get_columns("admin_logs")}
+    except Exception:
+        return
+
+    if "admin_user_id" not in cols or "action" not in cols:
+        return
+
+    kwargs = {
+        "admin_user_id": user_id,
+        "action": action,
+    }
+    if "details" in cols:
+        kwargs["details"] = details
+    if "entity_type" in cols:
+        kwargs["entity_type"] = "request"
+    if "entity_id" in cols:
+        kwargs["entity_id"] = request_id
+    if "ip_address" in cols:
+        kwargs["ip_address"] = getattr(request, "remote_addr", None)
+    if "user_agent" in cols:
+        kwargs["user_agent"] = (request.headers.get("User-Agent") if getattr(request, "headers", None) else None)
+
+    try:
+        db.session.add(AdminLog(**kwargs))
     except Exception:
         pass
 
@@ -1135,7 +1174,7 @@ def admin_requests():
 
     show_deleted = (request.args.get("deleted") or "").strip() == "1"
     query = Request.query
-    query, status, q = build_requests_query(query, request.args)
+    query, status, q, show_archived = build_requests_query(query, request.args)
     requests = query.all()
     now_aware = utc_now()
     now_naive = datetime.utcnow()
@@ -1150,6 +1189,7 @@ def admin_requests():
         status=status,
         q=q,
         show_deleted=show_deleted,
+        show_archived=show_archived,
         now_aware=now_aware,
         now_naive=now_naive,
         SLA_WARN_NO_OWNER_DAYS=SLA_WARN_NO_OWNER_DAYS,
@@ -1161,11 +1201,20 @@ def build_requests_query(base_query, request_args):
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
     show_deleted = (request_args.get("deleted") or "").strip() == "1"
+    show_archived = (request_args.get("archived") or "").strip() == "1"
 
     if show_deleted:
         base_query = base_query.filter(Request.deleted_at.isnot(None))
     else:
         base_query = base_query.filter(Request.deleted_at.is_(None))
+
+    # Default: hide archived requests in admin lists.
+    # If deleted=1, show_deleted already scopes to tombstones (which are archived by design).
+    if not show_deleted:
+        if show_archived:
+            base_query = base_query.filter(Request.is_archived.is_(True))
+        else:
+            base_query = base_query.filter(Request.is_archived.is_(False))
 
     if status:
         internal = "pending" if status == "new" else status
@@ -1183,13 +1232,13 @@ def build_requests_query(base_query, request_args):
         )
 
     base_query = base_query.order_by(Request.id.desc())
-    return base_query, status, q
+    return base_query, status, q, show_archived
 
 
 @admin_bp.get("/requests/export.csv")
 @admin_required
 def admin_requests_export_csv():
-    query, _status, _q = build_requests_query(Request.query, request.args)
+    query, _status, _q, _show_archived = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
     out = StringIO()
@@ -1232,7 +1281,7 @@ def admin_requests_export_xlsx():
     except Exception:
         return Response("openpyxl is not installed", status=500)
 
-    query, _status, _q = build_requests_query(Request.query, request.args)
+    query, _status, _q, _show_archived = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
     wb = Workbook()
@@ -1277,7 +1326,7 @@ def admin_requests_export_xlsx():
 @admin_bp.get("/requests/export_anonymized.csv")
 @admin_required
 def admin_requests_export_csv_anonymized():
-    query, _status, _q = build_requests_query(Request.query, request.args)
+    query, _status, _q, _show_archived = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
     out = StringIO()
@@ -1315,7 +1364,7 @@ def admin_requests_export_xlsx_anonymized():
     except Exception:
         return Response("openpyxl is not installed", status=500)
 
-    query, _status, _q = build_requests_query(Request.query, request.args)
+    query, _status, _q, _show_archived = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
     wb = Workbook()
@@ -1426,6 +1475,64 @@ def admin_request_unassign(req_id: int):
     db.session.commit()
     flash("Owner е премахнат.", "info")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+@admin_bp.post("/requests/<int:req_id>/archive", endpoint="admin_request_archive")
+@login_required
+def admin_request_archive(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    # Idempotent
+    if getattr(req, "is_archived", False):
+        return jsonify({"ok": True})
+
+    req.is_archived = True
+    req.archived_at = utc_now()
+    db.session.add(req)
+
+    log_request_activity(req, "request_archive", old=False, new=True, actor_admin_id=getattr(current_user, "id", None))
+    log_admin_audit(
+        "request_archive",
+        request_id=req.id,
+        user_id=getattr(current_user, "id", None),
+        details="Archived request",
+    )
+
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@admin_bp.post("/requests/<int:req_id>/unarchive", endpoint="admin_request_unarchive")
+@login_required
+def admin_request_unarchive(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    # Idempotent
+    if not getattr(req, "is_archived", False):
+        return jsonify({"ok": True})
+
+    # Safety: deleted (tombstone) requests must stay archived.
+    if getattr(req, "deleted_at", None) is not None:
+        return jsonify({"ok": False, "error": "deleted"}), 400
+
+    req.is_archived = False
+    req.archived_at = None
+    db.session.add(req)
+
+    log_request_activity(req, "request_unarchive", old=True, new=False, actor_admin_id=getattr(current_user, "id", None))
+    log_admin_audit(
+        "request_unarchive",
+        request_id=req.id,
+        user_id=getattr(current_user, "id", None),
+        details="Unarchived request",
+    )
+
+    db.session.commit()
+    return jsonify({"ok": True})
 
 
 @admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")
