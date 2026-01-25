@@ -13,19 +13,22 @@
     <div>
       <div class="text-muted small">Admin</div>
       <h2 class="mb-1 fw-bold">Request #{{ req.id }}</h2>
-  <div class="text-muted small">
-    <span class="me-2">Status:</span>
-    <span class="badge text-bg-secondary">{{ req.status }}</span>
-    <span class="mx-2">|</span>
-    <span class="me-2">Priority:</span>
-    <span class="badge text-bg-light border">{{ req.priority }}</span>
-    <span class="mx-2">|</span>
-    <span class="me-2">Category:</span>
-    <span class="badge text-bg-light border">{{ req.category }}</span>
-      {% if req.is_archived and req.archived_at %}
+      <div class="text-muted small">
+        <span class="me-2">Status:</span>
+        <span class="badge text-bg-secondary">{{ req.status }}</span>
         <span class="mx-2">|</span>
-        <span class="text-muted small">Archived at {{ req.archived_at.strftime("%Y-%m-%d %H:%M") }}</span>
-      {% endif %}
+        <span class="me-2">Priority:</span>
+        <span class="badge text-bg-light border">{{ req.priority }}</span>
+        <span class="mx-2">|</span>
+        <span class="me-2">Category:</span>
+        <span class="badge text-bg-light border">{{ req.category }}</span>
+        {% if req.deleted_at %}
+          <span class="mx-2">|</span>
+          <span class="text-danger small">Deleted at {{ req.deleted_at.strftime("%Y-%m-%d %H:%M") }}</span>
+        {% elif req.is_archived and req.archived_at %}
+          <span class="mx-2">|</span>
+          <span class="text-muted small">Archived at {{ req.archived_at.strftime("%Y-%m-%d %H:%M") }}</span>
+        {% endif %}
         <div class="mt-2">
           <span class="me-2">Created:</span>
           <strong>{{ req.created_at.strftime("%d %b %Y, %H:%M") if req.created_at else "-" }}</strong>
@@ -42,6 +45,17 @@
       <- Back
     </a>
   </div>
+
+  {% if req.deleted_at %}
+  <div class="alert alert-warning py-2 mb-3">
+    <strong>{{ _('Deleted') }}</strong> — {{ _('Deleted at') }} {{ req.deleted_at.strftime("%Y-%m-%d %H:%M") }}
+    <form method="post" action="{{ url_for('admin.admin_request_restore', req_id=req.id) }}" class="d-inline ms-3">
+      <button type="submit" class="btn btn-outline-success btn-sm">
+        {{ _('Restore') }}
+      </button>
+    </form>
+  </div>
+  {% endif %}
 
   <!-- Contact quick actions -->
   <div class="card border-0 shadow-sm mb-3">
@@ -233,6 +247,7 @@
         </div>
       </div>
 
+      {% if not req.deleted_at %}
       <div class="card border-0 shadow-sm mt-3">
         <div class="card-body">
           <div class="fw-semibold mb-1">Archive</div>
@@ -284,10 +299,10 @@
               Deleted requests cannot be unarchived. Restore from Deleted first.
             </div>
           {% endif %}
-        </div>
       </div>
+      {% endif %}
 
-      <div class="card border-0 shadow-sm mt-3">
+    <div class="card border-0 shadow-sm mt-3">
         <div class="card-body">
           <div class="fw-semibold mb-1">Delete (tombstone)</div>
           <div class="text-muted small mb-3">

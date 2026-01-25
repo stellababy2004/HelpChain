@@ -1587,6 +1587,38 @@ def admin_request_delete(req_id: int):
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
+@admin_bp.post("/requests/<int:req_id>/restore", endpoint="admin_request_restore")
+@login_required
+def admin_request_restore(req_id: int):
+    req = Request.query.get_or_404(req_id)
+
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    if getattr(req, "deleted_at", None) is None:
+        flash("Request is not deleted.", "info")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    old_deleted_at = req.deleted_at
+
+    req.deleted_at = None
+    req.is_archived = True
+    if getattr(req, "archived_at", None) is None:
+        req.archived_at = utc_now()
+
+    log_request_activity(
+        req,
+        "restore",
+        old=str(old_deleted_at),
+        new=None,
+        actor_admin_id=getattr(current_user, "id", None),
+    )
+
+    db.session.commit()
+    flash("Request restored (kept archived).", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+
 @admin_bp.post("/requests/<int:req_id>/restore-deleted", endpoint="admin_request_restore_deleted")
 @login_required
 def admin_request_restore_deleted(req_id: int):

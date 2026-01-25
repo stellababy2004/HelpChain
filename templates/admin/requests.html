@@ -81,6 +81,12 @@
     </div>
   </form>
 
+  {% if show_deleted %}
+  <div class="alert alert-warning py-2 mb-3">
+    <strong>{{ _('Deleted mode') }}</strong> — {{ _('These requests are tombstoned. You can restore them.') }}
+  </div>
+  {% endif %}
+
   <div class="table-responsive">
     <table class="table table-hover align-middle">
       <thead>
@@ -137,25 +143,37 @@
             {% endif %}
           </td>
           <td class="text-end">
-            {% if r.deleted_at %}
-              <span class="badge bg-danger">{{ _('Deleted') }}</span>
+            {% if show_deleted %}
+              <form
+                method="post"
+                action="{{ safe_url_for('admin.admin_request_restore', req_id=r.id) }}"
+                class="d-inline"
+                onsubmit="event.stopPropagation();">
+                <button type="submit" class="btn btn-sm btn-outline-success">
+                  {{ _('Restore') }}
+                </button>
+              </form>
             {% else %}
-              {% if r.is_archived %}
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary"
-                  onclick="event.stopPropagation(); adminRequestToggleArchive('{{ safe_url_for('admin.admin_request_unarchive', req_id=r.id) }}', 'Unarchive this request?');"
-                >
-                  {{ _('Unarchive') }}
-                </button>
+              {% if r.deleted_at %}
+                <span class="badge bg-danger">{{ _('Deleted') }}</span>
               {% else %}
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary"
-                  onclick="event.stopPropagation(); adminRequestToggleArchive('{{ safe_url_for('admin.admin_request_archive', req_id=r.id) }}', 'Archive this request?');"
-                >
-                  {{ _('Archive') }}
-                </button>
+                {% if r.is_archived %}
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    onclick="event.stopPropagation(); adminRequestToggleArchive('{{ safe_url_for('admin.admin_request_unarchive', req_id=r.id) }}', 'Unarchive this request?');"
+                  >
+                    {{ _('Unarchive') }}
+                  </button>
+                {% else %}
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    onclick="event.stopPropagation(); adminRequestToggleArchive('{{ safe_url_for('admin.admin_request_archive', req_id=r.id) }}', 'Archive this request?');"
+                  >
+                    {{ _('Archive') }}
+                  </button>
+                {% endif %}
               {% endif %}
             {% endif %}
           </td>
