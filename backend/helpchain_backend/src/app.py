@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import os
+import re
 from dotenv import load_dotenv
 from flask import Flask, request, session
 from flask_login import LoginManager
 from flask_wtf.csrf import generate_csrf
 from flask_babel import get_locale as babel_get_locale
+from markupsafe import Markup, escape
 
 from backend.extensions import babel, db, migrate
 from backend.models import AdminUser
@@ -70,6 +72,28 @@ def create_app(config_object=None) -> Flask:
     root_translations = os.path.abspath(os.path.join(base_dir, "..", "..", "..", "translations"))
 
     app = Flask(__name__, instance_relative_config=True, template_folder=root_templates, static_folder=root_static)
+
+    @app.template_filter("highlight_ci")
+    def highlight_ci(text, q):
+        """
+        Wrap case-insensitive matches of q inside <mark>.
+        Safe: escape first, then inject controlled HTML.
+        """
+        if not text or not q:
+            return text
+
+        s = str(text)
+        needle = str(q).strip()
+        if not needle:
+            return s
+
+        escaped = escape(s)
+        pattern = re.compile(re.escape(needle), re.IGNORECASE)
+
+        def repl(match):
+            return f'<mark class="hc-highlight">{escape(match.group(0))}</mark>'
+
+        return Markup(pattern.sub(repl, escaped))
 
     # Config: caller overrides, then Config class, then env defaults
     if isinstance(config_object, dict):

@@ -43,12 +43,33 @@
       </select>
     </div>
 
-    <div class="col-md-6">
-            <input class="form-control" type="text" name="q" value="{{ q or '' }}"
-              placeholder="{{ _('Search by name, title, description...') }}" aria-label="{{ _('Search') }}" />
+    <div class="col-md-6 col-xl-5">
+      <label class="form-label small text-muted mb-1">{{ _('Search') }}</label>
+      <div class="input-group">
+        <input
+          type="search"
+          class="form-control"
+          name="q"
+          value="{{ q or '' }}"
+          placeholder="{{ _('Search by name or title…') }}"
+          autocomplete="off"
+        />
+        {% if q %}
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_requests',
+              status=status,
+              deleted=('1' if show_deleted else None),
+              archived=('1' if show_archived else None)) }}">
+            {{ _('Clear') }}
+          </a>
+        {% else %}
+          <button class="btn btn-outline-secondary" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+        {% endif %}
+      </div>
     </div>
 
-    <div class="col-md-3 d-grid">
+    <div class="col-md-3 col-xl-2 d-grid">
       <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
     </div>
 
@@ -137,8 +158,8 @@
             <input class="form-check-input rowCheck" type="checkbox" name="ids" value="{{ r.id }}" form="bulkForm"/>
           </td>
           <td>{{ r.id }}</td>
-          <td>{{ r.title }}</td>
-          <td>{{ r.name or r.requester_name }}</td>
+          <td>{{ (r.title or '') | highlight_ci(q) }}</td>
+          <td>{{ (r.name or r.requester_name or '') | highlight_ci(q) }}</td>
             <td>
               {% set status_class = {
                 'pending':'bg-primary',
@@ -205,6 +226,27 @@
           </td>
         </tr>
         {% else %}
+        {% if q and not show_archived %}
+          <tr>
+            <td colspan="11">
+              <div class="alert alert-info mt-3 mb-0 d-flex flex-column gap-2">
+                <div>
+                  No live results for <strong>“{{ (q or '')|e }}”</strong>. Try searching archived requests.
+                </div>
+                <div>
+                  <a class="btn btn-sm btn-outline-secondary"
+                     href="{{ safe_url_for('admin.admin_requests',
+                                          status=status or None,
+                                          q=q,
+                                          archived=1,
+                                          deleted=('1' if show_deleted else None)) }}">
+                    {{ _('Show archived') }}
+                  </a>
+                </div>
+              </div>
+            </td>
+          </tr>
+        {% endif %}
         <tr><td colspan="11" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
         {% endfor %}
       </tbody>

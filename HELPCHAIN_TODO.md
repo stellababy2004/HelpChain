@@ -29,8 +29,10 @@ No chaos. No multitasking. No new features before finishing the current phase.
 
 ## PHASE 2 – Admin UX
 
-- [ ] Status filters (Pending / In progress / Done)  
-- [ ] Search by name / title  
+- [x] Status filters (Pending / In progress / Done)  
+- [x] Search by name / title  
+- [x] Global navbar search (removed for MVP clarity)
+- [x] Admin list search by name/title
 - [ ] Mini dashboard counters  
 - [ ] Bulk archive action  
 - [ ] Better empty states  
@@ -39,8 +41,12 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - [x] Admin: enforce archive-before-delete (backend guardrail)
 - [x] Admin: idempotent tombstone delete
 - [x] Admin: log delete_blocked_not_archived
-- [x] Admin: bulk actions (archive / unarchive / restore / delete) – current page only
+- [x] Admin: bulk actions (archive / unarchive / restore / delete) – current page only  
 - [x] Admin: CSRF-safe POST for all admin request actions
+
+- [x] Navbar: fix logout (GET+POST fallback, no 405)
+- [x] Navbar: fix profile dead link
+- [x] UI: persistent theme toggle (dark mode)
 
 ---
 
@@ -89,4 +95,5 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - DB: Added `Request.is_archived`, `Request.archived_at`, `Request.deleted_at` + indexes; Alembic head `fb611ecf034d` with AdminLog entity/created_at cols  
 - Admin: Archive/unarchive flows fully wired (list + details + audit log); hidden archived requests by default; bulk actions + CSRF-safe POSTs shipped  
 - KPI: `/pilot`, `/api/pilot/metrics`, `/api/pilot-kpi` ignore deleted requests (`deleted_at IS NULL`)
-Next: Confirm modal for destructive bulk actions (delete) OR visual row states
+- UI: Global navbar search removed for MVP clarity; admin list search controls handle scoped queries
+Next: Submit request UX polish OR admin pro features (bulk assign / SLA)

@@ -21,7 +21,7 @@ from ..models import AdminUser, Request, RequestActivity, RequestLog, RequestMet
 from backend.models import utc_now
 from ..config import Config
 from sqlalchemy.orm import joinedload
-from sqlalchemy import func, inspect
+from sqlalchemy import func, inspect, or_
 from backend.helpchain_backend.src.utils.mfa import (
     generate_totp_secret,
     build_totp_uri,
@@ -442,7 +442,8 @@ def admin_login():
         return redirect(request.args.get("next") or url_for("admin.admin_requests"))
     return render_template("admin/login.html")
 
-@admin_bp.get("/logout")
+@admin_bp.route("/logout", methods=["GET", "POST"], endpoint="admin_logout")
+@login_required
 def admin_logout():
     _mfa_ok_clear()
     _mfa_attempt_reset()
@@ -1302,14 +1303,14 @@ def build_requests_query(base_query, request_args):
         internal = "pending" if status == "new" else status
         base_query = base_query.filter(Request.status == internal)
     if q:
-        like = f"%{q}%"
+        like = f"%{q.lower()}%"
         base_query = base_query.filter(
             or_(
-                Request.title.ilike(like),
-                Request.name.ilike(like),
-                Request.email.ilike(like),
-                Request.phone.ilike(like),
-                Request.description.ilike(like),
+                func.lower(Request.title).like(like),
+                func.lower(Request.name).like(like),
+                func.lower(Request.email).like(like),
+                func.lower(Request.phone).like(like),
+                func.lower(Request.description).like(like),
             )
         )
 

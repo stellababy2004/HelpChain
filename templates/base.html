@@ -111,14 +111,17 @@
             </li>
             {% endif %}
             <li class="nav-item">
-              <a class="nav-link" href="/profile"
-                ><i class="fas fa-user me-1"></i>{{ _('Profile') }}</a
-              >
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_requests') }}">
+                <i class="fas fa-user me-1"></i>{{ _('Profile') }}
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('logout') }}"
-                ><i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}</a
-              >
+              <form class="d-inline" method="post" action="{{ safe_url_for('admin.admin_logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="nav-link btn btn-link p-0" style="text-decoration:none;">
+                  <i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}
+                </button>
+              </form>
             </li>
             {% else %}
             <li class="nav-item">
@@ -133,24 +136,9 @@
             </li>
             {% endif %}
           </ul>
-          <!-- Search + actions -->
-          <form class="d-flex align-items-center ms-3" role="search" method="get" action="/search">
-            <input
-              class="form-control form-control-sm me-2"
-              type="search"
-              name="q"
-              placeholder="{{ _('Search in HelpChain...') }}"
-              aria-label="{{ _('Search') }}"
-            />
-            <button class="btn btn-outline-light btn-sm" type="submit" title="{{ _('Search') }}" aria-label="{{ _('Search') }}">
-              <i class="fas fa-search"></i>
-              <span class="visually-hidden">{{ _('Search') }}</span>
-            </button>
-          </form>
-
           <div class="d-flex align-items-center ms-2">
-            <button class="btn btn-link text-white" type="button"
-                    aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
+            <button id="theme-toggle" class="btn btn-link text-white" type="button"
+                    aria-pressed="false" aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
               <i class="fas fa-moon"></i>
             </button>
 
@@ -371,6 +359,38 @@
       }
     </script>
     {% endif %}
+    <script>
+    (function () {
+      const btn = document.getElementById("theme-toggle");
+      if (!btn) return;
+      const KEY = "hc_theme";
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        try {
+          localStorage.setItem(KEY, theme);
+        } catch (e) {
+          /* ignore */
+        }
+        btn.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+      }
+
+      let saved = null;
+      try {
+        saved = localStorage.getItem(KEY);
+      } catch (e) {
+        /* ignore */
+      }
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(saved || (prefersDark ? "dark" : "light"));
+
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const current = document.documentElement.getAttribute("data-theme") || "light";
+        applyTheme(current === "dark" ? "light" : "dark");
+      });
+    })();
+    </script>
     {% block scripts %}{% endblock %}
   </body>
 </html>

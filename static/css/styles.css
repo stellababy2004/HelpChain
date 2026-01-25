@@ -200,6 +200,55 @@ form select.form-select {
   color: rgba(255, 255, 255, 0.75);
 }
 
+/* ===== HelpChain Theme Tokens ===== */
+:root {
+  --hc-bg: #ffffff;
+  --hc-text: #0f172a;
+  --hc-card: #ffffff;
+  --hc-border: rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="dark"] {
+  --hc-bg: #0b1220;
+  --hc-text: #e5e7eb;
+  --hc-card: #0f172a;
+  --hc-border: rgba(229, 231, 235, 0.14);
+}
+
+body {
+  background: var(--hc-bg) !important;
+  color: var(--hc-text);
+}
+
+.card,
+.hc-card,
+.panel,
+.container .card,
+.dropdown-menu,
+.toast,
+.modal-content {
+  background: var(--hc-card) !important;
+  border-color: var(--hc-border) !important;
+}
+
+.navbar,
+.navbar-nav .nav-link {
+  color: var(--hc-text);
+}
+
+/* Highlight search matches */
+.hc-highlight {
+  background: #fff3a0;
+  color: #000;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+:root[data-theme="dark"] .hc-highlight {
+  background: rgba(255, 243, 160, 0.22);
+  color: inherit;
+}
+
 /* --- Submit request: sticky CTA --- */
 .hc-sticky-cta{
   position: fixed;
