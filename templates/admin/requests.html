@@ -106,15 +106,18 @@
           <td>{{ r.id }}</td>
           <td>{{ r.title }}</td>
           <td>{{ r.name or r.requester_name }}</td>
-          <td>
-            {% set status_class = {
-              'pending':'bg-primary',
-              'approved':'bg-info text-dark',
+            <td>
+              {% set status_class = {
+                'pending':'bg-primary',
+                'approved':'bg-info text-dark',
               'in_progress':'bg-warning text-dark',
               'done':'bg-success',
               'rejected':'bg-danger'
             }.get(r.status, 'bg-secondary') %}
-            <span class="badge {{ status_class }}">{{ _(STATUS_LABELS.get(r.status, r.status)) }}</span>
+              <span class="badge {{ status_class }}">{{ _(STATUS_LABELS.get(r.status, r.status)) }}</span>
+              {% if r.is_archived %}
+                <span class="badge bg-secondary ms-1">Archived</span>
+              {% endif %}
           </td>
           <td>{{ _(r.priority) if r.priority else '' }}</td>
           <td>{{ _(r.category) if r.category else '' }}</td>
