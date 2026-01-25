@@ -170,7 +170,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="{{ safe_url_for('admin_dashboard') }}">
+        <a class="navbar-brand" href="{{ safe_url_for('admin.admin_dashboard') }}">
           <i class="fas fa-shield-alt me-2"></i>HelpChain Admin
         </a>
         <button
@@ -184,12 +184,12 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_volunteers') }}">
                 <i class="fas fa-users me-1"></i>Доброволци
               </a>
             </li>
@@ -248,12 +248,12 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-            <a href="{{ safe_url_for('admin_dashboard') }}">
+            <a href="{{ safe_url_for('admin.admin_dashboard') }}">
               <i class="fas fa-home me-1"></i>Dashboard
             </a>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
-            <i class="fas fa-file-export me-1"></i>Експорт данни
+            <i class="fas fa-file-export me-1"></i>{{ _('Export data') }}
           </li>
         </ol>
       </nav>
@@ -263,9 +263,9 @@
           <div class="export-icon">
             <i class="fas fa-file-export"></i>
           </div>
-          <h2>Експорт на данни</h2>
+          <h2>{{ _('Export data') }}</h2>
           <p class="text-muted">
-            Изтеглете данни от системата в различни формати
+            {{ _('Download data from the system in various formats') }}
           </p>
         </div>
 
@@ -329,7 +329,7 @@
 
         <!-- Export Options -->
         <h4 class="mb-3">
-          <i class="fas fa-download me-2"></i>Изберете формат
+          <i class="fas fa-download me-2"></i>{{ _('Choose format') }}
         </h4>
         <div class="row">
           <div class="col-md-3">
@@ -337,8 +337,8 @@
               <div class="export-icon-small csv">
                 <i class="fas fa-file-csv"></i>
               </div>
-              <h5>CSV</h5>
-              <p class="text-muted small">Разделени със запетая</p>
+              <h5>{{ _('CSV') }}</h5>
+              <p class="text-muted small">{{ _('Comma separated') }}</p>
             </div>
           </div>
           <div class="col-md-3">
@@ -346,8 +346,8 @@
               <div class="export-icon-small json">
                 <i class="fas fa-file-code"></i>
               </div>
-              <h5>JSON</h5>
-              <p class="text-muted small">Структурирани данни</p>
+              <h5>{{ _('JSON') }}</h5>
+              <p class="text-muted small">{{ _('Structured data') }}</p>
             </div>
           </div>
           <div class="col-md-3">
@@ -355,8 +355,8 @@
               <div class="export-icon-small pdf">
                 <i class="fas fa-file-pdf"></i>
               </div>
-              <h5>PDF</h5>
-              <p class="text-muted small">Форматиран документ</p>
+              <h5>{{ _('PDF') }}</h5>
+              <p class="text-muted small">{{ _('Formatted document') }}</p>
             </div>
           </div>
           <div class="col-md-3">
@@ -364,8 +364,8 @@
               <div class="export-icon-small excel">
                 <i class="fas fa-file-excel"></i>
               </div>
-              <h5>Excel</h5>
-              <p class="text-muted small">Електронна таблица</p>
+              <h5>{{ _('Excel') }}</h5>
+              <p class="text-muted small">{{ _('Spreadsheet') }}</p>
             </div>
           </div>
         </div>
@@ -383,14 +383,14 @@
               class="btn btn-outline-secondary me-2"
               onclick="previewExport()"
             >
-              <i class="fas fa-eye me-1"></i>Преглед
+              <i class="fas fa-eye me-1"></i>{{ _('Preview') }}
             </button>
             <button
               class="btn btn-primary"
               onclick="startExport()"
               id="exportBtn"
             >
-              <i class="fas fa-download me-1"></i>Експорт
+              <i class="fas fa-download me-1"></i>{{ _('Export') }}
             </button>
           </div>
         </div>

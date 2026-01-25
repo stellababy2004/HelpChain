@@ -22,16 +22,23 @@ def test_admin_login_using_client(client, init_test_data):
     resp = client.get("/admin/login")
     assert resp.status_code == 200
 
-    # POST credentials for the admin that has 2FA enabled
-    login_data = {"username": admin.username, "password": "TestPass123"}
+    # POST credentials for the admin that has 2FA enabled, including CSRF token from session
+    with client.session_transaction() as sess:
+        csrf_token = sess.get("csrf_token", "")
+
+    login_data = {
+        "username": admin.username,
+        "password": "TestPass123",
+        "csrf_token": csrf_token,
+    }
     resp = client.post("/admin/login", data=login_data, follow_redirects=False)
     assert (
         resp.status_code == 302
     ), f"Expected redirect after POST, got {resp.status_code}"
 
     location = resp.headers.get("Location", "")
-    # Should redirect into the email 2FA flow
-    assert "admin/email_2fa" in location
+    # Should redirect into the 2FA flow
+    assert "/admin/2fa" in location
 
     # Check that the session was populated for pending email 2FA
     with client.session_transaction() as sess:

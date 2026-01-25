@@ -517,7 +517,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('dashboard') }}">
+              <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
@@ -527,7 +527,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('submit_request') }}">
+              <a class="nav-link" href="{{ safe_url_for('main.submit_request') }}">
                 <i class="fas fa-plus-circle me-1"></i>Нова заявка
               </a>
             </li>
@@ -570,7 +570,7 @@
           <div class="col-lg-8 text-center">
             {% if current_user.profile_picture %}
             <img
-              src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) }}"
+              src="{{ url_lang('static', filename='uploads/' + current_user.profile_picture) }}"
               alt="Profile Picture"
               class="profile-avatar"
             />

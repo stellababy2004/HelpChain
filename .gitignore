@@ -126,6 +126,10 @@ staged_changes.patch
 .venv/
 .venv311/
 
+# Legacy templates quarantine
+backend/_legacy_templates/
+backend/_legacy_src_templates/
+
 # Local scanner outputs
 all_objects.txt
 all_hashes.txt
@@ -139,3 +143,18 @@ vercel_excerpt_*.txt
 # CI / extraction artifacts
 artifacts/
 .github/artifacts/
+*.db
+instance/*.db
+
+# Local previews / temp
+static/previews/
+backend/static/previews/
+**/previews/
+
+# Temp scripts/files
+scripts/_tmp_*.py
+temp.txt
+
+
+# local tooling
+.hintrc

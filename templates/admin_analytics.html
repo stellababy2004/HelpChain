@@ -19,10 +19,10 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='js/chartjs_adapter_date_fns.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/chartjs_adapter_date_fns.js') }}"></script>
 
     <!-- ApexCharts for advanced charts -->
-    <script src="{{ url_for('static', filename='js/apexcharts.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/apexcharts.js') }}"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -381,7 +381,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
@@ -394,7 +394,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_volunteers') }}">
                 <i class="fas fa-users me-1"></i>Доброволци
               </a>
             </li>
@@ -427,7 +427,7 @@
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ safe_url_for('admin_dashboard') }}">
+            <a href="{{ safe_url_for('admin.admin_dashboard') }}">
               <i class="fas fa-home me-1"></i>Админ панел
             </a>
           </li>
@@ -456,10 +456,10 @@
             </div>
             <div class="d-flex gap-2">
               <button class="export-btn" onclick="exportData('json')">
-                <i class="fas fa-download me-1"></i>Export JSON
+                <i class="fas fa-download me-1"></i>{{ _('Export JSON') }}
               </button>
-              <button class="export-btn" onclick="exportData('csv')">
-                <i class="fas fa-file-csv me-1"></i>Export CSV
+              <button class="export-btn" onclick="if(confirm({{ export_confirm|tojson }})) exportData('csv')">
+                <i class="fas fa-file-csv me-1"></i>{{ _('Export CSV') }}
               </button>
             </div>
           </div>
@@ -1004,6 +1004,14 @@
           window.location.reload();
         }, 1000);
       }
+
+      // Localized export confirmation (stable multiline msgids)
+      {% set export_confirm = '\n'.join([
+        _('⚠️ This export contains personal data.'),
+        _('Internal use only.'),
+        '',
+        _('Are you sure you want to continue?')
+      ]) %}
 
       function exportData(format) {
         const url = `/api/analytics/export?format=${format}&type=dashboard`;

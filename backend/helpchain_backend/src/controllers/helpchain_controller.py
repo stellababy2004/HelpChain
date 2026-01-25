@@ -2,8 +2,10 @@ import os
 import tempfile
 from datetime import UTC, datetime, timedelta
 
-from ..extensions import db
-from ..models import Request
+from backend.extensions import db
+from backend.models import Request
+from flask import render_template
+
 
 
 def utc_now() -> datetime:
@@ -14,18 +16,18 @@ def utc_now() -> datetime:
 # опитваме се да намерим моделите; ако липсват - не вдигаме ImportError при зареждане
 MODELS_AVAILABLE = True
 try:
-    from ..models.help_request import HelpRequest
-    from ..models.volunteer import Volunteer
+    from backend.models import HelpRequest  # alias към Request
+    from backend.models import Volunteer
 except Exception:
     try:
-        from ..models import HelpRequest, Volunteer
+        from backend.models import HelpRequest, Volunteer
     except Exception:
         HelpRequest = None
         Volunteer = None
         MODELS_AVAILABLE = False
 
 try:
-    from ..models.audit import AuditLog
+    from backend.models import AuditLog
 except Exception:
     AuditLog = None
 
@@ -85,41 +87,47 @@ class HelpChainController:
         if not MODELS_AVAILABLE:
             return q
         if filters.get("date_from"):
-            q = q.filter(HelpRequest.created_at >= datetime.fromisoformat(filters["date_from"]))
+            q = q.filter(Request.created_at >= datetime.fromisoformat(filters["date_from"]))
         if filters.get("date_to"):
-            q = q.filter(HelpRequest.created_at <= datetime.fromisoformat(filters["date_to"]))
+            q = q.filter(Request.created_at <= datetime.fromisoformat(filters["date_to"]))
         if filters.get("status"):
-            q = q.filter(HelpRequest.status == filters["status"])
+            q = q.filter(Request.status == filters["status"])
         if filters.get("region"):
-            q = q.filter(HelpRequest.region == filters["region"])
-        if filters.get("volunteer_id"):
-            q = q.filter(HelpRequest.volunteer_id == int(filters["volunteer_id"]))
+            q = q.filter(Request.region == filters["region"])
+        # volunteer_id липсва в Request; пропускаме
         return q
 
     def get_dashboard_stats(self, filters):
         if not MODELS_AVAILABLE:
             return {
                 "counts_by_status": [],
-                "volunteers_by_city": [],
+                "requests_by_city": [],
                 "top_request_types": [],
                 "timeseries": [],
                 "warning": "Models HelpRequest/Volunteer not found - implement src/models/help_request.py and src/models/volunteer.py to enable DB stats.",
             }
 
         out = {}
-        q = db.session.query(HelpRequest)
+        q = db.session.query(Request)
         q = self._apply_filters_query(q, filters)
 
         # counts by status
-        status_counts = db.session.query(HelpRequest.status, db.func.count(HelpRequest.id)).group_by(HelpRequest.status).all()
+        status_counts = db.session.query(Request.status, db.func.count(Request.id)).group_by(Request.status).all()
         out["counts_by_status"] = [{"status": s, "count": c} for s, c in status_counts]
 
-        # volunteers by city
-        vol_by_city = db.session.query(Volunteer.city, db.func.count(Volunteer.id)).group_by(Volunteer.city).order_by(db.func.count(Volunteer.id).desc()).limit(50).all()
-        out["volunteers_by_city"] = [{"city": c, "count": n} for c, n in vol_by_city]
+        # requests by city (top 10)
+        city_rows = (
+            db.session.query(Request.city, db.func.count(Request.id))
+            .filter(Request.city.isnot(None), Request.city != "")
+            .group_by(Request.city)
+            .order_by(db.func.count(Request.id).desc())
+            .limit(10)
+            .all()
+        )
+        out["requests_by_city"] = [{"city": city, "count": cnt} for city, cnt in city_rows]
 
-        # top request types
-        types = db.session.query(HelpRequest.type, db.func.count(HelpRequest.id)).group_by(HelpRequest.type).order_by(db.func.count(HelpRequest.id).desc()).limit(10).all()
+        # top request categories
+        types = db.session.query(Request.category, db.func.count(Request.id)).group_by(Request.category).order_by(db.func.count(Request.id).desc()).limit(10).all()
         out["top_request_types"] = [{"type": t, "count": cnt} for t, cnt in types]
 
         # time series active vs completed (simple last 30 days)
@@ -129,10 +137,13 @@ class HelpChainController:
             day = today - timedelta(days=29 - i)
             start = datetime.combine(day, datetime.min.time())
             end = datetime.combine(day, datetime.max.time())
-            active = db.session.query(HelpRequest).filter(HelpRequest.created_at <= end, HelpRequest.status != "completed").count()
-            completed = db.session.query(HelpRequest).filter(HelpRequest.updated_at >= start, HelpRequest.status == "completed").count()
+            active = db.session.query(Request).filter(Request.created_at <= end, Request.status != "completed").count()
+            completed = db.session.query(Request).filter(Request.updated_at >= start, Request.status == "completed").count()
             series.append({"date": day.isoformat(), "active": active, "completed": completed})
         out["timeseries"] = series
+
+        out["total_requests"] = db.session.query(Request).count()
+        out["total_volunteers"] = db.session.query(Volunteer).count() if Volunteer else 0
 
         return out
 
@@ -214,3 +225,12 @@ class HelpChainController:
         db.session.commit()
         print(f"Created request with id: {req.id}")  # Debug log
         return {"success": True, "id": req.id}
+
+    def render_category_template(self, category, COMMON):
+        show_emergency = category["ui"].get("severity") == "critical"
+        return render_template(
+            "request_category.html",
+            category=category,
+            COMMON=COMMON,
+            show_emergency=show_emergency,
+        )

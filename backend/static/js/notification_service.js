@@ -46,6 +46,11 @@ class HelpChainNotificationService {
    */
   async registerServiceWorker() {
     if ("serviceWorker" in navigator) {
+      const host = window.location.hostname;
+      if (host === "127.0.0.1" || host === "localhost") {
+        console.info("Service Worker disabled on localhost (dev)");
+        return;
+      }
       try {
         this.swRegistration = await navigator.serviceWorker.register("/sw.js");
         console.log("Service Worker registered successfully");
@@ -743,18 +748,36 @@ class HelpChainNotificationService {
   }
 }
 
-// Global notification service instance
-const notificationService = new HelpChainNotificationService();
+// Dev safety: if a Service Worker was registered previously, unregister it on localhost
+(function () {
+  try {
+    if (!("serviceWorker" in navigator)) return;
+    const host = window.location.hostname;
+    if (host !== "127.0.0.1" && host !== "localhost") return;
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((regs) => Promise.all(regs.map((r) => r.unregister())))
+      .then(() => console.info("Service Workers unregistered on localhost (dev)"))
+      .catch(() => {});
+  } catch (e) {
+    // ignore
+  }
+})();
 
-// Initialize when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () =>
-    notificationService.initialize(),
-  );
-} else {
-  notificationService.initialize();
+// Global notification service instance (guard against double-declare)
+if (!window.notificationService) {
+  const notificationService = new HelpChainNotificationService();
+
+  // Initialize when DOM is ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () =>
+      notificationService.initialize(),
+    );
+  } else {
+    notificationService.initialize();
+  }
+
+  // Export for global access
+  window.HelpChainNotificationService = HelpChainNotificationService;
+  window.notificationService = notificationService;
 }
-
-// Export for global access
-window.HelpChainNotificationService = HelpChainNotificationService;
-window.notificationService = notificationService;

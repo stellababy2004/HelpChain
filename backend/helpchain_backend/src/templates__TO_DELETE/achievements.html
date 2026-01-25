@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Achievements{% endblock %}
+
+{% block content %}
+<h1>Achievements</h1>
+
+<ul id="achievements-list">
+	{% for a in achievements %}
+		<li class="achievement-item">
+			<span class="achievement-title">{{ a.title }}</span>
+			<span class="achievement-points">{{ a.points }}</span>
+			<span class="achievement-status">{{ a.status }}</span>
+		</li>
+	{% endfor %}
+</ul>
+{% endblock %}

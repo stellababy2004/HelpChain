@@ -24,8 +24,16 @@ CATEGORIES = {
             "severity": "normal"
         },
         "content": {
-            "title": {"bg": "Храна и хранителни продукти"},
-            "intro": {"bg": "HelpChain съдейства с основни хранителни продукти и спешна хранителна подкрепа за семейства и уязвими хора."},
+            "title": {
+                "bg": "Храна и хранителни продукти",
+                "en": "Food and groceries",
+                "fr": "Nourriture et produits alimentaires",
+            },
+            "intro": {
+                "bg": "HelpChain съдейства с основни хранителни продукти и спешна хранителна подкрепа за семейства и уязвими хора.",
+                "en": "HelpChain provides support with essential groceries and urgent food assistance for families and vulnerable people.",
+                "fr": "HelpChain aide avec des produits alimentaires essentiels et un soutien alimentaire urgent pour les familles et les personnes vulnérables.",
+            },
             "bullets": [
                 "Основни хранителни продукти",
                 "Спешна хранителна подкрепа",
@@ -39,7 +47,11 @@ CATEGORIES = {
             "notes": [
                 "Помощта е доброволческа и според наличните възможности."
             ],
-            "cta": {"bg": "Подай заявка за хранителна помощ"}
+            "cta": {
+                "bg": "Подай заявка за хранителна помощ",
+                "en": "Submit a food assistance request",
+                "fr": "Déposer une demande d'aide alimentaire",
+            }
         }
     },
     "emergency": {
@@ -49,8 +61,16 @@ CATEGORIES = {
             "severity": "critical"
         },
         "content": {
-            "title": {"bg": "Помощ при бедствия и аварии"},
-            "intro": {"bg": "HelpChain съдейства с координация, информация и допълваща подкрепа при бедствия и аварии."},
+            "title": {
+                "bg": "Помощ при бедствия и аварии",
+                "en": "Disaster and emergency assistance",
+                "fr": "Aide en cas de catastrophe et d'urgence",
+            },
+            "intro": {
+                "bg": "HelpChain съдейства с координация, информация и допълваща подкрепа при бедствия и аварии.",
+                "en": "HelpChain supports coordination, information, and additional assistance during disasters and emergencies.",
+                "fr": "HelpChain aide à la coordination, à l'information et au soutien complémentaire lors de catastrophes et d'urgences.",
+            },
             "bullets": [
                 "Наводнения, пожари и природни бедствия",
                 "Аварии в дома или района",
@@ -67,7 +87,11 @@ CATEGORIES = {
                 "HelpChain не замества спешните и аварийни служби. Платформата подпомага координацията и допълващата подкрепа."
             ],
             "emergency_line": "При непосредствена опасност за живота или здравето незабавно се обадете на 112.",
-            "cta": {"bg": "Подай заявка за съдействие"}
+            "cta": {
+                "bg": "Подай заявка за съдействие",
+                "en": "Submit an assistance request",
+                "fr": "Déposer une demande d'assistance",
+            }
         }
     },
     # ... добави останалите категории по същия модел ...

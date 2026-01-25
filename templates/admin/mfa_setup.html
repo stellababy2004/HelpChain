@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:520px;margin:24px auto;padding:18px;border:1px solid #333;border-radius:12px;">
+  <h2 style="margin:0 0 10px 0;">{{ _('Set up MFA') }}</h2>
+  <p style="opacity:.85;margin-top:0;">
+    {{ _('Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code.') }}
+  </p>
+
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+    <div style="background:#fff;padding:10px;border-radius:10px;">
+      <img alt="MFA QR" src="data:image/png;base64,{{ qr_b64 }}" />
+    </div>
+    <div style="flex:1;min-width:220px;">
+      <div style="font-size:12px;opacity:.8;">{{ _('Manual key (if QR does not work):') }}</div>
+      <div style="font-family:monospace;padding:10px;border:1px dashed #555;border-radius:10px;margin:6px 0 12px 0;">
+        {{ secret }}
+      </div>
+
+      <form method="post">
+        <label style="display:block;margin-bottom:6px;">{{ _('Verification code (6 digits)') }}</label>
+        <input name="code" inputmode="numeric" autocomplete="one-time-code"
+               style="width:100%;padding:10px;border-radius:10px;border:1px solid #555;background:#111;color:#fff;"
+               placeholder="123456" aria-label="{{ _('Verification code (6 digits)') }}">
+        <button type="submit" style="margin-top:12px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;">
+          {{ _('Activate MFA') }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+
+backend\helpchain_backend\src\routes\admin.py:63:    return render_template(
+backend\helpchain_backend\src\routes\admin.py:156:    return render_template("volunteer_detail.html", volunteer=volunteer)
+backend\helpchain_backend\src\routes\admin.py:175:            return render_template("admin_login.html")
+backend\helpchain_backend\src\routes\admin.py:431:        return render_template("admin_login.html", error=error_msg)
+backend\helpchain_backend\src\routes\admin.py:456:    return render_template("admin_2fa.html")
+backend\helpchain_backend\src\routes\admin.py:477:    return render_template("admin_2fa_setup.html", totp_uri=uri)
+backend\helpchain_backend\src\routes\admin.py:573:    return render_template(
+backend\helpchain_backend\src\routes\admin.py:599:    return render_template("admin_volunteers.html", volunteers=volunteers)
+backend\helpchain_backend\src\routes\admin.py:623:    return render_template("add_volunteer.html")
+backend\helpchain_backend\src\routes\admin.py:674:    return render_template("edit_volunteer.html", volunteer=volunteer)
+backend\helpchain_backend\src\routes\main_old.py:18:    return render_template(
+backend\helpchain_backend\src\routes\main_old.py:29:    return render_template("about.html")
+backend\helpchain_backend\src\routes\main_old.py:57:    return render_template("submit_request.html")
+backend\helpchain_backend\src\routes\main_old.py:82:    return render_template("become_volunteer.html")
+backend\helpchain_backend\src\routes\main_old.py:93:    return render_template("feedback.html")
+backend\helpchain_backend\src\routes\main_old.py:99:    return render_template("faq.html")
+backend\helpchain_backend\src\routes\main_old.py:105:    return render_template("success_stories.html")
+backend\helpchain_backend\src\routes\main_old.py:111:    return render_template("privacy.html")
+backend\helpchain_backend\src\routes\main_old.py:117:    return render_template("terms.html")
+backend\helpchain_backend\src\routes\main.py:22:    return render_template("all_categories.html", categories=categories)
+backend\helpchain_backend\src\routes\main.py:30:    return render_template("index.html"), 200
+backend\helpchain_backend\src\routes\main.py:41:    return render_template("achievements.html", achievements=achievements), 200
+backend\helpchain_backend\src\routes\main.py:46:    return render_template("volunteer_login.html"), 200
+backend\helpchain_backend\src\routes\main.py:55:        return render_template(
+backend\helpchain_backend\src\routes\main.py:65:    return render_template("chat/chat.html")
+backend\helpchain_backend\src\routes\main.py:68:    return render_template(
+backend\helpchain_backend\src\routes\main.py:87:    return render_template(
+backend\helpchain_backend\src\routes\main.py:100:        render_template(
+backend\helpchain_backend\src\routes\main.py:116:    return render_template("about.html")
+backend\helpchain_backend\src\routes\main.py:205:    return render_template("submit_request.html")
+backend\helpchain_backend\src\routes\main.py:210:    return render_template("faq.html")
+backend\helpchain_backend\src\routes\main.py:216:    return render_template("success_stories.html")
+backend\helpchain_backend\src\routes\main.py:222:    return render_template("privacy.html")
+backend\helpchain_backend\src\routes\main.py:228:    return render_template("terms.html")
+backend\helpchain_backend\src\routes\main.py:263:    return render_template(
+

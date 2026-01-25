@@ -1,0 +1,417 @@
+{% extends "base.html" %} {% block title %}Управление на доброволци{% endblock
+%} {% block head %}
+<link
+  rel="stylesheet"
+  href="{{ url_lang('static', filename='css/admin_volunteers.css') }}"
+/>
+<style>
+  .filters-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .export-buttons {
+    margin-bottom: 15px;
+  }
+
+  .export-buttons .btn {
+    margin-right: 10px;
+  }
+
+  .table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .pagination-wrapper {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  .per-page-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sort-indicator {
+    margin-left: 5px;
+  }
+
+  .sort-indicator:after {
+    content: "↕";
+    opacity: 0.3;
+  }
+
+  .sort-indicator.sort-asc:after {
+    content: "↑";
+    opacity: 1;
+  }
+
+  .sort-indicator.sort-desc:after {
+    content: "↓";
+    opacity: 1;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Управление на доброволци</h1>
+    <a
+      href="{{ safe_url_for('admin_dashboard') }}"
+      class="btn btn-outline-secondary"
+    >
+      <i class="fas fa-arrow-left me-2"></i>Обратно към dashboard
+    </a>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <form
+      method="GET"
+      action="{{ url_lang('admin_volunteers') }}"
+      class="row g-3"
+    >
+      <div class="col-md-4">
+        <label for="search" class="form-label">
+          <i class="fas fa-search me-1"></i>Търсене
+        </label>
+        <input
+          type="text"
+          class="form-control"
+          id="search"
+          name="search"
+          value="{{ search }}"
+          placeholder="Име, имейл или телефон..."
+        />
+      </div>
+      <div class="col-md-3">
+        <label for="location" class="form-label">
+          <i class="fas fa-map-marker-alt me-1"></i>Локация
+        </label>
+        <input
+          type="text"
+          class="form-control"
+          id="location"
+          name="location"
+          value="{{ location_filter }}"
+          placeholder="Град или област..."
+        />
+      </div>
+      <div class="col-md-2">
+        <label for="sort" class="form-label">
+          <i class="fas fa-sort me-1"></i>Сортиране
+        </label>
+        <select class="form-select" id="sort" name="sort">
+          <option value="name" {% if sort_by="" ="name" %}selected{% endif %}>
+            По име
+          </option>
+          <option
+            value="location"
+            {%
+            if
+            sort_by=""
+            ="location"
+            %}selected{%
+            endif
+            %}
+          >
+            По локация
+          </option>
+          <option
+            value="created_at"
+            {%
+            if
+            sort_by=""
+            ="created_at"
+            %}selected{%
+            endif
+            %}
+          >
+            По дата
+          </option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="order" class="form-label">
+          <i class="fas fa-arrow-up me-1"></i>Ред
+        </label>
+        <select class="form-select" id="order" name="order">
+          <option value="asc" {% if sort_order="" ="asc" %}selected{% endif %}>
+            Възходящ
+          </option>
+          <option
+            value="desc"
+            {%
+            if
+            sort_order=""
+            ="desc"
+            %}selected{%
+            endif
+            %}
+          >
+            Низходящ
+          </option>
+        </select>
+      </div>
+      <div class="col-md-1 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fas fa-filter me-1"></i>Филтрирай
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Export Buttons -->
+  <div class="export-buttons">
+    <h5>Експорт на данни:</h5>
+    <a
+      href="{{ safe_url_for('export_volunteers', format='csv', search=search, location=location_filter) }}"
+      class="btn btn-success btn-sm"
+    >
+      <i class="fas fa-file-csv me-1"></i>CSV
+    </a>
+    <a
+      href="{{ safe_url_for('export_volunteers', format='json', search=search, location=location_filter) }}"
+      class="btn btn-info btn-sm"
+    >
+      <i class="fas fa-file-code me-1"></i>JSON
+    </a>
+    <a
+      href="{{ safe_url_for('export_volunteers', format='pdf', search=search, location=location_filter) }}"
+      class="btn btn-danger btn-sm"
+    >
+      <i class="fas fa-file-pdf me-1"></i>PDF
+    </a>
+    <div class="float-end">
+      <small class="text-muted">
+        Общо: <strong>{{ total_volunteers }}</strong> доброволци
+      </small>
+    </div>
+  </div>
+
+  <!-- Add Volunteer Button -->
+  <div class="mb-3">
+    <a href="{{ safe_url_for('add_volunteer') }}" class="btn btn-primary">
+      <i class="fas fa-plus me-1"></i>Добави нов доброволец
+    </a>
+  </div>
+
+  <!-- Volunteers Table -->
+  <div class="table-responsive">
+    <table class="table table-striped table-hover mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>ID</th>
+          <th>
+            <a
+              href="{{ safe_url_for('admin_volunteers', sort='name', order='desc' if sort_by == 'name' and sort_order == 'asc' else 'asc', search=search, location=location_filter) }}"
+              class="text-white text-decoration-none"
+            >
+              Име
+              <span
+                class="sort-indicator {% if sort_by == 'name' %}sort-{{ sort_order }}{% endif %}"
+              ></span>
+            </a>
+          </th>
+          <th>Телефон</th>
+          <th>Имейл</th>
+          <th>Локация</th>
+          <th>Регистриран</th>
+          <th>Действия</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for volunteer in volunteers %}
+        <tr>
+          <td>{{ volunteer.id }}</td>
+          <td>
+            <strong>{{ volunteer.name }}</strong>
+          </td>
+          <td>{{ volunteer.phone }}</td>
+          <td>
+            <a href="mailto:{{ volunteer.email }}">{{ volunteer.email }}</a>
+          </td>
+          <td>{{ volunteer.location or 'Няма' }}</td>
+          <td>
+            {% if volunteer.created_at %} {{
+            volunteer.created_at.strftime('%d.%m.%Y') }} {% else %} Няма {%
+            endif %}
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <a
+                href="{{ safe_url_for('admin.volunteer_detail', id=volunteer.id) }}"
+                class="btn btn-outline-info btn-sm"
+                title="Преглед"
+              >
+                <i class="fas fa-eye"></i>
+              </a>
+              <a
+                href="{{ safe_url_for('admin.edit_volunteer', id=volunteer.id) }}"
+                class="btn btn-outline-warning btn-sm"
+                title="Редактирай"
+              >
+                <i class="fas fa-edit"></i>
+              </a>
+              <form
+                method="POST"
+                action="{{ url_lang('admin.delete_volunteer', id=volunteer.id) }}"
+                class="d-inline"
+                onsubmit="return confirm('Сигурни ли сте, че искате да изтриете {{ volunteer.name }}?')"
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+                <button
+                  type="submit"
+                  class="btn btn-outline-danger btn-sm"
+                  title="Изтрий"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination and Per Page Selector -->
+  {% if total_pages > 1 %}
+  <div class="pagination-wrapper">
+    <div class="per-page-selector">
+      <label for="per_page" class="form-label mb-0 me-2">Показвай:</label>
+      <select
+        class="form-select form-select-sm"
+        id="per_page"
+        onchange="changePerPage(this.value)"
+      >
+        <option value="10" {% if per_page="" ="10" %}selected{% endif %}>
+          10
+        </option>
+        <option value="25" {% if per_page="" ="25" %}selected{% endif %}>
+          25
+        </option>
+        <option value="50" {% if per_page="" ="50" %}selected{% endif %}>
+          50
+        </option>
+        <option value="100" {% if per_page="" ="100" %}selected{% endif %}>
+              <a
+                class="text-white text-decoration-none"
+                href="{{ safe_url_for('admin_volunteers', sort='name', order='desc' if sort_by == 'name' and sort_order == 'asc' else 'asc', search=search, location=location_filter) }}"
+              >
+    </div>
+
+    <nav aria-label="Volunteers pagination">
+      <ul class="pagination pagination-sm mb-0">
+        {%- if page > 1 -%}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="{{ safe_url_for('admin_volunteers', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
+            aria-label="{{ _('Предишна страница') }}"
+            >{{ _('Предишна') }}</a
+          >
+        </li>
+        {%- endif -%}{%- for page_num in range(start_page, end_page + 1) -%}
+        <li class="page-item {% if page_num == page %}active{% endif %}">
+          <a
+            class="page-link"
+            href="{{ safe_url_for('admin_volunteers', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
+            aria-label="{{ _('Страница') }} {{ page_num }}"
+            >{{ page_num }}</a
+          >
+        </li>
+        {%- endfor -%}{%- if page < total_pages -%}
+        <li class="page-item">
+          <a
+            class="page-link"
+            href="{{ safe_url_for('admin_volunteers', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order, per_page=per_page) }}"
+            aria-label="{{ _('Следваща страница') }}"
+            >{{ _('Следваща') }}</a
+          >
+        </li>
+        {%- endif -%}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+
+  <!-- Statistics -->
+  {% if total_volunteers > 0 %}
+  <div class="row mt-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title text-primary">{{ total_volunteers }}</h5>
+          <p class="card-text">Общо доброволци</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title text-success">
+            {{ volunteers|selectattr('location')|list|length }}
+          </h5>
+          <p class="card-text">С локация</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title text-info">{{ page }}</h5>
+          <p class="card-text">Текуща страница</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title text-warning">{{ total_pages }}</h5>
+          <p class="card-text">Общо страници</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  function changePerPage(perPage) {
+    const url = new URL(window.location);
+    url.searchParams.set("per_page", perPage);
+    url.searchParams.set("page", "1"); // Reset to first page
+    window.location.href = url.toString();
+  }
+
+  // Auto-submit form on sort/order change
+  document.getElementById("sort").addEventListener("change", function () {
+    this.closest("form").submit();
+  });
+
+  document.getElementById("order").addEventListener("change", function () {
+    this.closest("form").submit();
+  });
+
+  // Clear filters functionality
+  function clearFilters() {
+    const url = new URL(window.location);
+    url.searchParams.delete("search");
+    url.searchParams.delete("location");
+    url.searchParams.set("page", "1");
+    window.location.href = url.toString();
+  }
+</script>
+{% endblock %}

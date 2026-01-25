@@ -20,27 +20,27 @@
     <!-- Custom CSS -->
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/design-system.css') }}"
+      href="{{ url_lang('static', filename='css/design-system.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/performance-optimizations.css') }}"
+      href="{{ url_lang('static', filename='css/performance-optimizations.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/accessibility.css') }}"
+      href="{{ url_lang('static', filename='css/accessibility.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/mobile-responsiveness.css') }}"
+      href="{{ url_lang('static', filename='css/mobile-responsiveness.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/user-feedback.css') }}"
+      href="{{ url_lang('static', filename='css/user-feedback.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/navigation-improvements.css') }}"
+      href="{{ url_lang('static', filename='css/navigation-improvements.css') }}"
     />
     <style>
       :root {
@@ -519,12 +519,12 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link active" href="{{ safe_url_for('dashboard') }}">
+              <a class="nav-link active" href="{{ url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('submit_request') }}">
+              <a class="nav-link" href="{{ safe_url_for('main.submit_request') }}">
                 <i class="fas fa-plus-circle me-1"></i>Нова заявка
               </a>
             </li>
@@ -655,7 +655,7 @@
           <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
         </h4>
         <div class="action-grid">
-          <a href="{{ safe_url_for('submit_request') }}" class="action-card">
+          <a href="{{ safe_url_for('main.submit_request') }}" class="action-card">
             <div class="action-icon">
               <i class="fas fa-plus-circle"></i>
             </div>
@@ -714,7 +714,7 @@
                 <th><i class="fas fa-tag me-1"></i>Категория</th>
                 <th><i class="fas fa-info-circle me-1"></i>Статус</th>
                 <th><i class="fas fa-calendar me-1"></i>Дата</th>
-                <th><i class="fas fa-cogs me-1"></i>Действия</th>
+                <th>{{ _('Actions') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -765,7 +765,7 @@
             Подайте първата си заявка за помощ и ние ще се погрижим за вас
           </p>
           <a
-            href="{{ safe_url_for('submit_request') }}"
+            href="{{ safe_url_for('main.submit_request') }}"
             class="btn btn-primary-modern btn-modern"
           >
             <i class="fas fa-plus-circle me-1"></i>Подай заявка
@@ -949,7 +949,7 @@
     </script>
 
     <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/navigation.js') }}"></script>
 
     <!-- Back to Top Button -->
     <button

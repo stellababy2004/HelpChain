@@ -1,0 +1,18 @@
+
+backend\templates\admin_analytics_professional.html:148:        from {
+backend\templates\admin_analytics_professional.html:1187:      // Load data from JSON scripts
+backend\templates\admin_analytics_professional.html:1211:        // Get user info from session (passed from server)
+backend\templates\available_tasks.html:210:    <!-- Task data from server -->
+backend\templates\available_tasks.html:406:          // Remove task from list or update status
+backend\templates\base.html:378:        from {
+backend\templates\chat_room.html:296:        from {
+backend\templates\global_search.html:125:    // Search data - in a real app, this would come from an API
+backend\templates\global_search.html:340:  // Function to open global search (can be called from anywhere)
+backend\templates\home_new.html:234:        from {
+backend\templates\volunteer_chat.html:139:        from {
+backend\templates\volunteer_chat.html:1029:      // Handle new message from Socket.IO
+backend\templates\volunteer_chat.html:1101:      // Handle file message from Socket.IO
+backend\templates\volunteer_dashboard.html:503:    from {
+backend\templates\volunteer_profile.html:235:    // Mock activities - replace with real data from backend
+backend\templates\email_templates\welcome_email.html:1:import json import pytest from appy import app, db from models import
+

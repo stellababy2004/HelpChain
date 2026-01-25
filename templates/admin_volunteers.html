@@ -388,14 +388,14 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
                 <a
                 class="nav-link active"
-                href="{{ safe_url_for('admin_volunteers') }}"
+                href="{{ safe_url_for('admin.admin_volunteers') }}"
               >
                 <i class="fas fa-users me-1"></i>Доброволци
               </a>
@@ -601,7 +601,7 @@
                 <i class="fas fa-filter me-1"></i>Филтрирай
               </button>
                 <a
-                  href="{{ safe_url_for('admin_volunteers') }}"
+                  href="{{ safe_url_for('admin.admin_volunteers') }}"
                   class="btn btn-secondary btn-modern"
                 >
                 <i class="fas fa-times me-1"></i>Изчисти
@@ -623,7 +623,7 @@
               <th>Локация</th>
               <th>Регистриран</th>
               <th>Статус</th>
-              <th>Действия</th>
+              <th>{{ _('Actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -705,21 +705,21 @@
         {% endif %}
         {% if page > 1 %}
         <a
-          href="{{ safe_url_for('admin_volunteers', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          href="{{ safe_url_for('admin.admin_volunteers', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
           class="page-link"
         >
           <i class="fas fa-chevron-left"></i>
         </a>
         {% endif %} {% for page_num in range(start_page, end_page + 1) %}
         <a
-          href="{{ safe_url_for('admin_volunteers', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          href="{{ safe_url_for('admin.admin_volunteers', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
           class="page-link {% if page_num == page %}active{% endif %}"
         >
           {{ page_num }}
         </a>
         {% endfor %} {% if page < total_pages %}
         <a
-          href="{{ safe_url_for('admin_volunteers', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          href="{{ safe_url_for('admin.admin_volunteers', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
           class="page-link"
         >
           <i class="fas fa-chevron-right"></i>

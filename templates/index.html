@@ -29,27 +29,27 @@
     <!-- Custom CSS -->
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/design-system.css') }}"
+      href="{{ url_lang('static', filename='css/design-system.css') }}?v=20260115-hero"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/performance-optimizations.css') }}"
+      href="{{ url_lang('static', filename='css/performance-optimizations.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/accessibility.css') }}"
+      href="{{ url_lang('static', filename='css/accessibility.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/mobile-responsiveness.css') }}"
+      href="{{ url_lang('static', filename='css/mobile-responsiveness.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/user-feedback.css') }}"
+      href="{{ url_lang('static', filename='css/user-feedback.css') }}"
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/navigation-improvements.css') }}"
+      href="{{ url_lang('static', filename='css/navigation-improvements.css') }}"
     />
     <style>
       :root {
@@ -504,6 +504,21 @@
   </head>
 
   <body data-theme="light">
+    <div
+      style="
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 99999;
+        background: #ff0;
+        color: #000;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-weight: 700;
+      "
+    >
+      TEMPLATE OK ✅
+    </div>
     <!-- Skip to main content -->
     <a href="#main-content" class="skip-link">Отиди към основното съдържание</a>
 
@@ -618,7 +633,7 @@
           >
             <a
               class="btn-light btn-primary focus-visible"
-              href="{{ safe_url_for('submit_request') }}"
+              href="{{ safe_url_for('main.submit_request') }}"
             >
               <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>Подай
               заявка за помощ
@@ -630,6 +645,19 @@
               <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i
               >Стани доброволец
             </a>
+          </div>
+
+          <!-- Live Impact (public, no personal data) -->
+          <div class="hero-impact" aria-label="Реален ефект на живо">
+            <span class="hero-impact-badge">
+              <strong id="heroActiveRequests">–</strong> активни заявки
+            </span>
+            <span class="hero-impact-badge">
+              <strong id="heroCompleted7d">–</strong> приключени (7 дни)
+            </span>
+            <span class="hero-impact-badge">
+              <strong id="heroMatched24h">–</strong> свързани (24 ч.)
+            </span>
           </div>
         </div>
       </div>
@@ -749,6 +777,40 @@
         </div>
       </section>
 
+      <!-- Live Impact (public, privacy-safe) -->
+      <section class="impact" id="impact">
+        <div class="impact-card">
+          <div class="impact-head">
+            <h2>Реален ефект (на живо)</h2>
+            <p class="muted">Анонимни, агрегирани данни — без лична информация.</p>
+          </div>
+
+          <div class="impact-grid">
+            <div class="kpi"><div class="k">Активни заявки</div><div class="v" id="kpiActive">–</div></div>
+            <div class="kpi"><div class="k">Нови (24ч)</div><div class="v" id="kpiNew24h">–</div></div>
+            <div class="kpi"><div class="k">Свързани (24ч)</div><div class="v" id="kpiMatched24h">–</div></div>
+            <div class="kpi"><div class="k">Приключени (7 дни)</div><div class="v" id="kpiDone7d">–</div></div>
+          </div>
+
+          <div class="impact-sla">
+            <div><span class="muted">Средно време до първа реакция (7 дни):</span> <b id="slaFirst">–</b></div>
+            <div><span class="muted">Средно време до решаване (30 дни):</span> <b id="slaResolution">–</b></div>
+          </div>
+
+          <div class="impact-cats">
+            <div class="muted">Топ категории (7 дни)</div>
+            <ul id="impactCats"></ul>
+          </div>
+
+            <div class="impact-foot muted">
+              <span id="impactUpdated">Обновено: -</span>
+              <button type="button" class="impact-refresh" id="impactRefresh">
+                Обнови
+              </button>
+            </div>
+          </div>
+        </section>
+
       <!-- Footer -->
       <footer
         class="footer bg-dark text-light py-5 mt-5"
@@ -853,12 +915,85 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/feedback.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/notification_service.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/feedback.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/navigation.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/notification_service.js') }}"></script>
+    <script>
+      (function () {
+        async function loadImpact() {
+          try {
+            const res = await fetch("/api/public/impact", {
+              headers: { Accept: "application/json" },
+            });
+            if (!res.ok) throw new Error("HTTP " + res.status);
+            const data = await res.json();
+
+            document.getElementById("kpiActive").textContent =
+              data.counts?.active_requests ?? "–";
+            document.getElementById("kpiNew24h").textContent =
+              data.counts?.new_last_24h ?? "–";
+            document.getElementById("kpiMatched24h").textContent =
+              data.counts?.matched_last_24h ?? "–";
+            document.getElementById("kpiDone7d").textContent =
+              data.counts?.completed_last_7d ?? "–";
+
+            const catLabel = (c) =>
+              ({
+                medical: "Медицинска",
+                admin: "Административна",
+                transport: "Транспорт",
+                food: "Храна",
+                other: "Друго",
+              }[c] || c);
+
+            const fr = data.sla?.avg_first_response_minutes_7d;
+            document.getElementById("slaFirst").textContent =
+              fr == null || fr === ""
+                ? "– (недостатъчно данни)"
+                : fr + " мин";
+
+            const rr = data.sla?.avg_resolution_hours_30d;
+            document.getElementById("slaResolution").textContent =
+              rr == null || rr === ""
+                ? "– (недостатъчно данни)"
+                : rr + " ч";
+
+            const ul = document.getElementById("impactCats");
+            if (ul) {
+              ul.innerHTML = "";
+              (data.categories_last_7d || []).forEach((c) => {
+                const li = document.createElement("li");
+                li.textContent = `${catLabel(c.category)}: ${c.count}`;
+                ul.appendChild(li);
+              });
+            }
+
+            const ts = data.generated_at ? new Date(data.generated_at) : null;
+            document.getElementById("impactUpdated").textContent =
+              "Обновено: " + (ts ? ts.toLocaleString() : "–");
+          } catch (e) {
+            console.error("Impact widget error:", e);
+          }
+        }
+
+        if (document.getElementById("impact")) {
+          loadImpact();
+          setInterval(loadImpact, 10 * 60 * 1000);
+        }
+      })();
+    </script>
     <script>
       // Initialize feedback system
-      const feedback = new HelpChainFeedback();
+      let feedback = {
+        showToast: () => {},
+        showLoading: () => {},
+        hideLoading: () => {},
+      };
+      if (typeof window.HelpChainFeedback === "function") {
+        feedback = new window.HelpChainFeedback();
+      } else {
+        console.warn("HelpChainFeedback is not defined (skipping init).");
+      }
 
       // Initialize push notifications
       const notificationService = new NotificationService();
@@ -1025,6 +1160,24 @@
           el.style.transition = "none";
         });
       }
+    </script>
+    <script>
+      // Debug: confirm template is the served one
+      console.log("IMPACT_DEBUG: index.html loaded", new Date().toISOString());
+    </script>
+    <script>
+      // Debug: force a fetch to /api/public/impact to see it in network/logs
+      (async () => {
+        try {
+          console.log("IMPACT_DEBUG: fetching /api/public/impact ...");
+          const r = await fetch("/api/public/impact", { cache: "no-store" });
+          console.log("IMPACT_DEBUG: status", r.status);
+          const data = await r.json();
+          console.log("IMPACT_DEBUG: data", data);
+        } catch (e) {
+          console.error("IMPACT_DEBUG: failed", e);
+        }
+      })();
     </script>
   </body>
 </html>

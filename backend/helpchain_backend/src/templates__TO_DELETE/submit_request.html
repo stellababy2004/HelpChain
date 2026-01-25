@@ -1,0 +1,93 @@
+{% extends "base.html" %} {% block title %}Подай заявка | HelpChain.live{%
+endblock %} {% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Подай заявка за помощ</h2>
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% for category, message in messages %}
+  <div
+    class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ message }}
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="alert"
+      aria-label="Close"
+    ></button>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+  {% from "_macros.html" import lang_hidden %}
+  <form action="{{ url_lang('main.submit_request') }}" method="post">
+    {{ lang_hidden() }}
+    <div class="mb-3">
+      <label for="name" class="form-label">Име</label>
+      <input type="text" class="form-control" id="name" name="name" required />
+    </div>
+    <div class="mb-3">
+      <label for="phone" class="form-label">Телефон</label>
+      <input type="tel" class="form-control" id="phone" name="phone" required />
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Имейл</label>
+      <input
+        type="email"
+        class="form-control"
+        id="email"
+        name="email"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <label for="location_text" class="form-label">Локация</label>
+      <input
+        type="text"
+        class="form-control"
+        id="location_text"
+        name="location_text"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <label for="category" class="form-label">Категория</label>
+      <select class="form-select" id="category" name="category" required>
+        <option value="food">Храна</option>
+        <option value="medical">Медицинска помощ</option>
+        <option value="transport">Транспорт</option>
+        <option value="other">Друго</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">Описание</label>
+      <textarea
+        class="form-control"
+        id="description"
+        name="description"
+        rows="3"
+        required
+      ></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="urgency" class="form-label">Спешност</label>
+      <select class="form-select" id="urgency" name="urgency" required>
+        <option value="low">Ниска</option>
+        <option value="medium">Средна</option>
+        <option value="urgent">Спешна</option>
+      </select>
+    </div>
+    <div class="mb-3 form-check">
+      <input
+        type="checkbox"
+        class="form-check-input"
+        id="consent"
+        name="consent"
+        required
+      />
+      <label class="form-check-label" for="consent"
+        >Съгласявам се с обработката на личните ми данни</label
+      >
+    </div>
+    <button type="submit" class="btn btn-primary">Подай заявка</button>
+  </form>
+</div>
+{% endblock %}

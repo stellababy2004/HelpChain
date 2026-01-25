@@ -1,19 +1,299 @@
+from __future__ import annotations
+
+from flask_login import login_user, login_required, logout_user, current_user
+from datetime import datetime, timedelta
+from functools import wraps
+from urllib.parse import urlparse, urljoin
+
 from flask import (
-    Blueprint,
-    flash,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
+    Blueprint, render_template, request, redirect, url_for,
+    flash, session, current_app, jsonify, abort, Response, send_file
 )
-from flask_login import current_user, login_required
+import time
+import json
+import csv
+from io import StringIO, BytesIO
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
 
-from backend.extensions import db
-from backend.models import AdminUser, Request, RequestLog, Volunteer
+from ..extensions import db
+from ..models import AdminUser, Request, RequestActivity, RequestLog, RequestMetric, Volunteer
+from backend.models import utc_now
+from ..config import Config
+from sqlalchemy.orm import joinedload
+from sqlalchemy import func
+from backend.helpchain_backend.src.utils.mfa import (
+    generate_totp_secret,
+    build_totp_uri,
+    qr_png_base64,
+    verify_totp_code,
+)
 
-admin_bp = Blueprint("admin", __name__)
+admin_bp = Blueprint("admin", __name__, url_prefix="/admin")  # single templates path via app.py
+
+def is_safe_url(target: str) -> bool:
+    if not target:
+        return False
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return (test_url.scheme in ("http", "https")) and (ref_url.netloc == test_url.netloc)
+
+
+def admin_required(view_func):
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            nxt = request.full_path if request.query_string else request.path
+            if not is_safe_url(nxt):
+                nxt = url_for("admin.admin_requests")
+            return redirect(url_for("admin.admin_login", next=nxt))
+        return view_func(*args, **kwargs)
+    return wrapper
+
+
+def log_request_activity(req_obj, action, old=None, new=None, actor_admin_id=None):
+    """Append a RequestActivity row; swallow errors so UI flows stay smooth."""
+    try:
+        actor_id = actor_admin_id
+        if actor_id is None and getattr(current_user, "is_authenticated", False):
+            actor_id = getattr(current_user, "id", None)
+        activity = RequestActivity(
+            request_id=getattr(req_obj, "id", req_obj),
+            actor_admin_id=actor_id,
+            action=action,
+            old_value=str(old) if old is not None else None,
+            new_value=str(new) if new is not None else None,
+            created_at=utc_now(),
+        )
+        db.session.add(activity)
+    except Exception:
+        pass
+
+
+def _mfa_ok_set(ttl_min: int | None = None):
+    ttl = ttl_min or current_app.config.get("MFA_SESSION_TTL_MIN", 720)
+    session[current_app.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+    try:
+        session["mfa_ok_until"] = (utc_now() + timedelta(minutes=ttl)).isoformat()
+    except Exception:
+        session["mfa_ok_until"] = None
+
+
+def _mfa_ok_clear():
+    session.pop(current_app.config.get("MFA_SESSION_KEY", "mfa_ok"), None)
+    session.pop("mfa_ok_until", None)
+
+
+def _mfa_ok_is_valid() -> bool:
+    if not session.get(current_app.config.get("MFA_SESSION_KEY", "mfa_ok")):
+        return False
+    until = session.get("mfa_ok_until")
+    if not until:
+        return False
+    try:
+        return utc_now() <= datetime.fromisoformat(until)
+    except Exception:
+        return False
+
+
+def _mfa_lock_is_active() -> tuple[bool, int]:
+    lock_until = session.get("mfa_lock_until")
+    if not lock_until:
+        return (False, 0)
+    try:
+        dt = datetime.fromisoformat(lock_until)
+        if utc_now() >= dt:
+            session.pop("mfa_lock_until", None)
+            session.pop("mfa_attempts", None)
+            return (False, 0)
+        return (True, int((dt - utc_now()).total_seconds()))
+    except Exception:
+        session.pop("mfa_lock_until", None)
+        session.pop("mfa_attempts", None)
+        return (False, 0)
+
+
+def _mfa_attempt_fail():
+    max_attempts = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8)
+    lock_min = current_app.config.get("MFA_VERIFY_LOCK_MIN", 10)
+    session["mfa_attempts"] = int(session.get("mfa_attempts", 0)) + 1
+    if session["mfa_attempts"] >= max_attempts:
+        try:
+            session["mfa_lock_until"] = (utc_now() + timedelta(minutes=lock_min)).isoformat()
+        except Exception:
+            session["mfa_lock_until"] = None
+
+
+def _mfa_attempt_reset():
+    session.pop("mfa_attempts", None)
+    session.pop("mfa_lock_until", None)
+
+
+def _generate_backup_codes(n: int = 10) -> list[str]:
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    codes = []
+    for _ in range(n):
+        code = "".join(secrets.choice(alphabet) for _ in range(10))
+        codes.append(code)
+    return codes
+
+
+def _hash_codes(codes: list[str]) -> list[str]:
+    return [generate_password_hash(c) for c in codes]
+
+
+def _load_hashes(user) -> list[str]:
+    raw = getattr(user, "backup_codes_hashes", None)
+    if not raw:
+        return []
+    try:
+        return json.loads(raw)
+    except Exception:
+        return []
+
+
+def _save_hashes(user, hashes: list[str]):
+    user.backup_codes_hashes = json.dumps(hashes)
+    user.backup_codes_generated_at = utc_now()
+    db.session.commit()
+
+
+def can_edit_request(req_obj, user) -> bool:
+    """Owner or super_admin can edit; if no owner, only super_admin."""
+    if getattr(user, "role", None) == "super_admin":
+        return True
+    owner_id = getattr(req_obj, "owner_id", None)
+    user_id = getattr(user, "id", None)
+    return owner_id is not None and owner_id == user_id
+
+
+
+
+def is_stale(req_obj, minutes: int = 30) -> bool:
+    """Return True if owned_at is older than `minutes`."""
+    owned_at = getattr(req_obj, "owned_at", None)
+    if not owned_at:
+        return False
+    try:
+        return (utc_now() - owned_at).total_seconds() > minutes * 60
+    except Exception:
+        return False
+
+
+@admin_bp.before_request
+def enforce_admin_mfa():
+    if not current_app.config.get("MFA_ENABLED", False):
+        return None
+    allowed = {
+        "admin.admin_login",
+        "admin.admin_logout",
+        "admin.admin_mfa_setup",
+        "admin.admin_mfa_verify",
+        "admin.admin_mfa_backup_codes",
+        "static",
+    }
+    if request.endpoint in allowed or (request.endpoint and request.endpoint.startswith("static")):
+        return None
+    if not current_user.is_authenticated:
+        return None
+    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+        return None
+    if _mfa_ok_is_valid():
+        return None
+    nxt = request.full_path if request.query_string else request.path
+    return redirect(url_for("admin.admin_mfa_verify", next=nxt))
+
+
+# Emergency Requests (read-only, filtered, paginated)
+
+from datetime import datetime, timedelta
+from flask import current_app
+
+@admin_bp.route("/emergency-requests", methods=["GET"])
+@admin_required
+def emergency_requests():
+    # Admin guard (same as admin_dashboard)
+    if not getattr(current_user, "is_admin", False):
+        flash("Нямате достъп.", "error")
+        return redirect(url_for("main.index"))
+
+    q = (request.args.get("q") or "").strip()
+    days = int(request.args.get("days") or 7)
+    days = max(1, min(days, 90))
+    page = int(request.args.get("page") or 1)
+    page = max(page, 1)
+    per_page = int(request.args.get("per_page") or 25)
+    per_page = max(10, min(per_page, 100))
+    since = datetime.utcnow() - timedelta(days=days)
+
+    # Emergency filter: category=="emergency" only (no urgency field)
+    query = HelpRequest.query.filter(
+        HelpRequest.created_at >= since,
+        HelpRequest.category == "emergency"
+    ).order_by(HelpRequest.created_at.desc())
+
+    if q:
+        # Search in city/contact/priority only
+        query = query.filter(
+            (HelpRequest.city.ilike(f"%{q}%")) |
+            (HelpRequest.email.ilike(f"%{q}%")) |
+            (HelpRequest.phone.ilike(f"%{q}%")) |
+            (HelpRequest.priority.ilike(f"%{q}%"))
+        )
+
+    total = query.count()
+    items = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    return render_template(
+        "admin_emergency_requests.html",
+        items=items,
+        total=total,
+        page=page,
+        per_page=per_page,
+        q=q,
+        days=days,
+    )
+    # Admin guard (same as admin_dashboard)
+    if not getattr(current_user, "is_admin", False):
+        flash("Нямате достъп.", "error")
+        return redirect(url_for("main.index"))
+
+    q = (request.args.get("q") or "").strip()
+    days = int(request.args.get("days") or 7)
+    days = max(1, min(days, 90))
+    page = int(request.args.get("page") or 1)
+    page = max(page, 1)
+    per_page = int(request.args.get("per_page") or 25)
+    per_page = max(10, min(per_page, 100))
+    since = datetime.utcnow() - timedelta(days=days)
+
+    # Emergency filter: category=="emergency" only (no urgency field)
+    query = HelpRequest.query.filter(
+        HelpRequest.created_at >= since,
+        HelpRequest.category == "emergency"
+    ).order_by(HelpRequest.created_at.desc())
+
+    if q:
+        # Search in city/contact/priority only
+        query = query.filter(
+            (HelpRequest.city.ilike(f"%{q}%")) |
+            (HelpRequest.email.ilike(f"%{q}%")) |
+            (HelpRequest.phone.ilike(f"%{q}%")) |
+            (HelpRequest.priority.ilike(f"%{q}%"))
+        )
+
+    total = query.count()
+    items = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    return render_template(
+        "admin_emergency_requests.html",
+        items=items,
+        total=total,
+        page=page,
+        per_page=per_page,
+        q=q,
+        days=days,
+    )
 
 
 # API endpoint за заявки с филтри (status, date)
@@ -84,26 +364,11 @@ def api_volunteers():
     return jsonify(data)
 
 
-from datetime import UTC
-
-from flask import (
-    Blueprint,
-    flash,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-)
-from flask_login import current_user, login_required
-
-admin_bp = Blueprint("admin", __name__)
 
 
 # Детайли за доброволец
 @admin_bp.route("/admin_volunteers/<int:id>")
-@login_required
+@admin_required
 def volunteer_detail(id):
     if not current_user.is_admin:
         flash("Нямате достъп.", "error")
@@ -118,280 +383,170 @@ def volunteer_detail(id):
 
 @admin_bp.route("/login", methods=["GET", "POST"])
 def admin_login():
-    """Админ вход"""
-    try:
-        import logging as _logging
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        user = AdminUser.query.filter_by(username=username).first()
+        if not user:
+            flash("Admin user not found in database.", "danger")
+            return redirect(url_for("admin.admin_login"))
+        login_user(user, remember=False)
+        session.pop(Config.MFA_SESSION_KEY, None)
+        session.pop("mfa_required", None)
+        mfa_globally_enabled = bool(Config.MFA_ENABLED)
+        user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(getattr(user, "totp_secret", None))
+        if mfa_globally_enabled and user_has_mfa:
+            session["mfa_required"] = True
+            return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next") or url_for("admin.admin_requests")))
+        else:
+            _mfa_ok_set()
+            session["admin_logged_in"] = True
+        return redirect(request.args.get("next") or url_for("admin.admin_requests"))
+    return render_template("admin/login.html")
 
-        _log = _logging.getLogger(__name__)
-        _log.info("admin_login called - method=%s", request.method)
-    except Exception:
-        pass
+@admin_bp.get("/logout")
+def admin_logout():
+    _mfa_ok_clear()
+    _mfa_attempt_reset()
+    session.pop("mfa_required", None)
+    session.pop("mfa_pending_secret", None)
+    session.pop("backup_codes_plain", None)
+    session.pop("admin_logged_in", None)
+    logout_user()
+    flash("Logged out.", "info")
+    return redirect(url_for("admin.admin_login"))
 
-    # Fast-path for GET: render the login template immediately. This avoids
-    # unexpected None returns when other initialization steps are deferred
-    # and keeps the GET behavior simple and stable for tests.
-    if request.method == "GET":
-        try:
-            return render_template("admin_login.html")
-        except Exception:
-            # If template rendering fails for some reason, fall through to
-            # the POST-handling logic which will surface a clearer error.
-            pass
+
+MFA_PENDING_SECRET_KEY = "mfa_pending_secret"
+MFA_SESSION_KEY = "mfa_ok"
+
+
+@admin_bp.route("/mfa/setup", methods=["GET", "POST"])
+@login_required
+def admin_mfa_setup():
+    if getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None):
+        flash("MFA вече е активиран.", "info")
+        return redirect(url_for("admin.admin_mfa_verify"))
+
+    pending_secret = session.get(MFA_PENDING_SECRET_KEY)
+    if not pending_secret:
+        pending_secret = generate_totp_secret()
+        session[MFA_PENDING_SECRET_KEY] = pending_secret
+
+    issuer = "HelpChain"
+    username = getattr(current_user, "username", f"admin-{current_user.id}")
+    uri = build_totp_uri(pending_secret, username=username, issuer=issuer)
+    qr_b64 = qr_png_base64(uri)
 
     if request.method == "POST":
-        # CSRF validation: use Flask-WTF when available, otherwise compare with session token
-        form_csrf = request.form.get("csrf_token", "")
-        valid_csrf = False
-        try:
-            from flask_wtf.csrf import validate_csrf  # type: ignore
-            validate_csrf(form_csrf)
-            valid_csrf = True
-        except Exception:
-            valid_csrf = False
+        code = (request.form.get("code") or "").strip().replace(" ", "")
+        if not code:
+            flash("Въведи 6-цифрения код от приложението.", "danger")
+            return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
 
-        if not valid_csrf:
-            try:
-                from hmac import compare_digest
-                sess_token = session.get("csrf_token", "")
-                if not (sess_token and compare_digest(form_csrf or "", sess_token)):
-                    from flask import abort
-                    flash("Невалиден CSRF токен.", "error")
-                    abort(400, description="CSRF token invalid")
-            except Exception:
-                sess_token = session.get("csrf_token", "")
-                if not (form_csrf and sess_token and form_csrf == sess_token):
-                    from flask import abort
-                    flash("Невалиден CSRF токен.", "error")
-                    abort(400, description="CSRF token invalid")
-        username = request.form.get("username")
-        password = request.form.get("password")
-        admin_user = AdminUser.query.filter_by(username=username).first()
-        # No fallback seeding here; rely on fixtures (conftest) to create the
-        # canonical AdminUser in the same DB/engine that the application uses.
-        # Creating a user here previously could mask fixture/import-order issues
-        # and hide root-cause problems. Keep the handler pure and let tests
-        # prepare the DB state.
-        # Diagnostic: log whether user found and password check result
-        try:
-            import logging as _logging
+        if not verify_totp_code(pending_secret, code):
+            flash("Невалиден код. Провери часовника на телефона и опитай пак.", "danger")
+            return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
 
-            _log = _logging.getLogger(__name__)
-            # Additional diagnostics: module/app/db identity for tracing test fixture vs request context
-            try:
-                import sys as _sys
+        user = db.session.get(AdminUser, current_user.id)
+        user.totp_secret = pending_secret
+        user.mfa_enabled = True
+        user.mfa_enrolled_at = utc_now()
+        db.session.commit()
 
-                _log.info(
-                    "admin_login diagnostic: sys.modules['appy'] id=%s",
-                    id(_sys.modules.get("appy")),
-                )
-            except Exception:
-                pass
-            _log.info("admin_login diagnostic: found_admin=%s", bool(admin_user))
-            if admin_user:
-                try:
-                    _log.info(
-                        "admin_login diagnostic: password_hash=%s",
-                        getattr(admin_user, "password_hash", None),
-                    )
-                except Exception:
-                    pass
-                try:
-                    _log.info(
-                        "admin_login diagnostic: check_password(Admin123)=%s",
-                        admin_user.check_password("Admin123"),
-                    )
-                except Exception:
-                    _log.exception("admin_login diagnostic: check_password raised")
-            try:
-                # Also log how many AdminUser rows are visible to this db/session
-                from backend.extensions import db as _db
+        _mfa_ok_set()
+        session.pop(MFA_PENDING_SECRET_KEY, None)
+        flash("✅ MFA е активиран успешно.", "success")
+        flash("Сега си генерирай backup codes (спасителният пояс).", "info")
+        return redirect(url_for("admin.admin_mfa_backup_codes"))
 
-                try:
-                    _log.info("admin_login diagnostic: db.engine id=%s", id(_db.engine))
-                except Exception:
-                    pass
-                try:
-                    _log.info(
-                        "admin_login diagnostic: db.session.bind id=%s",
-                        id(_db.session.bind),
-                    )
-                except Exception:
-                    pass
-                try:
-                    _log.info(
-                        "admin_login diagnostic: AdminUser class id=%s module=%s",
-                        id(AdminUser),
-                        getattr(AdminUser, "__module__", None),
-                    )
-                except Exception:
-                    pass
-                count = _db.session.query(AdminUser).count()
-                _log.info("admin_login diagnostic: AdminUser.count() = %s", count)
-                try:
-                    # Use the session-bound execute instead of opening a fresh
-                    # engine connection. This avoids creating a raw DBAPI
-                    # connection for diagnostic checks and reduces connection
-                    # churn while providing the same information.
-                    from sqlalchemy import text as _text
+    return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
 
-                    # Write a lightweight trace marker before executing via
-                    # the session. This won't raise on failure.
-                    try:
-                        import os
-                        from datetime import datetime, timezone
 
-                        # Write markers to the canonical backend/tools path so
-                        # this file can be correlated with the test-time
-                        # DBAPI traces generated by conftest.py.
-                        marker_path = os.path.join(
-                            os.path.dirname(__file__),
-                            "..",
-                            "..",
-                            "..",
-                            "tools",
-                            "connection_markers.txt",
-                        )
-                        marker_path = os.path.normpath(marker_path)
-                        try:
-                            with open(marker_path, "a", encoding="utf-8") as _mf:
-                                _mf.write(f"{datetime.now(UTC).isoformat()} MARKER admin_login before session.execute\n")
-                        except Exception:
-                            pass
-                    except Exception:
-                        pass
+@admin_bp.route("/mfa/verify", methods=["GET", "POST"])
+@login_required
+def admin_mfa_verify():
+    if not current_app.config.get("MFA_ENABLED", False):
+        abort(404)
 
-                    try:
-                        _res = _db.session.execute(_text("SELECT count(*) FROM admin_users"))
-                        try:
-                            _count = _res.scalar()
-                        finally:
-                            try:
-                                if hasattr(_res, "close"):
-                                    _res.close()
-                            except Exception:
-                                pass
+    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+        _mfa_ok_set()
+        session["admin_logged_in"] = True
+        return redirect(request.args.get("next") or url_for("admin.admin_requests"))
 
-                        _log.info(
-                            "admin_login diagnostic: raw session count(admin_users) = %s",
-                            _count,
-                        )
-                    except Exception:
-                        # Trace marker: session.execute failed and the
-                        # fallback path will run. Record this so tests can
-                        # correlate which path opened DB connections.
-                        try:
-                            import os
-                            from datetime import datetime, timezone
+    locked, remaining = _mfa_lock_is_active()
+    if request.method == "GET":
+        return render_template("admin/mfa_verify.html", locked=locked, remaining=remaining, next=request.args.get("next") or "")
 
-                            # Same canonical backend/tools destination for fallback markers
-                            marker_path = os.path.join(
-                                os.path.dirname(__file__),
-                                "..",
-                                "..",
-                                "..",
-                                "tools",
-                                "connection_markers.txt",
-                            )
-                            marker_path = os.path.normpath(marker_path)
-                            try:
-                                with open(marker_path, "a", encoding="utf-8") as _mf:
-                                    _mf.write(f"{datetime.now(UTC).isoformat()} MARKER admin_login session.execute failed - before ORM fallback\n")
-                            except Exception:
-                                pass
-                        except Exception:
-                            pass
+    if locked:
+        flash(f"Твърде много опити. Опитай след {max(1, remaining//60)} мин.", "danger")
+        return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next", "")))
 
-                        # If session execute fails, fall back to the ORM count
-                        try:
-                            _count = _db.session.query(AdminUser).count()
-                            _log.info(
-                                "admin_login diagnostic: fallback ORM count(admin_users) = %s",
-                                _count,
-                            )
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
-            except Exception:
-                pass
-        except Exception:
-            pass
+    code = (request.form.get("code") or "").strip().replace(" ", "").upper()
+    totp_ok = False
+    try:
+        totp_ok = verify_totp_code(current_user.totp_secret, code)
+    except Exception:
+        totp_ok = False
 
-        if admin_user and admin_user.check_password(password):
-            # Support app-level email 2FA (tests set this via monkeypatch/app config).
-            # If EMAIL_2FA_ENABLED is set in the current Flask app config or in the
-            # imported appy module, trigger the email 2FA flow which uses the
-            # shared handlers under /admin/email_2fa.
-            use_email_2fa = False
-            try:
-                from flask import current_app
+    backup_ok = False
+    if not totp_ok:
+        hashes = _load_hashes(current_user)
+        for i, h in enumerate(hashes):
+            if check_password_hash(h, code):
+                backup_ok = True
+                hashes.pop(i)
+                _save_hashes(current_user, hashes)
+                break
 
-                if current_app.config.get("EMAIL_2FA_ENABLED"):
-                    use_email_2fa = True
-            except Exception:
-                pass
+    if totp_ok or backup_ok:
+        _mfa_attempt_reset()
+        _mfa_ok_set()
+        session["admin_logged_in"] = True
+        flash("✅ MFA потвърдено.", "success")
+        nxt = request.args.get("next")
+        if nxt and nxt.startswith("/"):
+            return redirect(nxt)
+        return redirect(url_for("admin.admin_requests"))
 
-            try:
-                # Import appy module (tests monkeypatch this module)
-                import appy as appy_mod
+    _mfa_attempt_fail()
+    locked, remaining = _mfa_lock_is_active()
+    if locked:
+        flash(f"Грешен код. Заключено за ~{max(1, remaining//60)} мин.", "danger")
+    else:
+        left = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8) - int(session.get("mfa_attempts", 0))
+        flash(f"Грешен код. Оставащи опити: {max(left,0)}.", "danger")
 
-                if getattr(appy_mod, "EMAIL_2FA_ENABLED", False):
-                    use_email_2fa = True
-            except Exception:
-                appy_mod = None
+    return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next", "")))
 
-            if use_email_2fa:
-                # Begin email 2FA flow (mirror the behavior in appy.py)
-                try:
-                    from datetime import datetime, timedelta
 
-                    # Generate a code using appy (monkeypatched in tests)
-                    code = None
-                    if appy_mod and hasattr(appy_mod, "generate_email_2fa_code"):
-                        code = appy_mod.generate_email_2fa_code()
-                    else:
-                        # Fallback deterministic code
-                        code = "000000"
+@admin_bp.route("/mfa/backup-codes", methods=["GET", "POST"])
+@login_required
+def admin_mfa_backup_codes():
+    if not current_app.config.get("MFA_ENABLED", False):
+        abort(404)
+    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+        flash("Първо активирай MFA от Setup.", "warning")
+        return redirect(url_for("admin.admin_mfa_setup"))
 
-                    session["pending_email_2fa"] = True
-                    session["email_2fa_code"] = code
-                    session["email_2fa_expires"] = (datetime.now() + timedelta(minutes=10)).timestamp()
+    if request.method == "POST":
+        codes = _generate_backup_codes(10)
+        _save_hashes(current_user, _hash_codes(codes))
+        session["backup_codes_plain"] = codes
+        flash("Backup кодовете са генерирани. Запази ги сега — няма да се покажат втори път.", "success")
+        return redirect(url_for("admin.admin_mfa_backup_codes"))
 
-                    # Attempt to send via appy (monkeypatched send_email_2fa_code in tests)
-                    if appy_mod and hasattr(appy_mod, "send_email_2fa_code"):
-                        try:
-                            appy_mod.send_email_2fa_code(code, request.remote_addr, request.user_agent.string)
-                        except Exception:
-                            # Don't fail login flow if sending fails during tests
-                            pass
-                except Exception:
-                    # Defensive: ensure we don't crash the login path
-                    session["pending_email_2fa"] = True
-                    session["email_2fa_code"] = "000000"
-                return redirect(url_for("admin_email_2fa"))
-            else:
-                from flask_login import login_user
-
-                login_user(admin_user)
-                # Rotate CSRF token after successful login
-                try:
-                    import secrets
-                    session["csrf_token"] = secrets.token_urlsafe(32)
-                except Exception:
-                    pass
-                return redirect(url_for("admin.admin_dashboard"))
-        # Use the same user-visible wording tests expect so handlers
-        # that reach this blueprint return a consistent message.
-        error_msg = "Грешно потребителско име или парола"
-        flash(error_msg, "error")
-        try:
-            _log.info("admin_login returning error template")
-        except Exception:
-            pass
-        return render_template("admin_login.html", error=error_msg)
-
+    codes_plain = session.pop("backup_codes_plain", None)
+    hashes = _load_hashes(current_user)
+    has_codes = len(hashes) > 0
+    return render_template(
+        "admin/mfa_backup_codes.html",
+        codes=codes_plain,
+        has_codes=has_codes,
+        generated_at=getattr(current_user, "backup_codes_generated_at", None),
+    )
 
 @admin_bp.route("/2fa", methods=["GET", "POST"])
+@admin_required
 def admin_2fa():
     """2FA верификация за админ"""
     user_id = session.get("pending_admin_user_id")
@@ -417,7 +572,7 @@ def admin_2fa():
 
 
 @admin_bp.route("/2fa/setup", methods=["GET", "POST"])
-@login_required
+@admin_required
 def admin_2fa_setup():
     """Настройка на 2FA за админ"""
     if not isinstance(current_user, AdminUser):
@@ -438,7 +593,7 @@ def admin_2fa_setup():
 
 
 @admin_bp.route("/2fa/disable", methods=["POST"])
-@login_required
+@admin_required
 def admin_2fa_disable():
     """Деактивиране на 2FA за админ"""
     if not isinstance(current_user, AdminUser):
@@ -450,8 +605,79 @@ def admin_2fa_disable():
     return redirect(url_for("admin.admin_dashboard"))
 
 
-@admin_bp.route("/")
+@admin_bp.get("/api/dashboard")
 @login_required
+def admin_api_dashboard():
+    """Session-based dashboard data for admin UI (bypass JWT)."""
+    if not getattr(current_user, "is_admin", False):
+        return jsonify({"error": "forbidden"}), 403
+
+    try:
+        try:
+            days = int(request.args.get("days", 30))
+        except Exception:
+            days = 30
+
+        since_dt = datetime.utcnow() - timedelta(days=days)
+
+        status_rows = (
+            db.session.query(
+                func.coalesce(Request.status, "unknown").label("status"),
+                func.count(Request.id).label("cnt"),
+            )
+            .group_by("status")
+            .all()
+        )
+        counts_by_status = {status: int(cnt) for status, cnt in status_rows}
+        total_requests = int(sum(counts_by_status.values()))
+
+        city_expr = func.coalesce(
+            func.nullif(Request.city, ""),
+            func.nullif(Request.region, ""),
+            "unknown",
+        )
+        city_rows = (
+            db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt"))
+            .group_by("city")
+            .order_by(func.count(Request.id).desc())
+            .limit(10)
+            .all()
+        )
+        requests_by_city = [{"city": c, "count": int(cnt)} for c, cnt in city_rows]
+
+        ts_rows = (
+            db.session.query(
+                func.date(Request.created_at).label("day"),
+                func.count(Request.id).label("cnt"),
+            )
+            .filter(Request.created_at.isnot(None))
+            .filter(Request.created_at >= since_dt)
+            .group_by("day")
+            .order_by("day")
+            .all()
+        )
+        timeseries = [{"date": str(day), "count": int(cnt)} for day, cnt in ts_rows]
+
+        try:
+            total_volunteers = db.session.query(Volunteer).count()
+        except Exception:
+            total_volunteers = 0
+
+        return jsonify(
+            {
+                "total_requests": total_requests,
+                "total_volunteers": total_volunteers,
+                "counts_by_status": counts_by_status,
+                "requests_by_city": requests_by_city,
+                "timeseries": timeseries,
+            }
+        ), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@admin_bp.route("/")
+@admin_required
 def admin_dashboard():
     """Админ панел"""
 
@@ -474,20 +700,26 @@ def admin_dashboard():
         logs_dict[log.request_id].append(log)
 
     # Convert to JSON serializable format
-    requests_dict = [
-        {
-            "id": r.id,
-            "name": r.name,
-            "phone": r.phone,
-            "email": r.email,
-            "location": r.location,
-            "category": r.category,
-            "description": r.description,
-            "status": r.status,
-            "urgency": r.urgency,
-        }
-        for r in requests
-    ]
+    requests_dict = []
+    for r in requests:
+        # Fallback location using location_text -> city/region
+        loc = getattr(r, "location_text", None) or ", ".join(
+            [val for val in (getattr(r, "city", None), getattr(r, "region", None)) if val]
+        ) or ""
+        requests_dict.append(
+            {
+                "id": r.id,
+                "name": r.name,
+                "phone": r.phone,
+                "email": r.email,
+                "location": loc,
+                "category": r.category,
+                "description": r.description,
+                "status": r.status,
+                # Map urgency to priority if urgency field is missing
+                "urgency": getattr(r, "urgency", None) or getattr(r, "priority", None),
+            }
+        )
 
     volunteers_dict = [
         {
@@ -521,6 +753,126 @@ def admin_dashboard():
         "total_volunteers": total_volunteers,
     }
 
+    try:
+        now = utc_now()
+        week_ago = now - timedelta(days=7)
+
+        total_requests_cnt = db.session.query(func.count(Request.id)).scalar() or 0
+
+        open_requests_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .scalar()
+            or 0
+        )
+
+        closed_requests_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.in_(["done", "rejected"]))
+            .scalar()
+            or 0
+        )
+
+        closed_last_7d_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.completed_at.isnot(None), Request.completed_at >= week_ago)
+            .scalar()
+            or 0
+        )
+
+        avg_resolution_hours = (
+            db.session.query(
+                func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0
+            )
+            .filter(Request.completed_at.isnot(None), Request.created_at.isnot(None))
+            .scalar()
+        )
+        avg_resolution_hours = float(avg_resolution_hours) if avg_resolution_hours is not None else None
+
+        unassigned_over_2d_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(
+                Request.owner_id.is_(None),
+                Request.status.notin_(["done", "rejected"]),
+                Request.created_at <= (now - timedelta(days=2)),
+            )
+            .scalar()
+            or 0
+        )
+
+        high_open_count = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .filter(Request.priority == "high")
+            .scalar()
+            or 0
+        )
+
+        stale_open_count = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .filter(Request.created_at <= (now - timedelta(days=7)))
+            .scalar()
+            or 0
+        )
+
+        # --- Requests per day (last 14 days) ---
+        since_dt = now - timedelta(days=14)
+        rows = (
+            db.session.query(func.date(Request.created_at), func.count(Request.id))
+            .filter(Request.created_at.isnot(None))
+            .filter(Request.created_at >= since_dt)
+            .group_by(func.date(Request.created_at))
+            .order_by(func.date(Request.created_at))
+            .all()
+        )
+        impact_dates = [str(r[0]) for r in rows]
+        impact_counts = [int(r[1]) for r in rows]
+
+        # --- Requests by category ---
+        cat_rows = (
+            db.session.query(Request.category, func.count(Request.id))
+            .group_by(Request.category)
+            .order_by(func.count(Request.id).desc())
+            .all()
+        )
+        impact_cat_labels = [r[0] or "unknown" for r in cat_rows]
+        impact_cat_counts = [int(r[1]) for r in cat_rows]
+
+        impact = {
+            "total": total_requests_cnt,
+            "open": open_requests_cnt,
+            "closed": closed_requests_cnt,
+            "closed_last_7d": closed_last_7d_cnt,
+            "avg_resolution_hours": avg_resolution_hours,
+            "unassigned_over_2d": unassigned_over_2d_cnt,
+            "open_requests": int(open_requests_cnt or 0),
+            "unassigned_48h": int(unassigned_over_2d_cnt or 0),
+            "requests_dates": impact_dates,
+            "requests_counts": impact_counts,
+            "cat_labels": impact_cat_labels,
+            "cat_counts": impact_cat_counts,
+            "high_open": int(high_open_count or 0),
+            "stale_open": int(stale_open_count or 0),
+        }
+    except Exception:
+        impact = {
+            "total": 0,
+            "open": 0,
+            "closed": 0,
+            "closed_last_7d": 0,
+            "avg_resolution_hours": None,
+            "unassigned_over_2d": 0,
+            "open_requests": 0,
+            "unassigned_48h": 0,
+            "requests_dates": [],
+            "requests_counts": [],
+            "cat_labels": [],
+            "cat_counts": [],
+            "high_open": 0,
+            "stale_open": 0,
+        }
+
     # Log the final template context summary for diagnostics during tests
     try:
         import logging as _logging
@@ -538,11 +890,13 @@ def admin_dashboard():
         volunteers=volunteers,
         volunteers_json=volunteers_dict,
         stats=stats,
+        impact=impact,
+        STATUS_LABELS=STATUS_LABELS,
     )
 
 
-@admin_bp.route("/admin_volunteers")
-@login_required
+@admin_bp.route("/volunteers", methods=["GET"])
+@admin_required
 def admin_volunteers():
     """Управление на доброволци"""
 
@@ -559,8 +913,14 @@ def admin_volunteers():
     return render_template("admin_volunteers.html", volunteers=volunteers)
 
 
+@admin_bp.route("/admin_volunteers", methods=["GET"])
+@admin_required
+def admin_volunteers_compat():
+    return redirect(url_for("admin.admin_volunteers"), code=302)
+
+
 @admin_bp.route("/admin_volunteers/add", methods=["GET", "POST"])
-@login_required
+@admin_required
 def add_volunteer():
     """Добавяне на доброволец"""
     if not current_user.is_admin:
@@ -584,7 +944,7 @@ def add_volunteer():
 
 
 @admin_bp.route("/delete_volunteer/<int:id>", methods=["POST"])
-@login_required
+@admin_required
 def delete_volunteer(id):
     """Изтриване на доброволец"""
     if not current_user.is_admin:
@@ -603,7 +963,7 @@ def delete_volunteer(id):
 
 
 @admin_bp.route("/admin_volunteers/edit/<int:id>", methods=["GET", "POST"])
-@login_required
+@admin_required
 def edit_volunteer(id):
     """Редактиране на доброволец"""
     if not current_user.is_admin:
@@ -635,7 +995,7 @@ def edit_volunteer(id):
 
 
 @admin_bp.route("/export_volunteers")
-@login_required
+@admin_required
 def export_volunteers():
     """Експорт на доброволци като CSV"""
     if not current_user.is_admin:
@@ -663,7 +1023,7 @@ def export_volunteers():
 
 
 @admin_bp.route("/update_status/<int:req_id>", methods=["POST"])
-@login_required
+@admin_required
 def update_status(req_id):
     """Обновяване статуса на заявка"""
     from flask import current_app
@@ -680,20 +1040,30 @@ def update_status(req_id):
         req = db.session.get(Request, req_id)
         if not req:
             return jsonify({"error": "Request not found"}), 404
+        if not can_edit_request(req, current_user):
+            abort(403)
+        old_status = req.status
         req.status = new_status
+        closing_statuses = {"done", "rejected"}
+        if new_status in closing_statuses:
+            req.completed_at = utc_now()
+        else:
+            req.completed_at = None
+        # Activity + legacy request log (single commit)
+        log_request_activity(req, "status_change", old=old_status, new=new_status, actor_admin_id=getattr(current_user, "id", None))
+        # metrics
+        metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
+        if metric is None:
+            metric = RequestMetric(request_id=req.id)
+            db.session.add(metric)
+        if new_status == "done" and metric.time_to_complete is None and req.created_at:
+            try:
+                metric.time_to_complete = int((utc_now() - req.created_at).total_seconds())
+            except Exception:
+                pass
         db.session.commit()
 
-        # Log the status change
-        log_entry = RequestLog(
-            request_id=req_id,
-            new_status=new_status,
-            user_id=current_user.id if hasattr(current_user, "id") else None,
-            action="status_update",
-        )
-        db.session.add(log_entry)
-        db.session.commit()
-
-        # Изпращане на email при промяна на статус
+        # Изпращане на email при промяна на статус (graceful fallback)
         try:
             from mail_service import send_notification_email
 
@@ -712,9 +1082,432 @@ def update_status(req_id):
             }
             if recipient:
                 send_notification_email(recipient, subject, "email_template.html", context)
+        except ModuleNotFoundError:
+            import logging
+
+            logging.info("[EMAIL] mail_service not configured; email sending skipped (dev mode)")
         except Exception as e:
             import logging
 
             logging.warning(f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}")
 
-    return jsonify({"success": True})
+    # Ако е JSON/AJAX – връщаме JSON; иначе redirect за формата
+    if request.is_json or (request.accept_mimetypes and request.accept_mimetypes.best == "application/json"):
+        return jsonify({"success": True, "status": new_status or req.status})
+    flash("Статусът е обновен.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+from flask import render_template, request, redirect, url_for, flash, current_app
+from sqlalchemy import or_, func
+from ..models import db, Request, RequestActivity
+
+ALLOWED_STATUSES = {"pending", "approved", "in_progress", "done", "rejected"}
+
+STATUS_LABELS_BG = {
+    "pending": "Чакащи",
+    "approved": "Одобрени",
+    "in_progress": "В процес",
+    "done": "Приключени",
+    "rejected": "Отхвърлени",
+}
+
+# Canonical EN msgids for status labels - passed to templates for localization
+STATUS_LABELS = {
+    "pending": "Pending",
+    "approved": "Approved",
+    "in_progress": "In progress",
+    "done": "Completed",
+    "rejected": "Rejected",
+}
+
+@admin_bp.get("/requests")
+@login_required
+def admin_requests():
+    STATUS_LABELS_BG = {
+        "new": "Нови",
+        "pending": "Чакащи",
+        "approved": "Одобрени",
+        "in_progress": "В процес",
+        "done": "Приключени",
+        "rejected": "Отхвърлени",
+    }
+
+    show_deleted = (request.args.get("deleted") or "").strip() == "1"
+    query = Request.query
+    query, status, q = build_requests_query(query, request.args)
+    requests = query.all()
+    now_aware = utc_now()
+    now_naive = datetime.utcnow()
+    SLA_WARN_NO_OWNER_DAYS = 2
+    SLA_STALE_DAYS = 7
+
+    return render_template(
+        "admin/requests.html",
+        STATUS_LABELS_BG=STATUS_LABELS_BG,
+        STATUS_LABELS=STATUS_LABELS,
+        requests=requests,
+        status=status,
+        q=q,
+        show_deleted=show_deleted,
+        now_aware=now_aware,
+        now_naive=now_naive,
+        SLA_WARN_NO_OWNER_DAYS=SLA_WARN_NO_OWNER_DAYS,
+        SLA_STALE_DAYS=SLA_STALE_DAYS,
+    )
+
+
+def build_requests_query(base_query, request_args):
+    status = (request_args.get("status") or "").strip()
+    q = (request_args.get("q") or "").strip()
+    show_deleted = (request_args.get("deleted") or "").strip() == "1"
+
+    if show_deleted:
+        base_query = base_query.filter(Request.deleted_at.isnot(None))
+    else:
+        base_query = base_query.filter(Request.deleted_at.is_(None))
+
+    if status:
+        internal = "pending" if status == "new" else status
+        base_query = base_query.filter(Request.status == internal)
+    if q:
+        like = f"%{q}%"
+        base_query = base_query.filter(
+            or_(
+                Request.title.ilike(like),
+                Request.name.ilike(like),
+                Request.email.ilike(like),
+                Request.phone.ilike(like),
+                Request.description.ilike(like),
+            )
+        )
+
+    base_query = base_query.order_by(Request.id.desc())
+    return base_query, status, q
+
+
+@admin_bp.get("/requests/export.csv")
+@admin_required
+def admin_requests_export_csv():
+    query, _status, _q = build_requests_query(Request.query, request.args)
+    rows = query.limit(5000).all()
+
+    out = StringIO()
+    writer = csv.writer(out)
+    writer.writerow([
+        "id", "created_at", "status", "priority", "category",
+        "title", "name", "email", "phone", "owner_id", "owned_at",
+        "completed_at",
+    ])
+
+    for r in rows:
+        writer.writerow([
+            r.id,
+            getattr(r, "created_at", "") or "",
+            getattr(r, "status", "") or "",
+            getattr(r, "priority", "") or "",
+            getattr(r, "category", "") or "",
+            getattr(r, "title", "") or "",
+            getattr(r, "name", "") or "",
+            getattr(r, "email", "") or "",
+            getattr(r, "phone", "") or "",
+            getattr(r, "owner_id", "") or "",
+            getattr(r, "owned_at", "") or "",
+            getattr(r, "completed_at", "") or "",
+        ])
+
+    filename = f"helpchain_requests_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        out.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@admin_bp.get("/requests/export.xlsx")
+@admin_required
+def admin_requests_export_xlsx():
+    try:
+        from openpyxl import Workbook
+    except Exception:
+        return Response("openpyxl is not installed", status=500)
+
+    query, _status, _q = build_requests_query(Request.query, request.args)
+    rows = query.limit(5000).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Requests"
+    headers = [
+        "id", "created_at", "status", "priority", "category",
+        "title", "name", "email", "phone", "owner_id", "owned_at",
+        "completed_at",
+    ]
+    ws.append(headers)
+
+    for r in rows:
+        ws.append([
+            r.id,
+            getattr(r, "created_at", None),
+            getattr(r, "status", None),
+            getattr(r, "priority", None),
+            getattr(r, "category", None),
+            getattr(r, "title", None),
+            getattr(r, "name", None),
+            getattr(r, "email", None),
+            getattr(r, "phone", None),
+            getattr(r, "owner_id", None),
+            getattr(r, "owned_at", None),
+            getattr(r, "completed_at", None),
+        ])
+
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+
+    filename = f"helpchain_requests_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        bio,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@admin_bp.get("/requests/export_anonymized.csv")
+@admin_required
+def admin_requests_export_csv_anonymized():
+    query, _status, _q = build_requests_query(Request.query, request.args)
+    rows = query.limit(5000).all()
+
+    out = StringIO()
+    writer = csv.writer(out)
+    writer.writerow([
+        "id", "created_at", "status", "priority", "category",
+        "owner_id", "owned_at", "completed_at",
+    ])
+
+    for r in rows:
+        writer.writerow([
+            r.id,
+            getattr(r, "created_at", "") or "",
+            getattr(r, "status", "") or "",
+            getattr(r, "priority", "") or "",
+            getattr(r, "category", "") or "",
+            getattr(r, "owner_id", "") or "",
+            getattr(r, "owned_at", "") or "",
+            getattr(r, "completed_at", "") or "",
+        ])
+
+    filename = f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    return Response(
+        out.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@admin_bp.get("/requests/export_anonymized.xlsx")
+@admin_required
+def admin_requests_export_xlsx_anonymized():
+    try:
+        from openpyxl import Workbook
+    except Exception:
+        return Response("openpyxl is not installed", status=500)
+
+    query, _status, _q = build_requests_query(Request.query, request.args)
+    rows = query.limit(5000).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Requests (Anon)"
+    headers = [
+        "id", "created_at", "status", "priority", "category",
+        "owner_id", "owned_at", "completed_at",
+    ]
+    ws.append(headers)
+
+    for r in rows:
+        ws.append([
+            r.id,
+            getattr(r, "created_at", None),
+            getattr(r, "status", None),
+            getattr(r, "priority", None),
+            getattr(r, "category", None),
+            getattr(r, "owner_id", None),
+            getattr(r, "owned_at", None),
+            getattr(r, "completed_at", None),
+        ])
+
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+
+    filename = f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    return send_file(
+        bio,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@admin_bp.get("/requests/<int:req_id>")
+@admin_required
+def admin_request_details(req_id: int):
+    req = (
+        Request.query
+        .options(joinedload(Request.logs), joinedload(Request.activities))
+        .get_or_404(req_id)
+    )
+    logs = req.logs  # already sorted by relationship order_by
+    activities = sorted(
+        (req.activities or []),
+        key=lambda a: a.created_at or datetime.min,
+        reverse=True,
+    )[:50]
+    return render_template(
+        "admin/request_details.html",
+        req=req,
+        activities=activities,
+        logs=logs,
+        STATUS_LABELS_BG=STATUS_LABELS_BG,
+        is_stale=is_stale,
+    ), 200
+
+
+# --- Assign owner to request ---
+@admin_bp.post("/requests/<int:req_id>/assign", endpoint="admin_request_assign")
+@login_required
+def admin_request_assign(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    takeover = False
+    if req.owner_id and req.owner_id != getattr(current_user, "id", None):
+        if getattr(current_user, "role", None) != "super_admin" and not is_stale(req):
+            abort(403)
+        takeover = True
+    old_owner = req.owner_id
+    req.owner_id = current_user.id
+    req.owned_at = utc_now()
+    metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
+    if metric is None:
+        metric = RequestMetric(request_id=req.id)
+        db.session.add(metric)
+    if metric.time_to_assign is None and req.created_at:
+        try:
+            metric.time_to_assign = int((utc_now() - req.created_at).total_seconds())
+        except Exception:
+            pass
+    action_name = "takeover" if takeover else "assign"
+    reason = None
+    if takeover and req.owned_at:
+        try:
+            hours = (utc_now() - req.owned_at).total_seconds() / 3600
+            reason = f"stale: {hours:.1f}h"
+        except Exception:
+            reason = "stale"
+    new_val = f"{current_user.id}" if reason is None else f"{current_user.id} ({reason})"
+    log_request_activity(req, action_name, old=old_owner, new=new_val, actor_admin_id=current_user.id)
+    db.session.commit()
+    flash("Заявката е assign-ната към теб.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+@admin_bp.post("/requests/<int:req_id>/unassign", endpoint="admin_request_unassign")
+@login_required
+def admin_request_unassign(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+    old_owner = req.owner_id
+    req.owner_id = None
+    req.owned_at = None
+    log_request_activity(req, "unassign", old=old_owner, new=None, actor_admin_id=getattr(current_user, "id", None))
+    db.session.commit()
+    flash("Owner е премахнат.", "info")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+@admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")
+@login_required
+def admin_request_delete(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    if not getattr(req, "is_archived", False):
+        flash("Archive the request first. Only archived requests can be deleted.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    if getattr(req, "deleted_at", None) is None:
+        req.deleted_at = utc_now()
+        req.is_archived = True
+        if getattr(req, "archived_at", None) is None:
+            req.archived_at = req.deleted_at
+        log_request_activity(
+            req,
+            "delete",
+            old=None,
+            new=str(req.deleted_at),
+            actor_admin_id=getattr(current_user, "id", None),
+        )
+        db.session.commit()
+        flash("Request moved to Deleted.", "success")
+
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+
+@admin_bp.post("/requests/<int:req_id>/restore-deleted", endpoint="admin_request_restore_deleted")
+@login_required
+def admin_request_restore_deleted(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    if getattr(req, "deleted_at", None) is not None:
+        old = req.deleted_at
+        req.deleted_at = None
+        req.is_archived = True
+        if getattr(req, "archived_at", None) is None:
+            req.archived_at = utc_now()
+        log_request_activity(
+            req,
+            "restore_deleted",
+            old=str(old),
+            new=None,
+            actor_admin_id=getattr(current_user, "id", None),
+        )
+        db.session.commit()
+        flash("Request restored from Deleted (kept archived).", "success")
+
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+
+@admin_bp.post("/requests/<int:req_id>/note")
+@login_required
+def admin_request_add_note(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    note = (request.form.get("note") or "").strip()
+    if not note:
+        flash("Note is empty.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+    if len(note) > 2000:
+        flash("Note is too long (max 2000 chars).", "danger")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    log_request_activity(
+        req,
+        "note",
+        old=None,
+        new=note,
+        actor_admin_id=getattr(current_user, "id", None),
+    )
+    db.session.commit()
+    flash("Note added.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+
+
+
+
+

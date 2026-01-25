@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Terms of service") }} | HelpChain{% endblock %}
+
+{% block content %}
+<main class="container py-5" role="main">
+  <div class="mx-auto" style="max-width: 860px;">
+    <h1 class="mb-3">{{ _("Terms of service") }}</h1>
+
+    <p class="text-muted mb-4">
+      {{ _("Last updated:") }} 2026-01-21
+    </p>
+
+    <p class="lead">
+      {{ _("HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic rules to keep everyone safe.") }}
+    </p>
+
+    <hr class="my-4" />
+
+    <h2 class="h5 mt-4">{{ _("Use of the platform") }}</h2>
+    <ul>
+      <li>{{ _("Provide accurate information and use respectful language.") }}</li>
+      <li>{{ _("Do not post illegal, harmful, or abusive content.") }}</li>
+      <li>{{ _("Do not impersonate others or misrepresent your identity.") }}</li>
+    </ul>
+
+    <h2 class="h5 mt-4">{{ _("Safety") }}</h2>
+    <ul>
+      <li>{{ _("HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency services.") }}</li>
+      <li>{{ _("We may limit or suspend accounts to prevent abuse or protect the community.") }}</li>
+    </ul>
+
+    <h2 class="h5 mt-4">{{ _("Liability") }}</h2>
+    <p>
+      {{ _("Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions taken by users. We encourage safe, transparent communication and caution when sharing personal details.") }}
+    </p>
+
+    <h2 class="h5 mt-4">{{ _("Contact") }}</h2>
+    <p>
+      {{ _("Questions about these terms? Contact us at") }}
+      <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>.
+    </p>
+  </div>
+</main>
+{% endblock %}

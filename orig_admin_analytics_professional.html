@@ -28,7 +28,7 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <!-- HelpChain WebSocket Client -->
-    <script src="{{ url_for('static', filename='js/helpchain-websocket.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/helpchain-websocket.js') }}"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -400,7 +400,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_volunteers') }}">
                 <i class="fas fa-users me-1"></i>Доброволци
               </a>
             </li>

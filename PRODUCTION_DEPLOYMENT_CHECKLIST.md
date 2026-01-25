@@ -19,6 +19,10 @@ Legend: [x] Done • [ ] Pending • Notes may include (in progress)
 - [ ] **Email Service**: Zoho SMTP working
 - [ ] **File Uploads**: Directory permissions correct
 - [ ] **Environment Variables**: All secrets configured
+   - Core: `SECRET_KEY`, `DEBUG`
+   - Admin: `ADMIN_USERNAME`, `ADMIN_PASSWORD`
+   - Database: `SQLALCHEMY_DATABASE_URI` or `DATABASE_URL` (Render Postgres)
+   - Mail: `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USE_TLS`, `MAIL_USE_SSL`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_DEFAULT_SENDER`
 
 ### 🔍 Security Monitoring
 - [x] **GitHub Security**: CodeQL, Bandit, pip-audit enabled (Bandit/pip-audit CI добавени; CodeQL вече активен)
@@ -96,7 +100,7 @@ pwsh -NoProfile -File .\scripts\start-and-smoke.ps1 \
 2. **Application Deployment**
 
    - [ ] Render service created
-   - [ ] Environment variables set
+   - [ ] Environment variables set (see list above)
    - [ ] Database initialized
    - [ ] File upload directory created
 

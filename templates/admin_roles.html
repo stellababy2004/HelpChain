@@ -19,10 +19,10 @@
       <div class="container">
         <a class="navbar-brand" href="/">HelpChain - Админ</a>
         <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}"
+          <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}"
             >Админ панел</a
           >
-          <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}"
+          <a class="nav-link" href="{{ safe_url_for('admin.admin_volunteers') }}"
             >Доброволци</a
           >
           <a class="nav-link" href="{{ safe_url_for('logout') }}">Изход</a>
@@ -35,7 +35,7 @@
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ safe_url_for('admin_dashboard') }}">
+            <a href="{{ safe_url_for('admin.admin_dashboard') }}">
               <i class="fas fa-home me-1"></i>Админ панел
             </a>
           </li>
@@ -100,7 +100,7 @@
                   <th>Описание</th>
                   <th>Системна</th>
                   <th>Права</th>
-                  <th>Действия</th>
+                  <th>{{ _('Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -179,7 +179,7 @@
                   <th>Имейл</th>
                   <th>Роли</th>
                   <th>Активен</th>
-                  <th>Действия</th>
+                  <th>{{ _('Actions') }}</th>
                 </tr>
               </thead>
               <tbody>

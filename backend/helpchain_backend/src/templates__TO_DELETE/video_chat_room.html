@@ -1,0 +1,148 @@
+{% extends "base.html" %} {% block title %}Видео чат стая - HelpChain{% endblock
+%} {% block head %}
+<style>
+  .video-container {
+    position: relative;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .video-element {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-placeholder {
+    color: #666;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  .controls {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .status-message {
+    text-align: center;
+    margin: 20px 0;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+
+  .status-waiting {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+  }
+
+  .status-connected {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+  }
+
+  .status-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-video me-2"></i>Видео чат</h2>
+        <a href="{{ safe_url_for('video_chat') }}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-1"></i>Обратно към видео чат
+        </a>
+      </div>
+
+      <!-- Status Message -->
+      <div id="videoStatus" class="status-message status-waiting">
+        Подготовка на видео чат...
+      </div>
+
+      <!-- Video Container -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <h5>Вашето видео</h5>
+          <div class="video-container">
+            <video id="localVideo" class="video-element" autoplay muted></video>
+            <div class="video-placeholder" id="localPlaceholder">
+              <i class="fas fa-video fa-3x mb-3"></i><br />
+              Натиснете "Старт видео" за да започнете
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <h5>Видео на партньора</h5>
+          <div class="video-container">
+            <video id="remoteVideo" class="video-element" autoplay></video>
+            <div class="video-placeholder" id="remotePlaceholder">
+              <i class="fas fa-video fa-3x mb-3"></i><br />
+              Изчакване на връзка...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button id="startVideo" class="btn btn-success btn-lg me-2">
+          <i class="fas fa-play me-1"></i>Старт видео
+        </button>
+        <button id="endVideo" class="btn btn-danger btn-lg me-2" disabled>
+          <i class="fas fa-stop me-1"></i>Край на чата
+        </button>
+        <button id="muteAudio" class="btn btn-secondary btn-lg me-2" disabled>
+          <i class="fas fa-microphone me-1"></i>Заглуши
+        </button>
+        <button id="hideVideo" class="btn btn-secondary btn-lg" disabled>
+          <i class="fas fa-video me-1"></i>Скрий видео
+        </button>
+      </div>
+
+      <!-- Session Info -->
+      <div class="mt-4 p-3 bg-light rounded">
+        <h6>Информация за сесията:</h6>
+        <p class="mb-1"><strong>Сесия ID:</strong> {{ session.session_id }}</p>
+        <p class="mb-1">
+          <strong>Статус:</strong>
+          <span
+            class="badge bg-{{ 'success' if session.status == 'active' else 'secondary' }}"
+          >
+            {{ 'Активна' if session.status == 'active' else 'Завършена' }}
+          </span>
+        </p>
+        <p class="mb-1">
+          <strong>Започната:</strong> {{ session.created_at.strftime('%d.%m.%Y
+          %H:%M') }}
+        </p>
+        {% if session.participant %}
+        <p class="mb-0">
+          <strong>Участник:</strong> {{ session.participant.name }} ({{
+          session.participant.email }})
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Video Chat JavaScript -->
+<script src="{{ url_lang('static', filename='js/video_chat.js') }}"></script>
+<script>
+  // Set session ID for JavaScript
+  document.body.dataset.sessionId = "{{ session.session_id }}";
+</script>
+{% endblock %}

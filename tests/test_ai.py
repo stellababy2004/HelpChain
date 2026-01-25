@@ -8,7 +8,7 @@ import sys
 
 from dotenv import load_dotenv
 
-from backend.ai_service import ai_service
+from backend.ai_service_clean import ai_service
 
 load_dotenv()
 

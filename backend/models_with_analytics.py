@@ -1,22 +1,11 @@
-import sys
 from datetime import UTC, datetime
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+from backend.models import AdminUser
 
-# Ensure this module is available under a small set of canonical names so
-# SQLAlchemy doesn't end up with duplicate module objects defining the same
-# mapped classes during the test runs. If the module is imported under any
-# of these aliases later, they will point to the same module object.
-try:
-    _this_module = sys.modules.get(__name__)
-    for _alias in (
-        "models_with_analytics",
-        "backend.models_with_analytics",
-        "helpchain_backend.src.models_with_analytics",
-    ):
-        if _alias not in sys.modules:
-            sys.modules[_alias] = _this_module
-except Exception:
-    # Never fail import of the models file due to aliasing; aliasing is best-effort.
-    pass
+
+db = SQLAlchemy()
+
 from enum import Enum
 
 # Import AdminUser and other models. Prefer the canonical package import
@@ -57,12 +46,10 @@ if db is None:
     # Fallback: build a minimal db-like namespace using SQLAlchemy primitives
     try:
         from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
-        from sqlalchemy.orm import declarative_base, relationship
-
-        _Base = declarative_base()
+        from sqlalchemy.orm import relationship
 
         class _FakeDB:
-            Model = _Base
+            Model = object
             Column = Column
             Integer = Integer
             String = String
@@ -121,32 +108,15 @@ class AdminRole(Enum):
     MODERATOR = "moderator"  # Ограничен достъп само за модерация
 
 
-class AdminLog(db.Model):
-    """Модел за проследяване на административни действия"""
+# Import the canonical db and AdminUser from models.py
+from backend.extensions import db
+from flask_login import UserMixin
+from datetime import datetime
 
-    __tablename__ = "admin_logs"
-    __table_args__ = {"extend_existing": True}
+# Import the single-source AdminUser model
+from backend.models import AdminUser
 
-    id = db.Column(db.Integer, primary_key=True)
-    # Use plain integer FK references to avoid cross-mapper metadata issues
-    # during test collection where models may be defined under different
-    # declarative registries. The numeric id is sufficient for tests.
-    admin_user_id = db.Column(db.Integer, nullable=False)
-    action = db.Column(db.String(100), nullable=False)  # "approved_request", "rejected_request", etc.
-    details = db.Column(db.Text, nullable=True)  # JSON или описание на действието
-    entity_type = db.Column(db.String(50), nullable=True)  # "help_request", "volunteer", etc.
-    entity_id = db.Column(db.Integer, nullable=True)  # ID на обекта
-    ip_address = db.Column(db.String(45), nullable=True)  # IP адрес
-    user_agent = db.Column(db.String(500), nullable=True)  # Browser info
-    timestamp = db.Column(db.DateTime, default=utc_now)
-
-    # Relationship to AdminUser intentionally omitted to avoid cross-registry
-    # mapper configuration issues during test import/collection. Tests only
-    # need the numeric `admin_user_id` value.
-    admin_user = None
-
-    def __repr__(self):
-        return f"<AdminLog {self.action} by {self.admin_user_id}>"
+# Ensure relationships reference the imported AdminUser
 
 
 class TwoFactorAuth(db.Model):
@@ -167,8 +137,8 @@ class TwoFactorAuth(db.Model):
     # mapper configuration issues during test import/collection.
     admin_user = None
 
-    def is_expired(self):
-        return utc_now() > self.expires_at
+def is_expired(self):
+    return utc_now() > self.expires_at
 
 
 class AdminSession(db.Model):
@@ -194,6 +164,25 @@ class AdminSession(db.Model):
     def update_activity(self):
         self.last_activity = utc_now()
         db.session.commit()
+
+
+class AdminLog(db.Model):
+    """Audit log for admin actions."""
+
+    __tablename__ = "admin_logs"
+    __table_args__ = {"extend_existing": True}
+
+    id = db.Column(db.Integer, primary_key=True)
+    admin_user_id = db.Column(db.Integer, db.ForeignKey("admin_users.id"), nullable=False)
+    action = db.Column(db.String(120), nullable=False)
+    details = db.Column(db.Text, nullable=True)
+    entity_type = db.Column(db.String(80), nullable=True)
+    entity_id = db.Column(db.Integer, nullable=True)
+    ip_address = db.Column(db.String(64), nullable=True)
+    user_agent = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
+
+    admin_user = db.relationship("AdminUser", back_populates="logs")
 
 
 class Feedback(db.Model):
@@ -530,4 +519,3 @@ class TaskPerformance(db.Model):
         return f"<TaskPerformance Task:{self.task_id} Volunteer:{self.volunteer_id} Completed:{self.task_completed}>"
 
 
-from backend.models import AdminLog

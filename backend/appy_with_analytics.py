@@ -43,16 +43,15 @@ from .backup_codes import (
     verify_and_consume,
 )
 from .models import (
-    AdminLog,
     AdminRole,
     AdminUser,
-    Feedback,
     HelpRequest,
     SuccessStory,
     User,
     Volunteer,
     db,
 )
+from .models_with_analytics import AdminLog, Feedback
 
 # -----------------------------------------------------------------------------
 # .env (зарежда се от backend директорията)
@@ -1655,7 +1654,7 @@ def update_request_status():
 
         # Логване на действието
         try:
-            from .models import AdminLog
+            from .models_with_analytics import AdminLog
 
             log = AdminLog(
                 admin_user_id=session.get("admin_user_id", 1),  # Default admin

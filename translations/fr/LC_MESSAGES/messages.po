@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-07-15 18:06+0200\n"
+"POT-Creation-Date: 2026-01-22 12:09+0100\n"
 "PO-Revision-Date: 2025-07-15 18:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -18,319 +18,2117 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: backend/venv/Lib/site-packages/click/_termui_impl.py:600
-#, python-brace-format
-msgid "{editor}: Editing failed"
+#: backend/appy_with_analytics.py:592
+msgid "Доброволецът е добавен успешно!"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/_termui_impl.py:604
-#, python-brace-format
-msgid "{editor}: Editing failed: {e}"
+#: backend/helpchain_backend/src/copy.py:12 templates/home_new.html:505
+#: templates/home_new.html:825
+msgid "HelpChain"
 msgstr ""
 
-#: backend/venv/Lib/site-packages/click/core.py:1084
-#: backend/venv/Lib/site-packages/click/core.py:1121
-#, python-brace-format
-msgid "{text} {deprecated_message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:1140
-msgid "Options"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:1202
-#, python-brace-format
-msgid "Got unexpected extra argument ({args})"
-msgid_plural "Got unexpected extra arguments ({args})"
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/core.py:1221
-#, python-brace-format
-msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:1405
-msgid "Aborted!"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:1779
-msgid "Commands"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:1810
-msgid "Missing command."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:1888
-#, python-brace-format
-msgid "No such command {name!r}."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2303
-msgid "Value must be an iterable."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2324
-#, python-brace-format
-msgid "Takes {nargs} values but 1 was given."
-msgid_plural "Takes {nargs} values but {len} were given."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2404
-#, python-brace-format
-msgid ""
-"DeprecationWarning: The {param_type} {name!r} is "
-"deprecated.{extra_message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2807
-#, python-brace-format
-msgid "env var: {var}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2810
-#, python-brace-format
-msgid "default: {default}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2814
-msgid "required"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/core.py:2870
-msgid "(dynamic)"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/decorators.py:465
-#, python-format
-msgid "%(prog)s, version %(version)s"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/decorators.py:522
-msgid "Show the version and exit."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/decorators.py:548
-msgid "Show this message and exit."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:50
-#: backend/venv/Lib/site-packages/click/exceptions.py:89
-#, python-brace-format
-msgid "Error: {message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:81
-#, python-brace-format
-msgid "Try '{command} {option}' for help."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:130
-#, python-brace-format
-msgid "Invalid value: {message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:132
-#, python-brace-format
-msgid "Invalid value for {param_hint}: {message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:190
-msgid "Missing argument"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:192
-msgid "Missing option"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:194
-msgid "Missing parameter"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:196
-#, python-brace-format
-msgid "Missing {param_type}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:203
-#, python-brace-format
-msgid "Missing parameter: {param_name}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:223
-#, python-brace-format
-msgid "No such option: {name}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:235
-#, python-brace-format
-msgid "Did you mean {possibility}?"
-msgid_plural "(Possible options: {possibilities})"
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:282
-msgid "unknown error"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/exceptions.py:289
-#, python-brace-format
-msgid "Could not open file {filename!r}: {message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/formatting.py:156
-msgid "Usage:"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/parser.py:200
-#, python-brace-format
-msgid "Argument {name!r} takes {nargs} values."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/parser.py:383
-#, python-brace-format
-msgid "Option {name!r} does not take a value."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/parser.py:444
-#, python-brace-format
-msgid "Option {name!r} requires an argument."
-msgid_plural "Option {name!r} requires {nargs} arguments."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/shell_completion.py:326
-msgid "Shell completion is not supported for Bash versions older than 4.4."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/shell_completion.py:333
-msgid "Couldn't detect Bash version, shell completion is not supported."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:162
-msgid "Repeat for confirmation"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:178
-msgid "Error: The value you entered was invalid."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:180
-#, python-brace-format
-msgid "Error: {e.message}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:191
-msgid "Error: The two entered values do not match."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:247
-msgid "Error: invalid input"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/termui.py:866
-msgid "Press any key to continue..."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:332
-#, python-brace-format
-msgid ""
-"Choose from:\n"
-"\t{choices}"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:369
-#, python-brace-format
-msgid "{value!r} is not {choice}."
-msgid_plural "{value!r} is not one of {choices}."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/types.py:460
-#, python-brace-format
-msgid "{value!r} does not match the format {format}."
-msgid_plural "{value!r} does not match the formats {formats}."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/types.py:482
-#, python-brace-format
-msgid "{value!r} is not a valid {number_type}."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:538
-#, python-brace-format
-msgid "{value} is not in the range {range}."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:679
-#, python-brace-format
-msgid "{value!r} is not a valid boolean."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:703
-#, python-brace-format
-msgid "{value!r} is not a valid UUID."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:893
-msgid "file"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:895
-msgid "directory"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:897
-msgid "path"
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:944
-#, python-brace-format
-msgid "{name} {filename!r} does not exist."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:953
-#, python-brace-format
-msgid "{name} {filename!r} is a file."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:961
-#, python-brace-format
-msgid "{name} {filename!r} is a directory."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:970
-#, python-brace-format
-msgid "{name} {filename!r} is not readable."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:979
-#, python-brace-format
-msgid "{name} {filename!r} is not writable."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:988
-#, python-brace-format
-msgid "{name} {filename!r} is not executable."
-msgstr ""
-
-#: backend/venv/Lib/site-packages/click/types.py:1055
-#, python-brace-format
-msgid "{len_type} values are required, but {len_value} was given."
-msgid_plural "{len_type} values are required, but {len_value} were given."
-msgstr[0] ""
-msgstr[1] ""
-
-#: backend/venv/Lib/site-packages/click/types.py:1111
-#, python-brace-format
-msgid "Админ панел"
-msgstr "Panneau d'administration"
-
-msgid "Подай сигнал за помощ"
+#: backend/helpchain_backend/src/copy.py:15
+#, fuzzy
+msgid "Подай заявка за помощ"
 msgstr "Soumettre une demande d'aide"
 
-msgid "Вашата заявка беше успешно изпратена."
-msgstr "Votre demande a été envoyée avec succès."
+#: backend/helpchain_backend/src/copy.py:16
+msgid "Попълни формата и екипът ни ще се свърже с теб възможно най-бързо."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:17
+msgid "Изпрати заявката"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:20
+msgid "Категории помощ"
+msgstr ""
+
+#: templates/admin_analytics.html:459
+msgid "Export JSON"
+msgstr "Exporter JSON"
+
+#: templates/admin_analytics.html:462
+msgid "Export CSV"
+msgstr "Exporter en CSV"
+
+#: templates/admin/requests.html:9 templates/admin_analytics.html:1010
+msgid "⚠️ This export contains personal data."
+msgstr ""
+
+#: templates/admin/requests.html:10 templates/admin_analytics.html:1011
+msgid "Internal use only."
+msgstr ""
+
+#: templates/admin/requests.html:12 templates/admin_analytics.html:1013
+msgid "Are you sure you want to continue?"
+msgstr ""
+
+#: templates/admin_dashboard.html:2
+msgid "Admin panel"
+msgstr "Panneau admin"
+
+# Status values (EN msgids -> FR)
+#: templates/admin_dashboard.html:7
+msgid "Pending"
+msgstr "En attente"
+
+#: templates/admin_dashboard.html:9
+msgid "In progress"
+msgstr "En cours"
+
+#: templates/admin_dashboard.html:11
+msgid "Completed"
+msgstr "Terminé"
+
+#: templates/admin_dashboard.html:13
+msgid "Cancelled"
+msgstr "Annulé"
+
+#: templates/admin_dashboard.html:15
+msgid "Unknown"
+msgstr "Inconnu"
+
+#: templates/admin_dashboard.html:22
+msgid "Admin dashboard"
+msgstr "Tableau de bord admin"
+
+#: templates/admin_dashboard.html:34 templates/pilot_dashboard.html:29
+msgid "Total requests"
+msgstr "Total des demandes"
+
+#: templates/admin_dashboard.html:43
+msgid "Pending requests"
+msgstr ""
+
+#: templates/admin_dashboard.html:52
+msgid "Total volunteers"
+msgstr ""
+
+#: templates/admin_dashboard.html:191
+#, fuzzy
+msgid "Requests by city (Top 10)"
+msgstr "Demandes par catégorie"
+
+#: templates/admin_dashboard.html:204
+#, fuzzy
+msgid "📈 Requests trend (last 30 days)"
+msgstr "Nouvelles demandes (derniers %(days)s jours)"
+
+#: templates/admin_dashboard.html:220
+msgid "Общо заявки"
+msgstr ""
+
+#: templates/admin_dashboard.html:228
+msgid "Чакащи"
+msgstr ""
+
+#: templates/admin_dashboard.html:236
+msgid "В процес"
+msgstr ""
+
+#: templates/admin_dashboard.html:244 templates/admin_dashboard.html:312
+msgid "Доброволци"
+msgstr ""
+
+#: templates/admin_dashboard.html:252
+msgid "Заявки"
+msgstr ""
+
+#: templates/admin_dashboard.html:258 templates/admin_dashboard.html:318
+msgid "Име"
+msgstr ""
+
+#: templates/admin_dashboard.html:259
+msgid "Описание"
+msgstr ""
+
+#: templates/admin_dashboard.html:260
+msgid "Статус"
+msgstr ""
+
+#: templates/admin_dashboard.html:261
+msgid "История"
+msgstr ""
+
+#: templates/admin_dashboard.html:262 templates/admin_roles.html:103
+#: templates/admin_roles.html:182 templates/admin_volunteers.html:626
+#: templates/dashboard.html:717
+#, fuzzy
+msgid "Actions"
+msgstr "Notifications"
+
+#: templates/admin_dashboard.html:271
+msgid "Без име"
+msgstr ""
+
+#: templates/admin_dashboard.html:272
+msgid "Без описание"
+msgstr ""
+
+#: templates/admin_dashboard.html:291
+msgid "No history"
+msgstr ""
+
+#: templates/admin_dashboard.html:295
+#, python-format
+msgid "Actions for request %(id)s"
+msgstr ""
+
+#: templates/admin_dashboard.html:305
+msgid "Няма намерени заявки"
+msgstr ""
+
+#: templates/admin_dashboard.html:319
+msgid "Имейл"
+msgstr ""
+
+#: templates/admin_dashboard.html:320
+msgid "Телефон"
+msgstr ""
+
+#: templates/admin_dashboard.html:321
+msgid "Локация"
+msgstr ""
+
+#: templates/admin_dashboard.html:322
+msgid "Умения"
+msgstr ""
+
+#: templates/admin_dashboard.html:340
+msgid "Няма"
+msgstr ""
+
+#: templates/admin_dashboard.html:347
+msgid "Няма намерени доброволци"
+msgstr ""
+
+# --- templates/all_categories.html (EN msgids) ---
+#: templates/all_categories.html:6
+msgid "Help categories - HelpChain"
+msgstr "Catégories d'aide - HelpChain"
+
+#: templates/all_categories.html:54
+msgid "Toggle navigation"
+msgstr "Basculer la navigation"
+
+#: templates/admin/requests.html:18 templates/all_categories.html:62
+#: templates/base.html:44
+msgid "Home"
+msgstr "Accueil"
+
+#: templates/submit_request.html:176
+msgid "Quick actions"
+msgstr "Actions rapides"
+
+#: templates/all_categories.html:66 templates/base.html:49
+#: templates/home_new.html:523 templates/home_new.html:833
+msgid "Categories"
+msgstr "Catégories"
+
+#: templates/all_categories.html:70 templates/all_categories.html:141
+#: templates/home_new.html:612
+msgid "Become a volunteer"
+msgstr "Devenir bénévole"
+
+# --- Added admin/requests translations ---
+#: templates/admin/login.html:6 templates/admin/login.html:19
+#: templates/all_categories.html:75
+msgid "Admin login"
+msgstr "Connexion admin"
+
+#: templates/all_categories.html:86
+msgid "Help categories"
+msgstr "Catégories d'aide"
+
+#: templates/all_categories.html:88
+msgid "Choose the category where you need help"
+msgstr "Choisissez la catégorie dans laquelle vous avez besoin d'aide"
+
+#: templates/all_categories.html:107
+msgid "See volunteers"
+msgstr "Voir des bénévoles"
+
+#: templates/all_categories.html:121
+msgid "Need help?"
+msgstr "Besoin d'aide ?"
+
+#: templates/all_categories.html:123
+msgid "Submit a request and we will find a volunteer for you."
+msgstr "Déposez une demande et nous trouverons un bénévole pour vous."
+
+#: templates/all_categories.html:126 templates/home_new.html:606
+msgid "Submit a request"
+msgstr "Déposer une demande"
+
+msgid "Request help"
+msgstr "Demander de l’aide"
+
+#: templates/all_categories.html:136
+msgid "Want to help?"
+msgstr "Vous voulez aider ?"
+
+#: templates/all_categories.html:138
+msgid "Join our community of volunteers."
+msgstr "Rejoignez notre communauté de bénévoles."
+
+#: templates/all_categories.html:150
+msgid "Back to home page"
+msgstr "Retour à la page d'accueil"
+
+#: templates/all_categories.html:162
+msgid "Connecting people in need with volunteers for a better future."
+msgstr ""
+"Mettre en relation les personnes dans le besoin avec des bénévoles pour "
+"un avenir meilleur."
+
+#: templates/all_categories.html:165
+msgid "Links"
+msgstr "Liens"
+
+#: templates/all_categories.html:167 templates/home_new.html:839
+#: templates/privacy.html:2 templates/privacy.html:7
+msgid "Privacy policy"
+msgstr "Politique de confidentialité"
+
+#: templates/all_categories.html:168
+msgid "Terms of use"
+msgstr "Conditions d'utilisation"
+
+#: templates/all_categories.html:169 templates/home_new.html:526
+msgid "FAQ"
+msgstr "FAQ"
+
+#: templates/all_categories.html:173
+msgid "Contacts"
+msgstr "Contacts"
+
+#: templates/all_categories.html:179
+msgid "All rights reserved."
+msgstr "Tous droits réservés."
+
+#: templates/base.html:54
+msgid "About"
+msgstr "À propos"
+
+#: templates/base.html:59
+msgid "Pilot (KPI)"
+msgstr "Pilote (KPI)"
+
+#: templates/base.html:59
+msgid "LIVE"
+msgstr "EN DIRECT"
+
+#: templates/base.html:65
+msgid "Dashboard"
+msgstr "Tableau de bord"
+
+#: templates/base.html:70
+msgid "Video chat"
+msgstr "Vidéo chat"
+
+#: templates/admin/requests.html:2 templates/base.html:76
+msgid "Admin"
+msgstr "Admin"
+
+#: templates/base.html:81
+msgid "Pilot (Public)"
+msgstr "Pilote (Public)"
+
+#: templates/base.html:87
+msgid "Profile"
+msgstr "Profil"
+
+#: templates/base.html:92
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: templates/base.html:98 templates/home_new.html:529
+msgid "Login"
+msgstr "Connexion"
+
+#: templates/base.html:103 templates/home_new.html:532
+msgid "Register"
+msgstr "Inscription"
+
+# --- Added translations for navbar/search/actions ---
+# These were added manually to ensure UI strings are available before
+# extraction
+# and follow the requested canonical msgid -> FR msgstr mapping.
+#: templates/base.html:114 templates/home_new.html:566
+msgid "Search in HelpChain..."
+msgstr "Rechercher sur HelpChain..."
+
+#: templates/admin/requests.html:36 templates/base.html:115
+#: templates/base.html:117 templates/base.html:119 templates/home_new.html:567
+#: templates/home_new.html:569
+msgid "Search"
+msgstr "Rechercher"
+
+#: templates/base.html:125 templates/home_new.html:541
+msgid "Toggle theme"
+msgstr "Changer de thème"
+
+#: templates/base.html:130
+msgid "Notifications"
+msgstr "Notifications"
+
+#: templates/base.html:138
+msgid "Language"
+msgstr "Langue"
+
+#: templates/base.html:162
+msgid "Затвори съобщението"
+msgstr ""
+
+#: templates/base.html:176
+msgid "Разработено от"
+msgstr ""
+
+#: templates/base.html:177
+msgid "За нас"
+msgstr ""
+
+#: templates/base.html:183
+msgid "Отвори AI асистент"
+msgstr ""
+
+#: templates/base.html:183 templates/base.html:188 templates/base.html:210
+msgid "AI Асистент"
+msgstr ""
+
+#: templates/base.html:189
+msgid "Затвори"
+msgstr ""
+
+#: templates/base.html:192
+msgid "Задай въпрос към HelpChain!"
+msgstr ""
+
+#: templates/base.html:196 templates/base.html:209
+msgid "Въведи въпрос..."
+msgstr ""
+
+#: templates/base.html:197
+msgid "Изпрати"
+msgstr ""
+
+#: templates/base.html:206
+msgid "AI пише..."
+msgstr ""
+
+#: templates/base.html:207
+msgid "Няма отговор от AI."
+msgstr ""
+
+#: templates/base.html:208
+msgid "Грешка при връзка с AI."
+msgstr ""
+
+#: templates/export_data.html:256 templates/export_data.html:266
+msgid "Export data"
+msgstr "Exporter des données"
+
+#: templates/export_data.html:268
+msgid "Download data from the system in various formats"
+msgstr "Téléchargez les données du système dans différents formats"
+
+#: templates/export_data.html:332
+msgid "Choose format"
+msgstr "Choisir le format"
+
+#: templates/export_data.html:340
+msgid "CSV"
+msgstr "CSV"
+
+#: templates/export_data.html:341
+msgid "Comma separated"
+msgstr "Séparés par des virgules"
+
+#: templates/export_data.html:349
+msgid "JSON"
+msgstr "JSON"
+
+#: templates/export_data.html:350
+msgid "Structured data"
+msgstr "Données structurées"
+
+#: templates/export_data.html:358
+msgid "PDF"
+msgstr "PDF"
+
+#: templates/export_data.html:359
+msgid "Formatted document"
+msgstr "Document formaté"
+
+#: templates/export_data.html:367
+msgid "Excel"
+msgstr "Excel"
+
+#: templates/export_data.html:368
+msgid "Spreadsheet"
+msgstr "Tableur"
+
+#: templates/export_data.html:386
+msgid "Preview"
+msgstr "Aperçu"
+
+#: templates/export_data.html:393
+msgid "Export"
+msgstr "Exporter"
+
+#: templates/home_new.html:7
+msgid "HelpChain - Connecting people in need with volunteers"
+msgstr ""
+"HelpChain - Mettre en relation les personnes dans le besoin avec des "
+"bénévoles"
+
+#: templates/home_new.html:491
+msgid "Skip to main content"
+msgstr "Aller au contenu principal"
+
+#: templates/home_new.html:502
+msgid "Main navigation"
+msgstr "Navigation principale"
+
+#: templates/home_new.html:514
+msgid "Open menu"
+msgstr "Ouvrir le menu"
+
+#: templates/home_new.html:521
+msgid "Features"
+msgstr "Fonctionnalités"
+
+#: templates/home_new.html:535
+msgid "Volunteer login"
+msgstr "Connexion bénévole"
+
+#: templates/home_new.html:542
+msgid "Toggle light/dark theme"
+msgstr "Basculer entre thème clair et sombre"
+
+#: templates/home_new.html:551 templates/home_new.html:552
+msgid "Manage push notifications"
+msgstr "Gérer les notifications push"
+
+#: templates/home_new.html:587
+msgid "Welcome to HelpChain"
+msgstr "Bienvenue sur HelpChain"
+
+#: templates/home_new.html:588
+msgid "Together, we make helping others simple, fast and human."
+msgstr "Ensemble, nous rendons l’entraide simple, rapide et humaine."
+
+#: templates/base.html:8
+msgid "HelpChain connects people in need with verified volunteers — fast, safe and human."
+msgstr "HelpChain met en relation les personnes dans le besoin avec des bénévoles vérifiés — rapide, sûr et humain."
+
+#: templates/base.html:14 templates/base.html:21
+msgid "HelpChain — Get help, become a volunteer"
+msgstr "HelpChain — Demander de l’aide, devenir bénévole"
+
+#: templates/home_new.html:589
+msgid "Trust and compliance"
+msgstr "Confiance et conformité"
+
+#: templates/home_new.html:590
+msgid "France"
+msgstr "France"
+
+#: templates/home_new.html:592
+msgid "Switzerland"
+msgstr "Suisse"
+
+#: templates/home_new.html:594
+msgid "Canada"
+msgstr "Canada"
+
+#: templates/home_new.html:596
+msgid "GDPR-friendly"
+msgstr "Compatible RGPD"
+
+#: templates/home_new.html:615
+msgid "Key numbers"
+msgstr "Chiffres clés"
+
+#: templates/home_new.html:618
+msgid "volunteer"
+msgstr "bénévole"
+
+#: templates/home_new.html:618
+msgid "volunteers"
+msgstr "bénévoles"
+
+#: templates/home_new.html:623
+msgid "request helped"
+msgstr "demande aidée"
+
+#: templates/home_new.html:623
+msgid "requests helped"
+msgstr "demandes aidées"
+
+#: templates/home_new.html:628
+msgid "country"
+msgstr "pays"
+
+#: templates/home_new.html:628
+msgid "countries"
+msgstr "pays"
+
+#: templates/home_new.html:631
+msgid "Trust information"
+msgstr "Informations de confiance"
+
+#: templates/home_new.html:632
+msgid "Pilot: France"
+msgstr "Pilote : France"
+
+#: templates/home_new.html:634
+msgid "GDPR-friendly exports"
+msgstr "Exports compatibles RGPD"
+
+#: templates/home_new.html:636
+msgid "Impact dashboard (read-only)"
+msgstr "Tableau d'impact (lecture seule)"
+
+#: templates/home_new.html:632
+msgid "We never sell your data."
+msgstr "Nous ne vendons jamais vos données."
+
+#: templates/home_new.html:634
+msgid "Verified community."
+msgstr "Communauté vérifiée."
+
+#: templates/home_new.html:636
+msgid "Fast matching."
+msgstr "Mise en relation rapide."
+
+#: templates/home_new.html:639
+msgid "How it works"
+msgstr "Comment ça marche"
+
+#: templates/home_new.html:642
+msgid "Post a request"
+msgstr "Publier une demande"
+
+msgid "Tell us what you need in under a minute."
+msgstr "Dites-nous ce dont vous avez besoin en moins d'une minute."
+
+#: templates/home_new.html:647
+msgid "Get matched"
+msgstr "Être mis en relation"
+
+#: templates/home_new.html:652
+msgid "Receive help"
+msgstr "Recevoir de l’aide"
+
+#: templates/home_new.html:664
+msgid "Human-first help"
+msgstr "Aide centrée sur l’humain"
+
+#: templates/home_new.html:665
+msgid "Real people helping real people - not bots, not call centers."
+msgstr "De vraies personnes aident de vraies personnes — pas des bots, pas des centres d’appel."
+
+#: templates/home_new.html:670
+msgid "Fast & simple"
+msgstr "Rapide et simple"
+
+#: templates/home_new.html:671
+msgid "Post a request in minutes. Get matched without bureaucracy."
+msgstr "Publiez une demande en quelques minutes. Mise en relation sans bureaucratie."
+
+#: templates/home_new.html:676
+msgid "Privacy by design"
+msgstr "Confidentialité dès la conception"
+
+#: templates/home_new.html:677
+msgid "Minimal data. No ads. No resale. GDPR-friendly architecture."
+msgstr "Données minimales. Pas de publicité. Pas de revente. Architecture compatible RGPD."
+
+#: templates/home_new.html:688
+msgid "Help you can trust"
+msgstr "Une aide en toute confiance"
+
+#: templates/home_new.html:691
+msgid "A safe, human and reliable way to connect with verified volunteers."
+msgstr ""
+"Une manière sûre, humaine et fiable de se connecter à des bénévoles "
+"vérifiés."
+
+#: templates/home_new.html:698
+msgid "Safety first"
+msgstr "Sécurité avant tout"
+
+#: templates/home_new.html:700
+msgid ""
+"Your requests and messages are protected. We design HelpChain with "
+"security in mind."
+msgstr "Vos demandes et vos messages sont protégés. Nous concevons HelpChain avec la sécurité à l’esprit."
+
+#: templates/home_new.html:706
+msgid "Verified volunteers"
+msgstr "Bénévoles vérifiés"
+
+#: templates/home_new.html:708
+msgid "Volunteers can be verified to create trust and reduce abuse."
+msgstr ""
+"Les bénévoles peuvent être vérifiés pour instaurer la confiance et "
+"réduire les abus."
+
+#: templates/home_new.html:714
+msgid "Human, fast, local"
+msgstr "Humaine, rapide, locale"
+
+#: templates/home_new.html:716
+msgid "We connect people nearby for quick, compassionate help - not bureaucracy."
+msgstr "Nous mettons en relation des personnes proches pour une aide rapide et bienveillante — sans bureaucratie."
+
+# --- templates/home_new.html (EN msgids) ---
+#: templates/home_new.html:728
+msgid "Main content"
+msgstr "Contenu principal"
+
+#: templates/home_new.html:738
+msgid "Active volunteers"
+msgstr "Bénévoles actifs"
+
+#: templates/home_new.html:744
+msgid "People helped"
+msgstr "Personnes aidées"
+
+#: templates/home_new.html:750
+msgid "Open requests"
+msgstr "Demandes ouvertes"
+
+#: templates/home_new.html:760
+msgid "Why choose HelpChain?"
+msgstr "Pourquoi choisir HelpChain ?"
+
+#: templates/home_new.html:761
+msgid ""
+"We offer a modern platform to connect people who need help with those who"
+" want to help."
+msgstr ""
+"Nous proposons une plateforme moderne pour connecter les personnes qui "
+"ont besoin d'aide avec celles qui veulent aider."
+
+#: templates/home_new.html:769
+msgid "Fast help"
+msgstr "Aide rapide"
+
+#: templates/home_new.html:770
+msgid ""
+"Our platform connects people in need with volunteers in minutes, "
+"providing fast and effective help."
+msgstr ""
+"Notre plateforme met en relation les personnes dans le besoin avec des "
+"bénévoles en quelques minutes, offrant une aide rapide et efficace."
+
+#: templates/home_new.html:777
+msgid "Security"
+msgstr "Sécurité"
+
+#: templates/home_new.html:778
+msgid ""
+"All users go through verification, and communication is protected with "
+"state-of-the-art security technologies."
+msgstr ""
+"Tous les utilisateurs sont vérifiés, et la communication est protégée par"
+" des technologies de sécurité de pointe."
+
+#: templates/home_new.html:785
+msgid "Community"
+msgstr "Communauté"
+
+#: templates/home_new.html:786
+msgid ""
+"Join a growing community of volunteers and people who believe that "
+"together we can make the world a better place."
+msgstr ""
+"Rejoignez une communauté grandissante de bénévoles et de personnes qui "
+"croient qu'ensemble nous pouvons rendre le monde meilleur."
+
+#: templates/home_new.html:793
+msgid "Mobile accessibility"
+msgstr "Accessibilité mobile"
+
+#: templates/home_new.html:794
+msgid ""
+"Our platform works perfectly on all devices - from smartphones to desktop"
+" computers."
+msgstr ""
+"Notre plateforme fonctionne parfaitement sur tous les appareils - des "
+"smartphones aux ordinateurs de bureau."
+
+#: templates/home_new.html:801
+msgid "24/7 support"
+msgstr "Support 24/7"
+
+#: templates/home_new.html:802
+msgid ""
+"Our team is always available to help. No matter the time, you can rely on"
+" our support."
+msgstr ""
+"Notre équipe est toujours disponible pour aider. Quelle que soit l'heure,"
+" vous pouvez compter sur notre support."
+
+#: templates/home_new.html:809
+msgid "Free"
+msgstr "Gratuit"
+
+#: templates/home_new.html:810
+msgid ""
+"HelpChain is a completely free platform. We believe that help should be "
+"accessible to everyone."
+msgstr ""
+"HelpChain est une plateforme entièrement gratuite. Nous pensons que "
+"l'aide doit être accessible à tous."
+
+#: templates/home_new.html:820
+msgid "Site information"
+msgstr "Informations du site"
+
+#: templates/home_new.html:826
+msgid "Connecting people in need with volunteers for a better world."
+msgstr ""
+"Mettre en relation les personnes dans le besoin avec des bénévoles pour "
+"un monde meilleur."
+
+#: templates/home_new.html:829
+msgid "Quick links"
+msgstr "Liens rapides"
+
+#: templates/home_new.html:845 templates/terms.html:2 templates/terms.html:7
+msgid "Terms of service"
+msgstr "Conditions d’utilisation"
+
+#: templates/home_new.html:851 templates/privacy.html:49
+#: templates/terms.html:37
+msgid "Contact"
+msgstr "Contact"
+
+#: templates/home_new.html:862
+msgid "Facebook"
+msgstr ""
+
+#: templates/home_new.html:863
+msgid "Visit us on Facebook"
+msgstr "Nous rendre visite sur Facebook"
+
+#: templates/home_new.html:870
+#, fuzzy
+msgid "Twitter"
+msgstr "Titre"
+
+#: templates/home_new.html:871
+msgid "Visit us on Twitter"
+msgstr "Nous rendre visite sur Twitter"
+
+#: templates/home_new.html:878
+#, fuzzy
+msgid "Instagram"
+msgstr "Nous rendre visite sur Instagram"
+
+#: templates/home_new.html:879
+msgid "Visit us on Instagram"
+msgstr "Nous rendre visite sur Instagram"
+
+#: templates/home_new.html:886
+#, fuzzy
+msgid "LinkedIn"
+msgstr "Liens"
+
+#: templates/home_new.html:887
+msgid "Visit us on LinkedIn"
+msgstr "Nous rendre visite sur LinkedIn"
+
+#: templates/home_new.html:896
+msgid "HelpChain. All rights reserved."
+msgstr "HelpChain. Tous droits réservés."
+
+#: templates/home_new.html:899
+msgid "Data hosted in Europe"
+msgstr "Données hébergées en Europe"
+
+#: templates/home_new.html:899
+msgid "GDPR compliant"
+msgstr "Conforme RGPD"
+
+#: templates/home_new.html:899
+msgid "Security-first"
+msgstr "Sécurité avant tout"
+
+#: templates/base.html:179 templates/home_new.html:899
+msgid "Legal information"
+msgstr "Informations légales"
+
+#: templates/base.html:179 templates/home_new.html:899
+msgid "Enhanced security"
+msgstr "Sécurité renforcée"
+
+#: templates/home_new.html:908 templates/home_new.html:909
+msgid "Back to top"
+msgstr "Retour en haut"
+
+#: templates/home_new.html:925
+msgid "Loading..."
+msgstr "Chargement..."
+
+#: templates/home_new.html:926
+msgid "An error occurred while loading"
+msgstr "Une erreur est survenue lors du chargement"
+
+#: templates/home_new.html:927
+msgid "Push notifications are enabled!"
+msgstr "Les notifications push sont activées !"
+
+#: templates/home_new.html:928
+msgid "Push notifications are disabled."
+msgstr "Les notifications push sont désactivées."
+
+#: templates/home_new.html:929
+msgid "Error setting up push notifications"
+msgstr "Erreur lors de la configuration des notifications push"
+
+#: templates/home_new.html:930
+msgid "Welcome to HelpChain! 🚀"
+msgstr "Bienvenue sur HelpChain ! 🚀"
+
+#: templates/home_new.html:932
+msgid "Theme switched to"
+msgstr "Le thème a été basculé vers"
+
+#: templates/home_new.html:933
+msgid "Switch to"
+msgstr "Passer à"
+
+#: templates/home_new.html:934
+msgid "dark"
+msgstr "sombre"
+
+#: templates/home_new.html:935
+msgid "light"
+msgstr "clair"
+
+#: templates/home_new.html:936
+msgid "theme"
+msgstr "thème"
+
+#: templates/pilot_dashboard.html:2 templates/pilot_dashboard.html:13
+msgid "Pilot Dashboard"
+msgstr "Tableau de bord Pilote"
+
+#: templates/pilot_dashboard.html:15
+msgid "Read-only KPI overview (no personal data)."
+msgstr "Vue KPI en lecture seule (aucune donnée personnelle)."
+
+#: templates/pilot_dashboard.html:16
+msgid "Generated:"
+msgstr "Généré le :"
+
+#: templates/pilot_dashboard.html:19
+msgid "Back"
+msgstr "Retour"
+
+#: templates/pilot_dashboard.html:23
+msgid ""
+"This page contains only aggregated metrics and excludes personal data "
+"(GDPR-safe)."
+msgstr ""
+"Cette page affiche uniquement des métriques agrégées et exclut les "
+"données personnelles (RGPD)."
+
+#: templates/pilot_dashboard.html:26
+msgid "Impact"
+msgstr "Impact"
+
+#: templates/pilot_dashboard.html:34
+msgid "Open"
+msgstr "Ouvertes"
+
+#: templates/pilot_dashboard.html:36
+msgid "Not done / not rejected"
+msgstr "Ni terminées / ni rejetées"
+
+#: templates/admin/requests.html:55 templates/admin/requests.html:92
+#: templates/pilot_dashboard.html:40
+msgid "Closed"
+msgstr "Clôturées"
+
+#: templates/pilot_dashboard.html:45
+msgid "Closed (last 7 days)"
+msgstr "Clôturées (7 derniers jours)"
+
+#: templates/pilot_dashboard.html:50
+msgid "Avg resolution"
+msgstr "Délai moyen de résolution"
+
+#: templates/pilot_dashboard.html:59 templates/pilot_dashboard.html:78
+msgid "Unassigned > 48h"
+msgstr "Non attribuées > 48h"
+
+#: templates/pilot_dashboard.html:61
+msgid "Open without owner"
+msgstr "Ouvertes sans responsable"
+
+#: templates/pilot_dashboard.html:65
+msgid "Top risks"
+msgstr "Principaux risques"
+
+#: templates/pilot_dashboard.html:68
+msgid "High priority open"
+msgstr "Priorité haute (ouvertes)"
+
+#: templates/pilot_dashboard.html:73
+msgid "Stale > 7 days"
+msgstr "En attente > 7 jours"
+
+#: templates/pilot_dashboard.html:88
+msgid "Requests by status"
+msgstr "Demandes par statut"
+
+#: templates/pilot_dashboard.html:94
+msgid "Requests by category"
+msgstr "Demandes par catégorie"
+
+#: templates/pilot_dashboard.html:102
+#, python-format
+msgid "New requests (last %(days)s days)"
+msgstr "Nouvelles demandes (derniers %(days)s jours)"
+
+#: templates/admin/requests.html:2 templates/pilot_dashboard.html:118
+msgid "Requests"
+msgstr "Demandes"
+
+#: templates/pilot_dashboard.html:124
+msgid "New requests"
+msgstr "Nouvelles demandes"
+
+#: templates/privacy.html:10 templates/terms.html:10
+msgid "Last updated:"
+msgstr "Dernière mise à jour :"
+
+#: templates/privacy.html:14
+msgid ""
+"HelpChain is a solidarity platform. We only collect what is necessary to "
+"connect people who need help with volunteers. We do not sell your data."
+msgstr ""
+"HelpChain est une plateforme solidaire. Nous ne collectons que ce qui est"
+" nécessaire pour connecter les personnes qui ont besoin d’aide avec des "
+"bénévoles. Nous ne vendons pas vos données."
+
+#: templates/privacy.html:19
+msgid "What data we collect"
+msgstr "Quelles données nous collectons"
+
+#: templates/privacy.html:21
+msgid ""
+"Account and contact details you provide (name, email, phone - if you "
+"choose)."
+msgstr "Coordonnées et informations de contact que vous fournissez (nom, e-mail, téléphone — si vous le souhaitez)."
+
+#: templates/privacy.html:22
+msgid ""
+"Request information you submit (category, description, location - if "
+"needed for the service)."
+msgstr "Informations de demande que vous soumettez (catégorie, description, localisation — si nécessaire au service)."
+
+#: templates/privacy.html:23
+msgid ""
+"Basic technical data for security (e.g., IP address, logs) to prevent "
+"abuse."
+msgstr ""
+"Des données techniques de base pour la sécurité (ex. adresse IP, "
+"journaux) afin de prévenir les abus."
+
+#: templates/privacy.html:26
+msgid "How we use it"
+msgstr "Comment nous l’utilisons"
+
+#: templates/privacy.html:28
+msgid "To operate the service and match requests with volunteers."
+msgstr "Pour faire fonctionner le service et associer les demandes aux bénévoles."
+
+#: templates/privacy.html:29
+msgid "To communicate about your request (updates, messages, notifications)."
+msgstr ""
+"Pour communiquer au sujet de votre demande (mises à jour, messages, "
+"notifications)."
+
+#: templates/privacy.html:30
+msgid "To keep the platform safe (fraud prevention, security monitoring)."
+msgstr ""
+"Pour maintenir la plateforme sécurisée (prévention de la fraude, "
+"surveillance de la sécurité)."
+
+#: templates/privacy.html:33
+msgid "What we do not do"
+msgstr "Ce que nous ne faisons pas"
+
+#: templates/privacy.html:35
+msgid "We do not sell personal data."
+msgstr "Nous ne vendons pas de données personnelles."
+
+#: templates/privacy.html:36
+msgid "We do not run advertising profiling."
+msgstr "Nous ne faisons pas de profilage publicitaire."
+
+#: templates/privacy.html:39
+msgid "Data retention"
+msgstr "Durée de conservation des données"
+
+#: templates/privacy.html:41
+msgid ""
+"We keep data only as long as needed for the service and legal "
+"obligations. You can request deletion of your account data."
+msgstr ""
+"Nous conservons les données uniquement le temps nécessaire au service et "
+"aux obligations légales. Vous pouvez demander la suppression des données "
+"de votre compte."
+
+#: templates/privacy.html:44
+msgid "Your rights"
+msgstr "Vos droits"
+
+#: templates/privacy.html:46
+msgid ""
+"You can request access, correction, or deletion of your personal data. "
+"You can also object to certain processing where applicable."
+msgstr ""
+"Vous pouvez demander l’accès, la correction ou la suppression de vos "
+"données personnelles. Vous pouvez aussi vous opposer à certains "
+"traitements lorsque cela s’applique."
+
+#: templates/privacy.html:51
+msgid "Questions about privacy? Contact us at"
+msgstr "Des questions sur la confidentialité ? Contactez-nous à"
+
+#: templates/terms.html:14
+msgid ""
+"HelpChain helps connect people who need help with volunteers. By using "
+"the platform, you agree to follow these basic rules to keep everyone "
+"safe."
+msgstr ""
+"HelpChain aide à mettre en relation les personnes qui ont besoin d’aide "
+"avec des bénévoles. En utilisant la plateforme, vous acceptez de suivre "
+"ces règles de base pour la sécurité de tous."
+
+#: templates/terms.html:19
+msgid "Use of the platform"
+msgstr "Utilisation de la plateforme"
+
+#: templates/terms.html:21
+msgid "Provide accurate information and use respectful language."
+msgstr "Fournissez des informations exactes et utilisez un langage respectueux."
+
+#: templates/terms.html:22
+msgid "Do not post illegal, harmful, or abusive content."
+msgstr "Ne publiez pas de contenu illégal, nuisible ou abusif."
+
+#: templates/terms.html:23
+msgid "Do not impersonate others or misrepresent your identity."
+msgstr ""
+"Ne vous faites pas passer pour quelqu’un d’autre et ne déformez pas votre"
+" identité."
+
+#: templates/terms.html:26
+msgid "Safety"
+msgstr "Sécurité"
+
+#: templates/terms.html:28
+msgid ""
+"HelpChain is a connection platform, not an emergency service. If there is"
+" immediate danger, contact local emergency services."
+msgstr ""
+"HelpChain est une plateforme de mise en relation, pas un service "
+"d’urgence. En cas de danger immédiat, contactez les services d’urgence "
+"locaux."
+
+#: templates/terms.html:29
+msgid ""
+"We may limit or suspend accounts to prevent abuse or protect the "
+"community."
+msgstr ""
+"Nous pouvons limiter ou suspendre des comptes pour prévenir les abus ou "
+"protéger la communauté."
+
+#: templates/terms.html:32
+msgid "Liability"
+msgstr "Responsabilité"
+
+#: templates/terms.html:34
+msgid ""
+"Volunteering involves human interactions. HelpChain cannot guarantee "
+"outcomes and is not responsible for actions taken by users. We encourage "
+"safe, transparent communication and caution when sharing personal "
+"details."
+msgstr ""
+"Le bénévolat implique des interactions humaines. HelpChain ne peut "
+"garantir les résultats et n’est pas responsable des actions des "
+"utilisateurs. Nous encourageons une communication sûre et transparente et"
+" la prudence lors du partage de données personnelles."
+
+#: templates/terms.html:39
+msgid "Questions about these terms? Contact us at"
+msgstr "Des questions sur ces conditions ? Contactez-nous à"
+
+# --- login.html additions ---
+#: templates/admin/login.html:31 templates/admin/login.html:40
+#: templates/admin/login.html:41
+msgid "Username"
+msgstr "Nom d’utilisateur"
+
+#: templates/admin/login.html:47 templates/admin/login.html:56
+#: templates/admin/login.html:57
+msgid "Password"
+msgstr "Mot de passe"
+
+#: templates/admin/login.html:62
+msgid "Sign in as admin"
+msgstr "Se connecter en tant qu’administrateur"
+
+# --- mfa_setup additions ---
+#: templates/admin/mfa_setup.html:4
+msgid "Set up MFA"
+msgstr "Configurer la MFA"
+
+#: templates/admin/mfa_setup.html:6
+msgid ""
+"Scan the QR code with Google Authenticator / Authy / Microsoft "
+"Authenticator, then enter the 6-digit code."
+msgstr ""
+"Scannez le code QR avec Google Authenticator / Authy / Microsoft "
+"Authenticator, puis entrez le code à 6 chiffres."
+
+#: templates/admin/mfa_setup.html:14
+msgid "Manual key (if QR does not work):"
+msgstr "Clé manuelle (si le QR ne fonctionne pas) :"
+
+#: templates/admin/mfa_setup.html:20 templates/admin/mfa_setup.html:23
+msgid "Verification code (6 digits)"
+msgstr "Code de vérification (6 chiffres)"
+
+#: templates/admin/mfa_setup.html:25
+msgid "Activate MFA"
+msgstr "Activer la MFA"
+
+#: templates/admin/requests.html:16
+msgid "Live requests"
+msgstr "Demandes en direct"
+
+# Admin requests specific strings
+#: templates/admin/requests.html:24 templates/admin/requests.html:51
+#, fuzzy
+msgid "Status"
+msgstr "Tous les statuts"
+
+# Admin requests specific strings
+#: templates/admin/requests.html:25
+msgid "All statuses"
+msgstr "Tous les statuts"
+
+#: templates/admin/requests.html:36
+msgid "Search by name, title, description..."
+msgstr "Rechercher par nom, titre, description..."
+
+#: templates/admin/requests.html:40
+msgid "Filter"
+msgstr "Filtrer"
+
+#: templates/admin/requests.html:48
+msgid "ID"
+msgstr ""
+
+#: templates/admin/requests.html:49
+msgid "Title"
+msgstr "Titre"
+
+#: templates/admin/requests.html:50
+msgid "Name"
+msgstr "Nom"
+
+#: templates/admin/requests.html:52
+msgid "Priority"
+msgstr "Priorité"
+
+#: templates/admin/requests.html:53
+msgid "Category"
+msgstr "Catégorie"
+
+#: templates/admin/requests.html:54 templates/admin/requests.html:84
+msgid "Created"
+msgstr "Créé"
+
+#: templates/admin/requests.html:56
+msgid "SLA"
+msgstr ""
+
+#: templates/admin/requests.html:57 templates/admin/requests.html:96
+msgid "Details"
+msgstr "Détails"
+
+#: templates/admin/requests.html:86
+msgid "No owner assigned"
+msgstr "Aucun responsable assigné"
+
+#: templates/admin/requests.html:86
+msgid "No owner"
+msgstr "Sans responsable"
+
+#: templates/admin/requests.html:89
+msgid "Stale request"
+msgstr "Demande obsolète"
+
+#: templates/admin/requests.html:89
+msgid "Stale"
+msgstr "Obsolète"
+
+#: templates/admin/requests.html:100
+msgid "No results."
+msgstr "Aucun résultat."
+
+#~ msgid "{editor}: Editing failed"
+#~ msgstr ""
+
+#~ msgid "{editor}: Editing failed: {e}"
+#~ msgstr ""
+
+#~ msgid "{text} {deprecated_message}"
+#~ msgstr ""
+
+#~ msgid "Options"
+#~ msgstr ""
+
+#~ msgid "Got unexpected extra argument ({args})"
+#~ msgstr ""
+
+#~ msgid "You can opt out at any time. Your data is not public."
+#~ msgstr ""
+#~ "Vous pouvez vous retirer à tout "
+#~ "moment. Vos données ne sont pas "
+#~ "publiques."
+
+#~ msgid "DeprecationWarning: The command {name!r} is deprecated.{extra_message}"
+#~ msgstr ""
+
+#~ msgid "Aborted!"
+#~ msgstr ""
+
+#~ msgid "Commands"
+#~ msgstr ""
+
+#~ msgid "Missing command."
+#~ msgstr ""
+
+#~ msgid "No such command {name!r}."
+#~ msgstr ""
+
+#~ msgid "Value must be an iterable."
+#~ msgstr ""
+
+#~ msgid "Takes {nargs} values but 1 was given."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "DeprecationWarning: The {param_type} {name!r} "
+#~ "is deprecated.{extra_message}"
+#~ msgstr ""
+
+#~ msgid "env var: {var}"
+#~ msgstr ""
+
+#~ msgid "default: {default}"
+#~ msgstr ""
+
+#~ msgid "required"
+#~ msgstr ""
+
+#~ msgid "(dynamic)"
+#~ msgstr ""
+
+#~ msgid "%(prog)s, version %(version)s"
+#~ msgstr ""
+
+#~ msgid "Show the version and exit."
+#~ msgstr ""
+
+#~ msgid "Show this message and exit."
+#~ msgstr ""
+
+#~ msgid "Error: {message}"
+#~ msgstr ""
+
+#~ msgid "Try '{command} {option}' for help."
+#~ msgstr ""
+
+#~ msgid "Invalid value: {message}"
+#~ msgstr ""
+
+#~ msgid "Invalid value for {param_hint}: {message}"
+#~ msgstr ""
+
+#~ msgid "Missing argument"
+#~ msgstr ""
+
+#~ msgid "Missing option"
+#~ msgstr ""
+
+#~ msgid "Missing parameter"
+#~ msgstr ""
+
+#~ msgid "Missing {param_type}"
+#~ msgstr ""
+
+#~ msgid "Missing parameter: {param_name}"
+#~ msgstr ""
+
+#~ msgid "No such option: {name}"
+#~ msgstr ""
+
+#~ msgid "Did you mean {possibility}?"
+#~ msgstr ""
+
+#~ msgid "unknown error"
+#~ msgstr ""
+
+#~ msgid "Could not open file {filename!r}: {message}"
+#~ msgstr ""
+
+#~ msgid "Usage:"
+#~ msgstr ""
+
+#~ msgid "Argument {name!r} takes {nargs} values."
+#~ msgstr ""
+
+#~ msgid "Option {name!r} does not take a value."
+#~ msgstr ""
+
+#~ msgid "Option {name!r} requires an argument."
+#~ msgstr ""
+
+#~ msgid "Shell completion is not supported for Bash versions older than 4.4."
+#~ msgstr ""
+
+#~ msgid "Couldn't detect Bash version, shell completion is not supported."
+#~ msgstr ""
+
+#~ msgid "Repeat for confirmation"
+#~ msgstr ""
+
+#~ msgid "Error: The value you entered was invalid."
+#~ msgstr ""
+
+#~ msgid "Error: {e.message}"
+#~ msgstr ""
+
+#~ msgid "Error: The two entered values do not match."
+#~ msgstr ""
+
+#~ msgid "Error: invalid input"
+#~ msgstr ""
+
+#~ msgid "Press any key to continue..."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Choose from:\n"
+#~ "\t{choices}"
+#~ msgstr ""
+
+#~ msgid "{value!r} is not {choice}."
+#~ msgstr ""
+
+#~ msgid "{value!r} does not match the format {format}."
+#~ msgstr ""
+
+#~ msgid "{value!r} is not a valid {number_type}."
+#~ msgstr ""
+
+#~ msgid "{value} is not in the range {range}."
+#~ msgstr ""
+
+#~ msgid "{value!r} is not a valid boolean."
+#~ msgstr ""
+
+#~ msgid "{value!r} is not a valid UUID."
+#~ msgstr ""
+
+#~ msgid "file"
+#~ msgstr ""
+
+#~ msgid "directory"
+#~ msgstr ""
+
+#~ msgid "path"
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} does not exist."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is a file."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is a directory."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not readable."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not writable."
+#~ msgstr ""
+
+#~ msgid "{name} {filename!r} is not executable."
+#~ msgstr ""
+
+#~ msgid "{len_type} values are required, but {len_value} was given."
+#~ msgstr ""
+
+#~ msgid "Админ панел"
+#~ msgstr "Panneau d'administration"
+
+#~ msgid "Изпрати"
+#~ msgstr ""
+
+#~ msgid "Продължи"
+#~ msgstr ""
+
+#~ msgid "Назад"
+#~ msgstr ""
+
+#~ msgid "Затвори"
+#~ msgstr ""
+
+#~ msgid "Зареждане…"
+#~ msgstr ""
+
+#~ msgid "Полета с * са задължителни."
+#~ msgstr ""
+
+#~ msgid "Нещо се обърка. Опитай отново след малко."
+#~ msgstr ""
+
+#~ msgid "Провери маркираните полета и опитай отново."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Избери категория и попълни кратко "
+#~ "описание. Ако случаят е спешен, отбележи"
+#~ " това ясно."
+#~ msgstr ""
+
+#~ msgid "Категория"
+#~ msgstr ""
+
+#~ msgid "Избери категория…"
+#~ msgstr ""
+
+#~ msgid "Описание на ситуацията"
+#~ msgstr ""
+
+#~ msgid "Напиши накратко какво се случва и от какво имаш нужда."
+#~ msgstr ""
+
+#~ msgid "Контакт за връзка"
+#~ msgstr ""
+
+#~ msgid "Телефон или имейл, за да можем да се свържем."
+#~ msgstr ""
+
+#~ msgid "Град/квартал (без точен адрес на този етап)."
+#~ msgstr ""
+
+#~ msgid "Съгласен/на съм данните да се използват само за обработка на заявката."
+#~ msgstr ""
+
+#~ msgid "Не споделяй чувствителни данни, които не са нужни."
+#~ msgstr ""
+
+#~ msgid "СПЕШНО"
+#~ msgstr ""
+
+#~ msgid "Ако има непосредствен риск за живот/здраве, звънни на 112."
+#~ msgstr ""
+
+#~ msgid "Спешен случай"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Ако има непосредствена опасност, обади "
+#~ "се на 112. HelpChain не е спешна"
+#~ " служба, но ще обработим заявката "
+#~ "приоритетно."
+#~ msgstr ""
+
+#~ msgid "Заявката е изпратена"
+#~ msgstr "Votre demande a été envoyée avec succès."
+
+#~ msgid "Получихме заявката ти. Ще се свържем при първа възможност."
+#~ msgstr ""
+
+#~ msgid "Можеш да подадеш нова заявка или да се върнеш към началото."
+#~ msgstr ""
+
+#~ msgid "Моля, избери категория."
+#~ msgstr ""
+
+#~ msgid "Невалидна категория. Избери от списъка."
+#~ msgstr ""
+
+#~ msgid "Моля, опиши накратко ситуацията."
+#~ msgstr ""
+
+#~ msgid "Описанието е твърде кратко. Добави още малко контекст."
+#~ msgstr ""
+
+#~ msgid "Моля, остави контакт за връзка."
+#~ msgstr ""
+
+#~ msgid "Контактът изглежда невалиден. Провери телефон/имейл."
+#~ msgstr ""
+
+#~ msgid "Трябва да потвърдиш съгласието, за да изпратиш заявката."
+#~ msgstr ""
+
+#~ msgid "Твърде много опити за кратко време. Опитай отново след малко."
+#~ msgstr ""
+
+#~ msgid "Храна"
+#~ msgstr ""
+
+#~ msgid "Нужда от хранителни продукти, доставка или подкрепа за изхранване."
+#~ msgstr ""
+
+#~ msgid "Спешно"
+#~ msgstr ""
+
+#~ msgid "Непосредствен риск или ситуация, изискваща бърза реакция."
+#~ msgstr ""
+
+#~ msgid "112"
+#~ msgstr ""
+
+#~ msgid "При непосредствен риск звънни на 112."
+#~ msgstr ""
+
+#~ msgid "Медицинска помощ"
+#~ msgstr ""
+
+#~ msgid "Навигация към услуги, придружаване, административна помощ."
+#~ msgstr ""
+
+#~ msgid "Правна помощ"
+#~ msgstr "Soumettre une demande d'aide"
+
+#~ msgid "Насоки, документи, консултация, институции."
+#~ msgstr ""
+
+#~ msgid "Подслон"
+#~ msgstr ""
+
+#~ msgid "Временно настаняване, кризисен център, базова подкрепа."
+#~ msgstr ""
+
+#~ msgid "Образование"
+#~ msgstr ""
+
+#~ msgid "Записване, подкрепа за ученици/студенти, документи."
+#~ msgstr ""
+
+#~ msgid "Психологическа подкрепа"
+#~ msgstr ""
+
+#~ msgid "Подкрепа при стрес, тревожност, кризисни ситуации."
+#~ msgstr ""
+
+#~ msgid "Социална помощ"
+#~ msgstr "Soumettre une demande d'aide"
+
+#~ msgid "Социални услуги, помощи, придружаване, административни въпроси."
+#~ msgstr ""
+
+#~ msgid "Подкрепа за възрастни"
+#~ msgstr ""
+
+#~ msgid "Грижа, пазаруване, придружаване, услуги."
+#~ msgstr ""
+
+#~ msgid "Хора с увреждания"
+#~ msgstr ""
+
+#~ msgid "Достъпност, услуги, документи, помощни средства."
+#~ msgstr ""
+
+#~ msgid "Envoyer"
+#~ msgstr ""
+
+#~ msgid "Continuer"
+#~ msgstr ""
+
+#~ msgid "Retour"
+#~ msgstr ""
+
+#~ msgid "Fermer"
+#~ msgstr ""
+
+#~ msgid "Chargement…"
+#~ msgstr ""
+
+#~ msgid "Les champs avec * sont obligatoires."
+#~ msgstr ""
+
+#~ msgid "Une erreur s’est produite. Réessaie dans un instant."
+#~ msgstr ""
+
+#~ msgid "Vérifie les champs signalés et réessaie."
+#~ msgstr ""
+
+#~ msgid "Soumettre une demande d’aide"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Choisis une catégorie et décris "
+#~ "brièvement la situation. Si c’est "
+#~ "urgent, indique-le clairement."
+#~ msgstr ""
+
+#~ msgid "Catégorie"
+#~ msgstr ""
+
+#~ msgid "Choisir une catégorie…"
+#~ msgstr ""
+
+#~ msgid "Description de la situation"
+#~ msgstr ""
+
+#~ msgid "Explique en quelques mots ce qui se passe et ce dont tu as besoin."
+#~ msgstr ""
+
+#~ msgid "Contact"
+#~ msgstr ""
+
+#~ msgid "Téléphone ou e-mail afin que nous puissions te recontacter."
+#~ msgstr ""
+
+#~ msgid "Localisation"
+#~ msgstr ""
+
+#~ msgid "Ville/quartier (sans adresse exacte à ce stade)."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "J’accepte que mes données soient "
+#~ "utilisées uniquement pour traiter cette "
+#~ "demande."
+#~ msgstr ""
+
+#~ msgid "Ne partage pas de données sensibles inutiles."
+#~ msgstr ""
+
+#~ msgid "URGENT"
+#~ msgstr ""
+
+#~ msgid "En cas de danger immédiat pour la vie/la santé, appelle le 112."
+#~ msgstr ""
+
+#~ msgid "Situation urgente"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "En cas de danger immédiat, appelle "
+#~ "le 112. HelpChain n’est pas un "
+#~ "service d’urgence, mais nous traiterons "
+#~ "ta demande en priorité."
+#~ msgstr ""
+
+#~ msgid "Demande envoyée"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Nous avons bien reçu ta demande. "
+#~ "Nous te recontacterons dès que possible."
+#~ msgstr ""
+
+#~ msgid "Tu peux soumettre une nouvelle demande ou revenir à l’accueil."
+#~ msgstr ""
+
+#~ msgid "Merci de choisir une catégorie."
+#~ msgstr ""
+
+#~ msgid "Catégorie invalide. Choisis dans la liste."
+#~ msgstr ""
+
+#~ msgid "Merci de décrire brièvement la situation."
+#~ msgstr ""
+
+#~ msgid "La description est trop courte. Ajoute un peu de contexte."
+#~ msgstr ""
+
+#~ msgid "Merci de laisser un moyen de contact."
+#~ msgstr ""
+
+#~ msgid "Le contact semble invalide. Vérifie téléphone/e-mail."
+#~ msgstr ""
+
+#~ msgid "Tu dois confirmer ton accord pour envoyer la demande."
+#~ msgstr ""
+
+#~ msgid "Trop de tentatives en peu de temps. Réessaie dans un instant."
+#~ msgstr ""
+
+#~ msgid "Alimentation"
+#~ msgstr ""
+
+#~ msgid "Besoin de courses, livraison ou soutien alimentaire."
+#~ msgstr ""
+
+#~ msgid "Urgence"
+#~ msgstr ""
+
+#~ msgid "Risque immédiat ou situation nécessitant une réaction rapide."
+#~ msgstr ""
+
+#~ msgid "En cas de danger immédiat, appelle le 112."
+#~ msgstr ""
+
+#~ msgid "Aide médicale"
+#~ msgstr ""
+
+#~ msgid "Orientation, accompagnement, aide administrative liée aux soins."
+#~ msgstr ""
+
+#~ msgid "Aide juridique"
+#~ msgstr ""
+
+#~ msgid "Conseils, documents, démarches, institutions."
+#~ msgstr ""
+
+#~ msgid "Hébergement"
+#~ msgstr ""
+
+#~ msgid "Solution temporaire, centre d’accueil, soutien de base."
+#~ msgstr ""
+
+#~ msgid "Éducation"
+#~ msgstr ""
+
+#~ msgid "Inscription, soutien scolaire/études, documents."
+#~ msgstr ""
+
+#~ msgid "Soutien psychologique"
+#~ msgstr ""
+
+#~ msgid "Aide en cas de stress, anxiété, situations de crise."
+#~ msgstr ""
+
+#~ msgid "Aide sociale"
+#~ msgstr ""
+
+#~ msgid "Services sociaux, aides, accompagnement, démarches."
+#~ msgstr ""
+
+#~ msgid "Soutien aux personnes âgées"
+#~ msgstr ""
+
+#~ msgid "Aide à domicile, courses, accompagnement, services."
+#~ msgstr ""
+
+#~ msgid "Handicap"
+#~ msgstr ""
+
+#~ msgid "Accessibilité, services, démarches, aides techniques."
+#~ msgstr ""
+
+#~ msgid "Developed by Stella Barbarella."
+#~ msgstr "Développé par Stella Barbarella."
+
+#~ msgid "Filter"
+#~ msgstr "Filtrer"
+
+#~ msgid "Export CSV"
+#~ msgstr "Exporter en CSV"
+
+#~ msgid "Export Excel"
+#~ msgstr "Exporter en Excel"
+
+#~ msgid "Export CSV (anonymized)"
+#~ msgstr "Exporter CSV (anonymisé)"
+
+#~ msgid "Export Excel (anonymized)"
+#~ msgstr "Exporter Excel (anonymisé)"
+
+#~ msgid "Export"
+#~ msgstr "Exporter"
+
+#~ msgid "contains personal data (internal use only)."
+#~ msgstr "contient des données personnelles (usage interne uniquement)."
+
+#~ msgid "Anonymized"
+#~ msgstr "Anonymisé"
+
+#~ msgid "is suitable for reports to external institutions (GDPR compliant)."
+#~ msgstr ""
+#~ "convient aux rapports destinés à des "
+#~ "institutions externes (conforme au RGPD)."
+
+#~ msgid ""
+#~ "⚠️ This export contains personal data.\n"
+#~ "Internal use only.\n"
+#~ "\n"
+#~ "Are you sure you want to continue?"
+#~ msgstr ""
+#~ "⚠️ Cet export contient des données personnelles.\n"
+#~ "Usage interne uniquement.\n"
+#~ "\n"
+#~ "Êtes-vous sûr de vouloir continuer ?"
+
+#~ msgid "Approved"
+#~ msgstr "Approuvé"
+
+#~ msgid "Rejected"
+#~ msgstr "Rejeté"
+
+#~ msgid "closed"
+#~ msgstr "Clôturées"
+
+#~ msgid "Действия"
+#~ msgstr ""
+
+#~ msgid "Няма история"
+#~ msgstr ""
+
+#~ msgid "Категории помощ - HelpChain"
+#~ msgstr ""
+
+#~ msgid "Начало"
+#~ msgstr ""
+
+#~ msgid "Категории"
+#~ msgstr ""
+
+#~ msgid "Стани доброволец"
+#~ msgstr ""
+
+#~ msgid "Админ вход"
+#~ msgstr ""
+
+#~ msgid "Изберете категорията, в която се нуждаете от помощ"
+#~ msgstr ""
+
+#~ msgid "Виж доброволци"
+#~ msgstr ""
+
+#~ msgid "Нуждаете се от помощ?"
+#~ msgstr ""
+
+#~ msgid "Подайте заявка и ние ще намерим доброволец за вас."
+#~ msgstr ""
+
+#~ msgid "Подайте заявка"
+#~ msgstr "Soumettre une demande d'aide"
+
+#~ msgid "Искате да помогнете?"
+#~ msgstr ""
+
+#~ msgid "Присъединете се към нашата общност от доброволци."
+#~ msgstr ""
+
+#~ msgid "Към началната страница"
+#~ msgstr ""
+
+#~ msgid "Свързваме нуждаещи се с доброволци за по-добро бъдеще."
+#~ msgstr ""
+
+#~ msgid "Връзки"
+#~ msgstr ""
+
+#~ msgid "Политика за поверителност"
+#~ msgstr ""
+
+#~ msgid "Условия за ползване"
+#~ msgstr ""
+
+#~ msgid "ЧЗВ"
+#~ msgstr ""
+
+#~ msgid "Контакти"
+#~ msgstr ""
+
+#~ msgid "Всички права запазени."
+#~ msgstr ""
+
+#~ msgid "Search HelpChain..."
+#~ msgstr "Rechercher dans HelpChain..."
+
+#~ msgid "Sign up"
+#~ msgstr "Inscription"
+
+#~ msgid "Welcome to HelpChain!"
+#~ msgstr "Bienvenue sur HelpChain !"
+
+#~ msgid ""
+#~ "Help without chaos or pressure. We "
+#~ "connect real needs with volunteers - "
+#~ "calmly, safely, humanely."
+#~ msgstr ""
+#~ "Aide sans chaos ni pression. Nous "
+#~ "mettons en lien des besoins réels "
+#~ "avec des bénévoles - avec calme, "
+#~ "sécurité et humanité."
+
+#~ msgid "Registration ~2 min | Data protected | No schedules or pressure"
+#~ msgstr "Inscription ~2 min | Données protégées | Pas d'horaires ni de pression"
+
+#~ msgid "Trust signals"
+#~ msgstr "Signaux de confiance"
+
+#~ msgid "Data protected"
+#~ msgstr "Données protégées"
+
+#~ msgid "No pressure"
+#~ msgstr "Sans pression"
+
+#~ msgid "Registration ~2 min"
+#~ msgstr "Inscription ~2 min"
+
+#~ msgid "You can browse requests first - no registration."
+#~ msgstr "Vous pouvez consulter les demandes d'abord - sans inscription."
+
+#~ msgid "Volunteer guarantees"
+#~ msgstr "Garanties pour les bénévoles"
+
+#~ msgid "No schedules"
+#~ msgstr "Pas d'horaires"
+
+#~ msgid "Scroll for more"
+#~ msgstr "Faites défiler pour en voir plus"
+
+#~ msgid "Quick start for volunteers"
+#~ msgstr "Démarrage rapide pour bénévoles"
+
+#~ msgid "Start in 30 seconds"
+#~ msgstr "Commencez en 30 secondes"
+
+#~ msgid "No schedules. No pressure. Just clear steps."
+#~ msgstr "Pas d'horaires. Pas de pression. Des étapes claires."
+
+#~ msgid "Volunteer registration"
+#~ msgstr "Inscription bénévole"
+
+#~ msgid "1) Sign up"
+#~ msgstr "1) Inscription"
+
+#~ msgid "Under 2 min. Only the essentials."
+#~ msgstr "Moins de 2 min. L'essentiel uniquement."
+
+#~ msgid "2) Log in"
+#~ msgstr "2) Connexion"
+
+#~ msgid "See requests and choose when to help."
+#~ msgstr "Consultez les demandes et choisissez quand aider."
+
+#~ msgid "See a sample request"
+#~ msgstr "Voir un exemple de demande"
+
+#~ msgid "3) See an example"
+#~ msgstr "3) Voir un exemple"
+
+#~ msgid "See how a request looks before you join."
+#~ msgstr "Voir à quoi ressemble une demande avant de vous engager."
+
+#~ msgid "Saved filter"
+#~ msgstr "Filtre enregistré"
+
+#~ msgid "Coming back? Save a preference — we will apply it automatically."
+#~ msgstr ""
+#~ "De retour ? Enregistrez une préférence"
+#~ " - nous l'appliquerons automatiquement."
+
+#~ msgid "Remote"
+#~ msgstr "À distance"
+
+#~ msgid "On site"
+#~ msgstr "Sur place"
+
+#~ msgid "All"
+#~ msgstr "Tous"
+
+#~ msgid "Clear"
+#~ msgstr "Effacer"
+
+#~ msgid ""
+#~ "We connect people in need with "
+#~ "volunteers for fast and effective help."
+#~ " Together we can make the world "
+#~ "a better place."
+#~ msgstr ""
+#~ "Nous mettons en relation les personnes"
+#~ " dans le besoin avec des bénévoles"
+#~ " pour une aide rapide et efficace."
+#~ " Ensemble, nous pouvons rendre le "
+#~ "monde meilleur."
+
+#~ msgid ""
+#~ "The solidarity platform that connects "
+#~ "people who need help with those "
+#~ "who want to help."
+#~ msgstr ""
+#~ "La plateforme solidaire qui relie les"
+#~ " personnes en difficulté à celles qui"
+#~ " veulent aider."
+
+#~ msgid "Privacy"
+#~ msgstr "Confidentialité"
+
+#~ msgid ""
+#~ "Account and contact details you provide"
+#~ " (name, email, phone - if you "
+#~ "choose)."
+#~ msgstr ""
+#~ "Les informations de compte et de "
+#~ "contact que vous fournissez (nom, "
+#~ "e-mail, téléphone — si vous le "
+#~ "souhaitez)."
+
+#~ msgid ""
+#~ "Request information you submit (category, "
+#~ "description, location - if needed for"
+#~ " the service)."
+#~ msgstr ""
+#~ "Les informations relatives à la demande"
+#~ " que vous soumettez (catégorie, "
+#~ "description, localisation — si nécessaire "
+#~ "au service)."
+
+#~ msgid "Impact counters"
+#~ msgstr "Indicateurs d'impact"
+
+msgid "A trusted volunteer takes ownership."
+msgstr "Un bénévole de confiance prend en charge votre demande."
+
+msgid "Follow progress with full transparency."
+msgstr "Suivez l'avancement en toute transparence."
+
+msgid "Trust badges"
+msgstr "Badges de confiance"
+
+msgid "Need help now?"
+msgstr "Besoin d'aide maintenant ?"
+
+msgid "— it takes less than a minute."
+msgstr "— cela prend moins d’une minute."
+
+msgid "Takes ~1 minute"
+msgstr "Prend ~1 minute"
+
+msgid "What happens next"
+msgstr "Ce qui se passe ensuite"
+
+msgid "A verified volunteer will contact you"
+msgstr "Un bénévole vérifié vous contactera"
+
+msgid "We never sell your data"
+msgstr "Nous ne vendons jamais vos données"
+
+msgid "Fast matching — no bureaucracy"
+msgstr "Mise en relation rapide — sans bureaucratie"

@@ -167,7 +167,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
-        <a class="navbar-brand" href="{{ safe_url_for('admin_dashboard') }}">
+        <a class="navbar-brand" href="{{ safe_url_for('admin.admin_dashboard') }}">
           <i class="fas fa-shield-alt me-2"></i>HelpChain Admin
         </a>
         <button
@@ -181,12 +181,12 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_volunteers') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_volunteers') }}">
                 <i class="fas fa-users me-1"></i>Доброволци
               </a>
             </li>
@@ -245,7 +245,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="{{ safe_url_for('admin_dashboard') }}">
+            <a href="{{ safe_url_for('admin.admin_dashboard') }}">
               <i class="fas fa-home me-1"></i>Dashboard
             </a>
           </li>

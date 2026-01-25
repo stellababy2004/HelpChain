@@ -260,10 +260,3 @@ def prepare_database():
             yield
 
 
-@pytest.fixture
-def app():
-    """Expose the Flask app object for pytest-flask fixtures like `client`."""
-    from backend.appy import app as _appy
-
-    _ensure_app_uses_test_uri(_appy)
-    return _appy

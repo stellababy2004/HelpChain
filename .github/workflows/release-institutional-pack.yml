@@ -1,0 +1,40 @@
+name: Release Institutional Pack
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-institutional-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pandoc and zip
+        run: sudo apt-get update && sudo apt-get install -y pandoc zip
+
+      - name: Build institutional PDFs
+        run: |
+          pandoc docs/institutions/HelpChain_Overview_FR.md -o docs/institutions/HelpChain_Overview_FR.pdf
+          pandoc docs/institutions/HelpChain_Overview_BG.md -o docs/institutions/HelpChain_Overview_BG.pdf
+          pandoc docs/institutions/HelpChain_Overview_EN.md -o docs/institutions/HelpChain_Overview_EN.pdf
+
+      - name: Create Institutional Pack ZIP
+        run: |
+          zip -j institutional-pack.zip \
+            docs/institutions/HelpChain_Overview_FR.pdf \
+            docs/institutions/HelpChain_Overview_BG.pdf \
+            docs/institutions/HelpChain_Overview_EN.pdf \
+            README.md
+
+      - name: Upload PDFs as release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            docs/institutions/HelpChain_Overview_FR.pdf
+            docs/institutions/HelpChain_Overview_BG.pdf
+            docs/institutions/HelpChain_Overview_EN.pdf
+            institutional-pack.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

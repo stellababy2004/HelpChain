@@ -1,0 +1,827 @@
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-01-20 10:39+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: backend/appy_with_analytics.py:592
+msgid "Доброволецът е добавен успешно!"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:12
+msgid "HelpChain"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:15
+msgid "Подай заявка за помощ"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:16
+msgid "Попълни формата и екипът ни ще се свърже с теб възможно най-бързо."
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:17
+msgid "Изпрати заявката"
+msgstr ""
+
+#: backend/helpchain_backend/src/copy.py:20 templates/all_categories.html:86
+msgid "Категории помощ"
+msgstr ""
+
+#: templates/admin_analytics.html:459
+msgid "Export JSON"
+msgstr ""
+
+#: templates/admin_analytics.html:462
+msgid "Export CSV"
+msgstr ""
+
+#: templates/admin/requests.html:9 templates/admin_analytics.html:1010
+msgid "⚠️ This export contains personal data."
+msgstr ""
+
+#: templates/admin/requests.html:10 templates/admin_analytics.html:1011
+msgid "Internal use only."
+msgstr ""
+
+#: templates/admin/requests.html:12 templates/admin_analytics.html:1013
+msgid "Are you sure you want to continue?"
+msgstr ""
+
+#: templates/admin_dashboard.html:2
+msgid "Admin panel"
+msgstr ""
+
+#: templates/admin_dashboard.html:7
+msgid "Pending"
+msgstr ""
+
+#: templates/admin_dashboard.html:9
+msgid "In progress"
+msgstr ""
+
+#: templates/admin_dashboard.html:11
+msgid "Completed"
+msgstr ""
+
+#: templates/admin_dashboard.html:13
+msgid "Cancelled"
+msgstr ""
+
+#: templates/admin_dashboard.html:15
+msgid "Unknown"
+msgstr ""
+
+#: templates/admin_dashboard.html:22
+msgid "Admin dashboard"
+msgstr ""
+
+#: templates/admin_dashboard.html:34 templates/admin_dashboard.html:594
+#: templates/pilot_dashboard.html:29
+msgid "Total requests"
+msgstr ""
+
+#: templates/admin_dashboard.html:43 templates/admin_dashboard.html:595
+msgid "Pending requests"
+msgstr ""
+
+#: templates/admin_dashboard.html:52 templates/admin_dashboard.html:596
+msgid "Total volunteers"
+msgstr ""
+
+#: templates/admin_dashboard.html:191
+msgid "Requests by city (Top 10)"
+msgstr ""
+
+#: templates/admin_dashboard.html:204
+msgid "📈 Requests trend (last 30 days)"
+msgstr ""
+
+#: templates/admin_dashboard.html:220
+msgid "Общо заявки"
+msgstr ""
+
+#: templates/admin_dashboard.html:228
+msgid "Чакащи"
+msgstr ""
+
+#: templates/admin_dashboard.html:236
+msgid "В процес"
+msgstr ""
+
+#: templates/admin_dashboard.html:244 templates/admin_dashboard.html:307
+msgid "Доброволци"
+msgstr ""
+
+#: templates/admin_dashboard.html:252
+msgid "Заявки"
+msgstr ""
+
+#: templates/admin_dashboard.html:258 templates/admin_dashboard.html:313
+msgid "Име"
+msgstr ""
+
+#: templates/admin_dashboard.html:259
+msgid "Описание"
+msgstr ""
+
+#: templates/admin_dashboard.html:260
+msgid "Статус"
+msgstr ""
+
+#: templates/admin_dashboard.html:261
+msgid "История"
+msgstr ""
+
+#: templates/admin_dashboard.html:262 templates/admin_roles.html:103
+#: templates/admin_roles.html:182 templates/admin_volunteers.html:626
+#: templates/dashboard.html:717
+msgid "Actions"
+msgstr ""
+
+#: templates/admin_dashboard.html:271
+msgid "Без име"
+msgstr ""
+
+#: templates/admin_dashboard.html:272
+msgid "Без описание"
+msgstr ""
+
+#: templates/admin_dashboard.html:286
+msgid "No history"
+msgstr ""
+
+#: templates/admin_dashboard.html:290
+#, python-format
+msgid "Actions for request %(id)s"
+msgstr ""
+
+#: templates/admin_dashboard.html:300
+msgid "Няма намерени заявки"
+msgstr ""
+
+#: templates/admin_dashboard.html:314
+msgid "Имейл"
+msgstr ""
+
+#: templates/admin_dashboard.html:315
+msgid "Телефон"
+msgstr ""
+
+#: templates/admin_dashboard.html:316
+msgid "Локация"
+msgstr ""
+
+#: templates/admin_dashboard.html:317
+msgid "Умения"
+msgstr ""
+
+#: templates/admin_dashboard.html:335
+msgid "Няма"
+msgstr ""
+
+#: templates/admin_dashboard.html:342
+msgid "Няма намерени доброволци"
+msgstr ""
+
+#: templates/all_categories.html:6
+msgid "Категории помощ - HelpChain"
+msgstr ""
+
+#: templates/all_categories.html:62
+msgid "Начало"
+msgstr ""
+
+#: templates/all_categories.html:66
+msgid "Категории"
+msgstr ""
+
+#: templates/all_categories.html:70 templates/all_categories.html:141
+msgid "Стани доброволец"
+msgstr ""
+
+#: templates/all_categories.html:75
+msgid "Админ вход"
+msgstr ""
+
+#: templates/all_categories.html:88
+msgid "Изберете категорията, в която се нуждаете от помощ"
+msgstr ""
+
+#: templates/all_categories.html:107
+msgid "Виж доброволци"
+msgstr ""
+
+#: templates/all_categories.html:121
+msgid "Нуждаете се от помощ?"
+msgstr ""
+
+#: templates/all_categories.html:123
+msgid "Подайте заявка и ние ще намерим доброволец за вас."
+msgstr ""
+
+#: templates/all_categories.html:126
+msgid "Подайте заявка"
+msgstr ""
+
+#: templates/all_categories.html:136
+msgid "Искате да помогнете?"
+msgstr ""
+
+#: templates/all_categories.html:138
+msgid "Присъединете се към нашата общност от доброволци."
+msgstr ""
+
+#: templates/all_categories.html:150
+msgid "Към началната страница"
+msgstr ""
+
+#: templates/all_categories.html:162
+msgid "Свързваме нуждаещи се с доброволци за по-добро бъдеще."
+msgstr ""
+
+#: templates/all_categories.html:165
+msgid "Връзки"
+msgstr ""
+
+#: templates/all_categories.html:167
+msgid "Политика за поверителност"
+msgstr ""
+
+#: templates/all_categories.html:168
+msgid "Условия за ползване"
+msgstr ""
+
+#: templates/all_categories.html:169
+msgid "ЧЗВ"
+msgstr ""
+
+#: templates/all_categories.html:173
+msgid "Контакти"
+msgstr ""
+
+#: templates/all_categories.html:179
+msgid "Всички права запазени."
+msgstr ""
+
+#: templates/admin/requests.html:18 templates/base.html:44
+msgid "Home"
+msgstr ""
+
+#: templates/base.html:49 templates/home_new.html:540
+msgid "Categories"
+msgstr ""
+
+#: templates/base.html:54
+msgid "About"
+msgstr ""
+
+#: templates/base.html:59 templates/home_new.html:544
+msgid "Pilot (KPI)"
+msgstr ""
+
+#: templates/base.html:59 templates/home_new.html:544
+msgid "LIVE"
+msgstr ""
+
+#: templates/base.html:65
+msgid "Dashboard"
+msgstr ""
+
+#: templates/base.html:70
+msgid "Video chat"
+msgstr ""
+
+#: templates/admin/requests.html:2 templates/base.html:76
+msgid "Admin"
+msgstr ""
+
+#: templates/base.html:81
+msgid "Pilot (Public)"
+msgstr ""
+
+#: templates/base.html:87 templates/home_new.html:591
+msgid "Profile"
+msgstr ""
+
+#: templates/base.html:92
+msgid "Logout"
+msgstr ""
+
+#: templates/base.html:98
+msgid "Login"
+msgstr ""
+
+#: templates/base.html:103
+msgid "Register"
+msgstr ""
+
+#: templates/base.html:114
+msgid "Search in HelpChain..."
+msgstr ""
+
+#: templates/admin/requests.html:36 templates/base.html:115
+#: templates/base.html:117 templates/base.html:119 templates/home_new.html:514
+#: templates/home_new.html:520 templates/home_new.html:522
+#: templates/home_new.html:562 templates/home_new.html:564
+msgid "Search"
+msgstr ""
+
+#: templates/base.html:125 templates/home_new.html:573
+msgid "Toggle theme"
+msgstr ""
+
+#: templates/base.html:130
+msgid "Notifications"
+msgstr ""
+
+#: templates/base.html:138
+msgid "Language"
+msgstr ""
+
+#: templates/base.html:162
+msgid "Затвори съобщението"
+msgstr ""
+
+#: templates/base.html:176
+msgid "Разработено от"
+msgstr ""
+
+#: templates/base.html:177
+msgid "За нас"
+msgstr ""
+
+#: templates/base.html:183
+msgid "Отвори AI асистент"
+msgstr ""
+
+#: templates/base.html:183 templates/base.html:188 templates/base.html:210
+msgid "AI Асистент"
+msgstr ""
+
+#: templates/base.html:189
+msgid "Затвори"
+msgstr ""
+
+#: templates/base.html:192
+msgid "Задай въпрос към HelpChain!"
+msgstr ""
+
+#: templates/base.html:196 templates/base.html:209
+msgid "Въведи въпрос..."
+msgstr ""
+
+#: templates/base.html:197
+msgid "Изпрати"
+msgstr ""
+
+#: templates/base.html:206
+msgid "AI пише..."
+msgstr ""
+
+#: templates/base.html:207
+msgid "Няма отговор от AI."
+msgstr ""
+
+#: templates/base.html:208
+msgid "Грешка при връзка с AI."
+msgstr ""
+
+#: templates/export_data.html:256 templates/export_data.html:266
+msgid "Export data"
+msgstr ""
+
+#: templates/export_data.html:268
+msgid "Download data from the system in various formats"
+msgstr ""
+
+#: templates/export_data.html:332
+msgid "Choose format"
+msgstr ""
+
+#: templates/export_data.html:340
+msgid "CSV"
+msgstr ""
+
+#: templates/export_data.html:341
+msgid "Comma separated"
+msgstr ""
+
+#: templates/export_data.html:349
+msgid "JSON"
+msgstr ""
+
+#: templates/export_data.html:350
+msgid "Structured data"
+msgstr ""
+
+#: templates/export_data.html:358
+msgid "PDF"
+msgstr ""
+
+#: templates/export_data.html:359
+msgid "Formatted document"
+msgstr ""
+
+#: templates/export_data.html:367
+msgid "Excel"
+msgstr ""
+
+#: templates/export_data.html:368
+msgid "Spreadsheet"
+msgstr ""
+
+#: templates/export_data.html:386
+msgid "Preview"
+msgstr ""
+
+#: templates/export_data.html:393
+msgid "Export"
+msgstr ""
+
+#: templates/home_new.html:491
+msgid "Skip to main content"
+msgstr ""
+
+#: templates/home_new.html:502
+msgid "Main navigation"
+msgstr ""
+
+#: templates/home_new.html:519 templates/home_new.html:561
+msgid "Search HelpChain..."
+msgstr ""
+
+#: templates/home_new.html:528 templates/home_new.html:548
+#: templates/home_new.html:641
+msgid "Become a volunteer"
+msgstr ""
+
+#: templates/home_new.html:532 templates/home_new.html:595
+#: templates/home_new.html:681
+msgid "Volunteer login"
+msgstr ""
+
+#: templates/home_new.html:533 templates/home_new.html:596
+msgid "Sign up"
+msgstr ""
+
+#: templates/admin/login.html:6 templates/admin/login.html:19
+#: templates/home_new.html:534 templates/home_new.html:598
+msgid "Admin login"
+msgstr ""
+
+#: templates/home_new.html:539
+msgid "Features"
+msgstr ""
+
+#: templates/home_new.html:541
+msgid "FAQ"
+msgstr ""
+
+#: templates/home_new.html:574
+msgid "Toggle light/dark theme"
+msgstr ""
+
+#: templates/home_new.html:582 templates/home_new.html:583
+msgid "Manage push notifications"
+msgstr ""
+
+#: templates/home_new.html:609
+msgid "Open menu"
+msgstr ""
+
+#: templates/home_new.html:628
+msgid "Welcome to HelpChain!"
+msgstr ""
+
+#: templates/home_new.html:630
+msgid ""
+"Help without chaos or pressure. We connect real needs with volunteers - "
+"calmly, safely, humanely."
+msgstr ""
+
+#: templates/home_new.html:633
+msgid "Registration ~2 min | Data protected | No schedules or pressure"
+msgstr ""
+
+#: templates/home_new.html:638
+msgid "Submit a request"
+msgstr ""
+
+#: templates/home_new.html:646
+msgid "Trust signals"
+msgstr ""
+
+#: templates/home_new.html:647 templates/home_new.html:658
+msgid "Data protected"
+msgstr ""
+
+#: templates/home_new.html:648
+msgid "No pressure"
+msgstr ""
+
+#: templates/home_new.html:649
+msgid "Registration ~2 min"
+msgstr ""
+
+#: templates/home_new.html:653
+msgid "You can browse requests first - no registration."
+msgstr ""
+
+#: templates/home_new.html:655
+msgid "Volunteer guarantees"
+msgstr ""
+
+#: templates/home_new.html:656
+msgid "No schedules"
+msgstr ""
+
+#: templates/home_new.html:657
+msgid "You can opt out"
+msgstr ""
+
+#: templates/home_new.html:660
+msgid "Scroll for more"
+msgstr ""
+
+#: templates/home_new.html:664
+msgid "Quick start for volunteers"
+msgstr ""
+
+#: templates/home_new.html:667
+msgid "Start in 30 seconds"
+msgstr ""
+
+#: templates/home_new.html:668
+msgid "No schedules. No pressure. Just clear steps."
+msgstr ""
+
+#: templates/home_new.html:672
+msgid "Volunteer registration"
+msgstr ""
+
+#: templates/home_new.html:675
+msgid "1) Sign up"
+msgstr ""
+
+#: templates/home_new.html:676
+msgid "Under 2 min. Only the essentials."
+msgstr ""
+
+#: templates/home_new.html:684
+msgid "2) Log in"
+msgstr ""
+
+#: templates/home_new.html:685
+msgid "See requests and choose when to help."
+msgstr ""
+
+#: templates/home_new.html:690
+msgid "See a sample request"
+msgstr ""
+
+#: templates/home_new.html:693
+msgid "3) See an example"
+msgstr ""
+
+#: templates/home_new.html:694
+msgid "See how a request looks before you join."
+msgstr ""
+
+#: templates/home_new.html:702
+msgid "Saved filter"
+msgstr ""
+
+#: templates/home_new.html:704
+msgid "Coming back? Save a preference — we will apply it automatically."
+msgstr ""
+
+#: templates/home_new.html:710
+msgid "Remote"
+msgstr ""
+
+#: templates/home_new.html:713
+msgid "On site"
+msgstr ""
+
+#: templates/home_new.html:716
+msgid "All"
+msgstr ""
+
+#: templates/home_new.html:719
+msgid "Clear"
+msgstr ""
+
+#: templates/home_new.html:725
+msgid "You can opt out at any time. Your data is not public."
+msgstr ""
+
+#: templates/pilot_dashboard.html:2 templates/pilot_dashboard.html:13
+msgid "Pilot Dashboard"
+msgstr ""
+
+#: templates/pilot_dashboard.html:15
+msgid "Read-only KPI overview (no personal data)."
+msgstr ""
+
+#: templates/pilot_dashboard.html:16
+msgid "Generated:"
+msgstr ""
+
+#: templates/pilot_dashboard.html:19
+msgid "Back"
+msgstr ""
+
+#: templates/pilot_dashboard.html:23
+msgid ""
+"This page contains only aggregated metrics and excludes personal data "
+"(GDPR-safe)."
+msgstr ""
+
+#: templates/pilot_dashboard.html:26
+msgid "Impact"
+msgstr ""
+
+#: templates/pilot_dashboard.html:34
+msgid "Open"
+msgstr ""
+
+#: templates/pilot_dashboard.html:36
+msgid "Not done / not rejected"
+msgstr ""
+
+#: templates/admin/requests.html:55 templates/admin/requests.html:92
+#: templates/pilot_dashboard.html:40
+msgid "Closed"
+msgstr ""
+
+#: templates/pilot_dashboard.html:45
+msgid "Closed (last 7 days)"
+msgstr ""
+
+#: templates/pilot_dashboard.html:50
+msgid "Avg resolution"
+msgstr ""
+
+#: templates/pilot_dashboard.html:59 templates/pilot_dashboard.html:78
+msgid "Unassigned > 48h"
+msgstr ""
+
+#: templates/pilot_dashboard.html:61
+msgid "Open without owner"
+msgstr ""
+
+#: templates/pilot_dashboard.html:65
+msgid "Top risks"
+msgstr ""
+
+#: templates/pilot_dashboard.html:68
+msgid "High priority open"
+msgstr ""
+
+#: templates/pilot_dashboard.html:73
+msgid "Stale > 7 days"
+msgstr ""
+
+#: templates/pilot_dashboard.html:88
+msgid "Requests by status"
+msgstr ""
+
+#: templates/pilot_dashboard.html:94
+msgid "Requests by category"
+msgstr ""
+
+#: templates/pilot_dashboard.html:102
+#, python-format
+msgid "New requests (last %(days)s days)"
+msgstr ""
+
+#: templates/admin/requests.html:2 templates/pilot_dashboard.html:118
+msgid "Requests"
+msgstr ""
+
+#: templates/pilot_dashboard.html:124
+msgid "New requests"
+msgstr ""
+
+#: templates/admin/login.html:31 templates/admin/login.html:40
+#: templates/admin/login.html:41
+msgid "Username"
+msgstr ""
+
+#: templates/admin/login.html:47 templates/admin/login.html:56
+#: templates/admin/login.html:57
+msgid "Password"
+msgstr ""
+
+#: templates/admin/login.html:62
+msgid "Sign in as admin"
+msgstr ""
+
+#: templates/admin/mfa_setup.html:4
+msgid "Set up MFA"
+msgstr ""
+
+#: templates/admin/mfa_setup.html:6
+msgid ""
+"Scan the QR code with Google Authenticator / Authy / Microsoft "
+"Authenticator, then enter the 6-digit code."
+msgstr ""
+
+#: templates/admin/mfa_setup.html:14
+msgid "Manual key (if QR does not work):"
+msgstr ""
+
+#: templates/admin/mfa_setup.html:20 templates/admin/mfa_setup.html:23
+msgid "Verification code (6 digits)"
+msgstr ""
+
+#: templates/admin/mfa_setup.html:25
+msgid "Activate MFA"
+msgstr ""
+
+#: templates/admin/requests.html:16
+msgid "Live requests"
+msgstr ""
+
+#: templates/admin/requests.html:24 templates/admin/requests.html:51
+msgid "Status"
+msgstr ""
+
+#: templates/admin/requests.html:25
+msgid "All statuses"
+msgstr ""
+
+#: templates/admin/requests.html:36
+msgid "Search by name, title, description..."
+msgstr ""
+
+#: templates/admin/requests.html:40
+msgid "Filter"
+msgstr ""
+
+#: templates/admin/requests.html:48
+msgid "ID"
+msgstr ""
+
+#: templates/admin/requests.html:49
+msgid "Title"
+msgstr ""
+
+#: templates/admin/requests.html:50
+msgid "Name"
+msgstr ""
+
+#: templates/admin/requests.html:52
+msgid "Priority"
+msgstr ""
+
+#: templates/admin/requests.html:53
+msgid "Category"
+msgstr ""
+
+#: templates/admin/requests.html:54 templates/admin/requests.html:84
+msgid "Created"
+msgstr ""
+
+#: templates/admin/requests.html:56
+msgid "SLA"
+msgstr ""
+
+#: templates/admin/requests.html:57 templates/admin/requests.html:96
+msgid "Details"
+msgstr ""
+
+#: templates/admin/requests.html:86
+msgid "No owner assigned"
+msgstr ""
+
+#: templates/admin/requests.html:86
+msgid "No owner"
+msgstr ""
+
+#: templates/admin/requests.html:89
+msgid "Stale request"
+msgstr ""
+
+#: templates/admin/requests.html:89
+msgid "Stale"
+msgstr ""
+
+#: templates/admin/requests.html:100
+msgid "No results."
+msgstr ""
+

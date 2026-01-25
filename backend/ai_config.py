@@ -45,6 +45,15 @@ class AIConfig:
                 temperature=float(os.getenv("GEMINI_TEMPERATURE", "0.7")),
                 priority=2,
             ),
+            "ollama": AIProvider(
+                name="Ollama",
+                enabled=bool(os.getenv("OLLAMA_MODEL")),
+                api_key=None,
+                model=os.getenv("OLLAMA_MODEL", "llama2"),
+                max_tokens=int(os.getenv("OLLAMA_MAX_TOKENS", "150")),
+                temperature=float(os.getenv("OLLAMA_TEMPERATURE", "0.7")),
+                priority=0,  # по-нисък номер = по-висок приоритет
+            ),
         }
 
         # System prompt for HelpChain context

@@ -1,0 +1,1230 @@
+<!-- TEMPLATE SOURCE: ROOT /templates/home_new.html -->
+<!doctype html>
+<html lang="{{ get_locale() }}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Step 13 - SEO & Social preview -->
+    <meta name="description" content="{{ _('HelpChain connects people in need with verified volunteers — fast, safe and human.') }}">
+    <meta name="robots" content="index,follow">
+
+    <meta property="og:site_name" content="HelpChain">
+    <meta property="og:title" content="{{ _('HelpChain — Get help, become a volunteer') }}">
+    <meta property="og:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <link rel="canonical" href="{{ request.base_url }}">
+
+    <meta property="og:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ _('HelpChain — Get help, become a volunteer') }}">
+    <meta name="twitter:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
+
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/icon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <title>{{ _('HelpChain - Connecting people in need with volunteers') }}</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- HelpChain Design System -->
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/design-system.css') }}?v=20260122">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/performance-optimizations.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/accessibility.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/mobile-responsiveness.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/user-feedback.css') }}">
+    <link rel="stylesheet" href="{{ url_lang('static', filename='css/navigation-improvements.css') }}">
+    <style>
+      :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        --light-bg: #f8f9fa;
+        --dark-bg: #1a1a1a;
+        --dark-card: #2d2d2d;
+        --text-light: #ffffff;
+        --text-dark: #333333;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+
+      [data-theme="dark"] {
+        --bg-color: var(--dark-bg);
+        --card-bg: var(--dark-card);
+        --text-color: var(--text-light);
+        --shadow: var(--shadow-dark);
+      }
+
+      [data-theme="light"] {
+        --bg-color: var(--light-bg);
+        --card-bg: white;
+        --text-color: var(--text-dark);
+      }
+
+      * {
+        transition: all 0.3s ease;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--bg-color);
+        color: var(--text-color);
+        overflow-x: hidden;
+      }
+
+      /* Animated Background */
+      .hero-section {
+        position: relative;
+        min-height: 100vh;
+        background: var(--primary-gradient);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hero-section::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(
+            circle at 20% 80%,
+            rgba(120, 119, 198, 0.3) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(255, 119, 198, 0.3) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 40% 40%,
+            rgba(120, 219, 255, 0.3) 0%,
+            transparent 50%
+          );
+        animation: float 6s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+
+        33% {
+          transform: translateY(-20px) rotate(120deg);
+        }
+
+        66% {
+          transform: translateY(10px) rotate(240deg);
+        }
+      }
+
+      /* Floating Elements */
+      .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .shape {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: floatShape 8s ease-in-out infinite;
+      }
+
+      .shape:nth-child(1) {
+        width: 80px;
+        height: 80px;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+      }
+
+      .shape:nth-child(2) {
+        width: 60px;
+        height: 60px;
+        top: 20%;
+        right: 10%;
+        animation-delay: 2s;
+      }
+
+      .shape:nth-child(3) {
+        width: 100px;
+        height: 100px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 4s;
+      }
+
+      .shape:nth-child(4) {
+        width: 40px;
+        height: 40px;
+        bottom: 10%;
+        right: 20%;
+        animation-delay: 6s;
+      }
+
+      @keyframes floatShape {
+        0%,
+        100% {
+          transform: translateY(0px) scale(1);
+          opacity: 0.7;
+        }
+
+        50% {
+          transform: translateY(-30px) scale(1.1);
+          opacity: 1;
+        }
+      }
+
+      /* Hero Content */
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: white;
+        max-width: 800px;
+        padding: 0 20px;
+      }
+
+      .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        animation: slideUp 1s ease-out;
+      }
+
+      .hero-subtitle {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        animation: slideUp 1s ease-out 0.2s both;
+      }
+
+      .hero-buttons {
+        animation: slideUp 1s ease-out 0.4s both;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Modern Buttons */
+      .btn-modern {
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 10px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-modern::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .btn-modern:hover::before {
+        left: 100%;
+      }
+
+      .btn-primary-modern {
+        background: var(--secondary-gradient);
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-primary-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-success-modern {
+        background: var(--success-gradient);
+        color: white;
+        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+      }
+
+      .btn-success-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(79, 172, 254, 0.4);
+      }
+
+      /* Navigation */
+      .navbar-modern {
+        background: rgba(255, 255, 255, 0.95);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      [data-theme="dark"] .navbar-modern {
+        background: rgba(45, 45, 45, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .navbar-brand-modern {
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      /* Theme Toggle */
+      .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+      }
+
+      /* Loading Spinner */
+      .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+      }
+
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Stats Section */
+      .stats-section {
+        padding: 80px 0;
+        background: var(--bg-color);
+      }
+
+      .stat-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        margin-bottom: 30px;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+      }
+
+      .stat-label {
+        font-size: 1.1rem;
+        color: var(--text-color);
+        opacity: 0.8;
+      }
+
+      /* Features Section */
+      .features-section {
+        padding: 80px 0;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.05) 0%,
+          rgba(118, 75, 162, 0.05) 100%
+        );
+      }
+
+      [data-theme="dark"] .features-section {
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1) 0%,
+          rgba(118, 75, 162, 0.1) 100%
+        );
+      }
+
+      .feature-card {
+        background: var(--card-bg);
+        border-radius: 15px;
+        padding: 40px 30px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+        height: 100%;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+      }
+
+      .feature-icon {
+        font-size: 3rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 20px;
+      }
+
+      .feature-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: var(--text-color);
+      }
+
+      .feature-description {
+        color: var(--text-color);
+        opacity: 0.8;
+        line-height: 1.6;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .hero-title {
+          font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+          font-size: 1.1rem;
+        }
+
+        .btn-modern {
+          display: block;
+          margin: 10px 0;
+          width: 100%;
+        }
+
+        .stat-number {
+          font-size: 2.5rem;
+        }
+      }
+
+      /* Scroll Animations */
+      .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+      }
+
+      .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .gradient-text {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    </style>
+  </head>
+
+  <body data-theme="light">
+    <!-- Skip to main content -->
+    <a href="#main-content" class="skip-link">{{ _('Skip to main content') }}</a>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+      <div class="spinner-light"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav
+      class="hc-nav main-nav"
+      role="navigation"
+      aria-label="{{ _('Main navigation') }}"
+    >
+      <div class="container">
+        <a class="hc-brand" href="/">
+          <img class="hc-brand__icon" src="{{ url_for('static', filename='icons/icon-32x32.png') }}" width="24" height="24" alt="" aria-hidden="true" />
+          <span class="hc-brand__text">{{ _('HelpChain') }}.live</span>
+        </a>
+
+        <button
+          class="navbar-toggler d-md-none"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-expanded="false"
+          aria-controls="navbarNav"
+          title="{{ _('Open menu') }}"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
+          <ul class="nav-menu">
+            <li><a class="hc-navlink" href="#features">{{ _('Features') }}</a></li>
+            <li>
+              <a class="hc-navlink" href="{{ safe_url_for('main.categories') }}">{{ _('Categories') }}</a>
+            </li>
+            <li>
+              <a class="hc-navlink" href="{{ safe_url_for('faq') }}">{{ _('FAQ') }}</a>
+            </li>
+            <li>
+              <a class="hc-navlink" href="{{ safe_url_for('admin.admin_login') }}">{{ _('Login') }}</a>
+            </li>
+            <li>
+              <a class="hc-navlink" href="{{ safe_url_for('volunteer_register') }}">{{ _('Register') }}</a>
+            </li>
+            <li>
+              <a class="hc-navlink nav-link-volunteer" href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}">{{ _('Volunteer login') }}</a>
+            </li>
+            <li>
+              <button
+                class="btn btn-sm ms-3 focus-visible"
+                id="themeToggle"
+                title="{{ _('Toggle theme') }}"
+                aria-label="{{ _('Toggle light/dark theme') }}"
+              >
+                <i class="fas fa-moon" aria-hidden="true"></i>
+              </button>
+            </li>
+            <li>
+              <button
+                class="btn btn-sm ms-2 focus-visible push-notifications"
+                id="pushNotifications"
+                title="{{ _('Manage push notifications') }}"
+                aria-label="{{ _('Manage push notifications') }}"
+              >
+                <i class="fas fa-bell" aria-hidden="true"></i>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Search Container -->
+        <div class="search-container d-none d-md-block ms-3">
+          <div class="search-input-group">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="{{ _('Search in HelpChain...') }}"
+              aria-label="{{ _('Search') }}"
+            />
+            <button class="search-button" aria-label="{{ _('Search') }}">
+              <i class="fas fa-search" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hc-hero" role="banner" aria-labelledby="hero-title">
+      <div class="hero-shapes" aria-hidden="true">
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+        <div class="hero-shape"></div>
+      </div>
+
+      <div class="container">
+        <div class="hero-content text-center">
+          <h1 id="hero-title" class="hc-hero__title">{{ _('Welcome to HelpChain') }}</h1>
+          <p class="hc-hero__subtitle">{{ _('Together, we make helping others simple, fast and human.') }}</p>
+          <div class="hc-trust-badges" aria-label="{{ _('Trust badges') }}">
+            <span class="hc-badge-pill">
+              <i class="fas fa-globe-europe" aria-hidden="true"></i>
+              {{ _('France') }} &bull; {{ _('Switzerland') }} &bull; {{ _('Canada') }}
+            </span>
+            <a class="hc-badge-pill" href="{{ safe_url_for('main.privacy') }}">
+              <i class="fas fa-shield-alt" aria-hidden="true"></i>
+              {{ _('GDPR-friendly') }}
+            </a>
+          </div>
+
+          <div class="hero-buttons d-flex justify-content-center gap-3 flex-wrap">
+              <a
+                class="hc-btn hc-btn-primary focus-visible"
+                href="{{ safe_url_for('main.submit_request') }}"
+              >
+                <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>{{ _('Request help') }}
+              </a>
+              <a
+                class="hc-btn hc-btn-secondary focus-visible"
+                href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
+              >
+                <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i>{{ _('Become a volunteer') }}
+              </a>
+          </div>
+          <div class="hc-hero__counters hc-hero__stats hc-kpis" aria-label="{{ _('Key numbers') }}">
+            <span class="hc-counter hc-stat">
+              <strong class="hc-stat__value" id="kpiVolunteers">&mdash;</strong>
+              <span
+                class="hc-stat__label"
+                id="kpiVolunteersLabel"
+                data-singular="{{ _('volunteer') }}"
+                data-plural="{{ _('volunteers') }}"
+              >{{ _('volunteers') }}</span>
+            </span>
+            <span class="hc-dot hc-stat__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-counter hc-stat">
+              <strong class="hc-stat__value" id="kpiClosed">&mdash;</strong>
+              <span
+                class="hc-stat__label"
+                id="kpiHelpedLabel"
+                data-singular="{{ _('request helped') }}"
+                data-plural="{{ _('requests helped') }}"
+              >{{ _('requests helped') }}</span>
+            </span>
+            <span class="hc-dot hc-stat__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-counter hc-stat">
+              <strong class="hc-stat__value" id="kpiCountries">&mdash;</strong>
+              <span
+                class="hc-stat__label"
+                id="kpiCountriesLabel"
+                data-singular="{{ _('country') }}"
+                data-plural="{{ _('countries') }}"
+              >{{ _('countries') }}</span>
+            </span>
+          </div>
+          <p class="hc-micro-cta">
+            {{ _('Need help now?') }}
+            <a href="{{ safe_url_for('main.submit_request') }}">{{ _('Request help') }}</a>
+            {{ _('— it takes less than a minute.') }}
+          </p>
+          <div class="hc-trustline" role="note" aria-label="{{ _('Trust information') }}">
+            <span class="hc-trustline__item">{{ _('Pilot: France') }}</span>
+            <span class="hc-trustline__dot" aria-hidden="true">&bull;</span>
+            <span class="hc-trustline__item">{{ _('GDPR-friendly exports') }}</span>
+            <span class="hc-trustline__dot" aria-hidden="true">&bull;</span>
+            <a class="hc-trustline__link" href="{{ safe_url_for('main.pilot') }}">
+              {{ _('Impact dashboard (read-only)') }}
+            </a>
+          </div>
+          <p class="hc-hero__microcopy">
+            <i class="fas fa-lock" aria-hidden="true"></i> {{ _('We never sell your data.') }}
+            <span class="hc-dot" aria-hidden="true">&bull;</span>
+            <i class="fas fa-user-check" aria-hidden="true"></i> {{ _('Verified community.') }}
+            <span class="hc-dot" aria-hidden="true">&bull;</span>
+            <i class="fas fa-bolt" aria-hidden="true"></i> {{ _('Fast matching.') }}
+          </p>
+        </div>
+
+        <!-- How it works (mini) -->
+        <div class="hc-how-mini" role="region" aria-label="{{ _('How it works') }}">
+          <div class="hc-how-mini__item">
+            <span class="hc-how-mini__icon" aria-hidden="true">📝</span>
+            <div class="hc-how-mini__text">
+              <div class="hc-how-mini__title">{{ _('Post a request') }}</div>
+              <div class="hc-how-mini__desc">{{ _('Tell us what you need in under a minute.') }}</div>
+            </div>
+          </div>
+
+          <div class="hc-how-mini__sep" aria-hidden="true"></div>
+
+          <div class="hc-how-mini__item">
+            <span class="hc-how-mini__icon" aria-hidden="true">🤝</span>
+            <div class="hc-how-mini__text">
+              <div class="hc-how-mini__title">{{ _('Get matched') }}</div>
+              <div class="hc-how-mini__desc">{{ _('A trusted volunteer takes ownership.') }}</div>
+            </div>
+          </div>
+
+          <div class="hc-how-mini__sep" aria-hidden="true"></div>
+
+          <div class="hc-how-mini__item">
+            <span class="hc-how-mini__icon" aria-hidden="true">✅</span>
+            <div class="hc-how-mini__text">
+              <div class="hc-how-mini__title">{{ _('Receive help') }}</div>
+              <div class="hc-how-mini__desc">{{ _('Follow progress with full transparency.') }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="hc-why">
+      <div class="hc-why__container">
+
+        <div class="hc-why__card">
+          <div class="hc-why__icon"><i class="fas fa-hand-holding-heart" aria-hidden="true"></i></div>
+          <h3>{{ _('Human-first help') }}</h3>
+          <p>{{ _('Real people helping real people - not bots, not call centers.') }}</p>
+        </div>
+
+        <div class="hc-why__card">
+          <div class="hc-why__icon"><i class="fas fa-bolt" aria-hidden="true"></i></div>
+          <h3>{{ _('Fast & simple') }}</h3>
+          <p>{{ _('Post a request in minutes. Get matched without bureaucracy.') }}</p>
+        </div>
+
+        <div class="hc-why__card">
+          <div class="hc-why__icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></div>
+          <h3>{{ _('Privacy by design') }}</h3>
+          <p>{{ _('Minimal data. No ads. No resale. GDPR-friendly architecture.') }}</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="hc-trust" aria-labelledby="trust-title">
+      <div class="container">
+        <header class="hc-trust__head text-center">
+          <h2 id="trust-title" class="hc-trust__title">
+            {{ _('Help you can trust') }}
+          </h2>
+          <p class="hc-trust__subtitle">
+            {{ _('A safe, human and reliable way to connect with verified volunteers.') }}
+          </p>
+        </header>
+
+        <div class="hc-trust__grid">
+          <article class="hc-card">
+            <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-shield-alt"></i></div>
+            <h3 class="hc-card__title">{{ _('Safety first') }}</h3>
+            <p class="hc-card__text">
+              {{ _('Your requests and messages are protected. We design HelpChain with security in mind.') }}
+            </p>
+          </article>
+
+          <article class="hc-card">
+            <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-user-check"></i></div>
+            <h3 class="hc-card__title">{{ _('Verified volunteers') }}</h3>
+            <p class="hc-card__text">
+              {{ _('Volunteers can be verified to create trust and reduce abuse.') }}
+            </p>
+          </article>
+
+          <article class="hc-card">
+            <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-hand-holding-heart"></i></div>
+            <h3 class="hc-card__title">{{ _('Human, fast, local') }}</h3>
+            <p class="hc-card__text">
+              {{ _('We connect people nearby for quick, compassionate help — not bureaucracy.') }}
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main
+      id="main-content"
+      class="main-content"
+      role="main"
+      aria-label="{{ _('Main content') }}"
+    >
+      <!-- Stats Section -->
+      <section class="stats-section">
+        <div class="container">
+          <div class="stats-grid">
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="volunteersCount">
+                {{ volunteers_count }}
+              </div>
+              <div class="stat-label-light">{{ _('Active volunteers') }}</div>
+            </div>
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="requestsCount">
+                {{ requests_count }}
+              </div>
+              <div class="stat-label-light">{{ _('People helped') }}</div>
+            </div>
+            <div class="stat-card-light">
+              <div class="stat-number-light" id="openRequestsCount">
+                {{ open_requests }}
+              </div>
+              <div class="stat-label-light">{{ _('Open requests') }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Features Section -->
+      <section class="features-section" id="features">
+        <div class="container">
+          <div class="text-center mb-5">
+            <h2 class="h1 mb-3">{{ _('Why choose HelpChain?') }}</h2>
+            <p class="lead text-muted">{{ _('We offer a modern platform to connect people who need help with those who want to help.') }}</p>
+          </div>
+
+          <div class="features-grid">
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-bolt"></i>
+              </div>
+              <h3 class="feature-title-light">{{ _('Fast help') }}</h3>
+              <p class="feature-description-light">{{ _('Our platform connects people in need with volunteers in minutes, providing fast and effective help.') }}</p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <h3 class="feature-title-light">{{ _('Security') }}</h3>
+              <p class="feature-description-light">{{ _('All users go through verification, and communication is protected with state-of-the-art security technologies.') }}</p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3 class="feature-title-light">{{ _('Community') }}</h3>
+              <p class="feature-description-light">{{ _('Join a growing community of volunteers and people who believe that together we can make the world a better place.') }}</p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <h3 class="feature-title-light">{{ _('Mobile accessibility') }}</h3>
+              <p class="feature-description-light">{{ _('Our platform works perfectly on all devices - from smartphones to desktop computers.') }}</p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-clock"></i>
+              </div>
+              <h3 class="feature-title-light">{{ _('24/7 support') }}</h3>
+              <p class="feature-description-light">{{ _('Our team is always available to help. No matter the time, you can rely on our support.') }}</p>
+            </div>
+
+            <div class="feature-card-light">
+              <div class="feature-icon-light">
+                <i class="fas fa-heart"></i>
+              </div>
+              <h3 class="feature-title-light">{{ _('Free') }}</h3>
+              <p class="feature-description-light">{{ _('HelpChain is a completely free platform. We believe that help should be accessible to everyone.') }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer
+        class="footer bg-dark text-light py-5 mt-5"
+        role="contentinfo"
+        aria-label="{{ _('Site information') }}"
+      >
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4">
+              <h5>{{ _('HelpChain') }}</h5>
+              <p>{{ _('Connecting people in need with volunteers for a better world.') }}</p>
+            </div>
+            <div class="col-md-4">
+              <h5>{{ _('Quick links') }}</h5>
+              <ul class="list-unstyled">
+                <li>
+                  <a href="{{ safe_url_for('main.categories') }}" class="text-light">
+                    {{ _("Categories") }}
+                  </a>
+                </li>
+
+                <li>
+                  <a href="{{ safe_url_for('main.privacy') }}" class="text-light">
+                    {{ _("Privacy policy") }}
+                  </a>
+                </li>
+
+                <li>
+                  <a href="{{ safe_url_for('main.terms') }}" class="text-light">
+                    {{ _("Terms of service") }}
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h5>{{ _('Contact') }}</h5>
+              <p>
+                <i class="fas fa-envelope me-2" aria-hidden="true"></i>contact@helpchain.live
+              </p>
+              <p>
+                <i class="fas fa-phone me-2" aria-hidden="true"></i>+359 XX XXX XXX
+              </p>
+              <div class="social-links mt-3">
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="{{ _('Facebook') }}"
+                  aria-label="{{ _('Visit us on Facebook') }}"
+                >
+                  <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="{{ _('Twitter') }}"
+                  aria-label="{{ _('Visit us on Twitter') }}"
+                >
+                  <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light me-3"
+                  title="{{ _('Instagram') }}"
+                  aria-label="{{ _('Visit us on Instagram') }}"
+                >
+                  <i class="fab fa-instagram" aria-hidden="true"></i>
+                </a>
+                <a
+                  href="#"
+                  class="text-light"
+                  title="{{ _('LinkedIn') }}"
+                  aria-label="{{ _('Visit us on LinkedIn') }}"
+                >
+                  <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <hr class="my-4" />
+          <div class="text-center">
+            <p>&copy; 2025 {{ _('HelpChain. All rights reserved.') }}</p>
+          </div>
+          <div class="hc-footer-legal" role="note" aria-label="{{ _('Legal information') }}">
+            {{ _('Data hosted in Europe') }} • {{ _('GDPR compliant') }} • {{ _('Enhanced security') }}
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <!-- Back to Top Button -->
+    <button
+      class="back-to-top"
+      aria-label="{{ _('Back to top') }}"
+      title="{{ _('Back to top') }}"
+    >
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_lang('static', filename='js/feedback.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/navigation.js') }}"></script>
+    <script src="{{ url_lang('static', filename='js/notification_service.js') }}"></script>
+    <script>
+      // i18n strings for inline JS (server-rendered)
+      window.i18n = window.i18n || {};
+      window.i18n.home = {
+        loading: {{ _('Loading...')|tojson }},
+        fetch_error: {{ _('An error occurred while loading')|tojson }},
+        push_enabled: {{ _('Push notifications are enabled!')|tojson }},
+        push_disabled: {{ _('Push notifications are disabled.')|tojson }},
+        push_error: {{ _('Error setting up push notifications')|tojson }},
+        welcome_toast: {{ _('Welcome to HelpChain! 🚀')|tojson }},
+        // For dynamic strings:
+        theme_switched_prefix: {{ _('Theme switched to')|tojson }},
+        switch_to_prefix: {{ _('Switch to')|tojson }},
+        theme_dark: {{ _('dark')|tojson }},
+        theme_light: {{ _('light')|tojson }},
+        theme_suffix: {{ _('theme')|tojson }}
+      };
+    </script>
+    <script>
+      // Initialize feedback system (guard if script failed to load OR constructor throws)
+      const feedbackFallback = {
+        showToast: () => {},
+        showLoading: () => {},
+        hideLoading: () => {},
+      };
+      let feedback = feedbackFallback;
+      try {
+        if (typeof window.HelpChainFeedback === "function") {
+          feedback = new window.HelpChainFeedback();
+        }
+      } catch (e) {
+        feedback = feedbackFallback;
+      }
+
+      // Initialize push notifications (use global singleton; guard constructor)
+      if (!window.notificationService) {
+        try {
+          window.notificationService =
+            typeof window.HelpChainNotificationService === "function"
+              ? new window.HelpChainNotificationService()
+              : null;
+        } catch (e) {
+          window.notificationService = null;
+        }
+      }
+
+      // Theme Toggle Functionality
+      const themeToggle = document.getElementById("themeToggle");
+      const html = document.documentElement;
+      const themeIcon = themeToggle ? themeToggle.querySelector("i") : null;
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem("theme") || "light";
+      html.setAttribute("data-theme", savedTheme);
+      if (themeToggle && themeIcon) updateThemeIcon(savedTheme);
+
+      if (themeToggle && themeIcon) {
+        themeToggle.addEventListener("click", () => {
+        const currentTheme = html.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+
+        html.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+        updateThemeIcon(newTheme);
+
+        // Show toast notification for theme change
+        const themeLabel = newTheme === "light" ? window.i18n.home.theme_light : window.i18n.home.theme_dark;
+        feedback.showToast(`${window.i18n.home.theme_switched_prefix} ${themeLabel}`, "success", 3000);
+        });
+      }
+
+      function updateThemeIcon(theme) {
+        if (!themeToggle || !themeIcon) return;
+        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
+        const nextThemeLabel = theme === "light" ? window.i18n.home.theme_dark : window.i18n.home.theme_light;
+        themeToggle.setAttribute(
+          "aria-label",
+          `${window.i18n.home.switch_to_prefix} ${nextThemeLabel} ${window.i18n.home.theme_suffix}`
+        );
+      }
+
+      // Intercept all AJAX requests with loading states
+      const originalFetch = window.fetch;
+      window.fetch = function (...args) {
+        if (feedback && typeof feedback.showLoading === "function") {
+          feedback.showLoading(window.i18n.home.loading);
+        }
+        return originalFetch
+          .apply(this, args)
+          .then((response) => {
+            if (feedback && typeof feedback.hideLoading === "function") {
+              feedback.hideLoading();
+            }
+            return response;
+          })
+          .catch((error) => {
+            if (feedback && typeof feedback.hideLoading === "function") {
+              feedback.hideLoading();
+            }
+            if (feedback && typeof feedback.showToast === "function") {
+              feedback.showToast(window.i18n.home.fetch_error, "error", 5000);
+            }
+            throw error;
+          });
+      };
+
+      // Smooth Scrolling with focus management
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            target.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+
+            // Focus the target element for keyboard navigation
+            target.focus({ preventScroll: true });
+          }
+        });
+      });
+
+      // Keyboard navigation improvements
+      document.addEventListener("keydown", function (e) {
+        // Close mobile menu with Escape key
+        if (e.key === "Escape") {
+          const navbarCollapse = document.getElementById("navbarNav");
+          if (navbarCollapse.classList.contains("show")) {
+            navbarCollapse.classList.remove("show");
+            themeToggle.focus();
+          }
+        }
+      });
+
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add click animations to buttons with accessibility
+        document.querySelectorAll(".btn-light").forEach((btn) => {
+          btn.addEventListener("click", function (e) {
+            this.style.transform = "scale(0.95)";
+            setTimeout(() => {
+              this.style.transform = "";
+            }, 150);
+          });
+        });
+
+        // Push notification button handler
+        const pushNotificationsBtn =
+          document.getElementById("pushNotifications");
+        if (pushNotificationsBtn) {
+          pushNotificationsBtn.addEventListener("click", async () => {
+            try {
+              if (!window.notificationService) return;
+              await window.notificationService.initialize();
+              feedback.showToast(window.i18n.home.push_enabled, "success", 3000);
+            } catch (error) {
+              feedback.showToast(window.i18n.home.push_error, "error", 5000);
+            }
+          });
+        }
+
+        // Navbar scroll effect with reduced motion support
+        const navbar = document.querySelector(".navbar-light");
+        if (navbar) {
+          window.addEventListener("scroll", function () {
+            if (window.scrollY > 50) {
+              navbar.style.background = "rgba(255, 255, 255, 0.98)";
+              navbar.style.backdropFilter = "blur(20px)";
+            } else {
+              navbar.style.background = "rgba(255, 255, 255, 0.95)";
+              navbar.style.backdropFilter = "blur(8px)";
+            }
+          });
+        }
+
+        // Load pilot metrics for hero counters (silent fallback)
+        (async function () {
+          try {
+            const res = await fetch("/api/pilot-kpi", {
+              headers: { Accept: "application/json" },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const elVol = document.getElementById("kpiVolunteers");
+            const elHelped = document.getElementById("kpiClosed"); // "requests helped" (done-only)
+            const elCountries = document.getElementById("kpiCountries");
+            const elVolLabel = document.getElementById("kpiVolunteersLabel");
+            const elHelpedLabel = document.getElementById("kpiHelpedLabel");
+            const elCountriesLabel = document.getElementById("kpiCountriesLabel");
+
+            function setPluralLabel(labelEl, value) {
+              if (!labelEl) return;
+              const n = Number(value);
+              const singular = labelEl.dataset.singular || "";
+              const plural = labelEl.dataset.plural || "";
+              labelEl.textContent = n === 1 ? singular : plural;
+            }
+
+            const volunteers = Number(data.active_volunteers ?? 0);
+            const helped = Number(data.helped ?? 0);
+            const countries = Number(data.countries ?? 0);
+
+            if (elVol) elVol.textContent = String(volunteers);
+            if (elHelped) elHelped.textContent = String(helped);
+            if (elCountries) elCountries.textContent = String(countries);
+
+            setPluralLabel(elVolLabel, volunteers);
+            setPluralLabel(elHelpedLabel, helped);
+            setPluralLabel(elCountriesLabel, countries);
+          } catch (e) {
+            // silent fail: keep fallback numbers
+          }
+        })();
+
+        // Show welcome toast
+        setTimeout(() => {
+          feedback.showToast(window.i18n.home.welcome_toast, "info", 4000);
+        }, 1000);
+      });
+
+      // Handle reduced motion preference
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        // Disable smooth scrolling
+        document.documentElement.style.scrollBehavior = "auto";
+
+        // Disable animations
+        document.querySelectorAll("*").forEach((el) => {
+          el.style.animation = "none";
+          el.style.transition = "none";
+        });
+      }
+    </script>
+  </body>
+</html>

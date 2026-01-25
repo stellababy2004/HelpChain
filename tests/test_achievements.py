@@ -6,6 +6,16 @@ class TestAchievementsIntegration:
         # Първо се логваме като volunteer
         volunteer = init_test_data["volunteer"]
 
+
+        # Инициализирай сесията с първа заявка
+        client.get("/")
+
+        # MINI-DIAG: print config/session state before session_transaction
+        real_app = client.application
+        print("SECRET_KEY in app.config:", real_app.config.get("SECRET_KEY"))
+        print("app.secret_key:", real_app.secret_key)
+        print("session_interface:", type(real_app.session_interface))
+
         # За сега използваме session-based authentication
         with client.session_transaction() as sess:
             sess["volunteer_logged_in"] = True

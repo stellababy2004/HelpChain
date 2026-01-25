@@ -1,63 +1,127 @@
-# HelpChain – Платформа за социална и здравна подкрепа
+# [![CI](https://github.com/stellababy2004/HelpChain.bg/actions/workflows/ci.yml/badge.svg)](https://github.com/stellababy2004/HelpChain.bg/actions/workflows/ci.yml)
+# HelpChain – Social & Healthcare Support Platform
 
-[![Website](https://img.shields.io/badge/Live%20Demo-helpchain.live-green)](https://helpchain-s2l5.onrender.com)
+🌍 Languages: [English](README.md) | [Български](README.bg.md) | [Français](README.fr.md)
+
+[![Website](https://img.shields.io/badge/Live%20Demo-helpchain.live-green)](https://helpchain.live)
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
 [![Flask](https://img.shields.io/badge/Flask-3.0+-lightgrey.svg)](https://flask.palletsprojects.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-HelpChain е уеб приложение, разработено с Flask, което свързва нуждаещи се хора с доброволци, които могат да предоставят помощ. Целта е да се създаде реална платформа за управление на заявки, разпределяне на доброволци и поддържане на многоезична и достъпна комуникация.
+**HelpChain** is a Flask-based web platform designed to connect people in need with volunteers and professionals who can provide real-world assistance.  
+The project focuses on reliability, security, multilingual support, and production-grade operational guarantees.
 
-## 🌐 Жив сайт
+---
 
-➡️ **[https://helpchain.live](https://helpchain.live)**
+## 🌐 Live Website
 
-## 📋 Съдържание
+➡️ **https://helpchain.live**
 
-- [Бърз старт](#-бърз-старт)
-- [Функционалности](#-функционалности)
-- [Технологии](#-технологии)
-- [Архитектура](#-архитектура)
-- [API документация](#-api-документация)
-- [Разработка](#-разработка)
-- [Тестване](#-тестване)
-- [Деплоймънт](#-деплоймънт)
-- [Принос](#-принос)
-- [Лиценз](#-лиценз)
+---
 
-## � Бърз старт
+## 🎯 Project Goals
 
-### Предварителни изисквания
+- Centralized request management for social & healthcare support
+- Volunteer coordination and task assignment
+- Secure admin operations with role-based access and 2FA
+- Multilingual, accessible, and privacy-aware communication
+- Production-ready CI, database sanity checks, and schema drift protection
 
-- Python 3.12+
-- pip
-- Git
+---
 
-### Инсталация
+## ✨ Key Features
 
-1. **Клонирайте репозитория:**
+### Users
+- Submit help requests via structured forms
+- Multilingual UI (BG / EN / FR)
+- Mobile-friendly, accessible interface
+- Secure CSRF-protected flows
 
-   ```bash
-   git clone https://github.com/stellababy2004/HelpChain.bg.git
-   cd HelpChain.bg
-   ```
+### Volunteers
+- Passwordless authentication via email
+- Task dashboard and status tracking
+- Geolocation-based matching
+- Email notifications
 
-2. **Създайте виртуална среда:**
+### Administrators
+- Dedicated admin authentication & 2FA
+- Volunteer and request management
+- Analytics and audit logs
+- Role & permission system
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   # или
-   venv\Scripts\activate     # Windows
-   ```
+---
 
-3. **Инсталирайте зависимостите:**
+## 🛠 Tech Stack
 
-   ```bash
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt  # за разработка
-   ```
+| Layer        | Technology                              |
+|-------------|------------------------------------------|
+| Backend     | Flask 3.x                                |
+| ORM         | SQLAlchemy + Flask-SQLAlchemy            |
+| Database    | SQLite (dev/CI), PostgreSQL (production) |
+| Auth        | Flask-Login, email-based 2FA             |
+| i18n        | Flask-Babel                              |
+| Security    | Flask-Limiter, CSRF, Talisman            |
+| CI          | GitHub Actions                           |
+| Deployment  | Uvicorn + Render                         |
 
-4. **Настройте environment променливите:**
+---
+
+## 🏗 Architecture Overview
+
+backend/
+├── models.py # ORM models
+├── extensions.py # Shared Flask extensions
+├── helpchain-backend/src/
+│ ├── app.py # App factory (ASGI)
+│ ├── routes/ # Blueprints
+│ ├── controllers/ # Business logic
+│ ├── templates/ # Jinja2 templates
+│ └── static/ # Frontend assets
+scripts/
+├── schema_drift_guard.py # DB schema verification
+├── db_crud_smoke.py # CRUD rollback tests
+
+---
+
+## 🧪 Testing & CI Guarantees
+
+The project includes **production-grade database safety checks**:
+
+- Schema Drift Guard (ORM vs real DB)
+- CRUD smoke tests with transaction rollback
+- CI pipeline halts immediately on drift or DB inconsistency
+
+CI order:
+1. Initialize test database
+2. Schema drift guard
+3. CRUD smoke tests (rollback)
+4. Pytest
+
+---
+
+## 🚀 Deployment
+
+**Recommended:** Render  
+**ASGI entrypoint:**
+```bash
+uvicorn backend.helpchain-backend.src.asgi:asgi_app --host 0.0.0.0 --port $PORT
+```
+
+### Environment (Render)
+- Core: `SECRET_KEY`
+- Admin: `ADMIN_USERNAME`, `ADMIN_PASSWORD`
+- Database: `SQLALCHEMY_DATABASE_URI` or `DATABASE_URL` (preferred on Render)
+- Mail: `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USE_TLS`, `MAIL_USE_SSL`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_DEFAULT_SENDER`
+
+Config loads `.env` and supports dict overrides in `create_app()`; overrides are applied before `db.init_app(app)` to ensure SQLAlchemy initializes correctly.
+
+📄 License
+
+MIT License – see LICENSE
+
+Author: Stella Barbarella
+Website: https://helpchain.live
+---
 
    ```bash
    cp .env.example .env
