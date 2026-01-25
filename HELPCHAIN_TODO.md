@@ -34,6 +34,8 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - [ ] Mini dashboard counters  
 - [ ] Bulk archive action  
 - [ ] Better empty states  
+- [x] Admin UI: show Archived badge in list  
+- [x] Admin UI: show archived_at timestamp in details
 
 ---
 
