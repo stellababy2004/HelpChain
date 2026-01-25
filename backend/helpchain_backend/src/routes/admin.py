@@ -1539,28 +1539,51 @@ def admin_request_unarchive(req_id: int):
 @login_required
 def admin_request_delete(req_id: int):
     req = Request.query.get_or_404(req_id)
+
     if not can_edit_request(req, current_user):
         abort(403)
 
+    # Guardrail: must be archived first
     if not getattr(req, "is_archived", False):
+        # (optional but recommended) audit blocked attempt
+        try:
+            log_request_activity(
+                req,
+                "delete_blocked_not_archived",
+                old=False,
+                new=False,
+                actor_admin_id=getattr(current_user, "id", None),
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
         flash("Archive the request first. Only archived requests can be deleted.", "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
-    if getattr(req, "deleted_at", None) is None:
-        req.deleted_at = utc_now()
-        req.is_archived = True
-        if getattr(req, "archived_at", None) is None:
-            req.archived_at = req.deleted_at
-        log_request_activity(
-            req,
-            "delete",
-            old=None,
-            new=str(req.deleted_at),
-            actor_admin_id=getattr(current_user, "id", None),
-        )
-        db.session.commit()
-        flash("Request moved to Deleted.", "success")
+    # Idempotent: if already deleted, just confirm
+    if getattr(req, "deleted_at", None) is not None:
+        flash("Request is already deleted.", "info")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
+    # Tombstone delete
+    req.deleted_at = utc_now()
+
+    # Keep it archived (and ensure archived_at exists)
+    req.is_archived = True
+    if getattr(req, "archived_at", None) is None:
+        req.archived_at = req.deleted_at
+
+    log_request_activity(
+        req,
+        "delete",
+        old=None,
+        new=str(req.deleted_at),
+        actor_admin_id=getattr(current_user, "id", None),
+    )
+
+    db.session.commit()
+    flash("Request moved to Deleted.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
