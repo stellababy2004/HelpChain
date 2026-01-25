@@ -334,8 +334,9 @@
               <form
                 method="post"
                 action="{{ url_for('admin.admin_request_delete', req_id=req.id) }}"
-                onsubmit="return confirm('Move to Deleted? You can restore it later.')"
+                data-hc-confirm="delete"
               >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-outline-danger btn-sm" {% if not req.is_archived %}disabled{% endif %}>
                   Delete
                 </button>
@@ -486,5 +487,69 @@
     }
   }
 </script>
+<script>
+(function(){
+  const modalEl = document.getElementById("hcConfirmDeleteModal");
+  const btnYes = document.getElementById("hcConfirmDeleteYes");
+  const textEl = document.getElementById("hcConfirmDeleteText");
+
+  if (!modalEl || !btnYes || !textEl || !(window.bootstrap)) return;
+
+  const modal = new bootstrap.Modal(modalEl);
+  let pendingSubmit = null;
+
+  function openConfirm(message, onConfirm){
+    textEl.textContent = message;
+    pendingSubmit = onConfirm;
+    modal.show();
+  }
+
+  btnYes.addEventListener("click", () => {
+    modal.hide();
+    if (pendingSubmit) {
+      const fn = pendingSubmit;
+      pendingSubmit = null;
+      fn();
+    }
+  });
+
+  document.addEventListener("submit", (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
+
+    if (form.dataset && form.dataset.hcConfirm === "delete") {
+      e.preventDefault();
+      openConfirm("Delete this request? It will be moved to Deleted and can be restored later.", () => form.submit());
+    }
+  }, true);
+})();
+</script>
+
+<div class="modal fade" id="hcConfirmDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ _('Confirm delete') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Close') }}"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2" id="hcConfirmDeleteText">
+          {{ _('This will move the request(s) to Deleted (tombstone). You can restore later.') }}
+        </p>
+        <div class="alert alert-warning py-2 mb-0">
+          <strong>{{ _('Note:') }}</strong> {{ _('Only archived requests can be deleted.') }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          {{ _('Cancel') }}
+        </button>
+        <button type="button" class="btn btn-danger" id="hcConfirmDeleteYes">
+          {{ _('Yes, delete') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
