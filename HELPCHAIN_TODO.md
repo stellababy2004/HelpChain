@@ -36,6 +36,9 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - [ ] Better empty states  
 - [x] Admin UI: show Archived badge in list  
 - [x] Admin UI: show archived_at timestamp in details
+- [x] Admin: enforce archive-before-delete (backend guardrail)
+- [x] Admin: idempotent tombstone delete
+- [x] Admin: log delete_blocked_not_archived
 
 ---
 
