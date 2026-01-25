@@ -81,6 +81,26 @@
     </div>
   </form>
 
+  <form method="post" action="{{ safe_url_for('admin.admin_requests_bulk') }}" class="d-flex align-items-center gap-2 mb-3" id="bulkForm">
+    <input type="hidden" name="next" value="{{ request.full_path }}"/>
+    <select class="form-select form-select-sm" name="action" style="max-width:260px;" required>
+      <option value="" selected disabled>{{ _('Bulk action…') }}</option>
+      {% if show_deleted %}
+        <option value="restore">{{ _('Restore selected') }}</option>
+      {% else %}
+        <option value="archive">{{ _('Archive selected') }}</option>
+        <option value="unarchive">{{ _('Unarchive selected') }}</option>
+        <option value="delete">{{ _('Delete selected') }}</option>
+      {% endif %}
+    </select>
+    <button type="submit" class="btn btn-sm btn-primary" id="bulkApply" disabled>
+      {{ _('Apply') }}
+    </button>
+    <span class="text-muted small ms-2">
+      {{ _('Selected:') }} <span id="bulkCount">0</span>
+    </span>
+  </form>
+
   {% if show_deleted %}
   <div class="alert alert-warning py-2 mb-3">
     <strong>{{ _('Deleted mode') }}</strong> — {{ _('These requests are tombstoned. You can restore them.') }}
@@ -91,6 +111,9 @@
     <table class="table table-hover align-middle">
       <thead>
         <tr>
+          <th style="width:36px;">
+            <input class="form-check-input" type="checkbox" id="selectAllPage"/>
+          </th>
           <th style="width:70px;">{{ _('ID') }}</th>
           <th>{{ _('Title') }}</th>
           <th style="width:180px;">{{ _('Name') }}</th>
@@ -109,6 +132,9 @@
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
             onclick="window.location='{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}'"
             style="cursor:pointer">
+          <td>
+            <input class="form-check-input rowCheck" type="checkbox" name="ids" value="{{ r.id }}" form="bulkForm"/>
+          </td>
           <td>{{ r.id }}</td>
           <td>{{ r.title }}</td>
           <td>{{ r.name or r.requester_name }}</td>
@@ -144,11 +170,7 @@
           </td>
           <td class="text-end">
             {% if show_deleted %}
-              <form
-                method="post"
-                action="{{ safe_url_for('admin.admin_request_restore', req_id=r.id) }}"
-                class="d-inline"
-                onsubmit="event.stopPropagation();">
+              <form method="post" action="{{ safe_url_for('admin.admin_request_restore', req_id=r.id) }}" class="d-inline" onsubmit="event.stopPropagation();">
                 <button type="submit" class="btn btn-sm btn-outline-success">
                   {{ _('Restore') }}
                 </button>
@@ -225,5 +247,37 @@
       alert("Network error.");
     }
   }
+</script>
+<script>
+(function(){
+  const selectAll = document.getElementById("selectAllPage");
+  const countEl = document.getElementById("bulkCount");
+  const applyBtn = document.getElementById("bulkApply");
+  const checks = () => Array.from(document.querySelectorAll(".rowCheck"));
+
+  function sync(){
+    const selected = checks().filter(x => x.checked).length;
+    if (countEl) countEl.textContent = String(selected);
+    if (applyBtn) applyBtn.disabled = selected === 0;
+    if (!selectAll) return;
+    selectAll.checked = (selected > 0 && selected === checks().length);
+    selectAll.indeterminate = (selected > 0 && selected < checks().length);
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener("change", () => {
+      checks().forEach(cb => cb.checked = selectAll.checked);
+      sync();
+    });
+  }
+
+  document.addEventListener("change", (e) => {
+    if (e.target && e.target.classList.contains("rowCheck")) {
+      sync();
+    }
+  });
+
+  sync();
+})();
 </script>
 {% endblock %}

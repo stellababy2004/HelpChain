@@ -1197,6 +1197,88 @@ def admin_requests():
     )
 
 
+@admin_bp.post("/requests/bulk", endpoint="admin_requests_bulk")
+@login_required
+def admin_requests_bulk():
+    action = (request.form.get("action") or "").strip()
+    ids = request.form.getlist("ids")
+    next_url = request.form.get("next") or url_for("admin.admin_requests")
+
+    try:
+        req_ids = [int(x) for x in ids if str(x).strip().isdigit()]
+    except Exception:
+        req_ids = []
+
+    if not action or not req_ids:
+        flash("Select at least one request and an action.", "warning")
+        return redirect(next_url)
+
+    reqs = Request.query.filter(Request.id.in_(req_ids)).all()
+    eligible = []
+    skipped = 0
+    actor_id = getattr(current_user, "id", None)
+
+    for r in reqs:
+        if can_edit_request(r, current_user):
+            eligible.append(r)
+        else:
+            skipped += 1
+
+    done = 0
+
+    for r in eligible:
+        is_deleted = getattr(r, "deleted_at", None) is not None
+        is_archived = bool(getattr(r, "is_archived", False))
+
+        if action == "archive":
+            if is_deleted or is_archived:
+                skipped += 1
+                continue
+            r.is_archived = True
+            r.archived_at = utc_now()
+            log_request_activity(r, "request_archive", old=False, new=True, actor_admin_id=actor_id)
+            done += 1
+
+        elif action == "unarchive":
+            if is_deleted or not is_archived:
+                skipped += 1
+                continue
+            r.is_archived = False
+            log_request_activity(r, "request_unarchive", old=True, new=False, actor_admin_id=actor_id)
+            done += 1
+
+        elif action == "restore":
+            if not is_deleted:
+                skipped += 1
+                continue
+            old_deleted_at = r.deleted_at
+            r.deleted_at = None
+            r.is_archived = True
+            if getattr(r, "archived_at", None) is None:
+                r.archived_at = utc_now()
+            log_request_activity(r, "restore", old=str(old_deleted_at), new=None, actor_admin_id=actor_id)
+            done += 1
+
+        elif action == "delete":
+            if is_deleted or not is_archived:
+                skipped += 1
+                continue
+            r.deleted_at = utc_now()
+            r.is_archived = True
+            if getattr(r, "archived_at", None) is None:
+                r.archived_at = r.deleted_at
+            log_request_activity(r, "delete", old=None, new=str(r.deleted_at), actor_admin_id=actor_id)
+            done += 1
+
+        else:
+            flash("Unknown bulk action.", "danger")
+            return redirect(next_url)
+
+    db.session.commit()
+    flash(f"Bulk '{action}': processed {done}, skipped {skipped}.", "success" if done else "warning")
+    return redirect(next_url)
+
+
 def build_requests_query(base_query, request_args):
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
