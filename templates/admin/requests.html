@@ -129,26 +129,29 @@
   </div>
   {% endif %}
 
-  <form method="post" action="{{ safe_url_for('admin.admin_requests_bulk') }}" class="d-flex align-items-center gap-2 mb-3" id="bulkForm" data-hc-bulk="1">
-    <input type="hidden" name="next" value="{{ request.full_path }}"/>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    <select class="form-select form-select-sm" name="action" style="max-width:260px;" required>
-      <option value="" selected disabled>{{ _('Bulk action…') }}</option>
-      {% if show_deleted %}
-        <option value="restore">{{ _('Restore selected') }}</option>
-      {% else %}
-        <option value="archive">{{ _('Archive selected') }}</option>
-        <option value="unarchive">{{ _('Unarchive selected') }}</option>
-        <option value="delete">{{ _('Delete selected') }}</option>
-      {% endif %}
+  <div class="d-flex align-items-center gap-2 mb-2" id="hcBulkBar">
+    <div class="form-check m-0">
+      <input class="form-check-input" type="checkbox" id="hcSelectAllPage">
+      <label class="form-check-label small" for="hcSelectAllPage">
+        {{ _('Select all (current page)') }}
+      </label>
+    </div>
+
+    <select class="form-select form-select-sm" id="hcBulkAction" style="max-width:220px;">
+      <option value="">{{ _('Bulk actions…') }}</option>
+      <option value="archive">{{ _('Archive') }}</option>
+      <option value="unarchive">{{ _('Unarchive') }}</option>
+      <option value="delete">{{ _('Delete (archived only)') }}</option>
     </select>
-    <button type="submit" class="btn btn-sm btn-primary" id="bulkApply" disabled>
+
+    <button type="button" class="btn btn-sm btn-primary" id="hcBulkApply" disabled>
       {{ _('Apply') }}
     </button>
-    <span class="text-muted small ms-2">
-      {{ _('Selected:') }} <span id="bulkCount">0</span>
+
+    <span class="small text-muted ms-2" id="hcBulkCount" data-selected-label="{{ _('selected') }}">
+      0 {{ _('selected') }}
     </span>
-  </form>
+  </div>
 
   {% if show_deleted %}
   <div class="alert alert-warning py-2 mb-3">
@@ -160,8 +163,8 @@
     <table class="table table-hover align-middle">
       <thead>
         <tr>
-          <th style="width:36px;">
-            <input class="form-check-input" type="checkbox" id="selectAllPage"/>
+          <th style="width:42px;">
+            <input class="form-check-input" type="checkbox" id="hcSelectAllHeader" aria-label="Select all on page"/>
           </th>
           <th style="width:70px;">{{ _('ID') }}</th>
           <th>{{ _('Title') }}</th>
@@ -182,7 +185,7 @@
             onclick="window.location='{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}'"
             style="cursor:pointer">
           <td>
-            <input class="form-check-input rowCheck" type="checkbox" name="ids" value="{{ r.id }}" form="bulkForm"/>
+            <input class="form-check-input hc-row-check" type="checkbox" value="{{ r.id }}" aria-label="Select request {{ r.id }}">
           </td>
           <td>{{ r.id }}</td>
           <td>{{ (r.title or '') | highlight_ci(q) }}</td>

@@ -1728,6 +1728,106 @@ def admin_request_restore_deleted(req_id: int):
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
+@admin_bp.post("/requests/bulk", endpoint="admin_requests_bulk")
+@login_required
+def admin_requests_bulk():
+    payload = request.get_json(silent=True) or {}
+    action = (payload.get("action") or "").strip().lower()
+    ids = payload.get("ids") or []
+
+    if action not in {"archive", "unarchive", "delete"}:
+        return jsonify({"ok": False, "error": "invalid_action"}), 400
+
+    try:
+        ids = [int(x) for x in ids]
+    except Exception:
+        return jsonify({"ok": False, "error": "invalid_ids"}), 400
+
+    ids = [x for x in ids if x > 0]
+    ids = list(dict.fromkeys(ids))
+
+    if not ids:
+        return jsonify({"ok": True, "updated": 0, "blocked": []})
+
+    if len(ids) > 200:
+        return jsonify({"ok": False, "error": "too_many_ids"}), 400
+
+    reqs = Request.query.filter(Request.id.in_(ids)).all()
+
+    updated = 0
+    blocked = []
+
+    for req in reqs:
+        if not can_edit_request(req, current_user):
+            blocked.append({"id": req.id, "reason": "forbidden"})
+            continue
+
+        if action == "archive":
+            if not getattr(req, "is_archived", False):
+                req.is_archived = True
+                if getattr(req, "archived_at", None) is None:
+                    req.archived_at = utc_now()
+                log_request_activity(
+                    req,
+                    "request_archive",
+                    old=False,
+                    new=True,
+                    actor_admin_id=getattr(current_user, "id", None),
+                )
+                updated += 1
+
+        elif action == "unarchive":
+            if getattr(req, "is_archived", False):
+                req.is_archived = False
+                req.archived_at = None
+                log_request_activity(
+                    req,
+                    "request_unarchive",
+                    old=True,
+                    new=False,
+                    actor_admin_id=getattr(current_user, "id", None),
+                )
+                updated += 1
+
+        elif action == "delete":
+            if not getattr(req, "is_archived", False):
+                blocked.append({"id": req.id, "reason": "not_archived"})
+                try:
+                    log_request_activity(
+                        req,
+                        "delete_blocked_not_archived",
+                        old=False,
+                        new=False,
+                        actor_admin_id=getattr(current_user, "id", None),
+                    )
+                except Exception:
+                    pass
+                continue
+
+            if getattr(req, "deleted_at", None) is None:
+                req.deleted_at = utc_now()
+                req.is_archived = True
+                if getattr(req, "archived_at", None) is None:
+                    req.archived_at = req.deleted_at
+
+                log_request_activity(
+                    req,
+                    "delete",
+                    old=None,
+                    new=str(req.deleted_at),
+                    actor_admin_id=getattr(current_user, "id", None),
+                )
+                updated += 1
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({"ok": False, "error": "db_commit_failed"}), 500
+
+    return jsonify({"ok": True, "updated": updated, "blocked": blocked})
+
+
 @admin_bp.post("/requests/<int:req_id>/note")
 @login_required
 def admin_request_add_note(req_id: int):
