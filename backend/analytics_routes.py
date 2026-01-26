@@ -159,18 +159,9 @@ def cached_analytics_data_1min_decorator(f):
 
 
 @analytics_bp.route("/")
+@require_admin_login
 def analytics_page():
-    # DEBUG: Log session state in analytics route
-    print(f"DEBUG analytics_page: session keys: {list(session.keys())}")
-    print(f"DEBUG analytics_page: admin_logged_in: {session.get('admin_logged_in')}")
-    print(f"DEBUG analytics_page: session id: {id(session)}")
-    print(f"DEBUG analytics_page: current_app: {current_app}")
-    # Redirect to admin analytics if user is admin, otherwise to login
-    if session.get("admin_logged_in"):
-        return redirect(url_for("analytics_bp.admin_analytics"))
-    else:
-        flash("Аналитиката е достъпна само за администратори.", "info")
-        return redirect(url_for("admin_login"))
+    return redirect(url_for("analytics_bp.admin_analytics"))
 
 
 @analytics_bp.route("/api/analytics/data")
@@ -795,7 +786,7 @@ def predictive_analytics_page():
         flash("Предиктивната аналитика е достъпна само за администратори.", "info")
         return redirect(url_for("admin_login"))
 
-    return render_template("predictive_analytics.html")
+    return redirect(url_for("analytics_bp.admin_analytics"))
 
 
 @analytics_bp.route("/api/predictive/regional-demand")
