@@ -125,12 +125,20 @@
             </div>
           </div>
 
-          <button class="hc-btn hc-btn--primary" type="submit">
-            {{ _("Send request") }}
-          </button>
+          <div class="hc-submit">
+            <button class="hc-btn hc-btn--primary hc-btn--lg" type="submit">
+              <span class="hc-btn__icon" aria-hidden="true">⚡</span>
+              <span class="hc-btn__text">{{ _("Send request") }}</span>
+            </button>
 
-          <div class="hc-hint" style="margin-top:10px;">
-            🔒 {{ _("Your data is processed confidentially. No info is shared without your consent.") }}
+            <div class="hc-submit__meta">
+              <div class="hc-hint">
+                🔒 {{ _("Your data is processed confidentially. No info is shared without your consent.") }}
+              </div>
+              <div class="hc-hint">
+                🕒 {{ _("Usually answered within 24–48h") }}
+              </div>
+            </div>
           </div>
 
         </div>
@@ -138,12 +146,12 @@
         <!-- Sticky CTA (mobile + long form) -->
         <div class="hc-sticky-cta is-visible" role="region" aria-label="{{ _('Quick actions') }}">
           <div class="hc-sticky-cta__inner">
-            <a class="btn btn-outline-secondary hc-sticky-cta__back" href="{{ url_for('main.index') }}">
-              {{ _('Home') }}
+            <a class="hc-btn hc-btn--ghost hc-sticky-cta__back" href="{{ url_for('main.index') }}">
+              ← {{ _('Home') }}
             </a>
 
-            <button type="submit" class="btn btn-primary hc-sticky-cta__submit">
-              {{ _('Submit a request') }}
+            <button type="submit" class="hc-btn hc-btn--primary hc-sticky-cta__submit">
+              {{ _('Send request') }}
             </button>
           </div>
         </div>

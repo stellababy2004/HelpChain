@@ -5426,6 +5426,70 @@ p{
   h2{ font-size: 1.6rem; }
   .hero-subtitle{ font-size: 1rem; }
 }
+
+/* === Submit Request polish (Home-matching) === */
+.hc-submit{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  justify-content:space-between;
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.hc-submit__meta{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  opacity:.95;
+}
+.hc-btn--lg{
+  padding:12px 16px;
+  border-radius:14px;
+  font-weight:700;
+  letter-spacing:.2px;
+}
+.hc-btn__icon{
+  margin-right:8px;
+  filter:drop-shadow(0 0 10px rgba(120,255,214,.25));
+}
+
+.hc-sticky-cta{
+  position:sticky;
+  bottom:0;
+  margin-top:16px;
+  padding:10px 0 0;
+  background:linear-gradient(to top, rgba(8,12,20,.92), rgba(8,12,20,0));
+  backdrop-filter:blur(8px);
+}
+.hc-sticky-cta__inner{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  background:rgba(12,16,26,.75);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.hc-sticky-cta__back{
+  flex:0 0 auto;
+}
+.hc-sticky-cta__submit{
+  flex:1 1 auto;
+  text-align:center;
+}
+
+@media (max-width: 520px){
+  .hc-submit{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .hc-sticky-cta__inner{
+    padding:10px;
+  }
+}
 /* =========================
    Step 4 – Home polish
    ========================= */
