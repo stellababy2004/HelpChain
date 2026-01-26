@@ -60,6 +60,11 @@
     });
   }
 
+  const clearBarBtn = document.getElementById("hcClearSearchBtn");
+  if (clearBarBtn && btnClear) {
+    clearBarBtn.addEventListener("click", () => btnClear.click());
+  }
+
   form.addEventListener("submit", () => {
     setLoading(true);
   });

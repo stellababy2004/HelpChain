@@ -31,7 +31,7 @@
     </a>
   </div>
 
-  <form class="row g-2 mb-3" method="GET" action="{{ safe_url_for('admin.admin_requests') }}">
+  <form id="hcAdminFilters" class="row g-2 mb-3" method="GET" action="{{ safe_url_for('admin.admin_requests') }}">
     <div class="col-md-3">
       <select class="form-select" name="status" aria-label="{{ _('Status') }}">
         <option value="">{{ _('All statuses') }}</option>
@@ -46,31 +46,37 @@
     <div class="col-md-6 col-xl-5">
       <label class="form-label small text-muted mb-1">{{ _('Search') }}</label>
       <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+
         <input
-          type="search"
+          id="hcAdminQ"
+          type="text"
           class="form-control"
           name="q"
-          value="{{ q or '' }}"
           placeholder="{{ _('Search by name or title…') }}"
+          value="{{ q or '' }}"
           autocomplete="off"
+          spellcheck="false"
         />
-        {% if q %}
-          <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_requests',
-              status=status,
-              deleted=('1' if show_deleted else None),
-              archived=('1' if show_archived else None)) }}">
-            {{ _('Clear') }}
-          </a>
-        {% else %}
-          <button class="btn btn-outline-secondary" type="submit">
-            <i class="bi bi-search"></i>
-          </button>
-        {% endif %}
-      </div>
-    </div>
 
-    <div class="col-md-3 col-xl-2 d-grid">
-      <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          id="hcAdminQClear"
+          aria-label="{{ _('Clear search') }}"
+          {% if not q %}style="display:none"{% endif %}
+        >
+          <i class="bi bi-x-lg"></i>
+        </button>
+
+        <span class="input-group-text" id="hcAdminQSpinner" style="display:none">
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        </span>
+
+        <button class="btn btn-primary" type="submit">
+          {{ _('Filter') }}
+        </button>
+      </div>
     </div>
 
     <div class="col-12">
@@ -101,6 +107,27 @@
       </div>
     </div>
   </form>
+
+  {% set has_q = (q or '')|trim != '' %}
+
+  {% if has_q %}
+  <div class="hc-admin-searchbar alert alert-secondary d-flex align-items-center justify-content-between py-2 mb-3">
+    <div class="small">
+      <strong>{{ _('Results for') }}</strong>
+      <span class="ms-1">“{{ q }}”</span>
+      <span class="ms-2 text-muted">
+        ({{ _('status') }}: {{ status or _('any') }},
+        {{ _('archived') }}: {{ _('on') if show_archived else _('off') }},
+        {{ _('deleted') }}: {{ _('on') if show_deleted else _('off') }})
+      </span>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="hcClearSearchBtn">
+        {{ _('Clear search') }}
+      </button>
+    </div>
+  </div>
+  {% endif %}
 
   <form method="post" action="{{ safe_url_for('admin.admin_requests_bulk') }}" class="d-flex align-items-center gap-2 mb-3" id="bulkForm" data-hc-bulk="1">
     <input type="hidden" name="next" value="{{ request.full_path }}"/>
@@ -226,28 +253,27 @@
           </td>
         </tr>
         {% else %}
-        {% if q and not show_archived %}
           <tr>
             <td colspan="11">
-              <div class="alert alert-info mt-3 mb-0 d-flex flex-column gap-2">
-                <div>
-                  No live results for <strong>“{{ (q or '')|e }}”</strong>. Try searching archived requests.
-                </div>
-                <div>
-                  <a class="btn btn-sm btn-outline-secondary"
-                     href="{{ safe_url_for('admin.admin_requests',
-                                          status=status or None,
-                                          q=q,
-                                          archived=1,
-                                          deleted=('1' if show_deleted else None)) }}">
-                    {{ _('Show archived') }}
+              <div class="hc-empty alert alert-info mb-0">
+                {% if has_q and not show_archived %}
+                  <div class="mb-2">
+                    {{ _('No live results for') }} “{{ q }}”.
+                  </div>
+                  <a class="btn btn-sm btn-outline-primary"
+                     href="{{ url_for('admin.admin_requests',
+                                      status=status or None,
+                                      q=q,
+                                      deleted=('1' if show_deleted else None),
+                                      archived='1') }}">
+                    {{ _('Try archived') }}
                   </a>
-                </div>
+                {% else %}
+                  <div class="text-center">{{ _('No results.') }}</div>
+                {% endif %}
               </div>
             </td>
           </tr>
-        {% endif %}
-        <tr><td colspan="11" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -373,6 +399,7 @@
   }, true);
 })();
 </script>
+<script src="{{ url_for('static', filename='js/admin-requests.js') }}"></script>
 
 <div class="modal fade" id="hcConfirmDeleteModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">

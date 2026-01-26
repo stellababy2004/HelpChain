@@ -249,6 +249,21 @@ body {
   color: inherit;
 }
 
+/* Admin search polish */
+#hcAdminQ:disabled {
+  opacity: 0.85;
+  cursor: wait;
+}
+
+#hcAdminQ[readonly] {
+  cursor: progress;
+  opacity: 0.95;
+}
+
+.hc-admin-searchbar {
+  border-radius: 12px;
+}
+
 /* --- Submit request: sticky CTA --- */
 .hc-sticky-cta{
   position: fixed;
