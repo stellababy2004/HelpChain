@@ -158,3 +158,12 @@ temp.txt
 
 # local tooling
 .hintrc
+
+# virtualenv
+.venv/
+.venv*/
+venv/
+__pycache__/
+*.pyc
+.env
+
