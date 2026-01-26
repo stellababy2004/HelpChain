@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 import re
+
 from dotenv import load_dotenv
 from flask import Flask, request, session
+from flask_babel import get_locale as babel_get_locale
 from flask_login import LoginManager
 from flask_wtf.csrf import generate_csrf
-from flask_babel import get_locale as babel_get_locale
 from markupsafe import Markup, escape
 
 from backend.extensions import babel, db, migrate
@@ -106,9 +107,13 @@ def create_app(config_object=None) -> Flask:
         pass
 
     app.config["PROPAGATE_EXCEPTIONS"] = True
-    app.config.setdefault(
-        "SQLALCHEMY_DATABASE_URI",
-        os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///helpchain.db"),
+    # DB: default to instance/app.db (single source of truth)
+    # allow env override (e.g., Postgres in prod)
+    default_db_path = os.path.join(app.instance_path, "app.db")
+    default_db_uri = f"sqlite:///{default_db_path}"
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
+        "SQLALCHEMY_DATABASE_URI", default_db_uri
     )
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", root_translations)

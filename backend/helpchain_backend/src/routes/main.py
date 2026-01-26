@@ -1,3 +1,5 @@
+import re
+
 from flask import (
     Blueprint,
     flash,
@@ -12,16 +14,92 @@ from flask import (
     make_response,
 )
 from flask_babel import get_locale as babel_get_locale
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from ..extensions import limiter
 from ..models import Request, Volunteer, db, utc_now
 from ..category_data import CATEGORIES, ALIASES, COMMON
 from sqlalchemy import or_, func
 
-COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
+# Supported countries for MVP KPI (keep simple; can be moved to config later)
+COUNTRIES_SUPPORTED = ("FR", "CH", "CA")
+
+ALLOWED_CATEGORIES = {"health", "administrative", "psychological", "legal", "housing", "other"}
+ALLOWED_URGENCY = {"low", "medium", "high"}
 
 main_bp = Blueprint("main", __name__)
+
+
+# --- helpers ---
+
+def _clean(val: str) -> str:
+    return (val or "").strip()
+
+
+def _collapse_spaces(value: str) -> str:
+    return " ".join(value.split())
+
+
+def _normalize_city(city: str | None) -> str | None:
+    if not city:
+        return None
+    city = re.sub(r"\s+", " ", city.strip())
+
+    def smart_title(word: str) -> str:
+        if "-" in word:
+            return "-".join(smart_title(w) for w in word.split("-"))
+        if "'" in word:
+            return "'".join(smart_title(w) for w in word.split("'"))
+        return word.capitalize()
+
+    return " ".join(smart_title(w) for w in city.split())
+
+
+def _normalize_name(name):
+    if not name:
+        return None
+    return re.sub(r"\s+", " ", name.strip())
+
+
+def _normalize_email(value: str | None) -> str | None:
+    value = _clean(value)
+    if not value:
+        return None
+    normalized = re.sub(r"\s+", "", value).strip().lower()
+    return normalized or None
+
+
+def _normalize_phone(value: str | None) -> str | None:
+    value = _clean(value)
+    if not value:
+        return None
+    normalized = value.strip()
+    normalized = re.sub(r"[^\d+]", "", normalized)
+    if normalized.startswith("00"):
+        normalized = "+" + normalized[2:]
+    if normalized.count("+") > 1:
+        normalized = normalized.replace("+", "")
+        normalized = "+" + normalized
+    return normalized or None
+
+
+CATEGORY_LABELS = {
+    "health": "Health",
+    "administrative": "Administrative",
+    "psychological": "Psychological",
+    "legal": "Legal",
+    "housing": "Housing",
+    "other": "Other",
+}
+
+
+def _priority_from_urgency(urgency: str | None) -> str:
+    u = (_clean(urgency) or "").lower()
+    if u in {"high", "urgent"}:
+        return "high"
+    if u in {"medium"}:
+        return "medium"
+    return "low"
 
 
 # ✅ url_lang + safe_url_for in ALL templates rendered by this blueprint
@@ -192,94 +270,82 @@ def normalize_request_form(form):
 
 
 @main_bp.route("/submit_request", methods=["GET", "POST"])
-@limiter.limit("5 per minute; 30 per hour")
 def submit_request():
-    """Подаване на заявка за помощ"""
-    if request.method == "POST":
-        current_app.logger.warning("SUBMIT_REQUEST POST hit")
-        current_app.logger.warning("Form keys=%s", list(request.form.keys()))
-        current_app.logger.warning("website(honeypot)='%s'", (request.form.get("website") or "").strip())
-        # Honeypot anti-bot field (ако се задейства, искам да го ВИДИШ)
-        website = (request.form.get("website") or "").strip()
-        if website:
-            current_app.logger.warning("Honeypot triggered on submit_request: website=%r", website)
-            flash("Формата беше отхвърлена (анти-бот). Опитай пак.", "error")
-            return redirect(url_for("main.submit_request"))
+    if request.method == "GET":
+        draft = session.get("request_draft") or {}
+        return render_template("submit_request.html", draft=draft)
 
-        category, urgency, description = normalize_request_form(request.form)
+    category = _clean(request.form.get("category"))
+    description = _clean(request.form.get("description"))
+    urgency = _clean(request.form.get("urgency"))
+    raw_city = _clean(request.form.get("city"))
+    city = _normalize_city(raw_city)
+    postal_code = _clean(request.form.get("postal_code"))
+    contact_method = _clean(request.form.get("contact_method"))
+    raw_name = _clean(request.form.get("name"))
+    name = _normalize_name(raw_name)
+    email = _normalize_email(request.form.get("email"))
+    phone = _normalize_phone(request.form.get("phone"))
 
-        # urgency -> priority (DB expects low/medium/high)
-        priority_map = {
-            "low": "low",
-            "medium": "medium",
-            "normal": "medium",
-            "urgent": "high",
-            "critical": "high",
-            "emergency": "high",
-        }
-        priority = priority_map.get(urgency, "medium")
+    errors = []
 
-        name = (request.form.get("name") or "").strip()
-        phone = (request.form.get("phone") or "").strip()
-        email = (request.form.get("email") or "").strip()
-        location_text = (request.form.get("location_text") or request.form.get("location") or "").strip()
-        title = (request.form.get("title") or "").strip()
+    if category not in ALLOWED_CATEGORIES:
+        errors.append("Моля изберете валиден тип помощ.")
+    if not (30 <= len(description) <= 800):
+        errors.append("Описанието трябва да е между 30 и 800 знака.")
+    if urgency not in ALLOWED_URGENCY:
+        errors.append("Моля изберете валидна спешност.")
+    if not city:
+        errors.append("Градът е задължителен.")
+    if contact_method not in {"email", "phone"}:
+        errors.append("Моля изберете начин за контакт (email или phone).")
+    else:
+        if contact_method == "email" and not email:
+            errors.append("Email е задължителен.")
+        if contact_method == "phone" and not phone:
+            errors.append("Телефон е задължителен.")
 
-        current_app.logger.warning(
-            "Parsed: name=%r(len=%s) phone=%r(len=%s) email=%r(len=%s) category=%r urgency=%r desc_len=%s title=%r",
-            name, len(name or ""),
-            phone, len(phone or ""),
-            email, len(email or ""),
-            category, urgency,
-            len(description or ""),
-            title,
-        )
-
-        # ✅ Server-side validation (точно както UX-а)
-        if len(name) < 2:
-            current_app.logger.warning("VALIDATION FAIL: name < 2")
-            flash("Моля, въведете име (поне 2 символа).", "error")
-            return redirect(url_for("main.submit_request"))
-
-        if len(description) < 10:
-            current_app.logger.warning("VALIDATION FAIL: description < 10")
-            flash("Моля, опишете проблема (поне 10 символа).", "error")
-            return redirect(url_for("main.submit_request"))
-
-        if not phone and not email:
-            current_app.logger.warning("VALIDATION FAIL: no phone and no email")
-            flash("Моля, въведете поне телефон или имейл.", "error")
-            return redirect(url_for("main.submit_request"))
-
-        # ✅ title is NOT NULL in DB
-        if not title:
-            title = f"Заявка: {category}" if category else "Заявка за помощ"
-
-        # ✅ category default (DB показва default general)
-        if not category:
-            category = "general"
-
-        session["request_draft"] = {
-            "name": name,
-            "phone": phone,
-            "email": email,
+    if errors:
+        for e in errors:
+            flash(e, "danger")
+        draft = {
             "category": category,
-            "urgency": urgency,
-            "priority": priority,
-            "title": title,
             "description": description,
-            "location_text": location_text,
+            "urgency": urgency,
+            "city": city,
+            "name": name,
+            "region": postal_code or None,
+            "priority": {"low": 1, "medium": 2, "high": 3}.get(urgency, 2),
+            "email": email or None,
+            "phone": phone or None,
+            # title derived at confirm time
+            "location_text": f"{city}{(' ' + postal_code) if postal_code else ''}",
+            "source_channel": "web",
+            "contact_method": contact_method,
         }
+        return render_template("submit_request.html", draft=draft), 400
 
-        return render_template(
-            "request_preview.html",
-            draft=session["request_draft"],
-        )
+    session["request_draft"] = {
+        "category": category,
+        "description": description,
+        "urgency": urgency,
+        "city": city,
+        "postal_code": postal_code,
+        "region": postal_code or None,
+        "priority": {"low": 1, "medium": 2, "high": 3}[urgency],
+        "name": name,
+        "email": email or None,
+        "phone": phone or None,
+        "location_text": f"{city}{(' ' + postal_code) if postal_code else ''}",
+        "source_channel": "web",
+        "contact_method": contact_method,
+    }
 
-    return render_template("submit_request.html")
+    return redirect(url_for("main.submit_request_confirm"))
 
 
-@main_bp.post("/submit_request/confirm")
+
+@main_bp.route("/submit_request/confirm", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def submit_request_confirm():
     draft = session.get("request_draft")
@@ -287,43 +353,61 @@ def submit_request_confirm():
         flash("Сесията изтече. Моля, подай заявката отново.", "error")
         return redirect(url_for("main.submit_request"))
 
+    if request.method == "GET":
+        return render_template("request_preview.html", draft=draft)
+
     try:
-        req = Request(
-            title=draft.get("title"),
-            description=draft.get("description"),
-            name=draft.get("name"),
-            phone=(draft.get("phone") or None),
-            email=(draft.get("email") or None),
-            location_text=(draft.get("location_text") or None),
+        category_raw = _clean(draft.get("category"))
+        category_value = category_raw.lower() if category_raw else "general"
+        if not category_value:
+            flash("Моля изберете валиден тип помощ.", "danger")
+            return redirect(url_for("main.submit_request"))
+        city_raw = draft.get("city")
+        postal_code_raw = draft.get("postal_code") or draft.get("region")
+        city = _normalize_city(_clean(city_raw))
+        postal_code = _clean(postal_code_raw)
+        raw_name = draft.get("name")
+        name = _normalize_name(raw_name)
+        description = _clean(draft.get("description"))
+        email = _normalize_email(draft.get("email"))
+        phone = _normalize_phone(draft.get("phone"))
+        urgency = _clean(draft.get("urgency"))
+        priority = _priority_from_urgency(urgency)
+        where = " ".join(p for p in (city, postal_code) if p)
+        location_text = where or None
+        pretty_cat = CATEGORY_LABELS.get(category_value, category_raw.capitalize() or "Request")
+        title = f"{pretty_cat} • {where}" if where else pretty_cat
+
+        new_req = Request(
+            title=title,
+            description=description or None,
+            email=email or None,
+            phone=phone or None,
+            city=city or None,
+            region=postal_code or None,
+            location_text=location_text,
             status="pending",
-            priority=draft.get("priority"),
-            category=draft.get("category"),
+            priority=priority,
+            source_channel="web",
+            category=category_value,
+            name=name or None,
         )
 
-        db.session.add(req)
+        db.session.add(new_req)
         db.session.commit()
 
         session.pop("request_draft", None)
-        session["last_request_id"] = req.id
 
-        category = draft.get("category")
-        urgency = draft.get("urgency")
-        is_emergency = (
-            category in ("emergency", "urgent")
-            or urgency in ("critical", "emergency", "urgent")
-        )
+        tracking = f"HC-{new_req.created_at:%Y%m%d}-{new_req.id:05d}" if getattr(new_req, "created_at", None) else f"HC-{new_req.id:05d}"
+        try:
+            log_audit("request_created", request_id=new_req.id)
+        except Exception:
+            current_app.logger.info("audit log missing for request_created %s", new_req.id)
 
-        app = current_app._get_current_object()
-        if is_emergency and hasattr(app, "can_send_emergency_email") and app.can_send_emergency_email():
-            if hasattr(app, "send_emergency_email"):
-                app.send_emergency_email(req)
-            if hasattr(app, "mark_emergency_email_sent"):
-                app.mark_emergency_email_sent()
+        return redirect(url_for("main.request_submitted", tracking=tracking))
 
-        return redirect(url_for("main.success", request_id=req.id))
-
-    except Exception as e:
-        current_app.logger.exception("CONFIRM FAILED: %s", e)
+    except Exception as exc:
+        current_app.logger.exception("CONFIRM FAILED: %s", exc)
         db.session.rollback()
         flash("Грешка при записване. Моля, опитай отново.", "error")
         return redirect(url_for("main.submit_request"))
@@ -334,6 +418,12 @@ def success():
     request_id = request.args.get("request_id") or session.get("last_request_id")
     is_admin = bool(session.get("admin_logged_in"))
     return render_template("success.html", request_id=request_id, is_admin=is_admin), 200
+
+
+@main_bp.route("/request_submitted")
+def request_submitted():
+    tracking = request.args.get("tracking")
+    return render_template("request_submitted.html", tracking=tracking), 200
 
 
 @main_bp.get("/pilot", endpoint="pilot")

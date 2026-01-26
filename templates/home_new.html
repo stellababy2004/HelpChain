@@ -604,52 +604,56 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hc-hero" role="banner" aria-labelledby="hero-title">
-      <div class="hero-shapes" aria-hidden="true">
-        <div class="hero-shape"></div>
-        <div class="hero-shape"></div>
-        <div class="hero-shape"></div>
-      </div>
+      <section class="hc-hero" role="banner" aria-labelledby="hero-title">
+        <div class="hero-shapes" aria-hidden="true">
+          <div class="hero-shape"></div>
+          <div class="hero-shape"></div>
+          <div class="hero-shape"></div>
+        </div>
 
-      <div class="container">
-        <div class="hero-content text-center">
-          <h1 id="hero-title" class="hc-hero__title">{{ _('Welcome to HelpChain') }}</h1>
-          <p class="hc-hero__subtitle">{{ _('Together, we make helping others simple, fast and human.') }}</p>
-          <div class="hc-trust-badges" aria-label="{{ _('Trust badges') }}">
-            <span class="hc-badge-pill">
-              <i class="fas fa-globe-europe" aria-hidden="true"></i>
-              {{ _('France') }} &bull; {{ _('Switzerland') }} &bull; {{ _('Canada') }}
-            </span>
-            <a class="hc-badge-pill" href="{{ safe_url_for('main.privacy') }}">
-              <i class="fas fa-shield-alt" aria-hidden="true"></i>
-              {{ _('GDPR-friendly') }}
-            </a>
-          </div>
+        <div class="container">
+          <div class="hero-content text-center">
+            <h1 id="hero-title" class="hc-hero__title">
+              Besoin d’aide humaine, maintenant ?<br />
+              HelpChain vous met en relation avec des bénévoles vérifiés, près de chez vous.
+            </h1>
+            <p class="hc-hero__subtitle">
+              Démarches administratives, santé, accompagnement, numérique, soutien moral…<br />
+              Une vraie personne vous aide. <strong>Gratuitement.</strong> En quelques minutes.
+            </p>
+            <div class="hc-trust-badges" aria-label="Trust badges">
+              <span class="hc-badge-pill">
+                🇫🇷 France • 🇨🇭 Suisse • 🇨🇦 Canada
+              </span>
+              <span class="hc-badge-pill">
+                🔒 Données protégées • 🤝 Bénévoles vérifiés • 🚀 Mise en relation rapide
+              </span>
+            </div>
 
-          <div class="hero-buttons d-flex justify-content-center gap-3 flex-wrap">
-              <a
-                class="hc-btn hc-btn-primary focus-visible"
-                href="{{ safe_url_for('main.submit_request') }}"
-              >
-                <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>{{ _('Request help') }}
-              </a>
-              <a
-                class="hc-btn hc-btn-secondary focus-visible"
-                href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
-              >
-                <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i>{{ _('Become a volunteer') }}
-              </a>
-          </div>
-          <div class="hc-hero__counters hc-hero__stats hc-kpis" aria-label="{{ _('Key numbers') }}">
-            <span class="hc-counter hc-stat">
-              <strong class="hc-stat__value" id="kpiVolunteers">&mdash;</strong>
-              <span
-                class="hc-stat__label"
-                id="kpiVolunteersLabel"
-                data-singular="{{ _('volunteer') }}"
-                data-plural="{{ _('volunteers') }}"
-              >{{ _('volunteers') }}</span>
-            </span>
+            <div class="hero-buttons d-flex justify-content-center gap-3 flex-wrap">
+                <a
+                  class="hc-btn hc-btn-primary focus-visible"
+                  href="{{ safe_url_for('main.submit_request') }}"
+                >
+                  <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>{{ _('Request help') }}
+                </a>
+                <a
+                  class="hc-btn hc-btn-secondary focus-visible"
+                  href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
+                >
+                  <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i>{{ _('Become a volunteer') }}
+                </a>
+            </div>
+            <div class="hc-hero__counters hc-hero__stats hc-kpis" aria-label="{{ _('Key numbers') }}">
+              <span class="hc-counter hc-stat">
+                <strong class="hc-stat__value" id="kpiVolunteers">&mdash;</strong>
+                <span
+                  class="hc-stat__label"
+                  id="kpiVolunteersLabel"
+                  data-singular="{{ _('volunteer') }}"
+                  data-plural="{{ _('volunteers') }}"
+                >{{ _('volunteers') }}</span>
+              </span>
             <span class="hc-dot hc-stat__dot" aria-hidden="true">&bull;</span>
             <span class="hc-counter hc-stat">
               <strong class="hc-stat__value" id="kpiClosed">&mdash;</strong>
@@ -824,62 +828,69 @@
         </div>
       </section>
 
-      <!-- Features Section -->
-      <section class="features-section" id="features">
+      <!-- Value section -->
+      <section class="section" id="why-different">
         <div class="container">
-          <div class="text-center mb-5">
-            <h2 class="h1 mb-3">{{ _('Why choose HelpChain?') }}</h2>
-            <p class="lead text-muted">{{ _('We offer a modern platform to connect people who need help with those who want to help.') }}</p>
+          <div class="text-center mb-4">
+            <h2>Pourquoi HelpChain est différent</h2>
+            <p class="section-subtitle">Une plateforme pensée pour l’humain, pas pour la bureaucratie.</p>
           </div>
-
-          <div class="features-grid">
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-bolt"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Fast help') }}</h3>
-              <p class="feature-description-light">{{ _('Our platform connects people in need with volunteers in minutes, providing fast and effective help.') }}</p>
+          <div class="value-grid">
+            <div class="value-item">
+              <i class="bi bi-heart" aria-hidden="true"></i>
+              <h3>100% humain</h3>
+              <p>Pas de bots. Pas de centres d’appel. Vous échangez avec une vraie personne bienveillante.</p>
             </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-shield-alt"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Security') }}</h3>
-              <p class="feature-description-light">{{ _('All users go through verification, and communication is protected with state-of-the-art security technologies.') }}</p>
+            <div class="value-item">
+              <i class="bi bi-geo-alt" aria-hidden="true"></i>
+              <h3>Local et rapide</h3>
+              <p>Des bénévoles près de chez vous, disponibles rapidement, pas à l’autre bout du pays.</p>
             </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-users"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Community') }}</h3>
-              <p class="feature-description-light">{{ _('Join a growing community of volunteers and people who believe that together we can make the world a better place.') }}</p>
+            <div class="value-item">
+              <i class="bi bi-shield-lock" aria-hidden="true"></i>
+              <h3>Conçu pour la confiance</h3>
+              <p>Données minimales. Bénévoles vérifiés. Historique des échanges. Traçabilité complète.</p>
             </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-mobile-alt"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Mobile accessibility') }}</h3>
-              <p class="feature-description-light">{{ _('Our platform works perfectly on all devices - from smartphones to desktop computers.') }}</p>
+            <div class="value-item">
+              <i class="bi bi-emoji-smile" aria-hidden="true"></i>
+              <h3>Gratuit et éthique</h3>
+              <p>Aucun modèle publicitaire. Aucune revente de données. L’aide reste un droit, pas un produit.</p>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-clock"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('24/7 support') }}</h3>
-              <p class="feature-description-light">{{ _('Our team is always available to help. No matter the time, you can rely on our support.') }}</p>
+      <section id="how-it-works" class="section">
+        <div class="container">
+          <div class="text-center mb-4">
+            <h2>Comment ça marche ?</h2>
+            <p class="section-subtitle">En 4 étapes simples. Sans stress. Sans paperasse inutile.</p>
+          </div>
+          <div class="steps-grid">
+            <div class="step-card">
+              <div class="step-num">1</div>
+              <h3>Publiez votre demande</h3>
+              <p>Décrivez votre besoin en moins d’une minute. Vous gardez le contrôle sur les informations partagées.</p>
             </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-heart"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Free') }}</h3>
-              <p class="feature-description-light">{{ _('HelpChain is a completely free platform. We believe that help should be accessible to everyone.') }}</p>
+            <div class="step-card">
+              <div class="step-num">2</div>
+              <h3>Un bénévole est alerté</h3>
+              <p>Un bénévole de confiance prend en charge la demande dès qu’il est disponible.</p>
             </div>
+            <div class="step-card">
+              <div class="step-num">3</div>
+              <h3>Vous échangez en sécurité</h3>
+              <p>Messages protégés, données minimales, et respect RGPD. L’objectif : une aide utile, pas une collecte d’infos.</p>
+            </div>
+            <div class="step-card">
+              <div class="step-num">4</div>
+              <h3>La situation avance</h3>
+              <p>Suivez l’avancement, recevez une réponse claire, et laissez un retour si vous le souhaitez.</p>
+            </div>
+          </div>
+          <div class="how-cta">
+            <a href="{{ safe_url_for('main.submit_request') }}" class="btn btn-primary">🆘 Demander de l’aide</a>
+            <a href="{{ safe_url_for('register') }}" class="btn btn-outline">🤝 Devenir bénévole</a>
           </div>
         </div>
       </section>
