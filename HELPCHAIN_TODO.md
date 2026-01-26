@@ -24,29 +24,31 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - [x] Activity log tab in request details  
 - [x] owned_at timestamp on assign  
 - [x] One-click contact (mailto / tel / copy)  
-
 ---
 
-## PHASE 2 – Admin UX
+## Admin UX v1 — Shipped (2026-01-26)
 
-- [x] Status filters (Pending / In progress / Done)  
-- [x] Search by name / title  
-- [x] Global navbar search (removed for MVP clarity)
-- [x] Admin list search by name/title
+- [x] Search input inside `/admin/requests` filters  
+- [x] Case-insensitive search  
+- [x] Highlight matches in list (name/title)  
+- [x] Smart empty state with "Try archived?" CTA  
+- [x] Dark-mode polish (admin)  
+- [x] Navbar fixes (Profile + Logout POST/GET fallback)  
+- [x] Tombstone delete (guarded)  
+- [x] Archive / Unarchive UX  
+- [x] Request notes (`admin_request_add_note` endpoint)  
+- [x] Prevent 500 on request details (route exists + `url_for` fix)
+
+## Admin UX v2 — Gmail-style (In Progress)
+
+- [x] Live search (debounced)  
+- [x] Disable auto-refresh on filters  
+- [ ] Scroll restore after actions  
+- [ ] Bulk actions (current page): Archive / Unarchive / Delete  
+- [ ] Select-all (current page only)  
 - [ ] Mini dashboard counters  
-- [ ] Bulk archive action  
-- [ ] Better empty states  
-- [x] Admin UI: show Archived badge in list  
-- [x] Admin UI: show archived_at timestamp in details
-- [x] Admin: enforce archive-before-delete (backend guardrail)
-- [x] Admin: idempotent tombstone delete
-- [x] Admin: log delete_blocked_not_archived
-- [x] Admin: bulk actions (archive / unarchive / restore / delete) – current page only  
-- [x] Admin: CSRF-safe POST for all admin request actions
-
-- [x] Navbar: fix logout (GET+POST fallback, no 405)
-- [x] Navbar: fix profile dead link
-- [x] UI: persistent theme toggle (dark mode)
+- [ ] Better empty states (no-results, no-live, no-archived)  
+- [ ] Keyboard shortcuts (J/K, Esc, / to focus search)
 
 ---
 
@@ -97,3 +99,12 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - KPI: `/pilot`, `/api/pilot/metrics`, `/api/pilot-kpi` ignore deleted requests (`deleted_at IS NULL`)
 - UI: Global navbar search removed for MVP clarity; admin list search controls handle scoped queries
 Next: Submit request UX polish OR admin pro features (bulk assign / SLA)
+
+## 2026-01-25 — Admin UX v1 shipped
+
+- Archive / Unarchive / Delete workflow completed (list + details + audit)
+- Search by name/title added (case-insensitive + highlight)
+- Smart empty state for zero results (suggest archived)
+- Bulk select (current page only)
+- Navbar fixes (logout POST+GET fallback, profile link)
+- UI polish (badges, timestamps, dark-highlighted matches)

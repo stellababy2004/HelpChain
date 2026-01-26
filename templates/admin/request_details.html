@@ -360,11 +360,12 @@
           <hr class="my-3" />
 
           <form method="post" action="{{ url_for('admin.admin_request_add_note', req_id=req.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <textarea
               name="note"
               class="form-control"
               rows="4"
-              maxlength="2000"
+              maxlength="1000"
               placeholder="Example: Called the requester, waiting for documents, next follow-up tomorrow..."
             ></textarea>
 
