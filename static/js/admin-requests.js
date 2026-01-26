@@ -125,8 +125,17 @@
   }
 
   rowChecks.forEach(c => {
-    c.addEventListener("click", (e) => e.stopPropagation());
-    c.addEventListener("change", updateBulkUI);
+    c.addEventListener("mousedown", (e) => e.stopPropagation(), true);
+    c.addEventListener("click", (e) => e.stopPropagation(), true);
+    c.addEventListener("change", (e) => {
+      e.stopPropagation();
+      updateBulkUI();
+    }, true);
+  });
+
+  document.querySelectorAll(".hc-bulk-cell").forEach(td => {
+    td.addEventListener("click", (e) => e.stopPropagation(), true);
+    td.addEventListener("mousedown", (e) => e.stopPropagation(), true);
   });
 
   if (selectAllPage) {
