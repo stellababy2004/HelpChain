@@ -27,12 +27,14 @@
 
     <style>
       :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --volunteer-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --light-bg: #f8f9fa;
+        --primary-gradient: linear-gradient(135deg, #6fa8ff 0%, #a8c5ff 100%);
+        --secondary-gradient: linear-gradient(135deg, #f5b7ff 0%, #ffc3a0 100%);
+        --success-gradient: linear-gradient(135deg, #60a5fa 0%, #a5f3fc 100%);
+        --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
+        --volunteer-gradient: linear-gradient(135deg, #60a5fa 0%, #a5f3fc 100%);
+        --vol-hero-gradient: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 55%, #67e8f9 100%);
+        --vol-card-border: #e2e8f0;
+        --light-bg: #f7fafc;
         --dark-bg: #1a1a1a;
         --dark-card: #2d2d2d;
         --text-light: #ffffff;
@@ -66,6 +68,234 @@
         min-height: 100vh;
         margin: 0;
         padding: 20px;
+      }
+
+      /* New volunteer landing (prepend, keeps old page intact) */
+      .vol-landing {
+        margin-top: 84px;
+        padding: 32px 0 12px;
+        background: var(--light-bg);
+        position: relative;
+        z-index: 2;
+      }
+
+      .vol-hero-card {
+        background: var(--vol-hero-gradient);
+        border-radius: 18px;
+        padding: 32px;
+        color: #e2e8f0;
+        box-shadow: 0 14px 38px rgba(15, 23, 42, 0.28);
+        position: relative;
+        z-index: 3;
+        overflow: hidden;
+      }
+
+      .vol-hero-card::after {
+        content: "";
+        position: absolute;
+        inset: 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        pointer-events: none;
+      }
+
+      .vol-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: #c7d2fe;
+        margin-bottom: 10px;
+      }
+
+      .vol-hero-title {
+        font-size: 2.25rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: #fff;
+        margin-bottom: 12px;
+      }
+
+      .vol-hero-sub {
+        font-size: 1.05rem;
+        max-width: 680px;
+        color: #e2e8f0;
+        opacity: 0.92;
+      }
+
+      .vol-cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .vol-cta-primary,
+      .vol-cta-secondary {
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        border: 2px solid transparent;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        pointer-events: auto;
+      }
+
+      .vol-cta-primary {
+        background: var(--volunteer-gradient);
+        color: #fff;
+        box-shadow: 0 10px 30px rgba(14, 165, 233, 0.45);
+      }
+
+      .vol-cta-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 34px rgba(14, 165, 233, 0.55);
+      }
+
+      .vol-cta-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        color: #e2e8f0;
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+
+      .vol-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .vol-metric {
+        padding: 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+      }
+
+      .vol-metric strong {
+        display: block;
+        font-size: 1.35rem;
+        color: #fff;
+      }
+
+      .vol-section {
+        margin-top: 26px;
+      }
+
+      .vol-section h3 {
+        font-weight: 800;
+        font-size: 1.2rem;
+        margin-bottom: 14px;
+        color: var(--text-dark);
+      }
+
+      .vol-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+      }
+
+      .vol-card {
+        border: 1px solid var(--vol-card-border);
+        border-radius: 14px;
+        padding: 16px;
+        background: #fff;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+      }
+
+      .vol-card h4 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #0f172a;
+      }
+
+      .vol-card p {
+        margin: 0;
+        color: #475569;
+        font-size: 0.95rem;
+      }
+
+      .vol-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 10px;
+      }
+
+      .vol-list li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px;
+        color: #0f172a;
+      }
+
+      .vol-list .icon {
+        color: #0ea5e9;
+        margin-top: 2px;
+      }
+
+      .hc-expectations {
+        margin-top: 2rem;
+        padding: 1.25rem;
+        background: rgba(255, 255, 255, 0.04);
+        border-left: 3px solid #6ea8fe;
+        border-radius: 8px;
+      }
+
+      .hc-expectations p {
+        margin-bottom: 0.6rem;
+        line-height: 1.5;
+      }
+
+      .hc-expectations .muted {
+        opacity: 0.8;
+        font-size: 0.95em;
+      }
+
+      .vol-final-cta {
+        margin-top: 18px;
+        padding: 18px;
+        border-radius: 14px;
+        background: linear-gradient(120deg, #0ea5e9, #22d3ee);
+        color: #fff;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        justify-content: space-between;
+        box-shadow: 0 12px 28px rgba(14, 165, 233, 0.35);
+        position: relative;
+        z-index: 3;
+      }
+
+      .vol-final-cta strong {
+        font-size: 1.05rem;
+      }
+
+      @media (max-width: 768px) {
+        .vol-landing {
+          margin-top: 70px;
+          padding: 20px 0 6px;
+        }
+
+        .vol-hero-card {
+          padding: 22px;
+        }
+
+        .vol-hero-title {
+          font-size: 1.85rem;
+        }
       }
 
       /* Navigation */
@@ -149,6 +379,18 @@
         position: relative;
         overflow: hidden;
         margin-top: 80px;
+        z-index: 1;
+      }
+
+      /* Ensure hero overlay never blocks clicks */
+      .volunteer-hero,
+      .volunteer-hero::before {
+        pointer-events: none;
+      }
+      .volunteer-hero a,
+      .volunteer-hero button,
+      .volunteer-hero .volunteer-welcome {
+        pointer-events: auto;
       }
 
       .volunteer-hero::before {
@@ -169,6 +411,7 @@
             transparent 50%
           );
         animation: float 12s ease-in-out infinite;
+        pointer-events: none;
       }
 
       @keyframes float {
@@ -631,6 +874,154 @@
     <div class="loading-spinner" id="loadingSpinner">
       <div class="spinner"></div>
     </div>
+
+    <!-- New volunteer landing (prepended) -->
+    <section class="vol-landing">
+      <div class="container">
+        <div class="vol-hero-card">
+          <div class="vol-eyebrow">
+            <i class="fas fa-shield-alt"></i>
+            Спокойствие за доброволци и хора в нужда
+          </div>
+          <h1 class="vol-hero-title">
+            Помагаш, когато можеш. По начин, който избираш.
+          </h1>
+          <p class="vol-hero-sub">
+            HelpChain свързва хора в нужда с доброволци – без натиск, без бюрокрация и с ясни граници. Винаги решаваш ти дали, кога и как да се включиш.
+          </p>
+          <div class="vol-cta-row">
+            <a class="vol-cta-primary" href="#volunteerForm">
+              <i class="fas fa-hand-holding-heart me-2"></i>Виж как можеш да помогнеш
+            </a>
+            <a class="vol-cta-secondary" href="{{ safe_url_for('faq') }}">
+              <i class="fas fa-circle-question me-2"></i>Как работи HelpChain →
+            </a>
+          </div>
+          <div class="vol-metrics">
+            <div class="vol-metric">
+              <strong>12 месеца</strong>
+              последователна подкрепа в общност.
+            </div>
+            <div class="vol-metric">
+              <strong>94%</strong>
+              заявки получават отговор от доброволец.
+            </div>
+            <div class="vol-metric">
+              <strong>4.9/5</strong>
+              оценка на разговора с доброволци.
+            </div>
+          </div>
+        </div>
+
+        <div class="vol-section">
+          <h3><i class="fas fa-sparkles me-2"></i>Какво означава да си доброволец тук</h3>
+          <div class="vol-card-grid">
+            <div class="vol-card">
+              <h4><i class="fas fa-route me-2 text-info"></i>Виждаш заявки наблизо</h4>
+              <p>Получаваш заявки според локация и вид помощ. Нищо задължително.</p>
+            </div>
+            <div class="vol-card">
+              <h4><i class="fas fa-hand-holding-heart me-2 text-success"></i>Избираш дали и кога</h4>
+              <p>Ти решаваш дали да поемеш заявка и кога да се включиш.</p>
+            </div>
+            <div class="vol-card">
+              <h4><i class="fas fa-phone-volume me-2 text-primary"></i>Свързваш се директно</h4>
+              <p>Говориш с човека директно (телефон или имейл) – без посредници и забавяне.</p>
+            </div>
+            <div class="vol-card">
+              <h4><i class="fas fa-door-open me-2 text-warning"></i>Можеш да откажеш</h4>
+              <p>Отказът е окей. Няма санкции, няма задължения, няма чувство за вина.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="vol-section">
+          <h3><i class="fas fa-list-check me-2"></i>Какво не очакваме от теб</h3>
+          <ul class="vol-list">
+            <li>
+              <span class="icon"><i class="fas fa-ban"></i></span>
+              Да поемаш рискове или да заместваш спешни служби.
+            </li>
+            <li>
+              <span class="icon"><i class="fas fa-shield-alt"></i></span>
+              Да помагаш, ако не се чувстваш комфортно или безопасно.
+            </li>
+            <li>
+              <span class="icon"><i class="fas fa-hand-paper"></i></span>
+              Да приемаш задължителни ангажименти – отказът винаги е приемлив.
+            </li>
+          </ul>
+        </div>
+
+        <div class="vol-section">
+          <h3><i class="fas fa-id-card-clip me-2"></i>Лека проверка за повече спокойствие</h3>
+          <div class="vol-card-grid">
+            <div class="vol-card">
+              <h4>1. Лека стъпка</h4>
+              <p>За да пазим всички в безопасност, някои доброволци минават лека проверка (напр. имейл или телефон). Това помага на хората да се чувстват по-спокойни.</p>
+            </div>
+            <div class="vol-card">
+              <h4>2. Ясни граници</h4>
+              <p>Избираш кога и колко да помагаш. Няма задължителен график.</p>
+            </div>
+            <div class="vol-card">
+              <h4>3. Директна връзка</h4>
+              <p>Свързваш се директно с човека и решавате заедно какво е удобно и безопасно.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="vol-final-cta">
+          <strong><i class="fas fa-paper-plane me-2"></i>Можеш да разгледаш без ангажимент. Регистрацията не означава задължение.</strong>
+          <a class="vol-cta-primary" href="#volunteerForm">Виж как можеш да помогнеш</a>
+        </div>
+
+        <p class="text-muted mt-2" style="font-size: 0.95rem;">
+          Можеш да разгледаш без ангажимент. Регистрацията не означава задължение.
+        </p>
+
+        <div class="hc-expectations">
+          <h3 class="h5 mb-3">Как работи свързването</h3>
+          <p>Като доброволец виждаш заявки, към които можеш да откликнеш. Не си задължен/а да отговаряш на всички.</p>
+          <p>Ако решиш да се свържеш, вие заедно уточнявате как и дали да помогнеш.</p>
+          <p class="muted">Доброволчеството не означава 24/7 наличност и не замества професионални услуги.</p>
+        </div>
+
+        <div class="hc-expectations">
+          <h3 class="h5 mb-3">Как се намира подходящият човек</h3>
+          <p>Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други – по-бавно. Това зависи от наличността на хората, не от важността на проблема.</p>
+          <p class="muted">Така очакванията са ясни: има човешки фактор, а не магия или гаранции.</p>
+        </div>
+
+        <div class="hc-expectations">
+          <h3 class="h5 mb-3">Какво може да очакваш от доброволеца</h3>
+          <p>✔️ Човешки отговор</p>
+          <p>✔️ Желание да помогне, когато може</p>
+          <p>✔️ Честност за това какво може и какво не</p>
+          <p class="muted">Доброволците не са на разположение 24/7 и не заместват професионални услуги.</p>
+        </div>
+
+        <div class="hc-expectations">
+          <h3 class="h5 mb-3">Какво помага нещата да се случат по-лесно</h3>
+          <p>✔️ Ясно описание на ситуацията</p>
+          <p>✔️ Коректен контакт</p>
+          <p>✔️ Уважителен тон</p>
+          <p class="muted">Ако нуждата ти се промени или вече си получил/а помощ, можеш да затвориш заявката по всяко време.</p>
+        </div>
+
+        <div class="hc-expectations">
+          <h3 class="h5 mb-3">Време за отговор</h3>
+          <p>Няма фиксирано време за отговор. Някои заявки получават реакция в същия ден, други – след няколко дни.</p>
+          <p class="muted">Ако заявката е спешна или опасна, потърси местните спешни служби.</p>
+        </div>
+
+        <div class="hc-expectations">
+          <p class="muted mb-0">
+            Понякога една заявка води до помощ. Понякога – до разговор. И понякога – просто до това някой да те чуе. Всичко това има стойност.
+          </p>
+        </div>
+      </div>
+    </section>
 
     <!-- Volunteer Hero -->
     <section class="volunteer-hero">
