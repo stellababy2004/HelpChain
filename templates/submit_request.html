@@ -1,20 +1,133 @@
 {% extends "base.html" %}
 
-{% block title %}Изпрати заявка{% endblock %}
+{% block title %}Подайте заявка{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 760px;">
-  <div class="d-flex align-items-center justify-content-between mb-3">
+<style>
+  .hc-hero {
+    background: linear-gradient(120deg, #0f172a, #0ea5e9);
+    color: #e2e8f0;
+    border-radius: 18px;
+    padding: 20px 18px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22);
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .hc-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: #c7d2fe;
+  }
+  .hc-title {
+    font-weight: 800;
+    font-size: 1.6rem;
+    margin: 8px 0 6px;
+    color: #fff;
+  }
+  .hc-subtitle {
+    margin: 0 0 10px;
+    color: #e2e8f0;
+    opacity: 0.92;
+  }
+  .hc-trust {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .hc-trust li {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .hc-badge {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 14px;
+    border-radius: 12px;
+    color: #f8fafc;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .hc-inline-note {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+  .hc-consent .form-check-label {
+    font-size: 0.95rem;
+  }
+  .hc-expectations {
+    margin-top: 2rem;
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-left: 3px solid #6ea8fe;
+    border-radius: 8px;
+  }
+  .hc-expectations p {
+    margin-bottom: 0.6rem;
+    line-height: 1.5;
+  }
+  .hc-expectations .muted {
+    opacity: 0.8;
+    font-size: 0.95em;
+  }
+  @media (max-width: 768px) {
+    .hc-hero {
+      flex-direction: column;
+      gap: 12px;
+    }
+    .hc-title {
+      font-size: 1.4rem;
+    }
+    .hc-trust li {
+      width: 100%;
+    }
+  }
+</style>
+<div class="container py-4" style="max-width: 780px;">
+  <div class="hc-hero mb-3">
     <div>
-      <h1 class="h3 mb-1">Изпрати заявка за помощ</h1>
-      <p class="text-muted mb-0">Опиши ситуацията. Ние ще я насочим към подходящи доброволци.</p>
+      <div class="hc-eyebrow">
+        <i class="fas fa-life-ring"></i> Нужда от помощ
+      </div>
+      <h1 class="hc-title">Изпратете заявка до доброволците</h1>
+      <p class="hc-subtitle">
+        Опишете какво е нужно и къде се намирате. Най-близките ни проверени доброволци ще откликнат до 24 часа.
+      </p>
+      <ul class="hc-trust" aria-label="{{ _('Trust signals') }}">
+        <li><i class="fas fa-shield-heart"></i> {{ _('Verified volunteers only') }}</li>
+        <li><i class="fas fa-user-clock"></i> {{ _('Fast matching, no bureaucracy') }}</li>
+        <li><i class="fas fa-lock"></i> {{ _('We keep your data private') }}</li>
+      </ul>
     </div>
+    <div class="hc-badge">
+      <i class="fas fa-hourglass-half me-1"></i> {{ _('~1 minute') }}
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end mb-3">
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">
-      ← Начало
+      ↩ Начало
     </a>
   </div>
 
-  {# Flash messages (в твоя код: flash + redirect) #}
+  {# Flash messages #}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, msg in messages %}
@@ -29,11 +142,11 @@
     <div class="card-body p-3 p-md-4">
 
       <div class="mb-3">
-        <div class="small text-muted">Примери:</div>
+        <div class="small text-muted">Подходящо за:</div>
         <div class="d-flex flex-wrap gap-2 mt-2">
-          <span class="badge text-bg-light border">❤️ Медицинска помощ</span>
-          <span class="badge text-bg-light border">👥 Социална подкрепа</span>
-          <span class="badge text-bg-light border">🛠️ Технически проблем</span>
+          <span class="badge text-bg-light border">Хора с ограничена подвижност</span>
+          <span class="badge text-bg-light border">Самотни възрастни хора</span>
+          <span class="badge text-bg-light border">Семейства със спешни нужди</span>
         </div>
       </div>
 
@@ -47,18 +160,19 @@
           </div>
 
           <ul class="hc-form-trust" aria-label="{{ _('What happens next') }}">
-            <li>✅ {{ _('A verified volunteer will contact you') }}</li>
-            <li>🔒 {{ _('We never sell your data') }}</li>
-            <li>⚡ {{ _('Fast matching — no bureaucracy') }}</li>
+            <li>✓ {{ _('A verified volunteer will contact you') }}</li>
+            <li>★ {{ _('We never sell your data') }}</li>
+            <li>⚡ {{ _('Fast matching - no bureaucracy') }}</li>
           </ul>
         </div>
+
         {# Honeypot (backend очаква "website") #}
         <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
           <label>Website</label>
           <input type="text" name="website" tabindex="-1" autocomplete="off">
         </div>
 
-        {# Ако имаш CSRF (Flask-WTF), остави това. Ако не — махни го спокойно. #}
+        {# Ако има CSRF (Flask-WTF), оставяме го. Ако не - нищо не се чупи. #}
         {% if csrf_token is defined %}
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% endif %}
@@ -66,27 +180,28 @@
         <div class="row g-3">
 
           <div class="col-12">
-            <label class="form-label">Вашето име <span class="text-danger">*</span></label>
+            <label class="form-label">Вашите имена <span class="text-danger">*</span></label>
             <input
               type="text"
               name="name"
               class="form-control"
               value="{{ request.form.get('name','') }}"
-              placeholder="Напр. Мария Иванова"
+              placeholder="Име и фамилия"
               required minlength="2"
             >
-            <div class="form-text">Поне 2 символа.</div>
+            <div class="form-text">Минимум 2 символа.</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">Телефон</label>
+            <label class="form-label">Телефон за връзка</label>
             <input
               type="tel"
               name="phone"
               class="form-control"
               value="{{ request.form.get('phone','') }}"
-              placeholder="+359… / +33…"
+              placeholder="+359 88 123 4567"
             >
+            <div class="form-text">Използваме го само за координация.</div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -98,25 +213,26 @@
               value="{{ request.form.get('email','') }}"
               placeholder="name@example.com"
             >
+            <div class="form-text">По избор, за да ви пишем писмено.</div>
           </div>
 
           <div class="col-12">
-            <div class="alert alert-info py-2 mb-0">
-              <span class="small">ℹ️ Въведи поне <b>телефон</b> или <b>имейл</b>, за да можем да се свържем.</span>
+            <div class="hc-inline-note">
+              <span class="small">Ако подавате от името на <b>близък</b> или <b>съсед</b>, го уточнете в описанието.</span>
             </div>
           </div>
 
-          <div class="col-12">
-            <label class="form-label">Категория</label>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Категория на нуждата</label>
             <select name="category" class="form-select">
-              <option value="">Избери…</option>
+              <option value="">Изберете тип нужда</option>
               <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>Медицинска помощ</option>
               <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>Социална подкрепа</option>
-              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>Технически проблем</option>
+              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>Техническа помощ</option>
               <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>Административна помощ</option>
               <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>Друго</option>
             </select>
-            <div class="form-text">Ако не избереш, системата ще запише “general”.</div>
+            <div class="form-text">Ако се колебаете, оставете "Друго".</div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -127,7 +243,7 @@
               <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>Спешна</option>
               <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>Критична</option>
             </select>
-            <div class="form-text">Това влияе на приоритета (low/medium/high).</div>
+            <div class="form-text">Помага ни да приоритизираме.</div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -137,37 +253,54 @@
               name="title"
               class="form-control"
               value="{{ request.form.get('title','') }}"
-              placeholder="Напр. Нужен придружител до лекар"
+              placeholder="Пример: Доставка на лекарства"
             >
-            <div class="form-text">Ако оставиш празно, системата ще го попълни автоматично.</div>
+            <div class="form-text">Кратка насока за доброволците.</div>
           </div>
 
-          <div class="col-12">
-            <label class="form-label">Локация / адрес</label>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Адрес / локация</label>
             <input
               type="text"
               name="location_text"
               class="form-control"
               value="{{ request.form.get('location_text','') }}"
-              placeholder="Град, квартал (без точен адрес, ако не е нужно)"
+              placeholder="Град, квартал или точен адрес"
             >
+            <div class="form-text">Достатъчен е кварталът, ако не искате точен адрес.</div>
           </div>
 
           <div class="col-12">
-            <label class="form-label">Описание <span class="text-danger">*</span></label>
+            <label class="form-label">Какво ви трябва? <span class="text-danger">*</span></label>
             <textarea
               name="description"
               class="form-control"
               rows="5"
               required minlength="10"
-              placeholder="Напиши с 2–3 изречения какво се случва и каква помощ търсиш."
+              placeholder="Опишете в 2-3 изречения какво е нужно, за кого е и кога е удобно."
             >{{ request.form.get('description','') }}</textarea>
             <div class="form-text">Минимум 10 символа.</div>
           </div>
 
+          <div class="col-12 hc-consent">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="consent_terms" name="consent_terms" required>
+              <label class="form-check-label" for="consent_terms">
+                Съгласен/на съм с <a href="{{ url_for('main.terms') }}" target="_blank">Условията за ползване</a> и <a href="{{ url_for('main.privacy') }}" target="_blank">Политиката за поверителност</a>.
+              </label>
+            </div>
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" id="consent_share" name="consent_share" required>
+              <label class="form-check-label" for="consent_share">
+                Разрешавам да споделите описаното с подбрани доброволци, за да получа съдействие.
+              </label>
+            </div>
+            <div class="form-text">Можете да оттеглите съгласието си по всяко време.</div>
+          </div>
+
           <div class="col-12 d-flex gap-2 justify-content-end pt-2">
             <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">Отказ</a>
-            <button type="submit" class="btn btn-primary">Изпрати заявка</button>
+            <button type="submit" class="btn btn-primary">Изпрати заявката</button>
           </div>
 
         </div>
@@ -188,8 +321,16 @@
     </div>
   </div>
 
-  {# място за floating елементи (напр. чат бутон) #}
+  {# spacer for floating CTA #}
   <div style="height: 84px;"></div>
+
+  <div class="hc-expectations">
+    <h3 class="h5 mb-3">Как се намира подходящият човек</h3>
+    <p>Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други – по-бавно. Това зависи от наличността на хората, не от важността на проблема.</p>
+    <hr class="my-3">
+    <p>Когато доброволец се интересува от твоята заявка, той може да се свърже с теб. От този момент вие решавате заедно дали и как да продължите. HelpChain улеснява връзката — решенията са между хората.</p>
+    <p class="muted"><em>Няма гарантирано време за отговор. При спешни или опасни ситуации се обърни към местните спешни служби.</em></p>
+  </div>
 </div>
 {% endblock %}
 
@@ -197,3 +338,110 @@
   {{ super() }}
   <script src="{{ url_lang('static', filename='js/submit_request.js') }}"></script>
 {% endblock %}
+
+<style>
+/* =========================
+   Warm Trust – Submit Request
+   Scoped & Safe
+   ========================= */
+
+.submit-wrap,
+.submit-card,
+.form-card {
+  background: #fafbfe;
+}
+
+.submit-header,
+.submit-hero {
+  background: linear-gradient(135deg, #0f4c81 0%, #1e6fb8 100%);
+  color: #ffffff;
+}
+
+.submit-header .trust-pill,
+.submit-hero .trust-pill {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+/* Trust bullets */
+.trust-list li,
+.form-trust li {
+  background: #e8f5ee;
+  color: #1f4d3a;
+  border-radius: 10px;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.trust-list li:hover,
+.form-trust li:hover {
+  transform: translateY(-1px);
+  background: #dcf3ea;
+}
+
+/* Inputs – softer, more human */
+input,
+select,
+textarea {
+  border-radius: 10px;
+  border: 1px solid #d7deea;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #2fa4a9;
+  box-shadow: 0 0 0 3px rgba(47, 164, 169, 0.15);
+}
+
+/* Consent checkboxes */
+.form-consent label {
+  color: #334155;
+  cursor: pointer;
+}
+
+.form-consent a {
+  color: #2fa4a9;
+  font-weight: 500;
+}
+
+/* Consent area */
+.form-consent {
+  margin-top: 1.2rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed #dbe3f0;
+}
+
+/* Primary CTA */
+button[type="submit"],
+.btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  border-radius: 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+button[type="submit"]:hover,
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.25);
+}
+
+/* Commit moment */
+button[type="submit"]:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+}
+
+/* Secondary / cancel */
+.btn-secondary {
+  border-radius: 14px;
+}
+
+/* Small reassurance text */
+.form-help,
+.form-note {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+</style>

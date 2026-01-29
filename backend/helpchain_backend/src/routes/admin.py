@@ -31,6 +31,17 @@ from backend.helpchain_backend.src.utils.mfa import (
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")  # single templates path via app.py
 
+
+def admin_required_404():
+    if not (current_user.is_authenticated and getattr(current_user, "is_admin", False)):
+        abort(404)
+
+
+def _is_local_request() -> bool:
+    """True when request comes from localhost (IPv4/IPv6)."""
+    return request.remote_addr in ("127.0.0.1", "::1")
+
+
 def is_safe_url(target: str) -> bool:
     if not target:
         return False
@@ -42,11 +53,9 @@ def is_safe_url(target: str) -> bool:
 def admin_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
-        if not session.get("admin_logged_in"):
-            nxt = request.full_path if request.query_string else request.path
-            if not is_safe_url(nxt):
-                nxt = url_for("admin.admin_requests")
-            return redirect(url_for("admin.admin_login", next=nxt))
+        # Harden: hide admin surface from non-admins (404 instead of redirect)
+        if not (current_user.is_authenticated and getattr(current_user, "is_admin", False)):
+            abort(404)
         return view_func(*args, **kwargs)
     return wrapper
 
@@ -167,8 +176,6 @@ def can_edit_request(req_obj, user) -> bool:
     return owner_id is not None and owner_id == user_id
 
 
-
-
 def is_stale(req_obj, minutes: int = 30) -> bool:
     """Return True if owned_at is older than `minutes`."""
     owned_at = getattr(req_obj, "owned_at", None)
@@ -185,6 +192,7 @@ def enforce_admin_mfa():
     if not current_app.config.get("MFA_ENABLED", False):
         return None
     allowed = {
+        "admin.ops_login",
         "admin.admin_login",
         "admin.admin_logout",
         "admin.admin_mfa_setup",
@@ -212,6 +220,7 @@ from flask import current_app
 @admin_bp.route("/emergency-requests", methods=["GET"])
 @admin_required
 def emergency_requests():
+    admin_required_404()
     # Admin guard (same as admin_dashboard)
     if not getattr(current_user, "is_admin", False):
         flash("Нямате достъп.", "error")
@@ -370,6 +379,7 @@ def api_volunteers():
 @admin_bp.route("/admin_volunteers/<int:id>")
 @admin_required
 def volunteer_detail(id):
+    admin_required_404()
     if not current_user.is_admin:
         flash("Нямате достъп.", "error")
         return redirect(url_for("main.index"))
@@ -381,14 +391,14 @@ def volunteer_detail(id):
     return render_template("volunteer_detail.html", volunteer=volunteer)
 
 
-@admin_bp.route("/login", methods=["GET", "POST"])
-def admin_login():
+@admin_bp.route("/ops/login", methods=["GET", "POST"], endpoint="ops_login")
+def admin_ops_login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         user = AdminUser.query.filter_by(username=username).first()
         if not user:
             flash("Admin user not found in database.", "danger")
-            return redirect(url_for("admin.admin_login"))
+            return redirect(url_for("admin.ops_login"))
         login_user(user, remember=False)
         session.pop(Config.MFA_SESSION_KEY, None)
         session.pop("mfa_required", None)
@@ -403,8 +413,20 @@ def admin_login():
         return redirect(request.args.get("next") or url_for("admin.admin_requests"))
     return render_template("admin/login.html")
 
+
+@admin_bp.route("/login", methods=["GET", "POST"])
+def admin_login():
+    # Legacy path: allow localhost (dev) to reach the real login; otherwise 404
+    if _is_local_request() or current_app.debug:
+        nxt = request.args.get("next")
+        if nxt:
+            return redirect(url_for("admin.ops_login", next=nxt))
+        return redirect(url_for("admin.ops_login"))
+    abort(404)
+
 @admin_bp.get("/logout")
 def admin_logout():
+    admin_required_404()
     _mfa_ok_clear()
     _mfa_attempt_reset()
     session.pop("mfa_required", None)
@@ -413,7 +435,7 @@ def admin_logout():
     session.pop("admin_logged_in", None)
     logout_user()
     flash("Logged out.", "info")
-    return redirect(url_for("admin.admin_login"))
+    return redirect(url_for("admin.ops_login"))
 
 
 MFA_PENDING_SECRET_KEY = "mfa_pending_secret"
@@ -423,6 +445,7 @@ MFA_SESSION_KEY = "mfa_ok"
 @admin_bp.route("/mfa/setup", methods=["GET", "POST"])
 @login_required
 def admin_mfa_setup():
+    admin_required_404()
     if getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None):
         flash("MFA вече е активиран.", "info")
         return redirect(url_for("admin.admin_mfa_verify"))
@@ -465,6 +488,7 @@ def admin_mfa_setup():
 @admin_bp.route("/mfa/verify", methods=["GET", "POST"])
 @login_required
 def admin_mfa_verify():
+    admin_required_404()
     if not current_app.config.get("MFA_ENABLED", False):
         abort(404)
 
@@ -522,6 +546,7 @@ def admin_mfa_verify():
 @admin_bp.route("/mfa/backup-codes", methods=["GET", "POST"])
 @login_required
 def admin_mfa_backup_codes():
+    admin_required_404()
     if not current_app.config.get("MFA_ENABLED", False):
         abort(404)
     if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
@@ -548,14 +573,15 @@ def admin_mfa_backup_codes():
 @admin_bp.route("/2fa", methods=["GET", "POST"])
 @admin_required
 def admin_2fa():
+    admin_required_404()
     """2FA верификация за админ"""
     user_id = session.get("pending_admin_user_id")
     if not user_id:
-        return redirect(url_for("admin.admin_login"))
+        return redirect(url_for("admin.ops_login"))
 
     admin_user = db.session.get(AdminUser, user_id)
     if not admin_user:
-        return redirect(url_for("admin.admin_login"))
+        return redirect(url_for("admin.ops_login"))
 
     if request.method == "POST":
         token = request.form.get("token")
@@ -574,6 +600,7 @@ def admin_2fa():
 @admin_bp.route("/2fa/setup", methods=["GET", "POST"])
 @admin_required
 def admin_2fa_setup():
+    admin_required_404()
     """Настройка на 2FA за админ"""
     if not isinstance(current_user, AdminUser):
         flash("Нямате достъп.", "error")
@@ -595,6 +622,7 @@ def admin_2fa_setup():
 @admin_bp.route("/2fa/disable", methods=["POST"])
 @admin_required
 def admin_2fa_disable():
+    admin_required_404()
     """Деактивиране на 2FA за админ"""
     if not isinstance(current_user, AdminUser):
         flash("Нямате достъп.", "error")
@@ -608,6 +636,7 @@ def admin_2fa_disable():
 @admin_bp.get("/api/dashboard")
 @login_required
 def admin_api_dashboard():
+    admin_required_404()
     """Session-based dashboard data for admin UI (bypass JWT)."""
     if not getattr(current_user, "is_admin", False):
         return jsonify({"error": "forbidden"}), 403
@@ -679,6 +708,7 @@ def admin_api_dashboard():
 @admin_bp.route("/")
 @admin_required
 def admin_dashboard():
+    admin_required_404()
     """Админ панел"""
 
     import logging
@@ -898,6 +928,7 @@ def admin_dashboard():
 @admin_bp.route("/volunteers", methods=["GET"])
 @admin_required
 def admin_volunteers():
+    admin_required_404()
     """Управление на доброволци"""
 
     import logging
@@ -916,12 +947,14 @@ def admin_volunteers():
 @admin_bp.route("/admin_volunteers", methods=["GET"])
 @admin_required
 def admin_volunteers_compat():
+    admin_required_404()
     return redirect(url_for("admin.admin_volunteers"), code=302)
 
 
 @admin_bp.route("/admin_volunteers/add", methods=["GET", "POST"])
 @admin_required
 def add_volunteer():
+    admin_required_404()
     """Добавяне на доброволец"""
     if not current_user.is_admin:
         flash("Нямате достъп.", "error")
@@ -946,6 +979,7 @@ def add_volunteer():
 @admin_bp.route("/delete_volunteer/<int:id>", methods=["POST"])
 @admin_required
 def delete_volunteer(id):
+    admin_required_404()
     """Изтриване на доброволец"""
     if not current_user.is_admin:
         flash("Нямате достъп.", "error")
@@ -965,6 +999,7 @@ def delete_volunteer(id):
 @admin_bp.route("/admin_volunteers/edit/<int:id>", methods=["GET", "POST"])
 @admin_required
 def edit_volunteer(id):
+    admin_required_404()
     """Редактиране на доброволец"""
     if not current_user.is_admin:
         flash("Нямате достъп.", "error")
@@ -997,6 +1032,7 @@ def edit_volunteer(id):
 @admin_bp.route("/export_volunteers")
 @admin_required
 def export_volunteers():
+    admin_required_404()
     """Експорт на доброволци като CSV"""
     if not current_user.is_admin:
         flash("Нямате достъп.", "error")
@@ -1025,6 +1061,7 @@ def export_volunteers():
 @admin_bp.route("/update_status/<int:req_id>", methods=["POST"])
 @admin_required
 def update_status(req_id):
+    admin_required_404()
     """Обновяване статуса на заявка"""
     from flask import current_app
 
@@ -1124,6 +1161,7 @@ STATUS_LABELS = {
 @admin_bp.get("/requests")
 @login_required
 def admin_requests():
+    admin_required_404()
     STATUS_LABELS_BG = {
         "new": "Нови",
         "pending": "Чакащи",
@@ -1189,6 +1227,7 @@ def build_requests_query(base_query, request_args):
 @admin_bp.get("/requests/export.csv")
 @admin_required
 def admin_requests_export_csv():
+    admin_required_404()
     query, _status, _q = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
@@ -1227,6 +1266,7 @@ def admin_requests_export_csv():
 @admin_bp.get("/requests/export.xlsx")
 @admin_required
 def admin_requests_export_xlsx():
+    admin_required_404()
     try:
         from openpyxl import Workbook
     except Exception:
@@ -1277,6 +1317,7 @@ def admin_requests_export_xlsx():
 @admin_bp.get("/requests/export_anonymized.csv")
 @admin_required
 def admin_requests_export_csv_anonymized():
+    admin_required_404()
     query, _status, _q = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
@@ -1310,6 +1351,7 @@ def admin_requests_export_csv_anonymized():
 @admin_bp.get("/requests/export_anonymized.xlsx")
 @admin_required
 def admin_requests_export_xlsx_anonymized():
+    admin_required_404()
     try:
         from openpyxl import Workbook
     except Exception:
@@ -1355,6 +1397,7 @@ def admin_requests_export_xlsx_anonymized():
 @admin_bp.get("/requests/<int:req_id>")
 @admin_required
 def admin_request_details(req_id: int):
+    admin_required_404()
     req = (
         Request.query
         .options(joinedload(Request.logs), joinedload(Request.activities))

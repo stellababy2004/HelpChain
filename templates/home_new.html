@@ -102,7 +102,9 @@
       /* Animated Background */
       .hero-section {
         position: relative;
-        min-height: 100vh;
+        min-height: auto;
+        padding-top: 5rem;
+        padding-bottom: 4rem;
         background: var(--primary-gradient);
         overflow: hidden;
         display: flex;
@@ -156,6 +158,175 @@
         width: 100%;
         height: 100%;
         pointer-events: none;
+      }
+
+      /* Micro-polish overrides */
+      .hero-section {
+        min-height: auto !important;
+      }
+
+      :root {
+        --hc-text: #0f172a;
+        --hc-muted: #64748b;
+        --hc-bg: #f6f8fc;
+        --hc-card: #ffffff;
+        --hc-border: rgba(15, 23, 42, 0.08);
+        --hc-shadow: 0 14px 40px rgba(2, 6, 23, 0.08);
+      }
+
+      body {
+        color: var(--hc-text);
+        background: var(--hc-bg);
+      }
+
+      p {
+        color: var(--hc-muted);
+      }
+
+      h1,
+      h2,
+      h3 {
+        letter-spacing: -0.02em;
+      }
+
+      .hero-section h1 {
+        letter-spacing: -0.02em;
+      }
+
+      section h2 {
+        letter-spacing: -0.015em;
+      }
+
+      section {
+        padding-block: clamp(48px, 8vh, 96px);
+      }
+
+      .container {
+        max-width: 1120px;
+      }
+
+      .card,
+      .feature-card,
+      .hc-card {
+        background: var(--hc-card);
+        border: 1px solid var(--hc-border);
+        border-radius: 18px;
+        box-shadow: var(--hc-shadow);
+      }
+
+      .card {
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+      }
+
+      .card:hover,
+      .feature-card:hover,
+      .hc-card:hover {
+        transform: translateY(-2px);
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .card p,
+      .feature-card p,
+      .hc-card p {
+        color: var(--hc-muted);
+      }
+
+      .kpi {
+        font-weight: 600;
+      }
+
+      .kpi-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+      }
+
+      .hero-section h1 {
+        font-size: clamp(30px, 4vw, 56px);
+        line-height: 1.05;
+      }
+
+      .hero-section .subtitle,
+      .hero-section p {
+        font-size: clamp(14px, 1.35vw, 18px);
+      }
+
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 18px;
+      }
+
+      .kpi-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 16px;
+      }
+
+      .kpi-pill {
+        background: rgba(2, 132, 199, 0.08);
+        border: 1px solid rgba(2, 132, 199, 0.18);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 600;
+      }
+
+      .kpi-pill .kpi-num {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .trust-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 14px;
+        color: var(--hc-muted);
+      }
+
+      .trust-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(15, 23, 42, 0.04);
+        border: 1px solid var(--hc-border);
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+      }
+
+      .trust-line {
+        font-size: 0.9rem;
+        color: #6b7280;
+      }
+
+      .trust-line i {
+        opacity: 0.8;
+      }
+
+      footer {
+        margin-top: 64px;
+        border-top: 1px solid var(--hc-border);
+      }
+
+      footer .footer-bottom {
+        color: rgba(148, 163, 184, 0.9);
+        font-size: 13px;
+      }
+
+      @media (max-width: 640px) {
+        section {
+          padding-top: 3rem;
+          padding-bottom: 3rem;
+        }
+
+        .hero-section {
+          padding-top: 4rem;
+        }
       }
 
       .shape {
@@ -368,6 +539,18 @@
         animation: spin 1s linear infinite;
       }
 
+      /* ✅ Default: overlay must NOT block clicks */
+      #loadingOverlay {
+        pointer-events: none;
+        display: none;
+      }
+
+      /* Optional active state if used elsewhere */
+      #loadingOverlay.is-active {
+        display: block;
+        pointer-events: auto;
+      }
+
       @keyframes spin {
         0% {
           transform: rotate(0deg);
@@ -545,7 +728,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
+        <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="nav-menu">
             <li><a class="hc-navlink" href="#features">{{ _('Features') }}</a></li>
             <li>
@@ -555,13 +738,10 @@
               <a class="hc-navlink" href="{{ safe_url_for('faq') }}">{{ _('FAQ') }}</a>
             </li>
             <li>
-              <a class="hc-navlink" href="{{ safe_url_for('admin.admin_login') }}">{{ _('Login') }}</a>
+              <a class="hc-navlink" href="{{ safe_url_for('main.volunteer_login') }}">{{ _('Login') }}</a>
             </li>
             <li>
-              <a class="hc-navlink" href="{{ safe_url_for('volunteer_register') }}">{{ _('Register') }}</a>
-            </li>
-            <li>
-              <a class="hc-navlink nav-link-volunteer" href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}">{{ _('Volunteer login') }}</a>
+              <a class="hc-navlink" href="{{ safe_url_for('main.become_volunteer') }}">{{ _('Register') }}</a>
             </li>
             <li>
               <button
@@ -599,6 +779,11 @@
               <i class="fas fa-search" aria-hidden="true"></i>
             </button>
           </div>
+          <div class="text-center mt-4">
+            <a class="hc-btn hc-btn-primary focus-visible" href="{{ safe_url_for('main.submit_request') }}">
+              {{ _('Need help? Post a request — it takes less than a minute.') }}
+            </a>
+          </div>
         </div>
       </div>
     </nav>
@@ -614,7 +799,7 @@
       <div class="container">
         <div class="hero-content text-center">
           <h1 id="hero-title" class="hc-hero__title">{{ _('Welcome to HelpChain') }}</h1>
-          <p class="hc-hero__subtitle">{{ _('Together, we make helping others simple, fast and human.') }}</p>
+          <p class="hc-hero__subtitle">{{ _('Real people. Real help. Right now. Post a request in minutes. Get matched with trusted volunteers nearby.') }}</p>
           <div class="hc-trust-badges" aria-label="{{ _('Trust badges') }}">
             <span class="hc-badge-pill">
               <i class="fas fa-globe-europe" aria-hidden="true"></i>
@@ -635,56 +820,74 @@
               </a>
               <a
                 class="hc-btn hc-btn-secondary focus-visible"
-                href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}"
+                href="{{ safe_url_for('main.become_volunteer') }}"
               >
                 <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i>{{ _('Become a volunteer') }}
               </a>
           </div>
+          <p class="mt-2 small text-muted">{{ _('No account required to post a request') }}</p>
           <div class="hc-hero__counters hc-hero__stats hc-kpis" aria-label="{{ _('Key numbers') }}">
             <span class="hc-counter hc-stat">
-              <strong class="hc-stat__value" id="kpiVolunteers">&mdash;</strong>
+              <strong class="hc-stat__value kpi-value" id="kpiVolunteers" data-kpi="active_volunteers">0</strong>
               <span
-                class="hc-stat__label"
+                class="hc-stat__label kpi-label"
                 id="kpiVolunteersLabel"
                 data-singular="{{ _('volunteer') }}"
                 data-plural="{{ _('volunteers') }}"
-              >{{ _('volunteers') }}</span>
+              >Active volunteers</span>
             </span>
             <span class="hc-dot hc-stat__dot" aria-hidden="true">&bull;</span>
             <span class="hc-counter hc-stat">
-              <strong class="hc-stat__value" id="kpiClosed">&mdash;</strong>
+              <strong class="hc-stat__value kpi-value" id="kpiClosed" data-kpi="helped">0</strong>
               <span
-                class="hc-stat__label"
+                class="hc-stat__label kpi-label"
                 id="kpiHelpedLabel"
                 data-singular="{{ _('request helped') }}"
                 data-plural="{{ _('requests helped') }}"
-              >{{ _('requests helped') }}</span>
+              >People helped</span>
             </span>
             <span class="hc-dot hc-stat__dot" aria-hidden="true">&bull;</span>
             <span class="hc-counter hc-stat">
-              <strong class="hc-stat__value" id="kpiCountries">&mdash;</strong>
+              <strong class="hc-stat__value kpi-value" id="kpiCountries" data-kpi="countries">0</strong>
               <span
-                class="hc-stat__label"
+                class="hc-stat__label kpi-label"
                 id="kpiCountriesLabel"
                 data-singular="{{ _('country') }}"
                 data-plural="{{ _('countries') }}"
-              >{{ _('countries') }}</span>
+              >Countries active</span>
             </span>
           </div>
+          <p class="kpi-note">
+            Live impact from our active pilot — updated in real time
+          </p>
+          <div class="kpi-meta">
+            <span class="kpi-meta-label">Closed cases:</span>
+            <span data-kpi="closed">0</span>
+          </div>
+          <p class="trust-strip text-muted">
+            Pilot mode: HelpChain connects you with volunteers. For emergencies, contact local emergency services.
+          </p>
           <p class="hc-micro-cta">
             {{ _('Need help now?') }}
             <a href="{{ safe_url_for('main.submit_request') }}">{{ _('Request help') }}</a>
-            {{ _('— it takes less than a minute.') }}
+            {{ _('- it takes less than a minute.') }}
           </p>
           <div class="hc-trustline" role="note" aria-label="{{ _('Trust information') }}">
-            <span class="hc-trustline__item">{{ _('Pilot: France') }}</span>
+            <span class="hc-trustline__item kpi-status" data-kpi-status>{{ _('Pilot: France') }}</span>
             <span class="hc-trustline__dot" aria-hidden="true">&bull;</span>
             <span class="hc-trustline__item">{{ _('GDPR-friendly exports') }}</span>
             <span class="hc-trustline__dot" aria-hidden="true">&bull;</span>
+            <span class="kpi-status" data-kpi-status="live">● Live pilot</span>
             <a class="hc-trustline__link" href="{{ safe_url_for('main.pilot') }}">
               {{ _('Impact dashboard (read-only)') }}
             </a>
           </div>
+          <p class="privacy-promise text-muted mt-2">
+            Privacy-first: we collect only what’s needed to connect you with help. No ads. No resale. Your data stays in Europe.
+          </p>
+          <p class="pilot-clarity text-muted">
+            About this pilot: We’re validating the model in a limited number of cities. Some requests may take longer to match — thank you for your patience.
+          </p>
           <p class="hc-hero__microcopy">
             <i class="fas fa-lock" aria-hidden="true"></i> {{ _('We never sell your data.') }}
             <span class="hc-dot" aria-hidden="true">&bull;</span>
@@ -700,7 +903,7 @@
             <span class="hc-how-mini__icon" aria-hidden="true">📝</span>
             <div class="hc-how-mini__text">
               <div class="hc-how-mini__title">{{ _('Post a request') }}</div>
-              <div class="hc-how-mini__desc">{{ _('Tell us what you need in under a minute.') }}</div>
+              <div class="hc-how-mini__desc">{{ _('Tell us what you need — it takes less than a minute.') }}</div>
             </div>
           </div>
 
@@ -710,7 +913,7 @@
             <span class="hc-how-mini__icon" aria-hidden="true">🤝</span>
             <div class="hc-how-mini__text">
               <div class="hc-how-mini__title">{{ _('Get matched') }}</div>
-              <div class="hc-how-mini__desc">{{ _('A trusted volunteer takes ownership.') }}</div>
+              <div class="hc-how-mini__desc">{{ _('A verified volunteer takes ownership of your request.') }}</div>
             </div>
           </div>
 
@@ -720,7 +923,7 @@
             <span class="hc-how-mini__icon" aria-hidden="true">✅</span>
             <div class="hc-how-mini__text">
               <div class="hc-how-mini__title">{{ _('Receive help') }}</div>
-              <div class="hc-how-mini__desc">{{ _('Follow progress with full transparency.') }}</div>
+              <div class="hc-how-mini__desc">{{ _('Follow progress step by step, with full transparency.') }}</div>
             </div>
           </div>
         </div>
@@ -745,7 +948,7 @@
         <div class="hc-why__card">
           <div class="hc-why__icon"><i class="fas fa-shield-alt" aria-hidden="true"></i></div>
           <h3>{{ _('Privacy by design') }}</h3>
-          <p>{{ _('Minimal data. No ads. No resale. GDPR-friendly architecture.') }}</p>
+          <p>{{ _('Minimal data. No ads. No resale. GDPR-friendly by default.') }}</p>
         </div>
 
       </div>
@@ -768,7 +971,7 @@
             <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-shield-alt"></i></div>
             <h3 class="hc-card__title">{{ _('Safety first') }}</h3>
             <p class="hc-card__text">
-              {{ _('Your requests and messages are protected. We design HelpChain with security in mind.') }}
+              {{ _('Your requests and messages are protected by design.') }}
             </p>
           </article>
 
@@ -776,7 +979,7 @@
             <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-user-check"></i></div>
             <h3 class="hc-card__title">{{ _('Verified volunteers') }}</h3>
             <p class="hc-card__text">
-              {{ _('Volunteers can be verified to create trust and reduce abuse.') }}
+              {{ _('Verified volunteers to build trust and prevent abuse.') }}
             </p>
           </article>
 
@@ -784,9 +987,17 @@
             <div class="hc-card__icon" aria-hidden="true"><i class="fas fa-hand-holding-heart"></i></div>
             <h3 class="hc-card__title">{{ _('Human, fast, local') }}</h3>
             <p class="hc-card__text">
-              {{ _('We connect people nearby for quick, compassionate help — not bureaucracy.') }}
+              {{ _('Quick, compassionate help from people nearby — no bureaucracy.') }}
             </p>
           </article>
+        </div>
+
+        <div class="text-center mt-4">
+          <h3 class="mb-2">{{ _('Want to help someone today?') }}</h3>
+          <p class="text-muted mb-3">{{ _('Join verified volunteers and make a real impact in your community.') }}</p>
+          <a class="hc-btn hc-btn-secondary focus-visible" href="{{ safe_url_for('edit_volunteer', id=volunteer_id) }}">
+            <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i>{{ _('Become a volunteer') }}
+          </a>
         </div>
       </div>
     </section>
@@ -798,38 +1009,12 @@
       role="main"
       aria-label="{{ _('Main content') }}"
     >
-      <!-- Stats Section -->
-      <section class="stats-section">
-        <div class="container">
-          <div class="stats-grid">
-            <div class="stat-card-light">
-              <div class="stat-number-light" id="volunteersCount">
-                {{ volunteers_count }}
-              </div>
-              <div class="stat-label-light">{{ _('Active volunteers') }}</div>
-            </div>
-            <div class="stat-card-light">
-              <div class="stat-number-light" id="requestsCount">
-                {{ requests_count }}
-              </div>
-              <div class="stat-label-light">{{ _('People helped') }}</div>
-            </div>
-            <div class="stat-card-light">
-              <div class="stat-number-light" id="openRequestsCount">
-                {{ open_requests }}
-              </div>
-              <div class="stat-label-light">{{ _('Open requests') }}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <!-- Features Section -->
       <section class="features-section" id="features">
         <div class="container">
           <div class="text-center mb-5">
             <h2 class="h1 mb-3">{{ _('Why choose HelpChain?') }}</h2>
-            <p class="lead text-muted">{{ _('We offer a modern platform to connect people who need help with those who want to help.') }}</p>
+            <p class="lead text-muted">{{ _('HelpChain is built for real-life situations. When you need help, speed, trust and humanity matter.') }}</p>
           </div>
 
           <div class="features-grid">
@@ -838,7 +1023,7 @@
                 <i class="fas fa-bolt"></i>
               </div>
               <h3 class="feature-title-light">{{ _('Fast help') }}</h3>
-              <p class="feature-description-light">{{ _('Our platform connects people in need with volunteers in minutes, providing fast and effective help.') }}</p>
+              <p class="feature-description-light">{{ _('We connect people in need with volunteers in minutes — not days.') }}</p>
             </div>
 
             <div class="feature-card-light">
@@ -846,7 +1031,7 @@
                 <i class="fas fa-shield-alt"></i>
               </div>
               <h3 class="feature-title-light">{{ _('Security') }}</h3>
-              <p class="feature-description-light">{{ _('All users go through verification, and communication is protected with state-of-the-art security technologies.') }}</p>
+              <p class="feature-description-light">{{ _('All users go through verification. Communication is protected by modern security standards.') }}</p>
             </div>
 
             <div class="feature-card-light">
@@ -854,7 +1039,7 @@
                 <i class="fas fa-users"></i>
               </div>
               <h3 class="feature-title-light">{{ _('Community') }}</h3>
-              <p class="feature-description-light">{{ _('Join a growing community of volunteers and people who believe that together we can make the world a better place.') }}</p>
+              <p class="feature-description-light">{{ _('A growing community built on trust, care and accountability.') }}</p>
             </div>
 
             <div class="feature-card-light">
@@ -862,7 +1047,7 @@
                 <i class="fas fa-mobile-alt"></i>
               </div>
               <h3 class="feature-title-light">{{ _('Mobile accessibility') }}</h3>
-              <p class="feature-description-light">{{ _('Our platform works perfectly on all devices - from smartphones to desktop computers.') }}</p>
+              <p class="feature-description-light">{{ _('Works perfectly on mobile — help is always within reach.') }}</p>
             </div>
 
             <div class="feature-card-light">
@@ -870,7 +1055,7 @@
                 <i class="fas fa-clock"></i>
               </div>
               <h3 class="feature-title-light">{{ _('24/7 support') }}</h3>
-              <p class="feature-description-light">{{ _('Our team is always available to help. No matter the time, you can rely on our support.') }}</p>
+              <p class="feature-description-light">{{ _('Help doesn’t wait. Neither do we.') }}</p>
             </div>
 
             <div class="feature-card-light">
@@ -885,6 +1070,17 @@
       </section>
 
       <!-- Footer -->
+      <section class="hc-safety" aria-labelledby="safety-title">
+        <div class="container">
+          <h2 id="safety-title" class="h4 mb-3">{{ _('Safety basics') }}</h2>
+          <ul class="list-unstyled text-muted">
+            <li>• {{ _('Never share bank details or passwords.') }}</li>
+            <li>• {{ _('Meet in public places when possible.') }}</li>
+            <li>• {{ _('Use the platform messages to keep a trace.') }}</li>
+          </ul>
+        </div>
+      </section>
+
       <footer
         class="footer bg-dark text-light py-5 mt-5"
         role="contentinfo"
@@ -1007,224 +1203,8 @@
         theme_suffix: {{ _('theme')|tojson }}
       };
     </script>
-    <script>
-      // Initialize feedback system (guard if script failed to load OR constructor throws)
-      const feedbackFallback = {
-        showToast: () => {},
-        showLoading: () => {},
-        hideLoading: () => {},
-      };
-      let feedback = feedbackFallback;
-      try {
-        if (typeof window.HelpChainFeedback === "function") {
-          feedback = new window.HelpChainFeedback();
-        }
-      } catch (e) {
-        feedback = feedbackFallback;
-      }
-
-      // Initialize push notifications (use global singleton; guard constructor)
-      if (!window.notificationService) {
-        try {
-          window.notificationService =
-            typeof window.HelpChainNotificationService === "function"
-              ? new window.HelpChainNotificationService()
-              : null;
-        } catch (e) {
-          window.notificationService = null;
-        }
-      }
-
-      // Theme Toggle Functionality
-      const themeToggle = document.getElementById("themeToggle");
-      const html = document.documentElement;
-      const themeIcon = themeToggle ? themeToggle.querySelector("i") : null;
-
-      // Load saved theme
-      const savedTheme = localStorage.getItem("theme") || "light";
-      html.setAttribute("data-theme", savedTheme);
-      if (themeToggle && themeIcon) updateThemeIcon(savedTheme);
-
-      if (themeToggle && themeIcon) {
-        themeToggle.addEventListener("click", () => {
-        const currentTheme = html.getAttribute("data-theme");
-        const newTheme = currentTheme === "light" ? "dark" : "light";
-
-        html.setAttribute("data-theme", newTheme);
-        localStorage.setItem("theme", newTheme);
-        updateThemeIcon(newTheme);
-
-        // Show toast notification for theme change
-        const themeLabel = newTheme === "light" ? window.i18n.home.theme_light : window.i18n.home.theme_dark;
-        feedback.showToast(`${window.i18n.home.theme_switched_prefix} ${themeLabel}`, "success", 3000);
-        });
-      }
-
-      function updateThemeIcon(theme) {
-        if (!themeToggle || !themeIcon) return;
-        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
-        const nextThemeLabel = theme === "light" ? window.i18n.home.theme_dark : window.i18n.home.theme_light;
-        themeToggle.setAttribute(
-          "aria-label",
-          `${window.i18n.home.switch_to_prefix} ${nextThemeLabel} ${window.i18n.home.theme_suffix}`
-        );
-      }
-
-      // Intercept all AJAX requests with loading states
-      const originalFetch = window.fetch;
-      window.fetch = function (...args) {
-        if (feedback && typeof feedback.showLoading === "function") {
-          feedback.showLoading(window.i18n.home.loading);
-        }
-        return originalFetch
-          .apply(this, args)
-          .then((response) => {
-            if (feedback && typeof feedback.hideLoading === "function") {
-              feedback.hideLoading();
-            }
-            return response;
-          })
-          .catch((error) => {
-            if (feedback && typeof feedback.hideLoading === "function") {
-              feedback.hideLoading();
-            }
-            if (feedback && typeof feedback.showToast === "function") {
-              feedback.showToast(window.i18n.home.fetch_error, "error", 5000);
-            }
-            throw error;
-          });
-      };
-
-      // Smooth Scrolling with focus management
-      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-        anchor.addEventListener("click", function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute("href"));
-          if (target) {
-            target.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-
-            // Focus the target element for keyboard navigation
-            target.focus({ preventScroll: true });
-          }
-        });
-      });
-
-      // Keyboard navigation improvements
-      document.addEventListener("keydown", function (e) {
-        // Close mobile menu with Escape key
-        if (e.key === "Escape") {
-          const navbarCollapse = document.getElementById("navbarNav");
-          if (navbarCollapse.classList.contains("show")) {
-            navbarCollapse.classList.remove("show");
-            themeToggle.focus();
-          }
-        }
-      });
-
-      // Initialize when DOM is loaded
-      document.addEventListener("DOMContentLoaded", function () {
-        // Add click animations to buttons with accessibility
-        document.querySelectorAll(".btn-light").forEach((btn) => {
-          btn.addEventListener("click", function (e) {
-            this.style.transform = "scale(0.95)";
-            setTimeout(() => {
-              this.style.transform = "";
-            }, 150);
-          });
-        });
-
-        // Push notification button handler
-        const pushNotificationsBtn =
-          document.getElementById("pushNotifications");
-        if (pushNotificationsBtn) {
-          pushNotificationsBtn.addEventListener("click", async () => {
-            try {
-              if (!window.notificationService) return;
-              await window.notificationService.initialize();
-              feedback.showToast(window.i18n.home.push_enabled, "success", 3000);
-            } catch (error) {
-              feedback.showToast(window.i18n.home.push_error, "error", 5000);
-            }
-          });
-        }
-
-        // Navbar scroll effect with reduced motion support
-        const navbar = document.querySelector(".navbar-light");
-        if (navbar) {
-          window.addEventListener("scroll", function () {
-            if (window.scrollY > 50) {
-              navbar.style.background = "rgba(255, 255, 255, 0.98)";
-              navbar.style.backdropFilter = "blur(20px)";
-            } else {
-              navbar.style.background = "rgba(255, 255, 255, 0.95)";
-              navbar.style.backdropFilter = "blur(8px)";
-            }
-          });
-        }
-
-        // Load pilot metrics for hero counters (silent fallback)
-        (async function () {
-          try {
-            const res = await fetch("/api/pilot-kpi", {
-              headers: { Accept: "application/json" },
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-
-            const elVol = document.getElementById("kpiVolunteers");
-            const elHelped = document.getElementById("kpiClosed"); // "requests helped" (done-only)
-            const elCountries = document.getElementById("kpiCountries");
-            const elVolLabel = document.getElementById("kpiVolunteersLabel");
-            const elHelpedLabel = document.getElementById("kpiHelpedLabel");
-            const elCountriesLabel = document.getElementById("kpiCountriesLabel");
-
-            function setPluralLabel(labelEl, value) {
-              if (!labelEl) return;
-              const n = Number(value);
-              const singular = labelEl.dataset.singular || "";
-              const plural = labelEl.dataset.plural || "";
-              labelEl.textContent = n === 1 ? singular : plural;
-            }
-
-            const volunteers = Number(data.active_volunteers ?? 0);
-            const helped = Number(data.helped ?? 0);
-            const countries = Number(data.countries ?? 0);
-
-            if (elVol) elVol.textContent = String(volunteers);
-            if (elHelped) elHelped.textContent = String(helped);
-            if (elCountries) elCountries.textContent = String(countries);
-
-            setPluralLabel(elVolLabel, volunteers);
-            setPluralLabel(elHelpedLabel, helped);
-            setPluralLabel(elCountriesLabel, countries);
-          } catch (e) {
-            // silent fail: keep fallback numbers
-          }
-        })();
-
-        // Show welcome toast
-        setTimeout(() => {
-          feedback.showToast(window.i18n.home.welcome_toast, "info", 4000);
-        }, 1000);
-      });
-
-      // Handle reduced motion preference
-      if (
-        window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ) {
-        // Disable smooth scrolling
-        document.documentElement.style.scrollBehavior = "auto";
-
-        // Disable animations
-        document.querySelectorAll("*").forEach((el) => {
-          el.style.animation = "none";
-          el.style.transition = "none";
-        });
-      }
-    </script>
+    <script defer src="{{ url_for('static', filename='js/pilot-kpi.js') }}"></script>
+    
   </body>
 </html>
+<!-- HOME_NEW_MARKER_2026_01_28 -->

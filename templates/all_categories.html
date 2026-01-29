@@ -66,14 +66,10 @@
               <i class="fas fa-list me-1"></i>{{ _('Categories') }}
             </a>
 
-            <a class="nav-link" href="{{ safe_url_for('volunteer_register') }}">
+            <a class="nav-link" href="{{ safe_url_for('main.become_volunteer') }}">
               <i class="fas fa-user-plus me-1"></i>{{ _('Become a volunteer') }}
             </a>
 
-            <!-- ✅ FIX: dotted endpoint -->
-            <a class="nav-link" href="{{ url_for('admin.admin_login') }}">
-              <i class="fas fa-user-shield me-1"></i>{{ _('Admin login') }}
-            </a>
           </div>
         </div>
       </div>

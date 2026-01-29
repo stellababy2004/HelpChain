@@ -5256,3 +5256,189 @@ pre, code { max-width: 100%; overflow-x: auto; }
 }
 
 .hc-form-trust li{ margin: .22rem 0; }
+
+.kpi-meta {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+/* KPI polish */
+.kpi-value {
+  font-weight: 700;
+  color: #2563eb; /* trust blue */
+}
+
+.kpi-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.kpi-note {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* KPI status pill */
+.kpi-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: #ecfeff;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.kpi-status.is-live { opacity: 1; }
+.kpi-status.is-offline { opacity: .6; filter: grayscale(1); }
+
+.features-section {
+  padding-block: clamp(32px, 6vw, 80px) !important;
+}
+
+/* =========================================
+   Step 2 — Mobile UX polish (Home hero + KPI)
+   ========================================= */
+@media (max-width: 480px) {
+  /* HERO spacing: less пусто, повече фокус */
+  .hc-hero,
+  .hero,
+  .home-hero,
+  main .hero {
+    padding-top: 24px !important;
+    padding-bottom: 20px !important;
+  }
+
+  /* Headline readability */
+  .hc-hero h1,
+  .hero h1,
+  .home-hero h1 {
+    font-size: clamp(28px, 7vw, 36px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.02em !important;
+    margin-bottom: 10px !important;
+  }
+
+  /* Subtitle spacing */
+  .hc-hero p,
+  .hero p,
+  .home-hero p {
+    font-size: 14.5px !important;
+    line-height: 1.45 !important;
+    margin-top: 0 !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* CTA buttons: full width stack, no tiny taps */
+  .hc-hero .btn,
+  .hero .btn,
+  .home-hero .btn,
+  .hc-hero a[role="button"],
+  .hero a[role="button"],
+  .home-hero a[role="button"] {
+    width: 100% !important;
+    justify-content: center !important;
+    min-height: 44px !important;
+  }
+
+  /* If there is a CTA row wrapper, stack it */
+  .hc-hero .btn-group,
+  .hero .btn-group,
+  .home-hero .btn-group,
+  .hc-hero .hero-actions,
+  .hero .hero-actions,
+  .home-hero .hero-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 420px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* KPI row: consistent cards */
+  .hc-kpis,
+  .kpis,
+  .hero-kpis,
+  .hc-hero .kpi-row,
+  .hero .kpi-row,
+  .home-hero .kpi-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    max-width: 420px !important;
+    margin: 12px auto 0 !important;
+  }
+
+  /* KPI item: equal height, better number focus */
+  .hc-kpis > *,
+  .kpis > *,
+  .hero-kpis > *,
+  .kpi {
+    padding: 10px 8px !important;
+    border-radius: 14px !important;
+    min-height: 56px !important;
+    display: grid !important;
+    place-items: center !important;
+    text-align: center !important;
+  }
+
+  /* KPI number */
+  [data-kpi],
+  .kpi__value,
+  .kpi-value {
+    font-size: 18px !important;
+    font-weight: 750 !important;
+    line-height: 1.1 !important;
+  }
+
+  /* KPI label */
+  .kpi__label,
+  .kpi-label,
+  .hc-kpi__label {
+    font-size: 11.5px !important;
+    opacity: 0.9 !important;
+    line-height: 1.2 !important;
+    margin-top: 2px !important;
+  }
+
+  /* Status pill: smaller, calmer */
+  .kpi-status,
+  .status-pill,
+  .trust-pill {
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+    border-radius: 999px !important;
+    margin-top: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    max-width: 100% !important;
+  }
+
+  /* Remove “jank” if any counters animate */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      scroll-behavior: auto !important;
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .hc-kpis,
+  .kpis,
+  .hero-kpis {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}

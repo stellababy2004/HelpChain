@@ -263,24 +263,36 @@
         font-size: 0.95em;
       }
 
-      .vol-final-cta {
-        margin-top: 18px;
-        padding: 18px;
-        border-radius: 14px;
-        background: linear-gradient(120deg, #0ea5e9, #22d3ee);
-        color: #fff;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 12px;
-        justify-content: space-between;
-        box-shadow: 0 12px 28px rgba(14, 165, 233, 0.35);
-        position: relative;
-        z-index: 3;
+      .hc-cta {
+        margin: 4rem auto 2rem;
+        padding: 2.5rem 1.5rem;
+        text-align: center;
       }
 
-      .vol-final-cta strong {
-        font-size: 1.05rem;
+      .hc-cta .btn-primary {
+        background: linear-gradient(135deg, #4fd1c5, #63b3ed);
+        border: none;
+        color: #0f172a;
+        font-weight: 600;
+        padding: 0.9rem 1.6rem;
+        border-radius: 999px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .hc-cta .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(79, 209, 197, 0.35);
+      }
+
+      .hc-cta .hc-note {
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+        color: #94a3b8;
+      }
+
+      .hc-cta .btn-primary:focus-visible {
+        outline: 3px solid #4fd1c5;
+        outline-offset: 3px;
       }
 
       @media (max-width: 768px) {
@@ -887,7 +899,7 @@
             Помагаш, когато можеш. По начин, който избираш.
           </h1>
           <p class="vol-hero-sub">
-            HelpChain свързва хора в нужда с доброволци – без натиск, без бюрокрация и с ясни граници. Винаги решаваш ти дали, кога и как да се включиш.
+            HelpChain свързва хора в нужда с доброволци — без натиск, без бюрокрация и с ясни граници. Ти решаваш дали, кога и как да се включиш.
           </p>
           <div class="vol-cta-row">
             <a class="vol-cta-primary" href="#volunteerForm">
@@ -936,7 +948,7 @@
         </div>
 
         <div class="vol-section">
-          <h3><i class="fas fa-list-check me-2"></i>Какво не очакваме от теб</h3>
+          <h3><i class="fas fa-list-check me-2"></i>Какво не си длъжен/длъжна да правиш</h3>
           <ul class="vol-list">
             <li>
               <span class="icon"><i class="fas fa-ban"></i></span>
@@ -951,6 +963,7 @@
               Да приемаш задължителни ангажименти – отказът винаги е приемлив.
             </li>
           </ul>
+          <p class="mt-3">Ако нещо не ти е окей — просто не го правиш. Това е напълно приемливо тук.</p>
         </div>
 
         <div class="vol-section">
@@ -971,14 +984,17 @@
           </div>
         </div>
 
-        <div class="vol-final-cta">
-          <strong><i class="fas fa-paper-plane me-2"></i>Можеш да разгледаш без ангажимент. Регистрацията не означава задължение.</strong>
-          <a class="vol-cta-primary" href="#volunteerForm">Виж как можеш да помогнеш</a>
+        <div class="hc-cta">
+          <a href="#volunteerForm" class="btn btn-primary">
+            Присъедини се като доброволец
+          </a>
+          <div class="hc-note">
+            Регистрацията е безплатна · Ангажиментът е по твои правила
+          </div>
+          <div class="hc-note" style="font-size: 0.85rem;">
+            Хора като теб вече помагат — по малко, по свой начин.
+          </div>
         </div>
-
-        <p class="text-muted mt-2" style="font-size: 0.95rem;">
-          Можеш да разгледаш без ангажимент. Регистрацията не означава задължение.
-        </p>
 
         <div class="hc-expectations">
           <h3 class="h5 mb-3">Как работи свързването</h3>
@@ -1072,7 +1088,7 @@
           </div>
           {% endfor %} {% endif %} {% endwith %}
 
-          <form method="POST" id="volunteerForm">
+          <form id="volunteerForm" method="POST" action="{{ url_for('main.become_volunteer') }}">
             <div class="form-group-modern">
               <label for="name" class="form-label-modern">
                 <i class="fas fa-user me-2"></i>Пълно име *
@@ -1360,8 +1376,11 @@
 
       // Skill Selection
       document.querySelectorAll(".skill-checkbox").forEach((checkbox) => {
-        checkbox.addEventListener("click", function () {
+        checkbox.addEventListener("click", function (e) {
+          // allow normal navigation if the click was on an actual link inside (none today)
           const input = this.querySelector('input[type="checkbox"]');
+          if (!input) return;
+          e.preventDefault();
           input.checked = !input.checked;
           this.classList.toggle("selected", input.checked);
         });

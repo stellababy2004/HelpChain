@@ -130,7 +130,7 @@
         </div>
         {% endfor %} {% endif %} {% endwith %}
 
-        <form method="POST" onsubmit="showLoading()">
+        <form method="POST" action="{{ url_for('main.volunteer_login') }}" onsubmit="showLoading()">
           <div class="mb-3">
             <label for="email" class="form-label">
               <i class="fas fa-envelope me-2"></i>Имейл адрес

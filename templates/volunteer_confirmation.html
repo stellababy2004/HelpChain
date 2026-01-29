@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Кандидатурата е получена') }} | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-confirm">
+  <div class="hc-confirm__wrap">
+
+    <div class="hc-confirm__card">
+      <div class="hc-confirm__icon" aria-hidden="true">🙏</div>
+
+      <h1 class="hc-confirm__title">Благодарим ти</h1>
+
+      <p class="hc-confirm__lead">
+        Получихме твоята кандидатура за доброволец.
+        <span class="hc-confirm__soft">Нищо не си задължен/длъжна на този етап.</span>
+      </p>
+
+      <div class="hc-confirm__steps">
+        <h2 class="hc-confirm__subtitle">Какво следва</h2>
+        <ul class="hc-confirm__list">
+          <li>Преглеждаме информацията ти.</li>
+          <li>При подходящи заявки ще можеш да избереш дали да се включиш.</li>
+          <li>Ако решиш — ще се свържеш директно с човека в нужда.</li>
+        </ul>
+
+        <p class="hc-confirm__reassurance">
+          Няма автоматично включване. <strong>Ти контролираш ангажимента си.</strong>
+        </p>
+      </div>
+
+      <div class="hc-confirm__actions">
+        <a class="btn btn-primary hc-confirm__btn" href="{{ safe_url_for('main.index') }}">
+          Към началната страница
+        </a>
+
+        <a class="hc-confirm__link" href="{{ safe_url_for('faq') }}">
+          Как работи HelpChain →
+        </a>
+      </div>
+
+      <div class="hc-confirm__note">
+        <strong>Важно:</strong> HelpChain не е платформа за спешни случаи и не замества институции.
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
