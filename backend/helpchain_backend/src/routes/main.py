@@ -11,17 +11,140 @@ from flask import (
     send_from_directory,
     make_response,
 )
+from werkzeug.security import check_password_hash
 from flask_babel import get_locale as babel_get_locale
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from ..extensions import limiter
 from ..models import Request, Volunteer, db, utc_now
 from ..category_data import CATEGORIES, ALIASES, COMMON
 from sqlalchemy import or_, func
+from functools import wraps
+from urllib.parse import urlparse, urljoin
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
 main_bp = Blueprint("main", __name__)
+
+
+# --- Helpers ---
+def normalize_list(value):
+    """Normalize comma- or list-based values to a lowercase set."""
+    if not value:
+        return set()
+    if isinstance(value, list):
+        return {v.strip().lower() for v in value if v and str(v).strip()}
+    return {v.strip().lower() for v in str(value).split(",") if v.strip()}
+
+
+def is_safe_url(target: str) -> bool:
+    """Ensure redirects stay on same host."""
+    if not target:
+        return False
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ("http", "https") and ref_url.netloc == test_url.netloc
+
+
+def get_safe_next(default_endpoint: str):
+    nxt = request.args.get("next")
+    if nxt and is_safe_url(nxt):
+        return nxt
+    return default_endpoint
+
+
+REMOTE_MARKERS = {
+    "remote",
+    "online",
+    "en ligne",
+    "à distance",
+    "a distance",
+    "zoom",
+    "google meet",
+    "teams",
+    "video",
+    "онлайн",
+    "дистанционно",
+    "по телефон",
+    "телефон",
+}
+
+
+def is_remote_request(req) -> bool:
+    """Heuristic remote flag based on text fields (no is_remote column)."""
+    text = " ".join(
+        [
+            (getattr(req, "location_text", None) or ""),
+            (getattr(req, "message", None) or ""),
+            (getattr(req, "description", None) or ""),
+        ]
+    ).lower()
+
+    if any(marker in text for marker in REMOTE_MARKERS):
+        return True
+
+    city = (getattr(req, "city", None) or "").strip()
+    loc_text = (getattr(req, "location_text", None) or "").strip()
+    if not city and loc_text:
+        return True
+
+    return False
+
+
+def is_request_matching_volunteer(request_obj, volunteer_obj):
+    """v1 deterministic matching: status open + category match + location/remote."""
+    if not request_obj or not volunteer_obj:
+        return False
+
+    if (getattr(request_obj, "status", "") or "").lower() != "open":
+        return False
+
+    # exclude assigned/archived/deleted
+    if getattr(request_obj, "assigned_volunteer_id", None) is not None:
+        return False
+    if getattr(request_obj, "is_archived", False):
+        return False
+    if getattr(request_obj, "deleted_at", None) is not None:
+        return False
+
+    volunteer_skills = normalize_list(getattr(volunteer_obj, "skills", None))
+    request_categories = normalize_list(getattr(request_obj, "category", None))
+
+    if not (volunteer_skills & request_categories):
+        return False
+
+    if is_remote_request(request_obj):
+        return True
+
+    v_city = (getattr(volunteer_obj, "city", None) or getattr(volunteer_obj, "location", None) or "").strip().lower()
+    r_city = (getattr(request_obj, "city", None) or "").strip().lower()
+    if v_city and r_city:
+        return v_city == r_city
+
+    # strict: if city missing on either side and not remote, no match
+    return False
+
+
+def require_volunteer_login(fn):
+    """Minimal access control using session flag (non-Flask-Login)."""
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not session.get("volunteer_id"):
+            return redirect(url_for("main.volunteer_login", next=request.full_path), code=303)
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
+def _current_volunteer():
+    vid = session.get("volunteer_id")
+    if not vid:
+        return None
+    try:
+        return Volunteer.query.get(int(vid))
+    except Exception:
+        return None
 
 
 # ✅ url_lang + safe_url_for in ALL templates rendered by this blueprint
@@ -100,7 +223,107 @@ def achievements():
 
 @main_bp.route("/volunteer_login", methods=["GET", "POST"])
 def volunteer_login():
-    return render_template("volunteer_login.html"), 200
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+
+        if not email:
+            flash("Моля въведи имейл.", "warning")
+            return render_template("volunteer_login.html", minimal_page=True), 200
+
+        volunteer = Volunteer.query.filter(Volunteer.email.ilike(email)).first()
+
+        if not volunteer or not getattr(volunteer, "is_active", True):
+            flash("Грешен имейл или профилът не е активен.", "danger")
+            return render_template("volunteer_login.html", minimal_page=True), 200
+
+        session["volunteer_id"] = int(volunteer.id)
+        session.permanent = True
+        session["just_logged_in"] = True
+
+        try:
+            volunteer.last_activity = datetime.utcnow()
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        return redirect(
+            get_safe_next(url_for("main.volunteer_dashboard")),
+            code=303,
+        )
+
+    return render_template("volunteer_login.html", minimal_page=True), 200
+
+
+@main_bp.post("/volunteer/logout")
+def volunteer_logout():
+    session.pop("volunteer_id", None)
+    session.pop("just_logged_in", None)
+    return redirect(url_for("main.index"), code=303)
+
+
+@main_bp.route("/become_volunteer", methods=["GET", "POST"])
+def become_volunteer():
+    """Public landing + submission endpoint for new volunteers."""
+    if request.method == "POST":
+        # TODO: collect and persist the submitted volunteer data
+        return redirect(url_for("main.volunteer_confirmation"))
+
+    return render_template("become_volunteer.html"), 200
+
+
+@main_bp.get("/volunteer/confirmation")
+def volunteer_confirmation():
+    """Confirmation screen after submitting volunteer interest."""
+    return render_template("volunteer_confirmation.html"), 200
+
+
+@main_bp.get("/volunteer/dashboard")
+@require_volunteer_login
+def volunteer_dashboard():
+    volunteer = _current_volunteer()
+
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login", next=request.path))
+
+    just_logged_in = session.pop("just_logged_in", None)
+
+    open_requests = Request.query.filter_by(status="open").all()
+    matched_requests = [
+        r for r in open_requests if is_request_matching_volunteer(r, volunteer)
+    ]
+
+    current_app.logger.info(
+        "Matching check",
+        extra={
+            "volunteer_id": volunteer.id,
+        "matched_requests": len(matched_requests),
+    },
+    )
+
+    return render_template(
+        "volunteer_dashboard.html",
+        volunteer=volunteer,
+        matches=matched_requests,
+        just_logged_in=bool(just_logged_in),
+    ), 200
+
+
+@main_bp.route("/volunteer/profile", methods=["GET", "POST"])
+@require_volunteer_login
+def volunteer_profile():
+    volunteer = _current_volunteer()
+
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login", next=request.path))
+
+    if request.method == "POST":
+        for field in ("name", "email", "phone", "city", "skills", "notes", "availability"):
+            if field in request.form:
+                setattr(volunteer, field, request.form.get(field, "").strip())
+        db.session.commit()
+        return redirect(url_for("main.volunteer_dashboard"))
+
+    return render_template("volunteer_profile.html", volunteer=volunteer), 200
 
 
 @main_bp.get("/request")

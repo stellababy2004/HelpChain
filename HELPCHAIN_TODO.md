@@ -82,3 +82,29 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - DB: Added `Request.is_archived`, `Request.archived_at`, `Request.deleted_at` + indexes; Alembic head `9c6b7a2b0a77`  
 - Admin: Archive/unarchive + Deleted/restore-deleted flows; admin request list filters include `archived` and `deleted`  
 - KPI: `/pilot`, `/api/pilot/metrics`, `/api/pilot-kpi` ignore deleted requests (`deleted_at IS NULL`)  
+
+## Volunteer Area — MVP (in progress)
+
+### ✅ Done (2026-01-29)
+- Session-based volunteer login (email-only, no password)
+- Volunteer login flow: `/volunteer_login` → `/volunteer/dashboard`
+- Volunteer logout (POST-only, clears session)
+- Admin login fully removed from public UI
+- Fixed volunteer routes:
+  - Dashboard: `/volunteer/dashboard`
+  - Profile: `/volunteer/profile`
+- Navbar adapts to volunteer session (Dashboard / Profile / Logout)
+- Volunteer dashboard CTA aligned: “Направи профила си готов за свързване”
+- Matching v1 adapted to model without `is_remote`
+- Seed volunteer + seed request working
+
+### 🚧 In progress
+- Volunteer dashboard UX (human, not empty)
+- Volunteer profile UX redesign (hc-* design system)
+
+### ⏭️ Next (tomorrow)
+- Finish Volunteer Dashboard:
+  - Add activity / social proof block
+  - Add “what happens when a request arrives” preview state
+- Finalize Volunteer Profile form → backend field mapping
+- Replace temporary empty states with human copy

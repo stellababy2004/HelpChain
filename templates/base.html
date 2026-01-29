@@ -51,8 +51,18 @@
 
   <body>
     <!-- Navigation -->
+    {% set quiet_paths = [
+      '/volunteer/confirmation',
+      '/volunteer/profile',
+      '/volunteer_login'
+    ] %}
+    {% set minimal_page = (request.path in quiet_paths) %}
+    {% set hide_full_nav = minimal_page %}
+    {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
+    {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
       <div class="container">
+        <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
           <img src="{{ url_for('static', filename='icons/icon-32x32.png') }}" width="24" height="24" alt="" aria-hidden="true" />
           <span>HelpChain.live</span>
@@ -66,6 +76,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
+          {% if not hide_full_nav %}
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('main.index') }}"
@@ -121,16 +132,39 @@
               >
             </li>
             {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('login') }}"
-                ><i class="fas fa-sign-in-alt me-1"></i>{{ _('Login') }}</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('volunteer_register') }}"
-                ><i class="fas fa-user-plus me-1"></i>{{ _('Register') }}</a
-              >
-            </li>
+              {% if volunteer_logged_in %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}">
+                  <i class="fas fa-hands-helping me-1"></i>{{ _('My dashboard') }}
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ safe_url_for('main.volunteer_profile') }}">
+                  <i class="fas fa-user me-1"></i>{{ _('Profile') }}
+                </a>
+              </li>
+              <li class="nav-item">
+                <form method="POST" action="{{ safe_url_for('main.volunteer_logout') }}" class="d-inline">
+                  {% if csrf_token is defined %}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  {% endif %}
+                  <button type="submit" class="nav-link btn btn-link p-0">
+                    <i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}
+                  </button>
+                </form>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ safe_url_for('main.volunteer_login') }}">
+                  <i class="fas fa-sign-in-alt me-1"></i>{{ _('Volunteer login') }}
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ safe_url_for('main.become_volunteer') }}">
+                  <i class="fas fa-user-plus me-1"></i>{{ _('Register') }}
+                </a>
+              </li>
+              {% endif %}
             {% endif %}
           </ul>
           <!-- Search + actions -->
@@ -159,8 +193,8 @@
               <i class="fas fa-bell"></i>
             </a>
           </div>
-
-          <form method="post" action="{{ url_for('main.set_language') }}" class="d-flex align-items-center ms-3">
+          {% endif %}
+          <form method="post" action="{{ url_for('main.set_language') }}" class="d-flex align-items-center ms-3 ms-lg-3">
             <input type="hidden" name="next" value="{{ request.path }}">
             <select name="lang" class="form-select form-select-sm" onchange="this.form.submit()"
                     aria-label="{{ _('Language') }}" title="{{ _('Language') }}">
@@ -175,6 +209,7 @@
     </nav>
 
     <!-- Flash Messages -->
+    {% if request.endpoint != 'main.volunteer_confirmation' %}
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %}
     <div class="container mt-3">
@@ -193,11 +228,13 @@
       {% endfor %}
     </div>
     {% endif %} {% endwith %}
+    {% endif %}
 
     <!-- Main Content -->
     <main>{% block content %}{% endblock %}</main>
 
     <!-- Footer -->
+    {% if not minimal_page %}
     <footer class="bg-dark text-white text-center py-3 mt-5">
       <div class="container">
           <p>
@@ -355,6 +392,13 @@
 
       </div>
     </footer>
+    {% else %}
+    <footer class="hc-footer-min">
+      <div class="hc-footer-min__wrap">
+        © 2025 HelpChain · GDPR compliant
+      </div>
+    </footer>
+    {% endif %}
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -372,5 +416,8 @@
     </script>
     {% endif %}
     {% block scripts %}{% endblock %}
+    {% if not minimal_page %}
+    <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>
+    {% endif %}
   </body>
 </html>

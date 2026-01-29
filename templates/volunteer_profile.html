@@ -1,41 +1,203 @@
-<!doctype html>
-<html lang="bg">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Профил на доброволеца - HelpChain</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-  </head>
+{% extends "base.html" %}
+{% block title %}{{ _('Профил') }} | HelpChain{% endblock %}
 
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" href="{{ safe_url_for('index') }}">HelpChain</a>
-        <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="{{ safe_url_for('volunteer_dashboard') }}"
-            >Табло</a
-          >
-          <a class="nav-link" href="{{ safe_url_for('volunteer_profile') }}"
-            >Профил</a
-          >
-          <a class="nav-link" href="{{ safe_url_for('volunteer_logout') }}">Изход</a>
+{% block content %}
+<section class="hc-prof">
+  <div class="hc-prof__wrap">
+
+    <!-- Page header -->
+    <header class="hc-prof__head">
+      <div class="hc-prof__headLeft">
+        <h1 class="hc-prof__title">{{ _('Профил на доброволец') }}</h1>
+        <p class="hc-prof__subtitle">
+          {{ _('Тук настройваш какво можеш и кога си свободен/на. Това помага да получаваш подходящи заявки.') }}
+        </p>
+      </div>
+
+      <div class="hc-prof__headRight">
+        <span class="hc-pill hc-pill--ok">
+          {{ _('Статус: Активен') }} ✅
+        </span>
+
+        <!-- Logout (POST-only) -->
+        <form class="hc-inline" method="POST" action="{{ safe_url_for('main.volunteer_logout') }}">
+          {% if csrf_token %} <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> {% endif %}
+          <button class="hc-btn hc-btn--ghost" type="submit">
+            {{ _('Изход') }}
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <!-- Readiness block -->
+    <section class="hc-card hc-card--soft hc-prof__readiness">
+      <div class="hc-card__head">
+        <h2 class="hc-card__title">{{ _('Готовност за свързване') }}</h2>
+        <p class="hc-card__hint">
+          {{ _('Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично — ти решаваш.') }}
+        </p>
+      </div>
+
+      <div class="hc-prof__chips">
+        <span class="hc-chip">
+          📍 {{ _('Локация:') }}
+          <strong>{{ volunteer.location or _('Липсва') }}</strong>
+        </span>
+        <span class="hc-chip">
+          🕒 {{ _('Наличност:') }}
+          <strong>{{ volunteer.availability or _('Липсва') }}</strong>
+        </span>
+        <span class="hc-chip">
+          🧩 {{ _('Умения:') }}
+          <strong>
+            {% if volunteer.skills %}
+              {{ volunteer.skills }}
+            {% else %}
+              {{ _('Липсва') }}
+            {% endif %}
+          </strong>
+        </span>
+
+        <a class="hc-softlink" href="#how-it-works">{{ _('Как работи свързването →') }}</a>
+      </div>
+
+      <!-- Optional: simple checklist / progress -->
+      <div class="hc-prof__progress">
+        {% set ok_loc = 1 if volunteer.location else 0 %}
+        {% set ok_av  = 1 if volunteer.availability else 0 %}
+        {% set ok_sk  = 1 if volunteer.skills else 0 %}
+        {% set ready  = ok_loc + ok_av + ok_sk %}
+        {% set pct    = (ready * 100) // 3 %}
+
+        <div class="hc-prof__progressTop">
+          <span class="hc-muted">{{ _('Готовност:') }} <strong>{{ pct }}%</strong></span>
+          {% if pct >= 67 %}
+            <span class="hc-pill hc-pill--ok">{{ _('Достатъчно добър старт') }} ✅</span>
+          {% else %}
+            <span class="hc-pill hc-pill--warn">{{ _('Има 1–2 липсващи неща') }}</span>
+          {% endif %}
+        </div>
+
+        <div class="hc-prof__checklist">
+          <span class="hc-check {{ 'is-ok' if ok_loc else 'is-miss' }}">{{ '✅' if ok_loc else '⛔' }} {{ _('Локация') }}</span>
+          <span class="hc-check {{ 'is-ok' if ok_av else 'is-miss' }}">{{ '✅' if ok_av else '⛔' }} {{ _('Наличност') }}</span>
+          <span class="hc-check {{ 'is-ok' if ok_sk else 'is-miss' }}">{{ '✅' if ok_sk else '⛔' }} {{ _('Умения') }}</span>
         </div>
       </div>
-    </nav>
+    </section>
 
-    <div class="container mt-4">
-      <h1>Профил на доброволеца</h1>
-      <p class="text-muted">Управление на вашия профил като доброволец.</p>
+    <!-- Main form -->
+    <form class="hc-prof__form" method="POST" action="{{ safe_url_for('main.volunteer_profile') }}">
+      {% if csrf_token %} <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> {% endif %}
 
-      <div class="alert alert-info">
-        <strong>Информация:</strong> Тази страница е в процес на разработка.
-        Скоро ще можете да редактирате своя профил.
+      <div class="hc-grid hc-grid--2">
+
+        <!-- Left: basics -->
+        <section class="hc-card">
+          <div class="hc-card__head">
+            <h2 class="hc-card__title">{{ _('Основни данни') }}</h2>
+            <p class="hc-card__hint">{{ _('Леко и човешки. Без излишни полета.') }}</p>
+          </div>
+
+          <div class="hc-field">
+            <label class="hc-label" for="name">{{ _('Име') }}</label>
+            <input class="hc-input" id="name" name="name" type="text"
+                   value="{{ volunteer.name or '' }}"
+                   placeholder="{{ _('Пример: Стела') }}">
+            <div class="hc-help">{{ _('Това име ще виждат хората (може само малко име).') }}</div>
+          </div>
+
+          <div class="hc-field">
+            <label class="hc-label" for="email">{{ _('Имейл') }}</label>
+            <input class="hc-input" id="email" name="email" type="email"
+                   value="{{ volunteer.email or '' }}"
+                   readonly>
+            <div class="hc-help">{{ _('Това е имейлът ти за вход.') }}</div>
+          </div>
+
+          <div class="hc-field">
+            <label class="hc-label" for="phone">{{ _('Телефон (по желание)') }}</label>
+            <input class="hc-input" id="phone" name="phone" type="text"
+                   value="{{ volunteer.phone or '' }}"
+                   placeholder="{{ _('Пример: +33...') }}">
+            <div class="hc-help">{{ _('Само ако искаш по-бърз контакт при нужда.') }}</div>
+          </div>
+        </section>
+
+        <!-- Right: matching -->
+        <section class="hc-card">
+          <div class="hc-card__head">
+            <h2 class="hc-card__title">{{ _('Как да те намираме') }}</h2>
+            <p class="hc-card__hint">{{ _('Това е “магнитът” за подходящи заявки.') }}</p>
+          </div>
+
+          <div class="hc-field">
+            <label class="hc-label" for="location">{{ _('Локация') }}</label>
+            <input class="hc-input" id="location" name="location" type="text"
+                   value="{{ volunteer.location or '' }}"
+                   placeholder="{{ _('Пример: Paris / Plovdiv / Remote') }}">
+            <div class="hc-help">{{ _('Град или “Remote”. Не ти искаме адрес.') }}</div>
+          </div>
+
+          <div class="hc-field">
+            <label class="hc-label" for="availability">{{ _('Наличност') }}</label>
+            <select class="hc-select" id="availability" name="availability">
+              {% set av = (volunteer.availability or '') %}
+              <option value="" {{ 'selected' if not av else '' }}>{{ _('Избери…') }}</option>
+              <option value="morning"   {{ 'selected' if av=='morning' else '' }}>{{ _('Сутрин') }}</option>
+              <option value="afternoon" {{ 'selected' if av=='afternoon' else '' }}>{{ _('Следобед') }}</option>
+              <option value="evening"   {{ 'selected' if av=='evening' else '' }}>{{ _('Вечер') }}</option>
+              <option value="weekend"   {{ 'selected' if av=='weekend' else '' }}>{{ _('Уикенд') }}</option>
+              <option value="flex"      {{ 'selected' if av=='flex' else '' }}>{{ _('Когато мога') }}</option>
+            </select>
+            <div class="hc-help">{{ _('Можеш да го сменяш по всяко време.') }}</div>
+          </div>
+
+          <div class="hc-field">
+            <label class="hc-label" for="skills">{{ _('Умения (2–5)') }}</label>
+            <input class="hc-input" id="skills" name="skills" type="text"
+                   value="{{ volunteer.skills or '' }}"
+                   placeholder="{{ _('Пример: административна, документи, превод') }}">
+            <div class="hc-help">{{ _('Временно: като текст. По-късно ще го направим на чипове.') }}</div>
+          </div>
+
+          <div class="hc-field">
+            <label class="hc-label" for="limits">{{ _('Граници (по желание)') }}</label>
+            <textarea class="hc-textarea" id="limits" name="limits" rows="4"
+                      placeholder="{{ _('Пример: не поемам спешни случаи; мога само онлайн; предпочитам…') }}"></textarea>
+            <div class="hc-help">{{ _('Това пази теб и човека отсреща.') }}</div>
+          </div>
+        </section>
+
       </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-  </body>
-</html>
+      <!-- Privacy note -->
+      <section class="hc-card hc-card--soft">
+        <div class="hc-card__head">
+          <h2 class="hc-card__title">🔒 {{ _('Лични данни и граници') }}</h2>
+          <p class="hc-card__hint">{{ _('Две прости правила:') }}</p>
+        </div>
+        <ul class="hc-list">
+          <li>{{ _('Не показваме твоя адрес.') }}</li>
+          <li>{{ _('При всяка заявка ти избираш дали да помогнеш.') }}</li>
+        </ul>
+      </section>
+
+      <!-- Action bar -->
+      <div class="hc-actions">
+        <button class="hc-btn hc-btn--primary" type="submit">
+          {{ _('Запази и се върни в таблото') }}
+        </button>
+        <a class="hc-btn hc-btn--ghost" href="{{ safe_url_for('main.volunteer_dashboard') }}">
+          {{ _('Отказ') }}
+        </a>
+      </div>
+
+      <p class="hc-muted hc-small" id="how-it-works">
+        {{ _('Свързването е просто: когато има заявка, която пасва на локация + наличност + умения, тя се появява в таблото ти.') }}
+      </p>
+    </form>
+
+  </div>
+</section>
+{% endblock %}
