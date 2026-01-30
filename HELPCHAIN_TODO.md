@@ -113,6 +113,7 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - [ ] Reduce friction (chips, presets, examples)
 - [ ] Clear “profile ready” end-state
 - [ ] Explain matching in human language (no tech)
+- ✅ Volunteer profile: success feedback visible after redirect (client-side fallback; sessionStorage hcProfileSaved, auto-hide ~3.5s, respects server flash; ok/err/info styles)
 
 ### ⏭️ Next (tomorrow)
 - Finish Volunteer Dashboard:
