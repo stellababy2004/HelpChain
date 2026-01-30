@@ -1,123 +1,215 @@
 {% extends "base.html" %}
-{% block title %}{{ _("Volunteer dashboard") }} | HelpChain{% endblock %}
+{% block title %}{{ _('Моето табло') }} | HelpChain{% endblock %}
 
 {% block content %}
-<div class="hc-vdash">
+<section class="hc-vdash">
 
-  <!-- HERO -->
-  <section class="hc-hero">
-    <div>
-      <h1 class="hc-hero__title">{{ _('Готов/а си да помогнеш. Когато има нужда — ще ти кажем.') }}</h1>
-      <p class="hc-hero__sub">
-        {{ _('Тук ще виждаш заявки, които отговарят на твоите умения и наличност. Нищо не се поема автоматично — ти решаваш дали и кога да се включиш.') }}
+  <!-- HERO / TOP BAR -->
+  <header class="hc-vdash__hero">
+    <div class="hc-vdash__heroText">
+      <h1 class="hc-vdash__title">Моето табло</h1>
+      <p class="hc-vdash__subtitle">
+        Тук виждаш заявки, които отговарят на твоите умения и наличност. Нищо не се поема автоматично — ти решаваш.
       </p>
-      <div class="hc-hero__actions">
-        <a class="btn btn-primary" href="{{ safe_url_for('main.volunteer_profile') }}">
-          {{ _('Направи профила си още по-точен') }}
-        </a>
-        <a class="hc-hero__link" href="{{ safe_url_for('main.about') }}">
-          {{ _('Как работи свързването') }} →
-        </a>
-      </div>
-      <div class="hc-hero__hint">
-        {{ _('Можеш да променяш профила си по всяко време.') }}
-      </div>
-      <div class="hc-hero__meta">
-        <span>🕒 {{ _('Последна активност: нова заявка преди 2 часа в Paris') }}</span>
-        <span>·</span>
-        <span>🤝 {{ _('В момента 12 доброволци помагат чрез HelpChain') }}</span>
-      </div>
-      <div class="hc-hero__links">
-        <a href="{{ safe_url_for('main.request_category') }}" class="hc-softlink">{{ _('Виж всички категории') }} →</a>
-        <a href="{{ safe_url_for('main.about') }}" class="hc-softlink">{{ _('Какво се случва, ако приема заявка') }} →</a>
-      </div>
+    </div>
+
+    <div class="hc-vdash__heroActions">
+      <a class="btn btn-primary" href="{{ safe_url_for('main.volunteer_profile') }}">
+        Направи профила си готов за свързване
+      </a>
+
+      <!-- Logout: POST-only -->
+      <form method="post" action="{{ safe_url_for('main.volunteer_logout') }}" class="hc-inline">
+        {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+        <button type="submit" class="btn btn-outline-secondary">Изход</button>
+      </form>
+    </div>
+  </header>
+
+  <section class="hc-activity">
+    <div class="hc-activity__item">
+      <span class="hc-activity__dot hc-dot--live"></span>
+      <strong>Последна активност:</strong>
+      1 нова заявка в <strong>Paris</strong> днес
+    </div>
+
+    <div class="hc-activity__proof">
+      HelpChain работи с реални хора и реални ситуации — <strong>без фалшива активност</strong>.
     </div>
   </section>
 
-  <!-- Badges / what the system sees -->
-  <section class="hc-badges">
-    <div class="hc-badge">
-      <span class="hc-badge__icon">📍</span>
-      <div class="hc-badge__text">
-        <div class="hc-badge__label">{{ _('Локация') }}</div>
-        <div class="hc-badge__value">{{ volunteer.location or _('липсва') }}</div>
-      </div>
-    </div>
-    <div class="hc-badge">
-      <span class="hc-badge__icon">🕒</span>
-      <div class="hc-badge__text">
-        <div class="hc-badge__label">{{ _('Наличност') }}</div>
-        <div class="hc-badge__value">{{ volunteer.availability or _('липсва') }}</div>
-      </div>
-    </div>
-    <div class="hc-badge">
-      <span class="hc-badge__icon">🧠</span>
-      <div class="hc-badge__text">
-        <div class="hc-badge__label">{{ _('Умения') }}</div>
-        <div class="hc-badge__value">{{ volunteer.skills or _('липсват') }}</div>
-      </div>
-    </div>
-    <div class="hc-badges__note">
-      {{ _('Можеш да промениш това по всяко време.') }}
-    </div>
-  </section>
+  <!-- QUICK CHIPS (status at-a-glance) -->
+  <div class="hc-vdash__chips">
+    <span class="hc-chip">📍 Локация: <strong>{{ volunteer.location or '—' }}</strong></span>
+    <span class="hc-chip">🕒 Наличност: <strong>{{ volunteer.availability or '—' }}</strong></span>
+    <span class="hc-chip">🧩 Умения: <strong>{{ volunteer.skills or '—' }}</strong></span>
+    <span class="hc-vdash__chipsHint">Можеш да промениш това по всяко време.</span>
+  </div>
 
-  <!-- Matches -->
-  <section class="hc-card hc-vdash__card">
-    <div class="hc-card__head">
-      <div class="hc-card__icon">🤝</div>
-      <div>
-        <div class="hc-card__title">{{ _('Подходящи заявки') }}</div>
-        <div class="hc-card__muted">{{ _('Когато някой има нужда, която съвпада с теб, ще я видиш тук.') }}</div>
-      </div>
-    </div>
+  <!-- MAIN GRID -->
+  <div class="hc-vdash__grid">
 
-    {% if matches and matches|length > 0 %}
-      <div class="hc-list">
-        {% for r in matches %}
-          <a class="hc-list__item" href="{{ safe_url_for('main.request_details', req_id=r.id) }}">
-            <div class="hc-list__main">
-              <div class="hc-list__title">{{ r.title or _('Заявка') }}</div>
-              <div class="hc-list__meta">
-                {% if r.city or r.location %}
-                  {{ _('Човек в') }} {{ r.city or r.location }} {{ _('има нужда от съдействие. Ще видиш детайли, ако решиш да помогнеш.') }}
-                {% else %}
-                  {{ _('Има човек, който търси помощ. Ще видиш детайли, ако решиш да помогнеш.') }}
-                {% endif %}
-              </div>
-            </div>
-            <div class="hc-list__arrow">→</div>
-          </a>
-        {% endfor %}
+    <!-- LEFT: PROFILE STATUS / NEXT ACTION -->
+    <aside class="hc-card hc-vdash__profile">
+      <div class="hc-card__head">
+        <h2 class="hc-card__title">Готовност за свързване</h2>
+        <p class="hc-card__desc">Колкото по-точен е профилът, толкова по-точни ще са заявките.</p>
       </div>
-    {% else %}
-      <div class="hc-empty hc-empty--compact">
-        <div class="hc-empty__icon">🤝</div>
-        <div class="hc-empty__title">{{ _('Тук ще се появят хора, които имат нужда от помощ като твоята.') }}</div>
-        <div class="hc-empty__text">
-          {{ _('Когато има нещо подходящо за теб, ще го видиш тук.') }}
+
+      <!-- readiness summary -->
+      <div class="hc-vdash__readiness">
+        <div class="hc-vdash__readinessRow">
+          <span class="hc-badge">Локация</span>
+          <span class="hc-vdash__readinessVal">{{ volunteer.location or 'Липсва' }}</span>
         </div>
-        <div class="hc-empty__preview">
-          <div class="hc-empty__label">🔔 {{ _('Пример за заявка, която може да получиш:') }}</div>
-          <div class="hc-empty__card">
-            <div class="hc-empty__title">{{ _('Помощ с документи') }}</div>
-            <div class="hc-empty__meta">Paris • {{ _('Възрастен човек') }} • {{ _('Административна подкрепа') }}</div>
-            <div class="hc-empty__hint">{{ _('Ще виждаш детайлите и ще решаваш дали да помогнеш.') }}</div>
+        <div class="hc-vdash__readinessRow">
+          <span class="hc-badge">Наличност</span>
+          <span class="hc-vdash__readinessVal">{{ volunteer.availability or 'Липсва' }}</span>
+        </div>
+        <div class="hc-vdash__readinessRow">
+          <span class="hc-badge">Умения</span>
+          <span class="hc-vdash__readinessVal">{{ volunteer.skills or 'Липсва' }}</span>
+        </div>
+      </div>
+
+      <div class="hc-vdash__ctaBox">
+        <p class="hc-vdash__ctaText">
+          {% if volunteer.location and volunteer.skills %}
+            Профилът ти е достатъчно добър, за да започнеш ✅
+          {% else %}
+            Още 1–2 детайла и профилът ти става видим за точните заявки ✅
+          {% endif %}
+        </p>
+
+        <a class="btn btn-primary" href="{{ safe_url_for('main.volunteer_profile') }}">
+          Редактирай профила си
+        </a>
+
+        <a class="hc-softlink" href="{{ safe_url_for('faq') }}">
+          Как работи свързването →
+        </a>
+      </div>
+    </aside>
+
+    <!-- RIGHT: MATCHING REQUESTS -->
+    <main class="hc-card hc-vdash__matches">
+      <div class="hc-card__head">
+        <h2 class="hc-card__title">Подходящи заявки</h2>
+        <p class="hc-card__desc">Когато има нужда, която съвпада с теб, ще я видиш тук.</p>
+      </div>
+
+      {% if matches and matches|length %}
+        <div id="hc-matches" class="hc-soft-fade">
+          <div class="hc-list">
+            {# skeleton item - replace later with real card per match #}
+            {% for m in matches %}
+              <article class="hc-listItem hc-soft-fade hc-match-card {% if loop.index0 == 0 %}hc-match-highlight{% endif %}">
+                <div class="hc-listItem__top d-flex align-items-center justify-content-between">
+                  <strong class="hc-listItem__title">{{ m.title or 'Нова заявка' }}</strong>
+                  <span class="hc-listItem__meta">{{ m.created_at or '' }}</span>
+                  {% if loop.index0 == 0 %}
+                    <span class="hc-new-pill">🟢 НОВО</span>
+                  {% endif %}
+                </div>
+                <div class="hc-listItem__body">
+                  {{ m.summary or '' }}
+                </div>
+                <div class="hc-listItem__actions">
+                  <a class="btn btn-sm btn-outline-primary" href="#">Виж детайли</a>
+                  <button class="btn btn-sm btn-primary" type="button">Ще помогна</button>
+                </div>
+              </article>
+            {% endfor %}
           </div>
         </div>
+      {% else %}
+        <!-- empty state (human) -->
+        <div class="hc-empty">
+          <div class="hc-empty__icon">🤝</div>
+          <h3 class="hc-empty__title">Още няма подходящи заявки</h3>
+          <p class="hc-empty__text">
+            Това е нормално. HelpChain работи с реални ситуации, не със “симулирана активност”.
+            Щом се появи нещо, което пасва на профила ти — ще го видиш тук.
+          </p>
+
+          <div class="hc-empty__actions">
+            <a class="btn btn-primary" href="{{ safe_url_for('main.volunteer_profile') }}">
+              Подобри профила си
+            </a>
+            <button class="btn btn-outline-secondary" type="button" data-hc-toggle="preview">
+              Виж пример →
+            </button>
+          </div>
+        </div>
+      {% endif %}
+    </main>
+
+  </div>
+
+  <!-- PREVIEW (secondary) -->
+  <section class="hc-card hc-vdash__preview" id="hc-preview">
+    <div class="hc-card__head">
+      <h2 class="hc-card__title">Как ще изглежда заявка</h2>
+      <p class="hc-card__desc">Пример, за да знаеш какво да очакваш.</p>
+    </div>
+
+    <article class="hc-previewCard">
+      <div class="hc-previewCard__chips">
+        <span class="hc-pill">Административна помощ</span>
+        <span class="hc-pill">Paris</span>
+        <span class="hc-pill">Онлайн</span>
       </div>
-    {% endif %}
 
-    <div class="hc-quiet-meta">
-      <span>🕒 {{ _('Последна активност: нова заявка преди 2 часа в Paris') }}</span>
-      <span>·</span>
-      <span>🤝 {{ _('Тази седмица 7 доброволци са помогнали чрез HelpChain') }}</span>
-    </div>
+      <h3 class="hc-previewCard__title">Помощ с документи</h3>
+      <p class="hc-previewCard__text">
+        Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.
+      </p>
 
-    <div class="hc-vdash__fineprint">
-      {{ _('Важно: HelpChain не е платформа за спешни случаи и не замества институции.') }}
-    </div>
+      <div class="hc-previewCard__actions">
+        <button class="btn btn-outline-primary" type="button" disabled>Виж детайли</button>
+        <button class="btn btn-primary" type="button" disabled>Ще помогна</button>
+      </div>
+
+      <p class="hc-note">
+        Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.
+      </p>
+    </article>
   </section>
 
-</div>
+</section>
+<script>
+(function () {
+  // 1) Demo mode: add ?demo_match=1 към URL за да видиш ефекта без реална заявка
+  const qs = new URLSearchParams(window.location.search);
+  const demo = qs.get("demo_match") === "1";
+
+  const matchesWrap = document.getElementById("hc-matches");
+  if (!matchesWrap) return;
+
+  // Опитай да намериш първия match card (настрой селектора според твоя HTML)
+  const firstCard = matchesWrap.querySelector(".hc-match-card") || matchesWrap.querySelector(".card") || matchesWrap.firstElementChild;
+
+  if (demo && firstCard) {
+    firstCard.classList.add("hc-match-highlight");
+    // ако няма badge, добави го
+    const header = firstCard.querySelector(".d-flex") || firstCard;
+    if (header && !firstCard.querySelector(".hc-new-pill")) {
+      const pill = document.createElement("span");
+      pill.className = "hc-new-pill";
+      pill.textContent = "🟢 НОВО";
+      header.appendChild(pill);
+    }
+    firstCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  // 2) Real: ако имаш реална заявка и искаш да highlight-неш само при "just_logged_in"
+  // (ако backend слага session флаг и ти го подаваш в template като just_logged_in)
+  const justLoggedIn = {{ 'true' if just_logged_in else 'false' }};
+  if (justLoggedIn && firstCard) {
+    firstCard.classList.add("hc-match-highlight");
+    firstCard.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+})();
+</script>
 {% endblock %}

@@ -102,6 +102,18 @@ No chaos. No multitasking. No new features before finishing the current phase.
 - Volunteer dashboard UX (human, not empty)
 - Volunteer profile UX redesign (hc-* design system)
 
+### Volunteer Dashboard — UX polish (IN PROGRESS)
+- [x] Clear primary CTA: “Направи профила си готов за свързване”
+- [x] Preview state when request arrives (highlight + NEW)
+- [ ] Activity & urgency micro-copy under last activity
+- [ ] Animated / highlighted match card on new request
+- [ ] Stronger guidance toward profile completion
+
+### Volunteer Profile — UX & conversion (NEXT)
+- [ ] Reduce friction (chips, presets, examples)
+- [ ] Clear “profile ready” end-state
+- [ ] Explain matching in human language (no tech)
+
 ### ⏭️ Next (tomorrow)
 - Finish Volunteer Dashboard:
   - Add activity / social proof block
