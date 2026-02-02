@@ -349,7 +349,7 @@ msgstr "Табло"
 #: templates/base.html:159
 #, fuzzy
 msgid "Volunteer login"
-msgstr "Виж доброволци"
+msgstr "Вход за доброволци"
 
 #: templates/base.html:164
 msgid "Register"
