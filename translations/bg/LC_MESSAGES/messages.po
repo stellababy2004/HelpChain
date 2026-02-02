@@ -347,7 +347,6 @@ msgid "My dashboard"
 msgstr "Табло"
 
 #: templates/base.html:159
-#, fuzzy
 msgid "Volunteer login"
 msgstr "Вход за доброволци"
 
@@ -3613,4 +3612,3 @@ msgstr "Няма резултати."
 #~ "HelpChain свързва хора в нужда с "
 #~ "проверени доброволци — бързо, сигурно и"
 #~ " човешко."
-
