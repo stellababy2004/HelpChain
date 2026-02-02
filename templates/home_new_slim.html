@@ -1,0 +1,138 @@
+{# TEMPLATE SOURCE: /templates/home_new_slim.html #}
+{% extends "base.html" %}
+
+{% block title %}{{ _('HelpChain - Get help, become a volunteer') }}{% endblock %}
+
+{% block head %}
+  <meta name="description" content="{{ _('HelpChain connects people in need with verified volunteers - fast, safe and human.') }}">
+  <meta name="robots" content="index,follow">
+  <meta property="og:site_name" content="HelpChain">
+  <meta property="og:title" content="{{ _('HelpChain - Get help, become a volunteer') }}">
+  <meta property="og:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ request.url }}">
+  <link rel="canonical" href="{{ request.base_url }}">
+  <meta property="og:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ _('HelpChain - Get help, become a volunteer') }}">
+  <meta name="twitter:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
+  <meta name="twitter:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
+{% endblock %}
+
+{% block content %}
+<section class="container py-4 py-lg-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <h1 class="display-5 fw-semibold mb-3">
+        {{ _('Help that reaches the right person — fast and human.') }}
+      </h1>
+      <p class="lead text-body-secondary mb-4">
+        {{ _('Submit a request or join as a volunteer. Starting in France, expanding across Europe.') }}
+      </p>
+
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary btn-lg" href="{{ url_for('main.submit_request') }}">
+          {{ _('Submit a request') }}
+        </a>
+
+        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('main.volunteer_dashboard') }}">
+          {{ _('I want to help') }}
+        </a>
+
+        <button class="btn btn-outline-secondary btn-lg" type="button" disabled title="{{ _('Coming soon') }}">
+          {{ _('I am a professional') }}
+        </button>
+      </div>
+
+      <div class="mt-3 small text-body-secondary">
+        {{ _('Moderated • Minimal data • No spam • MVP in France') }}
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="p-4 rounded-4 border bg-body-tertiary">
+        <div class="fw-semibold mb-2">{{ _('In 3 steps') }}</div>
+        <ol class="mb-0 text-body-secondary">
+          <li>{{ _('Submit a request (2 min).') }}</li>
+          <li>{{ _('Smart matching to volunteers/pros.') }}</li>
+          <li>{{ _('Follow the status and next steps.') }}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container pb-4 pb-lg-5">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="p-4 rounded-4 border h-100">
+        <div class="fw-semibold mb-2">{{ _('I need help') }}</div>
+        <div class="text-body-secondary">{{ _('Admin, health, transport, support…') }}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-4 rounded-4 border h-100">
+        <div class="fw-semibold mb-2">{{ _('I want to help') }}</div>
+        <div class="text-body-secondary">{{ _('Requests matched by time and location.') }}</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-4 rounded-4 border h-100">
+        <div class="fw-semibold mb-2">{{ _('I am a professional') }}</div>
+        <div class="text-body-secondary">{{ _('Structured requests, clear rules, real impact.') }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container pb-5">
+  <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
+    <div>
+      <h2 class="h4 mb-1">{{ _('Latest requests') }}</h2>
+      <div class="text-body-secondary">{{ _('A quick preview — open details to help.') }}</div>
+    </div>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.volunteer_dashboard') }}">
+      {{ _('See all') }}
+    </a>
+  </div>
+
+  <div class="row g-3">
+    {% for r in latest_requests %}
+      <div class="col-md-6 col-lg-4">
+        <div class="p-4 rounded-4 border h-100">
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <div class="fw-semibold">{{ r.title }}</div>
+            <span class="badge text-bg-light">{{ status_meta(r.status).label }}</span>
+          </div>
+
+          <div class="small text-body-secondary mb-2">
+            <span class="me-2">📍 {{ r.city or r.location_text or _('—') }}</span>
+          </div>
+
+          <div class="text-body-secondary mb-3">
+            {{ (r.description or r.message or '')|truncate(120, True, '…') }}
+          </div>
+
+          <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" href="{{ url_for('main.volunteer_request_details', req_id=r.id) }}">
+              {{ _('View details') }}
+            </a>
+            <a class="btn btn-primary" href="{{ url_for('main.volunteer_request_details', req_id=r.id) }}">
+              {{ _("I'll help") }}
+            </a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12">
+        <div class="p-4 rounded-4 border bg-body-tertiary text-body-secondary">
+          {{ _('No requests yet. Be the first to submit one.') }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

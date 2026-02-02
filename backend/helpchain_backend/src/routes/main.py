@@ -10,13 +10,16 @@ from flask import (
     current_app,
     send_from_directory,
     make_response,
+    abort,
 )
+from types import SimpleNamespace
 from werkzeug.security import check_password_hash
 from flask_babel import get_locale as babel_get_locale
 from datetime import timedelta, datetime
 
 from ..extensions import limiter
 from ..models import Request, Volunteer, db, utc_now
+from ..models.volunteer_interest import VolunteerInterest
 from ..category_data import CATEGORIES, ALIASES, COMMON
 from sqlalchemy import or_, func
 from functools import wraps
@@ -168,7 +171,15 @@ def inject_template_helpers():
 @main_bp.route("/", methods=["GET"])
 def index():
     """Главна страница"""
-    return render_template("home_new.html"), 200
+    latest_requests = (
+        Request.query
+        .filter(Request.deleted_at.is_(None))
+        .filter(Request.is_archived == 0)
+        .order_by(Request.created_at.desc())
+        .limit(6)
+        .all()
+    )
+    return render_template("home_new_slim.html", latest_requests=latest_requests), 200
 
 
 @main_bp.get("/lang/<locale>")
@@ -258,6 +269,7 @@ def volunteer_login():
 def volunteer_logout():
     session.pop("volunteer_id", None)
     session.pop("just_logged_in", None)
+    session.pop("demo_pending", None)
     return redirect(url_for("main.index"), code=303)
 
 
@@ -292,6 +304,40 @@ def volunteer_dashboard():
         r for r in open_requests if is_request_matching_volunteer(r, volunteer)
     ]
 
+    pending_ids = set(
+        rid for (rid,) in db.session.query(VolunteerInterest.request_id)
+        .filter(
+            VolunteerInterest.volunteer_id == volunteer.id,
+            VolunteerInterest.status == "pending",
+        ).all()
+    )
+
+    # --- My interests (dashboard lists) ---
+    my_interests = (
+        db.session.query(VolunteerInterest, Request)
+        .join(Request, Request.id == VolunteerInterest.request_id)
+        .filter(VolunteerInterest.volunteer_id == volunteer.id)
+        .order_by(VolunteerInterest.created_at.desc())
+        .limit(30)
+        .all()
+    )
+
+    my_pending: list[dict] = []
+    my_approved: list[dict] = []
+    my_rejected: list[dict] = []
+
+    for vi, req in my_interests:
+        row = {"vi": vi, "req": req}
+        status_norm = (vi.status or "").lower()
+        if status_norm == "pending":
+            my_pending.append(row)
+        elif status_norm == "approved":
+            my_approved.append(row)
+        elif status_norm == "rejected":
+            my_rejected.append(row)
+        else:
+            my_pending.append(row)  # fallback bucket
+
     current_app.logger.info(
         "Matching check",
         extra={
@@ -305,7 +351,123 @@ def volunteer_dashboard():
         volunteer=volunteer,
         matches=matched_requests,
         just_logged_in=bool(just_logged_in),
+        pending_ids=pending_ids,
+        my_pending=my_pending,
+        my_approved=my_approved,
+        my_rejected=my_rejected,
     ), 200
+
+
+@main_bp.get("/volunteer/requests/<int:req_id>")
+@require_volunteer_login
+def volunteer_request_details(req_id: int):
+    """Детайли за заявка, достъпни за логнат доброволец."""
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login", next=request.path))
+
+    req = db.session.get(Request, req_id)
+    if not req:
+        abort(404)
+
+    vi = (
+        VolunteerInterest.query.filter_by(
+            volunteer_id=volunteer.id, request_id=req.id
+        )
+        .order_by(VolunteerInterest.id.desc())
+        .first()
+    )
+
+    already_pending = bool(vi and vi.status == "pending")
+    already_approved = bool(vi and vi.status == "approved")
+    already_rejected = bool(vi and vi.status == "rejected")
+
+    # опционален контрол: показваме само ако е match/отворена
+    # if not is_request_matching_volunteer(req, volunteer):
+    #     abort(403)
+
+    return render_template(
+        "volunteer_request_details.html",
+        req=req,
+        volunteer=volunteer,
+        is_pending=already_pending,
+        already_pending=already_pending,
+        already_approved=already_approved,
+        already_rejected=already_rejected,
+        is_demo=False,
+    ), 200
+
+
+@main_bp.get("/volunteer/requests/demo")
+@require_volunteer_login
+def volunteer_request_demo():
+    """Demo детайли за примера в таблото."""
+    volunteer = _current_volunteer()
+    already_pending = bool(session.get("demo_pending"))
+    demo_req = SimpleNamespace(
+        id="demo",
+        title="Примерна заявка",
+        city="Paris",
+        created_at="току-що",
+        description="Човек търси помощ за документи и насоки къде да ги подаде.",
+    )
+    return render_template(
+        "volunteer_request_details.html",
+        req=demo_req,
+        volunteer=volunteer,
+        is_pending=already_pending,
+        already_pending=already_pending,
+        already_approved=False,
+        already_rejected=False,
+        is_demo=True,
+    ), 200
+
+
+@main_bp.post("/volunteer/requests/<int:req_id>/help")
+@require_volunteer_login
+def volunteer_help(req_id: int):
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login", next=request.path))
+
+    current_app.logger.info("VOL_HELP DB=%s", db.engine.url)
+    current_app.logger.info("VOL_HELP req_id=%s", req_id)
+
+    req = db.session.get(Request, req_id)
+    if not req:
+        abort(404)
+
+    interest = VolunteerInterest.query.filter_by(
+        volunteer_id=volunteer.id, request_id=req.id
+    ).one_or_none()
+
+    if interest is None:
+        interest = VolunteerInterest(
+            volunteer_id=volunteer.id,
+            request_id=req.id,
+            status="pending",
+        )
+        db.session.add(interest)
+    else:
+        interest.status = "pending"
+
+    current_app.logger.info("VOL_HELP about to commit volunteer_id=%s request_id=%s", volunteer.id, req.id)
+    db.session.commit()
+    current_app.logger.info("VOL_HELP committed interest_id=%s status=%s", interest.id, interest.status)
+
+    if request.headers.get("X-Requested-With") == "fetch":
+        return jsonify({"ok": True, "status": interest.status})
+
+    return redirect(url_for("main.volunteer_request_details", req_id=req_id))
+
+
+@main_bp.post("/volunteer/requests/demo/help")
+@require_volunteer_login
+def volunteer_request_help_demo():
+    """Demo: не записваме нищо, само връщаме UX feedback."""
+    session["demo_pending"] = True
+    flash("✅ Благодарим! Интересът ти е отбелязан (демо).", "success")
+    return redirect(url_for("main.volunteer_request_demo"))
 
 
 @main_bp.route("/volunteer/profile", methods=["GET", "POST"])
