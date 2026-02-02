@@ -1,25 +1,7 @@
 {# TEMPLATE SOURCE: /templates/home_new_slim.html #}
 {% extends "base.html" %}
 
-{% block title %}{{ _('HelpChain - Get help, become a volunteer') }}{% endblock %}
-
-{% block head %}
-  <meta name="description" content="{{ _('HelpChain connects people in need with verified volunteers - fast, safe and human.') }}">
-  <meta name="robots" content="index,follow">
-  <meta property="og:site_name" content="HelpChain">
-  <meta property="og:title" content="{{ _('HelpChain - Get help, become a volunteer') }}">
-  <meta property="og:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="{{ request.url }}">
-  <link rel="canonical" href="{{ request.base_url }}">
-  <meta property="og:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ _('HelpChain - Get help, become a volunteer') }}">
-  <meta name="twitter:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
-  <meta name="twitter:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
-{% endblock %}
+{% block title %}{{ _("HelpChain — Get help, become a volunteer") }}{% endblock %}
 
 {% block content %}
 <section class="container py-4 py-lg-5">
