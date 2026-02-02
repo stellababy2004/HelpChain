@@ -182,6 +182,28 @@ def index():
     return render_template("home_new_slim.html", latest_requests=latest_requests), 200
 
 
+@main_bp.get("/set-lang/<lang>")
+def set_lang_switch(lang):
+    lang = (lang or "").lower().strip()
+    if lang not in ("bg", "fr", "en"):
+        lang = "en"
+
+    session["lang"] = lang
+
+    next_url = request.referrer or url_for("main.index")
+    try:
+        ref_host = urlparse(request.host_url).netloc
+        target_host = urlparse(next_url).netloc
+        if ref_host != target_host:
+            next_url = url_for("main.index")
+    except Exception:
+        next_url = url_for("main.index")
+
+    resp = make_response(redirect(next_url))
+    resp.set_cookie("hc_lang", lang, max_age=60 * 60 * 24 * 365, samesite="Lax")
+    return resp
+
+
 @main_bp.get("/lang/<locale>")
 def set_lang(locale):
     locale = (locale or "").lower()

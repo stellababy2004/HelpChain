@@ -194,16 +194,18 @@
             </a>
           </div>
           {% endif %}
-          <form method="post" action="{{ url_for('main.set_language') }}" class="d-flex align-items-center ms-3 ms-lg-3">
-            <input type="hidden" name="next" value="{{ request.path }}">
-            <select name="lang" class="form-select form-select-sm" onchange="this.form.submit()"
-                    aria-label="{{ _('Language') }}" title="{{ _('Language') }}">
-              <option value="fr" {% if get_locale().language == 'fr' %}selected{% endif %}>FR</option>
-              <option value="en" {% if get_locale().language == 'en' %}selected{% endif %}>EN</option>
-              <option value="bg" {% if get_locale().language == 'bg' %}selected{% endif %}>BG</option>
-            </select>
-          </form>
-          <span class="ms-2 small text-muted">lang={{ get_locale().language }}</span>
+          {% set cur = (get_locale()|string)[:2] %}
+          <div class="d-flex align-items-center gap-2 ms-3 ms-lg-3">
+            <a class="btn btn-sm {{ 'btn-light text-primary' if cur == 'bg' else 'btn-outline-light' }}"
+               href="{{ url_for('main.set_lang_switch', lang='bg') }}"
+               aria-label="BG">BG</a>
+            <a class="btn btn-sm {{ 'btn-light text-primary' if cur == 'fr' else 'btn-outline-light' }}"
+               href="{{ url_for('main.set_lang_switch', lang='fr') }}"
+               aria-label="FR">FR</a>
+            <a class="btn btn-sm {{ 'btn-light text-primary' if cur == 'en' else 'btn-outline-light' }}"
+               href="{{ url_for('main.set_lang_switch', lang='en') }}"
+               aria-label="EN">EN</a>
+          </div>
         </div>
       </div>
     </nav>
