@@ -158,3 +158,20 @@ temp.txt
 
 # local tooling
 .hintrc
+
+# --- Local / temp ---
+_quarantine/
+templates/admin/__write_test.tmp
+
+# --- DB artifacts ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Python ---
+__pycache__/
+*.pyc
+
+# --- IDE ---
+.vscode/
+.idea/
