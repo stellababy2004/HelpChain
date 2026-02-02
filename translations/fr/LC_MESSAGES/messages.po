@@ -500,13 +500,13 @@ msgstr "HelpChain — Demander de l’aide, devenir bénévole"
 
 #: templates/home_new_slim.html:11
 msgid "Real help - fast, safe, and human."
-msgstr ""
+msgstr "De l’aide concrète — rapide, sûre et humaine."
 
 #: templates/home_new_slim.html:14
 msgid ""
 "Submit a request in 2 minutes. Verified volunteers respond, and you can "
 "follow every step."
-msgstr ""
+msgstr "Déposez une demande en 2 minutes. Des bénévoles vérifiés répondent, et vous suivez chaque étape."
 
 #: templates/home_new_slim.html:23 templates/home_new_slim.html:61
 #, fuzzy
@@ -515,7 +515,7 @@ msgstr "Vous voulez aider ?"
 
 #: templates/home_new_slim.html:27
 msgid "I'm a professional"
-msgstr ""
+msgstr "Je suis un professionnel"
 
 #: templates/home_new_slim.html:27
 #, fuzzy
