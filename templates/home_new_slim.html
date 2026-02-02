@@ -1,14 +1,14 @@
 {# TEMPLATE SOURCE: /templates/home_new_slim.html #}
 {% extends "base.html" %}
 
-{% block title %}{{ _("HelpChain — Get help, become a volunteer") }}{% endblock %}
+{% block title %}{{ _("HelpChain - Get help, become a volunteer") }}{% endblock %}
 
 {% block content %}
 <section class="container py-4 py-lg-5">
   <div class="row align-items-center g-4">
     <div class="col-lg-7">
       <h1 class="display-5 fw-semibold mb-3">
-        {{ _("Real help — fast, safe, and human.") }}
+        {{ _("Real help - fast, safe, and human.") }}
       </h1>
       <p class="lead text-body-secondary mb-4">
         {{ _("Submit a request in 2 minutes. Verified volunteers respond, and you can follow every step.") }}
@@ -75,7 +75,7 @@
   <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
     <div>
       <h2 class="h4 mb-1">{{ _('Latest requests') }}</h2>
-      <div class="text-body-secondary">{{ _('A quick preview — open details to help.') }}</div>
+      <div class="text-body-secondary">{{ _('A quick preview - open details to help.') }}</div>
     </div>
     <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.volunteer_dashboard') }}">
       {{ _('See all') }}
