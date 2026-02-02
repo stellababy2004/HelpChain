@@ -9,53 +9,49 @@ from flask_babel import get_locale as babel_get_locale
 
 from backend.extensions import babel, db, migrate
 from backend.models import AdminUser
+from backend.helpchain_backend.src.statuses import (
+    REQUEST_STATUS_META,
+    REQUEST_STATUS_ORDER,
+    normalize_request_status,
+)
 
 load_dotenv()
 
-SUPPORTED_LOCALES = {"bg", "fr", "en"}
+SUPPORTED_LOCALES = ("bg", "fr", "en")
 DEFAULT_LOCALE = "en"
-FR_CORE_REGIONS = {"FR", "CA", "CH"}
 
 
-def select_locale():
-    # 0) Език от URL ?lang=fr  (най-висок приоритет за тестове и ръчни линкове)
-    url_lang = (request.args.get("lang") or "").lower()
-    if url_lang in SUPPORTED_LOCALES:
-        session["lang"] = url_lang
-        session.pop("show_lang_choice_banner", None)
-        return url_lang
+def _country_from_headers() -> str | None:
+    """Extract country code from common edge/CDN headers."""
+    for header in ("CF-IPCountry", "X-Vercel-IP-Country", "X-Country"):
+        cc = request.headers.get(header)
+        if cc:
+            return cc.upper()
+    return None
 
-    # 1) Cookie
-    cookie_lang = (request.cookies.get("hc_lang") or "").lower()
-    if cookie_lang in SUPPORTED_LOCALES:
-        session.pop("show_lang_choice_banner", None)
-        return cookie_lang
 
-    # 2) Session
-    sess_lang = (session.get("lang") or "").lower()
-    if sess_lang in SUPPORTED_LOCALES:
-        session.pop("show_lang_choice_banner", None)
-        return sess_lang
+def _locale_selector():
+    # 1) Explicit query param always wins
+    q = (request.args.get("lang") or "").lower()
+    if q in SUPPORTED_LOCALES:
+        session["lang"] = q
+        return q
 
-    # 3) Accept-Language (компромисната логика за FR)
-    best = request.accept_languages.best_match(["bg", "fr", "en"])
+    # 2) Explicit cookie / session choice
+    for source in ((request.cookies.get("hc_lang") or ""), (session.get("lang") or "")):
+        val = source.lower()
+        if val in SUPPORTED_LOCALES:
+            return val
 
-    header = request.headers.get("Accept-Language", "") or ""
-    primary = header.split(",")[0].strip()
-    region = None
-    if "-" in primary:
-        parts = primary.split("-", 1)
-        if parts[0].lower() == "fr":
-            region = parts[1].upper()
-
-    if best == "fr":
-        if region and region not in FR_CORE_REGIONS:
-            session["show_lang_choice_banner"] = True
-        else:
-            session.pop("show_lang_choice_banner", None)
+    # 3) Country-based default
+    cc = _country_from_headers()
+    if cc == "BG":
+        return "bg"
+    if cc == "FR":
         return "fr"
 
-    session.pop("show_lang_choice_banner", None)
+    # 4) Browser preference, then default
+    best = request.accept_languages.best_match(SUPPORTED_LOCALES)
     return best or DEFAULT_LOCALE
 
 
@@ -82,9 +78,12 @@ def create_app(config_object=None) -> Flask:
         pass
 
     app.config["PROPAGATE_EXCEPTIONS"] = True
+    instance_db_path = os.path.join(os.path.abspath(os.path.join(base_dir, "..", "..", "..")), "instance", "app.db")
     app.config.setdefault(
         "SQLALCHEMY_DATABASE_URI",
-        os.getenv("SQLALCHEMY_DATABASE_URI", "sqlite:///helpchain.db"),
+        os.getenv("SQLALCHEMY_DATABASE_URI")
+        or os.getenv("DATABASE_URL")
+        or f"sqlite:///{instance_db_path}",
     )
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", root_translations)
@@ -112,18 +111,19 @@ def create_app(config_object=None) -> Flask:
 
     # i18n (Babel)
     try:
-        babel.init_app(app, locale_selector=select_locale)
+        babel.init_app(app, locale_selector=_locale_selector)
     except TypeError:
         babel.init_app(app)
 
         @babel.localeselector
         def _get_locale():
-            return select_locale()
+            return _locale_selector()
 
     # Ensure models are imported so Alembic sees them
     with app.app_context():
         import backend.models  # noqa
         import backend.models_with_analytics  # noqa
+        import backend.helpchain_backend.src.models.volunteer_interest  # noqa
 
     # CSRF helper for Jinja (if templates call {{ csrf_token() }})
     app.jinja_env.globals["csrf_token"] = generate_csrf
@@ -176,6 +176,26 @@ def create_app(config_object=None) -> Flask:
         app.register_blueprint(admin_bp)
     except Exception as e:
         app.logger.info("admin blueprint not loaded: %s", e)
+
+    # Status helpers for templates
+    @app.context_processor
+    def inject_status_helpers():
+        def status_meta(s: str):
+            key = normalize_request_status(s)
+            return REQUEST_STATUS_META.get(
+                key,
+                {
+                    "label": key or "—",
+                    "icon": "bi-question-circle",
+                    "badge_class": "badge bg-light text-dark",
+                },
+            )
+
+        return {
+            "REQUEST_STATUS_META": REQUEST_STATUS_META,
+            "REQUEST_STATUS_ORDER": REQUEST_STATUS_ORDER,
+            "status_meta": status_meta,
+        }
 
     return app
 

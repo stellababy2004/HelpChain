@@ -24,11 +24,13 @@ class Config:
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
     # ✅ Database
-    # Prefer explicit SQLALCHEMY_DATABASE_URI; fall back to Render's DATABASE_URL; else sqlite app.db.
+    # Prefer explicit env; else Render/Heroku DATABASE_URL; else project instance/app.db (absolute to avoid CWD drift)
+    INSTANCE_PATH = os.path.join(BASE_DIR, "instance")
+    DEFAULT_SQLITE_PATH = os.path.join(INSTANCE_PATH, "app.db")
     _db_url = (
         os.getenv("SQLALCHEMY_DATABASE_URI")
         or os.getenv("DATABASE_URL")
-        or "sqlite:///app.db"
+        or f"sqlite:///{DEFAULT_SQLITE_PATH}"
     )
     SQLALCHEMY_DATABASE_URI = _db_url
 
@@ -62,4 +64,8 @@ class Config:
 
     # --- JWT for API ---
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY") or os.getenv("SECRET_KEY")
+
+    # --- i18n / Babel ---
+    BABEL_DEFAULT_LOCALE = "en"
+    BABEL_DEFAULT_TIMEZONE = "Europe/Paris"
 
