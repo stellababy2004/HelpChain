@@ -46,8 +46,10 @@ def _locale_selector():
     # 3) Country-based default
     cc = _country_from_headers()
     if cc == "BG":
+        session["lang"] = "bg"
         return "bg"
     if cc == "FR":
+        session["lang"] = "fr"
         return "fr"
 
     # 4) Browser preference, then default
@@ -118,6 +120,15 @@ def create_app(config_object=None) -> Flask:
         @babel.localeselector
         def _get_locale():
             return _locale_selector()
+
+    @app.after_request
+    def add_content_language_header(resp):
+        # Surface the resolved locale for debugging and intermediaries.
+        try:
+            resp.headers["Content-Language"] = str(babel_get_locale())
+        except Exception:
+            pass
+        return resp
 
     # Ensure models are imported so Alembic sees them
     with app.app_context():
