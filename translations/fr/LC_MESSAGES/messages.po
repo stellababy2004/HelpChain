@@ -347,7 +347,6 @@ msgid "Logout"
 msgstr "Déconnexion"
 
 #: templates/base.html:138
-#, fuzzy
 msgid "My dashboard"
 msgstr "Tableau de bord"
 
@@ -2354,4 +2353,3 @@ msgstr "Aucun résultat."
 
 #~ msgid "A quick preview — open details to help."
 #~ msgstr ""
-
