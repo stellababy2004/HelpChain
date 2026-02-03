@@ -14,7 +14,7 @@ from flask import (
 )
 from types import SimpleNamespace
 from werkzeug.security import check_password_hash
-from flask_babel import get_locale as babel_get_locale
+from flask_babel import get_locale as babel_get_locale, gettext as _
 from datetime import timedelta, datetime
 
 from ..extensions import limiter
@@ -683,7 +683,12 @@ def submit_request():
             draft=session["request_draft"],
         )
 
-    return render_template("submit_request.html")
+    trust_items = [
+        ("&#10003;", "fas fa-shield-heart", _("Verified volunteers only")),
+        ("&#9733;", "fas fa-user-clock", _("Fast matching - no bureaucracy")),
+        ("&#9889;", "fas fa-lock", _("We keep your data private")),
+    ]
+    return render_template("submit_request.html", trust_items=trust_items)
 
 
 @main_bp.post("/submit_request/confirm")

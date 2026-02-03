@@ -111,9 +111,9 @@
         Опишете какво е нужно и къде се намирате. Най-близките ни проверени доброволци ще откликнат до 24 часа.
       </p>
       <ul class="hc-trust" aria-label="{{ _('Trust signals') }}">
-        <li><i class="fas fa-shield-heart"></i> {{ _('Verified volunteers only') }}</li>
-        <li><i class="fas fa-user-clock"></i> {{ _('Fast matching, no bureaucracy') }}</li>
-        <li><i class="fas fa-lock"></i> {{ _('We keep your data private') }}</li>
+        {% for mark, icon, text in trust_items %}
+          <li><i class="{{ icon }}"></i> {{ text }}</li>
+        {% endfor %}
       </ul>
     </div>
     <div class="hc-badge">
@@ -160,9 +160,9 @@
           </div>
 
           <ul class="hc-form-trust" aria-label="{{ _('What happens next') }}">
-            <li>✓ {{ _('A verified volunteer will contact you') }}</li>
-            <li>★ {{ _('We never sell your data') }}</li>
-            <li>⚡ {{ _('Fast matching - no bureaucracy') }}</li>
+            {% for mark, icon, text in trust_items %}
+              <li>{{ mark|safe }} {{ text }}</li>
+            {% endfor %}
           </ul>
         </div>
 
@@ -326,9 +326,9 @@
 
   <div class="hc-expectations">
     <h3 class="h5 mb-3">Как се намира подходящият човек</h3>
-    <p>Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други – по-бавно. Това зависи от наличността на хората, не от важността на проблема.</p>
+    <p>Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други - по-бавно. Това зависи от наличността на хората, не от важността на проблема.</p>
     <hr class="my-3">
-    <p>Когато доброволец се интересува от твоята заявка, той може да се свърже с теб. От този момент вие решавате заедно дали и как да продължите. HelpChain улеснява връзката — решенията са между хората.</p>
+    <p>Когато доброволец се интересува от твоята заявка, той може да се свърже с теб. От този момент вие решавате заедно дали и как да продължите. HelpChain улеснява връзката - решенията са между хората.</p>
     <p class="muted"><em>Няма гарантирано време за отговор. При спешни или опасни ситуации се обърни към местните спешни служби.</em></p>
   </div>
 </div>
@@ -341,7 +341,7 @@
 
 <style>
 /* =========================
-   Warm Trust – Submit Request
+   Warm Trust - Submit Request
    Scoped & Safe
    ========================= */
 
@@ -378,7 +378,7 @@
   background: #dcf3ea;
 }
 
-/* Inputs – softer, more human */
+/* Inputs - softer, more human */
 input,
 select,
 textarea {
@@ -445,3 +445,4 @@ button[type="submit"]:active {
   font-size: 0.9rem;
 }
 </style>
+
