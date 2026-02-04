@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-02 22:26+0100\n"
+"POT-Creation-Date: 2026-02-04 11:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,6 +39,30 @@ msgstr ""
 
 #: backend/helpchain_backend/src/copy.py:20
 msgid "Категории помощ"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:306
+msgid "Да поемаш рискове или да заместваш спешни служби."
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:307
+msgid "Да помагаш, ако не се чувстваш комфортно или безопасно."
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:308
+msgid "Да приемаш задължителни ангажименти - отказът винаги е приемлив."
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:696
+msgid "Verified volunteers only"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:697
+msgid "Fast matching - no bureaucracy"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:698
+msgid "We keep your data private"
 msgstr ""
 
 #: templates/admin_analytics.html:459
@@ -180,11 +204,13 @@ msgstr ""
 msgid "Телефон"
 msgstr ""
 
-#: templates/admin_dashboard.html:321 templates/volunteer_profile.html:136
+#: templates/admin_dashboard.html:321 templates/volunteer_dashboard.html:69
+#: templates/volunteer_profile.html:136
 msgid "Локация"
 msgstr ""
 
-#: templates/admin_dashboard.html:322 templates/volunteer_profile.html:142
+#: templates/admin_dashboard.html:322 templates/volunteer_dashboard.html:83
+#: templates/volunteer_profile.html:142
 msgid "Умения"
 msgstr ""
 
@@ -214,6 +240,7 @@ msgid "Categories"
 msgstr ""
 
 #: templates/all_categories.html:70 templates/all_categories.html:137
+#: templates/volunteer_login.html:163
 msgid "Become a volunteer"
 msgstr ""
 
@@ -250,7 +277,7 @@ msgstr ""
 msgid "Join our community of volunteers."
 msgstr ""
 
-#: templates/all_categories.html:146
+#: templates/all_categories.html:146 templates/volunteer_login.html:168
 msgid "Back to home page"
 msgstr ""
 
@@ -285,12 +312,12 @@ msgstr ""
 
 #: templates/base.html:8
 msgid ""
-"HelpChain connects people in need with verified volunteers — fast, safe "
+"HelpChain connects people in need with verified volunteers - fast, safe "
 "and human."
 msgstr ""
 
-#: templates/base.html:12 templates/base.html:23
-msgid "HelpChain — Get help, become a volunteer"
+#: templates/base.html:12 templates/base.html:23 templates/home_new_slim.html:4
+msgid "HelpChain - Get help, become a volunteer"
 msgstr ""
 
 #: templates/base.html:13 templates/base.html:24
@@ -474,10 +501,6 @@ msgstr ""
 
 #: templates/export_data.html:393
 msgid "Export"
-msgstr ""
-
-#: templates/home_new_slim.html:4
-msgid "HelpChain - Get help, become a volunteer"
 msgstr ""
 
 #: templates/home_new_slim.html:11
@@ -686,13 +709,13 @@ msgstr ""
 
 #: templates/privacy.html:21
 msgid ""
-"Account and contact details you provide (name, email, phone — if you "
+"Account and contact details you provide (name, email, phone - if you "
 "choose)."
 msgstr ""
 
 #: templates/privacy.html:22
 msgid ""
-"Request information you submit (category, description, location — if "
+"Request information you submit (category, description, location - if "
 "needed for the service)."
 msgstr ""
 
@@ -762,18 +785,6 @@ msgstr ""
 msgid "Trust signals"
 msgstr ""
 
-#: templates/submit_request.html:114
-msgid "Verified volunteers only"
-msgstr ""
-
-#: templates/submit_request.html:115
-msgid "Fast matching, no bureaucracy"
-msgstr ""
-
-#: templates/submit_request.html:116
-msgid "We keep your data private"
-msgstr ""
-
 #: templates/submit_request.html:120
 msgid "~1 minute"
 msgstr ""
@@ -784,18 +795,6 @@ msgstr ""
 
 #: templates/submit_request.html:162
 msgid "What happens next"
-msgstr ""
-
-#: templates/submit_request.html:163
-msgid "A verified volunteer will contact you"
-msgstr ""
-
-#: templates/submit_request.html:164
-msgid "We never sell your data"
-msgstr ""
-
-#: templates/submit_request.html:165
-msgid "Fast matching - no bureaucracy"
 msgstr ""
 
 #: templates/submit_request.html:309
@@ -865,17 +864,247 @@ msgstr ""
 msgid "Кандидатурата е получена"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:2
+#: templates/volunteer_dashboard.html:2 templates/volunteer_dashboard.html:11
 msgid "Моето табло"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:172
-#: templates/volunteer_dashboard.html:173
+#: templates/volunteer_dashboard.html:13
+msgid ""
+"Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не "
+"се поема автоматично — <strong>ти решаваш</strong>."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:26
+msgid "Има активност в твоя район"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:28
+msgid "В момента е спокойно"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:39
+msgid "Има нови заявки и ще виждаш подходящите тук."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:41 templates/volunteer_dashboard.html:201
+msgid ""
+"Това е нормално — HelpChain показва <strong>само реални нужди</strong>. "
+"Когато се появи заявка, която пасва на профила ти, ще я видиш тук."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:47
+msgid "Настрой профила"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:50
+msgid "Виж подходящи заявки"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:58 templates/volunteer_profile.html:80
+msgid "Готовност за свързване"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:60
+msgid "Профилът ти е твоят филтър. По-точен профил = по-точни заявки."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:71 templates/volunteer_dashboard.html:78
 msgid "не е зададена"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:174
-msgid "не са зададени"
+#: templates/volunteer_dashboard.html:76 templates/volunteer_profile.html:139
+msgid "Наличност"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:86
+msgid "въведени"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:88
+msgid "липсват"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:95
+msgid "За да виждаш най-точните заявки, добави:"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:97
+msgid "локация"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:98
+msgid "2–3 умения"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:102
+msgid "Направи профила си готов"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:105
+msgid "Профилът ти е готов за свързване"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:107
+msgid "Редактирай профила"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:117
+msgid "Подходящи заявки"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:119
+msgid "Когато има нужда, която съвпада с теб, ще я видиш тук."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:122
+msgid ""
+"Виждаш това, защото заявката съвпада с твоята локация, наличност и "
+"умения. Ако не ти е удобно — просто пропускаш."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:129
+msgid ""
+"Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да "
+"решиш."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:140
+msgid "Нова заявка"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:143
+#: templates/volunteer_dashboard.html:273
+msgid "В изчакване"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:145
+msgid "Нова"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:164
+#: templates/volunteer_dashboard.html:231
+#: templates/volunteer_dashboard.html:885
+#, python-format
+msgid "Виждаш тази заявка, защото съвпада с профила ти в %(loc)s"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:166
+#: templates/volunteer_dashboard.html:233
+#: templates/volunteer_dashboard.html:887
+msgid "Виждаш тази заявка, защото съвпада с профила ти"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:173
+msgid "Виж детайли"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:178
+msgid "Очаква се кратко потвърждение от екипа."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:185
+msgid "Ще помогна"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:191
+msgid "Нищо не се поема автоматично."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:199
+msgid "Няма активни заявки в момента"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:204
+msgid "По-точна локация + 2–3 умения = по-бърз match."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:207
+msgid "Виж пример"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:209
+msgid "Това е само пример — реалните заявки ще се покажат автоматично."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:215
+msgid "Примерна заявка"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:219
+msgid "току-що"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:222
+msgid "Пример (демо)"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:226
+msgid "Току-що се появи. Провери дали ти е удобно."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:228
+msgid "Човек търси помощ за документи и насоки къде да ги подаде."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:259
+#: templates/volunteer_dashboard.html:265
+msgid "Моите заявки"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:261
+msgid "Виж подадените от теб заявки и статуса им."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:284
+msgid "Одобрени"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:295
+msgid "Отказани"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:304
+msgid "Няма заявки в този статус"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:318
+msgid "Виж"
+msgstr ""
+
+#: templates/volunteer_login.html:6
+msgid "Volunteer login - HelpChain"
+msgstr ""
+
+#: templates/volunteer_login.html:113
+msgid "Start with peace of mind."
+msgstr ""
+
+#: templates/volunteer_login.html:114
+msgid "No schedules. No pressure."
+msgstr ""
+
+#: templates/volunteer_login.html:136
+msgid "Email address"
+msgstr ""
+
+#: templates/volunteer_login.html:145
+msgid "your@email.com"
+msgstr ""
+
+#: templates/volunteer_login.html:155
+msgid "Continue"
+msgstr ""
+
+#: templates/volunteer_login.html:157
+msgid "~2 min."
+msgstr ""
+
+#: templates/volunteer_login.html:173
+msgid "Login as a requester"
+msgstr ""
+
+#: templates/volunteer_login.html:186
+msgid "Sending..."
 msgstr ""
 
 #: templates/volunteer_profile.html:2
@@ -894,14 +1123,10 @@ msgstr ""
 msgid "Изход"
 msgstr ""
 
-#: templates/volunteer_profile.html:80
-msgid "Готовност за свързване"
-msgstr ""
-
 #: templates/volunteer_profile.html:82
 msgid ""
 "Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не "
-"се поема автоматично — ти решаваш."
+"се поема автоматично - ти решаваш."
 msgstr ""
 
 #: templates/volunteer_profile.html:88
@@ -925,17 +1150,13 @@ msgstr ""
 msgid "Как работи свързването →"
 msgstr ""
 
-#: templates/volunteer_profile.html:139
-msgid "Наличност"
-msgstr ""
-
 #: templates/volunteer_profile.html:152
 msgid "Попълни профила си"
 msgstr ""
 
 #: templates/volunteer_profile.html:154
 msgid ""
-"Това е всичко. Когато има заявка, която пасва — ще я видиш в таблото. "
+"Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. "
 "Няма автоматични ангажименти."
 msgstr ""
 
@@ -966,7 +1187,7 @@ msgid "Съвет:"
 msgstr ""
 
 #: templates/volunteer_profile.html:255
-msgid "Ако добавиш точна локация + 2–3 умения, шансът за match се вдига осезаемо."
+msgid "Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо."
 msgstr ""
 
 #: templates/admin/login.html:6 templates/admin/login.html:19

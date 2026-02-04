@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from flask import current_app
 from flask_login import login_user, login_required, logout_user, current_user
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from urllib.parse import urlparse, urljoin
 
 from flask import (
     Blueprint, render_template, request, redirect, url_for,
-    flash, session, current_app, jsonify, abort, Response, send_file
+    flash, session, jsonify, abort, Response, send_file
 )
 import time
 import json
@@ -16,10 +17,67 @@ from io import StringIO, BytesIO
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 
-from ..extensions import db
+from backend.extensions import db
 from ..models import AdminUser, Request, RequestActivity, RequestLog, RequestMetric, Volunteer
+from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
 from backend.models import utc_now
 from ..config import Config
+from backend.helpchain_backend.src.statuses import REQUEST_STATUS_ALLOWED, normalize_request_status
+from typing import Optional
+
+
+def _log_status_change_once(req_id: int, old_status: Optional[str], new_status: Optional[str], actor_admin_id: Optional[int]):
+    """Add a single status_change activity only when there is a real change."""
+    if (old_status or "") == (new_status or ""):
+        return
+    db.session.add(
+        RequestActivity(
+            request_id=req_id,
+            actor_admin_id=actor_admin_id,
+            action="status_change",
+            old_value=old_status,
+            new_value=new_status,
+        )
+    )
+
+
+def _is_request_locked(req) -> bool:
+    """Consider a request locked when status is done or cancelled (canonical)."""
+    s = normalize_request_status(getattr(req, "status", None))
+    return s in ("done", "cancelled")
+
+
+def _now_utc():
+    return datetime.now(timezone.utc)
+
+
+def _admin_id():
+    return getattr(current_user, "id", None)
+
+
+LOCK_TTL_MINUTES = 30
+
+
+def _lock_expired(req, now: datetime | None = None) -> bool:
+    """Return True if owned_at is older than LOCK_TTL_MINUTES."""
+    now = now or _now_utc()
+    owned_at = getattr(req, "owned_at", None)
+    if not owned_at:
+        return False
+    try:
+        if owned_at.tzinfo is None:
+            owned_at = owned_at.replace(tzinfo=timezone.utc)
+        return (now - owned_at).total_seconds() > LOCK_TTL_MINUTES * 60
+    except Exception:
+        return False
+
+
+def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
+    return bool(
+        getattr(req, "owner_id", None)
+        and getattr(req, "owner_id", None) != admin_id
+        and not _lock_expired(req, now or _now_utc())
+    )
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from backend.helpchain_backend.src.utils.mfa import (
@@ -30,6 +88,12 @@ from backend.helpchain_backend.src.utils.mfa import (
 )
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")  # single templates path via app.py
+
+
+@admin_bp.get("/")
+def admin_index():
+    """Redirect bare /admin to the main requests list."""
+    return redirect(url_for("admin.admin_requests"))
 
 
 def admin_required_404():
@@ -1069,64 +1133,147 @@ def update_status(req_id):
         if not getattr(current_user, "is_admin", False):
             return jsonify({"error": "Unauthorized"}), 403
 
-    new_status = request.form.get("status")
+    req = db.session.get(Request, req_id)
+    if not req:
+        return jsonify({"error": "Request not found"}), 404
+    if not can_edit_request(req, current_user):
+        abort(403)
 
-    if new_status:
-        from flask import abort
+    new_status = (request.form.get("status") or "").strip()
+    old_raw_status = req.status
+    old_status = normalize_request_status(old_raw_status)
+    new_status = normalize_request_status(new_status)
 
-        req = db.session.get(Request, req_id)
-        if not req:
-            return jsonify({"error": "Request not found"}), 404
-        if not can_edit_request(req, current_user):
-            abort(403)
-        old_status = req.status
-        req.status = new_status
-        closing_statuses = {"done", "rejected"}
-        if new_status in closing_statuses:
-            req.completed_at = utc_now()
-        else:
-            req.completed_at = None
-        # Activity + legacy request log (single commit)
-        log_request_activity(req, "status_change", old=old_status, new=new_status, actor_admin_id=getattr(current_user, "id", None))
-        # metrics
-        metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
-        if metric is None:
-            metric = RequestMetric(request_id=req.id)
-            db.session.add(metric)
-        if new_status == "done" and metric.time_to_complete is None and req.created_at:
-            try:
-                metric.time_to_complete = int((utc_now() - req.created_at).total_seconds())
-            except Exception:
-                pass
-        db.session.commit()
+    if new_status not in REQUEST_STATUS_ALLOWED:
+        current_app.logger.warning(
+            "ADMIN update_status blocked invalid new_status=%r for request_id=%s",
+            new_status,
+            req_id,
+        )
+        flash("Invalid status.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
-        # Изпращане на email при промяна на статус (graceful fallback)
+    # Guard: no-op changes shouldn't log noise
+    if not new_status or new_status == old_status:
+        if request.is_json or (request.accept_mimetypes and request.accept_mimetypes.best == "application/json"):
+            return jsonify({"success": False, "status": old_status, "message": "No status change."}), 200
+        flash("No status change.", "info")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    req.status = new_status
+    closing_statuses = {"done", "cancelled"}
+    if new_status in closing_statuses:
+        req.completed_at = utc_now()
+    else:
+        req.completed_at = None
+    # Activity + legacy request log (single commit)
+    log_request_activity(req, "status_change", old=old_status, new=new_status, actor_admin_id=getattr(current_user, "id", None))
+    # metrics
+    metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
+    if metric is None:
+        metric = RequestMetric(request_id=req.id)
+        db.session.add(metric)
+    if new_status == "done" and metric.time_to_complete is None and req.created_at:
         try:
-            from mail_service import send_notification_email
+            metric.time_to_complete = int((utc_now() - req.created_at).total_seconds())
+        except Exception:
+            pass
 
-            subject = f"Статусът на вашата заявка #{req.id} е променен на {new_status}"
-            recipient = getattr(req, "email", None)
-            recipient_name = getattr(req, "name", "Потребител")
-            content = f"Статусът на вашата заявка е променен на <b>{new_status}</b>.\n\nОписание: {req.description or ''}"
-            context = {
-                "subject": subject,
-                "recipient_name": recipient_name,
-                "content": content,
-                "request_id": req.id,
-                "new_status": new_status,
-                "description": req.description,
-                "updated_at": req.updated_at,
-            }
-            if recipient:
-                send_notification_email(recipient, subject, "email_template.html", context)
-        except ModuleNotFoundError:
-            import logging
+    # --- Bulletproof policy sync: VolunteerInterest follows Request.status + owner_id ---
+    from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
 
-            logging.info("[EMAIL] mail_service not configured; email sending skipped (dev mode)")
-        except Exception as e:
-            import logging
+    if new_status == "in_progress":
+        if not getattr(req, "owner_id", None):
+            current_app.logger.warning(
+                "Interest sync skipped: request_id=%s set to in_progress without owner_id",
+                req.id,
+            )
+        else:
+            q = VolunteerInterest.query.filter_by(request_id=req.id)
 
-            logging.warning(f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}")
+            # Ensure owner's latest interest exists and is approved
+            owner_latest = (
+                q.filter_by(volunteer_id=req.owner_id)
+                .order_by(VolunteerInterest.id.desc())
+                .first()
+            )
+            if owner_latest is None:
+                owner_latest = VolunteerInterest(
+                    request_id=req.id,
+                    volunteer_id=req.owner_id,
+                    status="approved",
+                )
+                db.session.add(owner_latest)
+                current_app.logger.info(
+                    "Interest sync: created approved owner interest (request_id=%s, volunteer_id=%s)",
+                    req.id, req.owner_id
+                )
+            elif owner_latest.status != "approved":
+                owner_latest.status = "approved"
+                db.session.add(owner_latest)
+                current_app.logger.info(
+                    "Interest sync: set owner interest to approved (request_id=%s, volunteer_id=%s)",
+                    req.id, req.owner_id
+                )
+
+            # Reject other pending interests
+            pending_others = (
+                q.filter(VolunteerInterest.status == "pending")
+                .filter(VolunteerInterest.volunteer_id != req.owner_id)
+                .all()
+            )
+            for vi_row in pending_others:
+                vi_row.status = "rejected"
+                db.session.add(vi_row)
+
+            if pending_others:
+                current_app.logger.info(
+                    "Interest sync: rejected %s pending interests (request_id=%s, owner_id=%s)",
+                    len(pending_others), req.id, req.owner_id
+                )
+
+    elif new_status in {"done", "cancelled"}:
+        q = VolunteerInterest.query.filter_by(request_id=req.id)
+        pending_all = q.filter(VolunteerInterest.status == "pending").all()
+        for vi_row in pending_all:
+            vi_row.status = "rejected"
+            db.session.add(vi_row)
+
+        if pending_all:
+            current_app.logger.info(
+                "Interest sync: rejected %s pending interests on close (request_id=%s, new_status=%s)",
+                len(pending_all), req.id, new_status
+            )
+
+    db.session.commit()
+
+    # Изпращане на email при промяна на статус (graceful fallback)
+    try:
+        from mail_service import send_notification_email
+
+        subject = f"Статусът на вашата заявка #{req.id} е променен на {new_status}"
+        recipient = getattr(req, "email", None)
+        recipient_name = getattr(req, "name", "Потребител")
+        content = f"Статусът на вашата заявка е променен на <b>{new_status}</b>.\n\nОписание: {req.description or ''}"
+        context = {
+            "subject": subject,
+            "recipient_name": recipient_name,
+            "content": content,
+            "request_id": req.id,
+            "new_status": new_status,
+            "description": req.description,
+            "updated_at": req.updated_at,
+        }
+        if recipient:
+            send_notification_email(recipient, subject, "email_template.html", context)
+    except ModuleNotFoundError:
+        import logging
+
+        logging.info("[EMAIL] mail_service not configured; email sending skipped (dev mode)")
+    except Exception as e:
+        import logging
+
+        logging.warning(f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}")
 
     # Ако е JSON/AJAX – връщаме JSON; иначе redirect за формата
     if request.is_json or (request.accept_mimetypes and request.accept_mimetypes.best == "application/json"):
@@ -1403,12 +1550,82 @@ def admin_request_details(req_id: int):
         .options(joinedload(Request.logs), joinedload(Request.activities))
         .get_or_404(req_id)
     )
+    admin_id = current_user.id
+    now = _now_utc()
+
+    locked_by = None
+    # --- AUTO-LOCK (must happen BEFORE any render_template return) ---
+    if req.owner_id is None:
+        req.owner_id = admin_id
+        req.owned_at = now
+        db.session.add(
+            RequestActivity(
+                request_id=req.id,
+                actor_admin_id=admin_id,
+                action="lock",
+                old_value="",
+                new_value=str(admin_id),
+                created_at=now,
+            )
+        )
+        db.session.commit()
+    elif req.owner_id == admin_id:
+        # refresh TTL quietly
+        if _lock_expired(req, now):
+            req.owned_at = now
+            db.session.commit()
+    else:
+        if _lock_expired(req, now):
+            old_owner = req.owner_id
+            req.owner_id = admin_id
+            req.owned_at = now
+            db.session.add(
+                RequestActivity(
+                    request_id=req.id,
+                    actor_admin_id=admin_id,
+                    action="lock",
+                    old_value=str(old_owner),
+                    new_value=str(admin_id),
+                    created_at=now,
+                )
+            )
+            db.session.commit()
+        else:
+            locked_by = req.owner_id
+            # show locked screen (no commit)
+            activities = sorted(
+                (req.activities or []),
+                key=lambda a: a.created_at or datetime.min,
+                reverse=True,
+            )[:50]
+            interests = (
+                VolunteerInterest.query.filter_by(request_id=req_id)
+                .order_by(VolunteerInterest.created_at.desc())
+                .all()
+            )
+            return render_template(
+                "admin/request_details.html",
+                req=req,
+                activities=activities,
+                logs=req.logs,
+                STATUS_LABELS_BG=STATUS_LABELS_BG,
+                is_stale=is_stale,
+                interests=interests,
+                is_locked=True,
+                locked_by=locked_by,
+            ), 200
+    is_locked = False
     logs = req.logs  # already sorted by relationship order_by
     activities = sorted(
         (req.activities or []),
         key=lambda a: a.created_at or datetime.min,
         reverse=True,
     )[:50]
+    interests = (
+        VolunteerInterest.query.filter_by(request_id=req_id)
+        .order_by(VolunteerInterest.created_at.desc())
+        .all()
+    )
     return render_template(
         "admin/request_details.html",
         req=req,
@@ -1416,7 +1633,147 @@ def admin_request_details(req_id: int):
         logs=logs,
         STATUS_LABELS_BG=STATUS_LABELS_BG,
         is_stale=is_stale,
+        interests=interests,
+        is_locked=is_locked,
+        locked_by=locked_by,
     ), 200
+
+
+@admin_bp.post("/requests/<int:req_id>/unlock", endpoint="admin_request_unlock")
+@admin_required
+def admin_request_unlock(req_id: int):
+    admin_required_404()
+    admin_id = _admin_id()
+    if not admin_id:
+        abort(403)
+
+    req = db.session.get(Request, req_id)
+    if not req:
+        abort(404)
+
+    old_owner = req.owner_id
+    if old_owner is not None:
+        req.owner_id = None
+        req.owned_at = None
+        db.session.add(
+            RequestActivity(
+                request_id=req.id,
+                actor_admin_id=admin_id,
+                action="unlock",
+                old_value=str(old_owner),
+                new_value="",
+                created_at=_now_utc(),
+            )
+        )
+        db.session.commit()
+
+    flash("Unlocked.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+# --- Volunteer interest moderation ---
+@admin_bp.post("/requests/<int:req_id>/interests/<int:interest_id>/approve", endpoint="admin_interest_approve")
+@admin_required
+def admin_interest_approve(req_id: int, interest_id: int):
+    current_app.logger.info("ADMIN_APPROVE HIT req_id=%s interest_id=%s", req_id, interest_id)
+
+    admin_required_404()
+    admin = current_user
+    admin_id = getattr(admin, "id", None)
+
+    req = db.session.get(Request, req_id)
+    if not req:
+        abort(404)
+
+    if _locked_by_other(req, admin_id):
+        flash("🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    vi = db.session.get(VolunteerInterest, interest_id)
+    if not vi or vi.request_id != req_id:
+        abort(404)
+
+    if _is_request_locked(req):
+        flash("🔒 Заявката е заключена (done/cancelled). Смени статуса, за да отключиш действията.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    old_vi = vi.status
+    changed_vi = (old_vi != "approved")
+    if changed_vi:
+        vi.status = "approved"
+        db.session.add(
+            RequestActivity(
+                request_id=req_id,
+                actor_admin_id=admin_id,
+                action="volunteer_interest_approved",
+                old_value=old_vi,
+                new_value="approved",
+            )
+        )
+
+    # Auto transition: open -> in_progress (single log)
+    old_rs = req.status
+    status_changed = False
+    if old_rs == "open":
+        req.status = "in_progress"
+        _log_status_change_once(req_id, old_rs, req.status, admin_id)
+        status_changed = True
+
+    if changed_vi or status_changed:
+        current_app.logger.info("BEFORE commit: req.status=%s vi.status=%s", req.status, vi.status)
+        db.session.commit()
+        current_app.logger.info("AFTER commit: req.status=%s vi.status=%s", req.status, vi.status)
+        flash("Approved.", "success")
+    else:
+        flash("No changes.", "info")
+
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+@admin_bp.post("/requests/<int:req_id>/interests/<int:interest_id>/reject", endpoint="admin_interest_reject")
+@admin_required
+def admin_interest_reject(req_id: int, interest_id: int):
+    admin_required_404()
+    admin = current_user
+    admin_id = getattr(admin, "id", None)
+
+    req = db.session.get(Request, req_id)
+    if not req:
+        abort(404)
+
+    if _locked_by_other(req, admin_id):
+        flash("🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    interest = db.session.get(VolunteerInterest, interest_id)
+    if not interest or interest.request_id != req_id:
+        abort(404)
+
+    if _is_request_locked(req):
+        flash("🔒 Заявката е заключена (done/cancelled). Смени статуса, за да отключиш действията.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    old_vi = interest.status
+    if old_vi == "rejected":
+        flash("No changes.", "info")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    current_app.logger.info("ADMIN_REJECT HIT req_id=%s interest_id=%s", req_id, interest_id)
+
+    interest.status = "rejected"
+    db.session.add(
+        RequestActivity(
+            request_id=req.id,
+            actor_admin_id=admin_id,
+            action="volunteer_interest_rejected",
+            old_value=old_vi,
+            new_value="rejected",
+        )
+    )
+
+    db.session.commit()
+    flash("Rejected.", "warning")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 
 # --- Assign owner to request ---
@@ -1424,6 +1781,12 @@ def admin_request_details(req_id: int):
 @login_required
 def admin_request_assign(req_id: int):
     req = Request.query.get_or_404(req_id)
+    if _locked_by_other(req, getattr(current_user, "id", None)):
+        flash("🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+    if _is_request_locked(req):
+        flash("This request is locked (done/cancelled). Unlock it by changing status first.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
     takeover = False
     if req.owner_id and req.owner_id != getattr(current_user, "id", None):
         if getattr(current_user, "role", None) != "super_admin" and not is_stale(req):
@@ -1460,6 +1823,12 @@ def admin_request_assign(req_id: int):
 @login_required
 def admin_request_unassign(req_id: int):
     req = Request.query.get_or_404(req_id)
+    if _locked_by_other(req, getattr(current_user, "id", None)):
+        flash("🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+    if _is_request_locked(req):
+        flash("This request is locked (done/cancelled). Unlock it by changing status first.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if not can_edit_request(req, current_user):
         abort(403)
     old_owner = req.owner_id

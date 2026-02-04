@@ -1,10 +1,31 @@
 from datetime import datetime, timezone
 from flask_login import UserMixin
 from backend.extensions import db
+from typing import Optional
 
 
 def utc_now():
     return datetime.now(timezone.utc)
+
+
+def canonical_role(role: Optional[str]) -> str:
+    """
+    Map legacy/alias role strings to the canonical set we support today.
+    Unknown values are returned as-is to avoid breaking unexpected roles.
+    """
+    r = (role or "").strip().lower()
+    mapping = {
+        "": "requester",
+        "user": "requester",
+        "requester": "requester",
+        "volunteer": "volunteer",
+        "pro": "professional",
+        "professional": "professional",
+        "admin": "admin",
+        "superadmin": "superadmin",
+        "super_admin": "superadmin",
+    }
+    return mapping.get(r, r)
 
 # Unified ORM style: alias common SQLAlchemy names to Flask-SQLAlchemy `db.*`
 # This lets existing declarations using Column/Integer/... work without mixing registries.
@@ -44,8 +65,12 @@ class AdminUser(db.Model, UserMixin):
 
     @property
     def is_admin(self) -> bool:
-        # Treat both admin and super_admin as admins
-        return getattr(self, "role", None) in ("admin", "super_admin")
+        # Treat admin + superadmin variants as admins
+        return canonical_role(getattr(self, "role", None)) in ("admin", "superadmin")
+
+    @property
+    def role_canon(self) -> str:
+        return canonical_role(getattr(self, "role", None))
 
 
 import os
@@ -301,6 +326,10 @@ class User(db.Model):
         cascade="all, delete-orphan",
         lazy=True,
     )
+
+    @property
+    def role_canon(self) -> str:
+        return canonical_role(getattr(self, "role", None))
 
     @property
     def push_subscriptions(self):
@@ -573,6 +602,8 @@ class Request(db.Model):
     owner_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
     owned_at = Column(DateTime, nullable=True)
     owner = relationship("AdminUser", foreign_keys=[owner_id], lazy="joined")
+    requester_token_hash = Column(String(128), nullable=True, index=True)
+    requester_token_created_at = Column(DateTime, nullable=True)
     logs = db.relationship(
         "RequestLog",
         back_populates="request",

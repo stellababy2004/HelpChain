@@ -18,43 +18,31 @@ from backend.helpchain_backend.src.statuses import (
 load_dotenv()
 
 SUPPORTED_LOCALES = ("bg", "fr", "en")
-DEFAULT_LOCALE = "en"
-
-
-def _country_from_headers() -> str | None:
-    """Extract country code from common edge/CDN headers."""
-    for header in ("CF-IPCountry", "X-Vercel-IP-Country", "X-Country"):
-        cc = request.headers.get(header)
-        if cc:
-            return cc.upper()
-    return None
+DEFAULT_LOCALE = "bg"
 
 
 def _locale_selector():
-    # 1) Explicit query param always wins
-    q = (request.args.get("lang") or "").lower()
+    # Priority order:
+    # 1) explicit query param (?lang=fr)
+    # 2) session ("lang")
+    # 3) cookie ("hc_lang")
+    # 4) Accept-Language header
+    # 5) default
+
+    q = (request.args.get("lang") or "").lower().strip()
     if q in SUPPORTED_LOCALES:
         session["lang"] = q
         return q
 
-    # 2) Explicit cookie / session choice
-    for source in ((request.cookies.get("hc_lang") or ""), (session.get("lang") or "")):
-        val = source.lower()
-        if val in SUPPORTED_LOCALES:
-            return val
+    s = (session.get("lang") or "").lower().strip()
+    if s in SUPPORTED_LOCALES:
+        return s
 
-    # 3) Country-based default
-    cc = _country_from_headers()
-    if cc == "BG":
-        session["lang"] = "bg"
-        return "bg"
-    if cc == "FR":
-        session["lang"] = "fr"
-        return "fr"
+    c = (request.cookies.get("hc_lang") or "").lower().strip()
+    if c in SUPPORTED_LOCALES:
+        return c
 
-    # 4) Browser preference, then default
-    best = request.accept_languages.best_match(SUPPORTED_LOCALES)
-    return best or DEFAULT_LOCALE
+    return request.accept_languages.best_match(SUPPORTED_LOCALES) or DEFAULT_LOCALE
 
 
 def create_app(config_object=None) -> Flask:
@@ -112,14 +100,7 @@ def create_app(config_object=None) -> Flask:
     migrate.init_app(app, db)
 
     # i18n (Babel)
-    try:
-        babel.init_app(app, locale_selector=_locale_selector)
-    except TypeError:
-        babel.init_app(app)
-
-        @babel.localeselector
-        def _get_locale():
-            return _locale_selector()
+    babel.init_app(app, locale_selector=_locale_selector)
 
     @app.after_request
     def add_content_language_header(resp):

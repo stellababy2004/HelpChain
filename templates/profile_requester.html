@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Profile') }} | HelpChain{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <h1 class="h3 m-0">{{ _('My profile') }}</h1>
+      <div class="text-muted small">
+        {{ _('This is where you track your requests and their progress.') }}
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" href="{{ url_for('main.dashboard') }}">{{ _('Dashboard') }}</a>
+      <a class="btn btn-primary" href="{{ url_for('main.submit_request') }}">{{ _('Submit a new request') }}</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.requester_logout') }}">
+        <i class="fas fa-sign-out-alt me-1"></i>{{ _('Déconnexion demandeur') }}
+      </a>
+    </div>
+  </div>
+
+  {% if kpi %}
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <span class="badge rounded-pill bg-light text-dark">open: {{ kpi.open }}</span>
+      <span class="badge rounded-pill bg-light text-dark">in_progress: {{ kpi.in_progress }}</span>
+      <span class="badge rounded-pill bg-light text-dark">done: {{ kpi.done }}</span>
+      <span class="badge rounded-pill bg-light text-dark">cancelled: {{ kpi.cancelled }}</span>
+    </div>
+  {% endif %}
+
+  <div class="card p-3 mb-3">
+    <div class="fw-semibold mb-1">{{ _('Account') }}</div>
+    <div class="small text-muted">
+      {{ _('Role') }}:
+      <span class="fw-semibold">{{ (current_user.role_canon if current_user.role_canon else current_user.role) }}</span>
+      {% if requester_email %}
+        <br>{{ _('Session for') }}: <span class="fw-semibold">{{ requester_email }}</span>
+      {% endif %}
+      {% if current_user.email %}
+        <br>{{ _('Email') }}: <span class="fw-semibold">{{ current_user.email }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <div class="fw-semibold">{{ _('Latest requests') }}</div>
+  </div>
+
+  {% if my_requests %}
+    <div class="list-group">
+      {% for r in my_requests %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between align-items-start gap-3">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ r.title or _('Request') }}</div>
+              <div class="small text-muted">
+                {{ r.city or '' }}{% if r.city %} • {% endif %}
+                {{ (r.created_at.strftime('%Y-%m-%d %H:%M') if r.created_at else '') }}
+              </div>
+            </div>
+            <span class="badge bg-light text-dark">{{ r.status or 'open' }}</span>
+          </div>
+
+          {% if r.owner_id %}
+            <div class="mt-2 small text-muted">
+              {{ _('Assigned') }}: <span class="fw-semibold">#{{ r.owner_id }}</span>
+              — {{ _('We will notify you when contact is available.') }}
+            </div>
+          {% else %}
+            <div class="mt-2 small text-muted">
+              {{ _('Not assigned yet. Someone will take it soon.') }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card p-3">
+      <p class="mb-2">{{ _("You haven't submitted any requests yet.") }}</p>
+      <a class="btn btn-primary" href="{{ url_for('main.submit_request') }}">{{ _('Submit your first request') }}</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

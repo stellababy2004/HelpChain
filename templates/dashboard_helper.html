@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | HelpChain{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h3 mb-3">{{ _('My assignments') }}</h1>
+
+  {% set allowed_statuses = ['in_progress'] %}
+
+  {% if kpi %}
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <span class="badge rounded-pill bg-light text-dark">open: {{ kpi.open }}</span>
+    <span class="badge rounded-pill bg-light text-dark">in_progress: {{ kpi.in_progress }}</span>
+    <span class="badge rounded-pill bg-light text-dark">done: {{ kpi.done }}</span>
+    <span class="badge rounded-pill bg-light text-dark">cancelled: {{ kpi.cancelled }}</span>
+  </div>
+  {% endif %}
+
+  {% if assigned %}
+    <div class="list-group">
+      {% for r in assigned %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between align-items-start gap-3">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ r.title or _('Request') }}</div>
+              <div class="small text-muted">
+                {{ r.city or '' }}{% if r.city %} • {% endif %}
+                {{ (r.created_at.strftime('%Y-%m-%d %H:%M') if r.created_at else '') }}
+              </div>
+              <div class="small text-muted mt-1">
+                {{ _('Requester') }}:
+                <span class="fw-semibold">
+                  {{ (r.user.name if r.user and r.user.name else ('#' ~ r.user_id)) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="text-end">
+              <span class="badge bg-light text-dark">{{ (r.status or 'pending') }}</span>
+              <div class="mt-2">
+                <a class="btn btn-sm btn-outline-secondary"
+                   href="{{ url_for('main.volunteer_request_details', req_id=r.id) }}">
+                  {{ _('Open') }}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {% set s = (r.status_norm or r.status or 'open')|lower %}
+          {% set volunteer_session_id = session.get('volunteer_id') %}
+          {% set current_user_id = current_user.id if current_user.is_authenticated else None %}
+          {% set can_contact = (
+              (
+                (r.owner_id is not none and current_user_id is not none and r.owner_id == current_user_id) or
+                (volunteer_session_id is not none and r.assigned_volunteer_id == volunteer_session_id) or
+                (volunteer_session_id is not none and r.owner_id == volunteer_session_id)
+              )
+              and (s in allowed_statuses)
+              and (r.email or r.phone)
+          ) %}
+          {% if can_contact %}
+            <div class="mt-2 d-flex flex-wrap gap-2">
+              {% if r.email %}
+              <a class="btn btn-sm btn-outline-primary" href="mailto:{{ r.email }}">
+                {{ _('Email requester') }}
+              </a>
+              {% endif %}
+              {% if r.phone %}
+              <a class="btn btn-sm btn-outline-primary" href="tel:{{ r.phone }}">
+                {{ _('Call requester') }}
+              </a>
+              {% endif %}
+            </div>
+            <div class="mt-2 small text-muted">
+              {{ _("Use only this contact for this request. Stay respectful and keep it focused on solving the issue.") }}
+            </div>
+          {% else %}
+            <div class="mt-2 small text-muted">
+              {{ _("Contact appears once the request is assigned, in progress, and the requester shared details.") }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card p-3">
+      <p class="mb-0 text-muted">{{ _("You don't have any assigned requests yet.") }}</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -15,15 +15,19 @@ from flask import (
 from types import SimpleNamespace
 from werkzeug.security import check_password_hash
 from flask_babel import get_locale as babel_get_locale, gettext as _
+from flask_login import login_required, current_user, logout_user
 from datetime import timedelta, datetime
+import secrets
+import hashlib
 
 from ..extensions import limiter
-from ..models import Request, Volunteer, db, utc_now
+from ..models import Request, Volunteer, db, utc_now, canonical_role
 from ..models.volunteer_interest import VolunteerInterest
 from ..category_data import CATEGORIES, ALIASES, COMMON
-from sqlalchemy import or_, func
+from sqlalchemy import or_, func, desc
 from functools import wraps
 from urllib.parse import urlparse, urljoin
+from ..statuses import normalize_request_status
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
@@ -182,6 +186,180 @@ def index():
     return render_template("home_new_slim.html", latest_requests=latest_requests), 200
 
 
+@main_bp.get("/logout", endpoint="logout")
+def logout():
+    """Unified logout for Flask-Login users (admin/front) and volunteer session."""
+    # If admin session is active, hand off to admin logout (keeps MFA cleanup)
+    if session.get("admin_logged_in"):
+        return redirect(url_for("admin.admin_logout"))
+
+    try:
+        logout_user()
+    except Exception:
+        pass
+
+    # Clear all session data to avoid stale logins
+    try:
+        session.clear()
+    except Exception:
+        # Fallback: pop known keys
+        for key in list(session.keys()):
+            session.pop(key, None)
+
+    resp = redirect(url_for("main.index"))
+
+    # Proactively drop remember/session cookies if present
+    try:
+        sess_cookie = current_app.config.get("SESSION_COOKIE_NAME", "session")
+        resp.delete_cookie(sess_cookie, path="/")
+    except Exception:
+        pass
+    try:
+        remember_cookie = current_app.config.get("REMEMBER_COOKIE_NAME", "remember_token")
+        resp.delete_cookie(remember_cookie, path="/")
+    except Exception:
+        pass
+
+    return resp
+
+
+@main_bp.route("/dashboard", methods=["GET"])
+@login_required
+def dashboard():
+    role = (getattr(current_user, "role_canon", None) or canonical_role(getattr(current_user, "role", None)))
+
+    if role in ("admin", "superadmin"):
+        return redirect(url_for("admin.admin_requests"))
+
+    if role == "requester":
+        my_requests = (
+            Request.query
+            .filter(Request.user_id == current_user.id)
+            .populate_existing()
+            .order_by(desc(Request.created_at))
+            .limit(20)
+            .all()
+        )
+        counts = dict(
+            ( (s or "open"), c )
+            for s, c in
+            db.session.query(Request.status, func.count(Request.id))
+              .filter(Request.user_id == current_user.id)
+              .group_by(Request.status)
+              .all()
+        )
+        kpi = {
+            "open": counts.get("open", 0),
+            "in_progress": counts.get("in_progress", 0),
+            "done": counts.get("done", 0),
+            "cancelled": counts.get("cancelled", 0),
+        }
+        return render_template("dashboard_requester.html", my_requests=my_requests, kpi=kpi)
+
+    if role in ("volunteer", "professional"):
+        assigned = (
+            Request.query
+            .filter(Request.owner_id == current_user.id)
+            .populate_existing()
+            .order_by(desc(Request.owned_at), desc(Request.created_at))
+            .limit(20)
+            .all()
+        )
+        for r in assigned:
+            try:
+                r.status_norm = normalize_request_status(getattr(r, "status", None))
+            except Exception:
+                r.status_norm = getattr(r, "status", None)
+        counts = dict(
+            ( (s or "open"), c )
+            for s, c in
+            db.session.query(Request.status, func.count(Request.id))
+              .filter(Request.owner_id == current_user.id)
+              .group_by(Request.status)
+              .all()
+        )
+        kpi = {
+            "open": counts.get("open", 0),
+            "in_progress": counts.get("in_progress", 0),
+            "done": counts.get("done", 0),
+            "cancelled": counts.get("cancelled", 0),
+        }
+        return render_template("dashboard_helper.html", assigned=assigned, kpi=kpi)
+
+    return render_template("dashboard_unknown_role.html", role=role), 403
+
+
+@main_bp.get("/profile")
+def profile():
+    # Authenticated users: route by role
+    if getattr(current_user, "is_authenticated", False):
+        role = (getattr(current_user, "role_canon", None) or canonical_role(getattr(current_user, "role", None)))
+        if role in ("admin", "superadmin"):
+            return redirect(url_for("admin.admin_requests"))
+        if role in ("volunteer", "professional"):
+            return redirect(url_for("main.dashboard"))
+
+    # Requester via session-stored email
+    requester_email = (session.get("requester_email") or "").strip().lower()
+    if not requester_email:
+        return redirect(url_for("main.submit_request"))
+
+    my_requests = (
+        Request.query
+        .filter(func.lower(Request.email) == requester_email)
+        .order_by(desc(Request.created_at))
+        .limit(20)
+        .all()
+    )
+    rows = (
+        db.session.query(Request.status, func.count(Request.id))
+        .filter(func.lower(Request.email) == requester_email)
+        .group_by(Request.status)
+        .all()
+    )
+    counts = { (s or "open"): c for s, c in rows }
+    kpi = {
+        "open": counts.get("open", 0),
+        "in_progress": counts.get("in_progress", 0),
+        "done": counts.get("done", 0),
+        "cancelled": counts.get("cancelled", 0),
+    }
+    return render_template("profile_requester.html", kpi=kpi, my_requests=my_requests, requester_email=requester_email)
+
+
+@main_bp.get("/requester/logout")
+def requester_logout():
+    session.pop("requester_email", None)
+    flash(_("Your session has been cleared."), "info")
+    return redirect(url_for("main.submit_request"))
+
+
+@main_bp.get("/r/<token>")
+def requester_magic_profile(token: str):
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    reqs = (
+        Request.query
+        .filter(Request.requester_token_hash == token_hash)
+        .order_by(desc(Request.created_at))
+        .all()
+    )
+    if not reqs:
+        abort(404)
+
+    counts = {"open": 0, "in_progress": 0, "done": 0, "cancelled": 0}
+    for r in reqs:
+        s = (r.status or "open").lower()
+        if s in counts:
+            counts[s] += 1
+
+    return render_template(
+        "profile_requester.html",
+        kpi=counts,
+        my_requests=reqs,
+        requester_magic=True,
+    )
+
+
 @main_bp.get("/set-lang/<lang>")
 def set_lang_switch(lang):
     lang = (lang or "").lower().strip()
@@ -302,7 +480,16 @@ def become_volunteer():
         # TODO: collect and persist the submitted volunteer data
         return redirect(url_for("main.volunteer_confirmation"))
 
-    return render_template("become_volunteer.html"), 200
+    not_required_items = [
+        ("fas fa-ban", _("Да поемаш рискове или да заместваш спешни служби.")),
+        ("fas fa-shield-alt", _("Да помагаш, ако не се чувстваш комфортно или безопасно.")),
+        ("fas fa-hand-paper", _("Да приемаш задължителни ангажименти - отказът винаги е приемлив.")),
+    ]
+
+    return render_template(
+        "become_volunteer.html",
+        not_required_items=not_required_items,
+    ), 200
 
 
 @main_bp.get("/volunteer/confirmation")
@@ -391,6 +578,10 @@ def volunteer_request_details(req_id: int):
     req = db.session.get(Request, req_id)
     if not req:
         abort(404)
+    try:
+        db.session.refresh(req)
+    except Exception:
+        pass
 
     vi = (
         VolunteerInterest.query.filter_by(
@@ -403,6 +594,10 @@ def volunteer_request_details(req_id: int):
     already_pending = bool(vi and vi.status == "pending")
     already_approved = bool(vi and vi.status == "approved")
     already_rejected = bool(vi and vi.status == "rejected")
+    try:
+        status_norm = normalize_request_status(getattr(req, "status", None))
+    except Exception:
+        status_norm = getattr(req, "status", None)
 
     # опционален контрол: показваме само ако е match/отворена
     # if not is_request_matching_volunteer(req, volunteer):
@@ -412,6 +607,7 @@ def volunteer_request_details(req_id: int):
         "volunteer_request_details.html",
         req=req,
         volunteer=volunteer,
+        status_norm=status_norm,
         is_pending=already_pending,
         already_pending=already_pending,
         already_approved=already_approved,
@@ -700,6 +896,8 @@ def submit_request_confirm():
         return redirect(url_for("main.submit_request"))
 
     try:
+        token = secrets.token_urlsafe(32)
+
         req = Request(
             title=draft.get("title"),
             description=draft.get("description"),
@@ -711,9 +909,48 @@ def submit_request_confirm():
             priority=draft.get("priority"),
             category=draft.get("category"),
         )
+        # Magic link fields (hash only)
+        req.requester_token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        req.requester_token_created_at = utc_now()
 
         db.session.add(req)
         db.session.commit()
+
+        # Remember requester email in session for profile view
+        try:
+            if getattr(req, "email", None):
+                session["requester_email"] = (req.email or "").strip().lower()
+        except Exception:
+            pass
+
+        # Build magic link (host-aware)
+        try:
+            base = request.host_url.rstrip("/")
+            magic_url = f"{base}/r/{token}"
+        except Exception:
+            magic_url = f"/r/{token}"
+
+        current_app.logger.info("[MAGIC LINK] request_id=%s url=%s", req.id, magic_url)
+
+        # Send magic link email (best effort)
+        try:
+            from mail_service import send_notification_email
+
+            recipient = getattr(req, "email", None)
+            if recipient:
+                subject = "Вашият защитен линк за проследяване в HelpChain"
+                context = {
+                    "subject": subject,
+                    "recipient_name": getattr(req, "name", "Потребител"),
+                    "content": f"Ето вашият защитен линк за проследяване:<br><a href='{magic_url}'>{magic_url}</a>",
+                    "magic_url": magic_url,
+                    "request_id": req.id,
+                }
+                send_notification_email(recipient, subject, "email_template.html", context)
+        except ModuleNotFoundError:
+            current_app.logger.info("[EMAIL] mail_service not configured; magic link email skipped (dev mode)")
+        except Exception as e:
+            current_app.logger.warning("[EMAIL] magic link send failed: %s", e)
 
         session.pop("request_draft", None)
         session["last_request_id"] = req.id
@@ -732,7 +969,7 @@ def submit_request_confirm():
             if hasattr(app, "mark_emergency_email_sent"):
                 app.mark_emergency_email_sent()
 
-        return redirect(url_for("main.success", request_id=req.id))
+        return redirect(url_for("main.profile"))
 
     except Exception as e:
         current_app.logger.exception("CONFIRM FAILED: %s", e)

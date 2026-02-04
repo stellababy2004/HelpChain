@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-02 22:26+0100\n"
+"POT-Creation-Date: 2026-02-04 11:15+0100\n"
 "PO-Revision-Date: 2025-07-15 18:12+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: fr\n"
@@ -42,6 +42,30 @@ msgstr ""
 #: backend/helpchain_backend/src/copy.py:20
 msgid "Категории помощ"
 msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:306
+msgid "Да поемаш рискове или да заместваш спешни служби."
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:307
+msgid "Да помагаш, ако не се чувстваш комфортно или безопасно."
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:308
+msgid "Да приемаш задължителни ангажименти - отказът винаги е приемлив."
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:696
+msgid "Verified volunteers only"
+msgstr "Uniquement des bénévoles vérifiés"
+
+#: backend/helpchain_backend/src/routes/main.py:697
+msgid "Fast matching - no bureaucracy"
+msgstr "Mise en relation rapide - sans bureaucratie"
+
+#: backend/helpchain_backend/src/routes/main.py:698
+msgid "We keep your data private"
+msgstr "Nous gardons vos données privées"
 
 #: templates/admin_analytics.html:459
 msgid "Export JSON"
@@ -186,16 +210,18 @@ msgstr "E-mail"
 msgid "Телефон"
 msgstr "Téléphone"
 
-#: templates/admin_dashboard.html:321 templates/volunteer_profile.html:136
+#: templates/admin_dashboard.html:321 templates/volunteer_dashboard.html:69
+#: templates/volunteer_profile.html:136
 msgid "Локация"
 msgstr "Localisation"
 
-#: templates/admin_dashboard.html:322 templates/volunteer_profile.html:142
+#: templates/admin_dashboard.html:322 templates/volunteer_dashboard.html:83
+#: templates/volunteer_profile.html:142
 msgid "Умения"
 msgstr "Compétences"
 
 #: templates/admin_dashboard.html:340
-msgstr "Няма"
+msgid "Няма"
 msgstr "Aucun"
 
 #: templates/admin_dashboard.html:347
@@ -221,6 +247,7 @@ msgid "Categories"
 msgstr "Catégories"
 
 #: templates/all_categories.html:70 templates/all_categories.html:137
+#: templates/volunteer_login.html:163
 msgid "Become a volunteer"
 msgstr "Devenir bénévole"
 
@@ -257,7 +284,7 @@ msgstr "Vous voulez aider ?"
 msgid "Join our community of volunteers."
 msgstr "Rejoignez notre communauté de bénévoles."
 
-#: templates/all_categories.html:146
+#: templates/all_categories.html:146 templates/volunteer_login.html:168
 msgid "Back to home page"
 msgstr "Retour à la page d'accueil"
 
@@ -294,15 +321,16 @@ msgstr "Tous droits réservés."
 
 #: templates/base.html:8
 msgid ""
-"HelpChain connects people in need with verified volunteers — fast, safe "
+"HelpChain connects people in need with verified volunteers - fast, safe "
 "and human."
 msgstr ""
 "HelpChain met en relation les personnes dans le besoin avec des bénévoles"
-" vérifiés — rapide, sûr et humain."
+" vérifiés - rapide, sûr et humain."
 
-#: templates/base.html:12 templates/base.html:23
-msgid "HelpChain — Get help, become a volunteer"
-msgstr "HelpChain — Demander de l’aide, devenir bénévole"
+#: templates/base.html:12 templates/base.html:23 templates/home_new_slim.html:4
+#, fuzzy
+msgid "HelpChain - Get help, become a volunteer"
+msgstr "HelpChain - Demander de l’aide, devenir bénévole"
 
 #: templates/base.html:13 templates/base.html:24
 msgid "A safe, human and reliable way to connect with verified volunteers."
@@ -493,20 +521,17 @@ msgstr "Aperçu"
 msgid "Export"
 msgstr "Exporter"
 
-#: templates/home_new_slim.html:4
-#, fuzzy
-msgid "HelpChain - Get help, become a volunteer"
-msgstr "HelpChain — Demander de l’aide, devenir bénévole"
-
 #: templates/home_new_slim.html:11
 msgid "Real help - fast, safe, and human."
-msgstr "De l’aide concrète — rapide, sûre et humaine."
+msgstr "De l’aide concrète - rapide, sûre et humaine."
 
 #: templates/home_new_slim.html:14
 msgid ""
 "Submit a request in 2 minutes. Verified volunteers respond, and you can "
 "follow every step."
-msgstr "Déposez une demande en 2 minutes. Des bénévoles vérifiés répondent, et vous suivez chaque étape."
+msgstr ""
+"Déposez une demande en 2 minutes. Des bénévoles vérifiés répondent, et "
+"vous suivez chaque étape."
 
 #: templates/home_new_slim.html:23 templates/home_new_slim.html:61
 #, fuzzy
@@ -714,22 +739,20 @@ msgid "What data we collect"
 msgstr "Quelles données nous collectons"
 
 #: templates/privacy.html:21
-#, fuzzy
 msgid ""
-"Account and contact details you provide (name, email, phone — if you "
+"Account and contact details you provide (name, email, phone - if you "
 "choose)."
 msgstr ""
 "Coordonnées et informations de contact que vous fournissez (nom, e-mail, "
-"téléphone — si vous le souhaitez)."
+"téléphone - si vous le souhaitez)."
 
 #: templates/privacy.html:22
-#, fuzzy
 msgid ""
-"Request information you submit (category, description, location — if "
+"Request information you submit (category, description, location - if "
 "needed for the service)."
 msgstr ""
 "Informations de demande que vous soumettez (catégorie, description, "
-"localisation — si nécessaire au service)."
+"localisation - si nécessaire au service)."
 
 #: templates/privacy.html:23
 msgid ""
@@ -810,21 +833,6 @@ msgstr "Des questions sur la confidentialité ? Contactez-nous à"
 msgid "Trust signals"
 msgstr "Badges de confiance"
 
-#: templates/submit_request.html:114
-#, fuzzy
-msgid "Verified volunteers only"
-msgstr "Bénévoles vérifiés"
-
-#: templates/submit_request.html:115
-#, fuzzy
-msgid "Fast matching, no bureaucracy"
-msgstr "Mise en relation rapide — sans bureaucratie"
-
-#: templates/submit_request.html:116
-#, fuzzy
-msgid "We keep your data private"
-msgstr "Nous ne vendons jamais vos données"
-
 #: templates/submit_request.html:120
 #, fuzzy
 msgid "~1 minute"
@@ -837,19 +845,6 @@ msgstr "Prend ~1 minute"
 #: templates/submit_request.html:162
 msgid "What happens next"
 msgstr "Ce qui se passe ensuite"
-
-#: templates/submit_request.html:163
-msgid "A verified volunteer will contact you"
-msgstr "Un bénévole vérifié vous contactera"
-
-#: templates/submit_request.html:164
-msgid "We never sell your data"
-msgstr "Nous ne vendons jamais vos données"
-
-#: templates/submit_request.html:165
-#, fuzzy
-msgid "Fast matching - no bureaucracy"
-msgstr "Mise en relation rapide — sans bureaucratie"
 
 #: templates/submit_request.html:309
 msgid "Quick actions"
@@ -932,18 +927,259 @@ msgstr "Des questions sur ces conditions ? Contactez-nous à"
 msgid "Кандидатурата е получена"
 msgstr "La candidature a été reçue"
 
-#: templates/volunteer_dashboard.html:2
+#: templates/volunteer_dashboard.html:2 templates/volunteer_dashboard.html:11
 msgid "Моето табло"
 msgstr "Mon tableau de bord"
 
-#: templates/volunteer_dashboard.html:172
-#: templates/volunteer_dashboard.html:173
+#: templates/volunteer_dashboard.html:13
+msgid ""
+"Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не "
+"се поема автоматично — <strong>ти решаваш</strong>."
+msgstr "Tu vois ici les demandes qui correspondent à ton profil. Rien n'est pris automatiquement — tu décides."
+
+#: templates/volunteer_dashboard.html:26
+#, fuzzy
+msgid "Има активност в твоя район"
+msgstr "Statut dans ta zone"
+
+#: templates/volunteer_dashboard.html:28
+msgid "В момента е спокойно"
+msgstr "C'est calme pour le moment"
+
+#: templates/volunteer_dashboard.html:39
+msgid "Има нови заявки и ще виждаш подходящите тук."
+msgstr "Il y a de nouvelles demandes, tu verras les correspondantes ici."
+
+#: templates/volunteer_dashboard.html:41 templates/volunteer_dashboard.html:201
+#, fuzzy
+msgid ""
+"Това е нормално — HelpChain показва <strong>само реални нужди</strong>. "
+"Когато се появи заявка, която пасва на профила ти, ще я видиш тук."
+msgstr ""
+"Pas de souci — nous montrons uniquement des besoins réels. Quand une "
+"demande correspond à ton profil, tu la verras ici."
+
+#: templates/volunteer_dashboard.html:47
+msgid "Настрой профила"
+msgstr "Configurer le profil"
+
+#: templates/volunteer_dashboard.html:50
+msgid "Виж подходящи заявки"
+msgstr "Voir les demandes adaptées"
+
+#: templates/volunteer_dashboard.html:58 templates/volunteer_profile.html:80
+msgid "Готовност за свързване"
+msgstr "Disponibilité pour être contacté"
+
+#: templates/volunteer_dashboard.html:60
+msgid "Профилът ти е твоят филтър. По-точен профил = по-точни заявки."
+msgstr ""
+"Ton profil est ton filtre. Plus il est précis, plus les demandes seront "
+"pertinentes."
+
+#: templates/volunteer_dashboard.html:71 templates/volunteer_dashboard.html:78
 msgid "не е зададена"
 msgstr "non renseignée"
 
-#: templates/volunteer_dashboard.html:174
-msgstr "не са зададени"
-msgstr "non définis"
+#: templates/volunteer_dashboard.html:76 templates/volunteer_profile.html:139
+msgid "Наличност"
+msgstr "Disponibilité"
+
+#: templates/volunteer_dashboard.html:86
+msgid "въведени"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:88
+msgid "липсват"
+msgstr "manquantes"
+
+#: templates/volunteer_dashboard.html:95
+msgid "За да виждаш най-точните заявки, добави:"
+msgstr "Pour voir les demandes les plus pertinentes, ajoute :"
+
+#: templates/volunteer_dashboard.html:97
+msgid "локация"
+msgstr "la localisation"
+
+#: templates/volunteer_dashboard.html:98
+msgid "2–3 умения"
+msgstr "2–3 compétences"
+
+#: templates/volunteer_dashboard.html:102
+msgid "Направи профила си готов"
+msgstr "Rends ton profil prêt"
+
+#: templates/volunteer_dashboard.html:105
+msgid "Профилът ти е готов за свързване"
+msgstr "Ton profil est prêt pour être contacté"
+
+#: templates/volunteer_dashboard.html:107
+msgid "Редактирай профила"
+msgstr "Modifier le profil"
+
+#: templates/volunteer_dashboard.html:117
+msgid "Подходящи заявки"
+msgstr "Demandes adaptées"
+
+#: templates/volunteer_dashboard.html:119
+msgid "Когато има нужда, която съвпада с теб, ще я видиш тук."
+msgstr "Lorsqu’un besoin correspond à ton profil, il apparaîtra ici."
+
+#: templates/volunteer_dashboard.html:122
+msgid ""
+"Виждаш това, защото заявката съвпада с твоята локация, наличност и "
+"умения. Ако не ти е удобно — просто пропускаш."
+msgstr "Tu vois ceci parce que la demande correspond à ta localisation, ta disponibilité et tes compétences. Si ce n’est pas le bon moment, tu peux simplement passer."
+
+#: templates/volunteer_dashboard.html:129
+msgid ""
+"Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да "
+"решиш."
+msgstr "C’est une invitation, pas un engagement. Tu peux consulter tranquillement les détails puis décider."
+
+#: templates/volunteer_dashboard.html:140
+msgid "Нова заявка"
+msgstr "Nouvelle demande"
+
+#: templates/volunteer_dashboard.html:143
+#: templates/volunteer_dashboard.html:273
+msgid "В изчакване"
+msgstr "En attente"
+
+#: templates/volunteer_dashboard.html:145
+msgid "Нова"
+msgstr "Nouveau"
+
+#: templates/volunteer_dashboard.html:164
+#: templates/volunteer_dashboard.html:231
+#: templates/volunteer_dashboard.html:885
+#, fuzzy, python-format
+msgid "Виждаш тази заявка, защото съвпада с профила ти в %(loc)s"
+msgstr "Tu vois cette demande parce qu’elle correspond à ton profil à %(loc)s"
+
+#: templates/volunteer_dashboard.html:166
+#: templates/volunteer_dashboard.html:233
+#: templates/volunteer_dashboard.html:887
+#, fuzzy
+msgid "Виждаш тази заявка, защото съвпада с профила ти"
+msgstr "Tu vois cette demande parce qu’elle correspond à ton profil."
+
+#: templates/volunteer_dashboard.html:173
+msgid "Виж детайли"
+msgstr "Voir les détails"
+
+#: templates/volunteer_dashboard.html:178
+msgid "Очаква се кратко потвърждение от екипа."
+msgstr "Une courte confirmation de l’équipe est attendue."
+
+#: templates/volunteer_dashboard.html:185
+msgid "Ще помогна"
+msgstr "Je vais aider"
+
+#: templates/volunteer_dashboard.html:191
+msgid "Нищо не се поема автоматично."
+msgstr "Rien n’est engagé automatiquement."
+
+#: templates/volunteer_dashboard.html:199
+msgid "Няма активни заявки в момента"
+msgstr "Aucune demande active pour le moment"
+
+#: templates/volunteer_dashboard.html:204
+#, fuzzy
+msgid "По-точна локация + 2–3 умения = по-бърз match."
+msgstr "Localisation précise + 2–3 compétences = un match plus rapide"
+
+#: templates/volunteer_dashboard.html:207
+msgid "Виж пример"
+msgstr "Voir un exemple"
+
+#: templates/volunteer_dashboard.html:209
+msgid "Това е само пример — реалните заявки ще се покажат автоматично."
+msgstr "Ceci est seulement un exemple — les demandes réelles s’afficheront automatiquement."
+
+#: templates/volunteer_dashboard.html:215
+#, fuzzy
+msgid "Примерна заявка"
+msgstr "Demande exemple"
+
+#: templates/volunteer_dashboard.html:219
+msgid "току-що"
+msgstr "à l’instant"
+
+#: templates/volunteer_dashboard.html:222
+msgid "Пример (демо)"
+msgstr "Exemple (démo)"
+
+#: templates/volunteer_dashboard.html:226
+msgid "Току-що се появи. Провери дали ти е удобно."
+msgstr "Elle vient d’apparaître. Vérifie si cela te convient."
+
+#: templates/volunteer_dashboard.html:228
+msgid "Човек търси помощ за документи и насоки къде да ги подаде."
+msgstr "Une personne cherche de l’aide pour remplir des documents et savoir où les déposer."
+
+#: templates/volunteer_dashboard.html:259
+#: templates/volunteer_dashboard.html:265
+msgid "Моите заявки"
+msgstr "Mes demandes"
+
+#: templates/volunteer_dashboard.html:261
+msgid "Виж подадените от теб заявки и статуса им."
+msgstr "Consulte les demandes que tu as envoyées et leur statut."
+
+#: templates/volunteer_dashboard.html:284
+msgid "Одобрени"
+msgstr "Approuvées"
+
+#: templates/volunteer_dashboard.html:295
+msgid "Отказани"
+msgstr "Refusées"
+
+#: templates/volunteer_dashboard.html:304
+msgid "Няма заявки в този статус"
+msgstr "Aucune demande dans ce statut"
+
+#: templates/volunteer_dashboard.html:318
+msgid "Виж"
+msgstr "Voir"
+
+#: templates/volunteer_login.html:6
+msgid "Volunteer login - HelpChain"
+msgstr "Connexion bénévole - HelpChain"
+
+#: templates/volunteer_login.html:113
+msgid "Start with peace of mind."
+msgstr "Commencez en toute sérénité."
+
+#: templates/volunteer_login.html:114
+msgid "No schedules. No pressure."
+msgstr "Pas d'horaires. Pas de pression."
+
+#: templates/volunteer_login.html:136
+msgid "Email address"
+msgstr "Adresse e-mail"
+
+#: templates/volunteer_login.html:145
+msgid "your@email.com"
+msgstr "your@email.com"
+
+#: templates/volunteer_login.html:155
+msgid "Continue"
+msgstr "Continuer"
+
+#: templates/volunteer_login.html:157
+msgid "~2 min."
+msgstr "~2 min."
+
+#: templates/volunteer_login.html:173
+msgid "Login as a requester"
+msgstr "Connexion en tant que demandeur"
+
+# Status values (EN msgids -> FR)
+#: templates/volunteer_login.html:186
+#, fuzzy
+msgid "Sending..."
+msgstr "Envoi..."
 
 #: templates/volunteer_profile.html:2
 msgid "Профил"
@@ -961,15 +1197,13 @@ msgstr "Statut : Actif"
 msgid "Изход"
 msgstr "Déconnexion"
 
-#: templates/volunteer_profile.html:80
-msgid "Готовност за свързване"
-msgstr "Disponibilité pour être contacté"
-
 #: templates/volunteer_profile.html:82
 msgid ""
 "Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не "
-"се поема автоматично — ти решаваш."
-msgstr "Plus c'est précis, plus les demandes reçues seront de qualité. Rien n'est engagé automatiquement — c'est toi qui décides."
+"се поема автоматично - ти решаваш."
+msgstr ""
+"Plus c'est précis, plus les demandes reçues seront de qualité. Rien n'est"
+" engagé automatiquement - c'est toi qui décides."
 
 #: templates/volunteer_profile.html:88
 msgid "Локация:"
@@ -977,7 +1211,7 @@ msgstr "Localisation :"
 
 #: templates/volunteer_profile.html:89 templates/volunteer_profile.html:93
 #: templates/volunteer_profile.html:101
-msgstr "Липсва"
+msgid "Липсва"
 msgstr "Manquant"
 
 #: templates/volunteer_profile.html:92
@@ -992,19 +1226,17 @@ msgstr "Compétences :"
 msgid "Как работи свързването →"
 msgstr "Comment fonctionne la mise en relation →"
 
-#: templates/volunteer_profile.html:139
-msgid "Наличност"
-msgstr "Disponibilité"
-
 #: templates/volunteer_profile.html:152
 msgid "Попълни профила си"
 msgstr "Complète ton profil"
 
 #: templates/volunteer_profile.html:154
 msgid ""
-"Това е всичко. Когато има заявка, която пасва — ще я видиш в таблото. "
+"Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. "
 "Няма автоматични ангажименти."
-msgstr "C'est tout. Quand une demande correspond, tu la verras dans le tableau de bord. Aucun engagement automatique."
+msgstr ""
+"C'est tout. Quand une demande correspond, tu la verras dans le tableau de"
+" bord. Aucun engagement automatique."
 
 #: templates/volunteer_profile.html:243
 msgid "Какво да очакваш"
@@ -1014,7 +1246,9 @@ msgstr "À quoi t'attendre"
 msgid ""
 "HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да "
 "помогнеш."
-msgstr "HelpChain n'est pas un « chat pour tout ». Nous te montrons des demandes et tu choisis d'aider ou non."
+msgstr ""
+"HelpChain n'est pas un « chat pour tout ». Nous te montrons des demandes "
+"et tu choisis d'aider ou non."
 
 #: templates/volunteer_profile.html:248
 msgid "Няма автоматични ангажименти."
@@ -1026,15 +1260,19 @@ msgstr "Tu peux refuser sans explication."
 
 #: templates/volunteer_profile.html:250
 msgid "Личните данни се показват само при нужда/съгласие."
-msgstr "Les données personnelles ne s'affichent qu'en cas de besoin ou de consentement."
+msgstr ""
+"Les données personnelles ne s'affichent qu'en cas de besoin ou de "
+"consentement."
 
 #: templates/volunteer_profile.html:254
 msgid "Съвет:"
 msgstr "Conseil :"
 
 #: templates/volunteer_profile.html:255
-msgid "Ако добавиш точна локация + 2–3 умения, шансът за match се вдига осезаемо."
-msgstr "Ajouter une localisation précise et 2–3 compétences augmente nettement les chances de match."
+msgid "Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо."
+msgstr ""
+"Ajouter une localisation précise et 2-3 compétences augmente nettement "
+"les chances de match."
 
 # --- Added admin/requests translations ---
 #: templates/admin/login.html:6 templates/admin/login.html:19
@@ -1911,7 +2149,7 @@ msgstr "Aucun résultat."
 #~ msgid "Saved filter"
 #~ msgstr "Filtre enregistré"
 
-#~ msgid "Coming back? Save a preference — we will apply it automatically."
+#~ msgid "Coming back? Save a preference - we will apply it automatically."
 #~ msgstr ""
 #~ "De retour ? Enregistrez une préférence"
 #~ " - nous l'appliquerons automatiquement."
@@ -1959,7 +2197,7 @@ msgstr "Aucun résultat."
 #~ msgstr ""
 #~ "Les informations de compte et de "
 #~ "contact que vous fournissez (nom, "
-#~ "e-mail, téléphone — si vous le "
+#~ "e-mail, téléphone - si vous le "
 #~ "souhaitez)."
 
 #~ msgid ""
@@ -1969,7 +2207,7 @@ msgstr "Aucun résultat."
 #~ msgstr ""
 #~ "Les informations relatives à la demande"
 #~ " que vous soumettez (catégorie, "
-#~ "description, localisation — si nécessaire "
+#~ "description, localisation - si nécessaire "
 #~ "au service)."
 
 #~ msgid "Impact counters"
@@ -2092,7 +2330,7 @@ msgstr "Aucun résultat."
 #~ msgid "Real people helping real people - not bots, not call centers."
 #~ msgstr ""
 #~ "De vraies personnes aident de vraies "
-#~ "personnes — pas des bots, pas des"
+#~ "personnes - pas des bots, pas des"
 #~ " centres d’appel."
 
 #~ msgid "Fast & simple"
@@ -2141,7 +2379,7 @@ msgstr "Aucun résultat."
 #~ msgstr ""
 #~ "Nous mettons en relation des personnes"
 #~ " proches pour une aide rapide et "
-#~ "bienveillante — sans bureaucratie."
+#~ "bienveillante - sans bureaucratie."
 
 # --- templates/home_new.html (EN msgids) ---
 #~ msgid "Main content"
@@ -2331,11 +2569,11 @@ msgstr "Aucun résultat."
 #~ msgid "Need help now?"
 #~ msgstr "Besoin d'aide maintenant ?"
 
-#~ msgid "— it takes less than a minute."
-#~ msgstr "— cela prend moins d’une minute."
+#~ msgid "- it takes less than a minute."
+#~ msgstr "- cela prend moins d’une minute."
 
 #~ msgid "HelpChain - Get help, become a volunteer"
-#~ msgstr "HelpChain — Demander de l’aide, devenir bénévole"
+#~ msgstr "HelpChain - Demander de l’aide, devenir bénévole"
 
 #~ msgid ""
 #~ "HelpChain connects people in need with"
@@ -2344,10 +2582,60 @@ msgstr "Aucun résultat."
 #~ msgstr ""
 #~ "HelpChain met en relation les personnes"
 #~ " dans le besoin avec des bénévoles"
-#~ " vérifiés — rapide, sûr et humain."
+#~ " vérifiés - rapide, sûr et humain."
 
-#~ msgid "Real help — fast, safe, and human."
+#~ msgid "Real help - fast, safe, and human."
 #~ msgstr ""
 
-#~ msgid "A quick preview — open details to help."
+#~ msgid "A quick preview - open details to help."
 #~ msgstr ""
+
+#~ msgid "Fast matching, no bureaucracy"
+#~ msgstr "Mise en relation rapide - sans bureaucratie"
+
+#~ msgid "A verified volunteer will contact you"
+#~ msgstr "Un bénévole vérifié vous contactera"
+
+#~ msgid "We never sell your data"
+#~ msgstr "Nous ne vendons jamais vos données"
+
+# -- volunteer_dashboard new copy --
+#~ msgid ""
+#~ "Виждаш заявки, които съвпадат с профила"
+#~ " ти. Ти решаваш дали да откликнеш."
+#~ msgstr ""
+#~ "Tu vois les demandes qui correspondent"
+#~ " à ton profil. C’est toi qui "
+#~ "décides d’y répondre."
+
+#~ msgid "Днес има нови заявки около"
+#~ msgstr "Aujourd’hui il y a de nouvelles demandes près de"
+
+#~ msgid "В момента няма нови заявки около"
+#~ msgstr "Pour l’instant il n’y a pas de nouvelles demandes près de"
+
+#~ msgid "Показваме само реални нужди от реални хора."
+#~ msgstr "Nous montrons uniquement des besoins réels de personnes réelles."
+
+#~ msgid "Колкото по-точен е профилът, толкова по-точни ще са заявките."
+#~ msgstr "Plus ton profil est précis, plus les demandes seront pertinentes."
+
+#~ msgid "Редактирай профила си"
+#~ msgstr "Modifier ton profil"
+
+#~ msgid ""
+#~ "Отвори детайлите и изпрати “интерес”. "
+#~ "После потвърждаваш (или отказваш) спокойно."
+#~ msgstr ""
+#~ "Ouvre les détails et envoie “intérêt”."
+#~ " Ensuite tu confirmes (ou refuses) "
+#~ "tranquillement."
+
+#~ msgid "Това е нормално. Показваме само реални нужди."
+#~ msgstr "C’est normal. Nous ne montrons que des besoins réels."
+
+#~ msgid "Направи профила си готов за свързване"
+#~ msgstr "Rends ton profil prêt pour être contacté"
+
+#~ msgid "не са зададени"
+#~ msgstr "non renseignée"
