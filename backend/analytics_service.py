@@ -43,7 +43,8 @@ except Exception:
             utc_now,
         )
     except Exception:
-        from models import (
+        # Serverless / preview safety: always use absolute backend import
+        from backend.models import (
             AnalyticsEvent,
             ChatbotConversation,
             PerformanceMetrics,
