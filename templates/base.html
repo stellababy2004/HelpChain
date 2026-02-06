@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Step 13 - SEO & Social preview -->
     <meta name="description" content="{{ _('HelpChain connects people in need with verified volunteers - fast, safe and human.') }}">
@@ -122,26 +123,38 @@
               </li>
               {% endif %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ safe_url_for('main.logout') }}"
-                  ><i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}</a
-                >
+                <form method="post" action="{{ safe_url_for('main.logout') }}" class="d-inline">
+                  {{ csrf_form.csrf_token if csrf_form is defined else '' }}
+                  <button type="submit" class="nav-link btn btn-link p-0">
+                    <i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}
+                  </button>
+                </form>
               </li>
             {% elif volunteer_logged_in %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}">
+                <i class="fas fa-hands-helping me-1"></i>{{ _('My dashboard') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link position-relative" href="{{ url_for('main.volunteer_notifications') }}" title="{{ _('Notifications') }}">
+                <i class="fas fa-bell"></i>
+                {% set badge = unread_volunteer_notifs|default(VOLUNTEER_UNREAD_NOTIF_COUNT|default(0)) %}
+                {% if badge and badge > 0 %}
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {{ badge }}
+                  </span>
+                {% endif %}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ safe_url_for('main.volunteer_profile') }}">
+                <i class="fas fa-user me-1"></i>{{ _('Profile') }}
+              </a>
+            </li>
               <li class="nav-item">
-                <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}">
-                  <i class="fas fa-hands-helping me-1"></i>{{ _('My dashboard') }}
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ safe_url_for('main.volunteer_profile') }}">
-                  <i class="fas fa-user me-1"></i>{{ _('Profile') }}
-                </a>
-              </li>
-              <li class="nav-item">
-                <form method="POST" action="{{ safe_url_for('main.volunteer_logout') }}" class="d-inline">
-                  {% if csrf_token is defined %}
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  {% endif %}
+                <form method="post" action="{{ safe_url_for('main.volunteer_logout') }}" class="d-inline">
+                  {{ csrf_form.csrf_token if csrf_form is defined else '' }}
                   <button type="submit" class="nav-link btn btn-link p-0">
                     <i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}
                   </button>

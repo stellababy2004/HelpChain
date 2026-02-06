@@ -1,15 +1,17 @@
 """
 Compatibility wrapper.
 
-Do NOT create extension instances here.
-Re-export the canonical ones from backend.helpchain_backend.src.extensions.
+Re-export the canonical extension instances from backend.helpchain_backend.src.extensions.
+Do NOT instantiate new objects here to avoid multiple SQLAlchemy MetaData registries.
 """
 
-from backend.helpchain_backend.src.extensions import babel, mail
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from backend.helpchain_backend.src.extensions import (
+    db,
+    mail,
+    babel,
+    migrate,
+    limiter,
+    csrf,
+)
 
-db = SQLAlchemy()
-migrate = Migrate()
-
-__all__ = ["db", "mail", "babel", "migrate"]
+__all__ = ["db", "mail", "babel", "migrate", "limiter", "csrf"]

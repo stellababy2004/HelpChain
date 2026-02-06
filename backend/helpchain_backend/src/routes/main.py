@@ -15,23 +15,43 @@ from flask import (
 from types import SimpleNamespace
 from werkzeug.security import check_password_hash
 from flask_babel import get_locale as babel_get_locale, gettext as _
+from flask_wtf import FlaskForm
 from flask_login import login_required, current_user, logout_user
 from datetime import timedelta, datetime
 import secrets
 import hashlib
 
+from flask_limiter.util import get_remote_address
+
 from ..extensions import limiter
-from ..models import Request, Volunteer, db, utc_now, canonical_role
+from ..models import Request, Volunteer, db, utc_now, canonical_role, Notification, VolunteerAction, RequestActivity
 from ..models.volunteer_interest import VolunteerInterest
 from ..category_data import CATEGORIES, ALIASES, COMMON
 from sqlalchemy import or_, func, desc
 from functools import wraps
 from urllib.parse import urlparse, urljoin
 from ..statuses import normalize_request_status
+from ..security_logging import log_security_event
+from ..notifications.inapp import ensure_new_match_notifications
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
 main_bp = Blueprint("main", __name__)
+
+
+def email_or_ip_key():
+    """Prefer per-email throttling; fall back to IP for anonymous abuse control."""
+    email = (request.form.get("email") or "").strip().lower()
+    if email:
+        return f"email:{email}"
+    return get_remote_address()
+
+
+def has_control_chars(text: str) -> bool:
+    """Detect non-printable control chars (excluding common whitespace)."""
+    if not text:
+        return False
+    return any(ord(ch) < 32 and ch not in ("\t", "\n", "\r") for ch in text)
 
 
 # --- Helpers ---
@@ -98,12 +118,19 @@ def is_remote_request(req) -> bool:
     return False
 
 
-def is_request_matching_volunteer(request_obj, volunteer_obj):
-    """v1 deterministic matching: status open + category match + location/remote."""
+def is_request_matching_volunteer(request_obj, volunteer_obj, interested_request_ids: set[int] | None = None):
+    """MVP matching (V2.2.A): status open + volunteer active + profile complete + not already interested."""
     if not request_obj or not volunteer_obj:
         return False
 
     if (getattr(request_obj, "status", "") or "").lower() != "open":
+        return False
+
+    if not getattr(volunteer_obj, "is_active", False):
+        return False
+
+    # profile completeness (location + availability)
+    if not (getattr(volunteer_obj, "location", None) and getattr(volunteer_obj, "availability", None)):
         return False
 
     # exclude assigned/archived/deleted
@@ -114,22 +141,11 @@ def is_request_matching_volunteer(request_obj, volunteer_obj):
     if getattr(request_obj, "deleted_at", None) is not None:
         return False
 
-    volunteer_skills = normalize_list(getattr(volunteer_obj, "skills", None))
-    request_categories = normalize_list(getattr(request_obj, "category", None))
-
-    if not (volunteer_skills & request_categories):
+    if interested_request_ids and getattr(request_obj, "id", None) in interested_request_ids:
         return False
 
-    if is_remote_request(request_obj):
-        return True
-
-    v_city = (getattr(volunteer_obj, "city", None) or getattr(volunteer_obj, "location", None) or "").strip().lower()
-    r_city = (getattr(request_obj, "city", None) or "").strip().lower()
-    if v_city and r_city:
-        return v_city == r_city
-
-    # strict: if city missing on either side and not remote, no match
-    return False
+    # Geo/skills matching postponed (later versions)
+    return True
 
 
 def require_volunteer_login(fn):
@@ -154,6 +170,11 @@ def _current_volunteer():
         return None
 
 
+# Minimal form to issue CSRF tokens for inline button actions
+class CSRFOnlyForm(FlaskForm):
+    pass
+
+
 # ✅ url_lang + safe_url_for in ALL templates rendered by this blueprint
 @main_bp.app_context_processor
 def inject_template_helpers():
@@ -175,14 +196,19 @@ def inject_template_helpers():
 @main_bp.route("/", methods=["GET"])
 def index():
     """Главна страница"""
-    latest_requests = (
-        Request.query
-        .filter(Request.deleted_at.is_(None))
-        .filter(Request.is_archived == 0)
-        .order_by(Request.created_at.desc())
-        .limit(6)
-        .all()
-    )
+    latest_requests = []
+    try:
+        latest_requests = (
+            Request.query
+            .filter(Request.deleted_at.is_(None))
+            .filter(Request.is_archived == 0)
+            .order_by(Request.created_at.desc())
+            .limit(6)
+            .all()
+        )
+    except Exception as e:
+        current_app.logger.warning("Home latest_requests skipped: %s", e)
+        latest_requests = []
     return render_template("home_new_slim.html", latest_requests=latest_requests), 200
 
 
@@ -397,6 +423,7 @@ def set_lang(locale):
 
 
 @main_bp.route("/categories", methods=["GET"])
+@limiter.limit("120 per minute")
 def categories():
     """Списък с всички категории"""
     locale_code = (str(babel_get_locale()) or "en").split("_", 1)[0].lower()
@@ -433,18 +460,44 @@ def achievements():
 
 
 @main_bp.route("/volunteer_login", methods=["GET", "POST"])
+@limiter.limit("5 per 5 minutes")
+@limiter.limit("20 per hour")
+@limiter.limit("3 per hour", key_func=email_or_ip_key, methods=["POST"])
 def volunteer_login():
+    current_app.logger.info(
+        "volunteer_login cfg bypass_enabled=%s bypass_email=%s args_dev=%s",
+        current_app.config.get("VOLUNTEER_DEV_BYPASS_ENABLED"),
+        current_app.config.get("VOLUNTEER_DEV_BYPASS_EMAIL"),
+        request.args.get("dev"),
+    )
     if request.method == "POST":
         email = (request.form.get("email") or "").strip().lower()
 
+        generic_msg = _("If the email is valid, you will receive a login link.")
+
+        log_security_event("magic_link_requested", actor_type="anonymous", meta={"flow": "volunteer"})
+
+        if current_app.config.get("VOLUNTEER_DEV_BYPASS_ENABLED") and email == current_app.config.get("VOLUNTEER_DEV_BYPASS_EMAIL"):
+            v = Volunteer.query.filter_by(email=email).first()
+            if not v:
+                v = Volunteer(email=email, is_active=True)
+                db.session.add(v)
+                db.session.commit()
+
+            session.clear()
+            session["volunteer_id"] = v.id
+            session["volunteer_logged_in"] = True
+            log_security_event("volunteer_dev_bypass_login", actor_type="volunteer", actor_id=v.id)
+            return redirect(url_for("main.volunteer_dashboard"))
+
         if not email:
-            flash("Моля въведи имейл.", "warning")
+            flash(generic_msg, "info")
             return render_template("volunteer_login.html", minimal_page=True), 200
 
         volunteer = Volunteer.query.filter(Volunteer.email.ilike(email)).first()
 
         if not volunteer or not getattr(volunteer, "is_active", True):
-            flash("Грешен имейл или профилът не е активен.", "danger")
+            flash(generic_msg, "info")
             return render_template("volunteer_login.html", minimal_page=True), 200
 
         session["volunteer_id"] = int(volunteer.id)
@@ -456,11 +509,16 @@ def volunteer_login():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        target = get_safe_next(url_for("main.volunteer_dashboard"))
+        if not getattr(volunteer, "volunteer_onboarded", False):
+            return redirect(url_for("main.volunteer_onboarding", next=target), code=303)
+        return redirect(target, code=303)
 
-        return redirect(
-            get_safe_next(url_for("main.volunteer_dashboard")),
-            code=303,
-        )
+    prefill_email = ""
+    if current_app.config.get("VOLUNTEER_DEV_BYPASS_ENABLED") and request.args.get("dev") == "1":
+        prefill_email = current_app.config.get("VOLUNTEER_DEV_BYPASS_EMAIL") or ""
+
+    return render_template("volunteer_login.html", minimal_page=True, prefill_email=prefill_email), 200
 
     return render_template("volunteer_login.html", minimal_page=True), 200
 
@@ -498,6 +556,40 @@ def volunteer_confirmation():
     return render_template("volunteer_confirmation.html"), 200
 
 
+@main_bp.get("/volunteer/onboarding")
+@require_volunteer_login
+def volunteer_onboarding():
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login"))
+    if getattr(volunteer, "volunteer_onboarded", False):
+        return redirect(get_safe_next(url_for("main.volunteer_dashboard")))
+    return render_template("volunteer_onboarding.html"), 200
+
+
+@main_bp.post("/volunteer/onboarding")
+@require_volunteer_login
+def volunteer_onboarding_submit():
+    volunteer_id = session.get("volunteer_id")
+    if not volunteer_id:
+        return redirect(url_for("main.volunteer_login"))
+
+    volunteer = Volunteer.query.get(volunteer_id)
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login"))
+
+    # ✅ V2.1.a — mark onboarding complete
+    volunteer.volunteer_onboarded = True
+    db.session.commit()
+
+    flash(
+        _("You're all set! You can now see requests where your help matters."),
+        "success",
+    )
+
+    return redirect(url_for("main.volunteer_dashboard"))
+
+
 @main_bp.get("/volunteer/dashboard")
 @require_volunteer_login
 def volunteer_dashboard():
@@ -505,13 +597,56 @@ def volunteer_dashboard():
 
     if not volunteer:
         return redirect(url_for("main.volunteer_login", next=request.path))
+    if not getattr(volunteer, "volunteer_onboarded", False):
+        return redirect(url_for("main.volunteer_onboarding", next=request.full_path), code=303)
 
     just_logged_in = session.pop("just_logged_in", None)
 
     open_requests = Request.query.filter_by(status="open").all()
+
+    my_interest_req_ids = set(
+        rid for (rid,) in db.session.query(VolunteerInterest.request_id)
+        .filter(VolunteerInterest.volunteer_id == volunteer.id)
+        .all()
+    )
+
     matched_requests = [
-        r for r in open_requests if is_request_matching_volunteer(r, volunteer)
+        r for r in open_requests
+        if is_request_matching_volunteer(r, volunteer, my_interest_req_ids)
     ]
+
+    # V2.2.A — in-app notification: create once per (volunteer, request)
+    if matched_requests:
+        matched_ids = [r.id for r in matched_requests if getattr(r, "id", None)]
+
+        existing = set(
+            rid for (rid,) in db.session.query(Notification.request_id)
+            .filter(
+                Notification.volunteer_id == volunteer.id,
+                Notification.type == "new_match",
+                Notification.request_id.in_(matched_ids),
+            )
+            .all()
+        )
+
+        new_notifs = []
+        for r in matched_requests:
+            if r.id in existing:
+                continue
+            new_notifs.append(
+                Notification(
+                    volunteer_id=volunteer.id,
+                    type="new_match",
+                    request_id=r.id,
+                    title="New match",
+                    body=(r.title or "")[:200],
+                    is_read=False,
+                )
+            )
+
+        if new_notifs:
+            db.session.add_all(new_notifs)
+            db.session.commit()
 
     pending_ids = set(
         rid for (rid,) in db.session.query(VolunteerInterest.request_id)
@@ -534,18 +669,35 @@ def volunteer_dashboard():
     my_pending: list[dict] = []
     my_approved: list[dict] = []
     my_rejected: list[dict] = []
+    my_first_approved_req = None
+    my_first_closed_req = None
 
     for vi, req in my_interests:
         row = {"vi": vi, "req": req}
         status_norm = (vi.status or "").lower()
+        my_interest_req_ids.add(req.id)
         if status_norm == "pending":
             my_pending.append(row)
         elif status_norm == "approved":
             my_approved.append(row)
+            if not my_first_approved_req:
+                my_first_approved_req = row
         elif status_norm == "rejected":
             my_rejected.append(row)
         else:
             my_pending.append(row)  # fallback bucket
+        try:
+            req_status = normalize_request_status(getattr(req, "status", None))
+        except Exception:
+            req_status = (getattr(req, "status", None) or "").lower()
+        if not my_first_closed_req and req_status in {"closed", "done", "completed", "resolved"}:
+            my_first_closed_req = row
+
+    # --- Generate match notifications lazily (MVP) ---
+    profile_complete = bool(volunteer.location) and bool(volunteer.availability)
+    if volunteer.is_active and profile_complete:
+        eligible_matches = [r for r in matched_requests if r.id not in my_interest_req_ids]
+        ensure_new_match_notifications(volunteer_id=volunteer.id, request_rows=eligible_matches)
 
     current_app.logger.info(
         "Matching check",
@@ -554,6 +706,121 @@ def volunteer_dashboard():
         "matched_requests": len(matched_requests),
     },
     )
+
+    csrf_form = CSRFOnlyForm()
+
+    actions = db.session.query(VolunteerAction.request_id, VolunteerAction.action).filter(
+        VolunteerAction.volunteer_id == volunteer.id
+    ).all()
+    my_actions_by_req_id = {rid: act for rid, act in actions}
+
+    unread_match_notifications = (
+        Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False, type="new_match")
+        .order_by(Notification.created_at.desc())
+        .all()
+    )
+    unread_count = Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False).count()
+
+    # --- In-app notifications (V2.2.A) ---
+    locale_code = str(babel_get_locale())[:2]
+    notif_copy = {
+        "fr": {
+            "new_match": {
+                "title": "New request matches your profile",
+                "body": "Localisation + compétences + disponibilité sont alignées. Consultez et choisissez si vous voulez aider.",
+                "cta": "Voir la demande",
+            },
+            "help_accepted": {
+                "title": "Vous êtes connectés. Vous pouvez aider.",
+                "body": "La personne a accepté votre aide. Vous pouvez maintenant coordonner.",
+                "cta": "Ouvrir la demande",
+            },
+            "request_done": {
+                "title": "Cette demande est terminée. Merci.",
+                "body": "Aidez une autre personne quand vous le souhaitez.",
+                "cta": "Voir les demandes",
+            },
+        },
+        "bg": {
+            "new_match": {
+                "title": "Нова заявка съвпада с профила ти",
+                "body": "Локация + умения + наличност съвпадат. Виж детайлите и реши дали да помогнеш.",
+                "cta": "Виж заявката",
+            },
+            "help_accepted": {
+                "title": "Свързани сте. Можеш да помогнеш вече.",
+                "body": "Заявителят прие помощта ти. Сега може да координирате.",
+                "cta": "Отвори заявката",
+            },
+            "request_done": {
+                "title": "Тази заявка е приключена. Благодарим.",
+                "body": "Можеш да помогнеш на друг човек, когато решиш.",
+                "cta": "Виж заявки",
+            },
+        },
+        "en": {
+            "new_match": {
+                "title": "New request matches your profile",
+                "body": "Location + skills + availability align. Review it and choose if you want to help.",
+                "cta": "View request",
+            },
+            "help_accepted": {
+                "title": "You’re connected. You can now help.",
+                "body": "The requester accepted your help. Coordinate when ready.",
+                "cta": "Open request",
+            },
+            "request_done": {
+                "title": "This request is now completed. Thank you.",
+                "body": "Help someone else whenever you like.",
+                "cta": "View requests",
+            },
+        },
+    }
+    notif_lang = notif_copy.get(locale_code, notif_copy["en"])
+    notifications: list[dict] = []
+    badge_count = 0
+
+    if my_first_approved_req:
+        notifications.append(
+            {
+                "kind": "help_accepted",
+                "title": notif_lang["help_accepted"]["title"],
+                "body": notif_lang["help_accepted"]["body"],
+                "cta_label": notif_lang["help_accepted"]["cta"],
+                "cta_href": url_for(
+                    "main.volunteer_request_details", req_id=my_first_approved_req["req"].id
+                ),
+                "tone": "success",
+            }
+        )
+        badge_count = 0  # badge clears automatically
+    elif my_first_closed_req:
+        notifications.append(
+            {
+                "kind": "request_done",
+                "title": notif_lang["request_done"]["title"],
+                "body": notif_lang["request_done"]["body"],
+                "cta_label": notif_lang["request_done"]["cta"],
+                "cta_href": url_for("main.volunteer_dashboard") + "#hc-matches",
+                "tone": "secondary",
+            }
+        )
+        badge_count = 0
+    elif unread_match_notifications:
+        first_match = unread_match_notifications[0]
+        notifications.append(
+            {
+                "kind": "new_match",
+                "title": notif_lang["new_match"]["title"],
+                "body": notif_lang["new_match"]["body"],
+                "cta_label": notif_lang["new_match"]["cta"],
+                "cta_href": url_for(
+                    "main.volunteer_request_details", req_id=first_match.request_id
+                ),
+                "tone": "primary",
+            }
+        )
+        badge_count = 1
 
     return render_template(
         "volunteer_dashboard.html",
@@ -564,6 +831,11 @@ def volunteer_dashboard():
         my_pending=my_pending,
         my_approved=my_approved,
         my_rejected=my_rejected,
+        notifications=notifications,
+        volunteer_badge_count=badge_count,
+        unread_count=unread_count,
+        my_actions_by_req_id=my_actions_by_req_id,
+        csrf_form=csrf_form,
     ), 200
 
 
@@ -599,9 +871,25 @@ def volunteer_request_details(req_id: int):
     except Exception:
         status_norm = getattr(req, "status", None)
 
+    action_row = VolunteerAction.query.filter_by(
+        request_id=req.id, volunteer_id=volunteer.id
+    ).one_or_none()
+
     # опционален контрол: показваме само ако е match/отворена
     # if not is_request_matching_volunteer(req, volunteer):
     #     abort(403)
+
+    # Mark related match notification as read (if any)
+    try:
+        changed = Notification.query.filter_by(
+            volunteer_id=volunteer.id, request_id=req.id, type="new_match", is_read=False
+        ).update({"is_read": True, "read_at": datetime.utcnow()})
+        if changed:
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    csrf_form = CSRFOnlyForm()
 
     return render_template(
         "volunteer_request_details.html",
@@ -613,6 +901,8 @@ def volunteer_request_details(req_id: int):
         already_approved=already_approved,
         already_rejected=already_rejected,
         is_demo=False,
+        volunteer_action=action_row,
+        csrf_form=csrf_form,
     ), 200
 
 
@@ -676,6 +966,80 @@ def volunteer_help(req_id: int):
     if request.headers.get("X-Requested-With") == "fetch":
         return jsonify({"ok": True, "status": interest.status})
 
+    # Clear match notification when volunteer expresses interest
+    try:
+        Notification.query.filter_by(
+            volunteer_id=volunteer.id, request_id=req.id, type="new_match"
+        ).update({"is_read": True, "read_at": datetime.utcnow()})
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    return redirect(url_for("main.volunteer_request_details", req_id=req_id))
+
+
+def _upsert_volunteer_action(req_obj, volunteer, action_value: str):
+    """Create or update a volunteer action signal for a request."""
+    row = VolunteerAction.query.filter_by(
+        request_id=req_obj.id, volunteer_id=volunteer.id
+    ).one_or_none()
+    old_action = getattr(row, "action", None) if row else None
+    if row is None:
+        row = VolunteerAction(
+            request_id=req_obj.id,
+            volunteer_id=volunteer.id,
+            action=action_value,
+        )
+        db.session.add(row)
+    else:
+        row.action = action_value
+    db.session.add(
+        RequestActivity(
+            request_id=req_obj.id,
+            action=f"volunteer_{action_value.lower()}",
+            old_value=old_action,
+            new_value=action_value,
+        )
+    )
+    db.session.commit()
+    return row
+
+
+@main_bp.post("/volunteer/requests/<int:req_id>/can-help")
+@require_volunteer_login
+def volunteer_can_help(req_id: int):
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login", next=request.path))
+
+    req = db.session.get(Request, req_id)
+    if not req:
+        abort(404)
+
+    _upsert_volunteer_action(req, volunteer, "CAN_HELP")
+
+    if request.headers.get("X-Requested-With") == "fetch":
+        return jsonify({"ok": True, "action": "CAN_HELP"})
+    flash(_("Signal sent: you can help."), "success")
+    return redirect(url_for("main.volunteer_request_details", req_id=req_id))
+
+
+@main_bp.post("/volunteer/requests/<int:req_id>/cant-help")
+@require_volunteer_login
+def volunteer_cant_help(req_id: int):
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login", next=request.path))
+
+    req = db.session.get(Request, req_id)
+    if not req:
+        abort(404)
+
+    _upsert_volunteer_action(req, volunteer, "CANT_HELP")
+
+    if request.headers.get("X-Requested-With") == "fetch":
+        return jsonify({"ok": True, "action": "CANT_HELP"})
+    flash(_("Signal sent: you can't help right now."), "info")
     return redirect(url_for("main.volunteer_request_details", req_id=req_id))
 
 
@@ -688,6 +1052,50 @@ def volunteer_request_help_demo():
     return redirect(url_for("main.volunteer_request_demo"))
 
 
+@main_bp.get("/volunteer/notifications")
+@require_volunteer_login
+def volunteer_notifications():
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login"))
+
+    notifs = (
+        Notification.query.filter_by(volunteer_id=volunteer.id)
+        .order_by(Notification.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    unread_count = (
+        Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False).count()
+    )
+
+    return render_template(
+        "volunteer_notifications.html",
+        notifications=notifs,
+        unread_count=unread_count,
+    ), 200
+
+
+@main_bp.post("/volunteer/notifications/<int:notif_id>/open")
+@require_volunteer_login
+def volunteer_notification_open(notif_id: int):
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return redirect(url_for("main.volunteer_login"))
+
+    n = Notification.query.filter_by(id=notif_id, volunteer_id=volunteer.id).first_or_404()
+
+    if not n.is_read:
+        n.is_read = True
+        n.read_at = datetime.utcnow()
+        db.session.commit()
+
+    if n.request_id:
+        return redirect(url_for("main.volunteer_request_details", req_id=n.request_id))
+
+    return redirect(url_for("main.volunteer_notifications"))
+
+
 @main_bp.route("/volunteer/profile", methods=["GET", "POST"])
 @require_volunteer_login
 def volunteer_profile():
@@ -697,7 +1105,19 @@ def volunteer_profile():
         return redirect(url_for("main.volunteer_login", next=request.path))
 
     if request.method == "POST":
-        for field in ("name", "email", "phone", "city", "skills", "notes", "availability"):
+        current_app.logger.info(
+            "VOL PROFILE SAVE location=%s", request.form.get("location")
+        )
+        for field in (
+            "name",
+            "email",
+            "phone",
+            "location",
+            "city",
+            "skills",
+            "notes",
+            "availability",
+        ):
             if field in request.form:
                 setattr(volunteer, field, request.form.get(field, "").strip())
         db.session.commit()
@@ -795,9 +1215,16 @@ def normalize_request_form(form):
 
 
 @main_bp.route("/submit_request", methods=["GET", "POST"])
-@limiter.limit("5 per minute; 30 per hour")
+@limiter.limit("3 per minute", methods=["POST"])
+@limiter.limit("10 per hour", methods=["POST"])
 def submit_request():
     """Подаване на заявка за помощ"""
+    trust_items = [
+        ("&#10003;", "fas fa-shield-heart", _("Verified volunteers only")),
+        ("&#9733;", "fas fa-user-clock", _("Fast matching - no bureaucracy")),
+        ("&#9889;", "fas fa-lock", _("We keep your data private")),
+    ]
+
     if request.method == "POST":
         current_app.logger.warning("SUBMIT_REQUEST POST hit")
         current_app.logger.warning("Form keys=%s", list(request.form.keys()))
@@ -806,8 +1233,8 @@ def submit_request():
         website = (request.form.get("website") or "").strip()
         if website:
             current_app.logger.warning("Honeypot triggered on submit_request: website=%r", website)
-            flash("Формата беше отхвърлена (анти-бот). Опитай пак.", "error")
-            return redirect(url_for("main.submit_request"))
+            # Pretend success to avoid bot feedback loops
+            return render_template("submit_request.html", trust_items=trust_items, success=True), 200
 
         category, urgency, description = normalize_request_form(request.form)
 
@@ -837,6 +1264,33 @@ def submit_request():
             len(description or ""),
             title,
         )
+
+        MAX_NAME_LEN = 80
+        MAX_TITLE_LEN = 120
+        MAX_DESC_LEN = 2000
+        MAX_LOCATION_LEN = 120
+
+        for label, value, max_len in (
+            ("name", name, MAX_NAME_LEN),
+            ("title", title, MAX_TITLE_LEN),
+            ("description", description, MAX_DESC_LEN),
+            ("location", location_text, MAX_LOCATION_LEN),
+        ):
+            if len(value) > max_len:
+                current_app.logger.warning("VALIDATION FAIL: %s too long (%s > %s)", label, len(value), max_len)
+                flash(_("Please shorten the %(field)s.", field=_("text") if label == "description" else label), "error")
+                return redirect(url_for("main.submit_request"))
+
+        for label, value in (
+            ("name", name),
+            ("title", title),
+            ("description", description),
+            ("location_text", location_text),
+        ):
+            if has_control_chars(value):
+                current_app.logger.warning("VALIDATION FAIL: control chars in %s", label)
+                flash(_("Invalid characters detected."), "error")
+                return redirect(url_for("main.submit_request"))
 
         # ✅ Server-side validation (точно както UX-а)
         if len(name) < 2:
@@ -941,7 +1395,7 @@ def submit_request_confirm():
                 subject = "Вашият защитен линк за проследяване в HelpChain"
                 context = {
                     "subject": subject,
-                    "recipient_name": getattr(req, "name", "Потребител"),
+                    # PII guard: no names/phones/emails in outbound email body
                     "content": f"Ето вашият защитен линк за проследяване:<br><a href='{magic_url}'>{magic_url}</a>",
                     "magic_url": magic_url,
                     "request_id": req.id,
@@ -968,6 +1422,12 @@ def submit_request_confirm():
                 app.send_emergency_email(req)
             if hasattr(app, "mark_emergency_email_sent"):
                 app.mark_emergency_email_sent()
+
+        log_security_event(
+            "request_submitted",
+            actor_type="anonymous",
+            meta={"request_id": req.id, "category": getattr(req, "category", None)},
+        )
 
         return redirect(url_for("main.profile"))
 

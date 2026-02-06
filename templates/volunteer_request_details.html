@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Детайли за заявка | HelpChain{% endblock %}
 
-{% macro interest_button(pending, approved, rejected, req_id, is_demo=False) -%}
+{% macro interest_button(pending, approved, rejected, req_id, is_demo=False, csrf_form=None) -%}
   {% if pending %}
     <button class="btn btn-secondary" disabled>В изчакване</button>
     <div class="small text-muted mt-2">
@@ -16,7 +16,11 @@
   {% else %}
     {% set post_url = url_for('main.volunteer_request_help_demo') if is_demo else url_for('main.volunteer_help', req_id=req_id) %}
     <form method="post" action="{{ post_url }}" class="d-inline">
-      {{ csrf_token() if csrf_token is defined }}
+      {% if csrf_form %}
+        {{ csrf_form.csrf_token }}
+      {% elif csrf_token is defined %}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% endif %}
       <button type="submit" class="btn btn-primary">Ще помогна</button>
     </form>
     {% if is_demo %}
@@ -75,8 +79,38 @@
     already_approved|default(false),
     already_rejected|default(false),
     req_id=req.id,
-    is_demo=is_demo
+    is_demo=is_demo,
+    csrf_form=csrf_form
 ) }}
+
+      <hr class="my-4">
+      <h4 class="h6 mb-2">{{ _('Your signal') }}</h4>
+      {% if volunteer_action and volunteer_action.action == 'CAN_HELP' %}
+        <span class="badge bg-success">✅ {{ _('You can help') }}</span>
+      {% elif volunteer_action and volunteer_action.action == 'CANT_HELP' %}
+        <span class="badge bg-secondary">🚫 {{ _('You can’t help right now') }}</span>
+      {% else %}
+        <span class="text-muted small">{{ _('No signal sent yet.') }}</span>
+      {% endif %}
+
+      <div class="d-flex flex-wrap gap-2 mt-2">
+        <form method="post" action="{{ url_for('main.volunteer_can_help', req_id=req.id) }}" class="d-inline">
+          {% if csrf_form %}
+            {{ csrf_form.csrf_token }}
+          {% elif csrf_token is defined %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% endif %}
+          <button type="submit" class="btn btn-sm btn-primary">{{ _('I can help') }}</button>
+        </form>
+        <form method="post" action="{{ url_for('main.volunteer_cant_help', req_id=req.id) }}" class="d-inline">
+          {% if csrf_form %}
+            {{ csrf_form.csrf_token }}
+          {% elif csrf_token is defined %}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% endif %}
+          <button type="submit" class="btn btn-sm btn-outline-secondary">{{ _('I can’t help') }}</button>
+        </form>
+      </div>
 
       <div class="mt-3">
         <div class="d-flex gap-3 align-items-center small text-muted">
