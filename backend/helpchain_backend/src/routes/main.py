@@ -33,7 +33,7 @@ from urllib.parse import urlparse, urljoin
 from ..statuses import normalize_request_status
 from ..security_logging import log_security_event
 from ..notifications.inapp import ensure_new_match_notifications
-from ..authz import can_view_notification
+from ..authz import can_view_notification, can_view_request
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
@@ -855,6 +855,9 @@ def volunteer_request_details(req_id: int):
         db.session.refresh(req)
     except Exception:
         pass
+
+    if not can_view_request(current_user, req, db):
+        abort(404)
 
     vi = (
         VolunteerInterest.query.filter_by(
