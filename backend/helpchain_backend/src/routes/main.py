@@ -33,6 +33,7 @@ from urllib.parse import urlparse, urljoin
 from ..statuses import normalize_request_status
 from ..security_logging import log_security_event
 from ..notifications.inapp import ensure_new_match_notifications
+from ..authz import can_view_notification
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
@@ -1060,14 +1061,14 @@ def volunteer_notifications():
         return redirect(url_for("main.volunteer_login"))
 
     notifs = (
-        Notification.query.filter_by(volunteer_id=volunteer.id)
+        Notification.query.filter(Notification.user_id == current_user.id)
         .order_by(Notification.created_at.desc())
         .limit(50)
         .all()
     )
-    unread_count = (
-        Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False).count()
-    )
+    unread_count = Notification.query.filter(
+        Notification.user_id == current_user.id, Notification.is_read == False  # noqa: E712
+    ).count()
 
     return render_template(
         "volunteer_notifications.html",
@@ -1083,7 +1084,10 @@ def volunteer_notification_open(notif_id: int):
     if not volunteer:
         return redirect(url_for("main.volunteer_login"))
 
-    n = Notification.query.filter_by(id=notif_id, volunteer_id=volunteer.id).first_or_404()
+    n = Notification.query.get_or_404(notif_id)
+
+    if not can_view_notification(current_user, n):
+        abort(404)
 
     if not n.is_read:
         n.is_read = True
