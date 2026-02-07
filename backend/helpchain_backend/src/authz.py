@@ -32,16 +32,13 @@ def can_view_notification(user, notification) -> bool:
 
 
 # --- Request access policies ---
-APPROVED_INTEREST_STATUS = "APPROVED"
-
-
 def can_view_request(user, req, db):
     """
     Allow view if:
     - request is assigned to this user (volunteer), OR
-    - user has an approved interest for this request.
+    - user has ANY interest row for this request (pending/approved/rejected, etc.).
     """
-    if not user or not req:
+    if not user or not req or not getattr(user, "id", None):
         return False
 
     # Assigned volunteer
@@ -57,7 +54,6 @@ def can_view_request(user, req, db):
             and_(
                 VolunteerInterest.request_id == req.id,
                 VolunteerInterest.volunteer_id == user.id,
-                VolunteerInterest.status == APPROVED_INTEREST_STATUS,
             )
         )
         .first()

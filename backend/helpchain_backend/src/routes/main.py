@@ -856,7 +856,7 @@ def volunteer_request_details(req_id: int):
     except Exception:
         pass
 
-    if not can_view_request(current_user, req, db):
+    if not can_view_request(volunteer, req, db):
         abort(404)
 
     vi = (
@@ -1064,13 +1064,13 @@ def volunteer_notifications():
         return redirect(url_for("main.volunteer_login"))
 
     notifs = (
-        Notification.query.filter(Notification.user_id == current_user.id)
+        Notification.query.filter(Notification.user_id == volunteer.id)
         .order_by(Notification.created_at.desc())
         .limit(50)
         .all()
     )
     unread_count = Notification.query.filter(
-        Notification.user_id == current_user.id, Notification.is_read == False  # noqa: E712
+        Notification.user_id == volunteer.id, Notification.is_read == False  # noqa: E712
     ).count()
 
     return render_template(
@@ -1089,7 +1089,7 @@ def volunteer_notification_open(notif_id: int):
 
     n = Notification.query.get_or_404(notif_id)
 
-    if not can_view_notification(current_user, n):
+    if not can_view_notification(volunteer, n):
         abort(404)
 
     if not n.is_read:
