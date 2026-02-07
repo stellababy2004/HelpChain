@@ -9,6 +9,7 @@
   {% endif %}
 
   <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label style="display:block;margin-bottom:6px;">Код (6 цифри)</label>
     <input name="code" inputmode="numeric" autocomplete="one-time-code"
            style="width:100%;padding:10px;border-radius:10px;border:1px solid #555;background:#111;color:#fff;"
@@ -19,7 +20,8 @@
   </form>
 
   <div style="margin-top:12px;font-size:12px;opacity:.75;">
-    Ако кодовете са “вечно грешни” — часовникът на телефона ти е виновен.
+    Ако кодовете са “вечно грешни” - часовникът на телефона ти е виновен.
   </div>
 </div>
 {% endblock %}
+

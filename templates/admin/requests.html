@@ -68,6 +68,7 @@
           <th style="width:120px;">{{ _('Created') }}</th>
           <th style="width:120px;">{{ _('Closed') }}</th>
           <th style="width:130px;">{{ _('SLA') }}</th>
+          <th style="width:140px;">{{ _('Signals') }}</th>
           <th style="width:120px;">{{ _('Details') }}</th>
         </tr>
       </thead>
@@ -106,6 +107,14 @@
               <span class="badge text-bg-success ms-1" title="{{ _('Closed') }}">✓ {{ _('Closed') }}</span>
             {% endif %}
           </td>
+          <td>
+            {% set c = volunteer_action_counts.get(r.id, {}) %}
+            {% set ch = c.get('CAN_HELP', 0) %}
+            {% set cc = c.get('CANT_HELP', 0) %}
+            {% if ch %}<span class="badge text-bg-success me-1">✅ +{{ ch }}</span>{% endif %}
+            {% if cc %}<span class="badge text-bg-secondary">🚫 +{{ cc }}</span>{% endif %}
+            {% if not ch and not cc %}<span class="text-muted small">—</span>{% endif %}
+          </td>
           <td class="text-end">
             <a class="btn btn-sm btn-outline-light" onclick="event.stopPropagation()" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
           </td>
@@ -119,3 +128,4 @@
 
 </div>
 {% endblock %}
+

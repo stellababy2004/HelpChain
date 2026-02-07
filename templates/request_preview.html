@@ -16,7 +16,7 @@
       </p>
       <p><strong>Категория:</strong> {{ draft.category }}</p>
       <p><strong>Спешност:</strong> {{ draft.urgency }}</p>
-      <p><strong>Локация:</strong> {{ draft.location_text or "—" }}</p>
+      <p><strong>Локация:</strong> {{ draft.location_text or "-" }}</p>
       <hr>
       <p><strong>Описание:</strong></p>
       <p>{{ draft.description }}</p>
@@ -40,3 +40,4 @@
   </div>
 </div>
 {% endblock %}
+
