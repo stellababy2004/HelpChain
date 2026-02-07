@@ -12,7 +12,7 @@
     </div>
   </header>
 
-  {% if notifications %}
+  {% if notifications and notifications|length %}
     <div class="hc-list">
       {% for n in notifications %}
         <form method="post" action="{{ url_for('main.volunteer_notification_open', notif_id=n.id) }}" class="hc-card hc-card--click">
@@ -25,15 +25,39 @@
               </div>
               <div class="hc-card__meta">{{ n.created_at.strftime('%Y-%m-%d %H:%M') if n.created_at else '' }}</div>
             </div>
+
+            <div class="hc-notif__meta">
+              {% if n.status == "UNREAD" %}
+                <span class="hc-badge hc-badge--unread">Ново</span>
+              {% else %}
+                <span class="hc-badge hc-badge--read">Прочетено</span>
+              {% endif %}
+              {% if n.kind %}
+                <span class="hc-badge hc-badge--kind">{{ n.kind }}</span>
+              {% endif %}
+            </div>
+
             {% if n.body %}
               <div class="hc-card__body">{{ n.body }}</div>
+            {% endif %}
+
+            {% if n.request_id %}
+              <div class="hc-card__actions">
+                <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.volunteer_request_details', req_id=n.request_id) }}">
+                  Отвори заявката
+                </a>
+              </div>
             {% endif %}
           </button>
         </form>
       {% endfor %}
     </div>
   {% else %}
-    <p class="hc-muted">{{ _("No notifications yet.") }}</p>
+    <div class="hc-empty">
+      <h2 class="hc-empty__title">Няма известия засега</h2>
+      <p class="hc-empty__text">Когато има движение по заявки, ще го видиш тук.</p>
+      <a class="hc-btn" href="{{ url_for('main.volunteer_dashboard') }}">Към таблото</a>
+    </div>
   {% endif %}
 </section>
 {% endblock %}

@@ -1679,3 +1679,10 @@ form select.form-select {
   background: rgba(0,0,0,0.02);
 }
 .hc-emptyMini__icon{ font-size: 1.25rem; }
+
+/* Notifications UI polish */
+.hc-notif__meta{display:flex;gap:.35rem;align-items:center;margin:8px 0}
+.hc-badge--unread{font-weight:700}
+.hc-badge--read{opacity:.65}
+.hc-badge--kind{opacity:.8}
+.hc-card__actions{margin-top:10px}
