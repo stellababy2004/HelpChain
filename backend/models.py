@@ -57,12 +57,6 @@ class AdminUser(db.Model, UserMixin):
     backup_codes_hashes = db.Column(db.Text, nullable=True)  # JSON list of password hashes
     backup_codes_generated_at = db.Column(db.DateTime, nullable=True)
 
-    logs = db.relationship(
-        "AdminLog",
-        back_populates="admin_user",
-        cascade="all, delete-orphan",
-    )
-
     @property
     def is_admin(self) -> bool:
         # Treat admin + superadmin variants as admins
@@ -167,6 +161,7 @@ class Volunteer(db.Model):
     longitude = Column(Float, nullable=True)
     # Active flag used by admin filters
     is_active = Column(Boolean, default=True)
+    volunteer_onboarded = Column(Boolean, default=False)
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, default=utc_now, nullable=True, onupdate=utc_now)
     # Minimal gamification fields
@@ -666,6 +661,32 @@ class RequestMetric(db.Model):
     time_to_complete = Column(Integer, nullable=True)  # seconds
 
 
+class SecurityEvent(db.Model):
+    """Structured security/audit events without PII."""
+
+    __tablename__ = "security_events"
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    event_type = Column(String(64), nullable=False)
+    actor_type = Column(String(32), nullable=False, default="anonymous")  # anonymous/user/admin/api
+    actor_id = Column(Integer, nullable=True)
+
+    ip_hash = Column(String(64), nullable=True)
+    ua_hash = Column(String(64), nullable=True)
+
+    route = Column(String(128), nullable=True)
+    method = Column(String(8), nullable=True)
+
+    meta = Column(db.JSON, nullable=True)
+
+    __table_args__ = (
+        Index("ix_security_events_created_at", "created_at"),
+        Index("ix_security_events_event_type_created_at", "event_type", "created_at"),
+    )
+
+
 
 
 
@@ -904,15 +925,21 @@ class ChatMessage(db.Model):
     created_at = Column(DateTime, default=utc_now)
 
 
-# Minimal Notification model
 class Notification(db.Model):
     __tablename__ = "notifications"
+    __table_args__ = (
+        UniqueConstraint("volunteer_id", "type", "request_id", name="uq_notif_vol_type_req"),
+    )
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    title = Column(String(200), nullable=True)
+    volunteer_id = Column(Integer, ForeignKey("volunteers.id"), nullable=False, index=True)
+    type = Column(String(50), nullable=False, index=True)
+    request_id = Column(Integer, ForeignKey("requests.id"), nullable=True, index=True)
+    title = Column(String(200), nullable=False)
     body = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=utc_now)
+    is_read = Column(Boolean, nullable=False, default=False, index=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now)
+    read_at = Column(DateTime, nullable=True)
 
 
 class NotificationSubscription(db.Model):

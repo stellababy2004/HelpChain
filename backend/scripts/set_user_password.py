@@ -48,9 +48,9 @@ def main():
                     user.password_hash = args.password
                 # default role to 'user'
                 try:
-                    user.role = models.RoleEnum.USER.value
+                    user.role = models.RoleEnum.REQUESTER.value  # type: ignore[attr-defined]
                 except Exception:
-                    user.role = "user"
+                    user.role = "requester"
                 # Use the Flask-SQLAlchemy bound session if available
                 if ext_db is not None:
                     ext_db.session.add(user)

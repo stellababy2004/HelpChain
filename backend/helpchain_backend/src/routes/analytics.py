@@ -13,11 +13,14 @@ from flask import (
     url_for,
 )
 
+from ..extensions import csrf
+
 analytics_bp = Blueprint(
     "analytics",
     __name__,
     template_folder=os.path.join(os.path.dirname(__file__), "..", "..", "templates"),
 )
+csrf.exempt(analytics_bp)
 
 
 @analytics_bp.route("/analytics")

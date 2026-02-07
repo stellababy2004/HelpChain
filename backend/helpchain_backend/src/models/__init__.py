@@ -1,46 +1,50 @@
-from backend.models import *  # noqa
+"""
+Canonical models package for HelpChain backend.
+
+All models should be imported here exactly once to keep a single SQLAlchemy
+MetaData registry. Legacy models defined in `backend.models` are re-exported
+so existing imports keep working, but they use the SAME `db` instance from
+backend.extensions.
+"""
+
+from backend.extensions import db
+
+# Re-export legacy monolith models (single metadata)
+from backend import models as _legacy_models  # noqa: E402
+
+# Explicitly import modern split models
+from .volunteer_interest import VolunteerInterest  # noqa: E402,F401
+from .refresh_token import RefreshToken  # noqa: E402,F401
+from .volunteer_action import VolunteerAction  # noqa: E402,F401
 
 
-# --- Canonical model imports (legacy compatibility shim) ---
-# Your repository currently has other parts importing `Request`, `User`, etc.
-# BUT they are not defined inside this `src/models/` package yet.
-# We try to import them from their canonical location(s) WITHOUT hard-failing.
-#
-# Replace/extend these import paths once you confirm where the real models live.
-_CANDIDATE_MODEL_MODULES = (
-    "backend.models",                 # common pattern: backend/models.py
-    "backend.models.models",          # sometimes: backend/models/models.py
-    "backend.models.base",            # sometimes: backend/models/base.py
-)
+# Collect public names from legacy + modern models
+_public = set()
+for name in (
+    "AdminUser",
+    "Request",
+    "RequestLog",
+    "RequestActivity",
+    "RequestMetric",
+    "User",
+    "Volunteer",
+    "PushSubscription",
+    "Feedback",
+    "NotificationSubscription",
+    "Notification",
+    "canonical_role",
+    "utc_now",
+):
+    if hasattr(_legacy_models, name):
+        globals()[name] = getattr(_legacy_models, name)
+        _public.add(name)
 
-_IMPORTED = {}
-for _mod in _CANDIDATE_MODEL_MODULES:
-    try:
-        module = __import__(_mod, fromlist=["*"])
-    except Exception:
-        continue
+globals()["VolunteerInterest"] = VolunteerInterest
+_public.add("VolunteerInterest")
+globals()["RefreshToken"] = RefreshToken
+_public.add("RefreshToken")
+globals()["VolunteerAction"] = VolunteerAction
+_public.add("VolunteerAction")
 
-    # Pick only the names you want to re-export if they exist in that module.
-    for _name in (
-        "AdminUser",
-        "RequestActivity",
-        "RequestMetric",
-        "Request",
-        "RequestLog",
-        "User",
-        "Volunteer",
-        "PushSubscription",
-        "Feedback",
-        "NotificationSubscription",
-    ):
-        if hasattr(module, _name):
-            _IMPORTED[_name] = getattr(module, _name)
-
-# Expose imported names in this module namespace (if any were found)
-globals().update(_IMPORTED)
-
-
-# --- Public API ---
-# Export db + whatever models we actually managed to import.
-__all__ = ["db", *sorted(_IMPORTED.keys())]
+__all__ = ["db", *sorted(_public)]
 

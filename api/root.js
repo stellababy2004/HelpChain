@@ -12,7 +12,6 @@ module.exports = function (req, res) {
       '<h1>HelpChain Preview</h1>',
       '<p class="muted">Лек статичен начален екран за прегледите (Vercel Preview).</p>',
       '<div class="card"><h3>Бързи връзки</h3><ul>',
-      '<li><a href="/admin/login">Admin Login</a></li>',
       '<li><a href="/health">/health</a></li>',
       '<li><a href="/api/_health">/api/_health</a></li>',
       '<li><a href="/api/analytics">/api/analytics</a></li>',

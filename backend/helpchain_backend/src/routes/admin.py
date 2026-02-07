@@ -17,13 +17,26 @@ from io import StringIO, BytesIO
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 
-from backend.extensions import db
-from ..models import AdminUser, Request, RequestActivity, RequestLog, RequestMetric, Volunteer
+from backend.extensions import db, limiter
+from ..models import (
+    AdminUser,
+    Request,
+    RequestActivity,
+    RequestLog,
+    RequestMetric,
+    Volunteer,
+    VolunteerInterest,
+    Notification,
+    VolunteerAction,
+    utc_now,
+)
 from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
-from backend.models import utc_now
 from ..config import Config
 from backend.helpchain_backend.src.statuses import REQUEST_STATUS_ALLOWED, normalize_request_status
 from typing import Optional
+from ..security_logging import log_security_event
+
+INVALID_CREDENTIALS_MSG = "Invalid credentials."
 
 
 def _log_status_change_once(req_id: int, old_status: Optional[str], new_status: Optional[str], actor_admin_id: Optional[int]):
@@ -93,6 +106,12 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")  # single templates
 @admin_bp.get("/")
 def admin_index():
     """Redirect bare /admin to the main requests list."""
+    return redirect(url_for("admin.admin_requests"))
+
+
+@admin_bp.get("/dashboard")
+def admin_dashboard_redirect():
+    """Alias for /admin/requests to avoid 404s from legacy /admin/dashboard links."""
     return redirect(url_for("admin.admin_requests"))
 
 
@@ -456,37 +475,57 @@ def volunteer_detail(id):
 
 
 @admin_bp.route("/ops/login", methods=["GET", "POST"], endpoint="ops_login")
+@limiter.limit("5 per 5 minutes")
+@limiter.limit("20 per hour")
 def admin_ops_login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
         user = AdminUser.query.filter_by(username=username).first()
-        if not user:
-            flash("Admin user not found in database.", "danger")
+        if not user or not getattr(user, "password_hash", None) or not check_password_hash(
+            user.password_hash, password
+        ):
+            log_security_event(
+                "auth_admin_login_failed",
+                actor_type="anonymous",
+                meta={"reason": "invalid_credentials"},
+            )
+            flash(INVALID_CREDENTIALS_MSG, "danger")
             return redirect(url_for("admin.ops_login"))
+        # Successful login path
+        session.clear()  # mitigate session fixation
         login_user(user, remember=False)
+        session["admin_user_id"] = user.id
+        session["admin_logged_in"] = True
+        log_security_event(
+            "auth_admin_login_success",
+            actor_type="admin",
+            actor_id=user.id,
+        )
+        # MFA flow
         session.pop(Config.MFA_SESSION_KEY, None)
         session.pop("mfa_required", None)
         mfa_globally_enabled = bool(Config.MFA_ENABLED)
         user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(getattr(user, "totp_secret", None))
         if mfa_globally_enabled and user_has_mfa:
             session["mfa_required"] = True
-            return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next") or url_for("admin.admin_requests")))
-        else:
-            _mfa_ok_set()
-            session["admin_logged_in"] = True
+            return redirect(
+                url_for(
+                    "admin.admin_mfa_verify",
+                    next=request.args.get("next") or url_for("admin.admin_requests"),
+                )
+            )
+        _mfa_ok_set()
         return redirect(request.args.get("next") or url_for("admin.admin_requests"))
     return render_template("admin/login.html")
 
 
-@admin_bp.route("/login", methods=["GET", "POST"])
-def admin_login():
-    # Legacy path: allow localhost (dev) to reach the real login; otherwise 404
-    if _is_local_request() or current_app.debug:
-        nxt = request.args.get("next")
-        if nxt:
-            return redirect(url_for("admin.ops_login", next=nxt))
-        return redirect(url_for("admin.ops_login"))
-    abort(404)
+@admin_bp.get("/login")
+@limiter.limit("30 per minute")
+def admin_login_legacy():
+    """Legacy alias to ops login; preserves ?next=."""
+    nxt = request.args.get("next", "")
+    return redirect(url_for("admin.ops_login", next=nxt))
 
 @admin_bp.get("/logout")
 def admin_logout():
@@ -496,6 +535,7 @@ def admin_logout():
     session.pop("mfa_required", None)
     session.pop("mfa_pending_secret", None)
     session.pop("backup_codes_plain", None)
+    session.pop("admin_user_id", None)
     session.pop("admin_logged_in", None)
     logout_user()
     flash("Logged out.", "info")
@@ -1327,6 +1367,23 @@ def admin_requests():
     SLA_WARN_NO_OWNER_DAYS = 2
     SLA_STALE_DAYS = 7
 
+    # Volunteer signals counts per request
+    action_counts = {}
+    if requests:
+        req_ids = [r.id for r in requests]
+        rows = (
+            db.session.query(
+                VolunteerAction.request_id,
+                VolunteerAction.action,
+                func.count(VolunteerAction.id),
+            )
+            .filter(VolunteerAction.request_id.in_(req_ids))
+            .group_by(VolunteerAction.request_id, VolunteerAction.action)
+            .all()
+        )
+        for rid, act, cnt in rows:
+            action_counts.setdefault(rid, {}).update({act: cnt})
+
     return render_template(
         "admin/requests.html",
         STATUS_LABELS_BG=STATUS_LABELS_BG,
@@ -1339,6 +1396,7 @@ def admin_requests():
         now_naive=now_naive,
         SLA_WARN_NO_OWNER_DAYS=SLA_WARN_NO_OWNER_DAYS,
         SLA_STALE_DAYS=SLA_STALE_DAYS,
+        volunteer_action_counts=action_counts,
     )
 
 
@@ -1626,6 +1684,61 @@ def admin_request_details(req_id: int):
         .order_by(VolunteerInterest.created_at.desc())
         .all()
     )
+
+    # --- V3: Match & engagement (city-based) ---
+    req_city = (getattr(req, "city", "") or "").strip().lower()
+
+    def _norm_city(val: str) -> str:
+        return (val or "").strip().lower()
+
+    vols = Volunteer.query.filter_by(is_active=True).all()
+    matched_volunteers = [v for v in vols if _norm_city(getattr(v, "location", None)) == req_city]
+    matched_volunteers = matched_volunteers[:20]
+    matched_volunteer_ids = [v.id for v in matched_volunteers]
+
+    notif_rows = []
+    if matched_volunteer_ids:
+        notif_rows = (
+            Notification.query.filter(
+                Notification.request_id == req.id,
+                Notification.type == "new_match",
+                Notification.volunteer_id.in_(matched_volunteer_ids),
+            ).all()
+        )
+    notified_count = len(notif_rows)
+    seen_count = sum(1 for n in notif_rows if getattr(n, "is_read", False))
+
+    interest_rows = interests  # already loaded for this request
+    interested_ids = {i.volunteer_id for i in interest_rows}
+    interested_count = len(interested_ids)
+
+    notif_by_vol = {n.volunteer_id: n for n in notif_rows}
+    flags_by_vol = {}
+    for v in matched_volunteers:
+        n = notif_by_vol.get(v.id)
+        flags_by_vol[v.id] = {
+            "notified": n is not None,
+            "seen": bool(getattr(n, "is_read", False)) if n else False,
+            "interested": v.id in interested_ids,
+        }
+
+    assigned_volunteer = None
+    if getattr(req, "assigned_volunteer_id", None):
+        assigned_volunteer = Volunteer.query.get(req.assigned_volunteer_id)
+
+    # Volunteer signals (can/can't help)
+    volunteer_signals = (
+        VolunteerAction.query.filter_by(request_id=req.id)
+        .order_by(VolunteerAction.updated_at.desc())
+        .all()
+    )
+    signal_vol_ids = [va.volunteer_id for va in volunteer_signals]
+    volunteers_map = {
+        v.id: v for v in Volunteer.query.filter(Volunteer.id.in_(signal_vol_ids)).all()
+    } if signal_vol_ids else {}
+    can_help_count = sum(1 for va in volunteer_signals if va.action == "CAN_HELP")
+    cant_help_count = sum(1 for va in volunteer_signals if va.action == "CANT_HELP")
+
     return render_template(
         "admin/request_details.html",
         req=req,
@@ -1636,6 +1749,17 @@ def admin_request_details(req_id: int):
         interests=interests,
         is_locked=is_locked,
         locked_by=locked_by,
+        matched_volunteers=matched_volunteers,
+        matched_count=len(matched_volunteers),
+        notified_count=notified_count,
+        seen_count=seen_count,
+        interested_count=interested_count,
+        flags_by_vol=flags_by_vol,
+        assigned_volunteer=assigned_volunteer,
+        volunteer_signals=volunteer_signals,
+        volunteers_map=volunteers_map,
+        can_help_count=can_help_count,
+        cant_help_count=cant_help_count,
     ), 200
 
 
@@ -1838,6 +1962,49 @@ def admin_request_unassign(req_id: int):
     db.session.commit()
     flash("Owner е премахнат.", "info")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+@admin_bp.post("/requests/<int:req_id>/assign_volunteer/<int:volunteer_id>", endpoint="admin_assign_volunteer")
+@login_required
+def admin_assign_volunteer(req_id: int, volunteer_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+    if _is_request_locked(req):
+        flash("This request is locked (done/cancelled).", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    req.assigned_volunteer_id = volunteer_id
+    log_request_activity(
+        req,
+        "assign_volunteer",
+        old=getattr(req, "assigned_volunteer_id", None),
+        new=volunteer_id,
+        actor_admin_id=getattr(current_user, "id", None),
+    )
+    db.session.commit()
+    flash("Assigned to volunteer.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+
+@admin_bp.post("/requests/<int:req_id>/unassign_volunteer", endpoint="admin_unassign_volunteer")
+@login_required
+def admin_unassign_volunteer(req_id: int):
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+    old_val = getattr(req, "assigned_volunteer_id", None)
+    req.assigned_volunteer_id = None
+    log_request_activity(
+        req,
+        "unassign_volunteer",
+        old=old_val,
+        new=None,
+        actor_admin_id=getattr(current_user, "id", None),
+    )
+    db.session.commit()
+    flash("Volunteer unassigned.", "info")
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
 @admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")

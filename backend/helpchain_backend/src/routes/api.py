@@ -15,6 +15,7 @@ from ..extensions import csrf
 
 api_bp = Blueprint("api", __name__)
 controller = HelpChainController()
+csrf.exempt(api_bp)
 
 @api_bp.route("/chat", methods=["POST"])
 def chat():
@@ -271,7 +272,7 @@ def dashboard():
 
         # Volunteer count (safe fallback)
         try:
-            from backend.models import Volunteer  # local import to avoid import issues
+            from ..models import Volunteer  # local import to avoid import issues
 
             total_volunteers = db.session.query(Volunteer).count()
         except Exception:
