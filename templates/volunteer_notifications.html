@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Notifications") }} | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-page">
+  <header class="hc-page__head d-flex align-items-center justify-content-between">
+    <div>
+      <h1 class="hc-page__title">{{ _("Notifications") }}</h1>
+      {% if unread_count and unread_count > 0 %}
+        <div class="hc-muted">{{ _("Unread") }}: <strong>{{ unread_count }}</strong></div>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if notifications %}
+    <div class="hc-list">
+      {% for n in notifications %}
+        <form method="post" action="{{ url_for('main.volunteer_notification_open', notif_id=n.id) }}" class="hc-card hc-card--click">
+          {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+          <button type="submit" class="hc-card__btn">
+            <div class="hc-card__row">
+              <div class="hc-card__title">
+                {% if not n.is_read %}<span class="hc-dot bg-primary"></span>{% endif %}
+                {{ n.title }}
+              </div>
+              <div class="hc-card__meta">{{ n.created_at.strftime('%Y-%m-%d %H:%M') if n.created_at else '' }}</div>
+            </div>
+            {% if n.body %}
+              <div class="hc-card__body">{{ n.body }}</div>
+            {% endif %}
+          </button>
+        </form>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="hc-muted">{{ _("No notifications yet.") }}</p>
+  {% endif %}
+</section>
+{% endblock %}
