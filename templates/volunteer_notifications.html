@@ -3,17 +3,28 @@
 
 {% block content %}
 <section class="hc-page">
-  <header class="hc-page__head d-flex align-items-center justify-content-between">
-    <div>
-      <h1 class="hc-page__title">{{ _("Notifications") }}</h1>
+  <header class="hc-page__head">
+    <div class="hc-notif__header">
+      <h1 class="hc-notif__title">Notifications</h1>
+
       {% if unread_count and unread_count > 0 %}
-        <div class="hc-muted">{{ _("Unread") }}: <strong>{{ unread_count }}</strong></div>
+        <span class="hc-badge hc-badge--unread">Unread {{ unread_count }}</span>
       {% endif %}
     </div>
   </header>
 
-  {% if notifications and notifications|length %}
-    <div class="hc-list">
+  {% if notifications|length == 0 %}
+    <div class="hc-empty">
+      <div class="hc-empty__icon">🔔</div>
+      <h3>No notifications yet</h3>
+      <p>When a request matches your profile, you’ll see it here.</p>
+
+      <a class="btn btn-primary" href="{{ url_for('main.volunteer_dashboard') }}">
+        View requests
+      </a>
+    </div>
+  {% else %}
+    <div class="hc-list hc-notifications-list">
       {% for n in notifications %}
         <form method="post" action="{{ url_for('main.volunteer_notification_open', notif_id=n.id) }}" class="hc-card hc-card--click">
           {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
@@ -51,12 +62,6 @@
           </button>
         </form>
       {% endfor %}
-    </div>
-  {% else %}
-    <div class="hc-empty">
-      <h2 class="hc-empty__title">Няма известия засега</h2>
-      <p class="hc-empty__text">Когато има движение по заявки, ще го видиш тук.</p>
-      <a class="hc-btn" href="{{ url_for('main.volunteer_dashboard') }}">Към таблото</a>
     </div>
   {% endif %}
 </section>

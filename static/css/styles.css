@@ -1686,3 +1686,41 @@ form select.form-select {
 .hc-badge--read{opacity:.65}
 .hc-badge--kind{opacity:.8}
 .hc-card__actions{margin-top:10px}
+
+/* Notifications page badges + empty state */
+.hc-notif__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin: 8px 0 16px;
+  flex-wrap:wrap;
+}
+.hc-notif__title{ margin:0; }
+.hc-badge--unread{
+  background: #0d6efd;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.hc-badge--danger{
+  background: #e53935;
+  color: #fff;
+}
+.hc-notifications-list{display:grid;gap:10px;}
+.hc-empty{
+  text-align: center;
+  padding: 48px 16px;
+  color: #555;
+}
+.hc-empty__icon{
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+.hc-empty h3{ margin: 0 0 6px; }
+.hc-empty p{
+  margin-bottom: 1.5rem;
+  color: #666;
+}
