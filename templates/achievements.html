@@ -533,12 +533,12 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a
-                    class="dropdown-item"
-                    href="{{ safe_url_for('volunteer_logout') }}"
-                  >
-                    <i class="fas fa-sign-out-alt me-2"></i>Изход
-                  </a>
+                  <form method="post" action="{{ safe_url_for('main.volunteer_logout') }}">
+                    {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+                    <button class="dropdown-item" type="submit">
+                      <i class="fas fa-sign-out-alt me-2"></i>Изход
+                    </button>
+                  </form>
                 </li>
               </ul>
             </li>
@@ -889,3 +889,4 @@
     </script>
   </body>
 </html>
+

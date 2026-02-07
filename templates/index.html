@@ -647,13 +647,13 @@
           <!-- Live Impact (public, no personal data) -->
           <div class="hero-impact" aria-label="Реален ефект на живо">
             <span class="hero-impact-badge">
-              <strong id="heroActiveRequests">–</strong> активни заявки
+              <strong id="heroActiveRequests">-</strong> активни заявки
             </span>
             <span class="hero-impact-badge">
-              <strong id="heroCompleted7d">–</strong> приключени (7 дни)
+              <strong id="heroCompleted7d">-</strong> приключени (7 дни)
             </span>
             <span class="hero-impact-badge">
-              <strong id="heroMatched24h">–</strong> свързани (24 ч.)
+              <strong id="heroMatched24h">-</strong> свързани (24 ч.)
             </span>
           </div>
         </div>
@@ -779,19 +779,19 @@
         <div class="impact-card">
           <div class="impact-head">
             <h2>Реален ефект (на живо)</h2>
-            <p class="muted">Анонимни, агрегирани данни — без лична информация.</p>
+            <p class="muted">Анонимни, агрегирани данни - без лична информация.</p>
           </div>
 
           <div class="impact-grid">
-            <div class="kpi"><div class="k">Активни заявки</div><div class="v" id="kpiActive">–</div></div>
-            <div class="kpi"><div class="k">Нови (24ч)</div><div class="v" id="kpiNew24h">–</div></div>
-            <div class="kpi"><div class="k">Свързани (24ч)</div><div class="v" id="kpiMatched24h">–</div></div>
-            <div class="kpi"><div class="k">Приключени (7 дни)</div><div class="v" id="kpiDone7d">–</div></div>
+            <div class="kpi"><div class="k">Активни заявки</div><div class="v" id="kpiActive">-</div></div>
+            <div class="kpi"><div class="k">Нови (24ч)</div><div class="v" id="kpiNew24h">-</div></div>
+            <div class="kpi"><div class="k">Свързани (24ч)</div><div class="v" id="kpiMatched24h">-</div></div>
+            <div class="kpi"><div class="k">Приключени (7 дни)</div><div class="v" id="kpiDone7d">-</div></div>
           </div>
 
           <div class="impact-sla">
-            <div><span class="muted">Средно време до първа реакция (7 дни):</span> <b id="slaFirst">–</b></div>
-            <div><span class="muted">Средно време до решаване (30 дни):</span> <b id="slaResolution">–</b></div>
+            <div><span class="muted">Средно време до първа реакция (7 дни):</span> <b id="slaFirst">-</b></div>
+            <div><span class="muted">Средно време до решаване (30 дни):</span> <b id="slaResolution">-</b></div>
           </div>
 
           <div class="impact-cats">
@@ -926,13 +926,13 @@
             const data = await res.json();
 
             document.getElementById("kpiActive").textContent =
-              data.counts?.active_requests ?? "–";
+              data.counts?.active_requests ?? "-";
             document.getElementById("kpiNew24h").textContent =
-              data.counts?.new_last_24h ?? "–";
+              data.counts?.new_last_24h ?? "-";
             document.getElementById("kpiMatched24h").textContent =
-              data.counts?.matched_last_24h ?? "–";
+              data.counts?.matched_last_24h ?? "-";
             document.getElementById("kpiDone7d").textContent =
-              data.counts?.completed_last_7d ?? "–";
+              data.counts?.completed_last_7d ?? "-";
 
             const catLabel = (c) =>
               ({
@@ -946,13 +946,13 @@
             const fr = data.sla?.avg_first_response_minutes_7d;
             document.getElementById("slaFirst").textContent =
               fr == null || fr === ""
-                ? "– (недостатъчно данни)"
+                ? "- (недостатъчно данни)"
                 : fr + " мин";
 
             const rr = data.sla?.avg_resolution_hours_30d;
             document.getElementById("slaResolution").textContent =
               rr == null || rr === ""
-                ? "– (недостатъчно данни)"
+                ? "- (недостатъчно данни)"
                 : rr + " ч";
 
             const ul = document.getElementById("impactCats");
@@ -967,7 +967,7 @@
 
             const ts = data.generated_at ? new Date(data.generated_at) : null;
             document.getElementById("impactUpdated").textContent =
-              "Обновено: " + (ts ? ts.toLocaleString() : "–");
+              "Обновено: " + (ts ? ts.toLocaleString() : "-");
           } catch (e) {
             console.error("Impact widget error:", e);
           }
@@ -1178,3 +1178,4 @@
     </script>
   </body>
 </html>
+

@@ -257,6 +257,7 @@
     </div>
 
     <form method="POST" id="loginForm" action="{{ safe_url_for('main.volunteer_login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {% if form is defined %}
         {{ form.hidden_tag() }}
       {% endif %}
@@ -321,3 +322,4 @@
   }
 </script>
 {% endblock %}
+
