@@ -478,6 +478,10 @@ def volunteer_detail(id):
 @limiter.limit("5 per 5 minutes")
 @limiter.limit("20 per hour")
 def admin_ops_login():
+    # Preserve safe next across GET -> POST -> redirect (and across failed logins).
+    next_candidate = (request.form.get("next") or request.args.get("next") or "").strip()
+    next_url = next_candidate if is_safe_url(next_candidate) else ""
+
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
@@ -491,7 +495,7 @@ def admin_ops_login():
                 meta={"reason": "invalid_credentials"},
             )
             flash(INVALID_CREDENTIALS_MSG, "danger")
-            return redirect(url_for("admin.ops_login"))
+            return redirect(url_for("admin.ops_login", next=next_url))
         # Successful login path
         session.clear()  # mitigate session fixation
         login_user(user, remember=False)
@@ -512,12 +516,12 @@ def admin_ops_login():
             return redirect(
                 url_for(
                     "admin.admin_mfa_verify",
-                    next=request.args.get("next") or url_for("admin.admin_requests"),
+                    next=next_url or url_for("admin.admin_requests"),
                 )
             )
         _mfa_ok_set()
-        return redirect(request.args.get("next") or url_for("admin.admin_requests"))
-    return render_template("admin/login.html")
+        return redirect(next_url or url_for("admin.admin_requests"), code=303)
+    return render_template("admin/login.html", next=next_url)
 
 
 @admin_bp.get("/login")

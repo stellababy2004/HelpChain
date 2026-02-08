@@ -19,7 +19,7 @@
               <h3 class="text-center">{{ _('Admin login') }}</h3>
             </div>
             <div class="card-body">
-              <form method="post" action="{{ url_for('admin.ops_login', next=next) }}">
+              <form method="post" action="{{ url_for('admin.ops_login') }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <input type="hidden" name="next" value="{{ next or '' }}">
 
