@@ -23,6 +23,46 @@ load_dotenv()
 SUPPORTED_LOCALES = ("bg", "fr", "en")
 DEFAULT_LOCALE = "bg"
 
+# Guard against duplicate SQLAlchemy event registration under the dev reloader.
+_SLOW_SQL_HOOKS_INSTALLED = False
+
+
+def _install_slow_sql_logger(app: Flask) -> None:
+    """
+    Dev-only: log slow SQL statements to help pinpoint admin disk I/O / N+1 / missing indexes.
+    """
+    global _SLOW_SQL_HOOKS_INSTALLED
+    if _SLOW_SQL_HOOKS_INSTALLED:
+        return
+
+    try:
+        from time import perf_counter
+
+        from sqlalchemy import event
+        from sqlalchemy.engine import Engine
+    except Exception:
+        return
+
+    SLOW_QUERY_MS = 200
+
+    @event.listens_for(Engine, "before_cursor_execute")
+    def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        context._query_start_time = perf_counter()
+
+    @event.listens_for(Engine, "after_cursor_execute")
+    def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+        start = getattr(context, "_query_start_time", None)
+        if start is None:
+            return
+        total_ms = (perf_counter() - start) * 1000
+        if total_ms >= SLOW_QUERY_MS:
+            try:
+                app.logger.warning("SLOW SQL (%.1f ms): %s", total_ms, (statement or "")[:500])
+            except Exception:
+                pass
+
+    _SLOW_SQL_HOOKS_INSTALLED = True
+
 
 def _locale_selector():
     # Priority order:
@@ -154,6 +194,8 @@ def create_app(config_object=None) -> Flask:
 
     # DB + Migrate
     db.init_app(app)
+    if app.debug or app.config.get("DEBUG"):
+        _install_slow_sql_logger(app)
     migrate.init_app(app, db)
 
     # i18n (Babel)
