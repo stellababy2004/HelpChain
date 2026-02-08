@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, session
+from flask import Flask, request, session, render_template
 from flask_login import LoginManager
 from flask_wtf.csrf import generate_csrf
 from flask_wtf import FlaskForm
@@ -237,6 +237,23 @@ def create_app(config_object=None) -> Flask:
     except Exception as e:
         app.logger.info("admin blueprint not loaded: %s", e)
 
+    @app.errorhandler(404)
+    def not_found(e):
+        # Keep privacy semantics (404) but give volunteers a human fallback page.
+        try:
+            path = request.path or ""
+        except Exception:
+            path = ""
+
+        if path.startswith("/volunteer/"):
+            return render_template("volunteer_404.html"), 404
+
+        # If a global 404 template doesn't exist, fall back to Flask's default.
+        try:
+            return render_template("404.html"), 404
+        except Exception:
+            return e, 404
+
     # Status helpers for templates
     @app.context_processor
     def inject_status_helpers():
@@ -282,7 +299,7 @@ def create_app(config_object=None) -> Flask:
             if not vid:
                 return {"unread_volunteer_notifs": 0, "VOLUNTEER_UNREAD_NOTIF_COUNT": 0}
 
-            from backend.helpchain_backend.src.models import Notification
+            from backend.models import Notification
 
             cnt = Notification.query.filter_by(volunteer_id=vid, is_read=False).count()
             return {

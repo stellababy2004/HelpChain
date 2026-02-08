@@ -1,5 +1,5 @@
 from backend.extensions import db
-from backend.helpchain_backend.src.models import Notification
+from backend.models import Notification
 
 
 def ensure_new_match_notifications(volunteer_id: int, request_rows) -> int:
