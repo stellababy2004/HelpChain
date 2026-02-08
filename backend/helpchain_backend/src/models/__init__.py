@@ -1,50 +1,49 @@
 """
-Canonical models package for HelpChain backend.
+Phase-1 compatibility exports for routes importing `..models`.
 
-All models should be imported here exactly once to keep a single SQLAlchemy
-MetaData registry. Legacy models defined in `backend.models` are re-exported
-so existing imports keep working, but they use the SAME `db` instance from
-backend.extensions.
+We re-export the canonical monolith models from `backend.models` plus a few
+split-out models that are not present there yet.
 """
 
 from backend.extensions import db
 
-# Re-export legacy monolith models (single metadata)
-from backend import models as _legacy_models  # noqa: E402
+# Local wrappers for canonical/legacy models (defined in `backend.models`)
+from .admin_user import AdminUser  # noqa: F401
+from .notification import Notification  # noqa: F401
+from .request_log import RequestLog  # noqa: F401
+from .volunteer import Volunteer  # noqa: F401
 
-# Explicitly import modern split models
-from .volunteer_interest import VolunteerInterest  # noqa: E402,F401
-from .refresh_token import RefreshToken  # noqa: E402,F401
-from .volunteer_action import VolunteerAction  # noqa: E402,F401
+# Other canonical/legacy names live in `backend.models`
+from backend.models import (  # noqa: F401
+    NotificationSubscription,
+    Request,
+    RequestActivity,
+    RequestMetric,
+    User,
+    canonical_role,
+    utc_now,
+)
 
+# Split models (not present in `backend.models`)
+from .refresh_token import RefreshToken  # noqa: F401
+from .volunteer_action import VolunteerAction  # noqa: F401
+from .volunteer_interest import VolunteerInterest  # noqa: F401
 
-# Collect public names from legacy + modern models
-_public = set()
-for name in (
+__all__ = [
+    "db",
+    "utc_now",
+    "canonical_role",
+    "User",
+    "Volunteer",
     "AdminUser",
     "Request",
     "RequestLog",
     "RequestActivity",
     "RequestMetric",
-    "User",
-    "Volunteer",
-    "PushSubscription",
-    "Feedback",
-    "NotificationSubscription",
     "Notification",
-    "canonical_role",
-    "utc_now",
-):
-    if hasattr(_legacy_models, name):
-        globals()[name] = getattr(_legacy_models, name)
-        _public.add(name)
-
-globals()["VolunteerInterest"] = VolunteerInterest
-_public.add("VolunteerInterest")
-globals()["RefreshToken"] = RefreshToken
-_public.add("RefreshToken")
-globals()["VolunteerAction"] = VolunteerAction
-_public.add("VolunteerAction")
-
-__all__ = ["db", *sorted(_public)]
+    "NotificationSubscription",
+    "RefreshToken",
+    "VolunteerInterest",
+    "VolunteerAction",
+]
 
