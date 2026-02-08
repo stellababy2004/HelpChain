@@ -611,14 +611,18 @@ def volunteer_dashboard():
         .all()
     )
 
+    # Show matches even if the volunteer already expressed interest.
+    # The dashboard will reflect interest status via badges/CTAs.
     matched_requests = [
         r for r in open_requests
-        if is_request_matching_volunteer(r, volunteer, my_interest_req_ids)
+        if is_request_matching_volunteer(r, volunteer, interested_request_ids=None)
     ]
 
     # V2.2.A — in-app notification: create once per (volunteer, request)
-    if matched_requests:
-        matched_ids = [r.id for r in matched_requests if getattr(r, "id", None)]
+    # Only for "fresh" matches (no interest yet).
+    candidate_requests = [r for r in matched_requests if getattr(r, "id", None) and r.id not in my_interest_req_ids]
+    if candidate_requests:
+        matched_ids = [r.id for r in candidate_requests if getattr(r, "id", None)]
 
         existing = set(
             rid for (rid,) in db.session.query(Notification.request_id)
@@ -631,7 +635,7 @@ def volunteer_dashboard():
         )
 
         new_notifs = []
-        for r in matched_requests:
+        for r in candidate_requests:
             if r.id in existing:
                 continue
             new_notifs.append(
@@ -656,6 +660,22 @@ def volunteer_dashboard():
             VolunteerInterest.status == "pending",
         ).all()
     )
+
+    # --- Interest status map (for dashboard badges/CTAs)
+    req_ids = [r.id for r in matched_requests] if matched_requests else []
+    interest_by_req_id = {}
+    if req_ids:
+        interests = (
+            VolunteerInterest.query.filter(
+                VolunteerInterest.volunteer_id == volunteer.id,
+                VolunteerInterest.request_id.in_(req_ids),
+            )
+            .order_by(VolunteerInterest.id.asc())
+            .all()
+        )
+        # If duplicates exist, keep the most recent one
+        for it in interests:
+            interest_by_req_id[it.request_id] = (it.status or "").upper()
 
     # --- My interests (dashboard lists) ---
     my_interests = (
@@ -829,6 +849,7 @@ def volunteer_dashboard():
         matches=matched_requests,
         just_logged_in=bool(just_logged_in),
         pending_ids=pending_ids,
+        interest_by_req_id=interest_by_req_id,
         my_pending=my_pending,
         my_approved=my_approved,
         my_rejected=my_rejected,
@@ -1063,14 +1084,18 @@ def volunteer_notifications():
     if not volunteer:
         return redirect(url_for("main.volunteer_login"))
 
+    # Volunteer UI: notifications are primarily keyed by `volunteer_id`.
+    owner_col = getattr(Notification, "volunteer_id", None) or getattr(Notification, "user_id", None)
+    if owner_col is None:
+        abort(500)
     notifs = (
-        Notification.query.filter(Notification.user_id == volunteer.id)
+        Notification.query.filter(owner_col == volunteer.id)
         .order_by(Notification.created_at.desc())
         .limit(50)
         .all()
     )
     unread_count = Notification.query.filter(
-        Notification.user_id == volunteer.id, Notification.is_read == False  # noqa: E712
+        owner_col == volunteer.id, Notification.is_read == False  # noqa: E712
     ).count()
 
     return render_template(
@@ -1092,9 +1117,15 @@ def volunteer_notification_open(notif_id: int):
     if not can_view_notification(volunteer, n):
         abort(404)
 
+    changed = False
     if not n.is_read:
         n.is_read = True
-        n.read_at = datetime.utcnow()
+        n.read_at = utc_now()
+        changed = True
+    if hasattr(n, "status") and getattr(n, "status", None) == "UNREAD":
+        n.status = "READ"
+        changed = True
+    if changed:
         db.session.commit()
 
     if n.request_id:
