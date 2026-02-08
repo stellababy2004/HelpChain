@@ -43,7 +43,11 @@ def _install_slow_sql_logger(app: Flask) -> None:
     except Exception:
         return
 
-    SLOW_QUERY_MS = 200
+    # Default lower threshold in dev; override per-run via HC_SLOW_QUERY_MS=10 if needed.
+    try:
+        SLOW_QUERY_MS = int(os.getenv("HC_SLOW_QUERY_MS", "50"))
+    except Exception:
+        SLOW_QUERY_MS = 50
 
     @event.listens_for(Engine, "before_cursor_execute")
     def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
