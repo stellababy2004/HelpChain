@@ -169,21 +169,66 @@
         </p>
         <div id="hc-matches" class="hc-soft-fade">
           {% for m in matches %}
-            {% set is_pending = pending_ids and (m.id in pending_ids) %}
+            {% set istatus = (interest_by_req_id.get(m.id) if interest_by_req_id else None) %}
+            {% set is_assigned = (m.assigned_volunteer_id == volunteer.id) %}
+            {% set req_status = (m.status or "")|lower %}
+            {% set is_done = req_status in ("done", "completed", "resolved", "closed") %}
+            {% set is_rejected = req_status in ("rejected", "cancelled", "canceled") %}
+            {% set is_in_progress = req_status in ("in_progress", "in progress", "active") %}
+            {% set is_new = (not is_done and not is_rejected and not is_in_progress) %}
+            {% set is_pending = istatus and istatus not in ("APPROVED", "REJECTED") %}
             {% set created = m.created_at %}
             {% set time_attr = created.isoformat() if created and created.isoformat is defined else (created or '') %}
+
+            {% if is_done %}
+              {% set req_badge = "Завършено" %}
+              {% set req_badge_mod = "hc-badge--done" %}
+            {% elif is_rejected %}
+              {% set req_badge = "Отказано" %}
+              {% set req_badge_mod = "hc-badge--rejected" %}
+            {% elif is_in_progress %}
+              {% set req_badge = "В процес" %}
+              {% set req_badge_mod = "hc-badge--progress" %}
+            {% else %}
+              {% set req_badge = "Нова" %}
+              {% set req_badge_mod = "hc-badge--new" %}
+            {% endif %}
+
+            {% if is_assigned %}
+              {% set vol_badge = "Назначен/а" %}
+              {% set vol_badge_mod = "hc-badge--assigned" %}
+            {% elif istatus == "APPROVED" %}
+              {% set vol_badge = "Одобрен/а" %}
+              {% set vol_badge_mod = "hc-badge--approved" %}
+            {% elif is_pending %}
+              {% set vol_badge = "В изчакване" %}
+              {% set vol_badge_mod = "hc-badge--muted" %}
+            {% elif istatus == "REJECTED" %}
+              {% set vol_badge = "Отхвърлен/а" %}
+              {% set vol_badge_mod = "hc-badge--rejected" %}
+            {% else %}
+              {% set vol_badge = "" %}
+              {% set vol_badge_mod = "" %}
+            {% endif %}
 
             <article class="hc-listItem hc-soft-fade hc-match-card" data-req-id="{{ m.id }}" data-demo="0" data-seen="0">
               <div class="hc-listItem__top">
                 <div class="hc-listItem__titleRow">
                   <strong class="hc-listItem__title">{{ m.title or _('Нова заявка') }}</strong>
 
-                  {% if is_pending %}
-                    <span class="hc-pill hc-pill--pending">{{ _('В изчакване') }}</span>
-                  {% else %}
-                    <span class="hc-pill hc-pill--new">{{ _('Нова') }}</span>
-                  {% endif %}
+                  <div class="hc-badges">
+                    <span class="hc-badge {{ req_badge_mod }}">{{ req_badge }}</span>
+                    {% if vol_badge %}
+                      <span class="hc-badge {{ vol_badge_mod }}">{{ vol_badge }}</span>
+                    {% endif %}
+                  </div>
                 </div>
+
+                {% if is_assigned %}
+                  <div class="hc-statusCopy">✅ Ти си назначен/а. Можеш да отвориш детайлите и да действаш.</div>
+                {% elif is_pending %}
+                  <div class="hc-statusCopy">⏳ В изчакване — ще получиш известие при потвърждение.</div>
+                {% endif %}
 
                 <div class="hc-listItem__metaRow">
                   <span class="hc-metaItem">📍 {{ m.city or m.location_text or '-' }}</span>
@@ -191,6 +236,22 @@
                     <time class="hc-metaItem hc-time" datetime="{{ time_attr }}">{{ time_attr }}</time>
                   {% endif %}
                 </div>
+              </div>
+
+              <div class="hc-reqmeta">
+                {% if is_done %}
+                  <span class="hc-reqmeta__hint">{{ _('Благодарим! Заявката е маркирана като приключена.') }}</span>
+                {% elif is_assigned %}
+                  <span class="hc-reqmeta__hint">{{ _('Ти си назначен/а по тази заявка. Натисни “Мога да помогна”.') }}</span>
+                {% elif istatus == "APPROVED" %}
+                  <span class="hc-reqmeta__hint">{{ _('Одобрен/а си. Отвори заявката за контакт и следващи стъпки.') }}</span>
+                {% elif istatus == "REJECTED" %}
+                  <span class="hc-reqmeta__hint">{{ _('Тази заявка вече е поета. Виж други активни заявки.') }}</span>
+                {% elif istatus %}
+                  <span class="hc-reqmeta__hint">{{ _('Администратор преглежда интереса ти. Ще получиш известие.') }}</span>
+                {% else %}
+                  <span class="hc-reqmeta__hint">{{ _('Натисни “Искам да помогна”, за да поискаш достъп.') }}</span>
+                {% endif %}
               </div>
 
               {% set desc = m.description or m.summary %}
@@ -207,50 +268,60 @@
               </p>
 
               <div class="hc-listItem__actions">
-                <a class="btn btn-sm btn-outline-primary js-native-link"
-                   href="{{ url_for('main.volunteer_request_details', req_id=m.id) }}">
-                  {{ _('Виж детайли') }}
-                </a>
-
-                {% if is_pending %}
-                  <span class="hc-hint-inline">
-                    {{ _('Очаква се кратко потвърждение от екипа.') }}
-                  </span>
+                {% if is_done %}
+                  <a class="btn btn-sm btn-outline-secondary js-native-link"
+                     href="{{ url_for('main.volunteer_dashboard') }}">
+                    {{ _('Виж други активни заявки') }}
+                  </a>
+                {% elif is_assigned or istatus == "APPROVED" %}
+                  <a class="btn btn-sm btn-primary js-native-link"
+                     href="{{ url_for('main.volunteer_request_details', req_id=m.id) }}">
+                    {{ _('Виж детайли') }}
+                  </a>
+                {% elif istatus == "REJECTED" %}
+                  <a class="btn btn-sm btn-outline-secondary js-native-link"
+                     href="{{ url_for('main.volunteer_dashboard') }}">
+                    {{ _('Виж други активни заявки') }}
+                  </a>
+                {% elif istatus %}
+                  <button class="btn btn-sm btn-outline-secondary" disabled>{{ _('В изчакване') }}</button>
                 {% else %}
                   <form method="post" action="{{ safe_url_for('main.volunteer_help', req_id=m.id) }}" class="d-inline">
                     {% if csrf_token is defined %}
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% endif %}
-                    <button class="btn btn-sm btn-primary" type="submit">{{ _('Ще помогна') }}</button>
+                    <button class="btn btn-sm btn-primary" type="submit">{{ _('Искам да помогна') }}</button>
                   </form>
                 {% endif %}
               </div>
 
               {# V3.3 — volunteer signals to admin #}
-              {% set act = my_actions_by_req_id.get(m.id) if my_actions_by_req_id is defined else None %}
-              <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
-                <form method="post" class="d-inline">
-                  {{ csrf_form.csrf_token }}
-                  <button type="submit"
-                          class="btn btn-sm btn-primary"
-                          formaction="{{ url_for('main.volunteer_can_help', req_id=m.id) }}"
-                          formmethod="post">
-                    I can help
-                  </button>
-                  <button type="submit"
-                          class="btn btn-sm btn-outline-secondary"
-                          formaction="{{ url_for('main.volunteer_cant_help', req_id=m.id) }}"
-                          formmethod="post">
-                    I can’t help
-                  </button>
-                  {% if act == 'CAN_HELP' %}
-                    <span class="badge text-bg-success ms-2">✅ Sent: I can help</span>
-                  {% elif act == 'CANT_HELP' %}
-                    <span class="badge text-bg-secondary ms-2">🚫 Sent: I can’t help</span>
-                  {% endif %}
-                </form>
-              </div>
-              <p class="text-muted small mt-1 mb-0">{{ _('Това изпраща сигнал към админите.') }}</p>
+              {% if (istatus or is_assigned) and (not is_done) %}
+                {% set act = my_actions_by_req_id.get(m.id) if my_actions_by_req_id is defined else None %}
+                <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
+                  <form method="post" class="d-inline">
+                    {{ csrf_form.csrf_token }}
+                    <button type="submit"
+                            class="btn btn-sm btn-primary"
+                            formaction="{{ url_for('main.volunteer_can_help', req_id=m.id) }}"
+                            formmethod="post">
+                      I can help
+                    </button>
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-secondary"
+                            formaction="{{ url_for('main.volunteer_cant_help', req_id=m.id) }}"
+                            formmethod="post">
+                      I can’t help
+                    </button>
+                    {% if act == 'CAN_HELP' %}
+                      <span class="badge text-bg-success ms-2">✅ Sent: I can help</span>
+                    {% elif act == 'CANT_HELP' %}
+                      <span class="badge text-bg-secondary ms-2">🚫 Sent: I can’t help</span>
+                    {% endif %}
+                  </form>
+                </div>
+                <p class="text-muted small mt-1 mb-0">{{ _('Това изпраща сигнал към админите.') }}</p>
+              {% endif %}
 
               {% if is_pending %}
                 <p class="hc-waiting-note">{{ _('Нищо не се поема автоматично.') }}</p>

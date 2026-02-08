@@ -1686,6 +1686,13 @@ form select.form-select {
 .hc-badge--read{opacity:.65}
 .hc-badge--kind{opacity:.8}
 .hc-card__actions{margin-top:10px}
+.hc-card--click{cursor:pointer;transition:transform .08s ease-out, box-shadow .08s ease-out, background-color .08s ease-out}
+.hc-card--click:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(0,0,0,0.07)}
+.hc-card__btn{display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;color:inherit}
+.hc-card__btn:focus-visible{outline:3px solid rgba(13,110,253,0.35);outline-offset:3px;border-radius:12px}
+.hc-notifications-list .hc-card__row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.hc-notifications-list .hc-card__title{display:flex;align-items:center;gap:8px}
+.hc-notifications-list .hc-card__body{margin-top:8px;color:rgba(0,0,0,0.72)}
 
 /* Notifications page badges + empty state */
 .hc-notif__header{
@@ -1723,4 +1730,159 @@ form select.form-select {
 .hc-empty p{
   margin-bottom: 1.5rem;
   color: #666;
+}
+
+/* --- Notifications (cards polish) --- */
+.hc-notif__card.is-unread,
+.hc-card.is-unread{
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.hc-notif__meta{
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .35rem;
+  flex-wrap: wrap;
+}
+
+.hc-badge--kind{
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(148, 163, 184, 0.10);
+}
+
+.hc-notif__time{
+  font-size: .85rem;
+  opacity: .75;
+}
+
+/* --- Empty state (volunteer-friendly 404, etc.) --- */
+.hc-empty{
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 24px;
+  text-align: center;
+}
+.hc-empty__icon{ font-size: 40px; margin-bottom: 10px; }
+.hc-empty__title{ margin: 0 0 10px; }
+.hc-empty__text{ margin: 0 0 10px; opacity: .9; }
+.hc-empty__actions{ margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+/* --- Volunteer dashboard: interest badges + hints --- */
+.hc-reqmeta { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+.hc-reqmeta__hint { font-size: 0.95em; opacity: .85; }
+
+.hc-badge--approved { background: rgba(0, 200, 120, .12); }
+.hc-badge--pending  { background: rgba(255, 180, 0, .12); }
+.hc-badge--rejected { background: rgba(255, 80, 80, .12); }
+.hc-badge--assigned { background: rgba(120, 160, 255, .12); }
+.hc-badge--done { background: rgba(148, 163, 184, .18); }
+.hc-badge--neutral  { background: rgba(120, 160, 255, .12); }
+
+/* --- Request details: status badges + copy --- */
+.hc-statusRow { display:flex; gap:8px; flex-wrap:wrap; margin: 10px 0; }
+.hc-statusCopy { margin: 8px 0 0; opacity: .9; }
+.hc-statusRow .hc-badge {
+  display:inline-flex;
+  align-items:center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: .85rem;
+  line-height: 1;
+  border: 1px solid rgba(255,255,255,.15);
+}
+.hc-badge--muted { background: rgba(255,255,255,.06); }
+.hc-badge--progress { background: rgba(52,152,219,.12); }
+.hc-miniNote { font-size: .9rem; opacity: .85; margin-top: 10px; }
+
+/* C2 — HelpChain vibe (human-first) */
+
+.hc-sectionTitle{
+  margin: 0 0 .35rem 0;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.hc-sectionHint{
+  margin: 0 0 .9rem 0;
+  font-size: .95rem;
+  opacity: .85;
+}
+
+.hc-statusRow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5rem;
+  align-items:center;
+  margin-bottom:.35rem;
+}
+
+.hc-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.5rem;
+  align-items:center;
+  margin: 0;
+}
+
+.hc-statusCopy{
+  margin-top:.35rem;
+  font-size:.95rem;
+  opacity:.9;
+}
+
+.hc-whatNow{
+  margin:.5rem 0 0 0;
+  font-size:.95rem;
+  opacity:.9;
+  line-height:1.35;
+}
+
+.hc-miniNote{
+  font-size:.92rem;
+  opacity:.85;
+  line-height:1.3;
+}
+
+/* Badges — soft, calm */
+.hc-statusRow .hc-badge,
+.hc-badges .hc-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  padding:.28rem .55rem;
+  border-radius:999px;
+  font-size:.82rem;
+  font-weight:600;
+  border:1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.6);
+  backdrop-filter: blur(6px);
+}
+
+/* Badge mods (semantic) */
+.hc-badge--new{ opacity:.95; }
+.hc-badge--muted{ opacity:.8; }
+.hc-badge--progress{
+  border-color: rgba(0,0,0,.12);
+  box-shadow: 0 1px 0 rgba(0,0,0,.04);
+}
+.hc-badge--done{
+  border-color: rgba(0,0,0,.12);
+}
+.hc-badge--rejected{
+  border-color: rgba(0,0,0,.12);
+}
+.hc-badge--assigned{
+  border-color: rgba(0,0,0,.14);
+  box-shadow: 0 1px 0 rgba(0,0,0,.05);
+}
+.hc-badge--approved{
+  border-color: rgba(0,0,0,.14);
+}
+
+/* Cards: slightly softer spacing */
+.hc-card, .card{
+  border-radius: 14px;
 }

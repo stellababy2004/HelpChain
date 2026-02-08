@@ -3,16 +3,11 @@
 
 {% macro interest_button(pending, approved, rejected, req_id, is_demo=False, csrf_form=None) -%}
   {% if pending %}
-    <button class="btn btn-secondary" disabled>В изчакване</button>
-    <div class="small text-muted mt-2">
-      <i class="bi bi-hourglass-split me-1"></i>
-      Очаква се потвърждение от екипа.
-      <span class="d-block">Ще получиш известие при промяна.</span>
-    </div>
+    {# Status is shown above; keep this area clean to avoid duplicates. #}
   {% elif approved %}
-    <button class="btn btn-success" disabled>Одобрено</button>
+    {# Status is shown above; keep this area clean to avoid duplicates. #}
   {% elif rejected %}
-    <button class="btn btn-danger" disabled>Отказано</button>
+    {# Status is shown above; keep this area clean to avoid duplicates. #}
   {% else %}
     {% set post_url = url_for('main.volunteer_request_help_demo') if is_demo else url_for('main.volunteer_help', req_id=req_id) %}
     <form method="post" action="{{ post_url }}" class="d-inline">
@@ -59,19 +54,56 @@
 
       <hr class="my-4">
 
-      {# Глобален статус (Request) + личен интерес (VolunteerInterest) #}
-      <div class="d-flex gap-2 align-items-center mb-3">
-        <span class="badge bg-light text-dark">
-          {{ status_norm or req.status or _('unknown') }}
-        </span>
-        {% if already_pending %}
-          <span class="badge bg-secondary">interest: pending</span>
-        {% elif already_approved %}
-          <span class="badge bg-success">interest: approved</span>
-        {% elif already_rejected %}
-          <span class="badge bg-danger">interest: rejected</span>
+      {# --- Status badges (human) --- #}
+      {% set is_assigned = (req.assigned_volunteer_id == volunteer.id) %}
+      {% set istatus = ('APPROVED' if already_approved else ('REJECTED' if already_rejected else ('PENDING' if already_pending else None))) %}
+      {% set rstatus = ((status_norm or req.status or '')|string)|lower %}
+
+      <div class="hc-statusRow">
+        {# Request status #}
+        {% if rstatus in ["in_progress", "in progress", "progress"] %}
+          <span class="hc-badge hc-badge--progress">В процес</span>
+        {% elif rstatus in ["done", "completed"] %}
+          <span class="hc-badge hc-badge--done">Завършено</span>
+        {% elif rstatus in ["cancelled", "canceled"] %}
+          <span class="hc-badge hc-badge--muted">Отказано</span>
+        {% else %}
+          <span class="hc-badge hc-badge--muted">Нова</span>
+        {% endif %}
+
+        {# Volunteer status #}
+        {% if is_assigned %}
+          <span class="hc-badge hc-badge--assigned">Назначен/а</span>
+        {% elif istatus == "APPROVED" %}
+          <span class="hc-badge hc-badge--approved">Одобрен/а</span>
+        {% elif istatus == "REJECTED" %}
+          <span class="hc-badge hc-badge--rejected">Отхвърлен/а</span>
+        {% elif istatus %}
+          <span class="hc-badge hc-badge--pending">В изчакване</span>
         {% endif %}
       </div>
+
+      {% if istatus == "APPROVED" or is_assigned %}
+        <p class="hc-statusCopy">
+          ✅ Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека.
+        </p>
+      {% elif istatus %}
+        <p class="hc-statusCopy">
+          ⏳ Заявката е изпратена. Ще получиш известие при решение.
+        </p>
+      {% endif %}
+
+      <p class="hc-whatNow">
+        {% if already_pending %}
+          Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно).
+        {% elif already_approved %}
+          Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно.
+        {% elif already_rejected %}
+          Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти.
+        {% else %}
+          Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем.
+        {% endif %}
+      </p>
 
 {% set is_demo = is_demo|default(false) %}
 {{ interest_button(
@@ -84,13 +116,16 @@
 ) }}
 
       <hr class="my-4">
-      <h4 class="h6 mb-2">{{ _('Your signal') }}</h4>
+      <h4 class="hc-sectionTitle">Твоят сигнал</h4>
+      <p class="hc-sectionHint">
+        Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно.
+      </p>
       {% if volunteer_action and volunteer_action.action == 'CAN_HELP' %}
-        <span class="badge bg-success">✅ {{ _('You can help') }}</span>
+        <span class="badge bg-success">✅ Мога да помогна</span>
       {% elif volunteer_action and volunteer_action.action == 'CANT_HELP' %}
-        <span class="badge bg-secondary">🚫 {{ _('You can’t help right now') }}</span>
+        <span class="badge bg-secondary">🚫 Не мога да помогна в момента</span>
       {% else %}
-        <span class="text-muted small">{{ _('No signal sent yet.') }}</span>
+        <span class="text-muted small">Още няма изпратен сигнал.</span>
       {% endif %}
 
       <div class="d-flex flex-wrap gap-2 mt-2">
@@ -100,7 +135,7 @@
           {% elif csrf_token is defined %}
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           {% endif %}
-          <button type="submit" class="btn btn-sm btn-primary">{{ _('I can help') }}</button>
+          <button type="submit" class="btn btn-sm btn-primary">Мога да помогна</button>
         </form>
         <form method="post" action="{{ url_for('main.volunteer_cant_help', req_id=req.id) }}" class="d-inline">
           {% if csrf_form %}
@@ -108,8 +143,13 @@
           {% elif csrf_token is defined %}
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           {% endif %}
-          <button type="submit" class="btn btn-sm btn-outline-secondary">{{ _('I can’t help') }}</button>
+          <button type="submit" class="btn btn-sm btn-outline-secondary">Не мога да помогна</button>
         </form>
+      </div>
+
+      <div class="hc-miniNote mt-2">
+        <i class="bi bi-info-circle me-1"></i>
+        Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина.
       </div>
 
       <div class="mt-3">
@@ -150,8 +190,10 @@
           </a>
           {% endif %}
         </div>
-        <div class="mt-2 small text-muted">
-          {{ _("Use only this contact for this request. Stay respectful and keep it focused on solving the issue.") }}
+        <div class="mt-2">
+          <p class="hc-miniNote">
+            Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта.
+          </p>
         </div>
       {% else %}
         <div class="small text-muted mt-2">
