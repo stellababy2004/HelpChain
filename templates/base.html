@@ -237,16 +237,17 @@
 
     <!-- Footer -->
     {% if not minimal_page %}
-    <footer class="bg-dark text-white text-center py-3 mt-5">
+    <footer class="footer text-center bg-dark text-white mt-5">
       <div class="container">
-          <p>
-          &copy; 2025 HelpChain. {{ _('Разработено от') }} Stella Barbarella.
-          <a href="{{ safe_url_for('main.about') }}" class="text-light">{{ _('За нас') }}</a>
-          </p>
-
-          <div class="hc-footer-legal" role="note" aria-label="{{ _('Legal information') }}">
-            {{ _('Data hosted in Europe') }} • {{ _('GDPR compliant') }} • {{ _('Enhanced security') }}
-          </div>
+        <div>© 2025 HelpChain</div>
+        <div class="footer-meta">
+          Données hébergées en Europe • Conforme RGPD • Sécurité renforcée
+        </div>
+        <div class="footer-links">
+          <a href="/about">À propos</a> ·
+          <a href="/legal">Mentions légales</a> ·
+          <a href="/contact">Contact</a>
+        </div>
 
 
     <!-- AI Chatbot Widget -->
@@ -397,7 +398,7 @@
     {% else %}
     <footer class="hc-footer-min">
       <div class="hc-footer-min__wrap">
-        © 2025 HelpChain · GDPR compliant
+        © 2025 HelpChain · Données hébergées en Europe • Conforme RGPD • Sécurité renforcée
       </div>
     </footer>
     {% endif %}
