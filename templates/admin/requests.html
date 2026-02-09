@@ -126,6 +126,25 @@
               {% else %}
                 <span class="badge text-bg-secondary">{{ sig.action }}</span>
               {% endif %}
+              {# --- B3: quick assign from list --- #}
+              {% if sig.action == 'CAN_HELP' and sig.volunteer_id %}
+                {% set already_assigned = r.assigned_volunteer_id and r.assigned_volunteer_id != sig.volunteer_id %}
+                {% set closed_statuses = ['done','closed','cancelled','canceled','rejected'] %}
+                {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
+                <form method="post"
+                      action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
+                      class="d-inline ms-2"
+                      onclick="event.stopPropagation()">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit"
+                          class="btn btn-sm btn-outline-primary"
+                          onclick="event.stopPropagation()"
+                          {% if already_assigned or is_closed %}disabled{% endif %}>
+                    Assign #{{ sig.volunteer_id }}
+                  </button>
+                </form>
+              {% endif %}
+
               <div class="text-muted small">
                 {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") if (sig.updated_at or sig.created_at) else "" }}
                 {% if sig.volunteer_id is defined %}<span class="ms-1">#{{ sig.volunteer_id }}</span>{% endif %}
