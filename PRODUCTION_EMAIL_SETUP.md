@@ -45,7 +45,7 @@
   MAIL_USE_TLS=True
   MAIL_USE_SSL=False
   MAIL_USERNAME=contact@helpchain.live
-  MAIL_PASSWORD=dFjmPT19x9h4
+  MAIL_PASSWORD=YOUR_ZOHO_APP_PASSWORD
   MAIL_DEFAULT_SENDER=contact@helpchain.live
   ```
 - **Алтернативни настройки (SSL)**:
@@ -55,7 +55,7 @@
   MAIL_USE_TLS=False
   MAIL_USE_SSL=True
   MAIL_USERNAME=contact@helpchain.live
-  MAIL_PASSWORD=dFjmPT19x9h4
+  MAIL_PASSWORD=YOUR_ZOHO_APP_PASSWORD
   MAIL_DEFAULT_SENDER=contact@helpchain.live
   ```
 
@@ -111,5 +111,4 @@ MAIL_DEFAULT_SENDER=contact@helpchain.live
 
 ## Fallback механизъм
 
-Ако SMTP изпращането не успее, имейлите се записват в `sent_emails.txt` файл за ръчна обработка.</content>
-<parameter name="filePath">c:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\PRODUCTION_EMAIL_SETUP.md
+Ако SMTP изпращането не успее, имейлите се записват в `sent_emails.txt` файл за ръчна обработка.

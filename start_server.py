@@ -71,8 +71,9 @@ def main():
     print("💡 Press Ctrl+C to stop the server")
     print()
 
-    # Keep it deterministic: avoid cookie/csrf split by changing secrets between runs.
-    os.environ.setdefault("SECRET_KEY", "dev-secret-keep-constant-123")
+    # Keep SECRET_KEY stable via env/.env (do not hardcode secrets in repo).
+    # Example:
+    #   $env:SECRET_KEY = "set-a-stable-dev-key"
 
     cmd = [
         sys.executable, "-m", "flask",

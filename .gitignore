@@ -110,6 +110,9 @@ output.tgz
 /backend.zip
 /.git.zip
 /backend/redis.zip
+# Local security scan outputs
+security_report.json
+security_report*.json
 # Ignore large artifacts and local envs added by CI cleanup
 repo-mirror.git/
 miniconda.exe
