@@ -13,6 +13,4 @@ class VolunteerInterest(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    __table_args__ = (
-        db.UniqueConstraint("volunteer_id", "request_id", name="uq_volunteer_request_interest"),
-    )
+    __table_args__ = (db.UniqueConstraint("volunteer_id", "request_id", name="uq_volunteer_request_interest"),)

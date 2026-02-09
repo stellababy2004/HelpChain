@@ -1,8 +1,9 @@
-
 import os
 import traceback
 from typing import Any
+
 import requests
+
 try:
     import openai
 except Exception:
@@ -14,9 +15,13 @@ except Exception:
 try:
     from langdetect import detect
 except Exception:
+
     def detect(text: str) -> str:
         return "bg"
+
+
 from .ai_config import get_ai_config, logger
+
 
 class AIService:
     """AI Service for generating intelligent responses"""
@@ -156,11 +161,7 @@ class AIService:
         try:
             base_url = os.getenv("OLLAMA_BASE_URL") or "http://localhost:11434"
             url = f"{base_url.rstrip('/')}/api/generate"
-            payload = {
-                "model": getattr(provider, "model", "llama2"),
-                "prompt": context,
-                "stream": False
-            }
+            payload = {"model": getattr(provider, "model", "llama2"), "prompt": context, "stream": False}
             resp = requests.post(url, json=payload, timeout=30)
             if resp.status_code != 200:
                 raise RuntimeError(f"Ollama API error: HTTP {resp.status_code}: {resp.text[:300]}")
@@ -253,6 +254,7 @@ class AIService:
 
     def generate_response_sync(self, user_message: str, context: dict[str, Any] | None = None) -> dict[str, Any]:
         import asyncio
+
         try:
             try:
                 loop = asyncio.get_event_loop()
@@ -268,6 +270,7 @@ class AIService:
                 "provider": "error_fallback",
                 "error": str(e),
             }
+
 
 ai_service = AIService()
 """
@@ -656,11 +659,7 @@ class AIService:
             raise RuntimeError("requests пакетът не е инсталиран. Инсталирайте с 'pip install requests'.")
         try:
             url = provider.api_url if hasattr(provider, "api_url") and provider.api_url else "http://localhost:11434/api/generate"
-            payload = {
-                "model": getattr(provider, "model", "llama2"),
-                "prompt": context,
-                "stream": False
-            }
+            payload = {"model": getattr(provider, "model", "llama2"), "prompt": context, "stream": False}
             resp = requests.post(url, json=payload, timeout=30)
             if resp.status_code != 200:
                 raise RuntimeError(f"Ollama API error: HTTP {resp.status_code}: {resp.text[:300]}")

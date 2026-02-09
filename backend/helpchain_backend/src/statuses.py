@@ -2,7 +2,6 @@
 
 from flask_babel import lazy_gettext as _l
 
-
 REQUEST_STATUS_META = {
     "open": {
         "label": _l("Open"),
@@ -31,8 +30,8 @@ REQUEST_STATUS_ORDER = ["open", "in_progress", "done", "cancelled"]
 
 # Legacy aliases -> canonical statuses (no migrations)
 REQUEST_STATUS_ALIASES = {
-    "approved": "in_progress",   # legacy approved behaves like in_progress
-    "rejected": "cancelled",     # legacy rejected behaves like cancelled
+    "approved": "in_progress",  # legacy approved behaves like in_progress
+    "rejected": "cancelled",  # legacy rejected behaves like cancelled
     "pending": "open",
 }
 
@@ -40,4 +39,3 @@ REQUEST_STATUS_ALIASES = {
 def normalize_request_status(s: str | None) -> str:
     s = (s or "").strip().lower()
     return REQUEST_STATUS_ALIASES.get(s, s)
-

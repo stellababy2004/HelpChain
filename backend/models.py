@@ -1,14 +1,19 @@
-from datetime import datetime, timezone
-from flask_login import UserMixin
-from backend.extensions import db
+import logging
+from datetime import UTC, datetime, timezone
 from typing import Optional
+
+from flask_login import UserMixin
+
+from backend.extensions import db
+
+logger = logging.getLogger(__name__)
 
 
 def utc_now():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
-def canonical_role(role: Optional[str]) -> str:
+def canonical_role(role: str | None) -> str:
     """
     Map legacy/alias role strings to the canonical set we support today.
     Unknown values are returned as-is to avoid breaking unexpected roles.
@@ -27,6 +32,7 @@ def canonical_role(role: Optional[str]) -> str:
     }
     return mapping.get(r, r)
 
+
 # Unified ORM style: alias common SQLAlchemy names to Flask-SQLAlchemy `db.*`
 # This lets existing declarations using Column/Integer/... work without mixing registries.
 Column = db.Column
@@ -40,6 +46,7 @@ Float = db.Float
 Index = db.Index
 UniqueConstraint = db.UniqueConstraint
 relationship = db.relationship
+
 
 # Реален AdminUser модел за да съществува таблицата `admin_users`
 class AdminUser(db.Model, UserMixin):
@@ -72,7 +79,6 @@ import sys
 from datetime import datetime
 from enum import Enum
 
-
 # Backwards-compatible alias: some modules import `AuditLog` from backend.models
 # Option 2: defer all session/engine ownership to Flask-SQLAlchemy.
 #
@@ -82,7 +88,6 @@ from enum import Enum
 # `db` so that the module-level aliases point to the app-backed
 # session/engine. This keeps initialization centralized and avoids
 # duplicate registries.
-
 from backend.extensions import db
 
 
@@ -104,7 +109,6 @@ def configure_models(flask_db):
         db_session = None
 
 
-
 # Backwards-compatible helper used by some modules/tests that call
 # `Model.get_query()` — use the configured db_session if available.
 def get_query_for(model):
@@ -115,9 +119,6 @@ def get_query_for(model):
         pass
     # Final fallback: raise so callers notice configuration issue early.
     raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
-
-
-
 
 
 # (Dynamic `.query` descriptor will be attached after the descriptor is defined.)
@@ -212,7 +213,6 @@ class Volunteer(db.Model):
 
         return True
 
-
     def get_total_score(self) -> int:
         """Compute a simple total score for leaderboard sorting."""
         # Match test expectation formula: points*0.4 + tasks*10 + rating*20 + level*50
@@ -302,6 +302,7 @@ class Volunteer(db.Model):
         elif a is None:
             self.achievements = ""
 
+
 class User(db.Model):
     """Модел за потребители"""
 
@@ -335,11 +336,8 @@ class User(db.Model):
         try:
             from backend.extensions import db as _db
             from backend.models import PushSubscription
-            return (
-                _db.session.query(PushSubscription)
-                .filter(PushSubscription.user_id == self.id)
-                .all()
-            )
+
+            return _db.session.query(PushSubscription).filter(PushSubscription.user_id == self.id).all()
         except Exception:
             return []
 
@@ -347,6 +345,7 @@ class User(db.Model):
         """Hash and store a password for the user."""
         try:
             from werkzeug.security import generate_password_hash
+
             self.password_hash = generate_password_hash(password)
         except Exception:
             self.password_hash = password
@@ -355,6 +354,7 @@ class User(db.Model):
         """Verify a password against the stored hash."""
         try:
             from werkzeug.security import check_password_hash
+
             return bool(self.password_hash and check_password_hash(self.password_hash, password))
         except Exception:
             return self.password_hash == password
@@ -613,11 +613,10 @@ class Request(db.Model):
         order_by="RequestActivity.created_at.desc()",
         lazy=True,
     )
-    
+
 
 # Backward-compat alias (legacy code expects HelpRequest)
 HelpRequest = Request
-
 
 
 class RequestLog(db.Model):
@@ -667,7 +666,7 @@ class SecurityEvent(db.Model):
     __tablename__ = "security_events"
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
     event_type = Column(String(64), nullable=False)
     actor_type = Column(String(32), nullable=False, default="anonymous")  # anonymous/user/admin/api
@@ -686,11 +685,6 @@ class SecurityEvent(db.Model):
         Index("ix_security_events_event_type_created_at", "event_type", "created_at"),
     )
 
-
-
-
-
- 
 
 # Ensure requests created without an explicit `user_id` get a minimal
 # placeholder user so older tests that create HelpRequest objects without
@@ -720,16 +714,16 @@ try:
 
                 new_id = None
                 try:
-                        try:
-                            # SQLAlchemy 1.x style
-                            new_id = getattr(res, "lastrowid", None)
-                        except Exception:
-                            new_id = None
-                        try:
-                            if new_id is None and hasattr(res, "inserted_primary_key"):
-                                new_id = res.inserted_primary_key[0]
-                        except Exception:
-                            pass
+                    try:
+                        # SQLAlchemy 1.x style
+                        new_id = getattr(res, "lastrowid", None)
+                    except Exception:
+                        new_id = None
+                    try:
+                        if new_id is None and hasattr(res, "inserted_primary_key"):
+                            new_id = res.inserted_primary_key[0]
+                    except Exception:
+                        pass
 
                 except Exception:
                     new_id = None
@@ -822,6 +816,7 @@ class RolePermission(db.Model):
     except Exception:
         permission = None
     try:
+
         @permission.setter
         def permission(self, value):
             # Allow assigning by codename string or by Permission instance.
@@ -927,9 +922,7 @@ class ChatMessage(db.Model):
 
 class Notification(db.Model):
     __tablename__ = "notifications"
-    __table_args__ = (
-        UniqueConstraint("volunteer_id", "type", "request_id", name="uq_notif_vol_type_req"),
-    )
+    __table_args__ = (UniqueConstraint("volunteer_id", "type", "request_id", name="uq_notif_vol_type_req"),)
 
     id = Column(Integer, primary_key=True)
     volunteer_id = Column(Integer, ForeignKey("volunteers.id"), nullable=False, index=True)
@@ -955,9 +948,7 @@ class NotificationSubscription(db.Model):
 
     created_at = Column(DateTime, nullable=False, default=utc_now)
 
-    __table_args__ = (
-        UniqueConstraint("endpoint", name="uq_notification_subscriptions_endpoint"),
-    )
+    __table_args__ = (UniqueConstraint("endpoint", name="uq_notification_subscriptions_endpoint"),)
 
 
 # Provide a lightweight Query proxy for modules that call `Model.query`.
@@ -1041,5 +1032,3 @@ class PriorityEnum(Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-
-

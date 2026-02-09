@@ -8,6 +8,7 @@ Re-exports the canonical ORM model from `backend.models`.
 """
 
 from backend.models import Request  # noqa: F401
+
 """
 Compatibility wrapper for the canonical Request model.
 """

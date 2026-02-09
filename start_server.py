@@ -76,11 +76,16 @@ def main():
     #   $env:SECRET_KEY = "set-a-stable-dev-key"
 
     cmd = [
-        sys.executable, "-m", "flask",
-        "--app", "backend.helpchain_backend.src.app:create_app",
+        sys.executable,
+        "-m",
+        "flask",
+        "--app",
+        "backend.helpchain_backend.src.app:create_app",
         "run",
-        "--host", host,
-        "--port", str(PORT),
+        "--host",
+        host,
+        "--port",
+        str(PORT),
         "--no-reload",
     ]
     try:

@@ -43,6 +43,7 @@ except Exception:
 
 # Import the app and DB
 from backend.app import _seed_if_empty, app
+
 from backend.extensions import db
 
 if __name__ == "__main__":

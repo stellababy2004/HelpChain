@@ -1,39 +1,40 @@
+import hashlib
+import secrets
+from datetime import datetime, timedelta
+from functools import wraps
+from types import SimpleNamespace
+from urllib.parse import urljoin, urlparse
+
 from flask import (
     Blueprint,
+    abort,
+    current_app,
     flash,
-    redirect,
     jsonify,
+    make_response,
+    redirect,
     render_template,
     request,
+    send_from_directory,
     session,
     url_for,
-    current_app,
-    send_from_directory,
-    make_response,
-    abort,
 )
-from types import SimpleNamespace
-from werkzeug.security import check_password_hash
-from flask_babel import get_locale as babel_get_locale, gettext as _
-from flask_wtf import FlaskForm
-from flask_login import login_required, current_user, logout_user
-from datetime import timedelta, datetime
-import secrets
-import hashlib
-
+from flask_babel import get_locale as babel_get_locale
+from flask_babel import gettext as _
 from flask_limiter.util import get_remote_address
+from flask_login import current_user, login_required, logout_user
+from flask_wtf import FlaskForm
+from sqlalchemy import desc, func, or_
+from werkzeug.security import check_password_hash
 
-from ..extensions import limiter
-from ..models import Request, Volunteer, db, utc_now, canonical_role, Notification, VolunteerAction, RequestActivity
-from ..models.volunteer_interest import VolunteerInterest
-from ..category_data import CATEGORIES, ALIASES, COMMON
-from sqlalchemy import or_, func, desc
-from functools import wraps
-from urllib.parse import urlparse, urljoin
-from ..statuses import normalize_request_status
-from ..security_logging import log_security_event
-from ..notifications.inapp import ensure_new_match_notifications
 from ..authz import can_view_notification, can_view_request
+from ..category_data import ALIASES, CATEGORIES, COMMON
+from ..extensions import limiter
+from ..models import Notification, Request, RequestActivity, Volunteer, VolunteerAction, canonical_role, db, utc_now
+from ..models.volunteer_interest import VolunteerInterest
+from ..notifications.inapp import ensure_new_match_notifications
+from ..security_logging import log_security_event
+from ..statuses import normalize_request_status
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
@@ -199,14 +200,7 @@ def index():
     """Главна страница"""
     latest_requests = []
     try:
-        latest_requests = (
-            Request.query
-            .filter(Request.deleted_at.is_(None))
-            .filter(Request.is_archived == 0)
-            .order_by(Request.created_at.desc())
-            .limit(6)
-            .all()
-        )
+        latest_requests = Request.query.filter(Request.deleted_at.is_(None)).filter(Request.is_archived == 0).order_by(Request.created_at.desc()).limit(6).all()
     except Exception as e:
         current_app.logger.warning("Home latest_requests skipped: %s", e)
         latest_requests = []
@@ -253,28 +247,14 @@ def logout():
 @main_bp.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
-    role = (getattr(current_user, "role_canon", None) or canonical_role(getattr(current_user, "role", None)))
+    role = getattr(current_user, "role_canon", None) or canonical_role(getattr(current_user, "role", None))
 
     if role in ("admin", "superadmin"):
         return redirect(url_for("admin.admin_requests"))
 
     if role == "requester":
-        my_requests = (
-            Request.query
-            .filter(Request.user_id == current_user.id)
-            .populate_existing()
-            .order_by(desc(Request.created_at))
-            .limit(20)
-            .all()
-        )
-        counts = dict(
-            ( (s or "open"), c )
-            for s, c in
-            db.session.query(Request.status, func.count(Request.id))
-              .filter(Request.user_id == current_user.id)
-              .group_by(Request.status)
-              .all()
-        )
+        my_requests = Request.query.filter(Request.user_id == current_user.id).populate_existing().order_by(desc(Request.created_at)).limit(20).all()
+        counts = dict(((s or "open"), c) for s, c in db.session.query(Request.status, func.count(Request.id)).filter(Request.user_id == current_user.id).group_by(Request.status).all())
         kpi = {
             "open": counts.get("open", 0),
             "in_progress": counts.get("in_progress", 0),
@@ -284,27 +264,13 @@ def dashboard():
         return render_template("dashboard_requester.html", my_requests=my_requests, kpi=kpi)
 
     if role in ("volunteer", "professional"):
-        assigned = (
-            Request.query
-            .filter(Request.owner_id == current_user.id)
-            .populate_existing()
-            .order_by(desc(Request.owned_at), desc(Request.created_at))
-            .limit(20)
-            .all()
-        )
+        assigned = Request.query.filter(Request.owner_id == current_user.id).populate_existing().order_by(desc(Request.owned_at), desc(Request.created_at)).limit(20).all()
         for r in assigned:
             try:
                 r.status_norm = normalize_request_status(getattr(r, "status", None))
             except Exception:
                 r.status_norm = getattr(r, "status", None)
-        counts = dict(
-            ( (s or "open"), c )
-            for s, c in
-            db.session.query(Request.status, func.count(Request.id))
-              .filter(Request.owner_id == current_user.id)
-              .group_by(Request.status)
-              .all()
-        )
+        counts = dict(((s or "open"), c) for s, c in db.session.query(Request.status, func.count(Request.id)).filter(Request.owner_id == current_user.id).group_by(Request.status).all())
         kpi = {
             "open": counts.get("open", 0),
             "in_progress": counts.get("in_progress", 0),
@@ -320,7 +286,7 @@ def dashboard():
 def profile():
     # Authenticated users: route by role
     if getattr(current_user, "is_authenticated", False):
-        role = (getattr(current_user, "role_canon", None) or canonical_role(getattr(current_user, "role", None)))
+        role = getattr(current_user, "role_canon", None) or canonical_role(getattr(current_user, "role", None))
         if role in ("admin", "superadmin"):
             return redirect(url_for("admin.admin_requests"))
         if role in ("volunteer", "professional"):
@@ -331,20 +297,9 @@ def profile():
     if not requester_email:
         return redirect(url_for("main.submit_request"))
 
-    my_requests = (
-        Request.query
-        .filter(func.lower(Request.email) == requester_email)
-        .order_by(desc(Request.created_at))
-        .limit(20)
-        .all()
-    )
-    rows = (
-        db.session.query(Request.status, func.count(Request.id))
-        .filter(func.lower(Request.email) == requester_email)
-        .group_by(Request.status)
-        .all()
-    )
-    counts = { (s or "open"): c for s, c in rows }
+    my_requests = Request.query.filter(func.lower(Request.email) == requester_email).order_by(desc(Request.created_at)).limit(20).all()
+    rows = db.session.query(Request.status, func.count(Request.id)).filter(func.lower(Request.email) == requester_email).group_by(Request.status).all()
+    counts = {(s or "open"): c for s, c in rows}
     kpi = {
         "open": counts.get("open", 0),
         "in_progress": counts.get("in_progress", 0),
@@ -364,12 +319,7 @@ def requester_logout():
 @main_bp.get("/r/<token>")
 def requester_magic_profile(token: str):
     token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
-    reqs = (
-        Request.query
-        .filter(Request.requester_token_hash == token_hash)
-        .order_by(desc(Request.created_at))
-        .all()
-    )
+    reqs = Request.query.filter(Request.requester_token_hash == token_hash).order_by(desc(Request.created_at)).all()
     if not reqs:
         abort(404)
 
@@ -614,18 +564,11 @@ def volunteer_dashboard():
 
     open_requests = Request.query.filter_by(status="open").all()
 
-    my_interest_req_ids = set(
-        rid for (rid,) in db.session.query(VolunteerInterest.request_id)
-        .filter(VolunteerInterest.volunteer_id == volunteer.id)
-        .all()
-    )
+    my_interest_req_ids = set(rid for (rid,) in db.session.query(VolunteerInterest.request_id).filter(VolunteerInterest.volunteer_id == volunteer.id).all())
 
     # Show matches even if the volunteer already expressed interest.
     # The dashboard will reflect interest status via badges/CTAs.
-    matched_requests = [
-        r for r in open_requests
-        if is_request_matching_volunteer(r, volunteer, interested_request_ids=None)
-    ]
+    matched_requests = [r for r in open_requests if is_request_matching_volunteer(r, volunteer, interested_request_ids=None)]
 
     # V2.2.A — in-app notification: create once per (volunteer, request)
     # Only for "fresh" matches (no interest yet).
@@ -634,7 +577,8 @@ def volunteer_dashboard():
         matched_ids = [r.id for r in candidate_requests if getattr(r, "id", None)]
 
         existing = set(
-            rid for (rid,) in db.session.query(Notification.request_id)
+            rid
+            for (rid,) in db.session.query(Notification.request_id)
             .filter(
                 Notification.volunteer_id == volunteer.id,
                 Notification.type == "new_match",
@@ -663,11 +607,13 @@ def volunteer_dashboard():
             db.session.commit()
 
     pending_ids = set(
-        rid for (rid,) in db.session.query(VolunteerInterest.request_id)
+        rid
+        for (rid,) in db.session.query(VolunteerInterest.request_id)
         .filter(
             VolunteerInterest.volunteer_id == volunteer.id,
             VolunteerInterest.status == "pending",
-        ).all()
+        )
+        .all()
     )
 
     # --- Interest status map (for dashboard badges/CTAs)
@@ -733,22 +679,16 @@ def volunteer_dashboard():
         "Matching check",
         extra={
             "volunteer_id": volunteer.id,
-        "matched_requests": len(matched_requests),
-    },
+            "matched_requests": len(matched_requests),
+        },
     )
 
     csrf_form = CSRFOnlyForm()
 
-    actions = db.session.query(VolunteerAction.request_id, VolunteerAction.action).filter(
-        VolunteerAction.volunteer_id == volunteer.id
-    ).all()
+    actions = db.session.query(VolunteerAction.request_id, VolunteerAction.action).filter(VolunteerAction.volunteer_id == volunteer.id).all()
     my_actions_by_req_id = {rid: act for rid, act in actions}
 
-    unread_match_notifications = (
-        Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False, type="new_match")
-        .order_by(Notification.created_at.desc())
-        .all()
-    )
+    unread_match_notifications = Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False, type="new_match").order_by(Notification.created_at.desc()).all()
     unread_count = Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False).count()
 
     # --- In-app notifications (V2.2.A) ---
@@ -817,9 +757,7 @@ def volunteer_dashboard():
                 "title": notif_lang["help_accepted"]["title"],
                 "body": notif_lang["help_accepted"]["body"],
                 "cta_label": notif_lang["help_accepted"]["cta"],
-                "cta_href": url_for(
-                    "main.volunteer_request_details", req_id=my_first_approved_req["req"].id
-                ),
+                "cta_href": url_for("main.volunteer_request_details", req_id=my_first_approved_req["req"].id),
                 "tone": "success",
             }
         )
@@ -844,9 +782,7 @@ def volunteer_dashboard():
                 "title": notif_lang["new_match"]["title"],
                 "body": notif_lang["new_match"]["body"],
                 "cta_label": notif_lang["new_match"]["cta"],
-                "cta_href": url_for(
-                    "main.volunteer_request_details", req_id=first_match.request_id
-                ),
+                "cta_href": url_for("main.volunteer_request_details", req_id=first_match.request_id),
                 "tone": "primary",
             }
         )
@@ -889,13 +825,7 @@ def volunteer_request_details(req_id: int):
     if not can_view_request(volunteer, req, db):
         abort(404)
 
-    vi = (
-        VolunteerInterest.query.filter_by(
-            volunteer_id=volunteer.id, request_id=req.id
-        )
-        .order_by(VolunteerInterest.id.desc())
-        .first()
-    )
+    vi = VolunteerInterest.query.filter_by(volunteer_id=volunteer.id, request_id=req.id).order_by(VolunteerInterest.id.desc()).first()
 
     already_pending = bool(vi and vi.status == "pending")
     already_approved = bool(vi and vi.status == "approved")
@@ -905,16 +835,11 @@ def volunteer_request_details(req_id: int):
     except Exception:
         status_norm = getattr(req, "status", None)
 
-    action_row = VolunteerAction.query.filter_by(
-        request_id=req.id, volunteer_id=volunteer.id
-    ).one_or_none()
+    action_row = VolunteerAction.query.filter_by(request_id=req.id, volunteer_id=volunteer.id).one_or_none()
     # Keep a single "last signal" object for the template (CAN_HELP / CANT_HELP).
     # This is effectively 1 row due to uq_volunteer_action_request_volunteer.
     my_last_signal = (
-        VolunteerAction.query
-        .filter_by(request_id=req.id, volunteer_id=volunteer.id)
-        .order_by(VolunteerAction.updated_at.desc(), VolunteerAction.created_at.desc(), VolunteerAction.id.desc())
-        .first()
+        VolunteerAction.query.filter_by(request_id=req.id, volunteer_id=volunteer.id).order_by(VolunteerAction.updated_at.desc(), VolunteerAction.created_at.desc(), VolunteerAction.id.desc()).first()
     )
 
     # опционален контрол: показваме само ако е match/отворена
@@ -923,9 +848,7 @@ def volunteer_request_details(req_id: int):
 
     # Mark related match notification as read (if any)
     try:
-        changed = Notification.query.filter_by(
-            volunteer_id=volunteer.id, request_id=req.id, type="new_match", is_read=False
-        ).update({"is_read": True, "read_at": datetime.utcnow()})
+        changed = Notification.query.filter_by(volunteer_id=volunteer.id, request_id=req.id, type="new_match", is_read=False).update({"is_read": True, "read_at": datetime.utcnow()})
         if changed:
             db.session.commit()
     except Exception:
@@ -989,9 +912,7 @@ def volunteer_help(req_id: int):
     if not req:
         abort(404)
 
-    interest = VolunteerInterest.query.filter_by(
-        volunteer_id=volunteer.id, request_id=req.id
-    ).one_or_none()
+    interest = VolunteerInterest.query.filter_by(volunteer_id=volunteer.id, request_id=req.id).one_or_none()
 
     if interest is None:
         interest = VolunteerInterest(
@@ -1012,9 +933,7 @@ def volunteer_help(req_id: int):
 
     # Clear match notification when volunteer expresses interest
     try:
-        Notification.query.filter_by(
-            volunteer_id=volunteer.id, request_id=req.id, type="new_match"
-        ).update({"is_read": True, "read_at": datetime.utcnow()})
+        Notification.query.filter_by(volunteer_id=volunteer.id, request_id=req.id, type="new_match").update({"is_read": True, "read_at": datetime.utcnow()})
         db.session.commit()
     except Exception:
         db.session.rollback()
@@ -1025,9 +944,7 @@ def volunteer_help(req_id: int):
 
 def _upsert_volunteer_action(req_obj, volunteer, action_value: str):
     """Create or update a volunteer action signal for a request."""
-    row = VolunteerAction.query.filter_by(
-        request_id=req_obj.id, volunteer_id=volunteer.id
-    ).one_or_none()
+    row = VolunteerAction.query.filter_by(request_id=req_obj.id, volunteer_id=volunteer.id).one_or_none()
     old_action = getattr(row, "action", None) if row else None
     if row is None:
         row = VolunteerAction(
@@ -1108,14 +1025,10 @@ def volunteer_notifications():
     owner_col = getattr(Notification, "volunteer_id", None) or getattr(Notification, "user_id", None)
     if owner_col is None:
         abort(500)
-    notifs = (
-        Notification.query.filter(owner_col == volunteer.id)
-        .order_by(Notification.created_at.desc())
-        .limit(50)
-        .all()
-    )
+    notifs = Notification.query.filter(owner_col == volunteer.id).order_by(Notification.created_at.desc()).limit(50).all()
     unread_count = Notification.query.filter(
-        owner_col == volunteer.id, Notification.is_read == False  # noqa: E712
+        owner_col == volunteer.id,
+        Notification.is_read == False,  # noqa: E712
     ).count()
 
     return render_template(
@@ -1163,9 +1076,7 @@ def volunteer_profile():
         return redirect(url_for("main.volunteer_login", next=request.path))
 
     if request.method == "POST":
-        current_app.logger.info(
-            "VOL PROFILE SAVE location=%s", request.form.get("location")
-        )
+        current_app.logger.info("VOL PROFILE SAVE location=%s", request.form.get("location"))
         for field in (
             "name",
             "email",
@@ -1320,10 +1231,14 @@ def submit_request():
 
         current_app.logger.warning(
             "Parsed: name=%r(len=%s) phone=%r(len=%s) email=%r(len=%s) category=%r urgency=%r desc_len=%s title=%r",
-            name, len(name or ""),
-            phone, len(phone or ""),
-            email, len(email or ""),
-            category, urgency,
+            name,
+            len(name or ""),
+            phone,
+            len(phone or ""),
+            email,
+            len(email or ""),
+            category,
+            urgency,
             len(description or ""),
             title,
         )
@@ -1474,10 +1389,7 @@ def submit_request_confirm():
 
         category = draft.get("category")
         urgency = draft.get("urgency")
-        is_emergency = (
-            category in ("emergency", "urgent")
-            or urgency in ("critical", "emergency", "urgent")
-        )
+        is_emergency = category in ("emergency", "urgent") or urgency in ("critical", "emergency", "urgent")
 
         app = current_app._get_current_object()
         if is_emergency and hasattr(app, "can_send_emergency_email") and app.can_send_emergency_email():
@@ -1518,67 +1430,33 @@ def pilot_dashboard():
 
     total_requests = db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
 
-    open_requests = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status.notin_(["done", "rejected"])
-    ).scalar() or 0
+    open_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"])).scalar() or 0
 
-    closed_requests = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status.in_(["done", "rejected"])
-    ).scalar() or 0
+    closed_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.in_(["done", "rejected"])).scalar() or 0
 
-    closed_last_7d = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.completed_at.isnot(None),
-        Request.completed_at >= week_ago
-    ).scalar() or 0
+    closed_last_7d = db.session.query(func.count(Request.id)).filter(not_deleted, Request.completed_at.isnot(None), Request.completed_at >= week_ago).scalar() or 0
 
-    avg_resolution_hours = db.session.query(
-        func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0
-    ).filter(
-        not_deleted,
-        Request.completed_at.isnot(None),
-        Request.created_at.isnot(None)
-    ).scalar()
+    avg_resolution_hours = (
+        db.session.query(func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0)
+        .filter(not_deleted, Request.completed_at.isnot(None), Request.created_at.isnot(None))
+        .scalar()
+    )
     avg_resolution_hours = float(avg_resolution_hours) if avg_resolution_hours is not None else None
 
-    unassigned_48h = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status.notin_(["done", "rejected"]),
-        Request.owner_id.is_(None),
-        Request.created_at <= (now - timedelta(days=2))
-    ).scalar() or 0
-
-    stale_7d = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status.notin_(["done", "rejected"]),
-        Request.created_at <= (now - timedelta(days=7))
-    ).scalar() or 0
-
-    high_open = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status.notin_(["done", "rejected"]),
-        Request.priority == "high"
-    ).scalar() or 0
-
-    status_rows = (
-        db.session.query(Request.status, func.count(Request.id))
-        .filter(not_deleted)
-        .group_by(Request.status)
-        .order_by(func.count(Request.id).desc())
-        .all()
+    unassigned_48h = (
+        db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"]), Request.owner_id.is_(None), Request.created_at <= (now - timedelta(days=2))).scalar()
+        or 0
     )
+
+    stale_7d = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"]), Request.created_at <= (now - timedelta(days=7))).scalar() or 0
+
+    high_open = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"]), Request.priority == "high").scalar() or 0
+
+    status_rows = db.session.query(Request.status, func.count(Request.id)).filter(not_deleted).group_by(Request.status).order_by(func.count(Request.id).desc()).all()
     status_labels = [r[0] or "unknown" for r in status_rows]
     status_counts = [int(r[1]) for r in status_rows]
 
-    cat_rows = (
-        db.session.query(Request.category, func.count(Request.id))
-        .filter(not_deleted)
-        .group_by(Request.category)
-        .order_by(func.count(Request.id).desc())
-        .all()
-    )
+    cat_rows = db.session.query(Request.category, func.count(Request.id)).filter(not_deleted).group_by(Request.category).order_by(func.count(Request.id).desc()).all()
     cat_labels = [r[0] or "unknown" for r in cat_rows]
     cat_counts = [int(r[1]) for r in cat_rows]
 
@@ -1592,9 +1470,7 @@ def pilot_dashboard():
     trend_dates = [str(r[0]) for r in trend_rows]
     trend_counts = [int(r[1]) for r in trend_rows]
 
-    total_volunteers = db.session.query(func.count(Volunteer.id)).filter(
-        Volunteer.is_active.is_(True)
-    ).scalar() or 0
+    total_volunteers = db.session.query(func.count(Volunteer.id)).filter(Volunteer.is_active.is_(True)).scalar() or 0
     countries = len(COUNTRIES_SUPPORTED)
 
     impact = {
@@ -1629,21 +1505,10 @@ def pilot_metrics():
     not_deleted = Request.deleted_at.is_(None)
 
     total_requests = db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
-    open_requests = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status.notin_(["done", "rejected"])
-    ).scalar() or 0
-    helped_requests = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status == "done"
-    ).scalar() or 0
-    closed_requests = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status.in_(["done", "rejected"])
-    ).scalar() or 0
-    total_volunteers = db.session.query(func.count(Volunteer.id)).filter(
-        Volunteer.is_active.is_(True)
-    ).scalar() or 0
+    open_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"])).scalar() or 0
+    helped_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status == "done").scalar() or 0
+    closed_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.in_(["done", "rejected"])).scalar() or 0
+    total_volunteers = db.session.query(func.count(Volunteer.id)).filter(Volunteer.is_active.is_(True)).scalar() or 0
     countries = len(COUNTRIES_SUPPORTED)
 
     impact = {
@@ -1663,19 +1528,11 @@ def pilot_kpi_api():
     # v1: marketing-safe counters (read-only)
     not_deleted = Request.deleted_at.is_(None)
 
-    helped_requests = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status == "done"
-    ).scalar() or 0
+    helped_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status == "done").scalar() or 0
 
-    closed_requests = db.session.query(func.count(Request.id)).filter(
-        not_deleted,
-        Request.status.in_(["done", "rejected"])
-    ).scalar() or 0
+    closed_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.in_(["done", "rejected"])).scalar() or 0
 
-    active_volunteers = db.session.query(func.count(Volunteer.id)).filter(
-        Volunteer.is_active.is_(True)
-    ).scalar() or 0
+    active_volunteers = db.session.query(func.count(Volunteer.id)).filter(Volunteer.is_active.is_(True)).scalar() or 0
 
     countries_count = len(COUNTRIES_SUPPORTED)
 
@@ -1756,11 +1613,7 @@ def category_help(category: str):
     # Category info (from CATEGORIES)
     data = CATEGORIES.get(canonical)
     if data:
-        title_bg = (
-            data.get("content", {})
-                .get("title", {})
-                .get("bg")
-        )
+        title_bg = data.get("content", {}).get("title", {}).get("bg")
         icon = data.get("ui", {}).get("icon") or "fa-solid fa-circle-question text-secondary"
         severity = data.get("ui", {}).get("severity")
         color = "danger" if severity == "critical" else "primary"
@@ -1804,7 +1657,7 @@ def category_help(category: str):
         else:
             volunteers = []
 
-        no_volunteers = (len(volunteers) == 0)
+        no_volunteers = len(volunteers) == 0
 
     except Exception as e:
         # НЕ чупим страницата на production
@@ -1818,7 +1671,7 @@ def category_help(category: str):
     # По желание: можеш да покажеш db_error само в debug (не в production UI)
     return render_template(
         "category_help.html",
-        category=canonical,                 # важно: canonical, не raw
+        category=canonical,  # важно: canonical, не raw
         category_display=category_display,  # ако още го ползваш някъде
         category_info=category_info,
         volunteers=volunteers,

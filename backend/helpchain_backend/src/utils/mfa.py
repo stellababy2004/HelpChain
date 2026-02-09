@@ -2,9 +2,10 @@ import base64
 import io
 import json
 import secrets
+
 import pyotp
 import qrcode
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 def get_totp_uri(username: str, secret: str, issuer: str = "HelpChain") -> str:

@@ -3,12 +3,19 @@
 # Общи настройки
 line-length = 200
 target-version = "py311"
+force-exclude = true
 
 # Изключвания (backup-и, vendor, venv и т.н.)
 extend-exclude = [
   "backend/backups/*",
   "**/*.backup*.py",
   "**/appy.backup*.py",
+  # Legacy standalone Flask app entrypoints kept for reference; not part of the current app factory.
+  "backend/appy_with_analytics.py",
+  "backend/notification_dashboard.py",
+  "**/appy_with_analytics.py",
+  "**/notification_dashboard.py",
+  "**/security_logging.py",
   "migrations/**",
   "tests/**",
   "vendor",

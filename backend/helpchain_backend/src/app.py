@@ -1,22 +1,23 @@
 from __future__ import annotations
 
 import os
+
 from dotenv import load_dotenv
-from flask import Flask, request, session, render_template
-from flask_login import LoginManager
-from flask_wtf.csrf import generate_csrf
-from flask_wtf import FlaskForm
+from flask import Flask, render_template, request, session
 from flask_babel import get_locale as babel_get_locale
+from flask_login import LoginManager
+from flask_wtf import FlaskForm
+from flask_wtf.csrf import generate_csrf
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from backend.extensions import babel, db, migrate, csrf
-from backend.models import AdminUser
+from backend.extensions import babel, csrf, db, migrate
+from backend.helpchain_backend.src.security_logging import log_security_event
 from backend.helpchain_backend.src.statuses import (
     REQUEST_STATUS_META,
     REQUEST_STATUS_ORDER,
     normalize_request_status,
 )
-from backend.helpchain_backend.src.security_logging import log_security_event
+from backend.models import AdminUser
 
 load_dotenv()
 
@@ -98,9 +99,7 @@ def add_security_headers(app: Flask):
         # Baseline hardening
         resp.headers["X-Content-Type-Options"] = "nosniff"
         resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        resp.headers["Permissions-Policy"] = (
-            "geolocation=(), microphone=(), camera=(), payment=(), usb=(), fullscreen=(self)"
-        )
+        resp.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=(), payment=(), usb=(), fullscreen=(self)"
         resp.headers["X-Frame-Options"] = "DENY"
 
         # CSP (start with Report-Only to avoid breaking inline scripts/styles)
@@ -119,9 +118,7 @@ def add_security_headers(app: Flask):
         resp.headers["Content-Security-Policy-Report-Only"] = csp
 
         # HSTS only when really on HTTPS and in production-ish env
-        if app.config.get("ENV") == "production" or app.config.get("APP_ENV") == "production" or (
-            (app.config.get("FLASK_CONFIG") or "").lower() in ("prod", "production")
-        ):
+        if app.config.get("ENV") == "production" or app.config.get("APP_ENV") == "production" or ((app.config.get("FLASK_CONFIG") or "").lower() in ("prod", "production")):
             if request.is_secure:
                 resp.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 
@@ -148,7 +145,8 @@ def create_app(config_object=None) -> Flask:
     if isinstance(config_object, dict):
         app.config.update(config_object)
     try:
-        from .config import Config as _Cfg, DevConfig, ProdConfig
+        from .config import Config as _Cfg
+        from .config import DevConfig, ProdConfig
 
         env_name = (os.getenv("FLASK_CONFIG") or os.getenv("APP_ENV") or os.getenv("FLASK_ENV") or "").lower()
         if config_object and not isinstance(config_object, dict):
@@ -172,9 +170,7 @@ def create_app(config_object=None) -> Flask:
     instance_db_path = os.path.join(os.path.abspath(os.path.join(base_dir, "..", "..", "..")), "instance", "app.db")
     app.config.setdefault(
         "SQLALCHEMY_DATABASE_URI",
-        os.getenv("SQLALCHEMY_DATABASE_URI")
-        or os.getenv("DATABASE_URL")
-        or f"sqlite:///{instance_db_path}",
+        os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL") or f"sqlite:///{instance_db_path}",
     )
     # Serverless / preview safety: never leave URI empty
     if not app.config.get("SQLALCHEMY_DATABASE_URI"):
@@ -345,6 +341,7 @@ def create_app(config_object=None) -> Flask:
     def inject_config_flags():
         try:
             from flask import current_app as _ca
+
             return {
                 "VOLUNTEER_DEV_BYPASS_ENABLED": _ca.config.get("VOLUNTEER_DEV_BYPASS_ENABLED"),
                 "VOLUNTEER_DEV_BYPASS_EMAIL": _ca.config.get("VOLUNTEER_DEV_BYPASS_EMAIL"),

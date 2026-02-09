@@ -8,9 +8,7 @@ cur = con.cursor()
 print("DB:", db)
 print("Tables:")
 
-for (name,) in cur.execute(
-    "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
-).fetchall():
+for (name,) in cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;").fetchall():
     print(" -", name)
 
 con.close()

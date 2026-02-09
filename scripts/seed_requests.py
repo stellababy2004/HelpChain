@@ -1,8 +1,8 @@
 # scripts/seed_requests.py
 from __future__ import annotations
 
-import sys
 import random
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -11,8 +11,8 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from backend.helpchain_backend.src.app import create_app
 from backend.extensions import db
+from backend.helpchain_backend.src.app import create_app
 from backend.models import Request
 
 
@@ -61,7 +61,7 @@ def main() -> int:
             created_at = now - timedelta(days=random.randint(0, 13), hours=random.randint(0, 20))
             updated_at = created_at + timedelta(hours=random.randint(0, 72))
 
-            title = f"Помощ #{i+1}: {category} — {city}"
+            title = f"Помощ #{i + 1}: {category} — {city}"
             desc = f"Seed demo request ({category}) in {city}. Generated for dashboard charts."
 
             r = Request(

@@ -6,12 +6,12 @@ Do NOT instantiate new objects here to avoid multiple SQLAlchemy MetaData regist
 """
 
 from backend.helpchain_backend.src.extensions import (
-    db,
-    mail,
     babel,
-    migrate,
-    limiter,
     csrf,
+    db,
+    limiter,
+    mail,
+    migrate,
 )
 
 __all__ = ["db", "mail", "babel", "migrate", "limiter", "csrf"]

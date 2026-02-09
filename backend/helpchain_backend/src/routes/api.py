@@ -1,21 +1,23 @@
-import os
-import json
 import asyncio
+import json
+import os
 from datetime import datetime, timedelta
-from flask import Blueprint, jsonify, request, send_file, current_app, g
-from pywebpush import webpush, WebPushException
+
+from flask import Blueprint, current_app, g, jsonify, request, send_file
+from pywebpush import WebPushException, webpush
 from sqlalchemy import func, or_
 
 from backend.ai_service import ai_service
-from ..controllers.helpchain_controller import HelpChainController
-from ..models import Request, RequestLog, RequestMetric, db, NotificationSubscription
-from ..security.api_authz import require_api_auth, require_roles
-from ..extensions import csrf
 
+from ..controllers.helpchain_controller import HelpChainController
+from ..extensions import csrf
+from ..models import NotificationSubscription, Request, RequestLog, RequestMetric, db
+from ..security.api_authz import require_api_auth, require_roles
 
 api_bp = Blueprint("api", __name__)
 controller = HelpChainController()
 csrf.exempt(api_bp)
+
 
 @api_bp.route("/chat", methods=["POST"])
 def chat():
@@ -27,10 +29,8 @@ def chat():
         reply = result.get("response", "Няма отговор от AI.")
         return jsonify({"reply": reply, "ok": True}), 200
     except Exception as e:
-        return jsonify({
-            "reply": "Извиняваме се, възникна временен проблем с автоматичния отговор. Моля, опитайте отново по-късно или се свържете с екипа на HelpChain.",
-            "ok": False
-        }), 500
+        return jsonify({"reply": "Извиняваме се, възникна временен проблем с автоматичния отговор. Моля, опитайте отново по-късно или се свържете с екипа на HelpChain.", "ok": False}), 500
+
 
 @api_bp.post("/chatbot/message")
 @csrf.exempt
@@ -38,6 +38,7 @@ def chatbot_message():
     data = request.get_json(silent=True) or {}
     # Stub: always return 200 for test compliance
     return jsonify({"ok": True, "message": "stub response"}), 200
+
 
 @api_bp.route("/ai/status", methods=["GET"])
 def ai_status():
@@ -247,13 +248,7 @@ def dashboard():
             func.nullif(Request.region, ""),
             "unknown",
         )
-        city_rows = (
-            db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt"))
-            .group_by("city")
-            .order_by(func.count(Request.id).desc())
-            .limit(10)
-            .all()
-        )
+        city_rows = db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt")).group_by("city").order_by(func.count(Request.id).desc()).limit(10).all()
         requests_by_city = [{"city": c, "count": int(cnt)} for c, cnt in city_rows]
 
         # 3) timeseries (daily) from created_at
@@ -512,32 +507,15 @@ def public_impact():
 
         # Define "active" as not in done/completed/rejected/closed
         inactive_statuses = ("done", "completed", "rejected", "closed")
-        active_count = (
-            db.session.query(func.count(Request.id))
-            .filter(or_(Request.status.is_(None), ~Request.status.in_(inactive_statuses)))
-            .scalar()
-        )
+        active_count = db.session.query(func.count(Request.id)).filter(or_(Request.status.is_(None), ~Request.status.in_(inactive_statuses))).scalar()
 
-        new_24h = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.created_at >= last_24h_from)
-            .scalar()
-        )
+        new_24h = db.session.query(func.count(Request.id)).filter(Request.created_at >= last_24h_from).scalar()
 
         matched_24h = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.assigned_volunteer_id.isnot(None))
-            .filter(Request.updated_at.isnot(None))
-            .filter(Request.updated_at >= last_24h_from)
-            .scalar()
+            db.session.query(func.count(Request.id)).filter(Request.assigned_volunteer_id.isnot(None)).filter(Request.updated_at.isnot(None)).filter(Request.updated_at >= last_24h_from).scalar()
         )
 
-        completed_7d = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.completed_at.isnot(None))
-            .filter(Request.completed_at >= last_7d_from)
-            .scalar()
-        )
+        completed_7d = db.session.query(func.count(Request.id)).filter(Request.completed_at.isnot(None)).filter(Request.completed_at >= last_7d_from).scalar()
 
         # SLA metrics from RequestMetric if available
         avg_first_response = (
@@ -563,13 +541,7 @@ def public_impact():
             avg_resolution_hours = round(float(avg_resolution) / 3600, 1)
 
         # Categories last 7d with k-anonymity (k>=3)
-        cat_rows = (
-            db.session.query(Request.category, func.count(Request.id))
-            .filter(Request.created_at >= last_7d_from)
-            .filter(Request.category.isnot(None))
-            .group_by(Request.category)
-            .all()
-        )
+        cat_rows = db.session.query(Request.category, func.count(Request.id)).filter(Request.created_at >= last_7d_from).filter(Request.category.isnot(None)).group_by(Request.category).all()
         categories = []
         other_count = 0
         for cat, cnt in cat_rows:

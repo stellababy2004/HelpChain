@@ -2,10 +2,10 @@ import os
 import tempfile
 from datetime import UTC, datetime, timedelta
 
-from backend.extensions import db
-from backend.models import Request
 from flask import render_template
 
+from backend.extensions import db
+from backend.models import Request
 
 
 def utc_now() -> datetime:
@@ -16,8 +16,10 @@ def utc_now() -> datetime:
 # опитваме се да намерим моделите; ако липсват - не вдигаме ImportError при зареждане
 MODELS_AVAILABLE = True
 try:
-    from backend.models import HelpRequest  # alias към Request
-    from backend.models import Volunteer
+    from backend.models import (
+        HelpRequest,  # alias към Request
+        Volunteer,
+    )
 except Exception:
     try:
         from backend.models import HelpRequest, Volunteer

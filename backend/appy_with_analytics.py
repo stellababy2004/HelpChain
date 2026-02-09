@@ -70,6 +70,13 @@ app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-change-me")
 app.config["WTF_CSRF_ENABLED"] = True
 
+
+def url_lang(endpoint: str, **values) -> str:
+    # Legacy helper used throughout this standalone app.
+    # In the main app we use a different i18n flow; keep this minimal.
+    return url_for(endpoint, **values)
+
+
 # -----------------------------------------------------------------------------
 # Database
 # -----------------------------------------------------------------------------
@@ -107,6 +114,7 @@ migrate = Migrate(app, db)
 @app.route("/_pytest_force_admin_login", methods=["GET"])  # test-only
 def _pytest_force_admin_login():
     import os
+
     if not app.config.get("TESTING") or not os.environ.get("PYTEST_CURRENT_TEST"):
         return ("Not Found", 404)
     try:

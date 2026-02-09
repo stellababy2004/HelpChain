@@ -2,9 +2,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.getcwd(), "backend"))
-import models
 from flask import Flask
 
+import models
 from backend.extensions import db
 
 app = Flask(__name__)

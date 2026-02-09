@@ -1,15 +1,14 @@
 from flask import request, url_for
 
+
 def url_lang(endpoint: str, **values):
     # keep lang from query or POST hidden input
-    lang = (
-        request.args.get("lang")
-        or request.form.get("lang")
-        or request.values.get("lang")
-    )
+    lang = request.args.get("lang") or request.form.get("lang") or request.values.get("lang")
     if lang and "lang" not in values:
         values["lang"] = lang
     return url_for(endpoint, **values)
+
+
 """
 Permission-based access control decorators and utilities for HelpChain
 """

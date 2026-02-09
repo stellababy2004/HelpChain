@@ -4,7 +4,10 @@ from __future__ import annotations
 try:
     from flask_babel import lazy_gettext as _
 except Exception:
-    _ = lambda s: s  # fallback if Babel not ready
+
+    def _(s: str) -> str:
+        # Fallback when Babel isn't importable (e.g., during isolated tooling runs).
+        return s
 
 
 COPY = {
@@ -20,5 +23,3 @@ COPY = {
         "title": _("Категории помощ"),
     },
 }
-
-

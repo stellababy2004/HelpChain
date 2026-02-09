@@ -1,12 +1,12 @@
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 import jwt  # PyJWT
 from flask import current_app
 
 
 def _now():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def new_jti():
@@ -53,4 +53,3 @@ def decode_token(token: str, expected_type: str):
     if payload.get("typ") != expected_type:
         raise jwt.InvalidTokenError("wrong token type")
     return payload
-

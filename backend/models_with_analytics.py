@@ -1,8 +1,9 @@
 from datetime import UTC, datetime
+
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from backend.models import AdminUser
 
+from backend.models import AdminUser
 
 db = SQLAlchemy()
 
@@ -109,9 +110,11 @@ class AdminRole(Enum):
 
 
 # Import the canonical db and AdminUser from models.py
-from backend.extensions import db
-from flask_login import UserMixin
 from datetime import datetime
+
+from flask_login import UserMixin
+
+from backend.extensions import db
 
 # Import the single-source AdminUser model
 from backend.models import AdminUser
@@ -136,6 +139,7 @@ class TwoFactorAuth(db.Model):
     # Relationship to AdminUser intentionally omitted to avoid cross-registry
     # mapper configuration issues during test import/collection.
     admin_user = None
+
 
 def is_expired(self):
     return utc_now() > self.expires_at
@@ -517,5 +521,3 @@ class TaskPerformance(db.Model):
 
     def __repr__(self):
         return f"<TaskPerformance Task:{self.task_id} Volunteer:{self.volunteer_id} Completed:{self.task_completed}>"
-
-

@@ -5,9 +5,9 @@ Web interface to view email notifications and requests
 """
 
 import os
+import secrets
 import sqlite3
 import time
-import secrets
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -21,6 +21,12 @@ from flask import (
 from flask_mail import Mail, Message
 
 # from .tasks import send_email_task  # Moved inside function to avoid import issues
+
+
+def url_lang(endpoint: str, **values) -> str:
+    # Legacy helper used by older templates; keep it as a plain alias here.
+    return url_for(endpoint, **values)
+
 
 # Load environment variables
 load_dotenv()

@@ -1,4 +1,3 @@
-    
 import os
 import sys
 
@@ -6,9 +5,10 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from backend.helpchain_backend.src.app import create_app
-from backend.extensions import db
 from backend import models as m
+from backend.extensions import db
+from backend.helpchain_backend.src.app import create_app
+
 
 def main() -> int:
     app = create_app()

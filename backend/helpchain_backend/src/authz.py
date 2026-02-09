@@ -1,9 +1,9 @@
 from functools import wraps
 
-from flask import request, jsonify
+from flask import jsonify, request
+from sqlalchemy import and_
 
 from backend.helpchain_backend.src.jwt_utils import decode_token
-from sqlalchemy import and_
 
 
 def require_access_token(fn):
@@ -85,4 +85,3 @@ def can_view_request(user, req, db):
     )
 
     return approved_interest_exists
-

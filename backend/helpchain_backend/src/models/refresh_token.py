@@ -18,4 +18,3 @@ class RefreshToken(db.Model):
 
     def is_active(self):
         return self.revoked_at is None and self.expires_at > datetime.utcnow()
-

@@ -11,8 +11,9 @@ with app.app_context():
     print("App context entered")
     # Ensure tables exist for direct queries
     try:
-        from backend.extensions import db
         import backend.models as models
+        from backend.extensions import db
+
         engine = getattr(db, "engine", None)
         if engine is None:
             try:

@@ -1,45 +1,42 @@
 from __future__ import annotations
 
-from flask import current_app
-from flask_login import login_user, login_required, logout_user, current_user
-from datetime import datetime, timedelta, timezone
-from functools import wraps
-from urllib.parse import urlparse, urljoin
-
-from flask import (
-    Blueprint, render_template, request, redirect, url_for,
-    flash, session, jsonify, abort, Response, send_file
-)
-import time
-import json
 import csv
-from io import StringIO, BytesIO
-from werkzeug.security import generate_password_hash, check_password_hash
+import json
 import secrets
+import time
+from datetime import UTC, datetime, timedelta, timezone
+from functools import wraps
+from io import BytesIO, StringIO
+from typing import Optional
+from urllib.parse import urljoin, urlparse
+
+from flask import Blueprint, Response, abort, current_app, flash, jsonify, redirect, render_template, request, send_file, session, url_for
+from flask_login import current_user, login_required, login_user, logout_user
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.extensions import db, limiter
+from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
+from backend.helpchain_backend.src.statuses import REQUEST_STATUS_ALLOWED, normalize_request_status
+
+from ..config import Config
 from ..models import (
     AdminUser,
+    Notification,
     Request,
     RequestActivity,
     RequestLog,
     RequestMetric,
     Volunteer,
-    VolunteerInterest,
-    Notification,
     VolunteerAction,
+    VolunteerInterest,
     utc_now,
 )
-from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
-from ..config import Config
-from backend.helpchain_backend.src.statuses import REQUEST_STATUS_ALLOWED, normalize_request_status
-from typing import Optional
 from ..security_logging import log_security_event
 
 INVALID_CREDENTIALS_MSG = "Invalid credentials."
 
 
-def _log_status_change_once(req_id: int, old_status: Optional[str], new_status: Optional[str], actor_admin_id: Optional[int]):
+def _log_status_change_once(req_id: int, old_status: str | None, new_status: str | None, actor_admin_id: int | None):
     """Add a single status_change activity only when there is a real change."""
     if (old_status or "") == (new_status or ""):
         return
@@ -61,7 +58,7 @@ def _is_request_locked(req) -> bool:
 
 
 def _now_utc():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _admin_id():
@@ -79,23 +76,22 @@ def _lock_expired(req, now: datetime | None = None) -> bool:
         return False
     try:
         if owned_at.tzinfo is None:
-            owned_at = owned_at.replace(tzinfo=timezone.utc)
+            owned_at = owned_at.replace(tzinfo=UTC)
         return (now - owned_at).total_seconds() > LOCK_TTL_MINUTES * 60
     except Exception:
         return False
 
 
 def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
-    return bool(
-        getattr(req, "owner_id", None)
-        and getattr(req, "owner_id", None) != admin_id
-        and not _lock_expired(req, now or _now_utc())
-    )
-from sqlalchemy.orm import joinedload
+    return bool(getattr(req, "owner_id", None) and getattr(req, "owner_id", None) != admin_id and not _lock_expired(req, now or _now_utc()))
+
+
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
+
 from backend.helpchain_backend.src.utils.mfa import (
-    generate_totp_secret,
     build_totp_uri,
+    generate_totp_secret,
     qr_png_base64,
     verify_totp_code,
 )
@@ -140,6 +136,7 @@ def admin_required(view_func):
         if not (current_user.is_authenticated and getattr(current_user, "is_admin", False)):
             abort(404)
         return view_func(*args, **kwargs)
+
     return wrapper
 
 
@@ -295,11 +292,6 @@ def enforce_admin_mfa():
     return redirect(url_for("admin.admin_mfa_verify", next=nxt))
 
 
-# Emergency Requests (read-only, filtered, paginated)
-
-from datetime import datetime, timedelta
-from flask import current_app
-
 @admin_bp.route("/emergency-requests", methods=["GET"])
 @admin_required
 def emergency_requests():
@@ -319,60 +311,11 @@ def emergency_requests():
     since = datetime.utcnow() - timedelta(days=days)
 
     # Emergency filter: category=="emergency" only (no urgency field)
-    query = HelpRequest.query.filter(
-        HelpRequest.created_at >= since,
-        HelpRequest.category == "emergency"
-    ).order_by(HelpRequest.created_at.desc())
+    query = Request.query.filter(Request.created_at >= since, Request.category == "emergency").order_by(Request.created_at.desc())
 
     if q:
         # Search in city/contact/priority only
-        query = query.filter(
-            (HelpRequest.city.ilike(f"%{q}%")) |
-            (HelpRequest.email.ilike(f"%{q}%")) |
-            (HelpRequest.phone.ilike(f"%{q}%")) |
-            (HelpRequest.priority.ilike(f"%{q}%"))
-        )
-
-    total = query.count()
-    items = query.offset((page - 1) * per_page).limit(per_page).all()
-
-    return render_template(
-        "admin_emergency_requests.html",
-        items=items,
-        total=total,
-        page=page,
-        per_page=per_page,
-        q=q,
-        days=days,
-    )
-    # Admin guard (same as admin_dashboard)
-    if not getattr(current_user, "is_admin", False):
-        flash("Нямате достъп.", "error")
-        return redirect(url_for("main.index"))
-
-    q = (request.args.get("q") or "").strip()
-    days = int(request.args.get("days") or 7)
-    days = max(1, min(days, 90))
-    page = int(request.args.get("page") or 1)
-    page = max(page, 1)
-    per_page = int(request.args.get("per_page") or 25)
-    per_page = max(10, min(per_page, 100))
-    since = datetime.utcnow() - timedelta(days=days)
-
-    # Emergency filter: category=="emergency" only (no urgency field)
-    query = HelpRequest.query.filter(
-        HelpRequest.created_at >= since,
-        HelpRequest.category == "emergency"
-    ).order_by(HelpRequest.created_at.desc())
-
-    if q:
-        # Search in city/contact/priority only
-        query = query.filter(
-            (HelpRequest.city.ilike(f"%{q}%")) |
-            (HelpRequest.email.ilike(f"%{q}%")) |
-            (HelpRequest.phone.ilike(f"%{q}%")) |
-            (HelpRequest.priority.ilike(f"%{q}%"))
-        )
+        query = query.filter((Request.city.ilike(f"%{q}%")) | (Request.email.ilike(f"%{q}%")) | (Request.phone.ilike(f"%{q}%")) | (Request.priority.ilike(f"%{q}%")))
 
     total = query.count()
     items = query.offset((page - 1) * per_page).limit(per_page).all()
@@ -456,8 +399,6 @@ def api_volunteers():
     return jsonify(data)
 
 
-
-
 # Детайли за доброволец
 @admin_bp.route("/admin_volunteers/<int:id>")
 @admin_required
@@ -486,9 +427,7 @@ def admin_ops_login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         user = AdminUser.query.filter_by(username=username).first()
-        if not user or not getattr(user, "password_hash", None) or not check_password_hash(
-            user.password_hash, password
-        ):
+        if not user or not getattr(user, "password_hash", None) or not check_password_hash(user.password_hash, password):
             log_security_event(
                 "auth_admin_login_failed",
                 actor_type="anonymous",
@@ -530,6 +469,7 @@ def admin_login_legacy():
     """Legacy alias to ops login; preserves ?next=."""
     nxt = request.args.get("next", "")
     return redirect(url_for("admin.ops_login", next=nxt))
+
 
 @admin_bp.get("/logout")
 def admin_logout():
@@ -610,7 +550,7 @@ def admin_mfa_verify():
         return render_template("admin/mfa_verify.html", locked=locked, remaining=remaining, next=request.args.get("next") or "")
 
     if locked:
-        flash(f"Твърде много опити. Опитай след {max(1, remaining//60)} мин.", "danger")
+        flash(f"Твърде много опити. Опитай след {max(1, remaining // 60)} мин.", "danger")
         return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next", "")))
 
     code = (request.form.get("code") or "").strip().replace(" ", "").upper()
@@ -643,10 +583,10 @@ def admin_mfa_verify():
     _mfa_attempt_fail()
     locked, remaining = _mfa_lock_is_active()
     if locked:
-        flash(f"Грешен код. Заключено за ~{max(1, remaining//60)} мин.", "danger")
+        flash(f"Грешен код. Заключено за ~{max(1, remaining // 60)} мин.", "danger")
     else:
         left = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8) - int(session.get("mfa_attempts", 0))
-        flash(f"Грешен код. Оставащи опити: {max(left,0)}.", "danger")
+        flash(f"Грешен код. Оставащи опити: {max(left, 0)}.", "danger")
 
     return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next", "")))
 
@@ -677,6 +617,7 @@ def admin_mfa_backup_codes():
         has_codes=has_codes,
         generated_at=getattr(current_user, "backup_codes_generated_at", None),
     )
+
 
 @admin_bp.route("/2fa", methods=["GET", "POST"])
 @admin_required
@@ -773,13 +714,7 @@ def admin_api_dashboard():
             func.nullif(Request.region, ""),
             "unknown",
         )
-        city_rows = (
-            db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt"))
-            .group_by("city")
-            .order_by(func.count(Request.id).desc())
-            .limit(10)
-            .all()
-        )
+        city_rows = db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt")).group_by("city").order_by(func.count(Request.id).desc()).limit(10).all()
         requests_by_city = [{"city": c, "count": int(cnt)} for c, cnt in city_rows]
 
         ts_rows = (
@@ -841,9 +776,7 @@ def admin_dashboard():
     requests_dict = []
     for r in requests:
         # Fallback location using location_text -> city/region
-        loc = getattr(r, "location_text", None) or ", ".join(
-            [val for val in (getattr(r, "city", None), getattr(r, "region", None)) if val]
-        ) or ""
+        loc = getattr(r, "location_text", None) or ", ".join([val for val in (getattr(r, "city", None), getattr(r, "region", None)) if val]) or ""
         requests_dict.append(
             {
                 "id": r.id,
@@ -897,31 +830,14 @@ def admin_dashboard():
 
         total_requests_cnt = db.session.query(func.count(Request.id)).scalar() or 0
 
-        open_requests_cnt = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.status.notin_(["done", "rejected"]))
-            .scalar()
-            or 0
-        )
+        open_requests_cnt = db.session.query(func.count(Request.id)).filter(Request.status.notin_(["done", "rejected"])).scalar() or 0
 
-        closed_requests_cnt = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.status.in_(["done", "rejected"]))
-            .scalar()
-            or 0
-        )
+        closed_requests_cnt = db.session.query(func.count(Request.id)).filter(Request.status.in_(["done", "rejected"])).scalar() or 0
 
-        closed_last_7d_cnt = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.completed_at.isnot(None), Request.completed_at >= week_ago)
-            .scalar()
-            or 0
-        )
+        closed_last_7d_cnt = db.session.query(func.count(Request.id)).filter(Request.completed_at.isnot(None), Request.completed_at >= week_ago).scalar() or 0
 
         avg_resolution_hours = (
-            db.session.query(
-                func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0
-            )
+            db.session.query(func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0)
             .filter(Request.completed_at.isnot(None), Request.created_at.isnot(None))
             .scalar()
         )
@@ -938,21 +854,9 @@ def admin_dashboard():
             or 0
         )
 
-        high_open_count = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.status.notin_(["done", "rejected"]))
-            .filter(Request.priority == "high")
-            .scalar()
-            or 0
-        )
+        high_open_count = db.session.query(func.count(Request.id)).filter(Request.status.notin_(["done", "rejected"])).filter(Request.priority == "high").scalar() or 0
 
-        stale_open_count = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.status.notin_(["done", "rejected"]))
-            .filter(Request.created_at <= (now - timedelta(days=7)))
-            .scalar()
-            or 0
-        )
+        stale_open_count = db.session.query(func.count(Request.id)).filter(Request.status.notin_(["done", "rejected"])).filter(Request.created_at <= (now - timedelta(days=7))).scalar() or 0
 
         # --- Requests per day (last 14 days) ---
         since_dt = now - timedelta(days=14)
@@ -968,12 +872,7 @@ def admin_dashboard():
         impact_counts = [int(r[1]) for r in rows]
 
         # --- Requests by category ---
-        cat_rows = (
-            db.session.query(Request.category, func.count(Request.id))
-            .group_by(Request.category)
-            .order_by(func.count(Request.id).desc())
-            .all()
-        )
+        cat_rows = db.session.query(Request.category, func.count(Request.id)).group_by(Request.category).order_by(func.count(Request.id).desc()).all()
         impact_cat_labels = [r[0] or "unknown" for r in cat_rows]
         impact_cat_counts = [int(r[1]) for r in cat_rows]
 
@@ -1243,11 +1142,7 @@ def update_status(req_id):
             q = VolunteerInterest.query.filter_by(request_id=req.id)
 
             # Ensure owner's latest interest exists and is approved
-            owner_latest = (
-                q.filter_by(volunteer_id=req.owner_id)
-                .order_by(VolunteerInterest.id.desc())
-                .first()
-            )
+            owner_latest = q.filter_by(volunteer_id=req.owner_id).order_by(VolunteerInterest.id.desc()).first()
             if owner_latest is None:
                 owner_latest = VolunteerInterest(
                     request_id=req.id,
@@ -1255,33 +1150,20 @@ def update_status(req_id):
                     status="approved",
                 )
                 db.session.add(owner_latest)
-                current_app.logger.info(
-                    "Interest sync: created approved owner interest (request_id=%s, volunteer_id=%s)",
-                    req.id, req.owner_id
-                )
+                current_app.logger.info("Interest sync: created approved owner interest (request_id=%s, volunteer_id=%s)", req.id, req.owner_id)
             elif owner_latest.status != "approved":
                 owner_latest.status = "approved"
                 db.session.add(owner_latest)
-                current_app.logger.info(
-                    "Interest sync: set owner interest to approved (request_id=%s, volunteer_id=%s)",
-                    req.id, req.owner_id
-                )
+                current_app.logger.info("Interest sync: set owner interest to approved (request_id=%s, volunteer_id=%s)", req.id, req.owner_id)
 
             # Reject other pending interests
-            pending_others = (
-                q.filter(VolunteerInterest.status == "pending")
-                .filter(VolunteerInterest.volunteer_id != req.owner_id)
-                .all()
-            )
+            pending_others = q.filter(VolunteerInterest.status == "pending").filter(VolunteerInterest.volunteer_id != req.owner_id).all()
             for vi_row in pending_others:
                 vi_row.status = "rejected"
                 db.session.add(vi_row)
 
             if pending_others:
-                current_app.logger.info(
-                    "Interest sync: rejected %s pending interests (request_id=%s, owner_id=%s)",
-                    len(pending_others), req.id, req.owner_id
-                )
+                current_app.logger.info("Interest sync: rejected %s pending interests (request_id=%s, owner_id=%s)", len(pending_others), req.id, req.owner_id)
 
     elif new_status in {"done", "cancelled"}:
         q = VolunteerInterest.query.filter_by(request_id=req.id)
@@ -1291,10 +1173,7 @@ def update_status(req_id):
             db.session.add(vi_row)
 
         if pending_all:
-            current_app.logger.info(
-                "Interest sync: rejected %s pending interests on close (request_id=%s, new_status=%s)",
-                len(pending_all), req.id, new_status
-            )
+            current_app.logger.info("Interest sync: rejected %s pending interests on close (request_id=%s, new_status=%s)", len(pending_all), req.id, new_status)
 
     db.session.commit()
 
@@ -1340,9 +1219,10 @@ def admin_request_set_status(req_id: int):
     return update_status(req_id)
 
 
-from flask import render_template, request, redirect, url_for, flash, current_app
-from sqlalchemy import or_, func
-from ..models import db, Request, RequestActivity
+from flask import current_app, flash, redirect, render_template, request, url_for
+from sqlalchemy import func, or_
+
+from ..models import Request, RequestActivity, db
 
 ALLOWED_STATUSES = {"pending", "approved", "in_progress", "done", "rejected"}
 
@@ -1362,6 +1242,7 @@ STATUS_LABELS = {
     "done": "Completed",
     "rejected": "Rejected",
 }
+
 
 @admin_bp.get("/requests")
 @login_required
@@ -1406,8 +1287,7 @@ def admin_requests():
         # --- Last volunteer signal per request (page only) ---
         # One extra query for this page, avoids N+1 and makes "can't help" visible.
         last_rows = (
-            VolunteerAction.query
-            .filter(VolunteerAction.request_id.in_(req_ids))
+            VolunteerAction.query.filter(VolunteerAction.request_id.in_(req_ids))
             .order_by(
                 VolunteerAction.request_id.asc(),
                 VolunteerAction.updated_at.desc(),
@@ -1475,27 +1355,40 @@ def admin_requests_export_csv():
 
     out = StringIO()
     writer = csv.writer(out)
-    writer.writerow([
-        "id", "created_at", "status", "priority", "category",
-        "title", "name", "email", "phone", "owner_id", "owned_at",
-        "completed_at",
-    ])
+    writer.writerow(
+        [
+            "id",
+            "created_at",
+            "status",
+            "priority",
+            "category",
+            "title",
+            "name",
+            "email",
+            "phone",
+            "owner_id",
+            "owned_at",
+            "completed_at",
+        ]
+    )
 
     for r in rows:
-        writer.writerow([
-            r.id,
-            getattr(r, "created_at", "") or "",
-            getattr(r, "status", "") or "",
-            getattr(r, "priority", "") or "",
-            getattr(r, "category", "") or "",
-            getattr(r, "title", "") or "",
-            getattr(r, "name", "") or "",
-            getattr(r, "email", "") or "",
-            getattr(r, "phone", "") or "",
-            getattr(r, "owner_id", "") or "",
-            getattr(r, "owned_at", "") or "",
-            getattr(r, "completed_at", "") or "",
-        ])
+        writer.writerow(
+            [
+                r.id,
+                getattr(r, "created_at", "") or "",
+                getattr(r, "status", "") or "",
+                getattr(r, "priority", "") or "",
+                getattr(r, "category", "") or "",
+                getattr(r, "title", "") or "",
+                getattr(r, "name", "") or "",
+                getattr(r, "email", "") or "",
+                getattr(r, "phone", "") or "",
+                getattr(r, "owner_id", "") or "",
+                getattr(r, "owned_at", "") or "",
+                getattr(r, "completed_at", "") or "",
+            ]
+        )
 
     filename = f"helpchain_requests_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
     return Response(
@@ -1521,27 +1414,38 @@ def admin_requests_export_xlsx():
     ws = wb.active
     ws.title = "Requests"
     headers = [
-        "id", "created_at", "status", "priority", "category",
-        "title", "name", "email", "phone", "owner_id", "owned_at",
+        "id",
+        "created_at",
+        "status",
+        "priority",
+        "category",
+        "title",
+        "name",
+        "email",
+        "phone",
+        "owner_id",
+        "owned_at",
         "completed_at",
     ]
     ws.append(headers)
 
     for r in rows:
-        ws.append([
-            r.id,
-            getattr(r, "created_at", None),
-            getattr(r, "status", None),
-            getattr(r, "priority", None),
-            getattr(r, "category", None),
-            getattr(r, "title", None),
-            getattr(r, "name", None),
-            getattr(r, "email", None),
-            getattr(r, "phone", None),
-            getattr(r, "owner_id", None),
-            getattr(r, "owned_at", None),
-            getattr(r, "completed_at", None),
-        ])
+        ws.append(
+            [
+                r.id,
+                getattr(r, "created_at", None),
+                getattr(r, "status", None),
+                getattr(r, "priority", None),
+                getattr(r, "category", None),
+                getattr(r, "title", None),
+                getattr(r, "name", None),
+                getattr(r, "email", None),
+                getattr(r, "phone", None),
+                getattr(r, "owner_id", None),
+                getattr(r, "owned_at", None),
+                getattr(r, "completed_at", None),
+            ]
+        )
 
     bio = BytesIO()
     wb.save(bio)
@@ -1565,22 +1469,32 @@ def admin_requests_export_csv_anonymized():
 
     out = StringIO()
     writer = csv.writer(out)
-    writer.writerow([
-        "id", "created_at", "status", "priority", "category",
-        "owner_id", "owned_at", "completed_at",
-    ])
+    writer.writerow(
+        [
+            "id",
+            "created_at",
+            "status",
+            "priority",
+            "category",
+            "owner_id",
+            "owned_at",
+            "completed_at",
+        ]
+    )
 
     for r in rows:
-        writer.writerow([
-            r.id,
-            getattr(r, "created_at", "") or "",
-            getattr(r, "status", "") or "",
-            getattr(r, "priority", "") or "",
-            getattr(r, "category", "") or "",
-            getattr(r, "owner_id", "") or "",
-            getattr(r, "owned_at", "") or "",
-            getattr(r, "completed_at", "") or "",
-        ])
+        writer.writerow(
+            [
+                r.id,
+                getattr(r, "created_at", "") or "",
+                getattr(r, "status", "") or "",
+                getattr(r, "priority", "") or "",
+                getattr(r, "category", "") or "",
+                getattr(r, "owner_id", "") or "",
+                getattr(r, "owned_at", "") or "",
+                getattr(r, "completed_at", "") or "",
+            ]
+        )
 
     filename = f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
     return Response(
@@ -1606,22 +1520,30 @@ def admin_requests_export_xlsx_anonymized():
     ws = wb.active
     ws.title = "Requests (Anon)"
     headers = [
-        "id", "created_at", "status", "priority", "category",
-        "owner_id", "owned_at", "completed_at",
+        "id",
+        "created_at",
+        "status",
+        "priority",
+        "category",
+        "owner_id",
+        "owned_at",
+        "completed_at",
     ]
     ws.append(headers)
 
     for r in rows:
-        ws.append([
-            r.id,
-            getattr(r, "created_at", None),
-            getattr(r, "status", None),
-            getattr(r, "priority", None),
-            getattr(r, "category", None),
-            getattr(r, "owner_id", None),
-            getattr(r, "owned_at", None),
-            getattr(r, "completed_at", None),
-        ])
+        ws.append(
+            [
+                r.id,
+                getattr(r, "created_at", None),
+                getattr(r, "status", None),
+                getattr(r, "priority", None),
+                getattr(r, "category", None),
+                getattr(r, "owner_id", None),
+                getattr(r, "owned_at", None),
+                getattr(r, "completed_at", None),
+            ]
+        )
 
     bio = BytesIO()
     wb.save(bio)
@@ -1640,11 +1562,7 @@ def admin_requests_export_xlsx_anonymized():
 @admin_required
 def admin_request_details(req_id: int):
     admin_required_404()
-    req = (
-        Request.query
-        .options(joinedload(Request.logs), joinedload(Request.activities))
-        .get_or_404(req_id)
-    )
+    req = Request.query.options(joinedload(Request.logs), joinedload(Request.activities)).get_or_404(req_id)
     admin_id = current_user.id
     now = _now_utc()
 
@@ -1693,11 +1611,7 @@ def admin_request_details(req_id: int):
                 key=lambda a: a.created_at or datetime.min,
                 reverse=True,
             )[:50]
-            interests = (
-                VolunteerInterest.query.filter_by(request_id=req_id)
-                .order_by(VolunteerInterest.created_at.desc())
-                .all()
-            )
+            interests = VolunteerInterest.query.filter_by(request_id=req_id).order_by(VolunteerInterest.created_at.desc()).all()
             return render_template(
                 "admin/request_details.html",
                 req=req,
@@ -1716,11 +1630,7 @@ def admin_request_details(req_id: int):
         key=lambda a: a.created_at or datetime.min,
         reverse=True,
     )[:50]
-    interests = (
-        VolunteerInterest.query.filter_by(request_id=req_id)
-        .order_by(VolunteerInterest.created_at.desc())
-        .all()
-    )
+    interests = VolunteerInterest.query.filter_by(request_id=req_id).order_by(VolunteerInterest.created_at.desc()).all()
 
     # --- V3: Match & engagement (city-based) ---
     req_city = (getattr(req, "city", "") or "").strip().lower()
@@ -1735,13 +1645,11 @@ def admin_request_details(req_id: int):
 
     notif_rows = []
     if matched_volunteer_ids:
-        notif_rows = (
-            Notification.query.filter(
-                Notification.request_id == req.id,
-                Notification.type == "new_match",
-                Notification.volunteer_id.in_(matched_volunteer_ids),
-            ).all()
-        )
+        notif_rows = Notification.query.filter(
+            Notification.request_id == req.id,
+            Notification.type == "new_match",
+            Notification.volunteer_id.in_(matched_volunteer_ids),
+        ).all()
     notified_count = len(notif_rows)
     seen_count = sum(1 for n in notif_rows if getattr(n, "is_read", False))
 
@@ -1764,17 +1672,11 @@ def admin_request_details(req_id: int):
         assigned_volunteer = Volunteer.query.get(req.assigned_volunteer_id)
 
     # Volunteer signals (can/can't help)
-    volunteer_signals = (
-        VolunteerAction.query.filter_by(request_id=req.id)
-        .order_by(VolunteerAction.updated_at.desc())
-        .all()
-    )
+    volunteer_signals = VolunteerAction.query.filter_by(request_id=req.id).order_by(VolunteerAction.updated_at.desc()).all()
     # Most recent signal for quick, high-visibility admin context.
     last_vol_signal = volunteer_signals[0] if volunteer_signals else None
     signal_vol_ids = [va.volunteer_id for va in volunteer_signals]
-    volunteers_map = {
-        v.id: v for v in Volunteer.query.filter(Volunteer.id.in_(signal_vol_ids)).all()
-    } if signal_vol_ids else {}
+    volunteers_map = {v.id: v for v in Volunteer.query.filter(Volunteer.id.in_(signal_vol_ids)).all()} if signal_vol_ids else {}
     can_help_count = sum(1 for va in volunteer_signals if va.action == "CAN_HELP")
     cant_help_count = sum(1 for va in volunteer_signals if va.action == "CANT_HELP")
 
@@ -1862,7 +1764,7 @@ def admin_interest_approve(req_id: int, interest_id: int):
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     old_vi = vi.status
-    changed_vi = (old_vi != "approved")
+    changed_vi = old_vi != "approved"
     if changed_vi:
         vi.status = "approved"
         db.session.add(
@@ -2145,9 +2047,3 @@ def admin_request_notes_get_alias(req_id: int):
 def admin_request_notes_post_alias(req_id: int):
     # Reuse existing note handler (/note) without changing templates.
     return admin_request_add_note(req_id)
-
-
-
-
-
-

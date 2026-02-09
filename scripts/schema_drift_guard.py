@@ -1,19 +1,18 @@
 import os
-import sys
 import sqlite3
-from typing import Dict, List, Set, Tuple
+import sys
 
 # Ensure project root is importable when running as a script
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from backend.helpchain_backend.src.app import create_app
-from backend.extensions import db
 from backend import models as m
+from backend.extensions import db
+from backend.helpchain_backend.src.app import create_app
 
 
-def sqlite_table_columns(db_path: str, table_name: str) -> Set[str]:
+def sqlite_table_columns(db_path: str, table_name: str) -> set[str]:
     con = sqlite3.connect(db_path)
     try:
         cur = con.cursor()
@@ -24,12 +23,12 @@ def sqlite_table_columns(db_path: str, table_name: str) -> Set[str]:
         con.close()
 
 
-def orm_model_columns(model) -> Set[str]:
+def orm_model_columns(model) -> set[str]:
     # Only works for Flask-SQLAlchemy models (db.Model)
     return {c.name for c in model.__table__.columns}
 
 
-def drift_for_model(db_path: str, model) -> Tuple[str, Set[str], Set[str]]:
+def drift_for_model(db_path: str, model) -> tuple[str, set[str], set[str]]:
     table = model.__table__.name
     orm_cols = orm_model_columns(model)
     sql_cols = sqlite_table_columns(db_path, table)
@@ -54,7 +53,7 @@ def main() -> int:
     ]
 
     with app.app_context():
-        problems: List[str] = []
+        problems: list[str] = []
         print("== SCHEMA DRIFT GUARD ==")
         print("DB:", db_path)
 

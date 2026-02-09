@@ -4,5 +4,3 @@ import pytest
 # This delegates to `tests.conftest.app` when available (richer test factory),
 # otherwise falls back to the application's `backend.appy.app`.
 _app_factory = None
-
-

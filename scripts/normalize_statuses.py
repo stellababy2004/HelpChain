@@ -8,8 +8,10 @@ Usage:
   or
     python normalize_statuses.py sqlite:///c:/path/to/db.sqlite
 """
+
 import os
 import sys
+
 from sqlalchemy import create_engine, text
 
 url = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("DATABASE_URL")

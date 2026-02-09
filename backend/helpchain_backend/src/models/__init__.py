@@ -7,12 +7,6 @@ split-out models that are not present there yet.
 
 from backend.extensions import db
 
-# Local wrappers for canonical/legacy models (defined in `backend.models`)
-from .admin_user import AdminUser  # noqa: F401
-from .notification import Notification  # noqa: F401
-from .request_log import RequestLog  # noqa: F401
-from .volunteer import Volunteer  # noqa: F401
-
 # Other canonical/legacy names live in `backend.models`
 from backend.models import (  # noqa: F401
     NotificationSubscription,
@@ -24,8 +18,14 @@ from backend.models import (  # noqa: F401
     utc_now,
 )
 
+# Local wrappers for canonical/legacy models (defined in `backend.models`)
+from .admin_user import AdminUser  # noqa: F401
+from .notification import Notification  # noqa: F401
+
 # Split models (not present in `backend.models`)
 from .refresh_token import RefreshToken  # noqa: F401
+from .request_log import RequestLog  # noqa: F401
+from .volunteer import Volunteer  # noqa: F401
 from .volunteer_action import VolunteerAction  # noqa: F401
 from .volunteer_interest import VolunteerInterest  # noqa: F401
 
@@ -46,4 +46,3 @@ __all__ = [
     "VolunteerInterest",
     "VolunteerAction",
 ]
-

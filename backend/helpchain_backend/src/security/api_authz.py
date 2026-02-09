@@ -1,8 +1,9 @@
-import jwt
 from functools import wraps
-from flask import jsonify, request, g
 
+import jwt
 from backend.helpchain_backend.src.jwt_utils import decode_token
+from flask import g, jsonify, request
+
 from ..models import AdminUser, canonical_role
 
 

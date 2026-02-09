@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 i18n coverage checker: finds missing translations (empty msgstr) in .po files
 and ranks by "visibility" score, using source references (#: templates/...)
@@ -15,8 +14,6 @@ import argparse
 import os
 import re
 from dataclasses import dataclass
-from typing import List
-
 
 VISIBLE_HINTS = [
     # UI text
@@ -59,7 +56,7 @@ HIGH_VALUE_TEMPLATES = [
 class PoEntry:
     msgid: str
     msgstr: str
-    refs: List[str]  # lines like: templates/home_new_slim.html:14
+    refs: list[str]  # lines like: templates/home_new_slim.html:14
 
 
 def unescape_po(s: str) -> str:
@@ -67,11 +64,11 @@ def unescape_po(s: str) -> str:
     return s.encode("utf-8").decode("unicode_escape")
 
 
-def parse_po(path: str) -> List[PoEntry]:
-    entries: List[PoEntry] = []
-    refs: List[str] = []
-    msgid_parts: List[str] = []
-    msgstr_parts: List[str] = []
+def parse_po(path: str) -> list[PoEntry]:
+    entries: list[PoEntry] = []
+    refs: list[str] = []
+    msgid_parts: list[str] = []
+    msgstr_parts: list[str] = []
     state = None  # "msgid" | "msgstr" | None
 
     def flush():
@@ -89,7 +86,7 @@ def parse_po(path: str) -> List[PoEntry]:
     re_msgstr = re.compile(r'^msgstr\s+"(.*)"\s*$')
     re_q = re.compile(r'^"(.*)"\s*$')
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.rstrip("\n")
 
@@ -216,7 +213,7 @@ def main():
         if show:
             print(f"    refs:  {', '.join(show)}")
         else:
-            print(f"    refs:  (none)")
+            print("    refs:  (none)")
         print()
 
     print("Tip: After filling msgstr values, run: pybabel compile -d translations\n")

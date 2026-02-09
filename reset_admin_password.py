@@ -1,9 +1,10 @@
 import os
 
-from backend.helpchain_backend.src.app import create_app
-from backend.extensions import db
-from backend.models import User
 from werkzeug.security import generate_password_hash
+
+from backend.extensions import db
+from backend.helpchain_backend.src.app import create_app
+from backend.models import User
 
 # Security: never hardcode credentials in tracked files (GitGuardian will block).
 USERNAME = os.getenv("ADMIN_USERNAME")
@@ -18,9 +19,7 @@ if not USERNAME and not EMAIL:
 app = create_app()
 
 with app.app_context():
-    user = User.query.filter(
-        (User.username == USERNAME) | (User.email == EMAIL)
-    ).first()
+    user = User.query.filter((User.username == USERNAME) | (User.email == EMAIL)).first()
 
     if not user:
         user = User(username=USERNAME, email=EMAIL)

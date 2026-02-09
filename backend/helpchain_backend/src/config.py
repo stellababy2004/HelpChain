@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+
 from dotenv import load_dotenv
 
 # === Project base (root of HelpChain.bg) ===
@@ -58,9 +59,7 @@ class Config:
     # --- Optional / misc ---
     NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN")
     QR_CODE_SIZE = int(os.getenv("QR_CODE_SIZE", 250))
-    ALLOWED_HOSTS = (
-        [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()]
-    )
+    ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()]
 
     # Dev-only volunteer bypass (disabled by default)
     VOLUNTEER_DEV_BYPASS_ENABLED = os.getenv("VOLUNTEER_DEV_BYPASS_ENABLED", "0") == "1"

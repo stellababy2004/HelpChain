@@ -14,28 +14,28 @@ def git_cat_file_size(h):
 def main():
     objs = []
     try:
-        with open('all_objects.txt', encoding='utf-8') as f:
+        with open("all_objects.txt", encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
                     continue
-                parts = line.split(' ', 1)
+                parts = line.split(" ", 1)
                 h = parts[0]
-                path = parts[1] if len(parts) > 1 else ''
+                path = parts[1] if len(parts) > 1 else ""
                 size = git_cat_file_size(h)
                 if size is None:
                     continue
                 objs.append((size, h, path))
     except FileNotFoundError:
-        print('all_objects.txt not found. Run: git rev-list --objects --all > all_objects.txt', file=sys.stderr)
+        print("all_objects.txt not found. Run: git rev-list --objects --all > all_objects.txt", file=sys.stderr)
         sys.exit(2)
 
     objs.sort(reverse=True, key=lambda x: x[0])
-    with open('large_blobs.txt', 'w', encoding='utf-8') as out:
+    with open("large_blobs.txt", "w", encoding="utf-8") as out:
         for size, h, path in objs[:200]:
             out.write(f"{size}\t{h}\t{path}\n")
     print(f"Wrote large_blobs.txt with top {min(200, len(objs))} objects")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
