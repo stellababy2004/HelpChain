@@ -1204,6 +1204,13 @@ def update_status(req_id):
         flash("No status change.", "info")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
+
+@admin_bp.post("/requests/<int:req_id>/status")
+@admin_required
+def admin_request_set_status(req_id: int):
+    # Alias: keep old canonical handler, just expose the “resource” URL too.
+    return update_status(req_id)
+
     req.status = new_status
     closing_statuses = {"done", "cancelled"}
     if new_status in closing_statuses:
