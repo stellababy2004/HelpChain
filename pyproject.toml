@@ -45,8 +45,12 @@ exclude = [
 ]
 
 [tool.black]
+# Formatting baseline.
+line-length = 88
+target-version = ["py311"]
+
 # Keep CI fast and avoid touching vendored / generated trees.
-exclude = '''
+extend-exclude = '''
 /(
   \.venv
 | venv
