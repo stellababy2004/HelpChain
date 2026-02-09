@@ -1697,6 +1697,12 @@ def terms():
     return render_template("terms.html")
 
 
+@main_bp.route("/legal")
+def legal():
+    # FR-first legal page (Mentions legales + RGPD). Keep content in template.
+    return render_template("legal.html")
+
+
 @main_bp.get("/video-chat")
 def video_chat():
     return render_template("video_chat.html")
