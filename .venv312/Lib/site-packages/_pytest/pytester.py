@@ -67,7 +67,6 @@ from _pytest.reports import TestReport
 from _pytest.tmpdir import TempPathFactory
 from _pytest.warning_types import PytestFDWarning
 
-
 if TYPE_CHECKING:
     import pexpect
 

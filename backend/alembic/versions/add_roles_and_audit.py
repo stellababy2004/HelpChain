@@ -21,17 +21,23 @@ def upgrade():
         "users",
         sa.Column("role", sa.String(length=50), nullable=False, server_default="user"),
     )
-    op.add_column("users", sa.Column("twofa_secret_encrypted", sa.Text(), nullable=True))
+    op.add_column(
+        "users", sa.Column("twofa_secret_encrypted", sa.Text(), nullable=True)
+    )
     op.create_table(
         "audit_logs",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("actor_user_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False),
+        sa.Column(
+            "actor_user_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=False
+        ),
         sa.Column("action", sa.Text(), nullable=False),
         sa.Column("target_type", sa.Text(), nullable=True),
         sa.Column("target_id", sa.Text(), nullable=True),
         sa.Column("outcome", sa.Text(), nullable=True),
         sa.Column("metadata", sa.JSON(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")
+        ),
     )
 
 

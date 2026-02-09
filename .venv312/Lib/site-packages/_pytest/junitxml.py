@@ -30,7 +30,6 @@ from _pytest.stash import StashKey
 from _pytest.terminal import TerminalReporter
 import pytest
 
-
 xml_key = StashKey["LogXML"]()
 
 

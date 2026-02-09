@@ -16,7 +16,7 @@ from babel.localtime._helpers import _get_tzinfo_or_raise
 # fail.  We want to catch it down in that case then and just assume
 # the mapping was empty.
 try:
-    tz_names: dict[str, str] = cast(Dict[str, str], get_global('windows_zone_mapping'))
+    tz_names: dict[str, str] = cast(Dict[str, str], get_global("windows_zone_mapping"))
 except RuntimeError:
     tz_names = {}
 
@@ -39,25 +39,25 @@ def get_localzone_name() -> str:
     # one matches.
     handle = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
 
-    TZLOCALKEYNAME = r'SYSTEM\CurrentControlSet\Control\TimeZoneInformation'
+    TZLOCALKEYNAME = r"SYSTEM\CurrentControlSet\Control\TimeZoneInformation"
     localtz = winreg.OpenKey(handle, TZLOCALKEYNAME)
     keyvalues = valuestodict(localtz)
     localtz.Close()
-    if 'TimeZoneKeyName' in keyvalues:
+    if "TimeZoneKeyName" in keyvalues:
         # Windows 7 (and Vista?)
 
         # For some reason this returns a string with loads of NUL bytes at
         # least on some systems. I don't know if this is a bug somewhere, I
         # just work around it.
-        tzkeyname = keyvalues['TimeZoneKeyName'].split('\x00', 1)[0]
+        tzkeyname = keyvalues["TimeZoneKeyName"].split("\x00", 1)[0]
     else:
         # Windows 2000 or XP
 
         # This is the localized name:
-        tzwin = keyvalues['StandardName']
+        tzwin = keyvalues["StandardName"]
 
         # Open the list of timezones to look up the real name:
-        TZKEYNAME = r'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones'
+        TZKEYNAME = r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones"
         tzkey = winreg.OpenKey(handle, TZKEYNAME)
 
         # Now, match this value to Time Zone information
@@ -67,7 +67,7 @@ def get_localzone_name() -> str:
             sub = winreg.OpenKey(tzkey, subkey)
             data = valuestodict(sub)
             sub.Close()
-            if data.get('Std', None) == tzwin:
+            if data.get("Std", None) == tzwin:
                 tzkeyname = subkey
                 break
 
@@ -75,7 +75,7 @@ def get_localzone_name() -> str:
         handle.Close()
 
     if tzkeyname is None:
-        raise LookupError('Can not find Windows timezone configuration')
+        raise LookupError("Can not find Windows timezone configuration")
 
     timezone = tz_names.get(tzkeyname)
     if timezone is None:
@@ -92,7 +92,6 @@ def get_localzone_name() -> str:
 
 def _get_localzone() -> datetime.tzinfo:
     if winreg is None:
-        raise LookupError(
-            'Runtime support not available')
+        raise LookupError("Runtime support not available")
 
     return _get_tzinfo_or_raise(get_localzone_name())

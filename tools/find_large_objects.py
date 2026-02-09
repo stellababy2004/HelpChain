@@ -27,7 +27,10 @@ def main():
                     continue
                 objs.append((size, h, path))
     except FileNotFoundError:
-        print("all_objects.txt not found. Run: git rev-list --objects --all > all_objects.txt", file=sys.stderr)
+        print(
+            "all_objects.txt not found. Run: git rev-list --objects --all > all_objects.txt",
+            file=sys.stderr,
+        )
         sys.exit(2)
 
     objs.sort(reverse=True, key=lambda x: x[0])

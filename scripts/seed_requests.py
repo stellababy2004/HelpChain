@@ -33,13 +33,22 @@ def main() -> int:
         print(f"[seed] Existing requests: {existing}")
 
         if existing > 0 and not force:
-            print("[seed] Abort: DB already has requests. Re-run with --force if you still want to add 10 more.")
+            print(
+                "[seed] Abort: DB already has requests. Re-run with --force if you still want to add 10 more."
+            )
             return 0
 
         now = datetime.utcnow()
 
         statuses = ["new", "pending", "approved", "in_progress", "done", "rejected"]
-        categories = ["general", "medical", "administrative", "legal", "social", "education"]
+        categories = [
+            "general",
+            "medical",
+            "administrative",
+            "legal",
+            "social",
+            "education",
+        ]
         locations = [
             ("Paris", "Île-de-France"),
             ("Boulogne-Billancourt", "Île-de-France"),
@@ -58,7 +67,9 @@ def main() -> int:
             status = random.choice(statuses)
             category = random.choice(categories)
 
-            created_at = now - timedelta(days=random.randint(0, 13), hours=random.randint(0, 20))
+            created_at = now - timedelta(
+                days=random.randint(0, 13), hours=random.randint(0, 20)
+            )
             updated_at = created_at + timedelta(hours=random.randint(0, 72))
 
             title = f"Помощ #{i + 1}: {category} — {city}"
@@ -67,7 +78,9 @@ def main() -> int:
             r = Request(
                 title=title,
                 description=desc,
-                name=random.choice(["Stella", "Ivan", "Maria", "Georgi", "Elena", "Nikolay"]),
+                name=random.choice(
+                    ["Stella", "Ivan", "Maria", "Georgi", "Elena", "Nikolay"]
+                ),
                 email="demo@example.com",
                 phone="+359000000000",
                 city=city,

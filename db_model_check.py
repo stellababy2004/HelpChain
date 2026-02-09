@@ -9,5 +9,13 @@ with app.app_context():
     print("db is:", db)
     for n in names:
         cls = getattr(m, n, None)
-        print(n, "exists=", cls is not None, "is_db_Model=", bool(cls and hasattr(cls, "__table__")), "base=", (cls.__mro__[1].__name__ if cls else None))
+        print(
+            n,
+            "exists=",
+            cls is not None,
+            "is_db_Model=",
+            bool(cls and hasattr(cls, "__table__")),
+            "base=",
+            (cls.__mro__[1].__name__ if cls else None),
+        )
     print("metadata tables:", len(db.metadata.tables))

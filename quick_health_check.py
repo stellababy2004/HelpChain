@@ -21,7 +21,9 @@ check("/")
 check("/sw.js", expect_200=False)  # 200 if exists, else should not be called
 
 # VAPID public key
-check("/api/notification/vapid-public-key", expect_200=False)  # 200 if exists, else should not be called
+check(
+    "/api/notification/vapid-public-key", expect_200=False
+)  # 200 if exists, else should not be called
 
 # Example static CSS file
 check("/static/css/design-system.css")

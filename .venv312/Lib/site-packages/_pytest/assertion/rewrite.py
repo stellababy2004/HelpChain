@@ -26,7 +26,6 @@ import types
 from typing import IO
 from typing import TYPE_CHECKING
 
-
 if sys.version_info >= (3, 12):
     from importlib.resources.abc import TraversableResources
 else:
@@ -704,9 +703,9 @@ class AssertionRewriter(ast.NodeVisitor):
         pos = 0
         for item in mod.body:
             match item:
-                case ast.Expr(value=ast.Constant(value=str() as doc)) if (
-                    expect_docstring
-                ):
+                case ast.Expr(
+                    value=ast.Constant(value=str() as doc)
+                ) if expect_docstring:
                     if self.is_rewrite_disabled(doc):
                         return
                     expect_docstring = False
@@ -1018,9 +1017,9 @@ class AssertionRewriter(ast.NodeVisitor):
                         e.id for e in boolop.values[:i] if hasattr(e, "id")
                     ]:
                         pytest_temp = self.variable()
-                        self.variables_overwrite[self.scope][target_id] = v.left  # type:ignore[assignment]
+                        self.variables_overwrite[self.scope][target_id] = v.left  # type: ignore[assignment]
                         # mypy's false positive, we're checking that the 'target' attribute exists.
-                        v.left.target.id = pytest_temp  # type:ignore[attr-defined]
+                        v.left.target.id = pytest_temp  # type: ignore[attr-defined]
             self.push_format_context()
             res, expl = self.visit(v)
             body.append(ast.Assign([ast.Name(res_var, ast.Store())], res))
@@ -1065,7 +1064,7 @@ class AssertionRewriter(ast.NodeVisitor):
             if isinstance(arg, ast.Name) and arg.id in self.variables_overwrite.get(
                 self.scope, {}
             ):
-                arg = self.variables_overwrite[self.scope][arg.id]  # type:ignore[assignment]
+                arg = self.variables_overwrite[self.scope][arg.id]  # type: ignore[assignment]
             res, expl = self.visit(arg)
             arg_expls.append(expl)
             new_args.append(res)
@@ -1074,7 +1073,7 @@ class AssertionRewriter(ast.NodeVisitor):
                 case ast.Name(id=id) if id in self.variables_overwrite.get(
                     self.scope, {}
                 ):
-                    keyword.value = self.variables_overwrite[self.scope][id]  # type:ignore[assignment]
+                    keyword.value = self.variables_overwrite[self.scope][id]  # type: ignore[assignment]
             res, expl = self.visit(keyword.value)
             new_kwargs.append(ast.keyword(keyword.arg, res))
             if keyword.arg:
@@ -1132,7 +1131,9 @@ class AssertionRewriter(ast.NodeVisitor):
                 case (
                     ast.NamedExpr(target=ast.Name(id=target_id)),
                     ast.Name(id=name_id),
-                ) if target_id == name_id:
+                ) if (
+                    target_id == name_id
+                ):
                     next_operand.target.id = self.variable()
                     self.variables_overwrite[self.scope][name_id] = next_operand  # type: ignore[assignment]
 

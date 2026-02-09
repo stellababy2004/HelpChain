@@ -151,9 +151,11 @@ def cli_detect(argv: List[str] = None) -> int:
             print(
                 'Unable to identify originating encoding for "{}". {}'.format(
                     my_file.name,
-                    "Maybe try increasing maximum amount of chaos."
-                    if args.threshold < 1.0
-                    else "",
+                    (
+                        "Maybe try increasing maximum amount of chaos."
+                        if args.threshold < 1.0
+                        else ""
+                    ),
                 ),
                 file=sys.stderr,
             )

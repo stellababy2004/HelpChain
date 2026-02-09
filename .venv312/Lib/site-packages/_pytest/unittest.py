@@ -38,7 +38,6 @@ from _pytest.runner import check_interactive_exception
 from _pytest.subtests import SubtestContext
 from _pytest.subtests import SubtestReport
 
-
 if sys.version_info[:2] < (3, 11):
     from exceptiongroup import ExceptionGroup
 
@@ -405,9 +404,11 @@ class TestCaseFunction(Function):
         self,
         test_case: Any,
         test: TestCase,
-        exc_info: ExceptionInfo[BaseException]
-        | tuple[type[BaseException], BaseException, TracebackType]
-        | None,
+        exc_info: (
+            ExceptionInfo[BaseException]
+            | tuple[type[BaseException], BaseException, TracebackType]
+            | None
+        ),
     ) -> None:
         exception_info: ExceptionInfo[BaseException] | None
         match exc_info:
@@ -459,9 +460,10 @@ class TestCaseFunction(Function):
         """Compute or obtain the cached values for subtest errors and non-subtest skips."""
         from unittest.case import _SubTest  # type: ignore[attr-defined]
 
-        assert sys.version_info < (3, 11), (
-            "This workaround only should be used in Python 3.10"
-        )
+        assert sys.version_info < (
+            3,
+            11,
+        ), "This workaround only should be used in Python 3.10"
         if self._cached_errors_and_skips is not None:
             return self._cached_errors_and_skips
 
@@ -600,7 +602,7 @@ def _handle_twisted_exc_info(
         # Unfortunately, because we cannot import `twisted.python.failure` at the top of the file
         # and use it in the signature, we need to use `type:ignore` here because we cannot narrow
         # the type properly in the `if` statement above.
-        return rawexcinfo  # type:ignore[return-value]
+        return rawexcinfo  # type: ignore[return-value]
     elif twisted_version is TwistedVersion.Version24:
         # Twisted calls addError() passing its own classes (like `twisted.python.Failure`), which violates
         # the `addError()` signature, so we extract the original `sys.exc_info()` tuple which is stored
@@ -609,8 +611,8 @@ def _handle_twisted_exc_info(
             saved_exc_info = getattr(rawexcinfo, TWISTED_RAW_EXCINFO_ATTR)
             # Delete the attribute from the original object to avoid leaks.
             delattr(rawexcinfo, TWISTED_RAW_EXCINFO_ATTR)
-            return saved_exc_info  # type:ignore[no-any-return]
-        return rawexcinfo  # type:ignore[return-value]
+            return saved_exc_info  # type: ignore[no-any-return]
+        return rawexcinfo  # type: ignore[return-value]
     elif twisted_version is TwistedVersion.Version25:
         if isinstance(rawexcinfo, BaseException):
             import twisted.python.failure
@@ -621,7 +623,7 @@ def _handle_twisted_exc_info(
                     tb = sys.exc_info()[2]
                 return type(rawexcinfo.value), rawexcinfo.value, tb
 
-        return rawexcinfo  # type:ignore[return-value]
+        return rawexcinfo  # type: ignore[return-value]
     else:
         # Ideally we would use assert_never() here, but it is not available in all Python versions
         # we support, plus we do not require `type_extensions` currently.

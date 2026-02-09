@@ -61,7 +61,9 @@ def _ensure_app_uses_test_uri(app_obj):
             app_obj.config["SQLALCHEMY_DATABASE_URI"] = db_url
             # Also register the test file path for helpers that consult it
             if db_url.startswith("sqlite///"):
-                app_obj.config.setdefault("_TEST_DB_PATH", db_url.replace("sqlite:///", ""))
+                app_obj.config.setdefault(
+                    "_TEST_DB_PATH", db_url.replace("sqlite:///", "")
+                )
     except Exception:
         pass
 
@@ -179,7 +181,9 @@ def prepare_database():
                     ready = False
                     for _ in range(8):
                         try:
-                            with socket.create_connection(("127.0.0.1", 3000), timeout=0.2):
+                            with socket.create_connection(
+                                ("127.0.0.1", 3000), timeout=0.2
+                            ):
                                 ready = True
                                 break
                         except Exception:
@@ -243,7 +247,9 @@ def prepare_database():
                         return resp
                     if url.endswith("/admin/roles") and m == "GET":
                         resp.status_code = 200
-                        resp._content = "<html><body>Роли и Права</body></html>".encode()
+                        resp._content = (
+                            "<html><body>Роли и Права</body></html>".encode()
+                        )
                         return resp
                     # Default stub for other admin endpoints
                     resp.status_code = 200

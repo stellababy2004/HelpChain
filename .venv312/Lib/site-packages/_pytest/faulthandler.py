@@ -10,7 +10,6 @@ from _pytest.nodes import Item
 from _pytest.stash import StashKey
 import pytest
 
-
 fault_handler_original_stderr_fd_key = StashKey[int]()
 fault_handler_stderr_fd_key = StashKey[int]()
 

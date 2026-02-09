@@ -13,6 +13,7 @@ from bs4.builder import (
 from bs4.builder._htmlparser import BeautifulSoupHTMLParser
 from . import SoupTest, HTMLTreeBuilderSmokeTest
 
+
 class TestHTMLParserTreeBuilder(SoupTest, HTMLTreeBuilderSmokeTest):
 
     default_builder = HTMLParserTreeBuilder
@@ -27,18 +28,17 @@ class TestHTMLParserTreeBuilder(SoupTest, HTMLTreeBuilderSmokeTest):
             # https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=28873
             # https://github.com/guidovranken/python-library-fuzzers/blob/master/corp-html/519e5b4269a01185a0d5e76295251921da2f0700
             # https://github.com/python/cpython/issues/81928
-            b'\n<![\xff\xfe\xfe\xcd\x00',
-
-            #https://github.com/guidovranken/python-library-fuzzers/blob/master/corp-html/de32aa55785be29bbc72a1a8e06b00611fb3d9f8
+            b"\n<![\xff\xfe\xfe\xcd\x00",
+            # https://github.com/guidovranken/python-library-fuzzers/blob/master/corp-html/de32aa55785be29bbc72a1a8e06b00611fb3d9f8
             # https://github.com/python/cpython/issues/78661
             #
-            b'<![n\x00',
+            b"<![n\x00",
             b"<![UNKNOWN[]]>",
         ]
         for markup in bad_markup:
             with pytest.raises(ParserRejectedMarkup):
                 soup = self.soup(markup)
-    
+
     def test_namespaced_system_doctype(self):
         # html.parser can't handle namespaced doctypes, so skip this one.
         pass
@@ -57,8 +57,8 @@ class TestHTMLParserTreeBuilder(SoupTest, HTMLTreeBuilderSmokeTest):
         assert isinstance(loaded.builder, type(tree.builder))
 
     def test_redundant_empty_element_closing_tags(self):
-        self.assert_soup('<br></br><br></br><br></br>', "<br/><br/><br/>")
-        self.assert_soup('</br></br></br>', "")
+        self.assert_soup("<br></br><br></br><br></br>", "<br/><br/><br/>")
+        self.assert_soup("</br></br></br>", "")
 
     def test_empty_element(self):
         # This verifies that any buffered data present when the parser
@@ -72,7 +72,7 @@ class TestHTMLParserTreeBuilder(SoupTest, HTMLTreeBuilderSmokeTest):
         soup = self.soup(markup)
         assert 2 == soup.p.sourceline
         assert 3 == soup.p.sourcepos
-        assert "sourceline" == soup.p.find('sourceline').name
+        assert "sourceline" == soup.p.find("sourceline").name
 
         # You can deactivate this behavior.
         soup = self.soup(markup, store_line_numbers=False)
@@ -88,20 +88,19 @@ class TestHTMLParserTreeBuilder(SoupTest, HTMLTreeBuilderSmokeTest):
         # If you don't provide any particular value for
         # on_duplicate_attribute, later values replace earlier values.
         soup = self.soup(markup)
-        assert "url3" == soup.a['href']
-        assert ["cls"] == soup.a['class']
-        assert "id" == soup.a['id']
-        
+        assert "url3" == soup.a["href"]
+        assert ["cls"] == soup.a["class"]
+        assert "id" == soup.a["id"]
+
         # You can also get this behavior explicitly.
         def assert_attribute(on_duplicate_attribute, expected):
-            soup = self.soup(
-                markup, on_duplicate_attribute=on_duplicate_attribute
-            )
-            assert expected == soup.a['href']
+            soup = self.soup(markup, on_duplicate_attribute=on_duplicate_attribute)
+            assert expected == soup.a["href"]
 
             # Verify that non-duplicate attributes are treated normally.
-            assert ["cls"] == soup.a['class']
-            assert "id" == soup.a['id']
+            assert ["cls"] == soup.a["class"]
+            assert "id" == soup.a["id"]
+
         assert_attribute(None, "url3")
         assert_attribute(BeautifulSoupHTMLParser.REPLACE, "url3")
 
@@ -113,7 +112,8 @@ class TestHTMLParserTreeBuilder(SoupTest, HTMLTreeBuilderSmokeTest):
             if not isinstance(attrs[key], list):
                 attrs[key] = [attrs[key]]
             attrs[key].append(value)
-        assert_attribute(accumulate, ["url1", "url2", "url3"])            
+
+        assert_attribute(accumulate, ["url1", "url2", "url3"])
 
     def test_html5_attributes(self):
         # The html.parser TreeBuilder can convert any entity named in
@@ -121,23 +121,23 @@ class TestHTMLParserTreeBuilder(SoupTest, HTMLTreeBuilderSmokeTest):
         # convert those Unicode characters to a (potentially
         # different) named entity on the way out.
         for input_element, output_unicode, output_element in (
-                ("&RightArrowLeftArrow;", '\u21c4', b'&rlarr;'),
-                ('&models;', '\u22a7', b'&models;'),
-                ('&Nfr;', '\U0001d511', b'&Nfr;'),
-                ('&ngeqq;', '\u2267\u0338', b'&ngeqq;'),
-                ('&not;', '\xac', b'&not;'),
-                ('&Not;', '\u2aec', b'&Not;'),
-                ('&quot;', '"', b'"'),
-                ('&there4;', '\u2234', b'&there4;'),
-                ('&Therefore;', '\u2234', b'&there4;'),
-                ('&therefore;', '\u2234', b'&there4;'),
-                ("&fjlig;", 'fj', b'fj'),                
-                ("&sqcup;", '\u2294', b'&sqcup;'),
-                ("&sqcups;", '\u2294\ufe00', b'&sqcups;'),
-                ("&apos;", "'", b"'"),
-                ("&verbar;", "|", b"|"),
+            ("&RightArrowLeftArrow;", "\u21c4", b"&rlarr;"),
+            ("&models;", "\u22a7", b"&models;"),
+            ("&Nfr;", "\U0001d511", b"&Nfr;"),
+            ("&ngeqq;", "\u2267\u0338", b"&ngeqq;"),
+            ("&not;", "\xac", b"&not;"),
+            ("&Not;", "\u2aec", b"&Not;"),
+            ("&quot;", '"', b'"'),
+            ("&there4;", "\u2234", b"&there4;"),
+            ("&Therefore;", "\u2234", b"&there4;"),
+            ("&therefore;", "\u2234", b"&there4;"),
+            ("&fjlig;", "fj", b"fj"),
+            ("&sqcup;", "\u2294", b"&sqcup;"),
+            ("&sqcups;", "\u2294\ufe00", b"&sqcups;"),
+            ("&apos;", "'", b"'"),
+            ("&verbar;", "|", b"|"),
         ):
-            markup = '<div>%s</div>' % input_element
+            markup = "<div>%s</div>" % input_element
             div = self.soup(markup).div
             without_element = div.encode()
             expect = b"<div>%s</div>" % output_unicode.encode("utf8")

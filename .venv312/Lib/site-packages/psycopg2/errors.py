@@ -1,5 +1,4 @@
-"""Error classes for PostgreSQL error codes
-"""
+"""Error classes for PostgreSQL error codes"""
 
 # psycopg/errors.py - SQLSTATE and DB-API exceptions
 #
@@ -34,5 +33,6 @@ def lookup(code):
 
     Raise `!KeyError` if the code is not found.
     """
-    from psycopg2._psycopg import sqlstate_errors   # avoid circular import
+    from psycopg2._psycopg import sqlstate_errors  # avoid circular import
+
     return sqlstate_errors[code]

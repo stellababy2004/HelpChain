@@ -1,6 +1,7 @@
 import pytest
 import requests
 
+
 # Block all requests to localhost/127.0.0.1 during tests (priority #1)
 @pytest.fixture(autouse=True)
 def _block_requests_to_localhost(monkeypatch):
@@ -8,12 +9,16 @@ def _block_requests_to_localhost(monkeypatch):
 
     def guarded(self, method, url, *args, **kwargs):
         if isinstance(url, str) and ("localhost" in url or "127.0.0.1" in url):
-            raise RuntimeError(f"Blocked external HTTP call during tests: {method} {url}")
+            raise RuntimeError(
+                f"Blocked external HTTP call during tests: {method} {url}"
+            )
         return real_request(self, method, url, *args, **kwargs)
 
     monkeypatch.setattr(requests.sessions.Session, "request", guarded)
 
+
 import pytest
+
 
 # Canonical fixture for authenticated volunteer client
 @pytest.fixture
@@ -24,6 +29,7 @@ def authenticated_volunteer_client(real_app, test_volunteer):
         sess["volunteer_logged_in"] = True
         sess["volunteer_id"] = test_volunteer.id
     return client
+
 
 """
 Early canonicalization guard: attempt to ensure the top-level name `extensions`
@@ -81,8 +87,13 @@ import importlib
 import pytest
 from backend.helpchain_backend.src.app import create_app
 from backend.extensions import db
-print(f"[DB DIAG] conftest.py: id(db)={id(db)}, db.__module__={getattr(db, '__module__', None)}")
-print(f"[DB DIAG] conftest.py: id(db)={id(db)}, db.__module__={getattr(db, '__module__', None)}")
+
+print(
+    f"[DB DIAG] conftest.py: id(db)={id(db)}, db.__module__={getattr(db, '__module__', None)}"
+)
+print(
+    f"[DB DIAG] conftest.py: id(db)={id(db)}, db.__module__={getattr(db, '__module__', None)}"
+)
 
 # Diagnostics: Ensure only one app and one db instance
 _app_instance = None
@@ -93,18 +104,24 @@ import pytest
 from backend.helpchain_backend.src.app import create_app
 from backend.extensions import db
 
+
 @pytest.fixture(scope="function")
 def real_app():
     from backend.helpchain_backend.src.app import create_app
+
     app = create_app({"TESTING": True})
     app.config.setdefault("SECRET_KEY", "test-secret-key")
     # Маркер за fail-fast: каноничен app factory ли е?
     assert app.config.get("APP_FACTORY_MARKER") == "CANONICAL_helpchain_backend_src_app"
     with app.app_context():
         from backend.extensions import db
+
         db.create_all()
         # --- ROUTE DIAGNOSTICS ---
-        print("[ROUTE CHECK] /achievements exists?:", any(r.rule == "/achievements" for r in app.url_map.iter_rules()))
+        print(
+            "[ROUTE CHECK] /achievements exists?:",
+            any(r.rule == "/achievements" for r in app.url_map.iter_rules()),
+        )
         for r in app.url_map.iter_rules():
             if "achiev" in r.rule:
                 print("[ROUTE]", r.rule, "->", r.endpoint)
@@ -119,16 +136,20 @@ def client(real_app):
     print(f"[TEST DIAG] session_interface type: {type(real_app.session_interface)}")
     return real_app.test_client(use_cookies=True)
 
+
 @pytest.fixture(scope="function")
 def db_session(real_app):
     from backend.extensions import db
+
     with real_app.app_context():
         yield db.session
         db.session.rollback()
 
+
 # --- Fix #3B: Seed users ---
 import datetime
 from backend.models import Volunteer, AdminUser, User
+
 
 @pytest.fixture(scope="function")
 def seed_volunteer(db_session):
@@ -141,6 +162,7 @@ def seed_volunteer(db_session):
     db_session.add(volunteer)
     db_session.commit()
     return volunteer
+
 
 @pytest.fixture(scope="function")
 def seed_admin(db_session):
@@ -155,18 +177,26 @@ def seed_admin(db_session):
     db_session.commit()
     return admin
 
+
 # --- Fix #3C: Login helpers ---
 @pytest.fixture(scope="function")
 def login_volunteer(client, seed_volunteer):
-    client.post("/volunteer_login", data={"email": seed_volunteer.email}, follow_redirects=True)
+    client.post(
+        "/volunteer_login", data={"email": seed_volunteer.email}, follow_redirects=True
+    )
     return client
+
 
 @pytest.fixture(scope="function")
 def login_admin(client, seed_admin):
-    client.post("/admin/login", data={"email": seed_admin.email, "password": "test"}, follow_redirects=True)
+    client.post(
+        "/admin/login",
+        data={"email": seed_admin.email, "password": "test"},
+        follow_redirects=True,
+    )
     return client
 
- 
+
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -227,6 +257,7 @@ _tmp_db.close()
 os.environ.setdefault("HELPCHAIN_TEST_DB_PATH", _tmp_db.name)
 
 import pytest
+
 
 # Simple external admin stub server for tests that POST to 127.0.0.1:3000.
 # This avoids ConnectionRefused errors from tests expecting an external admin
@@ -320,6 +351,7 @@ def external_admin_stub():
                 thread.join(timeout=1)
         except Exception:
             pass
+
 
 # Добавяме helpchain-backend (родител на папката src) в началото на sys.path,
 # за да може `import src` да работи
@@ -678,6 +710,7 @@ except Exception as e:
 try:
     import os
     import importlib
+
     db_path = os.environ.get("HELPCHAIN_TEST_DB_PATH")
     if db_path:
         bm = importlib.import_module("backend.models")
@@ -724,8 +757,6 @@ try:
                 pass
 except Exception:
     pass
-
-
 
 
 @pytest.fixture
@@ -971,8 +1002,6 @@ def authenticated_admin_client(real_app, test_admin_user):
         pass
 
     return admin_client
-
-
 
 
 @pytest.fixture

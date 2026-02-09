@@ -31,10 +31,33 @@ dependencies = [
 ]
 [tool.ruff]
 exclude = [
+	".venv",
+	"venv",
 	"vendor",
 	"backend/vendor",
 	"backend/helpchain-backend/vendor",
-	".venv",
-	"venv",
+	"node_modules",
+	"migrations",
+	"dist",
+	"build",
+	"__pycache__",
 	"_vendor",
 ]
+
+[tool.black]
+# Keep CI fast and avoid touching vendored / generated trees.
+exclude = '''
+/(
+  \.venv
+| venv
+| vendor
+| node_modules
+| migrations
+| dist
+| build
+| __pycache__
+| \.git
+| \.ruff_cache
+| \.pytest_cache
+)/
+'''

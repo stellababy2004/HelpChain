@@ -45,7 +45,7 @@ jobs:
         run: ruff check .
 
       - name: Black (check only)
-        run: black --check .
+        run: black --check --diff .
 
       - name: Bandit Security Scan
         run: |

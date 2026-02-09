@@ -56,7 +56,11 @@ class TranslationService:
 
     def get_supported_languages(self) -> list[SupportedLanguage]:
         """Получава всички поддържани езици"""
-        return SupportedLanguage.query.filter_by(is_active=True).order_by(SupportedLanguage.is_default.desc(), SupportedLanguage.name).all()
+        return (
+            SupportedLanguage.query.filter_by(is_active=True)
+            .order_by(SupportedLanguage.is_default.desc(), SupportedLanguage.name)
+            .all()
+        )
 
     def get_language_by_code(self, code: str) -> SupportedLanguage | None:
         """Получава език по код"""
@@ -64,16 +68,24 @@ class TranslationService:
 
     def get_default_language(self) -> SupportedLanguage:
         """Получава default езика"""
-        default = SupportedLanguage.query.filter_by(is_default=True, is_active=True).first()
+        default = SupportedLanguage.query.filter_by(
+            is_default=True, is_active=True
+        ).first()
         if not default:
-            default = SupportedLanguage.query.filter_by(code=self.default_language).first()
+            default = SupportedLanguage.query.filter_by(
+                code=self.default_language
+            ).first()
         return default
 
-    def detect_user_language(self, request_headers: dict = None, user_id: int = None) -> str:
+    def detect_user_language(
+        self, request_headers: dict = None, user_id: int = None
+    ) -> str:
         """Определя предпочитания език на потребителя"""
         # 1. Проверяваме user preferences (ако е логнат)
         if user_id:
-            user_pref = UserLanguagePreference.query.filter_by(volunteer_id=user_id, is_primary=True).first()
+            user_pref = UserLanguagePreference.query.filter_by(
+                volunteer_id=user_id, is_primary=True
+            ).first()
             if user_pref:
                 return user_pref.language.code
 
@@ -209,10 +221,14 @@ class TranslationService:
         cache_key = f"{key}:{language_code}"
         with self.cache_lock:
             cached = self.cache.get(cache_key)
-            if cached and cached["timestamp"] > utc_now() - timedelta(seconds=self.cache_timeout):
+            if cached and cached["timestamp"] > utc_now() - timedelta(
+                seconds=self.cache_timeout
+            ):
                 text = cached["text"]
             else:
-                text = self._fetch_translation_from_db(key, language_code, fallback_to_source)
+                text = self._fetch_translation_from_db(
+                    key, language_code, fallback_to_source
+                )
                 self.cache[cache_key] = {"text": text, "timestamp": utc_now()}
 
         # Обработваме променливите
@@ -221,7 +237,9 @@ class TranslationService:
 
         return text or key  # Fallback към ключа ако няма превод
 
-    def get_translations_batch(self, keys: list[str], language_code: str = None) -> dict[str, str]:
+    def get_translations_batch(
+        self, keys: list[str], language_code: str = None
+    ) -> dict[str, str]:
         """Получава batch от преводи"""
         if not language_code:
             language_code = self.default_language
@@ -234,14 +252,18 @@ class TranslationService:
             for key in keys:
                 cache_key = f"{key}:{language_code}"
                 cached = self.cache.get(cache_key)
-                if cached and cached["timestamp"] > utc_now() - timedelta(seconds=self.cache_timeout):
+                if cached and cached["timestamp"] > utc_now() - timedelta(
+                    seconds=self.cache_timeout
+                ):
                     results[key] = cached["text"]
                 else:
                     uncached_keys.append(key)
 
         # Вземаме некешираните от DB
         if uncached_keys:
-            db_results = self._fetch_translations_batch_from_db(uncached_keys, language_code)
+            db_results = self._fetch_translations_batch_from_db(
+                uncached_keys, language_code
+            )
 
             with self.cache_lock:
                 for key, text in db_results.items():
@@ -254,7 +276,9 @@ class TranslationService:
 
         return results
 
-    def _fetch_translation_from_db(self, key: str, language_code: str, fallback_to_source: bool = True) -> str:
+    def _fetch_translation_from_db(
+        self, key: str, language_code: str, fallback_to_source: bool = True
+    ) -> str:
         """Вземa превод от базата данни"""
         try:
             # Намираме ключа
@@ -303,7 +327,9 @@ class TranslationService:
             print(f"❌ Error fetching translation for {key}: {str(e)}")
             return None
 
-    def _fetch_translations_batch_from_db(self, keys: list[str], language_code: str) -> dict[str, str]:
+    def _fetch_translations_batch_from_db(
+        self, keys: list[str], language_code: str
+    ) -> dict[str, str]:
         """Batch вземане на преводи от DB"""
         try:
             language = self.get_language_by_code(language_code)
@@ -371,7 +397,9 @@ class TranslationService:
                 raise ValueError(f"Language '{language_code}' not supported")
 
             # Проверяваме дали вече има текущ превод
-            existing = Translation.query.filter_by(key_id=translation_key.id, language_id=language.id, is_current=True).first()
+            existing = Translation.query.filter_by(
+                key_id=translation_key.id, language_id=language.id, is_current=True
+            ).first()
 
             if existing:
                 # Деактивираме стария
@@ -469,7 +497,9 @@ class TranslationService:
                 db.session.query(TranslationKey)
                 .outerjoin(
                     Translation,
-                    (Translation.key_id == TranslationKey.id) & (Translation.language_id == target_language.id) & (Translation.is_current),
+                    (Translation.key_id == TranslationKey.id)
+                    & (Translation.language_id == target_language.id)
+                    & (Translation.is_current),
                 )
                 .filter(Translation.id.is_(None))
                 .limit(max_translations)
@@ -480,9 +510,15 @@ class TranslationService:
 
             for key in missing_keys:
                 # Получаваме source текста
-                source_translation = Translation.query.filter_by(key_id=key.id, language_id=source_language.id, is_current=True).first()
+                source_translation = Translation.query.filter_by(
+                    key_id=key.id, language_id=source_language.id, is_current=True
+                ).first()
 
-                source_text = source_translation.translated_text if source_translation else key.source_text
+                source_text = (
+                    source_translation.translated_text
+                    if source_translation
+                    else key.source_text
+                )
 
                 # AI превод
                 ai_translation = self._translate_with_ai(
@@ -518,7 +554,9 @@ class TranslationService:
             print(f"❌ Error in AI translation: {str(e)}")
             return 0
 
-    def _translate_with_ai(self, text: str, target_language: str, source_language: str = "bg") -> dict[str, Any] | None:
+    def _translate_with_ai(
+        self, text: str, target_language: str, source_language: str = "bg"
+    ) -> dict[str, Any] | None:
         """Превежда текст с AI"""
         if not AI_TRANSLATION_AVAILABLE:
             return None
@@ -625,7 +663,9 @@ class TranslationService:
                 db.session.add(result)
 
             db.session.commit()
-            print(f"✅ Content translated: {content_type}:{content_id} ({language_code})")
+            print(
+                f"✅ Content translated: {content_type}:{content_id} ({language_code})"
+            )
             return result
 
         except Exception as e:
@@ -633,7 +673,9 @@ class TranslationService:
             print(f"❌ Error translating content: {str(e)}")
             return None
 
-    def get_content_translation(self, content_type: str, content_id: int, language_code: str) -> ContentTranslation | None:
+    def get_content_translation(
+        self, content_type: str, content_id: int, language_code: str
+    ) -> ContentTranslation | None:
         """Получава превод на съдържание"""
         language = self.get_language_by_code(language_code)
         if not language:
@@ -668,16 +710,22 @@ class TranslationService:
             languages = self.get_supported_languages()
             stats = {
                 "total_keys": TranslationKey.query.filter_by(is_active=True).count(),
-                "total_translations": Translation.query.filter_by(is_current=True).count(),
+                "total_translations": Translation.query.filter_by(
+                    is_current=True
+                ).count(),
                 "languages": [],
             }
 
             for language in languages:
-                lang_translations = Translation.query.filter_by(language_id=language.id, is_current=True).count()
+                lang_translations = Translation.query.filter_by(
+                    language_id=language.id, is_current=True
+                ).count()
 
                 completion_percentage = 0
                 if stats["total_keys"] > 0:
-                    completion_percentage = round((lang_translations / stats["total_keys"]) * 100, 1)
+                    completion_percentage = round(
+                        (lang_translations / stats["total_keys"]) * 100, 1
+                    )
 
                 stats["languages"].append(
                     {

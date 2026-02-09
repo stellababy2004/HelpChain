@@ -38,7 +38,9 @@ def main():
 
         # Create provisioning URI
         totp = pyotp.TOTP(secret)
-        uri = totp.provisioning_uri(name=f"HelpChain Admin ({admin.username})", issuer_name="HelpChain.bg")
+        uri = totp.provisioning_uri(
+            name=f"HelpChain Admin ({admin.username})", issuer_name="HelpChain.bg"
+        )
 
         print("\n📱 За да настроите Microsoft Authenticator:")
         print("1. Отворете Microsoft Authenticator приложението")

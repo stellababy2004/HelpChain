@@ -24,7 +24,10 @@ def migrate_database():
 
             with db.engine.connect() as _conn:
                 inspector = inspect(_conn)
-                columns = [col["name"] for col in inspector.get_columns("chatbot_conversations")]
+                columns = [
+                    col["name"]
+                    for col in inspector.get_columns("chatbot_conversations")
+                ]
 
             ai_columns = [
                 "ai_provider",
@@ -46,27 +49,51 @@ def migrate_database():
             # Добавяме липсващите колони
             with db.engine.connect() as conn:
                 if "ai_provider" not in columns:
-                    conn.execute(db.text("ALTER TABLE chatbot_conversations ADD COLUMN ai_provider VARCHAR(50)"))
+                    conn.execute(
+                        db.text(
+                            "ALTER TABLE chatbot_conversations ADD COLUMN ai_provider VARCHAR(50)"
+                        )
+                    )
                     print("✅ Добавена колона: ai_provider")
 
                 if "ai_model" not in columns:
-                    conn.execute(db.text("ALTER TABLE chatbot_conversations ADD COLUMN ai_model VARCHAR(100)"))
+                    conn.execute(
+                        db.text(
+                            "ALTER TABLE chatbot_conversations ADD COLUMN ai_model VARCHAR(100)"
+                        )
+                    )
                     print("✅ Добавена колона: ai_model")
 
                 if "ai_confidence" not in columns:
-                    conn.execute(db.text("ALTER TABLE chatbot_conversations ADD COLUMN ai_confidence FLOAT"))
+                    conn.execute(
+                        db.text(
+                            "ALTER TABLE chatbot_conversations ADD COLUMN ai_confidence FLOAT"
+                        )
+                    )
                     print("✅ Добавена колона: ai_confidence")
 
                 if "ai_tokens_used" not in columns:
-                    conn.execute(db.text("ALTER TABLE chatbot_conversations ADD COLUMN ai_tokens_used INTEGER"))
+                    conn.execute(
+                        db.text(
+                            "ALTER TABLE chatbot_conversations ADD COLUMN ai_tokens_used INTEGER"
+                        )
+                    )
                     print("✅ Добавена колона: ai_tokens_used")
 
                 if "language_detected" not in columns:
-                    conn.execute(db.text("ALTER TABLE chatbot_conversations ADD COLUMN language_detected VARCHAR(10)"))
+                    conn.execute(
+                        db.text(
+                            "ALTER TABLE chatbot_conversations ADD COLUMN language_detected VARCHAR(10)"
+                        )
+                    )
                     print("✅ Добавена колона: language_detected")
 
                 if "processing_time" not in columns:
-                    conn.execute(db.text("ALTER TABLE chatbot_conversations ADD COLUMN processing_time FLOAT"))
+                    conn.execute(
+                        db.text(
+                            "ALTER TABLE chatbot_conversations ADD COLUMN processing_time FLOAT"
+                        )
+                    )
                     print("✅ Добавена колона: processing_time")
 
                 conn.commit()

@@ -12,16 +12,19 @@ from . import PY312
 # the build with assertions enabled. Otherwise, fallback to detecting PyDEBUG
 # build.
 ASSERTION_BUILD_PY312 = (
-    PY312 and (
+    PY312
+    and (
         "-DNDEBUG" not in sysconfig.get_config_var("OPT").split()
         if sysconfig.get_config_var("OPT") is not None
-        else hasattr(sys, 'gettotalrefcount')
+        else hasattr(sys, "gettotalrefcount")
     ),
-    "Broken on assertion-enabled builds of Python 3.12"
+    "Broken on assertion-enabled builds of Python 3.12",
 )
+
 
 class SomeError(Exception):
     pass
+
 
 class GreenletTracer(object):
     oldtrace = None
@@ -50,8 +53,10 @@ class TestGreenletTracing(TestCase):
 
     def test_a_greenlet_tracing(self):
         main = greenlet.getcurrent()
+
         def dummy():
             pass
+
         def dummyexc():
             raise SomeError()
 
@@ -61,26 +66,34 @@ class TestGreenletTracing(TestCase):
             g2 = greenlet.greenlet(dummyexc)
             self.assertRaises(SomeError, g2.switch)
 
-        self.assertEqual(actions, [
-            ('switch', (main, g1)),
-            ('switch', (g1, main)),
-            ('switch', (main, g2)),
-            ('throw', (g2, main)),
-        ])
+        self.assertEqual(
+            actions,
+            [
+                ("switch", (main, g1)),
+                ("switch", (g1, main)),
+                ("switch", (main, g2)),
+                ("throw", (g2, main)),
+            ],
+        )
 
     def test_b_exception_disables_tracing(self):
         main = greenlet.getcurrent()
+
         def dummy():
             main.switch()
+
         g = greenlet.greenlet(dummy)
         g.switch()
         with GreenletTracer(error_on_trace=True) as actions:
             self.assertRaises(SomeError, g.switch)
             self.assertEqual(greenlet.gettrace(), None)
 
-        self.assertEqual(actions, [
-            ('switch', (main, g)),
-        ])
+        self.assertEqual(
+            actions,
+            [
+                ("switch", (main, g)),
+            ],
+        )
 
     def test_set_same_tracer_twice(self):
         # https://github.com/python-greenlet/greenlet/issues/332
@@ -109,8 +122,10 @@ class PythonTracer(object):
     def __exit__(self, *args):
         sys.setprofile(self.oldtrace)
 
+
 def tpt_callback():
     return 42
+
 
 class TestPythonTracing(TestCase):
     """
@@ -133,13 +148,16 @@ class TestPythonTracing(TestCase):
         #     ('call', '__exit__'),
         # ])
 
-        self.assertEqual(actions, [
-            ('return', '__enter__'),
-            ('call', 'tpt_callback'),
-            ('return', 'tpt_callback'),
-            ('call', '__exit__'),
-            ('c_call', '__exit__'),
-        ])
+        self.assertEqual(
+            actions,
+            [
+                ("return", "__enter__"),
+                ("call", "tpt_callback"),
+                ("return", "tpt_callback"),
+                ("call", "__exit__"),
+                ("c_call", "__exit__"),
+            ],
+        )
 
     def _trace_switch(self, glet):
         with PythonTracer() as actions:
@@ -148,17 +166,20 @@ class TestPythonTracing(TestCase):
 
     def _check_trace_events_func_already_set(self, glet):
         actions = self._trace_switch(glet)
-        self.assertEqual(actions, [
-            ('return', '__enter__'),
-            ('c_call', '_trace_switch'),
-            ('call', 'run'),
-            ('call', 'tpt_callback'),
-            ('return', 'tpt_callback'),
-            ('return', 'run'),
-            ('c_return', '_trace_switch'),
-            ('call', '__exit__'),
-            ('c_call', '__exit__'),
-        ])
+        self.assertEqual(
+            actions,
+            [
+                ("return", "__enter__"),
+                ("c_call", "_trace_switch"),
+                ("call", "run"),
+                ("call", "tpt_callback"),
+                ("return", "tpt_callback"),
+                ("return", "run"),
+                ("c_return", "_trace_switch"),
+                ("call", "__exit__"),
+                ("c_call", "__exit__"),
+            ],
+        )
 
     def test_trace_events_into_greenlet_func_already_set(self):
         def run():
@@ -170,35 +191,41 @@ class TestPythonTracing(TestCase):
         class X(greenlet.greenlet):
             def run(self):
                 return tpt_callback()
+
         self._check_trace_events_func_already_set(X())
 
     def _check_trace_events_from_greenlet_sets_profiler(self, g, tracer):
         g.switch()
         tpt_callback()
         tracer.__exit__()
-        self.assertEqual(tracer.actions, [
-            ('return', '__enter__'),
-            ('call', 'tpt_callback'),
-            ('return', 'tpt_callback'),
-            ('return', 'run'),
-            ('call', 'tpt_callback'),
-            ('return', 'tpt_callback'),
-            ('call', '__exit__'),
-            ('c_call', '__exit__'),
-        ])
-
+        self.assertEqual(
+            tracer.actions,
+            [
+                ("return", "__enter__"),
+                ("call", "tpt_callback"),
+                ("return", "tpt_callback"),
+                ("return", "run"),
+                ("call", "tpt_callback"),
+                ("return", "tpt_callback"),
+                ("call", "__exit__"),
+                ("c_call", "__exit__"),
+            ],
+        )
 
     def test_trace_events_from_greenlet_func_sets_profiler(self):
         tracer = PythonTracer()
+
         def run():
             tracer.__enter__()
             return tpt_callback()
 
-        self._check_trace_events_from_greenlet_sets_profiler(greenlet.greenlet(run),
-                                                             tracer)
+        self._check_trace_events_from_greenlet_sets_profiler(
+            greenlet.greenlet(run), tracer
+        )
 
     def test_trace_events_from_greenlet_subclass_sets_profiler(self):
         tracer = PythonTracer()
+
         class X(greenlet.greenlet):
             def run(self):
                 tracer.__enter__()
@@ -231,18 +258,21 @@ class TestPythonTracing(TestCase):
 
         x = g1.switch()
         self.assertEqual(x, 42)
-        tpt_callback() # ensure not in the trace
-        self.assertEqual(tracer.actions, [
-            ('return', '__enter__'),
-            ('call', 'tpt_callback'),
-            ('return', 'tpt_callback'),
-            ('c_call', 'g1_run'),
-            ('call', 'g2_run'),
-            ('call', 'tpt_callback'),
-            ('return', 'tpt_callback'),
-            ('call', '__exit__'),
-            ('c_call', '__exit__'),
-        ])
+        tpt_callback()  # ensure not in the trace
+        self.assertEqual(
+            tracer.actions,
+            [
+                ("return", "__enter__"),
+                ("call", "tpt_callback"),
+                ("return", "tpt_callback"),
+                ("c_call", "g1_run"),
+                ("call", "g2_run"),
+                ("call", "tpt_callback"),
+                ("return", "tpt_callback"),
+                ("call", "__exit__"),
+                ("c_call", "__exit__"),
+            ],
+        )
 
     @unittest.skipIf(*ASSERTION_BUILD_PY312)
     def test_trace_events_multiple_greenlets_switching_siblings(self):
@@ -282,18 +312,21 @@ class TestPythonTracing(TestCase):
         x = g1.switch()
         self.assertEqual(x, 42)
 
-        tpt_callback() # ensure not in the trace
-        self.assertEqual(tracer.actions, [
-            ('return', '__enter__'),
-            ('call', 'tpt_callback'),
-            ('return', 'tpt_callback'),
-            ('c_call', 'g1_run'),
-            ('call', 'tpt_callback'),
-            ('return', 'tpt_callback'),
-            ('call', '__exit__'),
-            ('c_call', '__exit__'),
-        ])
+        tpt_callback()  # ensure not in the trace
+        self.assertEqual(
+            tracer.actions,
+            [
+                ("return", "__enter__"),
+                ("call", "tpt_callback"),
+                ("return", "tpt_callback"),
+                ("c_call", "g1_run"),
+                ("call", "tpt_callback"),
+                ("return", "tpt_callback"),
+                ("call", "__exit__"),
+                ("c_call", "__exit__"),
+            ],
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

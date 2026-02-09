@@ -15,7 +15,6 @@ from typing import overload
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
-
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -25,7 +24,6 @@ from _pytest.deprecated import check_ispytest
 from _pytest.fixtures import fixture
 from _pytest.outcomes import Exit
 from _pytest.outcomes import fail
-
 
 T = TypeVar("T")
 

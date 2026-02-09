@@ -52,7 +52,9 @@ class AnalyticsCache:
 
                 # Създай unique cache key от параметрите
                 try:
-                    cache_key = f"analytics_{f.__name__}_{hash(str(sorted(kwargs.items())))}"
+                    cache_key = (
+                        f"analytics_{f.__name__}_{hash(str(sorted(kwargs.items())))}"
+                    )
                 except Exception as key_error:
                     # Fallback cache key if hashing fails
                     cache_key = f"analytics_{f.__name__}_fallback_{id(f)}"
@@ -75,7 +77,9 @@ class AnalyticsCache:
 
                 # Try to cache the result
                 try:
-                    cache_timeout = timeout if timeout is not None else self.cache.default_timeout
+                    cache_timeout = (
+                        timeout if timeout is not None else self.cache.default_timeout
+                    )
                     self.cache.set(cache_key, result, timeout=cache_timeout)
                     print(f"Cached result for {cache_key} (timeout: {cache_timeout}s)")
                 except Exception as cache_error:
@@ -397,9 +401,15 @@ class DatabaseOptimizer:
             db.session.commit()
 
             if created_indexes:
-                print("✅ Database indexes verified or created: " + ", ".join(sorted(created_indexes)))
+                print(
+                    "✅ Database indexes verified or created: "
+                    + ", ".join(sorted(created_indexes))
+                )
             if skipped_tables:
-                print("ℹ️  Skipped index creation for missing tables: " + ", ".join(sorted(skipped_tables)))
+                print(
+                    "ℹ️  Skipped index creation for missing tables: "
+                    + ", ".join(sorted(skipped_tables))
+                )
 
             return True
 
@@ -570,7 +580,9 @@ def setup_performance_optimizations(app, db):
 
     # Apply database connection pooling settings
     if "SQLALCHEMY_ENGINE_OPTIONS" not in app.config:
-        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = PERFORMANCE_CONFIG["SQLALCHEMY_ENGINE_OPTIONS"]
+        app.config["SQLALCHEMY_ENGINE_OPTIONS"] = PERFORMANCE_CONFIG[
+            "SQLALCHEMY_ENGINE_OPTIONS"
+        ]
         print("✅ Database connection pooling configured")
 
     # Initialize caching with Redis fallback

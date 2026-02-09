@@ -30,7 +30,16 @@ from werkzeug.security import check_password_hash
 from ..authz import can_view_notification, can_view_request
 from ..category_data import ALIASES, CATEGORIES, COMMON
 from ..extensions import limiter
-from ..models import Notification, Request, RequestActivity, Volunteer, VolunteerAction, canonical_role, db, utc_now
+from ..models import (
+    Notification,
+    Request,
+    RequestActivity,
+    Volunteer,
+    VolunteerAction,
+    canonical_role,
+    db,
+    utc_now,
+)
 from ..models.volunteer_interest import VolunteerInterest
 from ..notifications.inapp import ensure_new_match_notifications
 from ..security_logging import log_security_event
@@ -120,7 +129,9 @@ def is_remote_request(req) -> bool:
     return False
 
 
-def is_request_matching_volunteer(request_obj, volunteer_obj, interested_request_ids: set[int] | None = None):
+def is_request_matching_volunteer(
+    request_obj, volunteer_obj, interested_request_ids: set[int] | None = None
+):
     """MVP matching (V2.2.A): status open + volunteer active + profile complete + not already interested."""
     if not request_obj or not volunteer_obj:
         return False
@@ -132,7 +143,10 @@ def is_request_matching_volunteer(request_obj, volunteer_obj, interested_request
         return False
 
     # profile completeness (location + availability)
-    if not (getattr(volunteer_obj, "location", None) and getattr(volunteer_obj, "availability", None)):
+    if not (
+        getattr(volunteer_obj, "location", None)
+        and getattr(volunteer_obj, "availability", None)
+    ):
         return False
 
     # exclude assigned/archived/deleted
@@ -143,7 +157,10 @@ def is_request_matching_volunteer(request_obj, volunteer_obj, interested_request
     if getattr(request_obj, "deleted_at", None) is not None:
         return False
 
-    if interested_request_ids and getattr(request_obj, "id", None) in interested_request_ids:
+    if (
+        interested_request_ids
+        and getattr(request_obj, "id", None) in interested_request_ids
+    ):
         return False
 
     # Geo/skills matching postponed (later versions)
@@ -156,7 +173,9 @@ def require_volunteer_login(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         if not session.get("volunteer_id"):
-            return redirect(url_for("main.volunteer_login", next=request.full_path), code=303)
+            return redirect(
+                url_for("main.volunteer_login", next=request.full_path), code=303
+            )
         return fn(*args, **kwargs)
 
     return wrapper
@@ -200,7 +219,13 @@ def index():
     """Главна страница"""
     latest_requests = []
     try:
-        latest_requests = Request.query.filter(Request.deleted_at.is_(None)).filter(Request.is_archived == 0).order_by(Request.created_at.desc()).limit(6).all()
+        latest_requests = (
+            Request.query.filter(Request.deleted_at.is_(None))
+            .filter(Request.is_archived == 0)
+            .order_by(Request.created_at.desc())
+            .limit(6)
+            .all()
+        )
     except Exception as e:
         current_app.logger.warning("Home latest_requests skipped: %s", e)
         latest_requests = []
@@ -236,7 +261,9 @@ def logout():
     except Exception:
         pass
     try:
-        remember_cookie = current_app.config.get("REMEMBER_COOKIE_NAME", "remember_token")
+        remember_cookie = current_app.config.get(
+            "REMEMBER_COOKIE_NAME", "remember_token"
+        )
         resp.delete_cookie(remember_cookie, path="/")
     except Exception:
         pass
@@ -247,30 +274,58 @@ def logout():
 @main_bp.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
-    role = getattr(current_user, "role_canon", None) or canonical_role(getattr(current_user, "role", None))
+    role = getattr(current_user, "role_canon", None) or canonical_role(
+        getattr(current_user, "role", None)
+    )
 
     if role in ("admin", "superadmin"):
         return redirect(url_for("admin.admin_requests"))
 
     if role == "requester":
-        my_requests = Request.query.filter(Request.user_id == current_user.id).populate_existing().order_by(desc(Request.created_at)).limit(20).all()
-        counts = dict(((s or "open"), c) for s, c in db.session.query(Request.status, func.count(Request.id)).filter(Request.user_id == current_user.id).group_by(Request.status).all())
+        my_requests = (
+            Request.query.filter(Request.user_id == current_user.id)
+            .populate_existing()
+            .order_by(desc(Request.created_at))
+            .limit(20)
+            .all()
+        )
+        counts = dict(
+            ((s or "open"), c)
+            for s, c in db.session.query(Request.status, func.count(Request.id))
+            .filter(Request.user_id == current_user.id)
+            .group_by(Request.status)
+            .all()
+        )
         kpi = {
             "open": counts.get("open", 0),
             "in_progress": counts.get("in_progress", 0),
             "done": counts.get("done", 0),
             "cancelled": counts.get("cancelled", 0),
         }
-        return render_template("dashboard_requester.html", my_requests=my_requests, kpi=kpi)
+        return render_template(
+            "dashboard_requester.html", my_requests=my_requests, kpi=kpi
+        )
 
     if role in ("volunteer", "professional"):
-        assigned = Request.query.filter(Request.owner_id == current_user.id).populate_existing().order_by(desc(Request.owned_at), desc(Request.created_at)).limit(20).all()
+        assigned = (
+            Request.query.filter(Request.owner_id == current_user.id)
+            .populate_existing()
+            .order_by(desc(Request.owned_at), desc(Request.created_at))
+            .limit(20)
+            .all()
+        )
         for r in assigned:
             try:
                 r.status_norm = normalize_request_status(getattr(r, "status", None))
             except Exception:
                 r.status_norm = getattr(r, "status", None)
-        counts = dict(((s or "open"), c) for s, c in db.session.query(Request.status, func.count(Request.id)).filter(Request.owner_id == current_user.id).group_by(Request.status).all())
+        counts = dict(
+            ((s or "open"), c)
+            for s, c in db.session.query(Request.status, func.count(Request.id))
+            .filter(Request.owner_id == current_user.id)
+            .group_by(Request.status)
+            .all()
+        )
         kpi = {
             "open": counts.get("open", 0),
             "in_progress": counts.get("in_progress", 0),
@@ -286,7 +341,9 @@ def dashboard():
 def profile():
     # Authenticated users: route by role
     if getattr(current_user, "is_authenticated", False):
-        role = getattr(current_user, "role_canon", None) or canonical_role(getattr(current_user, "role", None))
+        role = getattr(current_user, "role_canon", None) or canonical_role(
+            getattr(current_user, "role", None)
+        )
         if role in ("admin", "superadmin"):
             return redirect(url_for("admin.admin_requests"))
         if role in ("volunteer", "professional"):
@@ -297,8 +354,18 @@ def profile():
     if not requester_email:
         return redirect(url_for("main.submit_request"))
 
-    my_requests = Request.query.filter(func.lower(Request.email) == requester_email).order_by(desc(Request.created_at)).limit(20).all()
-    rows = db.session.query(Request.status, func.count(Request.id)).filter(func.lower(Request.email) == requester_email).group_by(Request.status).all()
+    my_requests = (
+        Request.query.filter(func.lower(Request.email) == requester_email)
+        .order_by(desc(Request.created_at))
+        .limit(20)
+        .all()
+    )
+    rows = (
+        db.session.query(Request.status, func.count(Request.id))
+        .filter(func.lower(Request.email) == requester_email)
+        .group_by(Request.status)
+        .all()
+    )
     counts = {(s or "open"): c for s, c in rows}
     kpi = {
         "open": counts.get("open", 0),
@@ -306,7 +373,12 @@ def profile():
         "done": counts.get("done", 0),
         "cancelled": counts.get("cancelled", 0),
     }
-    return render_template("profile_requester.html", kpi=kpi, my_requests=my_requests, requester_email=requester_email)
+    return render_template(
+        "profile_requester.html",
+        kpi=kpi,
+        my_requests=my_requests,
+        requester_email=requester_email,
+    )
 
 
 @main_bp.get("/requester/logout")
@@ -319,7 +391,11 @@ def requester_logout():
 @main_bp.get("/r/<token>")
 def requester_magic_profile(token: str):
     token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
-    reqs = Request.query.filter(Request.requester_token_hash == token_hash).order_by(desc(Request.created_at)).all()
+    reqs = (
+        Request.query.filter(Request.requester_token_hash == token_hash)
+        .order_by(desc(Request.created_at))
+        .all()
+    )
     if not reqs:
         abort(404)
 
@@ -391,7 +467,12 @@ def categories():
     def pick_locale(values):
         if not isinstance(values, dict):
             return values
-        return values.get(locale_code) or values.get("en") or values.get("bg") or next(iter(values.values()), "")
+        return (
+            values.get(locale_code)
+            or values.get("en")
+            or values.get("bg")
+            or next(iter(values.values()), "")
+        )
 
     items = []
     for key, value in CATEGORIES.items():
@@ -400,8 +481,12 @@ def categories():
                 "slug": key,
                 "name": pick_locale(value.get("content", {}).get("title", {})),
                 "description": pick_locale(value.get("content", {}).get("intro", {})),
-                "icon": value["ui"].get("icon", "fa-solid fa-question-circle text-secondary"),
-                "color": "primary" if value["ui"].get("severity") != "critical" else "danger",
+                "icon": value["ui"].get(
+                    "icon", "fa-solid fa-question-circle text-secondary"
+                ),
+                "color": (
+                    "primary" if value["ui"].get("severity") != "critical" else "danger"
+                ),
             }
         )
     return render_template("all_categories.html", categories=items)
@@ -435,9 +520,13 @@ def volunteer_login():
 
         generic_msg = _("If the email is valid, you will receive a login link.")
 
-        log_security_event("magic_link_requested", actor_type="anonymous", meta={"flow": "volunteer"})
+        log_security_event(
+            "magic_link_requested", actor_type="anonymous", meta={"flow": "volunteer"}
+        )
 
-        if current_app.config.get("VOLUNTEER_DEV_BYPASS_ENABLED") and email == current_app.config.get("VOLUNTEER_DEV_BYPASS_EMAIL"):
+        if current_app.config.get(
+            "VOLUNTEER_DEV_BYPASS_ENABLED"
+        ) and email == current_app.config.get("VOLUNTEER_DEV_BYPASS_EMAIL"):
             v = Volunteer.query.filter_by(email=email).first()
             if not v:
                 v = Volunteer(email=email, is_active=True)
@@ -447,7 +536,9 @@ def volunteer_login():
             session.clear()
             session["volunteer_id"] = v.id
             session["volunteer_logged_in"] = True
-            log_security_event("volunteer_dev_bypass_login", actor_type="volunteer", actor_id=v.id)
+            log_security_event(
+                "volunteer_dev_bypass_login", actor_type="volunteer", actor_id=v.id
+            )
             return redirect(url_for("main.volunteer_dashboard"))
 
         if not email:
@@ -475,10 +566,18 @@ def volunteer_login():
         return redirect(target, code=303)
 
     prefill_email = ""
-    if current_app.config.get("VOLUNTEER_DEV_BYPASS_ENABLED") and request.args.get("dev") == "1":
+    if (
+        current_app.config.get("VOLUNTEER_DEV_BYPASS_ENABLED")
+        and request.args.get("dev") == "1"
+    ):
         prefill_email = current_app.config.get("VOLUNTEER_DEV_BYPASS_EMAIL") or ""
 
-    return render_template("volunteer_login.html", minimal_page=True, prefill_email=prefill_email), 200
+    return (
+        render_template(
+            "volunteer_login.html", minimal_page=True, prefill_email=prefill_email
+        ),
+        200,
+    )
 
     return render_template("volunteer_login.html", minimal_page=True), 200
 
@@ -500,14 +599,23 @@ def become_volunteer():
 
     not_required_items = [
         ("fas fa-ban", _("Да поемаш рискове или да заместваш спешни служби.")),
-        ("fas fa-shield-alt", _("Да помагаш, ако не се чувстваш комфортно или безопасно.")),
-        ("fas fa-hand-paper", _("Да приемаш задължителни ангажименти - отказът винаги е приемлив.")),
+        (
+            "fas fa-shield-alt",
+            _("Да помагаш, ако не се чувстваш комфортно или безопасно."),
+        ),
+        (
+            "fas fa-hand-paper",
+            _("Да приемаш задължителни ангажименти - отказът винаги е приемлив."),
+        ),
     ]
 
-    return render_template(
-        "become_volunteer.html",
-        not_required_items=not_required_items,
-    ), 200
+    return (
+        render_template(
+            "become_volunteer.html",
+            not_required_items=not_required_items,
+        ),
+        200,
+    )
 
 
 @main_bp.get("/volunteer/confirmation")
@@ -558,21 +666,36 @@ def volunteer_dashboard():
     if not volunteer:
         return redirect(url_for("main.volunteer_login", next=request.path))
     if not getattr(volunteer, "volunteer_onboarded", False):
-        return redirect(url_for("main.volunteer_onboarding", next=request.full_path), code=303)
+        return redirect(
+            url_for("main.volunteer_onboarding", next=request.full_path), code=303
+        )
 
     just_logged_in = session.pop("just_logged_in", None)
 
     open_requests = Request.query.filter_by(status="open").all()
 
-    my_interest_req_ids = set(rid for (rid,) in db.session.query(VolunteerInterest.request_id).filter(VolunteerInterest.volunteer_id == volunteer.id).all())
+    my_interest_req_ids = set(
+        rid
+        for (rid,) in db.session.query(VolunteerInterest.request_id)
+        .filter(VolunteerInterest.volunteer_id == volunteer.id)
+        .all()
+    )
 
     # Show matches even if the volunteer already expressed interest.
     # The dashboard will reflect interest status via badges/CTAs.
-    matched_requests = [r for r in open_requests if is_request_matching_volunteer(r, volunteer, interested_request_ids=None)]
+    matched_requests = [
+        r
+        for r in open_requests
+        if is_request_matching_volunteer(r, volunteer, interested_request_ids=None)
+    ]
 
     # V2.2.A — in-app notification: create once per (volunteer, request)
     # Only for "fresh" matches (no interest yet).
-    candidate_requests = [r for r in matched_requests if getattr(r, "id", None) and r.id not in my_interest_req_ids]
+    candidate_requests = [
+        r
+        for r in matched_requests
+        if getattr(r, "id", None) and r.id not in my_interest_req_ids
+    ]
     if candidate_requests:
         matched_ids = [r.id for r in candidate_requests if getattr(r, "id", None)]
 
@@ -666,14 +789,23 @@ def volunteer_dashboard():
             req_status = normalize_request_status(getattr(req, "status", None))
         except Exception:
             req_status = (getattr(req, "status", None) or "").lower()
-        if not my_first_closed_req and req_status in {"closed", "done", "completed", "resolved"}:
+        if not my_first_closed_req and req_status in {
+            "closed",
+            "done",
+            "completed",
+            "resolved",
+        }:
             my_first_closed_req = row
 
     # --- Generate match notifications lazily (MVP) ---
     profile_complete = bool(volunteer.location) and bool(volunteer.availability)
     if volunteer.is_active and profile_complete:
-        eligible_matches = [r for r in matched_requests if r.id not in my_interest_req_ids]
-        ensure_new_match_notifications(volunteer_id=volunteer.id, request_rows=eligible_matches)
+        eligible_matches = [
+            r for r in matched_requests if r.id not in my_interest_req_ids
+        ]
+        ensure_new_match_notifications(
+            volunteer_id=volunteer.id, request_rows=eligible_matches
+        )
 
     current_app.logger.info(
         "Matching check",
@@ -685,11 +817,23 @@ def volunteer_dashboard():
 
     csrf_form = CSRFOnlyForm()
 
-    actions = db.session.query(VolunteerAction.request_id, VolunteerAction.action).filter(VolunteerAction.volunteer_id == volunteer.id).all()
+    actions = (
+        db.session.query(VolunteerAction.request_id, VolunteerAction.action)
+        .filter(VolunteerAction.volunteer_id == volunteer.id)
+        .all()
+    )
     my_actions_by_req_id = {rid: act for rid, act in actions}
 
-    unread_match_notifications = Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False, type="new_match").order_by(Notification.created_at.desc()).all()
-    unread_count = Notification.query.filter_by(volunteer_id=volunteer.id, is_read=False).count()
+    unread_match_notifications = (
+        Notification.query.filter_by(
+            volunteer_id=volunteer.id, is_read=False, type="new_match"
+        )
+        .order_by(Notification.created_at.desc())
+        .all()
+    )
+    unread_count = Notification.query.filter_by(
+        volunteer_id=volunteer.id, is_read=False
+    ).count()
 
     # --- In-app notifications (V2.2.A) ---
     locale_code = str(babel_get_locale())[:2]
@@ -757,7 +901,10 @@ def volunteer_dashboard():
                 "title": notif_lang["help_accepted"]["title"],
                 "body": notif_lang["help_accepted"]["body"],
                 "cta_label": notif_lang["help_accepted"]["cta"],
-                "cta_href": url_for("main.volunteer_request_details", req_id=my_first_approved_req["req"].id),
+                "cta_href": url_for(
+                    "main.volunteer_request_details",
+                    req_id=my_first_approved_req["req"].id,
+                ),
                 "tone": "success",
             }
         )
@@ -782,28 +929,33 @@ def volunteer_dashboard():
                 "title": notif_lang["new_match"]["title"],
                 "body": notif_lang["new_match"]["body"],
                 "cta_label": notif_lang["new_match"]["cta"],
-                "cta_href": url_for("main.volunteer_request_details", req_id=first_match.request_id),
+                "cta_href": url_for(
+                    "main.volunteer_request_details", req_id=first_match.request_id
+                ),
                 "tone": "primary",
             }
         )
         badge_count = 1
 
-    return render_template(
-        "volunteer_dashboard.html",
-        volunteer=volunteer,
-        matches=matched_requests,
-        just_logged_in=bool(just_logged_in),
-        pending_ids=pending_ids,
-        interest_by_req_id=interest_by_req_id,
-        my_pending=my_pending,
-        my_approved=my_approved,
-        my_rejected=my_rejected,
-        notifications=notifications,
-        volunteer_badge_count=badge_count,
-        unread_count=unread_count,
-        my_actions_by_req_id=my_actions_by_req_id,
-        csrf_form=csrf_form,
-    ), 200
+    return (
+        render_template(
+            "volunteer_dashboard.html",
+            volunteer=volunteer,
+            matches=matched_requests,
+            just_logged_in=bool(just_logged_in),
+            pending_ids=pending_ids,
+            interest_by_req_id=interest_by_req_id,
+            my_pending=my_pending,
+            my_approved=my_approved,
+            my_rejected=my_rejected,
+            notifications=notifications,
+            volunteer_badge_count=badge_count,
+            unread_count=unread_count,
+            my_actions_by_req_id=my_actions_by_req_id,
+            csrf_form=csrf_form,
+        ),
+        200,
+    )
 
 
 @main_bp.get("/volunteer/requests/<int:req_id>")
@@ -825,7 +977,11 @@ def volunteer_request_details(req_id: int):
     if not can_view_request(volunteer, req, db):
         abort(404)
 
-    vi = VolunteerInterest.query.filter_by(volunteer_id=volunteer.id, request_id=req.id).order_by(VolunteerInterest.id.desc()).first()
+    vi = (
+        VolunteerInterest.query.filter_by(volunteer_id=volunteer.id, request_id=req.id)
+        .order_by(VolunteerInterest.id.desc())
+        .first()
+    )
 
     already_pending = bool(vi and vi.status == "pending")
     already_approved = bool(vi and vi.status == "approved")
@@ -835,11 +991,19 @@ def volunteer_request_details(req_id: int):
     except Exception:
         status_norm = getattr(req, "status", None)
 
-    action_row = VolunteerAction.query.filter_by(request_id=req.id, volunteer_id=volunteer.id).one_or_none()
+    action_row = VolunteerAction.query.filter_by(
+        request_id=req.id, volunteer_id=volunteer.id
+    ).one_or_none()
     # Keep a single "last signal" object for the template (CAN_HELP / CANT_HELP).
     # This is effectively 1 row due to uq_volunteer_action_request_volunteer.
     my_last_signal = (
-        VolunteerAction.query.filter_by(request_id=req.id, volunteer_id=volunteer.id).order_by(VolunteerAction.updated_at.desc(), VolunteerAction.created_at.desc(), VolunteerAction.id.desc()).first()
+        VolunteerAction.query.filter_by(request_id=req.id, volunteer_id=volunteer.id)
+        .order_by(
+            VolunteerAction.updated_at.desc(),
+            VolunteerAction.created_at.desc(),
+            VolunteerAction.id.desc(),
+        )
+        .first()
     )
 
     # опционален контрол: показваме само ако е match/отворена
@@ -848,7 +1012,12 @@ def volunteer_request_details(req_id: int):
 
     # Mark related match notification as read (if any)
     try:
-        changed = Notification.query.filter_by(volunteer_id=volunteer.id, request_id=req.id, type="new_match", is_read=False).update({"is_read": True, "read_at": datetime.utcnow()})
+        changed = Notification.query.filter_by(
+            volunteer_id=volunteer.id,
+            request_id=req.id,
+            type="new_match",
+            is_read=False,
+        ).update({"is_read": True, "read_at": datetime.utcnow()})
         if changed:
             db.session.commit()
     except Exception:
@@ -856,21 +1025,24 @@ def volunteer_request_details(req_id: int):
 
     csrf_form = CSRFOnlyForm()
 
-    return render_template(
-        "volunteer_request_details.html",
-        req=req,
-        volunteer=volunteer,
-        status_norm=status_norm,
-        is_pending=already_pending,
-        already_pending=already_pending,
-        already_approved=already_approved,
-        already_rejected=already_rejected,
-        is_demo=False,
-        volunteer_action=action_row,
-        my_last_signal=my_last_signal,
-        my_signal=my_last_signal,  # alias for template clarity/back-compat
-        csrf_form=csrf_form,
-    ), 200
+    return (
+        render_template(
+            "volunteer_request_details.html",
+            req=req,
+            volunteer=volunteer,
+            status_norm=status_norm,
+            is_pending=already_pending,
+            already_pending=already_pending,
+            already_approved=already_approved,
+            already_rejected=already_rejected,
+            is_demo=False,
+            volunteer_action=action_row,
+            my_last_signal=my_last_signal,
+            my_signal=my_last_signal,  # alias for template clarity/back-compat
+            csrf_form=csrf_form,
+        ),
+        200,
+    )
 
 
 @main_bp.get("/volunteer/requests/demo")
@@ -886,16 +1058,19 @@ def volunteer_request_demo():
         created_at="току-що",
         description="Човек търси помощ за документи и насоки къде да ги подаде.",
     )
-    return render_template(
-        "volunteer_request_details.html",
-        req=demo_req,
-        volunteer=volunteer,
-        is_pending=already_pending,
-        already_pending=already_pending,
-        already_approved=False,
-        already_rejected=False,
-        is_demo=True,
-    ), 200
+    return (
+        render_template(
+            "volunteer_request_details.html",
+            req=demo_req,
+            volunteer=volunteer,
+            is_pending=already_pending,
+            already_pending=already_pending,
+            already_approved=False,
+            already_rejected=False,
+            is_demo=True,
+        ),
+        200,
+    )
 
 
 @main_bp.post("/volunteer/requests/<int:req_id>/help")
@@ -912,7 +1087,9 @@ def volunteer_help(req_id: int):
     if not req:
         abort(404)
 
-    interest = VolunteerInterest.query.filter_by(volunteer_id=volunteer.id, request_id=req.id).one_or_none()
+    interest = VolunteerInterest.query.filter_by(
+        volunteer_id=volunteer.id, request_id=req.id
+    ).one_or_none()
 
     if interest is None:
         interest = VolunteerInterest(
@@ -924,16 +1101,22 @@ def volunteer_help(req_id: int):
     else:
         interest.status = "pending"
 
-    current_app.logger.info("VOL_HELP about to commit volunteer_id=%s request_id=%s", volunteer.id, req.id)
+    current_app.logger.info(
+        "VOL_HELP about to commit volunteer_id=%s request_id=%s", volunteer.id, req.id
+    )
     db.session.commit()
-    current_app.logger.info("VOL_HELP committed interest_id=%s status=%s", interest.id, interest.status)
+    current_app.logger.info(
+        "VOL_HELP committed interest_id=%s status=%s", interest.id, interest.status
+    )
 
     if request.headers.get("X-Requested-With") == "fetch":
         return jsonify({"ok": True, "status": interest.status})
 
     # Clear match notification when volunteer expresses interest
     try:
-        Notification.query.filter_by(volunteer_id=volunteer.id, request_id=req.id, type="new_match").update({"is_read": True, "read_at": datetime.utcnow()})
+        Notification.query.filter_by(
+            volunteer_id=volunteer.id, request_id=req.id, type="new_match"
+        ).update({"is_read": True, "read_at": datetime.utcnow()})
         db.session.commit()
     except Exception:
         db.session.rollback()
@@ -944,7 +1127,9 @@ def volunteer_help(req_id: int):
 
 def _upsert_volunteer_action(req_obj, volunteer, action_value: str):
     """Create or update a volunteer action signal for a request."""
-    row = VolunteerAction.query.filter_by(request_id=req_obj.id, volunteer_id=volunteer.id).one_or_none()
+    row = VolunteerAction.query.filter_by(
+        request_id=req_obj.id, volunteer_id=volunteer.id
+    ).one_or_none()
     old_action = getattr(row, "action", None) if row else None
     if row is None:
         row = VolunteerAction(
@@ -1022,20 +1207,30 @@ def volunteer_notifications():
         return redirect(url_for("main.volunteer_login"))
 
     # Volunteer UI: notifications are primarily keyed by `volunteer_id`.
-    owner_col = getattr(Notification, "volunteer_id", None) or getattr(Notification, "user_id", None)
+    owner_col = getattr(Notification, "volunteer_id", None) or getattr(
+        Notification, "user_id", None
+    )
     if owner_col is None:
         abort(500)
-    notifs = Notification.query.filter(owner_col == volunteer.id).order_by(Notification.created_at.desc()).limit(50).all()
+    notifs = (
+        Notification.query.filter(owner_col == volunteer.id)
+        .order_by(Notification.created_at.desc())
+        .limit(50)
+        .all()
+    )
     unread_count = Notification.query.filter(
         owner_col == volunteer.id,
         Notification.is_read == False,  # noqa: E712
     ).count()
 
-    return render_template(
-        "volunteer_notifications.html",
-        notifications=notifs,
-        unread_count=unread_count,
-    ), 200
+    return (
+        render_template(
+            "volunteer_notifications.html",
+            notifications=notifs,
+            unread_count=unread_count,
+        ),
+        200,
+    )
 
 
 @main_bp.post("/volunteer/notifications/<int:notif_id>/open")
@@ -1076,7 +1271,9 @@ def volunteer_profile():
         return redirect(url_for("main.volunteer_login", next=request.path))
 
     if request.method == "POST":
-        current_app.logger.info("VOL PROFILE SAVE location=%s", request.form.get("location"))
+        current_app.logger.info(
+            "VOL PROFILE SAVE location=%s", request.form.get("location")
+        )
         for field in (
             "name",
             "email",
@@ -1179,7 +1376,9 @@ def normalize_request_form(form):
     """
     category = (form.get("category") or form.get("type") or "").strip().lower()
     urgency = (form.get("urgency") or form.get("priority") or "").strip().lower()
-    description = (form.get("description") or form.get("problem") or form.get("message") or "").strip()
+    description = (
+        form.get("description") or form.get("problem") or form.get("message") or ""
+    ).strip()
     return category, urgency, description
 
 
@@ -1197,17 +1396,31 @@ def submit_request():
     if request.method == "POST":
         current_app.logger.warning("SUBMIT_REQUEST POST hit")
         current_app.logger.warning("Form keys=%s", list(request.form.keys()))
-        current_app.logger.warning("website(honeypot)='%s'", (request.form.get("website") or "").strip())
+        current_app.logger.warning(
+            "website(honeypot)='%s'", (request.form.get("website") or "").strip()
+        )
         # Honeypot anti-bot field (ако се задейства, искам да го ВИДИШ)
         website = (request.form.get("website") or "").strip()
         if website:
-            current_app.logger.warning("Honeypot triggered on submit_request: website=%r", website)
+            current_app.logger.warning(
+                "Honeypot triggered on submit_request: website=%r", website
+            )
             # Pretend success to avoid bot feedback loops
-            return render_template("submit_request.html", trust_items=trust_items, success=True), 200
+            return (
+                render_template(
+                    "submit_request.html", trust_items=trust_items, success=True
+                ),
+                200,
+            )
 
         consent = (request.form.get("privacy_consent") or "").strip()
         if consent != "1":
-            flash(_("Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."), "warning")
+            flash(
+                _(
+                    "Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."
+                ),
+                "warning",
+            )
             return redirect(url_for("main.submit_request"))
 
         category, urgency, description = normalize_request_form(request.form)
@@ -1226,7 +1439,9 @@ def submit_request():
         name = (request.form.get("name") or "").strip()
         phone = (request.form.get("phone") or "").strip()
         email = (request.form.get("email") or "").strip()
-        location_text = (request.form.get("location_text") or request.form.get("location") or "").strip()
+        location_text = (
+            request.form.get("location_text") or request.form.get("location") or ""
+        ).strip()
         title = (request.form.get("title") or "").strip()
 
         current_app.logger.warning(
@@ -1255,8 +1470,16 @@ def submit_request():
             ("location", location_text, MAX_LOCATION_LEN),
         ):
             if len(value) > max_len:
-                current_app.logger.warning("VALIDATION FAIL: %s too long (%s > %s)", label, len(value), max_len)
-                flash(_("Please shorten the %(field)s.", field=_("text") if label == "description" else label), "error")
+                current_app.logger.warning(
+                    "VALIDATION FAIL: %s too long (%s > %s)", label, len(value), max_len
+                )
+                flash(
+                    _(
+                        "Please shorten the %(field)s.",
+                        field=_("text") if label == "description" else label,
+                    ),
+                    "error",
+                )
                 return redirect(url_for("main.submit_request"))
 
         for label, value in (
@@ -1266,7 +1489,9 @@ def submit_request():
             ("location_text", location_text),
         ):
             if has_control_chars(value):
-                current_app.logger.warning("VALIDATION FAIL: control chars in %s", label)
+                current_app.logger.warning(
+                    "VALIDATION FAIL: control chars in %s", label
+                )
                 flash(_("Invalid characters detected."), "error")
                 return redirect(url_for("main.submit_request"))
 
@@ -1378,9 +1603,13 @@ def submit_request_confirm():
                     "magic_url": magic_url,
                     "request_id": req.id,
                 }
-                send_notification_email(recipient, subject, "email_template.html", context)
+                send_notification_email(
+                    recipient, subject, "email_template.html", context
+                )
         except ModuleNotFoundError:
-            current_app.logger.info("[EMAIL] mail_service not configured; magic link email skipped (dev mode)")
+            current_app.logger.info(
+                "[EMAIL] mail_service not configured; magic link email skipped (dev mode)"
+            )
         except Exception as e:
             current_app.logger.warning("[EMAIL] magic link send failed: %s", e)
 
@@ -1389,10 +1618,18 @@ def submit_request_confirm():
 
         category = draft.get("category")
         urgency = draft.get("urgency")
-        is_emergency = category in ("emergency", "urgent") or urgency in ("critical", "emergency", "urgent")
+        is_emergency = category in ("emergency", "urgent") or urgency in (
+            "critical",
+            "emergency",
+            "urgent",
+        )
 
         app = current_app._get_current_object()
-        if is_emergency and hasattr(app, "can_send_emergency_email") and app.can_send_emergency_email():
+        if (
+            is_emergency
+            and hasattr(app, "can_send_emergency_email")
+            and app.can_send_emergency_email()
+        ):
             if hasattr(app, "send_emergency_email"):
                 app.send_emergency_email(req)
             if hasattr(app, "mark_emergency_email_sent"):
@@ -1417,7 +1654,10 @@ def submit_request_confirm():
 def success():
     request_id = request.args.get("request_id") or session.get("last_request_id")
     is_admin = bool(session.get("admin_logged_in"))
-    return render_template("success.html", request_id=request_id, is_admin=is_admin), 200
+    return (
+        render_template("success.html", request_id=request_id, is_admin=is_admin),
+        200,
+    )
 
 
 @main_bp.get("/pilot", endpoint="pilot")
@@ -1428,35 +1668,105 @@ def pilot_dashboard():
 
     not_deleted = Request.deleted_at.is_(None)
 
-    total_requests = db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
-
-    open_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"])).scalar() or 0
-
-    closed_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.in_(["done", "rejected"])).scalar() or 0
-
-    closed_last_7d = db.session.query(func.count(Request.id)).filter(not_deleted, Request.completed_at.isnot(None), Request.completed_at >= week_ago).scalar() or 0
-
-    avg_resolution_hours = (
-        db.session.query(func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0)
-        .filter(not_deleted, Request.completed_at.isnot(None), Request.created_at.isnot(None))
-        .scalar()
+    total_requests = (
+        db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
     )
-    avg_resolution_hours = float(avg_resolution_hours) if avg_resolution_hours is not None else None
 
-    unassigned_48h = (
-        db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"]), Request.owner_id.is_(None), Request.created_at <= (now - timedelta(days=2))).scalar()
+    open_requests = (
+        db.session.query(func.count(Request.id))
+        .filter(not_deleted, Request.status.notin_(["done", "rejected"]))
+        .scalar()
         or 0
     )
 
-    stale_7d = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"]), Request.created_at <= (now - timedelta(days=7))).scalar() or 0
+    closed_requests = (
+        db.session.query(func.count(Request.id))
+        .filter(not_deleted, Request.status.in_(["done", "rejected"]))
+        .scalar()
+        or 0
+    )
 
-    high_open = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"]), Request.priority == "high").scalar() or 0
+    closed_last_7d = (
+        db.session.query(func.count(Request.id))
+        .filter(
+            not_deleted,
+            Request.completed_at.isnot(None),
+            Request.completed_at >= week_ago,
+        )
+        .scalar()
+        or 0
+    )
 
-    status_rows = db.session.query(Request.status, func.count(Request.id)).filter(not_deleted).group_by(Request.status).order_by(func.count(Request.id).desc()).all()
+    avg_resolution_hours = (
+        db.session.query(
+            func.avg(
+                func.julianday(Request.completed_at)
+                - func.julianday(Request.created_at)
+            )
+            * 24.0
+        )
+        .filter(
+            not_deleted,
+            Request.completed_at.isnot(None),
+            Request.created_at.isnot(None),
+        )
+        .scalar()
+    )
+    avg_resolution_hours = (
+        float(avg_resolution_hours) if avg_resolution_hours is not None else None
+    )
+
+    unassigned_48h = (
+        db.session.query(func.count(Request.id))
+        .filter(
+            not_deleted,
+            Request.status.notin_(["done", "rejected"]),
+            Request.owner_id.is_(None),
+            Request.created_at <= (now - timedelta(days=2)),
+        )
+        .scalar()
+        or 0
+    )
+
+    stale_7d = (
+        db.session.query(func.count(Request.id))
+        .filter(
+            not_deleted,
+            Request.status.notin_(["done", "rejected"]),
+            Request.created_at <= (now - timedelta(days=7)),
+        )
+        .scalar()
+        or 0
+    )
+
+    high_open = (
+        db.session.query(func.count(Request.id))
+        .filter(
+            not_deleted,
+            Request.status.notin_(["done", "rejected"]),
+            Request.priority == "high",
+        )
+        .scalar()
+        or 0
+    )
+
+    status_rows = (
+        db.session.query(Request.status, func.count(Request.id))
+        .filter(not_deleted)
+        .group_by(Request.status)
+        .order_by(func.count(Request.id).desc())
+        .all()
+    )
     status_labels = [r[0] or "unknown" for r in status_rows]
     status_counts = [int(r[1]) for r in status_rows]
 
-    cat_rows = db.session.query(Request.category, func.count(Request.id)).filter(not_deleted).group_by(Request.category).order_by(func.count(Request.id).desc()).all()
+    cat_rows = (
+        db.session.query(Request.category, func.count(Request.id))
+        .filter(not_deleted)
+        .group_by(Request.category)
+        .order_by(func.count(Request.id).desc())
+        .all()
+    )
     cat_labels = [r[0] or "unknown" for r in cat_rows]
     cat_counts = [int(r[1]) for r in cat_rows]
 
@@ -1470,7 +1780,12 @@ def pilot_dashboard():
     trend_dates = [str(r[0]) for r in trend_rows]
     trend_counts = [int(r[1]) for r in trend_rows]
 
-    total_volunteers = db.session.query(func.count(Volunteer.id)).filter(Volunteer.is_active.is_(True)).scalar() or 0
+    total_volunteers = (
+        db.session.query(func.count(Volunteer.id))
+        .filter(Volunteer.is_active.is_(True))
+        .scalar()
+        or 0
+    )
     countries = len(COUNTRIES_SUPPORTED)
 
     impact = {
@@ -1504,11 +1819,33 @@ def pilot_dashboard():
 def pilot_metrics():
     not_deleted = Request.deleted_at.is_(None)
 
-    total_requests = db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
-    open_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.notin_(["done", "rejected"])).scalar() or 0
-    helped_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status == "done").scalar() or 0
-    closed_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.in_(["done", "rejected"])).scalar() or 0
-    total_volunteers = db.session.query(func.count(Volunteer.id)).filter(Volunteer.is_active.is_(True)).scalar() or 0
+    total_requests = (
+        db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
+    )
+    open_requests = (
+        db.session.query(func.count(Request.id))
+        .filter(not_deleted, Request.status.notin_(["done", "rejected"]))
+        .scalar()
+        or 0
+    )
+    helped_requests = (
+        db.session.query(func.count(Request.id))
+        .filter(not_deleted, Request.status == "done")
+        .scalar()
+        or 0
+    )
+    closed_requests = (
+        db.session.query(func.count(Request.id))
+        .filter(not_deleted, Request.status.in_(["done", "rejected"]))
+        .scalar()
+        or 0
+    )
+    total_volunteers = (
+        db.session.query(func.count(Volunteer.id))
+        .filter(Volunteer.is_active.is_(True))
+        .scalar()
+        or 0
+    )
     countries = len(COUNTRIES_SUPPORTED)
 
     impact = {
@@ -1528,11 +1865,26 @@ def pilot_kpi_api():
     # v1: marketing-safe counters (read-only)
     not_deleted = Request.deleted_at.is_(None)
 
-    helped_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status == "done").scalar() or 0
+    helped_requests = (
+        db.session.query(func.count(Request.id))
+        .filter(not_deleted, Request.status == "done")
+        .scalar()
+        or 0
+    )
 
-    closed_requests = db.session.query(func.count(Request.id)).filter(not_deleted, Request.status.in_(["done", "rejected"])).scalar() or 0
+    closed_requests = (
+        db.session.query(func.count(Request.id))
+        .filter(not_deleted, Request.status.in_(["done", "rejected"]))
+        .scalar()
+        or 0
+    )
 
-    active_volunteers = db.session.query(func.count(Volunteer.id)).filter(Volunteer.is_active.is_(True)).scalar() or 0
+    active_volunteers = (
+        db.session.query(func.count(Volunteer.id))
+        .filter(Volunteer.is_active.is_(True))
+        .scalar()
+        or 0
+    )
 
     countries_count = len(COUNTRIES_SUPPORTED)
 
@@ -1614,7 +1966,10 @@ def category_help(category: str):
     data = CATEGORIES.get(canonical)
     if data:
         title_bg = data.get("content", {}).get("title", {}).get("bg")
-        icon = data.get("ui", {}).get("icon") or "fa-solid fa-circle-question text-secondary"
+        icon = (
+            data.get("ui", {}).get("icon")
+            or "fa-solid fa-circle-question text-secondary"
+        )
         severity = data.get("ui", {}).get("severity")
         color = "danger" if severity == "critical" else "primary"
 

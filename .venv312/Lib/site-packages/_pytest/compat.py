@@ -18,7 +18,6 @@ from typing import NoReturn
 
 import py
 
-
 if sys.version_info >= (3, 14):
     from annotationlib import Format
 

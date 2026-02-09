@@ -17,13 +17,17 @@ def _get_app():
         return app
     except Exception:
         pass
-    raise RuntimeError("Неуспешен импорт на Flask приложението (backend.app или backend.appy)")
+    raise RuntimeError(
+        "Неуспешен импорт на Flask приложението (backend.app или backend.appy)"
+    )
 
 
 def main():
     parser = argparse.ArgumentParser(description="Initialize or update the admin user")
     parser.add_argument("--username", default=os.getenv("ADMIN_USERNAME", "admin"))
-    parser.add_argument("--email", default=os.getenv("ADMIN_EMAIL", "admin@helpchain.live"))
+    parser.add_argument(
+        "--email", default=os.getenv("ADMIN_EMAIL", "admin@helpchain.live")
+    )
     parser.add_argument("--password", default=os.getenv("ADMIN_PASSWORD", "Admin1234"))
     args = parser.parse_args()
 

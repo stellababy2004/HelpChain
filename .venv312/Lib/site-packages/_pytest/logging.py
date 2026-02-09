@@ -41,7 +41,6 @@ from _pytest.main import Session
 from _pytest.stash import StashKey
 from _pytest.terminal import TerminalReporter
 
-
 if TYPE_CHECKING:
     logging_StreamHandler = logging.StreamHandler[StringIO]
 else:

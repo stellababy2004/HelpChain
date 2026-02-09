@@ -10,13 +10,29 @@ from io import BytesIO, StringIO
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 
-from flask import Blueprint, Response, abort, current_app, flash, jsonify, redirect, render_template, request, send_file, session, url_for
+from flask import (
+    Blueprint,
+    Response,
+    abort,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
+)
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.extensions import db, limiter
 from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
-from backend.helpchain_backend.src.statuses import REQUEST_STATUS_ALLOWED, normalize_request_status
+from backend.helpchain_backend.src.statuses import (
+    REQUEST_STATUS_ALLOWED,
+    normalize_request_status,
+)
 
 from ..config import Config
 from ..models import (
@@ -36,7 +52,12 @@ from ..security_logging import log_security_event
 INVALID_CREDENTIALS_MSG = "Invalid credentials."
 
 
-def _log_status_change_once(req_id: int, old_status: str | None, new_status: str | None, actor_admin_id: int | None):
+def _log_status_change_once(
+    req_id: int,
+    old_status: str | None,
+    new_status: str | None,
+    actor_admin_id: int | None,
+):
     """Add a single status_change activity only when there is a real change."""
     if (old_status or "") == (new_status or ""):
         return
@@ -83,7 +104,11 @@ def _lock_expired(req, now: datetime | None = None) -> bool:
 
 
 def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
-    return bool(getattr(req, "owner_id", None) and getattr(req, "owner_id", None) != admin_id and not _lock_expired(req, now or _now_utc()))
+    return bool(
+        getattr(req, "owner_id", None)
+        and getattr(req, "owner_id", None) != admin_id
+        and not _lock_expired(req, now or _now_utc())
+    )
 
 
 from sqlalchemy import func
@@ -96,7 +121,9 @@ from backend.helpchain_backend.src.utils.mfa import (
     verify_totp_code,
 )
 
-admin_bp = Blueprint("admin", __name__, url_prefix="/admin")  # single templates path via app.py
+admin_bp = Blueprint(
+    "admin", __name__, url_prefix="/admin"
+)  # single templates path via app.py
 
 
 @admin_bp.get("/")
@@ -126,14 +153,18 @@ def is_safe_url(target: str) -> bool:
         return False
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
-    return (test_url.scheme in ("http", "https")) and (ref_url.netloc == test_url.netloc)
+    return (test_url.scheme in ("http", "https")) and (
+        ref_url.netloc == test_url.netloc
+    )
 
 
 def admin_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
         # Harden: hide admin surface from non-admins (404 instead of redirect)
-        if not (current_user.is_authenticated and getattr(current_user, "is_admin", False)):
+        if not (
+            current_user.is_authenticated and getattr(current_user, "is_admin", False)
+        ):
             abort(404)
         return view_func(*args, **kwargs)
 
@@ -208,7 +239,9 @@ def _mfa_attempt_fail():
     session["mfa_attempts"] = int(session.get("mfa_attempts", 0)) + 1
     if session["mfa_attempts"] >= max_attempts:
         try:
-            session["mfa_lock_until"] = (utc_now() + timedelta(minutes=lock_min)).isoformat()
+            session["mfa_lock_until"] = (
+                utc_now() + timedelta(minutes=lock_min)
+            ).isoformat()
         except Exception:
             session["mfa_lock_until"] = None
 
@@ -280,11 +313,16 @@ def enforce_admin_mfa():
         "admin.admin_mfa_backup_codes",
         "static",
     }
-    if request.endpoint in allowed or (request.endpoint and request.endpoint.startswith("static")):
+    if request.endpoint in allowed or (
+        request.endpoint and request.endpoint.startswith("static")
+    ):
         return None
     if not current_user.is_authenticated:
         return None
-    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+    if not (
+        getattr(current_user, "mfa_enabled", False)
+        and getattr(current_user, "totp_secret", None)
+    ):
         return None
     if _mfa_ok_is_valid():
         return None
@@ -311,11 +349,18 @@ def emergency_requests():
     since = datetime.utcnow() - timedelta(days=days)
 
     # Emergency filter: category=="emergency" only (no urgency field)
-    query = Request.query.filter(Request.created_at >= since, Request.category == "emergency").order_by(Request.created_at.desc())
+    query = Request.query.filter(
+        Request.created_at >= since, Request.category == "emergency"
+    ).order_by(Request.created_at.desc())
 
     if q:
         # Search in city/contact/priority only
-        query = query.filter((Request.city.ilike(f"%{q}%")) | (Request.email.ilike(f"%{q}%")) | (Request.phone.ilike(f"%{q}%")) | (Request.priority.ilike(f"%{q}%")))
+        query = query.filter(
+            (Request.city.ilike(f"%{q}%"))
+            | (Request.email.ilike(f"%{q}%"))
+            | (Request.phone.ilike(f"%{q}%"))
+            | (Request.priority.ilike(f"%{q}%"))
+        )
 
     total = query.count()
     items = query.offset((page - 1) * per_page).limit(per_page).all()
@@ -420,14 +465,20 @@ def volunteer_detail(id):
 @limiter.limit("20 per hour")
 def admin_ops_login():
     # Preserve safe next across GET -> POST -> redirect (and across failed logins).
-    next_candidate = (request.form.get("next") or request.args.get("next") or "").strip()
+    next_candidate = (
+        request.form.get("next") or request.args.get("next") or ""
+    ).strip()
     next_url = next_candidate if is_safe_url(next_candidate) else ""
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         user = AdminUser.query.filter_by(username=username).first()
-        if not user or not getattr(user, "password_hash", None) or not check_password_hash(user.password_hash, password):
+        if (
+            not user
+            or not getattr(user, "password_hash", None)
+            or not check_password_hash(user.password_hash, password)
+        ):
             log_security_event(
                 "auth_admin_login_failed",
                 actor_type="anonymous",
@@ -449,7 +500,9 @@ def admin_ops_login():
         session.pop(Config.MFA_SESSION_KEY, None)
         session.pop("mfa_required", None)
         mfa_globally_enabled = bool(Config.MFA_ENABLED)
-        user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(getattr(user, "totp_secret", None))
+        user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(
+            getattr(user, "totp_secret", None)
+        )
         if mfa_globally_enabled and user_has_mfa:
             session["mfa_required"] = True
             return redirect(
@@ -494,7 +547,9 @@ MFA_SESSION_KEY = "mfa_ok"
 @login_required
 def admin_mfa_setup():
     admin_required_404()
-    if getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None):
+    if getattr(current_user, "mfa_enabled", False) and getattr(
+        current_user, "totp_secret", None
+    ):
         flash("MFA вече е активиран.", "info")
         return redirect(url_for("admin.admin_mfa_verify"))
 
@@ -512,11 +567,23 @@ def admin_mfa_setup():
         code = (request.form.get("code") or "").strip().replace(" ", "")
         if not code:
             flash("Въведи 6-цифрения код от приложението.", "danger")
-            return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
+            return render_template(
+                "admin/mfa_setup.html",
+                qr_b64=qr_b64,
+                secret=pending_secret,
+                username=username,
+            )
 
         if not verify_totp_code(pending_secret, code):
-            flash("Невалиден код. Провери часовника на телефона и опитай пак.", "danger")
-            return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
+            flash(
+                "Невалиден код. Провери часовника на телефона и опитай пак.", "danger"
+            )
+            return render_template(
+                "admin/mfa_setup.html",
+                qr_b64=qr_b64,
+                secret=pending_secret,
+                username=username,
+            )
 
         user = db.session.get(AdminUser, current_user.id)
         user.totp_secret = pending_secret
@@ -530,7 +597,9 @@ def admin_mfa_setup():
         flash("Сега си генерирай backup codes (спасителният пояс).", "info")
         return redirect(url_for("admin.admin_mfa_backup_codes"))
 
-    return render_template("admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username)
+    return render_template(
+        "admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username
+    )
 
 
 @admin_bp.route("/mfa/verify", methods=["GET", "POST"])
@@ -540,18 +609,30 @@ def admin_mfa_verify():
     if not current_app.config.get("MFA_ENABLED", False):
         abort(404)
 
-    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+    if not (
+        getattr(current_user, "mfa_enabled", False)
+        and getattr(current_user, "totp_secret", None)
+    ):
         _mfa_ok_set()
         session["admin_logged_in"] = True
         return redirect(request.args.get("next") or url_for("admin.admin_requests"))
 
     locked, remaining = _mfa_lock_is_active()
     if request.method == "GET":
-        return render_template("admin/mfa_verify.html", locked=locked, remaining=remaining, next=request.args.get("next") or "")
+        return render_template(
+            "admin/mfa_verify.html",
+            locked=locked,
+            remaining=remaining,
+            next=request.args.get("next") or "",
+        )
 
     if locked:
-        flash(f"Твърде много опити. Опитай след {max(1, remaining // 60)} мин.", "danger")
-        return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next", "")))
+        flash(
+            f"Твърде много опити. Опитай след {max(1, remaining // 60)} мин.", "danger"
+        )
+        return redirect(
+            url_for("admin.admin_mfa_verify", next=request.args.get("next", ""))
+        )
 
     code = (request.form.get("code") or "").strip().replace(" ", "").upper()
     totp_ok = False
@@ -585,10 +666,14 @@ def admin_mfa_verify():
     if locked:
         flash(f"Грешен код. Заключено за ~{max(1, remaining // 60)} мин.", "danger")
     else:
-        left = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8) - int(session.get("mfa_attempts", 0))
+        left = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8) - int(
+            session.get("mfa_attempts", 0)
+        )
         flash(f"Грешен код. Оставащи опити: {max(left, 0)}.", "danger")
 
-    return redirect(url_for("admin.admin_mfa_verify", next=request.args.get("next", "")))
+    return redirect(
+        url_for("admin.admin_mfa_verify", next=request.args.get("next", ""))
+    )
 
 
 @admin_bp.route("/mfa/backup-codes", methods=["GET", "POST"])
@@ -597,7 +682,10 @@ def admin_mfa_backup_codes():
     admin_required_404()
     if not current_app.config.get("MFA_ENABLED", False):
         abort(404)
-    if not (getattr(current_user, "mfa_enabled", False) and getattr(current_user, "totp_secret", None)):
+    if not (
+        getattr(current_user, "mfa_enabled", False)
+        and getattr(current_user, "totp_secret", None)
+    ):
         flash("Първо активирай MFA от Setup.", "warning")
         return redirect(url_for("admin.admin_mfa_setup"))
 
@@ -605,7 +693,10 @@ def admin_mfa_backup_codes():
         codes = _generate_backup_codes(10)
         _save_hashes(current_user, _hash_codes(codes))
         session["backup_codes_plain"] = codes
-        flash("Backup кодовете са генерирани. Запази ги сега — няма да се покажат втори път.", "success")
+        flash(
+            "Backup кодовете са генерирани. Запази ги сега — няма да се покажат втори път.",
+            "success",
+        )
         return redirect(url_for("admin.admin_mfa_backup_codes"))
 
     codes_plain = session.pop("backup_codes_plain", None)
@@ -714,7 +805,15 @@ def admin_api_dashboard():
             func.nullif(Request.region, ""),
             "unknown",
         )
-        city_rows = db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt")).group_by("city").order_by(func.count(Request.id).desc()).limit(10).all()
+        city_rows = (
+            db.session.query(
+                city_expr.label("city"), func.count(Request.id).label("cnt")
+            )
+            .group_by("city")
+            .order_by(func.count(Request.id).desc())
+            .limit(10)
+            .all()
+        )
         requests_by_city = [{"city": c, "count": int(cnt)} for c, cnt in city_rows]
 
         ts_rows = (
@@ -735,15 +834,18 @@ def admin_api_dashboard():
         except Exception:
             total_volunteers = 0
 
-        return jsonify(
-            {
-                "total_requests": total_requests,
-                "total_volunteers": total_volunteers,
-                "counts_by_status": counts_by_status,
-                "requests_by_city": requests_by_city,
-                "timeseries": timeseries,
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "total_requests": total_requests,
+                    "total_volunteers": total_volunteers,
+                    "counts_by_status": counts_by_status,
+                    "requests_by_city": requests_by_city,
+                    "timeseries": timeseries,
+                }
+            ),
+            200,
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -776,7 +878,17 @@ def admin_dashboard():
     requests_dict = []
     for r in requests:
         # Fallback location using location_text -> city/region
-        loc = getattr(r, "location_text", None) or ", ".join([val for val in (getattr(r, "city", None), getattr(r, "region", None)) if val]) or ""
+        loc = (
+            getattr(r, "location_text", None)
+            or ", ".join(
+                [
+                    val
+                    for val in (getattr(r, "city", None), getattr(r, "region", None))
+                    if val
+                ]
+            )
+            or ""
+        )
         requests_dict.append(
             {
                 "id": r.id,
@@ -810,7 +922,11 @@ def admin_dashboard():
     except Exception:
         total_requests = 0
     try:
-        pending_requests = sum(1 for r in requests if getattr(r, "status", None) not in ("completed", "done", None))
+        pending_requests = sum(
+            1
+            for r in requests
+            if getattr(r, "status", None) not in ("completed", "done", None)
+        )
     except Exception:
         pending_requests = 0
     try:
@@ -830,18 +946,41 @@ def admin_dashboard():
 
         total_requests_cnt = db.session.query(func.count(Request.id)).scalar() or 0
 
-        open_requests_cnt = db.session.query(func.count(Request.id)).filter(Request.status.notin_(["done", "rejected"])).scalar() or 0
+        open_requests_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .scalar()
+            or 0
+        )
 
-        closed_requests_cnt = db.session.query(func.count(Request.id)).filter(Request.status.in_(["done", "rejected"])).scalar() or 0
+        closed_requests_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.in_(["done", "rejected"]))
+            .scalar()
+            or 0
+        )
 
-        closed_last_7d_cnt = db.session.query(func.count(Request.id)).filter(Request.completed_at.isnot(None), Request.completed_at >= week_ago).scalar() or 0
+        closed_last_7d_cnt = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.completed_at.isnot(None), Request.completed_at >= week_ago)
+            .scalar()
+            or 0
+        )
 
         avg_resolution_hours = (
-            db.session.query(func.avg(func.julianday(Request.completed_at) - func.julianday(Request.created_at)) * 24.0)
+            db.session.query(
+                func.avg(
+                    func.julianday(Request.completed_at)
+                    - func.julianday(Request.created_at)
+                )
+                * 24.0
+            )
             .filter(Request.completed_at.isnot(None), Request.created_at.isnot(None))
             .scalar()
         )
-        avg_resolution_hours = float(avg_resolution_hours) if avg_resolution_hours is not None else None
+        avg_resolution_hours = (
+            float(avg_resolution_hours) if avg_resolution_hours is not None else None
+        )
 
         unassigned_over_2d_cnt = (
             db.session.query(func.count(Request.id))
@@ -854,9 +993,21 @@ def admin_dashboard():
             or 0
         )
 
-        high_open_count = db.session.query(func.count(Request.id)).filter(Request.status.notin_(["done", "rejected"])).filter(Request.priority == "high").scalar() or 0
+        high_open_count = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .filter(Request.priority == "high")
+            .scalar()
+            or 0
+        )
 
-        stale_open_count = db.session.query(func.count(Request.id)).filter(Request.status.notin_(["done", "rejected"])).filter(Request.created_at <= (now - timedelta(days=7))).scalar() or 0
+        stale_open_count = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.status.notin_(["done", "rejected"]))
+            .filter(Request.created_at <= (now - timedelta(days=7)))
+            .scalar()
+            or 0
+        )
 
         # --- Requests per day (last 14 days) ---
         since_dt = now - timedelta(days=14)
@@ -872,7 +1023,12 @@ def admin_dashboard():
         impact_counts = [int(r[1]) for r in rows]
 
         # --- Requests by category ---
-        cat_rows = db.session.query(Request.category, func.count(Request.id)).group_by(Request.category).order_by(func.count(Request.id).desc()).all()
+        cat_rows = (
+            db.session.query(Request.category, func.count(Request.id))
+            .group_by(Request.category)
+            .order_by(func.count(Request.id).desc())
+            .all()
+        )
         impact_cat_labels = [r[0] or "unknown" for r in cat_rows]
         impact_cat_counts = [int(r[1]) for r in cat_rows]
 
@@ -915,7 +1071,12 @@ def admin_dashboard():
         import logging as _logging
 
         _log = _logging.getLogger(__name__)
-        _log.info("admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s", stats, total_requests, total_volunteers)
+        _log.info(
+            "admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s",
+            stats,
+            total_requests,
+            total_volunteers,
+        )
     except Exception:
         pass
 
@@ -1027,9 +1188,13 @@ def edit_volunteer(id):
         volunteer.phone = request.form["phone"]
         volunteer.location = request.form["location"]
         volunteer.skills = request.form.get("skills", "")
-        logging.warning(f"[DEBUG] Before commit: name={volunteer.name}, email={volunteer.email}, phone={volunteer.phone}, location={volunteer.location}, skills={volunteer.skills}")
+        logging.warning(
+            f"[DEBUG] Before commit: name={volunteer.name}, email={volunteer.email}, phone={volunteer.phone}, location={volunteer.location}, skills={volunteer.skills}"
+        )
         db.session.commit()
-        logging.warning(f"[DEBUG] After commit: id={volunteer.id}, email={volunteer.email}")
+        logging.warning(
+            f"[DEBUG] After commit: id={volunteer.id}, email={volunteer.email}"
+        )
         flash("Промените са запазени!", "success")
         return redirect(url_for("admin.admin_volunteers"))
 
@@ -1098,8 +1263,20 @@ def update_status(req_id):
 
     # Guard: no-op changes shouldn't log noise
     if not new_status or new_status == old_status:
-        if request.is_json or (request.accept_mimetypes and request.accept_mimetypes.best == "application/json"):
-            return jsonify({"success": False, "status": old_status, "message": "No status change."}), 200
+        if request.is_json or (
+            request.accept_mimetypes
+            and request.accept_mimetypes.best == "application/json"
+        ):
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "status": old_status,
+                        "message": "No status change.",
+                    }
+                ),
+                200,
+            )
         flash("No status change.", "info")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
@@ -1130,7 +1307,9 @@ def update_status(req_id):
             pass
 
     # --- Bulletproof policy sync: VolunteerInterest follows Request.status + owner_id ---
-    from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
+    from backend.helpchain_backend.src.models.volunteer_interest import (
+        VolunteerInterest,
+    )
 
     if new_status == "in_progress":
         if not getattr(req, "owner_id", None):
@@ -1142,7 +1321,11 @@ def update_status(req_id):
             q = VolunteerInterest.query.filter_by(request_id=req.id)
 
             # Ensure owner's latest interest exists and is approved
-            owner_latest = q.filter_by(volunteer_id=req.owner_id).order_by(VolunteerInterest.id.desc()).first()
+            owner_latest = (
+                q.filter_by(volunteer_id=req.owner_id)
+                .order_by(VolunteerInterest.id.desc())
+                .first()
+            )
             if owner_latest is None:
                 owner_latest = VolunteerInterest(
                     request_id=req.id,
@@ -1150,20 +1333,37 @@ def update_status(req_id):
                     status="approved",
                 )
                 db.session.add(owner_latest)
-                current_app.logger.info("Interest sync: created approved owner interest (request_id=%s, volunteer_id=%s)", req.id, req.owner_id)
+                current_app.logger.info(
+                    "Interest sync: created approved owner interest (request_id=%s, volunteer_id=%s)",
+                    req.id,
+                    req.owner_id,
+                )
             elif owner_latest.status != "approved":
                 owner_latest.status = "approved"
                 db.session.add(owner_latest)
-                current_app.logger.info("Interest sync: set owner interest to approved (request_id=%s, volunteer_id=%s)", req.id, req.owner_id)
+                current_app.logger.info(
+                    "Interest sync: set owner interest to approved (request_id=%s, volunteer_id=%s)",
+                    req.id,
+                    req.owner_id,
+                )
 
             # Reject other pending interests
-            pending_others = q.filter(VolunteerInterest.status == "pending").filter(VolunteerInterest.volunteer_id != req.owner_id).all()
+            pending_others = (
+                q.filter(VolunteerInterest.status == "pending")
+                .filter(VolunteerInterest.volunteer_id != req.owner_id)
+                .all()
+            )
             for vi_row in pending_others:
                 vi_row.status = "rejected"
                 db.session.add(vi_row)
 
             if pending_others:
-                current_app.logger.info("Interest sync: rejected %s pending interests (request_id=%s, owner_id=%s)", len(pending_others), req.id, req.owner_id)
+                current_app.logger.info(
+                    "Interest sync: rejected %s pending interests (request_id=%s, owner_id=%s)",
+                    len(pending_others),
+                    req.id,
+                    req.owner_id,
+                )
 
     elif new_status in {"done", "cancelled"}:
         q = VolunteerInterest.query.filter_by(request_id=req.id)
@@ -1173,7 +1373,12 @@ def update_status(req_id):
             db.session.add(vi_row)
 
         if pending_all:
-            current_app.logger.info("Interest sync: rejected %s pending interests on close (request_id=%s, new_status=%s)", len(pending_all), req.id, new_status)
+            current_app.logger.info(
+                "Interest sync: rejected %s pending interests on close (request_id=%s, new_status=%s)",
+                len(pending_all),
+                req.id,
+                new_status,
+            )
 
     db.session.commit()
 
@@ -1199,14 +1404,20 @@ def update_status(req_id):
     except ModuleNotFoundError:
         import logging
 
-        logging.info("[EMAIL] mail_service not configured; email sending skipped (dev mode)")
+        logging.info(
+            "[EMAIL] mail_service not configured; email sending skipped (dev mode)"
+        )
     except Exception as e:
         import logging
 
-        logging.warning(f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}")
+        logging.warning(
+            f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}"
+        )
 
     # Ако е JSON/AJAX – връщаме JSON; иначе redirect за формата
-    if request.is_json or (request.accept_mimetypes and request.accept_mimetypes.best == "application/json"):
+    if request.is_json or (
+        request.accept_mimetypes and request.accept_mimetypes.best == "application/json"
+    ):
         return jsonify({"success": True, "status": new_status or req.status})
     flash("Статусът е обновен.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
@@ -1496,7 +1707,9 @@ def admin_requests_export_csv_anonymized():
             ]
         )
 
-    filename = f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    filename = (
+        f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    )
     return Response(
         out.getvalue(),
         mimetype="text/csv; charset=utf-8",
@@ -1549,7 +1762,9 @@ def admin_requests_export_xlsx_anonymized():
     wb.save(bio)
     bio.seek(0)
 
-    filename = f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    filename = (
+        f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    )
     return send_file(
         bio,
         as_attachment=True,
@@ -1562,7 +1777,9 @@ def admin_requests_export_xlsx_anonymized():
 @admin_required
 def admin_request_details(req_id: int):
     admin_required_404()
-    req = Request.query.options(joinedload(Request.logs), joinedload(Request.activities)).get_or_404(req_id)
+    req = Request.query.options(
+        joinedload(Request.logs), joinedload(Request.activities)
+    ).get_or_404(req_id)
     admin_id = current_user.id
     now = _now_utc()
 
@@ -1611,18 +1828,25 @@ def admin_request_details(req_id: int):
                 key=lambda a: a.created_at or datetime.min,
                 reverse=True,
             )[:50]
-            interests = VolunteerInterest.query.filter_by(request_id=req_id).order_by(VolunteerInterest.created_at.desc()).all()
-            return render_template(
-                "admin/request_details.html",
-                req=req,
-                activities=activities,
-                logs=req.logs,
-                STATUS_LABELS_BG=STATUS_LABELS_BG,
-                is_stale=is_stale,
-                interests=interests,
-                is_locked=True,
-                locked_by=locked_by,
-            ), 200
+            interests = (
+                VolunteerInterest.query.filter_by(request_id=req_id)
+                .order_by(VolunteerInterest.created_at.desc())
+                .all()
+            )
+            return (
+                render_template(
+                    "admin/request_details.html",
+                    req=req,
+                    activities=activities,
+                    logs=req.logs,
+                    STATUS_LABELS_BG=STATUS_LABELS_BG,
+                    is_stale=is_stale,
+                    interests=interests,
+                    is_locked=True,
+                    locked_by=locked_by,
+                ),
+                200,
+            )
     is_locked = False
     logs = req.logs  # already sorted by relationship order_by
     activities = sorted(
@@ -1630,7 +1854,11 @@ def admin_request_details(req_id: int):
         key=lambda a: a.created_at or datetime.min,
         reverse=True,
     )[:50]
-    interests = VolunteerInterest.query.filter_by(request_id=req_id).order_by(VolunteerInterest.created_at.desc()).all()
+    interests = (
+        VolunteerInterest.query.filter_by(request_id=req_id)
+        .order_by(VolunteerInterest.created_at.desc())
+        .all()
+    )
 
     # --- V3: Match & engagement (city-based) ---
     req_city = (getattr(req, "city", "") or "").strip().lower()
@@ -1639,7 +1867,9 @@ def admin_request_details(req_id: int):
         return (val or "").strip().lower()
 
     vols = Volunteer.query.filter_by(is_active=True).all()
-    matched_volunteers = [v for v in vols if _norm_city(getattr(v, "location", None)) == req_city]
+    matched_volunteers = [
+        v for v in vols if _norm_city(getattr(v, "location", None)) == req_city
+    ]
     matched_volunteers = matched_volunteers[:20]
     matched_volunteer_ids = [v.id for v in matched_volunteers]
 
@@ -1672,37 +1902,51 @@ def admin_request_details(req_id: int):
         assigned_volunteer = Volunteer.query.get(req.assigned_volunteer_id)
 
     # Volunteer signals (can/can't help)
-    volunteer_signals = VolunteerAction.query.filter_by(request_id=req.id).order_by(VolunteerAction.updated_at.desc()).all()
+    volunteer_signals = (
+        VolunteerAction.query.filter_by(request_id=req.id)
+        .order_by(VolunteerAction.updated_at.desc())
+        .all()
+    )
     # Most recent signal for quick, high-visibility admin context.
     last_vol_signal = volunteer_signals[0] if volunteer_signals else None
     signal_vol_ids = [va.volunteer_id for va in volunteer_signals]
-    volunteers_map = {v.id: v for v in Volunteer.query.filter(Volunteer.id.in_(signal_vol_ids)).all()} if signal_vol_ids else {}
+    volunteers_map = (
+        {
+            v.id: v
+            for v in Volunteer.query.filter(Volunteer.id.in_(signal_vol_ids)).all()
+        }
+        if signal_vol_ids
+        else {}
+    )
     can_help_count = sum(1 for va in volunteer_signals if va.action == "CAN_HELP")
     cant_help_count = sum(1 for va in volunteer_signals if va.action == "CANT_HELP")
 
-    return render_template(
-        "admin/request_details.html",
-        req=req,
-        activities=activities,
-        logs=logs,
-        STATUS_LABELS_BG=STATUS_LABELS_BG,
-        is_stale=is_stale,
-        interests=interests,
-        is_locked=is_locked,
-        locked_by=locked_by,
-        matched_volunteers=matched_volunteers,
-        matched_count=len(matched_volunteers),
-        notified_count=notified_count,
-        seen_count=seen_count,
-        interested_count=interested_count,
-        flags_by_vol=flags_by_vol,
-        assigned_volunteer=assigned_volunteer,
-        volunteer_signals=volunteer_signals,
-        last_vol_signal=last_vol_signal,
-        volunteers_map=volunteers_map,
-        can_help_count=can_help_count,
-        cant_help_count=cant_help_count,
-    ), 200
+    return (
+        render_template(
+            "admin/request_details.html",
+            req=req,
+            activities=activities,
+            logs=logs,
+            STATUS_LABELS_BG=STATUS_LABELS_BG,
+            is_stale=is_stale,
+            interests=interests,
+            is_locked=is_locked,
+            locked_by=locked_by,
+            matched_volunteers=matched_volunteers,
+            matched_count=len(matched_volunteers),
+            notified_count=notified_count,
+            seen_count=seen_count,
+            interested_count=interested_count,
+            flags_by_vol=flags_by_vol,
+            assigned_volunteer=assigned_volunteer,
+            volunteer_signals=volunteer_signals,
+            last_vol_signal=last_vol_signal,
+            volunteers_map=volunteers_map,
+            can_help_count=can_help_count,
+            cant_help_count=cant_help_count,
+        ),
+        200,
+    )
 
 
 @admin_bp.post("/requests/<int:req_id>/unlock", endpoint="admin_request_unlock")
@@ -1738,10 +1982,15 @@ def admin_request_unlock(req_id: int):
 
 
 # --- Volunteer interest moderation ---
-@admin_bp.post("/requests/<int:req_id>/interests/<int:interest_id>/approve", endpoint="admin_interest_approve")
+@admin_bp.post(
+    "/requests/<int:req_id>/interests/<int:interest_id>/approve",
+    endpoint="admin_interest_approve",
+)
 @admin_required
 def admin_interest_approve(req_id: int, interest_id: int):
-    current_app.logger.info("ADMIN_APPROVE HIT req_id=%s interest_id=%s", req_id, interest_id)
+    current_app.logger.info(
+        "ADMIN_APPROVE HIT req_id=%s interest_id=%s", req_id, interest_id
+    )
 
     admin_required_404()
     admin = current_user
@@ -1752,7 +2001,10 @@ def admin_interest_approve(req_id: int, interest_id: int):
         abort(404)
 
     if _locked_by_other(req, admin_id):
-        flash("🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.", "warning")
+        flash(
+            "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     vi = db.session.get(VolunteerInterest, interest_id)
@@ -1760,7 +2012,10 @@ def admin_interest_approve(req_id: int, interest_id: int):
         abort(404)
 
     if _is_request_locked(req):
-        flash("🔒 Заявката е заключена (done/cancelled). Смени статуса, за да отключиш действията.", "warning")
+        flash(
+            "🔒 Заявката е заключена (done/cancelled). Смени статуса, за да отключиш действията.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     old_vi = vi.status
@@ -1786,9 +2041,13 @@ def admin_interest_approve(req_id: int, interest_id: int):
         status_changed = True
 
     if changed_vi or status_changed:
-        current_app.logger.info("BEFORE commit: req.status=%s vi.status=%s", req.status, vi.status)
+        current_app.logger.info(
+            "BEFORE commit: req.status=%s vi.status=%s", req.status, vi.status
+        )
         db.session.commit()
-        current_app.logger.info("AFTER commit: req.status=%s vi.status=%s", req.status, vi.status)
+        current_app.logger.info(
+            "AFTER commit: req.status=%s vi.status=%s", req.status, vi.status
+        )
         flash("Approved.", "success")
     else:
         flash("No changes.", "info")
@@ -1796,7 +2055,10 @@ def admin_interest_approve(req_id: int, interest_id: int):
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 
-@admin_bp.post("/requests/<int:req_id>/interests/<int:interest_id>/reject", endpoint="admin_interest_reject")
+@admin_bp.post(
+    "/requests/<int:req_id>/interests/<int:interest_id>/reject",
+    endpoint="admin_interest_reject",
+)
 @admin_required
 def admin_interest_reject(req_id: int, interest_id: int):
     admin_required_404()
@@ -1808,7 +2070,10 @@ def admin_interest_reject(req_id: int, interest_id: int):
         abort(404)
 
     if _locked_by_other(req, admin_id):
-        flash("🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.", "warning")
+        flash(
+            "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     interest = db.session.get(VolunteerInterest, interest_id)
@@ -1816,7 +2081,10 @@ def admin_interest_reject(req_id: int, interest_id: int):
         abort(404)
 
     if _is_request_locked(req):
-        flash("🔒 Заявката е заключена (done/cancelled). Смени статуса, за да отключиш действията.", "warning")
+        flash(
+            "🔒 Заявката е заключена (done/cancelled). Смени статуса, за да отключиш действията.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     old_vi = interest.status
@@ -1824,7 +2092,9 @@ def admin_interest_reject(req_id: int, interest_id: int):
         flash("No changes.", "info")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
-    current_app.logger.info("ADMIN_REJECT HIT req_id=%s interest_id=%s", req_id, interest_id)
+    current_app.logger.info(
+        "ADMIN_REJECT HIT req_id=%s interest_id=%s", req_id, interest_id
+    )
 
     interest.status = "rejected"
     db.session.add(
@@ -1848,10 +2118,16 @@ def admin_interest_reject(req_id: int, interest_id: int):
 def admin_request_assign(req_id: int):
     req = Request.query.get_or_404(req_id)
     if _locked_by_other(req, getattr(current_user, "id", None)):
-        flash("🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.", "warning")
+        flash(
+            "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if _is_request_locked(req):
-        flash("This request is locked (done/cancelled). Unlock it by changing status first.", "warning")
+        flash(
+            "This request is locked (done/cancelled). Unlock it by changing status first.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     takeover = False
     if req.owner_id and req.owner_id != getattr(current_user, "id", None):
@@ -1878,8 +2154,12 @@ def admin_request_assign(req_id: int):
             reason = f"stale: {hours:.1f}h"
         except Exception:
             reason = "stale"
-    new_val = f"{current_user.id}" if reason is None else f"{current_user.id} ({reason})"
-    log_request_activity(req, action_name, old=old_owner, new=new_val, actor_admin_id=current_user.id)
+    new_val = (
+        f"{current_user.id}" if reason is None else f"{current_user.id} ({reason})"
+    )
+    log_request_activity(
+        req, action_name, old=old_owner, new=new_val, actor_admin_id=current_user.id
+    )
     db.session.commit()
     flash("Заявката е assign-ната към теб.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
@@ -1890,23 +2170,38 @@ def admin_request_assign(req_id: int):
 def admin_request_unassign(req_id: int):
     req = Request.query.get_or_404(req_id)
     if _locked_by_other(req, getattr(current_user, "id", None)):
-        flash("🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.", "warning")
+        flash(
+            "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if _is_request_locked(req):
-        flash("This request is locked (done/cancelled). Unlock it by changing status first.", "warning")
+        flash(
+            "This request is locked (done/cancelled). Unlock it by changing status first.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if not can_edit_request(req, current_user):
         abort(403)
     old_owner = req.owner_id
     req.owner_id = None
     req.owned_at = None
-    log_request_activity(req, "unassign", old=old_owner, new=None, actor_admin_id=getattr(current_user, "id", None))
+    log_request_activity(
+        req,
+        "unassign",
+        old=old_owner,
+        new=None,
+        actor_admin_id=getattr(current_user, "id", None),
+    )
     db.session.commit()
     flash("Owner е премахнат.", "info")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 
-@admin_bp.post("/requests/<int:req_id>/assign_volunteer/<int:volunteer_id>", endpoint="admin_assign_volunteer")
+@admin_bp.post(
+    "/requests/<int:req_id>/assign_volunteer/<int:volunteer_id>",
+    endpoint="admin_assign_volunteer",
+)
 @login_required
 def admin_assign_volunteer(req_id: int, volunteer_id: int):
     req = Request.query.get_or_404(req_id)
@@ -1929,7 +2224,9 @@ def admin_assign_volunteer(req_id: int, volunteer_id: int):
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
-@admin_bp.post("/requests/<int:req_id>/unassign_volunteer", endpoint="admin_unassign_volunteer")
+@admin_bp.post(
+    "/requests/<int:req_id>/unassign_volunteer", endpoint="admin_unassign_volunteer"
+)
 @login_required
 def admin_unassign_volunteer(req_id: int):
     req = Request.query.get_or_404(req_id)
@@ -1957,7 +2254,10 @@ def admin_request_delete(req_id: int):
         abort(403)
 
     if not getattr(req, "is_archived", False):
-        flash("Archive the request first. Only archived requests can be deleted.", "warning")
+        flash(
+            "Archive the request first. Only archived requests can be deleted.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     if getattr(req, "deleted_at", None) is None:
@@ -1978,7 +2278,9 @@ def admin_request_delete(req_id: int):
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
-@admin_bp.post("/requests/<int:req_id>/restore-deleted", endpoint="admin_request_restore_deleted")
+@admin_bp.post(
+    "/requests/<int:req_id>/restore-deleted", endpoint="admin_request_restore_deleted"
+)
 @login_required
 def admin_request_restore_deleted(req_id: int):
     req = Request.query.get_or_404(req_id)

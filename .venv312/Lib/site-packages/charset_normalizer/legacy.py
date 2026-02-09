@@ -37,9 +37,11 @@ def detect(byte_str: bytes) -> Dict[str, Optional[Union[str, float]]]:
         encoding += "_sig"
 
     return {
-        "encoding": encoding
-        if encoding not in CHARDET_CORRESPONDENCE
-        else CHARDET_CORRESPONDENCE[encoding],
+        "encoding": (
+            encoding
+            if encoding not in CHARDET_CORRESPONDENCE
+            else CHARDET_CORRESPONDENCE[encoding]
+        ),
         "language": language,
         "confidence": confidence,
     }

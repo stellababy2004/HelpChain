@@ -27,7 +27,6 @@ from typing import NamedTuple
 from typing import TextIO
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -41,7 +40,6 @@ from _pytest.nodes import Collector
 from _pytest.nodes import File
 from _pytest.nodes import Item
 from _pytest.reports import CollectReport
-
 
 _CaptureMethod = Literal["fd", "sys", "no", "tee-sys"]
 
@@ -393,10 +391,10 @@ class SysCaptureBase(CaptureBase[AnyStr]):
         )
 
     def _assert_state(self, op: str, states: tuple[str, ...]) -> None:
-        assert self._state in states, (
-            "cannot {} in state {!r}: expected one of {}".format(
-                op, self._state, ", ".join(states)
-            )
+        assert (
+            self._state in states
+        ), "cannot {} in state {!r}: expected one of {}".format(
+            op, self._state, ", ".join(states)
         )
 
     def start(self) -> None:
@@ -510,10 +508,10 @@ class FDCaptureBase(CaptureBase[AnyStr]):
         )
 
     def _assert_state(self, op: str, states: tuple[str, ...]) -> None:
-        assert self._state in states, (
-            "cannot {} in state {!r}: expected one of {}".format(
-                op, self._state, ", ".join(states)
-            )
+        assert (
+            self._state in states
+        ), "cannot {} in state {!r}: expected one of {}".format(
+            op, self._state, ", ".join(states)
         )
 
     def start(self) -> None:

@@ -70,7 +70,6 @@ from _pytest.scope import Scope
 from _pytest.warning_types import PytestRemovedIn9Warning
 from _pytest.warning_types import PytestWarning
 
-
 if sys.version_info < (3, 11):
     from exceptiongroup import BaseExceptionGroup
 
@@ -759,9 +758,9 @@ class SubRequest(FixtureRequest):
         if node is None and scope is Scope.Class:
             # Fallback to function item itself.
             node = self._pyfuncitem
-        assert node, (
-            f'Could not obtain a node for scope "{scope}" for function {self._pyfuncitem!r}'
-        )
+        assert (
+            node
+        ), f'Could not obtain a node for scope "{scope}" for function {self._pyfuncitem!r}'
         return node
 
     def _check_scope(
@@ -821,9 +820,9 @@ class FixtureLookupError(LookupError):
         # new cases it might break.
         # Add the assert to make it clearer to developer that this will fail, otherwise
         # it crashes because `fspath` does not get set due to `stack` being empty.
-        assert self.msg is None or self.fixturestack, (
-            "formatrepr assumptions broken, rewrite it to handle it"
-        )
+        assert (
+            self.msg is None or self.fixturestack
+        ), "formatrepr assumptions broken, rewrite it to handle it"
         if msg is not None:
             # The last fixture raise an error, let's present
             # it at the requesting side.
@@ -1950,9 +1949,11 @@ def _show_fixtures_per_test(config: Config, session: Session) -> None:
         if fixture_doc:
             write_docstring(
                 tw,
-                fixture_doc.split("\n\n", maxsplit=1)[0]
-                if verbose <= 0
-                else fixture_doc,
+                (
+                    fixture_doc.split("\n\n", maxsplit=1)[0]
+                    if verbose <= 0
+                    else fixture_doc
+                ),
             )
         else:
             tw.line("    no docstring available", red=True)

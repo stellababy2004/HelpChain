@@ -33,7 +33,6 @@ import warnings
 
 from . import error
 
-
 # Moved from local.py.
 iswin32 = sys.platform == "win32" or (getattr(os, "_name", False) == "nt")
 
@@ -222,7 +221,7 @@ class Stat:
             raise NotImplementedError("XXX win32")
         import pwd
 
-        entry = error.checked_call(pwd.getpwuid, self.uid)  # type:ignore[attr-defined,unused-ignore]
+        entry = error.checked_call(pwd.getpwuid, self.uid)  # type: ignore[attr-defined,unused-ignore]
         return entry[0]
 
     @property
@@ -232,7 +231,7 @@ class Stat:
             raise NotImplementedError("XXX win32")
         import grp
 
-        entry = error.checked_call(grp.getgrgid, self.gid)  # type:ignore[attr-defined,unused-ignore]
+        entry = error.checked_call(grp.getgrgid, self.gid)  # type: ignore[attr-defined,unused-ignore]
         return entry[0]
 
     def isdir(self):
@@ -250,7 +249,7 @@ def getuserid(user):
     import pwd
 
     if not isinstance(user, int):
-        user = pwd.getpwnam(user)[2]  # type:ignore[attr-defined,unused-ignore]
+        user = pwd.getpwnam(user)[2]  # type: ignore[attr-defined,unused-ignore]
     return user
 
 
@@ -258,7 +257,7 @@ def getgroupid(group):
     import grp
 
     if not isinstance(group, int):
-        group = grp.getgrnam(group)[2]  # type:ignore[attr-defined,unused-ignore]
+        group = grp.getgrnam(group)[2]  # type: ignore[attr-defined,unused-ignore]
     return group
 
 

@@ -742,7 +742,7 @@ class Scaffold:
 
     @staticmethod
     def _get_exc_class_and_code(
-        exc_class_or_code: t.Union[t.Type[Exception], int]
+        exc_class_or_code: t.Union[t.Type[Exception], int],
     ) -> t.Tuple[t.Type[Exception], t.Optional[int]]:
         """Get the exception class being handled. For HTTP status codes
         or ``HTTPException`` subclasses, return both the exception and

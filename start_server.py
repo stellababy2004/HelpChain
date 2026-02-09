@@ -34,12 +34,16 @@ def main():
     # Skippable via HELPCHAIN_SKIP_KILL=1 to avoid killing unrelated Python tasks
     skip_kill = os.environ.get("HELPCHAIN_SKIP_KILL") in ("1", "true", "True")
     if skip_kill:
-        print("⏭️  [1/3] Skipping mass-kill of Python processes (HELPCHAIN_SKIP_KILL=1)")
+        print(
+            "⏭️  [1/3] Skipping mass-kill of Python processes (HELPCHAIN_SKIP_KILL=1)"
+        )
     else:
         print("📋 [1/3] Stopping existing Python processes...")
         try:
             if platform.system() == "Windows":
-                subprocess.run(["taskkill", "/f", "/im", "python.exe"], capture_output=True)
+                subprocess.run(
+                    ["taskkill", "/f", "/im", "python.exe"], capture_output=True
+                )
             else:
                 subprocess.run(["pkill", "-f", "python"], capture_output=True)
             time.sleep(1)
@@ -51,7 +55,9 @@ def main():
     print("🔍 [2/3] Checking application import path...")
     try:
         __import__("backend.helpchain_backend.src.app")
-        print("✅ Canonical app factory is importable: backend.helpchain_backend.src.app:create_app")
+        print(
+            "✅ Canonical app factory is importable: backend.helpchain_backend.src.app:create_app"
+        )
     except Exception as e:
         print(f"❌ Error importing canonical app factory: {e}")
         sys.exit(1)

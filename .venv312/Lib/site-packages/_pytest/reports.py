@@ -35,7 +35,6 @@ from _pytest.nodes import Item
 from _pytest.outcomes import fail
 from _pytest.outcomes import skip
 
-
 if sys.version_info < (3, 11):
     from exceptiongroup import BaseExceptionGroup
 
@@ -274,9 +273,9 @@ def _format_exception_group_all_skipped_longrepr(
     excinfo: ExceptionInfo[BaseExceptionGroup[BaseException | BaseExceptionGroup]],
 ) -> tuple[str, int, str]:
     r = excinfo._getreprcrash()
-    assert r is not None, (
-        "There should always be a traceback entry for skipping a test."
-    )
+    assert (
+        r is not None
+    ), "There should always be a traceback entry for skipping a test."
     if all(
         getattr(skip, "_use_item_location", False) for skip in excinfo.value.exceptions
     ):
@@ -321,11 +320,13 @@ class TestReport(BaseReport):
         location: tuple[str, int | None, str],
         keywords: Mapping[str, Any],
         outcome: Literal["passed", "failed", "skipped"],
-        longrepr: None
-        | ExceptionInfo[BaseException]
-        | tuple[str, int, str]
-        | str
-        | TerminalRepr,
+        longrepr: (
+            None
+            | ExceptionInfo[BaseException]
+            | tuple[str, int, str]
+            | str
+            | TerminalRepr
+        ),
         when: Literal["setup", "call", "teardown"],
         sections: Iterable[tuple[str, str]] = (),
         duration: float = 0,
@@ -412,9 +413,9 @@ class TestReport(BaseReport):
             elif isinstance(excinfo.value, skip.Exception):
                 outcome = "skipped"
                 r = excinfo._getreprcrash()
-                assert r is not None, (
-                    "There should always be a traceback entry for skipping a test."
-                )
+                assert (
+                    r is not None
+                ), "There should always be a traceback entry for skipping a test."
                 if excinfo.value._use_item_location:
                     path, line = item.reportinfo()[:2]
                     assert line is not None
@@ -466,11 +467,13 @@ class CollectReport(BaseReport):
         self,
         nodeid: str,
         outcome: Literal["passed", "failed", "skipped"],
-        longrepr: None
-        | ExceptionInfo[BaseException]
-        | tuple[str, int, str]
-        | str
-        | TerminalRepr,
+        longrepr: (
+            None
+            | ExceptionInfo[BaseException]
+            | tuple[str, int, str]
+            | str
+            | TerminalRepr
+        ),
         result: list[Item | Collector] | None,
         sections: Iterable[tuple[str, str]] = (),
         **extra,
@@ -496,7 +499,7 @@ class CollectReport(BaseReport):
         self.__dict__.update(extra)
 
     @property
-    def location(  # type:ignore[override]
+    def location(  # type: ignore[override]
         self,
     ) -> tuple[str, int | None, str] | None:
         return (self.fspath, None, self.fspath)

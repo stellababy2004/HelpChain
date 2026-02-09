@@ -27,22 +27,37 @@ def api_login():
     password = data.get("password") or ""
 
     user = AdminUser.query.filter_by(username=username).first()
-    if not user or not getattr(user, "is_active", False) or not check_password_hash(user.password_hash, password):
-        log_security_event("auth_api_login_failed", meta={"reason": "invalid_credentials"})
+    if (
+        not user
+        or not getattr(user, "is_active", False)
+        or not check_password_hash(user.password_hash, password)
+    ):
+        log_security_event(
+            "auth_api_login_failed", meta={"reason": "invalid_credentials"}
+        )
         return jsonify({"error": "invalid_credentials"}), 401
 
     access = encode_access_token(user.id)
 
     # refresh token issuance + store
     refresh_jti = new_jti()
-    exp_dt = datetime.utcnow() + timedelta(seconds=current_app.config["JWT_REFRESH_TTL_SECONDS"])
+    exp_dt = datetime.utcnow() + timedelta(
+        seconds=current_app.config["JWT_REFRESH_TTL_SECONDS"]
+    )
     db.session.add(RefreshToken(user_id=user.id, jti=refresh_jti, expires_at=exp_dt))
     db.session.commit()
 
     refresh = encode_refresh_token(user.id, refresh_jti, exp_dt)
     log_security_event("auth_api_login_success", actor_type="admin", actor_id=user.id)
 
-    return jsonify({"access_token": access, "refresh_token": refresh, "token_type": "Bearer", "expires_in": current_app.config["JWT_ACCESS_TTL_SECONDS"]})
+    return jsonify(
+        {
+            "access_token": access,
+            "refresh_token": refresh,
+            "token_type": "Bearer",
+            "expires_in": current_app.config["JWT_ACCESS_TTL_SECONDS"],
+        }
+    )
 
 
 @api_auth_bp.post("/refresh")
@@ -61,12 +76,19 @@ def api_refresh():
 
     row = RefreshToken.query.filter_by(jti=jti, user_id=user_id).first()
     if not row or not row.is_active():
-        log_security_event("auth_api_refresh_failed", actor_type="admin", actor_id=user_id, meta={"reason": "revoked_or_expired"})
+        log_security_event(
+            "auth_api_refresh_failed",
+            actor_type="admin",
+            actor_id=user_id,
+            meta={"reason": "revoked_or_expired"},
+        )
         return jsonify({"error": "refresh_revoked"}), 401
 
     # rotate: revoke old, issue new
     new_j = new_jti()
-    exp_dt = datetime.utcnow() + timedelta(seconds=current_app.config["JWT_REFRESH_TTL_SECONDS"])
+    exp_dt = datetime.utcnow() + timedelta(
+        seconds=current_app.config["JWT_REFRESH_TTL_SECONDS"]
+    )
 
     row.revoked_at = datetime.utcnow()
     row.replaced_by_jti = new_j
@@ -77,7 +99,14 @@ def api_refresh():
     refresh = encode_refresh_token(user_id, new_j, exp_dt)
     log_security_event("auth_api_refresh_success", actor_type="admin", actor_id=user_id)
 
-    return jsonify({"access_token": access, "refresh_token": refresh, "token_type": "Bearer", "expires_in": current_app.config["JWT_ACCESS_TTL_SECONDS"]})
+    return jsonify(
+        {
+            "access_token": access,
+            "refresh_token": refresh,
+            "token_type": "Bearer",
+            "expires_in": current_app.config["JWT_ACCESS_TTL_SECONDS"],
+        }
+    )
 
 
 @api_auth_bp.post("/logout")
@@ -103,13 +132,16 @@ def api_logout():
 @require_access_token
 def api_me():
     payload = getattr(request, "jwt_payload", {}) or {}
-    return jsonify(
-        {
-            "user_id": payload.get("sub"),
-            "typ": payload.get("typ"),
-            "iat": payload.get("iat"),
-            "exp": payload.get("exp"),
-            "iss": payload.get("iss"),
-            "aud": payload.get("aud"),
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "user_id": payload.get("sub"),
+                "typ": payload.get("typ"),
+                "iat": payload.get("iat"),
+                "exp": payload.get("exp"),
+                "iss": payload.get("iss"),
+                "aud": payload.get("aud"),
+            }
+        ),
+        200,
+    )

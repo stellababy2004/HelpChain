@@ -19,7 +19,11 @@ class Config:
     # --- Session / cookies hardening ---
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "").lower() in ("true", "1", "yes")
+    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
     SESSION_PERMANENT = True
     PERMANENT_SESSION_LIFETIME = timedelta(hours=6)
     SESSION_REFRESH_EACH_REQUEST = True
@@ -59,11 +63,15 @@ class Config:
     # --- Optional / misc ---
     NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN")
     QR_CODE_SIZE = int(os.getenv("QR_CODE_SIZE", 250))
-    ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()]
+    ALLOWED_HOSTS = [
+        h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()
+    ]
 
     # Dev-only volunteer bypass (disabled by default)
     VOLUNTEER_DEV_BYPASS_ENABLED = os.getenv("VOLUNTEER_DEV_BYPASS_ENABLED", "0") == "1"
-    VOLUNTEER_DEV_BYPASS_EMAIL = (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
+    VOLUNTEER_DEV_BYPASS_EMAIL = (
+        (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
+    )
 
     # --- MFA ---
     MFA_ENABLED = os.getenv("MFA_ENABLED", "true").lower() in ("true", "1", "yes")

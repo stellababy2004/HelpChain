@@ -37,7 +37,6 @@ from _pytest.compat import assert_never
 from _pytest.outcomes import skip
 from _pytest.warning_types import PytestWarning
 
-
 if sys.version_info < (3, 11):
     from importlib._bootstrap_external import _NamespaceLoader as NamespaceLoader
 else:
@@ -73,8 +72,10 @@ def get_lock_path(path: _AnyPurePath) -> _AnyPurePath:
 def on_rm_rf_error(
     func: Callable[..., Any] | None,
     path: str,
-    excinfo: BaseException
-    | tuple[type[BaseException], BaseException, types.TracebackType | None],
+    excinfo: (
+        BaseException
+        | tuple[type[BaseException], BaseException, types.TracebackType | None]
+    ),
     *,
     start_path: Path,
 ) -> bool:

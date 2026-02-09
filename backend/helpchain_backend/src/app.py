@@ -51,7 +51,9 @@ def _install_slow_sql_logger(app: Flask) -> None:
         SLOW_QUERY_MS = 50
 
     @event.listens_for(Engine, "before_cursor_execute")
-    def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    def before_cursor_execute(
+        conn, cursor, statement, parameters, context, executemany
+    ):
         context._query_start_time = perf_counter()
 
     @event.listens_for(Engine, "after_cursor_execute")
@@ -62,7 +64,9 @@ def _install_slow_sql_logger(app: Flask) -> None:
         total_ms = (perf_counter() - start) * 1000
         if total_ms >= SLOW_QUERY_MS:
             try:
-                app.logger.warning("SLOW SQL (%.1f ms): %s", total_ms, (statement or "")[:500])
+                app.logger.warning(
+                    "SLOW SQL (%.1f ms): %s", total_ms, (statement or "")[:500]
+                )
             except Exception:
                 pass
 
@@ -99,7 +103,9 @@ def add_security_headers(app: Flask):
         # Baseline hardening
         resp.headers["X-Content-Type-Options"] = "nosniff"
         resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        resp.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=(), payment=(), usb=(), fullscreen=(self)"
+        resp.headers["Permissions-Policy"] = (
+            "geolocation=(), microphone=(), camera=(), payment=(), usb=(), fullscreen=(self)"
+        )
         resp.headers["X-Frame-Options"] = "DENY"
 
         # CSP (start with Report-Only to avoid breaking inline scripts/styles)
@@ -118,9 +124,17 @@ def add_security_headers(app: Flask):
         resp.headers["Content-Security-Policy-Report-Only"] = csp
 
         # HSTS only when really on HTTPS and in production-ish env
-        if app.config.get("ENV") == "production" or app.config.get("APP_ENV") == "production" or ((app.config.get("FLASK_CONFIG") or "").lower() in ("prod", "production")):
+        if (
+            app.config.get("ENV") == "production"
+            or app.config.get("APP_ENV") == "production"
+            or (
+                (app.config.get("FLASK_CONFIG") or "").lower() in ("prod", "production")
+            )
+        ):
             if request.is_secure:
-                resp.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+                resp.headers["Strict-Transport-Security"] = (
+                    "max-age=31536000; includeSubDomains"
+                )
 
         # Strip Server header if present
         resp.headers.pop("Server", None)
@@ -135,11 +149,20 @@ def create_app(config_object=None) -> Flask:
     Uses root-level /templates and /static as the template/static folders.
     """
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    root_templates = os.path.abspath(os.path.join(base_dir, "..", "..", "..", "templates"))
+    root_templates = os.path.abspath(
+        os.path.join(base_dir, "..", "..", "..", "templates")
+    )
     root_static = os.path.abspath(os.path.join(base_dir, "..", "..", "..", "static"))
-    root_translations = os.path.abspath(os.path.join(base_dir, "..", "..", "..", "translations"))
+    root_translations = os.path.abspath(
+        os.path.join(base_dir, "..", "..", "..", "translations")
+    )
 
-    app = Flask(__name__, instance_relative_config=True, template_folder=root_templates, static_folder=root_static)
+    app = Flask(
+        __name__,
+        instance_relative_config=True,
+        template_folder=root_templates,
+        static_folder=root_static,
+    )
 
     # Config: caller overrides, then Config class, then env defaults
     if isinstance(config_object, dict):
@@ -148,7 +171,12 @@ def create_app(config_object=None) -> Flask:
         from .config import Config as _Cfg
         from .config import DevConfig, ProdConfig
 
-        env_name = (os.getenv("FLASK_CONFIG") or os.getenv("APP_ENV") or os.getenv("FLASK_ENV") or "").lower()
+        env_name = (
+            os.getenv("FLASK_CONFIG")
+            or os.getenv("APP_ENV")
+            or os.getenv("FLASK_ENV")
+            or ""
+        ).lower()
         if config_object and not isinstance(config_object, dict):
             app.config.from_object(config_object)
         elif env_name in ("prod", "production"):
@@ -167,10 +195,14 @@ def create_app(config_object=None) -> Flask:
         app.config["SESSION_COOKIE_SECURE"] = False
 
     app.config["PROPAGATE_EXCEPTIONS"] = True
-    instance_db_path = os.path.join(os.path.abspath(os.path.join(base_dir, "..", "..", "..")), "instance", "app.db")
+    instance_db_path = os.path.join(
+        os.path.abspath(os.path.join(base_dir, "..", "..", "..")), "instance", "app.db"
+    )
     app.config.setdefault(
         "SQLALCHEMY_DATABASE_URI",
-        os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL") or f"sqlite:///{instance_db_path}",
+        os.getenv("SQLALCHEMY_DATABASE_URI")
+        or os.getenv("DATABASE_URL")
+        or f"sqlite:///{instance_db_path}",
     )
     # Serverless / preview safety: never leave URI empty
     if not app.config.get("SQLALCHEMY_DATABASE_URI"):
@@ -178,8 +210,12 @@ def create_app(config_object=None) -> Flask:
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", root_translations)
     # FR-first: keep a single default locale across dev/prod unless explicitly overridden by env.
-    app.config["BABEL_DEFAULT_LOCALE"] = os.getenv("BABEL_DEFAULT_LOCALE", DEFAULT_LOCALE)
-    app.config["BABEL_DEFAULT_TIMEZONE"] = os.getenv("BABEL_DEFAULT_TIMEZONE", "Europe/Paris")
+    app.config["BABEL_DEFAULT_LOCALE"] = os.getenv(
+        "BABEL_DEFAULT_LOCALE", DEFAULT_LOCALE
+    )
+    app.config["BABEL_DEFAULT_TIMEZONE"] = os.getenv(
+        "BABEL_DEFAULT_TIMEZONE", "Europe/Paris"
+    )
 
     # Secrets
     if not app.config.get("SECRET_KEY"):
@@ -189,9 +225,13 @@ def create_app(config_object=None) -> Flask:
             secret = os.environ.get("SECRET_KEY")
         if not secret:
             secret = "dev-only-change-me"
-            app.logger.warning("SECRET_KEY missing. Using DEV fallback. Set SECRET_KEY via env/instance config.")
+            app.logger.warning(
+                "SECRET_KEY missing. Using DEV fallback. Set SECRET_KEY via env/instance config."
+            )
         app.config["SECRET_KEY"] = secret
-    app.config.setdefault("JWT_SECRET_KEY", os.getenv("JWT_SECRET_KEY", app.config.get("SECRET_KEY")))
+    app.config.setdefault(
+        "JWT_SECRET_KEY", os.getenv("JWT_SECRET_KEY", app.config.get("SECRET_KEY"))
+    )
 
     # Behind one proxy hop: trust X-Forwarded-For/Proto/Host early
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
@@ -209,7 +249,9 @@ def create_app(config_object=None) -> Flask:
     # Web push (VAPID) defaults
     app.config.setdefault("VAPID_PUBLIC_KEY", os.getenv("VAPID_PUBLIC_KEY"))
     app.config.setdefault("VAPID_PRIVATE_KEY", os.getenv("VAPID_PRIVATE_KEY"))
-    app.config.setdefault("VAPID_SUBJECT", os.getenv("VAPID_SUBJECT", "mailto:admin@example.com"))
+    app.config.setdefault(
+        "VAPID_SUBJECT", os.getenv("VAPID_SUBJECT", "mailto:admin@example.com")
+    )
 
     # DB + Migrate
     db.init_app(app)
@@ -343,8 +385,12 @@ def create_app(config_object=None) -> Flask:
             from flask import current_app as _ca
 
             return {
-                "VOLUNTEER_DEV_BYPASS_ENABLED": _ca.config.get("VOLUNTEER_DEV_BYPASS_ENABLED"),
-                "VOLUNTEER_DEV_BYPASS_EMAIL": _ca.config.get("VOLUNTEER_DEV_BYPASS_EMAIL"),
+                "VOLUNTEER_DEV_BYPASS_ENABLED": _ca.config.get(
+                    "VOLUNTEER_DEV_BYPASS_ENABLED"
+                ),
+                "VOLUNTEER_DEV_BYPASS_EMAIL": _ca.config.get(
+                    "VOLUNTEER_DEV_BYPASS_EMAIL"
+                ),
             }
         except Exception:
             return {}

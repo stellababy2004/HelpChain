@@ -29,7 +29,9 @@ if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1" and db is not None:
                             bind_url = getattr(bind, "url", None)
                         except Exception:
                             bind_url = None
-                        print(f"[EXT DEBUG] session.commit called session_id={id(sess)} bind_id={bind_id} bind_url={bind_url}")
+                        print(
+                            f"[EXT DEBUG] session.commit called session_id={id(sess)} bind_id={bind_id} bind_url={bind_url}"
+                        )
                     except Exception:
                         pass
                     return orig_commit(*a, **kw)
@@ -49,7 +51,9 @@ if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1" and db is not None:
                             bind_url = getattr(bind, "url", None)
                         except Exception:
                             bind_url = None
-                        print(f"[EXT DEBUG] session.flush called session_id={id(sess)} bind_id={bind_id} bind_url={bind_url}")
+                        print(
+                            f"[EXT DEBUG] session.flush called session_id={id(sess)} bind_id={bind_id} bind_url={bind_url}"
+                        )
                     except Exception:
                         pass
                     return orig_flush(*a, **kw)
@@ -105,7 +109,9 @@ if os.environ.get("HELPCHAIN_TEST_DEBUG") == "1" and db is not None:
                             url = getattr(eng, "url", None)
                         except Exception:
                             url = None
-                        print(f"[EXT DEBUG] engine.connect event engine_id={id(eng)} url={url} dbapi_conn={id(dbapi_conn)}")
+                        print(
+                            f"[EXT DEBUG] engine.connect event engine_id={id(eng)} url={url} dbapi_conn={id(dbapi_conn)}"
+                        )
                     except Exception:
                         pass
 

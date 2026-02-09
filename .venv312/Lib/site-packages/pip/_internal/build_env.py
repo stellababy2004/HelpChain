@@ -274,9 +274,7 @@ class BuildEnvironment:
         with open(
             os.path.join(self._site_dir, "sitecustomize.py"), "w", encoding="utf-8"
         ) as fp:
-            fp.write(
-                textwrap.dedent(
-                    """
+            fp.write(textwrap.dedent("""
                 import os, site, sys
 
                 # First, drop system-sites related paths.
@@ -299,9 +297,7 @@ class BuildEnvironment:
                 for path in {lib_dirs!r}:
                     assert not path in sys.path
                     site.addsitedir(path)
-                """
-                ).format(system_sites=system_sites, lib_dirs=self._lib_dirs)
-            )
+                """).format(system_sites=system_sites, lib_dirs=self._lib_dirs))
 
     def __enter__(self) -> None:
         self._save_env = {

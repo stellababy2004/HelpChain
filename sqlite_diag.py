@@ -2,7 +2,12 @@ import os
 import sqlite3
 
 path = r"C:\dev\HelpChain\HelpChain.bg\instance\app.db"
-print("DB exists:", os.path.exists(path), "size:", os.path.getsize(path) if os.path.exists(path) else None)
+print(
+    "DB exists:",
+    os.path.exists(path),
+    "size:",
+    os.path.getsize(path) if os.path.exists(path) else None,
+)
 con = sqlite3.connect(path)
 cur = con.cursor()
 cur.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")

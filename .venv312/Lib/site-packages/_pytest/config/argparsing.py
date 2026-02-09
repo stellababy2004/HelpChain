@@ -16,7 +16,6 @@ from .exceptions import UsageError
 import _pytest._io
 from _pytest.deprecated import check_ispytest
 
-
 FILE_OR_DIR = "file_or_dir"
 
 
@@ -186,10 +185,19 @@ class Parser:
         self,
         name: str,
         help: str,
-        type: Literal[
-            "string", "paths", "pathlist", "args", "linelist", "bool", "int", "float"
-        ]
-        | None = None,
+        type: (
+            Literal[
+                "string",
+                "paths",
+                "pathlist",
+                "args",
+                "linelist",
+                "bool",
+                "int",
+                "float",
+            ]
+            | None
+        ) = None,
         default: Any = NOT_SET,
         *,
         aliases: Sequence[str] = (),
