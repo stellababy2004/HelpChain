@@ -120,13 +120,24 @@
       <p class="hc-sectionHint">
         Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно.
       </p>
-      {% if volunteer_action and volunteer_action.action == 'CAN_HELP' %}
-        <span class="badge bg-success">✅ Мога да помогна</span>
-      {% elif volunteer_action and volunteer_action.action == 'CANT_HELP' %}
-        <span class="badge bg-secondary">🚫 Не мога да помогна в момента</span>
-      {% else %}
-        <span class="text-muted small">Още няма изпратен сигнал.</span>
-      {% endif %}
+      {% set _sig = my_last_signal or volunteer_action %}
+      <div class="mt-1">
+        <span class="text-muted small">{{ _("Last signal") }}:</span>
+        {% if _sig %}
+          {% if _sig.action == 'CAN_HELP' %}
+            <span class="badge bg-success ms-1">✅ {{ _("Can help") }}</span>
+          {% elif _sig.action == 'CANT_HELP' %}
+            <span class="badge bg-secondary ms-1">🚫 {{ _("Can't help") }}</span>
+          {% else %}
+            <span class="badge bg-secondary ms-1">{{ _sig.action }}</span>
+          {% endif %}
+          {% if _sig.updated_at or _sig.created_at %}
+            <span class="text-muted small ms-2">({{ _sig.updated_at or _sig.created_at }})</span>
+          {% endif %}
+        {% else %}
+          <span class="text-muted small ms-1">—</span>
+        {% endif %}
+      </div>
 
       <div class="d-flex flex-wrap gap-2 mt-2">
         <form method="post" action="{{ url_for('main.volunteer_can_help', req_id=req.id) }}" class="d-inline">
@@ -135,7 +146,7 @@
           {% elif csrf_token is defined %}
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           {% endif %}
-          <button type="submit" class="btn btn-sm btn-primary">Мога да помогна</button>
+          <button type="submit" class="btn btn-sm btn-primary" {% if _sig and _sig.action == 'CAN_HELP' %}disabled{% endif %}>Мога да помогна</button>
         </form>
         <form method="post" action="{{ url_for('main.volunteer_cant_help', req_id=req.id) }}" class="d-inline">
           {% if csrf_form %}
@@ -143,7 +154,7 @@
           {% elif csrf_token is defined %}
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           {% endif %}
-          <button type="submit" class="btn btn-sm btn-outline-secondary">Не мога да помогна</button>
+          <button type="submit" class="btn btn-sm btn-outline-secondary" {% if _sig and _sig.action == 'CANT_HELP' %}disabled{% endif %}>Не мога да помогна</button>
         </form>
       </div>
 

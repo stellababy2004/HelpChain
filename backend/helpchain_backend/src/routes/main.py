@@ -899,6 +899,14 @@ def volunteer_request_details(req_id: int):
     action_row = VolunteerAction.query.filter_by(
         request_id=req.id, volunteer_id=volunteer.id
     ).one_or_none()
+    # Keep a single "last signal" object for the template (CAN_HELP / CANT_HELP).
+    # This is effectively 1 row due to uq_volunteer_action_request_volunteer.
+    my_last_signal = (
+        VolunteerAction.query
+        .filter_by(request_id=req.id, volunteer_id=volunteer.id)
+        .order_by(VolunteerAction.updated_at.desc(), VolunteerAction.created_at.desc(), VolunteerAction.id.desc())
+        .first()
+    )
 
     # опционален контрол: показваме само ако е match/отворена
     # if not is_request_matching_volunteer(req, volunteer):
@@ -927,6 +935,7 @@ def volunteer_request_details(req_id: int):
         already_rejected=already_rejected,
         is_demo=False,
         volunteer_action=action_row,
+        my_last_signal=my_last_signal,
         csrf_form=csrf_form,
     ), 200
 
@@ -1000,7 +1009,8 @@ def volunteer_help(req_id: int):
     except Exception:
         db.session.rollback()
 
-    return redirect(url_for("main.volunteer_request_details", req_id=req_id))
+    flash(_("Got it. Your signal was sent to the team."), "success")
+    return redirect(url_for("main.volunteer_request_details", req_id=req_id), code=303)
 
 
 def _upsert_volunteer_action(req_obj, volunteer, action_value: str):
@@ -1045,8 +1055,8 @@ def volunteer_can_help(req_id: int):
 
     if request.headers.get("X-Requested-With") == "fetch":
         return jsonify({"ok": True, "action": "CAN_HELP"})
-    flash(_("Signal sent: you can help."), "success")
-    return redirect(url_for("main.volunteer_request_details", req_id=req_id))
+    flash(_("Got it. Your signal was sent to the team."), "success")
+    return redirect(url_for("main.volunteer_request_details", req_id=req_id), code=303)
 
 
 @main_bp.post("/volunteer/requests/<int:req_id>/cant-help")
@@ -1064,8 +1074,8 @@ def volunteer_cant_help(req_id: int):
 
     if request.headers.get("X-Requested-With") == "fetch":
         return jsonify({"ok": True, "action": "CANT_HELP"})
-    flash(_("Signal sent: you can't help right now."), "info")
-    return redirect(url_for("main.volunteer_request_details", req_id=req_id))
+    flash(_("Got it. Your signal was sent to the team."), "success")
+    return redirect(url_for("main.volunteer_request_details", req_id=req_id), code=303)
 
 
 @main_bp.post("/volunteer/requests/demo/help")
