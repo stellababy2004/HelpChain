@@ -37,7 +37,7 @@ msgstr ""
 
 #: backend/helpchain_backend/src/copy.py:17
 msgid "Изпрати заявката"
-msgstr ""
+msgstr "Envoyer la demande"
 
 #: backend/helpchain_backend/src/copy.py:20
 msgid "Категории помощ"
@@ -2639,3 +2639,169 @@ msgstr "Aucun résultat."
 
 #~ msgid "не са зададени"
 #~ msgstr "non renseignée"
+
+# --- templates/submit_request.html (FR default) ---
+msgid "Подайте заявка"
+msgstr "Déposer une demande"
+
+msgid "Нужда от помощ"
+msgstr "Besoin d'aide"
+
+msgid "Изпратете заявка до доброволците"
+msgstr "Envoyez une demande aux bénévoles"
+
+msgid "Опишете какво е нужно и къде се намирате. Най-близките ни проверени доброволци ще откликнат до 24 часа."
+msgstr "Décrivez ce dont vous avez besoin et où vous vous trouvez. Nos bénévoles vérifiés les plus proches répondront sous 24 heures."
+
+msgid "Начало"
+msgstr "Accueil"
+
+msgid "Подходящо за:"
+msgstr "Adapté pour :"
+
+msgid "Хора с ограничена подвижност"
+msgstr "Personnes à mobilité réduite"
+
+msgid "Самотни възрастни хора"
+msgstr "Personnes âgées isolées"
+
+msgid "Семейства със спешни нужди"
+msgstr "Familles avec des besoins urgents"
+
+msgid "Вашите имена"
+msgstr "Vos noms"
+
+msgid "Име и фамилия"
+msgstr "Prénom et nom"
+
+msgid "Минимум 2 символа."
+msgstr "Minimum 2 caractères."
+
+msgid "Телефон за връзка"
+msgstr "Téléphone de contact"
+
+msgid "Използваме го само за координация."
+msgstr "Nous l'utilisons uniquement pour la coordination."
+
+msgid "Имейл"
+msgstr "E-mail"
+
+msgid "По избор, за да ви пишем писмено."
+msgstr "Facultatif, pour vous écrire."
+
+msgid "Ако подавате от името на"
+msgstr "Si vous faites la demande au nom d'un(e)"
+
+msgid "близък"
+msgstr "proche"
+
+msgid "или"
+msgstr "ou"
+
+msgid "съсед"
+msgstr "voisin(e)"
+
+msgid "го уточнете в описанието."
+msgstr "Précisez-le dans la description."
+
+msgid "Категория на нуждата"
+msgstr "Catégorie du besoin"
+
+msgid "Изберете тип нужда"
+msgstr "Choisissez un type de besoin"
+
+msgid "Медицинска помощ"
+msgstr "Aide médicale"
+
+msgid "Социална подкрепа"
+msgstr "Soutien social"
+
+msgid "Техническа помощ"
+msgstr "Aide technique"
+
+msgid "Административна помощ"
+msgstr "Aide administrative"
+
+msgid "Друго"
+msgstr "Autre"
+
+msgid "Ако се колебаете, оставете \"Друго\"."
+msgstr "En cas de doute, choisissez \"Autre\"."
+
+msgid "Спешност"
+msgstr "Urgence"
+
+msgid "Ниска"
+msgstr "Faible"
+
+msgid "Нормална"
+msgstr "Normale"
+
+msgid "Спешна"
+msgstr "Urgente"
+
+msgid "Критична"
+msgstr "Critique"
+
+msgid "Помага ни да приоритизираме."
+msgstr "Cela nous aide à prioriser."
+
+msgid "Кратко заглавие (по избор)"
+msgstr "Titre court (facultatif)"
+
+msgid "Пример: Доставка на лекарства"
+msgstr "Exemple : livraison de médicaments"
+
+msgid "Кратка насока за доброволците."
+msgstr "Un bref résumé pour les bénévoles."
+
+msgid "Адрес / локация"
+msgstr "Adresse / localisation"
+
+msgid "Град, квартал или точен адрес"
+msgstr "Ville, quartier ou adresse précise"
+
+msgid "Достатъчен е кварталът, ако не искате точен адрес."
+msgstr "Le quartier suffit si vous ne souhaitez pas indiquer une adresse précise."
+
+msgid "Какво ви трябва?"
+msgstr "De quoi avez-vous besoin ?"
+
+msgid "Опишете в 2-3 изречения какво е нужно, за кого е и кога е удобно."
+msgstr "Decrivez en 2-3 phrases ce dont vous avez besoin, pour qui, et quand cela vous convient."
+
+msgid "Минимум 10 символа."
+msgstr "Minimum 10 caractères."
+
+msgid "Съгласен/на съм с"
+msgstr "J'accepte"
+
+msgid "Условията за ползване"
+msgstr "les Conditions d'utilisation"
+
+msgid "и"
+msgstr "et"
+
+msgid "Политиката за поверителност"
+msgstr "la Politique de confidentialité"
+
+msgid "Разрешавам да споделите описаното с подбрани доброволци, за да получа съдействие."
+msgstr "J'autorise le partage de cette description avec des bénévoles sélectionnés afin d'obtenir de l'aide."
+
+msgid "Можете да оттеглите съгласието си по всяко време."
+msgstr "Vous pouvez retirer votre consentement à tout moment."
+
+msgid "Отказ"
+msgstr "Annuler"
+
+msgid "Как се намира подходящият човек"
+msgstr "Comment trouvons-nous la bonne personne ?"
+
+msgid "Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други - по-бавно. Това зависи от наличността на хората, не от важността на проблема."
+msgstr "Lorsque vous soumettez une demande, elle devient visible pour des bénévoles proches de vous ou ayant les compétences nécessaires. Certaines demandes reçoivent une réponse rapidement, d'autres plus lentement. Cela dépend de la disponibilité des personnes, pas de l'importance du problème."
+
+msgid "Когато доброволец се интересува от твоята заявка, той може да се свърже с теб. От този момент вие решавате заедно дали и как да продължите. HelpChain улеснява връзката - решенията са между хората."
+msgstr "Lorsqu'un bénévole s'intéresse à votre demande, il peut vous contacter. À partir de là, vous décidez ensemble si et comment continuer. HelpChain facilite la mise en relation, les décisions se prennent entre personnes."
+
+msgid "Няма гарантирано време за отговор. При спешни или опасни ситуации се обърни към местните спешни служби."
+msgstr "Nous ne pouvons pas garantir un délai de réponse. En cas de situation urgente ou dangereuse, contactez les services d'urgence locaux."

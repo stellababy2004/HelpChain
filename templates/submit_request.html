@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Подайте заявка{% endblock %}
+{% block title %}{{ _("Подайте заявка") }}{% endblock %}
 
 {% block content %}
 <style>
@@ -104,11 +104,11 @@
   <div class="hc-hero mb-3">
     <div>
       <div class="hc-eyebrow">
-        <i class="fas fa-life-ring"></i> Нужда от помощ
+        <i class="fas fa-life-ring"></i> {{ _("Нужда от помощ") }}
       </div>
-      <h1 class="hc-title">Изпратете заявка до доброволците</h1>
+      <h1 class="hc-title">{{ _("Изпратете заявка до доброволците") }}</h1>
       <p class="hc-subtitle">
-        Опишете какво е нужно и къде се намирате. Най-близките ни проверени доброволци ще откликнат до 24 часа.
+        {{ _("Опишете какво е нужно и къде се намирате. Най-близките ни проверени доброволци ще откликнат до 24 часа.") }}
       </p>
       <ul class="hc-trust" aria-label="{{ _('Trust signals') }}">
         {% for mark, icon, text in trust_items %}
@@ -123,7 +123,7 @@
 
   <div class="d-flex justify-content-end mb-3">
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">
-      ↩ Начало
+      ↩ {{ _("Начало") }}
     </a>
   </div>
 
@@ -142,11 +142,11 @@
     <div class="card-body p-3 p-md-4">
 
       <div class="mb-3">
-        <div class="small text-muted">Подходящо за:</div>
+        <div class="small text-muted">{{ _("Подходящо за:") }}</div>
         <div class="d-flex flex-wrap gap-2 mt-2">
-          <span class="badge text-bg-light border">Хора с ограничена подвижност</span>
-          <span class="badge text-bg-light border">Самотни възрастни хора</span>
-          <span class="badge text-bg-light border">Семейства със спешни нужди</span>
+          <span class="badge text-bg-light border">{{ _("Хора с ограничена подвижност") }}</span>
+          <span class="badge text-bg-light border">{{ _("Самотни възрастни хора") }}</span>
+          <span class="badge text-bg-light border">{{ _("Семейства със спешни нужди") }}</span>
         </div>
       </div>
 
@@ -180,20 +180,20 @@
         <div class="row g-3">
 
           <div class="col-12">
-            <label class="form-label">Вашите имена <span class="text-danger">*</span></label>
+            <label class="form-label">{{ _("Вашите имена") }} <span class="text-danger">*</span></label>
             <input
               type="text"
               name="name"
               class="form-control"
               value="{{ request.form.get('name','') }}"
-              placeholder="Име и фамилия"
+              placeholder="{{ _('Име и фамилия') }}"
               required minlength="2"
             >
-            <div class="form-text">Минимум 2 символа.</div>
+            <div class="form-text">{{ _("Минимум 2 символа.") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">Телефон за връзка</label>
+            <label class="form-label">{{ _("Телефон за връзка") }}</label>
             <input
               type="tel"
               name="phone"
@@ -201,11 +201,11 @@
               value="{{ request.form.get('phone','') }}"
               placeholder="+359 88 123 4567"
             >
-            <div class="form-text">Използваме го само за координация.</div>
+            <div class="form-text">{{ _("Използваме го само за координация.") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">Имейл</label>
+            <label class="form-label">{{ _("Имейл") }}</label>
             <input
               type="email"
               name="email"
@@ -213,94 +213,114 @@
               value="{{ request.form.get('email','') }}"
               placeholder="name@example.com"
             >
-            <div class="form-text">По избор, за да ви пишем писмено.</div>
+            <div class="form-text">{{ _("По избор, за да ви пишем писмено.") }}</div>
           </div>
 
           <div class="col-12">
             <div class="hc-inline-note">
-              <span class="small">Ако подавате от името на <b>близък</b> или <b>съсед</b>, го уточнете в описанието.</span>
+              <span class="small">
+                {{ _("Ако подавате от името на") }} <b>{{ _("близък") }}</b> {{ _("или") }} <b>{{ _("съсед") }}</b>, {{ _("го уточнете в описанието.") }}
+              </span>
             </div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">Категория на нуждата</label>
+            <label class="form-label">{{ _("Категория на нуждата") }}</label>
             <select name="category" class="form-select">
-              <option value="">Изберете тип нужда</option>
-              <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>Медицинска помощ</option>
-              <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>Социална подкрепа</option>
-              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>Техническа помощ</option>
-              <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>Административна помощ</option>
-              <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>Друго</option>
+              <option value="">{{ _("Изберете тип нужда") }}</option>
+              <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>{{ _("Медицинска помощ") }}</option>
+              <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>{{ _("Социална подкрепа") }}</option>
+              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>{{ _("Техническа помощ") }}</option>
+              <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>{{ _("Административна помощ") }}</option>
+              <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>{{ _("Друго") }}</option>
             </select>
-            <div class="form-text">Ако се колебаете, оставете "Друго".</div>
+            <div class="form-text">{{ _("Ако се колебаете, оставете \"Друго\".") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">Спешност</label>
+            <label class="form-label">{{ _("Спешност") }}</label>
             <select name="urgency" class="form-select">
-              <option value="low" {% if request.form.get('urgency')=='low' %}selected{% endif %}>Ниска</option>
-              <option value="normal" {% if request.form.get('urgency','normal') in ['normal','medium'] %}selected{% endif %}>Нормална</option>
-              <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>Спешна</option>
-              <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>Критична</option>
+              <option value="low" {% if request.form.get('urgency')=='low' %}selected{% endif %}>{{ _("Ниска") }}</option>
+              <option value="normal" {% if request.form.get('urgency','normal') in ['normal','medium'] %}selected{% endif %}>{{ _("Нормална") }}</option>
+              <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>{{ _("Спешна") }}</option>
+              <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>{{ _("Критична") }}</option>
             </select>
-            <div class="form-text">Помага ни да приоритизираме.</div>
+            <div class="form-text">{{ _("Помага ни да приоритизираме.") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">Кратко заглавие (по избор)</label>
+            <label class="form-label">{{ _("Кратко заглавие (по избор)") }}</label>
             <input
               type="text"
               name="title"
               class="form-control"
               value="{{ request.form.get('title','') }}"
-              placeholder="Пример: Доставка на лекарства"
+              placeholder="{{ _('Пример: Доставка на лекарства') }}"
             >
-            <div class="form-text">Кратка насока за доброволците.</div>
+            <div class="form-text">{{ _("Кратка насока за доброволците.") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">Адрес / локация</label>
+            <label class="form-label">{{ _("Адрес / локация") }}</label>
             <input
               type="text"
               name="location_text"
               class="form-control"
               value="{{ request.form.get('location_text','') }}"
-              placeholder="Град, квартал или точен адрес"
+              placeholder="{{ _('Град, квартал или точен адрес') }}"
             >
-            <div class="form-text">Достатъчен е кварталът, ако не искате точен адрес.</div>
+            <div class="form-text">{{ _("Достатъчен е кварталът, ако не искате точен адрес.") }}</div>
           </div>
 
           <div class="col-12">
-            <label class="form-label">Какво ви трябва? <span class="text-danger">*</span></label>
+            <label class="form-label">{{ _("Какво ви трябва?") }} <span class="text-danger">*</span></label>
             <textarea
               name="description"
               class="form-control"
               rows="5"
               required minlength="10"
-              placeholder="Опишете в 2-3 изречения какво е нужно, за кого е и кога е удобно."
+              placeholder="{{ _('Опишете в 2-3 изречения какво е нужно, за кого е и кога е удобно.') }}"
             >{{ request.form.get('description','') }}</textarea>
-            <div class="form-text">Минимум 10 символа.</div>
+            <div class="form-text">{{ _("Минимум 10 символа.") }}</div>
           </div>
 
           <div class="col-12 hc-consent">
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="consent_terms" name="consent_terms" required>
               <label class="form-check-label" for="consent_terms">
-                Съгласен/на съм с <a href="{{ url_for('main.terms') }}" target="_blank">Условията за ползване</a> и <a href="{{ url_for('main.privacy') }}" target="_blank">Политиката за поверителност</a>.
+                {{ _("Съгласен/на съм с") }}
+                <a href="{{ url_for('main.terms') }}" target="_blank">{{ _("Условията за ползване") }}</a>
+                {{ _("и") }}
+                <a href="{{ url_for('main.privacy') }}" target="_blank">{{ _("Политиката за поверителност") }}</a>.
               </label>
             </div>
             <div class="form-check mt-2">
               <input class="form-check-input" type="checkbox" id="consent_share" name="consent_share" required>
               <label class="form-check-label" for="consent_share">
-                Разрешавам да споделите описаното с подбрани доброволци, за да получа съдействие.
+                {{ _("Разрешавам да споделите описаното с подбрани доброволци, за да получа съдействие.") }}
               </label>
             </div>
-            <div class="form-text">Можете да оттеглите съгласието си по всяко време.</div>
+            <div class="form-text">{{ _("Можете да оттеглите съгласието си по всяко време.") }}</div>
+          </div>
+
+          <div class="col-12">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="privacy_consent" name="privacy_consent" value="1" required>
+              <label class="form-check-label" for="privacy_consent">
+                J’ai lu et j’accepte
+                <a href="{{ url_for('main.legal') }}#rgpd" target="_blank" rel="noopener">la Politique de confidentialité (RGPD)</a>
+                et
+                <a href="{{ url_for('main.legal') }}#mentions" target="_blank" rel="noopener">les Mentions légales</a>.
+              </label>
+            </div>
+            <div class="form-text">
+              Nous utilisons vos informations uniquement pour traiter votre demande. Aucune revente.
+            </div>
           </div>
 
           <div class="col-12 d-flex gap-2 justify-content-end pt-2">
-            <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">Отказ</a>
-            <button type="submit" class="btn btn-primary">Изпрати заявката</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">{{ _("Отказ") }}</a>
+            <button type="submit" class="btn btn-primary">{{ _("Изпрати заявката") }}</button>
           </div>
 
         </div>
@@ -325,11 +345,11 @@
   <div style="height: 84px;"></div>
 
   <div class="hc-expectations">
-    <h3 class="h5 mb-3">Как се намира подходящият човек</h3>
-    <p>Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други - по-бавно. Това зависи от наличността на хората, не от важността на проблема.</p>
+    <h3 class="h5 mb-3">{{ _("Как се намира подходящият човек") }}</h3>
+    <p>{{ _("Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други - по-бавно. Това зависи от наличността на хората, не от важността на проблема.") }}</p>
     <hr class="my-3">
-    <p>Когато доброволец се интересува от твоята заявка, той може да се свърже с теб. От този момент вие решавате заедно дали и как да продължите. HelpChain улеснява връзката - решенията са между хората.</p>
-    <p class="muted"><em>Няма гарантирано време за отговор. При спешни или опасни ситуации се обърни към местните спешни служби.</em></p>
+    <p>{{ _("Когато доброволец се интересува от твоята заявка, той може да се свърже с теб. От този момент вие решавате заедно дали и как да продължите. HelpChain улеснява връзката - решенията са между хората.") }}</p>
+    <p class="muted"><em>{{ _("Няма гарантирано време за отговор. При спешни или опасни ситуации се обърни към местните спешни служби.") }}</em></p>
   </div>
 </div>
 {% endblock %}
