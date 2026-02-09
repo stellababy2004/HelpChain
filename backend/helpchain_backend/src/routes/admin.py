@@ -1204,13 +1204,7 @@ def update_status(req_id):
         flash("No status change.", "info")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
-
-@admin_bp.post("/requests/<int:req_id>/status")
-@admin_required
-def admin_request_set_status(req_id: int):
-    # Alias: keep old canonical handler, just expose the “resource” URL too.
-    return update_status(req_id)
-
+    # ✅ SUCCESS PATH (was accidentally placed under the alias handler)
     req.status = new_status
     closing_statuses = {"done", "cancelled"}
     if new_status in closing_statuses:
@@ -1218,7 +1212,13 @@ def admin_request_set_status(req_id: int):
     else:
         req.completed_at = None
     # Activity + legacy request log (single commit)
-    log_request_activity(req, "status_change", old=old_status, new=new_status, actor_admin_id=getattr(current_user, "id", None))
+    log_request_activity(
+        req,
+        "status_change",
+        old=old_status,
+        new=new_status,
+        actor_admin_id=getattr(current_user, "id", None),
+    )
     # metrics
     metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
     if metric is None:
@@ -1331,6 +1331,13 @@ def admin_request_set_status(req_id: int):
         return jsonify({"success": True, "status": new_status or req.status})
     flash("Статусът е обновен.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
+
+
+@admin_bp.post("/requests/<int:req_id>/status")
+@admin_required
+def admin_request_set_status(req_id: int):
+    # Alias: keep old canonical handler, just expose the “resource” URL too.
+    return update_status(req_id)
 
 
 from flask import render_template, request, redirect, url_for, flash, current_app
