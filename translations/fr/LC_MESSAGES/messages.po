@@ -2805,3 +2805,292 @@ msgstr "Lorsqu'un bénévole s'intéresse à votre demande, il peut vous contact
 
 msgid "Няма гарантирано време за отговор. При спешни или опасни ситуации се обърни към местните спешни служби."
 msgstr "Nous ne pouvons pas garantir un délai de réponse. En cas de situation urgente ou dangereuse, contactez les services d'urgence locaux."
+
+# --- templates/become_volunteer.html ---
+msgid "Стани доброволец"
+msgstr "Devenir bénévole"
+
+msgid "Отвори меню"
+msgstr "Ouvrir le menu"
+
+msgid "Категории"
+msgstr "Catégories"
+
+msgid "ЧЗВ"
+msgstr "FAQ"
+
+msgid "Вход"
+msgstr "Connexion"
+
+msgid "Регистрация"
+msgstr "Inscription"
+
+msgid "Вход за доброволци"
+msgstr "Connexion bénévoles"
+
+msgid "Превключи тема"
+msgstr "Changer de thème"
+
+msgid "Спокойствие за доброволци и хора в нужда"
+msgstr "Sérénité pour les bénévoles et les personnes dans le besoin"
+
+msgid "Помагаш, когато можеш. По начин, който избираш."
+msgstr "Vous aidez quand vous pouvez. De la manière que vous choisissez."
+
+msgid "HelpChain свързва хора в нужда с доброволци - без натиск, без бюрокрация и с ясни граници. Ти решаваш дали, кога и как да се включиш."
+msgstr "HelpChain met en relation des personnes dans le besoin avec des bénévoles, sans pression, sans bureaucratie et avec des limites claires. C’est vous qui décidez si, quand et comment participer."
+
+msgid "Виж как можеш да помогнеш"
+msgstr "Voir comment vous pouvez aider"
+
+msgid "Как работи HelpChain →"
+msgstr "Comment fonctionne HelpChain →"
+
+msgid "12 месеца"
+msgstr "12 mois"
+
+msgid "последователна подкрепа в общност."
+msgstr "un soutien constant au sein d’une communauté."
+
+msgid "заявки получават отговор от доброволец."
+msgstr "des demandes reçoivent une réponse d’un bénévole."
+
+msgid "оценка на разговора с доброволци."
+msgstr "d’évaluation des échanges avec des bénévoles."
+
+msgid "Какво означава да си доброволец тук"
+msgstr "Que signifie être bénévole ici"
+
+msgid "Виждаш заявки наблизо"
+msgstr "Vous voyez des demandes près de chez vous"
+
+msgid "Получаваш заявки според локация и вид помощ. Нищо задължително."
+msgstr "Vous recevez des demandes selon la localisation et le type d’aide. Rien d’obligatoire."
+
+msgid "Избираш дали и кога"
+msgstr "Vous choisissez si et quand"
+
+msgid "Ти решаваш дали да поемеш заявка и кога да се включиш."
+msgstr "Vous décidez si vous prenez une demande et quand vous vous impliquez."
+
+msgid "Свързваш се директно"
+msgstr "Vous contactez directement"
+
+msgid "Говориш с човека директно (телефон или имейл) - без посредници и забавяне."
+msgstr "Vous parlez directement à la personne (téléphone ou e-mail), sans intermédiaires ni délai."
+
+msgid "Можеш да откажеш"
+msgstr "Vous pouvez refuser"
+
+msgid "Отказът е окей. Няма санкции, няма задължения, няма чувство за вина."
+msgstr "Refuser, c’est OK. Pas de sanctions, pas d’obligations, pas de culpabilité."
+
+msgid "Какво не си длъжен/длъжна да правиш"
+msgstr "Ce que vous n’êtes pas obligé(e) de faire"
+
+msgid "Ако нещо не ти е окей - просто не го правиш. Това е напълно приемливо тук."
+msgstr "Si quelque chose ne vous convient pas, vous ne le faites pas. C’est tout à fait acceptable ici."
+
+msgid "Лека проверка за повече спокойствие"
+msgstr "Une vérification légère pour plus de sérénité"
+
+msgid "1. Лека стъпка"
+msgstr "1. Étape simple"
+
+msgid "За да пазим всички в безопасност, някои доброволци минават лека проверка (напр. имейл или телефон). Това помага на хората да се чувстват по-спокойни."
+msgstr "Pour la sécurité de tous, certains bénévoles passent une vérification légère (par ex. e-mail ou téléphone). Cela aide les personnes à se sentir plus sereines."
+
+msgid "2. Ясни граници"
+msgstr "2. Limites claires"
+
+msgid "Избираш кога и колко да помагаш. Няма задължителен график."
+msgstr "Vous choisissez quand et combien vous aidez. Aucun planning obligatoire."
+
+msgid "3. Директна връзка"
+msgstr "3. Contact direct"
+
+msgid "Свързваш се директно с човека и решавате заедно какво е удобно и безопасно."
+msgstr "Vous contactez directement la personne et vous décidez ensemble ce qui est pratique et sûr."
+
+msgid "Присъедини се като доброволец"
+msgstr "Rejoindre en tant que bénévole"
+
+msgid "Регистрацията е безплатна · Ангажиментът е по твои правила"
+msgstr "L’inscription est gratuite · L’engagement se fait selon vos règles"
+
+msgid "Хора като теб вече помагат - по малко, по свой начин."
+msgstr "Des personnes comme vous aident déjà, un peu, à leur manière."
+
+msgid "Как работи свързването"
+msgstr "Comment fonctionne la mise en relation"
+
+msgid "Като доброволец виждаш заявки, към които можеш да откликнеш. Не си задължен/а да отговаряш на всички."
+msgstr "En tant que bénévole, vous voyez des demandes auxquelles vous pouvez répondre. Vous n’êtes pas obligé(e) de répondre à toutes."
+
+msgid "Ако решиш да се свържеш, вие заедно уточнявате как и дали да помогнеш."
+msgstr "Si vous choisissez de contacter, vous clarifiez ensemble comment et si vous pouvez aider."
+
+msgid "Доброволчеството не означава 24/7 наличност и не замества професионални услуги."
+msgstr "Le bénévolat ne signifie pas une disponibilité 24/7 et ne remplace pas des services professionnels."
+
+msgid "Така очакванията са ясни: има човешки фактор, а не магия или гаранции."
+msgstr "Ainsi, les attentes sont claires : il y a un facteur humain, pas de magie ni de garanties."
+
+msgid "Какво може да очакваш от доброволеца"
+msgstr "Ce que vous pouvez attendre d’un bénévole"
+
+msgid "Човешки отговор"
+msgstr "Une réponse humaine"
+
+msgid "Желание да помогне, когато може"
+msgstr "L’envie d’aider quand c’est possible"
+
+msgid "Честност за това какво може и какво не"
+msgstr "De l’honnêteté sur ce qui est possible ou non"
+
+msgid "Доброволците не са на разположение 24/7 и не заместват професионални услуги."
+msgstr "Les bénévoles ne sont pas disponibles 24/7 et ne remplacent pas des services professionnels."
+
+msgid "Какво помага нещата да се случат по-лесно"
+msgstr "Ce qui aide les choses à se passer plus facilement"
+
+msgid "Ясно описание на ситуацията"
+msgstr "Une description claire de la situation"
+
+msgid "Коректен контакт"
+msgstr "Un contact correct"
+
+msgid "Уважителен тон"
+msgstr "Un ton respectueux"
+
+msgid "Ако нуждата ти се промени или вече си получил/а помощ, можеш да затвориш заявката по всяко време."
+msgstr "Si votre besoin change ou si vous avez déjà reçu de l’aide, vous pouvez clôturer la demande à tout moment."
+
+msgid "Време за отговор"
+msgstr "Délai de réponse"
+
+msgid "Няма фиксирано време за отговор. Някои заявки получават реакция в същия ден, други - след няколко дни."
+msgstr "Il n’y a pas de délai fixe. Certaines demandes reçoivent une réponse le jour même, d’autres après quelques jours."
+
+msgid "Ако заявката е спешна или опасна, потърси местните спешни служби."
+msgstr "Si la demande est urgente ou dangereuse, contactez les services d’urgence locaux."
+
+msgid "Понякога една заявка води до помощ. Понякога - до разговор. И понякога - просто до това някой да те чуе. Всичко това има стойност."
+msgstr "Parfois une demande mène à une aide. Parfois à une conversation. Et parfois simplement au fait que quelqu’un vous écoute. Tout cela a de la valeur."
+
+msgid "Доброволци"
+msgstr "Bénévoles"
+
+msgid "Помогнати хора"
+msgstr "Personnes aidées"
+
+msgid "Градове"
+msgstr "Villes"
+
+msgid "Попълни информацията си"
+msgstr "Renseignez vos informations"
+
+msgid "Разкажи ни малко за себе си и как можеш да помогнеш"
+msgstr "Parlez-nous un peu de vous et de la manière dont vous pouvez aider"
+
+msgid "Пълно име"
+msgstr "Nom complet"
+
+msgid "Въведете пълното си име"
+msgstr "Entrez votre nom complet"
+
+msgid "Имейл адрес"
+msgstr "Adresse e-mail"
+
+msgid "Ще използваме този имейл за връзка с теб"
+msgstr "Nous utiliserons cet e-mail pour vous contacter"
+
+msgid "Телефонен номер"
+msgstr "Numéro de téléphone"
+
+msgid "За спешни случаи и координация"
+msgstr "Pour les urgences et la coordination"
+
+msgid "Възраст"
+msgstr "Âge"
+
+msgid "Възраст в години"
+msgstr "Âge en années"
+
+msgid "Минимална възраст: 16 години"
+msgstr "Âge minimum : 16 ans"
+
+msgid "Град/Населено място"
+msgstr "Ville / Localité"
+
+msgid "София, Пловдив, Варна..."
+msgstr "Paris, Lyon, Marseille..."
+
+msgid "Умения и интереси"
+msgstr "Compétences et intérêts"
+
+msgid "Избери областите, в които можеш да помогнеш:"
+msgstr "Choisissez les domaines dans lesquels vous pouvez aider :"
+
+msgid "Транспорт"
+msgstr "Transport"
+
+msgid "Пазаруване"
+msgstr "Courses"
+
+msgid "Домакинска работа"
+msgstr "Tâches ménagères"
+
+msgid "Обучение"
+msgstr "Enseignement"
+
+msgid "Емоционална подкрепа"
+msgstr "Soutien émotionnel"
+
+msgid "Наличност"
+msgstr "Disponibilité"
+
+msgid "Кога си на разположение да помагаш:"
+msgstr "Quand êtes-vous disponible pour aider :"
+
+msgid "Сутрин"
+msgstr "Matin"
+
+msgid "Обяд"
+msgstr "Midi"
+
+msgid "Вечер"
+msgstr "Soir"
+
+msgid "Уикенд"
+msgstr "Week-end"
+
+msgid "Опит (по избор)"
+msgstr "Expérience (facultatif)"
+
+msgid "Разкажи за предишен опит като доброволец или подобни дейности..."
+msgstr "Parlez de votre expérience en tant que bénévole ou d’activités similaires..."
+
+msgid "Мотивация"
+msgstr "Motivation"
+
+msgid "Защо искаш да станеш доброволец? Какво те мотивира да помагаш на другите?"
+msgstr "Pourquoi souhaitez-vous devenir bénévole ? Qu’est-ce qui vous motive à aider les autres ?"
+
+msgid "Съгласявам се с"
+msgstr "J’accepte"
+
+msgid "условията за ползване"
+msgstr "les conditions d’utilisation"
+
+msgid "политиката за поверителност"
+msgstr "la politique de confidentialité"
+
+msgid "Изпрати кандидатурата"
+msgstr "Envoyer la candidature"
+
+msgid "Изпращане..."
+msgstr "Envoi..."
+
+msgid "Моля, съгласете се с условията за ползване!"
+msgstr "Veuillez accepter les conditions d’utilisation !"
