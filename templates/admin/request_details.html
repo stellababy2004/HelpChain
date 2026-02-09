@@ -191,6 +191,28 @@
           {% if not can_help_count and not cant_help_count %}—{% endif %}
         </div>
       </div>
+      {% if last_vol_signal %}
+        <div class="alert alert-info py-2 px-3 mb-3">
+          <strong>{{ _("Volunteer signal") }}:</strong>
+          {% if last_vol_signal.action == 'CAN_HELP' %}
+            ✅ {{ _("Can help") }}
+          {% elif last_vol_signal.action == 'CANT_HELP' %}
+            🚫 {{ _("Can't help") }}
+          {% else %}
+            {{ last_vol_signal.action }}
+          {% endif %}
+
+          {% if last_vol_signal.updated_at or last_vol_signal.created_at %}
+            <span class="text-muted ms-2">
+              ({{ last_vol_signal.updated_at or last_vol_signal.created_at }})
+            </span>
+          {% endif %}
+
+          {% if last_vol_signal.volunteer_id is defined %}
+            <span class="text-muted ms-2">#{{ last_vol_signal.volunteer_id }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
       {% if volunteer_signals %}
         <div class="table-responsive">
           <table class="table align-middle">

@@ -1743,6 +1743,8 @@ def admin_request_details(req_id: int):
         .order_by(VolunteerAction.updated_at.desc())
         .all()
     )
+    # Most recent signal for quick, high-visibility admin context.
+    last_vol_signal = volunteer_signals[0] if volunteer_signals else None
     signal_vol_ids = [va.volunteer_id for va in volunteer_signals]
     volunteers_map = {
         v.id: v for v in Volunteer.query.filter(Volunteer.id.in_(signal_vol_ids)).all()
@@ -1768,6 +1770,7 @@ def admin_request_details(req_id: int):
         flags_by_vol=flags_by_vol,
         assigned_volunteer=assigned_volunteer,
         volunteer_signals=volunteer_signals,
+        last_vol_signal=last_vol_signal,
         volunteers_map=volunteers_map,
         can_help_count=can_help_count,
         cant_help_count=cant_help_count,
