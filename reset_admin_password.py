@@ -1,11 +1,19 @@
+import os
+
 from backend.helpchain_backend.src.app import create_app
 from backend.extensions import db
 from backend.models import User
 from werkzeug.security import generate_password_hash
 
-USERNAME = "admin"
-EMAIL = "admin@helpchain.local"
-NEW_PASSWORD = "Admin-2026!ChangeMe"
+# Security: never hardcode credentials in tracked files (GitGuardian will block).
+USERNAME = os.getenv("ADMIN_USERNAME")
+EMAIL = os.getenv("ADMIN_EMAIL")
+NEW_PASSWORD = os.getenv("ADMIN_PASSWORD")
+
+if not NEW_PASSWORD:
+    raise RuntimeError("ADMIN_PASSWORD not set in environment")
+if not USERNAME and not EMAIL:
+    raise RuntimeError("Set ADMIN_USERNAME and/or ADMIN_EMAIL in environment")
 
 app = create_app()
 
