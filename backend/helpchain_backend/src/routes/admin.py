@@ -2097,6 +2097,27 @@ def admin_request_add_note(req_id: int):
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
+# --- ALIASES (temporary, to keep templates stable) ---
+@admin_bp.get("/requests/<int:req_id>/status")
+@login_required
+def admin_request_status_get_alias(req_id: int):
+    # Status is edited inside details page; redirect there.
+    return redirect(url_for("admin.admin_request_details", req_id=req_id), code=302)
+
+
+@admin_bp.get("/requests/<int:req_id>/notes")
+@login_required
+def admin_request_notes_get_alias(req_id: int):
+    return redirect(url_for("admin.admin_request_details", req_id=req_id), code=302)
+
+
+@admin_bp.post("/requests/<int:req_id>/notes")
+@login_required
+def admin_request_notes_post_alias(req_id: int):
+    # Reuse existing note handler (/note) without changing templates.
+    return admin_request_add_note(req_id)
+
+
 
 
 
