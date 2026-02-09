@@ -162,6 +162,12 @@ def create_app(config_object=None) -> Flask:
     except Exception:
         pass
 
+    # Dev safety: if someone has SESSION_COOKIE_SECURE=1 in their environment but
+    # is serving locally over plain HTTP, session cookies won't be sent and CSRF
+    # will fail with "CSRF session token is missing".
+    if app.debug or app.config.get("DEBUG"):
+        app.config["SESSION_COOKIE_SECURE"] = False
+
     app.config["PROPAGATE_EXCEPTIONS"] = True
     instance_db_path = os.path.join(os.path.abspath(os.path.join(base_dir, "..", "..", "..")), "instance", "app.db")
     app.config.setdefault(
@@ -190,6 +196,16 @@ def create_app(config_object=None) -> Flask:
 
     # Behind one proxy hop: trust X-Forwarded-For/Proto/Host early
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
+    if app.debug or app.config.get("DEBUG"):
+        try:
+            app.logger.info(
+                "DEV cookies: SESSION_COOKIE_SECURE=%s SESSION_COOKIE_SAMESITE=%s",
+                app.config.get("SESSION_COOKIE_SECURE"),
+                app.config.get("SESSION_COOKIE_SAMESITE"),
+            )
+        except Exception:
+            pass
 
     # Web push (VAPID) defaults
     app.config.setdefault("VAPID_PUBLIC_KEY", os.getenv("VAPID_PUBLIC_KEY"))
