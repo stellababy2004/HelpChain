@@ -47,33 +47,43 @@ def main():
             # Non-fatal; continue starting server
             pass
 
-    # Check if we can import the app
-    print("🔍 [2/3] Checking application...")
+    # Check if we can import the canonical app factory (avoid legacy entrypoints like `appy`).
+    print("🔍 [2/3] Checking application import path...")
     try:
-        sys.path.insert(0, "backend")
-        from appy import app
-
-        print("✅ Application loaded successfully!")
-        print(f"📊 Routes registered: {len(app.url_map._rules)}")
+        __import__("backend.helpchain_backend.src.app")
+        print("✅ Canonical app factory is importable: backend.helpchain_backend.src.app:create_app")
     except Exception as e:
-        print(f"❌ Error loading application: {e}")
+        print(f"❌ Error importing canonical app factory: {e}")
         sys.exit(1)
 
-    # Start the server
+    # Start the server (canonical entrypoint)
+    PORT = os.environ.get("PORT", "5005")
+    host = os.environ.get("HOST", "127.0.0.1")
+
     print("🌟 [3/3] Starting server...")
     print("=" * 50)
-    print("📍 Server URL: http://127.0.0.1:5000")
-    print("👨‍💼 Admin login: http://127.0.0.1:5000/admin/login")
-    print("   Username: admin")
-    print("   Password: Admin123")
-    print("👥 Volunteer login: http://127.0.0.1:5000/volunteer_login")
-    print("🤖 AI Chatbot: http://127.0.0.1:5000/api/chatbot/message")
+    print(f"📍 Server URL: http://{host}:{PORT}")
+    print(f"👨‍💼 Admin:      http://{host}:{PORT}/admin/ops/login")
+    print(f"👥 Volunteer:   http://{host}:{PORT}/volunteer_login")
+    print(f"🧾 Legal:       http://{host}:{PORT}/legal")
+    print(f"🤖 AI Chatbot:  http://{host}:{PORT}/api/chatbot/message")
     print("=" * 50)
     print("💡 Press Ctrl+C to stop the server")
     print()
 
+    # Keep it deterministic: avoid cookie/csrf split by changing secrets between runs.
+    os.environ.setdefault("SECRET_KEY", "dev-secret-keep-constant-123")
+
+    cmd = [
+        sys.executable, "-m", "flask",
+        "--app", "backend.helpchain_backend.src.app:create_app",
+        "run",
+        "--host", host,
+        "--port", str(PORT),
+        "--no-reload",
+    ]
     try:
-        app.run(host="127.0.0.1", port=5000, debug=False)
+        subprocess.run(cmd, check=True)
     except KeyboardInterrupt:
         print("\n\n🛑 Server stopped by user")
     except Exception as e:
