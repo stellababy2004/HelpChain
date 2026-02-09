@@ -927,6 +927,43 @@ msgstr "Des questions sur ces conditions ? Contactez-nous à"
 msgid "Кандидатурата е получена"
 msgstr "La candidature a été reçue"
 
+# --- templates/volunteer_confirmation.html ---
+msgid "Благодарим ти"
+msgstr "Merci"
+
+msgid "Получихме твоята кандидатура за доброволец."
+msgstr "Nous avons bien reçu votre candidature de bénévole."
+
+msgid "Нищо не си задължен/длъжна на този етап."
+msgstr "Vous n’avez aucune obligation à ce stade."
+
+msgid "Какво следва"
+msgstr "Et ensuite"
+
+msgid "Преглеждаме информацията ти."
+msgstr "Nous examinons vos informations."
+
+msgid "При подходящи заявки ще можеш да избереш дали да се включиш."
+msgstr "Lorsque des demandes pertinentes apparaissent, vous pourrez choisir si vous souhaitez vous engager."
+
+msgid "Ако решиш - ще се свържеш директно с човека в нужда."
+msgstr "Si vous le décidez, vous contacterez directement la personne dans le besoin."
+
+msgid "Няма автоматично включване."
+msgstr "Il n’y a pas d’inscription automatique."
+
+msgid "Ти контролираш ангажимента си."
+msgstr "Vous gardez le contrôle de votre engagement."
+
+msgid "Към началната страница"
+msgstr "Retour à l’accueil"
+
+msgid "Важно:"
+msgstr "Important :"
+
+msgid "HelpChain не е платформа за спешни случаи и не замества институции."
+msgstr "HelpChain n’est pas une plateforme d’urgence et ne remplace pas les institutions."
+
 #: templates/volunteer_dashboard.html:2 templates/volunteer_dashboard.html:11
 msgid "Моето табло"
 msgstr "Mon tableau de bord"
