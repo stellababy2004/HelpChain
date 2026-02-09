@@ -936,6 +936,7 @@ def volunteer_request_details(req_id: int):
         is_demo=False,
         volunteer_action=action_row,
         my_last_signal=my_last_signal,
+        my_signal=my_last_signal,  # alias for template clarity/back-compat
         csrf_form=csrf_form,
     ), 200
 

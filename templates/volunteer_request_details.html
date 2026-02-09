@@ -33,6 +33,25 @@
     <a class="btn btn-outline-secondary btn-sm" href="{{ safe_url_for('main.volunteer_dashboard') }}">← Назад</a>
   </div>
 
+  {% set _sig_top = my_signal or my_last_signal or volunteer_action %}
+  {% set _is_assigned = (req.assigned_volunteer_id == volunteer.id) %}
+  {% if _sig_top %}
+    {% if _sig_top.action == "CAN_HELP" %}
+      <div class="alert alert-success d-flex align-items-center justify-content-between gap-3">
+        <div>✅ {{ _("You marked that you can help.") }}</div>
+        {% if _is_assigned %}
+          <a class="btn btn-sm btn-outline-success" href="#hc-contact">{{ _("Go to contact") }}</a>
+        {% endif %}
+      </div>
+    {% elif _sig_top.action == "CANT_HELP" %}
+      <div class="alert alert-warning">🚫 {{ _("You marked that you can't help right now.") }}</div>
+    {% else %}
+      <div class="alert alert-info">ℹ️ {{ _("Last signal") }}: {{ _sig_top.action }}</div>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-secondary">ℹ️ {{ _("You haven't sent a signal yet.") }}</div>
+  {% endif %}
+
   <div class="card">
     <div class="card-body">
       <h2 class="h5">{{ req.title or "Заявка" }}</h2>
@@ -186,6 +205,7 @@
           and (req.email or req.phone)
       ) %}
 
+      <div id="hc-contact"></div>
       <hr class="my-4">
 
       {% if can_contact %}
