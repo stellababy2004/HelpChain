@@ -21,7 +21,7 @@ from backend.helpchain_backend.src.security_logging import log_security_event
 load_dotenv()
 
 SUPPORTED_LOCALES = ("bg", "fr", "en")
-DEFAULT_LOCALE = "bg"
+DEFAULT_LOCALE = "fr"
 
 # Guard against duplicate SQLAlchemy event registration under the dev reloader.
 _SLOW_SQL_HOOKS_INSTALLED = False
@@ -181,6 +181,9 @@ def create_app(config_object=None) -> Flask:
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", root_translations)
+    # FR-first: keep a single default locale across dev/prod unless explicitly overridden by env.
+    app.config["BABEL_DEFAULT_LOCALE"] = os.getenv("BABEL_DEFAULT_LOCALE", DEFAULT_LOCALE)
+    app.config["BABEL_DEFAULT_TIMEZONE"] = os.getenv("BABEL_DEFAULT_TIMEZONE", "Europe/Paris")
 
     # Secrets
     if not app.config.get("SECRET_KEY"):

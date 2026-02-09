@@ -391,9 +391,10 @@ def requester_magic_profile(token: str):
 def set_lang_switch(lang):
     lang = (lang or "").lower().strip()
     if lang not in ("bg", "fr", "en"):
-        lang = "en"
+        abort(404)
 
     session["lang"] = lang
+    session.modified = True
 
     next_url = request.referrer or url_for("main.index")
     try:
@@ -413,10 +414,18 @@ def set_lang_switch(lang):
 def set_lang(locale):
     locale = (locale or "").lower()
     if locale not in ("bg", "fr", "en"):
-        locale = "en"
+        abort(404)
 
     session["lang"] = locale
+    session.modified = True
     next_url = request.args.get("next") or url_for("main.index")
+    try:
+        ref_host = urlparse(request.host_url).netloc
+        target_host = urlparse(next_url).netloc
+        if target_host and ref_host != target_host:
+            next_url = url_for("main.index")
+    except Exception:
+        next_url = url_for("main.index")
 
     resp = make_response(redirect(next_url))
     resp.set_cookie("hc_lang", locale, max_age=60 * 60 * 24 * 365, samesite="Lax")
@@ -1284,6 +1293,11 @@ def submit_request():
             current_app.logger.warning("Honeypot triggered on submit_request: website=%r", website)
             # Pretend success to avoid bot feedback loops
             return render_template("submit_request.html", trust_items=trust_items, success=True), 200
+
+        consent = (request.form.get("privacy_consent") or "").strip()
+        if consent != "1":
+            flash(_("Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."), "warning")
+            return redirect(url_for("main.submit_request"))
 
         category, urgency, description = normalize_request_form(request.form)
 
