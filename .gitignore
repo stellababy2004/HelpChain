@@ -110,6 +110,9 @@ output.tgz
 /backend.zip
 /.git.zip
 /backend/redis.zip
+# Local security scan outputs
+security_report.json
+security_report*.json
 # Ignore large artifacts and local envs added by CI cleanup
 repo-mirror.git/
 miniconda.exe
@@ -158,3 +161,20 @@ temp.txt
 
 # local tooling
 .hintrc
+
+# --- Local / temp ---
+_quarantine/
+templates/admin/__write_test.tmp
+
+# --- DB artifacts ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Python ---
+__pycache__/
+*.pyc
+
+# --- IDE ---
+.vscode/
+.idea/

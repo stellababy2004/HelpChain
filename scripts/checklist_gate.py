@@ -3,15 +3,18 @@
 """
 Fail with exit code 1 if there is any [ ] Pending in PRODUCTION_DEPLOYMENT_CHECKLIST.md
 """
-import sys
+
 import re
+import sys
+
 
 def strip_fenced_code_blocks(text):
     # Remove all ```...``` fenced code blocks (multiline, any language)
-    text = re.sub(r'```[\s\S]*?```', '', text, flags=re.MULTILINE)
+    text = re.sub(r"```[\s\S]*?```", "", text, flags=re.MULTILINE)
     # Remove all inline code blocks `...` (single line)
-    text = re.sub(r'`[^`]*`', '', text)
+    text = re.sub(r"`[^`]*`", "", text)
     return text
+
 
 checklist = "PRODUCTION_DEPLOYMENT_CHECKLIST.md"
 with open(checklist, encoding="utf-8") as f:

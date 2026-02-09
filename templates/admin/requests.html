@@ -68,6 +68,8 @@
           <th style="width:120px;">{{ _('Created') }}</th>
           <th style="width:120px;">{{ _('Closed') }}</th>
           <th style="width:130px;">{{ _('SLA') }}</th>
+          <th style="width:140px;">{{ _('Signals') }}</th>
+          <th style="width:190px;">{{ _('Volunteer signal') }}</th>
           <th style="width:120px;">{{ _('Details') }}</th>
         </tr>
       </thead>
@@ -106,12 +108,57 @@
               <span class="badge text-bg-success ms-1" title="{{ _('Closed') }}">✓ {{ _('Closed') }}</span>
             {% endif %}
           </td>
+          <td>
+            {% set c = volunteer_action_counts.get(r.id, {}) %}
+            {% set ch = c.get('CAN_HELP', 0) %}
+            {% set cc = c.get('CANT_HELP', 0) %}
+            {% if ch %}<span class="badge text-bg-success me-1">✅ +{{ ch }}</span>{% endif %}
+            {% if cc %}<span class="badge text-bg-secondary">🚫 +{{ cc }}</span>{% endif %}
+            {% if not ch and not cc %}<span class="text-muted small">—</span>{% endif %}
+          </td>
+          <td>
+            {% set sig = last_signal_by_req.get(r.id) %}
+            {% if sig %}
+              {% if sig.action == "CAN_HELP" %}
+                <span class="badge text-bg-success">✅ {{ _("Can help") }}</span>
+              {% elif sig.action == "CANT_HELP" %}
+                <span class="badge text-bg-danger">🚫 {{ _("Can't help") }}</span>
+              {% else %}
+                <span class="badge text-bg-secondary">{{ sig.action }}</span>
+              {% endif %}
+              {# --- B3: quick assign from list --- #}
+              {% if sig.action == 'CAN_HELP' and sig.volunteer_id %}
+                {% set already_assigned = r.assigned_volunteer_id and r.assigned_volunteer_id != sig.volunteer_id %}
+                {% set closed_statuses = ['done','closed','cancelled','canceled','rejected'] %}
+                {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
+                <form method="post"
+                      action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
+                      class="d-inline ms-2"
+                      onclick="event.stopPropagation()">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit"
+                          class="btn btn-sm btn-outline-primary"
+                          onclick="event.stopPropagation()"
+                          {% if already_assigned or is_closed %}disabled{% endif %}>
+                    Assign #{{ sig.volunteer_id }}
+                  </button>
+                </form>
+              {% endif %}
+
+              <div class="text-muted small">
+                {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") if (sig.updated_at or sig.created_at) else "" }}
+                {% if sig.volunteer_id is defined %}<span class="ms-1">#{{ sig.volunteer_id }}</span>{% endif %}
+              </div>
+            {% else %}
+              <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
           <td class="text-end">
             <a class="btn btn-sm btn-outline-light" onclick="event.stopPropagation()" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="10" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
+        <tr><td colspan="12" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -119,3 +166,4 @@
 
 </div>
 {% endblock %}
+

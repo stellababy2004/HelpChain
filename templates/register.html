@@ -677,6 +677,7 @@
         </div>
 
         <form method="POST" id="registerForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="form-group-modern">
             <label for="username" class="form-label-modern">
               <i class="fas fa-user me-2"></i>Потребителско име *
@@ -1074,3 +1075,4 @@
     </script>
   </body>
 </html>
+

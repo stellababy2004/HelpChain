@@ -7,6 +7,7 @@ Usage:
 
 The script prints total findings, counts by level/rule, and the top findings.
 """
+
 from __future__ import annotations
 
 import json

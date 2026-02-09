@@ -1,5 +1,6 @@
-from backend.helpchain_backend.src.app import create_app
 from flask import render_template_string
+
+from backend.helpchain_backend.src.app import create_app
 
 app = create_app()
 client = app.test_client()
@@ -7,12 +8,12 @@ client = app.test_client()
 print("== BASIC GETs ==")
 
 urls = [
-    "/",                     # main.index
-    "/request",               # main.request_category
-    "/about",                # main.about
-    "/faq",                  # main.faq
-    "/volunteer_login",      # main.volunteer_login
-    "/admin/login",          # admin.admin_login
+    "/",  # main.index
+    "/request",  # main.request_category
+    "/about",  # main.about
+    "/faq",  # main.faq
+    "/volunteer_login",  # main.volunteer_login
+    "/admin/login",  # admin.admin_login
 ]
 
 for u in urls:

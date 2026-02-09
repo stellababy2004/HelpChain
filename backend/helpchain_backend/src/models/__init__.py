@@ -1,46 +1,48 @@
-from backend.models import *  # noqa
+"""
+Phase-1 compatibility exports for routes importing `..models`.
 
+We re-export the canonical monolith models from `backend.models` plus a few
+split-out models that are not present there yet.
+"""
 
-# --- Canonical model imports (legacy compatibility shim) ---
-# Your repository currently has other parts importing `Request`, `User`, etc.
-# BUT they are not defined inside this `src/models/` package yet.
-# We try to import them from their canonical location(s) WITHOUT hard-failing.
-#
-# Replace/extend these import paths once you confirm where the real models live.
-_CANDIDATE_MODEL_MODULES = (
-    "backend.models",                 # common pattern: backend/models.py
-    "backend.models.models",          # sometimes: backend/models/models.py
-    "backend.models.base",            # sometimes: backend/models/base.py
+from backend.extensions import db
+
+# Other canonical/legacy names live in `backend.models`
+from backend.models import (  # noqa: F401
+    NotificationSubscription,
+    Request,
+    RequestActivity,
+    RequestMetric,
+    User,
+    canonical_role,
+    utc_now,
 )
 
-_IMPORTED = {}
-for _mod in _CANDIDATE_MODEL_MODULES:
-    try:
-        module = __import__(_mod, fromlist=["*"])
-    except Exception:
-        continue
+# Local wrappers for canonical/legacy models (defined in `backend.models`)
+from .admin_user import AdminUser  # noqa: F401
+from .notification import Notification  # noqa: F401
 
-    # Pick only the names you want to re-export if they exist in that module.
-    for _name in (
-        "AdminUser",
-        "RequestActivity",
-        "RequestMetric",
-        "Request",
-        "RequestLog",
-        "User",
-        "Volunteer",
-        "PushSubscription",
-        "Feedback",
-        "NotificationSubscription",
-    ):
-        if hasattr(module, _name):
-            _IMPORTED[_name] = getattr(module, _name)
+# Split models (not present in `backend.models`)
+from .refresh_token import RefreshToken  # noqa: F401
+from .request_log import RequestLog  # noqa: F401
+from .volunteer import Volunteer  # noqa: F401
+from .volunteer_action import VolunteerAction  # noqa: F401
+from .volunteer_interest import VolunteerInterest  # noqa: F401
 
-# Expose imported names in this module namespace (if any were found)
-globals().update(_IMPORTED)
-
-
-# --- Public API ---
-# Export db + whatever models we actually managed to import.
-__all__ = ["db", *sorted(_IMPORTED.keys())]
-
+__all__ = [
+    "db",
+    "utc_now",
+    "canonical_role",
+    "User",
+    "Volunteer",
+    "AdminUser",
+    "Request",
+    "RequestLog",
+    "RequestActivity",
+    "RequestMetric",
+    "Notification",
+    "NotificationSubscription",
+    "RefreshToken",
+    "VolunteerInterest",
+    "VolunteerAction",
+]

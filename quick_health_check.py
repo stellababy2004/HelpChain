@@ -2,6 +2,7 @@ import requests
 
 BASE = "http://127.0.0.1:5000"
 
+
 def check(path, expect_200=True):
     url = BASE + path
     try:
@@ -11,6 +12,7 @@ def check(path, expect_200=True):
         print(f"{path}: {status} {'✅' if ok else '❌'}")
     except Exception as e:
         print(f"{path}: ERROR {e}")
+
 
 # Main page
 check("/")

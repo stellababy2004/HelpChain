@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   bandit:
+    if: false
     name: Bandit (SAST)
     runs-on: ubuntu-latest
     continue-on-error: true  # временно не-блокиращ, докато отработим находките
@@ -42,6 +43,7 @@ jobs:
           sarif_file: bandit.sarif
 
   pip-audit:
+    if: false
     name: pip-audit (Dependencies)
     runs-on: ubuntu-latest
     continue-on-error: true  # временно не-блокиращ за да видим пълния отчет

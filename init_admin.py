@@ -6,12 +6,14 @@ def _get_app():
     # Prefer full backend.app if available
     try:
         from backend.app import app
+
         return app
     except Exception:
         pass
     # Fallback to minimal backend.appy
     try:
         from backend.appy import app
+
         return app
     except Exception:
         pass
@@ -27,8 +29,8 @@ def main():
 
     app = _get_app()
     with app.app_context():
-        from backend.extensions import db
         import backend.models as models
+        from backend.extensions import db
 
         # Ensure models are configured and tables exist
         try:

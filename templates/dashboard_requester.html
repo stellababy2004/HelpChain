@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | HelpChain{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <h1 class="h3 m-0">{{ _('My requests') }}</h1>
+    <a class="btn btn-primary" href="{{ url_for('main.submit_request') }}">
+      {{ _('Submit a new request') }}
+    </a>
+  </div>
+
+  {% if kpi %}
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <span class="badge rounded-pill bg-light text-dark">open: {{ kpi.open }}</span>
+    <span class="badge rounded-pill bg-light text-dark">in_progress: {{ kpi.in_progress }}</span>
+    <span class="badge rounded-pill bg-light text-dark">done: {{ kpi.done }}</span>
+    <span class="badge rounded-pill bg-light text-dark">cancelled: {{ kpi.cancelled }}</span>
+  </div>
+  {% endif %}
+
+  {% if my_requests %}
+    <div class="list-group">
+      {% for r in my_requests %}
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between align-items-start gap-3">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{ r.title or _('Request') }}</div>
+              <div class="small text-muted">
+                {{ r.city or '' }}{% if r.city %} • {% endif %}
+                {{ (r.created_at.strftime('%Y-%m-%d %H:%M') if r.created_at else '') }}
+              </div>
+            </div>
+
+            <div class="text-end">
+              <span class="badge bg-light text-dark">{{ (r.status or 'pending') }}</span>
+              {# Add a details link when a public detail page exists #}
+              {# <a class="btn btn-sm btn-outline-secondary mt-2" href="{{ url_for('main.request_public', req_id=r.id) }}">{{ _('View') }}</a> #}
+            </div>
+          </div>
+
+          {% if r.owner_id %}
+            <div class="mt-2 small">
+              <span class="text-muted">{{ _('Assigned') }}:</span>
+              <span class="fw-semibold">#{{ r.owner_id }}</span>
+              <span class="text-muted">— {{ _('We will notify you when contact is available.') }}</span>
+            </div>
+          {% else %}
+            <div class="mt-2 small text-muted">
+              {{ _('Not assigned yet. A volunteer/pro will take it as soon as possible.') }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card p-3">
+      <p class="mb-2">{{ _("You haven't submitted any requests yet.") }}</p>
+      <a class="btn btn-primary" href="{{ url_for('main.submit_request') }}">{{ _('Submit your first request') }}</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

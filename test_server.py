@@ -10,6 +10,7 @@ BACKEND_DIR = os.path.join(HERE, "backend")
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
+
 def main():
     print("Starting server...")
     print(f"Project root: {HERE}")
@@ -36,6 +37,7 @@ def main():
         print(f"Error starting server: {e}")
         traceback.print_exc()
         sys.exit(2)
+
 
 if __name__ == "__main__":
     main()

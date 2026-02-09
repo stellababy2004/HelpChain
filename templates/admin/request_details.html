@@ -2,6 +2,7 @@
 {% block title %}Admin - Request #{{ req.id }}{% endblock %}
 
 {% block content %}
+{% set is_locked = is_locked|default(false) %}
 <div class="container my-4">
 
   <!-- Top bar -->
@@ -11,7 +12,10 @@
       <h2 class="mb-1 fw-bold">Request #{{ req.id }}</h2>
       <div class="text-muted small">
         <span class="me-2">Status:</span>
-        <span class="badge text-bg-secondary">{{ req.status }}</span>
+        {% set sm = status_meta(req.status) %}
+        <span class="{{ sm.badge_class }}">
+          <i class="bi {{ sm.icon }} me-1"></i>{{ sm.label }}
+        </span>
         <span class="mx-2">|</span>
         <span class="me-2">Priority:</span>
         <span class="badge text-bg-light border">{{ req.priority }}</span>
@@ -61,6 +65,189 @@
     </div>
   </div>
 
+  <!-- V3: Match & engagement (city-based) -->
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h5 class="card-title mb-0">Match & engagement</h5>
+        <div class="text-muted small">City-based match: <strong>{{ req.city or '—' }}</strong></div>
+      </div>
+      <div class="row text-center">
+        <div class="col-6 col-md-2 mb-2">
+          <div class="text-muted small">Matched</div>
+          <div class="fs-5 fw-semibold">{{ matched_count }}</div>
+        </div>
+        <div class="col-6 col-md-2 mb-2">
+          <div class="text-muted small">Notified</div>
+          <div class="fs-5 fw-semibold">{{ notified_count }}</div>
+        </div>
+        <div class="col-6 col-md-2 mb-2">
+          <div class="text-muted small">Seen</div>
+          <div class="fs-5 fw-semibold">{{ seen_count }}</div>
+        </div>
+        <div class="col-6 col-md-2 mb-2">
+          <div class="text-muted small">Interested</div>
+          <div class="fs-5 fw-semibold">{{ interested_count }}</div>
+        </div>
+        <div class="col-6 col-md-2 mb-2">
+          <div class="text-muted small">Assigned</div>
+          <div class="fs-5 fw-semibold">
+            {% if assigned_volunteer %}
+              {% set label = assigned_volunteer.name or assigned_volunteer.email or ('#' ~ assigned_volunteer.id) %}
+              {{ label }}
+              {% if assigned_volunteer.email and assigned_volunteer.email != label %}
+                <span class="text-muted small">({{ assigned_volunteer.email }})</span>
+              {% endif %}
+            {% else %}
+              —
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="card-title mb-0">Matched volunteers</h5>
+        <div class="text-muted small">Based on city match</div>
+      </div>
+      {% if csrf_token is defined %}
+        {% set csrf = csrf_token() %}
+      {% else %}
+        {% set csrf = '' %}
+      {% endif %}
+      {% if matched_volunteers %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Volunteer</th>
+                <th>Location</th>
+                <th>Notified</th>
+                <th>Seen</th>
+                <th>Interested</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for v in matched_volunteers %}
+                {% set f = flags_by_vol.get(v.id, {}) %}
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{ v.name or ('#' ~ v.id) }}</div>
+                    <div class="text-muted small">{{ v.email }}</div>
+                  </td>
+                  <td>{{ v.location or '—' }}</td>
+                  <td>{% if f.notified %}✅{% else %}—{% endif %}</td>
+                  <td>{% if f.seen %}👁️{% else %}—{% endif %}</td>
+                  <td>{% if f.interested %}⭐{% else %}—{% endif %}</td>
+                  <td>
+                    {% if req.assigned_volunteer_id == v.id %}
+                      <form method="post" action="{{ url_for('admin.admin_unassign_volunteer', req_id=req.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('Unassign will notify the volunteer. Proceed?');">
+                          Unassign
+                        </button>
+                        <div class="text-muted small mt-1">Unassign will notify the volunteer.</div>
+                      </form>
+                    {% else %}
+                      <form method="post" action="{{ url_for('admin.admin_assign_volunteer', req_id=req.id, volunteer_id=v.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if req.assigned_volunteer_id and req.assigned_volunteer_id != v.id %}
+                          <span class="text-muted small me-2">Already assigned</span>
+                          <button type="submit" class="btn btn-sm btn-outline-primary" disabled title="Already assigned">
+                            Assign
+                          </button>
+                        {% else %}
+                          <button type="submit" class="btn btn-sm btn-outline-primary"
+                            {% if req.assigned_volunteer_id %}disabled title="Already assigned"{% endif %}>
+                            Assign
+                          </button>
+                        {% endif %}
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No city-based matches for this request yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="card-title mb-0">Volunteer signals</h5>
+        <div class="text-muted small">
+          {% if can_help_count %}✅ {{ can_help_count }} can help{% endif %}
+          {% if cant_help_count %} <span class="ms-2">🚫 {{ cant_help_count }} can’t help</span>{% endif %}
+          {% if not can_help_count and not cant_help_count %}—{% endif %}
+        </div>
+      </div>
+      {% if last_vol_signal %}
+        <div class="alert alert-info py-2 px-3 mb-3">
+          <strong>{{ _("Volunteer signal") }}:</strong>
+          {% if last_vol_signal.action == 'CAN_HELP' %}
+            ✅ {{ _("Can help") }}
+          {% elif last_vol_signal.action == 'CANT_HELP' %}
+            🚫 {{ _("Can't help") }}
+          {% else %}
+            {{ last_vol_signal.action }}
+          {% endif %}
+
+          {% if last_vol_signal.updated_at or last_vol_signal.created_at %}
+            <span class="text-muted ms-2">
+              ({{ last_vol_signal.updated_at or last_vol_signal.created_at }})
+            </span>
+          {% endif %}
+
+          {% if last_vol_signal.volunteer_id is defined %}
+            <span class="text-muted ms-2">#{{ last_vol_signal.volunteer_id }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+      {% if volunteer_signals %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Volunteer</th>
+                <th>Action</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in volunteer_signals %}
+                {% set v = volunteers_map.get(s.volunteer_id) %}
+                <tr>
+                  <td>
+                    <div class="fw-semibold">{{ v.name if v else ('#' ~ s.volunteer_id) }}</div>
+                    <div class="text-muted small">{{ v.email if v else '' }}</div>
+                  </td>
+                  <td>
+                    {% if s.action == 'CAN_HELP' %}✅ Can help{% elif s.action == 'CANT_HELP' %}🚫 Can’t help{% else %}{{ s.action }}{% endif %}
+                  </td>
+                  <td class="text-muted small">
+                    {{ s.updated_at or s.created_at }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No signals yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
   {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
 
   <!-- Main grid -->
@@ -68,6 +255,19 @@
 
     <!-- Left: request info -->
     <div class="col-lg-8">
+
+      {% if is_locked %}
+        <div class="alert alert-warning d-flex justify-content-between align-items-center">
+          <div>
+            🔒 Заключено от admin #{{ locked_by }}.
+            Само той/тя може да редактира, освен ако не отключиш ръчно.
+          </div>
+          <form method="post" action="{{ url_for('admin.admin_request_unlock', req_id=req.id) }}" class="m-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-dark" type="submit">Unlock</button>
+          </form>
+        </div>
+      {% endif %}
 
       <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
@@ -88,6 +288,70 @@
           <div class="text-body" style="white-space: pre-wrap;">{{ req.description }}</div>
         </div>
       </div>
+
+      {% if interests %}
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0">Интерес от доброволци</h5>
+            <span class="badge text-bg-light border">{{ interests|length }} записи</span>
+          </div>
+          {% if is_locked %}
+            <div class="alert alert-warning py-2 mt-2 mb-2">
+              🔒 Заявката е заключена (done/cancelled). Смени статуса от dropdown-а, за да отключиш Approve/Reject.
+            </div>
+          {% endif %}
+
+          <div class="table-responsive mt-3">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Volunteer ID</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for i in interests %}
+                  <tr>
+                    <td>{{ i.id }}</td>
+                    <td>{{ i.volunteer_id }}</td>
+                    <td>
+                      {% if i.status == 'pending' %}
+                        <span class="badge bg-secondary">pending</span>
+                      {% elif i.status == 'approved' %}
+                        <span class="badge bg-success">approved</span>
+                      {% elif i.status == 'rejected' %}
+                        <span class="badge bg-danger">rejected</span>
+                      {% else %}
+                        <span class="badge bg-light text-dark">{{ i.status }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ i.created_at }}</td>
+                    <td class="text-end">
+                      {% if i.status == 'pending' %}
+                        <form method="post" action="{{ url_for('admin.admin_interest_approve', req_id=req.id, interest_id=i.id) }}" class="d-inline">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <button class="btn btn-sm btn-success" {% if is_locked %}disabled title="Locked (done/cancelled or by another admin)"{% endif %}>Approve</button>
+                        </form>
+                        <form method="post" action="{{ url_for('admin.admin_interest_reject', req_id=req.id, interest_id=i.id) }}" class="d-inline">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <button class="btn btn-sm btn-outline-danger" {% if is_locked %}disabled title="Locked (done/cancelled or by another admin)"{% endif %}>Reject</button>
+                        </form>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endif %}
 
       <div class="card border-0 shadow-sm">
         <div class="card-body">
@@ -143,27 +407,21 @@
           </div>
 
           <div class="text-muted small mt-1">
-            Change status using the buttons below.
+            Select a new status and save.
           </div>
 
           <hr class="my-3" />
 
           {% if can_edit %}
-            {% set actions = [
-              ("approved","Approve","success"),
-              ("in_progress","In Progress","primary"),
-              ("done","Done","dark"),
-              ("rejected","Reject","danger")
-            ] %}
-
-            <div class="d-flex flex-wrap gap-2">
-              {% for val,label,color in actions %}
-                <form method="POST" action="{{ url_for('admin.update_status', req_id=req.id) }}">
-                  <input type="hidden" name="status" value="{{ val }}" />
-                  <button class="btn btn-{{ color }} btn-sm" type="submit">{{ label }}</button>
-                </form>
-              {% endfor %}
-            </div>
+            <form method="post" action="{{ url_for('admin.update_status', req_id=req.id) }}" class="d-flex gap-2 align-items-center flex-wrap">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="status" class="form-select form-select-sm" style="max-width: 220px;">
+                {% for s in REQUEST_STATUS_ORDER %}
+                  <option value="{{ s }}" {% if req.status == s %}selected{% endif %}>{{ status_meta(s).label }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-sm btn-primary">Save</button>
+            </form>
           {% else %}
             <div class="alert alert-info mb-0 py-2">
               You can edit status only if you are the owner or a super admin.
@@ -202,17 +460,20 @@
           <div class="d-flex flex-wrap gap-2">
             {% if not req.owner_id %}
               <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
-                <button type="submit" class="btn btn-success btn-sm">Assign to me</button>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>Assign to me</button>
               </form>
 
             {% elif can_edit %}
               <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
-                <button type="submit" class="btn btn-outline-danger btn-sm">Unassign</button>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>Unassign</button>
               </form>
 
             {% elif req.owner_id and req.owner_id != current_user.id and is_stale(req) %}
               <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
-                <button type="submit" class="btn btn-warning btn-sm">Take over</button>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-warning btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>Take over</button>
               </form>
 
             {% else %}
@@ -240,6 +501,7 @@
               </div>
               {% if can_edit %}
                 <form method="post" action="{{ url_for('admin.admin_request_restore_deleted', req_id=req.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-success btn-sm">
                     Restore from Deleted
                   </button>
@@ -259,6 +521,7 @@
                 action="{{ url_for('admin.admin_request_delete', req_id=req.id) }}"
                 onsubmit="return confirm('Move to Deleted? You can restore it later.')"
               >
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-outline-danger btn-sm" {% if not req.is_archived %}disabled{% endif %}>
                   Delete
                 </button>
@@ -282,6 +545,7 @@
           <hr class="my-3" />
 
           <form method="post" action="{{ url_for('admin.admin_request_add_note', req_id=req.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <textarea
               name="note"
               class="form-control"
@@ -375,4 +639,5 @@
   }
 </script>
 {% endblock %}
+
 

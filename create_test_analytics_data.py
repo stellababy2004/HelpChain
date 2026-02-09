@@ -15,6 +15,7 @@ backend_dir = os.path.join(os.path.dirname(__file__), "backend")
 sys.path.insert(0, backend_dir)
 
 from analytics_service import analytics_service
+
 from appy import app, db
 from models import HelpRequest, User, Volunteer
 from models_with_analytics import (

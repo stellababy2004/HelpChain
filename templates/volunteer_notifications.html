@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Notifications") }} | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-page">
+  <header class="hc-page__head">
+    <div class="hc-notif__header">
+      <h1 class="hc-notif__title">{{ _("Notifications") }}</h1>
+
+      {% if unread_count and unread_count > 0 %}
+        <span class="hc-badge hc-badge--unread">{{ _("Unread") }} {{ unread_count }}</span>
+      {% endif %}
+    </div>
+  </header>
+
+  {% if notifications|length == 0 %}
+    <div class="hc-empty">
+      <div class="hc-empty__icon">🔔</div>
+      <h3>{{ _("No notifications yet") }}</h3>
+      <p>{{ _("When a request matches your profile, you'll see it here.") }}</p>
+
+      <a class="btn btn-primary" href="{{ url_for('main.volunteer_dashboard') }}">
+        {{ _("View requests") }}
+      </a>
+    </div>
+  {% else %}
+    <div class="hc-list hc-notifications-list">
+      {% for n in notifications %}
+        {% set is_unread = (n.status == 'UNREAD') or (n.is_read is defined and not n.is_read) %}
+        <form method="post"
+              action="{{ url_for('main.volunteer_notification_open', notif_id=n.id) }}"
+              class="hc-card hc-notif__card hc-card--click {{ 'is-unread' if is_unread else '' }}">
+          {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+          <button type="submit" class="hc-card__btn">
+            <div class="hc-card__row">
+              <div class="hc-card__title">
+                {% if is_unread %}<span class="hc-dot bg-primary"></span>{% endif %}
+                {{ n.title }}
+              </div>
+            </div>
+
+            <div class="hc-notif__meta">
+              {% if is_unread %}
+                <span class="hc-badge hc-badge--unread">{{ _("New") }}</span>
+              {% endif %}
+
+              {% if n.kind %}
+                <span class="hc-badge hc-badge--kind">{{ n.kind }}</span>
+              {% elif n.type %}
+                <span class="hc-badge hc-badge--kind">{{ n.type }}</span>
+              {% endif %}
+
+              {% if n.created_at %}
+                <time class="hc-notif__time" datetime="{{ n.created_at }}">{{ n.created_at }}</time>
+              {% endif %}
+            </div>
+
+            {% if n.body %}
+              <div class="hc-card__body">{{ n.body }}</div>
+            {% endif %}
+
+            {% if n.request_id %}
+              <div class="hc-card__actions">
+                <span class="hc-btn hc-btn--ghost">{{ _("Open request") }}</span>
+              </div>
+            {% endif %}
+          </button>
+        </form>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,21 +1,10 @@
-import jwt
 from functools import wraps
-from flask import current_app, jsonify, request, g
 
+import jwt
+from backend.helpchain_backend.src.jwt_utils import decode_token
+from flask import g, jsonify, request
 
-def _jwt_secret():
-    return current_app.config.get("JWT_SECRET_KEY") or current_app.config.get("SECRET_KEY")
-
-
-def _decode_token(token: str):
-    return jwt.decode(
-        token,
-        _jwt_secret(),
-        algorithms=["HS256"],
-        issuer="helpchain",
-        leeway=10,
-        options={"require": ["exp", "iat", "sub", "iss"]},
-    )
+from ..models import AdminUser, canonical_role
 
 
 def require_api_auth(fn):
@@ -27,7 +16,7 @@ def require_api_auth(fn):
 
         token = auth.split(" ", 1)[1].strip()
         try:
-            claims = _decode_token(token)
+            claims = decode_token(token, "access")
         except jwt.ExpiredSignatureError:
             return jsonify({"error": "Token expired"}), 401
         except jwt.InvalidTokenError:
@@ -35,8 +24,20 @@ def require_api_auth(fn):
 
         g.api_claims = claims
         g.api_user_id = claims.get("sub")
-        g.api_role = claims.get("role")
-        g.api_is_admin = bool(claims.get("is_admin", False))
+        role = claims.get("role")
+        is_admin = bool(claims.get("is_admin", False))
+
+        # Load fresh role/is_admin from DB when possible (tokens may omit them)
+        try:
+            user = AdminUser.query.get(int(claims.get("sub")))
+            if user:
+                role = getattr(user, "role", role)
+                is_admin = bool(getattr(user, "is_admin", is_admin))
+        except Exception:
+            pass
+
+        g.api_role = role
+        g.api_is_admin = is_admin or canonical_role(role) in ("admin", "superadmin")
         return fn(*args, **kwargs)
 
     return wrapper

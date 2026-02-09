@@ -11,6 +11,7 @@ on:
 
 jobs:
   prebuild:
+    if: false
     name: Prebuild on GitHub runner (create .vercel/output)
     runs-on: ubuntu-latest
 
@@ -255,6 +256,7 @@ jobs:
           path: .vercel/output
 
   deploy:
+    if: false
     name: Deploy prebuilt output to Vercel (preview)
     needs: prebuild
     runs-on: ubuntu-latest
@@ -496,9 +498,19 @@ jobs:
           if [ ! -f backend/pyproject.toml ]; then
             echo "Creating minimal backend/pyproject.toml placeholder to satisfy Vercel CLI"
             mkdir -p backend
-            # Use printf to avoid YAML parsers getting confused by embedded '[', '{' characters
-            printf '%s
-' '[build-system]' 'requires = ["setuptools>=61.0", "wheel"]' 'build-backend = "setuptools.build_meta"' '' '[project]' 'name = "helpchain-backend-placeholder"' 'version = "0.0.0"' 'description = "Placeholder pyproject to satisfy Vercel prebuilt deploy checks"' 'authors = [{ name = "CI", email = "ci@example.com" }]' 'license = { text = "MIT" }' > backend/pyproject.toml || true
+            # Keep this YAML-safe: avoid unindented heredoc content inside `run: |`.
+            printf '%s\n' \
+              '[build-system]' \
+              'requires = ["setuptools>=61.0", "wheel"]' \
+              'build-backend = "setuptools.build_meta"' \
+              '' \
+              '[project]' \
+              'name = "helpchain-backend-placeholder"' \
+              'version = "0.0.0"' \
+              'description = "Placeholder pyproject to satisfy Vercel prebuilt deploy checks"' \
+              'authors = [{ name = "CI", email = "ci@example.com" }]' \
+              'license = { text = "MIT" }' \
+              > backend/pyproject.toml || true
           fi
 
           npx vercel@latest deploy --prebuilt --token "$VERCEL_TOKEN" --yes --archive=tgz

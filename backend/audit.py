@@ -1,5 +1,5 @@
-
 from sqlalchemy.orm import Session
+
 from .models import AuditLog  # използваме централния модел от backend/models.py
 
 

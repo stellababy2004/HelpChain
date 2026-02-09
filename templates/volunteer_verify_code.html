@@ -154,6 +154,7 @@
         </div>
 
         <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-3">
             <label for="code" class="form-label text-center w-100">
               <i class="fas fa-key me-2"></i>Код за достъп
@@ -262,3 +263,4 @@
     </script>
   </body>
 </html>
+

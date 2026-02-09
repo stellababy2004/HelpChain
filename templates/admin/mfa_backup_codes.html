@@ -19,6 +19,7 @@
   {% endif %}
 
   <form method="post" style="margin-top:16px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit">
       {% if has_codes %}Regenerate (инвалидира старите){% else %}Generate backup codes{% endif %}
     </button>
@@ -29,3 +30,4 @@
   </p>
 </div>
 {% endblock %}
+

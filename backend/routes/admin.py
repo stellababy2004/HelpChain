@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from db import get_db
 from audit import log_admin_action
-from backend.models import User
+from backend.models import User, canonical_role
 from dependencies import require_role
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -56,13 +56,15 @@ def change_user_role(
     db: Session = Depends(get_db),
     current_user=Depends(require_role("superadmin")),
 ):
+    allowed = {"requester", "volunteer", "professional", "admin", "superadmin", "user"}
+    canon = canonical_role(new_role)
+    if canon not in allowed:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
     user = db.query(User).filter_by(id=user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if new_role not in [r.value for r in User.__table__.c.role.type.enums]:
-        # safe check; alternatively use RoleEnum
-        pass
-    user.role = new_role
+    user.role = canon
     db.add(user)
     db.commit()
     log_admin_action(
@@ -72,6 +74,6 @@ def change_user_role(
         target_type="user",
         target_id=str(user_id),
         outcome="role_changed",
-        metadata={"new_role": new_role},
+        metadata={"new_role": canon},
     )
-    return {"status": "ok", "new_role": new_role}
+    return {"status": "ok", "new_role": canon}

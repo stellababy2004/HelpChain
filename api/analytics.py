@@ -1,5 +1,6 @@
 # Dedicated /api/analytics function
 
+
 def app(environ, start_response):
     body = b'{"status":"ok","source":"api-analytics"}'
     headers = [

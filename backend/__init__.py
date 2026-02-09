@@ -18,5 +18,4 @@ This lazy approach prevents import-order races while remaining
 backwards-compatible.
 """
 
-
 __all__ = []

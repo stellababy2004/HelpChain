@@ -258,5 +258,3 @@ def prepare_database():
         except Exception:
             # If patching fails, allow tests to run and surface connection errors
             yield
-
-

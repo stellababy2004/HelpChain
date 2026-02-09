@@ -662,6 +662,7 @@
               class="form-modern"
               id="profileForm"
             >
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <div class="form-group-modern">
                 <label for="skills" class="form-label-modern">
                   <i class="fas fa-tools me-1"></i>Умения и компетенции
@@ -1027,3 +1028,4 @@
     </script>
   </body>
 </html>
+

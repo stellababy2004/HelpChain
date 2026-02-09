@@ -122,10 +122,12 @@ def run_migrations_online():
             conf_args["process_revision_directives"] = process_revision_directives
         connectable = get_engine()
     else:
-        # No app context, create engine directly from DATABASE_URL
+        # No app context, create engine directly from DATABASE_URL or default to absolute instance/app.db
         from sqlalchemy import create_engine
 
-        database_url = os.getenv("DATABASE_URL", "sqlite:///app.db")
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        default_sqlite = f"sqlite:///{os.path.join(project_root, 'instance', 'app.db')}"
+        database_url = os.getenv("DATABASE_URL", default_sqlite)
         connectable = create_engine(database_url)
 
     with connectable.connect() as connection:

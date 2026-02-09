@@ -2,151 +2,596 @@
 {% block title %}{{ _('Моето табло') }} | HelpChain{% endblock %}
 
 {% block content %}
+<!-- HC_DASH_TEMPLATE_MARKER v1 -->
 <section class="hc-vdash">
 
   <!-- HERO / TOP BAR -->
   <header class="hc-vdash__hero">
     <div class="hc-vdash__heroText">
-      <h1 class="hc-vdash__title">Моето табло</h1>
+      <h1 class="hc-vdash__title">{{ _('Моето табло') }}</h1>
       <p class="hc-vdash__subtitle">
-        Тук виждаш заявки, които отговарят на твоите умения и наличност. Нищо не се поема автоматично — ти решаваш.
+        {{ _('Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти решаваш</strong>.')|safe }}
       </p>
-    </div>
-
-    <div class="hc-vdash__heroActions">
-      <a class="btn btn-primary" href="{{ safe_url_for('main.volunteer_profile') }}">
-        Направи профила си готов за свързване
-      </a>
-
-      <!-- Logout: POST-only -->
-      <form method="post" action="{{ safe_url_for('main.volunteer_logout') }}" class="hc-inline">
-        {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
-        <button type="submit" class="btn btn-outline-secondary">Изход</button>
-      </form>
     </div>
   </header>
 
-  <section class="hc-activity">
-    <div class="hc-activity__item">
-      <span class="hc-activity__dot hc-dot--live"></span>
-      <strong>Последна активност:</strong>
-      1 нова заявка в <strong>Paris</strong> днес
+  {% if notifications and notifications|length %}
+    {% set n = notifications[0] %}
+    {% set btn_class = 'btn-primary' if n.tone == 'primary' else ('btn-success' if n.tone == 'success' else 'btn-outline-secondary') %}
+    <div class="alert alert-{{ n.tone }} d-flex align-items-start justify-content-between" role="status">
+      <div>
+        <strong>{{ n.title }}</strong><br>
+        <span class="small">{{ n.body }}</span>
+      </div>
+      <div class="ms-3">
+        <a class="btn btn-sm {{ btn_class }}" href="{{ n.cta_href }}">
+          {{ n.cta_label }}
+        </a>
+      </div>
+    </div>
+  {% endif %}
+
+  {% set locale_code = (get_locale()|string)[:2] %}
+  {% set copy_map = {
+    'fr': {
+      'almost_ready': {'title': '🔔 Votre profil est presque prêt', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir des demandes adaptées.', 'cta': 'Compléter mon profil'},
+      'waiting': {'title': "🌿 C’est calme pour l’instant", 'body': "Nous cherchons des demandes correspondant à votre profil.\nVous serez notifié dès qu’une aide vous correspond.", 'cta': 'Comment ça marche ?'},
+      'matches': {'title': '🚨 Des demandes correspondent à votre profil', 'body': 'Consultez-les et choisissez comment aider.', 'cta': 'Voir les demandes'},
+      'checklist_title': 'Votre profil',
+      'label_location': 'Localisation',
+      'label_availability': 'Disponibilité',
+      'steps': 'étapes restantes',
+      'empty': "Aucune demande ne correspond encore à votre profil.\nCela peut prendre un peu de temps — votre aide compte.",
+    },
+    'bg': {
+      'almost_ready': {'title': '🔔 Профилът ти е почти готов', 'body': 'Добави локация и наличност, за да получаваш подходящи заявки.', 'cta': 'Попълни профила'},
+      'waiting': {'title': '🌿 В момента е спокойно', 'body': 'Търсим заявки, които отговарят на твоя профил.\nЩе бъдеш уведомен веднага щом има съвпадение.', 'cta': 'Как работи?'},
+      'matches': {'title': '🚨 Има заявки, подходящи за теб', 'body': 'Виж ги и избери как да помогнеш.', 'cta': 'Виж заявките'},
+      'checklist_title': 'Твоят профил',
+      'label_location': 'Локация',
+      'label_availability': 'Наличност',
+      'steps': 'стъпки',
+      'empty': "Все още няма заявки, които да съвпадат с профила ти.\nТова е нормално — помощта ти е ценна.",
+    },
+    'en': {
+      'almost_ready': {'title': '🔔 Your profile is almost ready', 'body': 'Add your location and availability to receive relevant requests.', 'cta': 'Complete profile'},
+      'waiting': {'title': "🌿 It’s calm for now", 'body': "We’re looking for requests that match your profile.\nYou’ll be notified as soon as there’s a match.", 'cta': 'How it works'},
+      'matches': {'title': '🚨 Requests match your profile', 'body': 'Review them and choose how to help.', 'cta': 'View requests'},
+      'checklist_title': 'Your profile',
+      'label_location': 'Location',
+      'label_availability': 'Availability',
+      'steps': 'steps remaining',
+      'empty': "No requests match your profile yet.\nThis is normal — your help matters.",
+    },
+  } %}
+  {% set copy_lang = copy_map.get(locale_code, copy_map['en']) %}
+  {% set missing_location = not volunteer.location %}
+  {% set missing_availability = not volunteer.availability %}
+  {% set profile_ready = (not missing_location) and (not missing_availability) %}
+  {% set has_matches = matches and matches|length > 0 %}
+  {% set missing_count = (missing_location|int) + (missing_availability|int) %}
+
+  {% if not profile_ready %}
+    {% set status = copy_lang['almost_ready'] %}
+    {% set status_cta_href = safe_url_for('main.volunteer_profile') %}
+  {% elif profile_ready and has_matches %}
+    {% set status = copy_lang['matches'] %}
+    {% set status_cta_href = '#hc-matches' %}
+  {% else %}
+    {% set status = copy_lang['waiting'] %}
+    {% set status_cta_href = safe_url_for('main.volunteer_profile') ~ '#how-it-works' %}
+  {% endif %}
+
+  <section class="hc-card hc-activity hc-status" role="status" aria-live="polite">
+    <div class="hc-activity__top">
+      <span class="hc-dot {% if has_matches %}is-live{% else %}is-idle{% endif %}" aria-hidden="true"></span>
+      <strong class="hc-status__title">{{ status.title }}</strong>
+      {% if volunteer.location %}
+        <span class="hc-chip hc-chip--soft">📍 {{ volunteer.location }}</span>
+      {% endif %}
     </div>
 
-    <div class="hc-activity__proof">
-      HelpChain работи с реални хора и реални ситуации — <strong>без фалшива активност</strong>.
+    <p class="hc-muted" style="margin:8px 0 0;">{{ status.body.replace('\n', '<br>')|safe }}</p>
+
+    <div class="hc-activity__actions">
+      <a href="{{ status_cta_href }}" class="btn btn-sm btn-primary js-native-link">
+        {{ status.cta }}
+      </a>
+      <a href="{{ url_for('main.volunteer_notifications') }}" class="btn btn-sm btn-outline-secondary">
+        {{ _('Notifications') }}
+        {% if unread_count and unread_count > 0 %}
+          <span class="badge text-bg-danger ms-1">{{ unread_count }}</span>
+        {% endif %}
+      </a>
     </div>
   </section>
 
-  <!-- QUICK CHIPS (status at-a-glance) -->
-  <div class="hc-vdash__chips">
-    <span class="hc-chip">📍 Локация: <strong>{{ volunteer.location or '—' }}</strong></span>
-    <span class="hc-chip">🕒 Наличност: <strong>{{ volunteer.availability or '—' }}</strong></span>
-    <span class="hc-chip">🧩 Умения: <strong>{{ volunteer.skills or '—' }}</strong></span>
-    <span class="hc-vdash__chipsHint">Можеш да промениш това по всяко време.</span>
-  </div>
+  <div class="hc-vdash__layout">
+    <aside class="hc-vdash__side">
+      <section class="hc-card hc-sticky hc-sideCard">
+        <h2>{{ copy_lang['checklist_title'] }}</h2>
+        <p class="hc-muted">{{ _('Показваме само липсващото, за да станеш готов за свързване.') }}</p>
 
-  <!-- MAIN GRID -->
-  <div class="hc-vdash__grid">
+        <div class="hc-ready">
+          {% if missing_count > 0 %}
+            {% if missing_location %}
+              <div class="hc-ready__row">
+                <span class="hc-ready__label">🔴 {{ copy_lang['label_location'] }}</span>
+                <span class="hc-ready__value is-missing">{{ _('не е зададена') }}</span>
+              </div>
+            {% endif %}
+            {% if missing_availability %}
+              <div class="hc-ready__row">
+                <span class="hc-ready__label">🔴 {{ copy_lang['label_availability'] }}</span>
+                <span class="hc-ready__value is-missing">{{ _('не е зададена') }}</span>
+              </div>
+            {% endif %}
 
-    <!-- LEFT: PROFILE STATUS / NEXT ACTION -->
-    <aside class="hc-card hc-vdash__profile">
-      <div class="hc-card__head">
-        <h2 class="hc-card__title">Готовност за свързване</h2>
-        <p class="hc-card__desc">Колкото по-точен е профилът, толкова по-точни ще са заявките.</p>
-      </div>
-
-      <!-- readiness summary -->
-      <div class="hc-vdash__readiness">
-        <div class="hc-vdash__readinessRow">
-          <span class="hc-badge">Локация</span>
-          <span class="hc-vdash__readinessVal">{{ volunteer.location or 'Липсва' }}</span>
-        </div>
-        <div class="hc-vdash__readinessRow">
-          <span class="hc-badge">Наличност</span>
-          <span class="hc-vdash__readinessVal">{{ volunteer.availability or 'Липсва' }}</span>
-        </div>
-        <div class="hc-vdash__readinessRow">
-          <span class="hc-badge">Умения</span>
-          <span class="hc-vdash__readinessVal">{{ volunteer.skills or 'Липсва' }}</span>
-        </div>
-      </div>
-
-      <div class="hc-vdash__ctaBox">
-        <p class="hc-vdash__ctaText">
-          {% if volunteer.location and volunteer.skills %}
-            Профилът ти е достатъчно добър, за да започнеш ✅
+            <p class="hc-muted" style="margin:8px 0;">
+              🟦 {{ missing_count }} {{ copy_lang['steps'] }}
+            </p>
+            <a href="{{ safe_url_for('main.volunteer_profile') }}" class="btn btn-primary w-100">
+              {{ copy_lang['almost_ready']['cta'] if 'almost_ready' in copy_lang else _('Попълни профила') }}
+            </a>
           {% else %}
-            Още 1–2 детайла и профилът ти става видим за точните заявки ✅
+            <p class="hc-success">✅ {{ _('Профилът е готов') }}</p>
+            <p class="hc-muted" style="margin:4px 0 8px;">
+              {{ _('Ако искаш, можеш да обновиш наличност или умения по-късно.') }}
+            </p>
+            <a href="{{ safe_url_for('main.volunteer_profile') }}" class="btn btn-outline-primary w-100">
+              {{ _('Редактирай профила') }}
+            </a>
           {% endif %}
+        </div>
+
+        <p class="hc-muted small" style="margin-top:10px;">
+          ⚠️ {{ copy_lang['label_availability'] }}: {{ volunteer.availability or _('по избор') }}
         </p>
-
-        <a class="btn btn-primary" href="{{ safe_url_for('main.volunteer_profile') }}">
-          Редактирай профила си
-        </a>
-
-        <a class="hc-softlink" href="{{ safe_url_for('faq') }}">
-          Как работи свързването →
-        </a>
-      </div>
+      </section>
     </aside>
 
-    <!-- RIGHT: MATCHING REQUESTS -->
-    <main class="hc-card hc-vdash__matches">
-      <div class="hc-card__head">
-        <h2 class="hc-card__title">Подходящи заявки</h2>
-        <p class="hc-card__desc">Когато има нужда, която съвпада с теб, ще я видиш тук.</p>
+    <main class="hc-card hc-vdash__mainCol hc-vdash__matches">
+      <div class="hc-card__head hc-matchesHead">
+        <div>
+          <h2 class="hc-card__title">{{ _('Подходящи заявки') }}</h2>
+          <p class="hc-muted hc-matchesSub">
+            {{ _('Когато има нужда, която съвпада с теб, ще я видиш тук.') }}
+          </p>
+          <p class="hc-card__desc hc-muted">
+            {{ _('Виждаш това, защото заявката съвпада с твоята локация, наличност и умения. Ако не ти е удобно — просто пропускаш.') }}
+          </p>
+        </div>
       </div>
 
       {% if matches and matches|length %}
+        <p class="hc-cta-hint" style="margin-bottom:12px;">
+          {{ _('Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.') }}
+        </p>
         <div id="hc-matches" class="hc-soft-fade">
-          <div class="hc-list">
-            {# skeleton item - replace later with real card per match #}
-            {% for m in matches %}
-              <article class="hc-listItem hc-soft-fade hc-match-card {% if loop.index0 == 0 %}hc-match-highlight{% endif %}">
-                <div class="hc-listItem__top d-flex align-items-center justify-content-between">
-                  <strong class="hc-listItem__title">{{ m.title or 'Нова заявка' }}</strong>
-                  <span class="hc-listItem__meta">{{ m.created_at or '' }}</span>
-                  {% if loop.index0 == 0 %}
-                    <span class="hc-new-pill">🟢 НОВО</span>
+          {% for m in matches %}
+            {% set istatus = (interest_by_req_id.get(m.id) if interest_by_req_id else None) %}
+            {% set is_assigned = (m.assigned_volunteer_id == volunteer.id) %}
+            {% set req_status = (m.status or "")|lower %}
+            {% set is_done = req_status in ("done", "completed", "resolved", "closed") %}
+            {% set is_rejected = req_status in ("rejected", "cancelled", "canceled") %}
+            {% set is_in_progress = req_status in ("in_progress", "in progress", "active") %}
+            {% set is_new = (not is_done and not is_rejected and not is_in_progress) %}
+            {% set is_pending = istatus and istatus not in ("APPROVED", "REJECTED") %}
+            {% set created = m.created_at %}
+            {% set time_attr = created.isoformat() if created and created.isoformat is defined else (created or '') %}
+
+            {% if is_done %}
+              {% set req_badge = "Завършено" %}
+              {% set req_badge_mod = "hc-badge--done" %}
+            {% elif is_rejected %}
+              {% set req_badge = "Отказано" %}
+              {% set req_badge_mod = "hc-badge--rejected" %}
+            {% elif is_in_progress %}
+              {% set req_badge = "В процес" %}
+              {% set req_badge_mod = "hc-badge--progress" %}
+            {% else %}
+              {% set req_badge = "Нова" %}
+              {% set req_badge_mod = "hc-badge--new" %}
+            {% endif %}
+
+            {% if is_assigned %}
+              {% set vol_badge = "Назначен/а" %}
+              {% set vol_badge_mod = "hc-badge--assigned" %}
+            {% elif istatus == "APPROVED" %}
+              {% set vol_badge = "Одобрен/а" %}
+              {% set vol_badge_mod = "hc-badge--approved" %}
+            {% elif is_pending %}
+              {% set vol_badge = "В изчакване" %}
+              {% set vol_badge_mod = "hc-badge--muted" %}
+            {% elif istatus == "REJECTED" %}
+              {% set vol_badge = "Отхвърлен/а" %}
+              {% set vol_badge_mod = "hc-badge--rejected" %}
+            {% else %}
+              {% set vol_badge = "" %}
+              {% set vol_badge_mod = "" %}
+            {% endif %}
+
+            <article class="hc-listItem hc-soft-fade hc-match-card" data-req-id="{{ m.id }}" data-demo="0" data-seen="0">
+              <div class="hc-listItem__top">
+                <div class="hc-listItem__titleRow">
+                  <strong class="hc-listItem__title">{{ m.title or _('Нова заявка') }}</strong>
+
+                  <div class="hc-badges">
+                    <span class="hc-badge {{ req_badge_mod }}">{{ req_badge }}</span>
+                    {% if vol_badge %}
+                      <span class="hc-badge {{ vol_badge_mod }}">{{ vol_badge }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+
+                {% if is_assigned %}
+                  <div class="hc-statusCopy">✅ Ти си назначен/а. Можеш да отвориш детайлите и да действаш.</div>
+                {% elif is_pending %}
+                  <div class="hc-statusCopy">⏳ В изчакване — ще получиш известие при потвърждение.</div>
+                {% endif %}
+
+                <div class="hc-listItem__metaRow">
+                  <span class="hc-metaItem">📍 {{ m.city or m.location_text or '-' }}</span>
+                  {% if time_attr %}
+                    <time class="hc-metaItem hc-time" datetime="{{ time_attr }}">{{ time_attr }}</time>
                   {% endif %}
                 </div>
-                <div class="hc-listItem__body">
-                  {{ m.summary or '' }}
+              </div>
+
+              <div class="hc-reqmeta">
+                {% if is_done %}
+                  <span class="hc-reqmeta__hint">{{ _('Благодарим! Заявката е маркирана като приключена.') }}</span>
+                {% elif is_assigned %}
+                  <span class="hc-reqmeta__hint">{{ _('Ти си назначен/а по тази заявка. Натисни “Мога да помогна”.') }}</span>
+                {% elif istatus == "APPROVED" %}
+                  <span class="hc-reqmeta__hint">{{ _('Одобрен/а си. Отвори заявката за контакт и следващи стъпки.') }}</span>
+                {% elif istatus == "REJECTED" %}
+                  <span class="hc-reqmeta__hint">{{ _('Тази заявка вече е поета. Виж други активни заявки.') }}</span>
+                {% elif istatus %}
+                  <span class="hc-reqmeta__hint">{{ _('Администратор преглежда интереса ти. Ще получиш известие.') }}</span>
+                {% else %}
+                  <span class="hc-reqmeta__hint">{{ _('Натисни “Искам да помогна”, за да поискаш достъп.') }}</span>
+                {% endif %}
+              </div>
+
+              {% set desc = m.description or m.summary %}
+              {% if desc %}
+                <p class="hc-match__desc">{{ desc[:140] }}{% if desc|length > 140 %}…{% endif %}</p>
+              {% endif %}
+
+              <p class="hc-match__why">
+                {% if volunteer.location %}
+                  {{ _('Виждаш тази заявка, защото съвпада с профила ти в %(loc)s', loc=volunteer.location) }}
+                {% else %}
+                  {{ _('Виждаш тази заявка, защото съвпада с профила ти') }}
+                {% endif %}
+              </p>
+
+              <div class="hc-listItem__actions">
+                {% if is_done %}
+                  <a class="btn btn-sm btn-outline-secondary js-native-link"
+                     href="{{ url_for('main.volunteer_dashboard') }}">
+                    {{ _('Виж други активни заявки') }}
+                  </a>
+                {% elif is_assigned or istatus == "APPROVED" %}
+                  <a class="btn btn-sm btn-primary js-native-link"
+                     href="{{ url_for('main.volunteer_request_details', req_id=m.id) }}">
+                    {{ _('Виж детайли') }}
+                  </a>
+                {% elif istatus == "REJECTED" %}
+                  <a class="btn btn-sm btn-outline-secondary js-native-link"
+                     href="{{ url_for('main.volunteer_dashboard') }}">
+                    {{ _('Виж други активни заявки') }}
+                  </a>
+                {% elif istatus %}
+                  <button class="btn btn-sm btn-outline-secondary" disabled>{{ _('В изчакване') }}</button>
+                {% else %}
+                  <form method="post" action="{{ safe_url_for('main.volunteer_help', req_id=m.id) }}" class="d-inline">
+                    {% if csrf_token is defined %}
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% endif %}
+                    <button class="btn btn-sm btn-primary" type="submit">{{ _('Искам да помогна') }}</button>
+                  </form>
+                {% endif %}
+              </div>
+
+              {# V3.3 — volunteer signals to admin #}
+              {% if (istatus or is_assigned) and (not is_done) %}
+                {% set act = my_actions_by_req_id.get(m.id) if my_actions_by_req_id is defined else None %}
+                <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
+                  <form method="post" class="d-inline">
+                    {{ csrf_form.csrf_token }}
+                    <button type="submit"
+                            class="btn btn-sm btn-primary"
+                            formaction="{{ url_for('main.volunteer_can_help', req_id=m.id) }}"
+                            formmethod="post">
+                      I can help
+                    </button>
+                    <button type="submit"
+                            class="btn btn-sm btn-outline-secondary"
+                            formaction="{{ url_for('main.volunteer_cant_help', req_id=m.id) }}"
+                            formmethod="post">
+                      I can’t help
+                    </button>
+                    {% if act == 'CAN_HELP' %}
+                      <span class="badge text-bg-success ms-2">✅ Sent: I can help</span>
+                    {% elif act == 'CANT_HELP' %}
+                      <span class="badge text-bg-secondary ms-2">🚫 Sent: I can’t help</span>
+                    {% endif %}
+                  </form>
                 </div>
-                <div class="hc-listItem__actions">
-                  <a class="btn btn-sm btn-outline-primary" href="#">Виж детайли</a>
-                  <button class="btn btn-sm btn-primary" type="button">Ще помогна</button>
-                </div>
-              </article>
-            {% endfor %}
-          </div>
+                <p class="text-muted small mt-1 mb-0">{{ _('Това изпраща сигнал към админите.') }}</p>
+              {% endif %}
+
+              {% if is_pending %}
+                <p class="hc-waiting-note">{{ _('Нищо не се поема автоматично.') }}</p>
+              {% endif %}
+            </article>
+          {% endfor %}
         </div>
       {% else %}
-        <!-- empty state (human) -->
-        <div class="hc-empty">
+        <section class="hc-empty hc-empty--tight">
           <div class="hc-empty__icon">🤝</div>
-          <h3 class="hc-empty__title">Още няма подходящи заявки</h3>
+          <h2 class="hc-empty__title">{{ _('Няма активни заявки в момента') }}</h2>
           <p class="hc-empty__text">
-            Това е нормално. HelpChain работи с реални ситуации, не със “симулирана активност”.
-            Щом се появи нещо, което пасва на профила ти — ще го видиш тук.
+            {{ copy_lang['empty'].replace('\n', '<br>')|safe }}
           </p>
 
-          <div class="hc-empty__actions">
-            <a class="btn btn-primary" href="{{ safe_url_for('main.volunteer_profile') }}">
-              Подобри профила си
-            </a>
-            <button class="btn btn-outline-secondary" type="button" data-hc-toggle="preview">
-              Виж пример →
-            </button>
-          </div>
-        </div>
+          <p class="hc-tip">💡 {{ _('По-точна локация + 2–3 умения = по-бърз match.') }}</p>
+
+          <details class="hc-demoWrap" style="margin-top:12px;">
+            <summary>👀 {{ _('Виж пример') }}</summary>
+            <p class="hc-demoNote">
+              {{ _('Това е само пример — реалните заявки ще се покажат автоматично.') }}
+            </p>
+
+            <article class="hc-match hc-match--demo" data-req-id="demo-empty" data-demo="1" style="margin-top:10px;">
+              <header class="hc-match__top">
+                <div class="hc-match__titleWrap">
+                  <strong class="hc-match__title">{{ _('Примерна заявка') }}</strong>
+                  <div class="hc-match__meta">
+                <span class="hc-match__city">📍 Paris</span>
+                <span class="hc-dotSep" aria-hidden="true">•</span>
+                <span class="hc-match__time">{{ _('току-що') }}</span>
+              </div>
+            </div>
+            <span class="hc-demo-pill">{{ _('Пример (демо)') }}</span>
+          </header>
+
+              <p class="hc-muted" style="margin:4px 0 8px;">
+                {{ _('Току-що се появи. Провери дали ти е удобно.') }}
+              </p>
+              <p class="hc-match__desc">{{ _('Човек търси помощ за документи и насоки къде да ги подаде.') }}</p>
+              <p class="hc-match__why">
+                {% if volunteer.location %}
+                  {{ _('Виждаш тази заявка, защото съвпада с профила ти в %(loc)s', loc=volunteer.location) }}
+                {% else %}
+                  {{ _('Виждаш тази заявка, защото съвпада с профила ти') }}
+                {% endif %}
+              </p>
+            </article>
+          </details>
+        </section>
       {% endif %}
     </main>
-
   </div>
 
-  <!-- PREVIEW (secondary) -->
+  {# =========================
+     My Requests — Tabs (minimal)
+     ========================= #}
+  {% set pending_count = my_pending|length %}
+  {% set approved_count = my_approved|length %}
+  {% set rejected_count = my_rejected|length %}
+
+  {# default tab: first non-empty, else pending #}
+  {% set default_tab = 'pending' %}
+  {% if approved_count > 0 %}{% set default_tab = 'approved' %}{% endif %}
+  {% if rejected_count > 0 and approved_count == 0 %}{% set default_tab = 'rejected' %}{% endif %}
+  {% if pending_count > 0 %}{% set default_tab = 'pending' %}{% endif %}
+
+  <section class="hc-card hc-myreq" style="margin-top:16px;">
+    <div class="hc-card__head hc-myreq__head">
+      <div>
+        <h2 class="hc-card__title">{{ _('Моите заявки') }}</h2>
+        <p class="hc-card__desc hc-muted" style="margin-top:4px;">
+          {{ _('Виж подадените от теб заявки и статуса им.') }}
+        </p>
+      </div>
+
+      <div class="hc-tabs" role="tablist" aria-label="{{ _('Моите заявки') }}">
+        <button class="hc-tab"
+                type="button"
+                role="tab"
+                aria-selected="{{ 'true' if default_tab == 'pending' else 'false' }}"
+                aria-controls="myreq-panel-pending"
+                id="myreq-tab-pending"
+                data-tab="pending">
+          {{ _('В изчакване') }}
+          <span class="hc-tab__count">{{ pending_count }}</span>
+        </button>
+
+        <button class="hc-tab"
+                type="button"
+                role="tab"
+                aria-selected="{{ 'true' if default_tab == 'approved' else 'false' }}"
+                aria-controls="myreq-panel-approved"
+                id="myreq-tab-approved"
+                data-tab="approved">
+          {{ _('Одобрени') }}
+          <span class="hc-tab__count">{{ approved_count }}</span>
+        </button>
+
+        <button class="hc-tab"
+                type="button"
+                role="tab"
+                aria-selected="{{ 'true' if default_tab == 'rejected' else 'false' }}"
+                aria-controls="myreq-panel-rejected"
+                id="myreq-tab-rejected"
+                data-tab="rejected">
+          {{ _('Отказани') }}
+          <span class="hc-tab__count">{{ rejected_count }}</span>
+        </button>
+      </div>
+    </div>
+
+    {% macro myreq_list(items) -%}
+      {% if items|length == 0 %}
+        <div class="hc-emptyLine">
+          <span class="hc-muted">{{ _('Няма заявки в този статус') }}</span>
+        </div>
+      {% else %}
+        <div class="list-group">
+          {% for row in items %}
+            {% set req = row.req %}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-start"
+               href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
+              <div>
+                <div class="fw-semibold">{{ req.title }}</div>
+                <div class="text-muted" style="font-size: 0.9rem;">
+                  📍 {{ req.city or req.location_text or '-' }}
+                </div>
+              </div>
+              <span class="hc-pill">{{ _('Виж') }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {%- endmacro %}
+
+    <div class="hc-myreq__body">
+      <div class="hc-tabPanel"
+           role="tabpanel"
+           id="myreq-panel-pending"
+           aria-labelledby="myreq-tab-pending"
+           {% if default_tab != 'pending' %}hidden{% endif %}>
+        {{ myreq_list(my_pending) }}
+      </div>
+
+      <div class="hc-tabPanel"
+           role="tabpanel"
+           id="myreq-panel-approved"
+           aria-labelledby="myreq-tab-approved"
+           {% if default_tab != 'approved' %}hidden{% endif %}>
+        {{ myreq_list(my_approved) }}
+      </div>
+
+      <div class="hc-tabPanel"
+           role="tabpanel"
+           id="myreq-panel-rejected"
+           aria-labelledby="myreq-tab-rejected"
+           {% if default_tab != 'rejected' %}hidden{% endif %}>
+        {{ myreq_list(my_rejected) }}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .hc-myreq__head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .hc-tabs{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      padding:6px;
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:12px;
+      background: rgba(0,0,0,.02);
+    }
+    .hc-tab{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:0;
+      border-radius:10px;
+      background:transparent;
+      color: inherit;
+      cursor:pointer;
+      font-weight:600;
+      font-size: .92rem;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .hc-tab__count{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius:999px;
+      background: rgba(0,0,0,.08);
+      font-weight:700;
+      font-size:.82rem;
+    }
+    .hc-tab[aria-selected="true"]{
+      background: rgba(0,0,0,.06);
+      box-shadow: 0 1px 0 rgba(0,0,0,.06) inset;
+    }
+    .hc-myreq__body{ padding: 8px 0 0; }
+    .hc-tabPanel{ padding: 0; }
+    .hc-pill{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.85rem;
+      background: rgba(0,0,0,.06);
+      color: inherit;
+      border: 1px solid rgba(0,0,0,.06);
+    }
+    .hc-emptyLine{
+      padding: 10px 4px;
+    }
+
+    @media (max-width: 640px){
+      .hc-tabs{ width:100%; justify-content:space-between; }
+      .hc-tab{ flex:1; justify-content:center; }
+    }
+  </style>
+
+  <script>
+    (() => {
+      const root = document.querySelector('.hc-myreq');
+      if (!root) return;
+
+      const tabs = Array.from(root.querySelectorAll('.hc-tab[role="tab"]'));
+      const panels = Array.from(root.querySelectorAll('.hc-tabPanel[role="tabpanel"]'));
+
+      function activate(tabName) {
+        tabs.forEach(btn => {
+          const isActive = btn.dataset.tab === tabName;
+          btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        panels.forEach(p => {
+          const isActive = p.id === `myreq-panel-${tabName}`;
+          if (isActive) p.removeAttribute('hidden');
+          else p.setAttribute('hidden', 'hidden');
+        });
+      }
+
+      tabs.forEach(btn => {
+        btn.addEventListener('click', () => activate(btn.dataset.tab));
+        btn.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+          e.preventDefault();
+          const i = tabs.indexOf(btn);
+          const next = e.key === 'ArrowRight'
+            ? tabs[(i + 1) % tabs.length]
+            : tabs[(i - 1 + tabs.length) % tabs.length];
+          next.focus();
+          activate(next.dataset.tab);
+        });
+      });
+    })();
+  </script>
+
+<!-- PREVIEW (secondary) -->
   <section class="hc-card hc-vdash__preview" id="hc-preview">
     <div class="hc-card__head">
       <h2 class="hc-card__title">Как ще изглежда заявка</h2>
@@ -176,8 +621,132 @@
     </article>
   </section>
 
+  <div id="hc-confirm-overlay" class="hc-confirm-overlay" hidden>
+    <div class="hc-confirm-box">
+      <h4>Потвърди помощта</h4>
+      <p>
+        Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш
+        дали да поемеш. Нищо не се поема автоматично.
+      </p>
+
+      <div class="hc-confirm-actions">
+        <button id="hc-confirm-cancel" class="btn btn-outline-secondary btn-sm">
+          Откажи
+        </button>
+        <button id="hc-confirm-ok" class="btn btn-primary btn-sm">
+          Да, ще помогна
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="hc-help-success" class="hc-help-success" hidden>
+    ✅ Помощта е заявена. Очаква се кратко потвърждение от екипа.
+  </div>
+
+  <div id="hc-detail-toast" class="hc-help-success" hidden>
+    ℹ️ Детайлите ще се показват тук. Нищо не е изпратено автоматично.
+  </div>
+
 </section>
 <script>
+console.log("HC DASHBOARD JS LOADED ✅");
+
+// One delegated handler for details/help
+(function () {
+  if (window.__hcVolDashBound) return;
+  window.__hcVolDashBound = true;
+
+  function hcToast(msg) {
+    let t = document.querySelector(".hc-toast");
+    if (!t) {
+      t = document.createElement("div");
+      t.className = "hc-toast";
+      t.setAttribute("role", "status");
+      t.setAttribute("aria-live", "polite");
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add("is-show");
+    clearTimeout(window.__hcToastTimer);
+    window.__hcToastTimer = setTimeout(() => t.classList.remove("is-show"), 2800);
+  }
+
+  function openDetails(reqId) {
+    if (reqId === "demo") {
+      hcToast("ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница.");
+      return;
+    }
+    window.location.href = `/volunteer/requests/${reqId}`;
+  }
+
+  function startHelp(reqId, btnEl) {
+    const ok = confirm(
+      reqId === "demo"
+        ? "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."
+        : "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.\n\nПродължаваме?"
+    );
+    if (!ok) return;
+
+    if (btnEl) {
+      btnEl.disabled = true;
+      btnEl.textContent = "В изчакване";
+      btnEl.classList.add("disabled");
+      const note = btnEl.closest('.hc-match-card')?.querySelector('.hc-waiting-note');
+      if (note) note.hidden = false;
+    }
+
+    hcToast(reqId === "demo"
+      ? "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
+      : "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
+    );
+  }
+
+  document.addEventListener("click", (e) => {
+    const target = e.target.closest("a, button");
+    if (!target) return;
+
+    // Не пипаме истинските линкове с реален href
+    if (
+      target.tagName === "A" &&
+      target.getAttribute("href") &&
+      target.getAttribute("href") !== "#" &&
+      !target.getAttribute("href").startsWith("javascript")
+    ) {
+      return;
+    }
+
+    if (target.classList.contains("js-native-link")) return; // двойна защита
+
+    const el = e.target.closest("[data-hc-action]");
+    if (!el) return;
+
+    const action = el.dataset.hcAction;
+    const reqId = el.dataset.reqId || "unknown";
+    console.log("[HC] action:", action, "reqId:", reqId);
+
+    if (action === "details") {
+      const href = (el.getAttribute("href") || "").trim();
+      console.log("[HC] details href:", href);
+      // реален линк → позволяваме навигация
+      if (el.tagName === "A" && href && href !== "#" && !href.startsWith("javascript")) {
+        return; // без preventDefault
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      hcToast("ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли.");
+      return;
+    }
+
+    if (action === "help") {
+      e.preventDefault();
+      e.stopPropagation();
+      startHelp(reqId, el);
+      return;
+    }
+  }, true);
+})();
+
 (function () {
   // 1) Demo mode: add ?demo_match=1 към URL за да видиш ефекта без реална заявка
   const qs = new URLSearchParams(window.location.search);
@@ -211,5 +780,493 @@
     firstCard.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 })();
+
+// Shared hook list for post-card updates
+window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
+
+// Hide demo block if real matches exist
+(() => {
+  function hideDemoIfRealExists() {
+    const demoWrap = document.querySelector('[data-demo-wrap="1"]');
+    if (!demoWrap) return;
+    const hasReal = !!document.querySelector('.hc-match-card[data-req-id]:not([data-demo="1"])');
+    demoWrap.style.display = hasReal ? 'none' : '';
+  }
+  hideDemoIfRealExists();
+  window.hcAfterCardsUpdate.push(hideDemoIfRealExists);
+})();
+
+  // Auto-fade highlight after ~3.5s
+  window.addEventListener("load", () => {
+    const el = document.querySelector(".hc-match-highlight");
+    if (!el) return;
+    setTimeout(() => {
+      el.classList.remove("hc-match-highlight");
+    }, 3500);
+  });
+
+  function markSeenOnHover(card) {
+    card.addEventListener('mouseenter', () => {
+      card.setAttribute('data-seen', '1');
+      card.classList.remove('hc-match-highlight');
+    }, { once: true });
+  }
+
+  document.querySelectorAll('.hc-match-card').forEach(card => markSeenOnHover(card));
+
+  // Seen state with sessionStorage (click marks as seen)
+  (() => {
+    const KEY = 'hcSeenRequests';
+    const seen = new Set(JSON.parse(sessionStorage.getItem(KEY) || '[]'));
+
+  document.querySelectorAll('.hc-match-card').forEach((card, idx) => {
+    const id = card.dataset.reqId || idx;
+
+    if (seen.has(String(id))) {
+      card.classList.add('is-seen');
+    }
+
+    card.addEventListener('click', () => {
+      seen.add(String(id));
+      sessionStorage.setItem(KEY, JSON.stringify([...seen]));
+      card.classList.add('is-seen');
+    }, { once: true });
+    markSeenOnHover(card);
+  });
+})();
+
+// First-match micro-message (once per browser)
+(() => {
+  const FLAG = 'hcFirstMatchSeen';
+  function showBox() {
+    const hasMatch = document.querySelector('.hc-match-card:not([data-demo=\"1\"])');
+    if (hasMatch && !localStorage.getItem(FLAG)) {
+      const box = document.getElementById('hc-first-match');
+      if (box) {
+        box.hidden = false;
+        localStorage.setItem(FLAG, '1');
+      }
+    }
+  }
+  showBox();
+  window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
+  window.hcAfterCardsUpdate.push(showBox);
+})();
+
+// Micro-tooltip on primary CTA
+(() => {
+  const TIP_TITLE = 'Какво става, ако натиснеш?';
+  const TIP_TEXT  = 'Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично.';
+
+  let tipEl = null;
+  const TIP_ID = 'hc-help-tip';
+
+  function ensureTip() {
+    if (tipEl) return tipEl;
+    tipEl = document.createElement('div');
+    tipEl.className = 'hc-tip';
+    tipEl.id = TIP_ID;
+    tipEl.innerHTML = `
+      <div class="hc-tip__arrow"></div>
+      <div class="hc-tip__title">${TIP_TITLE}</div>
+      <div class="hc-tip__text">${TIP_TEXT}</div>
+    `;
+    document.body.appendChild(tipEl);
+    return tipEl;
+  }
+
+  function showTip(btn) {
+    const tip = ensureTip();
+    const r = btn.getBoundingClientRect();
+    tip.style.top  = `${window.scrollY + r.bottom + 10}px`;
+    tip.style.left = `${window.scrollX + r.left}px`;
+    tip.classList.add('is-on');
+  }
+
+  function hideTip() {
+    if (tipEl) tipEl.classList.remove('is-on');
+  }
+
+  function bindTooltips(root=document) {
+    root.querySelectorAll('.hc-match-card .btn.btn-primary').forEach(btn => {
+      if (btn.dataset.hcTipBound) return;
+      btn.dataset.hcTipBound = '1';
+      btn.setAttribute('aria-describedby', TIP_ID);
+
+      btn.addEventListener('mouseenter', () => showTip(btn));
+      btn.addEventListener('mouseleave', hideTip);
+      btn.addEventListener('focus', () => showTip(btn));
+      btn.addEventListener('blur', hideTip);
+
+      // mobile: tap shows tip
+      btn.addEventListener('touchstart', (e) => { showTip(btn); e.stopPropagation(); }, {passive:true});
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (tipEl && tipEl.classList.contains('is-on')) {
+          hideTip();
+        } else {
+          showTip(btn);
+        }
+      });
+    });
+  }
+
+  bindTooltips();
+
+  document.addEventListener('click', hideTip);
+  window.addEventListener('scroll', hideTip, {passive:true});
+
+  // expose for re-bind after DOM refresh
+  window.hcBindHelpTooltips = bindTooltips;
+})();
+
+// Subtle polling for new matches; animates arrivals
+(() => {
+  const INTERVAL_MS = 25000;
+  const CARD_SEL = '.hc-match-card';
+
+  function sig(card) {
+    if (card.dataset.demo === '1') return null;
+    const id = card.dataset.reqId;
+    if (id) return `id:${id}`;
+    const title = (card.querySelector('.hc-listItem__title')?.textContent || '').trim();
+    const meta  = (card.querySelector('.hc-listItem__meta')?.textContent || '').trim();
+    const body  = (card.querySelector('.hc-listItem__body')?.textContent || '').trim().slice(0,80);
+    return `t:${title}|m:${meta}|b:${body}`;
+  }
+
+  function currentSet() {
+    return new Set([...document.querySelectorAll(CARD_SEL)].map(sig).filter(Boolean));
+  }
+
+  let seen = currentSet();
+  let busy = false;
+
+  async function poll() {
+    if (busy || document.hidden) return;
+    busy = true;
+
+    try {
+      const res = await fetch(window.location.href, { headers: { 'X-Requested-With': 'hc-poll' } });
+      if (!res.ok) return;
+
+      const html = await res.text();
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const newCards = [...doc.querySelectorAll(CARD_SEL)].filter(c => c.dataset.demo !== '1');
+      if (!newCards.length) return;
+
+      const now = new Set(newCards.map(sig));
+      const added = [...now].filter(x => !seen.has(x));
+      if (!added.length) return;
+
+      const curFirst = document.querySelector(CARD_SEL);
+      const newFirst = doc.querySelector(CARD_SEL);
+      if (!curFirst || !newFirst) return;
+
+      const curParent = curFirst.parentElement;
+      const newParent = newFirst.parentElement;
+      if (!curParent || !newParent) return;
+
+      curParent.innerHTML = newParent.innerHTML;
+
+      document.querySelectorAll(CARD_SEL).forEach(card => {
+        if (added.includes(sig(card))) {
+          card.classList.add('hc-arrive');
+          setTimeout(() => card.classList.remove('hc-arrive'), 1200);
+        }
+      });
+
+      if (window.hcBindHelpTooltips) window.hcBindHelpTooltips(document);
+      if (window.hcAfterCardsUpdate) window.hcAfterCardsUpdate.forEach(fn => { try { fn(); } catch(_){} });
+
+      seen = currentSet();
+      if (window.hcUpdateNotif) window.hcUpdateNotif();
+    } catch (e) {
+      // silent
+    } finally {
+      busy = false;
+    }
+  }
+
+  setInterval(poll, INTERVAL_MS);
+})();
+
+// Demo card injector when no matches (via ?demo_match=1)
+(() => {
+  function injectDemo() {
+    if (document.querySelector('.hc-match-card')) return;
+    const matchesMain = document.querySelector('.hc-vdash__matches');
+    if (!matchesMain) return;
+
+    const empty = matchesMain.querySelector('.hc-empty');
+    if (empty) empty.remove();
+
+    const slot = document.createElement('div');
+    slot.id = 'hc-matches';
+    slot.className = 'hc-soft-fade';
+    slot.innerHTML = `
+          <div class="hc-list">
+            <article class="hc-listItem hc-soft-fade hc-match-card hc-demo-card" data-req-id="demo-1" data-demo="1">
+              <div class="hc-listItem__top d-flex align-items-center justify-content-between">
+                <strong class="hc-listItem__title">Примерна заявка</strong>
+                <span class="hc-listItem__meta">току-що</span>
+                <span class="hc-demo-pill">Пример (демо)</span>
+              </div>
+              <p class="hc-muted" style="margin:4px 0 8px;">Току-що се появи. Провери дали ти е удобно.</p>
+              <div class="hc-listItem__body">
+                Човек търси помощ за документи и насоки къде да ги подаде.
+              </div>
+              <p class="hc-why">
+                {% if volunteer.location %}
+                  {{ _('Виждаш тази заявка, защото съвпада с профила ти в %(loc)s', loc=volunteer.location) }}
+                {% else %}
+                  {{ _('Виждаш тази заявка, защото съвпада с профила ти') }}
+                {% endif %}
+              </p>
+              <div class="hc-listItem__actions">
+                <a class="btn btn-sm btn-outline-primary" href="javascript:void(0)" aria-disabled="true">Виж детайли</a>
+                <button class="btn btn-sm btn-primary" type="button">Ще помогна</button>
+              </div>
+          <p class="hc-cta-hint">
+            Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.
+          </p>
+        </article>
+      </div>
+    `;
+    matchesMain.appendChild(slot);
+
+    if (window.hcBindHelpTooltips) window.hcBindHelpTooltips(document);
+    if (window.hcAfterCardsUpdate) window.hcAfterCardsUpdate.forEach(fn => { try { fn(); } catch(_){} });
+  }
+
+  const qs = new URLSearchParams(window.location.search);
+  if (qs.get('demo_match') === '1' && !document.querySelector('.hc-match-card')) {
+    injectDemo();
+  }
+})();
+
+// Seen state (data-seen + sessionStorage)
+(() => {
+  const KEY = 'hcSeenRequests';
+  function bindSeen() {
+    const seenSet = new Set(JSON.parse(sessionStorage.getItem(KEY) || '[]'));
+    document.querySelectorAll('.hc-match-card').forEach(card => {
+      const id = card.dataset.reqId;
+      if (!id) return;
+
+      if (seenSet.has(String(id))) {
+        card.classList.add('hc-seen');
+        card.setAttribute('data-seen','1');
+      }
+
+      if (card.dataset.hcSeenBound) return;
+      card.dataset.hcSeenBound = '1';
+
+      card.addEventListener('click', () => {
+        seenSet.add(String(id));
+        sessionStorage.setItem(KEY, JSON.stringify([...seenSet]));
+        card.classList.add('hc-seen');
+        card.setAttribute('data-seen','1');
+      }, { once: true });
+
+      card.addEventListener('mouseenter', () => {
+        card.setAttribute('data-seen','1');
+        card.classList.remove('hc-match-highlight');
+      }, { once: true });
+    });
+  }
+  bindSeen();
+  window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
+  window.hcAfterCardsUpdate.push(bindSeen);
+})();
+
+// Mini confirm overlay for "Ще помогна"
+(() => {
+  let activeHelpBtn = null;
+  const overlay = document.getElementById('hc-confirm-overlay');
+  const cancelBtn = document.getElementById('hc-confirm-cancel');
+  const okBtn = document.getElementById('hc-confirm-ok');
+  const successBox = document.getElementById('hc-help-success');
+  if (!overlay || !cancelBtn || !okBtn) return;
+
+  function showHelpSuccess() {
+    if (!successBox) return;
+    successBox.hidden = false;
+    setTimeout(() => { successBox.hidden = true; }, 3500);
+  }
+
+  function bindHelpButtons(root = document) {
+    root.querySelectorAll('.hc-help-btn').forEach(btn => {
+      if (btn.dataset.hcConfirmBound) return;
+      btn.dataset.hcConfirmBound = '1';
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        if (btn.disabled) return;
+        activeHelpBtn = btn;
+        overlay.hidden = false;
+      });
+    });
+  }
+  bindHelpButtons();
+  window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
+  window.hcAfterCardsUpdate.push(() => bindHelpButtons(document));
+
+  cancelBtn.onclick = () => {
+    overlay.hidden = true;
+    activeHelpBtn = null;
+  };
+
+  okBtn.onclick = () => {
+    overlay.hidden = true;
+    if (!activeHelpBtn) return;
+    activeHelpBtn.classList.add('loading');
+    activeHelpBtn.textContent = 'Обработва се…';
+
+    setTimeout(() => {
+      activeHelpBtn.classList.remove('loading');
+      activeHelpBtn.disabled = true;
+      activeHelpBtn.textContent = 'В изчакване';
+      activeHelpBtn.classList.add('disabled');
+      const note = activeHelpBtn.closest('.hc-match-card')?.querySelector('.hc-waiting-note');
+      if (note) note.hidden = false;
+
+      showHelpSuccess();
+      activeHelpBtn = null;
+    }, 800);
+  };
+})();
+
+// Help history (prevent double actions per card)
+(() => {
+  const helped = JSON.parse(localStorage.getItem('hc-helped') || '[]');
+  document.querySelectorAll('.hc-help-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.hc-match-card');
+      if (!card) return;
+      const id = card.dataset.reqId;
+      if (!id) return;
+      if (!helped.includes(id)) {
+        helped.push(id);
+        localStorage.setItem('hc-helped', JSON.stringify(helped));
+      }
+    });
+  });
+
+  document.querySelectorAll('.hc-match-card').forEach(card => {
+    const id = card.dataset.reqId;
+    if (!id) return;
+    if (helped.includes(id)) {
+      const btn = card.querySelector('.hc-help-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'В изчакване';
+        btn.classList.add('disabled');
+      }
+    }
+  });
+})();
+
+// Notification badge for new matches
+(() => {
+  function updateNotif() {
+    const newCards = document.querySelectorAll('.hc-match-highlight:not([data-demo="1"])');
+    const badge = document.getElementById('hcNotif');
+    if (!badge) return;
+    if (newCards.length) {
+      badge.textContent = newCards.length;
+      badge.hidden = false;
+    } else {
+      badge.hidden = true;
+    }
+  }
+  window.hcUpdateNotif = updateNotif;
+  updateNotif();
+})();
+
+// Detail toast (placeholder)
+(() => {
+  const toast = document.getElementById('hc-detail-toast');
+  if (!toast) return;
+  function showDetailToast() {
+    toast.hidden = false;
+    setTimeout(() => { toast.hidden = true; }, 2200);
+  }
+  function bindDetailToast(root=document) {
+    root.querySelectorAll('.hc-detail-link').forEach(link => {
+      if (link.dataset.hcDetailBound) return;
+      link.dataset.hcDetailBound = '1';
+      const card = link.closest('.hc-match-card');
+      const isDemo = card && card.dataset.demo === "1";
+      if (!isDemo) return; // реалните карти не се прихващат
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        showDetailToast();
+      });
+    });
+  }
+  bindDetailToast();
+  window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
+  window.hcAfterCardsUpdate.push(() => bindDetailToast(document));
+})();
+
+(function(){
+  function pretty(ts){
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return null;
+    const diff = Math.floor((Date.now() - d.getTime())/1000);
+    if (diff < 60) return "just now";
+    const m = Math.floor(diff/60);
+    if (m < 60) return `${m} min ago`;
+    const h = Math.floor(m/60);
+    if (h < 24) return `${h} h ago`;
+    const days = Math.floor(h/24);
+    return `${days} d ago`;
+  }
+  document.querySelectorAll("time.hc-time[datetime]").forEach(t=>{
+    const p = pretty(t.getAttribute("datetime"));
+    if (p) t.textContent = p;
+  });
+})();
+
+(function(){
+  const tabs = Array.from(document.querySelectorAll(".hc-tab[data-tab]"));
+  const panels = {
+    pending: document.getElementById("tab-pending"),
+    approved: document.getElementById("tab-approved"),
+    rejected: document.getElementById("tab-rejected"),
+  };
+  if (!tabs.length) return;
+
+  function activate(key){
+    tabs.forEach(t=>{
+      const on = t.dataset.tab === key;
+      t.classList.toggle("is-active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    Object.entries(panels).forEach(([k, el])=>{
+      if (!el) return;
+      const on = k === key;
+      el.classList.toggle("is-active", on);
+      el.hidden = !on;
+    });
+    try { localStorage.setItem("hc_myreq_tab", key); } catch(e) {}
+  }
+
+  tabs.forEach(t=>{
+    t.addEventListener("click", ()=> activate(t.dataset.tab));
+  });
+
+  let saved = null;
+  try { saved = localStorage.getItem("hc_myreq_tab"); } catch(e) {}
+  if (saved && panels[saved]) activate(saved);
+})();
+
 </script>
 {% endblock %}
+
+{% block scripts %}
+<script>
+  console.log("[HC] dashboard scripts block loaded");
+</script>
+{% endblock %}
+

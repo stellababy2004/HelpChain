@@ -1,5 +1,6 @@
 # Optional: skip if Ollama env/model not available
 import os
+
 import pytest
 
 if not os.getenv("OLLAMA_BASE_URL"):

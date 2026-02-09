@@ -1,10 +1,37 @@
-from datetime import datetime, timezone
+import logging
+from datetime import UTC, datetime, timezone
+from typing import Optional
+
 from flask_login import UserMixin
+
 from backend.extensions import db
+
+logger = logging.getLogger(__name__)
 
 
 def utc_now():
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
+
+
+def canonical_role(role: str | None) -> str:
+    """
+    Map legacy/alias role strings to the canonical set we support today.
+    Unknown values are returned as-is to avoid breaking unexpected roles.
+    """
+    r = (role or "").strip().lower()
+    mapping = {
+        "": "requester",
+        "user": "requester",
+        "requester": "requester",
+        "volunteer": "volunteer",
+        "pro": "professional",
+        "professional": "professional",
+        "admin": "admin",
+        "superadmin": "superadmin",
+        "super_admin": "superadmin",
+    }
+    return mapping.get(r, r)
+
 
 # Unified ORM style: alias common SQLAlchemy names to Flask-SQLAlchemy `db.*`
 # This lets existing declarations using Column/Integer/... work without mixing registries.
@@ -19,6 +46,7 @@ Float = db.Float
 Index = db.Index
 UniqueConstraint = db.UniqueConstraint
 relationship = db.relationship
+
 
 # Реален AdminUser модел за да съществува таблицата `admin_users`
 class AdminUser(db.Model, UserMixin):
@@ -36,23 +64,20 @@ class AdminUser(db.Model, UserMixin):
     backup_codes_hashes = db.Column(db.Text, nullable=True)  # JSON list of password hashes
     backup_codes_generated_at = db.Column(db.DateTime, nullable=True)
 
-    logs = db.relationship(
-        "AdminLog",
-        back_populates="admin_user",
-        cascade="all, delete-orphan",
-    )
-
     @property
     def is_admin(self) -> bool:
-        # Treat both admin and super_admin as admins
-        return getattr(self, "role", None) in ("admin", "super_admin")
+        # Treat admin + superadmin variants as admins
+        return canonical_role(getattr(self, "role", None)) in ("admin", "superadmin")
+
+    @property
+    def role_canon(self) -> str:
+        return canonical_role(getattr(self, "role", None))
 
 
 import os
 import sys
 from datetime import datetime
 from enum import Enum
-
 
 # Backwards-compatible alias: some modules import `AuditLog` from backend.models
 # Option 2: defer all session/engine ownership to Flask-SQLAlchemy.
@@ -63,7 +88,6 @@ from enum import Enum
 # `db` so that the module-level aliases point to the app-backed
 # session/engine. This keeps initialization centralized and avoids
 # duplicate registries.
-
 from backend.extensions import db
 
 
@@ -85,7 +109,6 @@ def configure_models(flask_db):
         db_session = None
 
 
-
 # Backwards-compatible helper used by some modules/tests that call
 # `Model.get_query()` — use the configured db_session if available.
 def get_query_for(model):
@@ -96,9 +119,6 @@ def get_query_for(model):
         pass
     # Final fallback: raise so callers notice configuration issue early.
     raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
-
-
-
 
 
 # (Dynamic `.query` descriptor will be attached after the descriptor is defined.)
@@ -142,6 +162,7 @@ class Volunteer(db.Model):
     longitude = Column(Float, nullable=True)
     # Active flag used by admin filters
     is_active = Column(Boolean, default=True)
+    volunteer_onboarded = Column(Boolean, default=False)
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, default=utc_now, nullable=True, onupdate=utc_now)
     # Minimal gamification fields
@@ -191,7 +212,6 @@ class Volunteer(db.Model):
             self.points = 100
 
         return True
-
 
     def get_total_score(self) -> int:
         """Compute a simple total score for leaderboard sorting."""
@@ -282,6 +302,7 @@ class Volunteer(db.Model):
         elif a is None:
             self.achievements = ""
 
+
 class User(db.Model):
     """Модел за потребители"""
 
@@ -303,6 +324,10 @@ class User(db.Model):
     )
 
     @property
+    def role_canon(self) -> str:
+        return canonical_role(getattr(self, "role", None))
+
+    @property
     def push_subscriptions(self):
         """
         Soft access към push_subscriptions, без ORM relationship,
@@ -311,11 +336,8 @@ class User(db.Model):
         try:
             from backend.extensions import db as _db
             from backend.models import PushSubscription
-            return (
-                _db.session.query(PushSubscription)
-                .filter(PushSubscription.user_id == self.id)
-                .all()
-            )
+
+            return _db.session.query(PushSubscription).filter(PushSubscription.user_id == self.id).all()
         except Exception:
             return []
 
@@ -323,6 +345,7 @@ class User(db.Model):
         """Hash and store a password for the user."""
         try:
             from werkzeug.security import generate_password_hash
+
             self.password_hash = generate_password_hash(password)
         except Exception:
             self.password_hash = password
@@ -331,6 +354,7 @@ class User(db.Model):
         """Verify a password against the stored hash."""
         try:
             from werkzeug.security import check_password_hash
+
             return bool(self.password_hash and check_password_hash(self.password_hash, password))
         except Exception:
             return self.password_hash == password
@@ -573,6 +597,8 @@ class Request(db.Model):
     owner_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
     owned_at = Column(DateTime, nullable=True)
     owner = relationship("AdminUser", foreign_keys=[owner_id], lazy="joined")
+    requester_token_hash = Column(String(128), nullable=True, index=True)
+    requester_token_created_at = Column(DateTime, nullable=True)
     logs = db.relationship(
         "RequestLog",
         back_populates="request",
@@ -587,11 +613,10 @@ class Request(db.Model):
         order_by="RequestActivity.created_at.desc()",
         lazy=True,
     )
-    
+
 
 # Backward-compat alias (legacy code expects HelpRequest)
 HelpRequest = Request
-
 
 
 class RequestLog(db.Model):
@@ -635,10 +660,31 @@ class RequestMetric(db.Model):
     time_to_complete = Column(Integer, nullable=True)  # seconds
 
 
+class SecurityEvent(db.Model):
+    """Structured security/audit events without PII."""
 
+    __tablename__ = "security_events"
 
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
 
- 
+    event_type = Column(String(64), nullable=False)
+    actor_type = Column(String(32), nullable=False, default="anonymous")  # anonymous/user/admin/api
+    actor_id = Column(Integer, nullable=True)
+
+    ip_hash = Column(String(64), nullable=True)
+    ua_hash = Column(String(64), nullable=True)
+
+    route = Column(String(128), nullable=True)
+    method = Column(String(8), nullable=True)
+
+    meta = Column(db.JSON, nullable=True)
+
+    __table_args__ = (
+        Index("ix_security_events_created_at", "created_at"),
+        Index("ix_security_events_event_type_created_at", "event_type", "created_at"),
+    )
+
 
 # Ensure requests created without an explicit `user_id` get a minimal
 # placeholder user so older tests that create HelpRequest objects without
@@ -668,16 +714,16 @@ try:
 
                 new_id = None
                 try:
-                        try:
-                            # SQLAlchemy 1.x style
-                            new_id = getattr(res, "lastrowid", None)
-                        except Exception:
-                            new_id = None
-                        try:
-                            if new_id is None and hasattr(res, "inserted_primary_key"):
-                                new_id = res.inserted_primary_key[0]
-                        except Exception:
-                            pass
+                    try:
+                        # SQLAlchemy 1.x style
+                        new_id = getattr(res, "lastrowid", None)
+                    except Exception:
+                        new_id = None
+                    try:
+                        if new_id is None and hasattr(res, "inserted_primary_key"):
+                            new_id = res.inserted_primary_key[0]
+                    except Exception:
+                        pass
 
                 except Exception:
                     new_id = None
@@ -770,6 +816,7 @@ class RolePermission(db.Model):
     except Exception:
         permission = None
     try:
+
         @permission.setter
         def permission(self, value):
             # Allow assigning by codename string or by Permission instance.
@@ -873,15 +920,19 @@ class ChatMessage(db.Model):
     created_at = Column(DateTime, default=utc_now)
 
 
-# Minimal Notification model
 class Notification(db.Model):
     __tablename__ = "notifications"
+    __table_args__ = (UniqueConstraint("volunteer_id", "type", "request_id", name="uq_notif_vol_type_req"),)
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    title = Column(String(200), nullable=True)
+    volunteer_id = Column(Integer, ForeignKey("volunteers.id"), nullable=False, index=True)
+    type = Column(String(50), nullable=False, index=True)
+    request_id = Column(Integer, ForeignKey("requests.id"), nullable=True, index=True)
+    title = Column(String(200), nullable=False)
     body = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=utc_now)
+    is_read = Column(Boolean, nullable=False, default=False, index=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now)
+    read_at = Column(DateTime, nullable=True)
 
 
 class NotificationSubscription(db.Model):
@@ -897,9 +948,7 @@ class NotificationSubscription(db.Model):
 
     created_at = Column(DateTime, nullable=False, default=utc_now)
 
-    __table_args__ = (
-        UniqueConstraint("endpoint", name="uq_notification_subscriptions_endpoint"),
-    )
+    __table_args__ = (UniqueConstraint("endpoint", name="uq_notification_subscriptions_endpoint"),)
 
 
 # Provide a lightweight Query proxy for modules that call `Model.query`.
@@ -983,5 +1032,3 @@ class PriorityEnum(Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-
-

@@ -1,86 +1,39 @@
-import argparse
 import os
-import sys
 
+from werkzeug.security import generate_password_hash
 
-def _get_app():
-    try:
-        from backend.app import app  # preferred full app
-        return app
-    except Exception:
-        pass
-    try:
-        from backend.appy import app  # minimal preview app
-        return app
-    except Exception:
-        pass
-    raise RuntimeError("Неуспешен импорт на Flask приложението (backend.app или backend.appy)")
+from backend.extensions import db
+from backend.helpchain_backend.src.app import create_app
+from backend.models import User
 
+# Security: never hardcode credentials in tracked files (GitGuardian will block).
+USERNAME = os.getenv("ADMIN_USERNAME")
+EMAIL = os.getenv("ADMIN_EMAIL")
+NEW_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
-def main():
-    parser = argparse.ArgumentParser(description="Reset or create admin password")
-    parser.add_argument("--username", help="Admin username", default=os.getenv("ADMIN_USERNAME", "admin"))
-    parser.add_argument("--email", help="Admin email", default=os.getenv("ADMIN_EMAIL", "admin@helpchain.live"))
-    parser.add_argument("--password", help="New password", required=True)
-    args = parser.parse_args()
+if not NEW_PASSWORD:
+    raise RuntimeError("ADMIN_PASSWORD not set in environment")
+if not USERNAME and not EMAIL:
+    raise RuntimeError("Set ADMIN_USERNAME and/or ADMIN_EMAIL in environment")
 
-    app = _get_app()
-    with app.app_context():
-        try:
-            from backend.extensions import db
-            import backend.models as models
-        except Exception as e:
-            raise RuntimeError(f"Липсващ модул: {e}")
+app = create_app()
 
-        # Ensure models use the Flask-SQLAlchemy session and tables exist
-        try:
-            if hasattr(models, "configure_models"):
-                models.configure_models(db)
-        except Exception:
-            pass
-        try:
-            engine = getattr(db, "engine", None)
-            if engine is None:
-                try:
-                    engine = db.get_engine(app)
-                except Exception:
-                    engine = None
-            if engine is not None:
-                try:
-                    models.Base.metadata.create_all(bind=engine)
-                except Exception:
-                    pass
-        except Exception:
-            pass
+with app.app_context():
+    user = User.query.filter((User.username == USERNAME) | (User.email == EMAIL)).first()
 
-        AdminUser = models.AdminUser
+    if not user:
+        user = User(username=USERNAME, email=EMAIL)
+        db.session.add(user)
 
-        # Find by username or email
-        sess = db.session
-        admin = None
-        try:
-            admin = sess.query(AdminUser).filter_by(username=args.username).first()
-        except Exception:
-            admin = None
-        if not admin:
-            try:
-                admin = sess.query(AdminUser).filter_by(email=args.email).first()
-            except Exception:
-                admin = None
+    user.password_hash = generate_password_hash(NEW_PASSWORD)
+    user.role = "admin"
+    user.is_active = True
 
-        if admin:
-            print(f"Открит админ: {admin.username}, email: {admin.email}")
-            admin.set_password(args.password)
-            sess.commit()
-            print("Паролата е обновена успешно.")
-        else:
-            print("Админ не е намерен, създавам нов...")
-            admin = AdminUser(username=args.username, email=args.email)
-            admin.set_password(args.password)
-            sess.add(admin)
-            sess.commit()
-            print("Админът е създаден успешно.")
+    db.session.commit()
 
-
-if __name__ == "__main__":
-    main()
+    print("OK admin reset:")
+    print(" id =", user.id)
+    print(" username =", user.username)
+    print(" email =", user.email)
+    print(" role =", user.role)
+    print(" active =", user.is_active)

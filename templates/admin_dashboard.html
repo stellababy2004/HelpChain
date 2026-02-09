@@ -166,7 +166,7 @@
           <span id="dash-warning" class="text-warning small" style="display:none;">Няма данни</span>
         </div>
         <div id="chart-status" style="min-height: 320px;"></div>
-        <div class="text-muted small mt-2" id="dashboard-updated">Последно обновяване: —</div>
+        <div class="text-muted small mt-2" id="dashboard-updated">Последно обновяване: -</div>
       </div>
     </div>
   </div>
@@ -441,7 +441,7 @@
 
   function renderCityChart(data) {
     const rows = data?.requests_by_city || data?.requestsByCity || [];
-    const labels = rows.map(r => r.city || "—");
+    const labels = rows.map(r => r.city || "-");
     const series = rows.map(r => Number(r.count || 0));
 
     const isEmpty = rows.length === 0 || series.every(v => v === 0);
@@ -637,3 +637,4 @@ document.addEventListener("DOMContentLoaded", function renderRequestsCategoryCha
 });
 </script>
 {% endblock %}
+

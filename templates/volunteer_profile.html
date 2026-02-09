@@ -15,7 +15,7 @@
           толкова по-подходящи заявки ще виждаш.
         </p>
         <p class="hc-muted" style="margin:6px 0 0;">
-          Нищо не се поема автоматично — ти решаваш дали и кога да се включиш.
+          Нищо не се поема автоматично - ти решаваш дали и кога да се включиш.
         </p>
         {% set flashes = get_flashed_messages(with_categories=true) if get_flashed_messages is defined else [] %}
         {% if flashes %}
@@ -31,7 +31,7 @@
               <div class="hc-alert hc-alert--err" role="status" aria-live="polite">
                 <strong>⚠️ Не успяхме да запазим промените.</strong><br>
                 Провери полетата и опитай отново.<br>
-                <span class="hc-muted">Ако проблемът остане — презареди страницата.</span>
+                <span class="hc-muted">Ако проблемът остане - презареди страницата.</span>
                 <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
               </div>
             {% elif cat == 'info' %}
@@ -79,7 +79,7 @@
       <div class="hc-card__head">
         <h2 class="hc-card__title">{{ _('Готовност за свързване') }}</h2>
         <p class="hc-card__hint">
-          {{ _('Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично — ти решаваш.') }}
+          {{ _('Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш.') }}
         </p>
       </div>
 
@@ -123,7 +123,7 @@
             <span class="hc-muted">Остава още 1 дребно нещо и става още по-точно.</span>
           {% else %}
             <span class="hc-pill hc-pill--warn">Още малко и си готов/а</span>
-            <span class="hc-muted">Попълни липсващите полета по-долу — отнема 1–2 минути.</span>
+            <span class="hc-muted">Попълни липсващите полета по-долу - отнема 1-2 минути.</span>
           {% endif %}
         </div>
       </div><!-- /.hc-prof__progressTop -->
@@ -151,7 +151,7 @@
         <div class="hc-card__head">
           <h2 class="hc-card__title">{{ _('Попълни профила си') }}</h2>
           <p class="hc-card__hint">
-            {{ _('Това е всичко. Когато има заявка, която пасва — ще я видиш в таблото. Няма автоматични ангажименти.') }}
+            {{ _('Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. Няма автоматични ангажименти.') }}
           </p>
         </div>
 
@@ -199,7 +199,7 @@
               </label>
 
               <p class="hc-muted" style="margin:10px 0 0;">
-                Ако се промени графикът — просто редактираш тук.
+                Ако се промени графикът - просто редактираш тук.
               </p>
             </section>
 
@@ -207,7 +207,7 @@
             <section class="hc-card" style="grid-column: 1 / -1;">
               <div class="hc-card__head">
                 <h2 class="hc-card__title">3) Как можеш да помогнеш</h2>
-                <p class="hc-card__hint">Напиши с няколко думи — това е най-силният сигнал за matching.</p>
+                <p class="hc-card__hint">Напиши с няколко думи - това е най-силният сигнал за matching.</p>
               </div>
 
               <label class="hc-field">
@@ -252,7 +252,7 @@
 
         <div class="hc-note">
           <strong>{{ _('Съвет:') }}</strong>
-          {{ _('Ако добавиш точна локация + 2–3 умения, шансът за match се вдига осезаемо.') }}
+          {{ _('Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо.') }}
         </div>
 
         <a id="how-it-works" class="hc-softlink" href="{{ safe_url_for('main.volunteer_dashboard') }}#how-it-works">
@@ -328,3 +328,4 @@
   </div>
 </section>
 {% endblock %}
+

@@ -22,7 +22,10 @@
           <a class="nav-link active" href="{{ safe_url_for('available_tasks') }}"
             >Налични задачи</a
           >
-          <a class="nav-link" href="{{ safe_url_for('volunteer_logout') }}">Изход</a>
+          <form class="d-inline" method="post" action="{{ safe_url_for('main.volunteer_logout') }}">
+            {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+            <button class="nav-link btn btn-link p-0 text-decoration-none" type="submit">Изход</button>
+          </form>
         </div>
       </div>
     </nav>
@@ -42,3 +45,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
+

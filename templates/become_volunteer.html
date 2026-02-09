@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="bg">
+<html lang="{{ (get_locale()|string).split('_', 1)[0] }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Стани доброволец - HelpChain</title>
+    <title>{{ _("Стани доброволец") }} - HelpChain</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -834,7 +834,7 @@
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
-          title="Отвори меню"
+          title="{{ _('Отвори меню') }}"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -842,37 +842,37 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('index') }}">Начало</a>
+              <a class="nav-link" href="{{ safe_url_for('index') }}">{{ _("Начало") }}</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('all_categories') }}"
-                >Категории</a
+                >{{ _("Категории") }}</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('faq') }}">ЧЗВ</a>
+              <a class="nav-link" href="{{ safe_url_for('faq') }}">{{ _("ЧЗВ") }}</a>
             </li>
           </ul>
 
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('login') }}">Вход</a>
+              <a class="nav-link" href="{{ safe_url_for('login') }}">{{ _("Вход") }}</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('register') }}"
-                >Регистрация</a
+                >{{ _("Регистрация") }}</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('volunteer_login') }}"
-                >Вход за доброволци</a
+                >{{ _("Вход за доброволци") }}</a
               >
             </li>
             <li class="nav-item">
               <button
                 class="theme-toggle"
                 id="themeToggle"
-                title="Превключи тема"
+                title="{{ _('Превключи тема') }}"
               >
                 <i class="fas fa-moon"></i>
               </button>
@@ -893,147 +893,141 @@
         <div class="vol-hero-card">
           <div class="vol-eyebrow">
             <i class="fas fa-shield-alt"></i>
-            Спокойствие за доброволци и хора в нужда
+            {{ _("Спокойствие за доброволци и хора в нужда") }}
           </div>
           <h1 class="vol-hero-title">
-            Помагаш, когато можеш. По начин, който избираш.
+            {{ _("Помагаш, когато можеш. По начин, който избираш.") }}
           </h1>
           <p class="vol-hero-sub">
-            HelpChain свързва хора в нужда с доброволци — без натиск, без бюрокрация и с ясни граници. Ти решаваш дали, кога и как да се включиш.
+            {{ _("HelpChain свързва хора в нужда с доброволци - без натиск, без бюрокрация и с ясни граници. Ти решаваш дали, кога и как да се включиш.") }}
           </p>
           <div class="vol-cta-row">
             <a class="vol-cta-primary" href="#volunteerForm">
-              <i class="fas fa-hand-holding-heart me-2"></i>Виж как можеш да помогнеш
+              <i class="fas fa-hand-holding-heart me-2"></i>{{ _("Виж как можеш да помогнеш") }}
             </a>
             <a class="vol-cta-secondary" href="{{ safe_url_for('faq') }}">
-              <i class="fas fa-circle-question me-2"></i>Как работи HelpChain →
+              <i class="fas fa-circle-question me-2"></i>{{ _("Как работи HelpChain →") }}
             </a>
           </div>
           <div class="vol-metrics">
             <div class="vol-metric">
-              <strong>12 месеца</strong>
-              последователна подкрепа в общност.
+              <strong>{{ _("12 месеца") }}</strong>
+              {{ _("последователна подкрепа в общност.") }}
             </div>
             <div class="vol-metric">
               <strong>94%</strong>
-              заявки получават отговор от доброволец.
+              {{ _("заявки получават отговор от доброволец.") }}
             </div>
             <div class="vol-metric">
               <strong>4.9/5</strong>
-              оценка на разговора с доброволци.
+              {{ _("оценка на разговора с доброволци.") }}
             </div>
           </div>
         </div>
 
         <div class="vol-section">
-          <h3><i class="fas fa-sparkles me-2"></i>Какво означава да си доброволец тук</h3>
+          <h3><i class="fas fa-sparkles me-2"></i>{{ _("Какво означава да си доброволец тук") }}</h3>
           <div class="vol-card-grid">
             <div class="vol-card">
-              <h4><i class="fas fa-route me-2 text-info"></i>Виждаш заявки наблизо</h4>
-              <p>Получаваш заявки според локация и вид помощ. Нищо задължително.</p>
+              <h4><i class="fas fa-route me-2 text-info"></i>{{ _("Виждаш заявки наблизо") }}</h4>
+              <p>{{ _("Получаваш заявки според локация и вид помощ. Нищо задължително.") }}</p>
             </div>
             <div class="vol-card">
-              <h4><i class="fas fa-hand-holding-heart me-2 text-success"></i>Избираш дали и кога</h4>
-              <p>Ти решаваш дали да поемеш заявка и кога да се включиш.</p>
+              <h4><i class="fas fa-hand-holding-heart me-2 text-success"></i>{{ _("Избираш дали и кога") }}</h4>
+              <p>{{ _("Ти решаваш дали да поемеш заявка и кога да се включиш.") }}</p>
             </div>
             <div class="vol-card">
-              <h4><i class="fas fa-phone-volume me-2 text-primary"></i>Свързваш се директно</h4>
-              <p>Говориш с човека директно (телефон или имейл) – без посредници и забавяне.</p>
+              <h4><i class="fas fa-phone-volume me-2 text-primary"></i>{{ _("Свързваш се директно") }}</h4>
+              <p>{{ _("Говориш с човека директно (телефон или имейл) - без посредници и забавяне.") }}</p>
             </div>
             <div class="vol-card">
-              <h4><i class="fas fa-door-open me-2 text-warning"></i>Можеш да откажеш</h4>
-              <p>Отказът е окей. Няма санкции, няма задължения, няма чувство за вина.</p>
+              <h4><i class="fas fa-door-open me-2 text-warning"></i>{{ _("Можеш да откажеш") }}</h4>
+              <p>{{ _("Отказът е окей. Няма санкции, няма задължения, няма чувство за вина.") }}</p>
             </div>
           </div>
         </div>
 
         <div class="vol-section">
-          <h3><i class="fas fa-list-check me-2"></i>Какво не си длъжен/длъжна да правиш</h3>
+          <h3><i class="fas fa-list-check me-2"></i>{{ _("Какво не си длъжен/длъжна да правиш") }}</h3>
           <ul class="vol-list">
-            <li>
-              <span class="icon"><i class="fas fa-ban"></i></span>
-              Да поемаш рискове или да заместваш спешни служби.
-            </li>
-            <li>
-              <span class="icon"><i class="fas fa-shield-alt"></i></span>
-              Да помагаш, ако не се чувстваш комфортно или безопасно.
-            </li>
-            <li>
-              <span class="icon"><i class="fas fa-hand-paper"></i></span>
-              Да приемаш задължителни ангажименти – отказът винаги е приемлив.
-            </li>
+            {% for icon, text in not_required_items %}
+              <li>
+                <span class="icon"><i class="{{ icon }}"></i></span>
+                {{ text }}
+              </li>
+            {% endfor %}
           </ul>
-          <p class="mt-3">Ако нещо не ти е окей — просто не го правиш. Това е напълно приемливо тук.</p>
+          <p class="mt-3">{{ _("Ако нещо не ти е окей - просто не го правиш. Това е напълно приемливо тук.") }}</p>
         </div>
 
         <div class="vol-section">
-          <h3><i class="fas fa-id-card-clip me-2"></i>Лека проверка за повече спокойствие</h3>
+          <h3><i class="fas fa-id-card-clip me-2"></i>{{ _("Лека проверка за повече спокойствие") }}</h3>
           <div class="vol-card-grid">
             <div class="vol-card">
-              <h4>1. Лека стъпка</h4>
-              <p>За да пазим всички в безопасност, някои доброволци минават лека проверка (напр. имейл или телефон). Това помага на хората да се чувстват по-спокойни.</p>
+              <h4>{{ _("1. Лека стъпка") }}</h4>
+              <p>{{ _("За да пазим всички в безопасност, някои доброволци минават лека проверка (напр. имейл или телефон). Това помага на хората да се чувстват по-спокойни.") }}</p>
             </div>
             <div class="vol-card">
-              <h4>2. Ясни граници</h4>
-              <p>Избираш кога и колко да помагаш. Няма задължителен график.</p>
+              <h4>{{ _("2. Ясни граници") }}</h4>
+              <p>{{ _("Избираш кога и колко да помагаш. Няма задължителен график.") }}</p>
             </div>
             <div class="vol-card">
-              <h4>3. Директна връзка</h4>
-              <p>Свързваш се директно с човека и решавате заедно какво е удобно и безопасно.</p>
+              <h4>{{ _("3. Директна връзка") }}</h4>
+              <p>{{ _("Свързваш се директно с човека и решавате заедно какво е удобно и безопасно.") }}</p>
             </div>
           </div>
         </div>
 
         <div class="hc-cta">
           <a href="#volunteerForm" class="btn btn-primary">
-            Присъедини се като доброволец
+            {{ _("Присъедини се като доброволец") }}
           </a>
           <div class="hc-note">
-            Регистрацията е безплатна · Ангажиментът е по твои правила
+            {{ _("Регистрацията е безплатна · Ангажиментът е по твои правила") }}
           </div>
           <div class="hc-note" style="font-size: 0.85rem;">
-            Хора като теб вече помагат — по малко, по свой начин.
+            {{ _("Хора като теб вече помагат - по малко, по свой начин.") }}
           </div>
         </div>
 
         <div class="hc-expectations">
-          <h3 class="h5 mb-3">Как работи свързването</h3>
-          <p>Като доброволец виждаш заявки, към които можеш да откликнеш. Не си задължен/а да отговаряш на всички.</p>
-          <p>Ако решиш да се свържеш, вие заедно уточнявате как и дали да помогнеш.</p>
-          <p class="muted">Доброволчеството не означава 24/7 наличност и не замества професионални услуги.</p>
+          <h3 class="h5 mb-3">{{ _("Как работи свързването") }}</h3>
+          <p>{{ _("Като доброволец виждаш заявки, към които можеш да откликнеш. Не си задължен/а да отговаряш на всички.") }}</p>
+          <p>{{ _("Ако решиш да се свържеш, вие заедно уточнявате как и дали да помогнеш.") }}</p>
+          <p class="muted">{{ _("Доброволчеството не означава 24/7 наличност и не замества професионални услуги.") }}</p>
         </div>
 
         <div class="hc-expectations">
-          <h3 class="h5 mb-3">Как се намира подходящият човек</h3>
-          <p>Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други – по-бавно. Това зависи от наличността на хората, не от важността на проблема.</p>
-          <p class="muted">Така очакванията са ясни: има човешки фактор, а не магия или гаранции.</p>
+          <h3 class="h5 mb-3">{{ _("Как се намира подходящият човек") }}</h3>
+          <p>{{ _("Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други - по-бавно. Това зависи от наличността на хората, не от важността на проблема.") }}</p>
+          <p class="muted">{{ _("Така очакванията са ясни: има човешки фактор, а не магия или гаранции.") }}</p>
         </div>
 
         <div class="hc-expectations">
-          <h3 class="h5 mb-3">Какво може да очакваш от доброволеца</h3>
-          <p>✔️ Човешки отговор</p>
-          <p>✔️ Желание да помогне, когато може</p>
-          <p>✔️ Честност за това какво може и какво не</p>
-          <p class="muted">Доброволците не са на разположение 24/7 и не заместват професионални услуги.</p>
+          <h3 class="h5 mb-3">{{ _("Какво може да очакваш от доброволеца") }}</h3>
+          <p>✔️ {{ _("Човешки отговор") }}</p>
+          <p>✔️ {{ _("Желание да помогне, когато може") }}</p>
+          <p>✔️ {{ _("Честност за това какво може и какво не") }}</p>
+          <p class="muted">{{ _("Доброволците не са на разположение 24/7 и не заместват професионални услуги.") }}</p>
         </div>
 
         <div class="hc-expectations">
-          <h3 class="h5 mb-3">Какво помага нещата да се случат по-лесно</h3>
-          <p>✔️ Ясно описание на ситуацията</p>
-          <p>✔️ Коректен контакт</p>
-          <p>✔️ Уважителен тон</p>
-          <p class="muted">Ако нуждата ти се промени или вече си получил/а помощ, можеш да затвориш заявката по всяко време.</p>
+          <h3 class="h5 mb-3">{{ _("Какво помага нещата да се случат по-лесно") }}</h3>
+          <p>✔️ {{ _("Ясно описание на ситуацията") }}</p>
+          <p>✔️ {{ _("Коректен контакт") }}</p>
+          <p>✔️ {{ _("Уважителен тон") }}</p>
+          <p class="muted">{{ _("Ако нуждата ти се промени или вече си получил/а помощ, можеш да затвориш заявката по всяко време.") }}</p>
         </div>
 
         <div class="hc-expectations">
-          <h3 class="h5 mb-3">Време за отговор</h3>
-          <p>Няма фиксирано време за отговор. Някои заявки получават реакция в същия ден, други – след няколко дни.</p>
-          <p class="muted">Ако заявката е спешна или опасна, потърси местните спешни служби.</p>
+          <h3 class="h5 mb-3">{{ _("Време за отговор") }}</h3>
+          <p>{{ _("Няма фиксирано време за отговор. Някои заявки получават реакция в същия ден, други - след няколко дни.") }}</p>
+          <p class="muted">{{ _("Ако заявката е спешна или опасна, потърси местните спешни служби.") }}</p>
         </div>
 
         <div class="hc-expectations">
           <p class="muted mb-0">
-            Понякога една заявка води до помощ. Понякога – до разговор. И понякога – просто до това някой да те чуе. Всичко това има стойност.
+            {{ _("Понякога една заявка води до помощ. Понякога - до разговор. И понякога - просто до това някой да те чуе. Всичко това има стойност.") }}
           </p>
         </div>
       </div>
@@ -1043,25 +1037,23 @@
     <section class="volunteer-hero">
       <div class="volunteer-welcome">
         <h1 class="volunteer-title">
-          <i class="fas fa-hands-helping me-3"></i>Стани доброволец
+          <i class="fas fa-hands-helping me-3"></i>{{ _("Стани доброволец") }}
         </h1>
         <p class="volunteer-subtitle">
-          Присъедини се към нашата общност от доброволци и помогни на хората,
-          които се нуждаят от подкрепа. Твоето време и умения могат да променят
-          живота на някого.
+          {{ _("Присъедини се към нашата общност от доброволци и помогни на хората, които се нуждаят от подкрепа. Твоето време и умения могат да променят живота на някого.") }}
         </p>
         <div class="volunteer-stats">
           <div class="stat-item">
             <span class="stat-number">500+</span>
-            <span class="stat-label">Доброволци</span>
+            <span class="stat-label">{{ _("Доброволци") }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-number">1000+</span>
-            <span class="stat-label">Помогнати хора</span>
+            <span class="stat-label">{{ _("Помогнати хора") }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-number">50+</span>
-            <span class="stat-label">Градове</span>
+            <span class="stat-label">{{ _("Градове") }}</span>
           </div>
         </div>
       </div>
@@ -1071,8 +1063,8 @@
     <div class="container">
       <div class="volunteer-form-container bounce-in">
         <div class="form-header">
-          <h2><i class="fas fa-user-plus me-2"></i>Попълни информацията си</h2>
-          <p>Разкажи ни малко за себе си и как можеш да помогнеш</p>
+          <h2><i class="fas fa-user-plus me-2"></i>{{ _("Попълни информацията си") }}</h2>
+          <p>{{ _("Разкажи ни малко за себе си и как можеш да помогнеш") }}</p>
         </div>
 
         <div class="form-body">
@@ -1089,9 +1081,10 @@
           {% endfor %} {% endif %} {% endwith %}
 
           <form id="volunteerForm" method="POST" action="{{ url_for('main.become_volunteer') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group-modern">
               <label for="name" class="form-label-modern">
-                <i class="fas fa-user me-2"></i>Пълно име *
+                <i class="fas fa-user me-2"></i>{{ _("Пълно име") }} *
               </label>
               <input
                 type="text"
@@ -1099,14 +1092,14 @@
                 id="name"
                 name="name"
                 required
-                placeholder="Въведете пълното си име"
+                placeholder="{{ _('Въведете пълното си име') }}"
                 autocomplete="name"
               />
             </div>
 
             <div class="form-group-modern">
               <label for="email" class="form-label-modern">
-                <i class="fas fa-envelope me-2"></i>Имейл адрес *
+                <i class="fas fa-envelope me-2"></i>{{ _("Имейл адрес") }} *
               </label>
               <input
                 type="email"
@@ -1118,13 +1111,13 @@
                 autocomplete="email"
               />
               <small class="form-text-modern">
-                Ще използваме този имейл за връзка с теб
+                {{ _("Ще използваме този имейл за връзка с теб") }}
               </small>
             </div>
 
             <div class="form-group-modern">
               <label for="phone" class="form-label-modern">
-                <i class="fas fa-phone me-2"></i>Телефонен номер *
+                <i class="fas fa-phone me-2"></i>{{ _("Телефонен номер") }} *
               </label>
               <input
                 type="tel"
@@ -1136,13 +1129,13 @@
                 autocomplete="tel"
               />
               <small class="form-text-modern">
-                За спешни случаи и координация
+                {{ _("За спешни случаи и координация") }}
               </small>
             </div>
 
             <div class="form-group-modern">
               <label for="age" class="form-label-modern">
-                <i class="fas fa-birthday-cake me-2"></i>Възраст
+                <i class="fas fa-birthday-cake me-2"></i>{{ _("Възраст") }}
               </label>
               <input
                 type="number"
@@ -1151,16 +1144,16 @@
                 name="age"
                 min="16"
                 max="100"
-                placeholder="Възраст в години"
+                placeholder="{{ _('Възраст в години') }}"
               />
               <small class="form-text-modern">
-                Минимална възраст: 16 години
+                {{ _("Минимална възраст: 16 години") }}
               </small>
             </div>
 
             <div class="form-group-modern">
               <label for="location" class="form-label-modern">
-                <i class="fas fa-map-marker-alt me-2"></i>Град/Населено място *
+                <i class="fas fa-map-marker-alt me-2"></i>{{ _("Град/Населено място") }} *
               </label>
               <input
                 type="text"
@@ -1168,7 +1161,7 @@
                 id="location"
                 name="location"
                 required
-                placeholder="София, Пловдив, Варна..."
+                placeholder="{{ _('София, Пловдив, Варна...') }}"
                 autocomplete="address-level2"
               />
             </div>
@@ -1176,31 +1169,31 @@
             <!-- Skills Section -->
             <div class="skills-section">
               <label class="form-label-modern">
-                <i class="fas fa-tools me-2"></i>Умения и интереси
+                <i class="fas fa-tools me-2"></i>{{ _("Умения и интереси") }}
               </label>
               <p class="form-text-modern mb-3">
-                Избери областите, в които можеш да помогнеш:
+                {{ _("Избери областите, в които можеш да помогнеш:") }}
               </p>
               <div class="skills-grid">
                 <label class="skill-checkbox">
                   <input type="checkbox" name="skills" value="transport" />
-                  <span class="skill-label">Транспорт</span>
+                  <span class="skill-label">{{ _("Транспорт") }}</span>
                 </label>
                 <label class="skill-checkbox">
                   <input type="checkbox" name="skills" value="shopping" />
-                  <span class="skill-label">Пазаруване</span>
+                  <span class="skill-label">{{ _("Пазаруване") }}</span>
                 </label>
                 <label class="skill-checkbox">
                   <input type="checkbox" name="skills" value="medical" />
-                  <span class="skill-label">Медицинска помощ</span>
+                  <span class="skill-label">{{ _("Медицинска помощ") }}</span>
                 </label>
                 <label class="skill-checkbox">
                   <input type="checkbox" name="skills" value="housework" />
-                  <span class="skill-label">Домакинска работа</span>
+                  <span class="skill-label">{{ _("Домакинска работа") }}</span>
                 </label>
                 <label class="skill-checkbox">
                   <input type="checkbox" name="skills" value="teaching" />
-                  <span class="skill-label">Обучение</span>
+                  <span class="skill-label">{{ _("Обучение") }}</span>
                 </label>
                 <label class="skill-checkbox">
                   <input
@@ -1208,15 +1201,15 @@
                     name="skills"
                     value="emotional_support"
                   />
-                  <span class="skill-label">Емоционална подкрепа</span>
+                  <span class="skill-label">{{ _("Емоционална подкрепа") }}</span>
                 </label>
                 <label class="skill-checkbox">
                   <input type="checkbox" name="skills" value="technical" />
-                  <span class="skill-label">Техническа помощ</span>
+                  <span class="skill-label">{{ _("Техническа помощ") }}</span>
                 </label>
                 <label class="skill-checkbox">
                   <input type="checkbox" name="skills" value="other" />
-                  <span class="skill-label">Друго</span>
+                  <span class="skill-label">{{ _("Друго") }}</span>
                 </label>
               </div>
             </div>
@@ -1224,17 +1217,17 @@
             <!-- Availability Section -->
             <div class="availability-section">
               <label class="form-label-modern">
-                <i class="fas fa-clock me-2"></i>Наличност
+                <i class="fas fa-clock me-2"></i>{{ _("Наличност") }}
               </label>
               <p class="form-text-modern mb-3">
-                Кога си на разположение да помагаш:
+                {{ _("Кога си на разположение да помагаш:") }}
               </p>
               <div class="availability-options">
                 <div class="availability-option">
                   <div class="availability-icon">
                     <i class="fas fa-sun"></i>
                   </div>
-                  <div class="availability-label">Сутрин</div>
+                  <div class="availability-label">{{ _("Сутрин") }}</div>
                   <input
                     type="checkbox"
                     name="availability"
@@ -1246,7 +1239,7 @@
                   <div class="availability-icon">
                     <i class="fas fa-cloud-sun"></i>
                   </div>
-                  <div class="availability-label">Обяд</div>
+                  <div class="availability-label">{{ _("Обяд") }}</div>
                   <input
                     type="checkbox"
                     name="availability"
@@ -1258,7 +1251,7 @@
                   <div class="availability-icon">
                     <i class="fas fa-moon"></i>
                   </div>
-                  <div class="availability-label">Вечер</div>
+                  <div class="availability-label">{{ _("Вечер") }}</div>
                   <input
                     type="checkbox"
                     name="availability"
@@ -1270,7 +1263,7 @@
                   <div class="availability-icon">
                     <i class="fas fa-calendar-week"></i>
                   </div>
-                  <div class="availability-label">Уикенд</div>
+                  <div class="availability-label">{{ _("Уикенд") }}</div>
                   <input
                     type="checkbox"
                     name="availability"
@@ -1283,27 +1276,27 @@
 
             <div class="form-group-modern">
               <label for="experience" class="form-label-modern">
-                <i class="fas fa-star me-2"></i>Опит (по избор)
+                <i class="fas fa-star me-2"></i>{{ _("Опит (по избор)") }}
               </label>
               <textarea
                 class="form-control-modern"
                 id="experience"
                 name="experience"
                 rows="3"
-                placeholder="Разкажи за предишен опит като доброволец или подобни дейности..."
+                placeholder="{{ _('Разкажи за предишен опит като доброволец или подобни дейности...') }}"
               ></textarea>
             </div>
 
             <div class="form-group-modern">
               <label for="motivation" class="form-label-modern">
-                <i class="fas fa-heart me-2"></i>Мотивация
+                <i class="fas fa-heart me-2"></i>{{ _("Мотивация") }}
               </label>
               <textarea
                 class="form-control-modern"
                 id="motivation"
                 name="motivation"
                 rows="3"
-                placeholder="Защо искаш да станеш доброволец? Какво те мотивира да помагаш на другите?"
+                placeholder="{{ _('Защо искаш да станеш доброволец? Какво те мотивира да помагаш на другите?') }}"
               ></textarea>
             </div>
 
@@ -1322,14 +1315,10 @@
                   for="terms"
                   style="color: var(--text-color); font-size: 0.95rem"
                 >
-                  Съгласявам се с
-                  <a href="/terms" target="_blank" style="color: #4facfe"
-                    >условията за ползване</a
-                  >
-                  и
-                  <a href="/privacy" target="_blank" style="color: #4facfe"
-                    >политиката за поверителност</a
-                  >
+                  {{ _("Съгласявам се с") }}
+                  <a href="/terms" target="_blank" style="color: #4facfe">{{ _("условията за ползване") }}</a>
+                  {{ _("и") }}
+                  <a href="/privacy" target="_blank" style="color: #4facfe">{{ _("политиката за поверителност") }}</a>
                 </label>
               </div>
             </div>
@@ -1339,7 +1328,7 @@
               class="btn btn-primary-modern btn-modern"
               id="submitBtn"
             >
-              <i class="fas fa-paper-plane me-2"></i>Изпрати кандидатурата
+              <i class="fas fa-paper-plane me-2"></i>{{ _("Изпрати кандидатурата") }}
             </button>
           </form>
         </div>
@@ -1399,15 +1388,17 @@
       function showLoading() {
         document.getElementById("loadingSpinner").style.display = "block";
         document.getElementById("submitBtn").disabled = true;
+        const sendingText = {{ _("Изпращане...")|tojson }};
         document.getElementById("submitBtn").innerHTML =
-          '<i class="fas fa-spinner fa-spin me-2"></i>Изпращане...';
+          `<i class="fas fa-spinner fa-spin me-2"></i>${sendingText}`;
       }
 
       function hideLoading() {
         document.getElementById("loadingSpinner").style.display = "none";
         document.getElementById("submitBtn").disabled = false;
+        const submitText = {{ _("Изпрати кандидатурата")|tojson }};
         document.getElementById("submitBtn").innerHTML =
-          '<i class="fas fa-paper-plane me-2"></i>Изпрати кандидатурата';
+          `<i class="fas fa-paper-plane me-2"></i>${submitText}`;
       }
 
       // Form Validation and Submission
@@ -1447,7 +1438,7 @@
         const terms = document.getElementById("terms");
         if (!terms.checked) {
           isValid = false;
-          alert("Моля, съгласете се с условията за ползване!");
+          alert({{ _("Моля, съгласете се с условията за ползване!")|tojson }});
         }
 
         if (!isValid) {
@@ -1488,3 +1479,4 @@
     </script>
   </body>
 </html>
+

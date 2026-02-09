@@ -64,6 +64,7 @@
               method="POST"
               action="{{ url_lang('end_video_chat', session_id=session.session_id) }}"
             >
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-danger w-100">
                 Завърши чата
               </button>
@@ -93,3 +94,4 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
+

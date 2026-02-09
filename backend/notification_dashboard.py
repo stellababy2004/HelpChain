@@ -5,6 +5,7 @@ Web interface to view email notifications and requests
 """
 
 import os
+import secrets
 import sqlite3
 import time
 from datetime import datetime
@@ -21,11 +22,17 @@ from flask_mail import Mail, Message
 
 # from .tasks import send_email_task  # Moved inside function to avoid import issues
 
+
+def url_lang(endpoint: str, **values) -> str:
+    # Legacy helper used by older templates; keep it as a plain alias here.
+    return url_for(endpoint, **values)
+
+
 # Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = "helpchain-notification-secret-key"
+app.secret_key = os.getenv("SECRET_KEY") or secrets.token_urlsafe(32)
 
 # Configure Flask-Mail
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.mailtrap.io")

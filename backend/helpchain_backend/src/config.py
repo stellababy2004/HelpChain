@@ -1,4 +1,6 @@
 import os
+from datetime import timedelta
+
 from dotenv import load_dotenv
 
 # === Project base (root of HelpChain.bg) ===
@@ -10,12 +12,21 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 class Config:
     # --- Core ---
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
     PROPAGATE_EXCEPTIONS = True  # Enable full tracebacks during MFA debug
-    WTF_CSRF_ENABLED = True
-    WTF_CSRF_TIME_LIMIT = None  # DEV: no expiry (fixes "token expired")
-    SESSION_PERMANENT = True
     DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1")
+
+    # --- Session / cookies hardening ---
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "").lower() in ("true", "1", "yes")
+    SESSION_PERMANENT = True
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=6)
+    SESSION_REFRESH_EACH_REQUEST = True
+
+    # --- CSRF ---
+    WTF_CSRF_ENABLED = True
+    WTF_CSRF_TIME_LIMIT = 60 * 60 * 2  # 2 hours
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
@@ -24,13 +35,17 @@ class Config:
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
     # ✅ Database
-    # Prefer explicit SQLALCHEMY_DATABASE_URI; fall back to Render's DATABASE_URL; else sqlite app.db.
-    _db_url = (
-        os.getenv("SQLALCHEMY_DATABASE_URI")
-        or os.getenv("DATABASE_URL")
-        or "sqlite:///app.db"
-    )
-    SQLALCHEMY_DATABASE_URI = _db_url
+    # Prefer explicit env; else Render/Heroku DATABASE_URL; else project instance/app.db (absolute to avoid CWD drift)
+    INSTANCE_PATH = os.path.join(BASE_DIR, "instance")
+    DEFAULT_SQLITE_PATH = os.path.join(INSTANCE_PATH, "app.db")
+    _db_url_env = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
+    if _db_url_env:
+        # Allow %TEMP%, $HOME, etc. in dev env vars
+        _db_url_env = os.path.expandvars(_db_url_env)
+    SQLALCHEMY_DATABASE_URI = _db_url_env or f"sqlite:///{DEFAULT_SQLITE_PATH}"
+
+    # Rate limit headers (useful with ProxyFix and real client IPs)
+    RATELIMIT_HEADERS_ENABLED = True
 
     # --- Mail ---
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.mailtrap.io")
@@ -44,9 +59,11 @@ class Config:
     # --- Optional / misc ---
     NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN")
     QR_CODE_SIZE = int(os.getenv("QR_CODE_SIZE", 250))
-    ALLOWED_HOSTS = (
-        [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()]
-    )
+    ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()]
+
+    # Dev-only volunteer bypass (disabled by default)
+    VOLUNTEER_DEV_BYPASS_ENABLED = os.getenv("VOLUNTEER_DEV_BYPASS_ENABLED", "0") == "1"
+    VOLUNTEER_DEV_BYPASS_EMAIL = (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
 
     # --- MFA ---
     MFA_ENABLED = os.getenv("MFA_ENABLED", "true").lower() in ("true", "1", "yes")
@@ -63,3 +80,32 @@ class Config:
     # --- JWT for API ---
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY") or os.getenv("SECRET_KEY")
 
+    # --- JWT hardening ---
+    JWT_ISSUER = "helpchain"
+    JWT_AUDIENCE = "helpchain-api"
+    JWT_ALG = "HS256"  # switch to RS256 when keypair available
+    JWT_ACCESS_TTL_SECONDS = 900  # 15 minutes
+    JWT_REFRESH_TTL_SECONDS = 2592000  # 30 days
+    JWT_CLOCK_SKEW_SECONDS = 30
+    JWT_REQUIRE_JTI = True
+
+    # --- CORS ---
+    CORS_ALLOWED_ORIGINS = [
+        "http://127.0.0.1:5000",
+        "http://localhost:5000",
+        # "https://helpchain.live",  # prod
+    ]
+
+    # --- i18n / Babel ---
+    BABEL_DEFAULT_LOCALE = "en"
+    BABEL_DEFAULT_TIMEZONE = "Europe/Paris"
+
+
+class DevConfig(Config):
+    SESSION_COOKIE_SECURE = False
+    VOLUNTEER_DEV_BYPASS_ENABLED = True
+    VOLUNTEER_DEV_BYPASS_EMAIL = "testvol@helpchain.local"
+
+
+class ProdConfig(Config):
+    SESSION_COOKIE_SECURE = True
