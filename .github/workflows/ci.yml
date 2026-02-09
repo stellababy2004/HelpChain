@@ -86,7 +86,6 @@ jobs:
 
       - name: Upload Pytest Report
         if: false
-        if: always()
         uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
         with:
           name: pytest-report-${{ matrix.python-version }}
