@@ -1380,6 +1380,7 @@ def admin_requests():
 
     # Volunteer signals counts per request
     action_counts = {}
+    last_signal_by_req = {}
     if requests:
         req_ids = [r.id for r in requests]
         rows = (
@@ -1395,6 +1396,23 @@ def admin_requests():
         for rid, act, cnt in rows:
             action_counts.setdefault(rid, {}).update({act: cnt})
 
+        # --- Last volunteer signal per request (page only) ---
+        # One extra query for this page, avoids N+1 and makes "can't help" visible.
+        last_rows = (
+            VolunteerAction.query
+            .filter(VolunteerAction.request_id.in_(req_ids))
+            .order_by(
+                VolunteerAction.request_id.asc(),
+                VolunteerAction.updated_at.desc(),
+                VolunteerAction.created_at.desc(),
+            )
+            .all()
+        )
+        # pick first (newest) per request_id (because ordered desc by updated_at/created_at)
+        for a in last_rows:
+            if a.request_id not in last_signal_by_req:
+                last_signal_by_req[a.request_id] = a
+
     return render_template(
         "admin/requests.html",
         STATUS_LABELS_BG=STATUS_LABELS_BG,
@@ -1408,6 +1426,7 @@ def admin_requests():
         SLA_WARN_NO_OWNER_DAYS=SLA_WARN_NO_OWNER_DAYS,
         SLA_STALE_DAYS=SLA_STALE_DAYS,
         volunteer_action_counts=action_counts,
+        last_signal_by_req=last_signal_by_req,
     )
 
 
