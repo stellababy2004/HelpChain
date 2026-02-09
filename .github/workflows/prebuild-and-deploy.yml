@@ -11,6 +11,7 @@ on:
 
 jobs:
   prebuild:
+    if: false
     name: Prebuild on GitHub runner (create .vercel/output)
     runs-on: ubuntu-latest
 
@@ -255,6 +256,7 @@ jobs:
           path: .vercel/output
 
   deploy:
+    if: false
     name: Deploy prebuilt output to Vercel (preview)
     needs: prebuild
     runs-on: ubuntu-latest

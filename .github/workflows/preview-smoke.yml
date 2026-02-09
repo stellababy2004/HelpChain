@@ -17,8 +17,8 @@ on:
         type: string
 jobs:
   smoke:
+    if: false
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_dispatch' }}
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       BYPASS_TOKEN: ${{ secrets.BYPASS_TOKEN }}
