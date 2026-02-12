@@ -28,10 +28,13 @@
       </button>
       <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">Retour a l’accueil</a>
     </div>
+    <p class="hc-muted" style="margin-top:.5rem">
+      Si vous ne le voyez pas sous 1 minute, vérifiez Indésirables/Spam.
+    </p>
+    <p id="resend-msg" class="hc-muted" style="margin-top:.35rem; display:none" aria-live="polite"></p>
     {% if csrf_token is defined %}
       <input type="hidden" id="resend-csrf-token" value="{{ csrf_token() }}">
     {% endif %}
-    <p id="resend-msg" class="hc-help" style="margin-top:10px; min-height:1.2em;" aria-live="polite"></p>
   </div>
 </section>
 {% endblock %}
@@ -40,13 +43,18 @@
 <script>
 (() => {
   const btn = document.getElementById("resend-link");
-  const msg = document.getElementById("resend-msg");
   if (!btn) return;
 
   const email = (btn.dataset.email || "").trim();
   const defaultCooldown = parseInt(btn.dataset.cooldown || "14", 10) || 14;
+  const msgEl = document.getElementById("resend-msg");
+  function showResendMsg(text) {
+    if (!msgEl) return;
+    msgEl.textContent = text;
+    msgEl.style.display = "block";
+  }
   if (!email) {
-    if (msg) msg.textContent = "Veuillez recommencer depuis le formulaire.";
+    showResendMsg("Veuillez recommencer depuis le formulaire.");
     btn.disabled = true;
     return;
   }
@@ -104,14 +112,10 @@
       } catch (e) {
         // Keep generic UX even when JSON parsing fails.
       }
-      if (msg) {
-        msg.textContent = "Si l'adresse est valide, un nouveau lien a ete envoye.";
-      }
+      showResendMsg("Lien renvoyé (si l’adresse est valide).");
       startCooldown(cooldown);
     } catch (e) {
-      if (msg) {
-        msg.textContent = "Si l'adresse est valide, un nouveau lien a ete envoye.";
-      }
+      showResendMsg("Impossible de renvoyer maintenant. Réessayez dans un instant.");
       startCooldown(defaultCooldown);
     }
   }
