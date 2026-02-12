@@ -9,6 +9,7 @@ import smtplib
 import time
 from datetime import UTC, datetime
 from email.message import EmailMessage
+from email.utils import formatdate, make_msgid
 
 from flask import current_app, render_template
 from flask_mail import Message
@@ -193,13 +194,19 @@ def send_notification_email(recipient, subject, template, context=None):
         msg["Subject"] = subject
         msg["From"] = f"{from_name} <{mail_sender}>"
         msg["To"] = recipient
-        msg["Reply-To"] = reply_to
-        msg["Message-ID"] = f"<{message_id}@helpchain.live>"
+        msg["Date"] = formatdate(localtime=True)
+        msg["Message-ID"] = make_msgid(domain="helpchain.live")
+        msg["Reply-To"] = reply_to or mail_user
+        msg["X-Mailer"] = "HelpChain Mailer"
+        msg["List-Unsubscribe"] = "<mailto:contact@helpchain.live>"
 
-        if text_content:
-            msg.set_content(text_content)
-        else:
-            msg.set_content("Ouvrez ce message dans un client compatible HTML pour voir le contenu.")
+        magic_url = (context or {}).get("magic_link_url")
+        text_fallback = (
+            f"Votre lien de connexion HelpChain : {magic_url}"
+            if magic_url
+            else "Votre lien de connexion HelpChain est dans ce message."
+        )
+        msg.set_content(text_content or text_fallback)
         msg.add_alternative(html_content, subtype="html")
 
         try:
