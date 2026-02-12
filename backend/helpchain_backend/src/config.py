@@ -68,6 +68,7 @@ class Config:
     ALLOWED_HOSTS = [
         h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()
     ]
+    PUBLIC_BASE_URL = (os.getenv("PUBLIC_BASE_URL", "") or "").strip()
 
     # Dev-only volunteer bypass (disabled by default)
     VOLUNTEER_DEV_BYPASS_ENABLED = os.getenv("VOLUNTEER_DEV_BYPASS_ENABLED", "0") == "1"

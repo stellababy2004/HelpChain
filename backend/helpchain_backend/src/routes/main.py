@@ -927,8 +927,12 @@ def become_volunteer():
                 expires_at,
             )
 
-            magic_url = url_for(
-                "main.magic_link_consume", token=raw_token, _external=True
+            base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
+            path = url_for("main.magic_link_consume", token=raw_token, _external=False)
+            magic_url = (
+                f"{base}{path}"
+                if base
+                else url_for("main.magic_link_consume", token=raw_token, _external=True)
             )
 
             # Keep volunteer login subject stable in FR regardless of request locale.
@@ -1994,8 +1998,12 @@ def submit_request_confirm():
             db.session.rollback()
 
         try:
-            magic_url = url_for(
-                "main.magic_link_consume", token=raw_token, _external=True
+            base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
+            path = url_for("main.magic_link_consume", token=raw_token, _external=False)
+            magic_url = (
+                f"{base}{path}"
+                if base
+                else url_for("main.magic_link_consume", token=raw_token, _external=True)
             )
         except Exception:
             magic_url = f"/auth/magic/{raw_token}"

@@ -20,6 +20,7 @@ $env:MAIL_USE_TLS = "1"
 $env:MAIL_USE_SSL = "0"
 $env:MAIL_USERNAME = "contact@helpchain.live"
 $env:MAIL_DEFAULT_SENDER = "contact@helpchain.live"
+$env:PUBLIC_BASE_URL = "http://127.0.0.1:5005"
 
 $sec = Read-Host "Zoho App Password" -AsSecureString
 $env:MAIL_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR(
