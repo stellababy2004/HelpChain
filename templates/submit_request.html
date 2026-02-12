@@ -150,7 +150,7 @@
         </div>
       </div>
 
-      <form method="post" action="{{ url_for('main.submit_request') }}" novalidate>
+      <form method="post" action="{{ url_for('main.submit_request') }}" novalidate data-hc-magic-link="request" data-hc-generic-ok="{{ _("Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes.") }}">
         <div class="hc-form-intro">
           <div class="hc-form-steps">
             <span class="hc-step is-active">1</span>
@@ -166,11 +166,9 @@
           </ul>
         </div>
 
-        {# Honeypot (backend очаква "website") #}
-        <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
-          <label>Website</label>
-          <input type="text" name="website" tabindex="-1" autocomplete="off">
-        </div>
+        {# Honeypot + timing (frontend-only antibot; backend expects "website") #}
+        <input type="text" name="website" id="hp_website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:1px;width:1px;">
+        <input type="hidden" name="started_at" id="started_at" value="">
 
         {# Ако има CSRF (Flask-WTF), оставяме го. Ако не - нищо не се чупи. #}
         {% if csrf_token is defined %}
@@ -323,6 +321,10 @@
             <button type="submit" class="btn btn-primary">{{ _("Изпрати заявката") }}</button>
           </div>
 
+          <div class="col-12">
+            <div class="hc-form-msg" data-hc-form-msg aria-live="polite" style="display:none;"></div>
+          </div>
+
         </div>
 
         <!-- Sticky CTA (mobile + long form) -->
@@ -356,7 +358,7 @@
 
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_lang('static', filename='js/submit_request.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/submit_request.js') }}"></script>
 {% endblock %}
 
 <style>

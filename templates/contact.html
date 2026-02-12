@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Contact") }} | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-page">
+  <div class="hc-container hc-container--narrow">
+
+    <header class="hc-page__head">
+      <h1 class="hc-title">{{ _("Contact") }}</h1>
+      <p class="hc-subtitle">
+        {{ _("A question, a suggestion, or a concern? Write to us — a real human will read your message.") }}
+      </p>
+    </header>
+
+    <div class="hc-card hc-card--pad-lg hc-mb-16">
+      <form onsubmit="return false;" class="hc-form">
+
+        <div class="hc-form-group">
+          <label class="hc-label">{{ _("Your email") }}</label>
+          <input type="email" class="hc-input" placeholder="you@email.com" required>
+        </div>
+
+        <div class="hc-form-group">
+          <label class="hc-label">{{ _("Subject") }}</label>
+          <input type="text" class="hc-input" placeholder="{{ _('What is this about?') }}">
+        </div>
+
+        <div class="hc-form-group">
+          <label class="hc-label">{{ _("Message") }}</label>
+          <textarea class="hc-textarea" rows="5" placeholder="{{ _('Write your message here…') }}"></textarea>
+        </div>
+
+        <div class="hc-form-actions">
+          <button class="hc-btn hc-btn--primary" disabled>
+            {{ _("Send message") }}
+          </button>
+          <div class="hc-help">
+            {{ _("This form is informational for now. Please use email below.") }}
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="hc-card hc-mb-16">
+      <div class="hc-label">{{ _("Direct contact") }}</div>
+      <div class="hc-text">
+        <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
+      </div>
+    </div>
+
+    <div class="hc-card hc-mb-16">
+      <div class="hc-label">{{ _("Response time") }}</div>
+      <div class="hc-text">
+        {{ _("We usually reply within 24–48 hours on business days.") }}
+      </div>
+    </div>
+
+    <div class="hc-card">
+      <div class="hc-label">{{ _("Security & privacy") }}</div>
+      <ul class="hc-list hc-mt-8">
+        <li>{{ _("We never sell or share contact data.") }}</li>
+        <li>{{ _("No automated marketing emails.") }}</li>
+        <li>
+          {{ _("Security issues can be reported at") }}
+          <a href="mailto:security@helpchain.live">security@helpchain.live</a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+

@@ -59,6 +59,8 @@ class Config:
     MAIL_USERNAME = os.getenv("MAIL_USERNAME", os.getenv("MAILTRAP_USERNAME"))
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", os.getenv("MAILTRAP_PASSWORD"))
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "contact@helpchain.live")
+    MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "HelpChain")
+    MAIL_REPLY_TO = os.getenv("MAIL_REPLY_TO", MAIL_DEFAULT_SENDER)
 
     # --- Optional / misc ---
     NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN")
@@ -105,14 +107,18 @@ class Config:
     ]
 
     # --- i18n / Babel ---
-    BABEL_DEFAULT_LOCALE = "en"
+    # Keep in sync with app factory (FR-first).
+    BABEL_DEFAULT_LOCALE = "fr"
     BABEL_DEFAULT_TIMEZONE = "Europe/Paris"
 
 
 class DevConfig(Config):
     SESSION_COOKIE_SECURE = False
-    VOLUNTEER_DEV_BYPASS_ENABLED = True
-    VOLUNTEER_DEV_BYPASS_EMAIL = "testvol@helpchain.local"
+    # Dev-only volunteer bypass: honor env (default off)
+    VOLUNTEER_DEV_BYPASS_ENABLED = os.getenv("VOLUNTEER_DEV_BYPASS_ENABLED", "0") == "1"
+    VOLUNTEER_DEV_BYPASS_EMAIL = (
+        (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
+    )
 
 
 class ProdConfig(Config):

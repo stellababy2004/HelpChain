@@ -10,7 +10,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.csrf import generate_csrf
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from backend.extensions import babel, csrf, db, migrate
+from backend.extensions import babel, csrf, db, mail, migrate
 from backend.helpchain_backend.src.security_logging import log_security_event
 from backend.helpchain_backend.src.statuses import (
     REQUEST_STATUS_META,
@@ -255,6 +255,8 @@ def create_app(config_object=None) -> Flask:
 
     # DB + Migrate
     db.init_app(app)
+    # Mail (Flask-Mail): used by backend.tasks.send_email_task via backend.mail_service
+    mail.init_app(app)
     if app.debug or app.config.get("DEBUG"):
         _install_slow_sql_logger(app)
     migrate.init_app(app, db)

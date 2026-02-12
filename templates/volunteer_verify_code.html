@@ -182,7 +182,7 @@
 
         <div class="login-links">
           <p class="mb-2">
-            <a href="{{ safe_url_for('volunteer_login') }}" class="resend-link">
+            <a href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}" class="resend-link">
               <i class="fas fa-arrow-left me-1"></i>Обратно към вход
             </a>
           </p>

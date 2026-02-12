@@ -10,12 +10,20 @@ import signal
 import subprocess
 import sys
 import time
+from typing import Optional
 
 
 def signal_handler(signum, frame):
     """Handle Ctrl+C gracefully"""
     print("\n\n🛑 Stopping HelpChain server...")
     sys.exit(0)
+
+def _env_str(name: str) -> Optional[str]:
+    v = os.environ.get(name)
+    if v is None:
+        return None
+    v = str(v).strip()
+    return v if v else ""
 
 
 def main():
@@ -29,6 +37,23 @@ def main():
     # Change to script directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
+
+    # Quick env sanity (do not print secrets)
+    mail_server = _env_str("MAIL_SERVER")
+    mail_port = _env_str("MAIL_PORT")
+    mail_user = _env_str("MAIL_USERNAME")
+    mail_pass_set = bool(_env_str("MAIL_PASSWORD"))
+    print("🔧 ENV sanity (this shell/process):")
+    print(f"   MAIL_SERVER={mail_server!r}")
+    print(f"   MAIL_PORT={mail_port!r}")
+    print(f"   MAIL_USERNAME={mail_user!r}")
+    print(f"   MAIL_PASSWORD_SET={mail_pass_set}")
+    if mail_server is None and os.path.isfile(os.path.join(script_dir, ".env")):
+        print(
+            "ℹ️  Note: .env exists in repo root; the app loads it via python-dotenv. "
+            "If you're setting env vars in another terminal (PowerShell vs Git Bash), "
+            "they will not be visible here."
+        )
 
     # Stop any existing Python processes (optional)
     # Skippable via HELPCHAIN_SKIP_KILL=1 to avoid killing unrelated Python tasks

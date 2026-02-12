@@ -502,7 +502,7 @@ def send_notification():
 def _send_new_request_email(recipient, context):
     """Send new request notification email"""
     try:
-        from mail_service import send_notification_email
+        from backend.mail_service import send_notification_email
 
         send_notification_email(
             recipient=recipient.email,
@@ -524,7 +524,7 @@ def _send_new_request_email(recipient, context):
 def _send_urgent_request_email(recipient, context):
     """Send urgent request notification email"""
     try:
-        from mail_service import send_notification_email
+        from backend.mail_service import send_notification_email
 
         send_notification_email(
             recipient=recipient.email,
@@ -547,7 +547,7 @@ def _send_urgent_request_email(recipient, context):
 def _send_message_email(recipient, context):
     """Send message notification email"""
     try:
-        from mail_service import send_notification_email
+        from backend.mail_service import send_notification_email
 
         send_notification_email(
             recipient=recipient.email,

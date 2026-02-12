@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Детайли за заявка | HelpChain{% endblock %}
+{% block title %}{{ _("Детайли за заявка") }} | HelpChain{% endblock %}
 
 {% macro interest_button(pending, approved, rejected, req_id, is_demo=False, csrf_form=None) -%}
   {% if pending %}
@@ -16,12 +16,12 @@
       {% elif csrf_token is defined %}
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {% endif %}
-      <button type="submit" class="btn btn-primary">Ще помогна</button>
+      <button type="submit" class="btn btn-primary">{{ _("Ще помогна") }}</button>
     </form>
     {% if is_demo %}
-      <small class="text-muted d-block mt-2">Демо: нищо не се записва.</small>
+      <small class="text-muted d-block mt-2">{{ _("Демо: нищо не се записва.") }}</small>
     {% else %}
-      <div class="small text-muted mt-2">Следва кратък преглед и потвърждение.</div>
+      <div class="small text-muted mt-2">{{ _("Следва кратък преглед и потвърждение.") }}</div>
     {% endif %}
   {% endif %}
 {%- endmacro %}
@@ -29,8 +29,8 @@
 {% block content %}
 <div class="container py-4" style="max-width: 920px;">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Детайли за заявка</h1>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ safe_url_for('main.volunteer_dashboard') }}">← Назад</a>
+    <h1 class="h3 mb-0">{{ _("Детайли за заявка") }}</h1>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ safe_url_for('main.volunteer_dashboard') }}">← {{ _("Назад") }}</a>
   </div>
 
   {% set _sig_top = my_signal or my_last_signal or volunteer_action %}
@@ -54,7 +54,7 @@
 
   <div class="card">
     <div class="card-body">
-      <h2 class="h5">{{ req.title or "Заявка" }}</h2>
+      <h2 class="h5">{{ req.title or _("Заявка") }}</h2>
 
       {% if req.city %}
         <div class="text-muted mb-2">📍 {{ req.city }}</div>
@@ -65,10 +65,10 @@
       {% endif %}
 
       {% if req.description %}
-        <h3 class="h6 mt-3">Описание</h3>
+        <h3 class="h6 mt-3">{{ _("Описание") }}</h3>
         <div class="text-muted" style="white-space: pre-wrap;">{{ req.description }}</div>
       {% else %}
-        <p class="text-muted mb-0">Няма описание.</p>
+        <p class="text-muted mb-0">{{ _("Няма описание.") }}</p>
       {% endif %}
 
       <hr class="my-4">
@@ -81,46 +81,46 @@
       <div class="hc-statusRow">
         {# Request status #}
         {% if rstatus in ["in_progress", "in progress", "progress"] %}
-          <span class="hc-badge hc-badge--progress">В процес</span>
+          <span class="hc-badge hc-badge--progress">{{ _("В процес") }}</span>
         {% elif rstatus in ["done", "completed"] %}
-          <span class="hc-badge hc-badge--done">Завършено</span>
+          <span class="hc-badge hc-badge--done">{{ _("Завършено") }}</span>
         {% elif rstatus in ["cancelled", "canceled"] %}
-          <span class="hc-badge hc-badge--muted">Отказано</span>
+          <span class="hc-badge hc-badge--muted">{{ _("Отказано") }}</span>
         {% else %}
-          <span class="hc-badge hc-badge--muted">Нова</span>
+          <span class="hc-badge hc-badge--muted">{{ _("Нова") }}</span>
         {% endif %}
 
         {# Volunteer status #}
         {% if is_assigned %}
-          <span class="hc-badge hc-badge--assigned">Назначен/а</span>
+          <span class="hc-badge hc-badge--assigned">{{ _("Назначен/а") }}</span>
         {% elif istatus == "APPROVED" %}
-          <span class="hc-badge hc-badge--approved">Одобрен/а</span>
+          <span class="hc-badge hc-badge--approved">{{ _("Одобрен/а") }}</span>
         {% elif istatus == "REJECTED" %}
-          <span class="hc-badge hc-badge--rejected">Отхвърлен/а</span>
+          <span class="hc-badge hc-badge--rejected">{{ _("Отхвърлен/а") }}</span>
         {% elif istatus %}
-          <span class="hc-badge hc-badge--pending">В изчакване</span>
+          <span class="hc-badge hc-badge--pending">{{ _("В изчакване") }}</span>
         {% endif %}
       </div>
 
       {% if istatus == "APPROVED" or is_assigned %}
         <p class="hc-statusCopy">
-          ✅ Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека.
+          ✅ {{ _("Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека.") }}
         </p>
       {% elif istatus %}
         <p class="hc-statusCopy">
-          ⏳ Заявката е изпратена. Ще получиш известие при решение.
+          ⏳ {{ _("Заявката е изпратена. Ще получиш известие при решение.") }}
         </p>
       {% endif %}
 
       <p class="hc-whatNow">
         {% if already_pending %}
-          Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно).
+          {{ _("Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно).") }}
         {% elif already_approved %}
-          Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно.
+          {{ _("Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно.") }}
         {% elif already_rejected %}
-          Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти.
+          {{ _("Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти.") }}
         {% else %}
-          Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем.
+          {{ _("Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем.") }}
         {% endif %}
       </p>
 
@@ -135,9 +135,9 @@
 ) }}
 
       <hr class="my-4">
-      <h4 class="hc-sectionTitle">Твоят сигнал</h4>
+      <h4 class="hc-sectionTitle">{{ _("Твоят сигнал") }}</h4>
       <p class="hc-sectionHint">
-        Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно.
+        {{ _("Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно.") }}
       </p>
       {% set _sig = my_last_signal or volunteer_action %}
       <div class="mt-1">
@@ -165,7 +165,7 @@
           {% elif csrf_token is defined %}
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           {% endif %}
-          <button type="submit" class="btn btn-sm btn-primary" {% if _sig and _sig.action == 'CAN_HELP' %}disabled{% endif %}>Мога да помогна</button>
+          <button type="submit" class="btn btn-sm btn-primary" {% if _sig and _sig.action == 'CAN_HELP' %}disabled{% endif %}>{{ _("Мога да помогна") }}</button>
         </form>
         <form method="post" action="{{ url_for('main.volunteer_cant_help', req_id=req.id) }}" class="d-inline">
           {% if csrf_form %}
@@ -173,20 +173,20 @@
           {% elif csrf_token is defined %}
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           {% endif %}
-          <button type="submit" class="btn btn-sm btn-outline-secondary" {% if _sig and _sig.action == 'CANT_HELP' %}disabled{% endif %}>Не мога да помогна</button>
+          <button type="submit" class="btn btn-sm btn-outline-secondary" {% if _sig and _sig.action == 'CANT_HELP' %}disabled{% endif %}>{{ _("Не мога да помогна") }}</button>
         </form>
       </div>
 
       <div class="hc-miniNote mt-2">
         <i class="bi bi-info-circle me-1"></i>
-        Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина.
+        {{ _("Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина.") }}
       </div>
 
       <div class="mt-3">
         <div class="d-flex gap-3 align-items-center small text-muted">
-          <span class="{{ 'fw-bold text-primary' if already_pending else '' }}">1) Изчакване</span>
+          <span class="{{ 'fw-bold text-primary' if already_pending else '' }}">1) {{ _("Изчакване") }}</span>
           <span>→</span>
-          <span class="{{ 'fw-bold text-success' if already_approved else '' }}">2) Потвърдено</span>
+          <span class="{{ 'fw-bold text-success' if already_approved else '' }}">2) {{ _("Потвърдено") }}</span>
         </div>
       </div>
 
@@ -223,7 +223,7 @@
         </div>
         <div class="mt-2">
           <p class="hc-miniNote">
-            Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта.
+            {{ _("Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта.") }}
           </p>
         </div>
       {% else %}

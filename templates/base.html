@@ -55,11 +55,12 @@
     {% set quiet_paths = [
       '/volunteer/confirmation',
       '/volunteer/profile',
-      '/volunteer_login'
+      '/become_volunteer'
     ] %}
     {% set minimal_page = (request.path in quiet_paths) %}
     {% set hide_full_nav = minimal_page %}
     {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
+    {% set admin_logged_in = session.get('admin_logged_in') %}
     {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
       <div class="container">
@@ -105,25 +106,19 @@
               </a>
             </li>
             {% if current_user.is_authenticated %}
-              {% if (current_user.role_canon or current_user.role) in ['admin','superadmin','super_admin'] %}
-              <li class="nav-item">
-                <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}">
-                    <i class="fas fa-tachometer-alt me-1"></i>{{ _('Dashboard') }}
+              {% if admin_logged_in %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('admin.admin_requests') }}">
+                    <i class="fas fa-cog me-1"></i>{{ _('Admin') }}
                   </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}"
-                  ><i class="fas fa-cog me-1"></i>{{ _('Admin') }}</a
-                >
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.pilot') }}" target="_blank" rel="noopener">
-                  {{ _('Pilot (Public)') }}
-                </a>
-              </li>
+                </li>
               {% endif %}
               <li class="nav-item">
+                {% if admin_logged_in %}
+                <form method="post" action="{{ url_for('admin.admin_logout') }}" class="d-inline">
+                {% else %}
                 <form method="post" action="{{ safe_url_for('main.logout') }}" class="d-inline">
+                {% endif %}
                   {{ csrf_form.csrf_token if csrf_form is defined else '' }}
                   <button type="submit" class="nav-link btn btn-link p-0">
                     <i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}
@@ -162,7 +157,7 @@
               </li>
               {% else %}
               <li class="nav-item">
-                <a class="nav-link" href="{{ safe_url_for('main.volunteer_login') }}">
+                <a class="nav-link" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
                   <i class="fas fa-sign-in-alt me-1"></i>{{ _('Volunteer login') }}
                 </a>
               </li>

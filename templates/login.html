@@ -256,7 +256,7 @@
       <span style="color: #6c757d; font-size: 0.9rem">или</span>
     </div>
 
-    <form method="POST" id="loginForm" action="{{ safe_url_for('main.volunteer_login') }}">
+    <form method="POST" id="loginForm" action="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {% if form is defined %}
         {{ form.hidden_tag() }}

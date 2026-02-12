@@ -328,7 +328,6 @@ msgstr ""
 " vérifiés - rapide, sûr et humain."
 
 #: templates/base.html:12 templates/base.html:23 templates/home_new_slim.html:4
-#, fuzzy
 msgid "HelpChain - Get help, become a volunteer"
 msgstr "HelpChain - Demander de l’aide, devenir bénévole"
 
@@ -534,41 +533,36 @@ msgstr ""
 "vous suivez chaque étape."
 
 #: templates/home_new_slim.html:23 templates/home_new_slim.html:61
-#, fuzzy
 msgid "I want to help"
-msgstr "Vous voulez aider ?"
+msgstr "Je veux aider"
 
 #: templates/home_new_slim.html:27
 msgid "I'm a professional"
 msgstr "Je suis un professionnel"
 
 #: templates/home_new_slim.html:27
-#, fuzzy
 msgid "Soon"
-msgstr "JSON"
+msgstr "Bientôt"
 
 #: templates/home_new_slim.html:32
 msgid "Free for people in need"
 msgstr "Gratuit pour les personnes dans le besoin"
 
 #: templates/home_new_slim.html:33
-#, fuzzy
 msgid "Moderated & verified volunteers"
 msgstr "Bénévoles vérifiés"
 
 #: templates/home_new_slim.html:34
-#, fuzzy
 msgid "Human-first, minimal data"
-msgstr "Aide centrée sur l’humain"
+msgstr "L’humain d’abord, données minimales"
 
 #: templates/home_new_slim.html:40
 msgid "In 3 steps"
 msgstr "En 3 étapes"
 
 #: templates/home_new_slim.html:42
-#, fuzzy
 msgid "Submit a request (2 min)."
-msgstr "Déposer une demande"
+msgstr "Déposer une demande (2 min.)"
 
 #: templates/home_new_slim.html:43
 msgid "Smart matching to volunteers/pros."
@@ -579,9 +573,8 @@ msgid "Follow the status and next steps."
 msgstr "Suivez le statut et les prochaines étapes."
 
 #: templates/home_new_slim.html:55
-#, fuzzy
 msgid "I need help"
-msgstr "Besoin d'aide ?"
+msgstr "J’ai besoin d’aide"
 
 #: templates/home_new_slim.html:56
 msgid "Admin, health, transport, support…"
@@ -828,13 +821,71 @@ msgstr "Contact"
 msgid "Questions about privacy? Contact us at"
 msgstr "Des questions sur la confidentialité ? Contactez-nous à"
 
+#: templates/contact.html:9
+msgid "A question, a suggestion, or a concern? Write to us — a real human will read your message."
+msgstr "Une question, une suggestion ou un souci ? Écrivez-nous : un humain lira votre message."
+
+#: templates/contact.html:21
+msgid "Your email"
+msgstr "Votre e-mail"
+
+#: templates/contact.html:27
+msgid "Subject"
+msgstr "Objet"
+
+#: templates/contact.html:28
+msgid "What is this about?"
+msgstr "De quoi s'agit-il ?"
+
+#: templates/contact.html:33
+msgid "Message"
+msgstr "Message"
+
+#: templates/contact.html:34
+msgid "Write your message here…"
+msgstr "Écrivez votre message ici…"
+
+#: templates/contact.html:39
+msgid "Send message"
+msgstr "Envoyer le message"
+
+#: templates/contact.html:42
+msgid "This form is informational for now. Please use email below."
+msgstr "Ce formulaire est informatif pour l’instant. Merci d’utiliser l’e-mail ci-dessous."
+
+#: templates/contact.html:52
+msgid "Direct contact"
+msgstr "Contact direct"
+
+#: templates/contact.html:60
+msgid "Response time"
+msgstr "Délai de réponse"
+
+#: templates/contact.html:62
+msgid "We usually reply within 24–48 hours on business days."
+msgstr "Nous répondons généralement sous 24 à 48 h les jours ouvrés."
+
+#: templates/contact.html:68
+msgid "Security & privacy"
+msgstr "Sécurité et confidentialité"
+
+#: templates/contact.html:70
+msgid "We never sell or share contact data."
+msgstr "Nous ne vendons ni ne partageons jamais les données de contact."
+
+#: templates/contact.html:71
+msgid "No automated marketing emails."
+msgstr "Aucun e-mail marketing automatisé."
+
+#: templates/contact.html:73
+msgid "Security issues can be reported at"
+msgstr "Les problèmes de sécurité peuvent être signalés à"
+
 #: templates/submit_request.html:113
-#, fuzzy
 msgid "Trust signals"
 msgstr "Badges de confiance"
 
 #: templates/submit_request.html:120
-#, fuzzy
 msgid "~1 minute"
 msgstr "Prend ~1 minute"
 
@@ -1214,7 +1265,6 @@ msgstr "Connexion en tant que demandeur"
 
 # Status values (EN msgids -> FR)
 #: templates/volunteer_login.html:186
-#, fuzzy
 msgid "Sending..."
 msgstr "Envoi..."
 
@@ -3131,3 +3181,179 @@ msgstr "Envoi..."
 
 msgid "Моля, съгласете се с условията за ползване!"
 msgstr "Veuillez accepter les conditions d’utilisation !"
+
+
+
+msgid "За HelpChain"
+msgstr "À propos de HelpChain"
+
+msgid "HelpChain е платформа за координация на реална помощ, създадена с фокус върху сигурност, прозрачност и човечност. Тя свързва доброволци и нуждаещи се, за да се случва доброто по-бързо и по-организирано."
+msgstr "HelpChain est une plateforme de coordination d'aide réelle, conçue avec un accent sur la sécurité, la transparence et l'humanité. Elle met en relation des bénévoles et des personnes dans le besoin afin que l'aide se fasse plus vite et de manière plus organisée."
+
+msgid "Моля, въведете име (поне 2 символа)."
+msgstr "Veuillez saisir un nom (au moins 2 caractères)."
+
+msgid "Моля, опишете проблема (поне 10 символа)."
+msgstr "Veuillez décrire le problème (au moins 10 caractères)."
+
+msgid "Моля, въведете поне телефон или имейл."
+msgstr "Veuillez saisir au moins un téléphone ou un e-mail."
+
+msgid "Заявка: %(category)s"
+msgstr "Demande : %(category)s"
+
+msgid "Заявка за помощ"
+msgstr "Demande d'aide"
+
+msgid "Сесията изтече. Моля, подай заявката отново."
+msgstr "La session a expiré. Veuillez soumettre la demande à nouveau."
+
+msgid "Завършено"
+msgstr "Terminée"
+
+msgid "Отказано"
+msgstr "Annulée"
+
+msgid "Назначен/а"
+msgstr "Assigné(e)"
+
+msgid "Одобрен/а"
+msgstr "Approuvé(e)"
+
+msgid "Отхвърлен/а"
+msgstr "Refusé(e)"
+
+msgid "Ти си назначен/а. Можеш да отвориш детайлите и да действаш."
+msgstr "Vous êtes assigné(e). Vous pouvez ouvrir les détails et agir."
+
+msgid "В изчакване — ще получиш известие при потвърждение."
+msgstr "En attente, vous serez notifié(e) lors de la confirmation."
+
+msgid "Как ще изглежда заявка"
+msgstr "À quoi ressemble une demande"
+
+msgid "Пример, за да знаеш какво да очакваш."
+msgstr "Un exemple pour savoir à quoi vous attendre."
+
+msgid "Онлайн"
+msgstr "En ligne"
+
+msgid "Помощ с документи"
+msgstr "Aide pour les documents"
+
+msgid "Човек търси помощ за попълване на документи и ориентация къде да подаде заявление."
+msgstr "Une personne cherche de l'aide pour remplir des documents et savoir où déposer une demande."
+
+msgid "Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш."
+msgstr "Vous n'êtes pas obligé(e) de répondre à chaque demande. Vous choisissez quand et comment aider."
+
+msgid "Потвърди помощта"
+msgstr "Confirmer l'aide"
+
+msgid "Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично."
+msgstr "C'est une invitation, pas un engagement. Vous signalez votre intérêt, puis vous décidez tranquillement si vous prenez en charge. Rien n'est pris automatiquement."
+
+msgid "Откажи"
+msgstr "Annuler"
+
+msgid "Да, ще помогна"
+msgstr "Oui, je vais aider"
+
+msgid "Помощта е заявена. Очаква се кратко потвърждение от екипа."
+msgstr "Votre aide a été signalée. Une courte confirmation de l'équipe est attendue."
+
+msgid "Детайлите ще се показват тук. Нищо не е изпратено автоматично."
+msgstr "Les détails s'afficheront ici. Rien n'a été envoyé automatiquement."
+
+msgid "ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница."
+msgstr "ℹ️ Démo : voici à quoi ressembleront les détails. Les vraies demandes ouvriront une page."
+
+msgid "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."
+msgstr "Démo : vous enverrez un « intérêt ». C'est une invitation, pas un engagement. Ensuite, vous décidez tranquillement."
+
+msgid "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично."
+msgstr "Vous allez envoyer un « intérêt ». C'est une invitation, pas un engagement. Rien n'est pris automatiquement."
+
+msgid "Продължаваме?"
+msgstr "Continuer ?"
+
+msgid "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
+msgstr "✅ Démo : l'aide a été signalée. Rien n'est pris automatiquement."
+
+msgid "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
+msgstr "✅ Votre aide a été signalée. Une courte confirmation de l'équipe est attendue."
+
+msgid "ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."
+msgstr "ℹ️ Démo : les détails s'afficheront ici. Les vraies demandes ouvriront une page de détails."
+
+msgid "🟢 НОВО"
+msgstr "🟢 NOUVEAU"
+
+msgid "Какво става, ако натиснеш?"
+msgstr "Que se passe-t-il si vous cliquez ?"
+
+msgid "Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично."
+msgstr "Vous consultez les détails et envoyez un « intérêt ». Ensuite, vous décidez tranquillement si vous prenez en charge. Rien ne se fait automatiquement."
+
+msgid "Обработва се…"
+msgstr "Traitement…"
+
+msgid "Детайли за заявка"
+msgstr "Détails de la demande"
+
+msgid "Назад"
+msgstr "Retour"
+
+msgid "Заявка"
+msgstr "Demande"
+
+msgid "Няма описание."
+msgstr "Aucune description."
+
+msgid "Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека."
+msgstr "Vous avez le feu vert pour cette demande. Utilisez les boutons ci-dessous pour contacter la personne."
+
+msgid "Заявката е изпратена. Ще получиш известие при решение."
+msgstr "La demande a été envoyée. Vous serez notifié(e) lorsqu'une décision sera prise."
+
+msgid "Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно)."
+msgstr "Une fois l'équipe confirmée, vous serez notifié(e) et nous débloquerons le contact (si nécessaire)."
+
+msgid "Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно."
+msgstr "Vous êtes confirmé(e) pour cette demande. Suivez les instructions ci-dessous et agissez sereinement."
+
+msgid "Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти."
+msgstr "Pas de souci, vous pouvez aider sur une autre demande. Merci."
+
+msgid "Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем."
+msgstr "Si vous pouvez aider, cliquez sur « Je peux aider » : cela nous signale de vous mettre en relation."
+
+msgid "Демо: нищо не се записва."
+msgstr "Démo : rien n'est enregistré."
+
+msgid "Следва кратък преглед и потвърждение."
+msgstr "Un bref examen et une confirmation suivent."
+
+msgid "Твоят сигнал"
+msgstr "Votre signal"
+
+msgid "Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно."
+msgstr "C'est un signal rapide à l'équipe. Il n'est pas engageant, il nous aide à réagir plus précisément."
+
+msgid "Мога да помогна"
+msgstr "Je peux aider"
+
+msgid "Не мога да помогна"
+msgstr "Je ne peux pas aider"
+
+msgid "Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина."
+msgstr "Si vous ne pouvez pas, c'est OK. Mieux vaut un signal honnête que le silence."
+
+msgid "Потвърдено"
+msgstr "Confirmé"
+
+msgid "Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта."
+msgstr "Utilisez ce contact uniquement pour cette demande. Soyez respectueux(se) et précis(e) : cela accélère l'aide."
+
+msgid "Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes)."
+msgstr "Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes)."

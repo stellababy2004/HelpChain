@@ -118,6 +118,12 @@ repo-mirror.git/
 miniconda.exe
 backend.zip
 .git.zip
+
+# Codex / local temp artifacts (should not be committed)
+_mv_test*.txt
+translations/*/LC_MESSAGES/_tmp_po_copy.txt
+translations/*/LC_MESSAGES/_write_test*.txt
+translations/*/LC_MESSAGES/tmpmessages.po
 backend/redis.zip
 HelpChain_Financial_Pack_2025.zip
 backend/uploads/*.JPG

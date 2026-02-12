@@ -181,30 +181,30 @@
             {% set time_attr = created.isoformat() if created and created.isoformat is defined else (created or '') %}
 
             {% if is_done %}
-              {% set req_badge = "Завършено" %}
+              {% set req_badge = _("Завършено") %}
               {% set req_badge_mod = "hc-badge--done" %}
             {% elif is_rejected %}
-              {% set req_badge = "Отказано" %}
+              {% set req_badge = _("Отказано") %}
               {% set req_badge_mod = "hc-badge--rejected" %}
             {% elif is_in_progress %}
-              {% set req_badge = "В процес" %}
+              {% set req_badge = _("В процес") %}
               {% set req_badge_mod = "hc-badge--progress" %}
             {% else %}
-              {% set req_badge = "Нова" %}
+              {% set req_badge = _("Нова") %}
               {% set req_badge_mod = "hc-badge--new" %}
             {% endif %}
 
             {% if is_assigned %}
-              {% set vol_badge = "Назначен/а" %}
+              {% set vol_badge = _("Назначен/а") %}
               {% set vol_badge_mod = "hc-badge--assigned" %}
             {% elif istatus == "APPROVED" %}
-              {% set vol_badge = "Одобрен/а" %}
+              {% set vol_badge = _("Одобрен/а") %}
               {% set vol_badge_mod = "hc-badge--approved" %}
             {% elif is_pending %}
-              {% set vol_badge = "В изчакване" %}
+              {% set vol_badge = _("В изчакване") %}
               {% set vol_badge_mod = "hc-badge--muted" %}
             {% elif istatus == "REJECTED" %}
-              {% set vol_badge = "Отхвърлен/а" %}
+              {% set vol_badge = _("Отхвърлен/а") %}
               {% set vol_badge_mod = "hc-badge--rejected" %}
             {% else %}
               {% set vol_badge = "" %}
@@ -225,9 +225,9 @@
                 </div>
 
                 {% if is_assigned %}
-                  <div class="hc-statusCopy">✅ Ти си назначен/а. Можеш да отвориш детайлите и да действаш.</div>
+                  <div class="hc-statusCopy">✅ {{ _("Ти си назначен/а. Можеш да отвориш детайлите и да действаш.") }}</div>
                 {% elif is_pending %}
-                  <div class="hc-statusCopy">⏳ В изчакване — ще получиш известие при потвърждение.</div>
+                  <div class="hc-statusCopy">⏳ {{ _("В изчакване — ще получиш известие при потвърждение.") }}</div>
                 {% endif %}
 
                 <div class="hc-listItem__metaRow">
@@ -594,58 +594,57 @@
 <!-- PREVIEW (secondary) -->
   <section class="hc-card hc-vdash__preview" id="hc-preview">
     <div class="hc-card__head">
-      <h2 class="hc-card__title">Как ще изглежда заявка</h2>
-      <p class="hc-card__desc">Пример, за да знаеш какво да очакваш.</p>
+      <h2 class="hc-card__title">{{ _("Как ще изглежда заявка") }}</h2>
+      <p class="hc-card__desc">{{ _("Пример, за да знаеш какво да очакваш.") }}</p>
     </div>
 
     <article class="hc-previewCard">
       <div class="hc-previewCard__chips">
-        <span class="hc-pill">Административна помощ</span>
+        <span class="hc-pill">{{ _("Административна помощ") }}</span>
         <span class="hc-pill">Paris</span>
-        <span class="hc-pill">Онлайн</span>
+        <span class="hc-pill">{{ _("Онлайн") }}</span>
       </div>
 
-      <h3 class="hc-previewCard__title">Помощ с документи</h3>
+      <h3 class="hc-previewCard__title">{{ _("Помощ с документи") }}</h3>
       <p class="hc-previewCard__text">
-        Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.
+        {{ _("Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.") }}
       </p>
 
       <div class="hc-previewCard__actions">
-        <button class="btn btn-outline-primary" type="button" disabled>Виж детайли</button>
-        <button class="btn btn-primary" type="button" disabled>Ще помогна</button>
+        <button class="btn btn-outline-primary" type="button" disabled>{{ _("Виж детайли") }}</button>
+        <button class="btn btn-primary" type="button" disabled>{{ _("Ще помогна") }}</button>
       </div>
 
       <p class="hc-note">
-        Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.
+        {{ _("Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.") }}
       </p>
     </article>
   </section>
 
   <div id="hc-confirm-overlay" class="hc-confirm-overlay" hidden>
     <div class="hc-confirm-box">
-      <h4>Потвърди помощта</h4>
+      <h4>{{ _("Потвърди помощта") }}</h4>
       <p>
-        Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш
-        дали да поемеш. Нищо не се поема автоматично.
+        {{ _("Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично.") }}
       </p>
 
       <div class="hc-confirm-actions">
         <button id="hc-confirm-cancel" class="btn btn-outline-secondary btn-sm">
-          Откажи
+          {{ _("Откажи") }}
         </button>
         <button id="hc-confirm-ok" class="btn btn-primary btn-sm">
-          Да, ще помогна
+          {{ _("Да, ще помогна") }}
         </button>
       </div>
     </div>
   </div>
 
   <div id="hc-help-success" class="hc-help-success" hidden>
-    ✅ Помощта е заявена. Очаква се кратко потвърждение от екипа.
+    ✅ {{ _("Помощта е заявена. Очаква се кратко потвърждение от екипа.") }}
   </div>
 
   <div id="hc-detail-toast" class="hc-help-success" hidden>
-    ℹ️ Детайлите ще се показват тук. Нищо не е изпратено автоматично.
+    ℹ️ {{ _("Детайлите ще се показват тук. Нищо не е изпратено автоматично.") }}
   </div>
 
 </section>
@@ -656,6 +655,42 @@ console.log("HC DASHBOARD JS LOADED ✅");
 (function () {
   if (window.__hcVolDashBound) return;
   window.__hcVolDashBound = true;
+
+  const HC_I18N = {
+    toastDemoDetails: {{ _("ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница.")|tojson }},
+    confirmDemoInterest: {{ _("Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш.")|tojson }},
+    confirmSendInterest: (
+      {{ _("Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.")|tojson }}
+      + "\\n\\n"
+      + {{ _("Продължаваме?")|tojson }}
+    ),
+    pending: {{ _("В изчакване")|tojson }},
+    toastDemoHelpSent: {{ _("✅ Демо: помощта е заявена. Нищо не се поема автоматично.")|tojson }},
+    toastHelpSent: {{ _("✅ Помощта е заявена. Очаква се кратко потвърждение от екипа.")|tojson }},
+    toastDemoInlineDetails: {{ _("ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли.")|tojson }},
+    newPill: {{ _("🟢 НОВО")|tojson }},
+    tipTitle: {{ _("Какво става, ако натиснеш?")|tojson }},
+    tipText: {{ _("Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично.")|tojson }},
+    demoTitle: {{ _("Примерна заявка")|tojson }},
+    demoJustNow: {{ _("току-що")|tojson }},
+    demoPill: {{ _("Пример (демо)")|tojson }},
+    demoAppeared: {{ _("Току-що се появи. Провери дали ти е удобно.")|tojson }},
+    demoBody: {{ _("Човек търси помощ за документи и насоки къде да ги подаде.")|tojson }},
+    viewDetails: {{ _("Виж детайли")|tojson }},
+    willHelp: {{ _("Ще помогна")|tojson }},
+    inviteHint: {{ _("Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.")|tojson }},
+    processing: {{ _("Обработва се…")|tojson }},
+  };
+
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#39;",
+    }[ch]));
+  }
 
   function hcToast(msg) {
     let t = document.querySelector(".hc-toast");
@@ -674,7 +709,7 @@ console.log("HC DASHBOARD JS LOADED ✅");
 
   function openDetails(reqId) {
     if (reqId === "demo") {
-      hcToast("ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница.");
+      hcToast(HC_I18N.toastDemoDetails);
       return;
     }
     window.location.href = `/volunteer/requests/${reqId}`;
@@ -683,23 +718,20 @@ console.log("HC DASHBOARD JS LOADED ✅");
   function startHelp(reqId, btnEl) {
     const ok = confirm(
       reqId === "demo"
-        ? "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."
-        : "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.\n\nПродължаваме?"
+        ? HC_I18N.confirmDemoInterest
+        : HC_I18N.confirmSendInterest
     );
     if (!ok) return;
 
     if (btnEl) {
       btnEl.disabled = true;
-      btnEl.textContent = "В изчакване";
+      btnEl.textContent = HC_I18N.pending;
       btnEl.classList.add("disabled");
       const note = btnEl.closest('.hc-match-card')?.querySelector('.hc-waiting-note');
       if (note) note.hidden = false;
     }
 
-    hcToast(reqId === "demo"
-      ? "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
-      : "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
-    );
+    hcToast(reqId === "demo" ? HC_I18N.toastDemoHelpSent : HC_I18N.toastHelpSent);
   }
 
   document.addEventListener("click", (e) => {
@@ -734,7 +766,7 @@ console.log("HC DASHBOARD JS LOADED ✅");
       }
       e.preventDefault();
       e.stopPropagation();
-      hcToast("ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли.");
+      hcToast(HC_I18N.toastDemoInlineDetails);
       return;
     }
 
@@ -765,7 +797,7 @@ console.log("HC DASHBOARD JS LOADED ✅");
     if (header && !firstCard.querySelector(".hc-new-pill")) {
       const pill = document.createElement("span");
       pill.className = "hc-new-pill";
-      pill.textContent = "🟢 НОВО";
+      pill.textContent = HC_I18N.newPill;
       header.appendChild(pill);
     }
     firstCard.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -855,8 +887,8 @@ window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
 
 // Micro-tooltip on primary CTA
 (() => {
-  const TIP_TITLE = 'Какво става, ако натиснеш?';
-  const TIP_TEXT  = 'Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично.';
+  const TIP_TITLE = HC_I18N.tipTitle;
+  const TIP_TEXT  = HC_I18N.tipText;
 
   let tipEl = null;
   const TIP_ID = 'hc-help-tip';
@@ -1008,13 +1040,13 @@ window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
           <div class="hc-list">
             <article class="hc-listItem hc-soft-fade hc-match-card hc-demo-card" data-req-id="demo-1" data-demo="1">
               <div class="hc-listItem__top d-flex align-items-center justify-content-between">
-                <strong class="hc-listItem__title">Примерна заявка</strong>
-                <span class="hc-listItem__meta">току-що</span>
-                <span class="hc-demo-pill">Пример (демо)</span>
+                <strong class="hc-listItem__title">${escHtml(HC_I18N.demoTitle)}</strong>
+                <span class="hc-listItem__meta">${escHtml(HC_I18N.demoJustNow)}</span>
+                <span class="hc-demo-pill">${escHtml(HC_I18N.demoPill)}</span>
               </div>
-              <p class="hc-muted" style="margin:4px 0 8px;">Току-що се появи. Провери дали ти е удобно.</p>
+              <p class="hc-muted" style="margin:4px 0 8px;">${escHtml(HC_I18N.demoAppeared)}</p>
               <div class="hc-listItem__body">
-                Човек търси помощ за документи и насоки къде да ги подаде.
+                ${escHtml(HC_I18N.demoBody)}
               </div>
               <p class="hc-why">
                 {% if volunteer.location %}
@@ -1024,11 +1056,11 @@ window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
                 {% endif %}
               </p>
               <div class="hc-listItem__actions">
-                <a class="btn btn-sm btn-outline-primary" href="javascript:void(0)" aria-disabled="true">Виж детайли</a>
-                <button class="btn btn-sm btn-primary" type="button">Ще помогна</button>
+                <a class="btn btn-sm btn-outline-primary" href="javascript:void(0)" aria-disabled="true">${escHtml(HC_I18N.viewDetails)}</a>
+                <button class="btn btn-sm btn-primary" type="button">${escHtml(HC_I18N.willHelp)}</button>
               </div>
           <p class="hc-cta-hint">
-            Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.
+            ${escHtml(HC_I18N.inviteHint)}
           </p>
         </article>
       </div>
@@ -1120,12 +1152,12 @@ window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
     overlay.hidden = true;
     if (!activeHelpBtn) return;
     activeHelpBtn.classList.add('loading');
-    activeHelpBtn.textContent = 'Обработва се…';
+    activeHelpBtn.textContent = HC_I18N.processing;
 
     setTimeout(() => {
       activeHelpBtn.classList.remove('loading');
       activeHelpBtn.disabled = true;
-      activeHelpBtn.textContent = 'В изчакване';
+      activeHelpBtn.textContent = HC_I18N.pending;
       activeHelpBtn.classList.add('disabled');
       const note = activeHelpBtn.closest('.hc-match-card')?.querySelector('.hc-waiting-note');
       if (note) note.hidden = false;
@@ -1159,7 +1191,7 @@ window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
       const btn = card.querySelector('.hc-help-btn');
       if (btn) {
         btn.disabled = true;
-        btn.textContent = 'В изчакване';
+        btn.textContent = HC_I18N.pending;
         btn.classList.add('disabled');
       }
     }

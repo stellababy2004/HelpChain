@@ -33,6 +33,8 @@
       {% if csrf_token is defined %}
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {% endif %}
+      <input type="text" name="website" id="hp_website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:1px;width:1px;">
+      <input type="hidden" name="started_at" id="started_at" value="{{ draft.started_at or '' }}">
       <button type="submit" class="btn btn-primary">
         Потвърди и изпрати
       </button>

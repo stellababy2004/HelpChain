@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Lien envoye | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-page">
+  <div class="hc-card hc-card--center">
+    <div class="hc-card__icon" aria-hidden="true">📩</div>
+    <h1 class="hc-title hc-title--sm">Vérifiez votre e-mail</h1>
+    <p>
+      Si cet e-mail existe, un lien sécurisé vient d’être envoyé.
+      <strong>Aucun mot de passe.</strong>
+    </p>
+    <ul class="hc-list">
+      <li>Lien valable <strong>15 minutes</strong></li>
+      <li>Regardez aussi vos spams</li>
+      <li>Vous gardez le contrôle. Vous pourrez arrêter à tout moment.</li>
+    </ul>
+
+    <div class="hc-actions">
+      <button
+        id="resend-link"
+        class="hc-btn hc-btn--primary"
+        data-email="{{ resend_email or '' }}"
+        data-cooldown="{{ cooldown_seconds or 14 }}"
+        {% if not (resend_email or '') %}disabled{% endif %}
+      >
+        Renvoyer le lien
+      </button>
+      <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">Retour a l’accueil</a>
+    </div>
+    {% if csrf_token is defined %}
+      <input type="hidden" id="resend-csrf-token" value="{{ csrf_token() }}">
+    {% endif %}
+    <p id="resend-msg" class="hc-help" style="margin-top:10px; min-height:1.2em;" aria-live="polite"></p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+  const btn = document.getElementById("resend-link");
+  const msg = document.getElementById("resend-msg");
+  if (!btn) return;
+
+  const email = (btn.dataset.email || "").trim();
+  const defaultCooldown = parseInt(btn.dataset.cooldown || "14", 10) || 14;
+  if (!email) {
+    if (msg) msg.textContent = "Veuillez recommencer depuis le formulaire.";
+    btn.disabled = true;
+    return;
+  }
+
+  let timer = null;
+  let left = 0;
+
+  function startCooldown(seconds) {
+    left = Math.max(1, Number(seconds) || defaultCooldown);
+    btn.disabled = true;
+    btn.textContent = `Renvoyer le lien (${left}s)`;
+    if (timer) window.clearInterval(timer);
+    timer = window.setInterval(() => {
+      left -= 1;
+      if (left <= 0) {
+        window.clearInterval(timer);
+        timer = null;
+        btn.disabled = false;
+        btn.textContent = "Renvoyer le lien";
+        return;
+      }
+      btn.textContent = `Renvoyer le lien (${left}s)`;
+    }, 1000);
+  }
+
+  async function resend() {
+    btn.disabled = true;
+    btn.textContent = "Envoi…";
+    const params = new URLSearchParams();
+    params.append("email", email);
+    params.append("started_at", String(Date.now() - 5000));
+    params.append("company_fax", "");
+    const csrf = document.getElementById("resend-csrf-token");
+    if (csrf && csrf.value) {
+      params.append("csrf_token", csrf.value);
+    }
+
+    try {
+      const res = await fetch("{{ url_for('main.become_volunteer') }}", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        },
+        credentials: "same-origin",
+        body: params.toString(),
+      });
+
+      let cooldown = defaultCooldown;
+      try {
+        const data = await res.json();
+        if (data && Number.isFinite(Number(data.cooldown_seconds))) {
+          cooldown = Number(data.cooldown_seconds);
+        }
+      } catch (e) {
+        // Keep generic UX even when JSON parsing fails.
+      }
+      if (msg) {
+        msg.textContent = "Si l'adresse est valide, un nouveau lien a ete envoye.";
+      }
+      startCooldown(cooldown);
+    } catch (e) {
+      if (msg) {
+        msg.textContent = "Si l'adresse est valide, un nouveau lien a ete envoye.";
+      }
+      startCooldown(defaultCooldown);
+    }
+  }
+
+  startCooldown(defaultCooldown);
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (btn.disabled) return;
+    resend();
+  });
+})();
+</script>
+{% endblock %}

@@ -28,6 +28,7 @@ from .request_log import RequestLog  # noqa: F401
 from .volunteer import Volunteer  # noqa: F401
 from .volunteer_action import VolunteerAction  # noqa: F401
 from .volunteer_interest import VolunteerInterest  # noqa: F401
+from .magic_link_token import MagicLinkToken  # noqa: F401
 
 __all__ = [
     "db",
@@ -45,4 +46,5 @@ __all__ = [
     "RefreshToken",
     "VolunteerInterest",
     "VolunteerAction",
+    "MagicLinkToken",
 ]

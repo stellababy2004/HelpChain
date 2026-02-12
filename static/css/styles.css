@@ -1910,3 +1910,106 @@ form select.form-select {
 .hc-card, .card{
   border-radius: 14px;
 }
+
+/* Become volunteer (Step 1) - scoped to avoid affecting other pages */
+.hc-vol-join .hc-shell { padding: 48px 16px; }
+.hc-vol-join .hc-narrow { max-width: 720px; margin: 0 auto; }
+.hc-vol-join .hc-pagehead { margin-bottom: 18px; }
+.hc-vol-join .hc-title { font-size: 42px; line-height: 1.05; margin: 0; }
+.hc-vol-join .hc-subtitle { margin: 10px 0 0; opacity: .8; }
+.hc-vol-join .hc-trust { margin: 14px 0 0; padding-left: 18px; opacity: .9; }
+
+.hc-vol-join .hc-card__title { margin: 0; font-size: 18px; }
+.hc-vol-join .hc-card__hint { margin: 6px 0 0; opacity: .75; }
+
+.hc-vol-join .hc-form { margin-top: 16px; display: grid; gap: 14px; }
+.hc-vol-join .hc-field { display: grid; gap: 6px; }
+.hc-vol-join .hc-label { font-weight: 600; }
+.hc-vol-join .hc-req { color: #d00; }
+.hc-vol-join .hc-input { width: 100%; padding: 12px 12px; border: 1px solid rgba(0,0,0,.12); border-radius: 12px; }
+.hc-vol-join .hc-help { margin: 0; font-size: 13px; opacity: .7; }
+
+.hc-vol-join .hc-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.hc-vol-join .hc-chip { display: inline-flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid rgba(0,0,0,.10); border-radius: 999px; cursor: pointer; }
+.hc-vol-join .hc-chip input { transform: scale(1.05); }
+.hc-vol-join .hc-chip input:disabled,
+.hc-vol-join .hc-chip input:disabled + .hc-chip__text { opacity: 0.5; cursor: not-allowed; }
+
+.hc-vol-join .hc-consent__row { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; opacity: .9; }
+.hc-vol-join .hc-link { text-decoration: underline; }
+.hc-vol-join .hc-footnote { margin: 10px 0 0; font-size: 13px; opacity: .65; }
+.hc-vol-join .hc-btn--full { width: 100%; }
+
+.hc-vol-join .hc-faq { margin-top: 18px; border-radius: 14px; border: 1px solid rgba(0,0,0,.08); padding: 12px 14px; background: rgba(255,255,255,.65); }
+.hc-vol-join .hc-faq summary { cursor: pointer; font-weight: 600; }
+
+/* --- Trust mini card (Become volunteer header) --- */
+.hc-vol-join .hc-become-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.hc-vol-join .hc-become-titleblock{
+  min-width: 220px;
+}
+
+.hc-vol-join .hc-trust-card{
+  width: 260px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+}
+
+.hc-vol-join .hc-trust-list{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #334155;
+}
+
+.hc-vol-join .hc-trust-list li{
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+@media (max-width: 900px){
+  .hc-vol-join .hc-become-head{ flex-direction: column; }
+  .hc-vol-join .hc-trust-card{ width: 100%; margin-top: 10px; }
+}
+
+/* Step 1 hint + frozen state */
+.hc-vol-join .hc-hint{ font-size: 0.9rem; opacity: 0.8; margin-top: 8px; }
+.hc-vol-join .hc-error{ color: #b42318; opacity: 1; }
+.hc-vol-join .is-frozen{ opacity: .7; }
+
+/* Step 1.5 (frontend-only) */
+.hc-vol-join .hc-link-sent{ margin-top: 16px; }
+.hc-vol-join .hc-card--center{ max-width: 560px; margin: 0 auto; text-align: center; }
+.hc-vol-join .hc-card__icon{ font-size: 36px; margin-bottom: 8px; }
+.hc-vol-join .hc-title--sm{ font-size: 28px; }
+
+/* --- Generic HC page helpers (used by /contact and other clean pages) --- */
+.hc-page{ padding: 44px 16px 64px; }
+.hc-container{ width: 100%; margin: 0 auto; }
+.hc-container--narrow{ max-width: 720px; }
+.hc-page__head{ margin-bottom: 24px; }
+.hc-text{ margin-top: 6px; color: rgba(0,0,0,.75); }
+.hc-mb-16{ margin-bottom: 16px; }
+.hc-mt-8{ margin-top: 8px; }
+.hc-card--pad-lg{ padding: 20px; }
+.hc-form{ display: grid; gap: 14px; }
+.hc-form-group{ display: grid; gap: 6px; }
+.hc-form-actions{ margin-top: 6px; display: grid; gap: 6px; }
+
+/* Generic inline form message (anti-enumeration UX) */
+.hc-form-msg{ padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.85); color: rgba(0,0,0,.72); }
+.hc-form-msg.is-ok{ border-color: rgba(25,135,84,.25); background: rgba(25,135,84,.08); color: rgba(25,135,84,.95); }

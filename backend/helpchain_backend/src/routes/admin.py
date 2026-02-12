@@ -126,6 +126,31 @@ admin_bp = Blueprint(
 )  # single templates path via app.py
 
 
+@admin_bp.before_request
+def require_admin_session():
+    """
+    Gate the entire /admin surface behind the explicit admin session flag.
+
+    Security/UX:
+    - No public access to admin pages (redirect to login).
+    - "Admin" navbar link is also keyed off the same session flag.
+    """
+    allowed = {
+        "admin.ops_login",
+        "admin.admin_login_legacy",
+    }
+    if request.endpoint in allowed or (
+        request.endpoint and request.endpoint.startswith("static")
+    ):
+        return None
+
+    if session.get("admin_logged_in"):
+        return None
+
+    nxt = request.full_path if request.query_string else request.path
+    return redirect(url_for("admin.ops_login", next=nxt), code=303)
+
+
 @admin_bp.get("/")
 def admin_index():
     """Redirect bare /admin to the main requests list."""
@@ -306,7 +331,7 @@ def enforce_admin_mfa():
         return None
     allowed = {
         "admin.ops_login",
-        "admin.admin_login",
+        "admin.admin_login_legacy",
         "admin.admin_logout",
         "admin.admin_mfa_setup",
         "admin.admin_mfa_verify",
@@ -524,7 +549,7 @@ def admin_login_legacy():
     return redirect(url_for("admin.ops_login", next=nxt))
 
 
-@admin_bp.get("/logout")
+@admin_bp.route("/logout", methods=["GET", "POST"])
 def admin_logout():
     admin_required_404()
     _mfa_ok_clear()
@@ -1384,7 +1409,7 @@ def update_status(req_id):
 
     # Изпращане на email при промяна на статус (graceful fallback)
     try:
-        from mail_service import send_notification_email
+        from backend.mail_service import send_notification_email
 
         subject = f"Статусът на вашата заявка #{req.id} е променен на {new_status}"
         recipient = getattr(req, "email", None)
