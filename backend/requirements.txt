@@ -7,7 +7,7 @@ flask-babel==3.1.0
 flask-cors==6.0.1
 gunicorn==23.0.0
 sqlalchemy==2.0.44
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.11
 python-dotenv==1.0.0
 itsdangerous==2.2.0
 email-validator==2.3.0
@@ -129,7 +129,7 @@ pluggy==1.6.0
     # via pytest
 prompt-toolkit==3.0.52
     # via click-repl
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.11
     # via -r requirements.in
 pyjwt==2.10.1
     # via -r requirements.in

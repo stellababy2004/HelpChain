@@ -12,7 +12,7 @@ Flask-Talisman==1.1.0
 Flask-Caching==2.3.0
 gunicorn==23.0.0
 sqlalchemy==2.0.44
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.11
 python-dotenv==1.0.0
 itsdangerous==2.2.0
 email-validator==2.3.0
