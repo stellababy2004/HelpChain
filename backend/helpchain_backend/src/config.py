@@ -44,7 +44,15 @@ class Config:
     INSTANCE_PATH = os.path.join(BASE_DIR, "instance")
     DEFAULT_SQLITE_PATH = os.path.join(INSTANCE_PATH, "app.db")
     _db_path_env = os.getenv("HC_DB_PATH")
-    _db_url_env = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
+    _db_url_env = (
+        os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL") or ""
+    )
+    # normalize scheme for SQLAlchemy
+    if _db_url_env.startswith("postgres://"):
+        _db_url_env = _db_url_env.replace("postgres://", "postgresql://", 1)
+    # explicit psycopg v3 driver for Python 3.13 compatibility on Render
+    if _db_url_env.startswith("postgresql://") and "+psycopg" not in _db_url_env:
+        _db_url_env = _db_url_env.replace("postgresql://", "postgresql+psycopg://", 1)
     if _db_url_env:
         # Allow %TEMP%, $HOME, etc. in dev env vars
         _db_url_env = os.path.expandvars(_db_url_env)
@@ -58,6 +66,14 @@ class Config:
 
     # Rate limit headers (useful with ProxyFix and real client IPs)
     RATELIMIT_HEADERS_ENABLED = True
+    TRUST_PROXY_HEADERS = os.getenv("TRUST_PROXY_HEADERS", "false").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
+    PROXY_FIX_X_FOR = int(os.getenv("PROXY_FIX_X_FOR", "1"))
+    PROXY_FIX_X_PROTO = int(os.getenv("PROXY_FIX_X_PROTO", "1"))
+    PROXY_FIX_X_HOST = int(os.getenv("PROXY_FIX_X_HOST", "1"))
 
     # --- Mail ---
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.mailtrap.io")
