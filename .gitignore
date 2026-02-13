@@ -5,6 +5,7 @@ vercel.cookies
 # Local env files
 .env
 .env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -70,6 +71,7 @@ build/
 # local settings, secrets
 .env
 .env.*
+!.env.example
 instance/
 uploads/
 

@@ -3,7 +3,7 @@ import math
 import secrets
 import time
 from collections import deque
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from functools import wraps
 from types import SimpleNamespace
 from urllib.parse import urljoin, urlparse
@@ -36,6 +36,7 @@ from ..category_data import ALIASES, CATEGORIES, COMMON
 from ..extensions import limiter
 from ..models import (
     Notification,
+    ProfessionalLead,
     Request,
     RequestActivity,
     Volunteer,
@@ -2016,8 +2017,7 @@ def submit_request_confirm():
 
             recipient = getattr(req, "email", None)
             if recipient and not suppress_magic_send:
-                # i18n subject (FR msgid; translations in BG/EN)
-                subject = _("Votre lien de connexion HelpChain (15 min)")
+                subject = "Confirmez votre demande HelpChain (15 min)"
 
                 # Dedicated template context (no "content" HTML string)
                 context = {
@@ -2328,6 +2328,113 @@ def pilot_kpi_api():
 @main_bp.route("/faq")
 def faq():
     return render_template("faq.html")
+
+
+@main_bp.get("/professionnels")
+def professionnels():
+    return render_template("professionnels.html"), 200
+
+
+@main_bp.route("/professionnels/pilote", methods=["GET", "POST"])
+def professionnels_pilote():
+    if request.method == "GET":
+        return render_template("professionnels_pilote.html"), 200
+
+    email = (request.form.get("email") or "").strip().lower()
+    full_name = (request.form.get("full_name") or "").strip()
+    phone = (request.form.get("phone") or "").strip()
+    city = (request.form.get("city") or "").strip()
+    profession = (request.form.get("profession") or "").strip()
+    organization = (request.form.get("organization") or "").strip()
+    availability = (request.form.get("availability") or "").strip()
+    message = (request.form.get("message") or "").strip()
+
+    if not email or "@" not in email or not profession:
+        flash("Merci de renseigner au minimum votre e-mail et votre métier.", "error")
+        return render_template("professionnels_pilote.html"), 400
+
+    existing = (
+        ProfessionalLead.query.filter(ProfessionalLead.email == email)
+        .order_by(ProfessionalLead.id.desc())
+        .first()
+    )
+
+    if existing:
+        existing.city = city or existing.city
+        existing.phone = phone or existing.phone
+        existing.message = (message or "").strip() or existing.message
+        existing.locale = (
+            (session.get("lang") or str(babel_get_locale() or "")).strip() or existing.locale
+        )
+        existing.ip = _client_ip() or existing.ip
+        existing.user_agent = ((request.headers.get("User-Agent") or "")[:255] or existing.user_agent)
+        existing.source = "professionnels_pilote"
+        db.session.commit()
+        current_app.logger.info(
+            "[PRO-LEAD] dedup hit email=%s existing_id=%s created_at=%s",
+            email,
+            existing.id,
+            existing.created_at,
+        )
+        # Same UX either way: return success without inserting duplicate lead.
+        return render_template("professionnels_pilote_thanks.html", lead=existing), 200
+
+    lead = ProfessionalLead(
+        email=email,
+        full_name=full_name or None,
+        phone=phone or None,
+        city=city or None,
+        profession=profession,
+        organization=organization or None,
+        availability=availability or None,
+        message=message or None,
+        locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
+        ip=_client_ip(),
+        user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
+        source="professionnels_pilote",
+        created_at=datetime.now(timezone.utc),
+    )
+    db.session.add(lead)
+    db.session.commit()
+
+    try:
+        from backend.mail_service import send_notification_email
+
+        admin_to = (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
+        if not admin_to:
+            admin_to = (current_app.config.get("ADMIN_NOTIFY_EMAIL") or "").strip()
+
+        ctx = {
+            "lead_id": lead.id,
+            "email": lead.email,
+            "full_name": lead.full_name,
+            "phone": lead.phone,
+            "city": lead.city,
+            "profession": lead.profession,
+            "organization": lead.organization,
+            "availability": lead.availability,
+            "message": lead.message,
+            "created_at": lead.created_at,
+            "source": lead.source,
+            "locale": lead.locale,
+            "ip": lead.ip,
+            "user_agent": lead.user_agent,
+            "admin_url": f"{request.host_url.rstrip('/')}/admin/professional-leads",
+        }
+        if admin_to:
+            subject = "[HelpChain] Nouveau lead professionnel"
+            send_notification_email(
+                admin_to,
+                subject,
+                "emails/professional_lead_notify.html",
+                ctx,
+            )
+        else:
+            current_app.logger.info("[PRO-LEAD] notify skipped: no PRO_LEADS_NOTIFY_TO")
+    except Exception:
+        current_app.logger.exception("[PRO-LEAD] notify email failed lead_id=%s", lead.id)
+
+    return render_template("professionnels_pilote_thanks.html", lead=lead), 200
 
 
 @main_bp.route("/success_stories")

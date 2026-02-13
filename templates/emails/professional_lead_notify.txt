@@ -1,0 +1,19 @@
+Nouveau lead capté via /professionnels/pilote
+
+ID: {{ lead_id }}
+Email: {{ email }}
+Métier: {{ profession }}
+Ville: {{ city or "-" }}
+Nom: {{ full_name or "-" }}
+Téléphone: {{ phone or "-" }}
+Organisation: {{ organization or "-" }}
+Disponibilité: {{ availability or "-" }}
+Message: {{ message or "-" }}
+
+Source: {{ source or "-" }}
+Locale: {{ locale or "-" }}
+IP: {{ ip or "-" }}
+UA: {{ user_agent or "-" }}
+
+Created at: {{ created_at }}
+Admin: {{ admin_url or "-" }}

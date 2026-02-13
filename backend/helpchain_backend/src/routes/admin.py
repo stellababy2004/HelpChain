@@ -38,6 +38,7 @@ from ..config import Config
 from ..models import (
     AdminUser,
     Notification,
+    ProfessionalLead,
     Request,
     RequestActivity,
     RequestLog,
@@ -2374,3 +2375,108 @@ def admin_request_notes_get_alias(req_id: int):
 def admin_request_notes_post_alias(req_id: int):
     # Reuse existing note handler (/note) without changing templates.
     return admin_request_add_note(req_id)
+
+
+@admin_bp.get("/professional-leads")
+@login_required
+@admin_required
+def admin_professional_leads():
+    q = (request.args.get("q") or "").strip()
+    profession = (request.args.get("profession") or "").strip()
+    city = (request.args.get("city") or "").strip()
+    status = (request.args.get("status") or "").strip().lower()
+    status_choices = ["new", "contacted", "qualified", "rejected"]
+
+    query = ProfessionalLead.query
+
+    if q:
+        like = f"%{q.lower()}%"
+        query = query.filter(ProfessionalLead.email.ilike(like))
+
+    if profession:
+        query = query.filter(ProfessionalLead.profession == profession)
+
+    if city:
+        query = query.filter(ProfessionalLead.city.ilike(f"%{city}%"))
+
+    if status:
+        query = query.filter(func.lower(ProfessionalLead.status) == status)
+
+    leads = (
+        query.order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
+        .limit(200)
+        .all()
+    )
+
+    professions = (
+        ProfessionalLead.query.with_entities(ProfessionalLead.profession)
+        .distinct()
+        .order_by(ProfessionalLead.profession.asc())
+        .all()
+    )
+    professions = [p[0] for p in professions if p and p[0]]
+
+    return render_template(
+        "admin/professional_leads.html",
+        leads=leads,
+        q=q,
+        profession=profession,
+        city=city,
+        status=status,
+        status_choices=status_choices,
+        professions=professions,
+    ), 200
+
+
+@admin_bp.post("/professional-leads/<int:lead_id>/contacted")
+@login_required
+@admin_required
+def admin_professional_lead_mark_contacted(lead_id: int):
+    lead = ProfessionalLead.query.get_or_404(lead_id)
+    if (lead.status or "").lower() != "contacted":
+        lead.status = "contacted"
+        if not lead.contacted_at:
+            lead.contacted_at = datetime.now(UTC)
+        db.session.commit()
+        flash(f"Lead #{lead.id} marked as contacted.", "success")
+    return redirect(url_for("admin.admin_professional_leads"), code=303)
+
+
+@admin_bp.route("/professional-leads/<int:lead_id>", methods=["GET", "POST"])
+@login_required
+@admin_required
+def admin_professional_lead_detail(lead_id: int):
+    lead = ProfessionalLead.query.get_or_404(lead_id)
+    status_choices = ["new", "contacted", "qualified", "rejected"]
+
+    if request.method == "POST":
+        status = (request.form.get("status") or "").strip().lower()
+        notes = (request.form.get("notes") or "").strip()
+        if status not in status_choices:
+            status = "new"
+
+        lead.status = status
+        lead.notes = notes or None
+        if status == "contacted" and not lead.contacted_at:
+            lead.contacted_at = datetime.now(UTC)
+        elif status != "contacted":
+            lead.contacted_at = None
+
+        db.session.commit()
+        flash(f"Lead #{lead.id} updated.", "success")
+        return redirect(
+            url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303
+        )
+
+    return render_template(
+        "admin/professional_lead_detail.html",
+        lead=lead,
+        status_choices=status_choices,
+    ), 200
+
+
+@admin_bp.get("/professionnels/leads")
+@login_required
+@admin_required
+def admin_professionnels_leads():
+    return redirect(url_for("admin.admin_professional_leads"), code=302)

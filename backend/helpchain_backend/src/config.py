@@ -37,16 +37,24 @@ class Config:
     # ✅ Admin credentials (from .env)
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+    ADMIN_NOTIFY_EMAIL = os.getenv("ADMIN_NOTIFY_EMAIL", "")
 
     # ✅ Database
     # Prefer explicit env; else Render/Heroku DATABASE_URL; else project instance/app.db (absolute to avoid CWD drift)
     INSTANCE_PATH = os.path.join(BASE_DIR, "instance")
     DEFAULT_SQLITE_PATH = os.path.join(INSTANCE_PATH, "app.db")
+    _db_path_env = os.getenv("HC_DB_PATH")
     _db_url_env = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
     if _db_url_env:
         # Allow %TEMP%, $HOME, etc. in dev env vars
         _db_url_env = os.path.expandvars(_db_url_env)
-    SQLALCHEMY_DATABASE_URI = _db_url_env or f"sqlite:///{DEFAULT_SQLITE_PATH}"
+    if _db_path_env:
+        _db_path_env = os.path.expandvars(_db_path_env).replace("\\", "/")
+    SQLALCHEMY_DATABASE_URI = (
+        (f"sqlite:///{_db_path_env}" if _db_path_env else None)
+        or _db_url_env
+        or f"sqlite:///{DEFAULT_SQLITE_PATH}"
+    )
 
     # Rate limit headers (useful with ProxyFix and real client IPs)
     RATELIMIT_HEADERS_ENABLED = True
@@ -61,6 +69,7 @@ class Config:
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "contact@helpchain.live")
     MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "HelpChain")
     MAIL_REPLY_TO = os.getenv("MAIL_REPLY_TO", MAIL_DEFAULT_SENDER)
+    PRO_LEADS_NOTIFY_TO = os.getenv("PRO_LEADS_NOTIFY_TO", "")
 
     # --- Optional / misc ---
     NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN")

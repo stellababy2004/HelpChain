@@ -658,6 +658,57 @@ form select.form-select {
 .hc-chip{padding:8px 10px;border-radius:999px;font-size:13px;border:1px solid rgba(0,0,0,.08);background:rgba(0,0,0,.03)}
 .hc-chip b{font-weight:700}
 .hc-chip.is-ok{background:rgba(0,0,0,.02)}
+
+/* Professionnels architecture section: isolate from global .hc-step indicator styles */
+.hc-architecture-wrapper {
+  position: relative;
+  margin-top: 40px;
+  padding: 40px 0;
+  min-height: 300px;
+}
+
+.hc-architecture-wrapper svg,
+.hc-architecture-wrapper .diagram {
+  position: relative;
+  z-index: 1;
+}
+
+.hc-architecture-wrapper .hc-steps {
+  display: grid;
+  gap: 12px;
+}
+
+.hc-architecture-wrapper .hc-step {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.75rem;
+}
+
+.hc-architecture-wrapper .hc-step__k {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.hc-architecture-wrapper .hc-step__body {
+  min-width: 0;
+}
 .hc-chip.is-warn{background:rgba(255,193,7,.12);border-color:rgba(255,193,7,.25)}
 .hc-vdash__cta{margin:8px 0 4px;display:flex;flex-wrap:wrap;gap:10px}
 
