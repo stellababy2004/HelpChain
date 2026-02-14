@@ -74,7 +74,10 @@
 <section class="container pb-5">
   <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
     <div>
-      <h2 class="h4 mb-1">{{ _('Latest requests') }}</h2>
+      <h2 class="h4 mb-1">
+        {{ _('Latest requests') }}
+        <span class="hc-active-pill ms-1">{{ active_count }} {{ _('active') }}</span>
+      </h2>
       <div class="text-body-secondary">{{ _('A quick preview - open details to help.') }}</div>
     </div>
     <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.volunteer_dashboard') }}">
@@ -85,26 +88,29 @@
   <div class="row g-3">
     {% for req in latest_requests %}
       <div class="col-md-6 col-lg-4">
-        <div class="p-4 rounded-4 border h-100">
-          <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-            <h5 class="fw-semibold mb-2 hc-clamp-2">{{ req.title }}</h5>
-            {% set sm = status_meta(req.status) %}
-            <span class="rounded-pill {{ sm.badge_class or 'badge bg-secondary' }}">
-              {{ sm.label or (req.status or "open") }}
-            </span>
+        <div class="p-4 rounded-4 border h-100 {% if is_new_request and is_new_request(req) %}hc-reqCard--new{% endif %}">
+          <div class="hc-reqCard__top mb-2">
+            <h5 class="fw-semibold mb-0 hc-clamp-2 hc-reqCard__title">{{ req.title }}</h5>
+            {% if (is_new_request and is_new_request(req)) or loop.first %}
+              <span class="hc-badge hc-badge--new">{{ _("New") }}</span>
+            {% endif %}
           </div>
 
-          <p class="text-muted mb-2">
-            📍
-            {% if req.city %}
-              {{ req.city }}
-              {% if req.is_onsite %}
-                • {{ _("On-site") }}
-              {% endif %}
-            {% else %}
-              {{ _("Demo / auto-generated") }}
+          {% set raw_loc = (req.city or req.region or "") %}
+          {% set loc = raw_loc.strip() %}
+          {% set loc_l = loc.lower() %}
+          {% if "démo" in loc_l or "demo" in loc_l or "générée" in loc_l or "generee" in loc_l %}
+            {% set loc = "" %}
+          {% endif %}
+
+          <div class="hc-reqCard__meta mb-2">
+            <span class="hc-dot"></span>
+            <span>{{ loc or "—" }}</span>
+            {% if req.created_at %}
+              <span class="hc-sep">•</span>
+              <span>{{ time_ago(req.created_at) }}</span>
             {% endif %}
-          </p>
+          </div>
 
           {% set desc = (req.description or req.message or "") | striptags %}
           <p class="text-body-secondary mb-3 hc-clamp-3">

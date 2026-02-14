@@ -27,6 +27,7 @@ from flask_babel import gettext as _
 from flask_limiter.util import get_remote_address
 from flask_login import current_user, login_required, logout_user
 from flask_wtf import FlaskForm
+from babel.dates import format_timedelta
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import desc, func, or_
 from werkzeug.security import check_password_hash
@@ -294,9 +295,21 @@ def inject_template_helpers():
         except Exception:
             return "#"
 
+    def time_ago(dt):
+        if not dt:
+            return ""
+        try:
+            delta = datetime.utcnow() - dt.replace(tzinfo=None)
+        except Exception:
+            return ""
+        return format_timedelta(
+            delta, add_direction=True, locale=str(babel_get_locale())
+        )
+
     return {
         "url_lang": url_lang,
         "safe_url_for": safe_url_for,
+        "time_ago": time_ago,
     }
 
 
@@ -304,6 +317,7 @@ def inject_template_helpers():
 def index():
     """Главна страница"""
     latest_requests = []
+    active_count = 0
     try:
         latest_requests = (
             Request.query.filter(Request.deleted_at.is_(None))
@@ -312,10 +326,34 @@ def index():
             .limit(6)
             .all()
         )
+        active_count = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.deleted_at.is_(None))
+            .filter(Request.is_archived.is_(False))
+            .scalar()
+        ) or 0
     except Exception as e:
         current_app.logger.warning("Home latest_requests skipped: %s", e)
         latest_requests = []
-    return render_template("home_new_slim.html", latest_requests=latest_requests), 200
+        active_count = 0
+
+    now_utc_naive = _to_utc_naive(utc_now())
+
+    def is_new_request(req) -> bool:
+        created = _to_utc_naive(getattr(req, "created_at", None))
+        if not created or not now_utc_naive:
+            return False
+        return (now_utc_naive - created) <= timedelta(hours=24)
+
+    return (
+        render_template(
+            "home_new_slim.html",
+            latest_requests=latest_requests,
+            active_count=active_count,
+            is_new_request=is_new_request,
+        ),
+        200,
+    )
 
 
 @main_bp.route("/logout", methods=["GET", "POST"], endpoint="logout")

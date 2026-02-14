@@ -1962,6 +1962,75 @@ form select.form-select {
   border-radius: 14px;
 }
 
+/* Home latest requests: clearer meta + "New" indicator */
+.hc-reqCard__top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.hc-reqCard__title{
+  line-height:1.3;
+}
+
+.hc-reqCard--new{
+  border-color: rgba(37, 99, 235, .35) !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.12), 0 10px 28px rgba(56, 189, 248, 0.22);
+}
+
+.hc-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  font-weight:600;
+  font-size:13px;
+  border:1px solid rgba(0,0,0,.08);
+  background: rgba(0,0,0,.03);
+}
+
+.hc-badge--new{
+  background: #1f6fe8;
+  border-color: #1f6fe8;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(31, 111, 232, .28);
+}
+
+.hc-reqCard__meta{
+  margin-top:8px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color: rgba(0,0,0,.60);
+  font-size:14px;
+}
+
+.hc-reqCard__meta .hc-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background: rgba(239, 68, 68, .85);
+  box-shadow: none;
+}
+
+.hc-sep{
+  opacity:.55;
+}
+
+.hc-active-pill{
+  display:inline-flex;
+  align-items:center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: .95rem;
+  font-weight: 600;
+  color: #3b6fbf;
+  background: #eaf2ff;
+  border: 1px solid #d6e6ff;
+  vertical-align: middle;
+}
+
 /* Become volunteer (Step 1) - scoped to avoid affecting other pages */
 .hc-vol-join .hc-shell { padding: 48px 16px; }
 .hc-vol-join .hc-narrow { max-width: 720px; margin: 0 auto; }
