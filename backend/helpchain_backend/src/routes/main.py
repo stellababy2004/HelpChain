@@ -158,6 +158,19 @@ def _sha256_hex(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
 
 
+def mask_email(email: str) -> str:
+    """Mask local-part to avoid exposing full email in UI."""
+    e = (email or "").strip()
+    if "@" not in e:
+        return ""
+    name, domain = e.split("@", 1)
+    if not name:
+        return f"*@{domain}"
+    if len(name) <= 2:
+        return f"{name[0]}*@{domain}"
+    return f"{name[0]}{'*' * (len(name) - 2)}{name[-1]}@{domain}"
+
+
 def get_safe_next(default_endpoint: str):
     nxt = request.args.get("next")
     if nxt and is_safe_url(nxt):
@@ -307,7 +320,7 @@ def index():
     try:
         latest_requests = (
             Request.query.filter(Request.deleted_at.is_(None))
-            .filter(Request.is_archived == 0)
+            .filter(Request.is_archived.is_(False))
             .order_by(Request.created_at.desc())
             .limit(6)
             .all()
@@ -1954,23 +1967,19 @@ def submit_request_confirm():
             current_app.logger.info("[MAGIC LINK] rate-limited email_key=%s", email_key)
             suppress_magic_send = True
 
-        raw_token = secrets.token_urlsafe(32)
-        token_hash = _sha256_hex(raw_token)
+        email_norm = (draft.get("email") or "").strip().lower() or None
 
         req = Request(
             title=draft.get("title"),
             description=draft.get("description"),
             name=draft.get("name"),
             phone=(draft.get("phone") or None),
-            email=(draft.get("email") or None),
+            email=email_norm,
             location_text=(draft.get("location_text") or None),
             status="pending",
             priority=draft.get("priority"),
             category=draft.get("category"),
         )
-        # Legacy fields kept for backwards compatibility with existing /r/<token> links.
-        req.requester_token_hash = token_hash
-        req.requester_token_created_at = utc_now()
 
         db.session.add(req)
         db.session.commit()
@@ -1982,41 +1991,59 @@ def submit_request_confirm():
         except Exception:
             pass
 
-        # Create single-use token row (DB) + build canonical URL.
-        expires_at = utc_now() + timedelta(minutes=15)
-        try:
-            ml = MagicLinkToken(
-                token_hash=token_hash,
-                purpose="request",
-                email=(getattr(req, "email", "") or "").strip().lower(),
-                request_id=req.id,
-                expires_at=expires_at,
-            )
-            db.session.add(ml)
-            db.session.commit()
-        except Exception:
-            # If this fails, we still keep legacy token fields; send will use /r/<token>.
-            db.session.rollback()
+        magic_url = ""
+        raw_token = None
+        token_hash = None
+        recipient = (getattr(req, "email", "") or "").strip().lower()
+        if recipient and not suppress_magic_send:
+            raw_token = secrets.token_urlsafe(32)
+            token_hash = _sha256_hex(raw_token)
+            expires_at = utc_now() + timedelta(minutes=15)
+            try:
+                # Legacy fields kept for backwards compatibility with existing /r/<token> links.
+                req.requester_token_hash = token_hash
+                req.requester_token_created_at = utc_now()
+                ml = MagicLinkToken(
+                    token_hash=token_hash,
+                    purpose="request",
+                    email=recipient,
+                    request_id=req.id,
+                    expires_at=expires_at,
+                )
+                db.session.add(ml)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+                raw_token = None
+                token_hash = None
 
-        try:
-            base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
-            path = url_for("main.magic_link_consume", token=raw_token, _external=False)
-            magic_url = (
-                f"{base}{path}"
-                if base
-                else url_for("main.magic_link_consume", token=raw_token, _external=True)
-            )
-        except Exception:
-            magic_url = f"/auth/magic/{raw_token}"
+            if raw_token:
+                try:
+                    base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
+                    path = url_for(
+                        "main.magic_link_consume", token=raw_token, _external=False
+                    )
+                    magic_url = (
+                        f"{base}{path}"
+                        if base
+                        else url_for(
+                            "main.magic_link_consume", token=raw_token, _external=True
+                        )
+                    )
+                except Exception:
+                    magic_url = f"/auth/magic/{raw_token}"
 
-        current_app.logger.info("[MAGIC LINK] request_id=%s url=%s", req.id, magic_url)
+                current_app.logger.info(
+                    "[MAGIC LINK] request_id=%s url=%s", req.id, magic_url
+                )
+        elif recipient and suppress_magic_send:
+            current_app.logger.info("[MAGIC LINK] send suppressed (antibot/rate-limit)")
 
         # Send magic link email (best effort)
         try:
             from backend.mail_service import send_notification_email
 
-            recipient = getattr(req, "email", None)
-            if recipient and not suppress_magic_send:
+            if recipient and magic_url:
                 subject = "Confirmez votre demande HelpChain (15 min)"
 
                 # Dedicated template context (no "content" HTML string)
@@ -2031,15 +2058,15 @@ def submit_request_confirm():
                     "privacy_line": _("Données minimales, respect RGPD"),
                     "ignore_line": _("Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."),
                 }
-
-                send_notification_email(recipient, subject, "emails/magic_link.html", context)
-            elif recipient and suppress_magic_send:
-                current_app.logger.info("[MAGIC LINK] send suppressed (antibot/rate-limit)")
+                send_notification_email(
+                    recipient, subject, "emails/magic_link.html", context
+                )
         except Exception as e:
             current_app.logger.warning("[EMAIL] magic link send failed: %s", e)
 
         session.pop("request_draft", None)
         session["last_request_id"] = req.id
+        session["last_request_email"] = recipient or ""
 
         category = draft.get("category")
         urgency = draft.get("urgency")
@@ -2066,13 +2093,143 @@ def submit_request_confirm():
             meta={"request_id": req.id, "category": getattr(req, "category", None)},
         )
 
-        return redirect(url_for("main.profile"))
+        recipient_email = recipient
+        return redirect(url_for("main.submit_request_check_email"), code=303)
 
     except Exception as e:
         current_app.logger.exception("CONFIRM FAILED: %s", e)
         db.session.rollback()
         flash("Грешка при записване. Моля, опитай отново.", "error")
         return redirect(url_for("main.submit_request"))
+
+
+@main_bp.get("/submit_request/check-email")
+def submit_request_check_email():
+    email = (session.get("last_request_email") or "").strip().lower()
+    if not email:
+        flash(_("Сесията изтече. Подайте заявката отново."), "warning")
+        return redirect(url_for("main.submit_request"), code=303)
+    masked_email = mask_email(email) if email else _("(неизвестен адрес)")
+    return (
+        render_template(
+            "submit_request_check_email.html",
+            email=email,
+            masked_email=masked_email,
+        ),
+        200,
+    )
+
+
+@main_bp.post("/submit_request/resend")
+@limiter.limit("3 per 10 minutes")
+def submit_request_resend():
+    email = (
+        (request.form.get("email") or "").strip().lower()
+        or (session.get("last_request_email") or "").strip().lower()
+    )
+
+    def _done():
+        flash(_("Si l’adresse est valide, nous avons renvoyé un nouveau lien."), "success")
+        return redirect(url_for("main.submit_request_check_email"), code=303)
+
+    if not email or "@" not in email:
+        return _done()
+
+    ip = _client_ip()
+    email_key = email
+    ip_allowed, _ = _rate_limit_check(f"ml:req:resend:ip:{ip}", limit=10, window_sec=600)
+    email_allowed, _ = _rate_limit_check(
+        f"ml:req:resend:email:{email_key}", limit=3, window_sec=600
+    )
+    cooldown_allowed, _ = _rate_limit_check(
+        f"ml:req:resend:cooldown:{email_key}", limit=1, window_sec=14
+    )
+    suppress_send = not (ip_allowed and email_allowed and cooldown_allowed)
+    suppress_reasons: list[str] = []
+    if not ip_allowed:
+        suppress_reasons.append("ip-limit")
+    if not email_allowed:
+        suppress_reasons.append("email-limit")
+    if not cooldown_allowed:
+        suppress_reasons.append("cooldown")
+    if suppress_send:
+        current_app.logger.info(
+            "[REQ-RESEND] suppressed email=%s ip=%s reasons=%s",
+            email,
+            ip,
+            ",".join(suppress_reasons) if suppress_reasons else "-",
+        )
+        return _done()
+
+    req = (
+        Request.query.filter(Request.deleted_at.is_(None))
+        .filter(func.lower(Request.email) == email)
+        .filter(Request.status.in_(["pending", "new"]))
+        .order_by(Request.id.desc())
+        .first()
+    )
+    if not req:
+        current_app.logger.info(
+            "[REQ-RESEND] suppressed email=%s ip=%s reasons=no-pending-request",
+            email,
+            ip,
+        )
+        return _done()
+
+    raw_token = secrets.token_urlsafe(32)
+    token_hash = _sha256_hex(raw_token)
+    expires_at = utc_now() + timedelta(minutes=15)
+
+    try:
+        # Keep legacy request-level token fields in sync with latest resend.
+        req.requester_token_hash = token_hash
+        req.requester_token_created_at = utc_now()
+        ml = MagicLinkToken(
+            token_hash=token_hash,
+            purpose="request",
+            email=email,
+            request_id=req.id,
+            expires_at=expires_at,
+        )
+        db.session.add(ml)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return _done()
+
+    try:
+        base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
+        path = url_for("main.magic_link_consume", token=raw_token, _external=False)
+        magic_url = (
+            f"{base}{path}"
+            if base
+            else url_for("main.magic_link_consume", token=raw_token, _external=True)
+        )
+    except Exception:
+        magic_url = f"/auth/magic/{raw_token}"
+
+    try:
+        from backend.mail_service import send_notification_email
+
+        subject = "Confirmez votre demande HelpChain (15 min)"
+        context = {
+            "magic_link_url": magic_url,
+            "ttl_minutes": 15,
+            "request_id": req.id,
+            "intro_text": _("Sans mot de passe. Recevez un lien sécurisé par e-mail."),
+            "button_text": _("Ouvrir mon lien de connexion"),
+            "fallback_text": _("Si le bouton ne fonctionne pas, copiez-collez ce lien :"),
+            "privacy_line": _("Données minimales, respect RGPD"),
+            "ignore_line": _("Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."),
+        }
+        send_notification_email(email, subject, "emails/magic_link.html", context)
+        current_app.logger.info(
+            "[REQ-RESEND] sent request_id=%s email=%s", req.id, email
+        )
+    except Exception:
+        current_app.logger.warning("[EMAIL] request resend send failed")
+
+    return _done()
 
 
 @main_bp.get("/success")
