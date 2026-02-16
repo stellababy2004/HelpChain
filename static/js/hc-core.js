@@ -386,4 +386,33 @@
       });
     }
   })();
+
+  // --- HC: data-hc-width applier (CSP-friendly) ---
+  function hcClampPct(v) {
+    var n = Number(v);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(100, n));
+  }
+
+  function hcApplyWidths(root) {
+    var scope = root || document;
+    var nodes = scope.querySelectorAll("[data-hc-width]");
+    nodes.forEach(function (el) {
+      var v = el.getAttribute("data-hc-width");
+      var pct = hcClampPct(v);
+      el.style.width = pct + "%";
+      if (
+        el.parentElement &&
+        el.parentElement.getAttribute("role") === "progressbar"
+      ) {
+        el.parentElement.setAttribute("aria-valuenow", String(Math.round(pct)));
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    hcApplyWidths(document);
+  });
+
+  window.hcApplyWidths = hcApplyWidths;
 })();

@@ -347,7 +347,7 @@
               <div class="progress" style="height: 6px">
                 <div
                   class="progress-bar bg-success"
-                  style="width: {{ (stats.completed_requests or 0) / max((stats.total_requests or 1), 1) * 100 }}%"
+                  data-hc-width="{{ (stats.completed_requests or 0) / max((stats.total_requests or 1), 1) * 100 }}"
                 ></div>
               </div>
             </div>
@@ -364,7 +364,7 @@
               <div class="progress" style="height: 6px">
                 <div
                   class="progress-bar bg-warning"
-                  style="width: {{ (stats.average_rating or 0) / 5 * 100 }}%"
+                  data-hc-width="{{ (stats.average_rating or 0) / 5 * 100 }}"
                 ></div>
               </div>
             </div>
@@ -379,7 +379,7 @@
                 >
               </div>
               <div class="progress" style="height: 6px">
-                <div class="progress-bar bg-info" style="width: 75%"></div>
+                <div class="progress-bar bg-info" data-hc-width="75"></div>
               </div>
             </div>
           </div>

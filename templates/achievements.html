@@ -211,7 +211,7 @@
         <div class="progress-modern">
           <div
             class="progress-bar-modern"
-            style="width: {{ gamification.level_progress|default(0) }}%"
+            data-hc-width="{{ gamification.level_progress|default(0) }}"
           ></div>
         </div>
         <div class="progress-text">
@@ -281,7 +281,7 @@
               <div class="progress-modern">
                 <div
                   class="progress-bar-modern"
-                  style="width: {{ achievement.progress }}%"
+                  data-hc-width="{{ achievement.progress }}"
                 ></div>
               </div>
               <div class="progress-text">
