@@ -2782,3 +2782,91 @@ html[data-a11y-simple="on"] .hc-bars {
   opacity: 0.75;
 }
 
+
+/* === Volunteer Dashboard: My requests tabs (extracted) === */
+.hc-myreq__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hc-tabs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.hc-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.92rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hc-tab__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.hc-tab[aria-selected="true"] {
+  background: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06) inset;
+}
+
+.hc-myreq__body {
+  padding: 8px 0 0;
+}
+
+.hc-tabPanel {
+  padding: 0;
+}
+
+.hc-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hc-emptyLine {
+  padding: 10px 4px;
+}
+
+@media (max-width: 640px) {
+  .hc-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .hc-tab {
+    flex: 1;
+    justify-content: center;
+  }
+}

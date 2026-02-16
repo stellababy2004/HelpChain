@@ -369,6 +369,15 @@ def events_collect():
     return jsonify({"ok": True}), 200
 
 
+@main_bp.post("/csp-report")
+@csrf.exempt
+def csp_report():
+    # Browsers may send application/csp-report or application/json.
+    data = request.get_json(silent=True) or {}
+    current_app.logger.warning("[CSP-REPORT] %s", data)
+    return ("", 204)
+
+
 @main_bp.route("/logout", methods=["GET", "POST"], endpoint="logout")
 def logout():
     """Unified logout for Flask-Login users (admin/front) and volunteer session."""

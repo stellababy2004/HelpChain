@@ -100,25 +100,27 @@ def add_security_headers(app: Flask):
     @app.after_request
     def _set_security_headers(resp):
         # Baseline hardening
-        resp.headers["X-Content-Type-Options"] = "nosniff"
-        resp.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         resp.headers["Permissions-Policy"] = (
             "geolocation=(), microphone=(), camera=(), payment=(), usb=(), fullscreen=(self)"
         )
         resp.headers["X-Frame-Options"] = "DENY"
 
-        # CSP (start with Report-Only to avoid breaking inline scripts/styles)
+        # CSP Report-Only: collect violations before enforcement.
         csp = (
             "default-src 'self'; "
             "base-uri 'self'; "
             "object-src 'none'; "
-            "frame-ancestors 'none'; "
+            "frame-ancestors 'self'; "
+            "form-action 'self'; "
             "img-src 'self' data: https:; "
             "font-src 'self' data: https:; "
             "style-src 'self' 'unsafe-inline' https:; "
-            "script-src 'self' 'unsafe-inline' https:; "
+            "script-src 'self' https:; "
             "connect-src 'self' https:; "
-            "form-action 'self'; "
+            "upgrade-insecure-requests; "
+            "report-uri /csp-report"
         )
         resp.headers["Content-Security-Policy-Report-Only"] = csp
 
