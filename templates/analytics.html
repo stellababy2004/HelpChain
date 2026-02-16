@@ -35,7 +35,7 @@
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='vendor/jsdelivr/chart.js') }}"></script>
 <script>
   fetch("/api/analytics/data")
     .then((response) => response.json())
@@ -200,4 +200,5 @@
     .catch((error) => console.error("Error fetching analytics data:", error));
 </script>
 {% endblock %}
+
 

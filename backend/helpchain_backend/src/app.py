@@ -110,15 +110,15 @@ def add_security_headers(app: Flask):
         # CSP Report-Only: collect violations before enforcement.
         csp = (
             "default-src 'self'; "
-            "base-uri 'self'; "
-            "object-src 'none'; "
+            "script-src 'self'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "font-src 'self'; "
+            "connect-src 'self'; "
             "frame-ancestors 'self'; "
             "form-action 'self'; "
-            "img-src 'self' data: https:; "
-            "font-src 'self' data: https:; "
-            "style-src 'self' 'unsafe-inline' https:; "
-            "script-src 'self' https:; "
-            "connect-src 'self' https:; "
+            "base-uri 'self'; "
+            "object-src 'none'; "
             "upgrade-insecure-requests; "
             "report-uri /csp-report"
         )

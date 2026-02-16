@@ -7,28 +7,26 @@
 
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
     />
 
     <!-- Font Awesome -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
 
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jsdelivr/chart.js') }}"></script>
     <script src="{{ url_lang('static', filename='js/chartjs_adapter_date_fns.js') }}"></script>
 
     <!-- ApexCharts for advanced charts -->
     <script src="{{ url_lang('static', filename='js/apexcharts.js') }}"></script>
 
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="{{ url_for('static', filename='vendor/fonts/inter.css') }}"
       rel="stylesheet"
     />
 
@@ -694,7 +692,7 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
 
     <!-- Chart Data -->
     <script type="application/json" id="trendsData">
@@ -1075,4 +1073,7 @@
     </script>
   </body>
 </html>
+
+
+
 

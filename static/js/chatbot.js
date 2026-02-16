@@ -331,12 +331,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Vérifier si Font Awesome est présent
   if (
     !document.querySelector('link[href*="font-awesome"]') &&
-    !document.querySelector('link[href*="fontawesome"]')
+    !document.querySelector('link[href*="fontawesome"]') &&
+    !document.querySelector('link[href*="/static/vendor/fontawesome/css/all.min.css"]')
   ) {
     const fontAwesome = document.createElement("link");
+    fontAwesome.id = "fa-local";
     fontAwesome.rel = "stylesheet";
-    fontAwesome.href =
-      "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css";
+    fontAwesome.href = "/static/vendor/fontawesome/css/all.min.css";
     document.head.appendChild(fontAwesome);
   }
 
