@@ -186,3 +186,7 @@ __pycache__/
 # --- IDE ---
 .vscode/
 .idea/
+
+# local tmp logs
+tmp_*
+
