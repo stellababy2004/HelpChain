@@ -44,9 +44,8 @@ class Config:
     INSTANCE_PATH = os.path.join(BASE_DIR, "instance")
     DEFAULT_SQLITE_PATH = os.path.join(INSTANCE_PATH, "app.db")
     _db_path_env = os.getenv("HC_DB_PATH")
-    _db_url_env = (
-        os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL") or ""
-    )
+    db_url = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI") or ""
+    _db_url_env = db_url
     # normalize scheme for SQLAlchemy
     if _db_url_env.startswith("postgres://"):
         _db_url_env = _db_url_env.replace("postgres://", "postgresql://", 1)

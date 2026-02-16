@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, session
 from flask_babel import get_locale as babel_get_locale
 from flask_login import LoginManager
-from flask_wtf import FlaskForm
 from flask_wtf.csrf import generate_csrf
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -188,6 +187,12 @@ def create_app(config_object=None) -> Flask:
     except Exception:
         pass
 
+    app.logger.warning(
+        "[ENV] PUBLIC_BASE_URL=%r | TRUST_PROXY_HEADERS=%r",
+        os.getenv("PUBLIC_BASE_URL"),
+        os.getenv("TRUST_PROXY_HEADERS"),
+    )
+
     # Dev safety: if someone has SESSION_COOKIE_SECURE=1 in their environment but
     # is serving locally over plain HTTP, session cookies won't be sent and CSRF
     # will fail with "CSRF session token is missing".
@@ -233,8 +238,22 @@ def create_app(config_object=None) -> Flask:
         "JWT_SECRET_KEY", os.getenv("JWT_SECRET_KEY", app.config.get("SECRET_KEY"))
     )
 
-    # Behind one proxy hop: trust X-Forwarded-For/Proto/Host early
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+    # Trust proxy headers only when explicitly enabled for reverse-proxy deployments.
+    if app.config.get("TRUST_PROXY_HEADERS", False):
+        app.wsgi_app = ProxyFix(
+            app.wsgi_app,
+            x_for=int(app.config.get("PROXY_FIX_X_FOR", 1)),
+            x_proto=int(app.config.get("PROXY_FIX_X_PROTO", 1)),
+            x_host=int(app.config.get("PROXY_FIX_X_HOST", 1)),
+        )
+        app.logger.info(
+            "ProxyFix enabled x_for=%s x_proto=%s x_host=%s",
+            app.config.get("PROXY_FIX_X_FOR", 1),
+            app.config.get("PROXY_FIX_X_PROTO", 1),
+            app.config.get("PROXY_FIX_X_HOST", 1),
+        )
+    else:
+        app.logger.info("ProxyFix disabled (TRUST_PROXY_HEADERS=false)")
 
     if app.debug or app.config.get("DEBUG"):
         try:
@@ -266,14 +285,6 @@ def create_app(config_object=None) -> Flask:
 
     # CSRF for browser forms (JWT APIs are exempted per-blueprint)
     csrf.init_app(app)
-
-    # Global CSRF form for templates (navbar/logout and inline actions)
-    class CSRFOnlyForm(FlaskForm):
-        pass
-
-    @app.context_processor
-    def inject_csrf_form():
-        return {"csrf_form": CSRFOnlyForm()}
 
     @app.after_request
     def add_content_language_header(resp):
