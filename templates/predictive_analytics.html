@@ -4,10 +4,10 @@ HelpChain.live{% endblock %} {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Предиктивна Аналитика</h2>
     <div class="btn-group">
-      <button class="btn btn-outline-primary" onclick="refreshPredictions()">
+      <button class="btn btn-outline-primary" type="button" data-action="refreshPredictions">
         <i class="fas fa-sync-alt"></i> Обнови
       </button>
-      <button class="btn btn-outline-info" onclick="showModelInfo()">
+      <button class="btn btn-outline-info" type="button" data-action="showModelInfo">
         <i class="fas fa-info-circle"></i> Модели
       </button>
     </div>

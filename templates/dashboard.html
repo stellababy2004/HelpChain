@@ -739,14 +739,18 @@
                 <td>
                   <button
                     class="btn btn-primary-modern btn-modern btn-sm"
-                    onclick="viewRequest({{ request.id }})"
+                    type="button"
+                    data-action="viewRequest"
+                    data-id="{{ request.id }}"
                   >
                     <i class="fas fa-eye"></i>
                   </button>
                   {% if request.status == 'pending' %}
                   <button
                     class="btn btn-danger-modern btn-modern btn-sm"
-                    onclick="cancelRequest({{ request.id }})"
+                    type="button"
+                    data-action="cancelRequest"
+                    data-id="{{ request.id }}"
                   >
                     <i class="fas fa-times"></i>
                   </button>
@@ -887,11 +891,17 @@
       });
 
       // Action functions
-      function viewRequest(requestId) {
+      function viewRequest(elOrId) {
+        const requestId =
+          typeof elOrId === "number" ? elOrId : Number(elOrId?.dataset?.id);
+        if (!requestId) return;
         window.location.href = `/request/${requestId}`;
       }
 
-      function cancelRequest(requestId) {
+      function cancelRequest(elOrId) {
+        const requestId =
+          typeof elOrId === "number" ? elOrId : Number(elOrId?.dataset?.id);
+        if (!requestId) return;
         if (confirm("Сигурни ли сте, че искате да отмените тази заявка?")) {
           // In real implementation, this would make an AJAX call
           showToast("Заявката е отменена");
@@ -938,6 +948,25 @@
         }
       `;
       document.head.appendChild(style);
+
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
 
       // Initialize animations
       document.addEventListener("DOMContentLoaded", function () {

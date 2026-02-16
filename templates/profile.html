@@ -720,7 +720,8 @@
                 </label>
                 <div
                   class="file-upload-area"
-                  onclick="document.getElementById('profile_picture').click()"
+                  data-action="clickTarget"
+                  data-target="#profile_picture"
                 >
                   <div class="file-upload-icon">
                     <i class="fas fa-cloud-upload-alt"></i>
@@ -750,7 +751,7 @@
                 <button
                   type="button"
                   class="btn btn-secondary"
-                  onclick="resetForm()"
+                  data-action="resetForm"
                 >
                   <i class="fas fa-undo me-1"></i>Отказ
                 </button>
@@ -922,6 +923,12 @@
         }
       }
 
+      function clickTarget(el) {
+        const selector = el?.getAttribute("data-target");
+        const node = selector ? document.querySelector(selector) : null;
+        if (node && typeof node.click === "function") node.click();
+      }
+
       // File upload drag and drop
       const fileUploadArea = document.querySelector(".file-upload-area");
       const fileInput = document.getElementById("profile_picture");
@@ -934,6 +941,25 @@
         e.preventDefault();
         e.stopPropagation();
       }
+
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
 
       ["dragenter", "dragover"].forEach((eventName) => {
         fileUploadArea.addEventListener(eventName, highlight, false);

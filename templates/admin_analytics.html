@@ -410,7 +410,7 @@
 
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="#" onclick="logout()">
+              <a class="nav-link" href="#" data-action="logout">
                 <i class="fas fa-sign-out-alt me-1"></i>Изход
               </a>
             </li>
@@ -455,10 +455,10 @@
               </p>
             </div>
             <div class="d-flex gap-2">
-              <button class="export-btn" onclick="exportData('json')">
+              <button class="export-btn" type="button" data-action="exportData" data-format="json">
                 <i class="fas fa-download me-1"></i>{{ _('Export JSON') }}
               </button>
-              <button class="export-btn" onclick="if(confirm({{ export_confirm|tojson }})) exportData('csv')">
+              <button class="export-btn" type="button" data-action="exportData" data-format="csv" data-confirm="{{ export_confirm|e }}">
                 <i class="fas fa-file-csv me-1"></i>{{ _('Export CSV') }}
               </button>
             </div>
@@ -518,7 +518,7 @@
           </div>
 
           <div class="form-group d-flex align-items-end">
-            <button class="btn btn-primary" onclick="refreshData()">
+            <button class="btn btn-primary" type="button" data-action="refreshData">
               <i class="fas fa-sync-alt me-1"></i>Обнови
             </button>
           </div>
@@ -1013,7 +1013,19 @@
         _('Are you sure you want to continue?')
       ]) %}
 
-      function exportData(format) {
+      function exportData(elOrFormat) {
+        const format =
+          typeof elOrFormat === "string"
+            ? elOrFormat
+            : (elOrFormat?.getAttribute("data-format") || "json");
+
+        const confirmMsg =
+          typeof elOrFormat === "string"
+            ? ""
+            : (elOrFormat?.getAttribute("data-confirm") || "");
+
+        if (confirmMsg && !confirm(confirmMsg)) return;
+
         const url = `/api/analytics/export?format=${format}&type=dashboard`;
         window.open(url, "_blank");
       }
@@ -1040,6 +1052,26 @@
           form.submit();
         }
       }
+
+      // Delegated actions (CSP-ready pattern)
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
     </script>
   </body>
 </html>

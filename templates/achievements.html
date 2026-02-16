@@ -669,23 +669,29 @@
             </h3>
             <div class="filter-buttons">
               <button
-                class="filter-btn active"
-                onclick="filterAchievements('all')"
+                class="filter-btn active js-action"
+                type="button"
+                data-action="filterAchievements"
+                data-filter="all"
               >
                 Всички
               </button>
               <button
-                class="filter-btn"
-                onclick="filterAchievements('unlocked')"
+                class="filter-btn js-action"
+                type="button"
+                data-action="filterAchievements"
+                data-filter="unlocked"
               >
                 Отключени
               </button>
-              <button class="filter-btn" onclick="filterAchievements('locked')">
+              <button class="filter-btn js-action" type="button" data-action="filterAchievements" data-filter="locked">
                 Заключени
               </button>
               <button
-                class="filter-btn"
-                onclick="filterAchievements('in-progress')"
+                class="filter-btn js-action"
+                type="button"
+                data-action="filterAchievements"
+                data-filter="in-progress"
               >
                 В прогрес
               </button>
@@ -817,12 +823,21 @@
       }
 
       // Achievement filtering
-      function filterAchievements(filter) {
+      function filterAchievements(elOrFilter) {
+        const filter =
+          typeof elOrFilter === "string"
+            ? elOrFilter
+            : (elOrFilter?.dataset?.filter || "all");
+
         // Update active filter button
         document.querySelectorAll(".filter-btn").forEach((btn) => {
           btn.classList.remove("active");
         });
-        event.target.classList.add("active");
+        const activeBtn =
+          typeof elOrFilter === "string"
+            ? document.querySelector(`.filter-btn[data-filter="${filter}"]`)
+            : elOrFilter;
+        if (activeBtn) activeBtn.classList.add("active");
 
         // Filter achievements
         const achievements = document.querySelectorAll(".achievement-card");
@@ -854,6 +869,25 @@
           achievement.style.display = show ? "block" : "none";
         });
       }
+
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
 
       // Add stagger animation to cards
       document.addEventListener("DOMContentLoaded", function () {

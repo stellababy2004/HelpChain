@@ -381,13 +381,15 @@
           <div>
             <button
               class="btn btn-outline-secondary me-2"
-              onclick="previewExport()"
+              type="button"
+              data-action="previewExport"
             >
               <i class="fas fa-eye me-1"></i>{{ _('Preview') }}
             </button>
             <button
               class="btn btn-primary"
-              onclick="startExport()"
+              type="button"
+              data-action="startExport"
               id="exportBtn"
             >
               <i class="fas fa-download me-1"></i>{{ _('Export') }}
@@ -492,6 +494,25 @@
           }
         }, 200);
       }
+
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
     </script>
   </body>
 </html>

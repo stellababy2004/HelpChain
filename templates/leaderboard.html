@@ -633,16 +633,16 @@
       <!-- Filter Section -->
       <div class="filter-section">
         <div class="filter-buttons">
-          <button class="filter-btn active" onclick="filterLeaderboard('all')">
+          <button class="filter-btn active js-action" type="button" data-action="filterLeaderboard" data-filter="all">
             <i class="fas fa-users me-1"></i>Всички доброволци
           </button>
-          <button class="filter-btn" onclick="filterLeaderboard('monthly')">
+          <button class="filter-btn js-action" type="button" data-action="filterLeaderboard" data-filter="monthly">
             <i class="fas fa-calendar-alt me-1"></i>Този месец
           </button>
-          <button class="filter-btn" onclick="filterLeaderboard('weekly')">
+          <button class="filter-btn js-action" type="button" data-action="filterLeaderboard" data-filter="weekly">
             <i class="fas fa-calendar-week me-1"></i>Тази седмица
           </button>
-          <button class="filter-btn" onclick="filterLeaderboard('friends')">
+          <button class="filter-btn js-action" type="button" data-action="filterLeaderboard" data-filter="friends">
             <i class="fas fa-user-friends me-1"></i>Приятели
           </button>
         </div>
@@ -741,12 +741,21 @@
       }
 
       // Leaderboard filtering
-      function filterLeaderboard(filter) {
+      function filterLeaderboard(elOrFilter) {
+        const filter =
+          typeof elOrFilter === "string"
+            ? elOrFilter
+            : (elOrFilter?.dataset?.filter || "all");
+
         // Update active filter button
         document.querySelectorAll(".filter-btn").forEach((btn) => {
           btn.classList.remove("active");
         });
-        event.target.classList.add("active");
+        const activeBtn =
+          typeof elOrFilter === "string"
+            ? document.querySelector(`.filter-btn[data-filter="${filter}"]`)
+            : elOrFilter;
+        if (activeBtn) activeBtn.classList.add("active");
 
         // Here you would typically make an AJAX call to filter the leaderboard
         // For now, we'll just show a loading state
@@ -759,6 +768,25 @@
           console.log("Filtering leaderboard by:", filter);
         }, 500);
       }
+
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
 
       // Add animation delays
       document.addEventListener("DOMContentLoaded", function () {

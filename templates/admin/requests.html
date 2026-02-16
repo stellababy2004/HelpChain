@@ -75,8 +75,8 @@
       </thead>
       <tbody>
         {% for r in requests %}
-        <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
-            onclick="window.location='{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}'"
+        <tr class="js-rowlink {% if highlight and highlight|int == r.id %}table-success{% endif %}"
+            data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
             style="cursor:pointer">
           <td>{{ r.id }}</td>
           <td>{{ r.title }}</td>
@@ -133,12 +133,10 @@
                 {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
                 <form method="post"
                       action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
-                      class="d-inline ms-2"
-                      onclick="event.stopPropagation()">
+                      class="d-inline ms-2">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit"
                           class="btn btn-sm btn-outline-primary"
-                          onclick="event.stopPropagation()"
                           {% if already_assigned or is_closed %}disabled{% endif %}>
                     Assign #{{ sig.volunteer_id }}
                   </button>
@@ -154,7 +152,7 @@
             {% endif %}
           </td>
           <td class="text-end">
-            <a class="btn btn-sm btn-outline-light" onclick="event.stopPropagation()" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
+            <a class="btn btn-sm btn-outline-light" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
           </td>
         </tr>
         {% else %}

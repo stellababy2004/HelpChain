@@ -50,12 +50,12 @@
       <div class="d-flex gap-2 flex-wrap mt-3">
         {% if req.phone %}
           <a href="tel:{{ req.phone }}" class="btn btn-outline-primary btn-sm">Call</a>
-          <button type="button" onclick="copyText('{{ req.phone }}')" class="btn btn-outline-secondary btn-sm">Copy phone</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.phone }}">Copy phone</button>
         {% endif %}
 
         {% if req.email %}
           <a href="mailto:{{ req.email }}" class="btn btn-outline-success btn-sm">Email</a>
-          <button type="button" onclick="copyText('{{ req.email }}')" class="btn btn-outline-secondary btn-sm">Copy email</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.email }}">Copy email</button>
         {% endif %}
 
         {% if not req.phone and not req.email %}
@@ -147,8 +147,9 @@
                     {% if req.assigned_volunteer_id == v.id %}
                       <form method="post" action="{{ url_for('admin.admin_unassign_volunteer', req_id=req.id) }}" class="d-inline">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger"
-                          onclick="return confirm('Unassign will notify the volunteer. Proceed?');">
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                          data-action="confirmSubmit"
+                          data-confirm="Unassign will notify the volunteer. Proceed?">
                           Unassign
                         </button>
                         <div class="text-muted small mt-1">Unassign will notify the volunteer.</div>
@@ -366,7 +367,7 @@
               {% if req.email %}
                 <div class="d-flex align-items-center gap-2">
                   <a href="mailto:{{ req.email }}">{{ req.email }}</a>
-                  <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyText('{{ req.email }}')">Copy</button>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" data-action="copyText" data-copy="{{ req.email }}">Copy</button>
                 </div>
               {% else %}
                 <div>-</div>
@@ -378,7 +379,7 @@
               {% if req.phone %}
                 <div class="d-flex align-items-center gap-2">
                   <a href="tel:{{ req.phone }}">{{ req.phone }}</a>
-                  <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyText('{{ req.phone }}')">Copy</button>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" data-action="copyText" data-copy="{{ req.phone }}">Copy</button>
                 </div>
               {% else %}
                 <div>-</div>
@@ -519,10 +520,13 @@
               <form
                 method="post"
                 action="{{ url_for('admin.admin_request_delete', req_id=req.id) }}"
-                onsubmit="return confirm('Move to Deleted? You can restore it later.')"
               >
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-outline-danger btn-sm" {% if not req.is_archived %}disabled{% endif %}>
+                <button type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        data-action="confirmSubmit"
+                        data-confirm="Move to Deleted? You can restore it later."
+                        {% if not req.is_archived %}disabled{% endif %}>
                   Delete
                 </button>
               </form>
@@ -629,15 +633,6 @@
 
 </div>
 
-<script>
-  function copyText(text){
-    navigator.clipboard.writeText(text).then(()=>{
-      alert("Copied.");
-    }).catch(()=>{
-      alert("Copy failed.");
-    });
-  }
-</script>
 {% endblock %}
 
 

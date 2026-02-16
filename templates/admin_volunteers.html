@@ -455,7 +455,7 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a class="dropdown-item" href="#" onclick="logout()">
+                  <a class="dropdown-item" href="#" data-action="logout">
                     <i class="fas fa-sign-out-alt me-2"></i>Изход
                   </a>
                 </li>
@@ -501,7 +501,7 @@
               </a>
               <button
                 class="btn btn-info-modern btn-modern"
-                onclick="exportVolunteers()"
+                data-action="exportVolunteers"
               >
                 <i class="fas fa-download me-1"></i>Експорт
               </button>
@@ -647,21 +647,25 @@
                 <div class="btn-group" role="group">
                   <button
                     class="btn btn-info-modern btn-modern btn-sm"
-                    onclick="viewVolunteer({{ volunteer.id }})"
+                    data-action="viewVolunteer"
+                    data-id="{{ volunteer.id }}"
                     title="Виж детайли"
                   >
                     <i class="fas fa-eye"></i>
                   </button>
                   <button
                     class="btn btn-warning-modern btn-modern btn-sm"
-                    onclick="editVolunteer({{ volunteer.id }})"
+                    data-action="editVolunteer"
+                    data-id="{{ volunteer.id }}"
                     title="Редактирай"
                   >
                     <i class="fas fa-edit"></i>
                   </button>
                   <button
                     class="btn btn-danger-modern btn-modern btn-sm"
-                    onclick="deleteVolunteer({{ volunteer.id }}, '{{ volunteer.name }}')"
+                    data-action="deleteVolunteer"
+                    data-id="{{ volunteer.id }}"
+                    data-name="{{ volunteer.name }}"
                     title="Изтрий"
                   >
                     <i class="fas fa-trash"></i>
@@ -765,15 +769,25 @@
       }
 
       // Volunteer Actions
-      function viewVolunteer(id) {
+      function viewVolunteer(elOrId) {
+        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+        if (!id) return;
         window.location.href = `/admin/volunteer/${id}`;
       }
 
-      function editVolunteer(id) {
+      function editVolunteer(elOrId) {
+        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+        if (!id) return;
         window.location.href = `/admin/volunteer/${id}/edit`;
       }
 
-      function deleteVolunteer(id, name) {
+      function deleteVolunteer(elOrId, maybeName) {
+        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+        if (!id) return;
+        const name =
+          typeof maybeName === "string"
+            ? maybeName
+            : (elOrId?.getAttribute("data-name") || "");
         if (
           confirm(
             `Сигурни ли сте, че искате да изтриете доброволеца "${name}"? Това действие е необратимо.`,
@@ -824,6 +838,26 @@
           form.submit();
         }
       }
+
+      // Delegated actions (CSP-ready pattern)
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
 
       // Initialize animations
       document.addEventListener("DOMContentLoaded", function () {

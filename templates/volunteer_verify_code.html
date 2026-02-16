@@ -187,7 +187,7 @@
             </a>
           </p>
           <p class="mb-2">
-            <a href="#" onclick="resendCode()" class="resend-link">
+            <a href="#" data-action="resendCode" class="resend-link">
               <i class="fas fa-envelope me-1"></i>Изпрати кода отново
             </a>
           </p>
@@ -228,10 +228,31 @@
         }
       });
 
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
+
       // Resend code function
-      function resendCode() {
+      function resendCode(linkEl) {
         if (confirm("Сигурни ли сте, че искате да изпратим кода отново?")) {
-          const btn = event.target;
+          const btn = linkEl || document.querySelector('[data-action="resendCode"]');
+          if (!btn) return;
+
           const originalText = btn.innerHTML;
           btn.innerHTML =
             '<i class="fas fa-spinner fa-spin me-1"></i>Изпращане...';

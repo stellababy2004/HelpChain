@@ -650,7 +650,7 @@
               </button>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-danger" href="#" onclick="logout()">
+              <a class="nav-link text-danger" href="#" data-action="logout">
                 <i class="fas fa-sign-out-alt me-1"></i>Изход
               </a>
             </li>
@@ -850,7 +850,7 @@
           </h3>
           <button
             class="btn btn-primary-modern btn-modern btn-sm"
-            onclick="refreshSystemInfo()"
+            data-action="refreshSystemInfo"
           >
             <i class="fas fa-sync-alt me-1"></i>Обнови
           </button>
@@ -933,8 +933,9 @@
       }
 
       // Refresh system info
-      function refreshSystemInfo() {
-        const btn = event.target.closest("button");
+      function refreshSystemInfo(el) {
+        const btn = el?.closest ? el.closest("button") : null;
+        if (!btn) return;
         const originalText = btn.innerHTML;
         btn.innerHTML =
           '<i class="fas fa-spinner fa-spin me-1"></i>Обновяване...';
@@ -992,6 +993,25 @@
         }
       `;
       document.head.appendChild(style);
+
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
 
       // Initialize animations
       document.addEventListener("DOMContentLoaded", function () {
