@@ -12,101 +12,13 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
-    <style>
-      body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: "Inter", sans-serif;
-      }
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/pages/volunteer_auth.css') }}"
+    />
+    </head>
 
-      .login-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        max-width: 400px;
-        width: 100%;
-      }
-
-      .login-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        text-align: center;
-      }
-
-      .login-body {
-        padding: 2rem;
-      }
-
-      .form-control {
-        border-radius: 10px;
-        border: 2px solid #e1e5e9;
-        padding: 0.75rem 1rem;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-      }
-
-      .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-      }
-
-      .btn-login {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 10px;
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: white;
-        width: 100%;
-        transition: all 0.3s ease;
-      }
-
-      .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-      }
-
-      .login-links {
-        text-align: center;
-        margin-top: 1.5rem;
-      }
-
-      .login-links a {
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 500;
-      }
-
-      .login-links a:hover {
-        text-decoration: underline;
-      }
-
-      .alert {
-        border-radius: 10px;
-        border: none;
-      }
-
-      .input-group-text {
-        background: #f8f9fa;
-        border: 2px solid #e1e5e9;
-        border-right: none;
-        color: #6c757d;
-      }
-
-      .form-control:focus + .input-group-text,
-      .input-group-text:focus {
-        border-color: #667eea;
-      }
-    </style>
-  </head>
-
-  <body>
+  <body class="hc-page-volunteer-auth">
     <div class="login-card">
       <div class="login-header">
         <i class="fas fa-heart fa-3x mb-3"></i>
@@ -221,6 +133,7 @@
     </script>
   </body>
 </html>
+
 
 
 

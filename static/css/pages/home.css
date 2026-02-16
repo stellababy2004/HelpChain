@@ -1,0 +1,9 @@
+/* Defensive home reset against leaked page-specific global body rules. */
+body.hc-page-home {
+  display: block !important;
+  min-height: auto !important;
+  align-items: normal !important;
+  justify-content: normal !important;
+  background: #f8fafc !important;
+}
+

@@ -2,6 +2,10 @@
 {% extends "base.html" %}
 
 {% block title %}{{ _("HelpChain - Get help, become a volunteer") }}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home.css') }}">
+{% endblock %}
+{% block body_class %}hc-page-home{% endblock %}
 
 {% block content %}
 <section class="container py-4 py-lg-5">
