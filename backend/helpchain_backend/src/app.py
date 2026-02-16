@@ -107,10 +107,11 @@ def add_security_headers(app: Flask):
         )
         resp.headers["X-Frame-Options"] = "DENY"
 
-        # CSP Report-Only: collect violations before enforcement.
-        csp = (
+        # CSP enforce policy
+        csp_enforce = (
             "default-src 'self'; "
             "script-src 'self'; "
+            "script-src-attr 'none'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data:; "
             "font-src 'self'; "
@@ -119,10 +120,13 @@ def add_security_headers(app: Flask):
             "form-action 'self'; "
             "base-uri 'self'; "
             "object-src 'none'; "
-            "upgrade-insecure-requests; "
-            "report-uri /csp-report"
+            "upgrade-insecure-requests"
         )
-        resp.headers["Content-Security-Policy-Report-Only"] = csp
+        resp.headers["Content-Security-Policy"] = csp_enforce
+
+        # Keep Report-Only in parallel for visibility during rollout.
+        csp_report_only = f"{csp_enforce}; report-uri /csp-report"
+        resp.headers["Content-Security-Policy-Report-Only"] = csp_report_only
 
         # HSTS only when really on HTTPS and in production-ish env
         if (
