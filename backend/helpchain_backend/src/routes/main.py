@@ -26,7 +26,6 @@ from flask_babel import get_locale as babel_get_locale
 from flask_babel import gettext as _
 from flask_limiter.util import get_remote_address
 from flask_login import current_user, login_required, logout_user
-from flask_wtf import FlaskForm
 from babel.dates import format_timedelta
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import desc, func, or_
@@ -34,7 +33,7 @@ from werkzeug.security import check_password_hash
 
 from ..authz import can_view_notification, can_view_request
 from ..category_data import ALIASES, CATEGORIES, COMMON
-from ..extensions import limiter
+from ..extensions import csrf, limiter
 from ..models import (
     Notification,
     ProfessionalLead,
@@ -50,6 +49,9 @@ from ..models.magic_link_token import MagicLinkToken
 from ..models.volunteer_interest import VolunteerInterest
 from ..notifications.inapp import ensure_new_match_notifications
 from ..security_logging import log_security_event
+from ..services.matching_v1 import get_matched_requests_v1
+from ..services.matching_v1 import dismiss_for as match_dismiss_for
+from ..services.matching_v1 import mark_seen as match_mark_seen
 from ..statuses import normalize_request_status
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
@@ -278,11 +280,6 @@ def _current_volunteer():
         return None
 
 
-# Minimal form to issue CSRF tokens for inline button actions
-class CSRFOnlyForm(FlaskForm):
-    pass
-
-
 # ✅ url_lang + safe_url_for in ALL templates rendered by this blueprint
 @main_bp.app_context_processor
 def inject_template_helpers():
@@ -354,6 +351,22 @@ def index():
         ),
         200,
     )
+
+
+@main_bp.post("/events")
+@csrf.exempt
+@limiter.limit("120 per minute")
+def events_collect():
+    data = request.get_json(silent=True) or {}
+    event = (data.get("event") or "").strip()
+    props = data.get("props") or {}
+    if not event:
+        return jsonify({"ok": False}), 400
+    try:
+        current_app.logger.info("[EVENT] %s %s", event, props)
+    except Exception:
+        pass
+    return jsonify({"ok": True}), 200
 
 
 @main_bp.route("/logout", methods=["GET", "POST"], endpoint="logout")
@@ -1095,6 +1108,92 @@ def volunteer_dashboard():
         for r in open_requests
         if is_request_matching_volunteer(r, volunteer, interested_request_ids=None)
     ]
+    # Smart matching controls
+    min_match_raw = (request.args.get("min") or "55").strip()
+    try:
+        min_match_int = int(min_match_raw)
+    except Exception:
+        min_match_int = 55
+    if min_match_int not in (40, 50, 55, 60, 65, 70, 75, 80):
+        min_match_int = 55
+    match_prio = (request.args.get("prio") or "all").strip().lower()
+    if match_prio not in {"all", "urgent", "high"}:
+        match_prio = "all"
+    match_near = (request.args.get("near") or "").strip() == "1"
+    near_km = 25
+    has_coords = bool(
+        getattr(volunteer, "latitude", None) is not None
+        and getattr(volunteer, "longitude", None) is not None
+    )
+    if match_near and not has_coords:
+        match_near = False
+
+    # Smart matching layers:
+    # - strong matches: >=55%
+    # - low-confidence matches: 40..54%
+    all_scored_raw = get_matched_requests_v1(
+        volunteer,
+        limit=200,
+        min_percent=0,
+        prio=match_prio,
+        near=match_near,
+        max_text_chars=800,
+        cache_ttl_sec=90,
+    )
+    strong_raw = [t for t in all_scored_raw if int(round(t[1])) >= 55]
+    low_conf_raw = [t for t in all_scored_raw if 40 <= int(round(t[1])) < 55]
+    strong_raw = [t for t in strong_raw if int(round(t[1])) >= min_match_int]
+    matched_v1_raw = strong_raw[:8]
+    matched_v1 = []
+    for req, pct, breakdown in matched_v1_raw:
+        matched_v1.append(
+            {"req": req, "pct": int(round(pct)), "breakdown": dict(breakdown or {})}
+        )
+    low_conf_count = len(low_conf_raw)
+
+    # Dynamic guidance + profile completeness
+    skills_raw = (getattr(volunteer, "skills", None) or "").strip()
+    skills_items = [s.strip() for s in skills_raw.split(",") if s.strip()]
+    skills_count = len(skills_items)
+    has_location = bool((getattr(volunteer, "location", None) or "").strip())
+    has_availability = bool((getattr(volunteer, "availability", None) or "").strip())
+    has_coords = (
+        getattr(volunteer, "latitude", None) is not None
+        and getattr(volunteer, "longitude", None) is not None
+    )
+    has_skill_depth = skills_count >= 2
+    checks = [has_location, has_skill_depth, has_availability, has_coords]
+    profile_completeness = int(round((sum(1 for x in checks if x) / len(checks)) * 100))
+
+    smart_tips = []
+    if not has_location:
+        smart_tips.append(
+            {
+                "icon": "📍",
+                "text": "Enable location to unlock distance scoring (+20%).",
+            }
+        )
+    if not has_skill_depth:
+        smart_tips.append(
+            {
+                "icon": "🧠",
+                "text": "Add 2-3 specific skills to increase match score (+45%).",
+            }
+        )
+    if not has_coords:
+        smart_tips.append(
+            {
+                "icon": "🛰️",
+                "text": "Distance matching is currently disabled (missing coordinates).",
+            }
+        )
+    if not has_availability:
+        smart_tips.append(
+            {
+                "icon": "🕒",
+                "text": "Add availability so requests can be prioritized for your schedule.",
+            }
+        )
 
     # V2.2.A — in-app notification: create once per (volunteer, request)
     # Only for "fresh" matches (no interest yet).
@@ -1222,8 +1321,6 @@ def volunteer_dashboard():
         },
     )
 
-    csrf_form = CSRFOnlyForm()
-
     actions = (
         db.session.query(VolunteerAction.request_id, VolunteerAction.action)
         .filter(VolunteerAction.volunteer_id == volunteer.id)
@@ -1349,6 +1446,15 @@ def volunteer_dashboard():
             "volunteer_dashboard.html",
             volunteer=volunteer,
             matches=matched_requests,
+            matched_v1=matched_v1,
+            match_min=min_match_int,
+            match_prio=match_prio,
+            match_near=match_near,
+            near_km=near_km,
+            has_coords=has_coords,
+            low_conf_count=low_conf_count,
+            profile_completeness=profile_completeness,
+            smart_tips=smart_tips,
             just_logged_in=bool(just_logged_in),
             pending_ids=pending_ids,
             interest_by_req_id=interest_by_req_id,
@@ -1359,10 +1465,41 @@ def volunteer_dashboard():
             volunteer_badge_count=badge_count,
             unread_count=unread_count,
             my_actions_by_req_id=my_actions_by_req_id,
-            csrf_form=csrf_form,
         ),
         200,
     )
+
+
+@main_bp.post("/volunteer/match/<int:req_id>/seen")
+@main_bp.post("/volunteer/requests/<int:req_id>/seen")
+@require_volunteer_login
+def volunteer_request_seen(req_id: int):
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return jsonify({"ok": False}), 401
+    try:
+        match_mark_seen(volunteer.id, req_id)
+        return jsonify({"ok": True}), 200
+    except Exception:
+        current_app.logger.exception("Failed to mark seen req_id=%s", req_id)
+        db.session.rollback()
+        return jsonify({"ok": False}), 500
+
+
+@main_bp.post("/volunteer/match/<int:req_id>/dismiss")
+@main_bp.post("/volunteer/requests/<int:req_id>/dismiss")
+@require_volunteer_login
+def volunteer_request_dismiss(req_id: int):
+    volunteer = _current_volunteer()
+    if not volunteer:
+        return jsonify({"ok": False}), 401
+    try:
+        match_dismiss_for(volunteer.id, req_id, hours=48)
+        return jsonify({"ok": True, "dismiss_hours": 48}), 200
+    except Exception:
+        current_app.logger.exception("Failed to dismiss req_id=%s", req_id)
+        db.session.rollback()
+        return jsonify({"ok": False}), 500
 
 
 @main_bp.get("/volunteer/requests/<int:req_id>")
@@ -1430,8 +1567,6 @@ def volunteer_request_details(req_id: int):
     except Exception:
         db.session.rollback()
 
-    csrf_form = CSRFOnlyForm()
-
     return (
         render_template(
             "volunteer_request_details.html",
@@ -1446,7 +1581,6 @@ def volunteer_request_details(req_id: int):
             volunteer_action=action_row,
             my_last_signal=my_last_signal,
             my_signal=my_last_signal,  # alias for template clarity/back-compat
-            csrf_form=csrf_form,
         ),
         200,
     )
@@ -1789,6 +1923,98 @@ def normalize_request_form(form):
     return category, urgency, description
 
 
+def validate_submit_request_form(form):
+    """Manual submit_request validator returning (errors, cleaned_values)."""
+    errors: dict[str, str] = {}
+
+    category, urgency, description = normalize_request_form(form)
+    name = (form.get("name") or "").strip()
+    phone = (form.get("phone") or "").strip()
+    email = (form.get("email") or "").strip()
+    location_text = (form.get("location_text") or form.get("location") or "").strip()
+    title = (form.get("title") or "").strip()
+    consent = (form.get("privacy_consent") or "").strip()
+
+    MAX_NAME_LEN = 80
+    MAX_TITLE_LEN = 120
+    MAX_DESC_LEN = 2000
+    MAX_LOCATION_LEN = 120
+    MAX_PHONE_LEN = 32
+    MAX_EMAIL_LEN = 254
+
+    if consent != "1":
+        errors["privacy_consent"] = _(
+            "Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."
+        )
+
+    for label, value, max_len in (
+        ("name", name, MAX_NAME_LEN),
+        ("title", title, MAX_TITLE_LEN),
+        ("description", description, MAX_DESC_LEN),
+        ("location_text", location_text, MAX_LOCATION_LEN),
+        ("phone", phone, MAX_PHONE_LEN),
+        ("email", email, MAX_EMAIL_LEN),
+    ):
+        if len(value) > max_len:
+            if label == "description":
+                errors[label] = _("Please shorten the text.")
+            else:
+                errors[label] = _("Please shorten the %(field)s.", field=label)
+
+    for label, value in (
+        ("name", name),
+        ("title", title),
+        ("description", description),
+        ("location_text", location_text),
+    ):
+        if has_control_chars(value):
+            errors[label] = _("Invalid characters detected.")
+
+    if len(name) < 2:
+        errors["name"] = _("Моля, въведете име (поне 2 символа).")
+
+    if len(description) < 10:
+        errors["description"] = _("Моля, опишете проблема (поне 10 символа).")
+
+    if not phone and not email:
+        msg = _("Моля, въведете поне телефон или имейл.")
+        errors["phone"] = msg
+        errors["email"] = msg
+
+    allowed_categories = {"medical", "social", "tech", "admin", "other", "general", ""}
+    if category not in allowed_categories:
+        errors["category"] = _("Please select a valid category.")
+
+    allowed_urgency = {"low", "normal", "medium", "urgent", "critical", "emergency", ""}
+    if urgency not in allowed_urgency:
+        errors["urgency"] = _("Please select a valid urgency.")
+
+    # urgency -> priority (DB expects low/medium/high)
+    priority_map = {
+        "low": "low",
+        "medium": "medium",
+        "normal": "medium",
+        "urgent": "high",
+        "critical": "high",
+        "emergency": "high",
+    }
+    priority = priority_map.get(urgency, "medium")
+
+    cleaned = {
+        "name": name,
+        "phone": phone,
+        "email": email,
+        "category": category or "general",
+        "urgency": urgency or "normal",
+        "priority": priority,
+        "title": title,
+        "description": description,
+        "location_text": location_text,
+        "started_at": (form.get("started_at") or "").strip(),
+    }
+    return errors, cleaned
+
+
 @main_bp.route("/submit_request", methods=["GET", "POST"])
 @limiter.limit("3 per minute", methods=["POST"])
 @limiter.limit("10 per hour", methods=["POST"])
@@ -1820,128 +2046,54 @@ def submit_request():
                 200,
             )
 
-        consent = (request.form.get("privacy_consent") or "").strip()
-        if consent != "1":
-            flash(
-                _(
-                    "Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."
-                ),
-                "warning",
-            )
-            return redirect(url_for("main.submit_request"))
-
-        category, urgency, description = normalize_request_form(request.form)
-
-        # urgency -> priority (DB expects low/medium/high)
-        priority_map = {
-            "low": "low",
-            "medium": "medium",
-            "normal": "medium",
-            "urgent": "high",
-            "critical": "high",
-            "emergency": "high",
-        }
-        priority = priority_map.get(urgency, "medium")
-
-        name = (request.form.get("name") or "").strip()
-        phone = (request.form.get("phone") or "").strip()
-        email = (request.form.get("email") or "").strip()
-        location_text = (
-            request.form.get("location_text") or request.form.get("location") or ""
-        ).strip()
-        title = (request.form.get("title") or "").strip()
+        errors, cleaned = validate_submit_request_form(request.form)
 
         current_app.logger.warning(
             "Parsed: name=%r(len=%s) phone=%r(len=%s) email=%r(len=%s) category=%r urgency=%r desc_len=%s title=%r",
-            name,
-            len(name or ""),
-            phone,
-            len(phone or ""),
-            email,
-            len(email or ""),
-            category,
-            urgency,
-            len(description or ""),
-            title,
+            cleaned["name"],
+            len(cleaned["name"] or ""),
+            cleaned["phone"],
+            len(cleaned["phone"] or ""),
+            cleaned["email"],
+            len(cleaned["email"] or ""),
+            cleaned["category"],
+            cleaned["urgency"],
+            len(cleaned["description"] or ""),
+            cleaned["title"],
         )
 
-        MAX_NAME_LEN = 80
-        MAX_TITLE_LEN = 120
-        MAX_DESC_LEN = 2000
-        MAX_LOCATION_LEN = 120
-
-        for label, value, max_len in (
-            ("name", name, MAX_NAME_LEN),
-            ("title", title, MAX_TITLE_LEN),
-            ("description", description, MAX_DESC_LEN),
-            ("location", location_text, MAX_LOCATION_LEN),
-        ):
-            if len(value) > max_len:
-                current_app.logger.warning(
-                    "VALIDATION FAIL: %s too long (%s > %s)", label, len(value), max_len
-                )
-                flash(
-                    _(
-                        "Please shorten the %(field)s.",
-                        field=_("text") if label == "description" else label,
-                    ),
-                    "error",
-                )
-                return redirect(url_for("main.submit_request"))
-
-        for label, value in (
-            ("name", name),
-            ("title", title),
-            ("description", description),
-            ("location_text", location_text),
-        ):
-            if has_control_chars(value):
-                current_app.logger.warning(
-                    "VALIDATION FAIL: control chars in %s", label
-                )
-                flash(_("Invalid characters detected."), "error")
-                return redirect(url_for("main.submit_request"))
-
-        # ✅ Server-side validation (точно както UX-а)
-        if len(name) < 2:
-            current_app.logger.warning("VALIDATION FAIL: name < 2")
-            flash(_("Моля, въведете име (поне 2 символа)."), "error")
-            return redirect(url_for("main.submit_request"))
-
-        if len(description) < 10:
-            current_app.logger.warning("VALIDATION FAIL: description < 10")
-            flash(_("Моля, опишете проблема (поне 10 символа)."), "error")
-            return redirect(url_for("main.submit_request"))
-
-        if not phone and not email:
-            current_app.logger.warning("VALIDATION FAIL: no phone and no email")
-            flash(_("Моля, въведете поне телефон или имейл."), "error")
-            return redirect(url_for("main.submit_request"))
+        if errors:
+            current_app.logger.warning("VALIDATION FAIL: submit_request errors=%s", errors)
+            flash(_("Please correct the errors below."), "warning")
+            return (
+                render_template(
+                    "submit_request.html",
+                    trust_items=trust_items,
+                    form_errors=errors,
+                ),
+                400,
+            )
 
         # ✅ title is NOT NULL in DB
-        if not title:
-            title = (
-                _("Заявка: %(category)s", category=category)
-                if category
+        if not cleaned["title"]:
+            cleaned["title"] = (
+                _("Заявка: %(category)s", category=cleaned["category"])
+                if cleaned["category"]
                 else _("Заявка за помощ")
             )
 
-        # ✅ category default (DB показва default general)
-        if not category:
-            category = "general"
-
         session["request_draft"] = {
-            "name": name,
-            "phone": phone,
-            "email": email,
-            "category": category,
-            "urgency": urgency,
-            "priority": priority,
-            "title": title,
-            "description": description,
-            "location_text": location_text,
+            "name": cleaned["name"],
+            "phone": cleaned["phone"],
+            "email": cleaned["email"],
+            "category": cleaned["category"],
+            "urgency": cleaned["urgency"],
+            "priority": cleaned["priority"],
+            "title": cleaned["title"],
+            "description": cleaned["description"],
+            "location_text": cleaned["location_text"],
             # Frontend anti-bot timing (optional, can be missing)
-            "started_at": (request.form.get("started_at") or "").strip(),
+            "started_at": cleaned["started_at"],
         }
 
         return render_template(
