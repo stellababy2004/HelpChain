@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _("Проверете имейла си") }} | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-section">
+  <div class="hc-card hc-card--narrow">
+    <header class="hc-card__header">
+      <h1 class="hc-h1">{{ _("Проверете имейла си") }}</h1>
+      <p class="hc-muted">
+        {{ _("Изпратихме линк за потвърждение на:") }}
+        <strong>{{ masked_email }}</strong>
+      </p>
+      {% if email %}
+        <div class="hc-ctaRow" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+          <a
+            class="hc-btn hc-btn--ghost"
+            href="mailto:"
+            id="openMailApp"
+          >
+            {{ _("Отвори имейл приложението") }}
+          </a>
+          <button
+            type="button"
+            class="hc-btn hc-btn--ghost"
+            id="copyEmailBtn"
+            data-email="{{ email }}"
+          >
+            {{ _("Копирай имейла") }}
+          </button>
+          <span class="hc-muted hc-small" id="copyEmailStatus" style="align-self:center;"></span>
+        </div>
+      {% endif %}
+    </header>
+
+    <div class="hc-card__body">
+      <ul class="hc-list">
+        <li>{{ _("Линкът е валиден 15 минути.") }}</li>
+        <li>{{ _("Проверете и папките Spam/Promotions.") }}</li>
+      </ul>
+
+      <hr class="hc-hr" />
+
+      {% if email %}
+        <form method="POST" action="{{ url_for('main.submit_request_resend') }}" class="hc-form" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="email" value="{{ email }}">
+
+          <button
+            type="submit"
+            class="hc-btn hc-btn--primary"
+            id="resendBtn"
+            aria-describedby="resendHint"
+          >
+            {{ _("Изпрати отново") }}
+          </button>
+
+          <p class="hc-muted hc-small" id="resendHint" style="margin-top:10px;">
+            {{ _("Ако адресът е валиден, ще изпратим нов линк.") }}
+          </p>
+
+          <p class="hc-muted hc-small" id="cooldownText" style="margin-top:6px; display:none;"></p>
+        </form>
+      {% else %}
+        <p class="hc-muted">{{ _("Сесията изтече. Моля, върнете се към формата.") }}</p>
+      {% endif %}
+
+      <div style="margin-top:16px;">
+        <a class="hc-link" href="{{ url_for('main.submit_request') }}">
+          {{ _("Сгреших имейла / Подай заявката отново") }}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var copyBtn = document.getElementById("copyEmailBtn");
+  var copyStatus = document.getElementById("copyEmailStatus");
+  var openMail = document.getElementById("openMailApp");
+  var btn = document.getElementById("resendBtn");
+  var cd = document.getElementById("cooldownText");
+  var emailVal = "";
+  if (copyBtn) emailVal = (copyBtn.getAttribute("data-email") || "").trim();
+
+  if (openMail) {
+    var subj = encodeURIComponent("HelpChain");
+    var body = encodeURIComponent("");
+    if (!emailVal) {
+      openMail.setAttribute("aria-disabled", "true");
+    } else {
+      openMail.href = "mailto:" + encodeURIComponent(emailVal) + "?subject=" + subj + "&body=" + body;
+    }
+  }
+
+  if (copyBtn) {
+    if (!emailVal) {
+      copyBtn.disabled = true;
+      copyBtn.title = "No email available";
+    }
+
+    copyBtn.addEventListener("click", async function () {
+      if (!emailVal) return;
+
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(emailVal);
+        } else {
+          var ta = document.createElement("textarea");
+          ta.value = emailVal;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "absolute";
+          ta.style.left = "-9999px";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
+
+        if (copyStatus) copyStatus.textContent = "{{ _('Копирано ✅') }}";
+        window.setTimeout(function () {
+          if (copyStatus) copyStatus.textContent = "";
+        }, 2000);
+      } catch (e) {
+        if (copyStatus) copyStatus.textContent = "{{ _('Не успях да копирам. Опитай ръчно.') }}";
+      }
+    });
+  }
+
+  if (!btn || !cd) return;
+
+  var seconds = 14;
+
+  function tick() {
+    if (seconds <= 0) {
+      btn.disabled = false;
+      cd.style.display = "none";
+      cd.textContent = "";
+      btn.textContent = "{{ _('Изпрати отново') }}";
+      return;
+    }
+    btn.disabled = true;
+    cd.style.display = "block";
+    cd.textContent = "{{ _('Можете да изпратите отново след') }} " + seconds + "s";
+    btn.textContent = "{{ _('Изпращане...') }} (" + seconds + "s)";
+    seconds -= 1;
+    window.setTimeout(tick, 1000);
+  }
+
+  tick();
+
+  btn.addEventListener("click", function () {
+    seconds = Math.max(seconds, 14);
+    tick();
+  });
+})();
+</script>
+{% endblock %}

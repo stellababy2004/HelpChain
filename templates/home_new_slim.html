@@ -8,34 +8,40 @@
   <div class="row align-items-center g-4">
     <div class="col-lg-7">
       <h1 class="display-5 fw-semibold mb-3">
-        {{ _("Real help - fast, safe, and human.") }}
+        {{ _("Real help. Fast. Safe. Human.") }}
       </h1>
-      <p class="lead text-body-secondary mb-4">
-        {{ _("Submit a request in 2 minutes. Verified volunteers respond, and you can follow every step.") }}
+      <p class="lead text-body-secondary mb-4 hc-secondary">
+        {{ _("Submit a request in 2 minutes. Get matched, stay in control.") }}
       </p>
 
-      <div class="d-flex flex-wrap gap-2">
+      <div class="d-flex flex-wrap gap-2 mb-3">
         <a class="btn btn-primary btn-lg" href="{{ url_for('main.submit_request') }}">
           {{ _('Submit a request') }}
         </a>
 
-        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('main.volunteer_dashboard') }}">
-          {{ _('I want to help') }}
+        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('main.become_volunteer') }}">
+          {{ _('Become volunteer / Login') }}
         </a>
 
-        <button class="btn btn-outline-secondary btn-lg" type="button" disabled>
+        <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('main.contact') }}">
+          {{ _('Contact / Emergency info') }}
+        </a>
+
+        <a class="btn btn-outline-secondary btn-lg hc-secondary"
+           href="{{ url_for('main.professionnels') }}"
+           title="{{ _('Coming soon') }}">
           {{ _("I'm a professional") }} <span class="badge text-bg-light ms-2">{{ _("Soon") }}</span>
-        </button>
+        </a>
       </div>
 
-      <div class="d-flex flex-wrap gap-3 small text-muted mt-3">
+      <div class="d-flex flex-wrap gap-3 small text-muted mt-2 hc-secondary hc-trustStrip">
         <span>✅ {{ _("Free for people in need") }}</span>
         <span>🛡️ {{ _("Moderated & verified volunteers") }}</span>
         <span>🫶 {{ _("Human-first, minimal data") }}</span>
       </div>
     </div>
 
-    <div class="col-lg-5">
+    <div class="col-lg-5 hc-optional">
       <div class="p-4 rounded-4 border bg-body-tertiary">
         <div class="fw-semibold mb-2">{{ _('In 3 steps') }}</div>
         <ol class="mb-0 text-body-secondary">
@@ -48,7 +54,7 @@
   </div>
 </section>
 
-<section class="container pb-4 pb-lg-5">
+<section class="container pb-4 pb-lg-5 hc-optional">
   <div class="row g-3">
     <div class="col-md-4">
       <div class="p-4 rounded-4 border h-100">
@@ -71,7 +77,7 @@
   </div>
 </section>
 
-<section class="container pb-5">
+<section class="container pb-5 hc-optional">
   <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
     <div>
       <h2 class="h4 mb-1">
@@ -80,7 +86,9 @@
       </h2>
       <div class="text-body-secondary">{{ _('A quick preview - open details to help.') }}</div>
     </div>
-    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.volunteer_dashboard') }}">
+    {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
+    <a class="btn btn-sm btn-outline-secondary"
+       href="{{ url_for('main.volunteer_dashboard') if volunteer_logged_in else url_for('main.become_volunteer', next=url_for('main.volunteer_dashboard')) }}">
       {{ _('See all') }}
     </a>
   </div>
@@ -90,7 +98,11 @@
       <div class="col-md-6 col-lg-4">
         <div class="p-4 rounded-4 border h-100 {% if is_new_request and is_new_request(req) %}hc-reqCard--new{% endif %}">
           <div class="hc-reqCard__top mb-2">
-            <h5 class="fw-semibold mb-0 hc-clamp-2 hc-reqCard__title">{{ req.title }}</h5>
+            <h5 class="fw-semibold mb-0 hc-clamp-2 hc-reqCard__title">
+              <a class="hc-reqCard__titleLink" href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
+                {{ req.title }}
+              </a>
+            </h5>
             {% if (is_new_request and is_new_request(req)) or loop.first %}
               <span class="hc-badge hc-badge--new">{{ _("New") }}</span>
             {% endif %}
@@ -105,7 +117,9 @@
 
           <div class="hc-reqCard__meta mb-2">
             <span class="hc-dot"></span>
-            <span>{{ loc or "—" }}</span>
+            <span>
+              {% if loc %}{{ loc }}{% else %}<span class="visually-hidden">{{ _('Location unknown') }}</span>—{% endif %}
+            </span>
             {% if req.created_at %}
               <span class="hc-sep">•</span>
               <span>{{ time_ago(req.created_at) }}</span>
@@ -118,11 +132,14 @@
           </p>
 
           <div class="d-flex gap-2">
-            <a class="btn btn-outline-primary flex-fill" href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
-              {{ _("View details") }}
-            </a>
-            <a class="btn btn-primary flex-fill" href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
+            <a class="btn btn-primary flex-fill"
+               href="{{ url_for('main.volunteer_request_details', req_id=req.id, intent='help') }}"
+               aria-label="{{ _('Help with request: %(title)s', title=req.title or _('Untitled request')) }}">
               {{ _("I'll help") }}
+            </a>
+            <a class="btn btn-outline-secondary"
+               href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
+              {{ _("Details") }}
             </a>
           </div>
         </div>

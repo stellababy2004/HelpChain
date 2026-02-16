@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Детайли за заявка") }} | HelpChain{% endblock %}
 
-{% macro interest_button(pending, approved, rejected, req_id, is_demo=False, csrf_form=None) -%}
+{% macro interest_button(pending, approved, rejected, req_id, is_demo=False) -%}
   {% if pending %}
     {# Status is shown above; keep this area clean to avoid duplicates. #}
   {% elif approved %}
@@ -11,11 +11,7 @@
   {% else %}
     {% set post_url = url_for('main.volunteer_request_help_demo') if is_demo else url_for('main.volunteer_help', req_id=req_id) %}
     <form method="post" action="{{ post_url }}" class="d-inline">
-      {% if csrf_form %}
-        {{ csrf_form.csrf_token }}
-      {% elif csrf_token is defined %}
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      {% endif %}
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-primary">{{ _("Ще помогна") }}</button>
     </form>
     {% if is_demo %}
@@ -130,8 +126,7 @@
     already_approved|default(false),
     already_rejected|default(false),
     req_id=req.id,
-    is_demo=is_demo,
-    csrf_form=csrf_form
+    is_demo=is_demo
 ) }}
 
       <hr class="my-4">
@@ -160,19 +155,11 @@
 
       <div class="d-flex flex-wrap gap-2 mt-2">
         <form method="post" action="{{ url_for('main.volunteer_can_help', req_id=req.id) }}" class="d-inline">
-          {% if csrf_form %}
-            {{ csrf_form.csrf_token }}
-          {% elif csrf_token is defined %}
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          {% endif %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-sm btn-primary" {% if _sig and _sig.action == 'CAN_HELP' %}disabled{% endif %}>{{ _("Мога да помогна") }}</button>
         </form>
         <form method="post" action="{{ url_for('main.volunteer_cant_help', req_id=req.id) }}" class="d-inline">
-          {% if csrf_form %}
-            {{ csrf_form.csrf_token }}
-          {% elif csrf_token is defined %}
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          {% endif %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-sm btn-outline-secondary" {% if _sig and _sig.action == 'CANT_HELP' %}disabled{% endif %}>{{ _("Не мога да помогна") }}</button>
         </form>
       </div>

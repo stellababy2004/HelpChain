@@ -35,11 +35,7 @@
         </div>
 
         <form method="post" action="{{ url_for('main.become_volunteer') }}" class="hc-form" autocomplete="off" data-hc-magic-link="volunteer" data-hc-generic-ok="{{ _("Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes.") }}">
-          {% if csrf_form %}
-            {{ csrf_form.csrf_token }}
-          {% elif csrf_token is defined %}
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          {% endif %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
           <input type="text" name="company_fax" id="hp_company_fax" autocomplete="off" tabindex="-1" aria-hidden="true" readonly style="position:absolute;left:-9999px;opacity:0;height:1px;width:1px;">
           <input type="hidden" name="started_at" id="started_at" value="">

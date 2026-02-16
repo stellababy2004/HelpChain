@@ -9,7 +9,7 @@
   <header class="hc-vdash__hero">
     <div class="hc-vdash__heroText">
       <h1 class="hc-vdash__title">{{ _('Моето табло') }}</h1>
-      <p class="hc-vdash__subtitle">
+      <p class="hc-vdash__subtitle hc-secondary">
         {{ _('Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти решаваш</strong>.')|safe }}
       </p>
     </div>
@@ -18,7 +18,7 @@
   {% if notifications and notifications|length %}
     {% set n = notifications[0] %}
     {% set btn_class = 'btn-primary' if n.tone == 'primary' else ('btn-success' if n.tone == 'success' else 'btn-outline-secondary') %}
-    <div class="alert alert-{{ n.tone }} d-flex align-items-start justify-content-between" role="status">
+    <div class="alert alert-{{ n.tone }} d-flex align-items-start justify-content-between hc-secondary" role="status">
       <div>
         <strong>{{ n.title }}</strong><br>
         <span class="small">{{ n.body }}</span>
@@ -91,7 +91,7 @@
       {% endif %}
     </div>
 
-    <p class="hc-muted" style="margin:8px 0 0;">{{ status.body.replace('\n', '<br>')|safe }}</p>
+    <p class="hc-muted hc-secondary" style="margin:8px 0 0;">{{ status.body.replace('\n', '<br>')|safe }}</p>
 
     <div class="hc-activity__actions">
       <a href="{{ status_cta_href }}" class="btn btn-sm btn-primary js-native-link">
@@ -106,9 +106,324 @@
     </div>
   </section>
 
+  <section class="hc-smart">
+    <div class="hc-smart__head">
+      <div>
+        <h2 class="hc-smart__title">{{ _('Recommended for you') }}</h2>
+        <p class="hc-smart__sub hc-secondary">{{ _('Match score + urgency + freshness.') }}</p>
+      </div>
+      <div class="hc-smart__headMeta">
+        <span class="hc-smart__count hc-secondary">{{ (matched_v1|length) if matched_v1 else 0 }} {{ _('matches') }}</span>
+        <span class="hc-smart__algo hc-secondary">{{ _('Sorted by match score & urgency') }}</span>
+        <form method="get" action="{{ url_for('main.volunteer_dashboard') }}"
+              id="matchControls"
+              class="hc-match-controls hc-smart-filters"
+              data-current-min="{{ match_min }}"
+              data-current-prio="{{ match_prio }}"
+              data-current-near="{{ 1 if match_near else 0 }}"
+              data-near-km="{{ near_km }}"
+              data-has-coords="{{ 1 if has_coords else 0 }}">
+          <div class="hc-match-controls__row">
+            <label for="min_match" class="hc-smart-filters__label hc-label">{{ _('Min match') }}</label>
+            <select id="min_match" name="min" class="hc-smart-filters__select hc-select">
+              {% for v in [40,50,55,60,65,70,75,80] %}
+                <option value="{{ v }}" {% if match_min == v %}selected{% endif %}>{{ v }}%</option>
+              {% endfor %}
+            </select>
+
+            <label for="prio" class="hc-smart-filters__label hc-label">{{ _('Priority') }}</label>
+            <select id="prio" name="prio" class="hc-smart-filters__select hc-select">
+              <option value="all" {% if match_prio == "all" %}selected{% endif %}>{{ _('All') }}</option>
+              <option value="urgent" {% if match_prio == "urgent" %}selected{% endif %}>{{ _('Urgent only') }}</option>
+              <option value="high" {% if match_prio == "high" %}selected{% endif %}>{{ _('High+') }}</option>
+            </select>
+
+            <label class="hc-smart-filters__check hc-check {% if not has_coords %}is-disabled{% endif %}"
+                   {% if not has_coords %}title="{{ _('Enable location in profile') }}"{% endif %}>
+              <input id="matchNear" type="checkbox" name="near" value="1" {% if match_near %}checked{% endif %} {% if not has_coords %}disabled aria-describedby="near-help"{% endif %}>
+              <span>{{ _('Near me') }} {% if has_coords %}({{ near_km }}km){% endif %}</span>
+            </label>
+            {% if not has_coords %}
+              <div id="near-help" class="visually-hidden">
+                {{ _('Enable location in profile to use Near me.') }}
+              </div>
+            {% endif %}
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+              {{ _('Apply filters') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="hc-filter-pills">
+      <span class="hc-pill">≥ {{ match_min }}%</span>
+      {% if match_prio == "urgent" %}
+        <span class="hc-pill">{{ _('Urgent only') }}</span>
+      {% elif match_prio == "high" %}
+        <span class="hc-pill">{{ _('High+') }}</span>
+      {% endif %}
+      {% if match_near %}
+        <span class="hc-pill">{{ _('Near') }} {{ near_km }}km</span>
+      {% endif %}
+    </div>
+
+    {% if matched_v1 and matched_v1|length %}
+      <div class="hc-smart__grid">
+        {% for item in matched_v1 %}
+          {% include "components/match_card.html" %}
+        {% endfor %}
+      </div>
+    {% elif low_conf_count and low_conf_count > 0 %}
+      <div class="hc-smart-low hc-secondary">
+        <strong>{{ _('We found %(n)s low-confidence matches (40-54%%).', n=low_conf_count) }}</strong>
+        <p class="mb-0">{{ _('Improve your profile to unlock stronger matches.') }}</p>
+      </div>
+    {% endif %}
+
+    {% if smart_tips and smart_tips|length %}
+      <div class="hc-smart-empty mt-3">
+        <div class="hc-smart-empty__icon">🧭</div>
+        <h4>{{ _('Help us match you better') }}</h4>
+        <p>{{ _('Add your location and a few skills. Then you will start seeing high-confidence matches.') }}</p>
+
+        <div class="hc-smart-progress">
+          <div class="hc-smart-progress__label">{{ _('Profile completeness') }}: {{ profile_completeness }}%</div>
+          <div class="hc-smart-progress__track"><i style="width: {{ profile_completeness }}%"></i></div>
+        </div>
+
+        <ul class="hc-smart-tips">
+          {% for tip in smart_tips %}
+            <li>{{ tip.icon }} {{ tip.text }}</li>
+          {% endfor %}
+        </ul>
+
+        <a class="btn btn-outline-primary" href="{{ url_for('main.volunteer_profile') }}">{{ _('Update my profile') }}</a>
+      </div>
+    {% else %}
+      <div class="hc-smart-empty">
+        <div class="hc-smart-empty__icon">🧠</div>
+        <h4>{{ _('No strong matches yet') }}</h4>
+        <p>{{ _('Add more specific skills or enable location to improve matching.') }}</p>
+        <div class="hc-empty-actions">
+          {% if match_min > 50 %}
+            <a class="btn btn-outline-secondary" href="{{ url_for('main.volunteer_dashboard', min=50, prio=match_prio, near=(1 if match_near else 0)) }}">{{ _('Try 50%%') }}</a>
+          {% endif %}
+          <a href="{{ url_for('main.volunteer_profile') }}" class="btn btn-outline-primary btn--ghost">{{ _('Improve my profile') }}</a>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+
+  <div class="hc-modal" id="matchModal" aria-hidden="true">
+    <div class="hc-modal__backdrop" data-close="1"></div>
+    <div class="hc-modal__panel" role="dialog" aria-modal="true" aria-labelledby="matchModalTitle">
+      <div class="hc-modal__head">
+        <h3 id="matchModalTitle">Match explanation</h3>
+        <button class="hc-modal__x" type="button" data-close="1">✕</button>
+      </div>
+      <div class="hc-modal__body">
+        <div class="hc-modal__kpi">
+          <div class="hc-modal__pct" id="mmPct">82%</div>
+          <div class="hc-modal__title" id="mmTitle">—</div>
+        </div>
+        <div class="hc-breakdown" id="mmBreakdown"></div>
+        <div class="hc-modal__note" id="mmNote"></div>
+      </div>
+      <div class="hc-modal__foot">
+        <button class="btn btn-outline-secondary" type="button" data-close="1">{{ _('Close') }}</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  function hcTrack(event, props) {
+    try {
+      window.hc.post("/events", {event: event, props: props || {}}).catch(function(){});
+    } catch (e) {}
+  }
+
+  async function hcPostJson(url, payload) {
+    try {
+      const r = await window.hc.post(url, payload || {});
+      return r.ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  (function () {
+    const controls = document.getElementById("matchControls");
+    if (!controls) return;
+    const minEl = document.getElementById("min_match");
+    const prioEl = document.getElementById("prio");
+    const nearEl = document.getElementById("matchNear");
+    if (!minEl || !prioEl || !nearEl) return;
+
+    function buildUrl() {
+      const params = new URLSearchParams(window.location.search);
+      params.set("min", minEl.value);
+      params.set("prio", prioEl.value);
+      params.set("near", nearEl.checked ? "1" : "0");
+      return `${window.location.pathname}?${params.toString()}`;
+    }
+    function applyNow() {
+      window.location.href = buildUrl();
+    }
+
+    minEl.addEventListener("change", function () {
+      hcTrack("match_threshold_change", { value: this.value });
+      applyNow();
+    });
+    prioEl.addEventListener("change", function () {
+      hcTrack("match_priority_change", { value: this.value });
+      applyNow();
+    });
+    if (!nearEl.disabled) {
+      nearEl.addEventListener("change", function () {
+        hcTrack("match_near_toggle", { value: this.checked });
+        applyNow();
+      });
+    }
+  })();
+
+  document.addEventListener("click", async (e) => {
+    const seenEl = e.target.closest(".js-seen");
+    if (seenEl) {
+      const reqId = seenEl.getAttribute("data-req-id");
+      if (reqId) {
+        hcPostJson(`/volunteer/match/${reqId}/seen`, {});
+      }
+      return;
+    }
+
+    const dismissBtn = e.target.closest(".js-dismiss");
+    if (!dismissBtn) return;
+    const reqId = dismissBtn.getAttribute("data-req-id");
+    if (!reqId) return;
+    const ok = await hcPostJson(`/volunteer/match/${reqId}/dismiss`, {});
+    if (ok) {
+      hcTrack("match_dismiss", { request_id: reqId });
+      const card = dismissBtn.closest(".hc-card, .match-card, .hc-match-card, article, .card");
+      if (card) card.remove();
+    }
+  });
+
+  (function () {
+    const modal = document.getElementById("matchModal");
+    const mmPct = document.getElementById("mmPct");
+    const mmTitle = document.getElementById("mmTitle");
+    const mmBreakdown = document.getElementById("mmBreakdown");
+    const mmNote = document.getElementById("mmNote");
+    if (!modal || !mmPct || !mmTitle || !mmBreakdown || !mmNote) return;
+
+    function openModal() {
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+    }
+    function closeModal() {
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    function safeNum(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function percent(value, max) {
+      return Math.max(0, Math.min(100, Math.round((safeNum(value) / max) * 100)));
+    }
+    function clearNode(node) {
+      while (node.firstChild) node.removeChild(node.firstChild);
+    }
+    function createRow(label, value, max) {
+      const safeVal = safeNum(value);
+      const pct = percent(safeVal, max);
+
+      const row = document.createElement("div");
+      row.className = "hc-row";
+
+      const top = document.createElement("div");
+      top.className = "hc-row__top";
+
+      const labelSpan = document.createElement("span");
+      labelSpan.className = "hc-row__label";
+      labelSpan.textContent = label;
+
+      const valSpan = document.createElement("span");
+      valSpan.className = "hc-row__val";
+      valSpan.textContent = `+${safeVal}`;
+
+      top.appendChild(labelSpan);
+      top.appendChild(valSpan);
+
+      const bar = document.createElement("div");
+      bar.className = "hc-row__bar";
+      bar.setAttribute("role", "progressbar");
+      bar.setAttribute("aria-label", label);
+      bar.setAttribute("aria-valuemin", "0");
+      bar.setAttribute("aria-valuemax", "100");
+      bar.setAttribute("aria-valuenow", String(pct));
+
+      const fill = document.createElement("i");
+      fill.setAttribute("aria-hidden", "true");
+      fill.style.width = `${pct}%`;
+      bar.appendChild(fill);
+
+      row.appendChild(top);
+      row.appendChild(bar);
+
+      return row;
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".js-match-why");
+      const closer = e.target.closest("[data-close='1']");
+      if (closer) {
+        closeModal();
+        return;
+      }
+      if (!btn) return;
+
+      const pct = btn.dataset.pct || "—";
+      const title = btn.dataset.title || "—";
+      const reqId = btn.dataset.reqId || "";
+      let breakdown = {};
+      try {
+        breakdown = JSON.parse(btn.dataset.breakdown || "{}");
+      } catch (_) {}
+
+      mmPct.textContent = `${pct}%`;
+      mmTitle.textContent = title;
+
+      const skills = safeNum(breakdown.skills || 0);     // max 45
+      const city = safeNum(breakdown.city || breakdown.loc || 0); // max 25
+      const priority = safeNum(breakdown.priority || 0); // max 20
+      const activity = safeNum(breakdown.activity || 0); // max 10
+      const distance = safeNum(breakdown.distance || 0); // max 20 (optional)
+
+      clearNode(mmBreakdown);
+      mmBreakdown.appendChild(createRow("Skills match", skills, 45));
+      mmBreakdown.appendChild(createRow("Location match", city, 25));
+      mmBreakdown.appendChild(createRow("Priority boost", priority, 20));
+      mmBreakdown.appendChild(createRow("Volunteer activity", activity, 10));
+      if (distance) mmBreakdown.appendChild(createRow("Distance", distance, 20));
+
+      const mult = breakdown.urgency_mult ? `Urgency multiplier: x${breakdown.urgency_mult}` : "";
+      mmNote.textContent = mult || "This score is an estimate based on your profile + request metadata.";
+      hcTrack("match_open_modal", {request_id: reqId, pct: pct});
+      openModal();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+  })();
+  </script>
+
   <div class="hc-vdash__layout">
     <aside class="hc-vdash__side">
-      <section class="hc-card hc-sticky hc-sideCard">
+      <section class="hc-card hc-sticky hc-sideCard hc-profile-checklist hc-secondary">
         <h2>{{ copy_lang['checklist_title'] }}</h2>
         <p class="hc-muted">{{ _('Показваме само липсващото, за да станеш готов за свързване.') }}</p>
 
@@ -150,15 +465,16 @@
       </section>
     </aside>
 
-    <main class="hc-card hc-vdash__mainCol hc-vdash__matches">
+    <main class="hc-vdash__mainCol">
+    <section class="hc-card hc-vdash__matches">
       <div class="hc-card__head hc-matchesHead">
         <div>
-          <h2 class="hc-card__title">{{ _('Подходящи заявки') }}</h2>
+          <h2 class="hc-card__title">{{ _('All active requests') }}</h2>
           <p class="hc-muted hc-matchesSub">
-            {{ _('Когато има нужда, която съвпада с теб, ще я видиш тук.') }}
+            {{ _('Open requests ordered by freshness.') }}
           </p>
           <p class="hc-card__desc hc-muted">
-            {{ _('Виждаш това, защото заявката съвпада с твоята локация, наличност и умения. Ако не ти е удобно — просто пропускаш.') }}
+            {{ _('This list is not personalized. Use the section above for intelligent matching.') }}
           </p>
         </div>
       </div>
@@ -300,7 +616,7 @@
                 {% set act = my_actions_by_req_id.get(m.id) if my_actions_by_req_id is defined else None %}
                 <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
                   <form method="post" class="d-inline">
-                    {{ csrf_form.csrf_token }}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit"
                             class="btn btn-sm btn-primary"
                             formaction="{{ url_for('main.volunteer_can_help', req_id=m.id) }}"
@@ -373,6 +689,7 @@
           </details>
         </section>
       {% endif %}
+    </section>
     </main>
   </div>
 

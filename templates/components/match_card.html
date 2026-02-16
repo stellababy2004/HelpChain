@@ -1,0 +1,111 @@
+<article class="hc-card hc-card--smart match-card hc-recCard">
+  {% set req = item.req %}
+  {% set pct = item.pct %}
+  {% set breakdown = item.breakdown %}
+  {% set skills_pct = (breakdown.skills / 45 * 100)|round|int %}
+  {% set loc_pct = (breakdown.loc / 25 * 100)|round|int %}
+  {% set prio_pct = (breakdown.priority / 20 * 100)|round|int %}
+  <div class="hc-card__top match-top">
+    <div class="hc-pill hc-pill--match match-pill">{{ _('%(pct)s%% Match', pct=pct) }}</div>
+    {% if breakdown.priority >= 15 %}
+      <div class="hc-pill hc-pill--urgent urgent-pill">{{ _('High priority') }}</div>
+    {% endif %}
+  </div>
+
+  <h3 class="hc-card__title hc-recCard__title">
+    <a class="hc-card__titleLink js-seen js-track"
+       data-track="match_click_title"
+       data-request-id="{{ req.id }}"
+       data-pct="{{ pct }}"
+       data-req-id="{{ req.id }}"
+       href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
+      {{ req.title or _("Untitled request") }}
+    </a>
+  </h3>
+
+  <div class="hc-card__meta hc-recCard__meta">
+    {% if req.city %}<span>📍 {{ req.city }}</span>{% endif %}
+    {% if req.city %}<span>•</span>{% endif %}
+    <span>{{ req.created_at.strftime('%d %b') if req.created_at else "" }}</span>
+  </div>
+
+  <p class="hc-card__desc excerpt mb-2 text-muted">
+    {{ (req.description or req.message or "")[:120] }}{% if (req.description or req.message or "")|length > 120 %}…{% endif %}
+  </p>
+
+  <div class="hc-bars">
+    <div class="hc-bar">
+      <span>{{ _('Skills') }}</span>
+      <div class="hc-bar__track"
+           role="progressbar"
+           aria-label="{{ _('Skills match') }}"
+           aria-valuemin="0"
+           aria-valuemax="100"
+           aria-valuenow="{{ skills_pct }}">
+        <i aria-hidden="true" style="width: {{ skills_pct }}%"></i>
+      </div>
+    </div>
+    <div class="hc-bar">
+      <span>{{ _('Location') }}</span>
+      <div class="hc-bar__track"
+           role="progressbar"
+           aria-label="{{ _('Location match') }}"
+           aria-valuemin="0"
+           aria-valuemax="100"
+           aria-valuenow="{{ loc_pct }}">
+        <i aria-hidden="true" style="width: {{ loc_pct }}%"></i>
+      </div>
+    </div>
+    <div class="hc-bar">
+      <span>{{ _('Priority') }}</span>
+      <div class="hc-bar__track"
+           role="progressbar"
+           aria-label="{{ _('Priority boost') }}"
+           aria-valuemin="0"
+           aria-valuemax="100"
+           aria-valuenow="{{ prio_pct }}">
+        <i aria-hidden="true" style="width: {{ prio_pct }}%"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card__actions card-actions d-flex gap-2">
+    <a class="btn btn-sm btn-outline-primary btn--ghost flex-fill js-native-link js-seen js-track"
+       data-track="match_click_details"
+       data-request-id="{{ req.id }}"
+       data-pct="{{ pct }}"
+       data-req-id="{{ req.id }}"
+       href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
+      {{ _('View details') }}
+    </a>
+
+    <form method="post"
+          action="{{ url_for('main.volunteer_help', req_id=req.id) }}"
+          class="d-inline flex-fill">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-primary btn--primary w-100 js-track"
+              type="submit"
+              data-track="match_click_help"
+              data-request-id="{{ req.id }}"
+              data-pct="{{ pct }}">{{ _("I'll help") }}</button>
+    </form>
+  </div>
+
+  <div class="mt-2">
+    <button class="btn btn-outline-secondary btn-sm js-dismiss"
+            data-req-id="{{ req.id }}"
+            aria-label="{{ _('Dismiss this request for 48 hours') }}"
+            type="button">
+      {{ _('Not for me (48h)') }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-outline-secondary btn-sm js-match-why"
+      data-pct="{{ pct }}"
+      data-req-id="{{ req.id }}"
+      data-title="{{ req.title|e }}"
+      data-breakdown='{{ breakdown|tojson }}'>
+      {{ _('Why %(pct)s%%?', pct=pct) }}
+    </button>
+  </div>
+</article>
