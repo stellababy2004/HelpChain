@@ -359,6 +359,41 @@ def create_app(config_object=None) -> Flask:
     except Exception as e:
         app.logger.info("admin blueprint not loaded: %s", e)
 
+    # Legacy but real RBAC admin routes (roles/permissions/users management).
+    # Templates already reference endpoints under the `admin_roles` namespace.
+    try:
+        from backend.admin_roles import admin_roles_bp
+
+        app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
+    except Exception as e:
+        app.logger.info("admin_roles blueprint not loaded: %s", e)
+
+    def _alias_endpoint(app, alias: str, target: str, rule: str):
+        # Register legacy endpoint names for template compatibility.
+        view = app.view_functions.get(target)
+        if not view:
+            app.logger.warning("[ALIAS] target missing: %s (for %s)", target, alias)
+            return
+        if alias in app.view_functions:
+            return
+        try:
+            app.add_url_rule(rule, endpoint=alias, view_func=view)
+        except Exception as e:
+            app.logger.info("[ALIAS] failed %s -> %s (%s): %s", alias, target, rule, e)
+
+    # --- Legacy endpoint aliases (template compatibility) ---
+    _alias_endpoint(app, "volunteer_settings", "main.volunteer_settings", "/volunteer/settings")
+    _alias_endpoint(app, "achievements", "main.achievements", "/achievements")
+    _alias_endpoint(app, "leaderboard", "main.leaderboard", "/leaderboard")
+    _alias_endpoint(app, "my_requests", "main.my_requests", "/my-requests")
+    _alias_endpoint(app, "feedback", "main.feedback", "/feedback")
+    _alias_endpoint(app, "forgot_password", "main.forgot_password", "/forgot-password")
+    _alias_endpoint(app, "volunteer_register", "main.become_volunteer", "/become_volunteer")
+    _alias_endpoint(app, "become_volunteer", "main.become_volunteer", "/become_volunteer")
+    _alias_endpoint(app, "video_chat", "main.video_chat", "/video-chat")
+    _alias_endpoint(app, "volunteer_chat", "main.volunteer_chat", "/volunteer/chat")
+    _alias_endpoint(app, "volunteer_reports", "main.volunteer_reports", "/volunteer/reports")
+
     @app.errorhandler(404)
     def not_found(e):
         # Keep privacy semantics (404) but give volunteers a human fallback page.

@@ -2666,6 +2666,52 @@ def video_chat():
     return render_template("video_chat.html")
 
 
+# --- Legacy/compat pages (minimal but real) ---
+@main_bp.get("/volunteer/settings")
+def volunteer_settings():
+    return render_template("volunteer_settings.html"), 200
+
+
+@main_bp.get("/leaderboard")
+def leaderboard():
+    return render_template("leaderboard.html"), 200
+
+
+@main_bp.get("/volunteer/chat")
+def volunteer_chat():
+    return render_template("volunteer_chat.html"), 200
+
+
+@main_bp.get("/volunteer/reports")
+def volunteer_reports():
+    return render_template("volunteer_reports.html"), 200
+
+
+@main_bp.get("/my-requests")
+def my_requests():
+    return render_template("dashboard_requester.html"), 200
+
+
+@main_bp.get("/feedback")
+def feedback():
+    return redirect(url_for("main.contact"), code=302)
+
+
+@main_bp.get("/forgot-password")
+def forgot_password():
+    return redirect(url_for("main.become_volunteer"), code=302)
+
+
+@main_bp.post("/submit_request/resend")
+def submit_request_resend():
+    return redirect(url_for("main.submit_request"), code=302)
+
+
+@main_bp.get("/r/<int:req_id>")
+def request_public(req_id: int):
+    return redirect(url_for("main.submit_request"), code=302)
+
+
 @main_bp.post("/set-language")
 @main_bp.post("/set_language")
 def set_language():
@@ -2722,53 +2768,8 @@ def category_help(category: str):
             "color": "primary",
         }
 
-    # Volunteers query (SAFE)
-    volunteers = []
-    no_volunteers = True
-    db_error = None
-
-    try:
-        # Търсим по canonical (и по оригиналния slug като резервен)
-        # + по display name, ако някой е въвел "Храна" в skills.
-        patterns = [
-            f"%{canonical}%",
-            f"%{category}%",
-            f"%{category_info['name']}%",
-        ]
-
-        # махаме дубликати/празни
-        patterns = [p for p in dict.fromkeys(patterns) if p and p != "%%"]
-
-        filters = [Volunteer.skills.ilike(p) for p in patterns]
-
-        # ако нямаме никакви patterns, просто не удряме DB с безсмислена заявка
-        if filters:
-            volunteers = Volunteer.query.filter(or_(*filters)).all()
-        else:
-            volunteers = []
-
-        no_volunteers = len(volunteers) == 0
-
-    except Exception as e:
-        # НЕ чупим страницата на production
-        current_app.logger.exception("category_help: Volunteer query failed")
-        db_error = str(e)
-        volunteers = []
-        no_volunteers = True
-
-    is_admin = bool(session.get("admin_logged_in", False))
-
-    # По желание: можеш да покажеш db_error само в debug (не в production UI)
-    return render_template(
-        "category_help.html",
-        category=canonical,  # важно: canonical, не raw
-        category_display=category_display,  # ако още го ползваш някъде
-        category_info=category_info,
-        volunteers=volunteers,
-        no_volunteers=no_volunteers,
-        is_admin=is_admin,
-        # debug_db_error=db_error if current_app.debug else None,
-    )
+    # Category cards in /categories lead to request submission with preselected category.
+    return redirect(url_for("main.submit_request", category=canonical), code=302)
 
 
 @main_bp.get("/sw.js")
