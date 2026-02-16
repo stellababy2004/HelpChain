@@ -1,8 +1,10 @@
 {% extends "base.html" %}
+{% from "_forms.html" import select, textarea, input_text, checkbox %}
 
 {% block title %}{{ _("Подайте заявка") }}{% endblock %}
 
 {% block content %}
+{% set form_errors = form_errors|default({}, true) %}
 <style>
   .hc-hero {
     background: linear-gradient(120deg, #0f172a, #0ea5e9);
@@ -167,7 +169,10 @@
         </div>
 
         {# Honeypot + timing (frontend-only antibot; backend expects "website") #}
-        <input type="text" name="website" id="hp_website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:1px;width:1px;">
+        <div aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:1px;width:1px;">
+          <label for="hp_website">Website</label>
+          <input type="text" name="website" id="hp_website" autocomplete="off" tabindex="-1">
+        </div>
         <input type="hidden" name="started_at" id="started_at" value="">
 
         {# Ако има CSRF (Flask-WTF), оставяме го. Ако не - нищо не се чупи. #}
@@ -175,43 +180,95 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% endif %}
 
+        {% set ns = namespace(first_error_field=None) %}
+        {% set error_anchor_map = {
+          'name': 'name',
+          'phone': 'phone',
+          'email': 'email',
+          'title': 'title',
+          'urgency': 'urgency',
+          'privacy_consent': 'hc-privacy_consent',
+          'category': 'hc-category',
+          'location_text': 'hc-location_text',
+          'description': 'hc-description'
+        } %}
+        {% for k, v in form_errors.items() %}
+          {% if k != '_form' and ns.first_error_field is none %}
+            {% set ns.first_error_field = k %}
+          {% endif %}
+        {% endfor %}
+
+        {% if form_errors.get('_form') or form_errors %}
+          <div class="alert alert-warning" role="alert" aria-live="assertive" tabindex="-1" id="form-error-summary">
+            <div class="d-flex align-items-start gap-2">
+              <i class="fas fa-triangle-exclamation mt-1" aria-hidden="true"></i>
+              <div>
+                <div class="fw-semibold">
+                  {{ form_errors.get('_form', _("Please correct the errors below.")) }}
+                </div>
+                {% if ns.first_error_field %}
+                  <a class="alert-link" href="#{{ error_anchor_map.get(ns.first_error_field, ns.first_error_field) }}">
+                    {{ _("Go to the first error") }}
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
         <div class="row g-3">
 
           <div class="col-12">
-            <label class="form-label">{{ _("Вашите имена") }} <span class="text-danger">*</span></label>
+            <label for="name" class="form-label">{{ _("Вашите имена") }} <span class="text-danger" aria-hidden="true">*</span></label>
             <input
+              id="name"
               type="text"
               name="name"
-              class="form-control"
+              class="form-control{% if form_errors.get('name') %} is-invalid{% endif %}"
               value="{{ request.form.get('name','') }}"
               placeholder="{{ _('Име и фамилия') }}"
+              aria-describedby="name-help{% if form_errors.get('name') %} hc-name-error{% endif %}"
+              aria-required="true"
               required minlength="2"
             >
-            <div class="form-text">{{ _("Минимум 2 символа.") }}</div>
+            <div id="name-help" class="form-text">{{ _("Минимум 2 символа.") }}</div>
+            {% if form_errors.get('name') %}
+              <div id="hc-name-error" class="invalid-feedback d-block" role="alert">{{ form_errors.get('name') }}</div>
+            {% endif %}
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Телефон за връзка") }}</label>
+            <label for="phone" class="form-label">{{ _("Телефон за връзка") }}</label>
             <input
+              id="phone"
               type="tel"
               name="phone"
-              class="form-control"
+              class="form-control{% if form_errors.get('phone') %} is-invalid{% endif %}"
               value="{{ request.form.get('phone','') }}"
+              aria-describedby="phone-help{% if form_errors.get('phone') %} hc-phone-error{% endif %}"
               placeholder="+359 88 123 4567"
             >
-            <div class="form-text">{{ _("Използваме го само за координация.") }}</div>
+            <div id="phone-help" class="form-text">{{ _("Използваме го само за координация.") }}</div>
+            {% if form_errors.get('phone') %}
+              <div id="hc-phone-error" class="invalid-feedback d-block" role="alert">{{ form_errors.get('phone') }}</div>
+            {% endif %}
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Имейл") }}</label>
+            <label for="email" class="form-label">{{ _("Имейл") }}</label>
             <input
+              id="email"
               type="email"
               name="email"
-              class="form-control"
+              class="form-control{% if form_errors.get('email') %} is-invalid{% endif %}"
               value="{{ request.form.get('email','') }}"
+              aria-describedby="email-help{% if form_errors.get('email') %} hc-email-error{% endif %}"
               placeholder="name@example.com"
             >
-            <div class="form-text">{{ _("По избор, за да ви пишем писмено.") }}</div>
+            <div id="email-help" class="form-text">{{ _("По избор, за да ви пишем писмено.") }}</div>
+            {% if form_errors.get('email') %}
+              <div id="hc-email-error" class="invalid-feedback d-block" role="alert">{{ form_errors.get('email') }}</div>
+            {% endif %}
           </div>
 
           <div class="col-12">
@@ -223,63 +280,77 @@
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Категория на нуждата") }}</label>
-            <select name="category" class="form-select">
-              <option value="">{{ _("Изберете тип нужда") }}</option>
-              <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>{{ _("Медицинска помощ") }}</option>
-              <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>{{ _("Социална подкрепа") }}</option>
-              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>{{ _("Техническа помощ") }}</option>
-              <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>{{ _("Административна помощ") }}</option>
-              <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>{{ _("Друго") }}</option>
-            </select>
-            <div class="form-text">{{ _("Ако се колебаете, оставете \"Друго\".") }}</div>
+            {{ select(
+              name="category",
+              label=_("Категория на нуждата"),
+              options=[
+                ("medical", _("Медицинска помощ")),
+                ("social", _("Социална подкрепа")),
+                ("tech", _("Техническа помощ")),
+                ("admin", _("Административна помощ")),
+                ("other", _("Друго"))
+              ],
+              selected=request.form.get('category', ''),
+              help_text=_('Ако се колебаете, оставете "Друго".'),
+              placeholder_label=_("Изберете тип нужда"),
+              errors=form_errors
+            ) }}
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Спешност") }}</label>
-            <select name="urgency" class="form-select">
+            <label for="urgency" class="form-label">{{ _("Спешност") }}</label>
+            <select id="urgency" name="urgency" class="form-select{% if form_errors.get('urgency') %} is-invalid{% endif %}" aria-describedby="urgency-help{% if form_errors.get('urgency') %} hc-urgency-error{% endif %}">
               <option value="low" {% if request.form.get('urgency')=='low' %}selected{% endif %}>{{ _("Ниска") }}</option>
               <option value="normal" {% if request.form.get('urgency','normal') in ['normal','medium'] %}selected{% endif %}>{{ _("Нормална") }}</option>
               <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>{{ _("Спешна") }}</option>
               <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>{{ _("Критична") }}</option>
             </select>
-            <div class="form-text">{{ _("Помага ни да приоритизираме.") }}</div>
+            <div id="urgency-help" class="form-text">{{ _("Помага ни да приоритизираме.") }}</div>
+            {% if form_errors.get('urgency') %}
+              <div id="hc-urgency-error" class="invalid-feedback d-block" role="alert">{{ form_errors.get('urgency') }}</div>
+            {% endif %}
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Кратко заглавие (по избор)") }}</label>
+            <label for="title" class="form-label">{{ _("Кратко заглавие (по избор)") }}</label>
             <input
+              id="title"
               type="text"
               name="title"
-              class="form-control"
+              class="form-control{% if form_errors.get('title') %} is-invalid{% endif %}"
               value="{{ request.form.get('title','') }}"
+              aria-describedby="title-help{% if form_errors.get('title') %} hc-title-error{% endif %}"
               placeholder="{{ _('Пример: Доставка на лекарства') }}"
             >
-            <div class="form-text">{{ _("Кратка насока за доброволците.") }}</div>
+            <div id="title-help" class="form-text">{{ _("Кратка насока за доброволците.") }}</div>
+            {% if form_errors.get('title') %}
+              <div id="hc-title-error" class="invalid-feedback d-block" role="alert">{{ form_errors.get('title') }}</div>
+            {% endif %}
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Адрес / локация") }}</label>
-            <input
-              type="text"
-              name="location_text"
-              class="form-control"
-              value="{{ request.form.get('location_text','') }}"
-              placeholder="{{ _('Град, квартал или точен адрес') }}"
-            >
-            <div class="form-text">{{ _("Достатъчен е кварталът, ако не искате точен адрес.") }}</div>
+            {{ input_text(
+              name="location_text",
+              label=_("Адрес / локация"),
+              value=request.form.get('location_text', ''),
+              placeholder=_("Град, квартал или точен адрес"),
+              help_text=_("Достатъчен е кварталът, ако не искате точен адрес."),
+              errors=form_errors
+            ) }}
           </div>
 
           <div class="col-12">
-            <label class="form-label">{{ _("Какво ви трябва?") }} <span class="text-danger">*</span></label>
-            <textarea
-              name="description"
-              class="form-control"
-              rows="5"
-              required minlength="10"
-              placeholder="{{ _('Опишете в 2-3 изречения какво е нужно, за кого е и кога е удобно.') }}"
-            >{{ request.form.get('description','') }}</textarea>
-            <div class="form-text">{{ _("Минимум 10 символа.") }}</div>
+            {{ textarea(
+              name="description",
+              label=_("Какво ви трябва?"),
+              value=request.form.get('description', ''),
+              placeholder=_("Опишете в 2-3 изречения какво е нужно, за кого е и кога е удобно."),
+              help_text=_("Минимум 10 символа."),
+              required=true,
+              rows=5,
+              minlength=10,
+              errors=form_errors
+            ) }}
           </div>
 
           <div class="col-12 hc-consent">
@@ -302,18 +373,19 @@
           </div>
 
           <div class="col-12">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="privacy_consent" name="privacy_consent" value="1" required>
-              <label class="form-check-label" for="privacy_consent">
-                J’ai lu et j’accepte
-                <a href="{{ url_for('main.legal') }}#rgpd" target="_blank" rel="noopener">la Politique de confidentialité (RGPD)</a>
-                et
-                <a href="{{ url_for('main.legal') }}#mentions" target="_blank" rel="noopener">les Mentions légales</a>.
-              </label>
-            </div>
-            <div class="form-text">
-              Nous utilisons vos informations uniquement pour traiter votre demande. Aucune revente.
-            </div>
+            {{ checkbox(
+              name="privacy_consent",
+              label_html=(
+                "J’ai lu et j’accepte "
+                ~ '<a href="' ~ url_for('main.legal') ~ '#rgpd" target="_blank" rel="noopener">la Politique de confidentialité (RGPD)</a>'
+                ~ " et "
+                ~ '<a href="' ~ url_for('main.legal') ~ '#mentions" target="_blank" rel="noopener">les Mentions légales</a>.'
+              ),
+              checked=(request.form.get('privacy_consent') == '1'),
+              help_text="Nous utilisons vos informations uniquement pour traiter votre demande. Aucune revente.",
+              required=true,
+              errors=form_errors
+            ) }}
           </div>
 
           <div class="col-12 d-flex gap-2 justify-content-end pt-2">
@@ -358,7 +430,7 @@
 
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_for('static', filename='js/submit_request.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/submit_request.js') }}" defer></script>
 {% endblock %}
 
 <style>

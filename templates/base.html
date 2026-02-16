@@ -51,6 +51,9 @@
   </head>
 
   <body>
+    <a href="#main-content" class="visually-hidden-focusable">
+      {{ _('Skip to main content') }}
+    </a>
     <!-- Navigation -->
     {% set quiet_paths = [
       '/volunteer/confirmation',
@@ -62,7 +65,7 @@
     {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
     {% set admin_logged_in = session.get('admin_logged_in') %}
     {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
       <div class="container">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
@@ -74,6 +77,9 @@
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="{{ _('Toggle navigation') }}"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -82,22 +88,22 @@
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('main.index') }}"
-                ><i class="fas fa-home me-1"></i>{{ _('Home') }}</a
+                ><i class="fas fa-home me-1" aria-hidden="true"></i>{{ _('Home') }}</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="/categories">
-                <i class="fas fa-th-list me-1"></i>{{ _('Categories') }}
+                <i class="fas fa-th-list me-1" aria-hidden="true"></i>{{ _('Categories') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('main.about') }}"
-                ><i class="fas fa-info-circle me-1"></i>{{ _('About') }}</a
+                ><i class="fas fa-info-circle me-1" aria-hidden="true"></i>{{ _('About') }}</a
               >
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('main.professionnels') }}">
-                <i class="fas fa-briefcase me-1"></i>Professionnels
+                <i class="fas fa-briefcase me-1" aria-hidden="true"></i>Professionnels
               </a>
             </li>
             <li class="nav-item">
@@ -107,14 +113,14 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('main.submit_request') }}">
-                <i class="fas fa-plus-circle me-1"></i>{{ _('Submit a request') }}
+                <i class="fas fa-plus-circle me-1" aria-hidden="true"></i>{{ _('Submit a request') }}
               </a>
             </li>
             {% if current_user.is_authenticated %}
               {% if admin_logged_in %}
                 <li class="nav-item">
                   <a class="nav-link" href="{{ url_for('admin.admin_requests') }}">
-                    <i class="fas fa-cog me-1"></i>{{ _('Admin') }}
+                    <i class="fas fa-cog me-1" aria-hidden="true"></i>{{ _('Admin') }}
                   </a>
                 </li>
                 <li class="nav-item">
@@ -127,24 +133,25 @@
                 {% else %}
                 <form method="post" action="{{ safe_url_for('main.logout') }}" class="d-inline">
                 {% endif %}
-                  {{ csrf_form.csrf_token if csrf_form is defined else '' }}
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="nav-link btn btn-link p-0">
-                    <i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}
+                    <i class="fas fa-sign-out-alt me-1" aria-hidden="true"></i>{{ _('Logout') }}
                   </button>
                 </form>
               </li>
             {% elif volunteer_logged_in %}
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}">
-                <i class="fas fa-hands-helping me-1"></i>{{ _('My dashboard') }}
+                <i class="fas fa-hands-helping me-1" aria-hidden="true"></i>{{ _('My dashboard') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link position-relative" href="{{ url_for('main.volunteer_notifications') }}" title="{{ _('Notifications') }}">
-                <i class="fas fa-bell"></i>
+                <i class="fas fa-bell" aria-hidden="true"></i>
                 {% set badge = unread_volunteer_notifs|default(VOLUNTEER_UNREAD_NOTIF_COUNT|default(0)) %}
                 {% if badge and badge > 0 %}
-                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        aria-label="{{ badge }} {{ _('unread notifications') }}">
                     {{ badge }}
                   </span>
                 {% endif %}
@@ -152,26 +159,26 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('main.volunteer_profile') }}">
-                <i class="fas fa-user me-1"></i>{{ _('Profile') }}
+                <i class="fas fa-user me-1" aria-hidden="true"></i>{{ _('Profile') }}
               </a>
             </li>
               <li class="nav-item">
                 <form method="post" action="{{ safe_url_for('main.volunteer_logout') }}" class="d-inline">
-                  {{ csrf_form.csrf_token if csrf_form is defined else '' }}
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="nav-link btn btn-link p-0">
-                    <i class="fas fa-sign-out-alt me-1"></i>{{ _('Logout') }}
+                    <i class="fas fa-sign-out-alt me-1" aria-hidden="true"></i>{{ _('Logout') }}
                   </button>
                 </form>
               </li>
               {% else %}
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
-                  <i class="fas fa-sign-in-alt me-1"></i>{{ _('Volunteer login') }}
+                  <i class="fas fa-sign-in-alt me-1" aria-hidden="true"></i>{{ _('Volunteer login') }}
                 </a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="{{ safe_url_for('main.become_volunteer') }}">
-                  <i class="fas fa-user-plus me-1"></i>{{ _('Register') }}
+                  <i class="fas fa-user-plus me-1" aria-hidden="true"></i>{{ _('Register') }}
                 </a>
               </li>
               {% endif %}
@@ -186,32 +193,32 @@
               placeholder="{{ _('Search in HelpChain...') }}"
               aria-label="{{ _('Search') }}"
             />
-            <button class="btn btn-outline-light btn-sm" type="submit" title="{{ _('Search') }}" aria-label="{{ _('Search') }}">
-              <i class="fas fa-search"></i>
+            <button class="btn btn-outline-secondary btn-sm" type="submit" title="{{ _('Search') }}" aria-label="{{ _('Search') }}">
+              <i class="fas fa-search" aria-hidden="true"></i>
               <span class="visually-hidden">{{ _('Search') }}</span>
             </button>
           </form>
 
           <div class="d-flex align-items-center ms-2">
-            <button class="btn btn-link text-white" type="button"
+            <button class="btn btn-link text-secondary" type="button"
                     aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
-              <i class="fas fa-moon"></i>
+              <i class="fas fa-moon" aria-hidden="true"></i>
             </button>
 
-            <a class="btn btn-link text-white" href="/notifications"
+            <a class="btn btn-link text-secondary" href="/notifications"
                aria-label="{{ _('Notifications') }}" title="{{ _('Notifications') }}">
-              <i class="fas fa-bell"></i>
+              <i class="fas fa-bell" aria-hidden="true"></i>
             </a>
           </div>
           {% set cur = (get_locale()|string)[:2] %}
           <div class="d-flex align-items-center gap-2 ms-3 ms-lg-3">
-            <a class="btn btn-sm {{ 'btn-light text-primary' if cur == 'bg' else 'btn-outline-light' }}"
+            <a class="btn btn-sm {{ 'btn-primary text-white' if cur == 'bg' else 'btn-outline-secondary' }}"
                href="{{ url_for('main.set_lang_switch', lang='bg') }}"
                aria-label="BG">BG</a>
-            <a class="btn btn-sm {{ 'btn-light text-primary' if cur == 'fr' else 'btn-outline-light' }}"
+            <a class="btn btn-sm {{ 'btn-primary text-white' if cur == 'fr' else 'btn-outline-secondary' }}"
                href="{{ url_for('main.set_lang_switch', lang='fr') }}"
                aria-label="FR">FR</a>
-            <a class="btn btn-sm {{ 'btn-light text-primary' if cur == 'en' else 'btn-outline-light' }}"
+            <a class="btn btn-sm {{ 'btn-primary text-white' if cur == 'en' else 'btn-outline-secondary' }}"
                href="{{ url_for('main.set_lang_switch', lang='en') }}"
                aria-label="EN">EN</a>
           </div>
@@ -223,7 +230,7 @@
     {% if request.endpoint != 'main.volunteer_confirmation' %}
     {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
-        <div class="container mt-3">
+        <div class="container mt-3" aria-live="polite">
           {% for category, message in messages %}
             <div class="alert alert-{{ 'success' if category in ['success','ok'] else (category or 'info') }} mb-2" role="alert">
               {{ message }}
@@ -236,7 +243,68 @@
 
     <!-- Main Content -->
 
-    <main>{% block content %}{% endblock %}</main>
+    <main id="main-content">{% block content %}{% endblock %}</main>
+
+    <button
+      type="button"
+      id="hcA11yBtn"
+      class="hc-a11y-fab"
+      aria-label="{{ _('Accessibility settings') }}"
+      aria-controls="hcA11yDrawer"
+      aria-expanded="false"
+    >
+      ♿
+    </button>
+
+    <div
+      id="hcA11yDrawer"
+      class="hc-a11y-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="hcA11yTitle"
+      aria-hidden="true"
+      hidden
+    >
+      <div class="hc-a11y-drawer__overlay" data-a11y-close="true"></div>
+      <div class="hc-a11y-drawer__panel" role="document">
+        <header class="hc-a11y-drawer__header">
+          <h2 id="hcA11yTitle" class="hc-a11y-drawer__title">{{ _('Accessibility') }}</h2>
+          <button type="button" class="hc-a11y-drawer__close" data-a11y-close="true" aria-label="{{ _('Close') }}">
+            ✕
+          </button>
+        </header>
+        <div class="hc-a11y-drawer__body">
+          <div class="hc-a11y-row">
+            <label class="hc-a11y-switch">
+              <input type="checkbox" id="hcA11yContrast">
+              <span>{{ _('High contrast') }}</span>
+            </label>
+          </div>
+          <div class="hc-a11y-row">
+            <label class="hc-a11y-switch">
+              <input type="checkbox" id="hcA11yText">
+              <span>{{ _('Bigger text') }}</span>
+            </label>
+          </div>
+          <div class="hc-a11y-row">
+            <label class="hc-a11y-switch">
+              <input type="checkbox" id="hcA11yMotion">
+              <span>{{ _('Reduce motion') }}</span>
+            </label>
+          </div>
+          <div class="hc-a11y-row">
+            <label class="hc-a11y-switch">
+              <input type="checkbox" id="hcA11ySimple">
+              <span>{{ _('Simplified mode') }}</span>
+            </label>
+          </div>
+          <hr class="hc-a11y-sep">
+          <button type="button" id="hcA11yReset" class="btn btn-outline-secondary btn-sm">
+            {{ _('Reset') }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Footer -->
     {% if not minimal_page %}
@@ -264,19 +332,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% if request.host.startswith('127.0.0.1') or request.host.startswith('localhost') %}
-    <script>
-      // Dev helper: avoid stale assets from an old Service Worker cache.
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then((regs) => {
-          regs.forEach((r) => r.unregister());
-        });
-      }
-      if (window.caches) {
-        caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
-      }
-    </script>
-    {% endif %}
+    <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
     {% block scripts %}{% endblock %}
     {% if not minimal_page %}
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>
