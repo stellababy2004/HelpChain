@@ -37,11 +37,11 @@
         <form method="post" action="{{ url_for('main.become_volunteer') }}" class="hc-form" autocomplete="off" data-hc-magic-link="volunteer" data-hc-generic-ok="{{ _("Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes.") }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-          <input type="text" name="company_fax" id="hp_company_fax" autocomplete="off" tabindex="-1" aria-hidden="true" readonly style="position:absolute;left:-9999px;opacity:0;height:1px;width:1px;">
+          <input type="text" name="company_fax" id="hp_company_fax" autocomplete="off" tabindex="-1" aria-hidden="true" readonly class="hc-honeypot">
           <input type="hidden" name="started_at" id="started_at" value="">
 
           {% if is_login_mode %}
-          <p class="hc-help" style="margin: 0 0 10px;">
+          <p class="hc-help hc-mb-10">
             🔐 Connexion sécurisée - aucun mot de passe
           </p>
           {% endif %}
@@ -54,9 +54,9 @@
           </div>
 
           {% if is_login_mode %}
-          <details class="hc-faq" style="margin-top:8px;">
+          <details class="hc-faq hc-mt-8">
             <summary>Ajouter ville et compétences (optionnel)</summary>
-            <div class="hc-field" style="margin-top:10px;">
+            <div class="hc-field hc-mt-10">
               <label class="hc-label" for="city">Ville / Localité <span class="hc-help">(optionnel)</span></label>
               <input class="hc-input" id="city" name="city" type="text" autocomplete="address-level2" placeholder="Paris, Boulogne-Billancourt…">
               <p class="hc-help">Une zone approximative suffit.</p>
@@ -107,10 +107,10 @@
 
           <button id="magicLinkBtn" type="submit" class="hc-btn hc-btn--primary hc-btn--full">
             <span class="btn-text">{{ "Recevoir mon lien de connexion" if is_login_mode else "Devenir bénévole" }}</span>
-            <span class="btn-spinner" aria-hidden="true" style="display:none; margin-left:8px;">⏳</span>
+            <span class="btn-spinner hc-hidden hc-ml-8" aria-hidden="true">⏳</span>
           </button>
 
-          <p id="magicLinkMsg" class="hc-form-msg" data-hc-form-msg style="display:none; margin-top:10px;" aria-live="polite"></p>
+          <p id="magicLinkMsg" class="hc-form-msg hc-hidden hc-mt-10" data-hc-form-msg aria-live="polite"></p>
 
           {# Footnote removed: the message box above already carries anti-enumeration copy. #}
         </form>
@@ -127,12 +127,12 @@
 
       <details class="hc-faq">
         <summary>Vos données</summary>
-        <p class="hc-help" style="margin-top:10px;">
+        <p class="hc-help hc-mt-10">
           Nous collectons uniquement les informations nécessaires pour vous mettre en relation. Vous gardez le contrôle.
         </p>
       </details>
 
-      <section id="link-sent" class="hc-link-sent" style="display:none;">
+      <section id="link-sent" class="hc-link-sent hc-hidden">
         <div class="hc-card hc-card--center">
           <div class="hc-card__icon" aria-hidden="true">📩</div>
           <h2 class="hc-title hc-title--sm">Vérifiez votre e-mail</h2>

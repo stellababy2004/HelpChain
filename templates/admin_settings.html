@@ -12,129 +12,10 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
-    <style>
-      :root {
-        --primary-color: #667eea;
-        --secondary-color: #764ba2;
-        --success-color: #4caf50;
-        --warning-color: #ff9800;
-        --danger-color: #f44336;
-        --info-color: #2196f3;
-        --light-bg: #f8f9fa;
-        --dark-text: #333;
-        --border-radius: 10px;
-        --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      }
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}" />
+    </head>
 
-      body {
-        background: linear-gradient(
-          135deg,
-          var(--primary-color),
-          var(--secondary-color)
-        );
-        min-height: 100vh;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
-
-      .settings-container {
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        margin: 2rem auto;
-        max-width: 1000px;
-      }
-
-      .settings-header {
-        text-align: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid var(--light-bg);
-      }
-
-      .settings-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(
-          135deg,
-          var(--primary-color),
-          var(--secondary-color)
-        );
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
-        color: white;
-        font-size: 2rem;
-      }
-
-      .form-control:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-      }
-
-      .btn-primary {
-        background: linear-gradient(
-          135deg,
-          var(--primary-color),
-          var(--secondary-color)
-        );
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: var(--border-radius);
-        font-weight: 600;
-        transition: transform 0.2s;
-      }
-
-      .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-      }
-
-      .alert {
-        border-radius: var(--border-radius);
-        border: none;
-      }
-
-      .form-label {
-        font-weight: 600;
-        color: var(--dark-text);
-        margin-bottom: 0.5rem;
-      }
-
-      .setting-group {
-        background: var(--light-bg);
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .setting-group h4 {
-        color: var(--primary-color);
-        margin-bottom: 1rem;
-        border-bottom: 1px solid #dee2e6;
-        padding-bottom: 0.5rem;
-      }
-
-      .breadcrumb {
-        background: transparent;
-        margin-bottom: 2rem;
-      }
-
-      .breadcrumb-item a {
-        color: var(--primary-color);
-        text-decoration: none;
-      }
-
-      .breadcrumb-item.active {
-        color: var(--dark-text);
-        font-weight: 600;
-      }
-    </style>
-  </head>
-
-  <body>
+  <body class="hc-page-admin">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
@@ -486,6 +367,7 @@
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
   </body>
 </html>
+
 
 
 

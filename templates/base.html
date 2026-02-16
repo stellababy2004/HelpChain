@@ -50,7 +50,7 @@
     {% block head %}{% endblock %}
   </head>
 
-  <body>
+  <body class="{% block body_class %}{% endblock %}">
     <a href="#main-content" class="visually-hidden-focusable">
       {{ _('Skip to main content') }}
     </a>

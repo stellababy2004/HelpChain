@@ -14,31 +14,10 @@
       href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
 
-    <style>
-      .hero-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 60px 0;
-      }
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
+    </head>
 
-      .category-card {
-        transition: all 0.3s;
-        height: 100%;
-      }
-
-      .category-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      }
-
-      .category-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-      }
-    </style>
-  </head>
-
-  <body>
+<body class="hc-page-dashboard">
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">
         <a class="navbar-brand" href="{{ url_for('main.index') }}">
@@ -180,6 +159,7 @@
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
   </body>
 </html>
+
 
 
 

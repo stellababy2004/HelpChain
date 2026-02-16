@@ -1,40 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Pros — Leads | Admin{% endblock %}
-
-{% block content %}
-<section class="hc-section">
-  <div class="hc-card">
-    <h1 class="hc-h1">Professionnels — Leads</h1>
-    <p class="hc-muted">Derniers 300 leads.</p>
-
-    <div style="overflow:auto; margin-top:1rem">
-      <table class="hc-table" style="min-width:900px">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Créé</th>
-            <th>Métier</th>
-            <th>Email</th>
-            <th>Ville</th>
-            <th>Tél</th>
-            <th>Nom</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for l in leads %}
-          <tr>
-            <td>#{{ l.id }}</td>
-            <td>{{ l.created_at }}</td>
-            <td>{{ l.profession }}</td>
-            <td>{{ l.email }}</td>
-            <td>{{ l.city or "—" }}</td>
-            <td>{{ l.phone or "—" }}</td>
-            <td>{{ l.full_name or "—" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}" />
 {% endblock %}
+{% block body_class %}hc-page-admin{% endblock %}
