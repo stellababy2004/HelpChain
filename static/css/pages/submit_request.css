@@ -1,0 +1,31 @@
+/* HelpChain - Submit request (scoped) */
+body.hc-page-submit-request .hc-wrap {
+  max-width: 980px;
+}
+
+body.hc-page-submit-request .hc-sr-hero {
+  padding: 28px 0 10px;
+  text-align: center;
+}
+
+body.hc-page-submit-request .hc-sr-hero h1 {
+  margin: 0;
+  font-size: clamp(26px, 3vw, 42px);
+}
+
+body.hc-page-submit-request .hc-sr-hero p {
+  margin: 10px auto 0;
+  max-width: 760px;
+  opacity: 0.9;
+}
+
+body.hc-page-submit-request .hc-sr-card {
+  margin-top: 14px;
+  padding: 18px;
+}
+
+@media (max-width: 576px) {
+  body.hc-page-submit-request .hc-sr-card {
+    padding: 14px;
+  }
+}
