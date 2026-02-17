@@ -24,9 +24,13 @@ def setup_postgresql_deployment():
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
         print("⚠️  Warning: DATABASE_URL not set. Using default PostgreSQL connection.")
-        db_url = "postgresql://helpchain_user:helpchain_pass@localhost:5432/helpchain_db"
+        db_url = (
+            "postgresql://helpchain_user:helpchain_pass@localhost:5432/helpchain_db"
+        )
 
-    print(f"📊 Database URL: {db_url.replace(db_url.split('@')[0].split(':')[-1], '***')}")
+    print(
+        f"📊 Database URL: {db_url.replace(db_url.split('@')[0].split(':')[-1], '***')}"
+    )
 
     # Set Alembic configuration
     os.environ["ALEMBIC_CONFIG"] = str(Path("alembic.ini").absolute())

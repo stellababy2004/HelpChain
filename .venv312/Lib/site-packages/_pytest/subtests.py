@@ -38,7 +38,6 @@ from _pytest.runner import check_interactive_exception
 from _pytest.runner import get_reraise_exceptions
 from _pytest.stash import StashKey
 
-
 if TYPE_CHECKING:
     from typing_extensions import Self
 

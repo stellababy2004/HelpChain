@@ -38,7 +38,6 @@ from typing import NoReturn
 from typing import overload
 from typing import Protocol
 
-
 __all__ = [
     "Expression",
     "ExpressionMatcher",

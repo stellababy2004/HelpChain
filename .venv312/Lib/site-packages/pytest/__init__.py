@@ -91,7 +91,6 @@ from _pytest.warning_types import PytestUnknownMarkWarning
 from _pytest.warning_types import PytestUnraisableExceptionWarning
 from _pytest.warning_types import PytestWarning
 
-
 set_trace = __pytestPDB.set_trace
 
 

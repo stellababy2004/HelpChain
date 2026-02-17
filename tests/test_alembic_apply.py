@@ -7,7 +7,6 @@ from alembic.config import Config
 from alembic import command
 from flask import Flask
 
-
 try:
     # canonical db instance used by the app
     from backend.extensions import db as canonical_db

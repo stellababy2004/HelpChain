@@ -36,7 +36,6 @@ from _pytest.outcomes import OutcomeException
 from _pytest.outcomes import Skipped
 from _pytest.outcomes import TEST_OUTCOME
 
-
 if sys.version_info < (3, 11):
     from exceptiongroup import BaseExceptionGroup
 
@@ -172,7 +171,7 @@ def pytest_runtest_call(item: Item) -> None:
         del sys.last_value
         del sys.last_traceback
         if sys.version_info >= (3, 12, 0):
-            del sys.last_exc  # type:ignore[attr-defined]
+            del sys.last_exc  # type: ignore[attr-defined]
     except AttributeError:
         pass
     try:
@@ -182,7 +181,7 @@ def pytest_runtest_call(item: Item) -> None:
         sys.last_type = type(e)
         sys.last_value = e
         if sys.version_info >= (3, 12, 0):
-            sys.last_exc = e  # type:ignore[attr-defined]
+            sys.last_exc = e  # type: ignore[attr-defined]
         assert e.__traceback__ is not None
         # Skip *this* frame
         sys.last_traceback = e.__traceback__.tb_next

@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Моето табло') }} | HelpChain{% endblock %}
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/volunteer_dashboard.css') }}" />
+{% endblock %}
+{% block body_class %}hc-page-volunteer-dashboard{% endblock %}
 
 {% block content %}
 <!-- HC_DASH_TEMPLATE_MARKER v1 -->
@@ -9,7 +14,7 @@
   <header class="hc-vdash__hero">
     <div class="hc-vdash__heroText">
       <h1 class="hc-vdash__title">{{ _('Моето табло') }}</h1>
-      <p class="hc-vdash__subtitle">
+      <p class="hc-vdash__subtitle hc-secondary">
         {{ _('Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти решаваш</strong>.')|safe }}
       </p>
     </div>
@@ -18,7 +23,7 @@
   {% if notifications and notifications|length %}
     {% set n = notifications[0] %}
     {% set btn_class = 'btn-primary' if n.tone == 'primary' else ('btn-success' if n.tone == 'success' else 'btn-outline-secondary') %}
-    <div class="alert alert-{{ n.tone }} d-flex align-items-start justify-content-between" role="status">
+    <div class="alert alert-{{ n.tone }} d-flex align-items-start justify-content-between hc-secondary" role="status">
       <div>
         <strong>{{ n.title }}</strong><br>
         <span class="small">{{ n.body }}</span>
@@ -91,7 +96,7 @@
       {% endif %}
     </div>
 
-    <p class="hc-muted" style="margin:8px 0 0;">{{ status.body.replace('\n', '<br>')|safe }}</p>
+    <p class="hc-muted hc-secondary" style="margin:8px 0 0;">{{ status.body.replace('\n', '<br>')|safe }}</p>
 
     <div class="hc-activity__actions">
       <a href="{{ status_cta_href }}" class="btn btn-sm btn-primary js-native-link">
@@ -106,9 +111,140 @@
     </div>
   </section>
 
+  <section class="hc-smart">
+    <div class="hc-smart__head">
+      <div>
+        <h2 class="hc-smart__title">{{ _('Recommended for you') }}</h2>
+        <p class="hc-smart__sub hc-secondary">{{ _('Match score + urgency + freshness.') }}</p>
+      </div>
+      <div class="hc-smart__headMeta">
+        <span class="hc-smart__count hc-secondary">{{ (matched_v1|length) if matched_v1 else 0 }} {{ _('matches') }}</span>
+        <span class="hc-smart__algo hc-secondary">{{ _('Sorted by match score & urgency') }}</span>
+        <form method="get" action="{{ url_for('main.volunteer_dashboard') }}"
+              id="matchControls"
+              class="hc-match-controls hc-smart-filters"
+              data-current-min="{{ match_min }}"
+              data-current-prio="{{ match_prio }}"
+              data-current-near="{{ 1 if match_near else 0 }}"
+              data-near-km="{{ near_km }}"
+              data-has-coords="{{ 1 if has_coords else 0 }}">
+          <div class="hc-match-controls__row">
+            <label for="min_match" class="hc-smart-filters__label hc-label">{{ _('Min match') }}</label>
+            <select id="min_match" name="min" class="hc-smart-filters__select hc-select">
+              {% for v in [40,50,55,60,65,70,75,80] %}
+                <option value="{{ v }}" {% if match_min == v %}selected{% endif %}>{{ v }}%</option>
+              {% endfor %}
+            </select>
+
+            <label for="prio" class="hc-smart-filters__label hc-label">{{ _('Priority') }}</label>
+            <select id="prio" name="prio" class="hc-smart-filters__select hc-select">
+              <option value="all" {% if match_prio == "all" %}selected{% endif %}>{{ _('All') }}</option>
+              <option value="urgent" {% if match_prio == "urgent" %}selected{% endif %}>{{ _('Urgent only') }}</option>
+              <option value="high" {% if match_prio == "high" %}selected{% endif %}>{{ _('High+') }}</option>
+            </select>
+
+            <label class="hc-smart-filters__check hc-check {% if not has_coords %}is-disabled{% endif %}"
+                   {% if not has_coords %}title="{{ _('Enable location in profile') }}"{% endif %}>
+              <input id="matchNear" type="checkbox" name="near" value="1" {% if match_near %}checked{% endif %} {% if not has_coords %}disabled aria-describedby="near-help"{% endif %}>
+              <span>{{ _('Near me') }} {% if has_coords %}({{ near_km }}km){% endif %}</span>
+            </label>
+            {% if not has_coords %}
+              <div id="near-help" class="visually-hidden">
+                {{ _('Enable location in profile to use Near me.') }}
+              </div>
+            {% endif %}
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+              {{ _('Apply filters') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="hc-filter-pills">
+      <span class="hc-pill">≥ {{ match_min }}%</span>
+      {% if match_prio == "urgent" %}
+        <span class="hc-pill">{{ _('Urgent only') }}</span>
+      {% elif match_prio == "high" %}
+        <span class="hc-pill">{{ _('High+') }}</span>
+      {% endif %}
+      {% if match_near %}
+        <span class="hc-pill">{{ _('Near') }} {{ near_km }}km</span>
+      {% endif %}
+    </div>
+
+    {% if matched_v1 and matched_v1|length %}
+      <div class="hc-smart__grid">
+        {% for item in matched_v1 %}
+          {% include "components/match_card.html" %}
+        {% endfor %}
+      </div>
+    {% elif low_conf_count and low_conf_count > 0 %}
+      <div class="hc-smart-low hc-secondary">
+        <strong>{{ _('We found %(n)s low-confidence matches (40-54%%).', n=low_conf_count) }}</strong>
+        <p class="mb-0">{{ _('Improve your profile to unlock stronger matches.') }}</p>
+      </div>
+    {% endif %}
+
+    {% if smart_tips and smart_tips|length %}
+      <div class="hc-smart-empty mt-3">
+        <div class="hc-smart-empty__icon">🧭</div>
+        <h4>{{ _('Help us match you better') }}</h4>
+        <p>{{ _('Add your location and a few skills. Then you will start seeing high-confidence matches.') }}</p>
+
+        <div class="hc-smart-progress">
+          <div class="hc-smart-progress__label">{{ _('Profile completeness') }}: {{ profile_completeness }}%</div>
+          <div class="hc-smart-progress__track"><i data-hc-width="{{ profile_completeness }}"></i></div>
+        </div>
+
+        <ul class="hc-smart-tips">
+          {% for tip in smart_tips %}
+            <li>{{ tip.icon }} {{ tip.text }}</li>
+          {% endfor %}
+        </ul>
+
+        <a class="btn btn-outline-primary" href="{{ url_for('main.volunteer_profile') }}">{{ _('Update my profile') }}</a>
+      </div>
+    {% else %}
+      <div class="hc-smart-empty">
+        <div class="hc-smart-empty__icon">🧠</div>
+        <h4>{{ _('No strong matches yet') }}</h4>
+        <p>{{ _('Add more specific skills or enable location to improve matching.') }}</p>
+        <div class="hc-empty-actions">
+          {% if match_min > 50 %}
+            <a class="btn btn-outline-secondary" href="{{ url_for('main.volunteer_dashboard', min=50, prio=match_prio, near=(1 if match_near else 0)) }}">{{ _('Try 50%%') }}</a>
+          {% endif %}
+          <a href="{{ url_for('main.volunteer_profile') }}" class="btn btn-outline-primary btn--ghost">{{ _('Improve my profile') }}</a>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+
+  <div class="hc-modal" id="matchModal" aria-hidden="true">
+    <div class="hc-modal__backdrop" data-close="1"></div>
+    <div class="hc-modal__panel" role="dialog" aria-modal="true" aria-labelledby="matchModalTitle">
+      <div class="hc-modal__head">
+        <h3 id="matchModalTitle">Match explanation</h3>
+        <button class="hc-modal__x" type="button" data-close="1">✕</button>
+      </div>
+      <div class="hc-modal__body">
+        <div class="hc-modal__kpi">
+          <div class="hc-modal__pct" id="mmPct">82%</div>
+          <div class="hc-modal__title" id="mmTitle">—</div>
+        </div>
+        <div class="hc-breakdown" id="mmBreakdown"></div>
+        <div class="hc-modal__note" id="mmNote"></div>
+      </div>
+      <div class="hc-modal__foot">
+        <button class="btn btn-outline-secondary" type="button" data-close="1">{{ _('Close') }}</button>
+      </div>
+    </div>
+  </div>
+
+
   <div class="hc-vdash__layout">
     <aside class="hc-vdash__side">
-      <section class="hc-card hc-sticky hc-sideCard">
+      <section class="hc-card hc-sticky hc-sideCard hc-profile-checklist hc-secondary">
         <h2>{{ copy_lang['checklist_title'] }}</h2>
         <p class="hc-muted">{{ _('Показваме само липсващото, за да станеш готов за свързване.') }}</p>
 
@@ -150,15 +286,16 @@
       </section>
     </aside>
 
-    <main class="hc-card hc-vdash__mainCol hc-vdash__matches">
+    <main class="hc-vdash__mainCol">
+    <section class="hc-card hc-vdash__matches">
       <div class="hc-card__head hc-matchesHead">
         <div>
-          <h2 class="hc-card__title">{{ _('Подходящи заявки') }}</h2>
+          <h2 class="hc-card__title">{{ _('All active requests') }}</h2>
           <p class="hc-muted hc-matchesSub">
-            {{ _('Когато има нужда, която съвпада с теб, ще я видиш тук.') }}
+            {{ _('Open requests ordered by freshness.') }}
           </p>
           <p class="hc-card__desc hc-muted">
-            {{ _('Виждаш това, защото заявката съвпада с твоята локация, наличност и умения. Ако не ти е удобно — просто пропускаш.') }}
+            {{ _('This list is not personalized. Use the section above for intelligent matching.') }}
           </p>
         </div>
       </div>
@@ -181,30 +318,30 @@
             {% set time_attr = created.isoformat() if created and created.isoformat is defined else (created or '') %}
 
             {% if is_done %}
-              {% set req_badge = "Завършено" %}
+              {% set req_badge = _("Завършено") %}
               {% set req_badge_mod = "hc-badge--done" %}
             {% elif is_rejected %}
-              {% set req_badge = "Отказано" %}
+              {% set req_badge = _("Отказано") %}
               {% set req_badge_mod = "hc-badge--rejected" %}
             {% elif is_in_progress %}
-              {% set req_badge = "В процес" %}
+              {% set req_badge = _("В процес") %}
               {% set req_badge_mod = "hc-badge--progress" %}
             {% else %}
-              {% set req_badge = "Нова" %}
+              {% set req_badge = _("Нова") %}
               {% set req_badge_mod = "hc-badge--new" %}
             {% endif %}
 
             {% if is_assigned %}
-              {% set vol_badge = "Назначен/а" %}
+              {% set vol_badge = _("Назначен/а") %}
               {% set vol_badge_mod = "hc-badge--assigned" %}
             {% elif istatus == "APPROVED" %}
-              {% set vol_badge = "Одобрен/а" %}
+              {% set vol_badge = _("Одобрен/а") %}
               {% set vol_badge_mod = "hc-badge--approved" %}
             {% elif is_pending %}
-              {% set vol_badge = "В изчакване" %}
+              {% set vol_badge = _("В изчакване") %}
               {% set vol_badge_mod = "hc-badge--muted" %}
             {% elif istatus == "REJECTED" %}
-              {% set vol_badge = "Отхвърлен/а" %}
+              {% set vol_badge = _("Отхвърлен/а") %}
               {% set vol_badge_mod = "hc-badge--rejected" %}
             {% else %}
               {% set vol_badge = "" %}
@@ -225,9 +362,9 @@
                 </div>
 
                 {% if is_assigned %}
-                  <div class="hc-statusCopy">✅ Ти си назначен/а. Можеш да отвориш детайлите и да действаш.</div>
+                  <div class="hc-statusCopy">✅ {{ _("Ти си назначен/а. Можеш да отвориш детайлите и да действаш.") }}</div>
                 {% elif is_pending %}
-                  <div class="hc-statusCopy">⏳ В изчакване — ще получиш известие при потвърждение.</div>
+                  <div class="hc-statusCopy">⏳ {{ _("В изчакване — ще получиш известие при потвърждение.") }}</div>
                 {% endif %}
 
                 <div class="hc-listItem__metaRow">
@@ -300,7 +437,7 @@
                 {% set act = my_actions_by_req_id.get(m.id) if my_actions_by_req_id is defined else None %}
                 <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
                   <form method="post" class="d-inline">
-                    {{ csrf_form.csrf_token }}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit"
                             class="btn btn-sm btn-primary"
                             formaction="{{ url_for('main.volunteer_can_help', req_id=m.id) }}"
@@ -373,6 +510,7 @@
           </details>
         </section>
       {% endif %}
+    </section>
     </main>
   </div>
 
@@ -485,788 +623,101 @@
     </div>
   </section>
 
-  <style>
-    .hc-myreq__head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-    .hc-tabs{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      padding:6px;
-      border:1px solid rgba(0,0,0,.08);
-      border-radius:12px;
-      background: rgba(0,0,0,.02);
-    }
-    .hc-tab{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border:0;
-      border-radius:10px;
-      background:transparent;
-      color: inherit;
-      cursor:pointer;
-      font-weight:600;
-      font-size: .92rem;
-      line-height:1;
-      white-space:nowrap;
-    }
-    .hc-tab__count{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width: 22px;
-      height: 22px;
-      padding: 0 6px;
-      border-radius:999px;
-      background: rgba(0,0,0,.08);
-      font-weight:700;
-      font-size:.82rem;
-    }
-    .hc-tab[aria-selected="true"]{
-      background: rgba(0,0,0,.06);
-      box-shadow: 0 1px 0 rgba(0,0,0,.06) inset;
-    }
-    .hc-myreq__body{ padding: 8px 0 0; }
-    .hc-tabPanel{ padding: 0; }
-    .hc-pill{
-      display:inline-flex;
-      align-items:center;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:.85rem;
-      background: rgba(0,0,0,.06);
-      color: inherit;
-      border: 1px solid rgba(0,0,0,.06);
-    }
-    .hc-emptyLine{
-      padding: 10px 4px;
-    }
 
-    @media (max-width: 640px){
-      .hc-tabs{ width:100%; justify-content:space-between; }
-      .hc-tab{ flex:1; justify-content:center; }
-    }
-  </style>
-
-  <script>
-    (() => {
-      const root = document.querySelector('.hc-myreq');
-      if (!root) return;
-
-      const tabs = Array.from(root.querySelectorAll('.hc-tab[role="tab"]'));
-      const panels = Array.from(root.querySelectorAll('.hc-tabPanel[role="tabpanel"]'));
-
-      function activate(tabName) {
-        tabs.forEach(btn => {
-          const isActive = btn.dataset.tab === tabName;
-          btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        });
-        panels.forEach(p => {
-          const isActive = p.id === `myreq-panel-${tabName}`;
-          if (isActive) p.removeAttribute('hidden');
-          else p.setAttribute('hidden', 'hidden');
-        });
-      }
-
-      tabs.forEach(btn => {
-        btn.addEventListener('click', () => activate(btn.dataset.tab));
-        btn.addEventListener('keydown', (e) => {
-          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-          e.preventDefault();
-          const i = tabs.indexOf(btn);
-          const next = e.key === 'ArrowRight'
-            ? tabs[(i + 1) % tabs.length]
-            : tabs[(i - 1 + tabs.length) % tabs.length];
-          next.focus();
-          activate(next.dataset.tab);
-        });
-      });
-    })();
-  </script>
 
 <!-- PREVIEW (secondary) -->
   <section class="hc-card hc-vdash__preview" id="hc-preview">
     <div class="hc-card__head">
-      <h2 class="hc-card__title">Как ще изглежда заявка</h2>
-      <p class="hc-card__desc">Пример, за да знаеш какво да очакваш.</p>
+      <h2 class="hc-card__title">{{ _("Как ще изглежда заявка") }}</h2>
+      <p class="hc-card__desc">{{ _("Пример, за да знаеш какво да очакваш.") }}</p>
     </div>
 
     <article class="hc-previewCard">
       <div class="hc-previewCard__chips">
-        <span class="hc-pill">Административна помощ</span>
+        <span class="hc-pill">{{ _("Административна помощ") }}</span>
         <span class="hc-pill">Paris</span>
-        <span class="hc-pill">Онлайн</span>
+        <span class="hc-pill">{{ _("Онлайн") }}</span>
       </div>
 
-      <h3 class="hc-previewCard__title">Помощ с документи</h3>
+      <h3 class="hc-previewCard__title">{{ _("Помощ с документи") }}</h3>
       <p class="hc-previewCard__text">
-        Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.
+        {{ _("Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.") }}
       </p>
 
       <div class="hc-previewCard__actions">
-        <button class="btn btn-outline-primary" type="button" disabled>Виж детайли</button>
-        <button class="btn btn-primary" type="button" disabled>Ще помогна</button>
+        <button class="btn btn-outline-primary" type="button" disabled>{{ _("Виж детайли") }}</button>
+        <button class="btn btn-primary" type="button" disabled>{{ _("Ще помогна") }}</button>
       </div>
 
       <p class="hc-note">
-        Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.
+        {{ _("Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.") }}
       </p>
     </article>
   </section>
 
   <div id="hc-confirm-overlay" class="hc-confirm-overlay" hidden>
     <div class="hc-confirm-box">
-      <h4>Потвърди помощта</h4>
+      <h4>{{ _("Потвърди помощта") }}</h4>
       <p>
-        Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш
-        дали да поемеш. Нищо не се поема автоматично.
+        {{ _("Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично.") }}
       </p>
 
       <div class="hc-confirm-actions">
         <button id="hc-confirm-cancel" class="btn btn-outline-secondary btn-sm">
-          Откажи
+          {{ _("Откажи") }}
         </button>
         <button id="hc-confirm-ok" class="btn btn-primary btn-sm">
-          Да, ще помогна
+          {{ _("Да, ще помогна") }}
         </button>
       </div>
     </div>
   </div>
 
   <div id="hc-help-success" class="hc-help-success" hidden>
-    ✅ Помощта е заявена. Очаква се кратко потвърждение от екипа.
+    ✅ {{ _("Помощта е заявена. Очаква се кратко потвърждение от екипа.") }}
   </div>
 
   <div id="hc-detail-toast" class="hc-help-success" hidden>
-    ℹ️ Детайлите ще се показват тук. Нищо не е изпратено автоматично.
+    ℹ️ {{ _("Детайлите ще се показват тук. Нищо не е изпратено автоматично.") }}
   </div>
 
 </section>
-<script>
-console.log("HC DASHBOARD JS LOADED ✅");
-
-// One delegated handler for details/help
-(function () {
-  if (window.__hcVolDashBound) return;
-  window.__hcVolDashBound = true;
-
-  function hcToast(msg) {
-    let t = document.querySelector(".hc-toast");
-    if (!t) {
-      t = document.createElement("div");
-      t.className = "hc-toast";
-      t.setAttribute("role", "status");
-      t.setAttribute("aria-live", "polite");
-      document.body.appendChild(t);
-    }
-    t.textContent = msg;
-    t.classList.add("is-show");
-    clearTimeout(window.__hcToastTimer);
-    window.__hcToastTimer = setTimeout(() => t.classList.remove("is-show"), 2800);
-  }
-
-  function openDetails(reqId) {
-    if (reqId === "demo") {
-      hcToast("ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница.");
-      return;
-    }
-    window.location.href = `/volunteer/requests/${reqId}`;
-  }
-
-  function startHelp(reqId, btnEl) {
-    const ok = confirm(
-      reqId === "demo"
-        ? "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."
-        : "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.\n\nПродължаваме?"
-    );
-    if (!ok) return;
-
-    if (btnEl) {
-      btnEl.disabled = true;
-      btnEl.textContent = "В изчакване";
-      btnEl.classList.add("disabled");
-      const note = btnEl.closest('.hc-match-card')?.querySelector('.hc-waiting-note');
-      if (note) note.hidden = false;
-    }
-
-    hcToast(reqId === "demo"
-      ? "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
-      : "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
-    );
-  }
-
-  document.addEventListener("click", (e) => {
-    const target = e.target.closest("a, button");
-    if (!target) return;
-
-    // Не пипаме истинските линкове с реален href
-    if (
-      target.tagName === "A" &&
-      target.getAttribute("href") &&
-      target.getAttribute("href") !== "#" &&
-      !target.getAttribute("href").startsWith("javascript")
-    ) {
-      return;
-    }
-
-    if (target.classList.contains("js-native-link")) return; // двойна защита
-
-    const el = e.target.closest("[data-hc-action]");
-    if (!el) return;
-
-    const action = el.dataset.hcAction;
-    const reqId = el.dataset.reqId || "unknown";
-    console.log("[HC] action:", action, "reqId:", reqId);
-
-    if (action === "details") {
-      const href = (el.getAttribute("href") || "").trim();
-      console.log("[HC] details href:", href);
-      // реален линк → позволяваме навигация
-      if (el.tagName === "A" && href && href !== "#" && !href.startsWith("javascript")) {
-        return; // без preventDefault
-      }
-      e.preventDefault();
-      e.stopPropagation();
-      hcToast("ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли.");
-      return;
-    }
-
-    if (action === "help") {
-      e.preventDefault();
-      e.stopPropagation();
-      startHelp(reqId, el);
-      return;
-    }
-  }, true);
-})();
-
-(function () {
-  // 1) Demo mode: add ?demo_match=1 към URL за да видиш ефекта без реална заявка
-  const qs = new URLSearchParams(window.location.search);
-  const demo = qs.get("demo_match") === "1";
-
-  const matchesWrap = document.getElementById("hc-matches");
-  if (!matchesWrap) return;
-
-  // Опитай да намериш първия match card (настрой селектора според твоя HTML)
-  const firstCard = matchesWrap.querySelector(".hc-match-card") || matchesWrap.querySelector(".card") || matchesWrap.firstElementChild;
-
-  if (demo && firstCard) {
-    firstCard.classList.add("hc-match-highlight");
-    // ако няма badge, добави го
-    const header = firstCard.querySelector(".d-flex") || firstCard;
-    if (header && !firstCard.querySelector(".hc-new-pill")) {
-      const pill = document.createElement("span");
-      pill.className = "hc-new-pill";
-      pill.textContent = "🟢 НОВО";
-      header.appendChild(pill);
-    }
-    firstCard.scrollIntoView({ behavior: "smooth", block: "center" });
-    return;
-  }
-
-  // 2) Real: ако имаш реална заявка и искаш да highlight-неш само при "just_logged_in"
-  // (ако backend слага session флаг и ти го подаваш в template като just_logged_in)
-  const justLoggedIn = {{ 'true' if just_logged_in else 'false' }};
-  if (justLoggedIn && firstCard) {
-    firstCard.classList.add("hc-match-highlight");
-    firstCard.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-})();
-
-// Shared hook list for post-card updates
-window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
-
-// Hide demo block if real matches exist
-(() => {
-  function hideDemoIfRealExists() {
-    const demoWrap = document.querySelector('[data-demo-wrap="1"]');
-    if (!demoWrap) return;
-    const hasReal = !!document.querySelector('.hc-match-card[data-req-id]:not([data-demo="1"])');
-    demoWrap.style.display = hasReal ? 'none' : '';
-  }
-  hideDemoIfRealExists();
-  window.hcAfterCardsUpdate.push(hideDemoIfRealExists);
-})();
-
-  // Auto-fade highlight after ~3.5s
-  window.addEventListener("load", () => {
-    const el = document.querySelector(".hc-match-highlight");
-    if (!el) return;
-    setTimeout(() => {
-      el.classList.remove("hc-match-highlight");
-    }, 3500);
-  });
-
-  function markSeenOnHover(card) {
-    card.addEventListener('mouseenter', () => {
-      card.setAttribute('data-seen', '1');
-      card.classList.remove('hc-match-highlight');
-    }, { once: true });
-  }
-
-  document.querySelectorAll('.hc-match-card').forEach(card => markSeenOnHover(card));
-
-  // Seen state with sessionStorage (click marks as seen)
-  (() => {
-    const KEY = 'hcSeenRequests';
-    const seen = new Set(JSON.parse(sessionStorage.getItem(KEY) || '[]'));
-
-  document.querySelectorAll('.hc-match-card').forEach((card, idx) => {
-    const id = card.dataset.reqId || idx;
-
-    if (seen.has(String(id))) {
-      card.classList.add('is-seen');
-    }
-
-    card.addEventListener('click', () => {
-      seen.add(String(id));
-      sessionStorage.setItem(KEY, JSON.stringify([...seen]));
-      card.classList.add('is-seen');
-    }, { once: true });
-    markSeenOnHover(card);
-  });
-})();
-
-// First-match micro-message (once per browser)
-(() => {
-  const FLAG = 'hcFirstMatchSeen';
-  function showBox() {
-    const hasMatch = document.querySelector('.hc-match-card:not([data-demo=\"1\"])');
-    if (hasMatch && !localStorage.getItem(FLAG)) {
-      const box = document.getElementById('hc-first-match');
-      if (box) {
-        box.hidden = false;
-        localStorage.setItem(FLAG, '1');
-      }
-    }
-  }
-  showBox();
-  window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
-  window.hcAfterCardsUpdate.push(showBox);
-})();
-
-// Micro-tooltip on primary CTA
-(() => {
-  const TIP_TITLE = 'Какво става, ако натиснеш?';
-  const TIP_TEXT  = 'Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично.';
-
-  let tipEl = null;
-  const TIP_ID = 'hc-help-tip';
-
-  function ensureTip() {
-    if (tipEl) return tipEl;
-    tipEl = document.createElement('div');
-    tipEl.className = 'hc-tip';
-    tipEl.id = TIP_ID;
-    tipEl.innerHTML = `
-      <div class="hc-tip__arrow"></div>
-      <div class="hc-tip__title">${TIP_TITLE}</div>
-      <div class="hc-tip__text">${TIP_TEXT}</div>
-    `;
-    document.body.appendChild(tipEl);
-    return tipEl;
-  }
-
-  function showTip(btn) {
-    const tip = ensureTip();
-    const r = btn.getBoundingClientRect();
-    tip.style.top  = `${window.scrollY + r.bottom + 10}px`;
-    tip.style.left = `${window.scrollX + r.left}px`;
-    tip.classList.add('is-on');
-  }
-
-  function hideTip() {
-    if (tipEl) tipEl.classList.remove('is-on');
-  }
-
-  function bindTooltips(root=document) {
-    root.querySelectorAll('.hc-match-card .btn.btn-primary').forEach(btn => {
-      if (btn.dataset.hcTipBound) return;
-      btn.dataset.hcTipBound = '1';
-      btn.setAttribute('aria-describedby', TIP_ID);
-
-      btn.addEventListener('mouseenter', () => showTip(btn));
-      btn.addEventListener('mouseleave', hideTip);
-      btn.addEventListener('focus', () => showTip(btn));
-      btn.addEventListener('blur', hideTip);
-
-      // mobile: tap shows tip
-      btn.addEventListener('touchstart', (e) => { showTip(btn); e.stopPropagation(); }, {passive:true});
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (tipEl && tipEl.classList.contains('is-on')) {
-          hideTip();
-        } else {
-          showTip(btn);
-        }
-      });
-    });
-  }
-
-  bindTooltips();
-
-  document.addEventListener('click', hideTip);
-  window.addEventListener('scroll', hideTip, {passive:true});
-
-  // expose for re-bind after DOM refresh
-  window.hcBindHelpTooltips = bindTooltips;
-})();
-
-// Subtle polling for new matches; animates arrivals
-(() => {
-  const INTERVAL_MS = 25000;
-  const CARD_SEL = '.hc-match-card';
-
-  function sig(card) {
-    if (card.dataset.demo === '1') return null;
-    const id = card.dataset.reqId;
-    if (id) return `id:${id}`;
-    const title = (card.querySelector('.hc-listItem__title')?.textContent || '').trim();
-    const meta  = (card.querySelector('.hc-listItem__meta')?.textContent || '').trim();
-    const body  = (card.querySelector('.hc-listItem__body')?.textContent || '').trim().slice(0,80);
-    return `t:${title}|m:${meta}|b:${body}`;
-  }
-
-  function currentSet() {
-    return new Set([...document.querySelectorAll(CARD_SEL)].map(sig).filter(Boolean));
-  }
-
-  let seen = currentSet();
-  let busy = false;
-
-  async function poll() {
-    if (busy || document.hidden) return;
-    busy = true;
-
-    try {
-      const res = await fetch(window.location.href, { headers: { 'X-Requested-With': 'hc-poll' } });
-      if (!res.ok) return;
-
-      const html = await res.text();
-      const doc = new DOMParser().parseFromString(html, 'text/html');
-      const newCards = [...doc.querySelectorAll(CARD_SEL)].filter(c => c.dataset.demo !== '1');
-      if (!newCards.length) return;
-
-      const now = new Set(newCards.map(sig));
-      const added = [...now].filter(x => !seen.has(x));
-      if (!added.length) return;
-
-      const curFirst = document.querySelector(CARD_SEL);
-      const newFirst = doc.querySelector(CARD_SEL);
-      if (!curFirst || !newFirst) return;
-
-      const curParent = curFirst.parentElement;
-      const newParent = newFirst.parentElement;
-      if (!curParent || !newParent) return;
-
-      curParent.innerHTML = newParent.innerHTML;
-
-      document.querySelectorAll(CARD_SEL).forEach(card => {
-        if (added.includes(sig(card))) {
-          card.classList.add('hc-arrive');
-          setTimeout(() => card.classList.remove('hc-arrive'), 1200);
-        }
-      });
-
-      if (window.hcBindHelpTooltips) window.hcBindHelpTooltips(document);
-      if (window.hcAfterCardsUpdate) window.hcAfterCardsUpdate.forEach(fn => { try { fn(); } catch(_){} });
-
-      seen = currentSet();
-      if (window.hcUpdateNotif) window.hcUpdateNotif();
-    } catch (e) {
-      // silent
-    } finally {
-      busy = false;
-    }
-  }
-
-  setInterval(poll, INTERVAL_MS);
-})();
-
-// Demo card injector when no matches (via ?demo_match=1)
-(() => {
-  function injectDemo() {
-    if (document.querySelector('.hc-match-card')) return;
-    const matchesMain = document.querySelector('.hc-vdash__matches');
-    if (!matchesMain) return;
-
-    const empty = matchesMain.querySelector('.hc-empty');
-    if (empty) empty.remove();
-
-    const slot = document.createElement('div');
-    slot.id = 'hc-matches';
-    slot.className = 'hc-soft-fade';
-    slot.innerHTML = `
-          <div class="hc-list">
-            <article class="hc-listItem hc-soft-fade hc-match-card hc-demo-card" data-req-id="demo-1" data-demo="1">
-              <div class="hc-listItem__top d-flex align-items-center justify-content-between">
-                <strong class="hc-listItem__title">Примерна заявка</strong>
-                <span class="hc-listItem__meta">току-що</span>
-                <span class="hc-demo-pill">Пример (демо)</span>
-              </div>
-              <p class="hc-muted" style="margin:4px 0 8px;">Току-що се появи. Провери дали ти е удобно.</p>
-              <div class="hc-listItem__body">
-                Човек търси помощ за документи и насоки къде да ги подаде.
-              </div>
-              <p class="hc-why">
-                {% if volunteer.location %}
-                  {{ _('Виждаш тази заявка, защото съвпада с профила ти в %(loc)s', loc=volunteer.location) }}
-                {% else %}
-                  {{ _('Виждаш тази заявка, защото съвпада с профила ти') }}
-                {% endif %}
-              </p>
-              <div class="hc-listItem__actions">
-                <a class="btn btn-sm btn-outline-primary" href="javascript:void(0)" aria-disabled="true">Виж детайли</a>
-                <button class="btn btn-sm btn-primary" type="button">Ще помогна</button>
-              </div>
-          <p class="hc-cta-hint">
-            Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.
-          </p>
-        </article>
-      </div>
-    `;
-    matchesMain.appendChild(slot);
-
-    if (window.hcBindHelpTooltips) window.hcBindHelpTooltips(document);
-    if (window.hcAfterCardsUpdate) window.hcAfterCardsUpdate.forEach(fn => { try { fn(); } catch(_){} });
-  }
-
-  const qs = new URLSearchParams(window.location.search);
-  if (qs.get('demo_match') === '1' && !document.querySelector('.hc-match-card')) {
-    injectDemo();
-  }
-})();
-
-// Seen state (data-seen + sessionStorage)
-(() => {
-  const KEY = 'hcSeenRequests';
-  function bindSeen() {
-    const seenSet = new Set(JSON.parse(sessionStorage.getItem(KEY) || '[]'));
-    document.querySelectorAll('.hc-match-card').forEach(card => {
-      const id = card.dataset.reqId;
-      if (!id) return;
-
-      if (seenSet.has(String(id))) {
-        card.classList.add('hc-seen');
-        card.setAttribute('data-seen','1');
-      }
-
-      if (card.dataset.hcSeenBound) return;
-      card.dataset.hcSeenBound = '1';
-
-      card.addEventListener('click', () => {
-        seenSet.add(String(id));
-        sessionStorage.setItem(KEY, JSON.stringify([...seenSet]));
-        card.classList.add('hc-seen');
-        card.setAttribute('data-seen','1');
-      }, { once: true });
-
-      card.addEventListener('mouseenter', () => {
-        card.setAttribute('data-seen','1');
-        card.classList.remove('hc-match-highlight');
-      }, { once: true });
-    });
-  }
-  bindSeen();
-  window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
-  window.hcAfterCardsUpdate.push(bindSeen);
-})();
-
-// Mini confirm overlay for "Ще помогна"
-(() => {
-  let activeHelpBtn = null;
-  const overlay = document.getElementById('hc-confirm-overlay');
-  const cancelBtn = document.getElementById('hc-confirm-cancel');
-  const okBtn = document.getElementById('hc-confirm-ok');
-  const successBox = document.getElementById('hc-help-success');
-  if (!overlay || !cancelBtn || !okBtn) return;
-
-  function showHelpSuccess() {
-    if (!successBox) return;
-    successBox.hidden = false;
-    setTimeout(() => { successBox.hidden = true; }, 3500);
-  }
-
-  function bindHelpButtons(root = document) {
-    root.querySelectorAll('.hc-help-btn').forEach(btn => {
-      if (btn.dataset.hcConfirmBound) return;
-      btn.dataset.hcConfirmBound = '1';
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        if (btn.disabled) return;
-        activeHelpBtn = btn;
-        overlay.hidden = false;
-      });
-    });
-  }
-  bindHelpButtons();
-  window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
-  window.hcAfterCardsUpdate.push(() => bindHelpButtons(document));
-
-  cancelBtn.onclick = () => {
-    overlay.hidden = true;
-    activeHelpBtn = null;
-  };
-
-  okBtn.onclick = () => {
-    overlay.hidden = true;
-    if (!activeHelpBtn) return;
-    activeHelpBtn.classList.add('loading');
-    activeHelpBtn.textContent = 'Обработва се…';
-
-    setTimeout(() => {
-      activeHelpBtn.classList.remove('loading');
-      activeHelpBtn.disabled = true;
-      activeHelpBtn.textContent = 'В изчакване';
-      activeHelpBtn.classList.add('disabled');
-      const note = activeHelpBtn.closest('.hc-match-card')?.querySelector('.hc-waiting-note');
-      if (note) note.hidden = false;
-
-      showHelpSuccess();
-      activeHelpBtn = null;
-    }, 800);
-  };
-})();
-
-// Help history (prevent double actions per card)
-(() => {
-  const helped = JSON.parse(localStorage.getItem('hc-helped') || '[]');
-  document.querySelectorAll('.hc-help-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const card = btn.closest('.hc-match-card');
-      if (!card) return;
-      const id = card.dataset.reqId;
-      if (!id) return;
-      if (!helped.includes(id)) {
-        helped.push(id);
-        localStorage.setItem('hc-helped', JSON.stringify(helped));
-      }
-    });
-  });
-
-  document.querySelectorAll('.hc-match-card').forEach(card => {
-    const id = card.dataset.reqId;
-    if (!id) return;
-    if (helped.includes(id)) {
-      const btn = card.querySelector('.hc-help-btn');
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = 'В изчакване';
-        btn.classList.add('disabled');
-      }
-    }
-  });
-})();
-
-// Notification badge for new matches
-(() => {
-  function updateNotif() {
-    const newCards = document.querySelectorAll('.hc-match-highlight:not([data-demo="1"])');
-    const badge = document.getElementById('hcNotif');
-    if (!badge) return;
-    if (newCards.length) {
-      badge.textContent = newCards.length;
-      badge.hidden = false;
-    } else {
-      badge.hidden = true;
-    }
-  }
-  window.hcUpdateNotif = updateNotif;
-  updateNotif();
-})();
-
-// Detail toast (placeholder)
-(() => {
-  const toast = document.getElementById('hc-detail-toast');
-  if (!toast) return;
-  function showDetailToast() {
-    toast.hidden = false;
-    setTimeout(() => { toast.hidden = true; }, 2200);
-  }
-  function bindDetailToast(root=document) {
-    root.querySelectorAll('.hc-detail-link').forEach(link => {
-      if (link.dataset.hcDetailBound) return;
-      link.dataset.hcDetailBound = '1';
-      const card = link.closest('.hc-match-card');
-      const isDemo = card && card.dataset.demo === "1";
-      if (!isDemo) return; // реалните карти не се прихващат
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        showDetailToast();
-      });
-    });
-  }
-  bindDetailToast();
-  window.hcAfterCardsUpdate = window.hcAfterCardsUpdate || [];
-  window.hcAfterCardsUpdate.push(() => bindDetailToast(document));
-})();
-
-(function(){
-  function pretty(ts){
-    const d = new Date(ts);
-    if (isNaN(d.getTime())) return null;
-    const diff = Math.floor((Date.now() - d.getTime())/1000);
-    if (diff < 60) return "just now";
-    const m = Math.floor(diff/60);
-    if (m < 60) return `${m} min ago`;
-    const h = Math.floor(m/60);
-    if (h < 24) return `${h} h ago`;
-    const days = Math.floor(h/24);
-    return `${days} d ago`;
-  }
-  document.querySelectorAll("time.hc-time[datetime]").forEach(t=>{
-    const p = pretty(t.getAttribute("datetime"));
-    if (p) t.textContent = p;
-  });
-})();
-
-(function(){
-  const tabs = Array.from(document.querySelectorAll(".hc-tab[data-tab]"));
-  const panels = {
-    pending: document.getElementById("tab-pending"),
-    approved: document.getElementById("tab-approved"),
-    rejected: document.getElementById("tab-rejected"),
-  };
-  if (!tabs.length) return;
-
-  function activate(key){
-    tabs.forEach(t=>{
-      const on = t.dataset.tab === key;
-      t.classList.toggle("is-active", on);
-      t.setAttribute("aria-selected", on ? "true" : "false");
-    });
-    Object.entries(panels).forEach(([k, el])=>{
-      if (!el) return;
-      const on = k === key;
-      el.classList.toggle("is-active", on);
-      el.hidden = !on;
-    });
-    try { localStorage.setItem("hc_myreq_tab", key); } catch(e) {}
-  }
-
-  tabs.forEach(t=>{
-    t.addEventListener("click", ()=> activate(t.dataset.tab));
-  });
-
-  let saved = null;
-  try { saved = localStorage.getItem("hc_myreq_tab"); } catch(e) {}
-  if (saved && panels[saved]) activate(saved);
-})();
-
+<script type="application/json" id="hc-volDash-i18n">
+{{ {
+  "toastDemoDetails": _("ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница."),
+  "confirmDemoInterest": _("Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."),
+  "confirmSendInterest": _("Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.") ~ "\n\n" ~ _("Продължаваме?"),
+  "pending": _("В изчакване"),
+  "toastDemoHelpSent": _("✅ Демо: помощта е заявена. Нищо не се поема автоматично."),
+  "toastHelpSent": _("✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."),
+  "toastDemoInlineDetails": _("ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."),
+  "newPill": _("🟢 НОВО"),
+  "tipTitle": _("Какво става, ако натиснеш?"),
+  "tipText": _("Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично."),
+  "demoTitle": _("Примерна заявка"),
+  "demoJustNow": _("току-що"),
+  "demoPill": _("Пример (демо)"),
+  "demoAppeared": _("Току-що се появи. Провери дали ти е удобно."),
+  "demoBody": _("Човек търси помощ за документи и насоки къде да ги подаде."),
+  "viewDetails": _("Виж детайли"),
+  "willHelp": _("Ще помогна"),
+  "inviteHint": _("Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш."),
+  "processing": _("Обработва се…"),
+  "close": _("Close")
+}|tojson }}
+</script>
+<script type="application/json" id="hc-volDash-cfg">
+{{ {
+  "hasHcApi": true,
+  "path": request.path,
+  "qs": request.query_string.decode("utf-8") if request.query_string else "",
+  "justLoggedIn": just_logged_in,
+  "demoReason": (_("Виждаш тази заявка, защото съвпада с профила ти в %(loc)s", loc=volunteer.location) if volunteer.location else _("Виждаш тази заявка, защото съвпада с профила ти"))
+}|tojson }}
 </script>
 {% endblock %}
 
 {% block scripts %}
-<script>
-  console.log("[HC] dashboard scripts block loaded");
-</script>
+<script src="{{ url_for('static', filename='js/pages/volunteer_dashboard.js') }}" defer></script>
 {% endblock %}
 

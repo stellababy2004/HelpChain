@@ -6,20 +6,18 @@
 
 __metaclass__ = type
 __all__ = [
-    'additional_tests',
-    ]
+    "additional_tests",
+]
 
 import atexit
 import doctest
 import os
-#from pkg_resources import (
+
+# from pkg_resources import (
 #    resource_filename, resource_exists, resource_listdir, cleanup_resources)
 import unittest
 
-DOCTEST_FLAGS = (
-    doctest.ELLIPSIS |
-    doctest.NORMALIZE_WHITESPACE |
-    doctest.REPORT_NDIFF)
+DOCTEST_FLAGS = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_NDIFF
 
 
 # def additional_tests():

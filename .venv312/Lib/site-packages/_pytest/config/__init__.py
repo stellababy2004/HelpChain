@@ -74,7 +74,6 @@ from _pytest.stash import Stash
 from _pytest.warning_types import PytestConfigWarning
 from _pytest.warning_types import warn_explicit_for
 
-
 if TYPE_CHECKING:
     from _pytest.assertion.rewrite import AssertionRewritingHook
     from _pytest.cacheprovider import Cache
@@ -344,7 +343,7 @@ def _prepareconfig(
     if isinstance(args, os.PathLike):
         args = [os.fspath(args)]
     elif not isinstance(args, list):
-        msg = (  # type:ignore[unreachable]
+        msg = (  # type: ignore[unreachable]
             "`args` parameter expected to be a list of strings, got: {!r} (type: {})"
         )
         raise TypeError(msg.format(args, type(args)))
@@ -861,9 +860,9 @@ class PytestPluginManager(PluginManager):
         # "terminal" or "capture".  Those plugins are registered under their
         # basename for historic purposes but must be imported with the
         # _pytest prefix.
-        assert isinstance(modname, str), (
-            f"module name as text required, got {modname!r}"
-        )
+        assert isinstance(
+            modname, str
+        ), f"module name as text required, got {modname!r}"
         if self.is_blocked(modname) or self.get_plugin(modname) is not None:
             return
 
@@ -1475,9 +1474,9 @@ class Config:
 
     def parse(self, args: list[str], addopts: bool = True) -> None:
         # Parse given cmdline arguments into this config object.
-        assert self.args == [], (
-            "can only parse cmdline args at most once per Config object"
-        )
+        assert (
+            self.args == []
+        ), "can only parse cmdline args at most once per Config object"
 
         self.hook.pytest_addhooks.call_historic(
             kwargs=dict(pluginmanager=self.pluginmanager)
@@ -2082,8 +2081,7 @@ def parse_warning_filter(
     * Raises UsageError so we get nice error messages on failure.
     """
     __tracebackhide__ = True
-    error_template = dedent(
-        f"""\
+    error_template = dedent(f"""\
         while parsing the following warning configuration:
 
           {arg}
@@ -2091,23 +2089,20 @@ def parse_warning_filter(
         This error occurred:
 
         {{error}}
-        """
-    )
+        """)
 
     parts = arg.split(":")
     if len(parts) > 5:
         doc_url = (
             "https://docs.python.org/3/library/warnings.html#describing-warning-filters"
         )
-        error = dedent(
-            f"""\
+        error = dedent(f"""\
             Too many fields ({len(parts)}), expected at most 5 separated by colons:
 
               action:message:category:module:line
 
             For more information please consult: {doc_url}
-            """
-        )
+            """)
         raise UsageError(error_template.format(error=error))
 
     while len(parts) < 5:

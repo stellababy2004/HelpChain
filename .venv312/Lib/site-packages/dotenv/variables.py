@@ -71,7 +71,7 @@ def parse_variables(value: str) -> Iterator[Atom]:
     cursor = 0
 
     for match in _posix_variable.finditer(value):
-        (start, end) = match.span()
+        start, end = match.span()
         name = match["name"]
         default = match["default"]
 

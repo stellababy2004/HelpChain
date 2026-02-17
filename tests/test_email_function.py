@@ -2,6 +2,7 @@
 """
 Test script for email functionality
 """
+
 import os
 
 from backend.appy import app, send_email_2fa_code

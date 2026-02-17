@@ -31,10 +31,18 @@ def create_test_database():
     from models_with_analytics import AnalyticsEvent, Feedback
 
     with app.app_context():
-        Volunteer.query.filter(Volunteer.email.like("%@helpchain-test.%")).delete(synchronize_session=False)
-        Feedback.query.filter(Feedback.email.like("%@helpchain-test.%")).delete(synchronize_session=False)
-        HelpRequest.query.filter(HelpRequest.email.like("%@helpchain-test.%")).delete(synchronize_session=False)
-        AnalyticsEvent.query.filter(AnalyticsEvent.user_session.like("test_session_%")).delete(synchronize_session=False)
+        Volunteer.query.filter(Volunteer.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        Feedback.query.filter(Feedback.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        HelpRequest.query.filter(HelpRequest.email.like("%@helpchain-test.%")).delete(
+            synchronize_session=False
+        )
+        AnalyticsEvent.query.filter(
+            AnalyticsEvent.user_session.like("test_session_%")
+        ).delete(synchronize_session=False)
         db.session.commit()
         print("✅ Всички тестови данни са изтрити.")
         print("📝 Създаване на тестови Feedback записи...")
@@ -343,11 +351,15 @@ def create_test_database():
                 user_type=random.choice(user_types),
                 user_ip=fake.ipv4(),
                 user_agent="TestUserAgent/1.0",
-                referrer=random.choice([None, "https://google.com", "https://facebook.com", "direct"]),
+                referrer=random.choice(
+                    [None, "https://google.com", "https://facebook.com", "direct"]
+                ),
                 page_url=random.choice(popular_pages),
                 page_title=f"Test Page - {random.choice(popular_pages).replace('/', '')}",
                 load_time=random.uniform(0.2, 3.0),
-                screen_resolution=random.choice(["1920x1080", "1366x768", "1440x900", "1536x864"]),
+                screen_resolution=random.choice(
+                    ["1920x1080", "1366x768", "1440x900", "1536x864"]
+                ),
                 device_type=random.choice(["desktop", "mobile", "tablet"]),
                 created_at=event_time,
             )

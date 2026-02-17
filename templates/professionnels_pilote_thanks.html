@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Merci — Phase pilote | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-section">
+  <div class="hc-card">
+    <h1 class="hc-h1">Merci ✅</h1>
+    <p style="margin-top:.35rem">
+      Votre demande a bien été enregistrée. Nous vous recontactons rapidement.
+    </p>
+    <p class="hc-muted" style="margin-top:.5rem">
+      Référence: #{{ lead.id }}
+    </p>
+
+    <div style="margin-top:1rem">
+      <a class="hc-btn hc-btn--primary" href="{{ url_for('main.index') }}">Retour à l’accueil</a>
+      <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.professionnels') }}">Professionnels</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

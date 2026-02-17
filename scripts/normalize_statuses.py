@@ -16,7 +16,9 @@ from sqlalchemy import create_engine, text
 
 url = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("DATABASE_URL")
 if not url:
-    print("Provide DATABASE_URL env or as first arg (e.g. sqlite:///c:/path/to/db.sqlite)")
+    print(
+        "Provide DATABASE_URL env or as first arg (e.g. sqlite:///c:/path/to/db.sqlite)"
+    )
     sys.exit(1)
 
 engine = create_engine(url, future=True)

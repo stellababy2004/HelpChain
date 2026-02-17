@@ -52,9 +52,7 @@ class MariaDBDialect(MySQLDialect):
 
 
 def loader(driver: str) -> Callable[[], type[MariaDBDialect]]:
-    dialect_mod = __import__(
-        "sqlalchemy.dialects.mysql.%s" % driver
-    ).dialects.mysql
+    dialect_mod = __import__("sqlalchemy.dialects.mysql.%s" % driver).dialects.mysql
 
     driver_mod = getattr(dialect_mod, driver)
     if hasattr(driver_mod, "mariadb_dialect"):

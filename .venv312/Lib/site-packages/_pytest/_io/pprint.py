@@ -113,7 +113,7 @@ class PrettyPrinter:
         elif (
             _dataclasses.is_dataclass(object)
             and not isinstance(object, type)
-            and object.__dataclass_params__.repr  # type:ignore[attr-defined]
+            and object.__dataclass_params__.repr  # type: ignore[attr-defined]
             and
             # Check dataclass has generated repr method.
             hasattr(object.__repr__, "__wrapped__")

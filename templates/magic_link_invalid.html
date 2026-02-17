@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Lien invalide") }} | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-page">
+  <div class="hc-container hc-container--narrow">
+    <div class="hc-card hc-card--pad-lg">
+      <h1 class="hc-title hc-title--sm">{{ _("Lien invalide ou expiré") }}</h1>
+      <p class="hc-subtitle">
+        {{ _("Ce lien n’est plus valable. Veuillez demander un nouveau lien.") }}
+      </p>
+      <div class="hc-actions">
+        <a class="hc-btn hc-btn--primary" href="{{ url_for('main.submit_request') }}">{{ _("Submit a request") }}</a>
+        <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.become_volunteer') }}">{{ _("Register") }}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

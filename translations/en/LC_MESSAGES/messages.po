@@ -2564,3 +2564,33 @@ msgstr "No pressure"
 
 #~ msgid "не са зададени"
 #~ msgstr ""
+
+msgid "Votre lien de connexion HelpChain (15 min)"
+msgstr "Your HelpChain sign-in link (15 min)"
+
+msgid "Sans mot de passe. Recevez un lien sécurisé par e-mail."
+msgstr "No password. Receive a secure link by email."
+
+msgid "Ouvrir mon lien de connexion"
+msgstr "Open my sign-in link"
+
+msgid "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
+msgstr "If the button doesn't work, copy and paste this link:"
+
+msgid "Données minimales, respect RGPD"
+msgstr "Minimal data, GDPR compliant"
+
+msgid "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
+msgstr "If you didn't request this, please ignore this email."
+
+msgid "Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes."
+msgstr "If the email is valid, you will receive a link within a few minutes."
+
+msgid "Lien invalide"
+msgstr "Invalid link"
+
+msgid "Lien invalide ou expiré"
+msgstr "Invalid or expired link"
+
+msgid "Ce lien n’est plus valable. Veuillez demander un nouveau lien."
+msgstr "This link is no longer valid. Please request a new link."

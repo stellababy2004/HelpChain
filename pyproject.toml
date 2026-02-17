@@ -31,10 +31,37 @@ dependencies = [
 ]
 [tool.ruff]
 exclude = [
+	".venv",
+	"venv",
 	"vendor",
 	"backend/vendor",
 	"backend/helpchain-backend/vendor",
-	".venv",
-	"venv",
+	"node_modules",
+	"migrations",
+	"dist",
+	"build",
+	"__pycache__",
 	"_vendor",
 ]
+
+[tool.black]
+# Formatting baseline.
+line-length = 88
+target-version = ["py311"]
+
+# Keep CI fast and avoid touching vendored / generated trees.
+extend-exclude = '''
+/(
+  \.venv
+| venv
+| vendor
+| node_modules
+| migrations
+| dist
+| build
+| __pycache__
+| \.git
+| \.ruff_cache
+| \.pytest_cache
+)/
+'''

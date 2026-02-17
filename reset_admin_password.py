@@ -19,7 +19,9 @@ if not USERNAME and not EMAIL:
 app = create_app()
 
 with app.app_context():
-    user = User.query.filter((User.username == USERNAME) | (User.email == EMAIL)).first()
+    user = User.query.filter(
+        (User.username == USERNAME) | (User.email == EMAIL)
+    ).first()
 
     if not user:
         user = User(username=USERNAME, email=EMAIL)

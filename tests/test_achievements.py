@@ -6,7 +6,6 @@ class TestAchievementsIntegration:
         # Първо се логваме като volunteer
         volunteer = init_test_data["volunteer"]
 
-
         # Инициализирай сесията с първа заявка
         client.get("/")
 

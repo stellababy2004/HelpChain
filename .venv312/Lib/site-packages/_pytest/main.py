@@ -48,7 +48,6 @@ from _pytest.runner import collect_one_node
 from _pytest.runner import SetupState
 from _pytest.warning_types import PytestWarning
 
-
 if TYPE_CHECKING:
     from typing_extensions import Self
 

@@ -5,7 +5,6 @@ from typing import cast
 from typing import Generic
 from typing import TypeVar
 
-
 __all__ = ["Stash", "StashKey"]
 
 

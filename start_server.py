@@ -10,12 +10,20 @@ import signal
 import subprocess
 import sys
 import time
+from typing import Optional
 
 
 def signal_handler(signum, frame):
     """Handle Ctrl+C gracefully"""
     print("\n\n🛑 Stopping HelpChain server...")
     sys.exit(0)
+
+def _env_str(name: str) -> Optional[str]:
+    v = os.environ.get(name)
+    if v is None:
+        return None
+    v = str(v).strip()
+    return v if v else ""
 
 
 def main():
@@ -30,16 +38,37 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
 
+    # Quick env sanity (do not print secrets)
+    mail_server = _env_str("MAIL_SERVER")
+    mail_port = _env_str("MAIL_PORT")
+    mail_user = _env_str("MAIL_USERNAME")
+    mail_pass_set = bool(_env_str("MAIL_PASSWORD"))
+    print("🔧 ENV sanity (this shell/process):")
+    print(f"   MAIL_SERVER={mail_server!r}")
+    print(f"   MAIL_PORT={mail_port!r}")
+    print(f"   MAIL_USERNAME={mail_user!r}")
+    print(f"   MAIL_PASSWORD_SET={mail_pass_set}")
+    if mail_server is None and os.path.isfile(os.path.join(script_dir, ".env")):
+        print(
+            "ℹ️  Note: .env exists in repo root; the app loads it via python-dotenv. "
+            "If you're setting env vars in another terminal (PowerShell vs Git Bash), "
+            "they will not be visible here."
+        )
+
     # Stop any existing Python processes (optional)
     # Skippable via HELPCHAIN_SKIP_KILL=1 to avoid killing unrelated Python tasks
     skip_kill = os.environ.get("HELPCHAIN_SKIP_KILL") in ("1", "true", "True")
     if skip_kill:
-        print("⏭️  [1/3] Skipping mass-kill of Python processes (HELPCHAIN_SKIP_KILL=1)")
+        print(
+            "⏭️  [1/3] Skipping mass-kill of Python processes (HELPCHAIN_SKIP_KILL=1)"
+        )
     else:
         print("📋 [1/3] Stopping existing Python processes...")
         try:
             if platform.system() == "Windows":
-                subprocess.run(["taskkill", "/f", "/im", "python.exe"], capture_output=True)
+                subprocess.run(
+                    ["taskkill", "/f", "/im", "python.exe"], capture_output=True
+                )
             else:
                 subprocess.run(["pkill", "-f", "python"], capture_output=True)
             time.sleep(1)
@@ -51,7 +80,9 @@ def main():
     print("🔍 [2/3] Checking application import path...")
     try:
         __import__("backend.helpchain_backend.src.app")
-        print("✅ Canonical app factory is importable: backend.helpchain_backend.src.app:create_app")
+        print(
+            "✅ Canonical app factory is importable: backend.helpchain_backend.src.app:create_app"
+        )
     except Exception as e:
         print(f"❌ Error importing canonical app factory: {e}")
         sys.exit(1)

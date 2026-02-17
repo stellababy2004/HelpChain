@@ -7,21 +7,19 @@
 
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
     />
 
     <!-- Font Awesome for icons -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
 
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="{{ url_for('static', filename='vendor/fonts/inter.css') }}"
       rel="stylesheet"
     />
 
@@ -51,459 +49,10 @@
       rel="stylesheet"
       href="{{ url_lang('static', filename='css/navigation-improvements.css') }}"
     />
-    <style>
-      :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        --light-bg: #f8f9fa;
-        --dark-bg: #1a1a1a;
-        --dark-card: #2d2d2d;
-        --text-light: #ffffff;
-        --text-dark: #333333;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
-      }
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
+    </head>
 
-      [data-theme="dark"] {
-        --bg-color: var(--dark-bg);
-        --card-bg: var(--dark-card);
-        --text-color: var(--text-light);
-        --shadow: var(--shadow-dark);
-      }
-
-      [data-theme="light"] {
-        --bg-color: var(--light-bg);
-        --card-bg: white;
-        --text-color: var(--text-dark);
-      }
-
-      * {
-        transition: all 0.3s ease;
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-        overflow-x: hidden;
-      }
-
-      /* Animated Background */
-      .hero-section {
-        position: relative;
-        min-height: 100vh;
-        background: var(--primary-gradient);
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .hero-section::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(
-            circle at 20% 80%,
-            rgba(120, 119, 198, 0.3) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            circle at 80% 20%,
-            rgba(255, 119, 198, 0.3) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            circle at 40% 40%,
-            rgba(120, 219, 255, 0.3) 0%,
-            transparent 50%
-          );
-        animation: float 6s ease-in-out infinite;
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0px) rotate(0deg);
-        }
-
-        33% {
-          transform: translateY(-20px) rotate(120deg);
-        }
-
-        66% {
-          transform: translateY(10px) rotate(240deg);
-        }
-      }
-
-      /* Floating Elements */
-      .floating-shapes {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-      }
-
-      .shape {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-        animation: floatShape 8s ease-in-out infinite;
-      }
-
-      .shape:nth-child(1) {
-        width: 80px;
-        height: 80px;
-        top: 10%;
-        left: 10%;
-        animation-delay: 0s;
-      }
-
-      .shape:nth-child(2) {
-        width: 60px;
-        height: 60px;
-        top: 20%;
-        right: 10%;
-        animation-delay: 2s;
-      }
-
-      .shape:nth-child(3) {
-        width: 100px;
-        height: 100px;
-        bottom: 20%;
-        left: 20%;
-        animation-delay: 4s;
-      }
-
-      .shape:nth-child(4) {
-        width: 40px;
-        height: 40px;
-        bottom: 10%;
-        right: 20%;
-        animation-delay: 6s;
-      }
-
-      @keyframes floatShape {
-        0%,
-        100% {
-          transform: translateY(0px) scale(1);
-          opacity: 0.7;
-        }
-
-        50% {
-          transform: translateY(-30px) scale(1.1);
-          opacity: 1;
-        }
-      }
-
-      /* Hero Content */
-      .hero-content {
-        position: relative;
-        z-index: 2;
-        text-align: center;
-        color: white;
-        max-width: 800px;
-        padding: 0 20px;
-      }
-
-      .hero-title {
-        font-size: 3.5rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        animation: slideUp 1s ease-out;
-      }
-
-      .hero-subtitle {
-        font-size: 1.3rem;
-        margin-bottom: 2rem;
-        opacity: 0.9;
-        animation: slideUp 1s ease-out 0.2s both;
-      }
-
-      .hero-buttons {
-        animation: slideUp 1s ease-out 0.4s both;
-      }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      /* Modern Buttons */
-      .btn-modern {
-        padding: 15px 30px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 1.1rem;
-        text-decoration: none;
-        display: inline-block;
-        margin: 0 10px;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .btn-modern::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.2),
-          transparent
-        );
-        transition: left 0.5s;
-      }
-
-      .btn-modern:hover::before {
-        left: 100%;
-      }
-
-      .btn-primary-modern {
-        background: var(--secondary-gradient);
-        color: white;
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-      }
-
-      .btn-primary-modern:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-      }
-
-      .btn-success-modern {
-        background: var(--success-gradient);
-        color: white;
-        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
-      }
-
-      .btn-success-modern:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(79, 172, 254, 0.4);
-      }
-
-      /* Navigation */
-      .navbar-modern {
-        background: rgba(255, 255, 255, 0.95);
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-      }
-
-      [data-theme="dark"] .navbar-modern {
-        background: rgba(45, 45, 45, 0.95);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .navbar-brand-modern {
-        font-weight: 700;
-        font-size: 1.5rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      /* Theme Toggle */
-      .theme-toggle {
-        background: none;
-        border: none;
-        color: var(--text-color);
-        font-size: 1.2rem;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-      }
-
-      .theme-toggle:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: rotate(180deg);
-      }
-
-      /* Loading Spinner */
-      .loading-spinner {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 9999;
-      }
-
-      .spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top: 4px solid white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Stats Section */
-      .stats-section {
-        padding: 80px 0;
-        background: var(--bg-color);
-      }
-
-      .stat-card {
-        background: var(--card-bg);
-        border-radius: 15px;
-        padding: 30px;
-        text-align: center;
-        box-shadow: var(--shadow);
-        transition: all 0.3s ease;
-        margin-bottom: 30px;
-      }
-
-      .stat-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-      }
-
-      .stat-number {
-        font-size: 3rem;
-        font-weight: 700;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 10px;
-      }
-
-      .stat-label {
-        font-size: 1.1rem;
-        color: var(--text-color);
-        opacity: 0.8;
-      }
-
-      /* Features Section */
-      .features-section {
-        padding: 80px 0;
-        background: linear-gradient(
-          135deg,
-          rgba(102, 126, 234, 0.05) 0%,
-          rgba(118, 75, 162, 0.05) 100%
-        );
-      }
-
-      [data-theme="dark"] .features-section {
-        background: linear-gradient(
-          135deg,
-          rgba(102, 126, 234, 0.1) 0%,
-          rgba(118, 75, 162, 0.1) 100%
-        );
-      }
-
-      .feature-card {
-        background: var(--card-bg);
-        border-radius: 15px;
-        padding: 40px 30px;
-        text-align: center;
-        box-shadow: var(--shadow);
-        transition: all 0.3s ease;
-        height: 100%;
-      }
-
-      .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-      }
-
-      .feature-icon {
-        font-size: 3rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 20px;
-      }
-
-      .feature-title {
-        font-size: 1.3rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-        color: var(--text-color);
-      }
-
-      .feature-description {
-        color: var(--text-color);
-        opacity: 0.8;
-        line-height: 1.6;
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .hero-title {
-          font-size: 2.5rem;
-        }
-
-        .hero-subtitle {
-          font-size: 1.1rem;
-        }
-
-        .btn-modern {
-          display: block;
-          margin: 10px 0;
-          width: 100%;
-        }
-
-        .stat-number {
-          font-size: 2.5rem;
-        }
-      }
-
-      /* Scroll Animations */
-      .fade-in {
-        opacity: 0;
-        transform: translateY(30px);
-        transition: all 0.6s ease;
-      }
-
-      .fade-in.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      .gradient-text {
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-    </style>
-  </head>
-
-  <body data-theme="light">
+<body class="hc-page-dashboard" data-theme="light">
     <div
       style="
         position: fixed;
@@ -565,7 +114,7 @@
               >
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('volunteer_login') }}"
+              <a class="nav-link-light" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}"
                 >Вход за доброволци</a
               >
             </li>
@@ -909,7 +458,7 @@
     </button>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
 
     <!-- Custom JavaScript -->
     <script src="{{ url_lang('static', filename='js/feedback.js') }}"></script>
@@ -1178,4 +727,8 @@
     </script>
   </body>
 </html>
+
+
+
+
 

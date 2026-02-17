@@ -18,7 +18,6 @@ from _pytest.config import hookimpl
 from _pytest.config.argparsing import Parser
 from _pytest.nodes import Item
 
-
 if TYPE_CHECKING:
     from _pytest.main import Session
 

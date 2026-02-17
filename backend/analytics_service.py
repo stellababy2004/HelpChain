@@ -221,7 +221,9 @@ class AdvancedAnalytics:
                 return operation(*args, **kwargs)
             else:
                 # Ако сме в background thread, трябва да създадем app context
-                logger.warning("No Flask app context - skipping database operation for thread safety")
+                logger.warning(
+                    "No Flask app context - skipping database operation for thread safety"
+                )
                 return False
         except Exception as e:
             logger.error(f"Error in safe database operation: {e}")
@@ -275,7 +277,9 @@ class AdvancedAnalytics:
             if not session_id:
                 return
 
-            behavior = self.db.query(UserBehavior).filter_by(session_id=session_id).first()
+            behavior = (
+                self.db.query(UserBehavior).filter_by(session_id=session_id).first()
+            )
 
             if not behavior:
                 behavior = UserBehavior(
@@ -306,7 +310,9 @@ class AdvancedAnalytics:
                     "title": context.get("page_title"),
                 }
             )
-            behavior.pages_sequence = json.dumps(pages_sequence[-20:])  # Последните 20 страници
+            behavior.pages_sequence = json.dumps(
+                pages_sequence[-20:]
+            )  # Последните 20 страници
 
             self.db.commit()
 
@@ -354,7 +360,9 @@ class AdvancedAnalytics:
             if not current_app:
                 return self._get_sample_analytics()
 
-            start_dt, end_dt, period_days = self._normalize_period(days=days, start_date=start_date, end_date=end_date)
+            start_dt, end_dt, period_days = self._normalize_period(
+                days=days, start_date=start_date, end_date=end_date
+            )
 
             cache_key = "_".join(
                 [
@@ -382,11 +390,21 @@ class AdvancedAnalytics:
             }
 
             # Check if we have any meaningful data, if not provide sample data
-            has_data = analytics["overview"]["total_page_views"] > 0 or analytics["overview"]["unique_visitors"] > 0 or analytics["chatbot_analytics"]["total_conversations"] > 0
+            has_data = (
+                analytics["overview"]["total_page_views"] > 0
+                or analytics["overview"]["unique_visitors"] > 0
+                or analytics["chatbot_analytics"]["total_conversations"] > 0
+            )
             print(f"DEBUG: has_data = {has_data}")
-            print(f"DEBUG: total_page_views = {analytics['overview']['total_page_views']}")
-            print(f"DEBUG: unique_visitors = {analytics['overview']['unique_visitors']}")
-            print(f"DEBUG: total_conversations = {analytics['chatbot_analytics']['total_conversations']}")
+            print(
+                f"DEBUG: total_page_views = {analytics['overview']['total_page_views']}"
+            )
+            print(
+                f"DEBUG: unique_visitors = {analytics['overview']['unique_visitors']}"
+            )
+            print(
+                f"DEBUG: total_conversations = {analytics['chatbot_analytics']['total_conversations']}"
+            )
 
             if not has_data:
                 print("DEBUG: Returning sample data")
@@ -401,7 +419,9 @@ class AdvancedAnalytics:
             logger.error(f"Error getting dashboard analytics: {e}")
             return self._get_sample_analytics()
 
-    def _get_overview_metrics(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_overview_metrics(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Общи метрики за периода - optimized with indexes and caching"""
         try:
             from flask import current_app
@@ -423,7 +443,12 @@ class AdvancedAnalytics:
             # Optimized queries using new indexes
 
             # Уникални посетители (по session_id) - uses idx_user_behaviors_session_start
-            unique_visitors = self.db.query(func.count(func.distinct(UserBehavior.session_id))).filter(UserBehavior.session_start.between(start_date, end_date)).scalar() or 0
+            unique_visitors = (
+                self.db.query(func.count(func.distinct(UserBehavior.session_id)))
+                .filter(UserBehavior.session_start.between(start_date, end_date))
+                .scalar()
+                or 0
+            )
 
             # Общо page views - uses idx_analytics_timestamp and idx_analytics_event_type
             total_page_views = (
@@ -439,13 +464,20 @@ class AdvancedAnalytics:
             )
 
             # Средно време на сесия - uses idx_user_behaviors_session_start
-            avg_session_time = self.db.query(func.avg(UserBehavior.total_time_spent)).filter(UserBehavior.session_start.between(start_date, end_date)).scalar() or 0
+            avg_session_time = (
+                self.db.query(func.avg(UserBehavior.total_time_spent))
+                .filter(UserBehavior.session_start.between(start_date, end_date))
+                .scalar()
+                or 0
+            )
 
             # Bounce rate calculation - optimized with single query
             session_stats = (
                 self.db.query(
                     func.count(UserBehavior.id).label("total_sessions"),
-                    func.sum(case((UserBehavior.bounce_rate.is_(True), 1), else_=0)).label("bounced_sessions"),
+                    func.sum(
+                        case((UserBehavior.bounce_rate.is_(True), 1), else_=0)
+                    ).label("bounced_sessions"),
                     func.sum(
                         case(
                             (UserBehavior.conversion_action.isnot(None), 1),
@@ -461,13 +493,19 @@ class AdvancedAnalytics:
             bounced_sessions = session_stats.bounced_sessions or 0
             conversions = session_stats.conversions or 0
 
-            bounce_rate = (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
-            conversion_rate = (conversions / total_sessions * 100) if total_sessions > 0 else 0
+            bounce_rate = (
+                (bounced_sessions / total_sessions * 100) if total_sessions > 0 else 0
+            )
+            conversion_rate = (
+                (conversions / total_sessions * 100) if total_sessions > 0 else 0
+            )
 
             result = {
                 "unique_visitors": unique_visitors,
                 "total_page_views": total_page_views,
-                "avg_session_time": (round(avg_session_time / 60, 2) if avg_session_time else 0),  # в минути
+                "avg_session_time": (
+                    round(avg_session_time / 60, 2) if avg_session_time else 0
+                ),  # в минути
                 "bounce_rate": round(bounce_rate, 2),
                 "total_sessions": total_sessions,
                 "conversions": conversions,
@@ -488,7 +526,9 @@ class AdvancedAnalytics:
                 "conversion_rate": 0,
             }
 
-    def _get_user_engagement(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_user_engagement(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Метрики за потребителската ангажираност - optimized with indexes"""
         try:
             from performance_optimization import DatabaseOptimizer
@@ -498,8 +538,7 @@ class AdvancedAnalytics:
 
             # Най-посещавани страници - uses optimized query with index
             _ = optimized_queries.get("top_pages")  # retained for compatibility
-            top_pages_sql = text(
-                """
+            top_pages_sql = text("""
                 SELECT page_url AS page,
                        COUNT(*) AS visits
                 FROM analytics_events
@@ -508,8 +547,7 @@ class AdvancedAnalytics:
                 GROUP BY page_url
                 ORDER BY visits DESC
                 LIMIT 10
-                """
-            )
+                """)
             _top_res = self.db.execute(
                 top_pages_sql,
                 {"start_date": start_date, "end_date": end_date},
@@ -555,12 +593,20 @@ class AdvancedAnalytics:
             )
 
             # Convert to dict for easy lookup, then fill in missing hours with 0
-            hourly_dict = {int(row.hour): row.activity for row in hourly_activity_result}
-            hourly_activity = [{"hour": hour, "activity": hourly_dict.get(hour, 0)} for hour in range(24)]
+            hourly_dict = {
+                int(row.hour): row.activity for row in hourly_activity_result
+            }
+            hourly_activity = [
+                {"hour": hour, "activity": hourly_dict.get(hour, 0)}
+                for hour in range(24)
+            ]
 
             return {
                 "top_pages": top_pages,
-                "device_breakdown": [{"device": device or "Unknown", "sessions": sessions} for device, sessions in device_stats],
+                "device_breakdown": [
+                    {"device": device or "Unknown", "sessions": sessions}
+                    for device, sessions in device_stats
+                ],
                 "hourly_activity": hourly_activity,
             }
         except Exception as e:
@@ -596,18 +642,27 @@ class AdvancedAnalytics:
 
             return {
                 "top_pages": [{"url": url, "views": views} for url, views in top_pages],
-                "device_breakdown": [{"device": device or "Unknown", "sessions": sessions} for device, sessions in device_stats],
+                "device_breakdown": [
+                    {"device": device or "Unknown", "sessions": sessions}
+                    for device, sessions in device_stats
+                ],
                 "hourly_activity": [{"hour": h, "activity": 0} for h in range(24)],
             }
 
-    def _get_chatbot_analytics(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_chatbot_analytics(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Аналитика на чатбота"""
 
         try:
             optimized_queries = DatabaseOptimizer.get_optimized_analytics_queries()
 
             # Общо разговори - optimized count query
-            total_conversations = self.db.query(ChatbotConversation).filter(ChatbotConversation.created_at.between(start_date, end_date)).count()
+            total_conversations = (
+                self.db.query(ChatbotConversation)
+                .filter(ChatbotConversation.created_at.between(start_date, end_date))
+                .count()
+            )
 
             # По тип отговор - uses optimized query with index
             response_types_query = optimized_queries["chatbot_conversations_summary"]
@@ -627,7 +682,9 @@ class AdvancedAnalytics:
 
             # AI статистики - uses optimized query with index
             ai_stats_query = optimized_queries["chatbot_ai_stats"]
-            _ai_res = self.db.execute(text(ai_stats_query), {"start_date": start_date, "end_date": end_date})
+            _ai_res = self.db.execute(
+                text(ai_stats_query), {"start_date": start_date, "end_date": end_date}
+            )
             try:
                 ai_stats_result = _ai_res.fetchone()
             finally:
@@ -645,7 +702,9 @@ class AdvancedAnalytics:
 
             # User ratings - uses optimized query with index
             ratings_query = optimized_queries["chatbot_ratings"]
-            _ratings_res = self.db.execute(text(ratings_query), {"start_date": start_date, "end_date": end_date})
+            _ratings_res = self.db.execute(
+                text(ratings_query), {"start_date": start_date, "end_date": end_date}
+            )
             try:
                 ratings_result = _ratings_res.fetchone()
             finally:
@@ -669,11 +728,17 @@ class AdvancedAnalytics:
             # Fallback to basic queries
             return self._get_chatbot_analytics_fallback(start_date, end_date)
 
-    def _get_chatbot_analytics_fallback(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_chatbot_analytics_fallback(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Fallback method for chatbot analytics when optimized queries fail"""
 
         # Общо разговори
-        total_conversations = self.db.query(ChatbotConversation).filter(ChatbotConversation.created_at.between(start_date, end_date)).count()
+        total_conversations = (
+            self.db.query(ChatbotConversation)
+            .filter(ChatbotConversation.created_at.between(start_date, end_date))
+            .count()
+        )
 
         # По тип отговор
         response_types = (
@@ -700,8 +765,18 @@ class AdvancedAnalytics:
 
         ai_stats = {
             "total_ai_responses": len(ai_conversations),
-            "avg_confidence": (sum(c.ai_confidence or 0 for c in ai_conversations) / len(ai_conversations) if ai_conversations else 0),
-            "avg_processing_time": (sum(c.processing_time or 0 for c in ai_conversations) / len(ai_conversations) if ai_conversations else 0),
+            "avg_confidence": (
+                sum(c.ai_confidence or 0 for c in ai_conversations)
+                / len(ai_conversations)
+                if ai_conversations
+                else 0
+            ),
+            "avg_processing_time": (
+                sum(c.processing_time or 0 for c in ai_conversations)
+                / len(ai_conversations)
+                if ai_conversations
+                else 0
+            ),
             "total_tokens": sum(c.ai_tokens_used or 0 for c in ai_conversations),
         }
 
@@ -717,7 +792,11 @@ class AdvancedAnalytics:
             .all()
         )
 
-        avg_rating = sum(c.user_rating for c in rated_conversations) / len(rated_conversations) if rated_conversations else 0
+        avg_rating = (
+            sum(c.user_rating for c in rated_conversations) / len(rated_conversations)
+            if rated_conversations
+            else 0
+        )
 
         return {
             "total_conversations": total_conversations,
@@ -727,7 +806,9 @@ class AdvancedAnalytics:
             "rated_conversations": len(rated_conversations),
         }
 
-    def _get_performance_metrics(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_performance_metrics(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Метрики за производителност"""
 
         try:
@@ -760,7 +841,9 @@ class AdvancedAnalytics:
             daily_performance_result = (
                 self.db.query(
                     func.date(PerformanceMetrics.created_at).label("date"),
-                    func.avg(PerformanceMetrics.metric_value).label("avg_response_time"),
+                    func.avg(PerformanceMetrics.metric_value).label(
+                        "avg_response_time"
+                    ),
                 )
                 .filter(
                     and_(
@@ -791,7 +874,9 @@ class AdvancedAnalytics:
             # Fallback to basic queries
             return self._get_performance_metrics_fallback(start_date, end_date)
 
-    def _get_performance_metrics_fallback(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_performance_metrics_fallback(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Fallback method for performance metrics when optimized queries fail"""
 
         # Average response times by endpoint
@@ -841,11 +926,16 @@ class AdvancedAnalytics:
             current_date = next_date
 
         return {
-            "endpoint_performance": [{"endpoint": ep, "avg_time": round(time, 3)} for ep, time in response_times],
+            "endpoint_performance": [
+                {"endpoint": ep, "avg_time": round(time, 3)}
+                for ep, time in response_times
+            ],
             "daily_performance": daily_performance,
         }
 
-    def _get_conversion_funnel(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_conversion_funnel(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Анализ на conversion funnel"""
 
         try:
@@ -865,7 +955,9 @@ class AdvancedAnalytics:
                 except Exception:
                     pass
 
-            register_visits_query = optimized_queries["conversion_funnel_register_visits"]
+            register_visits_query = optimized_queries[
+                "conversion_funnel_register_visits"
+            ]
             _vr_res = self.db.execute(
                 text(register_visits_query),
                 {"start_date": start_date, "end_date": end_date},
@@ -924,10 +1016,26 @@ class AdvancedAnalytics:
                 "completed_registration": completed_registration,
                 "chatbot_users": chatbot_users,
                 "conversion_rates": {
-                    "visit_to_register_page": (round(visited_register / total_visitors * 100, 2) if total_visitors else 0),
-                    "register_page_to_start": (round(started_registration / visited_register * 100, 2) if visited_register else 0),
-                    "start_to_complete": (round(completed_registration / started_registration * 100, 2) if started_registration else 0),
-                    "overall_conversion": (round(completed_registration / total_visitors * 100, 2) if total_visitors else 0),
+                    "visit_to_register_page": (
+                        round(visited_register / total_visitors * 100, 2)
+                        if total_visitors
+                        else 0
+                    ),
+                    "register_page_to_start": (
+                        round(started_registration / visited_register * 100, 2)
+                        if visited_register
+                        else 0
+                    ),
+                    "start_to_complete": (
+                        round(completed_registration / started_registration * 100, 2)
+                        if started_registration
+                        else 0
+                    ),
+                    "overall_conversion": (
+                        round(completed_registration / total_visitors * 100, 2)
+                        if total_visitors
+                        else 0
+                    ),
                 },
             }
         except Exception as e:
@@ -935,11 +1043,18 @@ class AdvancedAnalytics:
             # Fallback to basic queries
             return self._get_conversion_funnel_fallback(start_date, end_date)
 
-    def _get_conversion_funnel_fallback(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_conversion_funnel_fallback(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Fallback method for conversion funnel when optimized queries fail"""
 
         # Основни стъпки във funnel-а
-        total_visitors = self.db.query(func.count(func.distinct(UserBehavior.session_id))).filter(UserBehavior.session_start.between(start_date, end_date)).scalar() or 0
+        total_visitors = (
+            self.db.query(func.count(func.distinct(UserBehavior.session_id)))
+            .filter(UserBehavior.session_start.between(start_date, end_date))
+            .scalar()
+            or 0
+        )
 
         # Посетили форма за регистрация
         visited_register = (
@@ -982,7 +1097,12 @@ class AdvancedAnalytics:
         )
 
         # Използвали чатбота
-        chatbot_users = self.db.query(func.count(func.distinct(ChatbotConversation.session_id))).filter(ChatbotConversation.created_at.between(start_date, end_date)).scalar() or 0
+        chatbot_users = (
+            self.db.query(func.count(func.distinct(ChatbotConversation.session_id)))
+            .filter(ChatbotConversation.created_at.between(start_date, end_date))
+            .scalar()
+            or 0
+        )
 
         return {
             "total_visitors": total_visitors,
@@ -991,14 +1111,32 @@ class AdvancedAnalytics:
             "completed_registration": completed_registration,
             "chatbot_users": chatbot_users,
             "conversion_rates": {
-                "visit_to_register_page": (round(visited_register / total_visitors * 100, 2) if total_visitors else 0),
-                "register_page_to_start": (round(started_registration / visited_register * 100, 2) if visited_register else 0),
-                "start_to_complete": (round(completed_registration / started_registration * 100, 2) if started_registration else 0),
-                "overall_conversion": (round(completed_registration / total_visitors * 100, 2) if total_visitors else 0),
+                "visit_to_register_page": (
+                    round(visited_register / total_visitors * 100, 2)
+                    if total_visitors
+                    else 0
+                ),
+                "register_page_to_start": (
+                    round(started_registration / visited_register * 100, 2)
+                    if visited_register
+                    else 0
+                ),
+                "start_to_complete": (
+                    round(completed_registration / started_registration * 100, 2)
+                    if started_registration
+                    else 0
+                ),
+                "overall_conversion": (
+                    round(completed_registration / total_visitors * 100, 2)
+                    if total_visitors
+                    else 0
+                ),
             },
         }
 
-    def _get_user_journey_analytics(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_user_journey_analytics(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Анализ на потребителските пътища"""
 
         try:
@@ -1018,11 +1156,15 @@ class AdvancedAnalytics:
                 except Exception:
                     pass
 
-            entry_pages = [{"page": row[0], "entries": row[1]} for row in entry_pages_rows]
+            entry_pages = [
+                {"page": row[0], "entries": row[1]} for row in entry_pages_rows
+            ]
 
             # Най-чести exit points - uses optimized query with index
             exit_pages_query = optimized_queries["user_journey_exit_pages"]
-            _exit_res = self.db.execute(text(exit_pages_query), {"start_date": start_date, "end_date": end_date})
+            _exit_res = self.db.execute(
+                text(exit_pages_query), {"start_date": start_date, "end_date": end_date}
+            )
             try:
                 exit_pages_rows = _exit_res.fetchall()
             finally:
@@ -1067,7 +1209,10 @@ class AdvancedAnalytics:
                 except Exception:
                     continue
 
-            common_paths = [{"path": path, "count": count} for path, count in path_counter.most_common(10)]
+            common_paths = [
+                {"path": path, "count": count}
+                for path, count in path_counter.most_common(10)
+            ]
 
             return {
                 "top_entry_pages": entry_pages,
@@ -1079,12 +1224,16 @@ class AdvancedAnalytics:
             # Fallback to basic queries
             return self._get_user_journey_analytics_fallback(start_date, end_date)
 
-    def _get_user_journey_analytics_fallback(self, start_date: datetime, end_date: datetime) -> dict[str, Any]:
+    def _get_user_journey_analytics_fallback(
+        self, start_date: datetime, end_date: datetime
+    ) -> dict[str, Any]:
         """Fallback method for user journey analytics when optimized queries fail"""
 
         # Най-чести entry points
         entry_pages = (
-            self.db.query(UserBehavior.entry_page, func.count(UserBehavior.id).label("entries"))
+            self.db.query(
+                UserBehavior.entry_page, func.count(UserBehavior.id).label("entries")
+            )
             .filter(
                 and_(
                     UserBehavior.session_start.between(start_date, end_date),
@@ -1099,7 +1248,9 @@ class AdvancedAnalytics:
 
         # Най-чести exit points
         exit_pages = (
-            self.db.query(UserBehavior.exit_page, func.count(UserBehavior.id).label("exits"))
+            self.db.query(
+                UserBehavior.exit_page, func.count(UserBehavior.id).label("exits")
+            )
             .filter(
                 and_(
                     UserBehavior.session_start.between(start_date, end_date),
@@ -1130,16 +1281,25 @@ class AdvancedAnalytics:
             try:
                 sequence = json.loads(session.pages_sequence or "[]")
                 if len(sequence) >= 2:
-                    path = " → ".join([page["url"].split("/")[-1] or "home" for page in sequence[:3]])
+                    path = " → ".join(
+                        [page["url"].split("/")[-1] or "home" for page in sequence[:3]]
+                    )
                     path_counter[path] += 1
             except Exception:
                 continue
 
-        common_paths = [{"path": path, "count": count} for path, count in path_counter.most_common(10)]
+        common_paths = [
+            {"path": path, "count": count}
+            for path, count in path_counter.most_common(10)
+        ]
 
         return {
-            "top_entry_pages": [{"page": page, "entries": entries} for page, entries in entry_pages],
-            "top_exit_pages": [{"page": page, "exits": exits} for page, exits in exit_pages],
+            "top_entry_pages": [
+                {"page": page, "entries": entries} for page, entries in entry_pages
+            ],
+            "top_exit_pages": [
+                {"page": page, "exits": exits} for page, exits in exit_pages
+            ],
             "common_user_paths": common_paths,
         }
 
@@ -1149,7 +1309,12 @@ class AdvancedAnalytics:
 
         # Активни потребители (последните 30 минути)
         thirty_min_ago = utc_now() - timedelta(minutes=30)
-        active_users = self.db.query(func.count(func.distinct(UserBehavior.session_id))).filter(UserBehavior.last_activity >= thirty_min_ago).scalar() or 0
+        active_users = (
+            self.db.query(func.count(func.distinct(UserBehavior.session_id)))
+            .filter(UserBehavior.last_activity >= thirty_min_ago)
+            .scalar()
+            or 0
+        )
 
         # Page views последният час
         recent_page_views = (
@@ -1164,7 +1329,11 @@ class AdvancedAnalytics:
         )
 
         # Чатбот съобщения последният час
-        recent_chatbot = self.db.query(ChatbotConversation).filter(ChatbotConversation.created_at >= one_hour_ago).count()
+        recent_chatbot = (
+            self.db.query(ChatbotConversation)
+            .filter(ChatbotConversation.created_at >= one_hour_ago)
+            .count()
+        )
 
         return {
             "active_users_now": active_users,
@@ -1302,12 +1471,38 @@ def _minimal_analytics() -> dict:
             "conversions": 0,
             "conversion_rate": 0.0,
         },
-        "user_engagement": {"top_pages": [], "device_breakdown": [], "hourly_activity": [{"hour": h, "activity": 0} for h in range(24)]},
-        "chatbot_analytics": {"total_conversations": 0, "response_types": {}, "ai_statistics": {}, "average_rating": 0, "rated_conversations": 0},
+        "user_engagement": {
+            "top_pages": [],
+            "device_breakdown": [],
+            "hourly_activity": [{"hour": h, "activity": 0} for h in range(24)],
+        },
+        "chatbot_analytics": {
+            "total_conversations": 0,
+            "response_types": {},
+            "ai_statistics": {},
+            "average_rating": 0,
+            "rated_conversations": 0,
+        },
         "performance_metrics": {"endpoint_performance": [], "daily_performance": []},
-        "conversion_funnel": {"total_visitors": 0, "visited_register": 0, "started_registration": 0, "completed_registration": 0, "chatbot_users": 0, "conversion_rates": {}},
-        "user_journey": {"top_entry_pages": [], "top_exit_pages": [], "common_user_paths": []},
-        "real_time": {"active_users_now": 0, "page_views_last_hour": 0, "chatbot_messages_last_hour": 0, "timestamp": utc_now().isoformat()},
+        "conversion_funnel": {
+            "total_visitors": 0,
+            "visited_register": 0,
+            "started_registration": 0,
+            "completed_registration": 0,
+            "chatbot_users": 0,
+            "conversion_rates": {},
+        },
+        "user_journey": {
+            "top_entry_pages": [],
+            "top_exit_pages": [],
+            "common_user_paths": [],
+        },
+        "real_time": {
+            "active_users_now": 0,
+            "page_views_last_hour": 0,
+            "chatbot_messages_last_hour": 0,
+            "timestamp": utc_now().isoformat(),
+        },
         "is_sample_data": True,
     }
 
@@ -1322,7 +1517,8 @@ class _NoopAnalytics:
 
 class _LazyAnalytics:
     """Lazy wrapper that delegates to a real analytics service if available,
-    otherwise returns no-op data when running in TESTING mode or when not initialized."""
+    otherwise returns no-op data when running in TESTING mode or when not initialized.
+    """
 
     def get_dashboard_analytics(self, *a, **k):
         try:

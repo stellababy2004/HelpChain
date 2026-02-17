@@ -1,20 +1,21 @@
 """CSS selector structure items."""
+
 from __future__ import annotations
 import copyreg
 from .pretty import pretty
 from typing import Any, Iterator, Hashable, Pattern, Iterable, Mapping
 
 __all__ = (
-    'Selector',
-    'SelectorNull',
-    'SelectorTag',
-    'SelectorAttribute',
-    'SelectorContains',
-    'SelectorNth',
-    'SelectorLang',
-    'SelectorList',
-    'Namespaces',
-    'CustomSelectors'
+    "Selector",
+    "SelectorNull",
+    "SelectorTag",
+    "SelectorAttribute",
+    "SelectorContains",
+    "SelectorNth",
+    "SelectorLang",
+    "SelectorList",
+    "Namespaces",
+    "CustomSelectors",
 )
 
 
@@ -34,7 +35,7 @@ SEL_PLACEHOLDER_SHOWN = 0x400
 class Immutable:
     """Immutable."""
 
-    __slots__: tuple[str, ...] = ('_hash',)
+    __slots__: tuple[str, ...] = ("_hash",)
 
     _hash: int
 
@@ -46,7 +47,7 @@ class Immutable:
             temp.append(type(v))
             temp.append(v)
             super().__setattr__(k, v)
-        super().__setattr__('_hash', hash(tuple(temp)))
+        super().__setattr__("_hash", hash(tuple(temp)))
 
     @classmethod
     def __base__(cls) -> type[Immutable]:
@@ -57,17 +58,19 @@ class Immutable:
     def __eq__(self, other: Any) -> bool:
         """Equal."""
 
-        return (
-            isinstance(other, self.__base__()) and
-            all(getattr(other, key) == getattr(self, key) for key in self.__slots__ if key != '_hash')
+        return isinstance(other, self.__base__()) and all(
+            getattr(other, key) == getattr(self, key)
+            for key in self.__slots__
+            if key != "_hash"
         )
 
     def __ne__(self, other: Any) -> bool:
         """Equal."""
 
-        return (
-            not isinstance(other, self.__base__()) or
-            any(getattr(other, key) != getattr(self, key) for key in self.__slots__ if key != '_hash')
+        return not isinstance(other, self.__base__()) or any(
+            getattr(other, key) != getattr(self, key)
+            for key in self.__slots__
+            if key != "_hash"
         )
 
     def __hash__(self) -> int:
@@ -83,7 +86,7 @@ class Immutable:
     def __repr__(self) -> str:  # pragma: no cover
         """Representation."""
 
-        r = ', '.join([f"{k}={getattr(self, k)!r}" for k in self.__slots__[:-1]])
+        r = ", ".join([f"{k}={getattr(self, k)!r}" for k in self.__slots__[:-1]])
         return f"{self.__class__.__name__}({r})"
 
     __str__ = __repr__
@@ -97,24 +100,25 @@ class Immutable:
 class ImmutableDict(Mapping[Any, Any]):
     """Hashable, immutable dictionary."""
 
-    def __init__(
-        self,
-        arg: dict[Any, Any] | Iterable[tuple[Any, Any]]
-    ) -> None:
+    def __init__(self, arg: dict[Any, Any] | Iterable[tuple[Any, Any]]) -> None:
         """Initialize."""
 
         self._validate(arg)
         self._d = dict(arg)
-        self._hash = hash(tuple([(type(x), x, type(y), y) for x, y in sorted(self._d.items())]))
+        self._hash = hash(
+            tuple([(type(x), x, type(y), y) for x, y in sorted(self._d.items())])
+        )
 
     def _validate(self, arg: dict[Any, Any] | Iterable[tuple[Any, Any]]) -> None:
         """Validate arguments."""
 
         if isinstance(arg, dict):
             if not all(isinstance(v, Hashable) for v in arg.values()):
-                raise TypeError(f'{self.__class__.__name__} values must be hashable')
-        elif not all(isinstance(k, Hashable) and isinstance(v, Hashable) for k, v in arg):
-            raise TypeError(f'{self.__class__.__name__} values must be hashable')
+                raise TypeError(f"{self.__class__.__name__} values must be hashable")
+        elif not all(
+            isinstance(k, Hashable) and isinstance(v, Hashable) for k, v in arg
+        ):
+            raise TypeError(f"{self.__class__.__name__} values must be hashable")
 
     def __iter__(self) -> Iterator[Any]:
         """Iterator."""
@@ -157,9 +161,11 @@ class Namespaces(ImmutableDict):
 
         if isinstance(arg, dict):
             if not all(isinstance(v, str) for v in arg.values()):
-                raise TypeError(f'{self.__class__.__name__} values must be hashable')
+                raise TypeError(f"{self.__class__.__name__} values must be hashable")
         elif not all(isinstance(k, str) and isinstance(v, str) for k, v in arg):
-            raise TypeError(f'{self.__class__.__name__} keys and values must be Unicode strings')
+            raise TypeError(
+                f"{self.__class__.__name__} keys and values must be Unicode strings"
+            )
 
 
 class CustomSelectors(ImmutableDict):
@@ -175,17 +181,29 @@ class CustomSelectors(ImmutableDict):
 
         if isinstance(arg, dict):
             if not all(isinstance(v, str) for v in arg.values()):
-                raise TypeError(f'{self.__class__.__name__} values must be hashable')
+                raise TypeError(f"{self.__class__.__name__} values must be hashable")
         elif not all(isinstance(k, str) and isinstance(v, str) for k, v in arg):
-            raise TypeError(f'{self.__class__.__name__} keys and values must be Unicode strings')
+            raise TypeError(
+                f"{self.__class__.__name__} keys and values must be Unicode strings"
+            )
 
 
 class Selector(Immutable):
     """Selector."""
 
     __slots__ = (
-        'tag', 'ids', 'classes', 'attributes', 'nth', 'selectors',
-        'relation', 'rel_type', 'contains', 'lang', 'flags', '_hash'
+        "tag",
+        "ids",
+        "classes",
+        "attributes",
+        "nth",
+        "selectors",
+        "relation",
+        "rel_type",
+        "contains",
+        "lang",
+        "flags",
+        "_hash",
     )
 
     tag: SelectorTag | None
@@ -212,7 +230,7 @@ class Selector(Immutable):
         rel_type: str | None,
         contains: tuple[SelectorContains, ...],
         lang: tuple[SelectorLang, ...],
-        flags: int
+        flags: int,
     ):
         """Initialize."""
 
@@ -227,7 +245,7 @@ class Selector(Immutable):
             rel_type=rel_type,
             contains=contains,
             lang=lang,
-            flags=flags
+            flags=flags,
         )
 
 
@@ -269,7 +287,7 @@ class SelectorAttribute(Immutable):
         attribute: str,
         prefix: str,
         pattern: Pattern[str] | None,
-        xml_type_pattern: Pattern[str] | None
+        xml_type_pattern: Pattern[str] | None,
     ) -> None:
         """Initialize."""
 
@@ -277,7 +295,7 @@ class SelectorAttribute(Immutable):
             attribute=attribute,
             prefix=prefix,
             pattern=pattern,
-            xml_type_pattern=xml_type_pattern
+            xml_type_pattern=xml_type_pattern,
         )
 
 
@@ -307,23 +325,27 @@ class SelectorNth(Immutable):
     last: bool
     selectors: SelectorList
 
-    def __init__(self, a: int, n: bool, b: int, of_type: bool, last: bool, selectors: SelectorList) -> None:
+    def __init__(
+        self,
+        a: int,
+        n: bool,
+        b: int,
+        of_type: bool,
+        last: bool,
+        selectors: SelectorList,
+    ) -> None:
         """Initialize."""
 
-        super().__init__(
-            a=a,
-            n=n,
-            b=b,
-            of_type=of_type,
-            last=last,
-            selectors=selectors
-        )
+        super().__init__(a=a, n=n, b=b, of_type=of_type, last=last, selectors=selectors)
 
 
 class SelectorLang(Immutable):
     """Selector language rules."""
 
-    __slots__ = ("languages", "_hash",)
+    __slots__ = (
+        "languages",
+        "_hash",
+    )
 
     languages: tuple[str, ...]
 
@@ -361,14 +383,14 @@ class SelectorList(Immutable):
         self,
         selectors: Iterable[Selector | SelectorNull] | None = None,
         is_not: bool = False,
-        is_html: bool = False
+        is_html: bool = False,
     ) -> None:
         """Initialize."""
 
         super().__init__(
             selectors=tuple(selectors) if selectors is not None else (),
             is_not=is_not,
-            is_html=is_html
+            is_html=is_html,
         )
 
     def __iter__(self) -> Iterator[Selector | SelectorNull]:

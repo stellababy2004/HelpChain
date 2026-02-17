@@ -23,7 +23,9 @@ with open(checklist, encoding="utf-8") as f:
 content_no_code = strip_fenced_code_blocks(content)
 
 if "[ ]" in content_no_code:
-    print("❌ There are still [ ] Pending items in the deployment checklist! Block production deploy.")
+    print(
+        "❌ There are still [ ] Pending items in the deployment checklist! Block production deploy."
+    )
     sys.exit(1)
 else:
     print("✅ All checklist items are marked as done. Proceeding with deploy.")

@@ -7,7 +7,9 @@ def main():
             c = conn.cursor()
 
             # Провери дали таблицата съществува
-            c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='volunteers'")
+            c.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='volunteers'"
+            )
             if not c.fetchone():
                 print("Таблица 'volunteers' не съществува.")
                 return

@@ -1,0 +1,340 @@
+/* Defensive home reset against leaked page-specific global body rules. */
+body.hc-page-home {
+  display: block !important;
+  min-height: auto !important;
+  align-items: normal !important;
+  justify-content: normal !important;
+  background: #f8fafc !important;
+}
+
+/* Hero air + depth */
+body.hc-page-home .hc-hero {
+  position: relative;
+  padding-top: clamp(56px, 7vw, 96px);
+  padding-bottom: clamp(18px, 2.4vw, 30px);
+}
+
+body.hc-page-home .hc-hero::before {
+  content: "";
+  position: absolute;
+  inset: -40px -20px auto -20px;
+  height: 260px;
+  pointer-events: none;
+  background: radial-gradient(
+    900px 220px at 50% 0%,
+    rgba(90, 140, 255, 0.18),
+    rgba(255, 255, 255, 0) 65%
+  );
+  filter: blur(6px);
+}
+
+body.hc-page-home .hc-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Primary cards polish */
+body.hc-page-home .hc-primaryCards .hc-card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+body.hc-page-home .hc-primaryCards .hc-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 42px rgba(2, 6, 23, 0.10);
+}
+
+/* Trust row */
+body.hc-page-home .hc-hero-trust {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: rgba(11, 18, 32, 0.86);
+  font-size: 15px;
+}
+
+body.hc-page-home .hc-hero-trust li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Tighter rhythm between hero and primary cards */
+body.hc-page-home .hc-primaryCards {
+  margin-top: -10px;
+}
+
+/* Slight subtitle contrast lift for readability */
+body.hc-page-home .hc-hero .lead,
+body.hc-page-home .hc-hero .hc-secondary {
+  color: rgba(11, 18, 32, 0.84) !important;
+}
+
+/* Make "See all" consistent with secondary CTAs */
+body.hc-page-home .hc-seeAll-btn {
+  border-color: rgba(59, 130, 246, 0.28);
+  color: rgba(30, 64, 175, 0.88);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+body.hc-page-home .hc-seeAll-btn:hover {
+  border-color: rgba(59, 130, 246, 0.42);
+  color: rgba(30, 64, 175, 0.96);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 991.98px) {
+  body.hc-page-home .hc-reqCard__actions {
+    gap: 8px !important;
+  }
+
+  body.hc-page-home .hc-reqCard__actions .btn {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.hc-page-home .hc-reqCard__actions {
+    flex-direction: column;
+  }
+
+  body.hc-page-home .hc-reqCard__actions .btn {
+    width: 100%;
+  }
+}
+
+/* Step 10 — Premium Hero Composition Refinement */
+body.hc-page-home .hc-hero h1 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  font-size: clamp(34px, 4.5vw, 52px);
+  max-width: 880px;
+  margin-bottom: 18px;
+  text-wrap: balance;
+}
+
+body.hc-page-home .hc-hero .btn-primary {
+  padding: 14px 28px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  min-width: 220px;
+}
+
+body.hc-page-home .hc-hero .btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+body.hc-page-home .hc-hero-steps {
+  margin-top: 16px;
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  color: rgba(11, 18, 32, 0.72);
+}
+
+body.hc-page-home .hc-hero-steps span {
+  position: relative;
+  padding-right: 16px;
+}
+
+body.hc-page-home .hc-hero-steps span:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  background: rgba(11, 18, 32, 0.30);
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+/* Step 10A — Hero KPI strip */
+body.hc-page-home .hc-hero-kpis {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  max-width: 860px;
+}
+
+body.hc-page-home .hc-kpi {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.54);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+body.hc-page-home .hc-kpi--soft {
+  background: rgba(255, 255, 255, 0.42);
+}
+
+body.hc-page-home .hc-kpi__num {
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: #0b1220;
+  line-height: 1.1;
+}
+
+body.hc-page-home .hc-kpi__label {
+  margin-top: 4px;
+  font-size: 13px;
+  color: rgba(11, 18, 32, 0.62);
+}
+
+/* Step 10B — Why HelpChain is different */
+body.hc-page-home .hc-diff {
+  margin-top: 34px;
+}
+
+body.hc-page-home .hc-diff h2 {
+  font-size: clamp(20px, 2.2vw, 28px);
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  color: #0b1220;
+}
+
+body.hc-page-home .hc-diff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+body.hc-page-home .hc-diff-card {
+  padding: 16px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.50);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+body.hc-page-home .hc-diff-card h3 {
+  font-size: 16px;
+  margin: 0 0 6px;
+  color: #0b1220;
+}
+
+body.hc-page-home .hc-diff-card p {
+  margin: 0;
+  color: rgba(11, 18, 32, 0.78);
+  line-height: 1.45;
+}
+
+/* Boost readability of Bootstrap secondary copy on home */
+body.hc-page-home .text-body-secondary,
+body.hc-page-home .text-muted {
+  color: rgba(11, 18, 32, 0.74) !important;
+}
+
+/* Latest requests cards — contrast lift */
+body.hc-page-home .hc-reqCard {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.14) !important;
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.06);
+}
+
+body.hc-page-home .hc-reqCard .hc-reqCard__titleLink {
+  color: #2a6fcf;
+  font-weight: 600;
+  text-decoration-thickness: 1px;
+}
+
+body.hc-page-home .hc-reqCard .hc-reqCard__meta {
+  color: rgba(11, 18, 32, 0.62);
+}
+
+body.hc-page-home .hc-reqCard .hc-dot {
+  color: rgba(220, 38, 38, 0.80);
+}
+
+body.hc-page-home .hc-reqCard p.text-body-secondary {
+  color: rgba(11, 18, 32, 0.78) !important;
+}
+
+body.hc-page-home .hc-reqCard .btn-outline-secondary {
+  color: rgba(11, 18, 32, 0.64);
+  border-color: rgba(15, 23, 42, 0.22);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+body.hc-page-home .hc-reqCard .btn-outline-secondary:hover {
+  color: rgba(11, 18, 32, 0.86);
+  border-color: rgba(15, 23, 42, 0.32);
+  background: rgba(255, 255, 255, 1);
+}
+
+/* Card sections — hard contrast fix */
+body.hc-page-home .hc-primaryCards .hc-card .fw-semibold {
+  color: rgba(11, 18, 32, 0.92) !important;
+}
+
+body.hc-page-home .hc-primaryCards .hc-card .text-body-secondary {
+  color: rgba(11, 18, 32, 0.72) !important;
+}
+
+body.hc-page-home .hc-latest h2,
+body.hc-page-home .hc-latest .h4 {
+  color: rgba(11, 18, 32, 0.90) !important;
+  font-weight: 600;
+}
+
+body.hc-page-home .hc-latest .text-body-secondary {
+  color: rgba(11, 18, 32, 0.72) !important;
+}
+
+body.hc-page-home .hc-latest .hc-active-pill {
+  color: rgba(37, 99, 235, 0.88) !important;
+}
+
+body.hc-page-home .hc-latest .hc-reqCard {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.16) !important;
+}
+
+body.hc-page-home .hc-latest .hc-reqCard .hc-reqCard__meta,
+body.hc-page-home .hc-latest .hc-reqCard .hc-sep {
+  color: rgba(11, 18, 32, 0.66) !important;
+}
+
+body.hc-page-home .hc-latest .hc-reqCard p,
+body.hc-page-home .hc-latest .hc-reqCard .text-body-secondary {
+  color: rgba(11, 18, 32, 0.78) !important;
+}
+
+body.hc-page-home .hc-latest .hc-reqCard .btn-outline-secondary {
+  color: rgba(30, 41, 59, 0.86) !important;
+  border-color: rgba(15, 23, 42, 0.30) !important;
+  font-weight: 500;
+}
+
+@media (max-width: 991.98px) {
+  body.hc-page-home .hc-diff-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.hc-page-home .hc-hero-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 640px;
+  }
+}
+
+@media (max-width: 576px) {
+  body.hc-page-home .hc-hero-kpis {
+    grid-template-columns: 1fr;
+  }
+}
+

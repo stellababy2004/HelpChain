@@ -21,7 +21,6 @@ from _pytest.deprecated import MONKEYPATCH_LEGACY_NAMESPACE_PACKAGES
 from _pytest.fixtures import fixture
 from _pytest.warning_types import PytestWarning
 
-
 RE_IMPORT_ERROR_NAME = re.compile(r"^No module named (.*)$")
 
 

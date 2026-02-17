@@ -3888,3 +3888,35 @@ msgstr "Няма резултати."
 #~ msgid "не са зададени"
 #~ msgstr "не са зададени"
 
+msgid "Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes)."
+msgstr "Без парола. Получаваш защитен линк по имейл (валиден 15 мин.)."
+
+msgid "Votre lien de connexion HelpChain (15 min)"
+msgstr "Вашият вход линк за HelpChain (15 мин)"
+
+msgid "Sans mot de passe. Recevez un lien sécurisé par e-mail."
+msgstr "Без парола. Получаваш защитен линк по имейл."
+
+msgid "Ouvrir mon lien de connexion"
+msgstr "Отвори линка за вход"
+
+msgid "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
+msgstr "Ако бутонът не работи, копирай и постави този линк:"
+
+msgid "Données minimales, respect RGPD"
+msgstr "Минимални данни, спазваме GDPR"
+
+msgid "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
+msgstr "Ако не сте поискали това, игнорирайте този имейл."
+
+msgid "Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes."
+msgstr "Ако имейлът е валиден, ще получите линк до няколко минути."
+
+msgid "Lien invalide"
+msgstr "Невалиден линк"
+
+msgid "Lien invalide ou expiré"
+msgstr "Линкът е невалиден или изтекъл"
+
+msgid "Ce lien n’est plus valable. Veuillez demander un nouveau lien."
+msgstr "Този линк вече не е валиден. Моля, поискайте нов линк."

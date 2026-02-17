@@ -19,7 +19,6 @@ from pygments.lexers.python import PythonLexer
 from ..compat import assert_never
 from .wcwidth import wcswidth
 
-
 # This code was initially copied from py 1.8.1, file _io/terminalwriter.py.
 
 

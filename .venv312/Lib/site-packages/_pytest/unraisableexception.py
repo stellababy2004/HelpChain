@@ -16,7 +16,6 @@ from _pytest.stash import StashKey
 from _pytest.tracemalloc import tracemalloc_message
 import pytest
 
-
 if TYPE_CHECKING:
     pass
 

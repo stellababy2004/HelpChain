@@ -53,7 +53,6 @@ from _pytest.reports import BaseReport
 from _pytest.reports import CollectReport
 from _pytest.reports import TestReport
 
-
 if TYPE_CHECKING:
     from _pytest.main import Session
 
@@ -1231,7 +1230,7 @@ class TerminalReporter:
             return
 
         session_duration = self._session_start.elapsed()
-        (parts, main_color) = self.build_summary_stats_line()
+        parts, main_color = self.build_summary_stats_line()
         line_parts = []
 
         display_sep = self.verbosity >= 0
@@ -1460,7 +1459,9 @@ class TerminalReporter:
 
         elif deselected == 0:
             main_color = "green"
-            collected_output = "%d %s collected" % pluralize(self._numcollected, "test")  # noqa: UP031
+            collected_output = "%d %s collected" % pluralize(
+                self._numcollected, "test"
+            )  # noqa: UP031
             parts = [(collected_output, {main_color: True})]
         else:
             all_tests_were_deselected = self._numcollected == deselected
@@ -1476,7 +1477,9 @@ class TerminalReporter:
 
         if errors:
             main_color = _color_for_type["error"]
-            parts += [("%d %s" % pluralize(errors, "error"), {main_color: True})]  # noqa: UP031
+            parts += [
+                ("%d %s" % pluralize(errors, "error"), {main_color: True})
+            ]  # noqa: UP031
 
         return parts, main_color
 

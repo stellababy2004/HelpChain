@@ -14,7 +14,6 @@ from _pytest.stash import StashKey
 from _pytest.terminal import TerminalReporter
 import pytest
 
-
 pastebinfile_key = StashKey[IO[bytes]]()
 
 

@@ -32,7 +32,6 @@ from _pytest.nodes import Directory
 from _pytest.nodes import File
 from _pytest.reports import TestReport
 
-
 README_CONTENT = """\
 # pytest cache directory #
 

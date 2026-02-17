@@ -21,10 +21,18 @@ def encode_access_token(user_id: int) -> str:
         "iss": current_app.config["JWT_ISSUER"],
         "aud": current_app.config["JWT_AUDIENCE"],
         "iat": int(now.timestamp()),
-        "exp": int((now + timedelta(seconds=current_app.config["JWT_ACCESS_TTL_SECONDS"])).timestamp()),
+        "exp": int(
+            (
+                now + timedelta(seconds=current_app.config["JWT_ACCESS_TTL_SECONDS"])
+            ).timestamp()
+        ),
         "jti": new_jti(),
     }
-    return jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm=current_app.config["JWT_ALG"])
+    return jwt.encode(
+        payload,
+        current_app.config["SECRET_KEY"],
+        algorithm=current_app.config["JWT_ALG"],
+    )
 
 
 def encode_refresh_token(user_id: int, jti: str, exp_dt: datetime) -> str:
@@ -37,7 +45,11 @@ def encode_refresh_token(user_id: int, jti: str, exp_dt: datetime) -> str:
         "exp": int(exp_dt.timestamp()),
         "jti": jti,
     }
-    return jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm=current_app.config["JWT_ALG"])
+    return jwt.encode(
+        payload,
+        current_app.config["SECRET_KEY"],
+        algorithm=current_app.config["JWT_ALG"],
+    )
 
 
 def decode_token(token: str, expected_type: str):

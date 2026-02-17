@@ -15,7 +15,6 @@ from pluggy import HookspecMarker
 
 from .deprecated import HOOK_LEGACY_PATH_ARG
 
-
 if TYPE_CHECKING:
     import pdb
     from typing import Literal
@@ -1043,7 +1042,7 @@ def pytest_assertion_pass(item: Item, lineno: int, orig: str, expl: str) -> None
         ),
     },
 )
-def pytest_report_header(  # type:ignore[empty-body]
+def pytest_report_header(  # type: ignore[empty-body]
     config: Config, start_path: Path, startdir: LEGACY_PATH
 ) -> str | list[str]:
     """Return a string or list of strings to be displayed as header info for terminal reporting.
@@ -1079,7 +1078,7 @@ def pytest_report_header(  # type:ignore[empty-body]
         ),
     },
 )
-def pytest_report_collectionfinish(  # type:ignore[empty-body]
+def pytest_report_collectionfinish(  # type: ignore[empty-body]
     config: Config,
     start_path: Path,
     startdir: LEGACY_PATH,
@@ -1118,7 +1117,7 @@ def pytest_report_collectionfinish(  # type:ignore[empty-body]
 
 
 @hookspec(firstresult=True)
-def pytest_report_teststatus(  # type:ignore[empty-body]
+def pytest_report_teststatus(  # type: ignore[empty-body]
     report: CollectReport | TestReport, config: Config
 ) -> TestShortLogReport | tuple[str, str, str | tuple[str, Mapping[str, bool]]]:
     """Return result-category, shortletter and verbose word for status
@@ -1216,7 +1215,7 @@ def pytest_warning_recorded(
 # -------------------------------------------------------------------------
 
 
-def pytest_markeval_namespace(  # type:ignore[empty-body]
+def pytest_markeval_namespace(  # type: ignore[empty-body]
     config: Config,
 ) -> dict[str, Any]:
     """Called when constructing the globals dictionary used for

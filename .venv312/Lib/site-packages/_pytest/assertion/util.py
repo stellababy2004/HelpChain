@@ -23,7 +23,6 @@ from _pytest._io.saferepr import saferepr_unlimited
 from _pytest.compat import running_on_ci
 from _pytest.config import Config
 
-
 # The _reprcompare attribute on the util module is used by the new assertion
 # interpretation code and assertion rewriter to detect this plugin was
 # loaded and in turn call the hooks defined here as part of the

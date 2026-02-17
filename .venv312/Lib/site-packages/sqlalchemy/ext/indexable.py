@@ -354,9 +354,7 @@ class index_property(hybrid_property[_T]):
             setattr(instance, attr_name, column_value)
             flag_modified(instance, attr_name)
 
-    def expr(
-        self, model: Any
-    ) -> Union[_HasClauseElement[_T], SQLColumnExpression[_T]]:
+    def expr(self, model: Any) -> Union[_HasClauseElement[_T], SQLColumnExpression[_T]]:
         column = getattr(model, self.attr_name)
         index = self.index
         if self.onebased:

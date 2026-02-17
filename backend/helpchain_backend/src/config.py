@@ -19,7 +19,11 @@ class Config:
     # --- Session / cookies hardening ---
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
-    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "").lower() in ("true", "1", "yes")
+    SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
     SESSION_PERMANENT = True
     PERMANENT_SESSION_LIFETIME = timedelta(hours=6)
     SESSION_REFRESH_EACH_REQUEST = True
@@ -33,19 +37,42 @@ class Config:
     # ✅ Admin credentials (from .env)
     ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
+    ADMIN_NOTIFY_EMAIL = os.getenv("ADMIN_NOTIFY_EMAIL", "")
 
     # ✅ Database
     # Prefer explicit env; else Render/Heroku DATABASE_URL; else project instance/app.db (absolute to avoid CWD drift)
     INSTANCE_PATH = os.path.join(BASE_DIR, "instance")
     DEFAULT_SQLITE_PATH = os.path.join(INSTANCE_PATH, "app.db")
-    _db_url_env = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL")
+    _db_path_env = os.getenv("HC_DB_PATH")
+    db_url = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI") or ""
+    _db_url_env = db_url
+    # normalize scheme for SQLAlchemy
+    if _db_url_env.startswith("postgres://"):
+        _db_url_env = _db_url_env.replace("postgres://", "postgresql://", 1)
+    # explicit psycopg v3 driver for Python 3.13 compatibility on Render
+    if _db_url_env.startswith("postgresql://") and "+psycopg" not in _db_url_env:
+        _db_url_env = _db_url_env.replace("postgresql://", "postgresql+psycopg://", 1)
     if _db_url_env:
         # Allow %TEMP%, $HOME, etc. in dev env vars
         _db_url_env = os.path.expandvars(_db_url_env)
-    SQLALCHEMY_DATABASE_URI = _db_url_env or f"sqlite:///{DEFAULT_SQLITE_PATH}"
+    if _db_path_env:
+        _db_path_env = os.path.expandvars(_db_path_env).replace("\\", "/")
+    SQLALCHEMY_DATABASE_URI = (
+        (f"sqlite:///{_db_path_env}" if _db_path_env else None)
+        or _db_url_env
+        or f"sqlite:///{DEFAULT_SQLITE_PATH}"
+    )
 
     # Rate limit headers (useful with ProxyFix and real client IPs)
     RATELIMIT_HEADERS_ENABLED = True
+    TRUST_PROXY_HEADERS = os.getenv("TRUST_PROXY_HEADERS", "false").lower() in (
+        "true",
+        "1",
+        "yes",
+    )
+    PROXY_FIX_X_FOR = int(os.getenv("PROXY_FIX_X_FOR", "1"))
+    PROXY_FIX_X_PROTO = int(os.getenv("PROXY_FIX_X_PROTO", "1"))
+    PROXY_FIX_X_HOST = int(os.getenv("PROXY_FIX_X_HOST", "1"))
 
     # --- Mail ---
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.mailtrap.io")
@@ -55,15 +82,23 @@ class Config:
     MAIL_USERNAME = os.getenv("MAIL_USERNAME", os.getenv("MAILTRAP_USERNAME"))
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", os.getenv("MAILTRAP_PASSWORD"))
     MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "contact@helpchain.live")
+    MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "HelpChain")
+    MAIL_REPLY_TO = os.getenv("MAIL_REPLY_TO", MAIL_DEFAULT_SENDER)
+    PRO_LEADS_NOTIFY_TO = os.getenv("PRO_LEADS_NOTIFY_TO", "")
 
     # --- Optional / misc ---
     NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN")
     QR_CODE_SIZE = int(os.getenv("QR_CODE_SIZE", 250))
-    ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()]
+    ALLOWED_HOSTS = [
+        h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",") if h.strip()
+    ]
+    PUBLIC_BASE_URL = (os.getenv("PUBLIC_BASE_URL", "") or "").strip()
 
     # Dev-only volunteer bypass (disabled by default)
     VOLUNTEER_DEV_BYPASS_ENABLED = os.getenv("VOLUNTEER_DEV_BYPASS_ENABLED", "0") == "1"
-    VOLUNTEER_DEV_BYPASS_EMAIL = (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
+    VOLUNTEER_DEV_BYPASS_EMAIL = (
+        (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
+    )
 
     # --- MFA ---
     MFA_ENABLED = os.getenv("MFA_ENABLED", "true").lower() in ("true", "1", "yes")
@@ -97,14 +132,28 @@ class Config:
     ]
 
     # --- i18n / Babel ---
-    BABEL_DEFAULT_LOCALE = "en"
+    # Keep in sync with app factory (FR-first).
+    BABEL_DEFAULT_LOCALE = "fr"
     BABEL_DEFAULT_TIMEZONE = "Europe/Paris"
+
+    # --- Analytics (Plausible) ---
+    PLAUSIBLE_ENABLED = os.getenv("PLAUSIBLE_ENABLED", "0") == "1"
+    PLAUSIBLE_DOMAIN = os.getenv("PLAUSIBLE_DOMAIN", "helpchain.live")
+    PLAUSIBLE_SCRIPT_URL = os.getenv(
+        "PLAUSIBLE_SCRIPT_URL", "https://plausible.io/js/script.js"
+    )
+    # Optional override for self-hosted API endpoint base host, e.g.
+    # https://plausible.helpchain.live
+    PLAUSIBLE_API_HOST = (os.getenv("PLAUSIBLE_API_HOST", "") or "").strip()
 
 
 class DevConfig(Config):
     SESSION_COOKIE_SECURE = False
-    VOLUNTEER_DEV_BYPASS_ENABLED = True
-    VOLUNTEER_DEV_BYPASS_EMAIL = "testvol@helpchain.local"
+    # Dev-only volunteer bypass: honor env (default off)
+    VOLUNTEER_DEV_BYPASS_ENABLED = os.getenv("VOLUNTEER_DEV_BYPASS_ENABLED", "0") == "1"
+    VOLUNTEER_DEV_BYPASS_EMAIL = (
+        (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
+    )
 
 
 class ProdConfig(Config):

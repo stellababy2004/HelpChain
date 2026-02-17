@@ -33,7 +33,6 @@ from _pytest.pytester import RunResult
 from _pytest.terminal import TerminalReporter
 from _pytest.tmpdir import TempPathFactory
 
-
 if TYPE_CHECKING:
     import pexpect
 

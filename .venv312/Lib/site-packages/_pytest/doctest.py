@@ -41,7 +41,6 @@ from _pytest.python import Module
 from _pytest.python_api import approx
 from _pytest.warning_types import PytestWarning
 
-
 if TYPE_CHECKING:
     import doctest
 
@@ -525,7 +524,7 @@ class DoctestModule(Module):
                         obj = inspect.unwrap(obj)
 
                     # Type ignored because this is a private function.
-                    return super()._find_lineno(  # type:ignore[misc]
+                    return super()._find_lineno(  # type: ignore[misc]
                         obj,
                         source_lines,
                     )

@@ -1,0 +1,296 @@
+/* HelpChain - Categories page (scoped) */
+body.hc-page-categories .hc-cats-hero {
+  padding: 42px 0 18px;
+  text-align: center;
+}
+
+body.hc-page-categories .hc-cats-hero__icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+body.hc-page-categories .hc-cats-hero h1 {
+  margin: 0;
+  font-size: clamp(28px, 3.2vw, 44px);
+}
+
+body.hc-page-categories .hc-cats-hero p {
+  margin: 10px auto 0;
+  max-width: 720px;
+  opacity: 0.9;
+}
+
+body.hc-page-categories .hc-cats-hero__actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+body.hc-page-categories .hc-cats-grid {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+body.hc-page-categories .hc-cat-card {
+  padding: 18px;
+}
+
+body.hc-page-categories .hc-cat-card .hc-cat-icon {
+  font-size: 34px;
+  opacity: 0.95;
+  margin-bottom: 10px;
+}
+
+body.hc-page-categories .hc-cat-card h4 {
+  margin: 6px 0 8px;
+}
+
+body.hc-page-categories .hc-cat-card p {
+  margin: 0 0 14px;
+  opacity: 0.9;
+}
+
+body.hc-page-categories .hc-cats-cta {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+body.hc-page-categories .hc-center {
+  text-align: center;
+  margin-top: 22px;
+}
+
+/* ---- Cards: make them feel like Home ---- */
+body.hc-page-categories .hc-cats-grid {
+  margin-top: 18px;
+  gap: 18px;
+}
+
+body.hc-page-categories .hc-cat-card {
+  padding: 0;
+  transition: transform 140ms ease, border-color 140ms ease;
+}
+
+body.hc-page-categories .hc-cat-card:hover {
+  transform: translateY(-2px);
+}
+
+/* equal height + pinned button */
+body.hc-page-categories .hc-cat-card__inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+body.hc-page-categories .hc-cat-card__top {
+  flex: 1 1 auto;
+}
+
+body.hc-page-categories .hc-cat-card__actions {
+  margin-top: 12px;
+}
+
+body.hc-page-categories .hc-cat-card__microcopy {
+  margin-top: 8px;
+  font-size: 0.95rem;
+}
+
+/* icon/typography rhythm */
+body.hc-page-categories .hc-cat-card .hc-cat-icon {
+  font-size: 34px;
+  margin-bottom: 10px;
+}
+
+body.hc-page-categories .hc-cat-card h4 {
+  margin: 6px 0 8px;
+}
+
+body.hc-page-categories .hc-cat-card p {
+  margin: 0;
+  margin-bottom: 12px;
+}
+
+/* CTA section should look like a clean section, not "another grid" */
+body.hc-page-categories .hc-cats-cta {
+  margin-top: 22px;
+  gap: 18px;
+}
+
+body.hc-page-categories .hc-cats-ctaCard {
+  padding: 0;
+}
+
+body.hc-page-categories .hc-cats-ctaCard__inner {
+  padding: 18px;
+}
+
+/* tighter hero + grid rhythm */
+body.hc-page-categories .hc-cats-hero {
+  padding: 28px 0 10px;
+}
+
+body.hc-page-categories .hc-cats-grid {
+  margin-top: 14px;
+}
+
+/* consistent card internals */
+body.hc-page-categories .hc-cat-card__top {
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+body.hc-page-categories .hc-cat-card p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 3.6em;
+}
+
+/* unify button feel */
+body.hc-page-categories .hc-cat-card .hc-btn,
+body.hc-page-categories .hc-cats-cta .hc-btn {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 12px;
+}
+
+/* =========================
+   Mobile pass: Categories
+   Breakpoints: 768 / 576 / 375 / 320
+   ========================= */
+
+/* 1) <= 768px: tighten layout + bigger tap targets */
+@media (max-width: 768px) {
+  body.hc-page-categories .hc-wrap {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  body.hc-page-categories .hc-cats-hero {
+    padding: 22px 0 8px;
+  }
+
+  body.hc-page-categories .hc-cats-hero__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+  }
+
+  body.hc-page-categories .hc-cats-hero p {
+    max-width: 520px;
+  }
+
+  body.hc-page-categories .hc-cats-grid,
+  body.hc-page-categories .hc-cats-cta {
+    gap: 14px;
+  }
+
+  body.hc-page-categories .hc-cat-card {
+    padding: 16px;
+  }
+
+  body.hc-page-categories .hc-cat-card .hc-cat-icon {
+    font-size: 30px;
+    margin-bottom: 6px;
+  }
+
+  /* buttons: comfortable touch */
+  body.hc-page-categories .hc-cat-card .btn,
+  body.hc-page-categories .hc-cats-cta .btn,
+  body.hc-page-categories .hc-cat-card .hc-btn,
+  body.hc-page-categories .hc-cats-cta .hc-btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* 2) <= 576px: single-column feel + remove "desktop air" */
+@media (max-width: 576px) {
+  body.hc-page-categories .hc-cats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-categories .hc-cats-cta {
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-categories .hc-cats-hero h1 {
+    font-size: clamp(24px, 6vw, 34px);
+  }
+
+  body.hc-page-categories .hc-cats-hero p {
+    font-size: 0.95rem;
+  }
+
+  body.hc-page-categories .hc-cats-hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* less fixed heights; let content breathe on narrow screens */
+  body.hc-page-categories .hc-cat-card .text-center {
+    min-height: auto;
+  }
+}
+
+/* 3) <= 375px: micro-tight */
+@media (max-width: 375px) {
+  body.hc-page-categories .hc-wrap {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  body.hc-page-categories .hc-cat-card {
+    padding: 14px;
+  }
+
+  body.hc-page-categories .hc-cat-card h4 {
+    font-size: 1.05rem;
+  }
+
+  body.hc-page-categories .hc-cat-card p {
+    -webkit-line-clamp: 4; /* allow a bit more text to avoid awkward truncation */
+    min-height: auto;
+  }
+}
+
+/* 4) <= 320px: survival mode (old phones) */
+@media (max-width: 320px) {
+  body.hc-page-categories .hc-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  body.hc-page-categories .hc-cats-hero__icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  body.hc-page-categories .hc-cat-card .hc-cat-icon {
+    font-size: 28px;
+  }
+
+  body.hc-page-categories .hc-cat-card .btn,
+  body.hc-page-categories .hc-cats-cta .btn,
+  body.hc-page-categories .hc-cat-card .hc-btn,
+  body.hc-page-categories .hc-cats-cta .hc-btn {
+    font-size: 0.95rem;
+  }
+}

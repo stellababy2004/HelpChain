@@ -30,7 +30,11 @@ def test_admin_login():
         print(f"Login response status: {response.status_code}")
         print(f"Login response location: {response.location}")
 
-        if response.status_code == 200 and response.location and "admin_dashboard" in response.location:
+        if (
+            response.status_code == 200
+            and response.location
+            and "admin_dashboard" in response.location
+        ):
             print("SUCCESS: Login worked!")
         else:
             print("Login response shows redirect to dashboard")

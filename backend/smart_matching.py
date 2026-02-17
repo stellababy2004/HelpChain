@@ -62,7 +62,9 @@ class SmartMatchingService:
 
         return help_request
 
-    def find_best_matches(self, request_id: int, limit: int = 5) -> list[dict[str, Any]]:
+    def find_best_matches(
+        self, request_id: int, limit: int = 5
+    ) -> list[dict[str, Any]]:
         """
         Намира най-добрите съпоставяния за HelpRequest
 
@@ -88,7 +90,9 @@ class SmartMatchingService:
                     {
                         "volunteer": volunteer,
                         "scores": match_score,
-                        "recommendation_reason": self._generate_recommendation_reason(help_request, volunteer, match_score),
+                        "recommendation_reason": self._generate_recommendation_reason(
+                            help_request, volunteer, match_score
+                        ),
                     }
                 )
 
@@ -96,7 +100,9 @@ class SmartMatchingService:
         matches.sort(key=lambda x: x["scores"]["overall"], reverse=True)
         return matches[:limit]
 
-    def _calculate_match_score(self, help_request: HelpRequest, volunteer: Volunteer) -> dict[str, float]:
+    def _calculate_match_score(
+        self, help_request: HelpRequest, volunteer: Volunteer
+    ) -> dict[str, float]:
         """
         Изчислява match score между HelpRequest и Volunteer
 
@@ -106,24 +112,34 @@ class SmartMatchingService:
         scores = {
             "skill_match": self._calculate_skill_match(help_request, volunteer),
             "location_match": self._calculate_location_match(help_request, volunteer),
-            "availability_match": self._calculate_availability_match(help_request, volunteer),
-            "performance_match": self._calculate_performance_match(help_request, volunteer),
+            "availability_match": self._calculate_availability_match(
+                help_request, volunteer
+            ),
+            "performance_match": self._calculate_performance_match(
+                help_request, volunteer
+            ),
             "urgency_match": self._calculate_urgency_match(help_request, volunteer),
         }
 
         # Изчисли overall score с тегла
-        overall = sum(scores[component] * self.weights[component] for component in scores.keys())
+        overall = sum(
+            scores[component] * self.weights[component] for component in scores.keys()
+        )
 
         scores["overall"] = min(100.0, overall)  # Капни на 100
         return scores
 
-    def _calculate_skill_match(self, help_request: HelpRequest, volunteer: Volunteer) -> float:
+    def _calculate_skill_match(
+        self, help_request: HelpRequest, volunteer: Volunteer
+    ) -> float:
         """Изчислява skill match score (0-100)"""
         if not volunteer.skills:
             return 25.0  # Неутрално ако доброволецът няма умения
 
         volunteer_skills = set((volunteer.skills or "").lower().split(","))
-        volunteer_skills = {skill.strip() for skill in volunteer_skills if skill.strip()}
+        volunteer_skills = {
+            skill.strip() for skill in volunteer_skills if skill.strip()
+        }
 
         # Extract keywords from help request title and description
         request_text = f"{help_request.title} {help_request.description}".lower()
@@ -217,7 +233,9 @@ class SmartMatchingService:
 
         return min(100.0, category_score + exact_bonus)
 
-    def _calculate_location_match(self, help_request: HelpRequest, volunteer: Volunteer) -> float:
+    def _calculate_location_match(
+        self, help_request: HelpRequest, volunteer: Volunteer
+    ) -> float:
         """Изчислява location match score (0-100)"""
         # If request has no location, it's location-independent
         if not help_request.latitude or not help_request.longitude:
@@ -249,22 +267,30 @@ class SmartMatchingService:
         else:  # Too far
             return 20.0
 
-    def _calculate_availability_match(self, help_request: HelpRequest, volunteer: Volunteer) -> float:
+    def _calculate_availability_match(
+        self, help_request: HelpRequest, volunteer: Volunteer
+    ) -> float:
         """Изчислява availability match score (0-100)"""
         # For now, assume all volunteers are available
         # In future, could check volunteer schedule/calendar
         return 100.0
 
-    def _calculate_performance_match(self, help_request: HelpRequest, volunteer: Volunteer) -> float:
+    def _calculate_performance_match(
+        self, help_request: HelpRequest, volunteer: Volunteer
+    ) -> float:
         """Изчислява performance match базиран на volunteer metrics (0-100)"""
         # Use volunteer rating, experience, and completion history
         rating_score = volunteer.rating * 20  # Rating out of 5, convert to 0-100 scale
 
         # Experience bonus
-        experience_score = min(30.0, volunteer.experience * 0.1)  # 1 point per 10 experience
+        experience_score = min(
+            30.0, volunteer.experience * 0.1
+        )  # 1 point per 10 experience
 
         # Completion rate bonus (assume based on total_tasks_completed)
-        completion_score = min(30.0, volunteer.total_tasks_completed * 2)  # 2 points per task
+        completion_score = min(
+            30.0, volunteer.total_tasks_completed * 2
+        )  # 2 points per task
 
         # Level bonus
         level_score = min(20.0, volunteer.level * 2)  # 2 points per level
@@ -273,11 +299,15 @@ class SmartMatchingService:
 
         return min(100.0, total_score)
 
-    def _calculate_urgency_match(self, help_request: HelpRequest, volunteer: Volunteer) -> float:
+    def _calculate_urgency_match(
+        self, help_request: HelpRequest, volunteer: Volunteer
+    ) -> float:
         """Изчислява urgency match - prefers experienced volunteers for urgent requests"""
         if help_request.priority == "urgent":
             # For urgent requests, prefer high-rated, experienced volunteers
-            urgency_bonus = min(50.0, volunteer.rating * 10 + volunteer.experience * 0.5)
+            urgency_bonus = min(
+                50.0, volunteer.rating * 10 + volunteer.experience * 0.5
+            )
             return urgency_bonus
         elif help_request.priority == "high":
             urgency_bonus = min(30.0, volunteer.rating * 6 + volunteer.experience * 0.3)
@@ -286,19 +316,25 @@ class SmartMatchingService:
             # Normal/low priority - no urgency bonus
             return 50.0
 
-    def _calculate_distance(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    def _calculate_distance(
+        self, lat1: float, lon1: float, lat2: float, lon2: float
+    ) -> float:
         """Изчислява distance между две точки в км (Haversine formula)"""
         R = 6371  # Earth radius in km
 
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
 
-        a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) * math.sin(dlon / 2)
+        a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(
+            math.radians(lat1)
+        ) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) * math.sin(dlon / 2)
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
         return R * c
 
-    def _generate_recommendation_reason(self, help_request: HelpRequest, volunteer: Volunteer, scores: dict[str, float]) -> str:
+    def _generate_recommendation_reason(
+        self, help_request: HelpRequest, volunteer: Volunteer, scores: dict[str, float]
+    ) -> str:
         """Генерира текст защо този доброволец е препоръчан"""
         reasons = []
 
@@ -421,15 +457,25 @@ class SmartMatchingService:
         """Аналитика за ефективността на matching системата"""
         # Обща статистика
         total_requests = HelpRequest.query.count()
-        assigned_requests = HelpRequest.query.filter(HelpRequest.status.in_(["assigned", "in_progress", "completed"])).count()
+        assigned_requests = HelpRequest.query.filter(
+            HelpRequest.status.in_(["assigned", "in_progress", "completed"])
+        ).count()
         completed_requests = HelpRequest.query.filter_by(status="completed").count()
 
-        assignment_rate = (assigned_requests / total_requests * 100) if total_requests > 0 else 0
-        completion_rate = (completed_requests / assigned_requests * 100) if assigned_requests > 0 else 0
+        assignment_rate = (
+            (assigned_requests / total_requests * 100) if total_requests > 0 else 0
+        )
+        completion_rate = (
+            (completed_requests / assigned_requests * 100)
+            if assigned_requests > 0
+            else 0
+        )
 
         # Volunteer statistics
         total_volunteers = Volunteer.query.count()
-        active_volunteers = Volunteer.query.filter(Volunteer.total_tasks_completed > 0).count()
+        active_volunteers = Volunteer.query.filter(
+            Volunteer.total_tasks_completed > 0
+        ).count()
 
         # Average ratings and experience
         volunteers = Volunteer.query.all()

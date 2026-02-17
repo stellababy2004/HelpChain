@@ -61,7 +61,9 @@ class AdminUser(db.Model, UserMixin):
     totp_secret = db.Column(db.String(32), nullable=True)
     mfa_enabled = db.Column(db.Boolean, default=False)
     mfa_enrolled_at = db.Column(db.DateTime, nullable=True)
-    backup_codes_hashes = db.Column(db.Text, nullable=True)  # JSON list of password hashes
+    backup_codes_hashes = db.Column(
+        db.Text, nullable=True
+    )  # JSON list of password hashes
     backup_codes_generated_at = db.Column(db.DateTime, nullable=True)
 
     @property
@@ -118,7 +120,9 @@ def get_query_for(model):
     except Exception:
         pass
     # Final fallback: raise so callers notice configuration issue early.
-    raise RuntimeError("Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app")
+    raise RuntimeError(
+        "Models not configured with Flask DB session. Call backend.models.configure_models(flask_db) from backend.extensions.init_app"
+    )
 
 
 # (Dynamic `.query` descriptor will be attached after the descriptor is defined.)
@@ -337,7 +341,11 @@ class User(db.Model):
             from backend.extensions import db as _db
             from backend.models import PushSubscription
 
-            return _db.session.query(PushSubscription).filter(PushSubscription.user_id == self.id).all()
+            return (
+                _db.session.query(PushSubscription)
+                .filter(PushSubscription.user_id == self.id)
+                .all()
+            )
         except Exception:
             return []
 
@@ -355,7 +363,9 @@ class User(db.Model):
         try:
             from werkzeug.security import check_password_hash
 
-            return bool(self.password_hash and check_password_hash(self.password_hash, password))
+            return bool(
+                self.password_hash and check_password_hash(self.password_hash, password)
+            )
         except Exception:
             return self.password_hash == password
 
@@ -573,7 +583,9 @@ class Request(db.Model):
     completed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, nullable=True, onupdate=utc_now)
-    is_archived = Column(Boolean, nullable=False, default=False, server_default="0", index=True)
+    is_archived = Column(
+        Boolean, nullable=False, default=False, server_default="0", index=True
+    )
     archived_at = Column(DateTime, nullable=True)
     deleted_at = Column(DateTime, nullable=True, index=True)
     latitude = Column(Float, nullable=True)
@@ -625,7 +637,9 @@ class RequestLog(db.Model):
     __tablename__ = "request_logs"
 
     id = Column(Integer, primary_key=True)
-    request_id = db.Column(db.Integer, db.ForeignKey("requests.id"), nullable=False, index=True)
+    request_id = db.Column(
+        db.Integer, db.ForeignKey("requests.id"), nullable=False, index=True
+    )
     action = db.Column(db.String, nullable=False)
     timestamp = db.Column(db.DateTime, default=utc_now)
 
@@ -639,7 +653,9 @@ class RequestActivity(db.Model):
 
     id = Column(Integer, primary_key=True)
     request_id = Column(Integer, ForeignKey("requests.id"), nullable=False, index=True)
-    actor_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    actor_admin_id = Column(
+        Integer, ForeignKey("admin_users.id"), nullable=True, index=True
+    )
     action = Column(String(50), nullable=False)
     old_value = Column(Text, nullable=True)
     new_value = Column(Text, nullable=True)
@@ -666,10 +682,14 @@ class SecurityEvent(db.Model):
     __tablename__ = "security_events"
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC)
+    )
 
     event_type = Column(String(64), nullable=False)
-    actor_type = Column(String(32), nullable=False, default="anonymous")  # anonymous/user/admin/api
+    actor_type = Column(
+        String(32), nullable=False, default="anonymous"
+    )  # anonymous/user/admin/api
     actor_id = Column(Integer, nullable=True)
 
     ip_hash = Column(String(64), nullable=True)
@@ -731,7 +751,11 @@ try:
                 if new_id is None:
                     # Try to select any existing placeholder user
                     try:
-                        sel = connection.execute(select(users_tbl.c.id).where(users_tbl.c.username == "__auto_user__")).first()
+                        sel = connection.execute(
+                            select(users_tbl.c.id).where(
+                                users_tbl.c.username == "__auto_user__"
+                            )
+                        ).first()
                         if sel:
                             new_id = sel[0]
                     except Exception:
@@ -756,6 +780,7 @@ try:
             # Never let the listener raise; tests will observe DB errors
             # if placeholder creation fails.
             pass
+
 except Exception:
     pass
 
@@ -821,7 +846,9 @@ class RolePermission(db.Model):
         def permission(self, value):
             # Allow assigning by codename string or by Permission instance.
             try:
-                logger.debug(f"RolePermission.permission setter called with value={value!r}")
+                logger.debug(
+                    f"RolePermission.permission setter called with value={value!r}"
+                )
             except Exception:
                 pass
             if isinstance(value, str):
@@ -842,13 +869,21 @@ class RolePermission(db.Model):
                         try:
                             from sqlalchemy.orm import object_session
 
-                            sess = object_session(self) or (object_session(self.role) if getattr(self, "role", None) is not None else None)
+                            sess = object_session(self) or (
+                                object_session(self.role)
+                                if getattr(self, "role", None) is not None
+                                else None
+                            )
                         except Exception:
                             sess = None
 
                         if sess is not None:
                             try:
-                                p = sess.query(Permission).filter_by(codename=value).first()
+                                p = (
+                                    sess.query(Permission)
+                                    .filter_by(codename=value)
+                                    .first()
+                                )
                             except Exception:
                                 p = None
 
@@ -856,7 +891,11 @@ class RolePermission(db.Model):
                             try:
                                 from backend.extensions import db as _ext_db
 
-                                p = _ext_db.session.query(Permission).filter_by(codename=value).first()
+                                p = (
+                                    _ext_db.session.query(Permission)
+                                    .filter_by(codename=value)
+                                    .first()
+                                )
                             except Exception:
                                 p = None
 
@@ -864,7 +903,9 @@ class RolePermission(db.Model):
                         self.permission_id = p.id
                         self._permission = p
                         try:
-                            logger.debug(f"Resolved permission codename '{value}' -> id={p.id}")
+                            logger.debug(
+                                f"Resolved permission codename '{value}' -> id={p.id}"
+                            )
                         except Exception:
                             pass
                     else:
@@ -883,12 +924,15 @@ class RolePermission(db.Model):
                     self._permission = value
                     self.permission_id = getattr(value, "id", None)
                     try:
-                        logger.debug(f"Assigned Permission instance -> id={self.permission_id}")
+                        logger.debug(
+                            f"Assigned Permission instance -> id={self.permission_id}"
+                        )
                     except Exception:
                         pass
                 except Exception:
                     self._permission = None
                     self.permission_id = None
+
     except Exception:
         # If @permission isn't valid in this environment, silently ignore.
         pass
@@ -922,10 +966,16 @@ class ChatMessage(db.Model):
 
 class Notification(db.Model):
     __tablename__ = "notifications"
-    __table_args__ = (UniqueConstraint("volunteer_id", "type", "request_id", name="uq_notif_vol_type_req"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "volunteer_id", "type", "request_id", name="uq_notif_vol_type_req"
+        ),
+    )
 
     id = Column(Integer, primary_key=True)
-    volunteer_id = Column(Integer, ForeignKey("volunteers.id"), nullable=False, index=True)
+    volunteer_id = Column(
+        Integer, ForeignKey("volunteers.id"), nullable=False, index=True
+    )
     type = Column(String(50), nullable=False, index=True)
     request_id = Column(Integer, ForeignKey("requests.id"), nullable=True, index=True)
     title = Column(String(200), nullable=False)
@@ -948,7 +998,9 @@ class NotificationSubscription(db.Model):
 
     created_at = Column(DateTime, nullable=False, default=utc_now)
 
-    __table_args__ = (UniqueConstraint("endpoint", name="uq_notification_subscriptions_endpoint"),)
+    __table_args__ = (
+        UniqueConstraint("endpoint", name="uq_notification_subscriptions_endpoint"),
+    )
 
 
 # Provide a lightweight Query proxy for modules that call `Model.query`.

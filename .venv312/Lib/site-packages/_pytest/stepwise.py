@@ -13,7 +13,6 @@ from _pytest.config.argparsing import Parser
 from _pytest.main import Session
 from _pytest.reports import TestReport
 
-
 if TYPE_CHECKING:
     from typing_extensions import Self
 

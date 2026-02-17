@@ -4,7 +4,9 @@ from urllib.parse import urlparse
 
 root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 default_sqlite = f"sqlite:///{os.path.join(root, 'instance', 'app.db')}"
-db_url = os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL") or default_sqlite
+db_url = (
+    os.getenv("SQLALCHEMY_DATABASE_URI") or os.getenv("DATABASE_URL") or default_sqlite
+)
 print("Using DB URL:", db_url)
 parsed = urlparse(db_url)
 if parsed.scheme.startswith("sqlite"):

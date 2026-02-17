@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Professionnels | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-section">
+  <div class="hc-wrap">
+    <div class="hc-hero">
+      <div class="hc-badge">Infrastructure sociale • France → Europe</div>
+      <h1 class="hc-h1">HelpChain</h1>
+      <p class="hc-lead">
+        Infrastructure sociale coordonnée, pensée pour durer.
+      </p>
+    </div>
+
+    <div class="hc-card" style="margin-top:1rem">
+      <h2 class="hc-h2">Notre vision</h2>
+      <p class="hc-text">
+        Les crises sociales ne manquent pas de bonne volonté. Elles manquent de structure.
+      </p>
+      <p class="hc-text">
+        HelpChain a été conçu comme une infrastructure numérique stable, capable de coordonner efficacement l’aide
+        entre personnes en situation fragile, professionnels qualifiés et acteurs locaux.
+      </p>
+      <p class="hc-text">
+        Notre objectif n’est pas de “poster des demandes”. Notre objectif est de structurer un flux social réel.
+      </p>
+    </div>
+
+    <div class="hc-card" style="margin-top:1rem">
+      <h2 class="hc-h2">Comment fonctionne l’infrastructure</h2>
+
+      <div class="hc-architecture-wrapper">
+        <div class="hc-steps" style="margin-top:.5rem">
+          <div class="hc-step">
+            <div class="hc-step__k">1</div>
+            <div class="hc-step__body">
+              <h3 class="hc-h3">Entrée structurée des demandes</h3>
+              <p class="hc-text">Catégorisation, localisation, contexte, normalisation.</p>
+              <p class="hc-muted">→ Une situation humaine devient un dossier exploitable.</p>
+            </div>
+          </div>
+
+          <div class="hc-step">
+            <div class="hc-step__k">2</div>
+            <div class="hc-step__body">
+              <h3 class="hc-h3">Qualification & tri</h3>
+              <p class="hc-text">Filtrage, validation des infos clés, réduction du bruit.</p>
+              <p class="hc-muted">→ Protection du temps professionnel.</p>
+            </div>
+          </div>
+
+          <div class="hc-step">
+            <div class="hc-step__k">3</div>
+            <div class="hc-step__body">
+              <h3 class="hc-h3">Matching sécurisé</h3>
+              <p class="hc-text">Ciblage, localisation, anti-spam, traçabilité.</p>
+              <p class="hc-muted">→ La bonne demande, au bon moment.</p>
+            </div>
+          </div>
+
+          <div class="hc-step">
+            <div class="hc-step__k">4</div>
+            <div class="hc-step__body">
+              <h3 class="hc-h3">Suivi & traçabilité</h3>
+              <p class="hc-text">Historique, dashboard, cycle clair (nouvelle → en cours → résolue).</p>
+              <p class="hc-muted">→ Une coordination mesurable, pas improvisée.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hc-card" style="margin-top:1rem">
+      <h2 class="hc-h2">Sécurité & fiabilité</h2>
+      <ul class="hc-list">
+        <li>Accès sécurisé (magic link)</li>
+        <li>Gestion des rôles</li>
+        <li>Journalisation des actions</li>
+        <li>Respect des données personnelles</li>
+      </ul>
+    </div>
+
+    <div class="hc-card" style="margin-top:1rem">
+      <h2 class="hc-h2">Professionnels</h2>
+      <p class="hc-text">
+        Si vous êtes avocat, psychologue, médecin ou expert administratif :
+        HelpChain vous connecte à des demandes structurées, avec un cadre clair et une traçabilité complète.
+      </p>
+
+      <div class="hc-actions" style="margin-top:.75rem">
+        <a class="hc-btn" href="{{ url_for('main.professionnels_pilote') }}">
+          Rejoindre la phase pilote (gratuit)
+        </a>
+        <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">Retour</a>
+      </div>
+
+      <p class="hc-muted" style="margin-top:.5rem">
+        (CTA provisoire — on le branche proprement au formulaire lead capture après.)
+      </p>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

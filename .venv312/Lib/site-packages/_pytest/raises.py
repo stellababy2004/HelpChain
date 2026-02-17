@@ -22,7 +22,6 @@ from _pytest._code.code import stringify_exception
 from _pytest.outcomes import fail
 from _pytest.warning_types import PytestWarning
 
-
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Sequence
@@ -709,9 +708,9 @@ class RaisesExc(AbstractRaises[BaseExcT_co_default]):
 
             fail(f"DID NOT RAISE {self.expected_exceptions[0]!r}")
 
-        assert self.excinfo is not None, (
-            "Internal error - should have been constructed in __enter__"
-        )
+        assert (
+            self.excinfo is not None
+        ), "Internal error - should have been constructed in __enter__"
 
         if not self.matches(exc_val):
             if self._just_propagate:
@@ -928,9 +927,9 @@ class RaisesGroup(AbstractRaises[BaseExceptionGroup[BaseExcT_co]]):
     @overload
     def __init__(
         self: RaisesGroup[BaseExcT_1 | BaseExceptionGroup[BaseExcT_2]],
-        expected_exception: type[BaseExcT_1]
-        | RaisesExc[BaseExcT_1]
-        | RaisesGroup[BaseExcT_2],
+        expected_exception: (
+            type[BaseExcT_1] | RaisesExc[BaseExcT_1] | RaisesGroup[BaseExcT_2]
+        ),
         /,
         *other_exceptions: type[BaseExcT_1]
         | RaisesExc[BaseExcT_1]
@@ -947,9 +946,9 @@ class RaisesGroup(AbstractRaises[BaseExceptionGroup[BaseExcT_co]]):
 
     def __init__(
         self: RaisesGroup[ExcT_1 | BaseExcT_1 | BaseExceptionGroup[BaseExcT_2]],
-        expected_exception: type[BaseExcT_1]
-        | RaisesExc[BaseExcT_1]
-        | RaisesGroup[BaseExcT_2],
+        expected_exception: (
+            type[BaseExcT_1] | RaisesExc[BaseExcT_1] | RaisesGroup[BaseExcT_2]
+        ),
         /,
         *other_exceptions: type[BaseExcT_1]
         | RaisesExc[BaseExcT_1]
@@ -1416,9 +1415,9 @@ class RaisesGroup(AbstractRaises[BaseExceptionGroup[BaseExcT_co]]):
         if exc_type is None:
             fail(f"DID NOT RAISE any exception, expected `{self.expected_type()}`")
 
-        assert self.excinfo is not None, (
-            "Internal error - should have been constructed in __enter__"
-        )
+        assert (
+            self.excinfo is not None
+        ), "Internal error - should have been constructed in __enter__"
 
         # group_str is the only thing that differs between RaisesExc and RaisesGroup...
         # I might just scrap it? Or make it part of fail_reason

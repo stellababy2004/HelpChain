@@ -40,6 +40,7 @@ be processed before ``dict``.
 
     app.session_interface.serializer.register(TagOrderedDict, index=0)
 """
+
 import typing as t
 from base64 import b64decode
 from base64 import b64encode

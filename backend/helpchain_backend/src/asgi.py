@@ -15,7 +15,10 @@ from unittest.mock import patch
 # Mock mail.send за всички изпращания на имейли
 mock_mail_send = patch(
     "flask_mail.Mail.send",
-    side_effect=lambda msg: print(f"Mocked email sent: {msg.subject} to {msg.recipients}") or None,
+    side_effect=lambda msg: print(
+        f"Mocked email sent: {msg.subject} to {msg.recipients}"
+    )
+    or None,
 ).start()
 
 # За да спреш mock-а в production, добави:

@@ -1,4 +1,5 @@
 """Tests of the bs4.element.PageElement class"""
+
 import copy
 import pickle
 import pytest
@@ -13,6 +14,7 @@ from bs4.element import (
 from . import (
     SoupTest,
 )
+
 
 class TestEncoding(SoupTest):
     """Test the ability to encode objects into strings."""
@@ -46,10 +48,8 @@ class TestEncoding(SoupTest):
     def test_encode_contents(self):
         html = "<b>\N{SNOWMAN}</b>"
         soup = self.soup(html)
-        assert "\N{SNOWMAN}".encode("utf8") == soup.b.encode_contents(
-            encoding="utf8"
-        )
-        
+        assert "\N{SNOWMAN}".encode("utf8") == soup.b.encode_contents(encoding="utf8")
+
     def test_encode_deeply_nested_document(self):
         # This test verifies that encoding a string doesn't involve
         # any recursive function calls. If it did, this test would
@@ -71,23 +71,25 @@ class TestEncoding(SoupTest):
         soup = self.soup(html)
         assert html == repr(soup)
 
-        
+
 class TestFormatters(SoupTest):
     """Test the formatting feature, used by methods like decode() and
     prettify(), and the formatters themselves.
     """
-    
+
     def test_default_formatter_is_minimal(self):
         markup = "<b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
         soup = self.soup(markup)
         decoded = soup.decode(formatter="minimal")
         # The < is converted back into &lt; but the e-with-acute is left alone.
         assert decoded == self.document_for(
-                "<b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
+            "<b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
         )
 
     def test_formatter_html(self):
-        markup = "<br><b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
+        markup = (
+            "<br><b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
+        )
         soup = self.soup(markup)
         decoded = soup.decode(formatter="html")
         assert decoded == self.document_for(
@@ -95,20 +97,22 @@ class TestFormatters(SoupTest):
         )
 
     def test_formatter_html5(self):
-        markup = "<br><b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
+        markup = (
+            "<br><b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
+        )
         soup = self.soup(markup)
         decoded = soup.decode(formatter="html5")
         assert decoded == self.document_for(
             "<br><b>&lt;&lt;Sacr&eacute; bleu!&gt;&gt;</b>"
         )
-        
+
     def test_formatter_minimal(self):
         markup = "<b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
         soup = self.soup(markup)
         decoded = soup.decode(formatter="minimal")
         # The < is converted back into &lt; but the e-with-acute is left alone.
         assert decoded == self.document_for(
-                "<b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
+            "<b>&lt;&lt;Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!&gt;&gt;</b>"
         )
 
     def test_formatter_null(self):
@@ -124,7 +128,7 @@ class TestFormatters(SoupTest):
     def test_formatter_custom(self):
         markup = "<b>&lt;foo&gt;</b><b>bar</b><br/>"
         soup = self.soup(markup)
-        decoded = soup.decode(formatter = lambda x: x.upper())
+        decoded = soup.decode(formatter=lambda x: x.upper())
         # Instead of normal entity conversion code, the custom
         # callable is called on every string.
         assert decoded == self.document_for("<b><FOO></b><b>BAR</b><br/>")
@@ -152,7 +156,7 @@ class TestFormatters(SoupTest):
    console.log("< < hey > > ");
   </script>
 """
-        encoded = BeautifulSoup(doc, 'html.parser').encode()
+        encoded = BeautifulSoup(doc, "html.parser").encode()
         assert b"< < hey > >" in encoded
 
     def test_formatter_skips_style_tag_for_html_documents(self):
@@ -161,14 +165,19 @@ class TestFormatters(SoupTest):
    console.log("< < hey > > ");
   </style>
 """
-        encoded = BeautifulSoup(doc, 'html.parser').encode()
+        encoded = BeautifulSoup(doc, "html.parser").encode()
         assert b"< < hey > >" in encoded
 
     def test_prettify_leaves_preformatted_text_alone(self):
-        soup = self.soup("<div>  foo  <pre>  \tbar\n  \n  </pre>  baz  <textarea> eee\nfff\t</textarea></div>")
+        soup = self.soup(
+            "<div>  foo  <pre>  \tbar\n  \n  </pre>  baz  <textarea> eee\nfff\t</textarea></div>"
+        )
         # Everything outside the <pre> tag is reformatted, but everything
         # inside is left alone.
-        assert '<div>\n foo\n <pre>  \tbar\n  \n  </pre>\n baz\n <textarea> eee\nfff\t</textarea>\n</div>\n' == soup.div.prettify()
+        assert (
+            "<div>\n foo\n <pre>  \tbar\n  \n  </pre>\n baz\n <textarea> eee\nfff\t</textarea>\n</div>\n"
+            == soup.div.prettify()
+        )
 
     def test_prettify_handles_nested_string_literal_tags(self):
         # Most of this markup is inside a <pre> tag, so prettify()
@@ -195,8 +204,8 @@ class TestFormatters(SoupTest):
         assert expect == soup.div.prettify()
 
     def test_prettify_accepts_formatter_function(self):
-        soup = BeautifulSoup("<html><body>foo</body></html>", 'html.parser')
-        pretty = soup.prettify(formatter = lambda x: x.upper())
+        soup = BeautifulSoup("<html><body>foo</body></html>", "html.parser")
+        pretty = soup.prettify(formatter=lambda x: x.upper())
         assert "FOO" in pretty
 
     def test_prettify_outputs_unicode_by_default(self):
@@ -211,17 +220,18 @@ class TestFormatters(SoupTest):
         markup = "<b>Sacr\N{LATIN SMALL LETTER E WITH ACUTE} bleu!</b>"
         soup = self.soup(markup)
         encoded = soup.b.encode("utf-8")
-        assert encoded == markup.encode('utf-8')
+        assert encoded == markup.encode("utf-8")
 
     def test_encoding_substitution(self):
         # Here's the <meta> tag saying that a document is
         # encoded in Shift-JIS.
-        meta_tag = ('<meta content="text/html; charset=x-sjis" '
-                    'http-equiv="Content-type"/>')
+        meta_tag = (
+            '<meta content="text/html; charset=x-sjis" ' 'http-equiv="Content-type"/>'
+        )
         soup = self.soup(meta_tag)
 
         # Parse the document, and the charset apprears unchanged.
-        assert soup.meta['content'] == 'text/html; charset=x-sjis'
+        assert soup.meta["content"] == "text/html; charset=x-sjis"
 
         # Encode the document into some encoding, and the encoding is
         # substituted into the meta tag.
@@ -238,15 +248,17 @@ class TestFormatters(SoupTest):
         assert "charset=utf-16" in utf_16_u
 
     def test_encoding_substitution_doesnt_happen_if_tag_is_strained(self):
-        markup = ('<head><meta content="text/html; charset=x-sjis" '
-                    'http-equiv="Content-type"/></head><pre>foo</pre>')
+        markup = (
+            '<head><meta content="text/html; charset=x-sjis" '
+            'http-equiv="Content-type"/></head><pre>foo</pre>'
+        )
 
         # Beautiful Soup used to try to rewrite the meta tag even if the
         # meta tag got filtered out by the strainer. This test makes
         # sure that doesn't happen.
-        strainer = SoupStrainer('pre')
+        strainer = SoupStrainer("pre")
         soup = self.soup(markup, parse_only=strainer)
-        assert soup.contents[0].name == 'pre'
+        assert soup.contents[0].name == "pre"
 
 
 class TestPersistence(SoupTest):
@@ -278,7 +290,7 @@ class TestPersistence(SoupTest):
         loaded = pickle.loads(dumped)
         assert loaded.__class__ == BeautifulSoup
         assert loaded.decode() == self.tree.decode()
-        
+
     def test_deepcopy_identity(self):
         # Making a deepcopy of a tree yields an identical tree.
         copied = copy.deepcopy(self.tree)
@@ -292,12 +304,12 @@ class TestPersistence(SoupTest):
         markup = "<span>" * limit
 
         soup = self.soup(markup)
-        
+
         copied = copy.copy(soup)
         copied = copy.deepcopy(soup)
 
     def test_copy_preserves_encoding(self):
-        soup = BeautifulSoup(b'<p>&nbsp;</p>', 'html.parser')
+        soup = BeautifulSoup(b"<p>&nbsp;</p>", "html.parser")
         encoding = soup.original_encoding
         copy = soup.__copy__()
         assert "<p> </p>" == str(copy)
@@ -305,12 +317,12 @@ class TestPersistence(SoupTest):
 
     def test_copy_preserves_builder_information(self):
 
-        tag = self.soup('<p></p>').p
+        tag = self.soup("<p></p>").p
 
         # Simulate a tag obtained from a source file.
         tag.sourceline = 10
         tag.sourcepos = 33
-        
+
         copied = tag.__copy__()
 
         # The TreeBuilder object is no longer availble, but information
@@ -321,7 +333,7 @@ class TestPersistence(SoupTest):
         assert tag.cdata_list_attributes == copied.cdata_list_attributes
         assert tag.preserve_whitespace_tags == copied.preserve_whitespace_tags
         assert tag.interesting_string_types == copied.interesting_string_types
-        
+
     def test_unicode_pickle(self):
         # A tree containing Unicode characters can be pickled.
         html = "<b>\N{SNOWMAN}</b>"
@@ -373,6 +385,5 @@ class TestPersistence(SoupTest):
         # copy is not associated with a parse tree at all.
         assert None == div_copy.parent
         assert None == div_copy.previous_element
-        assert None == div_copy.find(string='Bar').next_element
-        assert None != div.find(string='Bar').next_element
-
+        assert None == div_copy.find(string="Bar").next_element
+        assert None != div.find(string="Bar").next_element

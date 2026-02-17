@@ -10,7 +10,6 @@ from _pytest.compat import running_on_ci
 from _pytest.config import Config
 from _pytest.nodes import Item
 
-
 DEFAULT_MAX_LINES = 8
 DEFAULT_MAX_CHARS = DEFAULT_MAX_LINES * 80
 USAGE_MSG = "use '-vv' to show"

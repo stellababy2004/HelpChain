@@ -1,12 +1,13 @@
 """Integration code for CSS selectors using Soup Sieve (pypi: soupsieve)."""
 
 import warnings
+
 try:
     import soupsieve
 except ImportError as e:
     soupsieve = None
     warnings.warn(
-        'The soupsieve package is not installed. CSS selectors cannot be used.'
+        "The soupsieve package is not installed. CSS selectors cannot be used."
     )
 
 
@@ -75,6 +76,7 @@ class CSS(object):
         """
         # Import here to avoid circular import
         from bs4.element import ResultSet
+
         return ResultSet(None, results)
 
     def compile(self, select, namespaces=None, flags=0, **kwargs):
@@ -96,9 +98,7 @@ class CSS(object):
         :return: A precompiled selector object.
         :rtype: soupsieve.SoupSieve
         """
-        return self.api.compile(
-            select, self._ns(namespaces, select), flags, **kwargs
-        )
+        return self.api.compile(select, self._ns(namespaces, select), flags, **kwargs)
 
     def select_one(self, select, namespaces=None, flags=0, **kwargs):
         """Perform a CSS selection operation on the current Tag and return the
@@ -160,8 +160,7 @@ class CSS(object):
 
         return self._rs(
             self.api.select(
-                select, self.tag, self._ns(namespaces, select), limit, flags,
-                **kwargs
+                select, self.tag, self._ns(namespaces, select), limit, flags, **kwargs
             )
         )
 

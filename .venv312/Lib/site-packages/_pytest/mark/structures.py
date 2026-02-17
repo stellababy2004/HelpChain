@@ -31,7 +31,6 @@ from _pytest.raises import AbstractRaises
 from _pytest.scope import _ScopeName
 from _pytest.warning_types import PytestUnknownMarkWarning
 
-
 if TYPE_CHECKING:
     from ..nodes import Node
 
@@ -500,10 +499,12 @@ if TYPE_CHECKING:
             *conditions: str | bool,
             reason: str = ...,
             run: bool = ...,
-            raises: None
-            | type[BaseException]
-            | tuple[type[BaseException], ...]
-            | AbstractRaises[BaseException] = ...,
+            raises: (
+                None
+                | type[BaseException]
+                | tuple[type[BaseException], ...]
+                | AbstractRaises[BaseException]
+            ) = ...,
             strict: bool = ...,
         ) -> MarkDecorator: ...
 
@@ -514,9 +515,11 @@ if TYPE_CHECKING:
             argvalues: Iterable[ParameterSet | Sequence[object] | object],
             *,
             indirect: bool | Sequence[str] = ...,
-            ids: Iterable[None | str | float | int | bool]
-            | Callable[[Any], object | None]
-            | None = ...,
+            ids: (
+                Iterable[None | str | float | int | bool]
+                | Callable[[Any], object | None]
+                | None
+            ) = ...,
             scope: _ScopeName | None = ...,
         ) -> MarkDecorator: ...
 

@@ -9,7 +9,6 @@ import sys
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
-
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
 
@@ -94,7 +93,7 @@ class ErrorMaker:
                 try:
                     # error: Invalid index type "Optional[int]" for "dict[int, int]"; expected type "int"  [index]
                     # OK to ignore because we catch the KeyError below.
-                    cls = self._geterrnoclass(_winerrnomap[value.errno])  # type:ignore[index]
+                    cls = self._geterrnoclass(_winerrnomap[value.errno])  # type: ignore[index]
                 except KeyError:
                     raise value
             else:

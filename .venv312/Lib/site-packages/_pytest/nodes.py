@@ -41,7 +41,6 @@ from _pytest.pathlib import absolutepath
 from _pytest.stash import Stash
 from _pytest.warning_types import PytestWarning
 
-
 if TYPE_CHECKING:
     from typing_extensions import Self
 
