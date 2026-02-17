@@ -164,36 +164,60 @@
   })();
 
   (function () {
-    document.addEventListener("click", function (e) {
-      var a = e.target.closest("a[data-hc-event]");
-      if (!a) return;
-
-      var eventName = a.getAttribute("data-hc-event");
-      if (!eventName) return;
-
-      var props = {
-        page: window.location.pathname,
-        cta: a.getAttribute("data-hc-cta") || undefined,
-        intent: a.getAttribute("data-hc-intent") || undefined,
-        category: a.getAttribute("data-hc-category") || undefined,
-        lang: document.documentElement.lang || undefined,
-      };
-
-      if (typeof window.plausible === "function") {
-        try {
-          window.plausible(eventName, { props: props });
-        } catch (_) {}
-      }
-
+    function hcSendInternalEvent(eventName, props) {
       try {
+        var payload = JSON.stringify({
+          event: eventName,
+          props: props || {},
+        });
+
+        if (navigator.sendBeacon) {
+          var blob = new Blob([payload], { type: "application/json" });
+          navigator.sendBeacon("/events", blob);
+          return;
+        }
+
         fetch("/events", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ event: eventName, props: props }),
+          body: payload,
           keepalive: true,
-        });
+          credentials: "same-origin",
+        }).catch(function () {});
       } catch (_) {}
-    });
+    }
+
+    function hcTrack(eventName, props) {
+      try {
+        if (typeof window.plausible === "function") {
+          window.plausible(eventName, { props: props || {} });
+        }
+      } catch (_) {}
+
+      hcSendInternalEvent(eventName, props);
+    }
+
+    document.addEventListener(
+      "click",
+      function (e) {
+        var el = e.target.closest("[data-hc-event]");
+        if (!el) return;
+
+        var eventName = el.getAttribute("data-hc-event");
+        if (!eventName) return;
+
+        var props = {
+          page: window.location.pathname,
+          lang: document.documentElement.lang || "bg",
+          cta: el.getAttribute("data-hc-cta") || undefined,
+          intent: el.getAttribute("data-hc-intent") || undefined,
+          category: el.getAttribute("data-hc-category") || undefined,
+        };
+
+        hcTrack(eventName, props);
+      },
+      true,
+    );
   })();
 
   (function () {
@@ -443,9 +467,61 @@
     });
   }
 
+  function hcHydrateHeroKPIs() {
+    var els = {
+      helped: document.querySelector('[data-hc-kpi="helped"]'),
+      volunteers: document.querySelector('[data-hc-kpi="volunteers"]'),
+      countries: document.querySelector('[data-hc-kpi="countries"]'),
+      closed: document.querySelector('[data-hc-kpi="closed"]'),
+    };
+
+    if (!els.helped || !els.volunteers || !els.countries) return;
+
+    fetch("/api/pilot-kpi", { credentials: "same-origin" })
+      .then(function (r) {
+        if (!r.ok) return null;
+        return r.json();
+      })
+      .then(function (data) {
+        if (!data) return;
+
+        var helped = data.helped;
+        if (typeof helped === "undefined") helped = data.requests_helped;
+        if (typeof helped === "undefined") helped = data.total_helped;
+
+        var volunteers = data.active_volunteers;
+        if (typeof volunteers === "undefined") volunteers = data.volunteers;
+
+        var countries = data.countries;
+        if (typeof countries === "undefined") countries = data.countries_served;
+
+        var closed = data.closed;
+        if (typeof closed === "undefined") closed = data.closed_requests;
+
+        if (typeof helped !== "undefined") els.helped.textContent = String(helped);
+        if (typeof volunteers !== "undefined") els.volunteers.textContent = String(volunteers);
+        if (typeof countries !== "undefined") els.countries.textContent = String(countries);
+        if (els.closed && typeof closed !== "undefined") els.closed.textContent = String(closed);
+
+        if (typeof window.hcTrack === "function") {
+          window.hcTrack("home_kpi_loaded", {
+            helped: helped,
+            active_volunteers: volunteers,
+            countries: countries,
+            closed: closed,
+          });
+        }
+      })
+      .catch(function () {});
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     hcApplyWidths(document);
+    if (document.body.classList.contains("hc-page-home")) {
+      hcHydrateHeroKPIs();
+    }
   });
 
   window.hcApplyWidths = hcApplyWidths;
+
 })();
