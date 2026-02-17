@@ -2865,8 +2865,827 @@ html[data-a11y-simple="on"] .hc-bars {
     justify-content: space-between;
   }
 
-  .hc-tab {
+.hc-tab {
     flex: 1;
     justify-content: center;
   }
 }
+
+/* === CSP: inline-style purge utilities === */
+.hc-scroll-x { overflow: auto; }
+.hc-mt-1r { margin-top: 1rem; }
+.hc-minw-900 { min-width: 900px; }
+.hc-spacer-80 { height: 80px; }
+.hc-bg-success-gradient { background: var(--success-gradient); }
+.hc-bg-primary-gradient { background: var(--primary-gradient); }
+.hc-bg-info-gradient { background: var(--info-gradient); }
+.hc-bg-warning-gradient { background: var(--warning-gradient); }
+.hc-hidden { display: none !important; }
+.hc-minh-320 { min-height: 320px; }
+.hc-honeypot {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  height: 1px;
+  width: 1px;
+}
+.hc-mb-10 { margin: 0 0 10px; }
+.hc-mt-8 { margin-top: 8px; }
+.hc-mt-10 { margin-top: 10px; }
+.hc-ml-8 { margin-left: 8px; }
+
+/* === Home Background: Soft Blue Trust Field === */
+body.hc-page-home {
+  background:
+    radial-gradient(
+      circle at 50% -10%,
+      rgba(255,255,255,0.95) 0%,
+      rgba(245,248,255,0.85) 40%,
+      rgba(232,238,250,0.65) 75%,
+      rgba(226,233,247,0.55) 100%
+    );
+}
+
+body.hc-page-home .hc-hero {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+}
+
+body.hc-page-home .hc-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.62) 0%,
+      rgba(255, 255, 255, 0.30) 18%,
+      rgba(255, 255, 255, 0.08) 42%,
+      transparent 68%
+    ),
+    radial-gradient(
+      760px 420px at 42% -12%,
+      rgba(37, 99, 235, 0.075),
+      transparent 70%
+    );
+  z-index: 0;
+}
+
+body.hc-page-home .hc-hero-inner {
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(2px);
+}
+
+body.hc-page-home .hc-hero .card {
+  border: 1px solid rgba(37, 99, 235, 0.08);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  border-radius: 18px;
+}
+
+body.hc-page-home .hc-steps,
+body.hc-page-home .hero-steps,
+body.hc-page-home .card {
+  background: rgba(255,255,255,0.60);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 30px 60px rgba(2, 6, 23, 0.08);
+  border-radius: 20px;
+}
+
+/* === Home Primary CTA Glow (scoped) === */
+body.hc-page-home .btn.btn-primary,
+body.hc-page-home .hc-btn--primary {
+  position: relative;
+  transition: all 0.2s ease;
+  border-radius: 16px;
+  padding-left: 22px;
+  padding-right: 22px;
+  font-weight: 600;
+  box-shadow:
+    0 10px 24px rgba(2, 6, 23, 0.10),
+    0 10px 22px rgba(37, 99, 235, 0.16);
+}
+
+body.hc-page-home .btn-primary {
+  box-shadow:
+    0 18px 40px rgba(37, 99, 235, 0.22),
+    0 6px 16px rgba(2, 6, 23, 0.08);
+}
+
+body.hc-page-home .btn.btn-primary:hover,
+body.hc-page-home .hc-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+}
+
+body.hc-page-home .btn.btn-primary:active,
+body.hc-page-home .hc-btn--primary:active {
+  transform: translateY(0);
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+body.hc-page-home .hc-btn--ghost,
+body.hc-page-home .btn.btn-outline-primary {
+  border-radius: 16px;
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(255, 255, 255, 0.40);
+  backdrop-filter: blur(2px);
+}
+
+body.hc-page-home .hc-hero__actions,
+body.hc-page-home .hc-hero-actions {
+  gap: 14px;
+}
+
+/* Home only: hero typography polish */
+body.hc-page-home .hc-hero h1,
+body.hc-page-home .hc-hero .hc-hero__title {
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+}
+
+body.hc-page-home .hc-hero p,
+body.hc-page-home .hc-hero .hc-hero__subtitle {
+  max-width: 54ch;
+  opacity: 0.90;
+}
+
+body.hc-page-home .hc-hero-inner,
+body.hc-page-home .hc-hero__inner {
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 20px 50px rgba(2, 6, 23, 0.10),
+    0 2px 0 rgba(255, 255, 255, 0.55) inset;
+  border-radius: 18px;
+}
+
+body.hc-page-home .hc-trust,
+body.hc-page-home .hc-hero .hc-trust {
+  gap: 10px 16px;
+}
+
+body.hc-page-home .hc-trust li {
+  opacity: 0.88;
+}
+
+body.hc-page-home .hc-btn--primary:hover,
+body.hc-page-home .btn.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 34px rgba(2, 6, 23, 0.12),
+    0 12px 26px rgba(37, 99, 235, 0.18);
+}
+
+body.hc-page-home .hc-badge-soon {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  margin-left: 10px;
+}
+
+/* NAV-3 — Soft blue glass */
+body.hc-page-home .navbar,
+body.hc-page-home .hc-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1040;
+  background: linear-gradient(
+    to bottom,
+    rgba(240, 246, 255, 0.85),
+    rgba(248, 250, 255, 0.65)
+  );
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.08);
+  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.06);
+}
+
+/* Tighten the nav height a touch (optional, subtle) */
+body.hc-page-home .navbar .nav-link,
+body.hc-page-home .hc-navbar .nav-link {
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+/* Better contrast for icons/buttons on glass */
+body.hc-page-home .navbar .btn,
+body.hc-page-home .hc-navbar .btn {
+  backdrop-filter: blur(2px);
+}
+
+/* Ultra subtle top highlight */
+body.hc-page-home .navbar::before,
+body.hc-page-home .hc-navbar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: rgba(255,255,255,0.6);
+  pointer-events: none;
+}
+
+/* Brand positioning */
+body.hc-page-home .navbar-brand {
+  font-weight: 600;
+  font-size: 1.35rem;
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+body.hc-page-home .navbar-brand img {
+  height: 28px;
+  width: auto;
+  opacity: 0.95;
+}
+
+body.hc-page-home .navbar .container {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+/* HOME-A1 — ultra-subtle animated gradient, home only */
+body.hc-page-home .hc-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+/* animated veil */
+body.hc-page-home .hc-hero::before {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    radial-gradient(60% 45% at 25% 18%, rgba(59, 130, 246, 0.10), transparent 65%),
+    radial-gradient(55% 40% at 78% 22%, rgba(99, 102, 241, 0.08), transparent 68%),
+    linear-gradient(180deg, rgba(248, 250, 255, 0.78), rgba(248, 250, 255, 0.35));
+
+  filter: blur(16px);
+  opacity: 0.85;
+
+  transform: translate3d(0, 0, 0);
+  animation: hcHomeGlowDrift 26s ease-in-out infinite alternate;
+}
+
+/* keep content above veil */
+body.hc-page-home .hc-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes hcHomeGlowDrift {
+  0%   { transform: translate3d(-1.5%, -1%, 0) scale(1.02); }
+  100% { transform: translate3d(1.5%, 1%, 0) scale(1.04); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  body.hc-page-home .hc-hero::before { animation: none; }
+}
+
+/* =========================================
+   Unified Home Veil (navbar + hero)
+========================================= */
+body.hc-page-home {
+  position: relative;
+}
+
+body.hc-page-home::before {
+  content: "";
+  position: fixed;
+  inset: -25%;
+  pointer-events: none;
+  z-index: 0;
+
+  background:
+    radial-gradient(60% 40% at 20% 10%, rgba(59,130,246,0.08), transparent 65%),
+    radial-gradient(50% 35% at 80% 12%, rgba(99,102,241,0.07), transparent 70%),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.95) 0%,
+      rgba(248,250,255,0.85) 30%,
+      rgba(242,246,255,0.60) 70%,
+      rgba(238,242,252,0.45) 100%
+    );
+
+  filter: blur(16px);
+  opacity: 0.85;
+  animation: hcUnifiedDrift 36s ease-in-out infinite alternate;
+}
+
+@keyframes hcUnifiedDrift {
+  0%   { transform: translate3d(-1.5%, -1%, 0) scale(1.03); }
+  100% { transform: translate3d(1.5%, 1%, 0) scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.hc-page-home::before {
+    animation: none;
+  }
+}
+
+/* Neutralize hero-local animated veil; use unified body veil instead. */
+body.hc-page-home .hc-hero::before {
+  content: none;
+  animation: none;
+}
+
+/* Navbar glass above unified veil */
+body.hc-page-home .navbar,
+body.hc-page-home .hc-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(248,250,255,0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(59,130,246,0.08);
+  transition: background .35s ease, backdrop-filter .35s ease, box-shadow .35s ease;
+}
+
+body.hc-page-home .navbar.is-scrolled,
+body.hc-page-home .hc-navbar.is-scrolled {
+  background: rgba(245, 248, 252, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* HOME: declutter icon-heavy navbar */
+body.hc-page-home .navbar .nav-link i,
+body.hc-page-home .navbar .nav-link svg,
+body.hc-page-home .navbar .nav-link .bi{
+  font-size: 14px !important;
+  opacity: .55;
+  transform: translateY(-1px);
+  margin-right: 8px;
+}
+
+/* Make nav links single-line and calmer */
+body.hc-page-home .navbar .nav-link{
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  line-height: 1.1;
+  padding: 10px 12px;
+}
+
+/* If your nav currently stacks icon above label, force row layout */
+body.hc-page-home .navbar .nav-link{
+  flex-direction: row;
+}
+
+/* Tone down icon containers (if any) */
+body.hc-page-home .navbar .nav-item{
+  margin: 0 2px;
+}
+
+/* NAV — Variant 2: icons only for key items */
+.hc-navbar .nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+/* default: hide icons everywhere */
+.hc-navbar .nav-link > i,
+.hc-navbar .nav-link > svg,
+.hc-navbar .nav-link > .bi,
+.hc-navbar .nav-link .hc-navicon {
+  display: none;
+}
+
+/* show icons only for strategic items */
+.hc-navbar .nav-link[data-hc-nav="home"] .hc-navicon,
+.hc-navbar .nav-link[data-hc-nav="kpi"] .hc-navicon,
+.hc-navbar .nav-link[data-hc-nav="submit"] .hc-navicon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  opacity: .75;
+  transform: translateY(-.5px);
+}
+
+.hc-navbar .nav-link[data-hc-nav="home"] .hc-navicon i,
+.hc-navbar .nav-link[data-hc-nav="kpi"] .hc-navicon i,
+.hc-navbar .nav-link[data-hc-nav="submit"] .hc-navicon i,
+.hc-navbar .nav-link[data-hc-nav="home"] .hc-navicon svg,
+.hc-navbar .nav-link[data-hc-nav="kpi"] .hc-navicon svg,
+.hc-navbar .nav-link[data-hc-nav="submit"] .hc-navicon svg {
+  display: inline-block;
+}
+
+/* make label the star */
+.hc-navbar .nav-link .hc-navlabel {
+  font-weight: 500;
+  letter-spacing: .01em;
+}
+
+/* NAV CLEANUP — remove icon noise */
+.hc-navbar .nav-link i,
+.hc-navbar .nav-link svg {
+  display: none;
+}
+
+/* Show only strategic icons */
+.hc-navbar .nav-link[data-hc-nav="home"] .hc-navicon,
+.hc-navbar .nav-link[data-hc-nav="kpi"] .hc-navicon,
+.hc-navbar .nav-link[data-hc-nav="submit"] .hc-navicon {
+  display: inline-flex;
+}
+
+.hc-navbar .nav-link[data-hc-nav="home"] i,
+.hc-navbar .nav-link[data-hc-nav="home"] svg,
+.hc-navbar .nav-link[data-hc-nav="kpi"] i,
+.hc-navbar .nav-link[data-hc-nav="kpi"] svg,
+.hc-navbar .nav-link[data-hc-nav="submit"] i,
+.hc-navbar .nav-link[data-hc-nav="submit"] svg {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  opacity: 0.75;
+  transform: translateY(-1px);
+}
+
+/* Brand positioning */
+.hc-navbar .navbar-brand {
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* slight vertical centering */
+.hc-navbar {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+/* NAV — premium glass baseline */
+.hc-navbar {
+  background: linear-gradient(
+    180deg,
+    rgba(245, 249, 255, 0.92) 0%,
+    rgba(255, 255, 255, 0.80) 100%
+  ) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: none;
+  transition: background 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+/* NAV — scrolled: more solid + subtle enterprise shadow */
+.hc-navbar.hc-nav--scrolled,
+.hc-navbar.is-scrolled {
+  background: rgba(245, 249, 255, 0.98) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.10),
+    0 1px 0 rgba(255, 255, 255, 0.55) inset;
+}
+
+/* Nav link contrast */
+.hc-navbar .nav-link {
+  color: rgba(15, 23, 42, 0.72) !important;
+}
+
+.hc-navbar .nav-link:hover {
+  color: rgba(15, 23, 42, 0.92) !important;
+}
+
+/* NAV CTA — pill stronger but still quiet */
+.hc-navbar .nav-link.hc-nav-cta {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.10);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  color: rgba(37, 99, 235, 0.92) !important;
+  font-weight: 700;
+}
+
+.hc-navbar .nav-link.hc-nav-cta:hover {
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(37, 99, 235, 0.30);
+}
+
+/* HOME — hero veil tuning (reduce wash-out, keep air) */
+body.hc-page-home .hc-hero {
+  position: relative;
+  isolation: isolate;
+}
+
+/* overlay that gives "air" but doesn't kill contrast */
+body.hc-page-home .hc-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      1200px 420px at 50% 0%,
+      rgba(255, 255, 255, 0.90) 0%,
+      rgba(245, 249, 255, 0.45) 45%,
+      rgba(245, 249, 255, 0.00) 78%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(245, 249, 255, 0.55) 0%,
+      rgba(245, 249, 255, 0.10) 55%,
+      rgba(255, 255, 255, 0.00) 100%
+    );
+}
+
+/* ensure hero content is above veil */
+body.hc-page-home .hc-hero > *,
+body.hc-page-home .hc-hero .hc-hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* HOME — headline/subheadline contrast recovery */
+body.hc-page-home .hc-hero h1 {
+  color: rgba(15, 23, 42, 0.92);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* if you already use gradient text on h1, keep it but strengthen it */
+body.hc-page-home .hc-hero h1 {
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(
+    180deg,
+    rgba(17, 24, 39, 0.96) 0%,
+    rgba(55, 65, 81, 0.92) 55%,
+    rgba(17, 24, 39, 0.90) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* subheadline */
+body.hc-page-home .hc-hero p,
+body.hc-page-home .hc-hero .lead,
+body.hc-page-home .hc-hero .hc-subtitle {
+  color: rgba(15, 23, 42, 0.68) !important;
+}
+
+/* HOME — final contrast fix */
+body.hc-page-home .hc-hero::before{
+  background:
+    radial-gradient(1200px 420px at 50% 0%,
+      rgba(255,255,255,0.78) 0%,
+      rgba(245,249,255,0.22) 40%,
+      rgba(245,249,255,0.00) 70%),
+    linear-gradient(180deg,
+      rgba(245,249,255,0.30) 0%,
+      rgba(245,249,255,0.08) 55%,
+      rgba(255,255,255,0.00) 100%);
+}
+
+/* HOME — force readable headline (still premium) */
+body.hc-page-home .hc-hero h1{
+  -webkit-text-fill-color: initial;
+  background: none !important;
+  color: rgba(15, 23, 42, 0.92) !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.55);
+  filter: saturate(1.02);
+}
+
+/* HOME — final layering correction */
+body.hc-page-home .hc-hero {
+  position: relative;
+}
+
+body.hc-page-home .hc-hero::before {
+  z-index: 0;
+}
+
+body.hc-page-home .hc-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+body.hc-page-home .hc-hero-inner {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* HOME — force readable hero text */
+body.hc-page-home .hc-hero h1 {
+  opacity: 1 !important;
+  color: #0b1220 !important;
+}
+
+body.hc-page-home .hc-hero p {
+  opacity: 1 !important;
+  color: rgba(11, 18, 32, 0.72) !important;
+}
+
+/* NAVBAR — glass (default) */
+.navbar.hc-navbar.hc-navbar--glass {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background: rgba(245, 248, 255, 0.72) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.10) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+/* NAVBAR — solid on scroll */
+.navbar.hc-navbar.hc-navbar--glass.is-scrolled {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+/* HOME — navbar glass -> solid on scroll (quiet luxury) */
+body.hc-page-home .hc-navbar.hc-navbar--glass {
+  background: linear-gradient(
+    180deg,
+    rgba(240, 248, 255, 0.72) 0%,
+    rgba(240, 248, 255, 0.42) 60%,
+    rgba(240, 248, 255, 0.18) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(12, 22, 48, 0.06);
+  transition: background 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+/* When scrolled */
+body.hc-page-home .hc-navbar.hc-navbar--glass.is-scrolled {
+  background: rgba(244, 250, 255, 0.92);
+  border-bottom-color: rgba(12, 22, 48, 0.10);
+  box-shadow: 0 10px 30px rgba(10, 25, 50, 0.10);
+}
+
+/* Optional micro-compress on scroll */
+body.hc-page-home .hc-navbar.hc-navbar--glass {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+body.hc-page-home .hc-navbar.hc-navbar--glass.is-scrolled {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* HOME — ensure hero headline is readable even with gradient-text mode */
+body.hc-page-home .hc-hero h1 {
+  opacity: 1 !important;
+  -webkit-text-fill-color: #0b1220 !important;
+  color: #0b1220 !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+}
+
+/* NAVBAR — premium glass by default */
+.hc-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(248, 250, 255, 0.72) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  transition: background 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+/* NAVBAR — solid on scroll */
+.hc-navbar.is-scrolled {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.10) !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+}
+
+body.hc-page-home .hc-hero h1 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+  -webkit-text-fill-color: initial;
+  background: none !important;
+}
+
+/* HOME: hero veil must sit behind content (fix washed-out headline) */
+body.hc-page-home .hc-hero {
+  position: relative;
+  overflow: hidden; /* keeps the veil inside hero */
+}
+
+body.hc-page-home .hc-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* behind content */
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.85) 0%,
+    rgba(240,246,255,0.55) 40%,
+    rgba(255,255,255,0.0) 100%
+  );
+}
+
+/* bring hero content above veil */
+body.hc-page-home .hc-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* make headline readable (enterprise sharp) */
+body.hc-page-home .hc-hero h1 {
+  color: #0f172a !important;
+  opacity: 1 !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+body.hc-page-home .hc-hero p,
+body.hc-page-home .hc-hero .lead {
+  color: rgba(15, 23, 42, 0.70) !important;
+  opacity: 1 !important;
+}
+
+body.hc-page-home .hc-hero-inner {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Hero above unified veil */
+body.hc-page-home .hc-hero {
+  position: relative;
+  z-index: 5;
+}
+
+body.hc-page-home .hc-hero h1 {
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+/* HOME — subtle premium gradient headline */
+body.hc-page-home .hc-hero h1{
+  color: transparent;
+  background-image: linear-gradient(180deg, #0f172a 0%, #1f2937 55%, #475569 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.30); /* micro lift, not glow */
+}
+
+@supports not (-webkit-background-clip: text) {
+  body.hc-page-home .hc-hero h1 { color: #111827; }
+}
+
+/* HOME — subtle light glow under primary CTA */
+body.hc-page-home .btn-primary{
+  position: relative;
+  z-index: 1;
+}
+
+body.hc-page-home .btn-primary::after{
+  content: "";
+  position: absolute;
+  inset: -6px -10px -8px -10px;
+  border-radius: 20px;
+  background: radial-gradient(
+      60% 60% at 50% 50%,
+      rgba(37, 99, 235, 0.25) 0%,
+      rgba(37, 99, 235, 0.18) 30%,
+      rgba(37, 99, 235, 0.08) 55%,
+      rgba(37, 99, 235, 0.0) 75%
+  );
+  filter: blur(18px);
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.75;
+  transition: opacity .3s ease;
+}
+
+/* slightly stronger on hover */
+body.hc-page-home .btn-primary:hover::after{
+  opacity: 0.95;
+}
+
