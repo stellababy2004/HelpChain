@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
 from sqlalchemy import or_
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import DatabaseError, OperationalError
 from flask import current_app
 
 from backend.helpchain_backend.src.models import (
@@ -170,49 +170,98 @@ def _now() -> datetime:
     return datetime.utcnow()
 
 
+def _is_feedback_table_unavailable_error(exc: Exception) -> bool:
+    try:
+        msg = str(exc).lower()
+    except Exception:
+        return False
+    if "volunteer_match_feedback" in msg and (
+        "no such table" in msg or "undefined table" in msg
+    ):
+        return True
+    # Some local SQLite files throw malformed schema errors before table checks.
+    return "malformed database schema" in msg
+
+
 def is_dismissed(volunteer_id: int, request_id: int) -> bool:
     now = _now()
-    row = VolunteerMatchFeedback.query.filter_by(
-        volunteer_id=volunteer_id,
-        request_id=request_id,
-        action="dismissed",
-    ).first()
+    try:
+        row = VolunteerMatchFeedback.query.filter_by(
+            volunteer_id=volunteer_id,
+            request_id=request_id,
+            action="dismissed",
+        ).first()
+    except (OperationalError, DatabaseError) as exc:
+        db.session.rollback()
+        if _is_feedback_table_unavailable_error(exc):
+            try:
+                current_app.logger.warning(
+                    "volunteer_match_feedback table missing; is_dismissed fallback=False"
+                )
+            except Exception:
+                pass
+            return False
+        raise
     if not row or not row.expires_at:
         return False
     return row.expires_at > now
 
 
 def mark_seen(volunteer_id: int, request_id: int) -> None:
-    row = VolunteerMatchFeedback.query.filter_by(
-        volunteer_id=volunteer_id, request_id=request_id
-    ).first()
-    if not row:
-        row = VolunteerMatchFeedback(
-            volunteer_id=volunteer_id,
-            request_id=request_id,
-            action="seen",
-            expires_at=None,
-        )
-        db.session.add(row)
-    db.session.commit()
+    try:
+        row = VolunteerMatchFeedback.query.filter_by(
+            volunteer_id=volunteer_id, request_id=request_id
+        ).first()
+        if not row:
+            row = VolunteerMatchFeedback(
+                volunteer_id=volunteer_id,
+                request_id=request_id,
+                action="seen",
+                expires_at=None,
+            )
+            db.session.add(row)
+        db.session.commit()
+    except (OperationalError, DatabaseError) as exc:
+        db.session.rollback()
+        if _is_feedback_table_unavailable_error(exc):
+            try:
+                current_app.logger.warning(
+                    "volunteer_match_feedback unavailable; mark_seen no-op"
+                )
+            except Exception:
+                pass
+            return
+        raise
 
 
 def dismiss_for(volunteer_id: int, request_id: int, hours: int = 48) -> None:
-    row = VolunteerMatchFeedback.query.filter_by(
-        volunteer_id=volunteer_id, request_id=request_id
-    ).first()
-    if not row:
-        row = VolunteerMatchFeedback(
-            volunteer_id=volunteer_id,
-            request_id=request_id,
-            action="dismissed",
-            expires_at=_now() + timedelta(hours=hours),
-        )
-        db.session.add(row)
-    else:
-        row.action = "dismissed"
-        row.expires_at = _now() + timedelta(hours=hours)
-    db.session.commit()
+    try:
+        row = VolunteerMatchFeedback.query.filter_by(
+            volunteer_id=volunteer_id, request_id=request_id
+        ).first()
+        if not row:
+            row = VolunteerMatchFeedback(
+                volunteer_id=volunteer_id,
+                request_id=request_id,
+                action="dismissed",
+                expires_at=_now() + timedelta(hours=hours),
+            )
+            db.session.add(row)
+        else:
+            row.action = "dismissed"
+            row.expires_at = _now() + timedelta(hours=hours)
+        db.session.commit()
+    except (OperationalError, DatabaseError) as exc:
+        db.session.rollback()
+        if _is_feedback_table_unavailable_error(exc):
+            try:
+                current_app.logger.warning(
+                    "volunteer_match_feedback unavailable; dismiss_for no-op"
+                )
+            except Exception:
+                pass
+            return
+        raise
 
 
 def _cache_key(
@@ -294,7 +343,7 @@ def get_matched_requests_v1(
         )
         q = q.filter(~Request.id.in_(dismissed_ids_subq))
         dismiss_filter_applied = True
-    except OperationalError:
+    except (OperationalError, DatabaseError):
         # Backward-compatible fallback while DB is not yet migrated.
         db.session.rollback()
         try:
@@ -319,7 +368,7 @@ def get_matched_requests_v1(
 
     try:
         candidates = q.order_by(Request.created_at.desc()).limit(200).all()
-    except OperationalError:
+    except (OperationalError, DatabaseError):
         # Some SQLite setups raise only at execution time.
         db.session.rollback()
         if dismiss_filter_applied:

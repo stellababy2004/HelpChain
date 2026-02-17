@@ -230,7 +230,7 @@ def require_login(redirect_url="login"):
     return wrapper
 
 
-def require_admin_login(redirect_url="admin_login"):
+def require_admin_login(redirect_url="admin.ops_login"):
     """
     Decorator to require admin login with 2FA
 
@@ -341,7 +341,7 @@ def require_admin_login(redirect_url="admin_login"):
     # Support usage both as @require_admin_login and @require_admin_login('url')
     if callable(redirect_url):
         f = redirect_url
-        redirect_url = "admin_login"
+        redirect_url = "admin.ops_login"
         return decorator(f)
     return decorator
 
