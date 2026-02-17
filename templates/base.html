@@ -65,7 +65,7 @@
     {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
     {% set admin_logged_in = session.get('admin_logged_in') %}
     {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <nav class="navbar hc-navbar navbar-expand-lg hc-navbar--glass">
       <div class="container">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
@@ -85,35 +85,40 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           {% if not hide_full_nav %}
+          {% set ep = request.endpoint or '' %}
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('main.index') }}"
-                ><i class="fas fa-home me-1" aria-hidden="true"></i>{{ _('Home') }}</a
-              >
+              <a class="nav-link {{ 'active' if ep == 'main.index' else '' }}" href="{{ safe_url_for('main.index') }}" data-hc-nav="home" {% if ep == 'main.index' %}aria-current="page"{% endif %}>
+                <span class="hc-navicon" aria-hidden="true"><i class="fas fa-home" aria-hidden="true"></i></span>
+                <span class="hc-navlabel">{{ _('Home') }}</span>
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/categories">
+              <a class="nav-link {{ 'active' if ep.startswith('main.categories') else '' }}" href="{{ safe_url_for('main.categories') }}" {% if ep.startswith('main.categories') %}aria-current="page"{% endif %}>
                 <i class="fas fa-th-list me-1" aria-hidden="true"></i>{{ _('Categories') }}
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('main.about') }}"
+              <a class="nav-link {{ 'active' if ep.startswith('main.about') else '' }}" href="{{ safe_url_for('main.about') }}" {% if ep.startswith('main.about') %}aria-current="page"{% endif %}
                 ><i class="fas fa-info-circle me-1" aria-hidden="true"></i>{{ _('About') }}</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.professionnels') }}">
+              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
                 <i class="fas fa-briefcase me-1" aria-hidden="true"></i>Professionnels
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.pilot') }}">
-                {{ _('Pilot (KPI)') }} <span class="badge text-bg-success ms-1">{{ _('LIVE') }}</span>
+              <a class="nav-link {{ 'active' if ep.startswith('main.pilot') else '' }}" href="{{ url_for('main.pilot') }}" data-hc-nav="kpi" {% if ep.startswith('main.pilot') %}aria-current="page"{% endif %}>
+                <span class="hc-navicon" aria-hidden="true"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
+                <span class="hc-navlabel">{{ _('Pilot (KPI)') }}</span>
+                <span class="badge text-bg-success ms-1">{{ _('LIVE') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('main.submit_request') }}">
-                <i class="fas fa-plus-circle me-1" aria-hidden="true"></i>{{ _('Submit a request') }}
+              <a class="nav-link hc-nav-cta {{ 'active' if ep.startswith('main.submit_request') else '' }}" href="{{ url_for('main.submit_request') }}" data-hc-nav="submit" {% if ep.startswith('main.submit_request') %}aria-current="page"{% endif %}>
+                <span class="hc-navicon" aria-hidden="true"><i class="fas fa-plus-circle" aria-hidden="true"></i></span>
+                <span class="hc-navlabel">{{ _('Submit a request') }}</span>
               </a>
             </li>
             {% if current_user.is_authenticated %}
@@ -146,7 +151,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link position-relative" href="{{ url_for('main.volunteer_notifications') }}" title="{{ _('Notifications') }}">
+              <a class="nav-link nav-utility position-relative" href="{{ url_for('main.volunteer_notifications') }}" title="{{ _('Notifications') }}">
                 <i class="fas fa-bell" aria-hidden="true"></i>
                 {% set badge = unread_volunteer_notifs|default(VOLUNTEER_UNREAD_NOTIF_COUNT|default(0)) %}
                 {% if badge and badge > 0 %}
@@ -193,32 +198,32 @@
               placeholder="{{ _('Search in HelpChain...') }}"
               aria-label="{{ _('Search') }}"
             />
-            <button class="btn btn-outline-secondary btn-sm" type="submit" title="{{ _('Search') }}" aria-label="{{ _('Search') }}">
+            <button class="btn btn-outline-secondary btn-sm nav-utility" type="submit" title="{{ _('Search') }}" aria-label="{{ _('Search') }}">
               <i class="fas fa-search" aria-hidden="true"></i>
               <span class="visually-hidden">{{ _('Search') }}</span>
             </button>
           </form>
 
           <div class="d-flex align-items-center ms-2">
-            <button class="btn btn-link text-secondary" type="button"
+            <button class="btn btn-link text-secondary nav-utility" type="button"
                     aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
               <i class="fas fa-moon" aria-hidden="true"></i>
             </button>
 
-            <a class="btn btn-link text-secondary" href="{{ url_for('main.volunteer_notifications') }}"
+            <a class="btn btn-link text-secondary nav-utility" href="{{ url_for('main.volunteer_notifications') }}"
                aria-label="{{ _('Notifications') }}" title="{{ _('Notifications') }}">
               <i class="fas fa-bell" aria-hidden="true"></i>
             </a>
           </div>
           {% set cur = (get_locale()|string)[:2] %}
           <div class="d-flex align-items-center gap-2 ms-3 ms-lg-3">
-            <a class="btn btn-sm {{ 'btn-primary text-white' if cur == 'bg' else 'btn-outline-secondary' }}"
+            <a class="btn btn-sm nav-utility {{ 'btn-primary text-white' if cur == 'bg' else 'btn-outline-secondary' }}"
                href="{{ url_for('main.set_lang_switch', lang='bg') }}"
                aria-label="BG">BG</a>
-            <a class="btn btn-sm {{ 'btn-primary text-white' if cur == 'fr' else 'btn-outline-secondary' }}"
+            <a class="btn btn-sm nav-utility {{ 'btn-primary text-white' if cur == 'fr' else 'btn-outline-secondary' }}"
                href="{{ url_for('main.set_lang_switch', lang='fr') }}"
                aria-label="FR">FR</a>
-            <a class="btn btn-sm {{ 'btn-primary text-white' if cur == 'en' else 'btn-outline-secondary' }}"
+            <a class="btn btn-sm nav-utility {{ 'btn-primary text-white' if cur == 'en' else 'btn-outline-secondary' }}"
                href="{{ url_for('main.set_lang_switch', lang='en') }}"
                aria-label="EN">EN</a>
           </div>
@@ -342,6 +347,7 @@
     ></script>
     {% endif %}
     <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/nav-scroll.js') }}" defer></script>
     {% block scripts %}{% endblock %}
     {% if not minimal_page %}
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>

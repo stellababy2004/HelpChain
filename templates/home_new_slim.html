@@ -4,11 +4,12 @@
 {% block title %}{{ _("HelpChain - Get help, become a volunteer") }}{% endblock %}
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home.css') }}">
+<link rel="stylesheet" href="{{ url_lang('static', filename='css/navigation-improvements.css') }}">
 {% endblock %}
 {% block body_class %}hc-page-home{% endblock %}
 
 {% block content %}
-<section class="container py-4 py-lg-5">
+<section class="container py-4 py-lg-5 hc-hero">
   <div class="row align-items-center g-4">
     <div class="col-lg-7">
       <h1 class="display-5 fw-semibold mb-3">
@@ -34,19 +35,44 @@
         <a class="btn btn-outline-secondary btn-lg hc-secondary"
            href="{{ url_for('main.professionnels') }}"
            title="{{ _('Coming soon') }}">
-          {{ _("I'm a professional") }} <span class="badge text-bg-light ms-2">{{ _("Soon") }}</span>
+          {{ _("I'm a professional") }} <span class="hc-badge-soon">{{ _("Soon") }}</span>
         </a>
       </div>
 
-      <div class="d-flex flex-wrap gap-3 small text-muted mt-2 hc-secondary hc-trustStrip">
-        <span>✅ {{ _("Free for people in need") }}</span>
-        <span>🛡️ {{ _("Moderated & verified volunteers") }}</span>
-        <span>🫶 {{ _("Human-first, minimal data") }}</span>
+      <ul class="hc-hero-trust" aria-label="Trust">
+        <li>✅ {{ _("Réponse rapide") }}</li>
+        <li>🔒 {{ _("Données protégées") }}</li>
+        <li>🌍 {{ _("Aide locale") }}</li>
+      </ul>
+
+      <div class="hc-hero-kpis" aria-label="{{ _('Key indicators') }}">
+        <div class="hc-kpi">
+          <div class="hc-kpi__num" data-hc-kpi="helped">—</div>
+          <div class="hc-kpi__label">{{ _('Requests helped') }}</div>
+        </div>
+        <div class="hc-kpi">
+          <div class="hc-kpi__num" data-hc-kpi="volunteers">—</div>
+          <div class="hc-kpi__label">{{ _('Active volunteers') }}</div>
+        </div>
+        <div class="hc-kpi">
+          <div class="hc-kpi__num" data-hc-kpi="countries">—</div>
+          <div class="hc-kpi__label">{{ _('Countries') }}</div>
+        </div>
+        <div class="hc-kpi hc-kpi--soft" title="{{ _('Closed requests') }}">
+          <div class="hc-kpi__num" data-hc-kpi="closed">—</div>
+          <div class="hc-kpi__label">{{ _('Closed') }}</div>
+        </div>
+      </div>
+
+      <div class="hc-hero-steps" aria-label="How it works">
+        <span>{{ _("1. Describe") }}</span>
+        <span>{{ _("2. Get matched") }}</span>
+        <span>{{ _("3. Receive help") }}</span>
       </div>
     </div>
 
     <div class="col-lg-5 hc-optional">
-      <div class="p-4 rounded-4 border bg-body-tertiary">
+      <div class="p-4 rounded-4 border bg-body-tertiary hc-card">
         <div class="fw-semibold mb-2">{{ _('In 3 steps') }}</div>
         <ol class="mb-0 text-body-secondary">
           <li>{{ _('Submit a request (2 min).') }}</li>
@@ -58,22 +84,22 @@
   </div>
 </section>
 
-<section class="container pb-4 pb-lg-5 hc-optional">
+<section class="container pb-4 pb-lg-5 hc-optional hc-primaryCards">
   <div class="row g-3">
     <div class="col-md-4">
-      <div class="p-4 rounded-4 border h-100">
+      <div class="p-4 rounded-4 border h-100 hc-card">
         <div class="fw-semibold mb-2">{{ _('I need help') }}</div>
         <div class="text-body-secondary">{{ _('Admin, health, transport, support…') }}</div>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="p-4 rounded-4 border h-100">
+      <div class="p-4 rounded-4 border h-100 hc-card">
         <div class="fw-semibold mb-2">{{ _('I want to help') }}</div>
         <div class="text-body-secondary">{{ _('Requests matched by time and location.') }}</div>
       </div>
     </div>
     <div class="col-md-4">
-      <div class="p-4 rounded-4 border h-100">
+      <div class="p-4 rounded-4 border h-100 hc-card">
         <div class="fw-semibold mb-2">{{ _('I am a professional') }}</div>
         <div class="text-body-secondary">{{ _('Structured requests, clear rules, real impact.') }}</div>
       </div>
@@ -81,7 +107,28 @@
   </div>
 </section>
 
-<section class="container pb-5 hc-optional">
+<section class="container pb-4 hc-diff">
+  <h2>{{ _("Pourquoi HelpChain est différent") }}</h2>
+
+  <div class="hc-diff-grid">
+    <article class="hc-diff-card">
+      <h3>{{ _("Matching intelligent") }}</h3>
+      <p>{{ _("Your request is routed to the right volunteers, faster — without you repeating yourself.") }}</p>
+    </article>
+
+    <article class="hc-diff-card">
+      <h3>{{ _("Privacy by default") }}</h3>
+      <p>{{ _("You share only what’s needed. No data resale, no spam, no surprises.") }}</p>
+    </article>
+
+    <article class="hc-diff-card">
+      <h3>{{ _("Human-first support") }}</h3>
+      <p>{{ _("A real person can follow up. You stay in control from start to finish.") }}</p>
+    </article>
+  </div>
+</section>
+
+<section class="container pb-5 hc-optional hc-latest">
   <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
     <div>
       <h2 class="h4 mb-1">
@@ -91,7 +138,7 @@
       <div class="text-body-secondary">{{ _('A quick preview - open details to help.') }}</div>
     </div>
     {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
-    <a class="btn btn-sm btn-outline-secondary"
+    <a class="btn btn-sm btn-outline-secondary hc-seeAll-btn"
        href="{{ url_for('main.volunteer_dashboard') if volunteer_logged_in else url_for('main.become_volunteer', next=url_for('main.volunteer_dashboard')) }}">
       {{ _('See all') }}
     </a>
@@ -100,7 +147,7 @@
   <div class="row g-3">
     {% for req in latest_requests %}
       <div class="col-md-6 col-lg-4">
-        <div class="p-4 rounded-4 border h-100 {% if is_new_request and is_new_request(req) %}hc-reqCard--new{% endif %}">
+        <div class="p-4 rounded-4 border h-100 hc-reqCard {% if is_new_request and is_new_request(req) %}hc-reqCard--new{% endif %}">
           <div class="hc-reqCard__top mb-2">
             <h5 class="fw-semibold mb-0 hc-clamp-2 hc-reqCard__title">
               <a class="hc-reqCard__titleLink" href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
@@ -135,7 +182,7 @@
             {{ desc[:140] }}{% if desc|length > 140 %}…{% endif %}
           </p>
 
-          <div class="d-flex gap-2">
+          <div class="d-flex gap-2 hc-reqCard__actions">
             <a class="btn btn-primary flex-fill"
                href="{{ url_for('main.volunteer_request_details', req_id=req.id, intent='help') }}"
                aria-label="{{ _('Help with request: %(title)s', title=req.title or _('Untitled request')) }}">
