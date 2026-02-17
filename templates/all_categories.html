@@ -1,166 +1,105 @@
-<!doctype html>
-<html lang="{{ get_locale() }}">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ _('Help categories - HelpChain') }}</title>
+{% extends "base.html" %}
+{% block title %}{{ _('Help categories - HelpChain') }}{% endblock %}
+{% block body_class %}hc-page-categories{% endblock %}
 
-    <link
-      href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
-    />
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/categories.css') }}">
+{% endblock %}
 
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
-    </head>
+{% block content %}
+<section class="hc-wrap">
+  <header class="hc-cats-hero">
+    <div class="hc-cats-hero__icon" aria-hidden="true">
+      <i class="fas fa-th-large"></i>
+    </div>
+    <h1>{{ _("Catégories d'aide") }}</h1>
+    <p class="hc-muted">{{ _("Dites-nous de quoi vous avez besoin — on s'occupe du reste.") }}</p>
+    <div class="hc-cats-hero__actions">
+      <a
+        class="hc-btn hc-btn--primary"
+        href="#hc-cats-grid"
+        data-hc-intent="need_help"
+        data-hc-event="categories_intent_click"
+      >
+        {{ _("J’ai besoin d’aide") }}
+      </a>
+      <a
+        class="hc-btn hc-btn--ghost"
+        href="#hc-cats-cta"
+        data-hc-intent="want_help"
+        data-hc-event="categories_intent_click"
+      >
+        {{ _("Je veux aider") }}
+      </a>
+    </div>
+  </header>
 
-<body class="hc-page-dashboard">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container">
-        <a class="navbar-brand" href="{{ url_for('main.index') }}">
-          <i class="fas fa-hand-holding-heart me-2"></i>HelpChain
-        </a>
+  <div id="hc-cats-grid" class="hc-cats-grid">
+    {% for category in categories %}
+      <article class="hc-card hc-cat-card">
+        <div class="hc-cat-card__inner">
+          <div class="hc-cat-card__top text-center">
+            <i class="{{ category.icon }} hc-cat-icon" aria-hidden="true"></i>
+            <h4>{{ category.name }}</h4>
+            <p class="hc-muted">{{ category.description }}</p>
+          </div>
 
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-label="{{ _('Toggle navigation') }}"
+          <div class="hc-cat-card__actions">
+            <a
+              href="{{ url_for('main.category_help', category=category.slug) }}"
+              class="hc-btn hc-btn--primary w-100"
+              data-hc-event="categories_category_click"
+              data-hc-category="{{ category.slug }}"
+              data-hc-cta="request_help"
+            >
+              <i class="fas fa-bolt me-2" aria-hidden="true"></i>{{ _("Demander de l’aide") }}
+            </a>
+            <div class="hc-cat-card__microcopy hc-muted">{{ _("Ça prend ~2 minutes") }}</div>
+          </div>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  <div id="hc-cats-cta" class="hc-cats-cta">
+    <article class="hc-card hc-cats-ctaCard">
+      <div class="hc-cats-ctaCard__inner text-center">
+        <i class="fas fa-plus-circle fa-3x text-primary mb-3" aria-hidden="true"></i>
+        <h5>{{ _('Besoin d’aide ?') }}</h5>
+        <p class="hc-muted">{{ _('Déposez une demande — nous trouverons une personne pour vous répondre.') }}</p>
+        <a
+          href="{{ url_for('main.submit_request') }}"
+          class="hc-btn hc-btn--primary"
+          data-hc-event="categories_cta_click"
+          data-hc-cta="submit_request"
         >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <div class="navbar-nav ms-auto">
-            <a class="nav-link" href="{{ url_for('main.index') }}">
-              <i class="fas fa-home me-1"></i>{{ _('Home') }}
-            </a>
-
-            <a class="nav-link active" href="{{ url_for('main.categories') }}">
-              <i class="fas fa-list me-1"></i>{{ _('Categories') }}
-            </a>
-
-            <a class="nav-link" href="{{ safe_url_for('main.become_volunteer') }}">
-              <i class="fas fa-user-plus me-1"></i>{{ _('Become a volunteer') }}
-            </a>
-
-          </div>
-        </div>
+          <i class="fas fa-edit me-2" aria-hidden="true"></i>{{ _('Déposer une demande') }}
+        </a>
       </div>
-    </nav>
+    </article>
 
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="container text-center">
-        <i class="fas fa-th-large fa-4x mb-3"></i>
-        <h1 class="display-5 fw-bold">{{ _('Help categories') }}</h1>
-        <p class="lead fs-5">
-          {{ _('Choose the category where you need help') }}
-        </p>
+    <article class="hc-card hc-cats-ctaCard">
+      <div class="hc-cats-ctaCard__inner text-center">
+        <i class="fas fa-hand-paper fa-3x text-success mb-3" aria-hidden="true"></i>
+        <h5>{{ _('Vous voulez aider ?') }}</h5>
+        <p class="hc-muted">{{ _('Rejoignez notre communauté de bénévoles.') }}</p>
+        <a
+          href="{{ safe_url_for('volunteer_register') }}"
+          class="hc-btn hc-btn--ghost"
+          data-hc-event="categories_cta_click"
+          data-hc-cta="become_volunteer"
+        >
+          <i class="fas fa-user-plus me-2" aria-hidden="true"></i>{{ _('Devenir bénévole') }}
+        </a>
       </div>
-    </section>
+    </article>
+  </div>
 
-    <!-- Categories Grid -->
-    <section class="py-5">
-      <div class="container">
-        <div class="row">
-          {% for category in categories %}
-          <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card category-card h-100 border-0 shadow-sm">
-              <div class="card-body text-center p-4">
-                <i class="{{ category.icon }} category-icon"></i>
-                <h4 class="card-title mb-3">{{ category.name }}</h4>
-                <p class="card-text text-muted mb-4">{{ category.description }}</p>
-
-                <!-- NOTE: Линк към страницата за конкретната категория -->
-                <a href="{{ url_for('main.category_help', category=category.slug) }}" class="btn btn-{{ category.color }} px-4">
-                  <i class="fas fa-search me-2"></i>{{ _('See volunteers') }}
-                </a>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row mt-5">
-          <div class="col-md-6 mb-4">
-            <div class="card border-primary">
-              <div class="card-body text-center">
-                <i class="fas fa-plus-circle fa-3x text-primary mb-3"></i>
-                <h5 class="card-title">{{ _('Need help?') }}</h5>
-                <p class="card-text">
-                  {{ _('Submit a request and we will find a volunteer for you.') }}
-                </p>
-                <a href="{{ url_for('main.submit_request') }}" class="btn btn-primary">
-                  <i class="fas fa-edit me-2"></i>{{ _('Submit a request') }}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-6 mb-4">
-            <div class="card border-success">
-              <div class="card-body text-center">
-                <i class="fas fa-hand-paper fa-3x text-success mb-3"></i>
-                <h5 class="card-title">{{ _('Want to help?') }}</h5>
-                <p class="card-text">
-                  {{ _('Join our community of volunteers.') }}
-                </p>
-                <a href="{{ safe_url_for('volunteer_register') }}" class="btn btn-success">
-                  <i class="fas fa-user-plus me-2"></i>{{ _('Become a volunteer') }}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="text-center mt-5">
-          <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary btn-lg">
-            <i class="fas fa-home me-2"></i>{{ _('Back to home page') }}
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-light py-4">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-6">
-            <h5>HelpChain</h5>
-            <p>{{ _('Connecting people in need with volunteers for a better future.') }}</p>
-          </div>
-          <div class="col-md-3">
-            <h5>{{ _('Links') }}</h5>
-            <ul class="list-unstyled">
-              <li><a href="{{ url_for('main.privacy') }}" class="text-light">{{ _('Privacy policy') }}</a></li>
-              <li><a href="{{ url_for('main.terms') }}" class="text-light">{{ _('Terms of use') }}</a></li>
-              <li><a href="{{ url_for('main.faq') }}" class="text-light">{{ _('FAQ') }}</a></li>
-            </ul>
-          </div>
-          <div class="col-md-3">
-            <h5>{{ _('Contacts') }}</h5>
-            <p><i class="fas fa-envelope me-2"></i>contact@helpchain.live</p>
-          </div>
-        </div>
-        <hr />
-        <div class="text-center">
-          <p>&copy; 2025 HelpChain. {{ _('All rights reserved.') }}</p>
-        </div>
-      </div>
-    </footer>
-
-    <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
-  </body>
-</html>
-
-
-
-
-
+  <div class="hc-center">
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary btn-lg">
+      <i class="fas fa-home me-2" aria-hidden="true"></i>{{ _("Retour à l’accueil") }}
+    </a>
+  </div>
+</section>
+{% endblock %}
