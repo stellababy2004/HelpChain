@@ -110,4 +110,27 @@
       });
     });
   });
+
+  // SR-1: fire once when the user starts interacting with the form
+  onReady(function () {
+    const form = document.querySelector(
+      'form[action*="/submit_request"], form[action*="submit_request"]',
+    );
+    if (!form) return;
+
+    let fired = false;
+    const fire = () => {
+      if (fired) return;
+      fired = true;
+
+      if (typeof window.hcTrack === "function") {
+        window.hcTrack("sr_form_start", { cta: "submit_request_form" });
+      } else if (typeof window.plausible === "function") {
+        window.plausible("sr_form_start", { props: { cta: "submit_request_form" } });
+      }
+    };
+
+    form.addEventListener("focusin", fire, { once: true });
+    form.addEventListener("input", fire, { once: true });
+  });
 })();
