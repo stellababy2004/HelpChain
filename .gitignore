@@ -190,3 +190,5 @@ __pycache__/
 # local tmp logs
 tmp_*
 
+check_*.py
+top_bad_endpoints.py

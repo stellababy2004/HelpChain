@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, session
@@ -97,6 +98,15 @@ def _locale_selector():
 
 
 def add_security_headers(app: Flask):
+    def _origin_from_url(url: str) -> str:
+        try:
+            parsed = urlparse(url or "")
+            if parsed.scheme and parsed.netloc:
+                return f"{parsed.scheme}://{parsed.netloc}"
+        except Exception:
+            return ""
+        return ""
+
     @app.after_request
     def _set_security_headers(resp):
         # Baseline hardening
@@ -107,15 +117,29 @@ def add_security_headers(app: Flask):
         )
         resp.headers["X-Frame-Options"] = "DENY"
 
+        plausible_enabled = bool(app.config.get("PLAUSIBLE_ENABLED", False))
+        plausible_script_url = (app.config.get("PLAUSIBLE_SCRIPT_URL") or "").strip()
+        plausible_api_host = (app.config.get("PLAUSIBLE_API_HOST") or "").strip()
+
+        script_src = ["'self'"]
+        connect_src = ["'self'"]
+        if plausible_enabled:
+            script_origin = _origin_from_url(plausible_script_url)
+            api_origin = _origin_from_url(plausible_api_host) or script_origin
+            if script_origin and script_origin not in script_src:
+                script_src.append(script_origin)
+            if api_origin and api_origin not in connect_src:
+                connect_src.append(api_origin)
+
         # CSP enforce policy
         csp_enforce = (
             "default-src 'self'; "
-            "script-src 'self'; "
+            + f"script-src {' '.join(script_src)}; "
             "script-src-attr 'none'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data:; "
             "font-src 'self'; "
-            "connect-src 'self'; "
+            + f"connect-src {' '.join(connect_src)}; "
             "frame-ancestors 'self'; "
             "form-action 'self'; "
             "base-uri 'self'; "
@@ -448,6 +472,25 @@ def create_app(config_object=None) -> Flask:
             }
         except Exception:
             return {}
+
+    @app.context_processor
+    def inject_analytics():
+        try:
+            from flask import current_app as _ca
+
+            return {
+                "PLAUSIBLE_ENABLED": _ca.config.get("PLAUSIBLE_ENABLED", False),
+                "PLAUSIBLE_DOMAIN": _ca.config.get("PLAUSIBLE_DOMAIN", ""),
+                "PLAUSIBLE_SCRIPT_URL": _ca.config.get("PLAUSIBLE_SCRIPT_URL", ""),
+                "PLAUSIBLE_API_HOST": _ca.config.get("PLAUSIBLE_API_HOST", ""),
+            }
+        except Exception:
+            return {
+                "PLAUSIBLE_ENABLED": False,
+                "PLAUSIBLE_DOMAIN": "",
+                "PLAUSIBLE_SCRIPT_URL": "",
+                "PLAUSIBLE_API_HOST": "",
+            }
 
     @app.context_processor
     def inject_unread_notification_count():

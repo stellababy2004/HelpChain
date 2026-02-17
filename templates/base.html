@@ -205,7 +205,7 @@
               <i class="fas fa-moon" aria-hidden="true"></i>
             </button>
 
-            <a class="btn btn-link text-secondary" href="/notifications"
+            <a class="btn btn-link text-secondary" href="{{ url_for('main.volunteer_notifications') }}"
                aria-label="{{ _('Notifications') }}" title="{{ _('Notifications') }}">
               <i class="fas fa-bell" aria-hidden="true"></i>
             </a>
@@ -332,6 +332,15 @@
 
     <!-- Bootstrap JS -->
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/plausible-stub.js') }}" defer></script>
+    {% if PLAUSIBLE_ENABLED and PLAUSIBLE_SCRIPT_URL and PLAUSIBLE_DOMAIN %}
+    <script
+      defer
+      data-domain="{{ PLAUSIBLE_DOMAIN }}"
+      {% if PLAUSIBLE_API_HOST %}data-api="{{ PLAUSIBLE_API_HOST }}/api/event"{% endif %}
+      src="{{ PLAUSIBLE_SCRIPT_URL }}"
+    ></script>
+    {% endif %}
     <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
     {% block scripts %}{% endblock %}
     {% if not minimal_page %}

@@ -136,6 +136,16 @@ class Config:
     BABEL_DEFAULT_LOCALE = "fr"
     BABEL_DEFAULT_TIMEZONE = "Europe/Paris"
 
+    # --- Analytics (Plausible) ---
+    PLAUSIBLE_ENABLED = os.getenv("PLAUSIBLE_ENABLED", "0") == "1"
+    PLAUSIBLE_DOMAIN = os.getenv("PLAUSIBLE_DOMAIN", "helpchain.live")
+    PLAUSIBLE_SCRIPT_URL = os.getenv(
+        "PLAUSIBLE_SCRIPT_URL", "https://plausible.io/js/script.js"
+    )
+    # Optional override for self-hosted API endpoint base host, e.g.
+    # https://plausible.helpchain.live
+    PLAUSIBLE_API_HOST = (os.getenv("PLAUSIBLE_API_HOST", "") or "").strip()
+
 
 class DevConfig(Config):
     SESSION_COOKIE_SECURE = False

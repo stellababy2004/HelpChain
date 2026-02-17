@@ -164,6 +164,39 @@
   })();
 
   (function () {
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[data-hc-event]");
+      if (!a) return;
+
+      var eventName = a.getAttribute("data-hc-event");
+      if (!eventName) return;
+
+      var props = {
+        page: window.location.pathname,
+        cta: a.getAttribute("data-hc-cta") || undefined,
+        intent: a.getAttribute("data-hc-intent") || undefined,
+        category: a.getAttribute("data-hc-category") || undefined,
+        lang: document.documentElement.lang || undefined,
+      };
+
+      if (typeof window.plausible === "function") {
+        try {
+          window.plausible(eventName, { props: props });
+        } catch (_) {}
+      }
+
+      try {
+        fetch("/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event: eventName, props: props }),
+          keepalive: true,
+        });
+      } catch (_) {}
+    });
+  })();
+
+  (function () {
     function safeCall(fnName, el) {
       try {
         var fn = window[fnName];
