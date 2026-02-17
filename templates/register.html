@@ -45,24 +45,24 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('index') }}">Начало</a>
+              <a class="nav-link" href="{{ safe_url_for('main.index') }}">Начало</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('all_categories') }}"
+              <a class="nav-link" href="{{ safe_url_for('main.categories') }}"
                 >Категории</a
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('faq') }}">ЧЗВ</a>
+              <a class="nav-link" href="{{ safe_url_for('main.faq') }}">ЧЗВ</a>
             </li>
           </ul>
 
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('login') }}">Вход</a>
+              <a class="nav-link" href="{{ safe_url_for('main.volunteer_login') }}">Вход</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="{{ safe_url_for('register') }}"
+              <a class="nav-link active" href="{{ safe_url_for('main.become_volunteer') }}"
                 >Регистрация</a
               >
             </li>
@@ -265,8 +265,8 @@
                 </div>
                 <div class="checkbox-description">
                   Съгласен съм с
-                  <a href="{{ safe_url_for('terms') }}">общите условия</a> и
-                  <a href="{{ safe_url_for('privacy') }}"
+                  <a href="{{ safe_url_for('main.terms') }}">общите условия</a> и
+                  <a href="{{ safe_url_for('main.privacy') }}"
                     >политиката за поверителност</a
                   >
                 </div>
@@ -286,7 +286,7 @@
         <div class="register-links">
           <p style="margin: 0; color: #6c757d; font-size: 0.9rem">
             Вече имате акаунт?
-            <a href="{{ safe_url_for('login') }}" style="font-weight: 600"
+            <a href="{{ safe_url_for('main.volunteer_login') }}" style="font-weight: 600"
               >Влезте тук</a
             >
           </p>

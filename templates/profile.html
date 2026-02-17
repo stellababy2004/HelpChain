@@ -55,7 +55,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="{{ safe_url_for('profile') }}">
+              <a class="nav-link active" href="{{ safe_url_for('main.profile') }}">
                 <i class="fas fa-user me-1"></i>Профил
               </a>
             </li>
@@ -69,13 +69,13 @@
           <ul class="navbar-nav">
             {% if current_user.is_admin %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin_panel') }}">
+              <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-cogs me-1"></i>Админ
               </a>
             </li>
             {% endif %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('logout') }}">
+              <a class="nav-link" href="{{ safe_url_for('main.logout') }}">
                 <i class="fas fa-sign-out-alt me-1"></i>Изход
               </a>
             </li>

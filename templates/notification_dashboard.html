@@ -45,7 +45,7 @@
             <li class="nav-item">
               <a
                 class="nav-link"
-                href="{{ safe_url_for('analytics_main.admin_analytics') }}"
+                href="{{ safe_url_for('analytics.analytics_page') }}"
               >
                 <i class="fas fa-chart-bar me-1"></i>Аналитика
               </a>
@@ -65,14 +65,14 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" href="{{ safe_url_for('profile') }}">
+                  <a class="dropdown-item" href="{{ safe_url_for('main.profile') }}">
                     <i class="fas fa-user me-2"></i>Профил
                   </a>
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{{ safe_url_for('admin_settings') }}"
+                    href="{{ safe_url_for('admin.admin_dashboard') }}"
                   >
                     <i class="fas fa-cog me-2"></i>Настройки
                   </a>
@@ -81,7 +81,7 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ safe_url_for('logout') }}">
+                  <a class="dropdown-item" href="{{ safe_url_for('main.logout') }}">
                     <i class="fas fa-sign-out-alt me-2"></i>Изход
                   </a>
                 </li>
@@ -216,7 +216,7 @@
             </button>
           </div>
           <div>
-            <a href="{{ safe_url_for('admin_dashboard') }}" class="btn btn-primary">
+            <a href="{{ safe_url_for('admin.admin_dashboard') }}" class="btn btn-primary">
               <i class="fas fa-arrow-left me-1"></i>Назад към Dashboard
             </a>
           </div>
