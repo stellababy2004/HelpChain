@@ -52,12 +52,12 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('index') }}">
+              <a class="nav-link" href="{{ safe_url_for('main.index') }}">
                 <i class="fas fa-home me-1"></i>Начало
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="{{ safe_url_for('admin_panel') }}">
+              <a class="nav-link active" href="{{ safe_url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-tachometer-alt me-1"></i>Dashboard
               </a>
             </li>
@@ -75,7 +75,7 @@
                 <li>
                   <a
                     class="dropdown-item dropdown-item-modern"
-                    href="/admin_volunteers"
+                    href="{{ url_for('admin.admin_volunteers') }}"
                   >
                     <i class="fas fa-users me-2"></i>Доброволци
                   </a>
@@ -83,7 +83,7 @@
                 <li>
                   <a
                     class="dropdown-item dropdown-item-modern"
-                    href="/admin_requests"
+                    href="{{ url_for('admin.admin_requests') }}"
                   >
                     <i class="fas fa-clipboard-list me-2"></i>Заявки
                   </a>
@@ -91,7 +91,7 @@
                 <li>
                   <a
                     class="dropdown-item dropdown-item-modern"
-                    href="/admin_roles"
+                    href="{{ url_for('admin.admin_dashboard') }}"
                   >
                     <i class="fas fa-user-shield me-2"></i>Роли и потребители
                   </a>
@@ -99,17 +99,17 @@
               </ul>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/admin/analytics">
+              <a class="nav-link" href="{{ url_for('analytics.analytics_page') }}">
                 <i class="fas fa-chart-bar me-1"></i>Аналитика
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/admin_logs">
+              <a class="nav-link" href="{{ url_for('admin.admin_dashboard') }}">
                 <i class="fas fa-history me-1"></i>Логове
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/admin/export">
+              <a class="nav-link" href="{{ url_for('admin.export_volunteers') }}">
                 <i class="fas fa-download me-1"></i>Експорт
               </a>
             </li>
@@ -221,7 +221,7 @@
         </div>
 
         <div class="actions-grid">
-          <a href="/admin_volunteers" class="action-card-modern">
+          <a href="{{ url_for('admin.admin_volunteers') }}" class="action-card-modern">
             <div class="action-icon-modern">
               <i class="fas fa-users"></i>
             </div>
@@ -232,7 +232,7 @@
             </div>
           </a>
 
-          <a href="/admin_requests" class="action-card-modern">
+          <a href="{{ url_for('admin.admin_requests') }}" class="action-card-modern">
             <div class="action-icon-modern">
               <i class="fas fa-clipboard-list"></i>
             </div>
@@ -243,7 +243,7 @@
             </div>
           </a>
 
-          <a href="/admin/analytics" class="action-card-modern">
+          <a href="{{ url_for('analytics.analytics_page') }}" class="action-card-modern">
             <div class="action-icon-modern">
               <i class="fas fa-chart-bar"></i>
             </div>
@@ -254,7 +254,7 @@
             </div>
           </a>
 
-          <a href="/admin_roles" class="action-card-modern">
+          <a href="{{ url_for('admin.admin_dashboard') }}" class="action-card-modern">
             <div class="action-icon-modern">
               <i class="fas fa-user-shield"></i>
             </div>
@@ -265,7 +265,7 @@
             </div>
           </a>
 
-          <a href="/admin_logs" class="action-card-modern">
+          <a href="{{ url_for('admin.admin_dashboard') }}" class="action-card-modern">
             <div class="action-icon-modern">
               <i class="fas fa-history"></i>
             </div>
@@ -276,7 +276,7 @@
             </div>
           </a>
 
-          <a href="/admin/export" class="action-card-modern">
+          <a href="{{ url_for('admin.export_volunteers') }}" class="action-card-modern">
             <div class="action-icon-modern">
               <i class="fas fa-download"></i>
             </div>
@@ -298,7 +298,7 @@
             </div>
           </a>
 
-          <a href="/admin/settings" class="action-card-modern">
+          <a href="{{ url_for('admin.admin_dashboard') }}" class="action-card-modern">
             <div class="action-icon-modern">
               <i class="fas fa-cogs"></i>
             </div>

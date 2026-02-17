@@ -13,13 +13,13 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
       <div class="container">
-        <a class="navbar-brand" href="{{ safe_url_for('index') }}">HelpChain</a>
+        <a class="navbar-brand" href="{{ safe_url_for('main.index') }}">HelpChain</a>
         <div class="navbar-nav ms-auto">
-          <a class="nav-link" href="{{ safe_url_for('volunteer_dashboard') }}"
+          <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}"
             >Табло</a
           >
-          <a class="nav-link" href="{{ safe_url_for('my_tasks') }}">Моите задачи</a>
-          <a class="nav-link active" href="{{ safe_url_for('available_tasks') }}"
+          <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}">Моите задачи</a>
+          <a class="nav-link active" href="{{ safe_url_for('main.volunteer_dashboard') }}"
             >Налични задачи</a
           >
           <form class="d-inline" method="post" action="{{ safe_url_for('main.volunteer_logout') }}">

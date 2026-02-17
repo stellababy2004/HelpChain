@@ -52,22 +52,7 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
     </head>
 
-<body class="hc-page-dashboard" data-theme="light">
-    <div
-      style="
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        z-index: 99999;
-        background: #ff0;
-        color: #000;
-        padding: 6px 10px;
-        border-radius: 8px;
-        font-weight: 700;
-      "
-    >
-      TEMPLATE OK ✅
-    </div>
+<body class="hc-page-home" data-theme="light">
     <!-- Skip to main content -->
     <a href="#main-content" class="skip-link">Отиди към основното съдържание</a>
 
@@ -101,15 +86,15 @@
           <ul class="nav-menu">
             <li><a class="nav-link-light" href="#features">Функции</a></li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('all_categories') }}"
+              <a class="nav-link-light" href="{{ safe_url_for('main.categories') }}"
                 >Категории</a
               >
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('faq') }}">ЧЗВ</a>
+              <a class="nav-link-light" href="{{ safe_url_for('main.faq') }}">ЧЗВ</a>
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('register') }}"
+              <a class="nav-link-light" href="{{ safe_url_for('main.become_volunteer') }}"
                 >Регистрация</a
               >
             </li>
@@ -373,22 +358,22 @@
               <h5>Бързи връзки</h5>
               <ul class="list-unstyled">
                 <li>
-                  <a href="{{ safe_url_for('all_categories') }}" class="text-light"
+                  <a href="{{ safe_url_for('main.categories') }}" class="text-light"
                     >Категории помощ</a
                   >
                 </li>
                 <li>
-                  <a href="{{ safe_url_for('faq') }}" class="text-light"
+                  <a href="{{ safe_url_for('main.faq') }}" class="text-light"
                     >Често задавани въпроси</a
                   >
                 </li>
                 <li>
-                  <a href="{{ safe_url_for('privacy') }}" class="text-light"
+                  <a href="{{ safe_url_for('main.privacy') }}" class="text-light"
                     >Поверителност</a
                   >
                 </li>
                 <li>
-                  <a href="{{ safe_url_for('terms') }}" class="text-light"
+                  <a href="{{ safe_url_for('main.terms') }}" class="text-light"
                     >Условия за ползване</a
                   >
                 </li>
@@ -672,20 +657,6 @@
           });
         }
 
-        // Navbar scroll effect with reduced motion support
-        const navbar = document.querySelector(".navbar-light");
-        if (navbar) {
-          window.addEventListener("scroll", function () {
-            if (window.scrollY > 50) {
-              navbar.style.background = "rgba(255, 255, 255, 0.98)";
-              navbar.style.backdropFilter = "blur(20px)";
-            } else {
-              navbar.style.background = "rgba(255, 255, 255, 0.95)";
-              navbar.style.backdropFilter = "blur(8px)";
-            }
-          });
-        }
-
         // Show welcome toast
         setTimeout(() => {
           feedback.showToast("Добре дошли в HelpChain! 🚀", "info", 4000);
@@ -725,6 +696,7 @@
         }
       })();
     </script>
+    <script src="{{ url_for('static', filename='js/nav-scroll.js') }}"></script>
   </body>
 </html>
 
