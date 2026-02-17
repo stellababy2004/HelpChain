@@ -522,6 +522,188 @@
     }
   });
 
+  document.addEventListener("DOMContentLoaded", () => {
+    const desc = document.getElementById("srDesc") || document.getElementById("sr-description");
+    const status = document.getElementById("sr-desc-status");
+    const email = document.getElementById("srEmail");
+    const phone = document.getElementById("srPhone");
+    const contactWarning = document.getElementById("srContactWarn");
+
+    if (desc && status) {
+      const updateDescStatus = () => {
+        const value = desc.value.trim();
+        if (value.length >= 20) {
+          status.textContent = "✓ Sufficient information";
+          status.classList.remove("hc-sr__status--hidden");
+          status.classList.add("hc-sr__status--ok");
+        } else {
+          status.textContent = "";
+          status.classList.remove("hc-sr__status--ok");
+          status.classList.add("hc-sr__status--hidden");
+        }
+      };
+
+      desc.addEventListener("input", updateDescStatus);
+      updateDescStatus();
+    }
+
+    const updateContactState = () => {
+      if (!contactWarning) return;
+      const hasPhone = phone && phone.value.trim().length >= 6;
+      const hasEmail = email && email.value.trim().length >= 3;
+      const ok = hasPhone || hasEmail;
+
+      contactWarning.classList.toggle("is-ok", ok);
+      contactWarning.classList.toggle("is-warn", !ok);
+    };
+
+    if (phone) phone.addEventListener("input", updateContactState);
+    if (email) email.addEventListener("input", updateContactState);
+    updateContactState();
+  });
+
+  (function () {
+    function initSubmitRequestAutoTitle() {
+      const form = document.querySelector("form[data-hc-autotitle-template]");
+      if (!form) return;
+
+      const titleEl = document.getElementById("srTitle");
+      const descEl = document.getElementById("srDesc");
+      const catEl = document.getElementById("srCategory");
+      const hintEl = document.getElementById("srTitleHint");
+
+      if (!titleEl || !descEl) return;
+
+      const tpl = form.getAttribute("data-hc-autotitle-template") || "Request: {snippet}";
+      const tplCat =
+        form.getAttribute("data-hc-autotitle-template-cat") || "{cat}: {snippet}";
+      const hintOk = form.getAttribute("data-hc-hint-ok") || "Sufficient info";
+      const hintMin = form.getAttribute("data-hc-hint-min") || "";
+      let descTouched = false;
+
+      const USER_EDITED_KEY = "hcTitleUserEdited";
+      titleEl.addEventListener("input", () => {
+        titleEl.dataset.hcUserEdited = "1";
+        titleEl.dataset.hcAutoFilled = "0";
+        titleEl.dataset.hcAutofill = "0";
+        try {
+          sessionStorage.setItem(USER_EDITED_KEY, "1");
+        } catch (_) {}
+      });
+
+      try {
+        if (sessionStorage.getItem(USER_EDITED_KEY) === "1") {
+          titleEl.dataset.hcUserEdited = "1";
+        }
+      } catch (_) {}
+
+      function setHint(state) {
+        if (!hintEl) return;
+        if (titleEl.dataset.hcUserEdited === "1") {
+          hintEl.textContent = "";
+          return;
+        }
+        if (state === "ok") {
+          hintEl.textContent = `✓ ${hintOk}`;
+          return;
+        }
+        if (state === "min") {
+          hintEl.textContent = hintMin || "";
+          const len = (descEl && descEl.value ? descEl.value : "").trim().length;
+          if (!descTouched || len === 0) {
+            hintEl.textContent = "";
+          }
+          return;
+        }
+        hintEl.textContent = "";
+      }
+
+      function cleanSnippet(text) {
+        const t = (text || "").replace(/\s+/g, " ").trim();
+        if (!t) return "";
+
+        const first = t.split(/[\n\r]+/)[0].split(/[.!?]/)[0].trim();
+        const base = (first || t).trim();
+        const max = 64;
+        if (base.length <= max) return base;
+        return base.slice(0, max).replace(/\s+\S*$/, "") + "…";
+      }
+
+      function buildTitle() {
+        const desc = descEl.value || "";
+        const descTrim = desc.trim();
+        if (!descTrim) {
+          setHint("empty");
+          return null;
+        }
+        const snippet = cleanSnippet(desc);
+        if (snippet.length < 12) {
+          setHint("min");
+          return null;
+        }
+
+        const cat =
+          catEl && catEl.value
+            ? (catEl.options[catEl.selectedIndex] &&
+                catEl.options[catEl.selectedIndex].textContent) ||
+              ""
+            : "";
+        const category = (cat || "").trim();
+        const template = category ? tplCat : tpl;
+        return template
+          .replace("{cat}", category)
+          .replace("{snippet}", snippet)
+          .trim();
+      }
+
+      function applyAutoTitle() {
+        if (titleEl.dataset.hcUserEdited === "1") {
+          setHint("min");
+          return;
+        }
+
+        const isAuto =
+          titleEl.dataset.hcAutoFilled === "1" || titleEl.dataset.hcAutofill === "1";
+        const canAutoFill = !titleEl.value.trim() || isAuto;
+        if (!canAutoFill) {
+          setHint("ok");
+          return;
+        }
+
+        const suggestion = buildTitle();
+        if (!suggestion) return;
+
+        titleEl.value = suggestion;
+        titleEl.dataset.hcAutoFilled = "1";
+        titleEl.dataset.hcAutofill = "1";
+        setHint("ok");
+      }
+
+      descEl.addEventListener("input", () => {
+        descTouched = true;
+        applyAutoTitle();
+      });
+      if (catEl) catEl.addEventListener("change", applyAutoTitle);
+      applyAutoTitle();
+
+      document.addEventListener("click", (e) => {
+        const a = e.target && e.target.closest ? e.target.closest("a") : null;
+        if (!a) return;
+        if (a.href && a.href.includes("/lang/")) {
+          try {
+            sessionStorage.removeItem(USER_EDITED_KEY);
+          } catch (_) {}
+        }
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initSubmitRequestAutoTitle);
+    } else {
+      initSubmitRequestAutoTitle();
+    }
+  })();
+
   window.hcApplyWidths = hcApplyWidths;
 
 })();

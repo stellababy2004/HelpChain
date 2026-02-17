@@ -10,31 +10,33 @@
 {% block body_class %}hc-page-submit-request{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 760px;">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-      <h1 class="h3 mb-1">{{ _("Déposer une demande d’aide") }}</h1>
-      <p class="text-muted mb-0">{{ _("Décrivez votre situation — on s’occupe du reste.") }}</p>
-    </div>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}"
-       data-hc-event="sr_nav_click" data-hc-cta="back_home">
-      ← {{ _("Accueil") }}
-    </a>
-  </div>
-
-  {# Flash messages (в твоя код: flash + redirect) #}
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, msg in messages %}
-        <div class="alert alert-{{ 'danger' if category in ['error','danger'] else category }} mb-3" role="alert">
-          {{ msg }}
+<div class="hc-sr">
+  <div class="hc-sr__shell">
+    <div class="py-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h1 class="h3 mb-1 page-title">{{ _("Déposer une demande d’aide") }}</h1>
+          <p class="text-muted mb-0 page-subtitle">{{ _("Décrivez votre situation — on s’occupe du reste.") }}</p>
         </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}"
+           data-hc-event="sr_nav_click" data-hc-cta="back_home">
+          ← {{ _("Accueil") }}
+        </a>
+      </div>
 
-  <div class="card shadow-sm">
-    <div class="card-body p-3 p-md-4">
+      {# Flash messages (в твоя код: flash + redirect) #}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="alert alert-{{ 'danger' if category in ['error','danger'] else category }} mb-3" role="alert">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="card shadow-sm">
+        <div class="card-body p-3 p-md-4">
 
       <div class="mb-3">
         <div class="small text-muted">Примери:</div>
@@ -45,7 +47,15 @@
         </div>
       </div>
 
-      <form method="post" action="{{ url_for('main.submit_request') }}" novalidate>
+      <form
+        method="post"
+        action="{{ url_for('main.submit_request') }}"
+        novalidate
+        data-hc-autotitle-template="{{ _('Request') }}: {snippet}"
+        data-hc-autotitle-template-cat="{cat}: {snippet}"
+        data-hc-hint-ok="{{ _('Sufficient info') }}"
+        data-hc-hint-min="{{ _('Add a bit more detail (20+ chars)') }}"
+      >
         <div class="hc-form-intro">
           <div class="hc-form-steps">
             <span class="hc-step is-active">1</span>
@@ -61,7 +71,7 @@
           </ul>
         </div>
         {# Honeypot (backend очаква "website") #}
-        <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+        <div class="hc-sr__honeypot">
           <label>Website</label>
           <input type="text" name="website" tabindex="-1" autocomplete="off">
         </div>
@@ -91,6 +101,7 @@
           <div class="col-12 col-md-6">
             <label class="form-label">Телефон</label>
             <input
+              id="srPhone"
               type="tel"
               name="phone"
               class="form-control"
@@ -104,6 +115,7 @@
           <div class="col-12 col-md-6">
             <label class="form-label">Имейл</label>
             <input
+              id="srEmail"
               type="email"
               name="email"
               class="form-control"
@@ -115,14 +127,14 @@
           </div>
 
           <div class="col-12">
-            <div class="alert alert-info py-2 mb-0">
+            <div id="srContactWarn" class="alert alert-info py-2 mb-0">
               <span class="small">ℹ️ {{ _("Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter.") }}</span>
             </div>
           </div>
 
           <div class="col-12">
             <label class="form-label">Категория</label>
-            <select name="category" class="form-select" data-hc-event="sr_field_click" data-hc-field="category">
+            <select id="srCategory" name="category" class="form-select" data-hc-event="sr_field_click" data-hc-field="category">
               <option value="">Избери…</option>
               <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>Медицинска помощ</option>
               <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>Социална подкрепа</option>
@@ -147,6 +159,7 @@
           <div class="col-12 col-md-6">
             <label class="form-label">Кратко заглавие (по избор)</label>
             <input
+              id="srTitle"
               type="text"
               name="title"
               class="form-control"
@@ -156,6 +169,7 @@
               placeholder="Напр. Нужен придружител до лекар"
             >
             <div class="form-text">Ако оставиш празно, системата ще го попълни автоматично.</div>
+            <div id="srTitleHint" class="hc-sr-hint" aria-live="polite"></div>
           </div>
 
           <div class="col-12">
@@ -174,6 +188,7 @@
           <div class="col-12">
             <label class="form-label">Описание <span class="text-danger">*</span></label>
             <textarea
+              id="srDesc"
               name="description"
               class="form-control"
               data-hc-event="sr_field_click"
@@ -183,33 +198,21 @@
               placeholder="Напиши с 2–3 изречения какво се случва и каква помощ търсиш."
             >{{ request.form.get('description','') }}</textarea>
             <div class="form-text">Минимум 10 символа.</div>
+            <div id="sr-desc-status" class="hc-sr__status hc-sr__status--hidden" aria-live="polite"></div>
           </div>
 
-          <div class="col-12 d-flex gap-2 justify-content-end pt-2">
+          <div class="col-12 hc-sr__actions d-flex gap-2 justify-content-end pt-2">
             <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">Отказ</a>
             <button type="submit" class="btn btn-primary" data-hc-event="sr_submit_click" data-hc-cta="submit_request">Изпрати заявка</button>
           </div>
 
         </div>
-
-        <!-- Sticky CTA (mobile + long form) -->
-        <div class="hc-sticky-cta is-visible" role="region" aria-label="{{ _('Quick actions') }}">
-          <div class="hc-sticky-cta__inner">
-            <a class="btn btn-outline-secondary hc-sticky-cta__back" href="{{ url_for('main.index') }}">
-              {{ _('Home') }}
-            </a>
-
-            <button type="submit" class="btn btn-primary hc-sticky-cta__submit" data-hc-event="sr_submit_click" data-hc-cta="submit_request_sticky">
-              {{ _('Submit a request') }}
-            </button>
-          </div>
-        </div>
       </form>
+        </div>
+      </div>
+
     </div>
   </div>
-
-  {# място за floating елементи (напр. чат бутон) #}
-  <div style="height: 84px;"></div>
 </div>
 {% endblock %}
 
