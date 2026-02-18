@@ -1,5 +1,6 @@
 import hashlib
 import math
+import re
 import secrets
 import time
 from collections import deque
@@ -30,6 +31,7 @@ from babel.dates import format_timedelta
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import desc, func, or_
 from werkzeug.security import check_password_hash
+from markupsafe import Markup, escape
 
 from ..authz import can_view_notification, can_view_request
 from ..category_data import ALIASES, CATEGORIES, COMMON
@@ -713,6 +715,176 @@ def set_lang(locale):
     resp = make_response(redirect(next_url))
     resp.set_cookie("hc_lang", locale, max_age=60 * 60 * 24 * 365, samesite="Lax")
     return resp
+
+
+@main_bp.get("/search")
+def search():
+    q = (request.args.get("q") or "").strip()
+    if not q:
+        return render_template("search_results.html", q="", results=None), 200
+
+    q_like = f"%{q}%"
+    q_low = q.lower()
+    pattern = re.compile(re.escape(q), re.IGNORECASE)
+
+    def highlight_text(text: str) -> Markup | str:
+        raw = (text or "").strip()
+        if not raw:
+            return ""
+        last = 0
+        chunks = []
+        for match in pattern.finditer(raw):
+            chunks.append(escape(raw[last : match.start()]))
+            chunks.append(Markup("<mark>"))
+            chunks.append(escape(match.group(0)))
+            chunks.append(Markup("</mark>"))
+            last = match.end()
+        if not chunks:
+            return escape(raw)
+        chunks.append(escape(raw[last:]))
+        return Markup("").join(chunks)
+
+    def score(item: dict) -> int:
+        title = (item.get("title") or "").lower()
+        subtitle = (item.get("subtitle") or "").lower()
+        snippet = (item.get("snippet") or "").lower()
+        if title == q_low:
+            return 0
+        if title.startswith(q_low):
+            return 1
+        if q_low in title:
+            return 2
+        if q_low in subtitle:
+            return 3
+        if q_low in snippet:
+            return 4
+        return 5
+
+    def finalize(items: list[dict]) -> list[dict]:
+        ranked = sorted(items, key=score)
+        final = []
+        for item in ranked:
+            final.append(
+                {
+                    "title": highlight_text(item.get("title")),
+                    "url": item.get("url") or "#",
+                    "subtitle": highlight_text(item.get("subtitle")),
+                    "snippet": highlight_text(item.get("snippet")),
+                }
+            )
+        return final
+
+    results: dict[str, list[dict]] = {
+        "requests": [],
+        "categories": [],
+        "professionals": [],
+    }
+
+    try:
+        req_rows = (
+            Request.query.filter(
+                Request.deleted_at.is_(None),
+                Request.is_archived.is_(False),
+                or_(
+                    Request.title.ilike(q_like),
+                    Request.description.ilike(q_like),
+                    Request.message.ilike(q_like),
+                    Request.city.ilike(q_like),
+                    Request.category.ilike(q_like),
+                ),
+            )
+            .order_by(desc(Request.created_at))
+            .limit(20)
+            .all()
+        )
+        for row in req_rows:
+            results["requests"].append(
+                {
+                    "title": row.title or _("Request"),
+                    "url": url_for("main.request_public", req_id=row.id),
+                    "subtitle": row.city or row.category or "",
+                    "snippet": (row.description or row.message or "")[:180],
+                }
+            )
+    except Exception as exc:
+        current_app.logger.warning("Search requests skipped: %s", exc)
+
+    try:
+        cat_hits = []
+        for slug, meta in CATEGORIES.items():
+            title = (
+                meta.get("title")
+                or meta.get("label")
+                or meta.get("content", {}).get("title", {}).get("fr")
+                or meta.get("content", {}).get("title", {}).get("en")
+                or meta.get("content", {}).get("title", {}).get("bg")
+                or slug
+            )
+            description_text = (
+                meta.get("description")
+                or meta.get("desc")
+                or meta.get("content", {}).get("intro", {}).get("fr")
+                or meta.get("content", {}).get("intro", {}).get("en")
+                or meta.get("content", {}).get("intro", {}).get("bg")
+                or ""
+            )
+
+            hay = f"{slug} {title} {description_text}".lower()
+            if q_low in hay:
+                cat_hits.append(
+                    {
+                        "title": title,
+                        "url": url_for("main.category_help", category=slug),
+                        "subtitle": "Catégorie",
+                        "snippet": description_text[:160],
+                    }
+                )
+
+        results["categories"] = sorted(cat_hits[:18], key=score)
+    except Exception as exc:
+        current_app.logger.warning("Search categories skipped: %s", exc)
+
+    try:
+        pro_rows = (
+            ProfessionalLead.query.filter(
+                or_(
+                    ProfessionalLead.full_name.ilike(q_like),
+                    ProfessionalLead.profession.ilike(q_like),
+                    ProfessionalLead.organization.ilike(q_like),
+                    ProfessionalLead.city.ilike(q_like),
+                    ProfessionalLead.message.ilike(q_like),
+                )
+            )
+            .order_by(desc(ProfessionalLead.created_at))
+            .limit(12)
+            .all()
+        )
+        for pro in pro_rows:
+            subtitle_parts = [pro.profession or "", pro.city or ""]
+            results["professionals"].append(
+                {
+                    "title": pro.full_name or pro.organization or pro.email,
+                    "url": url_for("main.professionnels", q=q),
+                    "subtitle": " · ".join([part for part in subtitle_parts if part]),
+                    "snippet": (pro.message or "")[:180],
+                }
+            )
+    except Exception as exc:
+        current_app.logger.warning("Search professionals skipped: %s", exc)
+        results["professionals"] = [
+            {
+                "title": f"Voir les professionnels pour '{q}'",
+                "url": url_for("main.professionnels", q=q),
+                "subtitle": "Professionnels",
+                "snippet": "Ouvrir la liste et filtrer.",
+            }
+        ]
+
+    results["requests"] = finalize(results["requests"])
+    results["categories"] = finalize(results["categories"])
+    results["professionals"] = finalize(results["professionals"])
+
+    return render_template("search_results.html", q=q, results=results), 200
 
 
 @main_bp.route("/categories", methods=["GET"])
