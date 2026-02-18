@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Admin - Request #{{ req.id }}{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
 
 {% block content %}
 {% set is_locked = is_locked|default(false) %}
-<div class="container my-4">
+<div class="hc-admin-wrap">
 
   <!-- Top bar -->
   <div class="d-flex align-items-start align-items-md-center justify-content-between gap-3 mb-3">
@@ -18,7 +21,14 @@
         </span>
         <span class="mx-2">|</span>
         <span class="me-2">Priority:</span>
-        <span class="badge text-bg-light border">{{ req.priority }}</span>
+        {% set _prio = (req.priority or 'medium')|lower %}
+        {% if _prio == 'urgent' %}
+          <span class="badge text-bg-danger">{{ _prio }}</span>
+        {% elif _prio == 'low' %}
+          <span class="badge text-bg-secondary">{{ _prio }}</span>
+        {% else %}
+          <span class="badge text-bg-warning text-dark">{{ _prio }}</span>
+        {% endif %}
         <span class="mx-2">|</span>
         <span class="me-2">Category:</span>
         <span class="badge text-bg-light border">{{ req.category }}</span>
@@ -252,10 +262,10 @@
   {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
 
   <!-- Main grid -->
-  <div class="row g-3">
+  <div class="hc-admin-grid">
 
     <!-- Left: request info -->
-    <div class="col-lg-8">
+    <main>
 
       {% if is_locked %}
         <div class="alert alert-warning d-flex justify-content-between align-items-center">
@@ -270,7 +280,7 @@
         </div>
       {% endif %}
 
-      <div class="card border-0 shadow-sm mb-3">
+      <div class="card border-0 shadow-sm mb-3 hc-card">
         <div class="card-body">
           <div class="d-flex align-items-start justify-content-between gap-3">
             <div>
@@ -291,7 +301,7 @@
       </div>
 
       {% if interests %}
-      <div class="card border-0 shadow-sm mb-3">
+      <div class="card border-0 shadow-sm mb-3 hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <h5 class="card-title mb-0">Интерес от доброволци</h5>
@@ -354,7 +364,7 @@
       </div>
       {% endif %}
 
-      <div class="card border-0 shadow-sm">
+      <div class="card border-0 shadow-sm hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between gap-2">
             <div class="fw-semibold">Contact details</div>
@@ -390,13 +400,13 @@
         </div>
       </div>
 
-    </div>
+    </main>
 
     <!-- Right: controls -->
-    <div class="col-lg-4">
+    <aside class="hc-sticky">
 
       <!-- Status management -->
-      <div class="card border-0 shadow-sm mb-3">
+      <div class="card border-0 shadow-sm mb-3 hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div class="fw-semibold">Status</div>
@@ -414,15 +424,55 @@
           <hr class="my-3" />
 
           {% if can_edit %}
-            <form method="post" action="{{ url_for('admin.update_status', req_id=req.id) }}" class="d-flex gap-2 align-items-center flex-wrap">
+            {% set is_closed_status = ((req.status or '')|upper == 'CLOSED') %}
+            <form method="post" action="{{ url_for('admin.update_status', req_id=req.id) }}" class="d-flex gap-2 align-items-center flex-wrap" id="statusForm">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <select name="status" class="form-select form-select-sm" style="max-width: 220px;">
+              <select name="status" class="form-select form-select-sm" style="max-width: 220px;" id="statusSelect">
                 {% for s in REQUEST_STATUS_ORDER %}
-                  <option value="{{ s }}" {% if req.status == s %}selected{% endif %}>{{ status_meta(s).label }}</option>
+                  <option value="{{ s }}" {% if (req.status == s) or ((req.status or '')|upper == s) %}selected{% endif %}>{{ status_meta(s).label }}</option>
                 {% endfor %}
               </select>
+              <div id="resolutionWrap" class="w-100 mt-2" style="display:none;">
+                <label for="resolutionNote" class="form-label form-label-sm mb-1">Outcome / Résolution</label>
+                <textarea
+                  id="resolutionNote"
+                  name="resolution_note"
+                  class="form-control form-control-sm"
+                  rows="3"
+                  minlength="5"
+                  placeholder="Short outcome summary..."
+                >{{ resolution_note_value or '' }}</textarea>
+              </div>
               <button type="submit" class="btn btn-sm btn-primary">Save</button>
             </form>
+            <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}" class="mt-2">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-secondary" {% if is_closed_status %}disabled{% endif %}>
+                Archiver (Clôturer)
+              </button>
+            </form>
+            <script>
+              (function () {
+                const form = document.getElementById("statusForm");
+                const status = document.getElementById("statusSelect");
+                const wrap = document.getElementById("resolutionWrap");
+                const note = document.getElementById("resolutionNote");
+                if (!form || !status || !wrap || !note) return;
+                const toggle = () => {
+                  const need = (status.value || "").toUpperCase() === "COMPLETED";
+                  wrap.style.display = need ? "block" : "none";
+                  note.required = need;
+                };
+                status.addEventListener("change", toggle);
+                form.addEventListener("submit", function (e) {
+                  if ((status.value || "").toUpperCase() === "COMPLETED" && !note.value.trim()) {
+                    e.preventDefault();
+                    note.focus();
+                  }
+                });
+                toggle();
+              })();
+            </script>
           {% else %}
             <div class="alert alert-info mb-0 py-2">
               You can edit status only if you are the owner or a super admin.
@@ -432,7 +482,7 @@
       </div>
 
       <!-- Ownership -->
-      <div class="card border-0 shadow-sm">
+      <div class="card border-0 shadow-sm hc-card">
         <div class="card-body">
           <div class="fw-semibold mb-1">Owner</div>
           <div class="text-muted small mb-3">
@@ -487,8 +537,9 @@
         </div>
       </div>
 
-      <div class="card border-0 shadow-sm mt-3">
+      <div class="card border-0 shadow-sm mt-3 hc-card">
         <div class="card-body">
+          {% set can_delete = (((req.status or '')|upper == 'CLOSED') and req.is_archived) %}
           <div class="fw-semibold mb-1">Delete (tombstone)</div>
           <div class="text-muted small mb-3">
             Deleted requests are hidden from lists. You can restore later (restored requests stay archived).
@@ -510,9 +561,13 @@
               {% endif %}
             </div>
           {% else %}
-            {% if not req.is_archived %}
+            {% if (req.status or '')|upper != 'CLOSED' %}
               <div class="alert alert-warning py-2 mb-3">
-                Archive this request first to enable Delete.
+                Set status to Clôturée (CLOSED) first to enable Delete.
+              </div>
+            {% elif not req.is_archived %}
+              <div class="alert alert-warning py-2 mb-3">
+                Archive flags are missing for this request. Use Archiver (Clôturer).
               </div>
             {% endif %}
 
@@ -526,7 +581,7 @@
                         class="btn btn-outline-danger btn-sm"
                         data-action="confirmSubmit"
                         data-confirm="Move to Deleted? You can restore it later."
-                        {% if not req.is_archived %}disabled{% endif %}>
+                        {% if not can_delete %}disabled{% endif %}>
                   Delete
                 </button>
               </form>
@@ -535,7 +590,35 @@
         </div>
       </div>
 
-      <div class="card border-0 shadow-sm mt-3">
+      <div class="card border-0 shadow-sm mt-3 hc-card">
+        <div class="card-body">
+          <h3>Now</h3>
+          <div class="hc-muted">Ce qui nécessite une action</div>
+
+          {% if not req.assigned_volunteer_id %}
+          <div class="hc-activity-item">
+            <p class="hc-activity-title">• Aucun bénévole assigné</p>
+            <div class="hc-activity-meta">Assigner un bénévole ou clôturer</div>
+          </div>
+          {% endif %}
+
+          {% if req.status == "IN_PROGRESS" %}
+          <div class="hc-activity-item">
+            <p class="hc-activity-title">• En cours</p>
+            <div class="hc-activity-meta">Mettre à jour le statut dès que possible</div>
+          </div>
+          {% endif %}
+
+          {% if req.status == "COMPLETED" %}
+          <div class="hc-activity-item">
+            <p class="hc-activity-title">• Terminé</p>
+            <div class="hc-activity-meta">Clôturer pour архив / delete (tombstone)</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mt-3 hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div class="fw-semibold">Internal note</div>
@@ -566,11 +649,11 @@
         </div>
       </div>
 
-    </div>
+    </aside>
   </div>
 
     <!-- Activity timeline -->
-  <div class="card border-0 shadow-sm mt-3">
+  <div class="card border-0 shadow-sm mt-3 hc-card">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between">
         <div class="fw-semibold">Activity</div>
