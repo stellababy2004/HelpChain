@@ -67,8 +67,8 @@
     {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
     {% set admin_logged_in = session.get('admin_logged_in') %}
     {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
-    <nav class="navbar hc-navbar navbar-expand-lg hc-navbar--glass">
-      <div class="container">
+    <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass">
+      <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
           <img src="{{ url_for('static', filename='icons/icon-32x32.png') }}" width="24" height="24" alt="" aria-hidden="true" />
@@ -118,7 +118,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link hc-nav-cta {{ 'active' if ep.startswith('main.submit_request') else '' }}" href="{{ url_for('main.submit_request') }}" data-hc-nav="submit" {% if ep.startswith('main.submit_request') %}aria-current="page"{% endif %}>
+              <a class="nav-link hc-nav-cta hc-cta {{ 'active' if ep.startswith('main.submit_request') else '' }}" href="{{ url_for('main.submit_request') }}" data-hc-nav="submit" {% if ep.startswith('main.submit_request') %}aria-current="page"{% endif %}>
                 <span class="hc-navicon" aria-hidden="true"><i class="fas fa-plus-circle" aria-hidden="true"></i></span>
                 <span class="hc-navlabel">{{ _('Submit a request') }}</span>
               </a>
@@ -153,7 +153,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link nav-utility position-relative" href="{{ url_for('main.volunteer_notifications') }}" title="{{ _('Notifications') }}">
+              <a class="nav-link nav-utility position-relative hc-iconbtn" href="{{ url_for('main.volunteer_notifications') }}" title="{{ _('Notifications') }}">
                 <i class="fas fa-bell" aria-hidden="true"></i>
                 {% set badge = unread_volunteer_notifs|default(VOLUNTEER_UNREAD_NOTIF_COUNT|default(0)) %}
                 {% if badge and badge > 0 %}
@@ -192,27 +192,30 @@
             {% endif %}
           </ul>
           <!-- Search + actions -->
-          <form class="d-flex align-items-center ms-3" role="search" method="get" action="/search">
-            <input
-              class="form-control form-control-sm me-2"
-              type="search"
-              name="q"
-              placeholder="{{ _('Search in HelpChain...') }}"
-              aria-label="{{ _('Search') }}"
-            />
-            <button class="btn btn-outline-secondary btn-sm nav-utility" type="submit" title="{{ _('Search') }}" aria-label="{{ _('Search') }}">
-              <i class="fas fa-search" aria-hidden="true"></i>
-              <span class="visually-hidden">{{ _('Search') }}</span>
-            </button>
+          <form class="hc-nav-search ms-2" action="{{ url_for('search') }}" method="get" role="search">
+            <div class="hc-nav-search__box">
+              <input
+                class="hc-nav-search__input"
+                type="search"
+                name="q"
+                value="{{ request.args.get('q','') if request else '' }}"
+                placeholder="Rechercher…"
+                aria-label="Search"
+                autocomplete="off"
+              />
+              <button class="hc-nav-search__btn hc-iconbtn" type="submit" aria-label="Search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </div>
           </form>
 
           <div class="d-flex align-items-center ms-2">
-            <button class="btn btn-link text-secondary nav-utility" type="button"
+            <button class="btn btn-link text-secondary nav-utility hc-iconbtn" type="button"
                     aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
               <i class="fas fa-moon" aria-hidden="true"></i>
             </button>
 
-            <a class="btn btn-link text-secondary nav-utility" href="{{ url_for('main.volunteer_notifications') }}"
+            <a class="btn btn-link text-secondary nav-utility hc-iconbtn" href="{{ url_for('main.volunteer_notifications') }}"
                aria-label="{{ _('Notifications') }}" title="{{ _('Notifications') }}">
               <i class="fas fa-bell" aria-hidden="true"></i>
             </a>
