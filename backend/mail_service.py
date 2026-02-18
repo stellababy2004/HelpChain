@@ -7,12 +7,16 @@ import logging
 import os
 import smtplib
 import time
-from datetime import UTC, datetime
+import hashlib
+from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
 
-from flask import current_app, render_template
+from flask import current_app, has_request_context, render_template, request
 from flask_mail import Message
+from sqlalchemy.exc import SQLAlchemyError
+
+from backend.helpchain_backend.src.models import EmailSendEvent, db
 
 try:
     from ..analytics_service import analytics_service
@@ -23,6 +27,76 @@ except ImportError:
     analytics_available = False
 
 logger = logging.getLogger(__name__)
+
+
+def _norm_email(raw: str) -> str:
+    return (raw or "").strip().lower()
+
+
+def _email_hash(email: str) -> str:
+    salt = current_app.config.get("MAIL_HASH_SALT") or current_app.config["SECRET_KEY"]
+    return hashlib.sha256((f"{salt}|{email}").encode("utf-8")).hexdigest()
+
+
+def _client_ip() -> str | None:
+    if not has_request_context():
+        return None
+    xff = (request.headers.get("X-Forwarded-For") or "").split(",")[0].strip()
+    return request.headers.get("CF-Connecting-IP") or xff or request.remote_addr
+
+
+def _client_ua() -> str | None:
+    if not has_request_context():
+        return None
+    return request.headers.get("User-Agent")
+
+
+def _log_email_event(email_h: str, purpose: str, outcome: str, reason: str | None):
+    try:
+        db.session.add(
+            EmailSendEvent(
+                email_hash=email_h,
+                purpose=(purpose or "generic")[:64],
+                outcome=(outcome or "failed")[:16],
+                reason=(reason or None),
+                ip=(_client_ip() or None),
+                ua=(_client_ua() or "")[:256],
+            )
+        )
+        db.session.commit()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logger.warning("EmailSendEvent logging failed: %s", e)
+    except Exception as e:
+        db.session.rollback()
+        logger.warning("EmailSendEvent logging unexpected error: %s", e)
+
+
+def _recent_sent(email_h: str, purpose: str, minutes: int) -> bool:
+    since = datetime.now(UTC) - timedelta(minutes=int(minutes))
+    row = (
+        EmailSendEvent.query.filter(
+            EmailSendEvent.email_hash == email_h,
+            EmailSendEvent.purpose == purpose,
+            EmailSendEvent.outcome == "sent",
+            EmailSendEvent.created_at >= since,
+        )
+        .order_by(EmailSendEvent.created_at.desc())
+        .first()
+    )
+    return row is not None
+
+
+def _count_sent(email_h: str, purpose: str, window_minutes: int) -> int:
+    since = datetime.now(UTC) - timedelta(minutes=int(window_minutes))
+    return int(
+        EmailSendEvent.query.filter(
+            EmailSendEvent.email_hash == email_h,
+            EmailSendEvent.purpose == purpose,
+            EmailSendEvent.outcome == "sent",
+            EmailSendEvent.created_at >= since,
+        ).count()
+    )
 
 def _fallback_email_html(subject: str, context: dict) -> str:
     # Minimal HTML fallback when template is missing or fails to render.
@@ -52,7 +126,7 @@ def utc_now() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-def send_notification_email(recipient, subject, template, context=None):
+def send_notification_email(recipient, subject, template, context=None, *, purpose="generic"):
     """
     Send notification email to recipient
 
@@ -66,8 +140,15 @@ def send_notification_email(recipient, subject, template, context=None):
         bool: True if queued successfully, False otherwise
     """
     try:
+        recipient = _norm_email(recipient)
         if not recipient:
             logger.warning("No recipient specified for email")
+            _log_email_event(
+                email_h=hashlib.sha256(b"empty").hexdigest(),
+                purpose=purpose,
+                outcome="suppressed",
+                reason="empty_email",
+            )
             return False
         # Some SMTP providers reject SMTPUTF8 recipients; fail fast with a clear log.
         try:
@@ -77,7 +158,35 @@ def send_notification_email(recipient, subject, template, context=None):
                 "Recipient email must be ASCII for this SMTP server (no SMTPUTF8): %r",
                 recipient,
             )
+            _log_email_event(
+                email_h=_email_hash(recipient),
+                purpose=purpose,
+                outcome="suppressed",
+                reason="non_ascii_email",
+            )
             return False
+
+        email_h = _email_hash(recipient)
+        dedupe_min = int(current_app.config.get("MAIL_DEDUPE_MINUTES", 10))
+        if _recent_sent(email_h, purpose, minutes=dedupe_min):
+            _log_email_event(
+                email_h=email_h,
+                purpose=purpose,
+                outcome="suppressed",
+                reason=f"dedupe_{dedupe_min}m",
+            )
+            return True
+
+        rl_window = int(current_app.config.get("MAIL_RL_WINDOW_MINUTES", 30))
+        rl_max = int(current_app.config.get("MAIL_RL_MAX_SENT", 3))
+        if _count_sent(email_h, purpose, window_minutes=rl_window) >= rl_max:
+            _log_email_event(
+                email_h=email_h,
+                purpose=purpose,
+                outcome="suppressed",
+                reason=f"per_email_rl_{rl_max}_per_{rl_window}m",
+            )
+            return True
 
         # Dev/test safety: allow mocking email delivery without touching SMTP.
         if os.environ.get("MAIL_MOCK", "").lower() in ("true", "1", "yes"):
@@ -86,6 +195,12 @@ def send_notification_email(recipient, subject, template, context=None):
                 recipient,
                 subject,
                 template,
+            )
+            _log_email_event(
+                email_h=email_h,
+                purpose=purpose,
+                outcome="sent",
+                reason="mail_mock",
             )
             return True
 
@@ -166,6 +281,12 @@ def send_notification_email(recipient, subject, template, context=None):
                     },
                 )
             logger.info("Email queued successfully | to=%s | subject=%s", recipient, subject)
+            _log_email_event(
+                email_h=email_h,
+                purpose=purpose,
+                outcome="sent",
+                reason="queued",
+            )
             return True
 
         # If broker is configured but queue failed, warn once and fall back to SMTP.
@@ -188,6 +309,12 @@ def send_notification_email(recipient, subject, template, context=None):
 
         if not (mail_server and mail_port and mail_user and mail_pass and mail_sender):
             logger.error("SMTP not configured (missing MAIL_* settings).")
+            _log_email_event(
+                email_h=email_h,
+                purpose=purpose,
+                outcome="failed",
+                reason="smtp_not_configured",
+            )
             return False
 
         msg = EmailMessage()
@@ -232,6 +359,12 @@ def send_notification_email(recipient, subject, template, context=None):
                     f.write("\n")
             except Exception:
                 pass
+            _log_email_event(
+                email_h=email_h,
+                purpose=purpose,
+                outcome="failed",
+                reason="smtp_error",
+            )
             return False
 
         # Track analytics for sent email
@@ -248,10 +381,21 @@ def send_notification_email(recipient, subject, template, context=None):
             )
 
         logger.info("Email sent successfully | to=%s | subject=%s", recipient, subject)
+        _log_email_event(email_h=email_h, purpose=purpose, outcome="sent", reason=None)
         return True
 
     except Exception as e:
         logger.error(f"Failed to queue email to {recipient}: {e}")
+        try:
+            if recipient:
+                _log_email_event(
+                    email_h=_email_hash(_norm_email(recipient)),
+                    purpose=purpose,
+                    outcome="failed",
+                    reason="unexpected_error",
+                )
+        except Exception:
+            pass
 
         # Track failed email queuing
         if analytics_available and analytics_service:

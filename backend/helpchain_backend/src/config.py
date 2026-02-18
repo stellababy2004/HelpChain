@@ -85,6 +85,10 @@ class Config:
     MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", "HelpChain")
     MAIL_REPLY_TO = os.getenv("MAIL_REPLY_TO", MAIL_DEFAULT_SENDER)
     PRO_LEADS_NOTIFY_TO = os.getenv("PRO_LEADS_NOTIFY_TO", "")
+    MAIL_DEDUPE_MINUTES = int(os.getenv("MAIL_DEDUPE_MINUTES", "10"))
+    MAIL_RL_WINDOW_MINUTES = int(os.getenv("MAIL_RL_WINDOW_MINUTES", "30"))
+    MAIL_RL_MAX_SENT = int(os.getenv("MAIL_RL_MAX_SENT", "3"))
+    MAIL_HASH_SALT = os.getenv("MAIL_HASH_SALT", "")
 
     # --- Optional / misc ---
     NGROK_AUTH_TOKEN = os.getenv("NGROK_AUTH_TOKEN")

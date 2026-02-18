@@ -32,6 +32,7 @@ from .magic_link_token import MagicLinkToken  # noqa: F401
 from .professional_lead import ProfessionalLead  # noqa: F401
 from .volunteer_request_state import VolunteerRequestState  # noqa: F401
 from .volunteer_match_feedback import VolunteerMatchFeedback  # noqa: F401
+from .email_send_event import EmailSendEvent  # noqa: F401
 
 __all__ = [
     "db",
@@ -53,4 +54,5 @@ __all__ = [
     "ProfessionalLead",
     "VolunteerRequestState",
     "VolunteerMatchFeedback",
+    "EmailSendEvent",
 ]

@@ -1188,7 +1188,11 @@ def become_volunteer():
                 )
                 current_app.logger.info("[VOL-MAGIC] sending to=%s", email)
                 send_ok = send_notification_email(
-                    email, subject, "emails/magic_link.html", context
+                    email,
+                    subject,
+                    "emails/magic_link.html",
+                    context,
+                    purpose="volunteer_magic_link",
                 )
                 current_app.logger.info(
                     "[MAGIC LINK VOL] token_id=%s email_send_ok=%s",
@@ -2403,7 +2407,13 @@ def submit_request_confirm():
                     "ignore_line": _("Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."),
                 }
 
-                send_notification_email(recipient, subject, "emails/magic_link.html", context)
+                send_notification_email(
+                    recipient,
+                    subject,
+                    "emails/magic_link.html",
+                    context,
+                    purpose="request_magic_link",
+                )
             elif recipient and suppress_magic_send:
                 current_app.logger.info("[MAGIC LINK] send suppressed (antibot/rate-limit)")
         except Exception as e:
