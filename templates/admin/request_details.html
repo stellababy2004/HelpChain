@@ -286,6 +286,16 @@
       <div class="d-flex align-items-center justify-content-between mb-2">
         <h5 class="card-title mb-0">Volunteer actions</h5>
       </div>
+      {% if volunteer_engagement %}
+        <ul class="hc-mini-list mb-3">
+          {% for e in volunteer_engagement %}
+            <li>
+              <strong>{{ e.display }}</strong>
+              — Engagement: {{ e.label }} (score {{ e.score }})
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
       {% if not latest_actions %}
         <div class="text-muted">No volunteer actions yet.</div>
       {% else %}
@@ -296,7 +306,7 @@
         <ul class="hc-mini-list">
           {% for a in latest_actions %}
             <li>
-              <strong>Volunteer</strong>
+              <strong>{% if a.volunteer_id %}Volunteer #{{ a.volunteer_id }}{% else %}Volunteer{% endif %}</strong>
               —
               {{ ACTION_LABELS.get(a.action, a.action) }}
               <span class="text-muted">· {{ a.created_at }}</span>

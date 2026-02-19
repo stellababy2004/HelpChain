@@ -103,6 +103,77 @@ def _now_utc():
     return datetime.now(UTC)
 
 
+def _engagement_label(score: int) -> str:
+    if score >= 5:
+        return "High"
+    if score >= 1:
+        return "Medium"
+    return "At risk"
+
+
+def get_volunteer_engagement_score(volunteer_id: int, now: datetime | None = None) -> dict:
+    """
+    Heuristic engagement score per volunteer in range [-10..+10].
+    """
+    now = now or datetime.utcnow()
+    cutoff_72h = now - timedelta(hours=72)
+
+    states = (
+        db.session.query(
+            VolunteerRequestState.notified_at,
+            VolunteerRequestState.seen_at,
+        )
+        .filter(VolunteerRequestState.volunteer_id == volunteer_id)
+        .filter(VolunteerRequestState.notified_at.isnot(None))
+        .all()
+    )
+
+    seen_within_24h = 0
+    not_seen_72h = 0
+    for notified_at, seen_at in states:
+        if notified_at is None:
+            continue
+        if seen_at is not None and seen_at <= (notified_at + timedelta(hours=24)):
+            seen_within_24h += 1
+        if seen_at is None and notified_at <= cutoff_72h:
+            not_seen_72h += 1
+
+    can_help = 0
+    cant_help = 0
+    if _table_has_column("request_activities", "volunteer_id"):
+        can_help = (
+            db.session.query(func.count(RequestActivity.id))
+            .filter(RequestActivity.volunteer_id == volunteer_id)
+            .filter(RequestActivity.action == "volunteer_can_help")
+            .scalar()
+            or 0
+        )
+        cant_help = (
+            db.session.query(func.count(RequestActivity.id))
+            .filter(RequestActivity.volunteer_id == volunteer_id)
+            .filter(RequestActivity.action == "volunteer_cant_help")
+            .scalar()
+            or 0
+        )
+
+    raw_score = (
+        2 * int(seen_within_24h)
+        + 3 * int(can_help)
+        - 1 * int(cant_help)
+        - 3 * int(not_seen_72h)
+    )
+    score = max(-10, min(10, int(raw_score)))
+    return {
+        "volunteer_id": int(volunteer_id),
+        "score": score,
+        "label": _engagement_label(score),
+        "seen_within_24h": int(seen_within_24h),
+        "not_seen_72h": int(not_seen_72h),
+        "can_help": int(can_help),
+        "cant_help": int(cant_help),
+    }
+
+
 def _notseen_hours_from_risk(risk: str) -> int | None:
     if risk == "notseen":
         return 24
@@ -2220,6 +2291,30 @@ def admin_request_details(req_id: int):
         .limit(10)
         .all()
     )
+    linked_volunteer_ids = [
+        int(v_id)
+        for (v_id,) in db.session.query(VolunteerRequestState.volunteer_id)
+        .filter(VolunteerRequestState.request_id == req_id)
+        .distinct()
+        .all()
+        if v_id is not None
+    ]
+    volunteer_engagement = []
+    if linked_volunteer_ids:
+        linked_volunteers = {
+            v.id: v for v in Volunteer.query.filter(Volunteer.id.in_(linked_volunteer_ids)).all()
+        }
+        for v_id in linked_volunteer_ids:
+            score_row = get_volunteer_engagement_score(v_id, now=now)
+            v = linked_volunteers.get(v_id)
+            display = (
+                (getattr(v, "name", None) or getattr(v, "email", None) or f"Volunteer #{v_id}")
+                if v is not None
+                else f"Volunteer #{v_id}"
+            )
+            score_row["display"] = display
+            volunteer_engagement.append(score_row)
+        volunteer_engagement.sort(key=lambda x: (-x["score"], x["volunteer_id"]))
 
     locked_by = None
     # --- AUTO-LOCK (must happen BEFORE any render_template return) ---
@@ -2281,6 +2376,7 @@ def admin_request_details(req_id: int):
                     is_stale=is_stale,
                     interests=interests,
                     latest_actions=latest_actions,
+                    volunteer_engagement=volunteer_engagement,
                     is_locked=True,
                     locked_by=locked_by,
                 ),
@@ -2384,6 +2480,7 @@ def admin_request_details(req_id: int):
             can_help_count=can_help_count,
             cant_help_count=cant_help_count,
             latest_actions=latest_actions,
+            volunteer_engagement=volunteer_engagement,
         ),
         200,
     )
