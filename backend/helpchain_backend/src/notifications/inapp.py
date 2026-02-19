@@ -77,6 +77,35 @@ def touch_request_state_seen(
         db.session.rollback()
 
 
+def mark_request_seen_for_volunteer(
+    request_id: int,
+    volunteer_id: int,
+    seen_at: datetime | None = None,
+    *,
+    commit: bool = True,
+) -> bool:
+    """
+    Idempotent canonical seen marker.
+    Updates VolunteerRequestState.seen_at only when a state row exists and seen_at is NULL.
+    """
+    if not request_id or not volunteer_id:
+        return False
+
+    row = VolunteerRequestState.query.filter_by(
+        request_id=request_id, volunteer_id=volunteer_id
+    ).first()
+    if not row:
+        return False
+
+    if getattr(row, "seen_at", None) is not None:
+        return False
+
+    row.seen_at = seen_at or datetime.utcnow()
+    if commit:
+        db.session.commit()
+    return True
+
+
 def ensure_new_match_notifications(volunteer_id: int, request_rows) -> int:
     """
     Create at most one in-app notification per (volunteer, request) for type 'new_match'.
@@ -165,13 +194,12 @@ def mark_notification_opened(notif_id: int, volunteer_id: int) -> tuple[str, int
         n.status = "READ"
         changed = True
 
-    if n.request_id:
-        touch_request_state_seen(
-            volunteer_id=volunteer_id,
-            request_id=n.request_id,
-            seen_at=ts,
-            commit=False,
-        )
+    if n.request_id and mark_request_seen_for_volunteer(
+        request_id=n.request_id,
+        volunteer_id=volunteer_id,
+        seen_at=ts,
+        commit=False,
+    ):
         changed = True
 
     if changed:

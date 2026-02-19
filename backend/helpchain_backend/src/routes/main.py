@@ -52,7 +52,7 @@ from ..models.volunteer_interest import VolunteerInterest
 from ..notifications.inapp import (
     ensure_new_match_notifications,
     mark_notification_opened,
-    touch_request_state_seen,
+    mark_request_seen_for_volunteer,
 )
 from ..security_logging import log_security_event
 from ..services.matching_v1 import get_matched_requests_v1
@@ -1742,19 +1742,23 @@ def volunteer_request_details(req_id: int):
 
     # Mark related match notification as read (if any)
     try:
-        Notification.query.filter_by(
+        notif_changed = (
+            Notification.query.filter_by(
             volunteer_id=volunteer.id,
             request_id=req.id,
             type="new_match",
             is_read=False,
         ).update({"is_read": True, "read_at": datetime.utcnow()})
-        touch_request_state_seen(
-            volunteer_id=volunteer.id,
+            > 0
+        )
+        state_changed = mark_request_seen_for_volunteer(
             request_id=req.id,
+            volunteer_id=volunteer.id,
             seen_at=utc_now(),
             commit=False,
         )
-        db.session.commit()
+        if notif_changed or state_changed:
+            db.session.commit()
     except Exception:
         db.session.rollback()
 
