@@ -81,6 +81,8 @@ def _log_status_change_once(
     actor_admin_id: int | None,
 ):
     """Add a single status_change activity only when there is a real change."""
+    if not _table_has_column("request_activities", "volunteer_id"):
+        return
     if (old_status or "") == (new_status or ""):
         return
     db.session.add(
@@ -344,6 +346,8 @@ def admin_required(view_func):
 
 def log_request_activity(req_obj, action, old=None, new=None, actor_admin_id=None):
     """Append a RequestActivity row; swallow errors so UI flows stay smooth."""
+    if not _table_has_column("request_activities", "volunteer_id"):
+        return
     try:
         actor_id = actor_admin_id
         if actor_id is None and getattr(current_user, "is_authenticated", False):
@@ -2327,20 +2331,28 @@ def admin_requests_export_xlsx_anonymized():
 @admin_required
 def admin_request_details(req_id: int):
     admin_required_404()
-    req = Request.query.options(
-        joinedload(Request.logs), joinedload(Request.activities)
-    ).get_or_404(req_id)
+    activities_supported = _table_has_column("request_activities", "volunteer_id")
+    if activities_supported:
+        req = Request.query.options(
+            joinedload(Request.logs), joinedload(Request.activities)
+        ).get_or_404(req_id)
+    else:
+        req = Request.query.options(joinedload(Request.logs)).get_or_404(req_id)
     admin_id = current_user.id
     now = _now_utc()
-    latest_actions = (
-        RequestActivity.query.filter_by(request_id=req_id)
-        .filter(
-            RequestActivity.action.in_(["volunteer_can_help", "volunteer_cant_help"])
+    latest_actions = []
+    if activities_supported:
+        latest_actions = (
+            RequestActivity.query.filter_by(request_id=req_id)
+            .filter(
+                RequestActivity.action.in_(
+                    ["volunteer_can_help", "volunteer_cant_help"]
+                )
+            )
+            .order_by(RequestActivity.created_at.desc())
+            .limit(10)
+            .all()
         )
-        .order_by(RequestActivity.created_at.desc())
-        .limit(10)
-        .all()
-    )
     linked_volunteer_ids = [
         int(v_id)
         for (v_id,) in db.session.query(VolunteerRequestState.volunteer_id)
@@ -2371,16 +2383,17 @@ def admin_request_details(req_id: int):
     if req.owner_id is None:
         req.owner_id = admin_id
         req.owned_at = now
-        db.session.add(
-            RequestActivity(
-                request_id=req.id,
-                actor_admin_id=admin_id,
-                action="lock",
-                old_value="",
-                new_value=str(admin_id),
-                created_at=now,
+        if activities_supported:
+            db.session.add(
+                RequestActivity(
+                    request_id=req.id,
+                    actor_admin_id=admin_id,
+                    action="lock",
+                    old_value="",
+                    new_value=str(admin_id),
+                    created_at=now,
+                )
             )
-        )
         db.session.commit()
     elif req.owner_id == admin_id:
         # refresh TTL quietly
@@ -2392,25 +2405,28 @@ def admin_request_details(req_id: int):
             old_owner = req.owner_id
             req.owner_id = admin_id
             req.owned_at = now
-            db.session.add(
-                RequestActivity(
-                    request_id=req.id,
-                    actor_admin_id=admin_id,
-                    action="lock",
-                    old_value=str(old_owner),
-                    new_value=str(admin_id),
-                    created_at=now,
+            if activities_supported:
+                db.session.add(
+                    RequestActivity(
+                        request_id=req.id,
+                        actor_admin_id=admin_id,
+                        action="lock",
+                        old_value=str(old_owner),
+                        new_value=str(admin_id),
+                        created_at=now,
+                    )
                 )
-            )
             db.session.commit()
         else:
             locked_by = req.owner_id
             # show locked screen (no commit)
-            activities = sorted(
-                (req.activities or []),
-                key=lambda a: a.created_at or datetime.min,
-                reverse=True,
-            )[:50]
+            activities = []
+            if activities_supported:
+                activities = sorted(
+                    (req.activities or []),
+                    key=lambda a: a.created_at or datetime.min,
+                    reverse=True,
+                )[:50]
             interests = (
                 VolunteerInterest.query.filter_by(request_id=req_id)
                 .order_by(VolunteerInterest.created_at.desc())
@@ -2434,11 +2450,13 @@ def admin_request_details(req_id: int):
             )
     is_locked = False
     logs = req.logs  # already sorted by relationship order_by
-    activities = sorted(
-        (req.activities or []),
-        key=lambda a: a.created_at or datetime.min,
-        reverse=True,
-    )[:50]
+    activities = []
+    if activities_supported:
+        activities = sorted(
+            (req.activities or []),
+            key=lambda a: a.created_at or datetime.min,
+            reverse=True,
+        )[:50]
     interests = (
         VolunteerInterest.query.filter_by(request_id=req_id)
         .order_by(VolunteerInterest.created_at.desc())
