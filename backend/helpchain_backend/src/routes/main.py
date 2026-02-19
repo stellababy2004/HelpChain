@@ -1380,46 +1380,6 @@ def volunteer_dashboard():
             }
         )
 
-    # V2.2.A — in-app notification: create once per (volunteer, request)
-    # Only for "fresh" matches (no interest yet).
-    candidate_requests = [
-        r
-        for r in matched_requests
-        if getattr(r, "id", None) and r.id not in my_interest_req_ids
-    ]
-    if candidate_requests:
-        matched_ids = [r.id for r in candidate_requests if getattr(r, "id", None)]
-
-        existing = set(
-            rid
-            for (rid,) in db.session.query(Notification.request_id)
-            .filter(
-                Notification.volunteer_id == volunteer.id,
-                Notification.type == "new_match",
-                Notification.request_id.in_(matched_ids),
-            )
-            .all()
-        )
-
-        new_notifs = []
-        for r in candidate_requests:
-            if r.id in existing:
-                continue
-            new_notifs.append(
-                Notification(
-                    volunteer_id=volunteer.id,
-                    type="new_match",
-                    request_id=r.id,
-                    title="New match",
-                    body=(r.title or "")[:200],
-                    is_read=False,
-                )
-            )
-
-        if new_notifs:
-            db.session.add_all(new_notifs)
-            db.session.commit()
-
     pending_ids = set(
         rid
         for (rid,) in db.session.query(VolunteerInterest.request_id)
