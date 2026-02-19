@@ -13,6 +13,7 @@ class VolunteerRequestState(db.Model):
     request_id = db.Column(
         db.Integer, db.ForeignKey("requests.id"), nullable=False, index=True
     )
+    notified_at = db.Column(db.DateTime, nullable=True, index=True)
     seen_at = db.Column(db.DateTime, nullable=True)
     dismissed_until = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
@@ -30,4 +31,3 @@ class VolunteerRequestState(db.Model):
             name="uq_volunteer_request_state",
         ),
     )
-
