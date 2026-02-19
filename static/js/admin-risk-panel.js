@@ -3,16 +3,26 @@
   const meta = document.getElementById("hcRiskMeta");
   const kStale = document.getElementById("kStale");
   const kUnassigned = document.getElementById("kUnassigned");
-  const kNotSeen = document.getElementById("kNotSeen");
+  const kNotSeen24 = document.getElementById("kNotSeen24");
+  const kNotSeen48 = document.getElementById("kNotSeen48");
+  const kNotSeen72 = document.getElementById("kNotSeen72");
   const kConv = document.getElementById("kConv");
 
   const kStaleSub = document.getElementById("kStaleSub");
   const kUnassignedSub = document.getElementById("kUnassignedSub");
-  const kNotSeenSub = document.getElementById("kNotSeenSub");
+  const kNotSeen24Sub = document.getElementById("kNotSeen24Sub");
+  const kNotSeen48Sub = document.getElementById("kNotSeen48Sub");
+  const kNotSeen72Sub = document.getElementById("kNotSeen72Sub");
   const kConvSub = document.getElementById("kConvSub");
-  const kNotSeenWarn = document.getElementById("kNotSeenWarn");
-  const kNotSeenIcon = document.getElementById("kNotSeenIcon");
-  const cardNotSeen = document.getElementById("cardNotSeen");
+  const kNotSeen24Warn = document.getElementById("kNotSeen24Warn");
+  const kNotSeen48Warn = document.getElementById("kNotSeen48Warn");
+  const kNotSeen72Warn = document.getElementById("kNotSeen72Warn");
+  const kNotSeen24Icon = document.getElementById("kNotSeen24Icon");
+  const kNotSeen48Icon = document.getElementById("kNotSeen48Icon");
+  const kNotSeen72Icon = document.getElementById("kNotSeen72Icon");
+  const cardNotSeen24 = document.getElementById("cardNotSeen24");
+  const cardNotSeen48 = document.getElementById("cardNotSeen48");
+  const cardNotSeen72 = document.getElementById("cardNotSeen72");
   const topList = document.getElementById("riskTopList");
 
   async function load() {
@@ -92,7 +102,9 @@
   function render(d) {
     kStale.textContent = fmt(d.stale_count);
     kUnassigned.textContent = fmt(d.unassigned_count);
-    kNotSeen.textContent = fmt(d.notified_not_seen);
+    kNotSeen24.textContent = fmt(d.notseen24 ?? d.notified_not_seen);
+    kNotSeen48.textContent = fmt(d.notseen48);
+    kNotSeen72.textContent = fmt(d.notseen72);
 
     const conv =
       d.conversion_pct === null || d.conversion_pct === undefined
@@ -102,21 +114,25 @@
 
     kStaleSub.textContent = `> ${d.stale_days} days, not closed`;
     kUnassignedSub.textContent = `> ${d.unassigned_days} days, unassigned`;
-    if (kNotSeenSub) kNotSeenSub.textContent = "Volunteer attention risk";
+    if (kNotSeen24Sub) kNotSeen24Sub.textContent = "Volunteer attention risk";
+    if (kNotSeen48Sub) kNotSeen48Sub.textContent = "Elevated attention risk";
+    if (kNotSeen72Sub) kNotSeen72Sub.textContent = "Critical attention risk";
     kConvSub.textContent = `Last ${d.window_days} days - ${d.assigned_7d} assigned / ${d.can_help_7d} CAN_HELP`;
     const isFallback = Boolean(d.notified_source && d.notified_source !== "notified_at");
     renderMeta(d.generated_at, isFallback);
 
-    const notSeenCount = Number(d.notified_not_seen || 0);
-    if (cardNotSeen) {
-      cardNotSeen.classList.toggle("hc-riskcard--alert", notSeenCount > 0);
-    }
-    if (kNotSeenWarn) {
-      kNotSeenWarn.hidden = !(notSeenCount > 0);
-    }
-    if (kNotSeenIcon) {
-      kNotSeenIcon.hidden = !(notSeenCount > 0);
-    }
+    const notSeen24 = Number(d.notseen24 ?? d.notified_not_seen ?? 0);
+    const notSeen48 = Number(d.notseen48 || 0);
+    const notSeen72 = Number(d.notseen72 || 0);
+    if (cardNotSeen24) cardNotSeen24.classList.toggle("hc-riskcard--alert", notSeen24 > 0);
+    if (cardNotSeen48) cardNotSeen48.classList.toggle("hc-riskcard--alert", notSeen48 > 0);
+    if (cardNotSeen72) cardNotSeen72.classList.toggle("hc-riskcard--alert", notSeen72 > 0);
+    if (kNotSeen24Warn) kNotSeen24Warn.hidden = !(notSeen24 > 0);
+    if (kNotSeen48Warn) kNotSeen48Warn.hidden = !(notSeen48 > 0);
+    if (kNotSeen72Warn) kNotSeen72Warn.hidden = !(notSeen72 > 0);
+    if (kNotSeen24Icon) kNotSeen24Icon.hidden = !(notSeen24 > 0);
+    if (kNotSeen48Icon) kNotSeen48Icon.hidden = !(notSeen48 > 0);
+    if (kNotSeen72Icon) kNotSeen72Icon.hidden = !(notSeen72 > 0);
     renderTopRisky(d.top_risky || []);
   }
 

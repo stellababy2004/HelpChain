@@ -53,6 +53,7 @@ from ..security_logging import log_security_event
 
 INVALID_CREDENTIALS_MSG = "Invalid credentials."
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
+NOTSEEN_TIERS_HOURS = (24, 48, 72)
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
 
 
@@ -100,6 +101,43 @@ def _is_request_locked(req) -> bool:
 
 def _now_utc():
     return datetime.now(UTC)
+
+
+def _notseen_hours_from_risk(risk: str) -> int | None:
+    if risk == "notseen":
+        return 24
+    if not risk.startswith("notseen"):
+        return None
+    suffix = risk[len("notseen") :]
+    if not suffix.isdigit():
+        return None
+    hours = int(suffix)
+    if hours in NOTSEEN_TIERS_HOURS:
+        return hours
+    return None
+
+
+def _build_notseen_subquery(now: datetime, *, hours: int):
+    cutoff = now - timedelta(hours=hours)
+    has_vrs_notified_at = _table_has_column("volunteer_request_states", "notified_at")
+    if has_vrs_notified_at:
+        subq = (
+            db.session.query(VolunteerRequestState.request_id)
+            .filter(VolunteerRequestState.notified_at.isnot(None))
+            .filter(VolunteerRequestState.notified_at < cutoff)
+            .filter(VolunteerRequestState.seen_at.is_(None))
+            .subquery()
+        )
+        source = "notified_at"
+    else:
+        subq = (
+            db.session.query(Notification.request_id)
+            .filter(Notification.type == "new_match")
+            .filter(Notification.created_at < cutoff)
+            .subquery()
+        )
+        source = "notification_created_at_fallback"
+    return subq, source
 
 
 def _admin_id():
@@ -1006,7 +1044,6 @@ def admin_risk_kpis():
     stale_cutoff = now - timedelta(days=stale_days)
     unassigned_cutoff = now - timedelta(days=unassigned_days)
     window_cutoff = now - timedelta(days=window_days)
-    cutoff = now - timedelta(hours=24)
     has_vrs_notified_at = _table_has_column("volunteer_request_states", "notified_at")
     open_filter = or_(
         Request.status.is_(None), ~Request.status.in_(list(CLOSED_STATUSES))
@@ -1027,27 +1064,35 @@ def admin_risk_kpis():
         .scalar()
     )
 
-    if has_vrs_notified_at:
-        notified_not_seen = (
-            db.session.query(func.count(VolunteerRequestState.id))
-            .join(Request, Request.id == VolunteerRequestState.request_id)
-            .filter(VolunteerRequestState.notified_at.isnot(None))
-            .filter(VolunteerRequestState.notified_at < cutoff)
-            .filter(VolunteerRequestState.seen_at.is_(None))
-            .filter(open_filter)
-            .scalar()
-        )
-        notified_source = "notified_at"
-    else:
-        notified_not_seen = (
-            db.session.query(func.count(Notification.id))
-            .join(Request, Request.id == Notification.request_id)
-            .filter(Notification.type == "new_match")
-            .filter(Notification.created_at < cutoff)
-            .filter(open_filter)
-            .scalar()
-        )
-        notified_source = "notification_created_at_fallback"
+    def count_notseen(hours: int) -> tuple[int, str]:
+        cutoff = now - timedelta(hours=hours)
+        if has_vrs_notified_at:
+            cnt = (
+                db.session.query(func.count(VolunteerRequestState.id))
+                .join(Request, Request.id == VolunteerRequestState.request_id)
+                .filter(VolunteerRequestState.notified_at.isnot(None))
+                .filter(VolunteerRequestState.notified_at < cutoff)
+                .filter(VolunteerRequestState.seen_at.is_(None))
+                .filter(open_filter)
+                .scalar()
+            )
+            source = "notified_at"
+        else:
+            cnt = (
+                db.session.query(func.count(Notification.id))
+                .join(Request, Request.id == Notification.request_id)
+                .filter(Notification.type == "new_match")
+                .filter(Notification.created_at < cutoff)
+                .filter(open_filter)
+                .scalar()
+            )
+            source = "notification_created_at_fallback"
+        return int(cnt or 0), source
+
+    notseen24, notified_source = count_notseen(24)
+    notseen48, _ = count_notseen(48)
+    notseen72, _ = count_notseen(72)
+    notified_not_seen = notseen24
 
     can_help_7d = (
         db.session.query(func.count(VolunteerAction.id))
@@ -1070,6 +1115,7 @@ def admin_risk_kpis():
     not_seen_by_request = {}
     try:
         if has_vrs_notified_at:
+            cutoff = now - timedelta(hours=24)
             not_seen_rows = (
                 db.session.query(
                     VolunteerRequestState.request_id, func.count(VolunteerRequestState.id)
@@ -1083,6 +1129,7 @@ def admin_risk_kpis():
                 .all()
             )
         else:
+            cutoff = now - timedelta(hours=24)
             not_seen_rows = (
                 db.session.query(Notification.request_id, func.count(Notification.id))
                 .join(Request, Request.id == Notification.request_id)
@@ -1151,6 +1198,9 @@ def admin_risk_kpis():
             "stale_count": int(stale_count or 0),
             "unassigned_count": int(unassigned_count or 0),
             "notified_not_seen": int(notified_not_seen or 0),
+            "notseen24": int(notseen24 or 0),
+            "notseen48": int(notseen48 or 0),
+            "notseen72": int(notseen72 or 0),
             "can_help_7d": int(can_help_7d or 0),
             "assigned_7d": int(assigned_7d or 0),
             "conversion_pct": conversion,
@@ -1878,7 +1928,8 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
     open_filter = or_(
         Request.status.is_(None), ~func.lower(Request.status).in_(closed_statuses)
     )
-    if risk not in {"stale", "unassigned", "notseen", "assigned_recent"}:
+    notseen_hours = _notseen_hours_from_risk(risk)
+    if risk not in {"stale", "unassigned", "assigned_recent"} and notseen_hours is None:
         return base_query
 
     if risk == "stale":
@@ -1895,26 +1946,8 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
             Request.created_at >= (now - timedelta(days=7)),
             Request.assigned_volunteer_id.isnot(None),
         )
-    elif risk == "notseen":
-        not_seen_cutoff = now - timedelta(hours=24)
-        has_vrs_notified_at = _table_has_column(
-            "volunteer_request_states", "notified_at"
-        )
-        if has_vrs_notified_at:
-            notseen_subq = (
-                db.session.query(VolunteerRequestState.request_id)
-                .filter(VolunteerRequestState.notified_at.isnot(None))
-                .filter(VolunteerRequestState.notified_at < not_seen_cutoff)
-                .filter(VolunteerRequestState.seen_at.is_(None))
-                .subquery()
-            )
-        else:
-            notseen_subq = (
-                db.session.query(Notification.request_id)
-                .filter(Notification.type == "new_match")
-                .filter(Notification.created_at < not_seen_cutoff)
-                .subquery()
-            )
+    elif notseen_hours is not None:
+        notseen_subq, _source = _build_notseen_subquery(now, hours=notseen_hours)
         base_query = base_query.filter(Request.id.in_(notseen_subq))
         base_query = base_query.filter(open_filter)
     return base_query
