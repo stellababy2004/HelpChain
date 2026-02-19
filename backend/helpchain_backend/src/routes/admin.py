@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import secrets
 import time
 from datetime import UTC, datetime, timedelta, timezone
@@ -1230,6 +1231,15 @@ def admin_api_dashboard():
 SLA_HOURS_DEFAULT = 12
 
 
+def _pctl(values, p: float = 0.9) -> float | None:
+    vals = [float(v) for v in values if v is not None]
+    if not vals:
+        return None
+    vals.sort()
+    idx = max(0, min(len(vals) - 1, math.ceil(p * len(vals)) - 1))
+    return float(vals[idx])
+
+
 def _sla_kpis(
     sla_hours: int = SLA_HOURS_DEFAULT,
     scope: str = "all_notified",
@@ -1300,6 +1310,30 @@ def _sla_kpis(
     under_count = int(under_count or 0)
     total_count = int(total_count or 0)
     sla_pct = round((under_count * 100.0 / total_count), 1) if total_count else 0.0
+    p90_window_days = 7
+    cutoff = now - timedelta(days=p90_window_days)
+    seen_secs = [
+        int(sec)
+        for (sec,) in (
+            db.session.query(seen_delta)
+            .filter(base_states.c.seen_at.isnot(None))
+            .filter(base_states.c.notified_at >= cutoff)
+            .filter(seen_delta >= 0)
+            .all()
+        )
+        if sec is not None
+    ]
+    action_secs = [
+        int(sec)
+        for (sec,) in (
+            db.session.query(action_delta)
+            .filter(first_action_subq.c.notified_at >= cutoff)
+            .filter(first_action_subq.c.first_action_at >= cutoff)
+            .filter(action_delta >= 0)
+            .all()
+        )
+        if sec is not None
+    ]
 
     return {
         "avg_first_seen_seconds": (
@@ -1312,6 +1346,9 @@ def _sla_kpis(
         "sla_hours": int(sla_hours),
         "sla_samples": total_count,
         "sla_scope": scope,
+        "p90_first_seen_seconds_7d": _pctl(seen_secs, 0.9),
+        "p90_first_action_seconds_7d": _pctl(action_secs, 0.9),
+        "p90_window_days": p90_window_days,
     }
 
 
@@ -1491,9 +1528,11 @@ def admin_risk_kpis():
         "top_risky": top_risky,
         "generated_at": now.isoformat(timespec="seconds"),
     }
-    payload.update(
-        _sla_kpis(sla_hours=SLA_HOURS_DEFAULT, scope="all_notified", now=now)
-    )
+    requested_sla = request.args.get("sla", type=int)
+    default_sla = int(current_app.config.get("SLA_HOURS_DEFAULT", SLA_HOURS_DEFAULT))
+    sla_hours = requested_sla if requested_sla is not None else default_sla
+    sla_hours = max(1, min(int(sla_hours), 168))
+    payload.update(_sla_kpis(sla_hours=sla_hours, scope="all_notified", now=now))
     return jsonify(payload)
 
 
