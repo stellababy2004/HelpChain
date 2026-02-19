@@ -33,7 +33,7 @@ from sqlalchemy import desc, func, or_
 from werkzeug.security import check_password_hash
 from markupsafe import Markup, escape
 
-from ..authz import can_view_notification, can_view_request
+from ..authz import can_view_request
 from ..category_data import ALIASES, CATEGORIES, COMMON
 from ..extensions import csrf, limiter
 from ..models import (
@@ -49,7 +49,11 @@ from ..models import (
 )
 from ..models.magic_link_token import MagicLinkToken
 from ..models.volunteer_interest import VolunteerInterest
-from ..notifications.inapp import ensure_new_match_notifications, touch_request_state_seen
+from ..notifications.inapp import (
+    ensure_new_match_notifications,
+    mark_notification_opened,
+    touch_request_state_seen,
+)
 from ..security_logging import log_security_event
 from ..services.matching_v1 import get_matched_requests_v1
 from ..services.matching_v1 import dismiss_for as match_dismiss_for
@@ -1976,40 +1980,22 @@ def volunteer_notification_open(notif_id: int):
     if not volunteer:
         return redirect(url_for("main.become_volunteer", next=request.path))
 
-    n = Notification.query.get_or_404(notif_id)
-
-    if not can_view_notification(volunteer, n):
+    try:
+        target_url, request_id = mark_notification_opened(notif_id, volunteer.id)
+    except LookupError:
         abort(404)
-
-    changed = False
-    if not n.is_read:
-        n.is_read = True
-        n.read_at = utc_now()
-        changed = True
-    if hasattr(n, "status") and getattr(n, "status", None) == "UNREAD":
-        n.status = "READ"
-        changed = True
-    if changed:
-        db.session.commit()
-
-    if n.request_id:
-        touch_request_state_seen(
-            volunteer_id=volunteer.id,
-            request_id=n.request_id,
-            seen_at=utc_now(),
-            commit=True,
-        )
-        _emit_event(
-            "volunteer_notification_open",
-            {"volunteer_id": volunteer.id, "notification_id": n.id, "request_id": n.request_id},
-        )
-        return redirect(url_for("main.volunteer_request_details", req_id=n.request_id))
+    except RuntimeError:
+        abort(500)
 
     _emit_event(
         "volunteer_notification_open",
-        {"volunteer_id": volunteer.id, "notification_id": n.id, "request_id": None},
+        {
+            "volunteer_id": volunteer.id,
+            "notification_id": notif_id,
+            "request_id": request_id,
+        },
     )
-    return redirect(url_for("main.volunteer_notifications"))
+    return redirect(target_url)
 
 
 @main_bp.route("/volunteer/profile", methods=["GET", "POST"])
