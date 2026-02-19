@@ -40,7 +40,13 @@
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <a class="hc-riskcard hc-riskcard--yellow hc-riskcard--link" id="cardNotSeen" href="{{ url_for('admin.admin_requests', risk='notseen') }}">
+      <a
+        class="hc-riskcard hc-riskcard--yellow hc-riskcard--link"
+        id="cardNotSeen"
+        href="{{ url_for('admin.admin_requests', risk='notseen') }}"
+        title="View queue"
+        aria-label="Not seen queue - view filtered requests"
+      >
         <div class="hc-riskcard__label"><span id="kNotSeenIcon" class="hc-riskcard__icon" hidden>⚠️</span>Not seen (24h+)</div>
         <div class="hc-riskcard__value" id="kNotSeen">-</div>
         <div class="hc-riskcard__sub" id="kNotSeenSub">Volunteer attention risk</div>
