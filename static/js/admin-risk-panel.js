@@ -24,15 +24,35 @@
   const cardNotSeen48 = document.getElementById("cardNotSeen48");
   const cardNotSeen72 = document.getElementById("cardNotSeen72");
   const topList = document.getElementById("riskTopList");
+  const slaHours = document.getElementById("hcSlaHours");
 
   async function load() {
-    const res = await fetch("/admin/api/risk-kpis", { credentials: "same-origin" });
+    const params = new URLSearchParams(window.location.search || "");
+    const sla = params.get("sla");
+    const apiUrl = new URL("/admin/api/risk-kpis", window.location.origin);
+    if (sla) apiUrl.searchParams.set("sla", sla);
+    const res = await fetch(apiUrl.toString(), { credentials: "same-origin" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     return res.json();
   }
 
   function fmt(v) {
     return v === null || v === undefined ? "-" : String(v);
+  }
+
+  function fmtDuration(sec) {
+    if (sec === null || sec === undefined || Number.isNaN(Number(sec))) return "—";
+    const s = Math.max(0, Math.round(Number(sec)));
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    if (h <= 0) return `${m}m`;
+    return `${h}h ${m}m`;
+  }
+
+  function setText(selector, value) {
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.textContent = value;
   }
 
   function renderMeta(updatedAt, isFallback) {
@@ -100,6 +120,20 @@
   }
 
   function render(d) {
+    if (slaHours) slaHours.textContent = fmt(d.sla_hours ?? 12);
+    setText('[data-kpi="sla_hours"]', fmt(d.sla_hours ?? 12));
+    setText('[data-kpi="sla_scope"]', String(d.sla_scope || "all_notified").toUpperCase());
+    setText('[data-kpi="avg_first_seen"]', fmtDuration(d.avg_first_seen_seconds));
+    setText('[data-kpi="avg_first_action"]', fmtDuration(d.avg_first_action_seconds));
+    setText('[data-kpi="sla_under"]', Number(d.sla_under_12h_percent ?? 0).toFixed(1));
+    setText('[data-kpi="sla_samples"]', fmt(d.sla_samples ?? 0));
+    const sampleCount = Number(d.sla_samples ?? 0);
+    if (sampleCount > 0) {
+      setText('[data-kpi="sla_hint"]', `Based on ${sampleCount} notified matches with an action.`);
+    } else {
+      setText('[data-kpi="sla_hint"]', "No SLA samples yet. We'll start measuring once volunteers receive notifications and respond.");
+    }
+
     kStale.textContent = fmt(d.stale_count);
     kUnassigned.textContent = fmt(d.unassigned_count);
     kNotSeen24.textContent = fmt(d.notseen24 ?? d.notified_not_seen);

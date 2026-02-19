@@ -310,6 +310,35 @@ tr.hc-row-actionable[data-priority="URGENT"] td:first-child::before{
   border-bottom: 1px solid rgba(15,23,42,.10);
 }
 
+.hc-perf-kpi-row{
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hc-perf-kpi{
+  min-width: 180px;
+  border-radius: 12px;
+  border: 1px solid rgba(20,40,80,.10);
+  background: rgba(245,248,255,.7);
+  padding: 12px;
+}
+
+.hc-perf-kpi__label{
+  opacity: .75;
+  font-size: .85rem;
+}
+
+.hc-perf-kpi__value{
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.hc-perf-hint{
+  opacity: .75;
+  font-size: .85rem;
+}
+
 .hc-td-request{ overflow:hidden; }
 .hc-req__title{
   font-weight: 650;

@@ -12,6 +12,7 @@
       <div>
         <div class="hc-kicker">Operational Intelligence</div>
         <h1 class="h5 mb-0">Risk Panel</h1>
+        <div class="hc-muted">Response Performance (<span id="hcSlaHours">12</span>h SLA)</div>
       </div>
       <div class="hc-risk-meta" id="hcRiskMeta">
         <span class="text-muted">Updated: --</span>
@@ -78,6 +79,30 @@
         <div class="hc-riskcard__value" id="kConv">-</div>
         <div class="hc-riskcard__sub" id="kConvSub">Last 7 days</div>
       </a>
+    </div>
+  </div>
+
+  <div class="hc-card mt-3" id="hcPerfCard">
+    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+      <h2 class="h6 mb-0">Response Performance (<span data-kpi="sla_hours">12</span>h SLA)</h2>
+      <span class="hc-badge hc-badge--neutral" data-kpi="sla_scope">ALL_NOTIFIED</span>
+    </div>
+    <div class="hc-perf-kpi-row mt-3">
+      <div class="hc-perf-kpi">
+        <div class="hc-perf-kpi__label">Avg first seen</div>
+        <div class="hc-perf-kpi__value" data-kpi="avg_first_seen">—</div>
+      </div>
+      <div class="hc-perf-kpi">
+        <div class="hc-perf-kpi__label">Avg first action</div>
+        <div class="hc-perf-kpi__value" data-kpi="avg_first_action">—</div>
+      </div>
+      <div class="hc-perf-kpi">
+        <div class="hc-perf-kpi__label">SLA compliance</div>
+        <div class="hc-perf-kpi__value"><span data-kpi="sla_under">—</span>%</div>
+      </div>
+    </div>
+    <div class="hc-perf-hint mt-2" data-kpi="sla_hint">
+      Based on <span data-kpi="sla_samples">0</span> notified matches with an action.
     </div>
   </div>
 
