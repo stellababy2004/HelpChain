@@ -5757,10 +5757,8 @@ body.hc-page-home{
   --hc-shadow2: 0 12px 30px rgba(0,0,0,.35);
   --hc-radius: 18px;
   background:
-    radial-gradient(900px 520px at 50% -120px, rgba(56,189,248,.22), transparent 60%),
-    radial-gradient(780px 540px at 20% 10%, rgba(168,85,247,.18), transparent 55%),
-    radial-gradient(680px 520px at 80% 30%, rgba(34,197,94,.12), transparent 55%),
-    linear-gradient(180deg, var(--hc-bg), var(--hc-bg2));
+    radial-gradient(900px 520px at 50% -180px, rgba(56,189,248,.10), transparent 62%),
+    linear-gradient(180deg, #0f172a, #0b1220);
   color: var(--hc-text);
 }
 
