@@ -202,6 +202,7 @@
           </td>
           <td>
             {% set sig = last_signal_by_req.get(r.id) %}
+            {% set eng = engagement_by_request.get(r.id) %}
             {% if sig %}
               {% if sig.action == "CAN_HELP" %}
                 <span class="badge text-bg-success">✅ {{ _("Can help") }}</span>
@@ -234,6 +235,14 @@
             {% else %}
               <span class="text-muted small">—</span>
             {% endif %}
+            <div class="text-muted small mt-1">
+              Engagement:
+              {% if eng %}
+                {{ eng.label }} (score {{ eng.score }})
+              {% else %}
+                —
+              {% endif %}
+            </div>
           </td>
           <td class="text-end">
             <a class="btn btn-sm btn-outline-light" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>

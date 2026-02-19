@@ -1946,6 +1946,7 @@ def admin_requests():
     # Volunteer signals counts per request
     action_counts = {}
     last_signal_by_req = {}
+    engagement_by_request = {}
     if requests:
         req_ids = [r.id for r in requests]
         rows = (
@@ -1977,6 +1978,23 @@ def admin_requests():
             if a.request_id not in last_signal_by_req:
                 last_signal_by_req[a.request_id] = a
 
+        assigned_volunteer_ids = sorted(
+            {
+                int(r.assigned_volunteer_id)
+                for r in requests
+                if getattr(r, "assigned_volunteer_id", None)
+            }
+        )
+        engagement_by_volunteer = {}
+        for volunteer_id in assigned_volunteer_ids:
+            engagement_by_volunteer[volunteer_id] = get_volunteer_engagement_score(
+                volunteer_id, now=now_naive
+            )
+        engagement_by_request = {
+            r.id: engagement_by_volunteer.get(getattr(r, "assigned_volunteer_id", None))
+            for r in requests
+        }
+
     return render_template(
         "admin/requests.html",
         STATUS_LABELS_BG=STATUS_LABELS_BG,
@@ -1992,6 +2010,7 @@ def admin_requests():
         SLA_STALE_DAYS=SLA_STALE_DAYS,
         volunteer_action_counts=action_counts,
         last_signal_by_req=last_signal_by_req,
+        engagement_by_request=engagement_by_request,
         risk_notseen_tier_hours=risk_notseen_tier_hours,
     )
 
