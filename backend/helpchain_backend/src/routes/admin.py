@@ -49,6 +49,7 @@ from ..models import (
     VolunteerRequestState,
     utc_now,
 )
+from ..notifications.inapp import send_nudge_notification
 from ..security_logging import log_security_event
 
 INVALID_CREDENTIALS_MSG = "Invalid credentials."
@@ -2830,6 +2831,31 @@ def admin_unassign_volunteer(req_id: int):
     db.session.commit()
     flash("Volunteer unassigned.", "info")
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+
+@admin_bp.post("/requests/<int:req_id>/nudge", endpoint="admin_request_nudge")
+@login_required
+def admin_request_nudge(req_id: int):
+    admin_required_404()
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    volunteer_id = getattr(req, "assigned_volunteer_id", None)
+    if not volunteer_id:
+        flash("No assigned volunteer to nudge.", "warning")
+        return redirect(request.referrer or url_for("admin.admin_requests"))
+
+    created = send_nudge_notification(
+        request_id=req.id,
+        volunteer_id=int(volunteer_id),
+        actor_admin_id=getattr(current_user, "id", None),
+    )
+    if created:
+        flash("Nudge sent.", "success")
+    else:
+        flash("Nudge suppressed (recently sent).", "info")
+    return redirect(request.referrer or url_for("admin.admin_requests"))
 
 
 @admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")

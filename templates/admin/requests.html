@@ -245,6 +245,16 @@
             </div>
           </td>
           <td class="text-end">
+            {% if r.assigned_volunteer_id %}
+              <form method="post" action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        class="btn btn-sm btn-outline-primary me-1"
+                        title="Send in-app reminder to assigned volunteer">
+                  Nudge
+                </button>
+              </form>
+            {% endif %}
             <a class="btn btn-sm btn-outline-light" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
           </td>
         </tr>

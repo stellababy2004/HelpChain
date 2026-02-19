@@ -1,10 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import url_for
 
 from backend.extensions import db
-from backend.models import Notification
+from backend.models import Notification, RequestActivity
 from backend.helpchain_backend.src.models import VolunteerRequestState
+
+
+NUDGE_COOLDOWN_HOURS = 6
 
 
 def touch_request_state_notified(
@@ -208,3 +211,68 @@ def mark_notification_opened(notif_id: int, volunteer_id: int) -> tuple[str, int
     if n.request_id:
         return url_for("main.volunteer_request_details", req_id=n.request_id), n.request_id
     return url_for("main.volunteer_notifications"), None
+
+
+def send_nudge_notification(
+    request_id: int,
+    volunteer_id: int,
+    *,
+    actor_admin_id: int | None = None,
+    now: datetime | None = None,
+) -> bool:
+    """
+    Send an admin nudge in-app notification with cooldown.
+    Returns True when sent, False when suppressed by cooldown.
+    """
+    if not request_id or not volunteer_id:
+        return False
+
+    now = now or datetime.utcnow()
+    cutoff = now - timedelta(hours=NUDGE_COOLDOWN_HOURS)
+
+    existing = (
+        Notification.query.filter(Notification.volunteer_id == volunteer_id)
+        .filter(Notification.request_id == request_id)
+        .filter(Notification.type == "admin_nudge")
+        .order_by(Notification.created_at.desc())
+        .first()
+    )
+    if existing and existing.created_at and existing.created_at >= cutoff:
+        return False
+
+    if existing:
+        # Reuse row due unique (volunteer_id, type, request_id) constraint.
+        existing.title = "Reminder: please check this request"
+        existing.body = "An admin asked you to review this request and respond when you can."
+        existing.created_at = now
+        existing.is_read = False
+        existing.read_at = None
+    else:
+        db.session.add(
+            Notification(
+                volunteer_id=volunteer_id,
+                request_id=request_id,
+                type="admin_nudge",
+                title="Reminder: please check this request",
+                body="An admin asked you to review this request and respond when you can.",
+                is_read=False,
+                read_at=None,
+                created_at=now,
+            )
+        )
+
+    try:
+        db.session.add(
+            RequestActivity(
+                request_id=request_id,
+                actor_admin_id=actor_admin_id,
+                volunteer_id=volunteer_id,
+                action="admin_nudge_sent",
+                created_at=now,
+            )
+        )
+    except Exception:
+        pass
+
+    db.session.commit()
+    return True
