@@ -46,11 +46,30 @@ from ..models import (
     Volunteer,
     VolunteerAction,
     VolunteerInterest,
+    VolunteerRequestState,
     utc_now,
 )
 from ..security_logging import log_security_event
 
 INVALID_CREDENTIALS_MSG = "Invalid credentials."
+CLOSED_STATUSES = {"done", "cancelled", "rejected"}
+_SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
+
+
+def _table_has_column(table_name: str, column_name: str) -> bool:
+    key = (table_name, column_name)
+    cached = _SCHEMA_COLUMN_CACHE.get(key)
+    if cached is not None:
+        return cached
+    try:
+        inspector = sa_inspect(db.session.get_bind())
+        exists = any(
+            col.get("name") == column_name for col in inspector.get_columns(table_name)
+        )
+    except Exception:
+        exists = False
+    _SCHEMA_COLUMN_CACHE[key] = exists
+    return exists
 
 
 def _log_status_change_once(
@@ -112,7 +131,7 @@ def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
     )
 
 
-from sqlalchemy import func
+from sqlalchemy import func, inspect as sa_inspect, or_
 from sqlalchemy.orm import joinedload
 
 from backend.helpchain_backend.src.utils.mfa import (
@@ -973,6 +992,174 @@ def admin_api_dashboard():
         return jsonify({"error": str(e)}), 500
 
 
+@admin_bp.get("/api/risk-kpis")
+@admin_required
+def admin_risk_kpis():
+    admin_required_404()
+
+    now = datetime.utcnow()
+    stale_days = 8
+    unassigned_days = 3
+    window_days = 7
+    not_seen_hours = 24
+
+    stale_cutoff = now - timedelta(days=stale_days)
+    unassigned_cutoff = now - timedelta(days=unassigned_days)
+    window_cutoff = now - timedelta(days=window_days)
+    cutoff = now - timedelta(hours=24)
+    has_vrs_notified_at = _table_has_column("volunteer_request_states", "notified_at")
+    open_filter = or_(
+        Request.status.is_(None), ~Request.status.in_(list(CLOSED_STATUSES))
+    )
+
+    stale_count = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.created_at < stale_cutoff)
+        .filter(open_filter)
+        .scalar()
+    )
+
+    unassigned_count = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.created_at < unassigned_cutoff)
+        .filter(Request.assigned_volunteer_id.is_(None))
+        .filter(open_filter)
+        .scalar()
+    )
+
+    if has_vrs_notified_at:
+        notified_not_seen = (
+            db.session.query(func.count(VolunteerRequestState.id))
+            .join(Request, Request.id == VolunteerRequestState.request_id)
+            .filter(VolunteerRequestState.notified_at.isnot(None))
+            .filter(VolunteerRequestState.notified_at < cutoff)
+            .filter(VolunteerRequestState.seen_at.is_(None))
+            .filter(open_filter)
+            .scalar()
+        )
+        notified_source = "notified_at"
+    else:
+        notified_not_seen = (
+            db.session.query(func.count(Notification.id))
+            .join(Request, Request.id == Notification.request_id)
+            .filter(Notification.type == "new_match")
+            .filter(Notification.created_at < cutoff)
+            .filter(open_filter)
+            .scalar()
+        )
+        notified_source = "notification_created_at_fallback"
+
+    can_help_7d = (
+        db.session.query(func.count(VolunteerAction.id))
+        .filter(VolunteerAction.action == "CAN_HELP")
+        .filter(VolunteerAction.created_at >= window_cutoff)
+        .scalar()
+    )
+
+    assigned_7d = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.assigned_volunteer_id.isnot(None))
+        .filter(Request.created_at >= window_cutoff)
+        .scalar()
+    )
+
+    conversion = None
+    if can_help_7d and can_help_7d > 0:
+        conversion = round((assigned_7d / can_help_7d) * 100, 1)
+
+    not_seen_by_request = {}
+    try:
+        if has_vrs_notified_at:
+            not_seen_rows = (
+                db.session.query(
+                    VolunteerRequestState.request_id, func.count(VolunteerRequestState.id)
+                )
+                .join(Request, Request.id == VolunteerRequestState.request_id)
+                .filter(VolunteerRequestState.notified_at.isnot(None))
+                .filter(VolunteerRequestState.notified_at < cutoff)
+                .filter(VolunteerRequestState.seen_at.is_(None))
+                .filter(open_filter)
+                .group_by(VolunteerRequestState.request_id)
+                .all()
+            )
+        else:
+            not_seen_rows = (
+                db.session.query(Notification.request_id, func.count(Notification.id))
+                .join(Request, Request.id == Notification.request_id)
+                .filter(Notification.type == "new_match")
+                .filter(Notification.created_at < cutoff)
+                .filter(open_filter)
+                .group_by(Notification.request_id)
+                .all()
+            )
+        not_seen_by_request = {int(req_id): int(cnt) for req_id, cnt in not_seen_rows}
+    except Exception:
+        db.session.rollback()
+
+    risky_candidates = (
+        Request.query.filter(Request.deleted_at.is_(None))
+        .filter(open_filter)
+        .order_by(Request.created_at.asc())
+        .limit(300)
+        .all()
+    )
+    top_risky_scored = []
+    for row in risky_candidates:
+        created_at = getattr(row, "created_at", None)
+        age_days = (
+            max(0, int((now - created_at).total_seconds() // 86400))
+            if created_at is not None
+            else 0
+        )
+        is_unassigned = getattr(row, "assigned_volunteer_id", None) is None
+        ns_count = int(not_seen_by_request.get(int(row.id), 0))
+        score = 0
+        if age_days >= stale_days:
+            score += 3
+        if is_unassigned and age_days >= unassigned_days:
+            score += 4
+        if ns_count > 0:
+            score += 2 + min(3, ns_count)
+        if score <= 0:
+            continue
+        top_risky_scored.append((score, age_days, ns_count, row))
+
+    top_risky_scored.sort(key=lambda x: (-x[0], -x[1], -x[2], x[3].id))
+    top_risky = []
+    for score, age_days, ns_count, row in top_risky_scored[:5]:
+        top_risky.append(
+            {
+                "id": int(row.id),
+                "title": getattr(row, "title", None) or f"Request #{row.id}",
+                "days_open": int(age_days),
+                "is_unassigned": bool(
+                    getattr(row, "assigned_volunteer_id", None) is None
+                ),
+                "not_seen_count": int(ns_count),
+                "risk_score": int(score),
+                "details_url": url_for("admin.admin_request_details", req_id=row.id),
+            }
+        )
+
+    return jsonify(
+        {
+            "stale_days": stale_days,
+            "unassigned_days": unassigned_days,
+            "window_days": window_days,
+            "not_seen_hours": not_seen_hours,
+            "notified_source": notified_source,
+            "stale_count": int(stale_count or 0),
+            "unassigned_count": int(unassigned_count or 0),
+            "notified_not_seen": int(notified_not_seen or 0),
+            "can_help_7d": int(can_help_7d or 0),
+            "assigned_7d": int(assigned_7d or 0),
+            "conversion_pct": conversion,
+            "top_risky": top_risky,
+            "generated_at": now.isoformat(timespec="seconds"),
+        }
+    )
+
+
 @admin_bp.route("/")
 @admin_required
 def admin_dashboard():
@@ -1605,6 +1792,13 @@ STATUS_LABELS = {
 }
 
 
+@admin_bp.get("/risk")
+@admin_required
+def admin_risk_panel():
+    admin_required_404()
+    return render_template("admin/risk_panel.html")
+
+
 @admin_bp.get("/requests")
 @login_required
 def admin_requests():
@@ -1620,7 +1814,7 @@ def admin_requests():
 
     show_deleted = (request.args.get("deleted") or "").strip() == "1"
     query = Request.query
-    query, status, q = build_requests_query(query, request.args)
+    query, status, q, risk = build_requests_query(query, request.args)
     requests = query.all()
     now_aware = utc_now()
     now_naive = datetime.utcnow()
@@ -1668,6 +1862,7 @@ def admin_requests():
         requests=requests,
         status=status,
         q=q,
+        risk=risk,
         show_deleted=show_deleted,
         now_aware=now_aware,
         now_naive=now_naive,
@@ -1678,10 +1873,59 @@ def admin_requests():
     )
 
 
+def apply_risk_filter(base_query, risk: str, now: datetime):
+    closed_statuses = {"done", "cancelled", "rejected"}
+    open_filter = or_(
+        Request.status.is_(None), ~func.lower(Request.status).in_(closed_statuses)
+    )
+    if risk not in {"stale", "unassigned", "notseen", "assigned_recent"}:
+        return base_query
+
+    if risk == "stale":
+        base_query = base_query.filter(Request.created_at < (now - timedelta(days=8)))
+        base_query = base_query.filter(open_filter)
+    elif risk == "unassigned":
+        base_query = base_query.filter(
+            Request.created_at < (now - timedelta(days=3)),
+            Request.assigned_volunteer_id.is_(None),
+        )
+        base_query = base_query.filter(open_filter)
+    elif risk == "assigned_recent":
+        base_query = base_query.filter(
+            Request.created_at >= (now - timedelta(days=7)),
+            Request.assigned_volunteer_id.isnot(None),
+        )
+    elif risk == "notseen":
+        not_seen_cutoff = now - timedelta(hours=24)
+        has_vrs_notified_at = _table_has_column(
+            "volunteer_request_states", "notified_at"
+        )
+        if has_vrs_notified_at:
+            notseen_subq = (
+                db.session.query(VolunteerRequestState.request_id)
+                .filter(VolunteerRequestState.notified_at.isnot(None))
+                .filter(VolunteerRequestState.notified_at < not_seen_cutoff)
+                .filter(VolunteerRequestState.seen_at.is_(None))
+                .subquery()
+            )
+        else:
+            notseen_subq = (
+                db.session.query(Notification.request_id)
+                .filter(Notification.type == "new_match")
+                .filter(Notification.created_at < not_seen_cutoff)
+                .subquery()
+            )
+        base_query = base_query.filter(Request.id.in_(notseen_subq))
+        base_query = base_query.filter(open_filter)
+    return base_query
+
+
 def build_requests_query(base_query, request_args):
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
+    risk = (request_args.get("risk") or "").strip().lower()
     show_deleted = (request_args.get("deleted") or "").strip() == "1"
+    now = datetime.utcnow()
 
     if show_deleted:
         base_query = base_query.filter(Request.deleted_at.isnot(None))
@@ -1703,15 +1947,17 @@ def build_requests_query(base_query, request_args):
             )
         )
 
+    base_query = apply_risk_filter(base_query, risk, now)
+
     base_query = base_query.order_by(Request.id.desc())
-    return base_query, status, q
+    return base_query, status, q, risk
 
 
 @admin_bp.get("/requests/export.csv")
 @admin_required
 def admin_requests_export_csv():
     admin_required_404()
-    query, _status, _q = build_requests_query(Request.query, request.args)
+    query, _status, _q, _risk = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
     out = StringIO()
@@ -1768,7 +2014,7 @@ def admin_requests_export_xlsx():
     except Exception:
         return Response("openpyxl is not installed", status=500)
 
-    query, _status, _q = build_requests_query(Request.query, request.args)
+    query, _status, _q, _risk = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
     wb = Workbook()
@@ -1825,7 +2071,7 @@ def admin_requests_export_xlsx():
 @admin_required
 def admin_requests_export_csv_anonymized():
     admin_required_404()
-    query, _status, _q = build_requests_query(Request.query, request.args)
+    query, _status, _q, _risk = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
     out = StringIO()
@@ -1876,7 +2122,7 @@ def admin_requests_export_xlsx_anonymized():
     except Exception:
         return Response("openpyxl is not installed", status=500)
 
-    query, _status, _q = build_requests_query(Request.query, request.args)
+    query, _status, _q, _risk = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
 
     wb = Workbook()
