@@ -20,19 +20,26 @@
     </div>
   </header>
 
-  {% if notifications and notifications|length %}
-    {% set n = notifications[0] %}
-    {% set btn_class = 'btn-primary' if n.tone == 'primary' else ('btn-success' if n.tone == 'success' else 'btn-outline-secondary') %}
-    <div class="alert alert-{{ n.tone }} d-flex align-items-start justify-content-between hc-secondary" role="status">
-      <div>
-        <strong>{{ n.title }}</strong><br>
-        <span class="small">{{ n.body }}</span>
+  {% if match_count and match_count > 0 %}
+    {% if notifications and notifications|length %}
+      {% set n = notifications[0] %}
+      {% set btn_class = 'btn-primary' if n.tone == 'primary' else ('btn-success' if n.tone == 'success' else 'btn-outline-secondary') %}
+      <div class="alert alert-{{ n.tone }} d-flex align-items-start justify-content-between hc-secondary" role="status">
+        <div>
+          <strong>{{ n.title }}</strong><br>
+          <span class="small">{{ n.body }}</span>
+        </div>
+        <div class="ms-3">
+          <a class="btn btn-sm {{ btn_class }}" href="{{ n.cta_href }}">
+            {{ n.cta_label }}
+          </a>
+        </div>
       </div>
-      <div class="ms-3">
-        <a class="btn btn-sm {{ btn_class }}" href="{{ n.cta_href }}">
-          {{ n.cta_label }}
-        </a>
-      </div>
+    {% endif %}
+  {% else %}
+    <div class="hc-vdash-empty">
+      <div class="hc-vdash-empty__title">No matches right now</div>
+      <div class="hc-vdash-empty__text">We’ll notify you when a request fits your profile.</div>
     </div>
   {% endif %}
 

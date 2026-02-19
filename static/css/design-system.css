@@ -3257,6 +3257,22 @@ a{
   color: rgba(15,23,42,.62);
 }
 
+.hc-vdash-empty{
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.85);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.hc-vdash-empty__title{ font-weight: 750; }
+
+.hc-vdash-empty__text{
+  margin-top: 4px;
+  color: rgba(15,23,42,.62);
+  font-size: 14px;
+}
+
 .hc-cta{
   border-radius: 999px;
   padding: 10px 14px;

@@ -1493,6 +1493,7 @@ def volunteer_dashboard():
     unread_count = Notification.query.filter_by(
         volunteer_id=volunteer.id, is_read=False
     ).count()
+    match_count = int(len(unread_match_notifications or []))
 
     # --- In-app notifications (V2.2.A) ---
     locale_code = str(babel_get_locale())[:2]
@@ -1581,29 +1582,29 @@ def volunteer_dashboard():
         )
         badge_count = 0
     elif unread_match_notifications:
-        match_count = len(unread_match_notifications)
+        unread_match_count = len(unread_match_notifications)
         first_match = unread_match_notifications[0]
         if locale_code == "bg":
             title = (
-                f"Имаш съвпадение с {match_count} заявка"
-                if match_count == 1
-                else f"Имаш съвпадение с {match_count} заявки"
+                f"Имаш съвпадение с {unread_match_count} заявка"
+                if unread_match_count == 1
+                else f"Имаш съвпадение с {unread_match_count} заявки"
             )
             body = "Отвори и избери следващо действие."
             cta = "Виж"
         elif locale_code == "fr":
             title = (
                 "Vous avez une demande correspondante"
-                if match_count == 1
-                else f"Vous avez {match_count} demandes correspondantes"
+                if unread_match_count == 1
+                else f"Vous avez {unread_match_count} demandes correspondantes"
             )
             body = "Ouvrez et choisissez la prochaine action."
             cta = "Voir"
         else:
             title = (
                 "You've been matched to 1 request"
-                if match_count == 1
-                else f"You've been matched to {match_count} requests"
+                if unread_match_count == 1
+                else f"You've been matched to {unread_match_count} requests"
             )
             body = "Open and choose your next action."
             cta = "View"
@@ -1642,6 +1643,7 @@ def volunteer_dashboard():
             my_approved=my_approved,
             my_rejected=my_rejected,
             notifications=notifications,
+            match_count=int(match_count or 0),
             volunteer_badge_count=badge_count,
             unread_count=unread_count,
             my_actions_by_req_id=my_actions_by_req_id,
