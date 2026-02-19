@@ -174,13 +174,21 @@
                 {% endif %}
               </a>
               <div class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="volunteerNotifDropdown" style="min-width: 320px;">
-                <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
-                  <strong>{{ _('Notifications') }}</strong>
-                  <a class="small text-decoration-none" href="{{ url_for('main.volunteer_notifications') }}">{{ _('View all') }}</a>
+                {% set nav_notifications = volunteer_notif_preview|default([]) %}
+                <div class="hc-dd__head">
+                  <div class="hc-dd__title">
+                    {{ _('Notifications') }}{% if badge and badge > 0 %} ({{ badge }}){% endif %}
+                  </div>
+                  <a class="hc-dd__link" href="{{ url_for('main.volunteer_notifications') }}">{{ _('View all') }}</a>
                 </div>
-                {% if volunteer_notif_preview and volunteer_notif_preview|length > 0 %}
+                {% if not nav_notifications or nav_notifications|length == 0 %}
+                  <div class="hc-dd__empty">
+                    <div class="hc-dd__emptyTitle">{{ _('No notifications') }}</div>
+                    <div class="hc-dd__emptyText">{{ _("When you get matched, you'll see it here.") }}</div>
+                  </div>
+                {% else %}
                   <div style="max-height: 360px; overflow-y: auto;">
-                    {% for n in volunteer_notif_preview %}
+                    {% for n in nav_notifications %}
                       <form method="post" action="{{ url_for('main.volunteer_notification_open', notif_id=n.id) }}" class="px-3 py-2 border-bottom {% if n.is_unread %}bg-light{% endif %}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-link p-0 text-start text-decoration-none w-100">
@@ -196,8 +204,6 @@
                       </form>
                     {% endfor %}
                   </div>
-                {% else %}
-                  <div class="px-3 py-3 text-muted small">{{ _('No notifications yet') }}</div>
                 {% endif %}
               </div>
             </li>
