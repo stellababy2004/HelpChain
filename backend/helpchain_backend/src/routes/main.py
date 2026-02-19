@@ -1879,6 +1879,7 @@ def _upsert_volunteer_action(req_obj, volunteer, action_value: str):
     db.session.add(
         RequestActivity(
             request_id=req_obj.id,
+            volunteer_id=volunteer.id,
             action=f"volunteer_{action_value.lower()}",
             old_value=old_action,
             new_value=action_value,
