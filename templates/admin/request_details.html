@@ -289,18 +289,16 @@
       {% if not latest_actions %}
         <div class="text-muted">No volunteer actions yet.</div>
       {% else %}
+        {% set ACTION_LABELS = {
+          "volunteer_can_help": "Volunteer: can help",
+          "volunteer_cant_help": "Volunteer: can't help"
+        } %}
         <ul class="hc-mini-list">
           {% for a in latest_actions %}
             <li>
               <strong>Volunteer</strong>
               —
-              {% if a.action == 'volunteer_can_help' %}
-                I can help
-              {% elif a.action == 'volunteer_cant_help' %}
-                I can’t help
-              {% else %}
-                {{ a.action }}
-              {% endif %}
+              {{ ACTION_LABELS.get(a.action, a.action) }}
               <span class="text-muted">· {{ a.created_at }}</span>
             </li>
           {% endfor %}
