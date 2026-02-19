@@ -163,13 +163,13 @@
                  role="button"
                  data-bs-toggle="dropdown"
                  aria-expanded="false"
-                 title="{{ _('Notifications') }}">
+                title="{{ _('Notifications') }}">
                 <i class="fas fa-bell" aria-hidden="true"></i>
-                {% set badge = unread_volunteer_notifs|default(VOLUNTEER_UNREAD_NOTIF_COUNT|default(0)) %}
-                {% if badge and badge > 0 %}
+                {% set unread_count = unread_volunteer_notifs|default(VOLUNTEER_UNREAD_NOTIF_COUNT|default(0)) %}
+                {% if unread_count and unread_count > 0 %}
                   <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                        aria-label="{{ badge }} {{ _('unread notifications') }}">
-                    {{ badge }}
+                        aria-label="{{ unread_count }} {{ _('unread notifications') }}">
+                    {{ unread_count }}
                   </span>
                 {% endif %}
               </a>
@@ -177,7 +177,7 @@
                 {% set nav_notifications = volunteer_notif_preview|default([]) %}
                 <div class="hc-dd__head">
                   <div class="hc-dd__title">
-                    {{ _('Notifications') }}{% if badge and badge > 0 %} ({{ badge }}){% endif %}
+                    {{ _('Notifications') }}{% if unread_count and unread_count > 0 %} ({{ unread_count }}){% endif %}
                   </div>
                   <a class="hc-dd__link" href="{{ url_for('main.volunteer_notifications') }}">{{ _('View all') }}</a>
                 </div>
