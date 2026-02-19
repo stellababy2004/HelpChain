@@ -118,25 +118,41 @@ def get_volunteer_engagement_score(volunteer_id: int, now: datetime | None = Non
     now = now or datetime.utcnow()
     cutoff_72h = now - timedelta(hours=72)
 
-    states = (
-        db.session.query(
-            VolunteerRequestState.notified_at,
-            VolunteerRequestState.seen_at,
-        )
-        .filter(VolunteerRequestState.volunteer_id == volunteer_id)
-        .filter(VolunteerRequestState.notified_at.isnot(None))
-        .all()
-    )
-
     seen_within_24h = 0
     not_seen_72h = 0
-    for notified_at, seen_at in states:
-        if notified_at is None:
-            continue
-        if seen_at is not None and seen_at <= (notified_at + timedelta(hours=24)):
-            seen_within_24h += 1
-        if seen_at is None and notified_at <= cutoff_72h:
-            not_seen_72h += 1
+    has_vrs_notified_at = _table_has_column("volunteer_request_states", "notified_at")
+    if has_vrs_notified_at:
+        states = (
+            db.session.query(
+                VolunteerRequestState.notified_at,
+                VolunteerRequestState.seen_at,
+            )
+            .filter(VolunteerRequestState.volunteer_id == volunteer_id)
+            .filter(VolunteerRequestState.notified_at.isnot(None))
+            .all()
+        )
+        for notified_at, seen_at in states:
+            if notified_at is None:
+                continue
+            if seen_at is not None and seen_at <= (notified_at + timedelta(hours=24)):
+                seen_within_24h += 1
+            if seen_at is None and notified_at <= cutoff_72h:
+                not_seen_72h += 1
+    else:
+        # Compatibility fallback for environments where notified_at migration is missing.
+        notif_rows = (
+            db.session.query(Notification.created_at, Notification.read_at, Notification.is_read)
+            .filter(Notification.volunteer_id == volunteer_id)
+            .filter(Notification.type == "new_match")
+            .all()
+        )
+        for created_at, read_at, is_read in notif_rows:
+            if created_at is None:
+                continue
+            if read_at is not None and read_at <= (created_at + timedelta(hours=24)):
+                seen_within_24h += 1
+            if (not bool(is_read)) and created_at <= cutoff_72h:
+                not_seen_72h += 1
 
     can_help = 0
     cant_help = 0
@@ -1987,9 +2003,21 @@ def admin_requests():
         )
         engagement_by_volunteer = {}
         for volunteer_id in assigned_volunteer_ids:
-            engagement_by_volunteer[volunteer_id] = get_volunteer_engagement_score(
-                volunteer_id, now=now_naive
-            )
+            try:
+                engagement_by_volunteer[volunteer_id] = get_volunteer_engagement_score(
+                    volunteer_id, now=now_naive
+                )
+            except Exception:
+                db.session.rollback()
+                engagement_by_volunteer[volunteer_id] = {
+                    "volunteer_id": int(volunteer_id),
+                    "score": 0,
+                    "label": "At risk",
+                    "seen_within_24h": 0,
+                    "not_seen_72h": 0,
+                    "can_help": 0,
+                    "cant_help": 0,
+                }
         engagement_by_request = {
             r.id: engagement_by_volunteer.get(getattr(r, "assigned_volunteer_id", None))
             for r in requests
