@@ -104,6 +104,24 @@
     <div class="hc-perf-hint mt-2" data-kpi="sla_hint">
       Based on <span data-kpi="sla_samples">0</span> notified matches with an action.
     </div>
+
+    <hr class="hc-perf__sep">
+
+    <div class="hc-perf__outliers">
+      <div class="hc-perf__outHead">
+        <div class="hc-perf__outTitle">Slowest responses (7d)</div>
+        <div class="hc-perf__outMeta">
+          Top <span data-kpi="sla_outliers_limit">5</span>
+        </div>
+      </div>
+
+      <ul class="hc-mini-list" id="hcSlaOutliers">
+      </ul>
+
+      <div class="hc-perf__outEmpty" id="hcSlaOutliersEmpty" hidden>
+        No outliers yet.
+      </div>
+    </div>
   </div>
 
   <div class="hc-card mt-3">

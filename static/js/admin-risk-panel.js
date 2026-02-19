@@ -49,6 +49,19 @@
     return `${h}h ${m}m`;
   }
 
+  function fmtCompact(sec) {
+    if (sec == null) return "—";
+    const s = Math.max(0, Math.round(sec));
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    if (h <= 0) return `${m}m`;
+    return `${h}h ${m}m`;
+  }
+
+  function safeText(s) {
+    return s == null ? "" : String(s);
+  }
+
   function setText(selector, value) {
     const el = document.querySelector(selector);
     if (!el) return;
@@ -127,11 +140,65 @@
     setText('[data-kpi="avg_first_action"]', fmtDuration(d.avg_first_action_seconds));
     setText('[data-kpi="sla_under"]', Number(d.sla_under_12h_percent ?? 0).toFixed(1));
     setText('[data-kpi="sla_samples"]', fmt(d.sla_samples ?? 0));
+    setText('[data-kpi="sla_outliers_limit"]', fmt(d.sla_outliers_limit ?? 5));
     const sampleCount = Number(d.sla_samples ?? 0);
     if (sampleCount > 0) {
       setText('[data-kpi="sla_hint"]', `Based on ${sampleCount} notified matches with an action.`);
     } else {
       setText('[data-kpi="sla_hint"]', "No SLA samples yet. We'll start measuring once volunteers receive notifications and respond.");
+    }
+
+    // Outliers (slowest first-action responses)
+    const outList = document.getElementById("hcSlaOutliers");
+    const outEmpty = document.getElementById("hcSlaOutliersEmpty");
+    if (outList && outEmpty) {
+      const out = Array.isArray(d.sla_outliers_action_7d) ? d.sla_outliers_action_7d : [];
+      outList.innerHTML = "";
+      if (!out.length) {
+        outEmpty.hidden = false;
+      } else {
+        outEmpty.hidden = true;
+        for (const row of out) {
+          const reqId = row.request_id;
+          const volId = row.volunteer_id;
+          const delay = row.delay_seconds;
+
+          const li = document.createElement("li");
+          li.className = "hc-mini-list__item";
+
+          const a = document.createElement("a");
+          a.className = "hc-mini-list__link";
+          a.href = `/admin/requests/${encodeURIComponent(reqId)}`;
+          a.title = "Open request details";
+
+          const left = document.createElement("div");
+          left.className = "hc-mini-list__left";
+
+          const title = document.createElement("div");
+          title.className = "hc-mini-list__title";
+          title.textContent = `#${safeText(reqId)}`;
+
+          const sub = document.createElement("div");
+          sub.className = "hc-mini-list__sub";
+          sub.textContent = volId ? `Volunteer ${safeText(volId)}` : "Volunteer —";
+
+          left.appendChild(title);
+          left.appendChild(sub);
+
+          const right = document.createElement("div");
+          right.className = "hc-mini-list__right";
+
+          const badge = document.createElement("span");
+          badge.className = "hc-badge hc-badge--neutral";
+          badge.textContent = fmtCompact(delay);
+
+          right.appendChild(badge);
+          a.appendChild(left);
+          a.appendChild(right);
+          li.appendChild(a);
+          outList.appendChild(li);
+        }
+      }
     }
 
     kStale.textContent = fmt(d.stale_count);
