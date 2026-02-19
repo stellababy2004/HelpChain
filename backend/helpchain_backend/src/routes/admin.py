@@ -49,7 +49,7 @@ from ..models import (
     VolunteerRequestState,
     utc_now,
 )
-from ..notifications.inapp import send_nudge_notification
+from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..security_logging import log_security_event
 
 INVALID_CREDENTIALS_MSG = "Invalid credentials."
@@ -193,6 +193,111 @@ def get_volunteer_engagement_score(volunteer_id: int, now: datetime | None = Non
     }
 
 
+def _to_utc_naive(dt: datetime | None) -> datetime | None:
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt
+    return dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def _delta_seconds(start: datetime | None, end: datetime | None) -> int | None:
+    start_n = _to_utc_naive(start)
+    end_n = _to_utc_naive(end)
+    if not start_n or not end_n:
+        return None
+    return max(0, int((end_n - start_n).total_seconds()))
+
+
+def compute_response_metrics(
+    request_id: int, sla_hours: int = 12, now: datetime | None = None
+) -> dict:
+    """
+    Compute response metrics for a request using assigned volunteer context.
+    """
+    now_naive = _to_utc_naive(now) or datetime.utcnow()
+    out = {
+        "request_id": int(request_id),
+        "assigned_volunteer_id": None,
+        "first_seen_seconds": None,
+        "first_action_seconds": None,
+        "assignment_delay_seconds": None,
+        "not_seen_after_24h": False,
+        "sla_hours": int(sla_hours),
+        "sla_under_threshold": None,
+        "sla_bucket": "no_assignee",
+    }
+
+    req = (
+        db.session.query(Request.id, Request.created_at, Request.assigned_volunteer_id)
+        .filter(Request.id == request_id)
+        .first()
+    )
+    if not req:
+        out["sla_bucket"] = "missing_request"
+        return out
+
+    req_created_at = _to_utc_naive(getattr(req, "created_at", None))
+    assigned_volunteer_id = getattr(req, "assigned_volunteer_id", None)
+    out["assigned_volunteer_id"] = assigned_volunteer_id
+
+    first_assign_at = (
+        db.session.query(func.min(RequestActivity.created_at))
+        .filter(RequestActivity.request_id == request_id)
+        .filter(RequestActivity.action == "assign_volunteer")
+        .scalar()
+    )
+    out["assignment_delay_seconds"] = _delta_seconds(req_created_at, first_assign_at)
+
+    if not assigned_volunteer_id:
+        return out
+
+    state = (
+        db.session.query(VolunteerRequestState.notified_at, VolunteerRequestState.seen_at)
+        .filter(VolunteerRequestState.request_id == request_id)
+        .filter(VolunteerRequestState.volunteer_id == int(assigned_volunteer_id))
+        .first()
+    )
+    notified_at = _to_utc_naive(state[0]) if state else None
+    seen_at = _to_utc_naive(state[1]) if state else None
+
+    out["first_seen_seconds"] = _delta_seconds(notified_at, seen_at)
+    out["not_seen_after_24h"] = bool(
+        notified_at
+        and not seen_at
+        and ((now_naive - notified_at).total_seconds() >= 24 * 3600)
+    )
+
+    action_q = (
+        db.session.query(func.min(RequestActivity.created_at))
+        .filter(RequestActivity.request_id == request_id)
+        .filter(
+            RequestActivity.action.in_(["volunteer_can_help", "volunteer_cant_help"])
+        )
+    )
+    if _table_has_column("request_activities", "volunteer_id"):
+        action_q = action_q.filter(
+            RequestActivity.volunteer_id == int(assigned_volunteer_id)
+        )
+    if notified_at is not None:
+        action_q = action_q.filter(RequestActivity.created_at >= notified_at)
+    first_action_at = action_q.scalar()
+    out["first_action_seconds"] = _delta_seconds(notified_at, first_action_at)
+
+    if notified_at is None:
+        out["sla_bucket"] = "no_notification"
+        return out
+    if out["first_action_seconds"] is None:
+        out["sla_bucket"] = "no_action"
+        return out
+
+    sla_seconds = int(sla_hours) * 3600
+    under = out["first_action_seconds"] <= sla_seconds
+    out["sla_under_threshold"] = bool(under)
+    out["sla_bucket"] = "under_sla" if under else "over_sla"
+    return out
+
+
 def _notseen_hours_from_risk(risk: str) -> int | None:
     if risk == "notseen":
         return 24
@@ -259,7 +364,7 @@ def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
     )
 
 
-from sqlalchemy import func, inspect as sa_inspect, or_
+from sqlalchemy import case, func, inspect as sa_inspect, or_
 from sqlalchemy.orm import joinedload
 
 from backend.helpchain_backend.src.utils.mfa import (
@@ -1122,6 +1227,94 @@ def admin_api_dashboard():
         return jsonify({"error": str(e)}), 500
 
 
+SLA_HOURS_DEFAULT = 12
+
+
+def _sla_kpis(
+    sla_hours: int = SLA_HOURS_DEFAULT,
+    scope: str = "all_notified",
+    now: datetime | None = None,
+) -> dict:
+    now = now or datetime.utcnow()
+    sla_seconds = int(sla_hours * 3600)
+    if scope not in {"all_notified", "assigned_only"}:
+        raise ValueError("scope must be 'all_notified' or 'assigned_only'")
+
+    base_states_q = db.session.query(
+        VolunteerRequestState.request_id.label("req_id"),
+        VolunteerRequestState.volunteer_id.label("vol_id"),
+        VolunteerRequestState.notified_at.label("notified_at"),
+        VolunteerRequestState.seen_at.label("seen_at"),
+    ).filter(VolunteerRequestState.notified_at.isnot(None))
+    if scope == "assigned_only":
+        base_states_q = base_states_q.join(
+            Request, Request.id == VolunteerRequestState.request_id
+        ).filter(Request.assigned_volunteer_id == VolunteerRequestState.volunteer_id)
+    base_states = base_states_q.subquery()
+
+    seen_delta = func.strftime("%s", base_states.c.seen_at) - func.strftime(
+        "%s", base_states.c.notified_at
+    )
+    avg_first_seen = (
+        db.session.query(func.avg(seen_delta))
+        .filter(base_states.c.seen_at.isnot(None))
+        .filter(seen_delta >= 0)
+        .scalar()
+    )
+
+    first_action_subq = (
+        db.session.query(
+            base_states.c.req_id.label("req_id"),
+            base_states.c.vol_id.label("vol_id"),
+            base_states.c.notified_at.label("notified_at"),
+            func.min(RequestActivity.created_at).label("first_action_at"),
+        )
+        .join(
+            RequestActivity,
+            (RequestActivity.request_id == base_states.c.req_id)
+            & (RequestActivity.volunteer_id == base_states.c.vol_id),
+        )
+        .filter(
+            RequestActivity.action.in_(("volunteer_can_help", "volunteer_cant_help"))
+        )
+        .filter(RequestActivity.created_at >= base_states.c.notified_at)
+        .group_by(
+            base_states.c.req_id,
+            base_states.c.vol_id,
+            base_states.c.notified_at,
+        )
+        .subquery()
+    )
+    action_delta = func.strftime(
+        "%s", first_action_subq.c.first_action_at
+    ) - func.strftime("%s", first_action_subq.c.notified_at)
+    avg_first_action = db.session.query(func.avg(action_delta)).scalar()
+
+    under_count, total_count = (
+        db.session.query(
+            func.sum(case((action_delta <= sla_seconds, 1), else_=0)).label("under"),
+            func.count().label("total"),
+        ).first()
+        or (0, 0)
+    )
+    under_count = int(under_count or 0)
+    total_count = int(total_count or 0)
+    sla_pct = round((under_count * 100.0 / total_count), 1) if total_count else 0.0
+
+    return {
+        "avg_first_seen_seconds": (
+            float(avg_first_seen) if avg_first_seen is not None else None
+        ),
+        "avg_first_action_seconds": (
+            float(avg_first_action) if avg_first_action is not None else None
+        ),
+        "sla_under_12h_percent": sla_pct,
+        "sla_hours": int(sla_hours),
+        "sla_samples": total_count,
+        "sla_scope": scope,
+    }
+
+
 @admin_bp.get("/api/risk-kpis")
 @admin_required
 def admin_risk_kpis():
@@ -1280,26 +1473,28 @@ def admin_risk_kpis():
             }
         )
 
-    return jsonify(
-        {
-            "stale_days": stale_days,
-            "unassigned_days": unassigned_days,
-            "window_days": window_days,
-            "not_seen_hours": not_seen_hours,
-            "notified_source": notified_source,
-            "stale_count": int(stale_count or 0),
-            "unassigned_count": int(unassigned_count or 0),
-            "notified_not_seen": int(notified_not_seen or 0),
-            "notseen24": int(notseen24 or 0),
-            "notseen48": int(notseen48 or 0),
-            "notseen72": int(notseen72 or 0),
-            "can_help_7d": int(can_help_7d or 0),
-            "assigned_7d": int(assigned_7d or 0),
-            "conversion_pct": conversion,
-            "top_risky": top_risky,
-            "generated_at": now.isoformat(timespec="seconds"),
-        }
+    payload = {
+        "stale_days": stale_days,
+        "unassigned_days": unassigned_days,
+        "window_days": window_days,
+        "not_seen_hours": not_seen_hours,
+        "notified_source": notified_source,
+        "stale_count": int(stale_count or 0),
+        "unassigned_count": int(unassigned_count or 0),
+        "notified_not_seen": int(notified_not_seen or 0),
+        "notseen24": int(notseen24 or 0),
+        "notseen48": int(notseen48 or 0),
+        "notseen72": int(notseen72 or 0),
+        "can_help_7d": int(can_help_7d or 0),
+        "assigned_7d": int(assigned_7d or 0),
+        "conversion_pct": conversion,
+        "top_risky": top_risky,
+        "generated_at": now.isoformat(timespec="seconds"),
+    }
+    payload.update(
+        _sla_kpis(sla_hours=SLA_HOURS_DEFAULT, scope="all_notified", now=now)
     )
+    return jsonify(payload)
 
 
 @admin_bp.route("/")
@@ -1910,7 +2105,7 @@ def admin_request_archive(req_id: int):
 
 
 from flask import current_app, flash, redirect, render_template, request, url_for
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, tuple_
 
 from ..models import Request, RequestActivity, db
 
@@ -1968,6 +2163,7 @@ def admin_requests():
     action_counts = {}
     last_signal_by_req = {}
     engagement_by_request = {}
+    nudge_ui = {}
     if requests:
         req_ids = [r.id for r in requests]
         rows = (
@@ -2028,6 +2224,97 @@ def admin_requests():
             for r in requests
         }
 
+        # Pair-safe nudge cooldown status for queue rows (single query; no N+1).
+        def _to_utc_naive(dt):
+            if dt is None:
+                return None
+            if dt.tzinfo is None:
+                return dt
+            return dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+        now = datetime.utcnow()
+        cooldown = timedelta(hours=NUDGE_COOLDOWN_HOURS)
+        pairs = {
+            (r.id, int(r.assigned_volunteer_id))
+            for r in requests
+            if getattr(r, "id", None) and getattr(r, "assigned_volunteer_id", None)
+        }
+        nudge_by_pair: dict[tuple[int, int], datetime] = {}
+
+        if pairs:
+            try:
+                nudge_rows = (
+                    db.session.query(
+                        Notification.request_id,
+                        Notification.volunteer_id,
+                        Notification.created_at,
+                    )
+                    .filter(Notification.type == "admin_nudge")
+                    .filter(
+                        tuple_(
+                            Notification.request_id, Notification.volunteer_id
+                        ).in_(pairs)
+                    )
+                    .all()
+                )
+            except Exception:
+                req_ids = {req_id for req_id, _ in pairs}
+                nudge_rows = (
+                    db.session.query(
+                        Notification.request_id,
+                        Notification.volunteer_id,
+                        Notification.created_at,
+                    )
+                    .filter(Notification.type == "admin_nudge")
+                    .filter(Notification.request_id.in_(req_ids))
+                    .all()
+                )
+
+            for req_id, vol_id, created_at in nudge_rows:
+                if (req_id, vol_id) not in pairs:
+                    continue
+                created_naive = _to_utc_naive(created_at)
+                if not created_naive:
+                    continue
+                key = (int(req_id), int(vol_id))
+                prev = nudge_by_pair.get(key)
+                if prev is None or created_naive > prev:
+                    nudge_by_pair[key] = created_naive
+
+        for r in requests:
+            rid = getattr(r, "id", None)
+            vid = getattr(r, "assigned_volunteer_id", None)
+            if not rid:
+                continue
+            if not vid:
+                nudge_ui[rid] = {"disabled": True, "title": "No assigned volunteer"}
+                continue
+
+            created_at = nudge_by_pair.get((rid, int(vid)))
+            if not created_at:
+                nudge_ui[rid] = {
+                    "disabled": False,
+                    "title": "Send reminder to assigned volunteer",
+                }
+                continue
+
+            next_at = created_at + cooldown
+            if next_at > now:
+                remaining = next_at - now
+                mins = int(remaining.total_seconds() // 60)
+                hrs = mins // 60
+                mm = mins % 60
+                if hrs > 0:
+                    tip = f"Nudge available in {hrs}h {mm}m"
+                else:
+                    tip = f"Nudge available in {mm}m"
+                nudge_ui[rid] = {"disabled": True, "title": tip}
+            else:
+                nudge_ui[rid] = {
+                    "disabled": False,
+                    "title": "Send reminder to assigned volunteer",
+                }
+
     return render_template(
         "admin/requests.html",
         STATUS_LABELS_BG=STATUS_LABELS_BG,
@@ -2044,6 +2331,7 @@ def admin_requests():
         volunteer_action_counts=action_counts,
         last_signal_by_req=last_signal_by_req,
         engagement_by_request=engagement_by_request,
+        nudge_ui=nudge_ui,
         risk_notseen_tier_hours=risk_notseen_tier_hours,
     )
 
