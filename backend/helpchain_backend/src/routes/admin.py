@@ -2178,6 +2178,15 @@ def admin_request_details(req_id: int):
     ).get_or_404(req_id)
     admin_id = current_user.id
     now = _now_utc()
+    latest_actions = (
+        RequestActivity.query.filter_by(request_id=req_id)
+        .filter(
+            RequestActivity.action.in_(["volunteer_can_help", "volunteer_cant_help"])
+        )
+        .order_by(RequestActivity.created_at.desc())
+        .limit(10)
+        .all()
+    )
 
     locked_by = None
     # --- AUTO-LOCK (must happen BEFORE any render_template return) ---
@@ -2238,6 +2247,7 @@ def admin_request_details(req_id: int):
                     STATUS_LABELS_BG=STATUS_LABELS_BG,
                     is_stale=is_stale,
                     interests=interests,
+                    latest_actions=latest_actions,
                     is_locked=True,
                     locked_by=locked_by,
                 ),
@@ -2340,6 +2350,7 @@ def admin_request_details(req_id: int):
             volunteers_map=volunteers_map,
             can_help_count=can_help_count,
             cant_help_count=cant_help_count,
+            latest_actions=latest_actions,
         ),
         200,
     )

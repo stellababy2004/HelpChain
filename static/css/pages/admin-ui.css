@@ -760,3 +760,6 @@ tr.hc-row-actionable[data-priority="URGENT"] td:first-child::before{
   color: rgba(15,23,42,.58);
   font-size: 14px;
 }
+
+.hc-mini-list{ margin:0; padding-left: 18px; }
+.hc-mini-list li{ margin: 6px 0; }

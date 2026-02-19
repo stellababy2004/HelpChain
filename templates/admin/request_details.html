@@ -281,6 +281,34 @@
     </div>
   </div>
 
+  <div class="card border-0 shadow-sm mb-3 hc-card">
+    <div class="card-body">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="card-title mb-0">Volunteer actions</h5>
+      </div>
+      {% if not latest_actions %}
+        <div class="text-muted">No volunteer actions yet.</div>
+      {% else %}
+        <ul class="hc-mini-list">
+          {% for a in latest_actions %}
+            <li>
+              <strong>Volunteer</strong>
+              —
+              {% if a.action == 'volunteer_can_help' %}
+                I can help
+              {% elif a.action == 'volunteer_cant_help' %}
+                I can’t help
+              {% else %}
+                {{ a.action }}
+              {% endif %}
+              <span class="text-muted">· {{ a.created_at }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+
   {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
 
   <!-- Main grid -->
