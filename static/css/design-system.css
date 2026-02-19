@@ -5739,3 +5739,175 @@ pre, code { max-width: 100%; overflow-x: auto; }
     grid-template-columns: repeat(3, 1fr) !important;
   }
 }
+
+/* =========================
+   $20M SaaS polish pack
+   ========================= */
+
+body.hc-page-home{
+  --hc-bg: #0b1220;
+  --hc-bg2: #0a1020;
+  --hc-surface: rgba(255,255,255,.06);
+  --hc-surface2: rgba(255,255,255,.09);
+  --hc-border: rgba(255,255,255,.10);
+  --hc-border2: rgba(255,255,255,.16);
+  --hc-text: rgba(255,255,255,.92);
+  --hc-muted: rgba(255,255,255,.68);
+  --hc-shadow: 0 20px 60px rgba(0,0,0,.45);
+  --hc-shadow2: 0 12px 30px rgba(0,0,0,.35);
+  --hc-radius: 18px;
+  background:
+    radial-gradient(900px 520px at 50% -120px, rgba(56,189,248,.22), transparent 60%),
+    radial-gradient(780px 540px at 20% 10%, rgba(168,85,247,.18), transparent 55%),
+    radial-gradient(680px 520px at 80% 30%, rgba(34,197,94,.12), transparent 55%),
+    linear-gradient(180deg, var(--hc-bg), var(--hc-bg2));
+  color: var(--hc-text);
+}
+
+body.hc-page-home .hc-shell{ width: 100%; }
+
+body.hc-page-home .hc-container{
+  width: min(1200px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+/* HERO */
+body.hc-page-home .hc-hero{
+  position: relative;
+  padding: 72px 0 40px;
+}
+
+body.hc-page-home .hc-hero__grid{
+  display: grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 28px;
+  align-items: center;
+}
+
+@media (max-width: 992px){
+  body.hc-page-home .hc-hero{ padding: 56px 0 28px; }
+  body.hc-page-home .hc-hero__grid{ grid-template-columns: 1fr; }
+}
+
+body.hc-page-home .hc-eyebrow{
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--hc-border);
+  border-radius: 999px;
+  background: rgba(255,255,255,.03);
+  color: var(--hc-muted);
+  font-size: 13px;
+}
+
+body.hc-page-home .hc-h1{
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.06;
+  font-size: clamp(34px, 3.6vw, 56px);
+  margin: 14px 0 10px;
+}
+
+body.hc-page-home .hc-lead{
+  color: var(--hc-muted);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 56ch;
+}
+
+body.hc-page-home .hc-ctaRow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+body.hc-page-home .hc-btnPrimary{
+  border: 1px solid rgba(255,255,255,.18);
+  background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(168,85,247,.18));
+  box-shadow: var(--hc-shadow2);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 650;
+}
+
+body.hc-page-home .hc-btnGhost{
+  border: 1px solid var(--hc-border);
+  background: rgba(255,255,255,.04);
+  border-radius: 12px;
+  padding: 10px 14px;
+  color: var(--hc-text);
+}
+
+/* PRODUCT CARD */
+body.hc-page-home .hc-productCard{
+  border-radius: var(--hc-radius);
+  border: 1px solid var(--hc-border);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
+  box-shadow: var(--hc-shadow);
+  overflow: hidden;
+}
+
+body.hc-page-home .hc-productCard__inner{
+  padding: 18px 18px 14px;
+}
+
+body.hc-page-home .hc-miniKpis{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+@media (max-width: 576px){
+  body.hc-page-home .hc-miniKpis{ grid-template-columns: repeat(2, 1fr); }
+}
+
+body.hc-page-home .hc-kpi{
+  border: 1px solid var(--hc-border);
+  background: rgba(255,255,255,.03);
+  border-radius: 14px;
+  padding: 10px 10px;
+}
+
+body.hc-page-home .hc-kpi__v{
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1;
+}
+body.hc-page-home .hc-kpi__l{
+  color: var(--hc-muted);
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+/* SECTIONS */
+body.hc-page-home .hc-section{ padding: 28px 0; }
+body.hc-page-home .hc-sectionTitle{
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin: 0 0 12px;
+}
+
+body.hc-page-home .hc-cardRow{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 992px){
+  body.hc-page-home .hc-cardRow{ grid-template-columns: 1fr; }
+}
+
+body.hc-page-home .hc-card{
+  border: 1px solid var(--hc-border);
+  background: rgba(255,255,255,.035);
+  border-radius: 16px;
+  padding: 14px;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease;
+}
+body.hc-page-home .hc-card:hover{
+  transform: translateY(-2px);
+  border-color: var(--hc-border2);
+  background: rgba(255,255,255,.05);
+}

@@ -9,126 +9,97 @@
 {% block body_class %}hc-page-home{% endblock %}
 
 {% block content %}
-<section class="container py-4 py-lg-5 hc-hero">
-  <div class="row align-items-center g-4">
-    <div class="col-lg-7">
-      <h1 class="display-5 fw-semibold mb-3">
-        {{ _("Real help. Fast. Safe. Human.") }}
-      </h1>
-      <p class="lead text-body-secondary mb-4 hc-secondary">
-        {{ _("Submit a request in 2 minutes. Get matched, stay in control.") }}
-      </p>
+<div class="hc-shell">
+<section class="hc-hero">
+  <div class="hc-container">
+    <div class="hc-hero__grid">
+      <div>
+        <div class="hc-eyebrow">HelpChain • EU pilot • Safe workflows</div>
 
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <a class="btn btn-primary btn-lg" href="{{ url_for('main.submit_request') }}">
-          {{ _('Submit a request') }}
-        </a>
+        <h1 class="hc-h1">
+          Real help. Fast.<br>
+          Safe. Human.
+        </h1>
 
-        <a class="btn btn-outline-primary btn-lg" href="{{ url_for('main.become_volunteer') }}">
-          {{ _('Become volunteer / Login') }}
-        </a>
+        <p class="hc-lead">
+          Submit a request in minutes. Get matched. Stay in control - with clear status and accountable follow-up.
+        </p>
 
-        <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('main.contact') }}">
-          {{ _('Contact / Emergency info') }}
-        </a>
-
-        <a class="btn btn-outline-secondary btn-lg hc-secondary"
-           href="{{ url_for('main.professionnels') }}"
-           title="{{ _('Coming soon') }}">
-          {{ _("I'm a professional") }} <span class="hc-badge-soon">{{ _("Soon") }}</span>
-        </a>
-      </div>
-
-      <ul class="hc-hero-trust" aria-label="Trust">
-        <li>✅ {{ _("Réponse rapide") }}</li>
-        <li>🔒 {{ _("Données protégées") }}</li>
-        <li>🌍 {{ _("Aide locale") }}</li>
-      </ul>
-
-      <div class="hc-hero-kpis" aria-label="{{ _('Key indicators') }}">
-        <div class="hc-kpi">
-          <div class="hc-kpi__num" data-hc-kpi="helped">—</div>
-          <div class="hc-kpi__label">{{ _('Requests helped') }}</div>
+        <div class="hc-ctaRow">
+          <a class="btn hc-btnPrimary" href="{{ url_for('main.submit_request') }}">{{ _('Submit a request') }}</a>
+          <a class="btn hc-btnGhost" href="{{ url_for('main.become_volunteer') }}">{{ _('Become volunteer / Login') }}</a>
+          <a class="btn hc-btnGhost" href="{{ url_for('main.professionnels') }}">{{ _("I'm a professional") }}</a>
         </div>
-        <div class="hc-kpi">
-          <div class="hc-kpi__num" data-hc-kpi="volunteers">—</div>
-          <div class="hc-kpi__label">{{ _('Active volunteers') }}</div>
-        </div>
-        <div class="hc-kpi">
-          <div class="hc-kpi__num" data-hc-kpi="countries">—</div>
-          <div class="hc-kpi__label">{{ _('Countries') }}</div>
-        </div>
-        <div class="hc-kpi hc-kpi--soft" title="{{ _('Closed requests') }}">
-          <div class="hc-kpi__num" data-hc-kpi="closed">—</div>
-          <div class="hc-kpi__label">{{ _('Closed') }}</div>
+
+        <div style="margin-top:14px;color:var(--hc-muted);font-size:13px;">
+          Privacy-first. Clear ownership. No spam. No surprises.
         </div>
       </div>
 
-      <div class="hc-hero-steps" aria-label="How it works">
-        <span>{{ _("1. Describe") }}</span>
-        <span>{{ _("2. Get matched") }}</span>
-        <span>{{ _("3. Receive help") }}</span>
-      </div>
-    </div>
+      <div class="hc-productCard">
+        <div class="hc-productCard__inner">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
+            <div style="font-weight:750;">Live pilot snapshot</div>
+            <div style="color:var(--hc-muted);font-size:12px;">Operational view</div>
+          </div>
 
-    <div class="col-lg-5 hc-optional">
-      <div class="p-4 rounded-4 border bg-body-tertiary hc-card">
-        <div class="fw-semibold mb-2">{{ _('In 3 steps') }}</div>
-        <ol class="mb-0 text-body-secondary">
-          <li>{{ _('Submit a request (2 min).') }}</li>
-          <li>{{ _('Smart matching to volunteers/pros.') }}</li>
-          <li>{{ _('Follow the status and next steps.') }}</li>
-        </ol>
+          <div class="hc-miniKpis">
+            <div class="hc-kpi">
+              <div class="hc-kpi__v" data-hc-kpi="helped">—</div>
+              <div class="hc-kpi__l">{{ _('Requests helped') }}</div>
+            </div>
+            <div class="hc-kpi">
+              <div class="hc-kpi__v" data-hc-kpi="volunteers">—</div>
+              <div class="hc-kpi__l">{{ _('Active volunteers') }}</div>
+            </div>
+            <div class="hc-kpi">
+              <div class="hc-kpi__v" data-hc-kpi="countries">—</div>
+              <div class="hc-kpi__l">{{ _('Countries') }}</div>
+            </div>
+            <div class="hc-kpi">
+              <div class="hc-kpi__v" data-hc-kpi="closed">—</div>
+              <div class="hc-kpi__l">{{ _('Closed') }}</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;border-top:1px solid var(--hc-border);padding-top:12px;color:var(--hc-muted);font-size:13px;">
+            In 3 steps: submit -> match -> follow-up.
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="container pb-4 pb-lg-5 hc-optional hc-primaryCards">
-  <div class="row g-3">
-    <div class="col-md-4">
-      <div class="p-4 rounded-4 border h-100 hc-card">
-        <div class="fw-semibold mb-2">{{ _('I need help') }}</div>
-        <div class="text-body-secondary">{{ _('Admin, health, transport, support…') }}</div>
+<section class="hc-section">
+  <div class="hc-container">
+    <h2 class="hc-sectionTitle">Why HelpChain is different</h2>
+    <div class="hc-cardRow">
+      <div class="hc-card">
+        <div style="font-weight:700;margin-bottom:6px;">Matching intelligence</div>
+        <div style="color:var(--hc-muted);font-size:14px;line-height:1.6;">
+          Requests routed to the right volunteers/pros based on time, location and priority.
+        </div>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="p-4 rounded-4 border h-100 hc-card">
-        <div class="fw-semibold mb-2">{{ _('I want to help') }}</div>
-        <div class="text-body-secondary">{{ _('Requests matched by time and location.') }}</div>
+
+      <div class="hc-card">
+        <div style="font-weight:700;margin-bottom:6px;">Privacy by default</div>
+        <div style="color:var(--hc-muted);font-size:14px;line-height:1.6;">
+          Share only what’s needed. No spam. No surprises.
+        </div>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="p-4 rounded-4 border h-100 hc-card">
-        <div class="fw-semibold mb-2">{{ _('I am a professional') }}</div>
-        <div class="text-body-secondary">{{ _('Structured requests, clear rules, real impact.') }}</div>
+
+      <div class="hc-card">
+        <div style="font-weight:700;margin-bottom:6px;">Human-first support</div>
+        <div style="color:var(--hc-muted);font-size:14px;line-height:1.6;">
+          Real people can follow up. You stay in control from start to finish.
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="container pb-4 hc-diff">
-  <h2>{{ _("Pourquoi HelpChain est différent") }}</h2>
-
-  <div class="hc-diff-grid">
-    <article class="hc-diff-card">
-      <h3>{{ _("Matching intelligent") }}</h3>
-      <p>{{ _("Your request is routed to the right volunteers, faster — without you repeating yourself.") }}</p>
-    </article>
-
-    <article class="hc-diff-card">
-      <h3>{{ _("Privacy by default") }}</h3>
-      <p>{{ _("You share only what’s needed. No data resale, no spam, no surprises.") }}</p>
-    </article>
-
-    <article class="hc-diff-card">
-      <h3>{{ _("Human-first support") }}</h3>
-      <p>{{ _("A real person can follow up. You stay in control from start to finish.") }}</p>
-    </article>
-  </div>
-</section>
-
-<section class="container pb-5 hc-optional hc-latest">
+<section class="hc-container pb-5 hc-optional hc-latest">
   <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
     <div>
       <h2 class="h4 mb-1">
@@ -204,6 +175,6 @@
     {% endfor %}
   </div>
 </section>
-
+</div>
 {% endblock %}
 
