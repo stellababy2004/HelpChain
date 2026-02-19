@@ -332,7 +332,7 @@
             {% endif %}
 
             {% if is_assigned %}
-              {% set vol_badge = _("Назначен/а") %}
+              {% set vol_badge = _("Assigned to you") %}
               {% set vol_badge_mod = "hc-badge--assigned" %}
             {% elif istatus == "APPROVED" %}
               {% set vol_badge = _("Одобрен/а") %}
@@ -362,7 +362,7 @@
                 </div>
 
                 {% if is_assigned %}
-                  <div class="hc-statusCopy">✅ {{ _("Ти си назначен/а. Можеш да отвориш детайлите и да действаш.") }}</div>
+                  <div class="hc-statusCopy">✅ {{ _("Assigned to you. Next action: open details.") }}</div>
                 {% elif is_pending %}
                   <div class="hc-statusCopy">⏳ {{ _("В изчакване — ще получиш известие при потвърждение.") }}</div>
                 {% endif %}
@@ -379,7 +379,7 @@
                 {% if is_done %}
                   <span class="hc-reqmeta__hint">{{ _('Благодарим! Заявката е маркирана като приключена.') }}</span>
                 {% elif is_assigned %}
-                  <span class="hc-reqmeta__hint">{{ _('Ти си назначен/а по тази заявка. Натисни “Мога да помогна”.') }}</span>
+                  <span class="hc-reqmeta__hint">{{ _('Assigned to you. Next action: click “View details”.') }}</span>
                 {% elif istatus == "APPROVED" %}
                   <span class="hc-reqmeta__hint">{{ _('Одобрен/а си. Отвори заявката за контакт и следващи стъпки.') }}</span>
                 {% elif istatus == "REJECTED" %}

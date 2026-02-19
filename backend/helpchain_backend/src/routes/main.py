@@ -49,7 +49,7 @@ from ..models import (
 )
 from ..models.magic_link_token import MagicLinkToken
 from ..models.volunteer_interest import VolunteerInterest
-from ..notifications.inapp import ensure_new_match_notifications
+from ..notifications.inapp import ensure_new_match_notifications, touch_request_state_seen
 from ..security_logging import log_security_event
 from ..services.matching_v1 import get_matched_requests_v1
 from ..services.matching_v1 import dismiss_for as match_dismiss_for
@@ -369,6 +369,16 @@ def events_collect():
     except Exception:
         pass
     return jsonify({"ok": True}), 200
+
+
+def _emit_event(event: str, props: dict | None = None) -> None:
+    """Internal telemetry helper aligned with /events payload shape."""
+    if not event:
+        return
+    try:
+        current_app.logger.info("[EVENT] %s %s", event, props or {})
+    except Exception:
+        pass
 
 
 @main_bp.post("/csp-report")
@@ -1571,13 +1581,38 @@ def volunteer_dashboard():
         )
         badge_count = 0
     elif unread_match_notifications:
+        match_count = len(unread_match_notifications)
         first_match = unread_match_notifications[0]
+        if locale_code == "bg":
+            title = (
+                f"Имаш съвпадение с {match_count} заявка"
+                if match_count == 1
+                else f"Имаш съвпадение с {match_count} заявки"
+            )
+            body = "Отвори и избери следващо действие."
+            cta = "Виж"
+        elif locale_code == "fr":
+            title = (
+                "Vous avez une demande correspondante"
+                if match_count == 1
+                else f"Vous avez {match_count} demandes correspondantes"
+            )
+            body = "Ouvrez et choisissez la prochaine action."
+            cta = "Voir"
+        else:
+            title = (
+                "You've been matched to 1 request"
+                if match_count == 1
+                else f"You've been matched to {match_count} requests"
+            )
+            body = "Open and choose your next action."
+            cta = "View"
         notifications.append(
             {
                 "kind": "new_match",
-                "title": notif_lang["new_match"]["title"],
-                "body": notif_lang["new_match"]["body"],
-                "cta_label": notif_lang["new_match"]["cta"],
+                "title": title,
+                "body": body,
+                "cta_label": cta,
                 "cta_href": url_for(
                     "main.volunteer_request_details", req_id=first_match.request_id
                 ),
@@ -1701,14 +1736,19 @@ def volunteer_request_details(req_id: int):
 
     # Mark related match notification as read (if any)
     try:
-        changed = Notification.query.filter_by(
+        Notification.query.filter_by(
             volunteer_id=volunteer.id,
             request_id=req.id,
             type="new_match",
             is_read=False,
         ).update({"is_read": True, "read_at": datetime.utcnow()})
-        if changed:
-            db.session.commit()
+        touch_request_state_seen(
+            volunteer_id=volunteer.id,
+            request_id=req.id,
+            seen_at=utc_now(),
+            commit=False,
+        )
+        db.session.commit()
     except Exception:
         db.session.rollback()
 
@@ -1835,6 +1875,14 @@ def _upsert_volunteer_action(req_obj, volunteer, action_value: str):
         )
     )
     db.session.commit()
+    _emit_event(
+        "volunteer_action_signal",
+        {
+            "volunteer_id": volunteer.id,
+            "request_id": req_obj.id,
+            "action": action_value,
+        },
+    )
     return row
 
 
@@ -1943,8 +1991,22 @@ def volunteer_notification_open(notif_id: int):
         db.session.commit()
 
     if n.request_id:
+        touch_request_state_seen(
+            volunteer_id=volunteer.id,
+            request_id=n.request_id,
+            seen_at=utc_now(),
+            commit=True,
+        )
+        _emit_event(
+            "volunteer_notification_open",
+            {"volunteer_id": volunteer.id, "notification_id": n.id, "request_id": n.request_id},
+        )
         return redirect(url_for("main.volunteer_request_details", req_id=n.request_id))
 
+    _emit_event(
+        "volunteer_notification_open",
+        {"volunteer_id": volunteer.id, "notification_id": n.id, "request_id": None},
+    )
     return redirect(url_for("main.volunteer_notifications"))
 
 

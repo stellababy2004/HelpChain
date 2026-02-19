@@ -495,24 +495,49 @@ def create_app(config_object=None) -> Flask:
     @app.context_processor
     def inject_unread_notification_count():
         """
-        Expose unread notification count globally (for volunteer navbar badge).
+        Expose volunteer notification counters + preview globally.
         Only computed when a volunteer is logged in.
         """
         try:
             vid = session.get("volunteer_id")
             # keep backward compatibility with existing session flag, but don't require it
             if not vid:
-                return {"unread_volunteer_notifs": 0, "VOLUNTEER_UNREAD_NOTIF_COUNT": 0}
+                return {
+                    "unread_volunteer_notifs": 0,
+                    "VOLUNTEER_UNREAD_NOTIF_COUNT": 0,
+                    "volunteer_notif_preview": [],
+                }
 
             from backend.models import Notification
 
             cnt = Notification.query.filter_by(volunteer_id=vid, is_read=False).count()
+            preview_rows = (
+                Notification.query.filter_by(volunteer_id=vid)
+                .order_by(Notification.created_at.desc())
+                .limit(10)
+                .all()
+            )
+            preview = [
+                {
+                    "id": n.id,
+                    "title": (n.title or "").strip(),
+                    "body": (n.body or "").strip(),
+                    "request_id": getattr(n, "request_id", None),
+                    "is_unread": not bool(getattr(n, "is_read", False)),
+                }
+                for n in preview_rows
+            ]
             return {
                 "unread_volunteer_notifs": cnt,
                 "VOLUNTEER_UNREAD_NOTIF_COUNT": cnt,  # legacy template var
+                "volunteer_notif_preview": preview,
             }
         except Exception:
-            return {"unread_volunteer_notifs": 0, "VOLUNTEER_UNREAD_NOTIF_COUNT": 0}
+            return {
+                "unread_volunteer_notifs": 0,
+                "VOLUNTEER_UNREAD_NOTIF_COUNT": 0,
+                "volunteer_notif_preview": [],
+            }
 
     return app
 
