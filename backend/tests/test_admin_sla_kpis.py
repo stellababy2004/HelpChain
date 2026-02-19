@@ -273,3 +273,73 @@ def test_admin_risk_kpis_includes_p90_metrics_7d(client, app):
     assert data["p90_window_days"] == 7
     assert data["p90_first_seen_seconds_7d"] == 5400.0
     assert data["p90_first_action_seconds_7d"] == 5400.0
+
+
+def test_admin_sla_outliers_action_7d_sorted_and_limited(client, app):
+    now = datetime.utcnow().replace(microsecond=0)
+    delays_min = [10, 20, 30, 40, 50, 60]
+
+    with app.app_context():
+        admin = AdminUser(
+            username="sla_admin_outliers",
+            email="sla_admin_outliers@test.local",
+            password_hash="x",
+            role="admin",
+            is_active=True,
+        )
+        requester = User(
+            username="sla_req_user_outliers",
+            email="sla_req_user_outliers@test.local",
+            password_hash="x",
+            role="requester",
+            is_active=True,
+        )
+        db.session.add_all([admin, requester])
+        db.session.flush()
+
+        for idx, delay in enumerate(delays_min):
+            volunteer = Volunteer(email=f"sla_vol_outliers_{idx}@test.local")
+            db.session.add(volunteer)
+            db.session.flush()
+
+            req = Request(
+                title=f"sla req outlier {idx}",
+                status="open",
+                category="general",
+                user_id=requester.id,
+                assigned_volunteer_id=volunteer.id,
+                created_at=now - timedelta(days=1, hours=1),
+            )
+            db.session.add(req)
+            db.session.flush()
+
+            notified_at = now - timedelta(days=1)
+            action_at = notified_at + timedelta(minutes=delay)
+
+            db.session.add(
+                VolunteerRequestState(
+                    volunteer_id=volunteer.id,
+                    request_id=req.id,
+                    notified_at=notified_at,
+                    seen_at=notified_at + timedelta(minutes=delay),
+                )
+            )
+            db.session.add(
+                RequestActivity(
+                    request_id=req.id,
+                    volunteer_id=volunteer.id,
+                    action="volunteer_can_help",
+                    created_at=action_at,
+                )
+            )
+        db.session.commit()
+        admin_id = admin.id
+
+    _login_admin_session(client, admin_id)
+    resp = client.get("/admin/api/risk-kpis?sla=12")
+    assert resp.status_code == 200
+    data = resp.get_json()
+    out = data["sla_outliers_action_7d"]
+    assert len(out) == 5
+    delays = [o["delay_seconds"] for o in out]
+    assert delays == [3600.0, 3000.0, 2400.0, 1800.0, 1200.0]
