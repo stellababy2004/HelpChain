@@ -144,9 +144,19 @@
             <tbody>
               {% for v in matched_volunteers %}
                 {% set f = flags_by_vol.get(v.id, {}) %}
-                <tr>
+                <tr data-volunteer-id="{{ v.id }}" data-request-id="{{ req.id }}">
                   <td>
-                    <div class="fw-semibold">{{ v.name or ('#' ~ v.id) }}</div>
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 hc-vol-link"
+                      data-volunteer-id="{{ v.id }}"
+                      data-request-id="{{ req.id }}"
+                      data-bs-toggle="offcanvas"
+                      data-bs-target="#hcVolunteerDrawer"
+                      aria-controls="hcVolunteerDrawer">
+                      #{{ v.id }}
+                    </button>
+                    <div class="fw-semibold">{{ v.name or ('Volunteer #' ~ v.id) }}</div>
                     <div class="text-muted small">{{ v.email }}</div>
                   </td>
                   <td>{{ v.location or '—' }}</td>
@@ -165,7 +175,7 @@
                         <div class="text-muted small mt-1">Unassign will notify the volunteer.</div>
                       </form>
                     {% else %}
-                      <form method="post" action="{{ url_for('admin.admin_assign_volunteer', req_id=req.id, volunteer_id=v.id) }}" class="d-inline">
+                      <form method="post" action="{{ url_for('admin.admin_assign_volunteer', req_id=req.id, volunteer_id=v.id) }}" class="d-inline hc-assign-form" data-volunteer-id="{{ v.id }}" data-request-id="{{ req.id }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         {% if req.assigned_volunteer_id and req.assigned_volunteer_id != v.id %}
                           <span class="text-muted small me-2">Already assigned</span>
@@ -173,7 +183,9 @@
                             Assign
                           </button>
                         {% else %}
-                          <button type="submit" class="btn btn-sm btn-outline-primary"
+                          <button type="submit" class="btn btn-sm btn-outline-primary hc-assign-btn"
+                            data-volunteer-id="{{ v.id }}"
+                            data-request-id="{{ req.id }}"
                             {% if req.assigned_volunteer_id %}disabled title="Already assigned"{% endif %}>
                             Assign
                           </button>
@@ -239,7 +251,17 @@
                 {% set v = volunteers_map.get(s.volunteer_id) %}
                 <tr>
                   <td>
-                    <div class="fw-semibold">{{ v.name if v else ('#' ~ s.volunteer_id) }}</div>
+                    <button
+                      type="button"
+                      class="btn btn-link p-0 hc-vol-link"
+                      data-volunteer-id="{{ s.volunteer_id }}"
+                      data-request-id="{{ req.id }}"
+                      data-bs-toggle="offcanvas"
+                      data-bs-target="#hcVolunteerDrawer"
+                      aria-controls="hcVolunteerDrawer">
+                      #{{ s.volunteer_id }}
+                    </button>
+                    <div class="fw-semibold">{{ v.name if v else ('Volunteer #' ~ s.volunteer_id) }}</div>
                     <div class="text-muted small">{{ v.email if v else '' }}</div>
                   </td>
                   <td>
@@ -714,8 +736,44 @@
     </div>
   </div>
 
+  <div class="offcanvas offcanvas-end hc-offcanvas" tabindex="-1" id="hcVolunteerDrawer" aria-labelledby="hcVolunteerDrawerLabel">
+    <div class="offcanvas-header">
+      <div>
+        <div class="hc-offcanvas__kicker">Volunteer</div>
+        <h5 class="offcanvas-title" id="hcVolunteerDrawerLabel">Loading…</h5>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+
+    <div class="offcanvas-body">
+      <div id="hcVolBody" class="hc-offcanvas__body">
+        <div class="hc-skel"></div>
+        <div class="hc-skel"></div>
+        <div class="hc-skel"></div>
+      </div>
+
+      <div class="hc-offcanvas__footer">
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="#" class="btn btn-outline-dark btn-sm" id="hcVolProfileBtn" target="_blank" rel="noopener">Open full profile</a>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyEmail">Copy email</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyPhone">Copy phone</button>
+          <button type="button" class="btn btn-primary btn-sm" id="hcDrawerAssignBtn">Assign to this request</button>
+        </div>
+        <div id="hcDrawerAssignHint" class="text-muted small mt-2 d-none">
+          No assign action available for this volunteer on this request.
+        </div>
+        <div class="small text-muted mt-2" id="hcVolHint"></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-volunteer-drawer.js') }}"></script>
 {% endblock %}
 
 

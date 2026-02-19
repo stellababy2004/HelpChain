@@ -486,6 +486,103 @@ def volunteer_detail(id):
     return render_template("volunteer_detail.html", volunteer=volunteer)
 
 
+@admin_bp.get("/api/volunteers/<int:vol_id>")
+@admin_required
+def admin_volunteer_api(vol_id: int):
+    admin_required_404()
+    volunteer = db.session.get(Volunteer, vol_id)
+    if not volunteer:
+        abort(404)
+    req_id_raw = (request.args.get("req_id") or "").strip()
+    req_id = int(req_id_raw) if req_id_raw.isdigit() else None
+
+    def _to_list(value):
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return [str(x).strip() for x in value if str(x).strip()]
+        raw = str(value).strip()
+        if not raw:
+            return []
+        return [chunk.strip() for chunk in raw.split(",") if chunk.strip()]
+
+    last_active = getattr(volunteer, "last_activity", None) or getattr(
+        volunteer, "updated_at", None
+    )
+    can_help_count = (
+        db.session.query(func.count(VolunteerAction.id))
+        .filter(
+            VolunteerAction.volunteer_id == volunteer.id,
+            VolunteerAction.action == "CAN_HELP",
+        )
+        .scalar()
+        or 0
+    )
+    action_rows = (
+        VolunteerAction.query.filter_by(volunteer_id=volunteer.id)
+        .order_by(VolunteerAction.updated_at.desc())
+        .limit(5)
+        .all()
+    )
+    history = [
+        {
+            "request_id": row.request_id,
+            "action": row.action,
+            "at": (
+                (row.updated_at or row.created_at).isoformat(
+                    sep=" ", timespec="minutes"
+                )
+                if (row.updated_at or row.created_at)
+                else None
+            ),
+        }
+        for row in action_rows
+    ]
+
+    notified_at = None
+    seen_at = None
+    if req_id is not None:
+        notif = (
+            Notification.query.filter_by(
+                volunteer_id=volunteer.id, type="new_match", request_id=req_id
+            )
+            .order_by(Notification.created_at.desc())
+            .first()
+        )
+        if notif:
+            notified_at = (
+                notif.created_at.isoformat(sep=" ", timespec="minutes")
+                if notif.created_at
+                else None
+            )
+            seen_at = (
+                notif.read_at.isoformat(sep=" ", timespec="minutes")
+                if notif.read_at
+                else None
+            )
+
+    data = {
+        "id": volunteer.id,
+        "name": getattr(volunteer, "name", None) or f"Volunteer #{volunteer.id}",
+        "email": getattr(volunteer, "email", None),
+        "phone": getattr(volunteer, "phone", None),
+        "city": None,
+        "location": getattr(volunteer, "location", None),
+        "languages": [],
+        "roles": _to_list(getattr(volunteer, "skills", None)),
+        "availability": getattr(volunteer, "availability", None),
+        "last_active": (
+            last_active.isoformat(sep=" ", timespec="minutes") if last_active else None
+        ),
+        "can_help_count": int(can_help_count),
+        "history": history,
+        "notified_at": notified_at,
+        "seen_at": seen_at,
+        "profile_url": url_for("admin.volunteer_detail", id=volunteer.id),
+    }
+    return jsonify(data)
+
+
 @admin_bp.route("/ops/login", methods=["GET", "POST"], endpoint="ops_login")
 @limiter.limit("5 per 5 minutes")
 @limiter.limit("20 per hour")
@@ -1454,6 +1551,33 @@ def update_status(req_id):
 def admin_request_set_status(req_id: int):
     # Alias: keep old canonical handler, just expose the “resource” URL too.
     return update_status(req_id)
+
+
+@admin_bp.post("/requests/<int:req_id>/archive", endpoint="admin_request_archive")
+@login_required
+def admin_request_archive(req_id: int):
+    """One-click archive/close action used by the details view button."""
+    req = Request.query.get_or_404(req_id)
+    if not can_edit_request(req, current_user):
+        abort(403)
+
+    old_status = normalize_request_status(getattr(req, "status", None))
+    req.status = "cancelled"
+    req.completed_at = utc_now()
+    req.is_archived = True
+    if getattr(req, "archived_at", None) is None:
+        req.archived_at = utc_now()
+
+    log_request_activity(
+        req,
+        "status_change",
+        old=old_status,
+        new="cancelled",
+        actor_admin_id=getattr(current_user, "id", None),
+    )
+    db.session.commit()
+    flash("Request archived and closed.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
 from flask import current_app, flash, redirect, render_template, request, url_for
