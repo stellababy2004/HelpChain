@@ -1941,6 +1941,7 @@ def admin_requests():
     now_naive = datetime.utcnow()
     SLA_WARN_NO_OWNER_DAYS = 2
     SLA_STALE_DAYS = 7
+    risk_notseen_tier_hours = _notseen_hours_from_risk(risk)
 
     # Volunteer signals counts per request
     action_counts = {}
@@ -1991,6 +1992,7 @@ def admin_requests():
         SLA_STALE_DAYS=SLA_STALE_DAYS,
         volunteer_action_counts=action_counts,
         last_signal_by_req=last_signal_by_req,
+        risk_notseen_tier_hours=risk_notseen_tier_hours,
     )
 
 

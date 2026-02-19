@@ -167,6 +167,14 @@
           <td>
             {% set age_days = ((now_naive - r.created_at).days) if r.created_at else 0 %}
             <span class="badge text-bg-secondary" title="{{ _('Created') }}: {{ r.created_at }}">{{ age_days }}d</span>
+            {% if risk_notseen_tier_hours %}
+              {% if risk_notseen_tier_hours >= 72 %}
+                {% set risk_badge_class = 'text-bg-danger' %}
+              {% else %}
+                {% set risk_badge_class = 'text-bg-warning' %}
+              {% endif %}
+              <span class="badge {{ risk_badge_class }} ms-1" title="Not seen risk tier">{{ risk_notseen_tier_hours }}h+</span>
+            {% endif %}
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
               <span class="badge text-bg-warning ms-1" title="{{ _('No owner assigned') }}">⚠️ {{ _('No owner') }}</span>
             {% endif %}
