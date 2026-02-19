@@ -656,6 +656,9 @@ class RequestActivity(db.Model):
     actor_admin_id = Column(
         Integer, ForeignKey("admin_users.id"), nullable=True, index=True
     )
+    volunteer_id = Column(
+        Integer, ForeignKey("volunteers.id"), nullable=True, index=True
+    )
     action = Column(String(50), nullable=False)
     old_value = Column(Text, nullable=True)
     new_value = Column(Text, nullable=True)
@@ -663,6 +666,7 @@ class RequestActivity(db.Model):
 
     request = relationship("Request", back_populates="activities")
     actor = relationship("AdminUser", foreign_keys=[actor_admin_id], lazy="joined")
+    volunteer = relationship("Volunteer", foreign_keys=[volunteer_id], lazy="joined")
 
 
 class RequestMetric(db.Model):
