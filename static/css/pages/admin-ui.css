@@ -614,3 +614,149 @@ tr.hc-row-actionable[data-priority="URGENT"] td:first-child::before{
     width: 100%;
   }
 }
+
+.hc-kicker{
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(15,23,42,.55);
+}
+
+.hc-risk-meta{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.hc-risk-meta .hc-badge{
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.75);
+}
+
+.hc-risk-meta .hc-badge--neutral{
+  color: rgba(15,23,42,.70);
+  border-color: rgba(15,23,42,.14);
+  background: rgba(15,23,42,.04);
+}
+
+.hc-risk-meta .hc-badge--ok{
+  color: rgba(16,185,129,.95);
+  border-color: rgba(16,185,129,.25);
+  background: rgba(16,185,129,.08);
+}
+
+.hc-riskcard{
+  border: 1px solid rgba(15,23,42,.10);
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 10px 26px rgba(2,6,23,.06);
+}
+.hc-riskcard--link{
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .16s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.hc-riskcard--link:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(2,6,23,.10);
+}
+
+.hc-riskcard__label{
+  font-size: 12px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: rgba(15,23,42,.60);
+}
+.hc-riskcard__icon{
+  margin-right: 6px;
+}
+
+.hc-riskcard__value{
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.05;
+  margin-top: 6px;
+  color: rgba(15,23,42,.95);
+}
+
+.hc-riskcard__sub{
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(15,23,42,.55);
+}
+
+.hc-riskcard--red{ border-left: 4px solid rgba(239,68,68,.75); }
+.hc-riskcard--amber{ border-left: 4px solid rgba(245,158,11,.75); }
+.hc-riskcard--yellow{ border-left: 4px solid rgba(234,179,8,.75); }
+.hc-riskcard--blue{ border-left: 4px solid rgba(59,130,246,.75); }
+
+.hc-riskcard--alert{
+  border-left-color: rgba(220,38,38,.85);
+  border-color: rgba(220,38,38,.5);
+  box-shadow: 0 0 0 1px rgba(220,38,38,.18), 0 14px 30px rgba(220,38,38,.14);
+}
+.hc-riskcard__warn{
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(185,28,28,.95);
+}
+
+.hc-risklist{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.hc-riskitem{
+  border: 1px solid rgba(15,23,42,.09);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.92);
+}
+.hc-riskitem__title{
+  display: inline-block;
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 600;
+}
+.hc-riskitem__title:hover{
+  text-decoration: underline;
+}
+.hc-riskitem__meta{
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.hc-riskpill{
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  background: rgba(30,64,175,.10);
+  color: rgba(30,64,175,.95);
+}
+.hc-riskpill--warn{
+  background: rgba(245,158,11,.16);
+  color: rgba(180,83,9,.95);
+}
+.hc-riskpill--danger{
+  background: rgba(239,68,68,.16);
+  color: rgba(153,27,27,.95);
+}
+.hc-risklist__empty{
+  color: rgba(15,23,42,.58);
+  font-size: 14px;
+}

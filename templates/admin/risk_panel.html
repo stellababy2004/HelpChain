@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Risk Panel | Admin{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-requests-page">
+  <div class="hc-admin-stickybar">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <div class="hc-kicker">Operational Intelligence</div>
+        <h1 class="h5 mb-0">Risk Panel</h1>
+      </div>
+      <div class="hc-risk-meta" id="hcRiskMeta">
+        <span class="text-muted">Updated: --</span>
+        <span class="hc-badge hc-badge--neutral" title="Waiting for KPI data.">
+          DATA: --
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-2">
+    <div class="col-12 col-md-6 col-xl-3">
+      <a class="hc-riskcard hc-riskcard--red hc-riskcard--link" id="cardStale" href="{{ url_for('admin.admin_requests', risk='stale') }}">
+        <div class="hc-riskcard__label">Stale requests</div>
+        <div class="hc-riskcard__value" id="kStale">-</div>
+        <div class="hc-riskcard__sub" id="kStaleSub">&gt; 8 days, not closed</div>
+      </a>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <a class="hc-riskcard hc-riskcard--amber hc-riskcard--link" id="cardUnassigned" href="{{ url_for('admin.admin_requests', risk='unassigned') }}">
+        <div class="hc-riskcard__label">Unassigned aging</div>
+        <div class="hc-riskcard__value" id="kUnassigned">-</div>
+        <div class="hc-riskcard__sub" id="kUnassignedSub">&gt; 3 days, unassigned</div>
+      </a>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <a class="hc-riskcard hc-riskcard--yellow hc-riskcard--link" id="cardNotSeen" href="{{ url_for('admin.admin_requests', risk='notseen') }}">
+        <div class="hc-riskcard__label"><span id="kNotSeenIcon" class="hc-riskcard__icon" hidden>⚠️</span>Not seen (24h+)</div>
+        <div class="hc-riskcard__value" id="kNotSeen">-</div>
+        <div class="hc-riskcard__sub" id="kNotSeenSub">Volunteer attention risk</div>
+        <div class="hc-riskcard__warn" id="kNotSeenWarn" hidden>⚠ Needs follow-up</div>
+      </a>
+    </div>
+
+    <div class="col-12 col-md-6 col-xl-3">
+      <a class="hc-riskcard hc-riskcard--blue hc-riskcard--link" id="cardConv" href="{{ url_for('admin.admin_requests', risk='assigned_recent') }}">
+        <div class="hc-riskcard__label">CAN_HELP -> Assigned</div>
+        <div class="hc-riskcard__value" id="kConv">-</div>
+        <div class="hc-riskcard__sub" id="kConvSub">Last 7 days</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="hc-card mt-3">
+    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+      <div>
+        <h2 class="h6 mb-1">Top 5 risky requests</h2>
+        <div class="hc-muted">Actionable queue for ops follow-up</div>
+      </div>
+      <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.admin_requests') }}">Open requests</a>
+    </div>
+    <ul class="hc-risklist mt-3" id="riskTopList">
+      <li class="hc-risklist__empty">Loading...</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/admin-risk-panel.js') }}"></script>
+{% endblock %}
