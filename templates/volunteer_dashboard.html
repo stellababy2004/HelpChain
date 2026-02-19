@@ -430,7 +430,7 @@
                 {% elif istatus %}
                   <button class="btn btn-sm btn-outline-secondary" disabled>{{ _('В изчакване') }}</button>
                 {% else %}
-                  <form method="post" action="{{ safe_url_for('main.volunteer_help', req_id=m.id) }}" class="d-inline">
+                  <form method="post" action="{{ safe_url_for('main.volunteer_help', req_id=m.id) }}" class="d-inline" data-hc-action-form="1">
                     {% if csrf_token is defined %}
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% endif %}
@@ -443,7 +443,7 @@
               {% if (istatus or is_assigned) and (not is_done) %}
                 {% set act = my_actions_by_req_id.get(m.id) if my_actions_by_req_id is defined else None %}
                 <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
-                  <form method="post" class="d-inline">
+                  <form method="post" class="d-inline" data-hc-action-form="1">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit"
                             class="btn btn-sm btn-primary"

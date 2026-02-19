@@ -384,6 +384,7 @@
       </div>
     </footer>
     {% endif %}
+    <div id="hc-toast" class="hc-toast" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Bootstrap JS -->
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
@@ -398,6 +399,7 @@
     {% endif %}
     <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/nav-scroll.js') }}" defer></script>
+    <script defer src="{{ url_for('static', filename='js/volunteer-actions-ui.js') }}"></script>
     {% block scripts %}{% endblock %}
     {% if not minimal_page %}
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>
