@@ -5747,12 +5747,12 @@ pre, code { max-width: 100%; overflow-x: auto; }
 body.hc-page-home{
   --hc-bg: #0b1220;
   --hc-bg2: #0a1020;
-  --hc-surface: rgba(255,255,255,.06);
-  --hc-surface2: rgba(255,255,255,.09);
-  --hc-border: rgba(255,255,255,.10);
-  --hc-border2: rgba(255,255,255,.16);
-  --hc-text: rgba(255,255,255,.92);
-  --hc-muted: rgba(255,255,255,.68);
+  --hc-surface: rgba(15,23,42,.03);
+  --hc-surface2: rgba(15,23,42,.06);
+  --hc-border: rgba(15,23,42,.12);
+  --hc-border2: rgba(15,23,42,.20);
+  --hc-text: #0f172a;
+  --hc-muted: #475569;
   --hc-shadow: 0 20px 60px rgba(0,0,0,.45);
   --hc-shadow2: 0 12px 30px rgba(0,0,0,.35);
   --hc-radius: 18px;
@@ -5782,6 +5782,10 @@ body.hc-page-home .hc-hero__grid{
   align-items: center;
 }
 
+body.hc-page-home .hc-hero__grid > :first-child{
+  text-align: left;
+}
+
 @media (max-width: 992px){
   body.hc-page-home .hc-hero{ padding: 56px 0 28px; }
   body.hc-page-home .hc-hero__grid{ grid-template-columns: 1fr; }
@@ -5794,7 +5798,7 @@ body.hc-page-home .hc-eyebrow{
   padding: 8px 12px;
   border: 1px solid var(--hc-border);
   border-radius: 999px;
-  background: rgba(255,255,255,.03);
+  background: rgba(255,255,255,.55);
   color: var(--hc-muted);
   font-size: 13px;
 }
@@ -5811,7 +5815,8 @@ body.hc-page-home .hc-lead{
   color: var(--hc-muted);
   font-size: 16px;
   line-height: 1.6;
-  max-width: 56ch;
+  text-align: left;
+  max-width: 52ch;
 }
 
 body.hc-page-home .hc-ctaRow{
@@ -5822,28 +5827,29 @@ body.hc-page-home .hc-ctaRow{
 }
 
 body.hc-page-home .hc-btnPrimary{
-  border: 1px solid rgba(255,255,255,.18);
+  border: 1px solid rgba(99,102,241,.22);
   background: linear-gradient(135deg, rgba(56,189,248,.22), rgba(168,85,247,.18));
   box-shadow: var(--hc-shadow2);
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-weight: 650;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-weight: 600;
 }
 
 body.hc-page-home .hc-btnGhost{
   border: 1px solid var(--hc-border);
-  background: rgba(255,255,255,.04);
-  border-radius: 12px;
-  padding: 10px 14px;
+  background: rgba(255,255,255,.65);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-weight: 600;
   color: var(--hc-text);
 }
 
 /* PRODUCT CARD */
 body.hc-page-home .hc-productCard{
   border-radius: var(--hc-radius);
-  border: 1px solid var(--hc-border);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
-  box-shadow: var(--hc-shadow);
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 18px 50px rgba(0,0,0,.12);
   overflow: hidden;
 }
 
@@ -5863,8 +5869,8 @@ body.hc-page-home .hc-miniKpis{
 }
 
 body.hc-page-home .hc-kpi{
-  border: 1px solid var(--hc-border);
-  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(15,23,42,.10);
+  background: rgba(255,255,255,.92);
   border-radius: 14px;
   padding: 10px 10px;
 }
@@ -5899,7 +5905,7 @@ body.hc-page-home .hc-cardRow{
 
 body.hc-page-home .hc-card{
   border: 1px solid var(--hc-border);
-  background: rgba(255,255,255,.035);
+  background: rgba(255,255,255,.70);
   border-radius: 16px;
   padding: 14px;
   transition: transform .15s ease, border-color .15s ease, background .15s ease;
@@ -5907,5 +5913,47 @@ body.hc-page-home .hc-card{
 body.hc-page-home .hc-card:hover{
   transform: translateY(-2px);
   border-color: var(--hc-border2);
-  background: rgba(255,255,255,.05);
+  background: rgba(255,255,255,.80);
+}
+
+/* =========================
+   Enterprise tighten (Light public)
+   ========================= */
+
+/* Hero copy should read like a product, not a poster */
+body.hc-page-home .hc-hero__copy,
+body.hc-page-home .hc-lead{
+  text-align: left;
+}
+
+body.hc-page-home .hc-lead{
+  max-width: 52ch;
+}
+
+/* Make the right card feel like an operational module */
+body.hc-page-home .hc-productCard{
+  background: rgba(255,255,255,.86);
+  border-color: rgba(15,23,42,.10);
+  box-shadow: 0 18px 50px rgba(0,0,0,.12);
+}
+
+body.hc-page-home .hc-kpi{
+  background: rgba(255,255,255,.95);
+  border-color: rgba(15,23,42,.10);
+}
+
+/* Slightly more “Linear-like” buttons */
+body.hc-page-home .hc-btnPrimary,
+body.hc-page-home .hc-btnGhost{
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-weight: 600;
+}
+
+/* Optional but recommended: calmer glass navbar */
+body.hc-page-home .navbar{
+  background: rgba(255,255,255,.82) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(15,23,42,.08);
 }
