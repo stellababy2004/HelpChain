@@ -1240,6 +1240,53 @@ def _pctl(values, p: float = 0.9) -> float | None:
     return float(vals[idx])
 
 
+def _sla_outliers_action_7d(first_action_subq, now: datetime, limit: int = 5) -> list[dict]:
+    cutoff = now - timedelta(days=7)
+    delay_expr = func.strftime(
+        "%s", first_action_subq.c.first_action_at
+    ) - func.strftime("%s", VolunteerRequestState.notified_at)
+    rows = (
+        db.session.query(
+            VolunteerRequestState.request_id.label("request_id"),
+            VolunteerRequestState.volunteer_id.label("volunteer_id"),
+            VolunteerRequestState.notified_at.label("notified_at"),
+            first_action_subq.c.first_action_at.label("first_action_at"),
+            delay_expr.label("delay_seconds"),
+        )
+        .join(
+            first_action_subq,
+            (first_action_subq.c.req_id == VolunteerRequestState.request_id)
+            & (first_action_subq.c.vol_id == VolunteerRequestState.volunteer_id),
+        )
+        .filter(VolunteerRequestState.notified_at.isnot(None))
+        .filter(VolunteerRequestState.notified_at >= cutoff)
+        .filter(first_action_subq.c.first_action_at.isnot(None))
+        .filter(first_action_subq.c.first_action_at >= cutoff)
+        .filter(delay_expr >= 0)
+        .order_by(db.text("delay_seconds DESC"))
+        .limit(limit)
+        .all()
+    )
+    out = []
+    for row in rows:
+        out.append(
+            {
+                "request_id": int(row.request_id),
+                "volunteer_id": (
+                    int(row.volunteer_id) if row.volunteer_id is not None else None
+                ),
+                "delay_seconds": (
+                    float(row.delay_seconds) if row.delay_seconds is not None else None
+                ),
+                "notified_at": row.notified_at.isoformat() if row.notified_at else None,
+                "first_action_at": (
+                    row.first_action_at.isoformat() if row.first_action_at else None
+                ),
+            }
+        )
+    return out
+
+
 def _sla_kpis(
     sla_hours: int = SLA_HOURS_DEFAULT,
     scope: str = "all_notified",
@@ -1334,6 +1381,7 @@ def _sla_kpis(
         )
         if sec is not None
     ]
+    outliers = _sla_outliers_action_7d(first_action_subq, now, limit=5)
 
     return {
         "avg_first_seen_seconds": (
@@ -1349,6 +1397,9 @@ def _sla_kpis(
         "p90_first_seen_seconds_7d": _pctl(seen_secs, 0.9),
         "p90_first_action_seconds_7d": _pctl(action_secs, 0.9),
         "p90_window_days": p90_window_days,
+        "sla_outliers_action_7d": outliers,
+        "sla_outliers_window_days": 7,
+        "sla_outliers_limit": 5,
     }
 
 
