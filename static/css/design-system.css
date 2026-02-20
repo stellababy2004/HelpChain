@@ -5824,6 +5824,7 @@ body.hc-page-home .hc-ctaRow{
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 18px;
+  margin-bottom: 8px;
 }
 
 body.hc-page-home .hc-btnPrimary{
@@ -5876,8 +5877,8 @@ body.hc-page-home .hc-kpi{
 }
 
 body.hc-page-home .hc-kpi__v{
-  font-weight: 800;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 20px;
   line-height: 1;
 }
 body.hc-page-home .hc-kpi__l{
@@ -5948,6 +5949,201 @@ body.hc-page-home .hc-btnGhost{
   border-radius: 10px;
   padding: 9px 12px;
   font-weight: 600;
+}
+
+body.hc-page-home .hc-hero__micro{
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--hc-muted);
+}
+
+body.hc-page-home .hc-ctaTertiary{
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 2px;
+  color: rgba(15,23,42,.78);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+body.hc-page-home .hc-ctaTertiary:hover{
+  color: rgba(15,23,42,.96);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+body.hc-page-home .hc-b2b-copy{
+  margin: 0 0 10px;
+  color: var(--hc-muted);
+  line-height: 1.6;
+  max-width: 70ch;
+}
+
+body.hc-page-home .hc-b2b-list{
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 6px;
+  color: rgba(15,23,42,.86);
+}
+
+/* Admin - ProAccess detail */
+.hc-admin .card { border-radius: 16px; }
+.hc-admin .card-header { background: rgba(255,255,255,.75); }
+.hc-pre { white-space: pre-wrap; line-height: 1.55; }
+.hc-sticky { position: sticky; top: 96px; }
+@media (max-width: 991px) { .hc-sticky { position: static; top: auto; } }
+
+/* Professionnels page - isolate step layout from submit-request step pills */
+body.hc-page-pro .hc-hero-pro {
+  text-align: left;
+  padding: 140px 0 120px 0;
+}
+
+body.hc-page-pro .container {
+  max-width: 1280px;
+}
+
+body.hc-page-pro .hc-hero-pro .hc-hero__content {
+  max-width: 1200px;
+  margin: 0;
+  text-align: left;
+}
+
+body.hc-page-pro .hc-hero-pro .hc-hero__title {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+body.hc-page-pro .hc-hero-pro .hc-hero__subtitle {
+  font-size: 1.1rem;
+  color: #374151;
+  max-width: 720px;
+}
+
+#how-it-works .hc-pro-step {
+  height: 100%;
+  padding: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+#how-it-works .hc-pro-step__number {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+#how-it-works .hc-pro-step h4 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+#how-it-works .hc-pro-step p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(15, 23, 42, 0.82);
+  line-height: 1.5;
+}
+
+.hc-hero-pro .hc-micro--authority {
+  margin-top: 4px;
+  color: rgba(15, 23, 42, 0.62);
+  font-size: .9rem;
+}
+
+.hc-anchor { margin-top: 48px; }
+.hc-anchor p { font-size: 0.95rem; }
+.hc-anchor .fw-semibold { font-size: 1.05rem; }
+
+/* Institutional block */
+body.hc-page-pro .hc-section-institutional {
+  background: #f8fafc;
+  padding: 120px 0;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+body.hc-page-pro .hc-section-institutional .hc-section__title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+body.hc-page-pro .hc-section-institutional .hc-security-intro {
+  max-width: 720px;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: rgba(15,23,42,.72);
+}
+
+body.hc-page-pro .hc-section-institutional .hc-security-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+body.hc-page-pro .hc-section-institutional .hc-security-list li {
+  margin-bottom: 0.75rem;
+  position: relative;
+  padding-left: 18px;
+}
+
+body.hc-page-pro .hc-section-institutional .hc-security-list li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: #1e3a8a;
+}
+
+/* Professionals - more institutional cards */
+body.hc-page-pro .card-institutional {
+  border-radius: 8px;
+  box-shadow: none;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+/* Professionals - stricter footer tone */
+body.hc-page-pro .footer,
+body.hc-page-pro .hc-footer-min {
+  background: #0f172a !important;
+  color: rgba(255,255,255,.86);
+}
+
+body.hc-page-pro footer::before {
+  display: none !important;
+}
+
+/* Institutional hero */
+.hc-hero-institutional {
+  text-align: left;
+  padding: 140px 0 110px 0;
+}
+
+.hc-h1-institutional {
+  font-weight: 750;
+  letter-spacing: -0.6px;
+  line-height: 1.08;
+  max-width: 18ch;
+}
+
+.hc-subtext-institutional {
+  font-size: 1.1rem;
+  line-height: 1.55;
+  max-width: 70ch;
+  color: rgba(15, 23, 42, 0.82);
+}
+
+.hc-pilotline {
+  max-width: 70ch;
+  color: rgba(15, 23, 42, 0.62);
 }
 
 /* Optional but recommended: calmer glass navbar */
