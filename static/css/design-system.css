@@ -6132,6 +6132,7 @@ body.hc-page-pro footer::before {
   letter-spacing: -0.6px;
   line-height: 1.08;
   max-width: 18ch;
+  margin-bottom: 28px;
 }
 
 .hc-subtext-institutional {
@@ -6139,9 +6140,11 @@ body.hc-page-pro footer::before {
   line-height: 1.55;
   max-width: 70ch;
   color: rgba(15, 23, 42, 0.82);
+  margin-bottom: 22px;
 }
 
 .hc-pilotline {
+  margin-top: 14px;
   max-width: 70ch;
   color: rgba(15, 23, 42, 0.62);
 }
@@ -6152,6 +6155,20 @@ body.hc-page-pro footer::before {
   border: 1px solid rgba(15, 23, 42, 0.10);
   box-shadow: none !important;
   background: #fff;
+}
+
+body.hc-page-pro .hc-section__title {
+  margin-bottom: 36px;
+}
+
+body.hc-page-pro .hc-card.card-institutional {
+  padding: 28px 32px;
+}
+
+@media (max-width: 575px) {
+  .hc-card-institutional {
+    padding: 22px 20px;
+  }
 }
 
 .hc-card-institutional h3,
@@ -6175,18 +6192,19 @@ body.hc-page-pro footer::before {
 .hc-compliance .hc-section__title {
   font-weight: 750;
   letter-spacing: -0.3px;
+  margin-bottom: 28px;
 }
 
 .hc-compliance__intro {
   max-width: 78ch;
-  color: rgba(15, 23, 42, 0.70);
+  color: rgba(15, 23, 42, 0.82);
   font-size: 1rem;
   line-height: 1.6;
 }
 
 /* Institutional footer */
 .hc-footer-institutional {
-  background: rgba(10, 15, 25, 1);
+  background: #0f172a;
   color: rgba(255, 255, 255, 0.82);
   border-top: 1px solid rgba(255, 255, 255, 0.10);
 }
