@@ -6218,6 +6218,249 @@ body.hc-page-pro .hc-card.card-institutional {
   text-decoration: underline;
 }
 
+.hc-footer__inner { padding-top: 16px; padding-bottom: 16px; }
+.hc-footer__top { display: grid; gap: 6px; justify-items: center; }
+.hc-footer__copyright { font-weight: 600; }
+.hc-footer__trust { opacity: .9; font-size: .92rem; }
+.hc-footer__nav { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hc-footer__link { opacity: .95; }
+.hc-footer__dot { opacity: .6; }
+
+/* Admin dashboard - pilotage KPI cards */
+.hc-kpi-card {
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px 14px;
+  min-height: 84px;
+}
+
+.hc-kpi-card__label {
+  font-size: 0.82rem;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+.hc-kpi-card__value {
+  margin-top: 4px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* =========================
+   Core design tokens
+   ========================= */
+:root{
+  /* density */
+  --hc-section-pad-y: 72px;
+  --hc-section-gap: 24px;
+
+  /* cards */
+  --hc-card-radius: 18px;
+  --hc-card-border: rgba(15, 23, 42, .10);
+  --hc-card-shadow: 0 14px 40px rgba(15, 23, 42, .08);
+
+  /* typography */
+  --hc-h1-weight: 800;
+  --hc-h2-weight: 800;
+  --hc-body-color: #1f2937;
+  --hc-muted-color: #475569;
+  --hc-heading-color: #0f172a;
+
+  /* surfaces */
+  --hc-surface: #ffffff;
+  --hc-surface-alt: #f8fafc;
+}
+
+/* Apply tokens globally where it matters */
+body{
+  color: var(--hc-body-color);
+}
+h1, .h1{
+  color: var(--hc-heading-color);
+  font-weight: var(--hc-h1-weight);
+}
+h2, .h2{
+  color: var(--hc-heading-color);
+  font-weight: var(--hc-h2-weight);
+}
+p, .text-muted{
+  color: var(--hc-muted-color);
+}
+
+/* Utility you can reuse on any section wrapper */
+.hc-section{
+  padding-block: var(--hc-section-pad-y);
+}
+.hc-card{
+  border-radius: var(--hc-card-radius);
+  border: 1px solid var(--hc-card-border);
+  box-shadow: var(--hc-card-shadow);
+  background: var(--hc-surface);
+}
+
+/* =========================
+   Institutional mode (per page)
+   ========================= */
+body[data-hc-page="/gouvernance"],
+body[data-hc-page="/professionnels"],
+body[data-hc-page="/pro-access-request"]{
+  /* tighter spacing */
+  --hc-section-pad-y: 52px;
+  --hc-section-gap: 18px;
+
+  /* less softness, more structure */
+  --hc-card-radius: 12px;
+  --hc-card-border: rgba(15, 23, 42, .16);
+  --hc-card-shadow: 0 6px 18px rgba(15, 23, 42, .06);
+
+  /* typography */
+  --hc-h1-weight: 750;
+  --hc-h2-weight: 700;
+  --hc-body-color: #111827;
+  --hc-muted-color: #374151;
+  --hc-heading-color: #0b1220;
+
+  /* backgrounds */
+  --hc-surface: #ffffff;
+  --hc-surface-alt: #f6f8fb;
+}
+
+body[data-hc-page="/gouvernance"] .hc-divider,
+body[data-hc-page="/professionnels"] .hc-divider{
+  height: 1px;
+  background: rgba(15, 23, 42, .08);
+  margin-block: 18px;
+}
+
+/* Bootstrap card bridge for institutional pages */
+body[data-hc-page="/gouvernance"] .card,
+body[data-hc-page="/professionnels"] .card,
+body[data-hc-page="/pro-access-request"] .card{
+  border-radius: var(--hc-card-radius);
+  border: 1px solid var(--hc-card-border);
+  box-shadow: var(--hc-card-shadow);
+  background: var(--hc-surface);
+}
+
+/* Institutional cards refinement */
+body[data-hc-page="/gouvernance"] .hc-card,
+body[data-hc-page="/professionnels"] .hc-card,
+body[data-hc-page="/pro-access-request"] .hc-card,
+body[data-hc-page="/gouvernance"] .card,
+body[data-hc-page="/professionnels"] .card,
+body[data-hc-page="/pro-access-request"] .card {
+  border-radius: 10px;
+  border: 1px solid rgba(15,23,42,.18);
+  box-shadow: none;
+  background: #ffffff;
+}
+
+body[data-hc-page="/gouvernance"] h2,
+body[data-hc-page="/professionnels"] h2,
+body[data-hc-page="/pro-access-request"] h2 {
+  font-weight: 700;
+  letter-spacing: -.2px;
+  margin-bottom: 14px;
+}
+
+body[data-hc-page="/gouvernance"] .hc-hero,
+body[data-hc-page="/professionnels"] .hc-hero {
+  padding-top: 56px;
+  padding-bottom: 40px;
+}
+
+/* Memo (document-like) section */
+body[data-hc-page="/professionnels"] .hc-memo,
+body[data-hc-page="/gouvernance"] .hc-memo,
+body[data-hc-page="/pro-access-request"] .hc-memo{
+  padding-block: 44px;
+}
+
+body[data-hc-page="/professionnels"] .hc-memo__title{
+  font-weight: 700;
+  letter-spacing: -.2px;
+  margin-bottom: 22px;
+}
+
+body[data-hc-page="/professionnels"] .hc-memo__block{
+  padding: 18px 0;
+  border-top: 1px solid rgba(15,23,42,.10);
+}
+
+body[data-hc-page="/professionnels"] .hc-memo__block:last-child{
+  border-bottom: 1px solid rgba(15,23,42,.10);
+}
+
+body[data-hc-page="/professionnels"] .hc-memo__h{
+  font-weight: 650;
+  margin: 0 0 6px 0;
+}
+
+body[data-hc-page="/professionnels"] .hc-memo__p{
+  margin: 0;
+  color: rgba(15,23,42,.78);
+  max-width: 78ch;
+}
+
+/* Institutional CTA tone */
+body[data-hc-page="/gouvernance"] .btn-primary{
+  background: #0f172a;
+  border-color: #0f172a;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+body[data-hc-page="/gouvernance"] .btn-primary:hover{
+  background: #0b1220;
+  border-color: #0b1220;
+}
+
+/* Audit trail blocks (admin + institutional detail pages) */
+.hc-audit__row {
+  padding: 10px 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.hc-audit__row:first-child {
+  border-top: 0;
+}
+
+.hc-audit__meta {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.65);
+}
+
+.hc-audit__action {
+  font-weight: 650;
+  font-size: 13px;
+}
+
+.hc-audit__msg {
+  font-size: 13px;
+  color: rgba(15, 23, 42, 0.8);
+}
+
+.hc-audit__diff {
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.7);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.hc-audit__old {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.hc-audit__arrow {
+  opacity: 0.6;
+}
+
 /* Optional but recommended: calmer glass navbar */
 body.hc-page-home .navbar{
   background: rgba(255,255,255,.82) !important;
