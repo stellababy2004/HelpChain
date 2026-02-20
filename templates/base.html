@@ -137,6 +137,9 @@
                 <li class="nav-item">
                   <a class="nav-link" href="{{ url_for('admin.admin_professional_leads') }}">Pros Leads</a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('admin.admin_pro_access_list') }}">Pro Access</a>
+                </li>
               {% endif %}
               <li class="nav-item">
                 {% if admin_logged_in %}
@@ -363,11 +366,11 @@
 
     <!-- Footer -->
     {% if not minimal_page %}
-    <footer class="footer text-center bg-dark text-white mt-5">
+    <footer class="footer hc-footer-institutional text-center bg-dark text-white mt-5">
       <div class="container">
         <div>© 2025 HelpChain</div>
         <div class="footer-meta">
-          Données hébergées en Europe • Conforme RGPD • Sécurité renforcée
+          Données hébergées en Europe • Conforme RGPD • Sécurité renforcée • Développé et opéré en France
         </div>
         <div class="footer-links">
           <a href="/about">À propos</a> ·
@@ -378,9 +381,9 @@
       </div>
     </footer>
     {% else %}
-    <footer class="hc-footer-min">
+    <footer class="hc-footer-min hc-footer-institutional">
       <div class="hc-footer-min__wrap">
-        © 2025 HelpChain · Données hébergées en Europe • Conforme RGPD • Sécurité renforcée
+        © 2025 HelpChain · Données hébergées en Europe • Conforme RGPD • Sécurité renforcée · Développé et opéré en France
       </div>
     </footer>
     {% endif %}

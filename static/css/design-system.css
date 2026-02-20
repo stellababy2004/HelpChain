@@ -6184,6 +6184,22 @@ body.hc-page-pro footer::before {
   line-height: 1.6;
 }
 
+/* Institutional footer */
+.hc-footer-institutional {
+  background: rgba(10, 15, 25, 1);
+  color: rgba(255, 255, 255, 0.82);
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.hc-footer-institutional a {
+  color: rgba(255, 255, 255, 0.86);
+  text-decoration: none;
+}
+
+.hc-footer-institutional a:hover {
+  text-decoration: underline;
+}
+
 /* Optional but recommended: calmer glass navbar */
 body.hc-page-home .navbar{
   background: rgba(255,255,255,.82) !important;
