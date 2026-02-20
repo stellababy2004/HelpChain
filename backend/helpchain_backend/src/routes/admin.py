@@ -1664,6 +1664,110 @@ def admin_risk_kpis():
     return jsonify(payload)
 
 
+def _seconds_diff(end_col, start_col):
+    """
+    Portable-ish SQL expression for (end - start) in seconds.
+    PostgreSQL: extract(epoch from end - start)
+    SQLite/other: (julianday(end) - julianday(start)) * 86400
+    """
+    try:
+        dialect = db.session.get_bind().dialect.name
+    except Exception:
+        dialect = ""
+    if dialect == "postgresql":
+        return func.extract("epoch", end_col - start_col)
+    return (func.julianday(end_col) - func.julianday(start_col)) * 86400.0
+
+
+@admin_bp.get("/api/ops-kpis")
+@admin_required
+def admin_ops_kpis():
+    admin_required_404()
+
+    days = max(1, min(int(request.args.get("days", 30) or 30), 365))
+    now = datetime.utcnow()
+    since = now - timedelta(days=days)
+    stale_since = now - timedelta(days=7)
+
+    new_count = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.created_at >= since)
+        .scalar()
+        or 0
+    )
+
+    resolved_count = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.completed_at.isnot(None))
+        .filter(Request.completed_at >= since)
+        .scalar()
+        or 0
+    )
+
+    avg_to_owner_assign_sec = (
+        db.session.query(func.avg(_seconds_diff(Request.owned_at, Request.created_at)))
+        .filter(Request.owned_at.isnot(None))
+        .scalar()
+    )
+    avg_owner_assign_hours = round(float(avg_to_owner_assign_sec or 0) / 3600.0, 2)
+
+    avg_to_resolve_sec = (
+        db.session.query(
+            func.avg(_seconds_diff(Request.completed_at, Request.created_at))
+        )
+        .filter(Request.completed_at.isnot(None))
+        .scalar()
+    )
+    avg_resolve_hours = round(float(avg_to_resolve_sec or 0) / 3600.0, 2)
+
+    stale_count = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.created_at < stale_since)
+        .filter(Request.completed_at.is_(None))
+        .scalar()
+        or 0
+    )
+
+    by_category_rows = (
+        db.session.query(Request.category, func.count(Request.id))
+        .filter(Request.created_at >= since)
+        .group_by(Request.category)
+        .all()
+    )
+    by_category = [
+        {"category": (category or "—"), "count": int(count)}
+        for category, count in by_category_rows
+    ]
+
+    by_status_rows = (
+        db.session.query(Request.status, func.count(Request.id))
+        .filter(Request.completed_at.is_(None))
+        .group_by(Request.status)
+        .all()
+    )
+    by_status = [
+        {"status": (status or "—"), "count": int(count)}
+        for status, count in by_status_rows
+    ]
+
+    return jsonify(
+        {
+            "window_days": days,
+            "new_requests": int(new_count),
+            "resolved_requests": int(resolved_count),
+            "avg_owner_assign_hours": avg_owner_assign_hours,
+            "avg_resolve_hours": avg_resolve_hours,
+            "stale_over_7d": int(stale_count),
+            "by_category": by_category,
+            "by_status_open": by_status,
+            "definition": {
+                "assignment": "owner assignment (owner_id + owned_at)",
+                "resolution": "completed_at not null",
+            },
+        }
+    )
+
+
 @admin_bp.route("/")
 @admin_required
 def admin_dashboard():
