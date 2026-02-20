@@ -28,6 +28,7 @@ from flask import (
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from backend.audit import log_activity
 from backend.extensions import db, limiter
 from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
 from backend.helpchain_backend.src.statuses import (
@@ -38,7 +39,9 @@ from backend.helpchain_backend.src.statuses import (
 from ..config import Config
 from ..models import (
     AdminUser,
+    ActivityLog,
     Notification,
+    ProAccessRequest,
     ProfessionalLead,
     Request,
     RequestActivity,
@@ -56,6 +59,7 @@ from ..security_logging import log_security_event
 INVALID_CREDENTIALS_MSG = "Invalid credentials."
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 NOTSEEN_TIERS_HOURS = (24, 48, 72)
+PRO_ACCESS_STATUSES = ("new", "reviewed", "approved", "rejected")
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
 
 
@@ -471,6 +475,56 @@ def log_request_activity(req_obj, action, old=None, new=None, actor_admin_id=Non
         pass
 
 
+def _audit_request(
+    req_id: int,
+    *,
+    action: str,
+    message: str | None = None,
+    old: str | None = None,
+    new: str | None = None,
+    meta: dict | None = None,
+):
+    if not _table_has_column("activity_logs", "id"):
+        return
+    try:
+        log_activity(
+            entity_type="request",
+            entity_id=req_id,
+            action=action,
+            message=message,
+            old_value=str(old) if old is not None else None,
+            new_value=str(new) if new is not None else None,
+            meta=meta,
+        )
+    except Exception:
+        pass
+
+
+def _audit_pro_access(
+    pro_id: int,
+    *,
+    action: str,
+    message: str | None = None,
+    old: str | None = None,
+    new: str | None = None,
+    meta: dict | None = None,
+):
+    if not _table_has_column("activity_logs", "id"):
+        return
+    try:
+        log_activity(
+            entity_type="pro_access",
+            entity_id=pro_id,
+            action=action,
+            message=message,
+            old_value=str(old) if old is not None else None,
+            new_value=str(new) if new is not None else None,
+            meta=meta,
+        )
+    except Exception:
+        pass
+
+
 def _mfa_ok_set(ttl_min: int | None = None):
     ttl = ttl_min or current_app.config.get("MFA_SESSION_TTL_MIN", 720)
     session[current_app.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
@@ -869,6 +923,14 @@ def admin_ops_login():
         login_user(user, remember=False)
         session["admin_user_id"] = user.id
         session["admin_logged_in"] = True
+        log_activity(
+            entity_type="admin",
+            entity_id=user.id,
+            action="admin_login",
+            message="Admin login",
+            meta={"via": "admin_ops_login"},
+            persist=True,
+        )
         log_security_event(
             "auth_admin_login_success",
             actor_type="admin",
@@ -905,6 +967,14 @@ def admin_login_legacy():
 @admin_bp.route("/logout", methods=["GET", "POST"])
 def admin_logout():
     admin_required_404()
+    actor_id = getattr(current_user, "id", 0) or 0
+    log_activity(
+        entity_type="admin",
+        entity_id=actor_id,
+        action="admin_logout",
+        message="Admin logout",
+        persist=True,
+    )
     _mfa_ok_clear()
     _mfa_attempt_reset()
     session.pop("mfa_required", None)
@@ -1033,6 +1103,13 @@ def admin_mfa_verify():
         _mfa_attempt_reset()
         _mfa_ok_set()
         session["admin_logged_in"] = True
+        log_activity(
+            entity_type="admin",
+            entity_id=getattr(current_user, "id", 0) or 0,
+            action="admin_mfa_success",
+            message="Admin MFA verified",
+            persist=True,
+        )
         flash("✅ MFA потвърдено.", "success")
         nxt = request.args.get("next")
         if nxt and nxt.startswith("/"):
@@ -2032,6 +2109,13 @@ def update_status(req_id):
         new=new_status,
         actor_admin_id=getattr(current_user, "id", None),
     )
+    _audit_request(
+        req.id,
+        action="status_change",
+        message="Status updated",
+        old=old_status,
+        new=new_status,
+    )
     # metrics
     metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
     if metric is None:
@@ -2495,9 +2579,18 @@ def admin_requests_export_csv():
     admin_required_404()
     query, _status, _q, _risk = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
+    log_activity(
+        entity_type="export",
+        entity_id=0,
+        action="requests_export",
+        message="Requests export",
+        meta={"format": "csv", "anonymized": False},
+        persist=True,
+    )
 
     out = StringIO()
-    writer = csv.writer(out)
+    # Excel-friendly CSV for EU locales: UTF-8 BOM + semicolon delimiter.
+    writer = csv.writer(out, delimiter=";")
     writer.writerow(
         [
             "id",
@@ -2535,7 +2628,7 @@ def admin_requests_export_csv():
 
     filename = f"helpchain_requests_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
     return Response(
-        out.getvalue(),
+        "\ufeff" + out.getvalue(),
         mimetype="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
@@ -2547,11 +2640,20 @@ def admin_requests_export_xlsx():
     admin_required_404()
     try:
         from openpyxl import Workbook
+        from openpyxl.utils import get_column_letter
     except Exception:
         return Response("openpyxl is not installed", status=500)
 
     query, _status, _q, _risk = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
+    log_activity(
+        entity_type="export",
+        entity_id=0,
+        action="requests_export",
+        message="Requests export",
+        meta={"format": "xlsx", "anonymized": False},
+        persist=True,
+    )
 
     wb = Workbook()
     ws = wb.active
@@ -2590,6 +2692,25 @@ def admin_requests_export_xlsx():
             ]
         )
 
+    # Keep phone values as text to avoid Excel scientific notation.
+    phone_col = headers.index("phone") + 1
+    for row_idx in range(2, ws.max_row + 1):
+        cell = ws.cell(row=row_idx, column=phone_col)
+        if cell.value is not None:
+            cell.value = str(cell.value)
+        cell.number_format = "@"
+
+    # Auto-fit column widths for readable exports.
+    for col_idx, col_cells in enumerate(ws.columns, start=1):
+        max_len = 0
+        for cell in col_cells:
+            val = "" if cell.value is None else str(cell.value)
+            if len(val) > max_len:
+                max_len = len(val)
+        ws.column_dimensions[get_column_letter(col_idx)].width = min(
+            max(10, max_len + 2), 60
+        )
+
     bio = BytesIO()
     wb.save(bio)
     bio.seek(0)
@@ -2609,9 +2730,18 @@ def admin_requests_export_csv_anonymized():
     admin_required_404()
     query, _status, _q, _risk = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
+    log_activity(
+        entity_type="export",
+        entity_id=0,
+        action="requests_export",
+        message="Requests export (anonymized)",
+        meta={"format": "csv", "anonymized": True},
+        persist=True,
+    )
 
     out = StringIO()
-    writer = csv.writer(out)
+    # Excel-friendly CSV for EU locales: UTF-8 BOM + semicolon delimiter.
+    writer = csv.writer(out, delimiter=";")
     writer.writerow(
         [
             "id",
@@ -2643,7 +2773,7 @@ def admin_requests_export_csv_anonymized():
         f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
     )
     return Response(
-        out.getvalue(),
+        "\ufeff" + out.getvalue(),
         mimetype="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
@@ -2655,11 +2785,20 @@ def admin_requests_export_xlsx_anonymized():
     admin_required_404()
     try:
         from openpyxl import Workbook
+        from openpyxl.utils import get_column_letter
     except Exception:
         return Response("openpyxl is not installed", status=500)
 
     query, _status, _q, _risk = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
+    log_activity(
+        entity_type="export",
+        entity_id=0,
+        action="requests_export",
+        message="Requests export (anonymized)",
+        meta={"format": "xlsx", "anonymized": True},
+        persist=True,
+    )
 
     wb = Workbook()
     ws = wb.active
@@ -2688,6 +2827,17 @@ def admin_requests_export_xlsx_anonymized():
                 getattr(r, "owned_at", None),
                 getattr(r, "completed_at", None),
             ]
+        )
+
+    # Auto-fit column widths for readable exports.
+    for col_idx, col_cells in enumerate(ws.columns, start=1):
+        max_len = 0
+        for cell in col_cells:
+            val = "" if cell.value is None else str(cell.value)
+            if len(val) > max_len:
+                max_len = len(val)
+        ws.column_dimensions[get_column_letter(col_idx)].width = min(
+            max(10, max_len + 2), 60
         )
 
     bio = BytesIO()
@@ -2719,6 +2869,15 @@ def admin_request_details(req_id: int):
     admin_id = current_user.id
     now = _now_utc()
     latest_actions = []
+    if _table_has_column("activity_logs", "id"):
+        audit_logs = (
+            ActivityLog.query.filter_by(entity_type="request", entity_id=req_id)
+            .order_by(ActivityLog.created_at.desc())
+            .limit(50)
+            .all()
+        )
+    else:
+        audit_logs = []
     if activities_supported:
         latest_actions = (
             RequestActivity.query.filter_by(request_id=req_id)
@@ -2821,6 +2980,7 @@ def admin_request_details(req_id: int):
                     interests=interests,
                     latest_actions=latest_actions,
                     volunteer_engagement=volunteer_engagement,
+                    audit_logs=audit_logs,
                     is_locked=True,
                     locked_by=locked_by,
                 ),
@@ -2927,6 +3087,7 @@ def admin_request_details(req_id: int):
             cant_help_count=cant_help_count,
             latest_actions=latest_actions,
             volunteer_engagement=volunteer_engagement,
+            audit_logs=audit_logs,
         ),
         200,
     )
@@ -3143,6 +3304,13 @@ def admin_request_assign(req_id: int):
     log_request_activity(
         req, action_name, old=old_owner, new=new_val, actor_admin_id=current_user.id
     )
+    _audit_request(
+        req.id,
+        action="assign_owner",
+        message="Owner assigned",
+        old=str(old_owner) if old_owner is not None else None,
+        new=str(current_user.id),
+    )
     db.session.commit()
     flash("Заявката е assign-ната към теб.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
@@ -3175,6 +3343,13 @@ def admin_request_unassign(req_id: int):
         old=old_owner,
         new=None,
         actor_admin_id=getattr(current_user, "id", None),
+    )
+    _audit_request(
+        req.id,
+        action="unassign_owner",
+        message="Owner unassigned",
+        old=str(old_owner) if old_owner is not None else None,
+        new=None,
     )
     db.session.commit()
     flash("Owner е премахнат.", "info")
@@ -3333,6 +3508,11 @@ def admin_request_add_note(req_id: int):
         new=note,
         actor_admin_id=getattr(current_user, "id", None),
     )
+    _audit_request(
+        req.id,
+        action="note_add",
+        message="Admin note added",
+    )
     db.session.commit()
     flash("Note added.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
@@ -3462,3 +3642,185 @@ def admin_professional_lead_detail(lead_id: int):
 @admin_required
 def admin_professionnels_leads():
     return redirect(url_for("admin.admin_professional_leads"), code=302)
+
+
+@admin_bp.get("/pro-access")
+@login_required
+@admin_required
+def admin_pro_access_list():
+    status = (request.args.get("status") or "new").strip().lower()
+    if status not in PRO_ACCESS_STATUSES and status != "all":
+        status = "new"
+
+    query = ProAccessRequest.query
+    if status != "all":
+        query = query.filter(ProAccessRequest.status == status)
+
+    rows = (
+        query.order_by(ProAccessRequest.created_at.desc(), ProAccessRequest.id.desc())
+        .limit(500)
+        .all()
+    )
+
+    counts = {
+        "new": ProAccessRequest.query.filter_by(status="new").count(),
+        "reviewed": ProAccessRequest.query.filter_by(status="reviewed").count(),
+        "approved": ProAccessRequest.query.filter_by(status="approved").count(),
+        "rejected": ProAccessRequest.query.filter_by(status="rejected").count(),
+        "all": ProAccessRequest.query.count(),
+    }
+
+    return render_template(
+        "admin/pro_access_list.html",
+        rows=rows,
+        status=status,
+        counts=counts,
+    ), 200
+
+
+@admin_bp.get("/audit")
+@login_required
+@admin_required
+def admin_audit():
+    entity = (request.args.get("entity") or "all").strip().lower()
+    action = (request.args.get("action") or "all").strip().lower()
+    q = (request.args.get("q") or "").strip()
+    page = max(1, int(request.args.get("page", 1) or 1))
+    per_page = 100
+
+    if not _table_has_column("activity_logs", "id"):
+        return render_template(
+            "admin/audit.html",
+            rows=[],
+            pagination=None,
+            entity=entity,
+            action=action,
+            q=q,
+            entities=[],
+            actions=[],
+            total=0,
+        ), 200
+
+    base = ActivityLog.query
+    if entity != "all":
+        base = base.filter(ActivityLog.entity_type == entity)
+    if action != "all":
+        base = base.filter(ActivityLog.action == action)
+    if q:
+        like = f"%{q}%"
+        base = base.filter(
+            or_(
+                ActivityLog.message.ilike(like),
+                ActivityLog.actor_email.ilike(like),
+                ActivityLog.old_value.ilike(like),
+                ActivityLog.new_value.ilike(like),
+            )
+        )
+
+    base = base.order_by(ActivityLog.created_at.desc(), ActivityLog.id.desc())
+    pagination = base.paginate(page=page, per_page=per_page, error_out=False)
+    rows = pagination.items
+
+    entities = [
+        r[0]
+        for r in db.session.query(ActivityLog.entity_type)
+        .filter(ActivityLog.entity_type.isnot(None))
+        .distinct()
+        .order_by(ActivityLog.entity_type.asc())
+        .all()
+        if r and r[0]
+    ]
+    actions_q = db.session.query(ActivityLog.action).filter(ActivityLog.action.isnot(None))
+    if entity != "all":
+        actions_q = actions_q.filter(ActivityLog.entity_type == entity)
+    actions = [r[0] for r in actions_q.distinct().order_by(ActivityLog.action.asc()).all() if r and r[0]]
+
+    return render_template(
+        "admin/audit.html",
+        rows=rows,
+        pagination=pagination,
+        entity=entity,
+        action=action,
+        q=q,
+        entities=entities,
+        actions=actions,
+        total=int(pagination.total or 0),
+    ), 200
+
+
+@admin_bp.get("/pro-access/<int:pro_id>")
+@login_required
+@admin_required
+def admin_pro_access_detail(pro_id: int):
+    row = ProAccessRequest.query.get_or_404(pro_id)
+    if _table_has_column("activity_logs", "id"):
+        audit_logs = (
+            ActivityLog.query.filter_by(entity_type="pro_access", entity_id=pro_id)
+            .order_by(ActivityLog.created_at.desc())
+            .limit(50)
+            .all()
+        )
+    else:
+        audit_logs = []
+    return render_template(
+        "admin/pro_access_detail.html",
+        row=row,
+        audit_logs=audit_logs,
+    ), 200
+
+
+def _pro_access_set_status(row: ProAccessRequest, new_status: str, note: str | None = None):
+    old_status = (row.status or "").strip().lower() or None
+    row.status = new_status
+    row.reviewed_at = utc_now()
+    row.reviewed_by = (
+        getattr(current_user, "email", None)
+        or getattr(current_user, "username", None)
+        or "admin"
+    )
+    if note is not None:
+        row.admin_notes = note
+    _audit_pro_access(
+        row.id,
+        action="status_change",
+        message="Pro access status updated",
+        old=old_status,
+        new=new_status,
+        meta={"has_admin_notes": bool(note)},
+    )
+
+
+@admin_bp.post("/pro-access/<int:pro_id>/review")
+@login_required
+@admin_required
+def admin_pro_access_review(pro_id: int):
+    row = ProAccessRequest.query.get_or_404(pro_id)
+    note = (request.form.get("admin_notes") or "").strip() or None
+    _pro_access_set_status(row, "reviewed", note)
+    db.session.commit()
+    flash("Marked as reviewed.", "success")
+    return redirect(url_for("admin.admin_pro_access_detail", pro_id=pro_id), code=303)
+
+
+@admin_bp.post("/pro-access/<int:pro_id>/approve")
+@login_required
+@admin_required
+def admin_pro_access_approve(pro_id: int):
+    row = ProAccessRequest.query.get_or_404(pro_id)
+    note = (request.form.get("admin_notes") or "").strip() or None
+    _pro_access_set_status(row, "approved", note)
+    db.session.commit()
+    flash("Approved.", "success")
+    return redirect(url_for("admin.admin_pro_access_detail", pro_id=pro_id), code=303)
+
+
+@admin_bp.post("/pro-access/<int:pro_id>/reject")
+@login_required
+@admin_required
+def admin_pro_access_reject(pro_id: int):
+    row = ProAccessRequest.query.get_or_404(pro_id)
+    note = (request.form.get("admin_notes") or "").strip() or None
+    _pro_access_set_status(row, "rejected", note)
+    db.session.commit()
+    flash("Rejected.", "success")
+    return redirect(url_for("admin.admin_pro_access_detail", pro_id=pro_id), code=303)
