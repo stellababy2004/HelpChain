@@ -6164,6 +6164,26 @@ body.hc-page-pro footer::before {
   color: rgba(15, 23, 42, 0.82);
 }
 
+/* Compliance block */
+.hc-compliance {
+  background: rgba(248, 250, 252, 1);
+  padding: 120px 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.hc-compliance .hc-section__title {
+  font-weight: 750;
+  letter-spacing: -0.3px;
+}
+
+.hc-compliance__intro {
+  max-width: 78ch;
+  color: rgba(15, 23, 42, 0.70);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
 /* Optional but recommended: calmer glass navbar */
 body.hc-page-home .navbar{
   background: rgba(255,255,255,.82) !important;
