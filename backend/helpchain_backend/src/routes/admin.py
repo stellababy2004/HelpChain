@@ -60,6 +60,7 @@ INVALID_CREDENTIALS_MSG = "Invalid credentials."
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 ASSIGN_SLA_HOURS = 48
 RESOLVE_SLA_DAYS = 7
+VOLUNTEER_ASSIGN_SLA_HOURS = 72
 NOTSEEN_TIERS_HOURS = (24, 48, 72)
 PRO_ACCESS_STATUSES = ("new", "reviewed", "approved", "rejected")
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
@@ -1779,6 +1780,17 @@ def admin_ops_kpis():
         or 0
     )
 
+    volunteer_assign_deadline = now - timedelta(hours=VOLUNTEER_ASSIGN_SLA_HOURS)
+    volunteer_assign_breach_count = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.created_at.isnot(None))
+        .filter(Request.created_at < volunteer_assign_deadline)
+        .filter(Request.assigned_volunteer_id.is_(None))
+        .filter(open_filter)
+        .scalar()
+        or 0
+    )
+
     # --- Health scoring (SLA-driven) ---
     if resolve_breach_count > 0:
         health_status = "critique"
@@ -1809,6 +1821,10 @@ def admin_ops_kpis():
             },
             "health": {
                 "status": health_status,
+            },
+            "volunteer_sla": {
+                "volunteer_assign_sla_hours": VOLUNTEER_ASSIGN_SLA_HOURS,
+                "volunteer_assign_breach_count": int(volunteer_assign_breach_count),
             },
         }
     )
@@ -2460,6 +2476,131 @@ def admin_risk_panel():
     return render_template("admin/risk_panel.html")
 
 
+@admin_bp.get("/sla")
+@admin_required
+def admin_sla_breakdown():
+    admin_required_404()
+
+    breach_type = (request.args.get("type") or "owner_assign").strip().lower()
+    if breach_type not in {"all", "resolve", "owner_assign", "volunteer_assign"}:
+        breach_type = "owner_assign"
+    sort = (request.args.get("sort") or "overdue").strip().lower()
+    days = max(1, min(int(request.args.get("days", 30) or 30), 365))
+    limit = max(1, min(int(request.args.get("limit", 200) or 200), 1000))
+
+    now = datetime.utcnow()
+    window_start = now - timedelta(days=days)
+
+    open_filter = or_(
+        Request.status.is_(None), ~func.lower(Request.status).in_(CLOSED_STATUSES)
+    )
+
+    owner_assign_sla_hours = int(ASSIGN_SLA_HOURS)
+    resolve_sla_hours = int(RESOLVE_SLA_DAYS * 24)
+    volunteer_assign_sla_hours = int(VOLUNTEER_ASSIGN_SLA_HOURS)
+
+    q = (
+        db.session.query(Request)
+        .filter(Request.created_at.isnot(None))
+        .filter(Request.created_at >= window_start)
+        .filter(open_filter)
+    )
+
+    if breach_type == "resolve":
+        breach_label = "SLA résolution"
+    elif breach_type == "owner_assign":
+        breach_label = "SLA assignation owner"
+    elif breach_type == "volunteer_assign":
+        breach_label = "Affectation bénévole"
+    else:
+        breach_label = "Toutes violations"
+
+    requests = q.all()
+
+    rows: list[dict] = []
+    resolve_count = 0
+    owner_assign_count = 0
+    volunteer_assign_count = 0
+
+    for req in requests:
+        created_at = _to_utc_naive(getattr(req, "created_at", None))
+        if not created_at:
+            continue
+        age_hours = max(0.0, (now - created_at).total_seconds() / 3600.0)
+
+        resolve_overdue = None
+        owner_assign_overdue = None
+        volunteer_assign_overdue = None
+
+        if req.completed_at is None and age_hours > resolve_sla_hours:
+            resolve_overdue = age_hours - resolve_sla_hours
+            resolve_count += 1
+
+        if req.owner_id is None and age_hours > owner_assign_sla_hours:
+            owner_assign_overdue = age_hours - owner_assign_sla_hours
+            owner_assign_count += 1
+
+        if req.assigned_volunteer_id is None and age_hours > volunteer_assign_sla_hours:
+            volunteer_assign_overdue = age_hours - volunteer_assign_sla_hours
+            volunteer_assign_count += 1
+
+        candidates = []
+        if resolve_overdue is not None:
+            candidates.append(("resolve", resolve_overdue))
+        if owner_assign_overdue is not None:
+            candidates.append(("owner_assign", owner_assign_overdue))
+        if volunteer_assign_overdue is not None:
+            candidates.append(("volunteer_assign", volunteer_assign_overdue))
+
+        if not candidates:
+            continue
+
+        if breach_type == "all":
+            row_breach_type, overdue_hours = max(candidates, key=lambda x: x[1])
+        else:
+            picked = {k: v for k, v in candidates}.get(breach_type)
+            if picked is None:
+                continue
+            row_breach_type, overdue_hours = breach_type, picked
+
+        rows.append(
+            {
+                "id": req.id,
+                "title": req.title,
+                "category": req.category,
+                "status": req.status,
+                "created_at": req.created_at,
+                "owner_id": req.owner_id,
+                "assigned_volunteer_id": req.assigned_volunteer_id,
+                "overdue_hours": round(float(overdue_hours), 1),
+                "breach_type": row_breach_type,
+            }
+        )
+
+    def _created_ts(row: dict) -> float:
+        dt = _to_utc_naive(row.get("created_at"))
+        return dt.timestamp() if dt else 0.0
+
+    if sort == "created":
+        rows.sort(key=_created_ts)
+    else:
+        rows.sort(key=lambda r: (-(float(r.get("overdue_hours") or 0.0)), _created_ts(r)))
+    rows = rows[:limit]
+
+    return render_template(
+        "admin/sla.html",
+        breach_label=breach_label,
+        breach_type=breach_type,
+        days=days,
+        sort=sort,
+        limit=limit,
+        resolve_count=int(resolve_count),
+        owner_assign_count=int(owner_assign_count),
+        volunteer_assign_count=int(volunteer_assign_count),
+        rows=rows,
+    )
+
+
 @admin_bp.get("/requests")
 @login_required
 def admin_requests():
@@ -2666,7 +2807,18 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
         Request.status.is_(None), ~func.lower(Request.status).in_(closed_statuses)
     )
     notseen_hours = _notseen_hours_from_risk(risk)
-    if risk not in {"stale", "unassigned", "assigned_recent"} and notseen_hours is None:
+    if (
+        risk
+        not in {
+            "stale",
+            "unassigned",
+            "assigned_recent",
+            "volunteer_stale",
+            "sla_resolve_breach",
+            "sla_assign_breach",
+        }
+        and notseen_hours is None
+    ):
         return base_query
 
     if risk == "stale":
@@ -2683,6 +2835,24 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
             Request.created_at >= (now - timedelta(days=7)),
             Request.assigned_volunteer_id.isnot(None),
         )
+    elif risk == "volunteer_stale":
+        base_query = base_query.filter(
+            Request.created_at < (now - timedelta(hours=VOLUNTEER_ASSIGN_SLA_HOURS)),
+            Request.assigned_volunteer_id.is_(None),
+        )
+        base_query = base_query.filter(open_filter)
+    elif risk == "sla_resolve_breach":
+        base_query = base_query.filter(
+            Request.created_at < (now - timedelta(days=RESOLVE_SLA_DAYS)),
+            Request.completed_at.is_(None),
+        )
+        base_query = base_query.filter(open_filter)
+    elif risk == "sla_assign_breach":
+        base_query = base_query.filter(
+            Request.created_at < (now - timedelta(hours=ASSIGN_SLA_HOURS)),
+            Request.owned_at.is_(None),
+        )
+        base_query = base_query.filter(open_filter)
     elif notseen_hours is not None:
         notseen_subq, _source = _build_notseen_subquery(now, hours=notseen_hours)
         base_query = base_query.filter(Request.id.in_(notseen_subq))
@@ -3466,6 +3636,9 @@ def admin_request_assign(req_id: int):
     )
     db.session.commit()
     flash("Заявката е assign-ната към теб.", "success")
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and next_url.startswith("/"):
+        return redirect(next_url)
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 

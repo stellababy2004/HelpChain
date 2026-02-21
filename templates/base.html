@@ -53,7 +53,7 @@
     {% block head %}{% endblock %}
   </head>
 
-  <body class="{% block body_class %}{% endblock %}">
+  <body class="{% block body_class %}{% endblock %}" data-hc-page="{{ request.path }}">
     <a href="#main-content" class="visually-hidden-focusable">
       {{ _('Skip to main content') }}
     </a>
@@ -112,6 +112,11 @@
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep == 'main.gouvernance' else '' }}" href="{{ url_for('main.gouvernance') }}" {% if ep == 'main.gouvernance' %}aria-current="page"{% endif %}>
+                <i class="fas fa-landmark me-1" aria-hidden="true"></i>Institution
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.pilot') else '' }}" href="{{ url_for('main.pilot') }}" data-hc-nav="kpi" {% if ep.startswith('main.pilot') %}aria-current="page"{% endif %}>
                 <span class="hc-navicon" aria-hidden="true"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
                 <span class="hc-navlabel">{{ _('Pilot (KPI)') }}</span>
@@ -139,6 +144,12 @@
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="{{ url_for('admin.admin_pro_access_list') }}">Pro Access</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('admin.admin_sla_breakdown') }}">SLA</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ url_for('admin.admin_audit') }}">Audit</a>
                 </li>
               {% endif %}
               <li class="nav-item">
@@ -365,28 +376,25 @@
     </div>
 
     <!-- Footer -->
-    {% if not minimal_page %}
-    <footer class="footer hc-footer-institutional text-center bg-dark text-white mt-5">
+    <footer class="hc-footer hc-footer-institutional mt-auto" role="contentinfo">
       <div class="container">
-        <div>© 2025 HelpChain</div>
-        <div class="footer-meta">
-          Données hébergées en Europe • Conforme RGPD • Sécurité renforcée • Développé et opéré en France
-        </div>
-        <div class="footer-links">
-          <a href="/about">À propos</a> ·
-          <a href="/legal">Mentions légales</a> ·
-          <a href="/contact">Contact</a>
-        </div>
+        <div class="hc-footer__top">
+          <div class="hc-footer__copyright">&copy; {{ current_year|default(2026) }} HelpChain</div>
 
+          <div class="hc-footer__trust">
+            Données hébergées en Europe · Conforme RGPD · Sécurité renforcée · Développé et opéré en France
+          </div>
+
+          <nav class="hc-footer__nav" aria-label="Footer">
+            <a class="hc-footer__link" href="{{ url_for('main.about') }}">À propos</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.mentions_legales') }}">Mentions légales</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.contact') }}">Contact</a>
+          </nav>
+        </div>
       </div>
     </footer>
-    {% else %}
-    <footer class="hc-footer-min hc-footer-institutional">
-      <div class="hc-footer-min__wrap">
-        © 2025 HelpChain · Données hébergées en Europe • Conforme RGPD • Sécurité renforcée · Développé et opéré en France
-      </div>
-    </footer>
-    {% endif %}
     <div id="hc-toast" class="hc-toast" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Bootstrap JS -->
