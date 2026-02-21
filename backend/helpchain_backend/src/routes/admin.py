@@ -2647,6 +2647,7 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
 def build_requests_query(base_query, request_args):
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
+    category = (request_args.get("category") or "").strip()
     risk = (request_args.get("risk") or "").strip().lower()
     show_deleted = (request_args.get("deleted") or "").strip() == "1"
     now = datetime.utcnow()
@@ -2670,6 +2671,8 @@ def build_requests_query(base_query, request_args):
                 Request.description.ilike(like),
             )
         )
+    if category:
+        base_query = base_query.filter(func.lower(Request.category) == category.lower())
 
     base_query = apply_risk_filter(base_query, risk, now)
 

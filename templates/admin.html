@@ -23,6 +23,7 @@
       rel="stylesheet"
     />
 
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}" />
         <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}" />
     </head>
 
@@ -211,70 +212,48 @@
         </div>
       </div>
 
-      <!-- Pilotage KPI (30d) -->
-      <div class="actions-section fade-in mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h3 class="mb-0">
-            <i class="fas fa-chart-line text-primary me-2"></i>Pilotage (30j)
-          </h3>
-          <small class="text-muted">
-            <a href="/admin/api/ops-kpis" target="_blank" rel="noopener">API</a>
-          </small>
+      <section class="hc-ops-kpis fade-in" data-days="30">
+        <div class="hc-ops-kpis__header">
+          <h2 class="hc-h2">Pilotage opérationnel</h2>
+          <div class="hc-ops-kpis__meta">Fenêtre: 30 jours</div>
         </div>
 
-        <div class="row g-3" id="hcOpsKpiCards">
-          <div class="col-xl-2 col-md-4 col-6">
-            <div class="hc-kpi-card">
-              <div class="hc-kpi-card__label">Nouveaux</div>
-              <div class="hc-kpi-card__value" data-kpi="new_requests">—</div>
-            </div>
+        <div class="hc-ops-kpis__grid">
+          <div class="hc-kpi-card">
+            <div class="hc-kpi-label">Nouveaux dossiers</div>
+            <div class="hc-kpi-value" id="kpi-new">—</div>
           </div>
-          <div class="col-xl-2 col-md-4 col-6">
-            <div class="hc-kpi-card">
-              <div class="hc-kpi-card__label">Résolus</div>
-              <div class="hc-kpi-card__value" data-kpi="resolved_requests">—</div>
-            </div>
-          </div>
-          <div class="col-xl-2 col-md-4 col-6">
-            <div class="hc-kpi-card">
-              <div class="hc-kpi-card__label">Assign avg (h)</div>
-              <div class="hc-kpi-card__value" data-kpi="avg_owner_assign_hours">—</div>
-            </div>
-          </div>
-          <div class="col-xl-2 col-md-4 col-6">
-            <div class="hc-kpi-card">
-              <div class="hc-kpi-card__label">Resolve avg (h)</div>
-              <div class="hc-kpi-card__value" data-kpi="avg_resolve_hours">—</div>
-            </div>
-          </div>
-          <div class="col-xl-2 col-md-4 col-6">
-            <div class="hc-kpi-card">
-              <div class="hc-kpi-card__label">Stale >7d</div>
-              <div class="hc-kpi-card__value" data-kpi="stale_over_7d">—</div>
-            </div>
-          </div>
-          <div class="col-xl-2 col-md-4 col-6">
-            <div class="hc-kpi-card">
-              <div class="hc-kpi-card__label">Window</div>
-              <div class="hc-kpi-card__value"><span data-kpi="window_days">30</span>d</div>
-            </div>
-          </div>
-        </div>
 
-        <div class="table-responsive mt-3">
-          <table class="table table-sm align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Catégorie</th>
-                <th class="text-end">Count</th>
-              </tr>
-            </thead>
-            <tbody id="hcOpsByCategory">
-              <tr><td colspan="2" class="text-muted">Loading…</td></tr>
-            </tbody>
-          </table>
+          <div class="hc-kpi-card">
+            <div class="hc-kpi-label">Résolus</div>
+            <div class="hc-kpi-value" id="kpi-resolved">—</div>
+          </div>
+
+          <div class="hc-kpi-card">
+            <div class="hc-kpi-label">Délai moyen assignation</div>
+            <div class="hc-kpi-value" id="kpi-assign">—</div>
+            <div class="hc-kpi-sub">heures</div>
+          </div>
+
+          <div class="hc-kpi-card">
+            <div class="hc-kpi-label">Délai moyen résolution</div>
+            <div class="hc-kpi-value" id="kpi-resolve">—</div>
+            <div class="hc-kpi-sub">heures</div>
+          </div>
+
+          <div class="hc-kpi-card hc-kpi-card--alert">
+            <div class="hc-kpi-label">Dossiers &gt; 7j</div>
+            <div class="hc-kpi-value" id="kpi-stale">—</div>
+          </div>
+
+          <div class="hc-kpi-card hc-kpi-card--wide">
+            <div class="hc-kpi-label">Répartition par catégorie</div>
+            <ul class="hc-kpi-list" id="kpi-category">
+              <li>—</li>
+            </ul>
+          </div>
         </div>
-      </div>
+      </section>
 
       <!-- Quick Actions -->
       <div class="actions-section fade-in">
@@ -424,9 +403,8 @@
 
     <!-- Bootstrap JS -->
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}" defer></script>
-
     <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}" defer></script>
     <script>
       // Theme Toggle Functionality
       const themeToggle = document.getElementById("themeToggle");

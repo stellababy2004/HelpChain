@@ -60,6 +60,56 @@
     </div>
   </div>
 
+  <section class="hc-ops-kpis mb-3" data-days="30">
+    <div class="hc-ops-kpis__header">
+      <h2 class="hc-h2">Pilotage opérationnel</h2>
+      <div class="hc-ops-kpis__controls">
+        <span class="hc-ops-kpis__meta" id="opsWindowLabel">Fenêtre: 30 jours</span>
+        <select id="opsDaysSelect" class="form-select form-select-sm hc-ops-kpis__select" data-ops-days>
+          <option value="7">7 jours</option>
+          <option value="30" selected>30 jours</option>
+          <option value="90">90 jours</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="hc-ops-kpis__grid">
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-label">Nouveaux dossiers</div>
+        <div class="hc-kpi-value" id="kpi-new">—</div>
+      </div>
+
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-label">Résolus</div>
+        <div class="hc-kpi-value" id="kpi-resolved">—</div>
+      </div>
+
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-label">Délai moyen assignation</div>
+        <div class="hc-kpi-value" id="kpi-assign">—</div>
+        <div class="hc-kpi-sub">heures</div>
+      </div>
+
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-label">Délai moyen résolution</div>
+        <div class="hc-kpi-value" id="kpi-resolve">—</div>
+        <div class="hc-kpi-sub">heures</div>
+      </div>
+
+      <div class="hc-kpi-card hc-kpi-card--alert" id="kpi-stale-card">
+        <div class="hc-kpi-label">Dossiers en attente &gt; 7j</div>
+        <div class="hc-kpi-value" id="kpi-stale">—</div>
+      </div>
+
+      <div class="hc-kpi-card hc-kpi-card--wide">
+        <div class="hc-kpi-label">Répartition par catégorie</div>
+        <ul class="hc-kpi-list" id="kpi-category">
+          <li>—</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <form class="row g-2 mb-3" method="GET" action="{{ safe_url_for('admin.admin_requests') }}">
     <div class="col-md-3">
       <select class="form-select" name="status" aria-label="{{ _('Status') }}">
@@ -76,6 +126,9 @@
             <input class="form-control" type="text" name="q" value="{{ q or '' }}"
               placeholder="{{ _('Search by name, title, description...') }}" aria-label="{{ _('Search') }}" />
     </div>
+    {% if request.args.get('category') %}
+    <input type="hidden" name="category" value="{{ request.args.get('category') }}">
+    {% endif %}
 
     <div class="col-md-3 d-grid">
       <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
@@ -95,6 +148,41 @@
       </div>
     </div>
   </form>
+
+  {% if request.args.get('category') %}
+  <div class="mb-3">
+    <span class="badge text-bg-primary">
+      Category: {{ request.args.get('category') }}
+    </span>
+    <a class="btn btn-link btn-sm" href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None) }}">Clear</a>
+  </div>
+  {% endif %}
+
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('admin.admin_requests_export_csv') }}"
+       onclick="return confirm({{ export_confirm|tojson }});">
+      Export CSV
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('admin.admin_requests_export_xlsx') }}"
+       onclick="return confirm({{ export_confirm|tojson }});">
+      Export XLSX
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('admin.admin_requests_export_csv_anonymized') }}"
+       onclick="return confirm({{ export_confirm|tojson }});">
+      Export CSV (anonymized)
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('admin.admin_requests_export_xlsx_anonymized') }}"
+       onclick="return confirm({{ export_confirm|tojson }});">
+      Export XLSX (anonymized)
+    </a>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_audit', entity='export') }}">
+      View export logs
+    </a>
+  </div>
 
   <div class="table-responsive">
     <table class="table table-hover align-middle">
@@ -245,16 +333,18 @@
             </div>
           </td>
           <td class="text-end">
-            {% if r.assigned_volunteer_id %}
-              <form method="post" action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}" class="d-inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit"
-                        class="btn btn-sm btn-outline-primary me-1"
-                        title="Send in-app reminder to assigned volunteer">
-                  Nudge
-                </button>
-              </form>
-            {% endif %}
+            {% set nu = (nudge_ui or {}).get(r.id, {}) %}
+            {% set is_disabled = nu.get('disabled', False) %}
+            {% set tip = nu.get('title', 'Send reminder to assigned volunteer') %}
+            <form method="post" action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit"
+                      class="btn btn-sm {{ 'btn-outline-secondary' if is_disabled else 'btn-outline-primary' }} me-1"
+                      title="{{ tip }}"
+                      {% if is_disabled %}disabled aria-disabled="true"{% endif %}>
+                Nudge
+              </button>
+            </form>
             <a class="btn btn-sm btn-outline-light" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
           </td>
         </tr>
@@ -293,5 +383,6 @@
 <script src="{{ url_for('static', filename='js/admin-requests-filters.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-copy-link.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-requests-rowclick.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}"></script>
 {% endblock %}
 
