@@ -58,6 +58,8 @@ from ..security_logging import log_security_event
 
 INVALID_CREDENTIALS_MSG = "Invalid credentials."
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
+ASSIGN_SLA_HOURS = 48
+RESOLVE_SLA_DAYS = 7
 NOTSEEN_TIERS_HOURS = (24, 48, 72)
 PRO_ACCESS_STATUSES = ("new", "reviewed", "approved", "rejected")
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
@@ -1750,6 +1752,41 @@ def admin_ops_kpis():
         for status, count in by_status_rows
     ]
 
+    # --- SLA breach detection ---
+    assign_deadline = now - timedelta(hours=ASSIGN_SLA_HOURS)
+    resolve_deadline = now - timedelta(days=RESOLVE_SLA_DAYS)
+    open_filter = or_(
+        Request.status.is_(None), ~func.lower(Request.status).in_(CLOSED_STATUSES)
+    )
+
+    assign_breach_count = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.created_at.isnot(None))
+        .filter(Request.created_at < assign_deadline)
+        .filter(Request.owned_at.is_(None))
+        .filter(open_filter)
+        .scalar()
+        or 0
+    )
+
+    resolve_breach_count = (
+        db.session.query(func.count(Request.id))
+        .filter(Request.created_at.isnot(None))
+        .filter(Request.created_at < resolve_deadline)
+        .filter(Request.completed_at.is_(None))
+        .filter(open_filter)
+        .scalar()
+        or 0
+    )
+
+    # --- Health scoring (SLA-driven) ---
+    if resolve_breach_count > 0:
+        health_status = "critique"
+    elif assign_breach_count > 0:
+        health_status = "sous_tension"
+    else:
+        health_status = "stable"
+
     return jsonify(
         {
             "window_days": days,
@@ -1763,6 +1800,15 @@ def admin_ops_kpis():
             "definition": {
                 "assignment": "owner assignment (owner_id + owned_at)",
                 "resolution": "completed_at not null",
+            },
+            "sla": {
+                "assign_sla_hours": ASSIGN_SLA_HOURS,
+                "resolve_sla_days": RESOLVE_SLA_DAYS,
+                "assign_breach_count": int(assign_breach_count),
+                "resolve_breach_count": int(resolve_breach_count),
+            },
+            "health": {
+                "status": health_status,
             },
         }
     )

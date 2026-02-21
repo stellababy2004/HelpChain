@@ -3224,6 +3224,84 @@ a{
 
 .hc-ops-kpis { margin-bottom: 40px; }
 
+.hc-health {
+  margin-bottom: 25px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: rgba(15, 23, 42, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #0f172a;
+}
+
+.hc-health__label {
+  font-size: 0.9rem;
+  opacity: 1;
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.hc-health__sub {
+  margin-top: 4px;
+  font-size: 0.84rem;
+  color: rgba(15, 23, 42, 0.68);
+}
+
+.hc-health__value {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.hc-health__cta-container {
+  margin-top: 6px;
+}
+
+.hc-health__cta {
+  font-size: 0.85rem;
+  text-decoration: none;
+  opacity: 0.9;
+  color: inherit;
+}
+
+.hc-health__cta:hover {
+  text-decoration: underline;
+}
+
+.hc-health--stable {
+  background: rgba(22, 163, 74, 0.08);
+  border-color: rgba(22, 163, 74, 0.4);
+}
+
+.hc-health--warning {
+  background: rgba(245, 158, 11, 0.09);
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.hc-health--danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.42);
+}
+
+.hc-health--stable .hc-health__value,
+.hc-health--stable .hc-health__cta,
+.hc-health--stable .hc-health__sub {
+  color: #166534;
+}
+
+.hc-health--warning .hc-health__value,
+.hc-health--warning .hc-health__cta,
+.hc-health--warning .hc-health__sub {
+  color: #92400e;
+}
+
+.hc-health--danger .hc-health__value,
+.hc-health--danger .hc-health__cta,
+.hc-health--danger .hc-health__sub {
+  color: #b91c1c;
+}
+
 .hc-ops-kpis__header {
   display: flex;
   justify-content: space-between;
@@ -3265,12 +3343,18 @@ a{
 }
 
 .hc-kpi-card--alert {
-  border: 1px solid rgba(255, 80, 80, 0.4);
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
-.hc-kpi-card--danger {
-  border-color: rgba(220, 38, 38, 0.55);
-  background: #fff7f7;
+.hc-kpi-card--focus {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: #fffdf7;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.15) inset;
+}
+
+.hc-kpi-card--warning {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: #fffefa;
 }
 
 .hc-kpi-card--healthy {

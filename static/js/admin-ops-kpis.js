@@ -38,9 +38,60 @@ document.addEventListener("DOMContentLoaded", function () {
         const stale = Number(data.stale_over_7d ?? 0);
         if (elStale) elStale.textContent = stale;
         const staleCard = document.getElementById("kpi-stale-card");
+        const ctaContainer = document.getElementById("hc-health-cta");
         if (staleCard) {
-          staleCard.classList.toggle("hc-kpi-card--danger", stale > 0);
-          staleCard.classList.toggle("hc-kpi-card--healthy", stale === 0);
+          staleCard.classList.remove(
+            "hc-kpi-card--focus",
+            "hc-kpi-card--warning",
+            "hc-kpi-card--healthy",
+          );
+        }
+        if (ctaContainer) {
+          ctaContainer.innerHTML = "";
+        }
+
+        const healthEl = document.getElementById("hc-health-value");
+        const healthWrapper = document.getElementById("hc-health");
+        const healthSubEl = document.getElementById("hc-health-sub");
+        if (healthEl && healthWrapper) {
+          healthWrapper.classList.remove(
+            "hc-health--stable",
+            "hc-health--warning",
+            "hc-health--danger",
+          );
+          const status = data.health && data.health.status;
+          const sla = data.sla || {};
+          const assignB = Number(sla.assign_breach_count || 0);
+          const resolveB = Number(sla.resolve_breach_count || 0);
+          let line = "Aucun dépassement SLA";
+          if (resolveB > 0) {
+            line = `SLA résolution dépassé : ${resolveB} dossiers`;
+          } else if (assignB > 0) {
+            line = `SLA assignation dépassé : ${assignB} dossiers`;
+          }
+          if (healthSubEl) healthSubEl.textContent = line;
+          if (status === "stable") {
+            healthEl.textContent = "Stable";
+            healthWrapper.classList.add("hc-health--stable");
+            if (staleCard) staleCard.classList.add("hc-kpi-card--healthy");
+          } else if (status === "sous_tension") {
+            healthEl.textContent = "Sous tension";
+            healthWrapper.classList.add("hc-health--warning");
+            if (staleCard) staleCard.classList.add("hc-kpi-card--warning");
+          } else if (status === "critique") {
+            healthEl.textContent = "Critique";
+            healthWrapper.classList.add("hc-health--danger");
+            if (staleCard) staleCard.classList.add("hc-kpi-card--focus");
+            if (ctaContainer) {
+              const link = document.createElement("a");
+              link.href = "?risk=stale";
+              link.className = "hc-health__cta";
+              link.textContent = "Voir les dossiers en attente > 7j →";
+              ctaContainer.appendChild(link);
+            }
+          } else {
+            healthEl.textContent = "—";
+          }
         }
 
         const categoryList = document.getElementById("kpi-category");
