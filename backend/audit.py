@@ -7,7 +7,10 @@ from flask_login import current_user
 from sqlalchemy.orm import Session
 
 from backend.extensions import db
-from backend.models import ActivityLog
+try:
+    from backend.models import ActivityLog
+except ImportError:
+    ActivityLog = None
 
 
 def log_activity(
@@ -28,6 +31,9 @@ def log_activity(
     Centralized audit trail writer.
     Caller owns transaction/commit.
     """
+    if ActivityLog is None:
+        return
+
     if actor_user_id is None:
         try:
             actor_user_id = getattr(current_user, "id", None)

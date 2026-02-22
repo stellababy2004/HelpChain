@@ -39,9 +39,7 @@ from backend.helpchain_backend.src.statuses import (
 from ..config import Config
 from ..models import (
     AdminUser,
-    ActivityLog,
     Notification,
-    ProAccessRequest,
     ProfessionalLead,
     Request,
     RequestActivity,
@@ -53,6 +51,11 @@ from ..models import (
     VolunteerRequestState,
     utc_now,
 )
+try:
+    from ..models import ProAccessRequest
+except ImportError:
+    ProAccessRequest = None
+
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..security_logging import log_security_event
 
@@ -3192,15 +3195,7 @@ def admin_request_details(req_id: int):
     admin_id = current_user.id
     now = _now_utc()
     latest_actions = []
-    if _table_has_column("activity_logs", "id"):
-        audit_logs = (
-            ActivityLog.query.filter_by(entity_type="request", entity_id=req_id)
-            .order_by(ActivityLog.created_at.desc())
-            .limit(50)
-            .all()
-        )
-    else:
-        audit_logs = []
+    audit_logs = []
     if activities_supported:
         latest_actions = (
             RequestActivity.query.filter_by(request_id=req_id)
@@ -3974,6 +3969,9 @@ def admin_professionnels_leads():
 @login_required
 @admin_required
 def admin_pro_access_list():
+    if ProAccessRequest is None:
+        abort(404)
+
     status = (request.args.get("status") or "new").strip().lower()
     if status not in PRO_ACCESS_STATUSES and status != "all":
         status = "new"
@@ -4011,66 +4009,16 @@ def admin_audit():
     entity = (request.args.get("entity") or "all").strip().lower()
     action = (request.args.get("action") or "all").strip().lower()
     q = (request.args.get("q") or "").strip()
-    page = max(1, int(request.args.get("page", 1) or 1))
-    per_page = 100
-
-    if not _table_has_column("activity_logs", "id"):
-        return render_template(
-            "admin/audit.html",
-            rows=[],
-            pagination=None,
-            entity=entity,
-            action=action,
-            q=q,
-            entities=[],
-            actions=[],
-            total=0,
-        ), 200
-
-    base = ActivityLog.query
-    if entity != "all":
-        base = base.filter(ActivityLog.entity_type == entity)
-    if action != "all":
-        base = base.filter(ActivityLog.action == action)
-    if q:
-        like = f"%{q}%"
-        base = base.filter(
-            or_(
-                ActivityLog.message.ilike(like),
-                ActivityLog.actor_email.ilike(like),
-                ActivityLog.old_value.ilike(like),
-                ActivityLog.new_value.ilike(like),
-            )
-        )
-
-    base = base.order_by(ActivityLog.created_at.desc(), ActivityLog.id.desc())
-    pagination = base.paginate(page=page, per_page=per_page, error_out=False)
-    rows = pagination.items
-
-    entities = [
-        r[0]
-        for r in db.session.query(ActivityLog.entity_type)
-        .filter(ActivityLog.entity_type.isnot(None))
-        .distinct()
-        .order_by(ActivityLog.entity_type.asc())
-        .all()
-        if r and r[0]
-    ]
-    actions_q = db.session.query(ActivityLog.action).filter(ActivityLog.action.isnot(None))
-    if entity != "all":
-        actions_q = actions_q.filter(ActivityLog.entity_type == entity)
-    actions = [r[0] for r in actions_q.distinct().order_by(ActivityLog.action.asc()).all() if r and r[0]]
-
     return render_template(
         "admin/audit.html",
-        rows=rows,
-        pagination=pagination,
+        rows=[],
+        pagination=None,
         entity=entity,
         action=action,
         q=q,
-        entities=entities,
-        actions=actions,
-        total=int(pagination.total or 0),
+        entities=[],
+        actions=[],
+        total=0,
     ), 200
 
 
@@ -4078,16 +4026,11 @@ def admin_audit():
 @login_required
 @admin_required
 def admin_pro_access_detail(pro_id: int):
+    if ProAccessRequest is None:
+        abort(404)
+
     row = ProAccessRequest.query.get_or_404(pro_id)
-    if _table_has_column("activity_logs", "id"):
-        audit_logs = (
-            ActivityLog.query.filter_by(entity_type="pro_access", entity_id=pro_id)
-            .order_by(ActivityLog.created_at.desc())
-            .limit(50)
-            .all()
-        )
-    else:
-        audit_logs = []
+    audit_logs = []
     return render_template(
         "admin/pro_access_detail.html",
         row=row,
@@ -4120,6 +4063,9 @@ def _pro_access_set_status(row: ProAccessRequest, new_status: str, note: str | N
 @login_required
 @admin_required
 def admin_pro_access_review(pro_id: int):
+    if ProAccessRequest is None:
+        abort(404)
+
     row = ProAccessRequest.query.get_or_404(pro_id)
     note = (request.form.get("admin_notes") or "").strip() or None
     _pro_access_set_status(row, "reviewed", note)
@@ -4132,6 +4078,9 @@ def admin_pro_access_review(pro_id: int):
 @login_required
 @admin_required
 def admin_pro_access_approve(pro_id: int):
+    if ProAccessRequest is None:
+        abort(404)
+
     row = ProAccessRequest.query.get_or_404(pro_id)
     note = (request.form.get("admin_notes") or "").strip() or None
     _pro_access_set_status(row, "approved", note)
@@ -4144,6 +4093,9 @@ def admin_pro_access_approve(pro_id: int):
 @login_required
 @admin_required
 def admin_pro_access_reject(pro_id: int):
+    if ProAccessRequest is None:
+        abort(404)
+
     row = ProAccessRequest.query.get_or_404(pro_id)
     note = (request.form.get("admin_notes") or "").strip() or None
     _pro_access_set_status(row, "rejected", note)
