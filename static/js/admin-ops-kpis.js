@@ -3,6 +3,29 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!section) return;
   const select = section.querySelector("[data-ops-days]");
   const windowLabel = document.getElementById("opsWindowLabel");
+  const globalCtaLink = document.getElementById("hc-health-cta-link");
+  const globalCtaContainer = document.querySelector(".hc-health__cta-container");
+
+  function navigateFromCta(e) {
+    if (!globalCtaLink) return;
+    const href = globalCtaLink.getAttribute("href");
+    if (!href || href === "#" || globalCtaLink.hidden) return;
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    window.location.assign(href);
+  }
+
+  if (globalCtaLink) {
+    globalCtaLink.addEventListener("click", navigateFromCta, true);
+  }
+  if (globalCtaContainer) {
+    globalCtaContainer.addEventListener("click", function (e) {
+      if (!globalCtaLink || globalCtaLink.hidden) return;
+      navigateFromCta(e);
+    }, true);
+  }
 
   function formatHours(hours) {
     const n = Number(hours);
@@ -38,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const stale = Number(data.stale_over_7d ?? 0);
         if (elStale) elStale.textContent = stale;
         const staleCard = document.getElementById("kpi-stale-card");
-        const ctaContainer = document.getElementById("hc-health-cta");
+        const ctaLink = document.getElementById("hc-health-cta-link");
         if (staleCard) {
           staleCard.classList.remove(
             "hc-kpi-card--focus",
@@ -46,13 +69,17 @@ document.addEventListener("DOMContentLoaded", function () {
             "hc-kpi-card--healthy",
           );
         }
-        if (ctaContainer) {
-          ctaContainer.innerHTML = "";
+        if (ctaLink) {
+          ctaLink.hidden = true;
+          ctaLink.setAttribute("href", "#");
+          ctaLink.textContent = "—";
+          ctaLink.classList.remove("is-active");
         }
 
         const healthEl = document.getElementById("hc-health-value");
         const healthWrapper = document.getElementById("hc-health");
         const healthSubEl = document.getElementById("hc-health-sub");
+        const healthSecondaryEl = document.getElementById("hc-health-secondary");
         if (healthEl && healthWrapper) {
           healthWrapper.classList.remove(
             "hc-health--stable",
@@ -64,12 +91,41 @@ document.addEventListener("DOMContentLoaded", function () {
           const assignB = Number(sla.assign_breach_count || 0);
           const resolveB = Number(sla.resolve_breach_count || 0);
           let line = "Aucun dépassement SLA";
+          let cta = null;
+
+          // Single-Action Rule: resolve -> assign -> volunteer -> none
           if (resolveB > 0) {
             line = `SLA résolution dépassé : ${resolveB} dossiers`;
+            cta = {
+              href: "/admin/requests?risk=sla_resolve_breach",
+              text: "Voir les dossiers en dépassement SLA résolution →",
+            };
           } else if (assignB > 0) {
             line = `SLA assignation dépassé : ${assignB} dossiers`;
+            cta = {
+              href: "/admin/requests?risk=sla_assign_breach",
+              text: "Voir les dossiers en dépassement SLA assignation →",
+            };
           }
           if (healthSubEl) healthSubEl.textContent = line;
+          if (healthSecondaryEl) {
+            healthSecondaryEl.innerHTML = "";
+            const volunteerSla = data.volunteer_sla || {};
+            const volunteerBreaches = Number(
+              volunteerSla.volunteer_assign_breach_count || 0,
+            );
+            if (volunteerBreaches > 0) {
+              const text = document.createElement("span");
+              text.textContent = `Affectation bénévole en retard : ${volunteerBreaches} dossiers`;
+              healthSecondaryEl.appendChild(text);
+              if (!cta) {
+                cta = {
+                  href: "/admin/requests?risk=volunteer_stale",
+                  text: "Voir les affectations bénévoles en retard →",
+                };
+              }
+            }
+          }
           if (status === "stable") {
             healthEl.textContent = "Stable";
             healthWrapper.classList.add("hc-health--stable");
@@ -82,15 +138,15 @@ document.addEventListener("DOMContentLoaded", function () {
             healthEl.textContent = "Critique";
             healthWrapper.classList.add("hc-health--danger");
             if (staleCard) staleCard.classList.add("hc-kpi-card--focus");
-            if (ctaContainer) {
-              const link = document.createElement("a");
-              link.href = "?risk=stale";
-              link.className = "hc-health__cta";
-              link.textContent = "Voir les dossiers en attente > 7j →";
-              ctaContainer.appendChild(link);
-            }
           } else {
             healthEl.textContent = "—";
+          }
+
+          if (ctaLink && cta) {
+            ctaLink.href = cta.href;
+            ctaLink.textContent = cta.text;
+            ctaLink.hidden = false;
+            ctaLink.classList.add("is-active");
           }
         }
 
