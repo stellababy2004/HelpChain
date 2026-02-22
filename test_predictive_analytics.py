@@ -20,11 +20,15 @@ def test_predictive_analytics():
 
         print("\nTesting regional demand forecast...")
         forecast = predictive_analytics.get_regional_demand_forecast(days_ahead=7)
-        print(f"✓ Regional forecast generated: {len(forecast.get('forecast', []))} regions")
+        print(
+            f"✓ Regional forecast generated: {len(forecast.get('forecast', []))} regions"
+        )
 
         print("\nTesting workload prediction...")
         workload = predictive_analytics.get_workload_prediction(hours_ahead=24)
-        print(f"✓ Workload prediction generated: {len(workload.get('predictions', []))} hours")
+        print(
+            f"✓ Workload prediction generated: {len(workload.get('predictions', []))} hours"
+        )
 
         print("\nTesting predictive insights...")
         insights = predictive_analytics.get_predictive_insights()
@@ -35,8 +39,12 @@ def test_predictive_analytics():
         # Print sample data
         if forecast.get("forecast"):
             sample_region = forecast["forecast"][0]
-            print(f"\nSample regional forecast for {sample_region.get('region', 'Unknown')}:")
-            print(f"  - Predicted requests: {sample_region.get('predicted_requests', 0)}")
+            print(
+                f"\nSample regional forecast for {sample_region.get('region', 'Unknown')}:"
+            )
+            print(
+                f"  - Predicted requests: {sample_region.get('predicted_requests', 0)}"
+            )
             print(f"  - Confidence: {sample_region.get('confidence', 0):.2f}")
 
         if workload.get("predictions"):

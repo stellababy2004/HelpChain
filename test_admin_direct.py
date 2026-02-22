@@ -33,7 +33,9 @@ with app.app_context():
     admin = AdminUser.query.filter_by(username="admin").first()
     if admin:
         print(f"Admin found: {admin.username}")
-        print(f"Password check {os.getenv('ADMIN_PASSWORD', 'Admin123')}: {admin.check_password(os.getenv('ADMIN_PASSWORD', 'Admin123'))}")
+        print(
+            f"Password check {os.getenv('ADMIN_PASSWORD', 'Admin123')}: {admin.check_password(os.getenv('ADMIN_PASSWORD', 'Admin123'))}"
+        )
         print(f"Password check admin123: {admin.check_password('admin123')}")
     else:
         print("No admin found")

@@ -29,7 +29,15 @@ def chat():
         reply = result.get("response", "Няма отговор от AI.")
         return jsonify({"reply": reply, "ok": True}), 200
     except Exception as e:
-        return jsonify({"reply": "Извиняваме се, възникна временен проблем с автоматичния отговор. Моля, опитайте отново по-късно или се свържете с екипа на HelpChain.", "ok": False}), 500
+        return (
+            jsonify(
+                {
+                    "reply": "Извиняваме се, възникна временен проблем с автоматичния отговор. Моля, опитайте отново по-късно или се свържете с екипа на HelpChain.",
+                    "ok": False,
+                }
+            ),
+            500,
+        )
 
 
 @api_bp.post("/chatbot/message")
@@ -114,7 +122,11 @@ def notification_test():
     endpoint = data.get("endpoint")
 
     q = NotificationSubscription.query
-    sub = q.filter_by(endpoint=endpoint).first() if endpoint else q.order_by(NotificationSubscription.created_at.desc()).first()
+    sub = (
+        q.filter_by(endpoint=endpoint).first()
+        if endpoint
+        else q.order_by(NotificationSubscription.created_at.desc()).first()
+    )
 
     if not sub:
         return jsonify({"ok": False, "error": "no subscription"}), 404
@@ -156,7 +168,11 @@ def notification_test():
 @api_bp.route("/some_endpoint", methods=["GET"])
 def some_endpoint():
     # опитваме се да използваме подходящ method от контролера, ако има
-    fn = getattr(controller, "some_endpoint", None) or getattr(controller, "ping", None) or getattr(controller, "status", None)
+    fn = (
+        getattr(controller, "some_endpoint", None)
+        or getattr(controller, "ping", None)
+        or getattr(controller, "status", None)
+    )
     if callable(fn):
         try:
             out = fn()
@@ -248,7 +264,15 @@ def dashboard():
             func.nullif(Request.region, ""),
             "unknown",
         )
-        city_rows = db.session.query(city_expr.label("city"), func.count(Request.id).label("cnt")).group_by("city").order_by(func.count(Request.id).desc()).limit(10).all()
+        city_rows = (
+            db.session.query(
+                city_expr.label("city"), func.count(Request.id).label("cnt")
+            )
+            .group_by("city")
+            .order_by(func.count(Request.id).desc())
+            .limit(10)
+            .all()
+        )
         requests_by_city = [{"city": c, "count": int(cnt)} for c, cnt in city_rows]
 
         # 3) timeseries (daily) from created_at
@@ -273,15 +297,18 @@ def dashboard():
         except Exception:
             total_volunteers = 0
 
-        return jsonify(
-            {
-                "total_requests": total_requests,
-                "total_volunteers": total_volunteers,
-                "counts_by_status": counts_by_status,
-                "requests_by_city": requests_by_city,
-                "timeseries": timeseries,
-            }
-        ), 200
+        return (
+            jsonify(
+                {
+                    "total_requests": total_requests,
+                    "total_volunteers": total_volunteers,
+                    "counts_by_status": counts_by_status,
+                    "requests_by_city": requests_by_city,
+                    "timeseries": timeseries,
+                }
+            ),
+            200,
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -290,10 +317,15 @@ def dashboard():
 @require_roles("admin")
 def export():
     fmt = (request.args.get("format") or "excel").lower()
-    filters = {k: request.args.get(k) for k in ("date_from", "date_to", "status", "region", "volunteer_id")}
+    filters = {
+        k: request.args.get(k)
+        for k in ("date_from", "date_to", "status", "region", "volunteer_id")
+    }
     try:
         path, mimetype, filename = controller.export_requests(filters, fmt)
-        return send_file(path, mimetype=mimetype, as_attachment=True, download_name=filename)
+        return send_file(
+            path, mimetype=mimetype, as_attachment=True, download_name=filename
+        )
     except NotImplementedError:
         return jsonify({"error": "format not supported"}), 400
     except RuntimeError as e:
@@ -392,8 +424,13 @@ def get_nearby_volunteers():
         lat = float(request.args.get("lat", 0))
         lng = float(request.args.get("lng", 0))
         radius_km = float(request.args.get("radius", 10))  # default 10km
-        include_contacts = request.args.get("include_contacts", "false").lower() == "true"
-        can_see_contacts = include_contacts and (getattr(g, "api_is_admin", False) or getattr(g, "api_role", None) == "coordinator")
+        include_contacts = (
+            request.args.get("include_contacts", "false").lower() == "true"
+        )
+        can_see_contacts = include_contacts and (
+            getattr(g, "api_is_admin", False)
+            or getattr(g, "api_role", None) == "coordinator"
+        )
 
         # Simple distance calculation using Haversine formula
         # For production, consider using PostGIS or similar
@@ -403,13 +440,18 @@ def get_nearby_volunteers():
             R = 6371  # Earth radius in km
             dlat = radians(lat2 - lat1)
             dlon = radians(lon2 - lon1)
-            a = sin(dlat / 2) ** 2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+            a = (
+                sin(dlat / 2) ** 2
+                + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon / 2) ** 2
+            )
             c = 2 * atan2(sqrt(a), sqrt(1 - a))
             return R * c
 
         from ..models import Volunteer
 
-        volunteers = Volunteer.query.filter(Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)).all()
+        volunteers = Volunteer.query.filter(
+            Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)
+        ).all()
 
         nearby = []
         for vol in volunteers:
@@ -507,15 +549,34 @@ def public_impact():
 
         # Define "active" as not in done/completed/rejected/closed
         inactive_statuses = ("done", "completed", "rejected", "closed")
-        active_count = db.session.query(func.count(Request.id)).filter(or_(Request.status.is_(None), ~Request.status.in_(inactive_statuses))).scalar()
-
-        new_24h = db.session.query(func.count(Request.id)).filter(Request.created_at >= last_24h_from).scalar()
-
-        matched_24h = (
-            db.session.query(func.count(Request.id)).filter(Request.assigned_volunteer_id.isnot(None)).filter(Request.updated_at.isnot(None)).filter(Request.updated_at >= last_24h_from).scalar()
+        active_count = (
+            db.session.query(func.count(Request.id))
+            .filter(
+                or_(Request.status.is_(None), ~Request.status.in_(inactive_statuses))
+            )
+            .scalar()
         )
 
-        completed_7d = db.session.query(func.count(Request.id)).filter(Request.completed_at.isnot(None)).filter(Request.completed_at >= last_7d_from).scalar()
+        new_24h = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.created_at >= last_24h_from)
+            .scalar()
+        )
+
+        matched_24h = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.assigned_volunteer_id.isnot(None))
+            .filter(Request.updated_at.isnot(None))
+            .filter(Request.updated_at >= last_24h_from)
+            .scalar()
+        )
+
+        completed_7d = (
+            db.session.query(func.count(Request.id))
+            .filter(Request.completed_at.isnot(None))
+            .filter(Request.completed_at >= last_7d_from)
+            .scalar()
+        )
 
         # SLA metrics from RequestMetric if available
         avg_first_response = (
@@ -541,7 +602,13 @@ def public_impact():
             avg_resolution_hours = round(float(avg_resolution) / 3600, 1)
 
         # Categories last 7d with k-anonymity (k>=3)
-        cat_rows = db.session.query(Request.category, func.count(Request.id)).filter(Request.created_at >= last_7d_from).filter(Request.category.isnot(None)).group_by(Request.category).all()
+        cat_rows = (
+            db.session.query(Request.category, func.count(Request.id))
+            .filter(Request.created_at >= last_7d_from)
+            .filter(Request.category.isnot(None))
+            .group_by(Request.category)
+            .all()
+        )
         categories = []
         other_count = 0
         for cat, cnt in cat_rows:
@@ -556,9 +623,18 @@ def public_impact():
         data = {
             "generated_at": now.isoformat() + "Z",
             "window": {
-                "last_24h": {"from": last_24h_from.isoformat() + "Z", "to": now.isoformat() + "Z"},
-                "last_7d": {"from": last_7d_from.isoformat() + "Z", "to": now.isoformat() + "Z"},
-                "last_30d": {"from": last_30d_from.isoformat() + "Z", "to": now.isoformat() + "Z"},
+                "last_24h": {
+                    "from": last_24h_from.isoformat() + "Z",
+                    "to": now.isoformat() + "Z",
+                },
+                "last_7d": {
+                    "from": last_7d_from.isoformat() + "Z",
+                    "to": now.isoformat() + "Z",
+                },
+                "last_30d": {
+                    "from": last_30d_from.isoformat() + "Z",
+                    "to": now.isoformat() + "Z",
+                },
             },
             "counts": {
                 "active_requests": int(active_count or 0),

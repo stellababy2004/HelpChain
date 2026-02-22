@@ -1,0 +1,10 @@
+HelpChain — lien de connexion
+
+{{ intro_text or "Voici votre lien de connexion." }}
+Valable {{ ttl_minutes or 15 }} minutes.
+
+{{ magic_link_url }}
+
+{{ ignore_line or "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail." }}
+contact@helpchain.live
+

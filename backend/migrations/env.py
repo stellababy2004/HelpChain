@@ -5,6 +5,15 @@ from flask import current_app
 
 from alembic import context
 
+# Ensure model classes are imported so SQLAlchemy metadata is fully populated
+# for Alembic autogenerate runs.
+try:
+    import backend.models  # noqa: F401
+    import backend.helpchain_backend.src.models  # noqa: F401
+except Exception:
+    # Keep env.py resilient in constrained CI/startup contexts.
+    pass
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

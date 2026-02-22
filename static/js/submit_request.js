@@ -38,3 +38,68 @@
   io.observe(realSubmit);
 })();
 
+// --- Step 1.5.A: frontend-only anti-bot + single-submit (no enumeration) ---
+(() => {
+  const MIN_MS = 2500;
+
+  function init() {
+    const form = document.querySelector('form[data-hc-magic-link="request"]');
+    if (!form) return;
+
+    const GENERIC_OK =
+      form.dataset.hcGenericOk ||
+      "Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes.";
+
+    const started = Date.now();
+    const startedAt = form.querySelector("#started_at");
+    if (startedAt) startedAt.value = String(started);
+
+    const msgBox = form.querySelector("[data-hc-form-msg]");
+    let locked = false;
+
+    function showGenericOk() {
+      if (!msgBox) return;
+      msgBox.style.display = "block";
+      msgBox.textContent = GENERIC_OK;
+      msgBox.classList.add("is-ok");
+    }
+
+    form.addEventListener("submit", (e) => {
+      if (locked) {
+        e.preventDefault();
+        return;
+      }
+
+      const hp = form.querySelector("#hp_website");
+      const t = form.querySelector("#started_at");
+      const elapsedMs =
+        Date.now() - (t ? parseInt(t.value || "0", 10) : started);
+
+      // Bot signals: honeypot filled OR submitted too fast.
+      if ((hp && (hp.value || "").trim().length > 0) || elapsedMs < MIN_MS) {
+        e.preventDefault();
+        showGenericOk();
+        return;
+      }
+
+      locked = true;
+      // Show the same neutral message even for normal submits (anti-enumeration UX).
+      // The page will typically redirect quickly, but users still get immediate feedback.
+      showGenericOk();
+      const submits = Array.from(form.querySelectorAll('button[type="submit"], input[type="submit"]'));
+      submits.forEach((el) => {
+        el.disabled = true;
+        if (el.tagName === "BUTTON") {
+          el.dataset.originalText = el.textContent;
+          el.textContent = "Envoi…";
+        }
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();

@@ -1,0 +1,23 @@
+/* === Extracted from templates\\smart_matching.html === */
+.match-card {
+    transition: all 0.2s ease;
+  }
+
+  .match-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .request-card {
+    transition: all 0.2s ease;
+  }
+
+  .request-card:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .badge {
+    font-size: 0.7em;
+  }
+
+

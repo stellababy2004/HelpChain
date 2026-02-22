@@ -82,7 +82,9 @@ def test_initialize_default_roles_is_idempotent(standalone_app):
         assert Permission.query.count() == initial_permission_count
 
 
-def test_has_permission_with_session_context(app_with_defaults, standalone_admin_user_id):
+def test_has_permission_with_session_context(
+    app_with_defaults, standalone_admin_user_id
+):
     with app_with_defaults.test_request_context():
         session["user_id"] = standalone_admin_user_id
         assert has_permission(PermissionEnum.ADMIN_ACCESS.value)

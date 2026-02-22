@@ -142,7 +142,9 @@ def test_admin_login():
         login_page = session.get("http://localhost:8000/admin/login", timeout=5)
 
         if login_page.status_code != 200:
-            print_error(f"Login страницата не се зареди (код: {login_page.status_code})")
+            print_error(
+                f"Login страницата не се зареди (код: {login_page.status_code})"
+            )
             return False
 
         print_success("Login страницата се зареди успешно")
@@ -168,13 +170,17 @@ def test_admin_login():
 
                 # Тестваме достъп до dashboard
                 print_info("Тест на достъп до dashboard...")
-                dashboard_response = session.get("http://localhost:8000/admin/dashboard", timeout=5)
+                dashboard_response = session.get(
+                    "http://localhost:8000/admin/dashboard", timeout=5
+                )
 
                 if dashboard_response.status_code == 200:
                     print_success("Dashboard достъпен след login")
                     return True
                 else:
-                    print_error(f"Dashboard недостъпен (код: {dashboard_response.status_code})")
+                    print_error(
+                        f"Dashboard недостъпен (код: {dashboard_response.status_code})"
+                    )
                     return False
             else:
                 print_error(f"Неочакван redirect: {location}")

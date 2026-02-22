@@ -8,7 +8,9 @@ from flask import Flask
 from backend.extensions import db
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///C:/Users/Stella Barbarella/OneDrive/Documents/chatGPT/Projet BG/HelpChain/instance/volunteers.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    "sqlite:///C:/Users/Stella Barbarella/OneDrive/Documents/chatGPT/Projet BG/HelpChain/instance/volunteers.db"
+)
 db.init_app(app)
 
 with app.app_context():
@@ -16,7 +18,9 @@ with app.app_context():
         dashboard_stats = analytics_service.get_dashboard_analytics(days=30)
         print("Analytics service response:")
         print(f"Type: {type(dashboard_stats)}")
-        print(f"Keys: {list(dashboard_stats.keys()) if isinstance(dashboard_stats, dict) else 'Not a dict'}")
+        print(
+            f"Keys: {list(dashboard_stats.keys()) if isinstance(dashboard_stats, dict) else 'Not a dict'}"
+        )
 
         if isinstance(dashboard_stats, dict):
             for key, value in dashboard_stats.items():

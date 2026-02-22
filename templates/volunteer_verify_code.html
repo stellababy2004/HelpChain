@@ -5,117 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Верификация - HelpChain</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
     />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
-    <style>
-      body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: "Inter", sans-serif;
-      }
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/pages/volunteer_auth.css') }}"
+    />
+    </head>
 
-      .login-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        max-width: 400px;
-        width: 100%;
-      }
-
-      .login-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        text-align: center;
-      }
-
-      .login-body {
-        padding: 2rem;
-      }
-
-      .form-control {
-        border-radius: 10px;
-        border: 2px solid #e1e5e9;
-        padding: 0.75rem 1rem;
-        font-size: 1.5rem;
-        font-weight: bold;
-        text-align: center;
-        letter-spacing: 0.3rem;
-        transition: all 0.3s ease;
-      }
-
-      .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-      }
-
-      .btn-login {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 10px;
-        padding: 0.75rem 2rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: white;
-        width: 100%;
-        transition: all 0.3s ease;
-      }
-
-      .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-      }
-
-      .login-links {
-        text-align: center;
-        margin-top: 1.5rem;
-      }
-
-      .login-links a {
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 500;
-      }
-
-      .login-links a:hover {
-        text-decoration: underline;
-      }
-
-      .alert {
-        border-radius: 10px;
-        border: none;
-      }
-
-      .code-instructions {
-        text-align: center;
-        margin-bottom: 1.5rem;
-        color: #6c757d;
-        font-size: 0.9rem;
-      }
-
-      .resend-link {
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-      }
-
-      .resend-link:hover {
-        text-decoration: underline;
-      }
-    </style>
-  </head>
-
-  <body>
+  <body class="hc-page-volunteer-auth">
     <div class="login-card">
       <div class="login-header">
         <i class="fas fa-shield-alt fa-3x mb-3"></i>
@@ -182,17 +85,17 @@
 
         <div class="login-links">
           <p class="mb-2">
-            <a href="{{ safe_url_for('volunteer_login') }}" class="resend-link">
+            <a href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}" class="resend-link">
               <i class="fas fa-arrow-left me-1"></i>Обратно към вход
             </a>
           </p>
           <p class="mb-2">
-            <a href="#" onclick="resendCode()" class="resend-link">
+            <a href="#" data-action="resendCode" class="resend-link">
               <i class="fas fa-envelope me-1"></i>Изпрати кода отново
             </a>
           </p>
           <p class="mb-0">
-            <a href="{{ safe_url_for('index') }}">
+            <a href="{{ safe_url_for('main.index') }}">
               <i class="fas fa-home me-1"></i>Начало
             </a>
           </p>
@@ -200,7 +103,7 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
     <script>
       // Auto-focus the code input
       document.getElementById("code").focus();
@@ -228,10 +131,31 @@
         }
       });
 
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
+
       // Resend code function
-      function resendCode() {
+      function resendCode(linkEl) {
         if (confirm("Сигурни ли сте, че искате да изпратим кода отново?")) {
-          const btn = event.target;
+          const btn = linkEl || document.querySelector('[data-action="resendCode"]');
+          if (!btn) return;
+
           const originalText = btn.innerHTML;
           btn.innerHTML =
             '<i class="fas fa-spinner fa-spin me-1"></i>Изпращане...';
@@ -263,4 +187,8 @@
     </script>
   </body>
 </html>
+
+
+
+
 

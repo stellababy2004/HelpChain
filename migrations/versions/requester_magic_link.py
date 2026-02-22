@@ -4,7 +4,9 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = "requester_magic_link"
+# NOTE: this project DB was already stamped with this revision id in existing environments.
+# Keep it stable so `flask db upgrade` can continue the chain.
+revision = "6b9c56545b8a"
 down_revision = "add_roles_and_audit"
 branch_labels = None
 depends_on = None

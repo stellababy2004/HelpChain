@@ -4,8 +4,8 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Анализи</h2>
     <div class="btn-group" role="group">
-      <a href="/analytics" class="btn btn-primary active">Текущи анализи</a>
-      <a href="/predictive-analytics" class="btn btn-outline-primary">
+      <a href="{{ url_for('analytics.analytics_page') }}" class="btn btn-primary active">Текущи анализи</a>
+      <a href="{{ url_for('analytics.analytics_page') }}" class="btn btn-outline-primary">
         <i class="fas fa-chart-line"></i> Предиктивна аналитика
       </a>
     </div>
@@ -35,7 +35,7 @@
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='vendor/jsdelivr/chart.js') }}"></script>
 <script>
   fetch("/api/analytics/data")
     .then((response) => response.json())
@@ -200,4 +200,5 @@
     .catch((error) => console.error("Error fetching analytics data:", error));
 </script>
 {% endblock %}
+
 

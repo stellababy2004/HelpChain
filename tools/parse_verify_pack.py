@@ -35,7 +35,9 @@ def main():
                     if t == "blob":
                         entries.append((size, h))
     except FileNotFoundError:
-        print("verify_pack_raw.txt not found; run: git verify-pack -v .git/objects/pack/pack-*.idx > verify_pack_raw.txt")
+        print(
+            "verify_pack_raw.txt not found; run: git verify-pack -v .git/objects/pack/pack-*.idx > verify_pack_raw.txt"
+        )
         return
     entries.sort(reverse=True)
     with open("large_blobs_verify.txt", "w", encoding="utf-8") as out:

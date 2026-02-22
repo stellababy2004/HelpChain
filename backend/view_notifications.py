@@ -19,7 +19,9 @@ def view_notifications(limit=10):
 
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
-        c.execute("SELECT * FROM notifications ORDER BY timestamp DESC LIMIT ?", (limit,))
+        c.execute(
+            "SELECT * FROM notifications ORDER BY timestamp DESC LIMIT ?", (limit,)
+        )
         notifications = c.fetchall()
 
     if not notifications:

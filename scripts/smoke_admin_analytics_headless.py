@@ -10,8 +10,17 @@ from flask import render_template
 from backend.appy import app
 
 ctx = dict(
-    export_confirm="\n".join(["⚠️ This export contains personal data.", "Internal use only.", "Are you sure you want to continue?"]),
-    trends_data=[{"date": "2026-01-01", "value": 10}, {"date": "2026-01-02", "value": 12}],
+    export_confirm="\n".join(
+        [
+            "⚠️ This export contains personal data.",
+            "Internal use only.",
+            "Are you sure you want to continue?",
+        ]
+    ),
+    trends_data=[
+        {"date": "2026-01-01", "value": 10},
+        {"date": "2026-01-02", "value": 12},
+    ],
     category_stats={"Requests": 123, "Volunteers": 45},
     predictions=[{"label": "uptick", "score": 0.7}],
     filters={},
@@ -28,7 +37,9 @@ dashboard_stats = {
         "unique_visitors": 80,
         "bounce_rate": 32,
     },
-    "performance_metrics": {"endpoint_performance": [{"endpoint": "/api/foo", "latency": 120}]},
+    "performance_metrics": {
+        "endpoint_performance": [{"endpoint": "/api/foo", "latency": 120}]
+    },
     "chatbot_analytics": {
         "total_conversations": 42,
         "average_rating": 4.2,
@@ -41,7 +52,9 @@ for lang in ("fr", "bg"):
     with app.test_request_context("/", headers={"Accept-Language": lang}):
         try:
             out = render_template("admin_analytics.html", **ctx)
-            present = "Export CSV" not in out and ("Exporter en CSV" in out or "Експорт CSV" in out)
+            present = "Export CSV" not in out and (
+                "Exporter en CSV" in out or "Експорт CSV" in out
+            )
             print("\n" + "=" * 20 + f" lang={lang} " + "=" * 20 + "\n")
             print("Export CSV localized:", "yes" if present else "no")
             # quick checks

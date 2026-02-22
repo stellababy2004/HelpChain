@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Управление роли на потребител - HelpChain</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
     />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
   </head>
 
@@ -21,10 +21,10 @@
         <div class="navbar-nav ms-auto">
           <a
             class="nav-link"
-            href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
+            href="{{ safe_url_for('admin.admin_dashboard') }}"
             >Обратно към роли</a
           >
-          <a class="nav-link" href="{{ safe_url_for('admin_dashboard') }}"
+          <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}"
             >Админ панел</a
           >
         </div>
@@ -132,7 +132,7 @@
                     <i class="fas fa-save"></i> Запази роли
                   </button>
                   <a
-                    href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
+                    href="{{ safe_url_for('admin.admin_dashboard') }}"
                     class="btn btn-secondary"
                   >
                     <i class="fas fa-times"></i> Отказ
@@ -160,7 +160,10 @@
       // Also, handle the initial connection when the page loads normally
       // ... establish initial extension connection ...
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
   </body>
 </html>
+
+
+
 

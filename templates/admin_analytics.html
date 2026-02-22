@@ -7,360 +7,33 @@
 
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
     />
 
     <!-- Font Awesome -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
 
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jsdelivr/chart.js') }}"></script>
     <script src="{{ url_lang('static', filename='js/chartjs_adapter_date_fns.js') }}"></script>
 
     <!-- ApexCharts for advanced charts -->
     <script src="{{ url_lang('static', filename='js/apexcharts.js') }}"></script>
 
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="{{ url_for('static', filename='vendor/fonts/inter.css') }}"
       rel="stylesheet"
     />
 
-    <style>
-      :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-        --light-bg: #f8f9fa;
-        --dark-bg: #1a1a1a;
-        --dark-card: #2d2d2d;
-        --text-light: #ffffff;
-        --text-dark: #333333;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
-        --border-radius: 15px;
-      }
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/analytics.css') }}" />
+    </head>
 
-      * {
-        transition: all 0.3s ease;
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--light-bg);
-        color: var(--text-dark);
-        min-height: 100vh;
-      }
-
-      /* Modern Navigation */
-      .navbar-modern {
-        background: rgba(255, 255, 255, 0.95);
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: var(--shadow);
-      }
-
-      .navbar-brand-modern {
-        font-weight: 700;
-        font-size: 1.5rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      /* Stats Cards */
-      .stats-card {
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        border: none;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .stats-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: var(--primary-gradient);
-      }
-
-      .stats-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-      }
-
-      .stats-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-      }
-
-      .stats-value {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-      }
-
-      .stats-label {
-        color: #6c757d;
-        font-size: 0.9rem;
-        margin: 0;
-      }
-
-      .stats-change {
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-
-      .stats-change.positive {
-        color: #28a745;
-      }
-
-      .stats-change.negative {
-        color: #dc3545;
-      }
-
-      /* Chart Containers */
-      .chart-container {
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        margin-bottom: 2rem;
-      }
-
-      .chart-header {
-        display: flex;
-        justify-content: between;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-
-      .chart-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin: 0;
-      }
-
-      .chart-controls {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-      }
-
-      /* KPI Cards */
-      .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-      }
-
-      .kpi-card {
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 1.5rem;
-        text-align: center;
-      }
-
-      .kpi-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-      }
-
-      .kpi-label {
-        color: #6c757d;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-      }
-
-      .kpi-trend {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-
-      /* Filters */
-      .filters-section {
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-      }
-
-      .filter-row {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      /* Real-time Updates */
-      .live-indicator {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #28a745;
-        font-size: 0.9rem;
-        font-weight: 600;
-      }
-
-      .live-dot {
-        width: 8px;
-        height: 8px;
-        background: #28a745;
-        border-radius: 50%;
-        animation: pulse 2s infinite;
-      }
-
-      @keyframes pulse {
-        0% {
-          opacity: 1;
-        }
-
-        50% {
-          opacity: 0.5;
-        }
-
-        100% {
-          opacity: 1;
-        }
-      }
-
-      /* Export Buttons */
-      .export-btn {
-        background: var(--primary-gradient);
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .export-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-      }
-
-      /* Loading States */
-      .loading-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(255, 255, 255, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--border-radius);
-        z-index: 10;
-      }
-
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid rgba(102, 126, 234, 0.3);
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .kpi-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .filter-row {
-          flex-direction: column;
-          align-items: stretch;
-        }
-
-        .chart-controls {
-          flex-direction: column;
-          align-items: stretch;
-        }
-      }
-
-      /* Dark mode support */
-      [data-theme="dark"] {
-        --bg-color: var(--dark-bg);
-        --card-bg: var(--dark-card);
-        --text-color: var(--text-light);
-      }
-
-      [data-theme="dark"] body {
-        background: var(--dark-bg);
-        color: var(--text-light);
-      }
-
-      [data-theme="dark"] .stats-card,
-      [data-theme="dark"] .chart-container,
-      [data-theme="dark"] .kpi-card,
-      [data-theme="dark"] .filters-section {
-        background: var(--dark-card);
-        color: var(--text-light);
-      }
-
-      /* Navbar spacer */
-      .navbar-spacer {
-        height: 80px;
-      }
-
-      /* Chart containers */
-      .chart-canvas {
-        height: 400px;
-      }
-
-      .chart-canvas-small {
-        height: 350px;
-      }
-    </style>
-  </head>
-
-  <body>
+<body class="hc-page-analytics">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
       <div class="container-fluid">
@@ -388,7 +61,7 @@
             <li class="nav-item">
               <a
                 class="nav-link active"
-                href="{{ safe_url_for('analytics_main.admin_analytics') }}"
+                href="{{ safe_url_for('analytics.analytics_page') }}"
               >
                 <i class="fas fa-chart-line me-1"></i>Analytics
               </a>
@@ -401,7 +74,7 @@
             <li class="nav-item">
               <a
                 class="nav-link"
-                href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
+                href="{{ safe_url_for('admin.admin_dashboard') }}"
               >
                 <i class="fas fa-user-shield me-1"></i>Роли
               </a>
@@ -410,7 +83,7 @@
 
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="#" onclick="logout()">
+              <a class="nav-link" href="#" data-action="logout">
                 <i class="fas fa-sign-out-alt me-1"></i>Изход
               </a>
             </li>
@@ -455,10 +128,10 @@
               </p>
             </div>
             <div class="d-flex gap-2">
-              <button class="export-btn" onclick="exportData('json')">
+              <button class="export-btn" type="button" data-action="exportData" data-format="json">
                 <i class="fas fa-download me-1"></i>{{ _('Export JSON') }}
               </button>
-              <button class="export-btn" onclick="if(confirm({{ export_confirm|tojson }})) exportData('csv')">
+              <button class="export-btn" type="button" data-action="exportData" data-format="csv" data-confirm="{{ export_confirm|e }}">
                 <i class="fas fa-file-csv me-1"></i>{{ _('Export CSV') }}
               </button>
             </div>
@@ -518,7 +191,7 @@
           </div>
 
           <div class="form-group d-flex align-items-end">
-            <button class="btn btn-primary" onclick="refreshData()">
+            <button class="btn btn-primary" type="button" data-action="refreshData">
               <i class="fas fa-sync-alt me-1"></i>Обнови
             </button>
           </div>
@@ -694,7 +367,7 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
 
     <!-- Chart Data -->
     <script type="application/json" id="trendsData">
@@ -1013,7 +686,19 @@
         _('Are you sure you want to continue?')
       ]) %}
 
-      function exportData(format) {
+      function exportData(elOrFormat) {
+        const format =
+          typeof elOrFormat === "string"
+            ? elOrFormat
+            : (elOrFormat?.getAttribute("data-format") || "json");
+
+        const confirmMsg =
+          typeof elOrFormat === "string"
+            ? ""
+            : (elOrFormat?.getAttribute("data-confirm") || "");
+
+        if (confirmMsg && !confirm(confirmMsg)) return;
+
         const url = `/api/analytics/export?format=${format}&type=dashboard`;
         window.open(url, "_blank");
       }
@@ -1040,7 +725,31 @@
           form.submit();
         }
       }
+
+      // Delegated actions (CSP-ready pattern)
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
     </script>
   </body>
 </html>
+
+
+
+
 

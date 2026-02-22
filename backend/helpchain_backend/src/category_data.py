@@ -31,8 +31,16 @@ CATEGORIES = {
                 "en": "HelpChain provides support with essential groceries and urgent food assistance for families and vulnerable people.",
                 "fr": "HelpChain aide avec des produits alimentaires essentiels et un soutien alimentaire urgent pour les familles et les personnes vulnérables.",
             },
-            "bullets": ["Основни хранителни продукти", "Спешна хранителна подкрепа", "Помощ за семейства и уязвими хора"],
-            "steps": ["Описваш нуждата си (форма)", "Ние поемаме координацията", "Свързваме с помощ"],
+            "bullets": [
+                "Основни хранителни продукти",
+                "Спешна хранителна подкрепа",
+                "Помощ за семейства и уязвими хора",
+            ],
+            "steps": [
+                "Описваш нуждата си (форма)",
+                "Ние поемаме координацията",
+                "Свързваме с помощ",
+            ],
             "notes": ["Помощта е доброволческа и според наличните възможности."],
             "cta": {
                 "bg": "Подай заявка за хранителна помощ",
@@ -43,7 +51,10 @@ CATEGORIES = {
     },
     "emergency": {
         "canonical_slug": "emergency",
-        "ui": {"icon": "fa-solid fa-triangle-exclamation text-danger", "severity": "critical"},
+        "ui": {
+            "icon": "fa-solid fa-triangle-exclamation text-danger",
+            "severity": "critical",
+        },
         "content": {
             "title": {
                 "bg": "Помощ при бедствия и аварии",
@@ -62,8 +73,14 @@ CATEGORIES = {
                 "Нужда от координация и насочване към помощ",
                 "Допълваща подкрепа след намеса на спешните служби",
             ],
-            "steps": ["Описваш ситуацията (форма)", "Ние поемаме координацията", "Свързваме с помощ"],
-            "notes": ["HelpChain не замества спешните и аварийни служби. Платформата подпомага координацията и допълващата подкрепа."],
+            "steps": [
+                "Описваш ситуацията (форма)",
+                "Ние поемаме координацията",
+                "Свързваме с помощ",
+            ],
+            "notes": [
+                "HelpChain не замества спешните и аварийни служби. Платформата подпомага координацията и допълващата подкрепа."
+            ],
             "emergency_line": "При непосредствена опасност за живота или здравето незабавно се обадете на 112.",
             "cta": {
                 "bg": "Подай заявка за съдействие",

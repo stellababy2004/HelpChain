@@ -61,8 +61,16 @@ checks = {
     "admin/requests": {
         "template": "admin/requests.html",
         "keys": {
-            "bg": {"Filter": "Филтрирай", "Pending": "Чакащи", "No results.": "Няма резултати."},
-            "fr": {"Filter": "Filtrer", "Pending": "En attente", "No results.": "Aucun résultat."},
+            "bg": {
+                "Filter": "Филтрирай",
+                "Pending": "Чакащи",
+                "No results.": "Няма резултати.",
+            },
+            "fr": {
+                "Filter": "Filtrer",
+                "Pending": "En attente",
+                "No results.": "Aucun résultat.",
+            },
         },
     },
 }
@@ -91,7 +99,9 @@ for page, info in checks.items():
                 if idx == -1:
                     # try find the English msgid
                     idx = out.find(key)
-                snippet = out[max(0, idx - 60) : idx + 60] if idx != -1 else "[not found]"
+                snippet = (
+                    out[max(0, idx - 60) : idx + 60] if idx != -1 else "[not found]"
+                )
                 print(f"    snippet: {snippet}")
 
 print("\nCombined smoke render complete.")

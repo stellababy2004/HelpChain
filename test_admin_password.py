@@ -16,7 +16,9 @@ from backend.models import AdminUser, db
 
 # Create a minimal app for testing
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = r"sqlite:///C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    r"sqlite:///C:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain\instance\volunteers.db"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SECRET_KEY"] = "test-key"  # pragma: allowlist secret
 
@@ -29,7 +31,9 @@ with app.app_context():
         print(f"Password hash exists: {bool(admin.password_hash)}")
         if admin.password_hash:
             print(f"Password hash: {admin.password_hash[:20]}...")
-        print(f"Password check {os.getenv('ADMIN_PASSWORD', 'Admin123')}: {admin.check_password(os.getenv('ADMIN_PASSWORD', 'Admin123'))}")
+        print(
+            f"Password check {os.getenv('ADMIN_PASSWORD', 'Admin123')}: {admin.check_password(os.getenv('ADMIN_PASSWORD', 'Admin123'))}"
+        )
         print(f"Password check admin123: {admin.check_password('admin123')}")
         print(f"Password check Admin: {admin.check_password('Admin')}")
     else:

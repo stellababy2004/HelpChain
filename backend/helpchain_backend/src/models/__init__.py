@@ -28,6 +28,11 @@ from .request_log import RequestLog  # noqa: F401
 from .volunteer import Volunteer  # noqa: F401
 from .volunteer_action import VolunteerAction  # noqa: F401
 from .volunteer_interest import VolunteerInterest  # noqa: F401
+from .magic_link_token import MagicLinkToken  # noqa: F401
+from .professional_lead import ProfessionalLead  # noqa: F401
+from .volunteer_request_state import VolunteerRequestState  # noqa: F401
+from .volunteer_match_feedback import VolunteerMatchFeedback  # noqa: F401
+from .email_send_event import EmailSendEvent  # noqa: F401
 
 __all__ = [
     "db",
@@ -45,4 +50,9 @@ __all__ = [
     "RefreshToken",
     "VolunteerInterest",
     "VolunteerAction",
+    "MagicLinkToken",
+    "ProfessionalLead",
+    "VolunteerRequestState",
+    "VolunteerMatchFeedback",
+    "EmailSendEvent",
 ]

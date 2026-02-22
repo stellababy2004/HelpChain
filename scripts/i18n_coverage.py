@@ -157,7 +157,20 @@ def visibility_score(entry: PoEntry, only_templates: bool) -> int:
         score += 4
 
     low = t.lower()
-    if any(k in low for k in ["submit", "search", "login", "sign", "help", "open", "cancel", "progress", "see all"]):
+    if any(
+        k in low
+        for k in [
+            "submit",
+            "search",
+            "login",
+            "sign",
+            "help",
+            "open",
+            "cancel",
+            "progress",
+            "see all",
+        ]
+    ):
         score += 12
 
     ref_join = " ".join(refs).lower()
@@ -174,7 +187,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--lang", default="fr", help="Language code (fr|bg|en)")
     ap.add_argument("--top", type=int, default=30, help="Top N missing translations")
-    ap.add_argument("--only-templates", action="store_true", help="Only consider strings referenced from templates/")
+    ap.add_argument(
+        "--only-templates",
+        action="store_true",
+        help="Only consider strings referenced from templates/",
+    )
     args = ap.parse_args()
 
     po_path = os.path.join("translations", args.lang, "LC_MESSAGES", "messages.po")
