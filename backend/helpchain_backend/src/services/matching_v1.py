@@ -3,32 +3,30 @@ from __future__ import annotations
 import re
 import time
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple
-
-from sqlalchemy import or_
-from sqlalchemy.exc import DatabaseError, OperationalError
-from flask import current_app
 
 from backend.helpchain_backend.src.models import (
     Request,
     Volunteer,
     VolunteerMatchFeedback,
+    db,
 )
-from backend.helpchain_backend.src.models import db
+from flask import current_app
+from sqlalchemy import or_
+from sqlalchemy.exc import DatabaseError, OperationalError
 
 _WORD_RE = re.compile(r"[a-zA-ZÀ-ÿ0-9]+", re.UNICODE)
 _MATCH_CACHE: dict[str, tuple[float, list[tuple[int, int, dict]]]] = {}
 
 
-def _norm(s: Optional[str]) -> str:
+def _norm(s: str | None) -> str:
     return (s or "").strip().lower()
 
 
-def _tokens(s: Optional[str]) -> List[str]:
+def _tokens(s: str | None) -> list[str]:
     return _WORD_RE.findall(_norm(s))
 
 
-def _volunteer_skill_tokens(volunteer: Volunteer) -> List[str]:
+def _volunteer_skill_tokens(volunteer: Volunteer) -> list[str]:
     return _tokens(getattr(volunteer, "skills", "") or "")
 
 
@@ -142,7 +140,7 @@ def _urgency_multiplier(req: Request) -> float:
     return 1.0
 
 
-def distance_km(volunteer: Volunteer, req: Request) -> Optional[float]:
+def distance_km(volunteer: Volunteer, req: Request) -> float | None:
     vlat = getattr(volunteer, "latitude", None)
     vlon = getattr(volunteer, "longitude", None)
     rlat = getattr(req, "latitude", None)
@@ -303,7 +301,7 @@ def get_matched_requests_v1(
     near: bool = False,
     max_text_chars: int = 800,
     cache_ttl_sec: int = 90,
-) -> List[Tuple[Request, int, dict]]:
+) -> list[tuple[Request, int, dict]]:
     now_ts = time.time()
     key = _cache_key(
         volunteer=volunteer,
@@ -318,7 +316,7 @@ def get_matched_requests_v1(
         req_ids = [rid for rid, _, _ in cached[1]]
         req_rows = Request.query.filter(Request.id.in_(req_ids)).all() if req_ids else []
         by_id = {r.id: r for r in req_rows}
-        hydrated: List[Tuple[Request, int, dict]] = []
+        hydrated: list[tuple[Request, int, dict]] = []
         for rid, pct, breakdown in cached[1]:
             r = by_id.get(rid)
             if r is not None:
@@ -396,7 +394,7 @@ def get_matched_requests_v1(
                 pass
         else:
             raise
-    results: List[Tuple[Request, int, dict]] = []
+    results: list[tuple[Request, int, dict]] = []
     prio_norm = _norm(prio) or "all"
     for req in candidates:
         s_loc = _score_location(getattr(volunteer, "location", "") or "", req)

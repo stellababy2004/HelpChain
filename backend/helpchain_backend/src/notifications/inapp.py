@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta
 
-from flask import url_for
-
 from backend.extensions import db
-from backend.models import Notification, RequestActivity
 from backend.helpchain_backend.src.models import VolunteerRequestState
-
+from backend.models import Notification, RequestActivity
+from flask import url_for
 
 NUDGE_COOLDOWN_HOURS = 6
 

@@ -51,6 +51,7 @@ from ..models import (
     VolunteerRequestState,
     utc_now,
 )
+
 try:
     from ..models import ProAccessRequest
 except ImportError:
@@ -209,7 +210,7 @@ def _to_utc_naive(dt: datetime | None) -> datetime | None:
         return None
     if dt.tzinfo is None:
         return dt
-    return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt.astimezone(UTC).replace(tzinfo=None)
 
 
 def _delta_seconds(start: datetime | None, end: datetime | None) -> int | None:
@@ -375,7 +376,8 @@ def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
     )
 
 
-from sqlalchemy import case, func, inspect as sa_inspect, or_
+from sqlalchemy import case, func, or_
+from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import joinedload
 
 from backend.helpchain_backend.src.utils.mfa import (
@@ -2698,7 +2700,7 @@ def admin_requests():
                 return None
             if dt.tzinfo is None:
                 return dt
-            return dt.astimezone(timezone.utc).replace(tzinfo=None)
+            return dt.astimezone(UTC).replace(tzinfo=None)
 
         now = datetime.utcnow()
         cooldown = timedelta(hours=NUDGE_COOLDOWN_HOURS)

@@ -20,7 +20,10 @@ from backend.models import (  # noqa: F401
 
 # Local wrappers for canonical/legacy models (defined in `backend.models`)
 from .admin_user import AdminUser  # noqa: F401
+from .email_send_event import EmailSendEvent  # noqa: F401
+from .magic_link_token import MagicLinkToken  # noqa: F401
 from .notification import Notification  # noqa: F401
+from .professional_lead import ProfessionalLead  # noqa: F401
 
 # Split models (not present in `backend.models`)
 from .refresh_token import RefreshToken  # noqa: F401
@@ -28,11 +31,8 @@ from .request_log import RequestLog  # noqa: F401
 from .volunteer import Volunteer  # noqa: F401
 from .volunteer_action import VolunteerAction  # noqa: F401
 from .volunteer_interest import VolunteerInterest  # noqa: F401
-from .magic_link_token import MagicLinkToken  # noqa: F401
-from .professional_lead import ProfessionalLead  # noqa: F401
-from .volunteer_request_state import VolunteerRequestState  # noqa: F401
 from .volunteer_match_feedback import VolunteerMatchFeedback  # noqa: F401
-from .email_send_event import EmailSendEvent  # noqa: F401
+from .volunteer_request_state import VolunteerRequestState  # noqa: F401
 
 __all__ = [
     "db",
