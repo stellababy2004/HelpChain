@@ -7,6 +7,7 @@ from flask_login import current_user
 from sqlalchemy.orm import Session
 
 from backend.extensions import db
+
 try:
     from backend.models import ActivityLog
 except ImportError:
