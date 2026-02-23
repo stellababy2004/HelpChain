@@ -9,6 +9,7 @@ from functools import wraps
 from types import SimpleNamespace
 from urllib.parse import urljoin, urlparse
 
+from babel.dates import format_timedelta
 from flask import (
     Blueprint,
     abort,
@@ -27,11 +28,10 @@ from flask_babel import get_locale as babel_get_locale
 from flask_babel import gettext as _
 from flask_limiter.util import get_remote_address
 from flask_login import current_user, login_required, logout_user
-from babel.dates import format_timedelta
-from sqlalchemy.exc import OperationalError
-from sqlalchemy import desc, func, or_
-from werkzeug.security import check_password_hash
 from markupsafe import Markup, escape
+from sqlalchemy import desc, func, or_
+from sqlalchemy.exc import OperationalError
+from werkzeug.security import check_password_hash
 
 from ..authz import can_view_request
 from ..category_data import ALIASES, CATEGORIES, COMMON
@@ -55,8 +55,8 @@ from ..notifications.inapp import (
     mark_request_seen_for_volunteer,
 )
 from ..security_logging import log_security_event
-from ..services.matching_v1 import get_matched_requests_v1
 from ..services.matching_v1 import dismiss_for as match_dismiss_for
+from ..services.matching_v1 import get_matched_requests_v1
 from ..services.matching_v1 import mark_seen as match_mark_seen
 from ..statuses import normalize_request_status
 
@@ -2767,7 +2767,7 @@ def professionnels_pilote():
         ip=_client_ip(),
         user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
         source="professionnels_pilote",
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
     )
     db.session.add(lead)
     db.session.commit()
