@@ -70,7 +70,9 @@ def _derive_path(environ: dict) -> str:
             return val
     # Fallback: scan for common probe substrings in all string values
     try:
-        joined = " \n ".join(str(v) for v in environ.values() if isinstance(v, (str, bytes)))
+        joined = " \n ".join(
+            str(v) for v in environ.values() if isinstance(v, (str, bytes))
+        )
         for probe in ("/health", "/api/_health", "/admin/login", "/api/analytics"):
             if probe in joined:
                 return probe
@@ -90,7 +92,11 @@ def app(environ, start_response: Callable):
 
                 png_b64 = b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAuMB9D7rWqkAAAAASUVORK5CYII="
                 buf = base64.b64decode(png_b64)
-                headers = [("Content-Type", "image/png"), ("Cache-Control", "public, max-age=3600"), ("Content-Length", str(len(buf)))]
+                headers = [
+                    ("Content-Type", "image/png"),
+                    ("Cache-Control", "public, max-age=3600"),
+                    ("Content-Length", str(len(buf))),
+                ]
                 start_response("200 OK", headers)
                 return [buf]
         except Exception:
@@ -106,12 +112,24 @@ def app(environ, start_response: Callable):
             try:
                 app_obj = _load_inner_app()
                 # Flask app exposes import_name; WSGI callable may be wrapper
-                inner_name = getattr(app_obj, "import_name", None) or getattr(app_obj, "__name__", None)
+                inner_name = getattr(app_obj, "import_name", None) or getattr(
+                    app_obj, "__name__", None
+                )
             except Exception:
                 inner_name = None
-            data = {"status": "ok", "commit": sha, "inner_app": inner_name or "unknown", "source": "api/index.py"}
+            data = {
+                "status": "ok",
+                "commit": sha,
+                "inner_app": inner_name or "unknown",
+                "source": "api/index.py",
+            }
             body = json.dumps(data, ensure_ascii=False).encode("utf-8")
-            headers = [("Content-Type", "application/json; charset=utf-8"), ("X-App-Commit", sha), ("Cache-Control", "no-store"), ("Content-Length", str(len(body)))]
+            headers = [
+                ("Content-Type", "application/json; charset=utf-8"),
+                ("X-App-Commit", sha),
+                ("Cache-Control", "no-store"),
+                ("Content-Length", str(len(body))),
+            ]
             start_response("200 OK", headers)
             return [body]
         # Delegate HTML routes to Flask; avoid placeholder pages for preview
@@ -126,17 +144,26 @@ def app(environ, start_response: Callable):
                 "</body></html>"
             )
             body = html.encode("utf-8")
-            headers = [("Content-Type", "text/html; charset=utf-8"), ("Content-Length", str(len(body)))]
+            headers = [
+                ("Content-Type", "text/html; charset=utf-8"),
+                ("Content-Length", str(len(body))),
+            ]
             start_response("200 OK", headers)
             return [body]
         if path.endswith("/health") or path.endswith("/api/_health"):
             body = b"ok"
-            headers = [("Content-Type", "text/plain; charset=utf-8"), ("Content-Length", str(len(body)))]
+            headers = [
+                ("Content-Type", "text/plain; charset=utf-8"),
+                ("Content-Length", str(len(body))),
+            ]
             start_response("200 OK", headers)
             return [body]
         if path.endswith("/api/analytics"):
             body = b'{"status":"ok","source":"api-wrapper"}'
-            headers = [("Content-Type", "application/json; charset=utf-8"), ("Content-Length", str(len(body)))]
+            headers = [
+                ("Content-Type", "application/json; charset=utf-8"),
+                ("Content-Length", str(len(body))),
+            ]
             start_response("200 OK", headers)
             return [body]
         # Delegate admin/login and other HTML routes to Flask to render templates
@@ -151,7 +178,11 @@ def app(environ, start_response: Callable):
 
         tb = traceback.format_exc()
         body = tb.encode("utf-8", errors="replace")
-        headers = [("Content-Type", "text/plain; charset=utf-8"), ("Cache-Control", "no-store"), ("Content-Length", str(len(body)))]
+        headers = [
+            ("Content-Type", "text/plain; charset=utf-8"),
+            ("Cache-Control", "no-store"),
+            ("Content-Length", str(len(body))),
+        ]
         start_response("500 Internal Server Error", headers)
         return [body]
 

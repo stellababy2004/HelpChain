@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% block title %}Professionnels | HelpChain{% endblock %}
+{% block body_class %}hc-page-pro{% endblock %}
+
+{% block content %}
+<div class="hc-page-pro">
+
+<section class="hc-section hc-hero-pro hc-hero-institutional">
+  <div class="container">
+
+    <div class="hc-hero__content">
+
+      <p class="hc-eyebrow">
+        Infrastructure sociale • France
+      </p>
+
+      <h1 class="hc-hero__title hc-h1-institutional">
+        Infrastructure numerique de coordination - pour associations et professionnels
+      </h1>
+
+      <p class="hc-hero__subtitle hc-subtext-institutional">
+        Centralisez les demandes, attribuez les dossiers et pilotez chaque action
+        dans un cadre structuré, sécurisé et traçable.
+      </p>
+
+      <div class="hc-hero__actions">
+        <a href="{{ url_for('main.professionnels_pilote') }}" class="btn btn-primary">
+          Demander un accès professionnel — phase pilote
+        </a>
+        <a href="#how-it-works" class="btn btn-outline-secondary">
+          Voir comment ca marche
+        </a>
+      </div>
+
+      <p class="hc-micro hc-pilotline">
+        Phase pilote : accès validé manuellement afin de garantir un réseau structuré et fiable.
+      </p>
+      <p class="hc-micro hc-micro--authority">
+        Conçu pour les associations et réseaux professionnels opérant en France.
+      </p>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- POUR QUI -->
+<section class="hc-section">
+  <div class="container">
+
+    <h2 class="hc-section__title text-center">
+      Pour qui ?
+    </h2>
+    <p class="hc-hero__subtitle text-center">
+      Une infrastructure conçue pour structurer la coordination entre acteurs locaux et professionnels qualifiés.
+    </p>
+
+    <div class="row mt-4">
+
+      <div class="col-md-6">
+        <div class="hc-card card-institutional hc-card-institutional">
+          <h3>Associations & structures locales</h3>
+          <ul>
+            <li>Centralisation structurée des demandes</li>
+            <li>Attribution claire des responsables</li>
+            <li>Suivi par statut avec historique complet</li>
+            <li>Réduction des canaux informels</li>
+            <li>Visibilité opérationnelle sur l’activité et les délais</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="hc-card card-institutional hc-card-institutional">
+          <h3>Professionnels partenaires</h3>
+          <ul>
+            <li>Dossiers structurés et contextualisés</li>
+            <li>Qualification préalable des demandes</li>
+            <li>Cadre opérationnel clair (nouvelle -> en cours -> résolue)</li>
+            <li>Traçabilité complète des actions</li>
+            <li>Respect du temps et des priorités professionnelles</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hc-anchor text-center">
+      <p class="text-muted mb-1">
+        HelpChain n’est pas une plateforme d’annonces.
+      </p>
+      <p class="fw-semibold">
+        C’est une infrastructure de coordination structurée.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- COMMENT CA MARCHE -->
+<section id="how-it-works" class="hc-section hc-section-alt">
+  <div class="container">
+
+    <h2 class="hc-section__title text-center">
+      Comment fonctionne HelpChain
+    </h2>
+
+    <div class="row mt-5">
+
+      <div class="col-md-3">
+        <div class="hc-pro-step hc-card-institutional">
+          <div class="hc-pro-step__number">1</div>
+          <h4>Entree structuree</h4>
+          <p>
+            Une situation humaine devient un dossier exploitable :
+            categorie, localisation, contexte.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="hc-pro-step hc-card-institutional">
+          <div class="hc-pro-step__number">2</div>
+          <h4>Qualification & tri</h4>
+          <p>
+            Infos cles verifiees. Reduction du bruit.
+            Protection du temps des equipes.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="hc-pro-step hc-card-institutional">
+          <div class="hc-pro-step__number">3</div>
+          <h4>Matching cible</h4>
+          <p>
+            La bonne demande au bon moment :
+            pertinence, localisation, tracabilite.
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="hc-pro-step hc-card-institutional">
+          <div class="hc-pro-step__number">4</div>
+          <h4>Suivi & cloture</h4>
+          <p>
+            Historique complet, statut clair,
+            coordination mesurable.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- SECURITE -->
+<section class="hc-section hc-section-institutional hc-compliance">
+  <div class="container">
+
+    <h2 class="hc-section__title">
+      <i class="fas fa-shield-alt me-2" aria-hidden="true"></i>
+      Sécurité & conformité (RGPD)
+    </h2>
+    <p class="hc-security-intro hc-compliance__intro">
+      La protection des données, la gouvernance des accès et la traçabilité des actions constituent le socle de l’infrastructure.
+    </p>
+
+    <div class="row mt-4">
+      <div class="col-md-6">
+        <ul class="hc-security-list">
+          <li>Accès sécurisé et contrôle des rôles</li>
+          <li>Journalisation complète des actions</li>
+        </ul>
+      </div>
+
+      <div class="col-md-6">
+        <ul class="hc-security-list">
+          <li>Données minimisées et usage encadré (RGPD)</li>
+          <li>Hébergement conforme aux standards européens</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- FINAL CTA -->
+<section class="hc-section hc-cta-section text-center">
+  <div class="container">
+
+    <h2>Rejoindre la phase pilote</h2>
+    <p>
+      L'acces est valide manuellement afin de garantir un environnement structure,
+      securise et utile.
+    </p>
+
+    <a href="{{ url_for('main.professionnels_pilote') }}" class="btn btn-primary btn-lg mt-3">
+      Demander un acces professionnel
+    </a>
+
+  </div>
+</section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Orienter une demande{% endblock %}
+
+{% block body_class %}hc-page-orienter{% endblock %}
+
+{% block content %}
+<main class="hc-orienter">
+  <section class="hc-orienter__hero">
+    <div class="hc-container">
+      <h1 class="hc-orienter__title">Orienter une demande</h1>
+      <p class="hc-orienter__subtitle">
+        Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée.
+      </p>
+    </div>
+  </section>
+
+  <section class="hc-orienter__grid-section">
+    <div class="hc-container">
+      <div class="hc-orienter__grid" role="list">
+        {% set domains = domains or [
+          {"key":"alimentation","title":"Accès alimentaire","desc":"Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles."},
+          {"key":"administratif","title":"Accompagnement administratif","desc":"Appui dans les démarches administratives, accès aux droits et médiation institutionnelle."},
+          {"key":"psychosocial","title":"Soutien psychosocial","desc":"Orientation et coordination pour les situations nécessitant un accompagnement individuel."},
+          {"key":"soins","title":"Accès aux soins","desc":"Mise en relation et suivi pour les situations liées à l’accès aux services de santé."},
+          {"key":"numerique","title":"Inclusion numérique","desc":"Accompagnement vers l’accès aux outils et services numériques."},
+          {"key":"urgence","title":"Urgences & situations critiques","desc":"Coordination prioritaire des situations nécessitant une prise en charge rapide."}
+        ] %}
+
+        {% for d in domains %}
+          <a
+            class="hc-orienter-card"
+            role="listitem"
+            href="{{ url_for('main.submit_request', domain=d.key) }}"
+            data-hc-event="orienter_domain_click"
+            data-hc-domain="{{ d.key }}"
+          >
+            <div class="hc-orienter-card__head">
+              <h2 class="hc-orienter-card__title">{{ d.title }}</h2>
+            </div>
+
+            <p class="hc-orienter-card__desc">{{ d.desc }}</p>
+
+            <div class="hc-orienter-card__meta">
+              <span class="hc-orienter-card__meta-label">Coordination structurée</span>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+
+      <div class="hc-orienter__cta">
+        <a
+          class="hc-btn hc-btn--primary"
+          href="{{ url_for('main.submit_request') }}"
+          data-hc-event="orienter_primary_cta"
+        >
+          Déposer une demande
+        </a>
+        <p class="hc-orienter__cta-sub">Formulaire guidé – moins de 3 minutes.</p>
+      </div>
+
+      <section class="hc-orienter__enterprise" aria-labelledby="hc-enterprise-title">
+        <div class="hc-orienter__enterprise-inner">
+          <div class="hc-orienter__enterprise-copy">
+            <h3 id="hc-enterprise-title" class="hc-orienter__enterprise-title">
+              Vous représentez une structure ?
+            </h3>
+            <p class="hc-orienter__enterprise-text">
+              HelpChain propose une infrastructure de coordination destinée aux associations, services publics et réseaux professionnels.
+            </p>
+          </div>
+
+          <div class="hc-orienter__enterprise-actions">
+            <a
+              class="hc-btn hc-btn-outline"
+              href="{{ url_for('main.professionnels') }}"
+              data-hc-event="orienter_enterprise_cta"
+            >
+              Accéder à l’espace professionnel
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <p class="hc-orienter__trust">
+        Infrastructure numérique de coordination • Conformité RGPD • Données hébergées en Europe
+      </p>
+    </div>
+  </section>
+</main>
+{% endblock %}

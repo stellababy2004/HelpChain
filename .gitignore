@@ -5,6 +5,7 @@ vercel.cookies
 # Local env files
 .env
 .env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -58,6 +59,12 @@ __pycache__/
 
 # test / coverage
 .pytest_cache/
+
+# virtualenv / local python environments
+.venv/
+.venv*/
+venv/
+venv*/
 coverage.xml
 htmlcov/
 .coverage
@@ -70,6 +77,7 @@ build/
 # local settings, secrets
 .env
 .env.*
+!.env.example
 instance/
 uploads/
 
@@ -118,6 +126,12 @@ repo-mirror.git/
 miniconda.exe
 backend.zip
 .git.zip
+
+# Codex / local temp artifacts (should not be committed)
+_mv_test*.txt
+translations/*/LC_MESSAGES/_tmp_po_copy.txt
+translations/*/LC_MESSAGES/_write_test*.txt
+translations/*/LC_MESSAGES/tmpmessages.po
 backend/redis.zip
 HelpChain_Financial_Pack_2025.zip
 backend/uploads/*.JPG
@@ -178,3 +192,14 @@ __pycache__/
 # --- IDE ---
 .vscode/
 .idea/
+
+# local tmp logs
+tmp_*
+
+check_*.py
+top_bad_endpoints.py
+
+# local dev artifacts
+.dev/
+*_write_test*
+*.db-journal

@@ -1,0 +1,31 @@
+<h2>Nouveau professionnel — phase pilote</h2>
+
+<ul>
+  <li><strong>ID:</strong> {{ lead_id }}</li>
+  <li><strong>Métier:</strong> {{ profession }}</li>
+  <li><strong>Email:</strong> {{ email }}</li>
+  {% if full_name %}<li><strong>Nom:</strong> {{ full_name }}</li>{% endif %}
+  {% if phone %}<li><strong>Tél:</strong> {{ phone }}</li>{% endif %}
+  {% if city %}<li><strong>Ville:</strong> {{ city }}</li>{% endif %}
+  {% if organization %}<li><strong>Organisation:</strong> {{ organization }}</li>{% endif %}
+  {% if availability %}<li><strong>Disponibilité:</strong> {{ availability }}</li>{% endif %}
+  {% if source %}<li><strong>Source:</strong> {{ source }}</li>{% endif %}
+  {% if locale %}<li><strong>Locale:</strong> {{ locale }}</li>{% endif %}
+  {% if ip %}<li><strong>IP:</strong> {{ ip }}</li>{% endif %}
+</ul>
+
+{% if message %}
+<p><strong>Message:</strong><br />{{ message }}</p>
+{% endif %}
+
+{% if user_agent %}
+<p><strong>User-Agent:</strong><br />{{ user_agent }}</p>
+{% endif %}
+
+{% if admin_url %}
+<p><a href="{{ admin_url }}">Ouvrir la liste admin des leads</a></p>
+{% endif %}
+
+<p style="color:#666; font-size:12px">
+  Created at: {{ created_at }}
+</p>

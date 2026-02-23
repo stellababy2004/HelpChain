@@ -1,0 +1,158 @@
+{# templates/_forms.html #}
+
+{% macro hc_id(name) -%}
+  hc-{{ name|replace('[','-')|replace(']','')|replace('.','-') }}
+{%- endmacro %}
+
+{% macro hc_help_id(name) -%}
+  {{ hc_id(name) }}-help
+{%- endmacro %}
+
+{% macro hc_error_id(name) -%}
+  {{ hc_id(name) }}-error
+{%- endmacro %}
+
+{% macro input_text(name, label, value='', placeholder='', help_text='', required=false, type='text', minlength=None, maxlength=None, autocomplete=None, inputmode=None, errors=None) -%}
+  {% set _id = hc_id(name) %}
+  {% set _help = hc_help_id(name) %}
+  {% set _err = hc_error_id(name) %}
+  {% set has_err = errors and errors.get(name) %}
+  <label for="{{ _id }}" class="form-label">
+    {{ label }}
+    {% if required %}<span class="text-danger" aria-hidden="true">*</span>{% endif %}
+  </label>
+
+  <input
+    id="{{ _id }}"
+    type="{{ type }}"
+    name="{{ name }}"
+    class="form-control{% if has_err %} is-invalid{% endif %}"
+    value="{{ value|e }}"
+    {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+    {% if required %}required aria-required="true"{% endif %}
+    {% if minlength is not none %}minlength="{{ minlength }}"{% endif %}
+    {% if maxlength is not none %}maxlength="{{ maxlength }}"{% endif %}
+    {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+    {% if inputmode %}inputmode="{{ inputmode }}"{% endif %}
+    {% if has_err %}aria-invalid="true"{% endif %}
+    aria-describedby="{% if help_text %}{{ _help }}{% endif %}{% if has_err %}{% if help_text %} {% endif %}{{ _err }}{% endif %}"
+  >
+
+  {% if help_text %}
+    <div id="{{ _help }}" class="form-text">{{ help_text }}</div>
+  {% endif %}
+
+  {% if has_err %}
+    <div id="{{ _err }}" class="invalid-feedback" role="alert">
+      {{ errors.get(name) }}
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro textarea(name, label, value='', placeholder='', help_text='', required=false, rows=4, minlength=None, maxlength=None, errors=None) -%}
+  {% set _id = hc_id(name) %}
+  {% set _help = hc_help_id(name) %}
+  {% set _err = hc_error_id(name) %}
+  {% set has_err = errors and errors.get(name) %}
+
+  <label for="{{ _id }}" class="form-label">
+    {{ label }}
+    {% if required %}<span class="text-danger" aria-hidden="true">*</span>{% endif %}
+  </label>
+
+  <textarea
+    id="{{ _id }}"
+    name="{{ name }}"
+    class="form-control{% if has_err %} is-invalid{% endif %}"
+    rows="{{ rows }}"
+    {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+    {% if required %}required aria-required="true"{% endif %}
+    {% if minlength is not none %}minlength="{{ minlength }}"{% endif %}
+    {% if maxlength is not none %}maxlength="{{ maxlength }}"{% endif %}
+    {% if has_err %}aria-invalid="true"{% endif %}
+    aria-describedby="{% if help_text %}{{ _help }}{% endif %}{% if has_err %}{% if help_text %} {% endif %}{{ _err }}{% endif %}"
+  >{{ value|e }}</textarea>
+
+  {% if help_text %}
+    <div id="{{ _help }}" class="form-text">{{ help_text }}</div>
+  {% endif %}
+
+  {% if has_err %}
+    <div id="{{ _err }}" class="invalid-feedback" role="alert">
+      {{ errors.get(name) }}
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro select(name, label, options, selected='', help_text='', required=false, errors=None, placeholder_label=None) -%}
+  {% set _id = hc_id(name) %}
+  {% set _help = hc_help_id(name) %}
+  {% set _err = hc_error_id(name) %}
+  {% set has_err = errors and errors.get(name) %}
+
+  <label for="{{ _id }}" class="form-label">
+    {{ label }}
+    {% if required %}<span class="text-danger" aria-hidden="true">*</span>{% endif %}
+  </label>
+
+  <select
+    id="{{ _id }}"
+    name="{{ name }}"
+    class="form-select{% if has_err %} is-invalid{% endif %}"
+    {% if required %}required aria-required="true"{% endif %}
+    {% if has_err %}aria-invalid="true"{% endif %}
+    aria-describedby="{% if help_text %}{{ _help }}{% endif %}{% if has_err %}{% if help_text %} {% endif %}{{ _err }}{% endif %}"
+  >
+    {% if placeholder_label is not none %}
+      <option value="">{{ placeholder_label }}</option>
+    {% endif %}
+    {% for v, t in options %}
+      <option value="{{ v }}" {% if v == selected %}selected{% endif %}>{{ t }}</option>
+    {% endfor %}
+  </select>
+
+  {% if help_text %}
+    <div id="{{ _help }}" class="form-text">{{ help_text }}</div>
+  {% endif %}
+
+  {% if has_err %}
+    <div id="{{ _err }}" class="invalid-feedback" role="alert">
+      {{ errors.get(name) }}
+    </div>
+  {% endif %}
+{%- endmacro %}
+
+{% macro checkbox(name, label_html, checked=false, help_text='', required=false, errors=None) -%}
+  {% set _id = hc_id(name) %}
+  {% set _help = hc_help_id(name) %}
+  {% set _err = hc_error_id(name) %}
+  {% set has_err = errors and errors.get(name) %}
+
+  <div class="form-check">
+    <input
+      class="form-check-input{% if has_err %} is-invalid{% endif %}"
+      type="checkbox"
+      id="{{ _id }}"
+      name="{{ name }}"
+      value="1"
+      {% if checked %}checked{% endif %}
+      {% if required %}required aria-required="true"{% endif %}
+      {% if has_err %}aria-invalid="true"{% endif %}
+      aria-describedby="{% if help_text %}{{ _help }}{% endif %}{% if has_err %}{% if help_text %} {% endif %}{{ _err }}{% endif %}"
+    >
+    <label class="form-check-label" for="{{ _id }}">
+      {{ label_html|safe }}
+      {% if required %}<span class="text-danger" aria-hidden="true">*</span>{% endif %}
+    </label>
+
+    {% if has_err %}
+      <div id="{{ _err }}" class="invalid-feedback d-block" role="alert">
+        {{ errors.get(name) }}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if help_text %}
+    <div id="{{ _help }}" class="form-text">{{ help_text }}</div>
+  {% endif %}
+{%- endmacro %}

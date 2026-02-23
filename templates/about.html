@@ -1,14 +1,191 @@
 {% extends "base.html" %}
-{% block title %}За HelpChain{% endblock %}
+
+{% block title %}À propos{% endblock %}
+
+{% block body_class %}hc-page-about{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h1>За HelpChain</h1>
-  <p>
-    HelpChain е платформа за координация на реална помощ, създадена с фокус върху сигурност,
-    прозрачност и човечност. Тя свързва доброволци и нуждаещи се, за да се случва доброто
-    по-бързо и по-организирано.
-  </p>
-</div>
+<main class="hc-about">
+  <section class="hc-about__hero">
+    <div class="hc-container">
+      <div class="hc-about__hero-inner">
+        <div class="hc-about__hero-copy">
+          <h1 class="hc-about__title">À propos de HelpChain</h1>
+          <p class="hc-about__subtitle">
+            HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en charge des situations sociales.
+          </p>
+
+          <div class="hc-about__hero-actions">
+            <a
+              class="hc-btn hc-btn--primary"
+              href="{{ url_for('main.submit_request') }}"
+              data-hc-event="about_primary_cta"
+            >
+              Déposer une demande
+            </a>
+            <a
+              class="hc-btn hc-btn-outline"
+              href="{{ url_for('main.orienter') }}"
+              data-hc-event="about_secondary_cta"
+            >
+              Orienter une demande
+            </a>
+          </div>
+
+          <p class="hc-about__trustline">
+            Conformité RGPD • Hébergement européen • Traçabilité opérationnelle
+          </p>
+
+          <div class="hc-about__institutional">
+            <div class="hc-about__institutional-inner">
+              <p class="hc-about__institutional-text">
+                Conçu et opéré depuis la France.
+                <span class="hc-about__institutional-sep">•</span>
+                Infrastructure à vocation européenne.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hc-about__hero-proof" aria-label="Repères">
+          <div class="hc-about__proof-card">
+            <div class="hc-about__proof-label">Approche</div>
+            <div class="hc-about__proof-value">Structurée</div>
+          </div>
+          <div class="hc-about__proof-card">
+            <div class="hc-about__proof-label">Pilotage</div>
+            <div class="hc-about__proof-value">Opérationnel</div>
+          </div>
+          <div class="hc-about__proof-card">
+            <div class="hc-about__proof-label">Conformité</div>
+            <div class="hc-about__proof-value">RGPD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-about__content">
+    <div class="hc-container">
+      <section class="hc-about__section" aria-labelledby="about-mission">
+        <header class="hc-about__section-head">
+          <h2 id="about-mission" class="hc-about__h2">Notre mission</h2>
+          <p class="hc-about__lead">
+            Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable.
+          </p>
+        </header>
+
+        <div class="hc-about__grid">
+          <div class="hc-about__card">
+            <h3 class="hc-about__h3">Orientation claire</h3>
+            <p class="hc-about__text">
+              Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé.
+            </p>
+          </div>
+
+          <div class="hc-about__card">
+            <h3 class="hc-about__h3">Coordination traçable</h3>
+            <p class="hc-about__text">
+              Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions.
+            </p>
+          </div>
+
+          <div class="hc-about__card">
+            <h3 class="hc-about__h3">Pilotage opérationnel</h3>
+            <p class="hc-about__text">
+              Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-about__section" aria-labelledby="about-positionnement">
+        <header class="hc-about__section-head">
+          <h2 id="about-positionnement" class="hc-about__h2">Pour qui</h2>
+          <p class="hc-about__lead">
+            HelpChain est pensé pour les organisations et acteurs territoriaux qui ont besoin d’un dispositif fiable de coordination.
+          </p>
+        </header>
+
+        <div class="hc-about__split">
+          <div class="hc-about__split-col">
+            <ul class="hc-about__list">
+              <li><strong>Associations</strong> : structuration des parcours, suivi et coordination multi-intervenants.</li>
+              <li><strong>Services publics</strong> : orientation, traçabilité et pilotage des prises en charge.</li>
+              <li><strong>Réseaux professionnels</strong> : coordination de l’intervention et continuité opérationnelle.</li>
+            </ul>
+          </div>
+
+          <div class="hc-about__split-col">
+            <div class="hc-about__panel">
+              <h3 class="hc-about__h3">Ce que HelpChain n’est pas</h3>
+              <p class="hc-about__text">
+                Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est une couche de coordination, avec des processus et de la gouvernance.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-about__section" aria-labelledby="about-securite">
+        <header class="hc-about__section-head">
+          <h2 id="about-securite" class="hc-about__h2">Sécurité & conformité</h2>
+          <p class="hc-about__lead">
+            Une base institutionnelle : conformité, contrôle et responsabilité.
+          </p>
+        </header>
+
+        <div class="hc-about__grid">
+          <div class="hc-about__card">
+            <h3 class="hc-about__h3">Conformité RGPD</h3>
+            <p class="hc-about__text">
+              Minimisation des données, finalités explicites et gestion des accès.
+            </p>
+          </div>
+
+          <div class="hc-about__card">
+            <h3 class="hc-about__h3">Hébergement européen</h3>
+            <p class="hc-about__text">
+              Données hébergées en Europe, avec une approche orientée sécurité.
+            </p>
+          </div>
+
+          <div class="hc-about__card">
+            <h3 class="hc-about__h3">Traçabilité</h3>
+            <p class="hc-about__text">
+              Journalisation des actions clés, visibilité sur les délais et la prise en charge.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-about__section hc-about__section--closing" aria-labelledby="about-vision">
+        <div class="hc-about__closing">
+          <h2 id="about-vision" class="hc-about__h2">Notre vision</h2>
+          <p class="hc-about__lead">
+            Une coordination efficace repose sur la structure, la responsabilité et la transparence — pas sur l’improvisation.
+          </p>
+
+          <div class="hc-about__closing-actions">
+            <a
+              class="hc-btn hc-btn--primary"
+              href="{{ url_for('main.orienter') }}"
+              data-hc-event="about_closing_cta"
+            >
+              Commencer
+            </a>
+            <a
+              class="hc-btn hc-btn--ghost"
+              href="{{ url_for('main.professionnels') }}"
+              data-hc-event="about_closing_pro"
+            >
+              Espace professionnel
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
 {% endblock %}
 

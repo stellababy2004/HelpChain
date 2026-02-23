@@ -1,468 +1,240 @@
 {% extends "base.html" %}
+{% from "_forms.html" import select, textarea, input_text, checkbox %}
 
-{% block title %}{{ _("Подайте заявка") }}{% endblock %}
+{% block title %}{{ _("Déposer une demande") }} | HelpChain{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/submit_request.css') }}" />
+{% endblock %}
+{% block body_class %}hc-page-submit-request{% endblock %}
 
 {% block content %}
-<style>
-  .hc-hero {
-    background: linear-gradient(120deg, #0f172a, #0ea5e9);
-    color: #e2e8f0;
-    border-radius: 18px;
-    padding: 20px 18px;
-    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22);
-    display: flex;
-    gap: 18px;
-    align-items: flex-start;
-    justify-content: space-between;
-  }
-  .hc-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    color: #c7d2fe;
-  }
-  .hc-title {
-    font-weight: 800;
-    font-size: 1.6rem;
-    margin: 8px 0 6px;
-    color: #fff;
-  }
-  .hc-subtitle {
-    margin: 0 0 10px;
-    color: #e2e8f0;
-    opacity: 0.92;
-  }
-  .hc-trust {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 8px;
-  }
-  .hc-trust li {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #f8fafc;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-  }
-  .hc-badge {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 14px;
-    border-radius: 12px;
-    color: #f8fafc;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-  .hc-inline-note {
-    background: #f8fafc;
-    border: 1px dashed #cbd5e1;
-    padding: 10px 12px;
-    border-radius: 10px;
-  }
-  .hc-consent .form-check-label {
-    font-size: 0.95rem;
-  }
-  .hc-expectations {
-    margin-top: 2rem;
-    padding: 1.25rem;
-    background: rgba(255, 255, 255, 0.04);
-    border-left: 3px solid #6ea8fe;
-    border-radius: 8px;
-  }
-  .hc-expectations p {
-    margin-bottom: 0.6rem;
-    line-height: 1.5;
-  }
-  .hc-expectations .muted {
-    opacity: 0.8;
-    font-size: 0.95em;
-  }
-  @media (max-width: 768px) {
-    .hc-hero {
-      flex-direction: column;
-      gap: 12px;
-    }
-    .hc-title {
-      font-size: 1.4rem;
-    }
-    .hc-trust li {
-      width: 100%;
-    }
-  }
-</style>
-<div class="container py-4" style="max-width: 780px;">
-  <div class="hc-hero mb-3">
-    <div>
-      <div class="hc-eyebrow">
-        <i class="fas fa-life-ring"></i> {{ _("Нужда от помощ") }}
-      </div>
-      <h1 class="hc-title">{{ _("Изпратете заявка до доброволците") }}</h1>
-      <p class="hc-subtitle">
-        {{ _("Опишете какво е нужно и къде се намирате. Най-близките ни проверени доброволци ще откликнат до 24 часа.") }}
-      </p>
-      <ul class="hc-trust" aria-label="{{ _('Trust signals') }}">
-        {% for mark, icon, text in trust_items %}
-          <li><i class="{{ icon }}"></i> {{ text }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    <div class="hc-badge">
-      <i class="fas fa-hourglass-half me-1"></i> {{ _('~1 minute') }}
-    </div>
-  </div>
-
-  <div class="d-flex justify-content-end mb-3">
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">
-      ↩ {{ _("Начало") }}
-    </a>
-  </div>
-
-  {# Flash messages #}
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, msg in messages %}
-        <div class="alert alert-{{ 'danger' if category in ['error','danger'] else category }} mb-3" role="alert">
-          {{ msg }}
+<div class="hc-sr">
+  <div class="hc-sr__shell">
+    <div class="py-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h1 class="h3 mb-1 page-title">{{ _("Déposer une demande d’aide") }}</h1>
+          <p class="text-muted mb-0 page-subtitle">{{ _("Décrivez votre situation — on s’occupe du reste.") }}</p>
         </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}"
+           data-hc-event="sr_nav_click" data-hc-cta="back_home">
+          ← {{ _("Accueil") }}
+        </a>
+      </div>
 
-  <div class="card shadow-sm">
-    <div class="card-body p-3 p-md-4">
+      {# Flash messages (в твоя код: flash + redirect) #}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="alert alert-{{ 'danger' if category in ['error','danger'] else category }} mb-3" role="alert">
+              {{ msg }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="card shadow-sm">
+        <div class="card-body p-3 p-md-4">
 
       <div class="mb-3">
-        <div class="small text-muted">{{ _("Подходящо за:") }}</div>
+        <div class="small text-muted">Примери:</div>
         <div class="d-flex flex-wrap gap-2 mt-2">
-          <span class="badge text-bg-light border">{{ _("Хора с ограничена подвижност") }}</span>
-          <span class="badge text-bg-light border">{{ _("Самотни възрастни хора") }}</span>
-          <span class="badge text-bg-light border">{{ _("Семейства със спешни нужди") }}</span>
+          <span class="badge text-bg-light border">❤️ Медицинска помощ</span>
+          <span class="badge text-bg-light border">👥 Социална подкрепа</span>
+          <span class="badge text-bg-light border">🛠️ Технически проблем</span>
         </div>
       </div>
 
-      <form method="post" action="{{ url_for('main.submit_request') }}" novalidate>
+      <form
+        method="post"
+        action="{{ url_for('main.submit_request') }}"
+        novalidate
+        data-hc-autotitle-template="{{ _('Request') }}: {snippet}"
+        data-hc-autotitle-template-cat="{cat}: {snippet}"
+        data-hc-hint-ok="{{ _('Sufficient info') }}"
+        data-hc-hint-min="{{ _('Add a bit more detail (20+ chars)') }}"
+      >
         <div class="hc-form-intro">
           <div class="hc-form-steps">
             <span class="hc-step is-active">1</span>
             <span class="hc-step">2</span>
             <span class="hc-step">3</span>
-            <span class="hc-step-label">{{ _('Takes ~1 minute') }}</span>
+            <span class="hc-step-label">{{ _("Ça prend ~2 minutes") }}</span>
           </div>
 
           <ul class="hc-form-trust" aria-label="{{ _('What happens next') }}">
-            {% for mark, icon, text in trust_items %}
-              <li>{{ mark|safe }} {{ text }}</li>
-            {% endfor %}
+            <li>✅ {{ _("Une personne de confiance vous contacte") }}</li>
+            <li>🔒 {{ _("Vos données servent uniquement à la coordination") }}</li>
+            <li>⚡ {{ _("En cas d’urgence, votre demande est priorisée") }}</li>
           </ul>
         </div>
-
         {# Honeypot (backend очаква "website") #}
-        <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;">
+        <div class="hc-sr__honeypot">
           <label>Website</label>
           <input type="text" name="website" tabindex="-1" autocomplete="off">
         </div>
 
-        {# Ако има CSRF (Flask-WTF), оставяме го. Ако не - нищо не се чупи. #}
+        {# Ако имаш CSRF (Flask-WTF), остави това. Ако не — махни го спокойно. #}
         {% if csrf_token is defined %}
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% endif %}
+        <input type="hidden" name="started_at" value="{{ request.form.get('started_at', '') }}">
 
         <div class="row g-3">
 
           <div class="col-12">
-            <label class="form-label">{{ _("Вашите имена") }} <span class="text-danger">*</span></label>
+            <label class="form-label">Вашето име <span class="text-danger">*</span></label>
             <input
               type="text"
               name="name"
               class="form-control"
+              data-hc-event="sr_field_click"
+              data-hc-field="name"
               value="{{ request.form.get('name','') }}"
-              placeholder="{{ _('Име и фамилия') }}"
+              placeholder="Напр. Мария Иванова"
               required minlength="2"
             >
-            <div class="form-text">{{ _("Минимум 2 символа.") }}</div>
+            <div class="form-text">Поне 2 символа.</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Телефон за връзка") }}</label>
+            <label class="form-label">Телефон</label>
             <input
+              id="srPhone"
               type="tel"
               name="phone"
               class="form-control"
+              data-hc-event="sr_field_click"
+              data-hc-field="phone"
               value="{{ request.form.get('phone','') }}"
-              placeholder="+359 88 123 4567"
+              placeholder="+359… / +33…"
             >
-            <div class="form-text">{{ _("Използваме го само за координация.") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Имейл") }}</label>
+            <label class="form-label">Имейл</label>
             <input
+              id="srEmail"
               type="email"
               name="email"
               class="form-control"
+              data-hc-event="sr_field_click"
+              data-hc-field="email"
               value="{{ request.form.get('email','') }}"
               placeholder="name@example.com"
             >
-            <div class="form-text">{{ _("По избор, за да ви пишем писмено.") }}</div>
           </div>
 
           <div class="col-12">
-            <div class="hc-inline-note">
-              <span class="small">
-                {{ _("Ако подавате от името на") }} <b>{{ _("близък") }}</b> {{ _("или") }} <b>{{ _("съсед") }}</b>, {{ _("го уточнете в описанието.") }}
-              </span>
+            <div id="srContactWarn" class="alert alert-info py-2 mb-0">
+              <span class="small">ℹ️ {{ _("Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter.") }}</span>
             </div>
           </div>
 
-          <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Категория на нуждата") }}</label>
-            <select name="category" class="form-select">
-              <option value="">{{ _("Изберете тип нужда") }}</option>
-              <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>{{ _("Медицинска помощ") }}</option>
-              <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>{{ _("Социална подкрепа") }}</option>
-              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>{{ _("Техническа помощ") }}</option>
-              <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>{{ _("Административна помощ") }}</option>
-              <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>{{ _("Друго") }}</option>
+          <div class="col-12">
+            <label class="form-label">Категория</label>
+            <select id="srCategory" name="category" class="form-select" data-hc-event="sr_field_click" data-hc-field="category">
+              <option value="">Избери…</option>
+              <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>Медицинска помощ</option>
+              <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>Социална подкрепа</option>
+              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>Технически проблем</option>
+              <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>Административна помощ</option>
+              <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>Друго</option>
             </select>
-            <div class="form-text">{{ _("Ако се колебаете, оставете \"Друго\".") }}</div>
+            <div class="form-text">Ако не избереш, системата ще запише “general”.</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Спешност") }}</label>
-            <select name="urgency" class="form-select">
-              <option value="low" {% if request.form.get('urgency')=='low' %}selected{% endif %}>{{ _("Ниска") }}</option>
-              <option value="normal" {% if request.form.get('urgency','normal') in ['normal','medium'] %}selected{% endif %}>{{ _("Нормална") }}</option>
-              <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>{{ _("Спешна") }}</option>
-              <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>{{ _("Критична") }}</option>
+            <label class="form-label">Спешност</label>
+            <select name="urgency" class="form-select" data-hc-event="sr_field_click" data-hc-field="urgency">
+              <option value="low" {% if request.form.get('urgency')=='low' %}selected{% endif %}>Ниска</option>
+              <option value="normal" {% if request.form.get('urgency','normal') in ['normal','medium'] %}selected{% endif %}>Нормална</option>
+              <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>Спешна</option>
+              <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>Критична</option>
             </select>
-            <div class="form-text">{{ _("Помага ни да приоритизираме.") }}</div>
+            <div class="form-text">Това влияе на приоритета (low/medium/high).</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Кратко заглавие (по избор)") }}</label>
+            <label class="form-label">Кратко заглавие (по избор)</label>
             <input
+              id="srTitle"
               type="text"
               name="title"
               class="form-control"
+              data-hc-event="sr_field_click"
+              data-hc-field="title"
               value="{{ request.form.get('title','') }}"
-              placeholder="{{ _('Пример: Доставка на лекарства') }}"
+              placeholder="Напр. Нужен придружител до лекар"
             >
-            <div class="form-text">{{ _("Кратка насока за доброволците.") }}</div>
+            <div class="form-text">Ако оставиш празно, системата ще го попълни автоматично.</div>
+            <div id="srTitleHint" class="hc-sr-hint" aria-live="polite"></div>
           </div>
 
-          <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Адрес / локация") }}</label>
+          <div class="col-12">
+            <label class="form-label">Локация / адрес</label>
             <input
               type="text"
               name="location_text"
               class="form-control"
+              data-hc-event="sr_field_click"
+              data-hc-field="location_text"
               value="{{ request.form.get('location_text','') }}"
-              placeholder="{{ _('Град, квартал или точен адрес') }}"
+              placeholder="Град, квартал (без точен адрес, ако не е нужно)"
             >
-            <div class="form-text">{{ _("Достатъчен е кварталът, ако не искате точен адрес.") }}</div>
           </div>
 
           <div class="col-12">
-            <label class="form-label">{{ _("Какво ви трябва?") }} <span class="text-danger">*</span></label>
+            <label class="form-label">Описание <span class="text-danger">*</span></label>
             <textarea
+              id="srDesc"
               name="description"
               class="form-control"
+              data-hc-event="sr_field_click"
+              data-hc-field="description"
               rows="5"
               required minlength="10"
-              placeholder="{{ _('Опишете в 2-3 изречения какво е нужно, за кого е и кога е удобно.') }}"
+              placeholder="Напиши с 2–3 изречения какво се случва и каква помощ търсиш."
             >{{ request.form.get('description','') }}</textarea>
-            <div class="form-text">{{ _("Минимум 10 символа.") }}</div>
-          </div>
-
-          <div class="col-12 hc-consent">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="consent_terms" name="consent_terms" required>
-              <label class="form-check-label" for="consent_terms">
-                {{ _("Съгласен/на съм с") }}
-                <a href="{{ url_for('main.terms') }}" target="_blank">{{ _("Условията за ползване") }}</a>
-                {{ _("и") }}
-                <a href="{{ url_for('main.privacy') }}" target="_blank">{{ _("Политиката за поверителност") }}</a>.
-              </label>
-            </div>
-            <div class="form-check mt-2">
-              <input class="form-check-input" type="checkbox" id="consent_share" name="consent_share" required>
-              <label class="form-check-label" for="consent_share">
-                {{ _("Разрешавам да споделите описаното с подбрани доброволци, за да получа съдействие.") }}
-              </label>
-            </div>
-            <div class="form-text">{{ _("Можете да оттеглите съгласието си по всяко време.") }}</div>
+            <div class="form-text">Минимум 10 символа.</div>
+            <div id="sr-desc-status" class="hc-sr__status hc-sr__status--hidden" aria-live="polite"></div>
           </div>
 
           <div class="col-12">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="privacy_consent" name="privacy_consent" value="1" required>
-              <label class="form-check-label" for="privacy_consent">
-                J’ai lu et j’accepte
-                <a href="{{ url_for('main.legal') }}#rgpd" target="_blank" rel="noopener">la Politique de confidentialité (RGPD)</a>
-                et
-                <a href="{{ url_for('main.legal') }}#mentions" target="_blank" rel="noopener">les Mentions légales</a>.
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="privacyConsent"
+                name="privacy_consent"
+                value="1"
+                {% if request.form.get('privacy_consent') == '1' %}checked{% endif %}
+                required
+              >
+              <label class="form-check-label" for="privacyConsent">
+                {{ _("I agree to the Privacy Policy (GDPR).") }}
               </label>
             </div>
-            <div class="form-text">
-              Nous utilisons vos informations uniquement pour traiter votre demande. Aucune revente.
-            </div>
           </div>
 
-          <div class="col-12 d-flex gap-2 justify-content-end pt-2">
-            <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">{{ _("Отказ") }}</a>
-            <button type="submit" class="btn btn-primary">{{ _("Изпрати заявката") }}</button>
+          <div class="col-12 hc-sr__actions d-flex gap-2 justify-content-end pt-2">
+            <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">Отказ</a>
+            <button type="submit" class="btn btn-primary" data-hc-event="sr_submit_click" data-hc-cta="submit_request">Изпрати заявка</button>
           </div>
 
-        </div>
-
-        <!-- Sticky CTA (mobile + long form) -->
-        <div class="hc-sticky-cta is-visible" role="region" aria-label="{{ _('Quick actions') }}">
-          <div class="hc-sticky-cta__inner">
-            <a class="btn btn-outline-secondary hc-sticky-cta__back" href="{{ url_for('main.index') }}">
-              {{ _('Home') }}
-            </a>
-
-            <button type="submit" class="btn btn-primary hc-sticky-cta__submit">
-              {{ _('Submit a request') }}
-            </button>
-          </div>
         </div>
       </form>
+        </div>
+      </div>
+
     </div>
-  </div>
-
-  {# spacer for floating CTA #}
-  <div style="height: 84px;"></div>
-
-  <div class="hc-expectations">
-    <h3 class="h5 mb-3">{{ _("Как се намира подходящият човек") }}</h3>
-    <p>{{ _("Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други - по-бавно. Това зависи от наличността на хората, не от важността на проблема.") }}</p>
-    <hr class="my-3">
-    <p>{{ _("Когато доброволец се интересува от твоята заявка, той може да се свърже с теб. От този момент вие решавате заедно дали и как да продължите. HelpChain улеснява връзката - решенията са между хората.") }}</p>
-    <p class="muted"><em>{{ _("Няма гарантирано време за отговор. При спешни или опасни ситуации се обърни към местните спешни служби.") }}</em></p>
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_lang('static', filename='js/submit_request.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/submit_request.js') }}" defer></script>
 {% endblock %}
-
-<style>
-/* =========================
-   Warm Trust - Submit Request
-   Scoped & Safe
-   ========================= */
-
-.submit-wrap,
-.submit-card,
-.form-card {
-  background: #fafbfe;
-}
-
-.submit-header,
-.submit-hero {
-  background: linear-gradient(135deg, #0f4c81 0%, #1e6fb8 100%);
-  color: #ffffff;
-}
-
-.submit-header .trust-pill,
-.submit-hero .trust-pill {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-}
-
-/* Trust bullets */
-.trust-list li,
-.form-trust li {
-  background: #e8f5ee;
-  color: #1f4d3a;
-  border-radius: 10px;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-
-.trust-list li:hover,
-.form-trust li:hover {
-  transform: translateY(-1px);
-  background: #dcf3ea;
-}
-
-/* Inputs - softer, more human */
-input,
-select,
-textarea {
-  border-radius: 10px;
-  border: 1px solid #d7deea;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: #2fa4a9;
-  box-shadow: 0 0 0 3px rgba(47, 164, 169, 0.15);
-}
-
-/* Consent checkboxes */
-.form-consent label {
-  color: #334155;
-  cursor: pointer;
-}
-
-.form-consent a {
-  color: #2fa4a9;
-  font-weight: 500;
-}
-
-/* Consent area */
-.form-consent {
-  margin-top: 1.2rem;
-  padding-top: 0.8rem;
-  border-top: 1px dashed #dbe3f0;
-}
-
-/* Primary CTA */
-button[type="submit"],
-.btn-primary {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-  border-radius: 14px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-button[type="submit"]:hover,
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.25);
-}
-
-/* Commit moment */
-button[type="submit"]:active {
-  transform: translateY(0);
-  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
-}
-
-/* Secondary / cancel */
-.btn-secondary {
-  border-radius: 14px;
-}
-
-/* Small reassurance text */
-.form-help,
-.form-note {
-  color: #64748b;
-  font-size: 0.9rem;
-}
-</style>
-

@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Admin panel') }} | HelpChain{% endblock %}
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}" />
+{% endblock %}
+{% block body_class %}hc-page-admin{% endblock %}
 
 {% macro status_badge(status) -%}
   {%- set s = (status or '').lower() -%}
@@ -163,9 +168,9 @@
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between">
           <h5 class="mb-0">Заявки по статус</h5>
-          <span id="dash-warning" class="text-warning small" style="display:none;">Няма данни</span>
+          <span id="dash-warning" class="text-warning small hc-hidden">Няма данни</span>
         </div>
-        <div id="chart-status" style="min-height: 320px;"></div>
+        <div id="chart-status" class="hc-minh-320"></div>
         <div class="text-muted small mt-2" id="dashboard-updated">Последно обновяване: -</div>
       </div>
     </div>
@@ -189,11 +194,11 @@
   <div class="card mt-3">
     <div class="card-body">
       <h5 class="card-title mb-2">{{ _('Requests by city (Top 10)') }}</h5>
-      <div id="chart-by-city" style="min-height: 320px;"></div>
-      <div id="chart-by-city-empty" class="text-muted small" style="display:none;">
+      <div id="chart-by-city" class="hc-minh-320"></div>
+      <div id="chart-by-city-empty" class="text-muted small hc-hidden">
         Няма данни.
       </div>
-      <div id="chart-by-city-error" class="alert alert-warning mt-2" style="display:none;">
+      <div id="chart-by-city-error" class="alert alert-warning mt-2 hc-hidden">
         Неуспешно зареждане на данните (липса на достъп или грешка).
       </div>
     </div>
@@ -203,10 +208,10 @@
     <div class="card-body">
       <h3 class="h5 mb-3">{{ _('📈 Requests trend (last 30 days)') }}</h3>
       <div id="chart-trend"></div>
-      <div id="chart-trend-empty" class="text-muted mt-2" style="display:none;">
+      <div id="chart-trend-empty" class="text-muted mt-2 hc-hidden">
         Няма данни за периода.
       </div>
-      <div id="chart-trend-error" class="alert alert-warning mt-2" style="display:none;">
+      <div id="chart-trend-error" class="alert alert-warning mt-2 hc-hidden">
         Нямаш достъп или възникна грешка.
       </div>
     </div>

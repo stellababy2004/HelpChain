@@ -1,1482 +1,171 @@
-<!doctype html>
-<html lang="{{ (get_locale()|string).split('_', 1)[0] }}">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ _("Стани доброволец") }} - HelpChain</title>
-
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <style>
-      :root {
-        --primary-gradient: linear-gradient(135deg, #6fa8ff 0%, #a8c5ff 100%);
-        --secondary-gradient: linear-gradient(135deg, #f5b7ff 0%, #ffc3a0 100%);
-        --success-gradient: linear-gradient(135deg, #60a5fa 0%, #a5f3fc 100%);
-        --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
-        --volunteer-gradient: linear-gradient(135deg, #60a5fa 0%, #a5f3fc 100%);
-        --vol-hero-gradient: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 55%, #67e8f9 100%);
-        --vol-card-border: #e2e8f0;
-        --light-bg: #f7fafc;
-        --dark-bg: #1a1a1a;
-        --dark-card: #2d2d2d;
-        --text-light: #ffffff;
-        --text-dark: #333333;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
-        --border-radius: 15px;
-      }
-
-      [data-theme="dark"] {
-        --bg-color: var(--dark-bg);
-        --card-bg: var(--dark-card);
-        --text-color: var(--text-light);
-        --shadow: var(--shadow-dark);
-      }
-
-      [data-theme="light"] {
-        --bg-color: var(--light-bg);
-        --card-bg: white;
-        --text-color: var(--text-dark);
-      }
-
-      * {
-        transition: all 0.3s ease;
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-        min-height: 100vh;
-        margin: 0;
-        padding: 20px;
-      }
-
-      /* New volunteer landing (prepend, keeps old page intact) */
-      .vol-landing {
-        margin-top: 84px;
-        padding: 32px 0 12px;
-        background: var(--light-bg);
-        position: relative;
-        z-index: 2;
-      }
-
-      .vol-hero-card {
-        background: var(--vol-hero-gradient);
-        border-radius: 18px;
-        padding: 32px;
-        color: #e2e8f0;
-        box-shadow: 0 14px 38px rgba(15, 23, 42, 0.28);
-        position: relative;
-        z-index: 3;
-        overflow: hidden;
-      }
-
-      .vol-hero-card::after {
-        content: "";
-        position: absolute;
-        inset: 12px;
-        border-radius: 14px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        pointer-events: none;
-      }
-
-      .vol-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.08);
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        color: #c7d2fe;
-        margin-bottom: 10px;
-      }
-
-      .vol-hero-title {
-        font-size: 2.25rem;
-        font-weight: 800;
-        line-height: 1.2;
-        color: #fff;
-        margin-bottom: 12px;
-      }
-
-      .vol-hero-sub {
-        font-size: 1.05rem;
-        max-width: 680px;
-        color: #e2e8f0;
-        opacity: 0.92;
-      }
-
-      .vol-cta-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 18px;
-      }
-
-      .vol-cta-primary,
-      .vol-cta-secondary {
-        padding: 12px 18px;
-        border-radius: 12px;
-        font-weight: 700;
-        text-decoration: none;
-        border: 2px solid transparent;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        pointer-events: auto;
-      }
-
-      .vol-cta-primary {
-        background: var(--volunteer-gradient);
-        color: #fff;
-        box-shadow: 0 10px 30px rgba(14, 165, 233, 0.45);
-      }
-
-      .vol-cta-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 16px 34px rgba(14, 165, 233, 0.55);
-      }
-
-      .vol-cta-secondary {
-        background: rgba(255, 255, 255, 0.08);
-        color: #e2e8f0;
-        border-color: rgba(255, 255, 255, 0.15);
-      }
-
-      .vol-metrics {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 12px;
-        margin-top: 18px;
-      }
-
-      .vol-metric {
-        padding: 14px;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        color: #e2e8f0;
-      }
-
-      .vol-metric strong {
-        display: block;
-        font-size: 1.35rem;
-        color: #fff;
-      }
-
-      .vol-section {
-        margin-top: 26px;
-      }
-
-      .vol-section h3 {
-        font-weight: 800;
-        font-size: 1.2rem;
-        margin-bottom: 14px;
-        color: var(--text-dark);
-      }
-
-      .vol-card-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 14px;
-      }
-
-      .vol-card {
-        border: 1px solid var(--vol-card-border);
-        border-radius: 14px;
-        padding: 16px;
-        background: #fff;
-        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
-      }
-
-      .vol-card h4 {
-        font-size: 1rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: #0f172a;
-      }
-
-      .vol-card p {
-        margin: 0;
-        color: #475569;
-        font-size: 0.95rem;
-      }
-
-      .vol-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        gap: 10px;
-      }
-
-      .vol-list li {
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 12px;
-        color: #0f172a;
-      }
-
-      .vol-list .icon {
-        color: #0ea5e9;
-        margin-top: 2px;
-      }
-
-      .hc-expectations {
-        margin-top: 2rem;
-        padding: 1.25rem;
-        background: rgba(255, 255, 255, 0.04);
-        border-left: 3px solid #6ea8fe;
-        border-radius: 8px;
-      }
-
-      .hc-expectations p {
-        margin-bottom: 0.6rem;
-        line-height: 1.5;
-      }
-
-      .hc-expectations .muted {
-        opacity: 0.8;
-        font-size: 0.95em;
-      }
-
-      .hc-cta {
-        margin: 4rem auto 2rem;
-        padding: 2.5rem 1.5rem;
-        text-align: center;
-      }
-
-      .hc-cta .btn-primary {
-        background: linear-gradient(135deg, #4fd1c5, #63b3ed);
-        border: none;
-        color: #0f172a;
-        font-weight: 600;
-        padding: 0.9rem 1.6rem;
-        border-radius: 999px;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-      }
-
-      .hc-cta .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 8px 24px rgba(79, 209, 197, 0.35);
-      }
-
-      .hc-cta .hc-note {
-        margin-top: 0.75rem;
-        font-size: 0.9rem;
-        color: #94a3b8;
-      }
-
-      .hc-cta .btn-primary:focus-visible {
-        outline: 3px solid #4fd1c5;
-        outline-offset: 3px;
-      }
-
-      @media (max-width: 768px) {
-        .vol-landing {
-          margin-top: 70px;
-          padding: 20px 0 6px;
-        }
-
-        .vol-hero-card {
-          padding: 22px;
-        }
-
-        .vol-hero-title {
-          font-size: 1.85rem;
-        }
-      }
-
-      /* Navigation */
-      .navbar-modern {
-        background: rgba(255, 255, 255, 0.95);
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-      }
-
-      [data-theme="dark"] .navbar-modern {
-        background: rgba(45, 45, 45, 0.95);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .navbar-brand-modern {
-        font-weight: 700;
-        font-size: 1.5rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      /* Theme Toggle */
-      .theme-toggle {
-        background: none;
-        border: none;
-        color: var(--text-color);
-        font-size: 1.2rem;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-      }
-
-      .theme-toggle:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: rotate(180deg);
-      }
-
-      /* Loading Spinner */
-      .loading-spinner {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 9999;
-      }
-
-      .spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top: 4px solid #4facfe;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Volunteer Hero */
-      .volunteer-hero {
-        background: var(--volunteer-gradient);
-        padding: 80px 0;
-        position: relative;
-        overflow: hidden;
-        margin-top: 80px;
-        z-index: 1;
-      }
-
-      /* Ensure hero overlay never blocks clicks */
-      .volunteer-hero,
-      .volunteer-hero::before {
-        pointer-events: none;
-      }
-      .volunteer-hero a,
-      .volunteer-hero button,
-      .volunteer-hero .volunteer-welcome {
-        pointer-events: auto;
-      }
-
-      .volunteer-hero::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(
-            circle at 20% 80%,
-            rgba(79, 172, 254, 0.4) 0%,
-            transparent 50%
-          ),
-          radial-gradient(
-            circle at 80% 20%,
-            rgba(0, 242, 254, 0.4) 0%,
-            transparent 50%
-          );
-        animation: float 12s ease-in-out infinite;
-        pointer-events: none;
-      }
-
-      @keyframes float {
-        0%,
-        100% {
-          transform: translateY(0px) rotate(0deg);
-        }
-
-        33% {
-          transform: translateY(-20px) rotate(120deg);
-        }
-
-        66% {
-          transform: translateY(15px) rotate(240deg);
-        }
-      }
-
-      .volunteer-welcome {
-        position: relative;
-        z-index: 2;
-        text-align: center;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 20px;
-      }
-
-      .volunteer-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        margin-bottom: 1rem;
-      }
-
-      .volunteer-subtitle {
-        font-size: 1.2rem;
-        opacity: 0.9;
-        color: white;
-        margin-bottom: 2rem;
-        line-height: 1.6;
-      }
-
-      .volunteer-stats {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        flex-wrap: wrap;
-        margin-top: 2rem;
-      }
-
-      .stat-item {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 15px;
-        text-align: center;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-      }
-
-      .stat-number {
-        font-size: 1.8rem;
-        font-weight: 700;
-        display: block;
-      }
-
-      .stat-label {
-        font-size: 0.9rem;
-        opacity: 0.9;
-      }
-
-      /* Form Container */
-      .volunteer-form-container {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        max-width: 600px;
-        margin: -50px auto 0;
-        position: relative;
-        z-index: 3;
-      }
-
-      .form-header {
-        background: var(--volunteer-gradient);
-        color: white;
-        padding: 2rem;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .form-header::before {
-        content: "";
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>');
-        animation: float 15s infinite linear;
-      }
-
-      .form-header h2 {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        position: relative;
-        z-index: 1;
-      }
-
-      .form-header p {
-        opacity: 0.9;
-        margin: 0;
-        position: relative;
-        z-index: 1;
-      }
-
-      .form-body {
-        padding: 2.5rem;
-      }
-
-      /* Form Groups */
-      .form-group-modern {
-        margin-bottom: 2rem;
-        position: relative;
-      }
-
-      .form-label-modern {
-        font-weight: 600;
-        color: var(--text-color);
-        margin-bottom: 0.5rem;
-        display: block;
-        font-size: 1rem;
-      }
-
-      .form-control-modern {
-        width: 100%;
-        padding: 1rem 1.2rem;
-        border: 2px solid #e1e5e9;
-        border-radius: 10px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        background: var(--card-bg);
-        color: var(--text-color);
-      }
-
-      [data-theme="dark"] .form-control-modern {
-        border-color: #495057;
-        background: var(--dark-card);
-      }
-
-      .form-control-modern:focus {
-        outline: none;
-        border-color: #4facfe;
-        box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
-        transform: translateY(-2px);
-      }
-
-      .form-control-modern:hover {
-        border-color: #4facfe;
-      }
-
-      .form-text-modern {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-top: 0.25rem;
-      }
-
-      /* Skills Section */
-      .skills-section {
-        margin-bottom: 2rem;
-      }
-
-      .skills-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 1rem;
-        margin-top: 1rem;
-      }
-
-      .skill-checkbox {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem;
-        border: 2px solid #e1e5e9;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: var(--card-bg);
-      }
-
-      [data-theme="dark"] .skill-checkbox {
-        border-color: #495057;
-      }
-
-      .skill-checkbox:hover {
-        border-color: #4facfe;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.2);
-      }
-
-      .skill-checkbox.selected {
-        border-color: #4facfe;
-        background: rgba(79, 172, 254, 0.05);
-      }
-
-      .skill-checkbox input[type="checkbox"] {
-        margin-right: 0.75rem;
-        transform: scale(1.2);
-      }
-
-      .skill-label {
-        font-weight: 500;
-        color: var(--text-color);
-        margin: 0;
-        cursor: pointer;
-      }
-
-      /* Availability Section */
-      .availability-section {
-        margin-bottom: 2rem;
-      }
-
-      .availability-options {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 1rem;
-        margin-top: 1rem;
-      }
-
-      .availability-option {
-        text-align: center;
-        padding: 1rem;
-        border: 2px solid #e1e5e9;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        background: var(--card-bg);
-      }
-
-      [data-theme="dark"] .availability-option {
-        border-color: #495057;
-      }
-
-      .availability-option:hover {
-        border-color: #4facfe;
-        transform: translateY(-2px);
-      }
-
-      .availability-option.selected {
-        border-color: #4facfe;
-        background: rgba(79, 172, 254, 0.05);
-      }
-
-      .availability-icon {
-        font-size: 1.5rem;
-        color: #4facfe;
-        margin-bottom: 0.5rem;
-      }
-
-      .availability-label {
-        font-weight: 600;
-        color: var(--text-color);
-        font-size: 0.9rem;
-      }
-
-      /* Modern Buttons */
-      .btn-modern {
-        padding: 1rem 2rem;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 1.1rem;
-        text-decoration: none;
-        display: block;
-        width: 100%;
-        text-align: center;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        margin-bottom: 1rem;
-      }
-
-      .btn-modern::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.2),
-          transparent
-        );
-        transition: left 0.5s;
-      }
-
-      .btn-modern:hover::before {
-        left: 100%;
-      }
-
-      .btn-primary-modern {
-        background: var(--volunteer-gradient);
-        color: white;
-        box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
-      }
-
-      .btn-primary-modern:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 35px rgba(79, 172, 254, 0.4);
-      }
-
-      /* Alert Messages */
-      .alert-modern {
-        border-radius: 10px;
-        border: none;
-        padding: 1rem 1.5rem;
-        margin-bottom: 1.5rem;
-      }
-
-      .alert-success {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        color: #155724;
-      }
-
-      .alert-danger {
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        color: #721c24;
-      }
-
-      /* Animations */
-      .fade-in {
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.6s ease-out forwards;
-      }
-
-      @keyframes fadeInUp {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .bounce-in {
-        animation: bounceIn 0.6s ease-out;
-      }
-
-      @keyframes bounceIn {
-        0% {
-          opacity: 0;
-          transform: scale(0.3);
-        }
-
-        50% {
-          opacity: 1;
-          transform: scale(1.05);
-        }
-
-        70% {
-          transform: scale(0.9);
-        }
-
-        100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .volunteer-title {
-          font-size: 2rem;
-        }
-
-        .volunteer-stats {
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .skills-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .availability-options {
-          grid-template-columns: repeat(2, 1fr);
-        }
-
-        .form-body {
-          padding: 2rem 1.5rem;
-        }
-      }
-    </style>
-  </head>
-
-  <body data-theme="light">
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-modern">
-      <div class="container">
-        <a class="navbar-brand navbar-brand-modern" href="/">HelpChain</a>
-
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          title="{{ _('Отвори меню') }}"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('index') }}">{{ _("Начало") }}</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('all_categories') }}"
-                >{{ _("Категории") }}</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('faq') }}">{{ _("ЧЗВ") }}</a>
-            </li>
-          </ul>
-
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('login') }}">{{ _("Вход") }}</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('register') }}"
-                >{{ _("Регистрация") }}</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('volunteer_login') }}"
-                >{{ _("Вход за доброволци") }}</a
-              >
-            </li>
-            <li class="nav-item">
-              <button
-                class="theme-toggle"
-                id="themeToggle"
-                title="{{ _('Превключи тема') }}"
-              >
-                <i class="fas fa-moon"></i>
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loadingSpinner">
-      <div class="spinner"></div>
-    </div>
-
-    <!-- New volunteer landing (prepended) -->
-    <section class="vol-landing">
-      <div class="container">
-        <div class="vol-hero-card">
-          <div class="vol-eyebrow">
-            <i class="fas fa-shield-alt"></i>
-            {{ _("Спокойствие за доброволци и хора в нужда") }}
+{% extends "base.html" %}
+{% block title %}{{ _("Accès intervenant") }} | HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-vol-join">
+  {% set next_path = (request.args.get('next') or '') %}
+  {% set is_login_mode = next_path.startswith('/volunteer/') %}
+  <div class="hc-shell">
+    <div class="hc-narrow">
+
+      <header class="hc-pagehead">
+        <div class="hc-become-head">
+          <div class="hc-become-titleblock">
+            <h1 class="hc-title">{{ "Accès intervenant" if is_login_mode else "Demander un accès intervenant" }}</h1>
+            <p class="hc-subtitle">
+              {{ "Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe." if is_login_mode else "Demandez un accès intervenant. Nous vous enverrons un lien sécurisé par e-mail." }}
+            </p>
           </div>
-          <h1 class="vol-hero-title">
-            {{ _("Помагаш, когато можеш. По начин, който избираш.") }}
-          </h1>
-          <p class="vol-hero-sub">
-            {{ _("HelpChain свързва хора в нужда с доброволци - без натиск, без бюрокрация и с ясни граници. Ти решаваш дали, кога и как да се включиш.") }}
+
+          <!-- Trust mini card (right side) -->
+          <aside class="hc-trust-card" aria-label="Confiance et confidentialité">
+            <ul class="hc-trust-list">
+              <li>✅ Accès réservé aux intervenants autorisés</li>
+              <li>⚡ Processus simple, traçable et responsable</li>
+              <li>🔒 Données minimales, respect RGPD</li>
+            </ul>
+          </aside>
+        </div>
+      </header>
+
+        <div class="hc-card hc-vol-join__card">
+        <div class="hc-card__head">
+          <h2 class="hc-card__title">{{ "Accéder à mon espace intervenant" if is_login_mode else "1 minute pour commencer" }}</h2>
+          <p class="hc-card__hint">Nous vous envoyons un lien de connexion. Aucun mot de passe.</p>
+        </div>
+
+        <form method="post" action="{{ url_for('main.become_volunteer') }}" class="hc-form" autocomplete="off" data-hc-magic-link="volunteer" data-hc-generic-ok="{{ _("Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes.") }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <input type="text" name="company_fax" id="hp_company_fax" autocomplete="off" tabindex="-1" aria-hidden="true" readonly class="hc-honeypot">
+          <input type="hidden" name="started_at" id="started_at" value="">
+
+          {% if is_login_mode %}
+          <p class="hc-help hc-mb-10">
+            Connexion sécurisée — aucun mot de passe
           </p>
-          <div class="vol-cta-row">
-            <a class="vol-cta-primary" href="#volunteerForm">
-              <i class="fas fa-hand-holding-heart me-2"></i>{{ _("Виж как можеш да помогнеш") }}
-            </a>
-            <a class="vol-cta-secondary" href="{{ safe_url_for('faq') }}">
-              <i class="fas fa-circle-question me-2"></i>{{ _("Как работи HelpChain →") }}
-            </a>
+          {% endif %}
+
+          <div class="hc-field">
+            <label class="hc-label" for="email">Adresse e-mail <span class="hc-req">*</span></label>
+            <input class="hc-input" id="email" name="email" type="email" autocomplete="email" required placeholder="vous@email.com">
+            <p class="hc-help">Nous ne partageons jamais votre e-mail. Vous pourrez supprimer votre compte à tout moment.</p>
+            <p class="hc-help">{{ _("Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes).") }}</p>
           </div>
-          <div class="vol-metrics">
-            <div class="vol-metric">
-              <strong>{{ _("12 месеца") }}</strong>
-              {{ _("последователна подкрепа в общност.") }}
+
+          {% if is_login_mode %}
+          <details class="hc-faq hc-mt-8">
+            <summary>Ajouter ville et compétences (optionnel)</summary>
+            <div class="hc-field hc-mt-10">
+              <label class="hc-label" for="city">Ville / Localité <span class="hc-help">(optionnel)</span></label>
+              <input class="hc-input" id="city" name="city" type="text" autocomplete="address-level2" placeholder="Paris, Boulogne-Billancourt…">
+              <p class="hc-help">Une zone approximative suffit.</p>
             </div>
-            <div class="vol-metric">
-              <strong>94%</strong>
-              {{ _("заявки получават отговор от доброволец.") }}
+
+            <div class="hc-field">
+              <label class="hc-label">Compétences (max 5) <span class="hc-help">(optionnel)</span></label>
+              <div class="hc-chips hc-skills">
+                <label class="hc-chip"><input type="checkbox" name="skills" value="transport"> <span class="hc-chip__text">Transport</span></label>
+                <label class="hc-chip"><input type="checkbox" name="skills" value="courses"> <span class="hc-chip__text">Courses</span></label>
+                <label class="hc-chip"><input type="checkbox" name="skills" value="admin"> <span class="hc-chip__text">Admin</span></label>
+                <label class="hc-chip"><input type="checkbox" name="skills" value="health"> <span class="hc-chip__text">Aide médicale</span></label>
+                <label class="hc-chip"><input type="checkbox" name="skills" value="support"> <span class="hc-chip__text">Soutien émotionnel</span></label>
+                <label class="hc-chip"><input type="checkbox" name="skills" value="other"> <span class="hc-chip__text">Autre</span></label>
+              </div>
+              <p id="skills-hint" class="hc-hint">Maximum 5 compétences.</p>
+              <p class="hc-help">Vous pourrez ajuster plus tard.</p>
             </div>
-            <div class="vol-metric">
-              <strong>4.9/5</strong>
-              {{ _("оценка на разговора с доброволци.") }}
-            </div>
+          </details>
+          {% else %}
+          <div class="hc-field">
+            <label class="hc-label" for="city">Ville / Localité <span class="hc-req">*</span></label>
+            <input class="hc-input" id="city" name="city" type="text" autocomplete="address-level2" required placeholder="Paris, Boulogne-Billancourt…">
+            <p class="hc-help">Une zone approximative suffit.</p>
           </div>
-        </div>
 
-        <div class="vol-section">
-          <h3><i class="fas fa-sparkles me-2"></i>{{ _("Какво означава да си доброволец тук") }}</h3>
-          <div class="vol-card-grid">
-            <div class="vol-card">
-              <h4><i class="fas fa-route me-2 text-info"></i>{{ _("Виждаш заявки наблизо") }}</h4>
-              <p>{{ _("Получаваш заявки според локация и вид помощ. Нищо задължително.") }}</p>
+          <div class="hc-field">
+            <label class="hc-label">Compétences (max 5)</label>
+            <div class="hc-chips hc-skills">
+              <label class="hc-chip"><input type="checkbox" name="skills" value="transport"> <span class="hc-chip__text">Transport</span></label>
+              <label class="hc-chip"><input type="checkbox" name="skills" value="courses"> <span class="hc-chip__text">Courses</span></label>
+              <label class="hc-chip"><input type="checkbox" name="skills" value="admin"> <span class="hc-chip__text">Admin</span></label>
+              <label class="hc-chip"><input type="checkbox" name="skills" value="health"> <span class="hc-chip__text">Aide médicale</span></label>
+              <label class="hc-chip"><input type="checkbox" name="skills" value="support"> <span class="hc-chip__text">Soutien émotionnel</span></label>
+              <label class="hc-chip"><input type="checkbox" name="skills" value="other"> <span class="hc-chip__text">Autre</span></label>
             </div>
-            <div class="vol-card">
-              <h4><i class="fas fa-hand-holding-heart me-2 text-success"></i>{{ _("Избираш дали и кога") }}</h4>
-              <p>{{ _("Ти решаваш дали да поемеш заявка и кога да се включиш.") }}</p>
-            </div>
-            <div class="vol-card">
-              <h4><i class="fas fa-phone-volume me-2 text-primary"></i>{{ _("Свързваш се директно") }}</h4>
-              <p>{{ _("Говориш с човека директно (телефон или имейл) - без посредници и забавяне.") }}</p>
-            </div>
-            <div class="vol-card">
-              <h4><i class="fas fa-door-open me-2 text-warning"></i>{{ _("Можеш да откажеш") }}</h4>
-              <p>{{ _("Отказът е окей. Няма санкции, няма задължения, няма чувство за вина.") }}</p>
-            </div>
+            <p id="skills-hint" class="hc-hint">Maximum 5 compétences.</p>
+            <p class="hc-help">Vous pourrez ajuster plus tard.</p>
           </div>
-        </div>
+          {% endif %}
 
-        <div class="vol-section">
-          <h3><i class="fas fa-list-check me-2"></i>{{ _("Какво не си длъжен/длъжна да правиш") }}</h3>
-          <ul class="vol-list">
-            {% for icon, text in not_required_items %}
-              <li>
-                <span class="icon"><i class="{{ icon }}"></i></span>
-                {{ text }}
-              </li>
-            {% endfor %}
-          </ul>
-          <p class="mt-3">{{ _("Ако нещо не ти е окей - просто не го правиш. Това е напълно приемливо тук.") }}</p>
-        </div>
-
-        <div class="vol-section">
-          <h3><i class="fas fa-id-card-clip me-2"></i>{{ _("Лека проверка за повече спокойствие") }}</h3>
-          <div class="vol-card-grid">
-            <div class="vol-card">
-              <h4>{{ _("1. Лека стъпка") }}</h4>
-              <p>{{ _("За да пазим всички в безопасност, някои доброволци минават лека проверка (напр. имейл или телефон). Това помага на хората да се чувстват по-спокойни.") }}</p>
-            </div>
-            <div class="vol-card">
-              <h4>{{ _("2. Ясни граници") }}</h4>
-              <p>{{ _("Избираш кога и колко да помагаш. Няма задължителен график.") }}</p>
-            </div>
-            <div class="vol-card">
-              <h4>{{ _("3. Директна връзка") }}</h4>
-              <p>{{ _("Свързваш се директно с човека и решавате заедно какво е удобно и безопасно.") }}</p>
-            </div>
+          <div class="hc-field hc-consent">
+            <label class="hc-consent__row">
+              <input type="checkbox" name="consent" {% if not is_login_mode %}required{% endif %}>
+              <span>J’accepte les <a href="/legal" class="hc-link">conditions d’utilisation</a> et la <a href="/legal" class="hc-link">politique de confidentialité</a>.</span>
+            </label>
           </div>
-        </div>
 
-        <div class="hc-cta">
-          <a href="#volunteerForm" class="btn btn-primary">
-            {{ _("Присъедини се като доброволец") }}
-          </a>
-          <div class="hc-note">
-            {{ _("Регистрацията е безплатна · Ангажиментът е по твои правила") }}
-          </div>
-          <div class="hc-note" style="font-size: 0.85rem;">
-            {{ _("Хора като теб вече помагат - по малко, по свой начин.") }}
-          </div>
-        </div>
+          <button id="magicLinkBtn" type="submit" class="hc-btn hc-btn--primary hc-btn--full">
+            <span class="btn-text">{{ "Recevoir mon lien de connexion" if is_login_mode else "Demander un accès intervenant" }}</span>
+            <span class="btn-spinner hc-hidden hc-ml-8" aria-hidden="true">⏳</span>
+          </button>
 
-        <div class="hc-expectations">
-          <h3 class="h5 mb-3">{{ _("Как работи свързването") }}</h3>
-          <p>{{ _("Като доброволец виждаш заявки, към които можеш да откликнеш. Не си задължен/а да отговаряш на всички.") }}</p>
-          <p>{{ _("Ако решиш да се свържеш, вие заедно уточнявате как и дали да помогнеш.") }}</p>
-          <p class="muted">{{ _("Доброволчеството не означава 24/7 наличност и не замества професионални услуги.") }}</p>
-        </div>
+          <p id="magicLinkMsg" class="hc-form-msg hc-hidden hc-mt-10" data-hc-form-msg aria-live="polite"></p>
 
-        <div class="hc-expectations">
-          <h3 class="h5 mb-3">{{ _("Как се намира подходящият човек") }}</h3>
-          <p>{{ _("Когато подадеш заявка, тя става видима за доброволци, които са близо до теб или имат подходящи умения. Някои заявки получават отговор бързо. Други - по-бавно. Това зависи от наличността на хората, не от важността на проблема.") }}</p>
-          <p class="muted">{{ _("Така очакванията са ясни: има човешки фактор, а не магия или гаранции.") }}</p>
-        </div>
-
-        <div class="hc-expectations">
-          <h3 class="h5 mb-3">{{ _("Какво може да очакваш от доброволеца") }}</h3>
-          <p>✔️ {{ _("Човешки отговор") }}</p>
-          <p>✔️ {{ _("Желание да помогне, когато може") }}</p>
-          <p>✔️ {{ _("Честност за това какво може и какво не") }}</p>
-          <p class="muted">{{ _("Доброволците не са на разположение 24/7 и не заместват професионални услуги.") }}</p>
-        </div>
-
-        <div class="hc-expectations">
-          <h3 class="h5 mb-3">{{ _("Какво помага нещата да се случат по-лесно") }}</h3>
-          <p>✔️ {{ _("Ясно описание на ситуацията") }}</p>
-          <p>✔️ {{ _("Коректен контакт") }}</p>
-          <p>✔️ {{ _("Уважителен тон") }}</p>
-          <p class="muted">{{ _("Ако нуждата ти се промени или вече си получил/а помощ, можеш да затвориш заявката по всяко време.") }}</p>
-        </div>
-
-        <div class="hc-expectations">
-          <h3 class="h5 mb-3">{{ _("Време за отговор") }}</h3>
-          <p>{{ _("Няма фиксирано време за отговор. Някои заявки получават реакция в същия ден, други - след няколко дни.") }}</p>
-          <p class="muted">{{ _("Ако заявката е спешна или опасна, потърси местните спешни служби.") }}</p>
-        </div>
-
-        <div class="hc-expectations">
-          <p class="muted mb-0">
-            {{ _("Понякога една заявка води до помощ. Понякога - до разговор. И понякога - просто до това някой да те чуе. Всичко това има стойност.") }}
-          </p>
-        </div>
+          {# Footnote removed: the message box above already carries anti-enumeration copy. #}
+        </form>
       </div>
-    </section>
 
-    <!-- Volunteer Hero -->
-    <section class="volunteer-hero">
-      <div class="volunteer-welcome">
-        <h1 class="volunteer-title">
-          <i class="fas fa-hands-helping me-3"></i>{{ _("Стани доброволец") }}
-        </h1>
-        <p class="volunteer-subtitle">
-          {{ _("Присъедини се към нашата общност от доброволци и помогни на хората, които се нуждаят от подкрепа. Твоето време и умения могат да променят живота на някого.") }}
+      <details class="hc-faq">
+        <summary>Comment ça marche ?</summary>
+        <ul>
+          <li>Vous recevez un lien sécurisé par e-mail.</li>
+          <li>Vous choisissez les demandes qui vous conviennent.</li>
+          <li>Vous pouvez arrêter à tout moment, sans justification.</li>
+        </ul>
+      </details>
+
+      <details class="hc-faq">
+        <summary>Vos données</summary>
+        <p class="hc-help hc-mt-10">
+          Nous collectons uniquement les informations nécessaires pour vous mettre en relation. Vous gardez le contrôle.
         </p>
-        <div class="volunteer-stats">
-          <div class="stat-item">
-            <span class="stat-number">500+</span>
-            <span class="stat-label">{{ _("Доброволци") }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">1000+</span>
-            <span class="stat-label">{{ _("Помогнати хора") }}</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">50+</span>
-            <span class="stat-label">{{ _("Градове") }}</span>
-          </div>
-        </div>
-      </div>
-    </section>
+      </details>
 
-    <!-- Volunteer Form -->
-    <div class="container">
-      <div class="volunteer-form-container bounce-in">
-        <div class="form-header">
-          <h2><i class="fas fa-user-plus me-2"></i>{{ _("Попълни информацията си") }}</h2>
-          <p>{{ _("Разкажи ни малко за себе си и как можеш да помогнеш") }}</p>
-        </div>
+      <section id="link-sent" class="hc-link-sent hc-hidden">
+        <div class="hc-card hc-card--center">
+          <div class="hc-card__icon" aria-hidden="true">📩</div>
+          <h2 class="hc-title hc-title--sm">Vérifiez votre e-mail</h2>
+          <p class="hc-muted">
+            Si cet e-mail existe, nous venons d’envoyer un lien sécurisé.
+            <strong>Aucun mot de passe.</strong>
+          </p>
+          <ul class="hc-list">
+            <li>Lien valable <strong>15 minutes</strong></li>
+            <li>Regardez aussi vos spams</li>
+            <li>Vous gardez le contrôle. Vous pourrez arrêter à tout moment.</li>
+          </ul>
 
-        <div class="form-body">
-          {% with messages = get_flashed_messages(with_categories=true) %} {% if
-          messages %} {% for category, message in messages %}
-          <div
-            class="alert alert-modern alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'warning' }}"
-          >
-            <i
-              class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'error' else 'info-circle' }} me-2"
-            ></i>
-            {{ message }}
-          </div>
-          {% endfor %} {% endif %} {% endwith %}
-
-          <form id="volunteerForm" method="POST" action="{{ url_for('main.become_volunteer') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group-modern">
-              <label for="name" class="form-label-modern">
-                <i class="fas fa-user me-2"></i>{{ _("Пълно име") }} *
-              </label>
-              <input
-                type="text"
-                class="form-control-modern"
-                id="name"
-                name="name"
-                required
-                placeholder="{{ _('Въведете пълното си име') }}"
-                autocomplete="name"
-              />
-            </div>
-
-            <div class="form-group-modern">
-              <label for="email" class="form-label-modern">
-                <i class="fas fa-envelope me-2"></i>{{ _("Имейл адрес") }} *
-              </label>
-              <input
-                type="email"
-                class="form-control-modern"
-                id="email"
-                name="email"
-                required
-                placeholder="your.email@example.com"
-                autocomplete="email"
-              />
-              <small class="form-text-modern">
-                {{ _("Ще използваме този имейл за връзка с теб") }}
-              </small>
-            </div>
-
-            <div class="form-group-modern">
-              <label for="phone" class="form-label-modern">
-                <i class="fas fa-phone me-2"></i>{{ _("Телефонен номер") }} *
-              </label>
-              <input
-                type="tel"
-                class="form-control-modern"
-                id="phone"
-                name="phone"
-                required
-                placeholder="+359 88 123 4567"
-                autocomplete="tel"
-              />
-              <small class="form-text-modern">
-                {{ _("За спешни случаи и координация") }}
-              </small>
-            </div>
-
-            <div class="form-group-modern">
-              <label for="age" class="form-label-modern">
-                <i class="fas fa-birthday-cake me-2"></i>{{ _("Възраст") }}
-              </label>
-              <input
-                type="number"
-                class="form-control-modern"
-                id="age"
-                name="age"
-                min="16"
-                max="100"
-                placeholder="{{ _('Възраст в години') }}"
-              />
-              <small class="form-text-modern">
-                {{ _("Минимална възраст: 16 години") }}
-              </small>
-            </div>
-
-            <div class="form-group-modern">
-              <label for="location" class="form-label-modern">
-                <i class="fas fa-map-marker-alt me-2"></i>{{ _("Град/Населено място") }} *
-              </label>
-              <input
-                type="text"
-                class="form-control-modern"
-                id="location"
-                name="location"
-                required
-                placeholder="{{ _('София, Пловдив, Варна...') }}"
-                autocomplete="address-level2"
-              />
-            </div>
-
-            <!-- Skills Section -->
-            <div class="skills-section">
-              <label class="form-label-modern">
-                <i class="fas fa-tools me-2"></i>{{ _("Умения и интереси") }}
-              </label>
-              <p class="form-text-modern mb-3">
-                {{ _("Избери областите, в които можеш да помогнеш:") }}
-              </p>
-              <div class="skills-grid">
-                <label class="skill-checkbox">
-                  <input type="checkbox" name="skills" value="transport" />
-                  <span class="skill-label">{{ _("Транспорт") }}</span>
-                </label>
-                <label class="skill-checkbox">
-                  <input type="checkbox" name="skills" value="shopping" />
-                  <span class="skill-label">{{ _("Пазаруване") }}</span>
-                </label>
-                <label class="skill-checkbox">
-                  <input type="checkbox" name="skills" value="medical" />
-                  <span class="skill-label">{{ _("Медицинска помощ") }}</span>
-                </label>
-                <label class="skill-checkbox">
-                  <input type="checkbox" name="skills" value="housework" />
-                  <span class="skill-label">{{ _("Домакинска работа") }}</span>
-                </label>
-                <label class="skill-checkbox">
-                  <input type="checkbox" name="skills" value="teaching" />
-                  <span class="skill-label">{{ _("Обучение") }}</span>
-                </label>
-                <label class="skill-checkbox">
-                  <input
-                    type="checkbox"
-                    name="skills"
-                    value="emotional_support"
-                  />
-                  <span class="skill-label">{{ _("Емоционална подкрепа") }}</span>
-                </label>
-                <label class="skill-checkbox">
-                  <input type="checkbox" name="skills" value="technical" />
-                  <span class="skill-label">{{ _("Техническа помощ") }}</span>
-                </label>
-                <label class="skill-checkbox">
-                  <input type="checkbox" name="skills" value="other" />
-                  <span class="skill-label">{{ _("Друго") }}</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Availability Section -->
-            <div class="availability-section">
-              <label class="form-label-modern">
-                <i class="fas fa-clock me-2"></i>{{ _("Наличност") }}
-              </label>
-              <p class="form-text-modern mb-3">
-                {{ _("Кога си на разположение да помагаш:") }}
-              </p>
-              <div class="availability-options">
-                <div class="availability-option">
-                  <div class="availability-icon">
-                    <i class="fas fa-sun"></i>
-                  </div>
-                  <div class="availability-label">{{ _("Сутрин") }}</div>
-                  <input
-                    type="checkbox"
-                    name="availability"
-                    value="morning"
-                    style="display: none"
-                  />
-                </div>
-                <div class="availability-option">
-                  <div class="availability-icon">
-                    <i class="fas fa-cloud-sun"></i>
-                  </div>
-                  <div class="availability-label">{{ _("Обяд") }}</div>
-                  <input
-                    type="checkbox"
-                    name="availability"
-                    value="afternoon"
-                    style="display: none"
-                  />
-                </div>
-                <div class="availability-option">
-                  <div class="availability-icon">
-                    <i class="fas fa-moon"></i>
-                  </div>
-                  <div class="availability-label">{{ _("Вечер") }}</div>
-                  <input
-                    type="checkbox"
-                    name="availability"
-                    value="evening"
-                    style="display: none"
-                  />
-                </div>
-                <div class="availability-option">
-                  <div class="availability-icon">
-                    <i class="fas fa-calendar-week"></i>
-                  </div>
-                  <div class="availability-label">{{ _("Уикенд") }}</div>
-                  <input
-                    type="checkbox"
-                    name="availability"
-                    value="weekend"
-                    style="display: none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group-modern">
-              <label for="experience" class="form-label-modern">
-                <i class="fas fa-star me-2"></i>{{ _("Опит (по избор)") }}
-              </label>
-              <textarea
-                class="form-control-modern"
-                id="experience"
-                name="experience"
-                rows="3"
-                placeholder="{{ _('Разкажи за предишен опит като доброволец или подобни дейности...') }}"
-              ></textarea>
-            </div>
-
-            <div class="form-group-modern">
-              <label for="motivation" class="form-label-modern">
-                <i class="fas fa-heart me-2"></i>{{ _("Мотивация") }}
-              </label>
-              <textarea
-                class="form-control-modern"
-                id="motivation"
-                name="motivation"
-                rows="3"
-                placeholder="{{ _('Защо искаш да станеш доброволец? Какво те мотивира да помагаш на другите?') }}"
-              ></textarea>
-            </div>
-
-            <div class="form-group-modern">
-              <div class="d-flex align-items-center">
-                <input
-                  class="form-check-input me-3"
-                  type="checkbox"
-                  id="terms"
-                  name="terms"
-                  required
-                  style="transform: scale(1.2)"
-                />
-                <label
-                  class="form-check-label"
-                  for="terms"
-                  style="color: var(--text-color); font-size: 0.95rem"
-                >
-                  {{ _("Съгласявам се с") }}
-                  <a href="/terms" target="_blank" style="color: #4facfe">{{ _("условията за ползване") }}</a>
-                  {{ _("и") }}
-                  <a href="/privacy" target="_blank" style="color: #4facfe">{{ _("политиката за поверителност") }}</a>
-                </label>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              class="btn btn-primary-modern btn-modern"
-              id="submitBtn"
-            >
-              <i class="fas fa-paper-plane me-2"></i>{{ _("Изпрати кандидатурата") }}
+          <div class="hc-actions">
+            <button id="resend-link" class="hc-btn hc-btn--primary" disabled title="Placeholder (backend à venir)">
+              Renvoyer le lien
             </button>
-          </form>
+            <a id="back-home" class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">Retour à l’accueil</a>
+          </div>
         </div>
-      </div>
+      </section>
+
     </div>
+  </div>
+</section>
+{% endblock %}
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Custom JavaScript -->
-    <script>
-      // Theme Toggle Functionality
-      const themeToggle = document.getElementById("themeToggle");
-      const html = document.documentElement;
-      const themeIcon = themeToggle.querySelector("i");
-
-      // Load saved theme
-      const savedTheme = localStorage.getItem("theme") || "light";
-      html.setAttribute("data-theme", savedTheme);
-      updateThemeIcon(savedTheme);
-
-      themeToggle.addEventListener("click", () => {
-        const currentTheme = html.getAttribute("data-theme");
-        const newTheme = currentTheme === "light" ? "dark" : "light";
-
-        html.setAttribute("data-theme", newTheme);
-        localStorage.setItem("theme", newTheme);
-        updateThemeIcon(newTheme);
-      });
-
-      function updateThemeIcon(theme) {
-        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
-      }
-
-      // Skill Selection
-      document.querySelectorAll(".skill-checkbox").forEach((checkbox) => {
-        checkbox.addEventListener("click", function (e) {
-          // allow normal navigation if the click was on an actual link inside (none today)
-          const input = this.querySelector('input[type="checkbox"]');
-          if (!input) return;
-          e.preventDefault();
-          input.checked = !input.checked;
-          this.classList.toggle("selected", input.checked);
-        });
-      });
-
-      // Availability Selection
-      document.querySelectorAll(".availability-option").forEach((option) => {
-        option.addEventListener("click", function () {
-          const input = this.querySelector('input[type="checkbox"]');
-          input.checked = !input.checked;
-          this.classList.toggle("selected", input.checked);
-        });
-      });
-
-      // Loading States for form submission
-      function showLoading() {
-        document.getElementById("loadingSpinner").style.display = "block";
-        document.getElementById("submitBtn").disabled = true;
-        const sendingText = {{ _("Изпращане...")|tojson }};
-        document.getElementById("submitBtn").innerHTML =
-          `<i class="fas fa-spinner fa-spin me-2"></i>${sendingText}`;
-      }
-
-      function hideLoading() {
-        document.getElementById("loadingSpinner").style.display = "none";
-        document.getElementById("submitBtn").disabled = false;
-        const submitText = {{ _("Изпрати кандидатурата")|tojson }};
-        document.getElementById("submitBtn").innerHTML =
-          `<i class="fas fa-paper-plane me-2"></i>${submitText}`;
-      }
-
-      // Form Validation and Submission
-      const form = document.getElementById("volunteerForm");
-
-      form.addEventListener("submit", function (e) {
-        // Basic validation
-        const requiredFields = ["name", "email", "phone", "location"];
-        let isValid = true;
-
-        requiredFields.forEach((field) => {
-          const element = document.getElementById(field);
-          if (!element.value.trim()) {
-            element.style.borderColor = "#dc3545";
-            isValid = false;
-          } else {
-            element.style.borderColor = "#28a745";
-          }
-        });
-
-        // Email validation
-        const email = document.getElementById("email");
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (email.value && !emailRegex.test(email.value)) {
-          email.style.borderColor = "#dc3545";
-          isValid = false;
-        }
-
-        // Phone validation (basic)
-        const phone = document.getElementById("phone");
-        if (phone.value && phone.value.length < 10) {
-          phone.style.borderColor = "#dc3545";
-          isValid = false;
-        }
-
-        // Terms validation
-        const terms = document.getElementById("terms");
-        if (!terms.checked) {
-          isValid = false;
-          alert({{ _("Моля, съгласете се с условията за ползване!")|tojson }});
-        }
-
-        if (!isValid) {
-          e.preventDefault();
-          return;
-        }
-
-        // Show loading state
-        showLoading();
-      });
-
-      // Real-time validation
-      document.querySelectorAll(".form-control-modern").forEach((field) => {
-        field.addEventListener("blur", function () {
-          if (this.hasAttribute("required") && !this.value.trim()) {
-            this.style.borderColor = "#dc3545";
-          } else {
-            this.style.borderColor = "#28a745";
-          }
-        });
-
-        field.addEventListener("input", function () {
-          if (this.value.trim()) {
-            this.style.borderColor = "#28a745";
-          }
-        });
-      });
-
-      // Initialize animations
-      document.addEventListener("DOMContentLoaded", function () {
-        // Add fade-in animation to form elements
-        const formElements = document.querySelectorAll(".form-group-modern");
-        formElements.forEach((element, index) => {
-          element.style.animationDelay = `${index * 0.1}s`;
-          element.classList.add("fade-in");
-        });
-      });
-    </script>
-  </body>
-</html>
-
+{% block scripts %}
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    var hp = document.getElementById("hp_company_fax");
+    if (hp) hp.removeAttribute("readonly");
+  });
+</script>
+<script src="{{ url_for('static', filename='js/volunteer_step1.js') }}"></script>
+{% endblock %}

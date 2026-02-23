@@ -15,10 +15,14 @@ from backend.models import User
 
 def _get_fernet() -> "Fernet":
     if not _AUTH_2FA_AVAILABLE:
-        raise RuntimeError("Optional 2FA dependencies not installed (pyotp/cryptography)")
+        raise RuntimeError(
+            "Optional 2FA dependencies not installed (pyotp/cryptography)"
+        )
     key = os.getenv("FERNET_KEY")
     if not key:
-        raise RuntimeError("FERNET_KEY must be set in environment (export or GH secret)")
+        raise RuntimeError(
+            "FERNET_KEY must be set in environment (export or GH secret)"
+        )
     return Fernet(key.encode() if isinstance(key, str) else key)
 
 

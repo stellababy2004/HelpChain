@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+  <body style="margin:0;background:#f6f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
+    <div style="max-width:560px;margin:0 auto;padding:24px;">
+      <div style="background:#ffffff;border:1px solid #e8eaf2;border-radius:14px;padding:22px;">
+        <div style="color:#445; font-size:14px; margin-bottom:16px;">
+          {{ intro_text or "Voici votre lien de connexion." }}
+          <br>
+          <b>{{ ttl_minutes or 15 }}</b> minutes.
+        </div>
+
+        <a href="{{ magic_link_url }}" class="btn-primary">
+          {{ button_text or "Ouvrir mon lien de connexion" }}
+        </a>
+
+        <div style="color:#667; font-size:12px; margin-top:16px;">
+          <p style="margin:0 0 6px;">{{ fallback_text or "Si le bouton ne fonctionne pas, copiez-collez ce lien :" }}</p>
+          <p style="margin:0;"><code>{{ magic_link_url }}</code></p>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #eef0f6;margin:18px 0;">
+
+        <div style="color:#778; font-size:12px; line-height:1.45;">
+          🔒 {{ privacy_line or "Données minimales, respect RGPD" }}<br>
+          {{ ignore_line or "Si vous n’êtes pas à l’origine de cette demande, ignorez simplement cet e-mail." }}
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>
+

@@ -7,363 +7,26 @@
 
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
     />
 
     <!-- Font Awesome for icons -->
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
 
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      href="{{ url_for('static', filename='vendor/fonts/inter.css') }}"
       rel="stylesheet"
     />
 
-    <style>
-      :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-        --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-        --light-bg: #f8f9fa;
-        --dark-bg: #1a1a1a;
-        --dark-card: #2d2d2d;
-        --text-light: #ffffff;
-        --text-dark: #333333;
-        --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
-        --border-radius: 15px;
-      }
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}" />
+    </head>
 
-      [data-theme="dark"] {
-        --bg-color: var(--dark-bg);
-        --card-bg: var(--dark-card);
-        --text-color: var(--text-light);
-        --shadow: var(--shadow-dark);
-      }
-
-      [data-theme="light"] {
-        --bg-color: var(--light-bg);
-        --card-bg: white;
-        --text-color: var(--text-dark);
-      }
-
-      body {
-        font-family: "Inter", sans-serif;
-        background: var(--bg-color);
-        color: var(--text-color);
-        min-height: 100vh;
-      }
-
-      /* Modern Navigation */
-      .navbar-modern {
-        background: rgba(255, 255, 255, 0.95);
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow);
-      }
-
-      [data-theme="dark"] .navbar-modern {
-        background: rgba(45, 45, 45, 0.95);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-
-      .navbar-brand-modern {
-        font-weight: 700;
-        font-size: 1.5rem;
-        background: var(--primary-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      /* Theme Toggle */
-      .theme-toggle {
-        background: none;
-        border: none;
-        color: var(--text-color);
-        font-size: 1.2rem;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 50%;
-        transition: all 0.3s ease;
-      }
-
-      .theme-toggle:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: rotate(180deg);
-      }
-
-      /* Stats Cards */
-      .stats-card {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        border: none;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .stats-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 100%;
-        background: var(--success-gradient);
-      }
-
-      .stats-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-      }
-
-      .stats-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-      }
-
-      .stats-value {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-      }
-
-      .stats-label {
-        color: #6c757d;
-        font-size: 0.9rem;
-        margin: 0;
-      }
-
-      /* Tables */
-      .table-modern {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        overflow: hidden;
-        box-shadow: var(--shadow);
-      }
-
-      .table-modern thead th {
-        background: var(--success-gradient);
-        color: white;
-        border: none;
-        padding: 1rem;
-        font-weight: 600;
-      }
-
-      .table-modern tbody td {
-        padding: 1rem;
-        border-bottom: 1px solid #e1e5e9;
-        vertical-align: middle;
-      }
-
-      [data-theme="dark"] .table-modern tbody td {
-        border-bottom-color: #495057;
-      }
-
-      /* Search and Filters */
-      .filters-section {
-        background: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        margin-bottom: 2rem;
-      }
-
-      .search-input {
-        border: 2px solid #e1e5e9;
-        border-radius: 25px;
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-      }
-
-      [data-theme="dark"] .search-input {
-        border-color: #495057;
-        background: var(--dark-card);
-        color: var(--text-light);
-      }
-
-      .search-input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        outline: none;
-      }
-
-      /* Action Buttons */
-      .btn-modern {
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 500;
-        font-size: 0.9rem;
-        text-decoration: none;
-        display: inline-block;
-        margin: 0.125rem;
-        transition: all 0.3s ease;
-        border: none;
-        cursor: pointer;
-      }
-
-      .btn-primary-modern {
-        background: var(--primary-gradient);
-        color: white;
-      }
-
-      .btn-primary-modern:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-      }
-
-      .btn-success-modern {
-        background: var(--success-gradient);
-        color: white;
-      }
-
-      .btn-warning-modern {
-        background: var(--warning-gradient);
-        color: white;
-      }
-
-      .btn-danger-modern {
-        background: var(--danger-gradient);
-        color: white;
-      }
-
-      .btn-info-modern {
-        background: var(--info-gradient);
-        color: white;
-      }
-
-      /* Pagination */
-      .pagination-modern {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 0.5rem;
-        margin-top: 2rem;
-      }
-
-      .pagination-modern .page-link {
-        color: #667eea;
-        border: 2px solid #e1e5e9;
-        border-radius: 8px;
-        padding: 0.5rem 0.75rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-      }
-
-      .pagination-modern .page-link:hover,
-      .pagination-modern .page-item.active .page-link {
-        background: var(--primary-gradient);
-        color: white;
-        border-color: transparent;
-      }
-
-      /* Status Badges */
-      .status-badge {
-        padding: 0.375rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
-
-      .status-active {
-        background: var(--success-gradient);
-        color: white;
-      }
-
-      .status-inactive {
-        background: var(--danger-gradient);
-        color: white;
-      }
-
-      /* Loading States */
-      .loading-spinner {
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 9999;
-      }
-
-      .spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top: 4px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Animations */
-      .fade-in {
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeInUp 0.6s ease-out forwards;
-      }
-
-      @keyframes fadeInUp {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .table-responsive {
-          font-size: 0.85rem;
-        }
-
-        .filters-section {
-          padding: 1rem;
-        }
-
-        .stats-card {
-          padding: 1rem;
-          margin-bottom: 1rem;
-        }
-
-        .stats-value {
-          font-size: 1.5rem;
-        }
-      }
-    </style>
-  </head>
-
-  <body data-theme="light">
+  <body class="hc-page-admin" data-theme="light">
     <!-- Loading Spinner -->
     <div class="loading-spinner" id="loadingSpinner">
       <div class="spinner"></div>
@@ -403,7 +66,7 @@
             <li class="nav-item">
                 <a
                 class="nav-link"
-                href="{{ safe_url_for('admin_roles.roles_dashboard') }}"
+                href="{{ safe_url_for('admin.admin_dashboard') }}"
               >
                 <i class="fas fa-users-cog me-1"></i>Роли и права
               </a>
@@ -411,7 +74,7 @@
             <li class="nav-item">
                 <a
                 class="nav-link"
-                href="{{ safe_url_for('analytics_main.admin_analytics') }}"
+                href="{{ safe_url_for('analytics.analytics_page') }}"
               >
                 <i class="fas fa-chart-line me-1"></i>Аналитика
               </a>
@@ -419,7 +82,7 @@
             <li class="nav-item">
                 <a
                 class="nav-link"
-                href="{{ safe_url_for('notification_dashboard') }}"
+                href="{{ safe_url_for('main.volunteer_notifications') }}"
               >
                 <i class="fas fa-bell me-1"></i>Нотификации
               </a>
@@ -439,14 +102,14 @@
               </a>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" href="{{ safe_url_for('profile') }}">
+                  <a class="dropdown-item" href="{{ safe_url_for('main.profile') }}">
                     <i class="fas fa-user me-2"></i>Профил
                   </a>
                 </li>
                 <li>
                   <a
                     class="dropdown-item"
-                    href="{{ safe_url_for('admin_settings') }}"
+                    href="{{ safe_url_for('admin.admin_dashboard') }}"
                   >
                     <i class="fas fa-cog me-2"></i>Настройки
                   </a>
@@ -455,7 +118,7 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a class="dropdown-item" href="#" onclick="logout()">
+                  <a class="dropdown-item" href="#" data-action="logout">
                     <i class="fas fa-sign-out-alt me-2"></i>Изход
                   </a>
                 </li>
@@ -476,7 +139,7 @@
     </nav>
 
     <!-- Spacer for fixed navbar -->
-    <div style="height: 80px"></div>
+    <div class="hc-spacer-80"></div>
 
     <div class="container-fluid">
       <!-- Header -->
@@ -494,14 +157,14 @@
             </div>
             <div class="d-flex gap-2">
               <a
-                href="{{ safe_url_for('add_volunteer') }}"
+                href="{{ safe_url_for('admin.admin_volunteers') }}"
                 class="btn btn-success-modern btn-modern"
               >
                 <i class="fas fa-plus me-1"></i>Добави доброволец
               </a>
               <button
                 class="btn btn-info-modern btn-modern"
-                onclick="exportVolunteers()"
+                data-action="exportVolunteers"
               >
                 <i class="fas fa-download me-1"></i>Експорт
               </button>
@@ -514,7 +177,7 @@
       <div class="row mb-4">
         <div class="col-xl-3 col-md-6">
           <div class="stats-card fade-in">
-            <div class="stats-icon" style="background: var(--success-gradient)">
+            <div class="stats-icon hc-bg-success-gradient">
               <i class="fas fa-users text-white"></i>
             </div>
             <div class="stats-value">{{ total_volunteers }}</div>
@@ -524,7 +187,7 @@
 
         <div class="col-xl-3 col-md-6">
           <div class="stats-card fade-in">
-            <div class="stats-icon" style="background: var(--primary-gradient)">
+            <div class="stats-icon hc-bg-primary-gradient">
               <i class="fas fa-user-check text-white"></i>
             </div>
             <div class="stats-value">{{ total_volunteers }}</div>
@@ -534,7 +197,7 @@
 
         <div class="col-xl-3 col-md-6">
           <div class="stats-card fade-in">
-            <div class="stats-icon" style="background: var(--info-gradient)">
+            <div class="stats-icon hc-bg-info-gradient">
               <i class="fas fa-map-marker-alt text-white"></i>
             </div>
             <div class="stats-value">{{ total_volunteers }}</div>
@@ -544,7 +207,7 @@
 
         <div class="col-xl-3 col-md-6">
           <div class="stats-card fade-in">
-            <div class="stats-icon" style="background: var(--warning-gradient)">
+            <div class="stats-icon hc-bg-warning-gradient">
               <i class="fas fa-clock text-white"></i>
             </div>
             <div class="stats-value">{{ total_volunteers }}</div>
@@ -647,21 +310,25 @@
                 <div class="btn-group" role="group">
                   <button
                     class="btn btn-info-modern btn-modern btn-sm"
-                    onclick="viewVolunteer({{ volunteer.id }})"
+                    data-action="viewVolunteer"
+                    data-id="{{ volunteer.id }}"
                     title="Виж детайли"
                   >
                     <i class="fas fa-eye"></i>
                   </button>
                   <button
                     class="btn btn-warning-modern btn-modern btn-sm"
-                    onclick="editVolunteer({{ volunteer.id }})"
+                    data-action="editVolunteer"
+                    data-id="{{ volunteer.id }}"
                     title="Редактирай"
                   >
                     <i class="fas fa-edit"></i>
                   </button>
                   <button
                     class="btn btn-danger-modern btn-modern btn-sm"
-                    onclick="deleteVolunteer({{ volunteer.id }}, '{{ volunteer.name }}')"
+                    data-action="deleteVolunteer"
+                    data-id="{{ volunteer.id }}"
+                    data-name="{{ volunteer.name }}"
                     title="Изтрий"
                   >
                     <i class="fas fa-trash"></i>
@@ -680,7 +347,7 @@
                   регистрирани доброволци в системата. {% endif %}
                 </p>
                 <a
-                  href="{{ safe_url_for('add_volunteer') }}"
+                  href="{{ safe_url_for('admin.admin_volunteers') }}"
                   class="btn btn-success-modern btn-modern"
                 >
                   <i class="fas fa-plus me-1"></i>Добави първия доброволец
@@ -737,7 +404,7 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
 
     <!-- Custom JavaScript -->
     <script>
@@ -765,15 +432,25 @@
       }
 
       // Volunteer Actions
-      function viewVolunteer(id) {
+      function viewVolunteer(elOrId) {
+        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+        if (!id) return;
         window.location.href = `/admin/volunteer/${id}`;
       }
 
-      function editVolunteer(id) {
+      function editVolunteer(elOrId) {
+        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+        if (!id) return;
         window.location.href = `/admin/volunteer/${id}/edit`;
       }
 
-      function deleteVolunteer(id, name) {
+      function deleteVolunteer(elOrId, maybeName) {
+        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+        if (!id) return;
+        const name =
+          typeof maybeName === "string"
+            ? maybeName
+            : (elOrId?.getAttribute("data-name") || "");
         if (
           confirm(
             `Сигурни ли сте, че искате да изтриете доброволеца "${name}"? Това действие е необратимо.`,
@@ -825,6 +502,26 @@
         }
       }
 
+      // Delegated actions (CSP-ready pattern)
+      (function () {
+        function safeCall(fnName, el) {
+          try {
+            const fn = window[fnName];
+            if (typeof fn === "function") return fn(el);
+          } catch (_) {}
+          return undefined;
+        }
+
+        document.addEventListener("click", function (e) {
+          const el = e.target.closest("[data-action]");
+          if (!el) return;
+          const action = el.getAttribute("data-action");
+          if (!action) return;
+          if (el.tagName === "A") e.preventDefault();
+          safeCall(action, el);
+        });
+      })();
+
       // Initialize animations
       document.addEventListener("DOMContentLoaded", function () {
         const cards = document.querySelectorAll(
@@ -837,4 +534,8 @@
     </script>
   </body>
 </html>
+
+
+
+
 

@@ -189,7 +189,9 @@ def auto_match_requests(self):
                         )
 
                         matched_count += 1
-                        logger.info(f"Auto-matched request {request.id} to volunteer {volunteer.name}")
+                        logger.info(
+                            f"Auto-matched request {request.id} to volunteer {volunteer.name}"
+                        )
 
             except Exception as e:
                 logger.error(f"Error matching request {request.id}: {e}")
@@ -254,7 +256,9 @@ def send_reminders(self):
                     f"Има {pending_requests} чакащи заявки за повече от 24 часа.",
                 )
 
-        logger.info(f"Reminders sent for {len(overdue_tasks)} tasks and {pending_requests} pending requests")
+        logger.info(
+            f"Reminders sent for {len(overdue_tasks)} tasks and {pending_requests} pending requests"
+        )
 
     except Exception as e:
         logger.error(f"Error in send_reminders: {e}")
@@ -283,15 +287,24 @@ def auto_evaluate_tasks(self):
         evaluated_count = 0
         for task in completed_tasks:
             # Check if performance record already exists
-            existing_perf = db.session.query(TaskPerformance).filter_by(task_id=task.id).first()
+            existing_perf = (
+                db.session.query(TaskPerformance).filter_by(task_id=task.id).first()
+            )
             if existing_perf:
                 continue
 
             try:
                 # Get task details and chat history for AI evaluation
-                chat_messages = db.session.query(ChatMessage).filter_by(task_id=task.id).order_by(ChatMessage.timestamp).all()
+                chat_messages = (
+                    db.session.query(ChatMessage)
+                    .filter_by(task_id=task.id)
+                    .order_by(ChatMessage.timestamp)
+                    .all()
+                )
 
-                conversation_text = "\n".join([f"{msg.sender_type}: {msg.message}" for msg in chat_messages])
+                conversation_text = "\n".join(
+                    [f"{msg.sender_type}: {msg.message}" for msg in chat_messages]
+                )
 
                 # Use AI to evaluate the task
                 evaluation_prompt = f"""
@@ -353,7 +366,11 @@ def generate_daily_reports(self):
         today_end = today_start + timedelta(days=1)
 
         # Get daily statistics
-        new_requests = db.session.query(HelpRequest).filter(HelpRequest.created_at.between(today_start, today_end)).count()
+        new_requests = (
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.created_at.between(today_start, today_end))
+            .count()
+        )
 
         completed_tasks = (
             db.session.query(Task)
@@ -366,7 +383,11 @@ def generate_daily_reports(self):
             .count()
         )
 
-        new_volunteers = db.session.query(Volunteer).filter(Volunteer.created_at.between(today_start, today_end)).count()
+        new_volunteers = (
+            db.session.query(Volunteer)
+            .filter(Volunteer.created_at.between(today_start, today_end))
+            .count()
+        )
 
         # Generate report
         report = f"""
@@ -422,7 +443,9 @@ def generate_sample_analytics(self, days=5, events_per_day=48, force=False):
             if created:
                 logger.info("Generated %s sample analytics events", created)
             else:
-                logger.debug("Sample analytics data already present; skipping generation")
+                logger.debug(
+                    "Sample analytics data already present; skipping generation"
+                )
 
             return {"created": created}
 
@@ -440,15 +463,25 @@ def cleanup_old_data(self):
 
         # Delete old analytics events (older than 90 days)
         cutoff_date = utc_now() - timedelta(days=90)
-        deleted_events = db.session.query(AnalyticsEvent).filter(AnalyticsEvent.timestamp < cutoff_date).delete()
+        deleted_events = (
+            db.session.query(AnalyticsEvent)
+            .filter(AnalyticsEvent.timestamp < cutoff_date)
+            .delete()
+        )
 
         # Delete old chat messages (older than 180 days)
         cutoff_date = utc_now() - timedelta(days=180)
-        deleted_messages = db.session.query(ChatMessage).filter(ChatMessage.timestamp < cutoff_date).delete()
+        deleted_messages = (
+            db.session.query(ChatMessage)
+            .filter(ChatMessage.timestamp < cutoff_date)
+            .delete()
+        )
 
         db.session.commit()
 
-        logger.info(f"Data cleanup completed. Deleted {deleted_events} events and {deleted_messages} messages")
+        logger.info(
+            f"Data cleanup completed. Deleted {deleted_events} events and {deleted_messages} messages"
+        )
 
     except Exception as e:
         logger.error(f"Error in cleanup_old_data: {e}")
@@ -601,13 +634,20 @@ def retry_failed_emails(self):
             logger.warning("FailedEmail model not available; skipping retry job")
             return {"retried": 0, "total_failed": 0}
 
-        failed_emails = db.session.query(FailedEmail).filter(FailedEmail.created_at < cutoff_time).limit(50).all()  # Process in batches
+        failed_emails = (
+            db.session.query(FailedEmail)
+            .filter(FailedEmail.created_at < cutoff_time)
+            .limit(50)
+            .all()
+        )  # Process in batches
 
         retried_count = 0
         for failed_email in failed_emails:
             try:
                 # Parse context back to dict
-                context = json.loads(failed_email.context) if failed_email.context else {}
+                context = (
+                    json.loads(failed_email.context) if failed_email.context else {}
+                )
 
                 # Retry sending the email (schedule async task)
                 try:
@@ -630,7 +670,9 @@ def retry_failed_emails(self):
                     continue
 
             except Exception as e:
-                logger.error(f"Error retrying failed email to {getattr(failed_email, 'recipient', None)}: {e}")
+                logger.error(
+                    f"Error retrying failed email to {getattr(failed_email, 'recipient', None)}: {e}"
+                )
                 # Keep in DLQ for next retry cycle
                 continue
 
@@ -639,7 +681,9 @@ def retry_failed_emails(self):
         except Exception:
             db.session.rollback()
 
-        logger.info(f"Periodic retry completed. Retried {retried_count} emails from DLQ")
+        logger.info(
+            f"Periodic retry completed. Retried {retried_count} emails from DLQ"
+        )
 
         return {"retried": retried_count, "total_failed": len(failed_emails)}
 
@@ -683,13 +727,17 @@ def requeue_dlq_emails(self, limit: int = 50):
                 )
 
                 requeued_count += 1
-                logger.info(f"Requeued email: {payload.get('message_id')} to {payload['recipients']}")
+                logger.info(
+                    f"Requeued email: {payload.get('message_id')} to {payload['recipients']}"
+                )
 
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse DLQ payload: {raw}, error: {e}")
                 continue
             except KeyError as e:
-                logger.error(f"Missing required field in DLQ payload: {e}, payload: {payload}")
+                logger.error(
+                    f"Missing required field in DLQ payload: {e}, payload: {payload}"
+                )
                 continue
             except Exception as e:
                 logger.error(f"Error requeuing email from DLQ: {e}, payload: {payload}")
@@ -768,10 +816,16 @@ def update_realtime_stats(self):
         # Calculate current statistics
         stats = {
             "total_requests": db.session.query(HelpRequest).count(),
-            "pending_requests": db.session.query(HelpRequest).filter_by(status="pending").count(),
-            "completed_requests": db.session.query(HelpRequest).filter_by(status="completed").count(),
+            "pending_requests": db.session.query(HelpRequest)
+            .filter_by(status="pending")
+            .count(),
+            "completed_requests": db.session.query(HelpRequest)
+            .filter_by(status="completed")
+            .count(),
             "total_volunteers": db.session.query(Volunteer).count(),
-            "active_volunteers": db.session.query(Volunteer).filter_by(is_active=True).count(),
+            "active_volunteers": db.session.query(Volunteer)
+            .filter_by(is_active=True)
+            .count(),
             "timestamp": utc_now().isoformat(),
         }
 
@@ -780,7 +834,9 @@ def update_realtime_stats(self):
             from redis import Redis
 
             redis_client = Redis.from_url(celery.conf.broker_url)
-            redis_client.setex("helpchain:stats", 300, json.dumps(stats))  # Cache for 5 minutes
+            redis_client.setex(
+                "helpchain:stats", 300, json.dumps(stats)
+            )  # Cache for 5 minutes
         except Exception as redis_error:
             logger.warning(f"Redis caching failed: {redis_error}")
 
@@ -817,10 +873,14 @@ def send_bulk_notifications(self, notifications):
                 )
                 success_count += 1
             except Exception as e:
-                logger.error(f"Failed to send notification to {notification['email']}: {e}")
+                logger.error(
+                    f"Failed to send notification to {notification['email']}: {e}"
+                )
                 continue
 
-        logger.info(f"Bulk notifications completed: {success_count}/{len(notifications)} sent")
+        logger.info(
+            f"Bulk notifications completed: {success_count}/{len(notifications)} sent"
+        )
 
         # Track analytics
         analytics_service.track_event(
@@ -937,12 +997,22 @@ def generate_performance_report(self, volunteer_id=None, period="weekly"):
                 "volunteer_email": volunteer.email,
                 "period": period,
                 "total_tasks": len(performances),
-                "avg_rating": (sum(p.overall_rating for p in performances) / len(performances) if performances else 0),
-                "tasks_completed": len([p for p in performances if p.task.status == "completed"]),
+                "avg_rating": (
+                    sum(p.overall_rating for p in performances) / len(performances)
+                    if performances
+                    else 0
+                ),
+                "tasks_completed": len(
+                    [p for p in performances if p.task.status == "completed"]
+                ),
             }
         else:
             # All volunteers report
-            performances = db.session.query(TaskPerformance).filter(TaskPerformance.evaluated_at >= start_date).all()
+            performances = (
+                db.session.query(TaskPerformance)
+                .filter(TaskPerformance.evaluated_at >= start_date)
+                .all()
+            )
 
             volunteer_stats = {}
             for perf in performances:
@@ -1015,7 +1085,9 @@ def monitor_system_health(self):
                 pass
 
         # Check pending requests count
-        pending_count = db.session.query(HelpRequest).filter_by(status="pending").count()
+        pending_count = (
+            db.session.query(HelpRequest).filter_by(status="pending").count()
+        )
         if pending_count > 50:  # Alert threshold
             admins = db.session.query(AdminUser).all()
             for admin in admins:
@@ -1026,7 +1098,9 @@ def monitor_system_health(self):
                 )
 
         # Check volunteer availability
-        active_volunteers = db.session.query(Volunteer).filter_by(is_active=True).count()
+        active_volunteers = (
+            db.session.query(Volunteer).filter_by(is_active=True).count()
+        )
         if active_volunteers < 5:  # Alert threshold
             admins = db.session.query(AdminUser).all()
             for admin in admins:
@@ -1050,7 +1124,9 @@ def process_feedback_sentiment(self, feedback_id):
         logger.info(f"Processing sentiment analysis for feedback {feedback_id}")
 
         if sentiment_analysis_service is None:
-            logger.warning(f"Sentiment analysis service not available, skipping feedback {feedback_id}")
+            logger.warning(
+                f"Sentiment analysis service not available, skipping feedback {feedback_id}"
+            )
             return {"error": "sentiment_analysis_service_not_available"}
 
         result = sentiment_analysis_service.analyze_feedback(feedback_id)
@@ -1060,10 +1136,14 @@ def process_feedback_sentiment(self, feedback_id):
             raise self.retry(countdown=60, max_retries=3)
         else:
             sentiment_label = result.get("sentiment_label", "unknown")
-            logger.info(f"Successfully analyzed sentiment for feedback {feedback_id}: {sentiment_label}")
+            logger.info(
+                f"Successfully analyzed sentiment for feedback {feedback_id}: {sentiment_label}"
+            )
 
         return result
 
     except Exception as e:
-        logger.error(f"Error in process_feedback_sentiment for feedback {feedback_id}: {e}")
+        logger.error(
+            f"Error in process_feedback_sentiment for feedback {feedback_id}: {e}"
+        )
         raise self.retry(countdown=300, max_retries=3) from e

@@ -59,7 +59,9 @@ class AnalyticsEngine:
         Returns:
             dict: Речник със статистики
         """
-        start_date, end_date, period_days = AnalyticsEngine._normalize_period(days=days, start_date=start_date, end_date=end_date)
+        start_date, end_date, period_days = AnalyticsEngine._normalize_period(
+            days=days, start_date=start_date, end_date=end_date
+        )
 
         cache_key = "admin_dashboard_stats"
         if cache:
@@ -89,7 +91,9 @@ class AnalyticsEngine:
         period_requests = total_requests
 
         status_counts = (
-            db.session.query(HelpRequest.status, func.count(HelpRequest.id).label("count"))
+            db.session.query(
+                HelpRequest.status, func.count(HelpRequest.id).label("count")
+            )
             .filter(
                 HelpRequest.created_at >= start_date,
                 HelpRequest.created_at <= end_date,
@@ -101,13 +105,17 @@ class AnalyticsEngine:
         status_stats = {status: count for status, count in status_counts}
 
         # Дневни статистики за графики
-        daily_stats = AnalyticsEngine.get_daily_stats(days=period_days, start_date=start_date, end_date=end_date)
+        daily_stats = AnalyticsEngine.get_daily_stats(
+            days=period_days, start_date=start_date, end_date=end_date
+        )
 
         # Геолокационни данни
         location_stats = AnalyticsEngine.get_location_stats()
 
         # Категории заявка (ако имаме поле category)
-        category_stats = AnalyticsEngine.get_category_stats(start_date=start_date, end_date=end_date)
+        category_stats = AnalyticsEngine.get_category_stats(
+            start_date=start_date, end_date=end_date
+        )
 
         stats = {
             "totals": {
@@ -139,7 +147,9 @@ class AnalyticsEngine:
     @staticmethod
     def get_daily_stats(days=30, start_date=None, end_date=None):
         """Получава дневни статистики за избрания период."""
-        start_dt, end_dt, _ = AnalyticsEngine._normalize_period(days=days, start_date=start_date, end_date=end_date)
+        start_dt, end_dt, _ = AnalyticsEngine._normalize_period(
+            days=days, start_date=start_date, end_date=end_date
+        )
         start_date_only = start_dt.date()
         end_date_only = end_dt.date()
 
@@ -222,7 +232,12 @@ class AnalyticsEngine:
         # Заявки по локации (ако имаме location поле)
         # За сега ще използваме доброволците
         volunteer_locations = (
-            db.session.query(Volunteer.location, func.count(Volunteer.id).label("count")).filter(Volunteer.location.isnot(None), Volunteer.location != "").group_by(Volunteer.location).all()
+            db.session.query(
+                Volunteer.location, func.count(Volunteer.id).label("count")
+            )
+            .filter(Volunteer.location.isnot(None), Volunteer.location != "")
+            .group_by(Volunteer.location)
+            .all()
         )
 
         location_data = {}
@@ -304,7 +319,9 @@ class AnalyticsEngine:
             month_expr = AnalyticsEngine._month_group_expression(HelpRequest.created_at)
 
             request_rows = (
-                db.session.query(month_expr.label("month"), func.count(HelpRequest.id).label("count"))
+                db.session.query(
+                    month_expr.label("month"), func.count(HelpRequest.id).label("count")
+                )
                 .filter(
                     HelpRequest.created_at >= start_period,
                     HelpRequest.created_at < end_period,
@@ -314,7 +331,9 @@ class AnalyticsEngine:
             )
 
             completed_rows = (
-                db.session.query(month_expr.label("month"), func.count(HelpRequest.id).label("count"))
+                db.session.query(
+                    month_expr.label("month"), func.count(HelpRequest.id).label("count")
+                )
                 .filter(
                     HelpRequest.created_at >= start_period,
                     HelpRequest.created_at < end_period,
@@ -324,7 +343,9 @@ class AnalyticsEngine:
                 .all()
             )
 
-            volunteer_expr = AnalyticsEngine._month_group_expression(Volunteer.created_at)
+            volunteer_expr = AnalyticsEngine._month_group_expression(
+                Volunteer.created_at
+            )
             volunteer_rows = (
                 db.session.query(
                     volunteer_expr.label("month"),
@@ -339,8 +360,12 @@ class AnalyticsEngine:
             )
 
             request_counts = {row.month: row.count for row in request_rows if row.month}
-            completed_counts = {row.month: row.count for row in completed_rows if row.month}
-            volunteer_counts = {row.month: row.count for row in volunteer_rows if row.month}
+            completed_counts = {
+                row.month: row.count for row in completed_rows if row.month
+            }
+            volunteer_counts = {
+                row.month: row.count for row in volunteer_rows if row.month
+            }
 
             labels = [month.strftime("%Y-%m") for month in month_series]
 
@@ -426,17 +451,31 @@ class AnalyticsEngine:
 
             if trends["requests"]:
                 # Използваме по-сложна прогноза базирана на ML insights
-                avg_requests = sum(trends["requests"][-3:]) / len(trends["requests"][-3:])
-                avg_volunteers = sum(trends["volunteers"][-3:]) / len(trends["volunteers"][-3:]) if trends["volunteers"] else 0
+                avg_requests = sum(trends["requests"][-3:]) / len(
+                    trends["requests"][-3:]
+                )
+                avg_volunteers = (
+                    sum(trends["volunteers"][-3:]) / len(trends["volunteers"][-3:])
+                    if trends["volunteers"]
+                    else 0
+                )
 
                 # Фактор на растеж базиран на ML insights
                 growth_factor = 1.05  # базов фактор
 
                 # Ако има аномалии в трафика, коригираме прогнозата
                 anomalies = ml_insights.get("anomalies", [])
-                if any(a.get("type") == "traffic_spike" for a in anomalies if isinstance(a, dict)):
+                if any(
+                    a.get("type") == "traffic_spike"
+                    for a in anomalies
+                    if isinstance(a, dict)
+                ):
                     growth_factor = 1.15  # по-агресивен растеж при spike
-                elif any(a.get("type") == "traffic_drop" for a in anomalies if isinstance(a, dict)):
+                elif any(
+                    a.get("type") == "traffic_drop"
+                    for a in anomalies
+                    if isinstance(a, dict)
+                ):
                     growth_factor = 0.95  # по-консервативен при drop
 
                 # Прогнозираме за следващите months
@@ -447,7 +486,9 @@ class AnalyticsEngine:
                     future_date = datetime.now() + timedelta(days=(i + 1) * 30)
                     predictions["labels"].append(future_date.strftime("%Y-%m"))
                     predictions["requests_predicted"].append(max(0, future_requests))
-                    predictions["volunteers_predicted"].append(max(0, future_volunteers))
+                    predictions["volunteers_predicted"].append(
+                        max(0, future_volunteers)
+                    )
 
             return predictions
 
@@ -469,7 +510,11 @@ class AnalyticsEngine:
 
         if trends["requests"]:
             avg_requests = sum(trends["requests"][-3:]) / len(trends["requests"][-3:])
-            avg_volunteers = sum(trends["volunteers"][-3:]) / len(trends["volunteers"][-3:]) if trends["volunteers"] else 0
+            avg_volunteers = (
+                sum(trends["volunteers"][-3:]) / len(trends["volunteers"][-3:])
+                if trends["volunteers"]
+                else 0
+            )
 
             growth_factor = 1.1  # 10% ръст
 
@@ -488,16 +533,29 @@ class AnalyticsEngine:
     def get_performance_metrics():
         """Performance метрики"""
         # Средно време за отговор
-        avg_response_time = db.session.query(func.avg(func.julianday(HelpRequest.updated_at) - func.julianday(HelpRequest.created_at))).scalar()
+        avg_response_time = db.session.query(
+            func.avg(
+                func.julianday(HelpRequest.updated_at)
+                - func.julianday(HelpRequest.created_at)
+            )
+        ).scalar()
 
         # Success rate
         total_requests = db.session.query(HelpRequest).count()
-        completed_requests = db.session.query(HelpRequest).filter_by(status="completed").count()
-        success_rate = (completed_requests / total_requests * 100) if total_requests > 0 else 0
+        completed_requests = (
+            db.session.query(HelpRequest).filter_by(status="completed").count()
+        )
+        success_rate = (
+            (completed_requests / total_requests * 100) if total_requests > 0 else 0
+        )
 
         # Volunteer utilization
         active_volunteers = db.session.query(Volunteer).count()
-        active_requests = db.session.query(HelpRequest).filter(HelpRequest.status.in_(["pending", "active", "in_progress"])).count()
+        active_requests = (
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.status.in_(["pending", "active", "in_progress"]))
+            .count()
+        )
 
         utilization_rate = min(100, (active_requests / max(active_volunteers, 1)) * 100)
 
@@ -522,10 +580,18 @@ class AnalyticsEngine:
     def get_geo_data():
         """Получава геолокационни данни за карта"""
         # Заявки с координати
-        requests_with_location = db.session.query(HelpRequest).filter(HelpRequest.latitude.isnot(None), HelpRequest.longitude.isnot(None)).all()
+        requests_with_location = (
+            db.session.query(HelpRequest)
+            .filter(HelpRequest.latitude.isnot(None), HelpRequest.longitude.isnot(None))
+            .all()
+        )
 
         # Доброволци с координати
-        volunteers_with_location = db.session.query(Volunteer).filter(Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)).all()
+        volunteers_with_location = (
+            db.session.query(Volunteer)
+            .filter(Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None))
+            .all()
+        )
 
         return {
             "requests": [
@@ -535,7 +601,9 @@ class AnalyticsEngine:
                     "lat": req.latitude,
                     "lng": req.longitude,
                     "status": req.status,
-                    "created_at": (req.created_at.isoformat() if req.created_at else None),
+                    "created_at": (
+                        req.created_at.isoformat() if req.created_at else None
+                    ),
                 }
                 for req in requests_with_location
             ],
@@ -559,9 +627,15 @@ class AnalyticsEngine:
         week_ago = datetime.now() - timedelta(days=7)
 
         return {
-            "requests_today": db.session.query(HelpRequest).filter(func.date(HelpRequest.created_at) == today).count(),
-            "requests_this_week": db.session.query(HelpRequest).filter(HelpRequest.created_at >= week_ago).count(),
-            "active_requests": db.session.query(HelpRequest).filter(HelpRequest.status.in_(["pending", "active", "in_progress"])).count(),
+            "requests_today": db.session.query(HelpRequest)
+            .filter(func.date(HelpRequest.created_at) == today)
+            .count(),
+            "requests_this_week": db.session.query(HelpRequest)
+            .filter(HelpRequest.created_at >= week_ago)
+            .count(),
+            "active_requests": db.session.query(HelpRequest)
+            .filter(HelpRequest.status.in_(["pending", "active", "in_progress"]))
+            .count(),
             "total_volunteers": db.session.query(Volunteer).count(),
             "success_rate": AnalyticsEngine.get_success_rate(),
         }
@@ -675,11 +749,21 @@ class RealtimeUpdates:
     def get_recent_activity(limit=10):
         """Получава последна активност"""
         # Последни заявки
-        recent_requests = db.session.query(HelpRequest).order_by(HelpRequest.created_at.desc()).limit(limit).all()
+        recent_requests = (
+            db.session.query(HelpRequest)
+            .order_by(HelpRequest.created_at.desc())
+            .limit(limit)
+            .all()
+        )
 
         # Последни логове (ако има)
         try:
-            recent_logs = db.session.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit).all()
+            recent_logs = (
+                db.session.query(AuditLog)
+                .order_by(AuditLog.created_at.desc())
+                .limit(limit)
+                .all()
+            )
         except Exception:
             recent_logs = []
 
@@ -692,7 +776,11 @@ class RealtimeUpdates:
                     "type": "request",
                     "id": req.id,
                     "title": f"Нова заявка от {req.name}",
-                    "description": (req.description[:100] + "..." if len(req.description) > 100 else req.description),
+                    "description": (
+                        req.description[:100] + "..."
+                        if len(req.description) > 100
+                        else req.description
+                    ),
                     "timestamp": req.created_at,
                     "status": req.status,
                 }
@@ -707,7 +795,9 @@ class RealtimeUpdates:
                     "title": f"Административно действие: {log.action}",
                     "description": log.details or "Няма подробности",
                     "timestamp": log.timestamp,
-                    "admin_user": (log.admin_user.username if log.admin_user else "Неизвестен"),
+                    "admin_user": (
+                        log.admin_user.username if log.admin_user else "Неизвестен"
+                    ),
                 }
             )
 
@@ -721,9 +811,15 @@ class RealtimeUpdates:
         """Получава статистики за live обновяване"""
         return {
             "timestamp": datetime.now().isoformat(),
-            "requests_today": db.session.query(HelpRequest).filter(func.date(HelpRequest.created_at) == datetime.now().date()).count(),
-            "requests_this_week": db.session.query(HelpRequest).filter(HelpRequest.created_at >= datetime.now() - timedelta(days=7)).count(),
-            "active_requests": db.session.query(HelpRequest).filter(HelpRequest.status.in_(["Pending", "Активен", "In Progress"])).count(),
+            "requests_today": db.session.query(HelpRequest)
+            .filter(func.date(HelpRequest.created_at) == datetime.now().date())
+            .count(),
+            "requests_this_week": db.session.query(HelpRequest)
+            .filter(HelpRequest.created_at >= datetime.now() - timedelta(days=7))
+            .count(),
+            "active_requests": db.session.query(HelpRequest)
+            .filter(HelpRequest.status.in_(["Pending", "Активен", "In Progress"]))
+            .count(),
             "total_volunteers": db.session.query(Volunteer).count(),
             "success_rate": AnalyticsEngine.get_success_rate(),
         }

@@ -46,7 +46,9 @@ class AdvancedAnalytics:
 
         # Вземи данните за последните дни
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=timeframe_days * 2)  # Double timeframe за comparison
+        start_date = end_date - timedelta(
+            days=timeframe_days * 2
+        )  # Double timeframe за comparison
 
         events = self.get_events_by_hour(start_date, end_date)
 
@@ -74,7 +76,9 @@ class AdvancedAnalytics:
             if abs(change_percent) > 30:  # 30% change threshold
                 anomalies.append(
                     {
-                        "type": ("traffic_spike" if change_percent > 0 else "traffic_drop"),
+                        "type": (
+                            "traffic_spike" if change_percent > 0 else "traffic_drop"
+                        ),
                         "severity": "high" if abs(change_percent) > 50 else "medium",
                         "value": change_percent,
                         "description": f"Traffic change of {change_percent:.1f}%",
@@ -83,11 +87,19 @@ class AdvancedAnalytics:
                 )
 
         # Error rate anomalies
-        baseline_errors = len([e for e in baseline_events if "error" in str(e.get("details", "")).lower()])
-        current_errors = len([e for e in current_events if "error" in str(e.get("details", "")).lower()])
+        baseline_errors = len(
+            [e for e in baseline_events if "error" in str(e.get("details", "")).lower()]
+        )
+        current_errors = len(
+            [e for e in current_events if "error" in str(e.get("details", "")).lower()]
+        )
 
-        baseline_error_rate = (baseline_errors / len(baseline_events)) * 100 if baseline_events else 0
-        current_error_rate = (current_errors / len(current_events)) * 100 if current_events else 0
+        baseline_error_rate = (
+            (baseline_errors / len(baseline_events)) * 100 if baseline_events else 0
+        )
+        current_error_rate = (
+            (current_errors / len(current_events)) * 100 if current_events else 0
+        )
 
         if current_error_rate > baseline_error_rate * 2 and current_error_rate > 5:
             anomalies.append(
@@ -121,7 +133,9 @@ class AdvancedAnalytics:
         if user_id:
             user_events = self.get_user_events(user_id)
             page_views = len([e for e in user_events if e["event_type"] == "page_view"])
-            form_interactions = len([e for e in user_events if e["event_type"] == "form_interaction"])
+            form_interactions = len(
+                [e for e in user_events if e["event_type"] == "form_interaction"]
+            )
 
             # Simple scoring
             score = (page_views * 0.1) + (form_interactions * 0.3)
@@ -173,7 +187,9 @@ class AdvancedAnalytics:
 
         if user_id:
             events = self.get_user_events(user_id)
-            used_features = set(e["category"] for e in events if e["event_type"] == "feature_usage")
+            used_features = set(
+                e["category"] for e in events if e["event_type"] == "feature_usage"
+            )
 
             # All available features
             all_features = {
@@ -250,7 +266,10 @@ class AdvancedAnalytics:
 
         now_ts = time.time()
         cached_snapshot = _INSIGHTS_CACHE.get("data")
-        if cached_snapshot is not None and now_ts - _INSIGHTS_CACHE.get("timestamp", 0.0) < INSIGHTS_CACHE_TTL:
+        if (
+            cached_snapshot is not None
+            and now_ts - _INSIGHTS_CACHE.get("timestamp", 0.0) < INSIGHTS_CACHE_TTL
+        ):
             cached_copy = copy.deepcopy(cached_snapshot)
             metadata = cached_copy.setdefault("metadata", {})
             metadata["cached"] = True
@@ -321,9 +340,19 @@ class AdvancedAnalytics:
                 {
                     "week": f"Week {4 - i}",
                     "total_events": len(week_events),
-                    "unique_users": len(set(e["user_id"] for e in week_events if e["user_id"])),
-                    "page_views": len([e for e in week_events if e["event_type"] == "page_view"]),
-                    "conversions": len([e for e in week_events if e["event_type"] == "form_interaction"]),
+                    "unique_users": len(
+                        set(e["user_id"] for e in week_events if e["user_id"])
+                    ),
+                    "page_views": len(
+                        [e for e in week_events if e["event_type"] == "page_view"]
+                    ),
+                    "conversions": len(
+                        [
+                            e
+                            for e in week_events
+                            if e["event_type"] == "form_interaction"
+                        ]
+                    ),
                 }
             )
 
@@ -333,7 +362,9 @@ class AdvancedAnalytics:
             values = [week[metric] for week in weeks_data]
             if len(values) >= 2:
                 trend = "increasing" if values[-1] > values[0] else "decreasing"
-                change = ((values[-1] - values[0]) / values[0] * 100) if values[0] > 0 else 0
+                change = (
+                    ((values[-1] - values[0]) / values[0] * 100) if values[0] > 0 else 0
+                )
                 trends[metric] = {"trend": trend, "change_percent": change}
 
         return {"weekly_data": weeks_data, "trends": trends}

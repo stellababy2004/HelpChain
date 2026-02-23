@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Requests') }} | HelpChain{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="hc-admin-wrap">
 
   {# Localized export confirmation (stable multiline msgids) #}
   {% set export_confirm = '\n'.join([
@@ -12,12 +15,109 @@
     _('Are you sure you want to continue?')
   ]) %}
 
-  <div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="mb-0">{{ _('Live requests') }}</h2>
-    <a class="btn btn-outline-light btn-sm" href="{{ safe_url_for('main.index') }}">
-      {{ _('Home') }}
-    </a>
+  <div class="hc-card mb-3">
+    <div class="hc-row">
+      <div>
+        <h1 style="margin:0;font-size:18px;">Demandes</h1>
+        <div class="hc-muted">Vue structurée par statut</div>
+      </div>
+      <a class="btn btn-outline-light btn-sm" href="{{ safe_url_for('main.index') }}">
+        {{ _('Home') }}
+      </a>
+    </div>
+    <div class="hc-tabs">
+      <button type="button" class="hc-tab" data-hc-tab="ALL" aria-current="true">Tous</button>
+      <button type="button" class="hc-tab" data-hc-tab="NEW">New</button>
+      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED">Assigned</button>
+      <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS">En cours</button>
+      <button type="button" class="hc-tab" data-hc-tab="COMPLETED">Terminé</button>
+      <button type="button" class="hc-tab" data-hc-tab="CLOSED">Clôturées</button>
+      <button type="button" class="hc-tab" id="hcToggleActionable">Action only</button>
+      <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="Copier le lien">
+        <span aria-hidden="true">🔗</span>
+        <span class="hc-copy-tick" aria-hidden="true">✓</span>
+        <span class="visually-hidden">Copier le lien</span>
+      </button>
+    </div>
+
+    <div class="hc-kpis" id="hcAdminKpis" style="margin-top:12px;">
+      <div class="hc-kpi" data-kpi="NEW">
+        <div class="hc-kpi__label">New</div>
+        <div class="hc-kpi__value">0</div>
+      </div>
+      <div class="hc-kpi" data-kpi="ASSIGNED">
+        <div class="hc-kpi__label">Assigned</div>
+        <div class="hc-kpi__value">0</div>
+      </div>
+      <div class="hc-kpi" data-kpi="IN_PROGRESS">
+        <div class="hc-kpi__label">En cours</div>
+        <div class="hc-kpi__value">0</div>
+      </div>
+      <div class="hc-kpi" data-kpi="COMPLETED">
+        <div class="hc-kpi__label">Terminé</div>
+        <div class="hc-kpi__value">0</div>
+      </div>
+    </div>
   </div>
+
+  <div class="hc-health" id="hc-health">
+    <div>
+      <div class="hc-health__label">État opérationnel</div>
+      <div class="hc-health__sub" id="hc-health-sub">—</div>
+      <div class="hc-health__cta-container" id="hc-health-cta"></div>
+    </div>
+    <div class="hc-health__value" id="hc-health-value">—</div>
+  </div>
+
+  <section class="hc-ops-kpis mb-3" data-days="30">
+    <div class="hc-ops-kpis__header">
+      <h2 class="hc-h2">Pilotage opérationnel</h2>
+      <div class="hc-ops-kpis__controls">
+        <span class="hc-ops-kpis__meta" id="opsWindowLabel">Fenêtre: 30 jours</span>
+        <select id="opsDaysSelect" class="form-select form-select-sm hc-ops-kpis__select" data-ops-days>
+          <option value="7">7 jours</option>
+          <option value="30" selected>30 jours</option>
+          <option value="90">90 jours</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="hc-ops-kpis__grid">
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-label">Nouveaux dossiers</div>
+        <div class="hc-kpi-value" id="kpi-new">—</div>
+      </div>
+
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-label">Résolus</div>
+        <div class="hc-kpi-value" id="kpi-resolved">—</div>
+      </div>
+
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-label">Délai moyen assignation</div>
+        <div class="hc-kpi-value" id="kpi-assign">—</div>
+        <div class="hc-kpi-sub">heures</div>
+      </div>
+
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-label">Délai moyen résolution</div>
+        <div class="hc-kpi-value" id="kpi-resolve">—</div>
+        <div class="hc-kpi-sub">heures</div>
+      </div>
+
+      <div class="hc-kpi-card hc-kpi-card--alert" id="kpi-stale-card">
+        <div class="hc-kpi-label">Dossiers en attente &gt; 7j</div>
+        <div class="hc-kpi-value" id="kpi-stale">—</div>
+      </div>
+
+      <div class="hc-kpi-card hc-kpi-card--wide">
+        <div class="hc-kpi-label">Répartition par catégorie</div>
+        <ul class="hc-kpi-list" id="kpi-category">
+          <li>—</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
   <form class="row g-2 mb-3" method="GET" action="{{ safe_url_for('admin.admin_requests') }}">
     <div class="col-md-3">
@@ -35,6 +135,9 @@
             <input class="form-control" type="text" name="q" value="{{ q or '' }}"
               placeholder="{{ _('Search by name, title, description...') }}" aria-label="{{ _('Search') }}" />
     </div>
+    {% if request.args.get('category') %}
+    <input type="hidden" name="category" value="{{ request.args.get('category') }}">
+    {% endif %}
 
     <div class="col-md-3 d-grid">
       <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
@@ -54,6 +157,41 @@
       </div>
     </div>
   </form>
+
+  {% if request.args.get('category') %}
+  <div class="mb-3">
+    <span class="badge text-bg-primary">
+      Category: {{ request.args.get('category') }}
+    </span>
+    <a class="btn btn-link btn-sm" href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None) }}">Clear</a>
+  </div>
+  {% endif %}
+
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('admin.admin_requests_export_csv') }}"
+       onclick="return confirm({{ export_confirm|tojson }});">
+      Export CSV
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('admin.admin_requests_export_xlsx') }}"
+       onclick="return confirm({{ export_confirm|tojson }});">
+      Export XLSX
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('admin.admin_requests_export_csv_anonymized') }}"
+       onclick="return confirm({{ export_confirm|tojson }});">
+      Export CSV (anonymized)
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       href="{{ url_for('admin.admin_requests_export_xlsx_anonymized') }}"
+       onclick="return confirm({{ export_confirm|tojson }});">
+      Export XLSX (anonymized)
+    </a>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_audit', entity='export') }}">
+      View export logs
+    </a>
+  </div>
 
   <div class="table-responsive">
     <table class="table table-hover align-middle">
@@ -75,8 +213,36 @@
       </thead>
       <tbody>
         {% for r in requests %}
+        {% set c = volunteer_action_counts.get(r.id, {}) %}
+        {% set ch = c.get('CAN_HELP', 0) %}
+        {% set cc = c.get('CANT_HELP', 0) %}
+        {% set priority_raw = ((r.priority or 'LOW')|upper) %}
+        {% if priority_raw in ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] %}
+          {% set row_priority = priority_raw %}
+        {% else %}
+          {% set row_priority = 'LOW' %}
+        {% endif %}
+        {% set row_status_raw = ((r.status or '')|upper) %}
+        {% if row_status_raw in ['NEW', 'OPEN', 'PENDING'] %}
+          {% set row_status = 'NEW' %}
+        {% elif row_status_raw in ['ASSIGNED'] %}
+          {% set row_status = 'ASSIGNED' %}
+        {% elif row_status_raw in ['IN_PROGRESS', 'IN PROGRESS', 'APPROVED'] %}
+          {% set row_status = 'IN_PROGRESS' %}
+        {% elif row_status_raw in ['COMPLETED', 'DONE'] %}
+          {% set row_status = 'COMPLETED' %}
+        {% elif row_status_raw in ['CLOSED', 'CANCELLED', 'CANCELED', 'REJECTED'] %}
+          {% set row_status = 'CLOSED' %}
+        {% else %}
+          {% set row_status = row_status_raw %}
+        {% endif %}
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
-            onclick="window.location='{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}'"
+            data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
+            data-hc-status-row="{{ row_status }}"
+            data-assigned-volunteer-id="{{ r.assigned_volunteer_id or '' }}"
+            data-sig-can-help="{{ ch }}"
+            data-sig-cant-help="{{ cc }}"
+            data-priority="{{ row_priority }}"
             style="cursor:pointer">
           <td>{{ r.id }}</td>
           <td>{{ r.title }}</td>
@@ -98,6 +264,14 @@
           <td>
             {% set age_days = ((now_naive - r.created_at).days) if r.created_at else 0 %}
             <span class="badge text-bg-secondary" title="{{ _('Created') }}: {{ r.created_at }}">{{ age_days }}d</span>
+            {% if risk_notseen_tier_hours %}
+              {% if risk_notseen_tier_hours >= 72 %}
+                {% set risk_badge_class = 'text-bg-danger' %}
+              {% else %}
+                {% set risk_badge_class = 'text-bg-warning' %}
+              {% endif %}
+              <span class="badge {{ risk_badge_class }} ms-1" title="Not seen risk tier">{{ risk_notseen_tier_hours }}h+</span>
+            {% endif %}
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
               <span class="badge text-bg-warning ms-1" title="{{ _('No owner assigned') }}">⚠️ {{ _('No owner') }}</span>
             {% endif %}
@@ -109,15 +283,23 @@
             {% endif %}
           </td>
           <td>
-            {% set c = volunteer_action_counts.get(r.id, {}) %}
-            {% set ch = c.get('CAN_HELP', 0) %}
-            {% set cc = c.get('CANT_HELP', 0) %}
-            {% if ch %}<span class="badge text-bg-success me-1">✅ +{{ ch }}</span>{% endif %}
-            {% if cc %}<span class="badge text-bg-secondary">🚫 +{{ cc }}</span>{% endif %}
-            {% if not ch and not cc %}<span class="text-muted small">—</span>{% endif %}
+            {% if ch > 0 %}
+              <span class="hc-chip hc-chip--pos" title="Volontaires disponibles">
+                <span class="hc-chip__dot"></span> +{{ ch }} CAN_HELP
+              </span>
+            {% endif %}
+            {% if cc > 0 %}
+              <span class="hc-chip hc-chip--neg ms-1" title="Volontaires indisponibles">
+                <span class="hc-chip__dot"></span> +{{ cc }} CANT_HELP
+              </span>
+            {% endif %}
+            {% if ch == 0 and cc == 0 %}
+              <span class="hc-muted">—</span>
+            {% endif %}
           </td>
           <td>
             {% set sig = last_signal_by_req.get(r.id) %}
+            {% set eng = engagement_by_request.get(r.id) %}
             {% if sig %}
               {% if sig.action == "CAN_HELP" %}
                 <span class="badge text-bg-success">✅ {{ _("Can help") }}</span>
@@ -133,12 +315,10 @@
                 {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
                 <form method="post"
                       action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
-                      class="d-inline ms-2"
-                      onclick="event.stopPropagation()">
+                      class="d-inline ms-2">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit"
                           class="btn btn-sm btn-outline-primary"
-                          onclick="event.stopPropagation()"
                           {% if already_assigned or is_closed %}disabled{% endif %}>
                     Assign #{{ sig.volunteer_id }}
                   </button>
@@ -152,9 +332,29 @@
             {% else %}
               <span class="text-muted small">—</span>
             {% endif %}
+            <div class="text-muted small mt-1">
+              Engagement:
+              {% if eng %}
+                {{ eng.label }} (score {{ eng.score }})
+              {% else %}
+                —
+              {% endif %}
+            </div>
           </td>
           <td class="text-end">
-            <a class="btn btn-sm btn-outline-light" onclick="event.stopPropagation()" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
+            {% set nu = (nudge_ui or {}).get(r.id, {}) %}
+            {% set is_disabled = nu.get('disabled', False) %}
+            {% set tip = nu.get('title', 'Send reminder to assigned volunteer') %}
+            <form method="post" action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit"
+                      class="btn btn-sm {{ 'btn-outline-secondary' if is_disabled else 'btn-outline-primary' }} me-1"
+                      title="{{ tip }}"
+                      {% if is_disabled %}disabled aria-disabled="true"{% endif %}>
+                Nudge
+              </button>
+            </form>
+            <a class="btn btn-sm btn-outline-light" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
           </td>
         </tr>
         {% else %}
@@ -164,6 +364,34 @@
     </table>
   </div>
 
+  <div class="hc-card" style="margin-top:12px;">
+    <h3>Live</h3>
+    <div class="hc-muted">État opérationnel instantané</div>
+
+    <div class="hc-activity-item">
+      <p class="hc-activity-title" id="hcLiveUnassigned">• Sans bénévole assigné: 0</p>
+      <div class="hc-activity-meta">Priorité: assigner ou clôturer</div>
+    </div>
+
+    <div class="hc-activity-item">
+      <p class="hc-activity-title" id="hcLiveInProgress">• En cours: 0</p>
+      <div class="hc-activity-meta">À surveiller</div>
+    </div>
+
+    <div class="hc-activity-item">
+      <p class="hc-activity-title" id="hcLiveCanHelp">• Disponibles (CAN_HELP): 0</p>
+      <div class="hc-activity-meta">Volontaires prêts à aider</div>
+    </div>
+  </div>
+
 </div>
+<script src="{{ url_for('static', filename='js/admin-requests-kpis.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-live-now.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-requests-rowhints.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-requests-actionable-mark.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-requests-filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-copy-link.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-requests-rowclick.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}"></script>
 {% endblock %}
 

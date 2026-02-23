@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Phase pilote | Professionnels — HelpChain{% endblock %}
+
+{% block content %}
+<section class="hc-section">
+  <div class="hc-card">
+    <h1 class="hc-h1">Phase pilote — Professionnels</h1>
+    <p class="hc-muted" style="margin-top:.35rem">
+      Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.
+    </p>
+
+    <form method="POST" class="hc-form" style="margin-top:1rem">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="hc-field">
+        <label>Votre métier *</label>
+        <input name="profession" required placeholder="Psychologue, avocat, médecin, assistant social..." />
+      </div>
+
+      <div class="hc-field">
+        <label>E-mail *</label>
+        <input type="email" name="email" required placeholder="vous@email.com" />
+      </div>
+
+      <div class="hc-grid-2">
+        <div class="hc-field">
+          <label>Nom (optionnel)</label>
+          <input name="full_name" placeholder="Nom Prénom" />
+        </div>
+        <div class="hc-field">
+          <label>Téléphone (optionnel)</label>
+          <input name="phone" placeholder="+33..." />
+        </div>
+      </div>
+
+      <div class="hc-grid-2">
+        <div class="hc-field">
+          <label>Ville / zone (optionnel)</label>
+          <input name="city" placeholder="Paris, Boulogne-Billancourt..." />
+        </div>
+        <div class="hc-field">
+          <label>Organisation (optionnel)</label>
+          <input name="organization" placeholder="Cabinet, association, structure..." />
+        </div>
+      </div>
+
+      <div class="hc-field">
+        <label>Disponibilité (optionnel)</label>
+        <input name="availability" placeholder="Ex: 2h/semaine, soirs, urgences..." />
+      </div>
+
+      <div class="hc-field">
+        <label>Message (optionnel)</label>
+        <textarea name="message" rows="4" placeholder="Type de demandes, conditions, périmètre..."></textarea>
+      </div>
+
+      <div style="display:flex; gap:.75rem; align-items:center; margin-top:1rem">
+        <button class="hc-btn hc-btn--primary" type="submit">Rejoindre le pilote</button>
+        <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.professionnels') }}">Retour</a>
+      </div>
+
+      <p class="hc-muted" style="margin-top:.75rem">
+        Données minimales • RGPD • Pas de spam.
+      </p>
+    </form>
+  </div>
+</section>
+{% endblock %}

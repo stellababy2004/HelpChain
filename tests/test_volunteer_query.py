@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.mark.usefixtures("real_app")
 def test_volunteer_query_count(real_app):
     from backend.extensions import db

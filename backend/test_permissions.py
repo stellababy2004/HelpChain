@@ -66,7 +66,11 @@ def permissions_app():
             # ensure admin role exists
             admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
             if not admin_role:
-                admin_role = Role(name="Администратор", description="Администратор", is_system_role=True)
+                admin_role = Role(
+                    name="Администратор",
+                    description="Администратор",
+                    is_system_role=True,
+                )
                 _db.session.add(admin_role)
                 try:
                     _db.session.flush()
@@ -78,13 +82,21 @@ def permissions_app():
                 for codename, perm in created.items():
                     if perm is None:
                         continue
-                    exists = _db.session.query(RolePermission).filter_by(role_id=admin_role.id, permission=perm.codename).first()
+                    exists = (
+                        _db.session.query(RolePermission)
+                        .filter_by(role_id=admin_role.id, permission=perm.codename)
+                        .first()
+                    )
                     if not exists:
                         # Associate via role object where possible to ensure relationship
                         try:
-                            rp = RolePermission(role=admin_role, permission=perm.codename)
+                            rp = RolePermission(
+                                role=admin_role, permission=perm.codename
+                            )
                         except Exception:
-                            rp = RolePermission(role_id=admin_role.id, permission=perm.codename)
+                            rp = RolePermission(
+                                role_id=admin_role.id, permission=perm.codename
+                            )
                         _db.session.add(rp)
             except Exception:
                 pass
@@ -99,7 +111,9 @@ def permissions_app():
             # Ensure role_permissions were persisted and are visible via relationship
             try:
                 _db.session.expire_all()
-                admin_role = _db.session.query(Role).filter_by(name="Администратор").first()
+                admin_role = (
+                    _db.session.query(Role).filter_by(name="Администратор").first()
+                )
                 if admin_role is not None:
                     # force reload of related RolePermission objects
                     _db.session.refresh(admin_role)
@@ -194,7 +208,9 @@ def test_has_permission_returns_true_for_admin(permissions_app, admin_user_id):
         assert not has_permission("nonexistent_permission")
 
 
-def test_has_permission_returns_false_for_regular_user(permissions_app, regular_user_id):
+def test_has_permission_returns_false_for_regular_user(
+    permissions_app, regular_user_id
+):
     with permissions_app.test_request_context():
         session["user_id"] = regular_user_id
         assert not has_permission(PermissionEnum.ADMIN_ACCESS.value)

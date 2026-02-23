@@ -111,10 +111,14 @@ def check_rotation_schedule(last_rotation_file=".last_rotation"):
         days_since_rotation = (datetime.now() - last_rotation).days
 
         if days_since_rotation < 90:
-            print(f"ℹ️  Last rotation was {days_since_rotation} days ago. Next rotation due in {90 - days_since_rotation} days.")
+            print(
+                f"ℹ️  Last rotation was {days_since_rotation} days ago. Next rotation due in {90 - days_since_rotation} days."
+            )
             return False
         else:
-            print(f"⚠️  Last rotation was {days_since_rotation} days ago. Rotation is overdue!")
+            print(
+                f"⚠️  Last rotation was {days_since_rotation} days ago. Rotation is overdue!"
+            )
             return True
     else:
         print("ℹ️  No previous rotation record found. Running initial rotation.")
@@ -124,7 +128,9 @@ def check_rotation_schedule(last_rotation_file=".last_rotation"):
 def main():
     parser = argparse.ArgumentParser(description="Rotate HelpChain secrets")
     parser.add_argument("--env-file", default=".env", help="Environment file to update")
-    parser.add_argument("--force", action="store_true", help="Force rotation even if not due")
+    parser.add_argument(
+        "--force", action="store_true", help="Force rotation even if not due"
+    )
     parser.add_argument("--no-backup", action="store_true", help="Skip backup creation")
 
     args = parser.parse_args()

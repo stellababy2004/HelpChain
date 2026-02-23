@@ -15,7 +15,9 @@ from backend.models_with_analytics import (
 )
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'instance', 'volunteers.db')}"
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    f"sqlite:///{os.path.join(os.path.dirname(__file__), 'instance', 'volunteers.db')}"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
@@ -58,19 +60,35 @@ with app.app_context():
         print("\n=== SAMPLE USER BEHAVIOR ===")
         behaviors = db.session.query(UserBehavior).limit(3).all()
         for behavior in behaviors:
-            print(f"- Session {behavior.session_id}: {behavior.pages_visited} pages, {behavior.user_type}")
+            print(
+                f"- Session {behavior.session_id}: {behavior.pages_visited} pages, {behavior.user_type}"
+            )
 
     # Get some sample chatbot conversations
     if chatbot_count > 0:
         print("\n=== SAMPLE CHATBOT CONVERSATIONS ===")
         conversations = db.session.query(ChatbotConversation).limit(3).all()
         for conv in conversations:
-            print(f"- {conv.user_message[:50]}... -> {conv.bot_response[:50] if conv.bot_response else 'No response'}")
+            print(
+                f"- {conv.user_message[:50]}... -> {conv.bot_response[:50] if conv.bot_response else 'No response'}"
+            )
 
     print("\n=== ANALYTICS SYSTEM STATUS ===")
-    print("✅ Analytics events table populated" if analytics_count > 0 else "❌ No analytics events found")
-    print("✅ User behavior tracking active" if behavior_count > 0 else "❌ No user behavior data")
-    print("✅ Chatbot analytics working" if chatbot_count > 0 else "❌ No chatbot conversations")
+    print(
+        "✅ Analytics events table populated"
+        if analytics_count > 0
+        else "❌ No analytics events found"
+    )
+    print(
+        "✅ User behavior tracking active"
+        if behavior_count > 0
+        else "❌ No user behavior data"
+    )
+    print(
+        "✅ Chatbot analytics working"
+        if chatbot_count > 0
+        else "❌ No chatbot conversations"
+    )
 
     total_data_points = analytics_count + behavior_count + chatbot_count
     print(f"\n📊 Total analytics data points: {total_data_points}")
@@ -78,4 +96,6 @@ with app.app_context():
     if total_data_points > 0:
         print("🎉 Analytics system is working correctly with real data!")
     else:
-        print("⚠️  Analytics system has no data - using sample data would be shown in dashboard")
+        print(
+            "⚠️  Analytics system has no data - using sample data would be shown in dashboard"
+        )

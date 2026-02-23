@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}" />
+{% endblock %}
+{% block body_class %}hc-page-admin{% endblock %}

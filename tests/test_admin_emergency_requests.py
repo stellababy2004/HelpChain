@@ -1,6 +1,7 @@
 import pytest
 from bs4 import BeautifulSoup
 
+
 def test_emergency_requests_admin_access(authenticated_admin_client):
     resp = authenticated_admin_client.get("/admin/emergency-requests")
     assert resp.status_code == 200

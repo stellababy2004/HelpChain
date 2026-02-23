@@ -21,12 +21,16 @@ def test_admin_login():
 
         # Test POST request with correct credentials
         data = {"username": "admin", "password": "admin123"}
-        response = requests.post("http://127.0.0.1:8000/admin_login", data=data, allow_redirects=False)
+        response = requests.post(
+            "http://127.0.0.1:8000/admin_login", data=data, allow_redirects=False
+        )
 
         print(f"POST /admin_login: {response.status_code}")
         print(f"Location header: {response.headers.get('location', 'None')}")
 
-        if response.status_code == 302 and "admin_dashboard" in response.headers.get("location", ""):
+        if response.status_code == 302 and "admin_dashboard" in response.headers.get(
+            "location", ""
+        ):
             print("Admin login successful!")
             return True
         else:

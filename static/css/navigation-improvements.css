@@ -1,1 +1,596 @@
-/* Placeholder: navigation improvements styles. */
+/* HOME NAV (index.html) — glass -> solid on scroll */
+body.hc-page-home .main-nav{
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background: linear-gradient(180deg, rgba(235,245,255,.92) 0%, rgba(255,255,255,.72) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(15,23,42,.08);
+  transition: background 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+body.hc-page-home .main-nav.is-scrolled{
+  background: rgba(255,255,255,.96);
+  border-bottom-color: rgba(15,23,42,.12);
+  box-shadow: 0 10px 30px rgba(15,23,42,.10);
+}
+
+body.hc-page-home .navbar-brand-light{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin-right: 18px;
+}
+
+/* ===== NAVBAR — enterprise scroll state ===== */
+.hc-page-home .hc-navbar,
+.hc-page-home .main-nav,
+.hc-page-home nav.navbar {
+  background: linear-gradient(180deg, rgba(232, 242, 255, 0.78), rgba(255, 255, 255, 0.62));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  transition: background 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.hc-page-home .hc-navbar.is-scrolled,
+.hc-page-home .main-nav.is-scrolled,
+.hc-page-home nav.navbar.is-scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* ===== NAV CTA pill ===== */
+.hc-page-home .hc-navbar .hc-nav-cta,
+.hc-page-home .main-nav .hc-nav-cta,
+.hc-page-home nav.navbar .hc-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.10);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  color: rgba(30, 64, 175, 0.95);
+  font-weight: 650;
+  line-height: 1;
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.hc-page-home .hc-navbar .hc-nav-cta:hover,
+.hc-page-home .main-nav .hc-nav-cta:hover,
+.hc-page-home nav.navbar .hc-nav-cta:hover {
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(37, 99, 235, 0.30);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+/* =========================
+   HOME NAV — glass -> solid on scroll
+   ========================= */
+
+/* базов glass (top) */
+body.hc-page-home nav.navbar,
+body.hc-page-home .hc-navbar,
+body.hc-page-home .main-nav,
+body.hc-page-home .hc-navbar--glass {
+  background: linear-gradient(
+    180deg,
+    rgba(236, 245, 255, 0.78) 0%,
+    rgba(255, 255, 255, 0.62) 100%
+  ) !important;
+
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+  box-shadow: none !important;
+
+  transition:
+    background 240ms ease,
+    box-shadow 240ms ease,
+    border-color 240ms ease,
+    backdrop-filter 240ms ease;
+}
+
+/* при scroll: по-плътно + лек shadow */
+body.hc-page-home nav.navbar.is-scrolled,
+body.hc-page-home .hc-navbar.is-scrolled,
+body.hc-page-home .main-nav.is-scrolled,
+body.hc-page-home .hc-navbar--glass.is-scrolled {
+  background: rgba(255, 255, 255, 1) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+
+  border-bottom-color: rgba(15, 23, 42, 0.10) !important;
+
+  box-shadow:
+    0 10px 30px rgba(15, 23, 42, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset !important;
+}
+
+/* Slim mode on scroll */
+body.hc-page-home nav.navbar.is-scrolled,
+body.hc-page-home .hc-navbar.is-scrolled,
+body.hc-page-home .main-nav.is-scrolled {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+body.hc-page-home nav.navbar.is-scrolled .navbar-brand,
+body.hc-page-home .hc-navbar.is-scrolled .navbar-brand {
+  transform: translateY(-0.5px);
+}
+
+body.hc-page-home nav.navbar.is-scrolled .nav-link,
+body.hc-page-home .hc-navbar.is-scrolled .nav-link {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+/* уважаваме reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  body.hc-page-home nav.navbar,
+  body.hc-page-home .hc-navbar,
+  body.hc-page-home .main-nav,
+  body.hc-page-home .hc-navbar--glass {
+    transition: none;
+  }
+}
+
+/* =========================
+   NAV CTA — pill button
+   (прикачи клас .hc-nav-cta на линка/бутона)
+   ========================= */
+
+body.hc-page-home .hc-nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+  border-radius: 999px;
+
+  background: rgba(59, 130, 246, 0.10);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+
+  color: rgba(30, 64, 175, 0.92) !important;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.10);
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+body.hc-page-home .hc-nav-cta:hover {
+  background: rgba(59, 130, 246, 0.14);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.14);
+  transform: translateY(-1px);
+}
+
+body.hc-page-home .hc-nav-cta:active {
+  transform: translateY(0);
+}
+
+/* quieter CTA on solid navbar */
+body.hc-page-home nav.navbar.is-scrolled .hc-nav-cta,
+body.hc-page-home .hc-navbar.is-scrolled .hc-nav-cta{
+  background: rgba(59, 130, 246, 0.08);
+}
+
+/* subtle icon tone inside CTA */
+body.hc-page-home .hc-nav-cta i,
+body.hc-page-home .hc-nav-cta svg{
+  opacity: 0.75;
+  transform: translateY(-0.5px);
+}
+
+/* =========================================
+   Premium Active Nav Underline
+========================================= */
+
+.hc-navbar .nav-link,
+.main-nav .nav-link-light,
+nav.navbar .nav-link {
+  position: relative;
+  padding-bottom: 6px;
+}
+
+/* Base underline (hidden) */
+.hc-navbar .nav-link::after,
+.main-nav .nav-link-light::after,
+nav.navbar .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  width: 60%;
+  height: 2px;
+  border-radius: 999px;
+  transform: translateX(-50%) scaleX(0);
+  opacity: 0;
+  transition: transform 180ms ease, opacity 180ms ease;
+  background: rgba(29, 78, 216, 0.75);
+}
+
+/* Active (or aria-current) triggers underline */
+.hc-navbar .nav-link.active::after,
+nav.navbar .nav-link.active::after,
+.hc-navbar .nav-link[aria-current="page"]::after,
+nav.navbar .nav-link[aria-current="page"]::after {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
+}
+
+/* Optional: hover hint (very subtle) */
+.hc-navbar .nav-link:hover::after,
+.main-nav .nav-link-light:hover::after,
+nav.navbar .nav-link:hover::after {
+  transform: translateX(-50%) scaleX(0.55);
+  opacity: 0.35;
+}
+
+/* Primary nav links only (exclude CTA + utility items) */
+.hc-navbar .nav-link.nav-utility::after,
+nav.navbar .nav-link.nav-utility::after {
+  content: none !important;
+  display: none !important;
+}
+
+.hc-navbar .nav-link:not(.hc-nav-cta):not(.nav-utility)::after,
+nav.navbar .nav-link:not(.hc-nav-cta):not(.nav-utility)::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0.8);
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, #2563eb, #1e40af);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.hc-navbar .nav-link.active:not(.hc-nav-cta):not(.nav-utility)::after,
+.hc-navbar .nav-link[aria-current="page"]:not(.hc-nav-cta):not(.nav-utility)::after,
+nav.navbar .nav-link.active:not(.hc-nav-cta):not(.nav-utility)::after,
+nav.navbar .nav-link[aria-current="page"]:not(.hc-nav-cta):not(.nav-utility)::after {
+  opacity: 1;
+  transform: translateX(-50%) scaleX(1);
+}
+
+/* =========================================
+   Step 9 — Scroll compression (premium)
+   Applies when .is-scrolled is toggled
+   ========================================= */
+
+/* Base (top-of-page) sizing — keep it calm */
+.hc-navbar,
+nav.navbar {
+  transition: padding 220ms ease, box-shadow 220ms ease, background 220ms ease, backdrop-filter 220ms ease;
+}
+
+/* Make sure nav links can host underline pseudo-element cleanly */
+.hc-navbar .nav-link,
+nav.navbar .nav-link {
+  position: relative;
+  transition: color 180ms ease, opacity 180ms ease, transform 220ms ease, font-size 220ms ease;
+}
+
+/* Brand: subtle premium */
+.hc-navbar .navbar-brand,
+nav.navbar .navbar-brand {
+  transition: transform 220ms ease, letter-spacing 220ms ease, font-size 220ms ease;
+}
+
+/* -------------------------
+   COMPRESSION STATE
+-------------------------- */
+.hc-navbar.is-scrolled,
+nav.navbar.is-scrolled {
+  /* compress vertical rhythm */
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* If your nav uses an inner container, compress it too */
+.hc-navbar.is-scrolled .container,
+nav.navbar.is-scrolled .container {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Brand gets slightly tighter */
+.hc-navbar.is-scrolled .navbar-brand,
+nav.navbar.is-scrolled .navbar-brand {
+  font-size: 1.02rem;          /* tiny drop */
+  letter-spacing: -0.01em;     /* micro premium */
+  transform: translateY(-0.5px);
+}
+
+/* Primary nav links: slightly tighter and calmer */
+.hc-navbar.is-scrolled .nav-link:not(.hc-nav-cta):not(.nav-utility),
+nav.navbar.is-scrolled .nav-link:not(.hc-nav-cta):not(.nav-utility) {
+  font-size: 0.95rem;
+  opacity: 0.92;
+}
+
+/* Utility icons/buttons: shrink a touch */
+.hc-navbar.is-scrolled .nav-utility,
+nav.navbar.is-scrolled .nav-utility {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* CTA pill becomes more compact on scroll */
+.hc-navbar.is-scrolled .hc-nav-cta,
+nav.navbar.is-scrolled .hc-nav-cta {
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  transform: translateY(-0.5px);
+}
+
+/* CTA icon inside pill (if present) */
+.hc-navbar.is-scrolled .hc-nav-cta i,
+nav.navbar.is-scrolled .hc-nav-cta i {
+  transform: translateY(-0.5px);
+  opacity: 0.78;
+}
+
+/* Optional: tighten spacing between items a bit */
+.hc-navbar.is-scrolled .navbar-nav,
+nav.navbar.is-scrolled .navbar-nav {
+  gap: 6px;
+}
+
+/* Step 9.1 — Hard density override (beats Bootstrap) */
+nav.navbar.is-scrolled,
+.hc-navbar.is-scrolled {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* Bootstrap often sets padding on .navbar itself and .container */
+nav.navbar.is-scrolled .container,
+nav.navbar.is-scrolled .container-fluid,
+.hc-navbar.is-scrolled .container,
+.hc-navbar.is-scrolled .container-fluid {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Reduce nav item vertical padding if Bootstrap applies it */
+nav.navbar.is-scrolled .nav-link,
+.hc-navbar.is-scrolled .nav-link {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* CTA pill: a bit tighter */
+nav.navbar.is-scrolled .hc-nav-cta,
+.hc-navbar.is-scrolled .hc-nav-cta {
+  padding: 7px 11px !important;
+}
+
+/* Optional: slightly smaller overall text to feel “tighter” */
+nav.navbar.is-scrolled,
+.hc-navbar.is-scrolled {
+  font-size: 0.98rem;
+}
+
+/* Deterministic scroll typography state (driven by body class from nav-scroll.js) */
+body.hc-page-home.hc-nav-scrolled nav.navbar .nav-link,
+body.hc-page-home.hc-nav-scrolled nav.navbar .nav-link-light {
+  font-size: 15px !important;
+  letter-spacing: -0.01em !important;
+  font-weight: 500 !important;
+}
+
+/* Hero accent: keep nav links a touch bigger at top */
+body.hc-page-home nav.navbar a.nav-link,
+body.hc-page-home nav.navbar .nav-link {
+  font-size: 16px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+/* Smooth typography compression on scroll */
+body.hc-page-home nav.navbar a.nav-link,
+body.hc-page-home nav.navbar .nav-link {
+  transition: font-size 180ms ease, letter-spacing 180ms ease, opacity 180ms ease;
+}
+
+body.hc-page-home nav.navbar.is-scrolled a.nav-link,
+body.hc-page-home nav.navbar.is-scrolled .nav-link {
+  font-size: 15px !important;
+}
+
+/* Micro polish: slightly denser inner spacing on scroll */
+body.hc-page-home nav.navbar.is-scrolled .hc-navbar__inner,
+body.hc-page-home nav.navbar.is-scrolled .container {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+/* Strong scroll compression override */
+body.hc-page-home nav.navbar.is-scrolled {
+  padding: 4px 0 !important;
+  min-height: 48px;
+}
+
+/* Kill internal Bootstrap spacing */
+body.hc-page-home nav.navbar.is-scrolled > .container,
+body.hc-page-home nav.navbar.is-scrolled > .container-fluid {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Tighten links */
+body.hc-page-home nav.navbar.is-scrolled .nav-link {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* Slight brand shrink */
+body.hc-page-home nav.navbar.is-scrolled .navbar-brand {
+  transform: scale(0.96);
+  transition: transform 180ms ease;
+}
+
+/* Premium compact typography on scroll */
+body.hc-page-home nav.navbar.is-scrolled .nav-link {
+  font-size: 0.94rem;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+body.hc-page-home nav.navbar.is-scrolled .navbar-brand {
+  letter-spacing: -0.02em;
+}
+
+/* Spacing balance */
+body.hc-page-home nav.navbar.is-scrolled .navbar-nav {
+  gap: 6px;
+}
+
+/* Enterprise divider */
+body.hc-page-home nav.navbar.is-scrolled {
+  border-bottom-color: rgba(15, 23, 42, 0.10) !important;
+}
+
+/* Strong scroll typography override */
+body.hc-page-home nav.navbar.is-scrolled .navbar-nav .nav-link {
+  font-size: 15px !important;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+/* Fallback: hit links even when markup differs from .navbar-nav */
+body.hc-page-home nav.navbar.is-scrolled .nav-link,
+body.hc-page-home nav.navbar.is-scrolled .nav-link-light {
+  font-size: 15px !important;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+/* CTA pill should never get the underline */
+.hc-navbar .hc-nav-cta::after,
+nav.navbar .hc-nav-cta::after,
+.hc-navbar a.hc-nav-cta::after,
+nav.navbar a.hc-nav-cta::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Reserve navbar space (prevents jump) */
+:root {
+  --hc-nav-h: 72px;
+  --hc-nav-h-scrolled: 64px;
+}
+
+body.hc-page-home {
+  padding-top: var(--hc-nav-h);
+}
+
+/* If your navbar is fixed/sticky */
+.hc-navbar,
+nav.navbar {
+  min-height: var(--hc-nav-h);
+}
+
+/* When scrolled we allow denser look, but keep reserved space stable */
+.hc-navbar.is-scrolled,
+nav.navbar.is-scrolled {
+  min-height: var(--hc-nav-h-scrolled);
+}
+
+/* =========================================
+   Premium Active Nav Underline
+========================================= */
+
+.hc-navbar .nav-link,
+.main-nav .nav-link-light,
+nav.navbar .nav-link {
+  position: relative;
+  padding-bottom: 6px;
+}
+
+/* Base underline (hidden) */
+.hc-navbar .nav-link::after,
+.main-nav .nav-link-light::after,
+nav.navbar .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0%;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    rgba(59,130,246,0.6),
+    rgba(37,99,235,0.9)
+  );
+
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: width 220ms ease, opacity 220ms ease;
+  opacity: 0;
+}
+
+/* Hover */
+.hc-navbar .nav-link:hover::after,
+.main-nav .nav-link-light:hover::after,
+nav.navbar .nav-link:hover::after {
+  width: 60%;
+  opacity: 1;
+}
+
+/* Active (route-aware class required) */
+.hc-navbar .nav-link.active::after,
+.main-nav .nav-link-light.active::after,
+nav.navbar .nav-link.active::after {
+  width: 70%;
+  opacity: 1;
+}
+
+/* Step 9.1 — Hard density override (beats Bootstrap) */
+nav.navbar.is-scrolled,
+.hc-navbar.is-scrolled {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* Bootstrap often sets padding on .navbar itself and .container */
+nav.navbar.is-scrolled .container,
+nav.navbar.is-scrolled .container-fluid,
+.hc-navbar.is-scrolled .container,
+.hc-navbar.is-scrolled .container-fluid {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Reduce nav item vertical padding if Bootstrap applies it */
+nav.navbar.is-scrolled .nav-link,
+.hc-navbar.is-scrolled .nav-link {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+/* CTA pill: a bit tighter */
+nav.navbar.is-scrolled .hc-nav-cta,
+.hc-navbar.is-scrolled .hc-nav-cta {
+  padding: 7px 11px !important;
+}
+
+/* Optional: slightly smaller overall text to feel “tighter” */
+nav.navbar.is-scrolled,
+.hc-navbar.is-scrolled {
+  font-size: 0.98rem;
+}

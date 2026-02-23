@@ -156,13 +156,17 @@ class NotificationService:
         if name in self.templates_cache:
             return self.templates_cache[name]
 
-        template = NotificationTemplate.query.filter_by(name=name, is_active=True).first()
+        template = NotificationTemplate.query.filter_by(
+            name=name, is_active=True
+        ).first()
         if template:
             self.templates_cache[name] = template
 
         return template
 
-    def render_template(self, template: NotificationTemplate, variables: dict[str, Any]) -> dict[str, str]:
+    def render_template(
+        self, template: NotificationTemplate, variables: dict[str, Any]
+    ) -> dict[str, str]:
         """Рендерира шаблон с променливи"""
         try:
             result = {}
@@ -273,17 +277,23 @@ class NotificationService:
                             stats["failed"] += 1
                         else:
                             item.status = "pending"
-                            item.next_retry = utc_now() + timedelta(minutes=item.attempts * 5)
+                            item.next_retry = utc_now() + timedelta(
+                                minutes=item.attempts * 5
+                            )
                             stats["skipped"] += 1
 
                     db.session.commit()
 
                 except Exception as e:
-                    item.status = "failed" if item.attempts >= item.max_attempts else "pending"
+                    item.status = (
+                        "failed" if item.attempts >= item.max_attempts else "pending"
+                    )
                     item.error_message = str(e)
                     db.session.commit()
                     stats["failed"] += 1
-                    print(f"❌ Грешка при изпращане към {item.recipient_email}: {str(e)}")
+                    print(
+                        f"❌ Грешка при изпращане към {item.recipient_email}: {str(e)}"
+                    )
 
             print(f"📬 Обработени {len(pending_items)} нотификации: {stats}")
             return stats
@@ -307,7 +317,9 @@ class NotificationService:
             # Проверяваме user preferences (ако е volunteer)
             if queue_item.recipient_id and queue_item.recipient_type == "volunteer":
                 if not self._check_user_preferences(queue_item.recipient_id, template):
-                    print(f"🚫 Нотификация блокирана от user preferences: {queue_item.recipient_email}")
+                    print(
+                        f"🚫 Нотификация блокирана от user preferences: {queue_item.recipient_email}"
+                    )
                     return True  # Считаме като "успешна" - просто е блокирана
 
             # Рендерираме съдържанието
@@ -351,7 +363,9 @@ class NotificationService:
     # EMAIL NOTIFICATIONS
     # ========================================================================
 
-    def _send_email(self, to_email: str, subject: str, content: str, template: NotificationTemplate) -> bool:
+    def _send_email(
+        self, to_email: str, subject: str, content: str, template: NotificationTemplate
+    ) -> bool:
         """Изпраща email нотификация"""
         try:
             # Създаваме съобщението
@@ -375,7 +389,9 @@ class NotificationService:
                 self.email_config["smtp_port"],
                 context=context,
             ) as server:
-                server.login(self.email_config["username"], self.email_config["password"])
+                server.login(
+                    self.email_config["username"], self.email_config["password"]
+                )
                 server.send_message(msg)
 
             print(f"📧 Email изпратен до: {to_email}")
@@ -403,7 +419,9 @@ class NotificationService:
 
         try:
             # Намираме активните push subscriptions за потребителя
-            subscriptions = PushSubscription.query.filter_by(volunteer_id=recipient_id, is_active=True).all()
+            subscriptions = PushSubscription.query.filter_by(
+                volunteer_id=recipient_id, is_active=True
+            ).all()
 
             if not subscriptions:
                 print(f"📱 Няма активни push subscriptions за volunteer {recipient_id}")
@@ -457,7 +475,9 @@ class NotificationService:
             db.session.commit()
 
             if success_count > 0:
-                print(f"📱 Push notifications изпратени: {success_count}/{len(subscriptions)}")
+                print(
+                    f"📱 Push notifications изпратени: {success_count}/{len(subscriptions)}"
+                )
                 return True
             else:
                 return False
@@ -505,10 +525,14 @@ class NotificationService:
     # USER PREFERENCES
     # ========================================================================
 
-    def _check_user_preferences(self, volunteer_id: int, template: NotificationTemplate) -> bool:
+    def _check_user_preferences(
+        self, volunteer_id: int, template: NotificationTemplate
+    ) -> bool:
         """Проверява дали потребителят желае този тип нотификация"""
         try:
-            prefs = NotificationPreference.query.filter_by(volunteer_id=volunteer_id).first()
+            prefs = NotificationPreference.query.filter_by(
+                volunteer_id=volunteer_id
+            ).first()
             if not prefs:
                 return True  # Ако няма настройки - разрешаваме по default
 
@@ -544,7 +568,10 @@ class NotificationService:
                         return False
                 else:
                     # Часовете преминават през полунощ
-                    if now_time >= prefs.quiet_hours_start or now_time <= prefs.quiet_hours_end:
+                    if (
+                        now_time >= prefs.quiet_hours_start
+                        or now_time <= prefs.quiet_hours_end
+                    ):
                         return False
 
             return True
@@ -605,7 +632,9 @@ class NotificationService:
             }
 
             # Общи статистики
-            notifications = Notification.query.filter(Notification.created_at >= start_date).all()
+            notifications = Notification.query.filter(
+                Notification.created_at >= start_date
+            ).all()
 
             stats["total_sent"] = len(notifications)
 
@@ -623,7 +652,9 @@ class NotificationService:
             for notification in notifications:
                 if notification.template:
                     category = notification.template.category
-                    stats["by_category"][category] = stats["by_category"].get(category, 0) + 1
+                    stats["by_category"][category] = (
+                        stats["by_category"].get(category, 0) + 1
+                    )
 
             # Engagement метрики
             delivered_count = len([n for n in notifications if n.delivered_at])
@@ -635,9 +666,15 @@ class NotificationService:
             stats["engagement"]["total_clicked"] = clicked_count
 
             if stats["total_sent"] > 0:
-                stats["engagement"]["delivery_rate"] = round(delivered_count / stats["total_sent"] * 100, 2)
-                stats["engagement"]["read_rate"] = round(read_count / stats["total_sent"] * 100, 2)
-                stats["engagement"]["click_rate"] = round(clicked_count / stats["total_sent"] * 100, 2)
+                stats["engagement"]["delivery_rate"] = round(
+                    delivered_count / stats["total_sent"] * 100, 2
+                )
+                stats["engagement"]["read_rate"] = round(
+                    read_count / stats["total_sent"] * 100, 2
+                )
+                stats["engagement"]["click_rate"] = round(
+                    clicked_count / stats["total_sent"] * 100, 2
+                )
 
             return stats
 
@@ -685,4 +722,6 @@ def send_notification(
 
 def create_template(name: str, type: str, category: str, **kwargs):
     """Бърз начин за създаване на шаблон"""
-    return notification_service.create_template(name=name, type=type, category=category, **kwargs)
+    return notification_service.create_template(
+        name=name, type=type, category=category, **kwargs
+    )

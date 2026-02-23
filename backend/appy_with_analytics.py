@@ -86,7 +86,9 @@ if db_url:
     db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{INSTANCE_DIR / 'volunteers.db'}"
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"sqlite:///{INSTANCE_DIR / 'volunteers.db'}"
+    )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 from .models import (
@@ -150,7 +152,12 @@ def _pytest_force_admin_login():
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
 
-        return jsonify({"success": True, "admin_id": admin.id, "username": admin.username}), 200
+        return (
+            jsonify(
+                {"success": True, "admin_id": admin.id, "username": admin.username}
+            ),
+            200,
+        )
     except Exception as exc:
         return jsonify({"success": False, "error": str(exc)}), 500
 
@@ -200,7 +207,9 @@ app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL", "True") == "True"
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "False") == "True"
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME", "")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", "")
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"])
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv(
+    "MAIL_DEFAULT_SENDER", app.config["MAIL_USERNAME"]
+)
 mail = Mail(app)
 
 # -----------------------------------------------------------------------------
@@ -318,7 +327,9 @@ def log_admin_action(action, details=None, entity_type=None, entity_id=None):
 
 def create_admin_user(username, email, password, role=AdminRole.MODERATOR):
     """Създава нов административен потребител"""
-    existing_user = AdminUser.query.filter((AdminUser.username == username) | (AdminUser.email == email)).first()
+    existing_user = AdminUser.query.filter(
+        (AdminUser.username == username) | (AdminUser.email == email)
+    ).first()
 
     if existing_user:
         return None, "Потребител с това име или email вече съществува"
@@ -373,7 +384,9 @@ def generate_qr_code(admin_user):
     if not admin_user.totp_secret:
         return None
 
-    totp_uri = pyotp.totp.TOTP(admin_user.totp_secret).provisioning_uri(name=admin_user.email, issuer_name="HelpChain.bg Admin")
+    totp_uri = pyotp.totp.TOTP(admin_user.totp_secret).provisioning_uri(
+        name=admin_user.email, issuer_name="HelpChain.bg Admin"
+    )
 
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(totp_uri)
@@ -518,7 +531,9 @@ def admin_login():
                 if admin_user:
                     admin_user.failed_login_attempts += 1
                     if admin_user.failed_login_attempts >= 5:
-                        admin_user.locked_until = datetime.utcnow() + timedelta(minutes=30)
+                        admin_user.locked_until = datetime.utcnow() + timedelta(
+                            minutes=30
+                        )
                     db.session.commit()
 
                 error = "Грешно потребителско име или парола!"
@@ -541,7 +556,11 @@ def admin_dashboard():
     status = request.args.get("status")
     volunteers = Volunteer.query.order_by(Volunteer.id.desc()).all()
     if status:
-        requests_q = HelpRequest.query.filter_by(status=status).order_by(HelpRequest.timestamp.desc()).all()
+        requests_q = (
+            HelpRequest.query.filter_by(status=status)
+            .order_by(HelpRequest.timestamp.desc())
+            .all()
+        )
     else:
         requests_q = HelpRequest.query.order_by(HelpRequest.timestamp.desc()).all()
 
@@ -862,7 +881,15 @@ def search_volunteers():
     if not q:
         vols = Volunteer.query.order_by(Volunteer.id.desc()).all()
     else:
-        vols = Volunteer.query.filter((Volunteer.name.contains(q)) | (Volunteer.email.contains(q)) | (Volunteer.phone.contains(q))).order_by(Volunteer.id.desc()).all()
+        vols = (
+            Volunteer.query.filter(
+                (Volunteer.name.contains(q))
+                | (Volunteer.email.contains(q))
+                | (Volunteer.phone.contains(q))
+            )
+            .order_by(Volunteer.id.desc())
+            .all()
+        )
     return render_template("admin_volunteers.html", volunteers=vols)
 
 
@@ -875,12 +902,18 @@ def stories():
 def search():
     query = request.args.get("q", "")
     if query:
-        requests_q = HelpRequest.query.filter(HelpRequest.name.contains(query) | HelpRequest.message.contains(query)).all()
-        volunteers = Volunteer.query.filter(Volunteer.name.contains(query) | Volunteer.email.contains(query)).all()
+        requests_q = HelpRequest.query.filter(
+            HelpRequest.name.contains(query) | HelpRequest.message.contains(query)
+        ).all()
+        volunteers = Volunteer.query.filter(
+            Volunteer.name.contains(query) | Volunteer.email.contains(query)
+        ).all()
     else:
         requests_q = []
         volunteers = []
-    return render_template("search.html", requests=requests_q, volunteers=volunteers, query=query)
+    return render_template(
+        "search.html", requests=requests_q, volunteers=volunteers, query=query
+    )
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -931,7 +964,11 @@ def login():
         email = (request.form.get("email") or "").strip()
         password = request.form.get("password") or ""
         user = User.query.filter_by(email=email).first()
-        if user and getattr(user, "check_password", None) and user.check_password(password):
+        if (
+            user
+            and getattr(user, "check_password", None)
+            and user.check_password(password)
+        ):
             login_user(user)
             flash("Влязохте успешно", "success")
             return redirect(url_lang("index"))
@@ -954,10 +991,14 @@ def volunteer_dashboard():
     my_requests = HelpRequest.query.filter_by(email=current_user.email).all()
 
     # Чужди заявки: Активни, които не са мои
-    foreign_requests = HelpRequest.query.filter(HelpRequest.email != current_user.email, HelpRequest.status == "Активен").all()
+    foreign_requests = HelpRequest.query.filter(
+        HelpRequest.email != current_user.email, HelpRequest.status == "Активен"
+    ).all()
 
     # Завършени мои
-    finished_requests = HelpRequest.query.filter_by(email=current_user.email, status="Завършена").all()
+    finished_requests = HelpRequest.query.filter_by(
+        email=current_user.email, status="Завършена"
+    ).all()
 
     latest_news = SuccessStory.query.order_by(SuccessStory.id.desc()).limit(5).all()
 
@@ -1111,7 +1152,9 @@ def add_news():
             action="added_news",
             details={
                 "news_title": title,
-                "news_content": (content[:100] + "..." if len(content) > 100 else content),
+                "news_content": (
+                    content[:100] + "..." if len(content) > 100 else content
+                ),
             },
             entity_type="success_story",
             entity_id=news.id,
@@ -1152,17 +1195,26 @@ def admin_logs():
         query = query.filter(AdminLog.entity_type == entity_type_filter)
 
     if admin_filter:
-        admin_users = AdminUser.query.filter(AdminUser.username.contains(admin_filter)).all()
+        admin_users = AdminUser.query.filter(
+            AdminUser.username.contains(admin_filter)
+        ).all()
         admin_ids = [au.id for au in admin_users]
         if admin_ids:
             query = query.filter(AdminLog.admin_user_id.in_(admin_ids))
 
     # Подреждаме по дата (най-новите първо) и пагинираме
-    logs = query.order_by(AdminLog.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    logs = query.order_by(AdminLog.timestamp.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
 
     # Вземаме уникални стойности за филтрите
     unique_actions = db.session.query(AdminLog.action).distinct().all()
-    unique_entity_types = db.session.query(AdminLog.entity_type).filter(AdminLog.entity_type.isnot(None)).distinct().all()
+    unique_entity_types = (
+        db.session.query(AdminLog.entity_type)
+        .filter(AdminLog.entity_type.isnot(None))
+        .distinct()
+        .all()
+    )
     unique_admins = db.session.query(AdminUser.username).distinct().all()
 
     return render_template(
@@ -1278,14 +1330,18 @@ def admin_2fa_setup():
                 db.session.commit()
 
                 # Записваме в лога
-                log_admin_action("disabled_2fa", {"admin_username": admin_user.username})
+                log_admin_action(
+                    "disabled_2fa", {"admin_username": admin_user.username}
+                )
 
                 flash("Двустепенната автентикация е деактивирана.", "info")
                 return redirect(url_for("admin_2fa_setup"))
             else:
                 flash("Невалиден код! Не можем да деактивираме 2FA.", "danger")
 
-    return render_template("admin_2fa_setup.html", admin_user=admin_user, step="initial")
+    return render_template(
+        "admin_2fa_setup.html", admin_user=admin_user, step="initial"
+    )
 
 
 @app.route("/admin_2fa_backup_codes")
@@ -1301,7 +1357,9 @@ def admin_2fa_backup_codes():
 
     # Не показваме истинските кодове след генериране; маскираме изгледа
     masked = mask_records_for_display(admin_user.backup_codes or "")
-    return render_template("admin_2fa_backup_codes.html", admin_user=admin_user, backup_codes=masked)
+    return render_template(
+        "admin_2fa_backup_codes.html", admin_user=admin_user, backup_codes=masked
+    )
 
 
 @app.route("/admin_2fa_regenerate_backup", methods=["POST"])
@@ -1325,7 +1383,9 @@ def admin_2fa_regenerate_backup():
         db.session.commit()
 
         # Записваме в лога
-        log_admin_action("regenerated_backup_codes", {"admin_username": admin_user.username})
+        log_admin_action(
+            "regenerated_backup_codes", {"admin_username": admin_user.username}
+        )
 
         flash("Новите backup кодове са генерирани успешно!", "success")
         return render_template(
@@ -1460,7 +1520,9 @@ def admin_analytics():
 
         # Допълнителни статистики
         success_rate = AnalyticsEngine.get_success_rate()
-        today_requests = HelpRequest.query.filter(db.func.date(HelpRequest.created_at) == datetime.utcnow().date()).count()
+        today_requests = HelpRequest.query.filter(
+            db.func.date(HelpRequest.created_at) == datetime.utcnow().date()
+        ).count()
         new_today = today_requests  # За простота
 
         # Най-активен доброволец (симулация)
@@ -1469,7 +1531,9 @@ def admin_analytics():
         # Най-честа категория
         try:
             if stats["category_stats"] and len(stats["category_stats"]) > 0:
-                top_category = max(stats["category_stats"].items(), key=lambda x: x[1])[0]
+                top_category = max(stats["category_stats"].items(), key=lambda x: x[1])[
+                    0
+                ]
             else:
                 top_category = "Няма данни"
         except (TypeError, ValueError, KeyError):
@@ -1602,7 +1666,9 @@ def admin_export():
 
         response = make_response(output.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"
-        response.headers["Content-Disposition"] = f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        response.headers["Content-Disposition"] = (
+            f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+        )
 
         return response
 
@@ -1630,13 +1696,17 @@ def admin_export():
                     "title": req.title,
                     "description": req.description or req.message,
                     "status": req.status,
-                    "created_at": (req.created_at.isoformat() if req.created_at else None),
+                    "created_at": (
+                        req.created_at.isoformat() if req.created_at else None
+                    ),
                 }
             )
 
         response = make_response(json.dumps(data, ensure_ascii=False, indent=2))
         response.headers["Content-Type"] = "application/json; charset=utf-8"
-        response.headers["Content-Disposition"] = f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
+        response.headers["Content-Disposition"] = (
+            f"attachment; filename=helpchain_requests_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
+        )
 
         return response
 
