@@ -74,6 +74,7 @@ def _install_slow_sql_logger(app: Flask) -> None:
 
 
 def _locale_selector():
+    # TEMP: FR-first launch phase (public + ops). Re-enable locale selection + switcher later.
     # Temporary FR-only public rollout: force a single runtime locale to avoid
     # mixed UI when legacy session/cookie language state is still present.
     return "fr"
