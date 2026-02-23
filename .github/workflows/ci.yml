@@ -39,7 +39,7 @@ jobs:
             pip install -r requirements.txt
           fi
           # ensure tools even if не са в requirements
-          pip install "ruff==0.15.0" "black==25.1.0" bandit pytest
+          pip install "ruff==0.15.0" "black==26.1.0" bandit pytest
 
       - name: Ruff Lint
         run: ruff check .
@@ -50,7 +50,9 @@ jobs:
           ls
 
       - name: Black (check only)
-        run: black --config pyproject.toml --check --diff .
+        run: |
+          python -m black --version
+          python -m black --config pyproject.toml --check --diff .
 
       - name: Bandit Security Scan
         run: |

@@ -1,5 +1,5 @@
 pytest
 flake8
-black
+black==26.1.0
 mypy
 pytest-flask
