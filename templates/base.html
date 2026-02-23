@@ -6,12 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Step 13 - SEO & Social preview -->
-    <meta name="description" content="{{ _('HelpChain connects people in need with verified volunteers - fast, safe and human.') }}">
+    <meta name="description" content="{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.') }}">
     <meta name="robots" content="index,follow">
 
     <meta property="og:site_name" content="HelpChain">
-    <meta property="og:title" content="{{ _('HelpChain - Get help, become a volunteer') }}">
-    <meta property="og:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
+    <meta property="og:title" content="{{ _('HelpChain - Infrastructure numérique de coordination') }}">
+    <meta property="og:description" content="{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.') }}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
     <link rel="canonical" href="{{ request.base_url }}">
@@ -21,8 +21,8 @@
     <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ _('HelpChain - Get help, become a volunteer') }}">
-    <meta name="twitter:description" content="{{ _('A safe, human and reliable way to connect with verified volunteers.') }}">
+    <meta name="twitter:title" content="{{ _('HelpChain - Infrastructure numérique de coordination') }}">
+    <meta name="twitter:description" content="{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.') }}">
     <meta name="twitter:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
 
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -97,8 +97,8 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.categories') else '' }}" href="{{ safe_url_for('main.categories') }}" {% if ep.startswith('main.categories') %}aria-current="page"{% endif %}>
-                <i class="fas fa-th-list me-1" aria-hidden="true"></i>{{ _('Categories') }}
+              <a class="nav-link {{ 'active' if ep.startswith('main.categories') or ep.startswith('main.orienter') else '' }}" href="{{ safe_url_for('main.orienter') }}" {% if ep.startswith('main.categories') or ep.startswith('main.orienter') %}aria-current="page"{% endif %}>
+                <i class="fas fa-th-list me-1" aria-hidden="true"></i>Orienter
               </a>
             </li>
             <li class="nav-item">
@@ -111,11 +111,7 @@
                 <i class="fas fa-briefcase me-1" aria-hidden="true"></i>Professionnels
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep == 'main.gouvernance' else '' }}" href="{{ url_for('main.gouvernance') }}" {% if ep == 'main.gouvernance' %}aria-current="page"{% endif %}>
-                <i class="fas fa-landmark me-1" aria-hidden="true"></i>Institution
-              </a>
-            </li>
+            {# Temporary: route removed/renamed; avoid BuildError in shared base template #}
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.pilot') else '' }}" href="{{ url_for('main.pilot') }}" data-hc-nav="kpi" {% if ep.startswith('main.pilot') %}aria-current="page"{% endif %}>
                 <span class="hc-navicon" aria-hidden="true"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
@@ -235,16 +231,6 @@
                 </form>
               </li>
               {% else %}
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
-                  <i class="fas fa-sign-in-alt me-1" aria-hidden="true"></i>{{ _('Volunteer login') }}
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ safe_url_for('main.become_volunteer') }}">
-                  <i class="fas fa-user-plus me-1" aria-hidden="true"></i>{{ _('Register') }}
-                </a>
-              </li>
               {% endif %}
             {% endif %}
           </ul>
@@ -266,6 +252,13 @@
             </div>
           </form>
 
+          {% set ep = request.endpoint or '' %}
+          {% set public_eps = [
+            'main.index', 'main.orienter', 'main.about', 'main.professionnels',
+            'main.become_volunteer', 'main.volunteer_login', 'main.faq', 'main.contact'
+          ] %}
+          {% set show_nav_chrome = ep.startswith('admin.') or ep.startswith('main.volunteer_') or (ep not in public_eps) %}
+          {% if show_nav_chrome %}
           <div class="d-flex align-items-center ms-2">
             <button class="btn btn-link text-secondary nav-utility hc-iconbtn" type="button"
                     aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
@@ -279,18 +272,7 @@
               </a>
             {% endif %}
           </div>
-          {% set cur = (get_locale()|string)[:2] %}
-          <div class="d-flex align-items-center gap-2 ms-3 ms-lg-3">
-            <a class="btn btn-sm nav-utility {{ 'btn-primary text-white' if cur == 'bg' else 'btn-outline-secondary' }}"
-               href="{{ url_for('main.set_lang_switch', lang='bg') }}"
-               aria-label="BG">BG</a>
-            <a class="btn btn-sm nav-utility {{ 'btn-primary text-white' if cur == 'fr' else 'btn-outline-secondary' }}"
-               href="{{ url_for('main.set_lang_switch', lang='fr') }}"
-               aria-label="FR">FR</a>
-            <a class="btn btn-sm nav-utility {{ 'btn-primary text-white' if cur == 'en' else 'btn-outline-secondary' }}"
-               href="{{ url_for('main.set_lang_switch', lang='en') }}"
-               aria-label="EN">EN</a>
-          </div>
+          {% endif %}
         </div>
       </div>
     </nav>
@@ -392,6 +374,18 @@
             <span class="hc-footer__dot" aria-hidden="true">·</span>
             <a class="hc-footer__link" href="{{ url_for('main.contact') }}">Contact</a>
           </nav>
+
+          <div class="hc-footer__intervenants">
+            <div class="hc-footer__intervenants-title">Accès intervenants</div>
+            <div class="hc-footer__intervenants-links">
+              <a class="hc-footer__link" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
+                Connexion intervenant
+              </a>
+              <a class="hc-footer__link" href="{{ safe_url_for('main.become_volunteer') }}">
+                Inscription intervenant
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

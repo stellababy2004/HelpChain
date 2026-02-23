@@ -1,180 +1,123 @@
-{# TEMPLATE SOURCE: /templates/home_new_slim.html #}
 {% extends "base.html" %}
 
-{% block title %}{{ _("HelpChain - Get help, become a volunteer") }}{% endblock %}
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home.css') }}">
-<link rel="stylesheet" href="{{ url_lang('static', filename='css/navigation-improvements.css') }}">
-{% endblock %}
+{% block title %}Accueil{% endblock %}
 {% block body_class %}hc-page-home{% endblock %}
 
 {% block content %}
-<div class="hc-shell">
-<section class="hc-hero">
-  <div class="hc-container">
-    <div class="hc-hero__grid">
-      <div class="hc-hero__copy">
-        <div class="hc-eyebrow">Operational coordination platform</div>
+<main class="hc-home">
+  <section class="hc-home__hero">
+    <div class="hc-container">
+      <div class="hc-home__hero-inner">
+        <div class="hc-home__hero-copy">
+          <h1 class="hc-home__title">
+            Infrastructure numérique de coordination des situations sociales.
+          </h1>
 
-        <h1 class="hc-h1">
-          Real help. Fast.<br>
-          Safe. Human.
-        </h1>
-
-        <p class="hc-lead">
-          Submit a request in minutes. Get matched. Stay in control - with clear status and accountable follow-up.
-        </p>
-
-        <div class="hc-ctaRow">
-          <a class="btn hc-btnPrimary" href="{{ url_for('main.submit_request') }}">{{ _('Submit a request') }}</a>
-          <a class="btn hc-btnGhost" href="{{ url_for('main.become_volunteer') }}">{{ _('Become volunteer / Login') }}</a>
-          <a class="btn hc-btnGhost" href="{{ url_for('main.professionnels') }}">{{ _("I'm a professional") }}</a>
-        </div>
-
-        <div style="margin-top:14px;color:var(--hc-muted);font-size:13px;">
-          Clear ownership. Structured follow-up. Audit-friendly workflow.
-        </div>
-      </div>
-
-      <div class="hc-productCard">
-        <div class="hc-productCard__inner">
-          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;">
-            <div style="font-weight:750;">Operational snapshot</div>
-            <div style="color:var(--hc-muted);font-size:12px;">Operational view</div>
-          </div>
-
-          <div class="hc-miniKpis">
-            <div class="hc-kpi">
-              <div class="hc-kpi__v" data-hc-kpi="helped">—</div>
-              <div class="hc-kpi__l">{{ _('Requests helped') }}</div>
-            </div>
-            <div class="hc-kpi">
-              <div class="hc-kpi__v" data-hc-kpi="volunteers">—</div>
-              <div class="hc-kpi__l">{{ _('Active volunteers') }}</div>
-            </div>
-            <div class="hc-kpi">
-              <div class="hc-kpi__v" data-hc-kpi="countries">—</div>
-              <div class="hc-kpi__l">{{ _('Countries') }}</div>
-            </div>
-            <div class="hc-kpi">
-              <div class="hc-kpi__v" data-hc-kpi="closed">—</div>
-              <div class="hc-kpi__l">{{ _('Closed') }}</div>
-            </div>
-          </div>
-
-          <div style="margin-top:12px;border-top:1px solid var(--hc-border);padding-top:12px;color:var(--hc-muted);font-size:13px;">
-            In 3 steps: submit -> match -> follow-up.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="hc-section">
-  <div class="hc-container">
-    <h2 class="hc-sectionTitle">Why HelpChain is different</h2>
-    <div class="hc-cardRow">
-      <div class="hc-card">
-        <div style="font-weight:700;margin-bottom:6px;">Matching intelligence</div>
-        <div style="color:var(--hc-muted);font-size:14px;line-height:1.6;">
-          Requests routed to the right volunteers/pros based on time, location and priority.
-        </div>
-      </div>
-
-      <div class="hc-card">
-        <div style="font-weight:700;margin-bottom:6px;">Privacy by default</div>
-        <div style="color:var(--hc-muted);font-size:14px;line-height:1.6;">
-          Share only what’s needed. No spam. No surprises.
-        </div>
-      </div>
-
-      <div class="hc-card">
-        <div style="font-weight:700;margin-bottom:6px;">Human-first support</div>
-        <div style="color:var(--hc-muted);font-size:14px;line-height:1.6;">
-          Real people can follow up. You stay in control from start to finish.
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="hc-container pb-5 hc-optional hc-latest">
-  <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
-    <div>
-      <h2 class="h4 mb-1">
-        {{ _('Latest requests') }}
-        <span class="hc-active-pill ms-1">{{ active_count }} {{ _('active') }}</span>
-      </h2>
-      <div class="text-body-secondary">{{ _('A quick preview - open details to help.') }}</div>
-    </div>
-    {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
-    <a class="btn btn-sm btn-outline-secondary hc-seeAll-btn"
-       href="{{ url_for('main.volunteer_dashboard') if volunteer_logged_in else url_for('main.become_volunteer', next=url_for('main.volunteer_dashboard')) }}">
-      {{ _('See all') }}
-    </a>
-  </div>
-
-  <div class="row g-3">
-    {% for req in latest_requests %}
-      <div class="col-md-6 col-lg-4">
-        <div class="p-4 rounded-4 border h-100 hc-reqCard {% if is_new_request and is_new_request(req) %}hc-reqCard--new{% endif %}">
-          <div class="hc-reqCard__top mb-2">
-            <h5 class="fw-semibold mb-0 hc-clamp-2 hc-reqCard__title">
-              <a class="hc-reqCard__titleLink" href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
-                {{ req.title }}
-              </a>
-            </h5>
-            {% if (is_new_request and is_new_request(req)) or loop.first %}
-              <span class="hc-badge hc-badge--new">{{ _("New") }}</span>
-            {% endif %}
-          </div>
-
-          {% set raw_loc = (req.city or req.region or "") %}
-          {% set loc = raw_loc.strip() %}
-          {% set loc_l = loc.lower() %}
-          {% if "démo" in loc_l or "demo" in loc_l or "générée" in loc_l or "generee" in loc_l %}
-            {% set loc = "" %}
-          {% endif %}
-
-          <div class="hc-reqCard__meta mb-2">
-            <span class="hc-dot"></span>
-            <span>
-              {% if loc %}{{ loc }}{% else %}<span class="visually-hidden">{{ _('Location unknown') }}</span>—{% endif %}
-            </span>
-            {% if req.created_at %}
-              <span class="hc-sep">•</span>
-              <span>{{ time_ago(req.created_at) }}</span>
-            {% endif %}
-          </div>
-
-          {% set desc = (req.description or req.message or "") | striptags %}
-          <p class="text-body-secondary mb-3 hc-clamp-3">
-            {{ desc[:140] }}{% if desc|length > 140 %}…{% endif %}
+          <p class="hc-home__subtitle">
+            Orientation structurée. Coordination traçable. Pilotage responsable.
           </p>
 
-          <div class="d-flex gap-2 hc-reqCard__actions">
-            <a class="btn btn-primary flex-fill"
-               href="{{ url_for('main.volunteer_request_details', req_id=req.id, intent='help') }}"
-               aria-label="{{ _('Help with request: %(title)s', title=req.title or _('Untitled request')) }}">
-              {{ _("I'll help") }}
+          <div class="hc-home__actions">
+            <a class="hc-btn hc-btn--primary"
+               href="{{ url_for('main.orienter') }}"
+               data-hc-event="home_primary_cta">
+              Orienter une demande
             </a>
-            <a class="btn btn-outline-secondary"
-               href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
-              {{ _("Details") }}
+
+            <a class="hc-btn hc-btn-outline"
+               href="{{ url_for('main.professionnels') }}"
+               data-hc-event="home_pro_cta">
+              Espace professionnel
             </a>
+          </div>
+
+          <p class="hc-home__trust">
+            Conçu et opéré depuis la France <span aria-hidden="true">•</span> Infrastructure à vocation européenne
+          </p>
+        </div>
+
+        <div class="hc-home__snapshot">
+          <div class="hc-home__snapshot-card">
+            <h2 class="hc-home__snapshot-title">Vue opérationnelle</h2>
+
+            <div class="hc-home__snapshot-grid">
+              <div class="hc-home__metric">
+                <span class="hc-home__metric-value" data-hc-kpi="helped">{{ helped|default(0, true) }}</span>
+                <span class="hc-home__metric-label">Situations traitées</span>
+              </div>
+
+              <div class="hc-home__metric">
+                <span class="hc-home__metric-value" data-hc-kpi="volunteers">{{ active_volunteers|default(0, true) }}</span>
+                <span class="hc-home__metric-label">Intervenants actifs</span>
+              </div>
+
+              <div class="hc-home__metric">
+                <span class="hc-home__metric-value" data-hc-kpi="countries">{{ countries|default(0, true) }}</span>
+                <span class="hc-home__metric-label">Territoires</span>
+              </div>
+            </div>
+
+            <p class="hc-home__snapshot-sub">
+              Processus structuré • Suivi traçable • Coordination continue
+            </p>
           </div>
         </div>
       </div>
-    {% else %}
-      <div class="col-12">
-        <div class="p-4 rounded-4 border bg-body-tertiary text-body-secondary">
-          {{ _('No requests yet. Be the first to submit one.') }}
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>Fonctionnement structuré</h2>
+        <p>
+          Un cadre clair pour organiser l'orientation et la coordination des situations.
+        </p>
+      </header>
+
+      <div class="hc-home__how-grid">
+        <div class="hc-home__card">
+          <h3>1. Orientation</h3>
+          <p>
+            Classification structurée des situations et qualification initiale.
+          </p>
+        </div>
+
+        <div class="hc-home__card">
+          <h3>2. Coordination</h3>
+          <p>
+            Attribution responsable et suivi continu des interventions.
+          </p>
+        </div>
+
+        <div class="hc-home__card">
+          <h3>3. Pilotage</h3>
+          <p>
+            Indicateurs opérationnels, visibilité et traçabilité des actions.
+          </p>
         </div>
       </div>
-    {% endfor %}
-  </div>
-</section>
-</div>
-{% endblock %}
+    </div>
+  </section>
 
+  <section class="hc-home__positioning">
+    <div class="hc-container">
+      <div class="hc-home__positioning-inner">
+        <div class="hc-home__positioning-copy">
+          <h2>Une infrastructure, pas un annuaire.</h2>
+          <p>
+            HelpChain fournit une couche de coordination destinée aux associations,
+            services publics et réseaux professionnels, avec un cadre structuré et sécurisé.
+          </p>
+        </div>
+
+        <div class="hc-home__positioning-cta">
+          <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.professionnels') }}">
+            Découvrir l'espace professionnel
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

@@ -74,27 +74,9 @@ def _install_slow_sql_logger(app: Flask) -> None:
 
 
 def _locale_selector():
-    # Priority order:
-    # 1) explicit query param (?lang=fr)
-    # 2) session ("lang")
-    # 3) cookie ("hc_lang")
-    # 4) Accept-Language header
-    # 5) default
-
-    q = (request.args.get("lang") or "").lower().strip()
-    if q in SUPPORTED_LOCALES:
-        session["lang"] = q
-        return q
-
-    s = (session.get("lang") or "").lower().strip()
-    if s in SUPPORTED_LOCALES:
-        return s
-
-    c = (request.cookies.get("hc_lang") or "").lower().strip()
-    if c in SUPPORTED_LOCALES:
-        return c
-
-    return request.accept_languages.best_match(SUPPORTED_LOCALES) or DEFAULT_LOCALE
+    # Temporary FR-only public rollout: force a single runtime locale to avoid
+    # mixed UI when legacy session/cookie language state is still present.
+    return "fr"
 
 
 def add_security_headers(app: Flask):

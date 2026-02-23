@@ -904,35 +904,14 @@ def search():
 @main_bp.route("/categories", methods=["GET"])
 @limiter.limit("120 per minute")
 def categories():
-    """Списък с всички категории"""
-    locale_code = (str(babel_get_locale()) or "en").split("_", 1)[0].lower()
+    """Legacy alias for orienter."""
+    return redirect(url_for("main.orienter"), code=301)
 
-    def pick_locale(values):
-        if not isinstance(values, dict):
-            return values
-        return (
-            values.get(locale_code)
-            or values.get("en")
-            or values.get("bg")
-            or next(iter(values.values()), "")
-        )
 
-    items = []
-    for key, value in CATEGORIES.items():
-        items.append(
-            {
-                "slug": key,
-                "name": pick_locale(value.get("content", {}).get("title", {})),
-                "description": pick_locale(value.get("content", {}).get("intro", {})),
-                "icon": value["ui"].get(
-                    "icon", "fa-solid fa-question-circle text-secondary"
-                ),
-                "color": (
-                    "primary" if value["ui"].get("severity") != "critical" else "danger"
-                ),
-            }
-        )
-    return render_template("all_categories.html", categories=items)
+@main_bp.route("/orienter", methods=["GET"])
+@limiter.limit("120 per minute")
+def orienter():
+    return render_template("orienter.html")
 
 
 @main_bp.route("/achievements", methods=["GET"])
@@ -2856,6 +2835,12 @@ def terms():
 def legal():
     # FR-first legal page (Mentions legales + RGPD). Keep content in template.
     return render_template("legal.html")
+
+
+@main_bp.get("/mentions-legales")
+@main_bp.get("/mentions_legales")
+def mentions_legales():
+    return legal()
 
 
 @main_bp.get("/video-chat")
