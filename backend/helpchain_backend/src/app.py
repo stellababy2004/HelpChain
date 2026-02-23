@@ -289,7 +289,7 @@ def create_app(config_object=None) -> Flask:
     mail.init_app(app)
     if app.debug or app.config.get("DEBUG"):
         _install_slow_sql_logger(app)
-    migrate.init_app(app, db)
+    migrate.init_app(app, db, directory="migrations")
 
     # i18n (Babel)
     babel.init_app(app, locale_selector=_locale_selector)
