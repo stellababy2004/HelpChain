@@ -3,11 +3,11 @@ HelpChain Mail Service
 Handles sending notification emails using Flask-Mail
 """
 
+import hashlib
 import logging
 import os
 import smtplib
 import time
-import hashlib
 from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
@@ -35,7 +35,7 @@ def _norm_email(raw: str) -> str:
 
 def _email_hash(email: str) -> str:
     salt = current_app.config.get("MAIL_HASH_SALT") or current_app.config["SECRET_KEY"]
-    return hashlib.sha256((f"{salt}|{email}").encode("utf-8")).hexdigest()
+    return hashlib.sha256((f"{salt}|{email}").encode()).hexdigest()
 
 
 def _client_ip() -> str | None:

@@ -33,8 +33,8 @@ def age_hours(dt):
     if not dt:
         return 9999
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    now = datetime.now(timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
+    now = datetime.now(UTC)
     return (now - dt).total_seconds() / 3600.0
 
 
