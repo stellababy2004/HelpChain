@@ -2092,6 +2092,12 @@ def about():
     return render_template("about.html")
 
 
+@main_bp.get("/gouvernance")
+def gouvernance():
+    # Temporary alias to avoid 500 if templates or old links reference it.
+    return redirect(url_for("main.about"), code=302)
+
+
 def normalize_request_form(form):
     """
     Canonical mapping from HTML form fields -> backend variables.
