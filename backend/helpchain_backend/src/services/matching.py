@@ -41,4 +41,3 @@ def get_matched_requests(volunteer, limit=6):
     scored.sort(key=lambda x: x[1], reverse=True)
 
     return [r[0] for r in scored[:limit]]
-

@@ -18,6 +18,7 @@ def signal_handler(signum, frame):
     print("\n\n🛑 Stopping HelpChain server...")
     sys.exit(0)
 
+
 def _env_str(name: str) -> str | None:
     v = os.environ.get(name)
     if v is None:

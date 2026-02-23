@@ -22,8 +22,5 @@ class VolunteerMatchFeedback(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     __table_args__ = (
-        db.UniqueConstraint(
-            "volunteer_id", "request_id", name="uq_vol_req_feedback"
-        ),
+        db.UniqueConstraint("volunteer_id", "request_id", name="uq_vol_req_feedback"),
     )
-

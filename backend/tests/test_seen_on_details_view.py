@@ -1,5 +1,12 @@
-from backend.helpchain_backend.src.models import Request, User, Volunteer, VolunteerRequestState
-from backend.helpchain_backend.src.notifications.inapp import mark_request_seen_for_volunteer
+from backend.helpchain_backend.src.models import (
+    Request,
+    User,
+    Volunteer,
+    VolunteerRequestState,
+)
+from backend.helpchain_backend.src.notifications.inapp import (
+    mark_request_seen_for_volunteer,
+)
 
 
 def test_mark_request_seen_for_volunteer_sets_seen_at_idempotently(app, session):
@@ -44,7 +51,9 @@ def test_mark_request_seen_for_volunteer_sets_seen_at_idempotently(app, session)
     session.add(state)
     session.commit()
 
-    changed = mark_request_seen_for_volunteer(request_id=req.id, volunteer_id=volunteer.id)
+    changed = mark_request_seen_for_volunteer(
+        request_id=req.id, volunteer_id=volunteer.id
+    )
     assert changed is True
 
     state_after = (
@@ -93,7 +102,9 @@ def test_mark_request_seen_for_volunteer_does_not_create_missing_state(app, sess
     session.add(req)
     session.commit()
 
-    changed = mark_request_seen_for_volunteer(request_id=req.id, volunteer_id=volunteer.id)
+    changed = mark_request_seen_for_volunteer(
+        request_id=req.id, volunteer_id=volunteer.id
+    )
     assert changed is False
 
     state = (

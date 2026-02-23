@@ -160,7 +160,9 @@ def ensure_new_match_notifications(volunteer_id: int, request_rows) -> int:
     return created
 
 
-def mark_notification_opened(notif_id: int, volunteer_id: int) -> tuple[str, int | None]:
+def mark_notification_opened(
+    notif_id: int, volunteer_id: int
+) -> tuple[str, int | None]:
     """
     Canonical open path for volunteer in-app notifications.
     Idempotently marks notification as read/seen and sets request_state.seen_at.
@@ -172,7 +174,9 @@ def mark_notification_opened(notif_id: int, volunteer_id: int) -> tuple[str, int
     if owner_col is None:
         raise RuntimeError("Notification owner column is missing")
 
-    n = Notification.query.filter(owner_col == volunteer_id, Notification.id == notif_id).first()
+    n = Notification.query.filter(
+        owner_col == volunteer_id, Notification.id == notif_id
+    ).first()
     if not n:
         raise LookupError("Notification not found")
 
@@ -207,7 +211,10 @@ def mark_notification_opened(notif_id: int, volunteer_id: int) -> tuple[str, int
         db.session.commit()
 
     if n.request_id:
-        return url_for("main.volunteer_request_details", req_id=n.request_id), n.request_id
+        return (
+            url_for("main.volunteer_request_details", req_id=n.request_id),
+            n.request_id,
+        )
     return url_for("main.volunteer_notifications"), None
 
 
@@ -241,7 +248,9 @@ def send_nudge_notification(
     if existing:
         # Reuse row due unique (volunteer_id, type, request_id) constraint.
         existing.title = "Reminder: please check this request"
-        existing.body = "An admin asked you to review this request and respond when you can."
+        existing.body = (
+            "An admin asked you to review this request and respond when you can."
+        )
         existing.created_at = now
         existing.is_read = False
         existing.read_at = None

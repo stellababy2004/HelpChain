@@ -13,7 +13,7 @@ def app():
         TESTING = True
         SQLALCHEMY_DATABASE_URI = "sqlite://"
         SQLALCHEMY_TRACK_MODIFICATIONS = False
-        SQLALCHEMY_ENGINE_OPTIONS={
+        SQLALCHEMY_ENGINE_OPTIONS = {
             "poolclass": StaticPool,
             "connect_args": {"check_same_thread": False},
         }

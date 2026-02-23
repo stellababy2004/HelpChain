@@ -116,13 +116,11 @@ def add_security_headers(app: Flask):
 
         # CSP enforce policy
         csp_enforce = (
-            "default-src 'self'; "
-            + f"script-src {' '.join(script_src)}; "
+            "default-src 'self'; " + f"script-src {' '.join(script_src)}; "
             "script-src-attr 'none'; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data:; "
-            "font-src 'self'; "
-            + f"connect-src {' '.join(connect_src)}; "
+            "font-src 'self'; " + f"connect-src {' '.join(connect_src)}; "
             "frame-ancestors 'self'; "
             "form-action 'self'; "
             "base-uri 'self'; "
@@ -389,17 +387,25 @@ def create_app(config_object=None) -> Flask:
             app.logger.info("[ALIAS] failed %s -> %s (%s): %s", alias, target, rule, e)
 
     # --- Legacy endpoint aliases (template compatibility) ---
-    _alias_endpoint(app, "volunteer_settings", "main.volunteer_settings", "/volunteer/settings")
+    _alias_endpoint(
+        app, "volunteer_settings", "main.volunteer_settings", "/volunteer/settings"
+    )
     _alias_endpoint(app, "achievements", "main.achievements", "/achievements")
     _alias_endpoint(app, "leaderboard", "main.leaderboard", "/leaderboard")
     _alias_endpoint(app, "my_requests", "main.my_requests", "/my-requests")
     _alias_endpoint(app, "feedback", "main.feedback", "/feedback")
     _alias_endpoint(app, "forgot_password", "main.forgot_password", "/forgot-password")
-    _alias_endpoint(app, "volunteer_register", "main.become_volunteer", "/become_volunteer")
-    _alias_endpoint(app, "become_volunteer", "main.become_volunteer", "/become_volunteer")
+    _alias_endpoint(
+        app, "volunteer_register", "main.become_volunteer", "/become_volunteer"
+    )
+    _alias_endpoint(
+        app, "become_volunteer", "main.become_volunteer", "/become_volunteer"
+    )
     _alias_endpoint(app, "video_chat", "main.video_chat", "/video-chat")
     _alias_endpoint(app, "volunteer_chat", "main.volunteer_chat", "/volunteer/chat")
-    _alias_endpoint(app, "volunteer_reports", "main.volunteer_reports", "/volunteer/reports")
+    _alias_endpoint(
+        app, "volunteer_reports", "main.volunteer_reports", "/volunteer/reports"
+    )
 
     @app.errorhandler(404)
     def not_found(e):

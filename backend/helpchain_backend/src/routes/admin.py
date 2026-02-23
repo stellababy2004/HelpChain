@@ -126,7 +126,9 @@ def _engagement_label(score: int) -> str:
     return "At risk"
 
 
-def get_volunteer_engagement_score(volunteer_id: int, now: datetime | None = None) -> dict:
+def get_volunteer_engagement_score(
+    volunteer_id: int, now: datetime | None = None
+) -> dict:
     """
     Heuristic engagement score per volunteer in range [-10..+10].
     """
@@ -156,7 +158,9 @@ def get_volunteer_engagement_score(volunteer_id: int, now: datetime | None = Non
     else:
         # Compatibility fallback for environments where notified_at migration is missing.
         notif_rows = (
-            db.session.query(Notification.created_at, Notification.read_at, Notification.is_read)
+            db.session.query(
+                Notification.created_at, Notification.read_at, Notification.is_read
+            )
             .filter(Notification.volunteer_id == volunteer_id)
             .filter(Notification.type == "new_match")
             .all()
@@ -265,7 +269,9 @@ def compute_response_metrics(
         return out
 
     state = (
-        db.session.query(VolunteerRequestState.notified_at, VolunteerRequestState.seen_at)
+        db.session.query(
+            VolunteerRequestState.notified_at, VolunteerRequestState.seen_at
+        )
         .filter(VolunteerRequestState.request_id == request_id)
         .filter(VolunteerRequestState.volunteer_id == int(assigned_volunteer_id))
         .first()
@@ -1325,7 +1331,9 @@ def _pctl(values, p: float = 0.9) -> float | None:
     return float(vals[idx])
 
 
-def _sla_outliers_action_7d(first_action_subq, now: datetime, limit: int = 5) -> list[dict]:
+def _sla_outliers_action_7d(
+    first_action_subq, now: datetime, limit: int = 5
+) -> list[dict]:
     cutoff = now - timedelta(days=7)
     delay_expr = func.strftime(
         "%s", first_action_subq.c.first_action_at
@@ -1432,13 +1440,10 @@ def _sla_kpis(
     ) - func.strftime("%s", first_action_subq.c.notified_at)
     avg_first_action = db.session.query(func.avg(action_delta)).scalar()
 
-    under_count, total_count = (
-        db.session.query(
-            func.sum(case((action_delta <= sla_seconds, 1), else_=0)).label("under"),
-            func.count().label("total"),
-        ).first()
-        or (0, 0)
-    )
+    under_count, total_count = db.session.query(
+        func.sum(case((action_delta <= sla_seconds, 1), else_=0)).label("under"),
+        func.count().label("total"),
+    ).first() or (0, 0)
     under_count = int(under_count or 0)
     total_count = int(total_count or 0)
     sla_pct = round((under_count * 100.0 / total_count), 1) if total_count else 0.0
@@ -1576,7 +1581,8 @@ def admin_risk_kpis():
             cutoff = now - timedelta(hours=24)
             not_seen_rows = (
                 db.session.query(
-                    VolunteerRequestState.request_id, func.count(VolunteerRequestState.id)
+                    VolunteerRequestState.request_id,
+                    func.count(VolunteerRequestState.id),
                 )
                 .join(Request, Request.id == VolunteerRequestState.request_id)
                 .filter(VolunteerRequestState.notified_at.isnot(None))
@@ -2589,7 +2595,9 @@ def admin_sla_breakdown():
     if sort == "created":
         rows.sort(key=_created_ts)
     else:
-        rows.sort(key=lambda r: (-(float(r.get("overdue_hours") or 0.0)), _created_ts(r)))
+        rows.sort(
+            key=lambda r: (-(float(r.get("overdue_hours") or 0.0)), _created_ts(r))
+        )
     rows = rows[:limit]
 
     return render_template(
@@ -2721,9 +2729,9 @@ def admin_requests():
                     )
                     .filter(Notification.type == "admin_nudge")
                     .filter(
-                        tuple_(
-                            Notification.request_id, Notification.volunteer_id
-                        ).in_(pairs)
+                        tuple_(Notification.request_id, Notification.volunteer_id).in_(
+                            pairs
+                        )
                     )
                     .all()
                 )
@@ -3221,13 +3229,20 @@ def admin_request_details(req_id: int):
     volunteer_engagement = []
     if linked_volunteer_ids:
         linked_volunteers = {
-            v.id: v for v in Volunteer.query.filter(Volunteer.id.in_(linked_volunteer_ids)).all()
+            v.id: v
+            for v in Volunteer.query.filter(
+                Volunteer.id.in_(linked_volunteer_ids)
+            ).all()
         }
         for v_id in linked_volunteer_ids:
             score_row = get_volunteer_engagement_score(v_id, now=now)
             v = linked_volunteers.get(v_id)
             display = (
-                (getattr(v, "name", None) or getattr(v, "email", None) or f"Volunteer #{v_id}")
+                (
+                    getattr(v, "name", None)
+                    or getattr(v, "email", None)
+                    or f"Volunteer #{v_id}"
+                )
                 if v is not None
                 else f"Volunteer #{v_id}"
             )
@@ -3901,16 +3916,19 @@ def admin_professional_leads():
     )
     professions = [p[0] for p in professions if p and p[0]]
 
-    return render_template(
-        "admin/professional_leads.html",
-        leads=leads,
-        q=q,
-        profession=profession,
-        city=city,
-        status=status,
-        status_choices=status_choices,
-        professions=professions,
-    ), 200
+    return (
+        render_template(
+            "admin/professional_leads.html",
+            leads=leads,
+            q=q,
+            profession=profession,
+            city=city,
+            status=status,
+            status_choices=status_choices,
+            professions=professions,
+        ),
+        200,
+    )
 
 
 @admin_bp.post("/professional-leads/<int:lead_id>/contacted")
@@ -3953,11 +3971,14 @@ def admin_professional_lead_detail(lead_id: int):
             url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303
         )
 
-    return render_template(
-        "admin/professional_lead_detail.html",
-        lead=lead,
-        status_choices=status_choices,
-    ), 200
+    return (
+        render_template(
+            "admin/professional_lead_detail.html",
+            lead=lead,
+            status_choices=status_choices,
+        ),
+        200,
+    )
 
 
 @admin_bp.get("/professionnels/leads")
@@ -3996,12 +4017,15 @@ def admin_pro_access_list():
         "all": ProAccessRequest.query.count(),
     }
 
-    return render_template(
-        "admin/pro_access_list.html",
-        rows=rows,
-        status=status,
-        counts=counts,
-    ), 200
+    return (
+        render_template(
+            "admin/pro_access_list.html",
+            rows=rows,
+            status=status,
+            counts=counts,
+        ),
+        200,
+    )
 
 
 @admin_bp.get("/audit")
@@ -4011,17 +4035,20 @@ def admin_audit():
     entity = (request.args.get("entity") or "all").strip().lower()
     action = (request.args.get("action") or "all").strip().lower()
     q = (request.args.get("q") or "").strip()
-    return render_template(
-        "admin/audit.html",
-        rows=[],
-        pagination=None,
-        entity=entity,
-        action=action,
-        q=q,
-        entities=[],
-        actions=[],
-        total=0,
-    ), 200
+    return (
+        render_template(
+            "admin/audit.html",
+            rows=[],
+            pagination=None,
+            entity=entity,
+            action=action,
+            q=q,
+            entities=[],
+            actions=[],
+            total=0,
+        ),
+        200,
+    )
 
 
 @admin_bp.get("/pro-access/<int:pro_id>")
@@ -4033,14 +4060,19 @@ def admin_pro_access_detail(pro_id: int):
 
     row = ProAccessRequest.query.get_or_404(pro_id)
     audit_logs = []
-    return render_template(
-        "admin/pro_access_detail.html",
-        row=row,
-        audit_logs=audit_logs,
-    ), 200
+    return (
+        render_template(
+            "admin/pro_access_detail.html",
+            row=row,
+            audit_logs=audit_logs,
+        ),
+        200,
+    )
 
 
-def _pro_access_set_status(row: ProAccessRequest, new_status: str, note: str | None = None):
+def _pro_access_set_status(
+    row: ProAccessRequest, new_status: str, note: str | None = None
+):
     old_status = (row.status or "").strip().lower() or None
     row.status = new_status
     row.reviewed_at = utc_now()

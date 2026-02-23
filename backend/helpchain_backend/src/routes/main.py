@@ -1022,9 +1022,12 @@ def become_volunteer():
 
         def _volunteer_magic_ok_response(resend_email: str = ""):
             if wants_json:
-                return jsonify(
-                    {"ok": True, "cooldown_seconds": int(response_cooldown_seconds)}
-                ), 200
+                return (
+                    jsonify(
+                        {"ok": True, "cooldown_seconds": int(response_cooldown_seconds)}
+                    ),
+                    200,
+                )
             safe_email = (
                 (resend_email or session.get("volunteer_magic_email") or "")
                 .strip()
@@ -1043,9 +1046,7 @@ def become_volunteer():
         suppress = False
         suppress_reasons: list[str] = []
         website = (
-            request.form.get("company_fax")
-            or request.form.get("website")
-            or ""
+            request.form.get("company_fax") or request.form.get("website") or ""
         ).strip()
         started_at = (request.form.get("started_at") or "").strip()
         if website:
@@ -1166,11 +1167,17 @@ def become_volunteer():
             context = {
                 "magic_link_url": magic_url,
                 "ttl_minutes": ttl_minutes,
-                "intro_text": _("Sans mot de passe. Recevez un lien sécurisé par e-mail."),
+                "intro_text": _(
+                    "Sans mot de passe. Recevez un lien sécurisé par e-mail."
+                ),
                 "button_text": _("Ouvrir mon lien de connexion"),
-                "fallback_text": _("Si le bouton ne fonctionne pas, copiez-collez ce lien :"),
+                "fallback_text": _(
+                    "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
+                ),
                 "privacy_line": _("Données minimales, respect RGPD"),
-                "ignore_line": _("Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."),
+                "ignore_line": _(
+                    "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
+                ),
             }
 
             try:
@@ -1723,11 +1730,11 @@ def volunteer_request_details(req_id: int):
     try:
         notif_changed = (
             Notification.query.filter_by(
-            volunteer_id=volunteer.id,
-            request_id=req.id,
-            type="new_match",
-            is_read=False,
-        ).update({"is_read": True, "read_at": datetime.utcnow()})
+                volunteer_id=volunteer.id,
+                request_id=req.id,
+                type="new_match",
+                is_read=False,
+            ).update({"is_read": True, "read_at": datetime.utcnow()})
             > 0
         )
         state_changed = mark_request_seen_for_volunteer(
@@ -2242,7 +2249,9 @@ def submit_request():
         )
 
         if errors:
-            current_app.logger.warning("VALIDATION FAIL: submit_request errors=%s", errors)
+            current_app.logger.warning(
+                "VALIDATION FAIL: submit_request errors=%s", errors
+            )
             flash(_("Please correct the errors below."), "warning")
             return (
                 render_template(
@@ -2299,7 +2308,9 @@ def submit_request_confirm():
         # --- Server-side anti-bot + rate-limit for magic link (anti-enumeration) ---
         suppress_magic_send = False
         website = (request.form.get("website") or "").strip()
-        started_at = (request.form.get("started_at") or draft.get("started_at") or "").strip()
+        started_at = (
+            request.form.get("started_at") or draft.get("started_at") or ""
+        ).strip()
 
         if website:
             current_app.logger.info("[MAGIC LINK] honeypot hit -> suppressed send")
@@ -2394,11 +2405,17 @@ def submit_request_confirm():
                     "ttl_minutes": 15,
                     "request_id": req.id,
                     # Email microcopy (i18n)
-                    "intro_text": _("Sans mot de passe. Recevez un lien sécurisé par e-mail."),
+                    "intro_text": _(
+                        "Sans mot de passe. Recevez un lien sécurisé par e-mail."
+                    ),
                     "button_text": _("Ouvrir mon lien de connexion"),
-                    "fallback_text": _("Si le bouton ne fonctionne pas, copiez-collez ce lien :"),
+                    "fallback_text": _(
+                        "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
+                    ),
                     "privacy_line": _("Données minimales, respect RGPD"),
-                    "ignore_line": _("Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."),
+                    "ignore_line": _(
+                        "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
+                    ),
                 }
 
                 send_notification_email(
@@ -2409,7 +2426,9 @@ def submit_request_confirm():
                     purpose="request_magic_link",
                 )
             elif recipient and suppress_magic_send:
-                current_app.logger.info("[MAGIC LINK] send suppressed (antibot/rate-limit)")
+                current_app.logger.info(
+                    "[MAGIC LINK] send suppressed (antibot/rate-limit)"
+                )
         except Exception as e:
             current_app.logger.warning("[EMAIL] magic link send failed: %s", e)
 
@@ -2739,10 +2758,12 @@ def professionnels_pilote():
         existing.phone = phone or existing.phone
         existing.message = (message or "").strip() or existing.message
         existing.locale = (
-            (session.get("lang") or str(babel_get_locale() or "")).strip() or existing.locale
-        )
+            session.get("lang") or str(babel_get_locale() or "")
+        ).strip() or existing.locale
         existing.ip = _client_ip() or existing.ip
-        existing.user_agent = ((request.headers.get("User-Agent") or "")[:255] or existing.user_agent)
+        existing.user_agent = (request.headers.get("User-Agent") or "")[
+            :255
+        ] or existing.user_agent
         existing.source = "professionnels_pilote"
         db.session.commit()
         current_app.logger.info(
@@ -2807,7 +2828,9 @@ def professionnels_pilote():
         else:
             current_app.logger.info("[PRO-LEAD] notify skipped: no PRO_LEADS_NOTIFY_TO")
     except Exception:
-        current_app.logger.exception("[PRO-LEAD] notify email failed lead_id=%s", lead.id)
+        current_app.logger.exception(
+            "[PRO-LEAD] notify email failed lead_id=%s", lead.id
+        )
 
     return render_template("professionnels_pilote_thanks.html", lead=lead), 200
 
@@ -2815,6 +2838,7 @@ def professionnels_pilote():
 @main_bp.route("/success_stories")
 def success_stories():
     return render_template("success_stories.html")
+
 
 @main_bp.route("/contact")
 def contact():

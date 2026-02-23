@@ -121,6 +121,8 @@ def test_risk_notseen_tiers_24_48_72(app, session):
     assert r48.id not in ids72
     assert r72.id in ids72
 
-    q_alias, _status, _q, _risk = build_requests_query(Request.query, {"risk": "notseen"})
+    q_alias, _status, _q, _risk = build_requests_query(
+        Request.query, {"risk": "notseen"}
+    )
     ids_alias = {r.id for r in q_alias.all()}
     assert ids_alias == ids24

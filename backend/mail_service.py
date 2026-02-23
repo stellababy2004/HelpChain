@@ -98,6 +98,7 @@ def _count_sent(email_h: str, purpose: str, window_minutes: int) -> int:
         ).count()
     )
 
+
 def _fallback_email_html(subject: str, context: dict) -> str:
     # Minimal HTML fallback when template is missing or fails to render.
     content = ""
@@ -126,7 +127,9 @@ def utc_now() -> datetime:
     return datetime.now(UTC).replace(tzinfo=None)
 
 
-def send_notification_email(recipient, subject, template, context=None, *, purpose="generic"):
+def send_notification_email(
+    recipient, subject, template, context=None, *, purpose="generic"
+):
     """
     Send notification email to recipient
 
@@ -280,7 +283,9 @@ def send_notification_email(recipient, subject, template, context=None, *, purpo
                         "message_id": message_id,
                     },
                 )
-            logger.info("Email queued successfully | to=%s | subject=%s", recipient, subject)
+            logger.info(
+                "Email queued successfully | to=%s | subject=%s", recipient, subject
+            )
             _log_email_event(
                 email_h=email_h,
                 purpose=purpose,

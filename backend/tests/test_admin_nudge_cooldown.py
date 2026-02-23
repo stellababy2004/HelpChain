@@ -42,8 +42,14 @@ def test_admin_nudge_cooldown_prevents_spam(app, session):
     session.commit()
 
     t0 = datetime.utcnow()
-    assert send_nudge_notification(request_id=req.id, volunteer_id=volunteer.id, now=t0) is True
-    assert send_nudge_notification(request_id=req.id, volunteer_id=volunteer.id, now=t0) is False
+    assert (
+        send_nudge_notification(request_id=req.id, volunteer_id=volunteer.id, now=t0)
+        is True
+    )
+    assert (
+        send_nudge_notification(request_id=req.id, volunteer_id=volunteer.id, now=t0)
+        is False
+    )
     assert (
         send_nudge_notification(
             request_id=req.id,

@@ -314,7 +314,9 @@ def get_matched_requests_v1(
     cached = _MATCH_CACHE.get(key)
     if cached and cached[0] > now_ts:
         req_ids = [rid for rid, _, _ in cached[1]]
-        req_rows = Request.query.filter(Request.id.in_(req_ids)).all() if req_ids else []
+        req_rows = (
+            Request.query.filter(Request.id.in_(req_ids)).all() if req_ids else []
+        )
         by_id = {r.id: r for r in req_rows}
         hydrated: list[tuple[Request, int, dict]] = []
         for rid, pct, breakdown in cached[1]:
@@ -324,9 +326,8 @@ def get_matched_requests_v1(
         if hydrated:
             return hydrated[: int(limit)]
 
-    q = (
-        Request.query.filter(Request.deleted_at.is_(None))
-        .filter(Request.is_archived.is_(False))
+    q = Request.query.filter(Request.deleted_at.is_(None)).filter(
+        Request.is_archived.is_(False)
     )
     now = _now()
     dismiss_filter_applied = False
@@ -370,9 +371,8 @@ def get_matched_requests_v1(
         # Some SQLite setups raise only at execution time.
         db.session.rollback()
         if dismiss_filter_applied:
-            q_fallback = (
-                Request.query.filter(Request.deleted_at.is_(None))
-                .filter(Request.is_archived.is_(False))
+            q_fallback = Request.query.filter(Request.deleted_at.is_(None)).filter(
+                Request.is_archived.is_(False)
             )
             if vloc:
                 like = f"%{vloc}%"

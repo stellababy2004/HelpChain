@@ -18,4 +18,3 @@ class MagicLinkToken(db.Model):
 
     used_ip = db.Column(db.String(64), nullable=True)
     used_ua = db.Column(db.String(255), nullable=True)
-

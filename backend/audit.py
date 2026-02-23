@@ -43,9 +43,8 @@ def log_activity(
 
     if actor_email is None:
         try:
-            actor_email = (
-                getattr(current_user, "email", None)
-                or getattr(current_user, "username", None)
+            actor_email = getattr(current_user, "email", None) or getattr(
+                current_user, "username", None
             )
         except Exception:
             actor_email = None
