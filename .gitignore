@@ -198,3 +198,8 @@ tmp_*
 
 check_*.py
 top_bad_endpoints.py
+
+# local dev artifacts
+.dev/
+*_write_test*
+*.db-journal
