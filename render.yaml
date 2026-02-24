@@ -3,7 +3,7 @@ services:
     name: helpchain
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "set -e; export FLASK_DEBUG=1; export PYTHONUNBUFFERED=1; export SQLALCHEMY_ECHO=1; pwd; ls -la; ls -la migrations || true; ls -la migrations/versions || true; flask --app run:app db current --directory migrations || true; flask --app run:app db heads --directory migrations || true; flask --app run:app db upgrade --directory migrations -v; gunicorn run:app --bind 0.0.0.0:$PORT"
+    startCommand: "set -euo pipefail; set -x; pwd; ls -la; ls -la migrations || true; python -V; export PYTHONUNBUFFERED=1; export FLASK_DEBUG=1; flask --app run:app db upgrade --directory migrations -v 2>&1; gunicorn run:app --bind 0.0.0.0:$PORT"
     region: frankfurt
     envVars:
       - key: FLASK_ENV
