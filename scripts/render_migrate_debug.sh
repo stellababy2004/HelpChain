@@ -26,7 +26,7 @@ ctx.push()
 from backend.helpchain_backend.src.extensions import db
 
 rows = db.session.execute(text("SELECT version_num FROM alembic_version")).fetchall()
-print(rows)
+print(f"ALEMBIC_VERSION_ROWS={rows} ALEMBIC_VERSION_COUNT={len(rows)}")
 PYCODE
 cat /tmp/alembic_version.log || true
 echo "ALEMBIC_VERSION_EXIT=$alembic_ver_rc"
