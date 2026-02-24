@@ -3,7 +3,7 @@ services:
     name: helpchain
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python -c \"from run import app; app.app_context().push(); from backend.helpchain_backend.src.extensions import db; print('DB_URL=', db.engine.url)\" && flask --app run:app db current --directory migrations && flask --app run:app db heads --directory migrations && flask --app run:app db upgrade --directory migrations && flask --app run:app db current --directory migrations && gunicorn run:app --bind 0.0.0.0:$PORT"
+    startCommand: "set -e; pwd; ls -la; ls -la migrations || true; flask --app run:app db upgrade --directory migrations; gunicorn run:app --bind 0.0.0.0:$PORT"
     region: frankfurt
     envVars:
       - key: FLASK_ENV
