@@ -3,7 +3,7 @@ services:
     name: helpchain
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "bash -lc 'set -e; echo \"=== START CMD ===\"; pwd; ls -la; ls -la migrations || true; ls -la migrations/versions || true; python -V; echo \"=== RUN MIGRATIONS (capture logs) ===\"; flask --app run:app db upgrade --directory migrations -v > /tmp/migrate.log 2>&1 || true; echo \"=== MIGRATE.LOG (always print) ===\"; tail -n 200 /tmp/migrate.log || true; grep -qiE \"traceback|error|exception|failed|cant locate|duplicate|undefined|psycopg|alembic\" /tmp/migrate.log && exit 1 || true; echo \"=== START GUNICORN ===\"; exec gunicorn run:app --bind 0.0.0.0:$PORT'"
+    startCommand: "python -m flask --app run:app db upgrade --directory migrations && gunicorn run:app --bind 0.0.0.0:$PORT"
     region: frankfurt
     envVars:
       - key: FLASK_ENV
