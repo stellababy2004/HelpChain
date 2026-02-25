@@ -21,7 +21,12 @@ from backend.models import AdminUser
 
 load_dotenv()
 
-SUPPORTED_LOCALES = ("bg", "fr", "en")
+SUPPORTED_LOCALES = (
+    "fr", "en", "es", "it", "de", "ar", "br", "ca", "cs", "co", "cy", "da",
+    "et", "eu", "sw", "mfe", "lv", "lb", "lt", "hu", "nl", "no", "oc", "pl",
+    "pt", "ro", "sk", "sl", "fi", "sv", "vi", "tr", "el", "bg", "ru", "uk",
+    "yi", "he", "ps", "hi", "th", "ko", "zh", "ja",
+)
 DEFAULT_LOCALE = "fr"
 
 # Guard against duplicate SQLAlchemy event registration under the dev reloader.
@@ -74,10 +79,25 @@ def _install_slow_sql_logger(app: Flask) -> None:
 
 
 def _locale_selector():
-    # TEMP: FR-first launch phase (public + ops). Re-enable locale selection + switcher later.
-    # Temporary FR-only public rollout: force a single runtime locale to avoid
-    # mixed UI when legacy session/cookie language state is still present.
-    return "fr"
+    # Honor explicit user choice first, but only for locales we actually ship.
+    candidates = [
+        (session.get("lang") or "").strip().lower(),
+        (request.cookies.get("hc_lang") or "").strip().lower(),
+    ]
+    for cand in candidates:
+        if cand in SUPPORTED_LOCALES:
+            return cand
+        short = cand.split("-")[0] if cand else ""
+        if short in SUPPORTED_LOCALES:
+            return short
+
+    try:
+        best = request.accept_languages.best_match(SUPPORTED_LOCALES)
+        if best:
+            return best
+    except Exception:
+        pass
+    return DEFAULT_LOCALE
 
 
 def add_security_headers(app: Flask):
@@ -197,6 +217,15 @@ def create_app(config_object=None) -> Flask:
             app.config.from_object(_Cfg)
     except Exception:
         pass
+
+    if env_name in ("prod", "production") and app.config.get(
+        "VOLUNTEER_DEV_BYPASS_ENABLED"
+    ):
+        app.logger.warning(
+            "[SECURITY] Forcing VOLUNTEER_DEV_BYPASS_ENABLED=False in production"
+        )
+        app.config["VOLUNTEER_DEV_BYPASS_ENABLED"] = False
+        app.config["VOLUNTEER_DEV_BYPASS_EMAIL"] = ""
 
     app.logger.warning(
         "[ENV] PUBLIC_BASE_URL=%r | TRUST_PROXY_HEADERS=%r",

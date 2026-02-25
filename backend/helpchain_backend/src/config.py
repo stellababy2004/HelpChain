@@ -162,3 +162,6 @@ class DevConfig(Config):
 
 class ProdConfig(Config):
     SESSION_COOKIE_SECURE = True
+    # Never allow volunteer dev bypass in production, even if env var is set.
+    VOLUNTEER_DEV_BYPASS_ENABLED = False
+    VOLUNTEER_DEV_BYPASS_EMAIL = ""
