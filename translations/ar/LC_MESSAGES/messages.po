@@ -1,0 +1,2960 @@
+# Arabic translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-02-24 23:27+0100\n"
+"PO-Revision-Date: 2026-02-24 13:46+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ar\n"
+"Language-Team: ar <LL@li.org>\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=0 && n%100<=2 ?"
+" 4 : 5);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: backend/appy_with_analytics.py:619
+msgid "Доброволецът е добавен успешно!"
+msgstr "ДоброволецENDт е добавен успеной!"
+
+#: backend/helpchain_backend/src/copy.py:15
+msgid "HelpChain"
+msgstr "مساعدة تشاين"
+
+#: backend/helpchain_backend/src/copy.py:18
+msgid "Подай заявка за помощ"
+msgstr "Подай заявка за помоно"
+
+#: backend/helpchain_backend/src/copy.py:20
+msgid "Попълни формата и екипът ни ще се свърже с теб възможно най-бързо."
+msgstr "Поп Antonioлни 国ормата и екип Antonioт ни TEDе се се свйрже с теб вnoteзможно най-брзо."
+
+#: backend/helpchain_backend/src/copy.py:22
+msgid "Изпрати заявката"
+msgstr "прати заявката"
+
+#: backend/helpchain_backend/src/copy.py:25
+msgid "Категории помощ"
+msgstr "атегори помо"
+
+#: backend/helpchain_backend/src/routes/main.py:549
+msgid "Your session has been cleared."
+msgstr "لقد تم تصفية دورتك"
+
+#: backend/helpchain_backend/src/routes/main.py:817 templates/dashboard_helper.html:25
+#: templates/dashboard_requester.html:28 templates/profile_requester.html:56 templates/submit_request.html:54
+msgid "Request"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:951
+msgid "If the email is valid, you will receive a login link."
+msgstr "إذا كانت الرسالة صحيحة، سوف تحصل على وصلة لوغاريت."
+
+#: backend/helpchain_backend/src/routes/main.py:1171 backend/helpchain_backend/src/routes/main.py:2415
+msgid "Sans mot de passe. Recevez un lien sécurisé par e-mail."
+msgstr "لا كلمة سر A secure link by e-mail (valid 15 minutes)."
+
+#: backend/helpchain_backend/src/routes/main.py:1173 backend/helpchain_backend/src/routes/main.py:2417
+msgid "Ouvrir mon lien de connexion"
+msgstr "أفتح وصلتي"
+
+#: backend/helpchain_backend/src/routes/main.py:1175 backend/helpchain_backend/src/routes/main.py:2419
+msgid "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
+msgstr "إذا لم يفلح الزر، نسمع ونعال هذه الرابط:"
+
+#: backend/helpchain_backend/src/routes/main.py:1177 backend/helpchain_backend/src/routes/main.py:2421
+msgid "Données minimales, respect RGPD"
+msgstr "البيانات الدنيا، امتثال الناتج المحلي الإجمالي"
+
+#: backend/helpchain_backend/src/routes/main.py:1179 backend/helpchain_backend/src/routes/main.py:2423
+msgid "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
+msgstr "إذا لم تكن منشأ هذا الطلب، تجاهل هذا البريد الإلكتروني."
+
+#: backend/helpchain_backend/src/routes/main.py:1259
+msgid "You're all set! You can now see requests where your help matters."
+msgstr "جميعكم جاهزون يمكنك الآن رؤية الطلبات التي تهم مساعدتك"
+
+#: backend/helpchain_backend/src/routes/main.py:1846 backend/helpchain_backend/src/routes/main.py:1901
+#: backend/helpchain_backend/src/routes/main.py:1920
+msgid "Got it. Your signal was sent to the team."
+msgstr "فهمت لقد أرسلت إشارتك إلى الفريق"
+
+#: backend/helpchain_backend/src/routes/main.py:2139
+msgid "Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."
+msgstr "يرجى قبول سياسة الخصوصية لمواصلة تنفيذها."
+
+#: backend/helpchain_backend/src/routes/main.py:2152
+msgid "Please shorten the text."
+msgstr "يرجى تقصير النص."
+
+#: backend/helpchain_backend/src/routes/main.py:2154
+#, python-format
+msgid "Please shorten the %(field)s."
+msgstr "الرجاء اختصار %(field)s."
+
+#: backend/helpchain_backend/src/routes/main.py:2163
+msgid "Invalid characters detected."
+msgstr "كشفت شخصيات غير صالحة"
+
+#: backend/helpchain_backend/src/routes/main.py:2166
+msgid "Моля, въведете име (поне 2 символа)."
+msgstr "يرجى إدراج اسم (شخصان على الأقل)."
+
+#: backend/helpchain_backend/src/routes/main.py:2169
+msgid "Моля, опишете проблема (поне 10 символа)."
+msgstr "يرجى وصف المشكلة (على الأقل 10 خصائص)."
+
+#: backend/helpchain_backend/src/routes/main.py:2172
+msgid "Моля, въведете поне телефон или имейл."
+msgstr "يرجى الدخول على الأقل هاتف واحد أو بريد إلكتروني."
+
+#: backend/helpchain_backend/src/routes/main.py:2178
+msgid "Please select a valid category."
+msgstr "يرجى اختيار فئة صالحة."
+
+#: backend/helpchain_backend/src/routes/main.py:2182
+msgid "Please select a valid urgency."
+msgstr "الرجاء اختيار حالة طوارئ صحيحة."
+
+#: backend/helpchain_backend/src/routes/main.py:2216 backend/helpchain_backend/src/routes/main.py:2299
+msgid "Verified volunteers only"
+msgstr "متطوعون مصدقون فقط"
+
+#: backend/helpchain_backend/src/routes/main.py:2217 backend/helpchain_backend/src/routes/main.py:2300
+msgid "Fast matching - no bureaucracy"
+msgstr "تطابق سريع لا بيروقراطية"
+
+#: backend/helpchain_backend/src/routes/main.py:2218 backend/helpchain_backend/src/routes/main.py:2301
+msgid "We keep your data private"
+msgstr "نبقي بياناتك سرية"
+
+#: backend/helpchain_backend/src/routes/main.py:2261
+msgid "Please correct the errors below."
+msgstr "يرجى تصحيح الأخطاء الواردة أدناه."
+
+#: backend/helpchain_backend/src/routes/main.py:2274
+#, python-format
+msgid "Заявка: %(category)s"
+msgstr "الطلب: %(category)s"
+
+#: backend/helpchain_backend/src/routes/main.py:2276
+msgid "Заявка за помощ"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:2310
+msgid "Сесията изтече. Моля, подай заявката отново."
+msgstr "انتهت الدورة. يرجى إعادة تقديم الطلب."
+
+#: templates/about.html:3 templates/base.html:816
+msgid "À propos"
+msgstr "بشأن"
+
+#: templates/about.html:13
+msgid "À propos de HelpChain"
+msgstr ""
+
+#: templates/about.html:15
+msgid ""
+"HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en "
+"charge des situations sociales."
+msgstr ""
+
+#: templates/about.html:24 templates/all_categories.html:77 templates/orienter.html:57 templates/submit_request.html:4
+msgid "Déposer une demande"
+msgstr "التطبيق"
+
+#: templates/about.html:31 templates/home_new_slim.html:24 templates/orienter.html:3 templates/orienter.html:11
+msgid "Orienter une demande"
+msgstr "توجيه الطلب"
+
+#: templates/about.html:36 templates/about.html:140 templates/orienter.html:86
+msgid "Conformité RGPD"
+msgstr ""
+
+#: templates/about.html:36 templates/about.html:147
+msgid "Hébergement européen"
+msgstr ""
+
+#: templates/about.html:36
+msgid "Traçabilité opérationnelle"
+msgstr ""
+
+#: templates/about.html:42
+msgid "Conçu et opéré depuis la France."
+msgstr ""
+
+#: templates/about.html:44
+msgid "Infrastructure à vocation européenne."
+msgstr ""
+
+#: templates/about.html:50
+msgid "Repères"
+msgstr ""
+
+#: templates/about.html:52
+msgid "Approche"
+msgstr ""
+
+#: templates/about.html:53
+msgid "Structurée"
+msgstr ""
+
+#: templates/about.html:56
+msgid "Pilotage"
+msgstr ""
+
+#: templates/about.html:57
+msgid "Opérationnel"
+msgstr ""
+
+#: templates/about.html:60
+msgid "Conformité"
+msgstr ""
+
+#: templates/about.html:61
+msgid "RGPD"
+msgstr ""
+
+#: templates/about.html:72
+msgid "Notre mission"
+msgstr ""
+
+#: templates/about.html:74
+msgid "Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable."
+msgstr ""
+
+#: templates/about.html:80
+msgid "Orientation claire"
+msgstr ""
+
+#: templates/about.html:82
+msgid "Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé."
+msgstr ""
+
+#: templates/about.html:87
+msgid "Coordination traçable"
+msgstr ""
+
+#: templates/about.html:89
+msgid "Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions."
+msgstr ""
+
+#: templates/about.html:94
+msgid "Pilotage opérationnel"
+msgstr ""
+
+#: templates/about.html:96
+msgid "Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement."
+msgstr ""
+
+#: templates/about.html:104
+msgid "Pour qui"
+msgstr ""
+
+#: templates/about.html:106
+msgid ""
+"HelpChain est pensé pour les organisations et acteurs territoriaux qui ont besoin d’un dispositif fiable de "
+"coordination."
+msgstr ""
+
+#: templates/about.html:113
+msgid "Associations"
+msgstr ""
+
+#: templates/about.html:113
+msgid "structuration des parcours, suivi et coordination multi-intervenants."
+msgstr ""
+
+#: templates/about.html:114
+msgid "Services publics"
+msgstr ""
+
+#: templates/about.html:114
+msgid "orientation, traçabilité et pilotage des prises en charge."
+msgstr ""
+
+#: templates/about.html:115
+msgid "Réseaux professionnels"
+msgstr ""
+
+#: templates/about.html:115
+msgid "coordination de l’intervention et continuité opérationnelle."
+msgstr ""
+
+#: templates/about.html:121
+msgid "Ce que HelpChain n’est pas"
+msgstr ""
+
+#: templates/about.html:123
+msgid ""
+"Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est une couche de coordination, avec des "
+"processus et de la gouvernance."
+msgstr ""
+
+#: templates/about.html:132
+msgid "Sécurité & conformité"
+msgstr ""
+
+#: templates/about.html:134
+msgid "Une base institutionnelle : conformité, contrôle et responsabilité."
+msgstr ""
+
+#: templates/about.html:142
+msgid "Minimisation des données, finalités explicites et gestion des accès."
+msgstr ""
+
+#: templates/about.html:149
+msgid "Données hébergées en Europe, avec une approche orientée sécurité."
+msgstr ""
+
+#: templates/about.html:154
+msgid "Traçabilité"
+msgstr ""
+
+#: templates/about.html:156
+msgid "Journalisation des actions clés, visibilité sur les délais et la prise en charge."
+msgstr ""
+
+#: templates/about.html:164
+msgid "Notre vision"
+msgstr ""
+
+#: templates/about.html:166
+msgid "Une coordination efficace repose sur la structure, la responsabilité et la transparence — pas sur l’improvisation."
+msgstr ""
+
+#: templates/about.html:175
+msgid "Commencer"
+msgstr ""
+
+#: templates/about.html:182 templates/home_new_slim.html:30
+msgid "Espace professionnel"
+msgstr ""
+
+#: templates/admin_analytics.html:132
+msgid "Export JSON"
+msgstr "Export JSON"
+
+#: templates/admin_analytics.html:135
+msgid "Export CSV"
+msgstr "Export CSV"
+
+#: templates/admin/requests.html:12 templates/admin_analytics.html:683
+msgid "⚠️ This export contains personal data."
+msgstr "هذا التصدير يحتوي على بيانات شخصية"
+
+#: templates/admin/requests.html:13 templates/admin_analytics.html:684
+msgid "Internal use only."
+msgstr "الاستخدام الداخلي فقط"
+
+#: templates/admin/requests.html:15 templates/admin_analytics.html:686
+msgid "Are you sure you want to continue?"
+msgstr "هل أنت متأكد أنك تريد الاستمرار؟"
+
+#: templates/admin_dashboard.html:2
+msgid "Admin panel"
+msgstr "فريق الخبراء"
+
+#: templates/admin_dashboard.html:12
+msgid "Pending"
+msgstr "تنتهي"
+
+#: templates/admin_dashboard.html:14
+msgid "In progress"
+msgstr "قيد التنفيذ"
+
+#: templates/admin_dashboard.html:16
+msgid "Completed"
+msgstr "مكتملة"
+
+#: templates/admin_dashboard.html:18
+msgid "Cancelled"
+msgstr "ألغيت"
+
+#: templates/admin_dashboard.html:20
+msgid "Unknown"
+msgstr "غير معروف"
+
+#: templates/admin_dashboard.html:27
+msgid "Admin dashboard"
+msgstr "لوحة بيانات"
+
+#: templates/admin_dashboard.html:39 templates/pilot_dashboard.html:29
+msgid "Total requests"
+msgstr "مجموع الطلبات"
+
+#: templates/admin_dashboard.html:48
+msgid "Pending requests"
+msgstr "الطلبات المعلقة"
+
+#: templates/admin_dashboard.html:57
+msgid "Total volunteers"
+msgstr "مجموع المتطوعين"
+
+#: templates/admin_dashboard.html:196
+msgid "Requests by city (Top 10)"
+msgstr "الطلبات المقدمة من المدينة (الباب 10)"
+
+#: templates/admin_dashboard.html:209
+msgid "📈 Requests trend (last 30 days)"
+msgstr ") تطلب الاتجاه (آخر 30 يوما)"
+
+#: templates/admin_dashboard.html:225
+msgid "Общо заявки"
+msgstr "по заявки"
+
+#: templates/admin_dashboard.html:233
+msgid "Чакащи"
+msgstr "Сакакаки"
+
+#: templates/admin_dashboard.html:241 templates/volunteer_dashboard.html:334 templates/volunteer_request_details.html:80
+msgid "В процес"
+msgstr "В процес"
+
+#: templates/admin_dashboard.html:249 templates/admin_dashboard.html:317
+msgid "Доброволци"
+msgstr "Доброволци"
+
+#: templates/admin_dashboard.html:257
+msgid "Заявки"
+msgstr "Заявки"
+
+#: templates/admin_dashboard.html:263 templates/admin_dashboard.html:323
+msgid "Име"
+msgstr "пе"
+
+#: templates/admin_dashboard.html:264 templates/submit_request.html:190 templates/volunteer_request_details.html:64
+msgid "Описание"
+msgstr "Описание"
+
+#: templates/admin_dashboard.html:265
+msgid "Статус"
+msgstr "Статус"
+
+#: templates/admin_dashboard.html:266
+msgid "История"
+msgstr "пория"
+
+#: templates/admin_dashboard.html:267 templates/admin_roles.html:103 templates/admin_roles.html:184
+#: templates/admin_volunteers.html:289 templates/dashboard.html:267
+msgid "Actions"
+msgstr "الإخطارات المتعلقة بالدفع"
+
+#: templates/admin_dashboard.html:276
+msgid "Без име"
+msgstr "ulfез име"
+
+#: templates/admin_dashboard.html:277
+msgid "Без описание"
+msgstr "ulfез описание"
+
+#: templates/admin_dashboard.html:296
+msgid "No history"
+msgstr "لا تاريخ"
+
+#: templates/admin_dashboard.html:300
+#, python-format
+msgid "Actions for request %(id)s"
+msgstr "إجراءات للطلب %(id)s"
+
+#: templates/admin_dashboard.html:310
+msgid "Няма намерени заявки"
+msgstr "Сяма намерени заявки"
+
+#: templates/admin_dashboard.html:324 templates/submit_request.html:117
+msgid "Имейл"
+msgstr "TRIмейл"
+
+#: templates/admin_dashboard.html:325 templates/submit_request.html:103
+msgid "Телефон"
+msgstr "Institutеленоон"
+
+#: templates/admin_dashboard.html:326 templates/volunteer_profile.html:136
+msgid "Локация"
+msgstr "Émaкация"
+
+#: templates/admin_dashboard.html:327 templates/volunteer_profile.html:142
+msgid "Умения"
+msgstr "MITED"
+
+#: templates/admin_dashboard.html:345
+msgid "Няма"
+msgstr "Сяма"
+
+#: templates/admin_dashboard.html:352
+msgid "Няма намерени доброволци"
+msgstr "Сяма намерени доброволци"
+
+#: templates/all_categories.html:2
+msgid "Help categories - HelpChain"
+msgstr "فئات المساعدة"
+
+#: templates/all_categories.html:16
+msgid "Catégories d'aide"
+msgstr ""
+
+#: templates/all_categories.html:17
+msgid "Dites-nous de quoi vous avez besoin — on s'occupe du reste."
+msgstr "قل لنا ما تحتاجه - نحن نعتني بالباقي."
+
+#: templates/all_categories.html:25
+msgid "J’ai besoin d’aide"
+msgstr "أحتاج للمساعدة"
+
+#: templates/all_categories.html:33
+msgid "Je veux aider"
+msgstr "أريد المساعدة"
+
+#: templates/all_categories.html:56
+msgid "Demander de l’aide"
+msgstr "طلب المساعدة"
+
+#: templates/all_categories.html:58 templates/submit_request.html:64
+msgid "Ça prend ~2 minutes"
+msgstr ""
+
+#: templates/all_categories.html:69
+msgid "Besoin d’aide ?"
+msgstr "هل تحتاج مساعدة؟"
+
+#: templates/all_categories.html:70
+msgid "Déposez une demande — nous trouverons une personne pour vous répondre."
+msgstr "تطبيقي - نحن سنجد شخص ما للرد عليك."
+
+#: templates/all_categories.html:85
+msgid "Vous voulez aider ?"
+msgstr "هل تريد المساعدة؟"
+
+#: templates/all_categories.html:86
+msgid "Rejoignez notre communauté de bénévoles."
+msgstr ""
+
+#: templates/all_categories.html:93
+msgid "Devenir bénévole"
+msgstr "كوني متطوعة"
+
+#: templates/all_categories.html:101
+msgid "Retour à l’accueil"
+msgstr "العودة إلى الاستقبال"
+
+#: templates/base.html:9 templates/base.html:14 templates/base.html:25
+msgid ""
+"Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation "
+"européenne."
+msgstr "توجه منظم، تنسيق يمكن تتبعه، توجيه مسؤول. صممت وعملت من فرنسا، بدعوى أوروبية."
+
+#: templates/base.html:13 templates/base.html:24
+msgid "HelpChain - Infrastructure numérique de coordination"
+msgstr "الهياكل الأساسية للتنسيق الرقمي"
+
+#: templates/base.html:58
+msgid "Skip to main content"
+msgstr "Skip to main content"
+
+#: templates/base.html:133
+msgid "Toggle navigation"
+msgstr "الملاحة"
+
+#: templates/base.html:143 templates/base.html:144 templates/base.html:351
+msgid "Language"
+msgstr "اللغة"
+
+#: templates/admin/requests.html:25 templates/base.html:159
+msgid "Home"
+msgstr "البيت"
+
+#: templates/base.html:164
+msgid "Orienter"
+msgstr ""
+
+#: templates/base.html:169
+msgid "About"
+msgstr "بشأن"
+
+#: templates/base.html:174 templates/professionnels.html:2
+msgid "Professionnels"
+msgstr ""
+
+#: templates/base.html:181
+msgid "Pilot (KPI)"
+msgstr "Pilot (KPI)"
+
+#: templates/base.html:182
+msgid "LIVE"
+msgstr "الحياة"
+
+#: templates/base.html:188 templates/magic_link_invalid.html:13
+msgid "Submit a request"
+msgstr "تقديم الطلب"
+
+#: templates/admin/requests.html:2 templates/base.html:195
+msgid "Admin"
+msgstr "Admin"
+
+#: templates/base.html:222 templates/base.html:292
+msgid "Logout"
+msgstr "Logout"
+
+#: templates/base.html:229
+msgid "My dashboard"
+msgstr "لوحتي"
+
+#: templates/base.html:239 templates/base.html:253 templates/base.html:333 templates/volunteer_dashboard.html:113
+#: templates/volunteer_notifications.html:2 templates/volunteer_notifications.html:8
+msgid "Notifications"
+msgstr "الإخطارات المتعلقة بالدفع"
+
+#: templates/base.html:244
+msgid "unread notifications"
+msgstr ""
+
+#: templates/base.html:255
+msgid "View all"
+msgstr ""
+
+#: templates/base.html:259
+msgid "No notifications"
+msgstr ""
+
+#: templates/base.html:260
+msgid "When you get matched, you'll see it here."
+msgstr "عندما تُصبحُ مطابق، أنت سَتَراه هنا."
+
+#: templates/base.html:269
+msgid "Notification"
+msgstr ""
+
+#: templates/base.html:270 templates/volunteer_notifications.html:44
+msgid "New"
+msgstr "جديدة"
+
+#: templates/base.html:275
+msgid "Mark as seen & open"
+msgstr "مارك كما يُرى مفتوحاً"
+
+#: templates/base.html:285 templates/base.html:782 templates/profile_requester.html:2
+msgid "Profile"
+msgstr "Profile"
+
+#: templates/base.html:308
+msgid "Search…"
+msgstr ""
+
+#: templates/admin/requests.html:136 templates/base.html:309 templates/base.html:312 templates/search_results.html:2
+#: templates/search_results.html:7 templates/search_results.html:14 templates/search_results.html:15
+#: templates/search_results.html:17
+msgid "Search"
+msgstr "البحث"
+
+#: templates/base.html:327
+msgid "Toggle theme"
+msgstr "الموضوع المحوري"
+
+#: templates/base.html:352 templates/base.html:447 templates/volunteer_dashboard.html:246
+#: templates/volunteer_dashboard.html:713
+msgid "Close"
+msgstr ""
+
+#: templates/base.html:403
+msgid "Accessibility settings"
+msgstr "باء - ظروف الوصول"
+
+#: templates/base.html:427
+msgid "Accessibility menu"
+msgstr ""
+
+#: templates/base.html:442 templates/base.html:443
+msgid "Toggle accessibility settings"
+msgstr ""
+
+#: templates/base.html:453
+msgid "Accessibility"
+msgstr ""
+
+#: templates/base.html:455
+msgid "Adjust readability and motion. Settings are saved on this device."
+msgstr "فقط الوصول والحركة. تم إنقاذ المنصات على هذا الجهاز"
+
+#: templates/base.html:466 templates/base.html:470
+msgid "No options enabled"
+msgstr "No options enabledd"
+
+#: templates/base.html:467
+msgid "1 option enabled"
+msgstr "خيار مُتاح"
+
+#: templates/base.html:468
+#, python-brace-format
+msgid "{count} options enabled"
+msgstr "HC PH"
+
+#: templates/base.html:469
+msgid "Accessibility paused"
+msgstr ""
+
+#: templates/base.html:474 templates/base.html:477
+msgid "Following system"
+msgstr "النظام"
+
+#: templates/base.html:475
+msgid "Power off"
+msgstr ""
+
+#: templates/base.html:480
+msgid "Accessibility sections"
+msgstr ""
+
+#: templates/base.html:483
+msgid "Display"
+msgstr ""
+
+#: templates/base.html:487
+msgid "Navigation"
+msgstr ""
+
+#: templates/base.html:497 templates/base.html:650 templates/base.html:669 templates/base.html:743
+msgid "Translations"
+msgstr ""
+
+#: templates/base.html:501
+msgid "Audio"
+msgstr ""
+
+#: templates/base.html:505
+msgid "Motor"
+msgstr ""
+
+#: templates/base.html:509
+msgid "Eco"
+msgstr ""
+
+#: templates/base.html:513
+msgid "More"
+msgstr ""
+
+#: templates/base.html:520
+msgid "Display & reading"
+msgstr ""
+
+#: templates/base.html:521
+msgid "Improve readability and visual comfort"
+msgstr ""
+
+#: templates/base.html:527
+msgid "High contrast"
+msgstr ""
+
+#: templates/base.html:528
+msgid "Increase visual contrast across the interface"
+msgstr "زيادة التناقض البصري عبر الواجهة"
+
+#: templates/base.html:536 templates/base.html:539
+msgid "Text size"
+msgstr "حجم النص"
+
+#: templates/base.html:537
+msgid "Choose a comfortable reading size"
+msgstr "اختر حجم القراءة المريح"
+
+#: templates/base.html:540
+msgid "Normal"
+msgstr "بريدك الإلكتروني"
+
+#: templates/base.html:541
+msgid "Large"
+msgstr "رقيب"
+
+#: templates/base.html:542
+msgid "Extra large"
+msgstr "خارج النطاق"
+
+#: templates/base.html:550
+msgid "Dyslexia-friendly font"
+msgstr "(ديسليكسيا)"
+
+#: templates/base.html:551
+msgid "Use a clearer fallback font stack with increased spacing"
+msgstr "استعملي كومة من الخيوط الواضحة مع زيادة المباعدة"
+
+#: templates/base.html:560
+msgid "Navigation comfort"
+msgstr ""
+
+#: templates/base.html:561
+msgid "Reduce distraction and simplify movement across pages"
+msgstr ""
+
+#: templates/base.html:564
+msgid "Navigation profiles"
+msgstr ""
+
+#: templates/base.html:568
+msgid "Reading comfort"
+msgstr ""
+
+#: templates/base.html:569
+msgid "Larger text with cleaner reading spacing"
+msgstr ""
+
+#: templates/base.html:571 templates/base.html:578 templates/base.html:585 templates/dashboard_helper.html:43
+#: templates/pilot_dashboard.html:34
+msgid "Open"
+msgstr "مفتوح"
+
+#: templates/base.html:576
+msgid "High contrast and larger text for central vision comfort"
+msgstr ""
+
+#: templates/base.html:583
+msgid "Extra-large text and simplified visuals for easier reading"
+msgstr ""
+
+#: templates/base.html:590
+msgid "Visual presets"
+msgstr ""
+
+#: templates/base.html:593
+msgid "Balanced"
+msgstr ""
+
+#: templates/base.html:594
+msgid "Keep a clean look without changing text size"
+msgstr ""
+
+#: templates/base.html:597
+msgid "Focus mode"
+msgstr ""
+
+#: templates/base.html:598
+msgid "Reduce motion and visual noise"
+msgstr ""
+
+#: templates/base.html:601
+msgid "High visibility"
+msgstr ""
+
+#: templates/base.html:602
+msgid "High contrast + bigger text"
+msgstr ""
+
+#: templates/base.html:610
+msgid "Reduce motion"
+msgstr "خفض الطلب"
+
+#: templates/base.html:611
+msgid "Limit animations and transitions"
+msgstr "الحد من الرسوم والتحولات"
+
+#: templates/base.html:620
+msgid "Simplified mode"
+msgstr "طريقة مبسطة"
+
+#: templates/base.html:621
+msgid "Hide decorative elements and reduce visual noise"
+msgstr "إخفاء عناصر الزينة وتقليل الضوضاء البصرية"
+
+#: templates/base.html:630
+msgid "Audio support"
+msgstr ""
+
+#: templates/base.html:631
+msgid "Placeholder section for future speech and sound accessibility tools"
+msgstr ""
+
+#: templates/base.html:634
+msgid "Coming soon: read aloud, voice guidance, and audio feedback options."
+msgstr ""
+
+#: templates/base.html:640
+msgid "Motor assistance"
+msgstr ""
+
+#: templates/base.html:641
+msgid "Placeholder section for click targets, dwell, and keyboard assistance"
+msgstr ""
+
+#: templates/base.html:644
+msgid "Coming soon: larger touch targets, click delay settings, and keyboard navigation helpers."
+msgstr ""
+
+#: templates/base.html:651 templates/base.html:673
+msgid "Choose the interface language"
+msgstr "اختيار واجهة اللغة"
+
+#: templates/base.html:684
+msgid "Eco display"
+msgstr ""
+
+#: templates/base.html:685
+msgid "Lighter pages for faster display and lower data/energy use"
+msgstr ""
+
+#: templates/base.html:691
+msgid "Eco mode"
+msgstr ""
+
+#: templates/base.html:692
+msgid "Lighter pages with reduced visual effects to improve speed and lower data/energy use"
+msgstr ""
+
+#: templates/base.html:701
+msgid "More options"
+msgstr ""
+
+#: templates/base.html:702
+msgid "This section is ready for future accessibility modules"
+msgstr ""
+
+#: templates/base.html:705
+msgid "You can add more grouped settings here later (audio, keyboard help, reading profiles, etc.)."
+msgstr ""
+
+#: templates/base.html:712
+msgid "Reset only this section"
+msgstr ""
+
+#: templates/base.html:715
+msgid "Reset"
+msgstr ""
+
+#: templates/base.html:718
+msgid "Restore system defaults"
+msgstr "قصور نظام إعادة الإمداد"
+
+#: templates/base.html:721
+msgid "Save as my profile"
+msgstr ""
+
+#: templates/base.html:724
+msgid "Done"
+msgstr "تم"
+
+#: templates/base.html:728
+msgid "Shortcut: Alt + A"
+msgstr "قصير: ألف + ألف"
+
+#: templates/base.html:738 templates/base.html:777 templates/pilot_dashboard.html:19
+msgid "Back"
+msgstr "العودة"
+
+#: templates/base.html:744
+msgid "Select language"
+msgstr "اللغة المختارة"
+
+#: templates/base.html:783
+msgid "Profile details"
+msgstr ""
+
+#: templates/base.html:788
+msgid "Preset description"
+msgstr ""
+
+#: templates/base.html:789
+msgid "This profile applies"
+msgstr ""
+
+#: templates/base.html:791
+msgid "Loading profile…"
+msgstr ""
+
+#: templates/base.html:796
+msgid "Apply profile"
+msgstr ""
+
+#: templates/base.html:812 templates/orienter.html:86
+msgid "Données hébergées en Europe"
+msgstr "البيانات المستضيفة في أوروبا"
+
+#: templates/base.html:812
+msgid "Conforme RGPD"
+msgstr "الناتج المحلي الإجمالي الممتثل"
+
+#: templates/base.html:812
+msgid "Sécurité renforcée"
+msgstr "تعزيز الأمن"
+
+#: templates/base.html:812
+msgid "Développé et opéré en France"
+msgstr "وضعت وعملت في فرنسا"
+
+#: templates/base.html:815
+msgid "Footer"
+msgstr ""
+
+#: templates/base.html:818
+msgid "Mentions légales"
+msgstr "المعلومات القانونية"
+
+#: templates/base.html:820 templates/contact.html:2 templates/contact.html:9 templates/privacy.html:49
+#: templates/terms.html:37
+msgid "Contact"
+msgstr "الاتصال"
+
+#: templates/base.html:824
+msgid "Accès intervenants"
+msgstr "الوصول إلى أصحاب المصلحة"
+
+#: templates/base.html:827
+msgid "Connexion intervenant"
+msgstr "الاتصال بين الطرفين"
+
+#: templates/base.html:830
+msgid "Inscription intervenant"
+msgstr "التسجيل"
+
+#: templates/become_volunteer.html:2 templates/volunteer_login.html:25
+msgid "Accès intervenant"
+msgstr "الدخول"
+
+#: templates/become_volunteer.html:37
+msgid "Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes."
+msgstr "إذا كان العنوان صالحاً، ستتلقى وصلة وصل خلال دقائق قليلة."
+
+#: templates/become_volunteer.html:53
+msgid "Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes)."
+msgstr "لا كلمة سر A secure link by e-mail (valid 15 minutes)."
+
+#: templates/contact.html:11
+msgid "A question, a suggestion, or a concern? Write to us — a real human will read your message."
+msgstr "أي سؤال أو اقتراحات أو شواغل؟ أكتبوا لنا، البشر سيقرأون رسالتكم"
+
+#: templates/contact.html:19
+msgid "Your email"
+msgstr ""
+
+#: templates/contact.html:24
+msgid "Subject"
+msgstr "الموضوع"
+
+#: templates/contact.html:25
+msgid "What is this about?"
+msgstr "ما الأمر؟"
+
+#: templates/contact.html:29
+msgid "Message"
+msgstr "الرسالة"
+
+#: templates/contact.html:30
+msgid "Write your message here…"
+msgstr "أكتب رسالتك هنا"
+
+#: templates/contact.html:35
+msgid "Send message"
+msgstr "أرسل رسالة"
+
+#: templates/contact.html:38
+msgid "This form is informational for now. Please use email below."
+msgstr "هذا الاستمارة مفيدة حالياً يرجى استخدام البريد الإلكتروني أدناه."
+
+#: templates/contact.html:46
+msgid "Direct contact"
+msgstr ""
+
+#: templates/contact.html:53
+msgid "Response time"
+msgstr "وقت الاستجابة"
+
+#: templates/contact.html:55
+msgid "We usually reply within 24–48 hours on business days."
+msgstr "ونحن نستجيب عادة في غضون 24 إلى 48 ساعة في أيام العمل."
+
+#: templates/contact.html:60
+msgid "Security & privacy"
+msgstr "الأمن والسرية"
+
+#: templates/contact.html:62
+msgid "We never sell or share contact data."
+msgstr ""
+
+#: templates/contact.html:63
+msgid "No automated marketing emails."
+msgstr "لا تسويق بريد إلكتروني آلي"
+
+#: templates/contact.html:65
+msgid "Security issues can be reported at"
+msgstr "يمكن الإبلاغ عن مسائل السلامة"
+
+#: templates/dashboard_helper.html:6
+msgid "My assignments"
+msgstr "مهامي"
+
+#: templates/dashboard_helper.html:31
+msgid "Requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:65 templates/volunteer_request_details.html:202
+msgid "Email requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:70 templates/volunteer_request_details.html:207
+msgid "Call requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:75
+msgid "Use only this contact for this request. Stay respectful and keep it focused on solving the issue."
+msgstr "استخدم هذا الاتصال فقط لهذا الطلب ابقوا محترمين وركزوا على حل المسألة"
+
+#: templates/dashboard_helper.html:79 templates/volunteer_request_details.html:218
+msgid "Contact appears once the request is assigned, in progress, and the requester shared details."
+msgstr "ويطبق الاتصال فور تكليف الطلب، وهو قيد التنفيذ، ويتقاسم الملتمس التفاصيل."
+
+#: templates/dashboard_helper.html:87
+msgid "You don't have any assigned requests yet."
+msgstr "ليس لديك أي طلبات محددة بعد"
+
+#: templates/dashboard_requester.html:7
+msgid "My requests"
+msgstr ""
+
+#: templates/dashboard_requester.html:9 templates/profile_requester.html:16
+msgid "Submit a new request"
+msgstr ""
+
+#: templates/dashboard_requester.html:44 templates/profile_requester.html:67
+msgid "Assigned"
+msgstr ""
+
+#: templates/dashboard_requester.html:46 templates/profile_requester.html:68
+msgid "We will notify you when contact is available."
+msgstr "سنعلمك عندما يكون الاتصال متاحاً"
+
+#: templates/dashboard_requester.html:50
+msgid "Not assigned yet. A volunteer/pro will take it as soon as possible."
+msgstr "لم يتم تعيينه بعد متطوع/متطوع سيأخذه في أقرب وقت ممكن"
+
+#: templates/dashboard_requester.html:58 templates/profile_requester.html:80
+msgid "You haven't submitted any requests yet."
+msgstr "لم تقدم أي طلبات بعد"
+
+#: templates/dashboard_requester.html:59 templates/profile_requester.html:81
+msgid "Submit your first request"
+msgstr ""
+
+#: templates/dashboard_unknown_role.html:6
+msgid "Dashboard access"
+msgstr ""
+
+#: templates/dashboard_unknown_role.html:8
+msgid "We couldn't determine your role for dashboard access."
+msgstr "لم نستطع تحديد دورك في الوصول إلى لوحة التحكم"
+
+#: templates/dashboard_unknown_role.html:9
+msgid "Detected role:"
+msgstr "تحديد الدور:"
+
+#: templates/dashboard_unknown_role.html:12
+msgid "Back to home"
+msgstr ""
+
+#: templates/export_data.html:105 templates/export_data.html:115
+msgid "Export data"
+msgstr "بيانات التصدير"
+
+#: templates/export_data.html:117
+msgid "Download data from the system in various formats"
+msgstr "تحميل البيانات من النظام في أشكال مختلفة"
+
+#: templates/export_data.html:181
+msgid "Choose format"
+msgstr "استمارة الاختيار"
+
+#: templates/export_data.html:189
+msgid "CSV"
+msgstr "CSV"
+
+#: templates/export_data.html:190
+msgid "Comma separated"
+msgstr "Comma separated"
+
+#: templates/export_data.html:198
+msgid "JSON"
+msgstr "JSON"
+
+#: templates/export_data.html:199
+msgid "Structured data"
+msgstr "البيانات الهيكلية"
+
+#: templates/export_data.html:207
+msgid "PDF"
+msgstr "PDF"
+
+#: templates/export_data.html:208
+msgid "Formatted document"
+msgstr "وثيقة صيغت"
+
+#: templates/export_data.html:216
+msgid "Excel"
+msgstr "Excel"
+
+#: templates/export_data.html:217
+msgid "Spreadsheet"
+msgstr "صحيفة عناوين"
+
+#: templates/export_data.html:236
+msgid "Preview"
+msgstr "Preview"
+
+#: templates/export_data.html:244
+msgid "Export"
+msgstr "الصادرات"
+
+#: templates/home_new_slim.html:3 templates/submit_request.html:23
+msgid "Accueil"
+msgstr "البيت"
+
+#: templates/home_new_slim.html:13
+msgid "Infrastructure numérique de coordination des situations sociales."
+msgstr "الهياكل الأساسية الرقمية لتنسيق الحالات الاجتماعية."
+
+#: templates/home_new_slim.html:17
+msgid "Orientation structurée. Coordination traçable. Pilotage responsable."
+msgstr "التوجه الهيكلي التنسيق القابل للتعقب. تجربة مسؤولة"
+
+#: templates/home_new_slim.html:35
+msgid "Conçu et opéré depuis la France"
+msgstr "تم تصميمها وتشغيلها من فرنسا"
+
+#: templates/home_new_slim.html:35
+msgid "Infrastructure à vocation européenne"
+msgstr "الهياكل الأساسية ذات الحرف الأوروبي"
+
+#: templates/home_new_slim.html:41
+msgid "Vue opérationnelle"
+msgstr "الرأي التنفيذي"
+
+#: templates/home_new_slim.html:46
+msgid "Situations traitées"
+msgstr "الحالات التي جرى تناولها"
+
+#: templates/home_new_slim.html:51
+msgid "Intervenants actifs"
+msgstr "أصحاب المصلحة النشطون"
+
+#: templates/home_new_slim.html:56
+msgid "Territoires"
+msgstr "الأقاليم"
+
+#: templates/home_new_slim.html:61
+msgid "Processus structuré"
+msgstr "العملية الهيكلية"
+
+#: templates/home_new_slim.html:61
+msgid "Suivi traçable"
+msgstr "التعقب"
+
+#: templates/home_new_slim.html:61
+msgid "Coordination continue"
+msgstr "التنسيق الجاري"
+
+#: templates/home_new_slim.html:72
+msgid "Fonctionnement structuré"
+msgstr "العملية الهيكلية"
+
+#: templates/home_new_slim.html:74
+msgid "Un cadre clair pour organiser l'orientation et la coordination des situations."
+msgstr "A clear framework for organizing the direction and coordination of situations."
+
+#: templates/home_new_slim.html:80
+msgid "1. Orientation"
+msgstr "1- التوجيه"
+
+#: templates/home_new_slim.html:82
+msgid "Classification structurée des situations et qualification initiale."
+msgstr "التصنيف الهيكلي للحالة والمؤهلات الأولية."
+
+#: templates/home_new_slim.html:87
+msgid "2. Coordination"
+msgstr "٢ - التنسيق"
+
+#: templates/home_new_slim.html:89
+msgid "Attribution responsable et suivi continu des interventions."
+msgstr "التخصيص المسؤول والرصد المستمر للتدخلات."
+
+#: templates/home_new_slim.html:94
+msgid "3. Pilotage"
+msgstr "3. Pilotage"
+
+#: templates/home_new_slim.html:96
+msgid "Indicateurs opérationnels, visibilité et traçabilité des actions."
+msgstr ":: المؤشرات التشغيلية، ووضوح الإجراءات وإمكانية تتبعها."
+
+#: templates/home_new_slim.html:107
+msgid "Une infrastructure, pas un annuaire."
+msgstr "بنية تحتية وليس دليل"
+
+#: templates/home_new_slim.html:109
+msgid ""
+"HelpChain fournit une couche de coordination destinée aux associations, services publics et réseaux professionnels, "
+"avec un cadre structuré et sécurisé."
+msgstr "وتوفر منظمة مساعدة الشباب طبقة تنسيق للجمعيات، والخدمات العامة، والشبكات المهنية، مع إطار منظم وآمن."
+
+#: templates/home_new_slim.html:115
+msgid "Découvrir l'espace professionnel"
+msgstr ""
+
+#: templates/magic_link_invalid.html:2
+msgid "Lien invalide"
+msgstr "الرابط الفاشل"
+
+#: templates/magic_link_invalid.html:8
+msgid "Lien invalide ou expiré"
+msgstr "الرابط الفاشل أو المنقضي"
+
+#: templates/magic_link_invalid.html:10
+msgid "Ce lien n’est plus valable. Veuillez demander un nouveau lien."
+msgstr "ولم تعد هذه الصلة صالحة. يرجى طلب وصلة جديدة."
+
+#: templates/magic_link_invalid.html:14
+msgid "Register"
+msgstr "السجل"
+
+#: templates/orienter.html:13
+msgid "Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée."
+msgstr ""
+
+#: templates/orienter.html:22
+msgid "Accès alimentaire"
+msgstr ""
+
+#: templates/orienter.html:22
+msgid "Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles."
+msgstr ""
+
+#: templates/orienter.html:23
+msgid "Accompagnement administratif"
+msgstr ""
+
+#: templates/orienter.html:23
+msgid "Appui dans les démarches administratives, accès aux droits et médiation institutionnelle."
+msgstr ""
+
+#: templates/orienter.html:24
+msgid "Soutien psychosocial"
+msgstr ""
+
+#: templates/orienter.html:24
+msgid "Orientation et coordination pour les situations nécessitant un accompagnement individuel."
+msgstr ""
+
+#: templates/orienter.html:25
+msgid "Accès aux soins"
+msgstr ""
+
+#: templates/orienter.html:25
+msgid "Mise en relation et suivi pour les situations liées à l’accès aux services de santé."
+msgstr ""
+
+#: templates/orienter.html:26
+msgid "Inclusion numérique"
+msgstr ""
+
+#: templates/orienter.html:26
+msgid "Accompagnement vers l’accès aux outils et services numériques."
+msgstr ""
+
+#: templates/orienter.html:27
+msgid "Urgences & situations critiques"
+msgstr ""
+
+#: templates/orienter.html:27
+msgid "Coordination prioritaire des situations nécessitant une prise en charge rapide."
+msgstr ""
+
+#: templates/orienter.html:45
+msgid "Coordination structurée"
+msgstr ""
+
+#: templates/orienter.html:59
+msgid "Formulaire guidé – moins de 3 minutes."
+msgstr ""
+
+#: templates/orienter.html:66
+msgid "Vous représentez une structure ?"
+msgstr ""
+
+#: templates/orienter.html:69
+msgid ""
+"HelpChain propose une infrastructure de coordination destinée aux associations, services publics et réseaux "
+"professionnels."
+msgstr ""
+
+#: templates/orienter.html:79
+msgid "Accéder à l’espace professionnel"
+msgstr ""
+
+#: templates/orienter.html:86
+msgid "Infrastructure numérique de coordination"
+msgstr ""
+
+#: templates/pilot_dashboard.html:2 templates/pilot_dashboard.html:13
+msgid "Pilot Dashboard"
+msgstr "Pilot Dashboard"
+
+#: templates/pilot_dashboard.html:15
+msgid "Read-only KPI overview (no personal data)."
+msgstr "(أ) لمحة عامة فقط عن عملية كيمبرلي (لا توجد بيانات شخصية)."
+
+#: templates/pilot_dashboard.html:16
+msgid "Generated:"
+msgstr "المولد:"
+
+#: templates/pilot_dashboard.html:23
+msgid "This page contains only aggregated metrics and excludes personal data (GDPR-safe)."
+msgstr "ولا تتضمن هذه الصفحة سوى مقاييس مجمعة، وتستبعد البيانات الشخصية (مأمونة حقوق الملكية الفكرية)."
+
+#: templates/pilot_dashboard.html:26
+msgid "Impact"
+msgstr "الأثر"
+
+#: templates/pilot_dashboard.html:36
+msgid "Not done / not rejected"
+msgstr "لم تتم/لم تُرفض"
+
+#: templates/admin/requests.html:207 templates/admin/requests.html:282 templates/pilot_dashboard.html:40
+msgid "Closed"
+msgstr "مغلق"
+
+#: templates/pilot_dashboard.html:45
+msgid "Closed (last 7 days)"
+msgstr "مغلقة (السابع أيام)"
+
+#: templates/pilot_dashboard.html:50
+msgid "Avg resolution"
+msgstr "Avg resolution"
+
+#: templates/pilot_dashboard.html:59 templates/pilot_dashboard.html:78
+msgid "Unassigned > 48h"
+msgstr "Unassigned   48h"
+
+#: templates/pilot_dashboard.html:61
+msgid "Open without owner"
+msgstr "مفتوح بدون مالك"
+
+#: templates/pilot_dashboard.html:65
+msgid "Top risks"
+msgstr "المخاطر الرئيسية"
+
+#: templates/pilot_dashboard.html:68
+msgid "High priority open"
+msgstr "أولوية عليا"
+
+#: templates/pilot_dashboard.html:73
+msgid "Stale > 7 days"
+msgstr "6 أيام"
+
+#: templates/pilot_dashboard.html:88
+msgid "Requests by status"
+msgstr "الطلبات حسب الحالة"
+
+#: templates/pilot_dashboard.html:94
+msgid "Requests by category"
+msgstr "الطلبات حسب الفئة"
+
+#: templates/pilot_dashboard.html:102
+#, python-format
+msgid "New requests (last %(days)s days)"
+msgstr "طلبات جديدة (آخر   %(days)s   يوم)"
+
+#: templates/admin/requests.html:2 templates/pilot_dashboard.html:118 templates/search_results.html:37
+msgid "Requests"
+msgstr "الطلبات"
+
+#: templates/pilot_dashboard.html:124
+msgid "New requests"
+msgstr "الطلبات الجديدة"
+
+#: templates/privacy.html:2 templates/privacy.html:7
+msgid "Privacy policy"
+msgstr "سياسة الخصوصية"
+
+#: templates/privacy.html:10 templates/terms.html:10
+msgid "Last updated:"
+msgstr "آخر تحديث:"
+
+#: templates/privacy.html:14
+msgid ""
+"HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with "
+"volunteers. We do not sell your data."
+msgstr "مساعدة تشاين هي منصة تضامن نحن فقط نجمع ما هو ضروري لربط الناس الذين يحتاجون مساعدة مع المتطوعين. نحن لا نبيع بياناتك"
+
+#: templates/privacy.html:19
+msgid "What data we collect"
+msgstr "أي بيانات نجمعها"
+
+#: templates/privacy.html:21
+msgid "Account and contact details you provide (name, email, phone - if you choose)."
+msgstr "حساب وتفاصيل الاتصال التي تقدمها (الاسم، البريد الإلكتروني، الهاتف، إذا اخترت)."
+
+#: templates/privacy.html:22
+msgid "Request information you submit (category, description, location - if needed for the service)."
+msgstr "نطلب معلومات تقدمونها (الفئة، الوصف، الموقع - إذا لزم الأمر للخدمة)."
+
+#: templates/privacy.html:23
+msgid "Basic technical data for security (e.g., IP address, logs) to prevent abuse."
+msgstr "بيانات تقنية أساسية عن الأمن (مثل عناوين IP وسجلات) لمنع إساءة الاستعمال."
+
+#: templates/privacy.html:26
+msgid "How we use it"
+msgstr "كيف نستخدمه"
+
+#: templates/privacy.html:28
+msgid "To operate the service and match requests with volunteers."
+msgstr "لتشغيل الخدمة ومطابقة الطلبات مع المتطوعين."
+
+#: templates/privacy.html:29
+msgid "To communicate about your request (updates, messages, notifications)."
+msgstr "للتواصل حول طلبك (التاريخ، الرسائل، الإخطارات)."
+
+#: templates/privacy.html:30
+msgid "To keep the platform safe (fraud prevention, security monitoring)."
+msgstr "(ب) الحفاظ على سلامة المنبر (منع الغش، ورصد الأمن)."
+
+#: templates/privacy.html:33
+msgid "What we do not do"
+msgstr "ما لا نفعله"
+
+#: templates/privacy.html:35
+msgid "We do not sell personal data."
+msgstr "نحن لا نبيع بيانات شخصية"
+
+#: templates/privacy.html:36
+msgid "We do not run advertising profiling."
+msgstr "نحن لا ندير التنميط الإعلاني"
+
+#: templates/privacy.html:39
+msgid "Data retention"
+msgstr "الاحتفاظ بالبيانات"
+
+#: templates/privacy.html:41
+msgid ""
+"We keep data only as long as needed for the service and legal obligations. You can request deletion of your account "
+"data."
+msgstr "ولا نحتفظ بالبيانات إلا إذا كانت هناك حاجة إلى الخدمات والالتزامات القانونية. يمكنك طلب حذف بيانات حسابك"
+
+#: templates/privacy.html:44
+msgid "Your rights"
+msgstr "حقوقك"
+
+#: templates/privacy.html:46
+msgid ""
+"You can request access, correction, or deletion of your personal data. You can also object to certain processing "
+"where applicable."
+msgstr "يمكنك طلب الدخول أو تصحيح أو حذف بياناتك الشخصية يمكنك أيضا الاعتراض على بعض التجهيزات عند الاقتضاء."
+
+#: templates/privacy.html:51
+msgid "Questions about privacy? Contact us at"
+msgstr "أسئلة عن الخصوصية؟ اتصل بنا"
+
+#: templates/professionnels.html:14
+msgid "Infrastructure sociale"
+msgstr ""
+
+#: templates/professionnels.html:14
+msgid "France"
+msgstr ""
+
+#: templates/professionnels.html:18
+msgid "Infrastructure numerique de coordination - pour associations et professionnels"
+msgstr ""
+
+#: templates/professionnels.html:22
+msgid "Centralisez les demandes, attribuez les dossiers et pilotez chaque action"
+msgstr ""
+
+#: templates/professionnels.html:23
+msgid "dans un cadre structuré, sécurisé et traçable."
+msgstr ""
+
+#: templates/professionnels.html:28
+msgid "Demander un accès professionnel — phase pilote"
+msgstr ""
+
+#: templates/professionnels.html:31
+msgid "Voir comment ca marche"
+msgstr ""
+
+#: templates/professionnels.html:36
+msgid "Phase pilote : accès validé manuellement afin de garantir un réseau structuré et fiable."
+msgstr ""
+
+#: templates/professionnels.html:39
+msgid "Conçu pour les associations et réseaux professionnels opérant en France."
+msgstr ""
+
+#: templates/professionnels.html:52
+msgid "Pour qui ?"
+msgstr ""
+
+#: templates/professionnels.html:55
+msgid "Une infrastructure conçue pour structurer la coordination entre acteurs locaux et professionnels qualifiés."
+msgstr ""
+
+#: templates/professionnels.html:62
+msgid "Associations & structures locales"
+msgstr ""
+
+#: templates/professionnels.html:64
+msgid "Centralisation structurée des demandes"
+msgstr ""
+
+#: templates/professionnels.html:65
+msgid "Attribution claire des responsables"
+msgstr ""
+
+#: templates/professionnels.html:66
+msgid "Suivi par statut avec historique complet"
+msgstr ""
+
+#: templates/professionnels.html:67
+msgid "Réduction des canaux informels"
+msgstr ""
+
+#: templates/professionnels.html:68
+msgid "Visibilité opérationnelle sur l’activité et les délais"
+msgstr ""
+
+#: templates/professionnels.html:75
+msgid "Professionnels partenaires"
+msgstr ""
+
+#: templates/professionnels.html:77
+msgid "Dossiers structurés et contextualisés"
+msgstr ""
+
+#: templates/professionnels.html:78
+msgid "Qualification préalable des demandes"
+msgstr ""
+
+#: templates/professionnels.html:79
+msgid "Cadre opérationnel clair (nouvelle -> en cours -> résolue)"
+msgstr ""
+
+#: templates/professionnels.html:80
+msgid "Traçabilité complète des actions"
+msgstr ""
+
+#: templates/professionnels.html:81
+msgid "Respect du temps et des priorités professionnelles"
+msgstr ""
+
+#: templates/professionnels.html:90
+msgid "HelpChain n’est pas une plateforme d’annonces."
+msgstr ""
+
+#: templates/professionnels.html:93
+msgid "C’est une infrastructure de coordination structurée."
+msgstr ""
+
+#: templates/professionnels.html:105
+msgid "Comment fonctionne HelpChain"
+msgstr ""
+
+#: templates/professionnels.html:113
+msgid "Entree structuree"
+msgstr ""
+
+#: templates/professionnels.html:115
+msgid "Une situation humaine devient un dossier exploitable :"
+msgstr ""
+
+#: templates/professionnels.html:116
+msgid "categorie, localisation, contexte."
+msgstr ""
+
+#: templates/professionnels.html:124
+msgid "Qualification & tri"
+msgstr ""
+
+#: templates/professionnels.html:126
+msgid "Infos cles verifiees. Reduction du bruit."
+msgstr ""
+
+#: templates/professionnels.html:127
+msgid "Protection du temps des equipes."
+msgstr ""
+
+#: templates/professionnels.html:135
+msgid "Matching cible"
+msgstr ""
+
+#: templates/professionnels.html:137
+msgid "La bonne demande au bon moment :"
+msgstr ""
+
+#: templates/professionnels.html:138
+msgid "pertinence, localisation, tracabilite."
+msgstr ""
+
+#: templates/professionnels.html:146
+msgid "Suivi & cloture"
+msgstr ""
+
+#: templates/professionnels.html:148
+msgid "Historique complet, statut clair,"
+msgstr ""
+
+#: templates/professionnels.html:149
+msgid "coordination mesurable."
+msgstr ""
+
+#: templates/professionnels.html:165
+msgid "Sécurité & conformité (RGPD)"
+msgstr ""
+
+#: templates/professionnels.html:168
+msgid ""
+"La protection des données, la gouvernance des accès et la traçabilité des actions constituent le socle de "
+"l’infrastructure."
+msgstr ""
+
+#: templates/professionnels.html:174
+msgid "Accès sécurisé et contrôle des rôles"
+msgstr ""
+
+#: templates/professionnels.html:175
+msgid "Journalisation complète des actions"
+msgstr ""
+
+#: templates/professionnels.html:181
+msgid "Données minimisées et usage encadré (RGPD)"
+msgstr ""
+
+#: templates/professionnels.html:182
+msgid "Hébergement conforme aux standards européens"
+msgstr ""
+
+#: templates/professionnels.html:195
+msgid "Rejoindre la phase pilote"
+msgstr ""
+
+#: templates/professionnels.html:197
+msgid "L'acces est valide manuellement afin de garantir un environnement structure,"
+msgstr ""
+
+#: templates/professionnels.html:198
+msgid "securise et utile."
+msgstr ""
+
+#: templates/professionnels.html:202
+msgid "Demander un acces professionnel"
+msgstr ""
+
+#: templates/profile_requester.html:9
+msgid "My profile"
+msgstr ""
+
+#: templates/profile_requester.html:11
+msgid "This is where you track your requests and their progress."
+msgstr "هنا تتعقب طلباتك وتقدمهم"
+
+#: templates/profile_requester.html:15
+msgid "Dashboard"
+msgstr "لوحة"
+
+#: templates/profile_requester.html:18
+msgid "Déconnexion demandeur"
+msgstr "مقدم الطلب"
+
+#: templates/profile_requester.html:33
+msgid "Account"
+msgstr ""
+
+#: templates/profile_requester.html:35
+msgid "Role"
+msgstr ""
+
+#: templates/profile_requester.html:38
+msgid "Session for"
+msgstr "الدورة"
+
+#: templates/profile_requester.html:41
+msgid "Email"
+msgstr ""
+
+#: templates/profile_requester.html:47
+msgid "Latest requests"
+msgstr "تقديم الطلب"
+
+#: templates/profile_requester.html:72
+msgid "Not assigned yet. Someone will take it soon."
+msgstr "لم يتم تعيينه بعد شخص ما سيأخذه قريباً"
+
+#: templates/search_results.html:22
+msgid "Type a keyword to search across requests, categories and professionals."
+msgstr "صنف كلمة رئيسية للبحث عبر الطلبات والفئات والمهنيين."
+
+#: templates/search_results.html:30
+msgid "Results for"
+msgstr ""
+
+#: templates/search_results.html:34
+msgid "No results found."
+msgstr ""
+
+#: templates/search_results.html:38
+msgid "Categories"
+msgstr "فئات"
+
+#: templates/search_results.html:39
+msgid "Professionals"
+msgstr ""
+
+#: templates/submit_request.html:18
+msgid "Déposer une demande d’aide"
+msgstr "تطبيق المعونة"
+
+#: templates/submit_request.html:19
+msgid "Décrivez votre situation — on s’occupe du reste."
+msgstr "صفوا موقفكم - نحن نهتم بالبقية -"
+
+#: templates/submit_request.html:42
+msgid "Примери:"
+msgstr ""
+
+#: templates/submit_request.html:44 templates/submit_request.html:140
+msgid "Медицинска помощ"
+msgstr ""
+
+#: templates/submit_request.html:45 templates/submit_request.html:141
+msgid "Социална подкрепа"
+msgstr ""
+
+#: templates/submit_request.html:46 templates/submit_request.html:142
+msgid "Технически проблем"
+msgstr ""
+
+#: templates/submit_request.html:56
+msgid "Sufficient info"
+msgstr "معلومات كافية"
+
+#: templates/submit_request.html:57
+msgid "Add a bit more detail (20+ chars)"
+msgstr "إضافة المزيد من التفاصيل (20+ دبابات)"
+
+#: templates/submit_request.html:67
+msgid "What happens next"
+msgstr "ماذا سيحدث بعد ذلك"
+
+#: templates/submit_request.html:68
+msgid "Une personne de confiance vous contacte"
+msgstr "شخص موثوق يتواصل معك"
+
+#: templates/submit_request.html:69
+msgid "Vos données servent uniquement à la coordination"
+msgstr "بياناتك تستخدم فقط للتنسيق"
+
+#: templates/submit_request.html:70
+msgid "En cas d’urgence, votre demande est priorisée"
+msgstr "في حالة الطوارئ، طلبك يتم تحديد أولوياته"
+
+#: templates/submit_request.html:88
+msgid "Вашето име"
+msgstr ""
+
+#: templates/submit_request.html:96
+msgid "Напр. Мария Иванова"
+msgstr ""
+
+#: templates/submit_request.html:99
+msgid "Поне 2 символа."
+msgstr ""
+
+#: templates/submit_request.html:112
+msgid "+359… / +33…"
+msgstr ""
+
+#: templates/submit_request.html:132
+msgid "Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter."
+msgstr "أضف هاتفاً أو بريداً إلكترونياً حتى نستطيع الاتصال بك مرة أخرى"
+
+#: templates/submit_request.html:137
+msgid "Категория"
+msgstr ""
+
+#: templates/submit_request.html:139
+msgid "Избери…"
+msgstr ""
+
+#: templates/submit_request.html:143 templates/volunteer_dashboard.html:644
+msgid "Административна помощ"
+msgstr "المعونة الإدارية"
+
+#: templates/submit_request.html:144
+msgid "Друго"
+msgstr ""
+
+#: templates/submit_request.html:146
+msgid "Ако не избереш, системата ще запише “general”."
+msgstr ""
+
+#: templates/submit_request.html:150
+msgid "Спешност"
+msgstr ""
+
+#: templates/submit_request.html:152
+msgid "Ниска"
+msgstr ""
+
+#: templates/submit_request.html:153
+msgid "Нормална"
+msgstr ""
+
+#: templates/submit_request.html:154
+msgid "Спешна"
+msgstr ""
+
+#: templates/submit_request.html:155
+msgid "Критична"
+msgstr ""
+
+#: templates/submit_request.html:157
+msgid "Това влияе на приоритета (low/medium/high)."
+msgstr ""
+
+#: templates/submit_request.html:161
+msgid "Кратко заглавие (по избор)"
+msgstr ""
+
+#: templates/submit_request.html:170
+msgid "Напр. Нужен придружител до лекар"
+msgstr ""
+
+#: templates/submit_request.html:172
+msgid "Ако оставиш празно, системата ще го попълни автоматично."
+msgstr ""
+
+#: templates/submit_request.html:177
+msgid "Локация / адрес"
+msgstr ""
+
+#: templates/submit_request.html:185
+msgid "Град, квартал (без точен адрес, ако не е нужно)"
+msgstr ""
+
+#: templates/submit_request.html:199
+msgid "Напиши с 2–3 изречения какво се случва и каква помощ търсиш."
+msgstr ""
+
+#: templates/submit_request.html:201
+msgid "Минимум 10 символа."
+msgstr ""
+
+#: templates/submit_request.html:217
+msgid "I agree to the Privacy Policy (GDPR)."
+msgstr "وأوافق على سياسة الخصوصية."
+
+#: templates/submit_request.html:223
+msgid "Отказ"
+msgstr ""
+
+#: templates/submit_request.html:224
+msgid "Изпрати заявка"
+msgstr ""
+
+#: templates/submit_request_check_email.html:3 templates/submit_request_check_email.html:9
+msgid "Проверете имейла си"
+msgstr "имейла си"
+
+#: templates/submit_request_check_email.html:11
+msgid "Изпратихме линк за потвърждение на:"
+msgstr ""
+
+#: templates/submit_request_check_email.html:21
+msgid "Отвори имейл приложението"
+msgstr "Отвори имейл ирилоението"
+
+#: templates/submit_request_check_email.html:29
+msgid "Копирай имейла"
+msgstr "имейла"
+
+#: templates/submit_request_check_email.html:38
+msgid "Линкът е валиден 15 минути."
+msgstr ""
+
+#: templates/submit_request_check_email.html:39
+msgid "Проверете и папките Spam/Promotions."
+msgstr "-الزراعة"
+
+#: templates/submit_request_check_email.html:55 templates/submit_request_check_email.html:140
+msgid "Изпрати отново"
+msgstr ""
+
+#: templates/submit_request_check_email.html:59
+msgid "Ако адресът е валиден, ще изпратим нов линк."
+msgstr ""
+
+#: templates/submit_request_check_email.html:65
+msgid "Сесията изтече. Моля, върнете се към формата."
+msgstr "انتهت الدورة. يرجى إعادة تقديم الطلب."
+
+#: templates/submit_request_check_email.html:70
+msgid "Сгреших имейла / Подай заявката отново"
+msgstr "انتهت الدورة. يرجى إعادة تقديم الطلب."
+
+#: templates/submit_request_check_email.html:121
+msgid "Копирано ✅"
+msgstr ""
+
+#: templates/submit_request_check_email.html:126
+msgid "Не успях да копирам. Опитай ръчно."
+msgstr "- لا، لا."
+
+#: templates/submit_request_check_email.html:145
+msgid "Можете да изпратите отново след"
+msgstr ""
+
+#: templates/submit_request_check_email.html:146
+msgid "Изпращане..."
+msgstr "أرسل..."
+
+#: templates/terms.html:2 templates/terms.html:7
+msgid "Terms of service"
+msgstr "مدة الخدمة"
+
+#: templates/terms.html:14
+msgid ""
+"HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic "
+"rules to keep everyone safe."
+msgstr ""
+"النجدة (تشاين) يساعد على ربط الناس الذين يحتاجون المساعدة بالمتطوعين بإستخدام المنصّة، تُوافقُ على إتّباع هذه "
+"القواعدِ الأساسيةِ لإبْقاء كُلّ شخص آمنِ."
+
+#: templates/terms.html:19
+msgid "Use of the platform"
+msgstr "استخدام المنبر"
+
+#: templates/terms.html:21
+msgid "Provide accurate information and use respectful language."
+msgstr "توفير معلومات دقيقة واستخدام لغة محترمة."
+
+#: templates/terms.html:22
+msgid "Do not post illegal, harmful, or abusive content."
+msgstr "لا تنشر محتوى غير قانوني أو ضار أو مؤذي."
+
+#: templates/terms.html:23
+msgid "Do not impersonate others or misrepresent your identity."
+msgstr "لا تنتحل شخصية الآخرين أو تضلل هويتك"
+
+#: templates/terms.html:26
+msgid "Safety"
+msgstr "السلامة"
+
+#: templates/terms.html:28
+msgid ""
+"HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency "
+"services."
+msgstr "مساعدة تشاين هي منصة اتصال وليست خدمة طوارئ وإذا كان هناك خطر فوري، يرجى الاتصال بخدمات الطوارئ المحلية."
+
+#: templates/terms.html:29
+msgid "We may limit or suspend accounts to prevent abuse or protect the community."
+msgstr "ويمكننا أن نحدد أو نعلق الحسابات لمنع إساءة المعاملة أو حماية المجتمع."
+
+#: templates/terms.html:32
+msgid "Liability"
+msgstr "المسؤولية"
+
+#: templates/terms.html:34
+msgid ""
+"Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions "
+"taken by users. We encourage safe, transparent communication and caution when sharing personal details."
+msgstr ""
+"العمل التطوعي يتضمن تفاعلات بشرية النجدة ولا يمكن للتحدي أن يضمن النتائج، وهو غير مسؤول عن الإجراءات التي يتخذها "
+"المستعملون. ونشجع على التواصل والحذر بشكل آمن وشفاف عند تقاسم التفاصيل الشخصية."
+
+#: templates/terms.html:39
+msgid "Questions about these terms? Contact us at"
+msgstr "أسئلة حول هذه الشروط؟ اتصل بنا"
+
+#: templates/volunteer_confirmation.html:2
+msgid "Кандидатурата е получена"
+msgstr "ндидатурата е получена"
+
+#: templates/volunteer_confirmation.html:11
+msgid "Благодарим ти"
+msgstr "شكراً لك"
+
+#: templates/volunteer_confirmation.html:14
+msgid "Получихме твоята кандидатура за доброволец."
+msgstr "لقد تلقينا طلبك التطوعي"
+
+#: templates/volunteer_confirmation.html:15
+msgid "Нищо не си задължен/длъжна на този етап."
+msgstr "ليس لديك التزام في هذه المرحلة"
+
+#: templates/volunteer_confirmation.html:19
+msgid "Какво следва"
+msgstr ""
+
+#: templates/volunteer_confirmation.html:21
+msgid "Преглеждаме информацията ти."
+msgstr "نحن ننظر إلى معلوماتك"
+
+#: templates/volunteer_confirmation.html:22
+msgid "При подходящи заявки ще можеш да избереш дали да се включиш."
+msgstr "عندما تظهر الطلبات ذات الصلة، يمكنك الاختيار إذا كنت ترغب في الالتزام."
+
+#: templates/volunteer_confirmation.html:23
+msgid "Ако решиш - ще се свържеш директно с човека в нужда."
+msgstr "إذا قررت ستتصل بالشخص المحتاج مباشرة"
+
+#: templates/volunteer_confirmation.html:27
+msgid "Няма автоматично включване."
+msgstr ""
+
+#: templates/volunteer_confirmation.html:27
+msgid "Ти контролираш ангажимента си."
+msgstr "حافظ على السيطرة على التزامك"
+
+#: templates/volunteer_confirmation.html:33
+msgid "Към началната страница"
+msgstr "العودة إلى الاستقبال"
+
+#: templates/volunteer_confirmation.html:37
+msgid "Как работи HelpChain →"
+msgstr "كيف مساعدة تشاين يعمل →"
+
+#: templates/volunteer_confirmation.html:42
+msgid "Важно:"
+msgstr "مهمة:"
+
+#: templates/volunteer_confirmation.html:42
+msgid "HelpChain не е платформа за спешни случаи и не замества институции."
+msgstr "مساعدة تشاين ليست منصة طوارئ ولا تحل محل المؤسسات."
+
+#: templates/volunteer_dashboard.html:2 templates/volunteer_dashboard.html:16
+msgid "Моето табло"
+msgstr "لوحتي"
+
+#: templates/volunteer_dashboard.html:18
+msgid ""
+"Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти "
+"решаваш</strong>."
+msgstr "هنا ترى الطلبات التي تطابق ملفك الشخصي لا شيء يتم أخذه تلقائياً - تقررين ذلك -"
+
+#: templates/volunteer_dashboard.html:124
+msgid "Recommended for you"
+msgstr "أوصي لك"
+
+#: templates/volunteer_dashboard.html:125
+msgid "Match score + urgency + freshness."
+msgstr "النتيجة المتطابقة + الإلحاح + الطازجة."
+
+#: templates/volunteer_dashboard.html:128
+msgid "matches"
+msgstr "تطابق"
+
+#: templates/volunteer_dashboard.html:129
+msgid "Sorted by match score & urgency"
+msgstr "مستعجلة"
+
+#: templates/volunteer_dashboard.html:139
+msgid "Min match"
+msgstr "تطابق"
+
+#: templates/admin/requests.html:204 templates/components/match_card.html:60 templates/volunteer_dashboard.html:146
+msgid "Priority"
+msgstr "الأولوية"
+
+#: templates/volunteer_dashboard.html:148
+msgid "All"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:149 templates/volunteer_dashboard.html:174
+msgid "Urgent only"
+msgstr "عاجل فقط"
+
+#: templates/volunteer_dashboard.html:150 templates/volunteer_dashboard.html:176
+msgid "High+"
+msgstr "عالية +"
+
+#: templates/volunteer_dashboard.html:154
+msgid "Enable location in profile"
+msgstr "التأجير الميسر"
+
+#: templates/volunteer_dashboard.html:156
+msgid "Near me"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:160
+msgid "Enable location in profile to use Near me."
+msgstr "يمكن أن يكون مكاناً محدداً ليستخدمه بالقرب مني"
+
+#: templates/volunteer_dashboard.html:164
+msgid "Apply filters"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:179
+msgid "Near"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:191
+#, python-format
+msgid "We found %(n)s low-confidence matches (40-54%%)."
+msgstr "وجدنا مباريات ثقه منخفضة (40-54%)."
+
+#: templates/volunteer_dashboard.html:192
+msgid "Improve your profile to unlock stronger matches."
+msgstr "تحسين ملفك لفتح مباريات أقوى"
+
+#: templates/volunteer_dashboard.html:199
+msgid "Help us match you better"
+msgstr "ساعدنا على مطابقتك"
+
+#: templates/volunteer_dashboard.html:200
+msgid "Add your location and a few skills. Then you will start seeing high-confidence matches."
+msgstr "أضف موقعك وبعض المهارات ستبدأين برؤية تطابق الثقة"
+
+#: templates/volunteer_dashboard.html:203
+msgid "Profile completeness"
+msgstr "ملف كامل"
+
+#: templates/volunteer_dashboard.html:213
+msgid "Update my profile"
+msgstr "تحديث ملفي"
+
+#: templates/volunteer_dashboard.html:218
+msgid "No strong matches yet"
+msgstr "لا تطابق قوي بعد"
+
+#: templates/volunteer_dashboard.html:219
+msgid "Add more specific skills or enable location to improve matching."
+msgstr "إضافة مهارات أكثر تحديداً أو تمكين الموقع من تحسين المطابقة."
+
+#: templates/volunteer_dashboard.html:222
+#, python-format
+msgid "Try 50%%"
+msgstr "جرب 50%"
+
+#: templates/volunteer_dashboard.html:224
+msgid "Improve my profile"
+msgstr "تحسين ملفي"
+
+#: templates/volunteer_dashboard.html:256
+msgid "Показваме само липсващото, за да станеш готов за свързване."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:263 templates/volunteer_dashboard.html:269
+msgid "не е зададена"
+msgstr "غير محددة"
+
+#: templates/volunteer_dashboard.html:277
+msgid "Попълни профила"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:280
+msgid "Профилът е готов"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:282
+msgid "Ако искаш, можеш да обновиш наличност или умения по-късно."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:285
+msgid "Редактирай профила"
+msgstr "Edit profile"
+
+#: templates/volunteer_dashboard.html:291
+msgid "по избор"
+msgstr "الخبرة (الاختيارية)"
+
+#: templates/volunteer_dashboard.html:300
+msgid "All active requests"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:302
+msgid "Open requests ordered by freshness."
+msgstr "طلبات مفتوحة أمرت بها (فريشنيس)"
+
+#: templates/volunteer_dashboard.html:305
+msgid "This list is not personalized. Use the section above for intelligent matching."
+msgstr "هذه القائمة ليست شخصية استخدمي القسم المذكور أعلاه لمطابقة ذكية"
+
+#: templates/volunteer_dashboard.html:312 templates/volunteer_dashboard.html:711
+msgid "Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш."
+msgstr "هذه دعوة، وليس التزاما. حر في قراءة التفاصيل واتخاذ القرار."
+
+#: templates/volunteer_dashboard.html:328 templates/volunteer_request_details.html:82
+msgid "Завършено"
+msgstr "مكتملة"
+
+#: templates/volunteer_dashboard.html:331 templates/volunteer_request_details.html:84
+msgid "Отказано"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:337 templates/volunteer_request_details.html:86
+msgid "Нова"
+msgstr "جديدة"
+
+#: templates/volunteer_dashboard.html:342
+msgid "Assigned to you"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:345 templates/volunteer_request_details.html:93
+msgid "Одобрен/а"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:348 templates/volunteer_dashboard.html:431 templates/volunteer_dashboard.html:554
+#: templates/volunteer_dashboard.html:697 templates/volunteer_request_details.html:97
+msgid "В изчакване"
+msgstr "تنتهي"
+
+#: templates/volunteer_dashboard.html:351 templates/volunteer_request_details.html:95
+msgid "Отхвърлен/а"
+msgstr "مرفوضة"
+
+#: templates/volunteer_dashboard.html:361
+msgid "Нова заявка"
+msgstr "طلب جديد"
+
+#: templates/volunteer_dashboard.html:372
+msgid "Assigned to you. Next action: open details."
+msgstr "أسندت إليك الإجراء التالي: تفاصيل مفتوحة."
+
+#: templates/volunteer_dashboard.html:374
+msgid "В изчакване — ще получиш известие при потвърждение."
+msgstr "حتى يتم إخطارك بعد تأكيد"
+
+#: templates/volunteer_dashboard.html:387
+msgid "Благодарим! Заявката е маркирана като приключена."
+msgstr "لا أعلم أنا عضو في عائلتي"
+
+#: templates/volunteer_dashboard.html:389
+msgid "Assigned to you. Next action: click “View details”."
+msgstr "أسندت إليك الإجراء التالي: نقر"
+
+#: templates/volunteer_dashboard.html:391
+msgid "Одобрен/а си. Отвори заявката за контакт и следващи стъпки."
+msgstr "Одоярен/а си. Отвори таявката та а а контакт и следваи стики."
+
+#: templates/volunteer_dashboard.html:393
+msgid "Тази заявка вече е поета. Виж други активни заявки."
+msgstr "سأعود حالاً"
+
+#: templates/volunteer_dashboard.html:395
+msgid "Администратор преглежда интереса ти. Ще получиш известие."
+msgstr "ти."
+
+#: templates/volunteer_dashboard.html:397
+msgid "Натисни “Искам да помогна”, за да поискаш достъп."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:408 templates/volunteer_dashboard.html:511 templates/volunteer_dashboard.html:722
+#, python-format
+msgid "Виждаш тази заявка, защото съвпада с профила ти в %(loc)s"
+msgstr "ترى هذا الطلب لأنه يطابق ملفك الشخصي في %(loc)s"
+
+#: templates/volunteer_dashboard.html:410 templates/volunteer_dashboard.html:513 templates/volunteer_dashboard.html:722
+msgid "Виждаш тази заявка, защото съвпада с профила ти"
+msgstr "ترى هذا الطلب لأنه يطابق ملفك الشخصي"
+
+#: templates/volunteer_dashboard.html:418 templates/volunteer_dashboard.html:428
+msgid "Виж други активни заявки"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:423 templates/volunteer_dashboard.html:655 templates/volunteer_dashboard.html:709
+msgid "Виж детайли"
+msgstr "انظر التفاصيل"
+
+#: templates/volunteer_dashboard.html:437
+msgid "Искам да помогна"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:467
+msgid "Това изпраща сигнал към админите."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:471
+msgid "Нищо не се поема автоматично."
+msgstr "لا شيء يجري تلقائياً"
+
+#: templates/volunteer_dashboard.html:479
+msgid "Няма активни заявки в момента"
+msgstr "لا طلبات نشطة الآن"
+
+#: templates/volunteer_dashboard.html:484
+msgid "По-точна локация + 2–3 умения = по-бърз match."
+msgstr "موقع أكثر دقة + 2-3 المهارات = تطابق أسرع."
+
+#: templates/volunteer_dashboard.html:487
+msgid "Виж пример"
+msgstr "انظر مثال"
+
+#: templates/volunteer_dashboard.html:489
+msgid "Това е само пример — реалните заявки ще се покажат автоматично."
+msgstr "وهذه مجرد عينة - ستظهر الطلبات الحقيقية تلقائيا."
+
+#: templates/volunteer_dashboard.html:495 templates/volunteer_dashboard.html:704
+msgid "Примерна заявка"
+msgstr "طلب العينات"
+
+#: templates/volunteer_dashboard.html:499 templates/volunteer_dashboard.html:705
+msgid "току-що"
+msgstr "الآن"
+
+#: templates/volunteer_dashboard.html:502 templates/volunteer_dashboard.html:706
+msgid "Пример (демо)"
+msgstr "Sample (demo)"
+
+#: templates/volunteer_dashboard.html:506 templates/volunteer_dashboard.html:707
+msgid "Току-що се появи. Провери дали ти е удобно."
+msgstr "لقد ظهرت للتو تحقق إذا كان يناسبك"
+
+#: templates/volunteer_dashboard.html:508 templates/volunteer_dashboard.html:708
+msgid "Човек търси помощ за документи и насоки къде да ги подаде."
+msgstr "شخص ما يحتاج للمساعدة في الوثائق وأين يقدم لهم."
+
+#: templates/volunteer_dashboard.html:540 templates/volunteer_dashboard.html:546
+msgid "Моите заявки"
+msgstr "طلباتي"
+
+#: templates/volunteer_dashboard.html:542
+msgid "Виж подадените от теб заявки и статуса им."
+msgstr "انظر الطلبات التي قدمتموها ووضعهم."
+
+#: templates/volunteer_dashboard.html:565
+msgid "Одобрени"
+msgstr "الوظائف المعتمدة"
+
+#: templates/volunteer_dashboard.html:576
+msgid "Отказани"
+msgstr "Rejected"
+
+#: templates/volunteer_dashboard.html:585
+msgid "Няма заявки в този статус"
+msgstr "No requests in this status"
+
+#: templates/volunteer_dashboard.html:599
+msgid "Виж"
+msgstr "View"
+
+#: templates/volunteer_dashboard.html:638
+msgid "Как ще изглежда заявка"
+msgstr "كيف يبدو الطلب"
+
+#: templates/volunteer_dashboard.html:639
+msgid "Пример, за да знаеш какво да очакваш."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:646
+msgid "Онлайн"
+msgstr "على الإنترنت"
+
+#: templates/volunteer_dashboard.html:649
+msgid "Помощ с документи"
+msgstr "المساعدة في الوثائق"
+
+#: templates/volunteer_dashboard.html:651
+msgid "Човек търси помощ за попълване на документи и ориентация къде да подаде заявление."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:656 templates/volunteer_dashboard.html:710
+#: templates/volunteer_request_details.html:15
+msgid "Ще помогна"
+msgstr "سأساعد"
+
+#: templates/volunteer_dashboard.html:660
+msgid "Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш."
+msgstr "ليس عليك الاستجابة لكل طلب تختار متى وكيف تساعد"
+
+#: templates/volunteer_dashboard.html:667
+msgid "Потвърди помощта"
+msgstr "تأكيد المعونة"
+
+#: templates/volunteer_dashboard.html:669
+msgid "Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:674
+msgid "Откажи"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:677
+msgid "Да, ще помогна"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:684
+msgid "Помощта е заявена. Очаква се кратко потвърждение от екипа."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:688
+msgid "Детайлите ще се показват тук. Нищо не е изпратено автоматично."
+msgstr "التفاصيل ستظهر هنا لم يُرسل شيء تلقائياً"
+
+#: templates/volunteer_dashboard.html:694
+msgid "ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница."
+msgstr "هذا ما ستبدو عليه التفاصيل الطلبات الحقيقية ستفتح صفحة"
+
+#: templates/volunteer_dashboard.html:695
+msgid "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."
+msgstr "سترسل \"مصلح\" انها دعوة، وليس التزاما. ثم تقرر بهدوء."
+
+#: templates/volunteer_dashboard.html:696
+msgid "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично."
+msgstr "سترسل \"مصلح\" انها دعوة، وليس التزاما. لا شيء يتم أخذه تلقائياً"
+
+#: templates/volunteer_dashboard.html:696
+msgid "Продължаваме?"
+msgstr "أكمل؟"
+
+#: templates/volunteer_dashboard.html:698
+msgid "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:699
+msgid "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:700
+msgid "ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."
+msgstr "إذا ديمو: التفاصيل ستظهر هنا. وستفتح الطلبات الحقيقية صفحة من التفاصيل."
+
+#: templates/volunteer_dashboard.html:701
+msgid "🟢 НОВО"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:702
+msgid "Какво става, ако натиснеш?"
+msgstr "ماذا يحدث إذا نقرت؟"
+
+#: templates/volunteer_dashboard.html:703
+msgid "Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично."
+msgstr "أنت تنظر إلى التفاصيل وترسل \"مصلح\" ثمّ تُقرّرُ بهدوء إذا تَستلمُ. لا شيء يتم تلقائيا."
+
+#: templates/volunteer_dashboard.html:712
+msgid "Обработва се…"
+msgstr "العلاج..."
+
+#: templates/volunteer_login.html:6
+msgid "Intervenant access - HelpChain"
+msgstr "وصول المتكلّم - مساعدة تشاين"
+
+#: templates/volunteer_login.html:27
+msgid "Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe."
+msgstr "لا كلمة سر A secure link by e-mail (valid 15 minutes)."
+
+#: templates/volunteer_login.html:51
+msgid "Email address"
+msgstr "عنوان البريد الإلكتروني"
+
+#: templates/volunteer_login.html:60
+msgid "your@email.com"
+msgstr "@email.com"
+
+#: templates/volunteer_login.html:70
+msgid "Recevoir mon lien de connexion"
+msgstr "إستلم وصلتي"
+
+#: templates/volunteer_login.html:72
+msgid "~2 min."
+msgstr "-2 مين"
+
+#: templates/volunteer_login.html:87
+msgid "Demander un accès intervenant"
+msgstr "طلب الدخول"
+
+#: templates/volunteer_login.html:92
+msgid "Back to home page"
+msgstr "العودة إلى الصفحة"
+
+#: templates/volunteer_login.html:97
+msgid "Login as a requester"
+msgstr "تقديم الطلب"
+
+#: templates/volunteer_login.html:132
+msgid "Sending..."
+msgstr "إرسال..."
+
+#: templates/volunteer_notifications.html:11
+msgid "Unread"
+msgstr ""
+
+#: templates/volunteer_notifications.html:19
+msgid "No notifications yet"
+msgstr ""
+
+#: templates/volunteer_notifications.html:20
+msgid "When a request matches your profile, you'll see it here."
+msgstr "عندما يطابق الطلب ملفك الشخصي ستراه هنا"
+
+#: templates/volunteer_notifications.html:23
+msgid "View requests"
+msgstr ""
+
+#: templates/volunteer_notifications.html:64
+msgid "Open request"
+msgstr ""
+
+#: templates/volunteer_profile.html:2
+msgid "Профил"
+msgstr "Простил"
+
+#: templates/volunteer_profile.html:11
+msgid "Профил на доброволец"
+msgstr "Протил на доброволец"
+
+#: templates/volunteer_profile.html:28 templates/volunteer_profile.html:35 templates/volunteer_profile.html:41
+#: templates/volunteer_profile.html:50 templates/volunteer_profile.html:57
+msgid "Затвори"
+msgstr "Затвори"
+
+#: templates/volunteer_profile.html:64
+msgid "Статус: Активен"
+msgstr "Статус: Áктивен"
+
+#: templates/volunteer_profile.html:71
+msgid "Изход"
+msgstr "النسبة المئوية"
+
+#: templates/volunteer_profile.html:80
+msgid "Готовност за свързване"
+msgstr "جاهز للتواصل"
+
+#: templates/volunteer_profile.html:82
+msgid "Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш."
+msgstr "олкото по-точно е това, толкова по-качествени заявки ке виждаен. Сико не се поема автоматично - ти реенава."
+
+#: templates/volunteer_profile.html:88
+msgid "Локация:"
+msgstr "É:"
+
+#: templates/volunteer_profile.html:89 templates/volunteer_profile.html:93 templates/volunteer_profile.html:101
+msgid "Липсва"
+msgstr "ипсва"
+
+#: templates/volunteer_profile.html:92
+msgid "Наличност:"
+msgstr "Саличност:"
+
+#: templates/volunteer_profile.html:96
+msgid "Умения:"
+msgstr "Смения:"
+
+#: templates/volunteer_profile.html:106 templates/volunteer_profile.html:259
+msgid "Как работи свързването →"
+msgstr "к работи свйрзването →"
+
+#: templates/volunteer_profile.html:139
+msgid "Наличност"
+msgstr "التوافر"
+
+#: templates/volunteer_profile.html:152
+msgid "Попълни профила си"
+msgstr "Поп Antonioлни проноила си"
+
+#: templates/volunteer_profile.html:154
+msgid "Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. Няма автоматични ангажименти."
+msgstr "Institutова е всичко. огато има заявка, която пасва - RTе я видиы в таблото. Сяма автоматични ангажименти."
+
+#: templates/volunteer_profile.html:243
+msgid "Какво да очакваш"
+msgstr "акво да очакваи"
+
+#: templates/volunteer_profile.html:244
+msgid "HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да помогнеш."
+msgstr "HelpChain не е “чат за всичко”. Показваме ти заявки, ти реаваен дали да помогнеени."
+
+#: templates/volunteer_profile.html:248
+msgid "Няма автоматични ангажименти."
+msgstr "Сяма автоматични ангажименти."
+
+#: templates/volunteer_profile.html:249
+msgid "Можеш да откажеш без обяснения."
+msgstr "Може да откажебез обяснения."
+
+#: templates/volunteer_profile.html:250
+msgid "Личните данни се показват само при нужда/съгласие."
+msgstr "ичните данни се показват само при нужда/сгласие."
+
+#: templates/volunteer_profile.html:254
+msgid "Съвет:"
+msgstr "Сntoвет:"
+
+#: templates/volunteer_profile.html:255
+msgid "Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо."
+msgstr "Áко добавиы точна локация + 2-3 умения, кансвдига осезаемо."
+
+#: templates/volunteer_request_details.html:2 templates/volunteer_request_details.html:28
+msgid "Детайли за заявка"
+msgstr ""
+
+#: templates/volunteer_request_details.html:18
+msgid "Демо: нищо не се записва."
+msgstr "لم يسجل شيء"
+
+#: templates/volunteer_request_details.html:20
+msgid "Следва кратък преглед и потвърждение."
+msgstr "ويعقب ذلك استعراض وتأكيد موجزين."
+
+#: templates/volunteer_request_details.html:29
+msgid "Назад"
+msgstr "العودة"
+
+#: templates/volunteer_request_details.html:37
+msgid "You marked that you can help."
+msgstr "لقد ميزت أنه يمكنك المساعدة"
+
+#: templates/volunteer_request_details.html:39
+msgid "Go to contact"
+msgstr ""
+
+#: templates/volunteer_request_details.html:43
+msgid "You marked that you can't help right now."
+msgstr "لقد ميزت أنك لا تستطيع المساعدة الآن"
+
+#: templates/volunteer_request_details.html:45 templates/volunteer_request_details.html:139
+msgid "Last signal"
+msgstr ""
+
+#: templates/volunteer_request_details.html:48
+msgid "You haven't sent a signal yet."
+msgstr "لم تشعر بإشارة بعد"
+
+#: templates/volunteer_request_details.html:53
+msgid "Заявка"
+msgstr ""
+
+#: templates/volunteer_request_details.html:67
+msgid "Няма описание."
+msgstr ""
+
+#: templates/volunteer_request_details.html:91
+msgid "Назначен/а"
+msgstr "محددة"
+
+#: templates/volunteer_request_details.html:103
+msgid "Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека."
+msgstr "لديك الضوء الأخضر لهذا الطلب إستعملْ الأزرارَ أسفل للإتِّصال بالشخصِ."
+
+#: templates/volunteer_request_details.html:107
+msgid "Заявката е изпратена. Ще получиш известие при решение."
+msgstr "أرسل الطلب سيتم إخطارك عندما يتم اتخاذ قرار"
+
+#: templates/volunteer_request_details.html:113
+msgid "Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно)."
+msgstr "وبمجرد تأكيد الفريق، سيتم إخطارك وسنفتح الاتصال (إذا لزم الأمر)."
+
+#: templates/volunteer_request_details.html:115
+msgid "Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно."
+msgstr "لقد تأكدت من هذا الطلب اتبع التعليمات الواردة أدناه وتصرف بهدوء."
+
+#: templates/volunteer_request_details.html:117
+msgid "Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти."
+msgstr "لا تقلق، يمكنك المساعدة في طلب آخر شكراً"
+
+#: templates/volunteer_request_details.html:119
+msgid "Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем."
+msgstr "إذا كنت تستطيع المساعدة، نقر على \"أنا يمكن أن تساعد\"."
+
+#: templates/volunteer_request_details.html:133
+msgid "Твоят сигнал"
+msgstr "إشارتك"
+
+#: templates/volunteer_request_details.html:135
+msgid "Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно."
+msgstr "إنها إشارة سريعة للفريق إنّه لا يُشارك، بل يساعدنا على الردّ بشكل أكثر دقة."
+
+#: templates/admin/request_details.html:221 templates/admin/requests.html:305 templates/volunteer_request_details.html:142
+msgid "Can help"
+msgstr ""
+
+#: templates/admin/request_details.html:223 templates/admin/requests.html:307 templates/volunteer_request_details.html:144
+msgid "Can't help"
+msgstr ""
+
+#: templates/volunteer_request_details.html:159
+msgid "Мога да помогна"
+msgstr ""
+
+#: templates/volunteer_request_details.html:163
+msgid "Не мога да помогна"
+msgstr ""
+
+#: templates/volunteer_request_details.html:169
+msgid "Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина."
+msgstr "إن لم تستطع، لا بأس أفضل إشارة صادقة من الصمت"
+
+#: templates/volunteer_request_details.html:174
+msgid "Изчакване"
+msgstr ""
+
+#: templates/volunteer_request_details.html:176
+msgid "Потвърдено"
+msgstr "تم تأكيدها"
+
+#: templates/volunteer_request_details.html:213
+msgid "Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта."
+msgstr "استخدام هذا الاتصال فقط لهذا الطلب. كن محترماً ودقيقاً إنه يسرع في المساعدة"
+
+#: templates/admin/login.html:6 templates/admin/login.html:19
+msgid "Admin login"
+msgstr "سجل أمين"
+
+#: templates/admin/login.html:32 templates/admin/login.html:41 templates/admin/login.html:42
+msgid "Username"
+msgstr "المستعمل"
+
+#: templates/admin/login.html:48 templates/admin/login.html:57 templates/admin/login.html:58
+msgid "Password"
+msgstr "كلمة السر"
+
+#: templates/admin/login.html:63
+msgid "Sign in as admin"
+msgstr "وقّعْ كعلامة"
+
+#: templates/admin/mfa_setup.html:4
+msgid "Set up MFA"
+msgstr "Establish up MFA"
+
+#: templates/admin/mfa_setup.html:6
+msgid "Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code."
+msgstr "Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code."
+
+#: templates/admin/mfa_setup.html:14
+msgid "Manual key (if QR does not work):"
+msgstr "المفتاح الدليلي (إذا لم تعمل شركة QR):"
+
+#: templates/admin/mfa_setup.html:21 templates/admin/mfa_setup.html:24
+msgid "Verification code (6 digits)"
+msgstr "رمز التحقق (6 أرقام)"
+
+#: templates/admin/mfa_setup.html:26
+msgid "Activate MFA"
+msgstr "Activate MFA"
+
+#: templates/admin/request_details.html:219 templates/admin/requests.html:210
+msgid "Volunteer signal"
+msgstr ""
+
+#: templates/admin/requests.html:124 templates/admin/requests.html:203
+msgid "Status"
+msgstr "الحالة"
+
+#: templates/admin/requests.html:125
+msgid "All statuses"
+msgstr "جميع الحالات"
+
+#: templates/admin/requests.html:136
+msgid "Search by name, title, description..."
+msgstr "البحث بالاسم، العنوان، الوصف..."
+
+#: templates/admin/requests.html:143
+msgid "Filter"
+msgstr "مرشح منقذ"
+
+#: templates/admin/requests.html:156
+msgid "Show deleted"
+msgstr "مسح العرض"
+
+#: templates/admin/requests.html:200
+msgid "ID"
+msgstr "الهوية"
+
+#: templates/admin/requests.html:201
+msgid "Title"
+msgstr "العنوان"
+
+#: templates/admin/requests.html:202
+msgid "Name"
+msgstr "الاسم"
+
+#: templates/admin/requests.html:205
+msgid "Category"
+msgstr "الفئة"
+
+#: templates/admin/requests.html:206 templates/admin/requests.html:266
+msgid "Created"
+msgstr "Remote"
+
+#: templates/admin/requests.html:208
+msgid "SLA"
+msgstr "SLA"
+
+#: templates/admin/requests.html:209
+msgid "Signals"
+msgstr ""
+
+#: templates/admin/requests.html:211 templates/admin/requests.html:357
+msgid "Details"
+msgstr "التفاصيل"
+
+#: templates/admin/requests.html:276
+msgid "No owner assigned"
+msgstr "No owner assigned"
+
+#: templates/admin/requests.html:276
+msgid "No owner"
+msgstr "لا مالك"
+
+#: templates/admin/requests.html:279
+msgid "Stale request"
+msgstr "تقديم الطلب"
+
+#: templates/admin/requests.html:279
+msgid "Stale"
+msgstr "Stale"
+
+#: templates/admin/requests.html:361
+msgid "No results."
+msgstr "لا ضغوط"
+
+#: templates/components/match_card.html:9
+#, python-format
+msgid "%(pct)s%% Match"
+msgstr "%(pct)s % Match"
+
+#: templates/components/match_card.html:11
+msgid "High priority"
+msgstr ""
+
+#: templates/components/match_card.html:22
+msgid "Untitled request"
+msgstr ""
+
+#: templates/components/match_card.html:38
+msgid "Skills"
+msgstr "المهارات"
+
+#: templates/components/match_card.html:41
+msgid "Skills match"
+msgstr "تطابق المهارات"
+
+#: templates/components/match_card.html:49
+msgid "Location"
+msgstr ""
+
+#: templates/components/match_card.html:52
+msgid "Location match"
+msgstr "تطابق الإيجار"
+
+#: templates/components/match_card.html:63
+msgid "Priority boost"
+msgstr ""
+
+#: templates/components/match_card.html:79
+msgid "View details"
+msgstr "تفاصيل الرؤية"
+
+#: templates/components/match_card.html:90
+msgid "I'll help"
+msgstr "سأساعد"
+
+#: templates/components/match_card.html:97
+msgid "Dismiss this request for 48 hours"
+msgstr "رفض هذا الطلب لمدة 48 ساعة"
+
+#: templates/components/match_card.html:99
+msgid "Not for me (48h)"
+msgstr "ليس بالنسبة لي (48h)"
+
+#: templates/components/match_card.html:108
+#, python-format
+msgid "Why %(pct)s%%?"
+msgstr "لماذا %(pct)s٪؟"
+

@@ -1,0 +1,2976 @@
+# Greek translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-02-24 23:29+0100\n"
+"PO-Revision-Date: 2026-02-24 13:47+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: el\n"
+"Language-Team: el <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: backend/appy_with_analytics.py:619
+msgid "Доброволецът е добавен успешно!"
+msgstr "Доброволецът е добавен успешно!"
+
+#: backend/helpchain_backend/src/copy.py:15
+msgid "HelpChain"
+msgstr "Βοήθεια Chain"
+
+#: backend/helpchain_backend/src/copy.py:18
+msgid "Подай заявка за помощ"
+msgstr "Подай заявка за помо"
+
+#: backend/helpchain_backend/src/copy.py:20
+msgid "Попълни формата и екипът ни ще се свърже с теб възможно най-бързо."
+msgstr "Попълни "
+
+#: backend/helpchain_backend/src/copy.py:22
+msgid "Изпрати заявката"
+msgstr "Изпрати заявката зИИз."
+
+#: backend/helpchain_backend/src/copy.py:25
+msgid "Категории помощ"
+msgstr "Категории помо"
+
+#: backend/helpchain_backend/src/routes/main.py:549
+msgid "Your session has been cleared."
+msgstr "Η συνεδρία σου έχει εκκαθαριστεί."
+
+#: backend/helpchain_backend/src/routes/main.py:817 templates/dashboard_helper.html:25
+#: templates/dashboard_requester.html:28 templates/profile_requester.html:56 templates/submit_request.html:54
+msgid "Request"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:951
+msgid "If the email is valid, you will receive a login link."
+msgstr "Εάν το email είναι έγκυρο, θα λάβετε ένα σύνδεσμο σύνδεσης."
+
+#: backend/helpchain_backend/src/routes/main.py:1171 backend/helpchain_backend/src/routes/main.py:2415
+msgid "Sans mot de passe. Recevez un lien sécurisé par e-mail."
+msgstr "Χωρίς κωδικό πρόσβασης. Ένας ασφαλής σύνδεσμος μέσω e-mail (ισχύει 15 λεπτά)."
+
+#: backend/helpchain_backend/src/routes/main.py:1173 backend/helpchain_backend/src/routes/main.py:2417
+msgid "Ouvrir mon lien de connexion"
+msgstr "Ανοίξτε το σύνδεσμο σύνδεσης μου"
+
+#: backend/helpchain_backend/src/routes/main.py:1175 backend/helpchain_backend/src/routes/main.py:2419
+msgid "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
+msgstr "Αν το κουμπί δεν λειτουργεί, αντιγράψτε και επικολλήστε αυτό το σύνδεσμο:"
+
+#: backend/helpchain_backend/src/routes/main.py:1177 backend/helpchain_backend/src/routes/main.py:2421
+msgid "Données minimales, respect RGPD"
+msgstr "Ελάχιστα δεδομένα, συμμόρφωση GDPR"
+
+#: backend/helpchain_backend/src/routes/main.py:1179 backend/helpchain_backend/src/routes/main.py:2423
+msgid "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
+msgstr "Εάν δεν είστε ο δημιουργός αυτής της αίτησης, αγνοήστε αυτό το email."
+
+#: backend/helpchain_backend/src/routes/main.py:1259
+msgid "You're all set! You can now see requests where your help matters."
+msgstr "Είσαι έτοιμος! Μπορείτε τώρα να δείτε αιτήματα όπου η βοήθειά σας μετράει."
+
+#: backend/helpchain_backend/src/routes/main.py:1846 backend/helpchain_backend/src/routes/main.py:1901
+#: backend/helpchain_backend/src/routes/main.py:1920
+msgid "Got it. Your signal was sent to the team."
+msgstr "Κατάλαβα. Το σήμα σου στάλθηκε στην ομάδα."
+
+#: backend/helpchain_backend/src/routes/main.py:2139
+msgid "Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."
+msgstr "Παρακαλώ δεχθείτε την Πολιτική Απορρήτου (GDPR) για να συνεχίσετε."
+
+#: backend/helpchain_backend/src/routes/main.py:2152
+msgid "Please shorten the text."
+msgstr "Παρακαλώ συντομεύστε το κείμενο."
+
+#: backend/helpchain_backend/src/routes/main.py:2154
+#, python-format
+msgid "Please shorten the %(field)s."
+msgstr "Παρακαλώ συντομεύστε το %(field)s ."
+
+#: backend/helpchain_backend/src/routes/main.py:2163
+msgid "Invalid characters detected."
+msgstr "Εντοπίστηκαν μη έγκυροι χαρακτήρες."
+
+#: backend/helpchain_backend/src/routes/main.py:2166
+msgid "Моля, въведете име (поне 2 символа)."
+msgstr "Παρακαλώ εισάγετε ένα όνομα (τουλάχιστον 2 χαρακτήρες)."
+
+#: backend/helpchain_backend/src/routes/main.py:2169
+msgid "Моля, опишете проблема (поне 10 символа)."
+msgstr "Παρακαλώ περιγράψτε το πρόβλημα (τουλάχιστον 10 χαρακτήρες)."
+
+#: backend/helpchain_backend/src/routes/main.py:2172
+msgid "Моля, въведете поне телефон или имейл."
+msgstr "Παρακαλώ εισάγετε τουλάχιστον ένα τηλέφωνο ή e-mail."
+
+#: backend/helpchain_backend/src/routes/main.py:2178
+msgid "Please select a valid category."
+msgstr "Παρακαλώ επιλέξτε μια έγκυρη κατηγορία."
+
+#: backend/helpchain_backend/src/routes/main.py:2182
+msgid "Please select a valid urgency."
+msgstr "Παρακαλώ επιλέξτε μια έγκυρη έκτακτη ανάγκη."
+
+#: backend/helpchain_backend/src/routes/main.py:2216 backend/helpchain_backend/src/routes/main.py:2299
+msgid "Verified volunteers only"
+msgstr "Μόνο πιστοποιημένοι εθελοντές"
+
+#: backend/helpchain_backend/src/routes/main.py:2217 backend/helpchain_backend/src/routes/main.py:2300
+msgid "Fast matching - no bureaucracy"
+msgstr "Γρήγορη ταύτιση - χωρίς γραφειοκρατία"
+
+#: backend/helpchain_backend/src/routes/main.py:2218 backend/helpchain_backend/src/routes/main.py:2301
+msgid "We keep your data private"
+msgstr "Κρατάμε τα δεδομένα σου μυστικά."
+
+#: backend/helpchain_backend/src/routes/main.py:2261
+msgid "Please correct the errors below."
+msgstr "Παρακαλώ διορθώστε τα παρακάτω λάθη."
+
+#: backend/helpchain_backend/src/routes/main.py:2274
+#, python-format
+msgid "Заявка: %(category)s"
+msgstr "Αίτηση: %(category)s"
+
+#: backend/helpchain_backend/src/routes/main.py:2276
+msgid "Заявка за помощ"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:2310
+msgid "Сесията изтече. Моля, подай заявката отново."
+msgstr "Η συνεδρία έληξε. Παρακαλώ υποβάλετε ξανά την αίτηση."
+
+#: templates/about.html:3 templates/base.html:816
+msgid "À propos"
+msgstr "Σχετικά"
+
+#: templates/about.html:13
+msgid "À propos de HelpChain"
+msgstr ""
+
+#: templates/about.html:15
+msgid ""
+"HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en "
+"charge des situations sociales."
+msgstr ""
+
+#: templates/about.html:24 templates/all_categories.html:77 templates/orienter.html:57 templates/submit_request.html:4
+msgid "Déposer une demande"
+msgstr "Εφαρμογή"
+
+#: templates/about.html:31 templates/home_new_slim.html:24 templates/orienter.html:3 templates/orienter.html:11
+msgid "Orienter une demande"
+msgstr "Προσανατολίστε μια αίτηση"
+
+#: templates/about.html:36 templates/about.html:140 templates/orienter.html:86
+msgid "Conformité RGPD"
+msgstr ""
+
+#: templates/about.html:36 templates/about.html:147
+msgid "Hébergement européen"
+msgstr ""
+
+#: templates/about.html:36
+msgid "Traçabilité opérationnelle"
+msgstr ""
+
+#: templates/about.html:42
+msgid "Conçu et opéré depuis la France."
+msgstr ""
+
+#: templates/about.html:44
+msgid "Infrastructure à vocation européenne."
+msgstr ""
+
+#: templates/about.html:50
+msgid "Repères"
+msgstr ""
+
+#: templates/about.html:52
+msgid "Approche"
+msgstr ""
+
+#: templates/about.html:53
+msgid "Structurée"
+msgstr ""
+
+#: templates/about.html:56
+msgid "Pilotage"
+msgstr ""
+
+#: templates/about.html:57
+msgid "Opérationnel"
+msgstr ""
+
+#: templates/about.html:60
+msgid "Conformité"
+msgstr ""
+
+#: templates/about.html:61
+msgid "RGPD"
+msgstr ""
+
+#: templates/about.html:72
+msgid "Notre mission"
+msgstr ""
+
+#: templates/about.html:74
+msgid "Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable."
+msgstr ""
+
+#: templates/about.html:80
+msgid "Orientation claire"
+msgstr ""
+
+#: templates/about.html:82
+msgid "Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé."
+msgstr ""
+
+#: templates/about.html:87
+msgid "Coordination traçable"
+msgstr ""
+
+#: templates/about.html:89
+msgid "Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions."
+msgstr ""
+
+#: templates/about.html:94
+msgid "Pilotage opérationnel"
+msgstr ""
+
+#: templates/about.html:96
+msgid "Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement."
+msgstr ""
+
+#: templates/about.html:104
+msgid "Pour qui"
+msgstr ""
+
+#: templates/about.html:106
+msgid ""
+"HelpChain est pensé pour les organisations et acteurs territoriaux qui ont besoin d’un dispositif fiable de "
+"coordination."
+msgstr ""
+
+#: templates/about.html:113
+msgid "Associations"
+msgstr ""
+
+#: templates/about.html:113
+msgid "structuration des parcours, suivi et coordination multi-intervenants."
+msgstr ""
+
+#: templates/about.html:114
+msgid "Services publics"
+msgstr ""
+
+#: templates/about.html:114
+msgid "orientation, traçabilité et pilotage des prises en charge."
+msgstr ""
+
+#: templates/about.html:115
+msgid "Réseaux professionnels"
+msgstr ""
+
+#: templates/about.html:115
+msgid "coordination de l’intervention et continuité opérationnelle."
+msgstr ""
+
+#: templates/about.html:121
+msgid "Ce que HelpChain n’est pas"
+msgstr ""
+
+#: templates/about.html:123
+msgid ""
+"Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est une couche de coordination, avec des "
+"processus et de la gouvernance."
+msgstr ""
+
+#: templates/about.html:132
+msgid "Sécurité & conformité"
+msgstr ""
+
+#: templates/about.html:134
+msgid "Une base institutionnelle : conformité, contrôle et responsabilité."
+msgstr ""
+
+#: templates/about.html:142
+msgid "Minimisation des données, finalités explicites et gestion des accès."
+msgstr ""
+
+#: templates/about.html:149
+msgid "Données hébergées en Europe, avec une approche orientée sécurité."
+msgstr ""
+
+#: templates/about.html:154
+msgid "Traçabilité"
+msgstr ""
+
+#: templates/about.html:156
+msgid "Journalisation des actions clés, visibilité sur les délais et la prise en charge."
+msgstr ""
+
+#: templates/about.html:164
+msgid "Notre vision"
+msgstr ""
+
+#: templates/about.html:166
+msgid "Une coordination efficace repose sur la structure, la responsabilité et la transparence — pas sur l’improvisation."
+msgstr ""
+
+#: templates/about.html:175
+msgid "Commencer"
+msgstr ""
+
+#: templates/about.html:182 templates/home_new_slim.html:30
+msgid "Espace professionnel"
+msgstr ""
+
+#: templates/admin_analytics.html:132
+msgid "Export JSON"
+msgstr "Εξαγωγή JSON"
+
+#: templates/admin_analytics.html:135
+msgid "Export CSV"
+msgstr "Εξαγωγή CSV"
+
+#: templates/admin/requests.html:12 templates/admin_analytics.html:683
+msgid "⚠️ This export contains personal data."
+msgstr "⚠️ Αυτή η εξαγωγή περιέχει προσωπικά δεδομένα."
+
+#: templates/admin/requests.html:13 templates/admin_analytics.html:684
+msgid "Internal use only."
+msgstr "Μόνο εσωτερική χρήση."
+
+#: templates/admin/requests.html:15 templates/admin_analytics.html:686
+msgid "Are you sure you want to continue?"
+msgstr "Είσαι σίγουρος ότι θέλεις να συνεχίσεις;"
+
+#: templates/admin_dashboard.html:2
+msgid "Admin panel"
+msgstr "Πίνακας διαχείρισης"
+
+#: templates/admin_dashboard.html:12
+msgid "Pending"
+msgstr "Σε αναμονή"
+
+#: templates/admin_dashboard.html:14
+msgid "In progress"
+msgstr "Σε εξέλιξη"
+
+#: templates/admin_dashboard.html:16
+msgid "Completed"
+msgstr "Ολοκληρώθηκε"
+
+#: templates/admin_dashboard.html:18
+msgid "Cancelled"
+msgstr "Ακύρωση"
+
+#: templates/admin_dashboard.html:20
+msgid "Unknown"
+msgstr "Άγνωστο"
+
+#: templates/admin_dashboard.html:27
+msgid "Admin dashboard"
+msgstr "ταμπλό διαχειριστή"
+
+#: templates/admin_dashboard.html:39 templates/pilot_dashboard.html:29
+msgid "Total requests"
+msgstr "Σύνολο αιτήσεων"
+
+#: templates/admin_dashboard.html:48
+msgid "Pending requests"
+msgstr "Εν αναμονή αιτήσεων"
+
+#: templates/admin_dashboard.html:57
+msgid "Total volunteers"
+msgstr "Σύνολο εθελοντών"
+
+#: templates/admin_dashboard.html:196
+msgid "Requests by city (Top 10)"
+msgstr "Αιτήσεις ανά πόλη (Top 10)"
+
+#: templates/admin_dashboard.html:209
+msgid "📈 Requests trend (last 30 days)"
+msgstr "📈 Αιτήματα τάσης (τελευταία 30 ημέρες)"
+
+#: templates/admin_dashboard.html:225
+msgid "Общо заявки"
+msgstr "Об"
+
+#: templates/admin_dashboard.html:233
+msgid "Чакащи"
+msgstr "Σε αναμονή"
+
+#: templates/admin_dashboard.html:241 templates/volunteer_dashboard.html:334 templates/volunteer_request_details.html:80
+msgid "В процес"
+msgstr "В процес."
+
+#: templates/admin_dashboard.html:249 templates/admin_dashboard.html:317
+msgid "Доброволци"
+msgstr "Доброволци Доброволци."
+
+#: templates/admin_dashboard.html:257
+msgid "Заявки"
+msgstr "Заявки."
+
+#: templates/admin_dashboard.html:263 templates/admin_dashboard.html:323
+msgid "Име"
+msgstr "Име"
+
+#: templates/admin_dashboard.html:264 templates/submit_request.html:190 templates/volunteer_request_details.html:64
+msgid "Описание"
+msgstr "Описание Описание."
+
+#: templates/admin_dashboard.html:265
+msgid "Статус"
+msgstr "Статус."
+
+#: templates/admin_dashboard.html:266
+msgid "История"
+msgstr "История Αριθ. διαβατηρίου:"
+
+#: templates/admin_dashboard.html:267 templates/admin_roles.html:103 templates/admin_roles.html:184
+#: templates/admin_volunteers.html:289 templates/dashboard.html:267
+msgid "Actions"
+msgstr "Διαχείριση ειδοποιήσεων ώθησης"
+
+#: templates/admin_dashboard.html:276
+msgid "Без име"
+msgstr "Без име."
+
+#: templates/admin_dashboard.html:277
+msgid "Без описание"
+msgstr "Без описание Без описание."
+
+#: templates/admin_dashboard.html:296
+msgid "No history"
+msgstr "Χωρίς ιστορικό"
+
+#: templates/admin_dashboard.html:300
+#, python-format
+msgid "Actions for request %(id)s"
+msgstr "Ενέργειες για αίτηση   %(id)s "
+
+#: templates/admin_dashboard.html:310
+msgid "Няма намерени заявки"
+msgstr "Няма намерени заявки Няма намерени заявки."
+
+#: templates/admin_dashboard.html:324 templates/submit_request.html:117
+msgid "Имейл"
+msgstr "Имейл."
+
+#: templates/admin_dashboard.html:325 templates/submit_request.html:103
+msgid "Телефон"
+msgstr "Теле"
+
+#: templates/admin_dashboard.html:326 templates/volunteer_profile.html:136
+msgid "Локация"
+msgstr "Τοποθεσία"
+
+#: templates/admin_dashboard.html:327 templates/volunteer_profile.html:142
+msgid "Умения"
+msgstr "Αρμοδιότητες"
+
+#: templates/admin_dashboard.html:345
+msgid "Няма"
+msgstr "Няма."
+
+#: templates/admin_dashboard.html:352
+msgid "Няма намерени доброволци"
+msgstr "Няма намерени доброволци Бананамерени доброволци."
+
+#: templates/all_categories.html:2
+msgid "Help categories - HelpChain"
+msgstr "Κατηγορίες βοήθειας - ΒοήθειαChain"
+
+#: templates/all_categories.html:16
+msgid "Catégories d'aide"
+msgstr ""
+
+#: templates/all_categories.html:17
+msgid "Dites-nous de quoi vous avez besoin — on s'occupe du reste."
+msgstr "Πείτε μας τι χρειάζεστε — φροντίζουμε για τα υπόλοιπα."
+
+#: templates/all_categories.html:25
+msgid "J’ai besoin d’aide"
+msgstr "Χρειάζομαι βοήθεια."
+
+#: templates/all_categories.html:33
+msgid "Je veux aider"
+msgstr "Θέλω να βοηθήσω."
+
+#: templates/all_categories.html:56
+msgid "Demander de l’aide"
+msgstr "Αιτούμαι βοήθεια."
+
+#: templates/all_categories.html:58 templates/submit_request.html:64
+msgid "Ça prend ~2 minutes"
+msgstr ""
+
+#: templates/all_categories.html:69
+msgid "Besoin d’aide ?"
+msgstr "Χρειάζεσαι βοήθεια;"
+
+#: templates/all_categories.html:70
+msgid "Déposez une demande — nous trouverons une personne pour vous répondre."
+msgstr "Εφαρμόστε — θα βρούμε κάποιον να σας απαντήσει."
+
+#: templates/all_categories.html:85
+msgid "Vous voulez aider ?"
+msgstr "Θέλεις να βοηθήσεις;"
+
+#: templates/all_categories.html:86
+msgid "Rejoignez notre communauté de bénévoles."
+msgstr ""
+
+#: templates/all_categories.html:93
+msgid "Devenir bénévole"
+msgstr "Γίνε εθελοντής."
+
+#: templates/all_categories.html:101
+msgid "Retour à l’accueil"
+msgstr "Επιστροφή στη ρεσεψιόν"
+
+#: templates/base.html:9 templates/base.html:14 templates/base.html:25
+msgid ""
+"Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation "
+"européenne."
+msgstr ""
+"Δομημένος προσανατολισμός, ανιχνεύσιμος συντονισμός, υπεύθυνη διεύθυνση. Σχεδιασμένο και λειτουργικό από τη Γαλλία, "
+"με ευρωπαϊκό επάγγελμα."
+
+#: templates/base.html:13 templates/base.html:24
+msgid "HelpChain - Infrastructure numérique de coordination"
+msgstr "ΒοήθειαChain - Ψηφιακή υποδομή συντονισμού"
+
+#: templates/base.html:58
+msgid "Skip to main content"
+msgstr "Μετάβαση στο κύριο περιεχόμενο"
+
+#: templates/base.html:133
+msgid "Toggle navigation"
+msgstr "Εναλλαγή πλοήγησης"
+
+#: templates/base.html:143 templates/base.html:144 templates/base.html:351
+msgid "Language"
+msgstr "Γλώσσα"
+
+#: templates/admin/requests.html:25 templates/base.html:159
+msgid "Home"
+msgstr "Σπίτι"
+
+#: templates/base.html:164
+msgid "Orienter"
+msgstr ""
+
+#: templates/base.html:169
+msgid "About"
+msgstr "Σχετικά"
+
+#: templates/base.html:174 templates/professionnels.html:2
+msgid "Professionnels"
+msgstr ""
+
+#: templates/base.html:181
+msgid "Pilot (KPI)"
+msgstr "Πιλότος (KPI)"
+
+#: templates/base.html:182
+msgid "LIVE"
+msgstr "ΖΩΝΤΑ"
+
+#: templates/base.html:188 templates/magic_link_invalid.html:13
+msgid "Submit a request"
+msgstr "Υποβολή αίτησης"
+
+#: templates/admin/requests.html:2 templates/base.html:195
+msgid "Admin"
+msgstr "Διαχειριστής"
+
+#: templates/base.html:222 templates/base.html:292
+msgid "Logout"
+msgstr "Αποσύνδεση"
+
+#: templates/base.html:229
+msgid "My dashboard"
+msgstr "Το ταμπλό μου"
+
+#: templates/base.html:239 templates/base.html:253 templates/base.html:333 templates/volunteer_dashboard.html:113
+#: templates/volunteer_notifications.html:2 templates/volunteer_notifications.html:8
+msgid "Notifications"
+msgstr "Διαχείριση ειδοποιήσεων ώθησης"
+
+#: templates/base.html:244
+msgid "unread notifications"
+msgstr ""
+
+#: templates/base.html:255
+msgid "View all"
+msgstr ""
+
+#: templates/base.html:259
+msgid "No notifications"
+msgstr ""
+
+#: templates/base.html:260
+msgid "When you get matched, you'll see it here."
+msgstr "Όταν ταιριάξετε, θα το δείτε εδώ."
+
+#: templates/base.html:269
+msgid "Notification"
+msgstr ""
+
+#: templates/base.html:270 templates/volunteer_notifications.html:44
+msgid "New"
+msgstr "Νέο"
+
+#: templates/base.html:275
+msgid "Mark as seen & open"
+msgstr "Σημείωση όπως φαίνεται & άνοιγμα"
+
+#: templates/base.html:285 templates/base.html:782 templates/profile_requester.html:2
+msgid "Profile"
+msgstr "Προφίλ"
+
+#: templates/base.html:308
+msgid "Search…"
+msgstr ""
+
+#: templates/admin/requests.html:136 templates/base.html:309 templates/base.html:312 templates/search_results.html:2
+#: templates/search_results.html:7 templates/search_results.html:14 templates/search_results.html:15
+#: templates/search_results.html:17
+msgid "Search"
+msgstr "Αναζήτηση"
+
+#: templates/base.html:327
+msgid "Toggle theme"
+msgstr "Εναλλαγή θέματος"
+
+#: templates/base.html:352 templates/base.html:447 templates/volunteer_dashboard.html:246
+#: templates/volunteer_dashboard.html:713
+msgid "Close"
+msgstr ""
+
+#: templates/base.html:403
+msgid "Accessibility settings"
+msgstr "settings προσβασιμότητας"
+
+#: templates/base.html:427
+msgid "Accessibility menu"
+msgstr ""
+
+#: templates/base.html:442 templates/base.html:443
+msgid "Toggle accessibility settings"
+msgstr ""
+
+#: templates/base.html:453
+msgid "Accessibility"
+msgstr ""
+
+#: templates/base.html:455
+msgid "Adjust readability and motion. Settings are saved on this device."
+msgstr "Ρυθμίστε την προσβασιμότητα και την κίνηση. Οι ρυθμίσεις αποθηκεύονται σε αυτή τη συσκευή."
+
+#: templates/base.html:466 templates/base.html:470
+msgid "No options enabled"
+msgstr "Δεν ενεργοποιήθηκαν οι επιλογές"
+
+#: templates/base.html:467
+msgid "1 option enabled"
+msgstr "1 επιλογή ενεργοποιημένη"
+
+#: templates/base.html:468
+#, python-brace-format
+msgid "{count} options enabled"
+msgstr "ενεργοποιημένες επιλογές {count}"
+
+#: templates/base.html:469
+msgid "Accessibility paused"
+msgstr ""
+
+#: templates/base.html:474 templates/base.html:477
+msgid "Following system"
+msgstr "Σύστημα παρακολούθησης"
+
+#: templates/base.html:475
+msgid "Power off"
+msgstr ""
+
+#: templates/base.html:480
+msgid "Accessibility sections"
+msgstr ""
+
+#: templates/base.html:483
+msgid "Display"
+msgstr ""
+
+#: templates/base.html:487
+msgid "Navigation"
+msgstr ""
+
+#: templates/base.html:497 templates/base.html:650 templates/base.html:669 templates/base.html:743
+msgid "Translations"
+msgstr ""
+
+#: templates/base.html:501
+msgid "Audio"
+msgstr ""
+
+#: templates/base.html:505
+msgid "Motor"
+msgstr ""
+
+#: templates/base.html:509
+msgid "Eco"
+msgstr ""
+
+#: templates/base.html:513
+msgid "More"
+msgstr ""
+
+#: templates/base.html:520
+msgid "Display & reading"
+msgstr ""
+
+#: templates/base.html:521
+msgid "Improve readability and visual comfort"
+msgstr ""
+
+#: templates/base.html:527
+msgid "High contrast"
+msgstr ""
+
+#: templates/base.html:528
+msgid "Increase visual contrast across the interface"
+msgstr "Αύξηση οπτικής αντίθεσης σε όλη τη διασύνδεση"
+
+#: templates/base.html:536 templates/base.html:539
+msgid "Text size"
+msgstr "Μέγεθος κειμένου"
+
+#: templates/base.html:537
+msgid "Choose a comfortable reading size"
+msgstr "Επιλέξτε ένα άνετο μέγεθος ανάγνωσης"
+
+#: templates/base.html:540
+msgid "Normal"
+msgstr "Το e-mail σας"
+
+#: templates/base.html:541
+msgid "Large"
+msgstr "Μεγάλο"
+
+#: templates/base.html:542
+msgid "Extra large"
+msgstr "Υπερευρεία"
+
+#: templates/base.html:550
+msgid "Dyslexia-friendly font"
+msgstr "Η δυσλεξία είναι φιλική"
+
+#: templates/base.html:551
+msgid "Use a clearer fallback font stack with increased spacing"
+msgstr "Χρήση σαφέστερης fallback στοίβας γραμματοσειρών με αυξημένη απόσταση"
+
+#: templates/base.html:560
+msgid "Navigation comfort"
+msgstr ""
+
+#: templates/base.html:561
+msgid "Reduce distraction and simplify movement across pages"
+msgstr ""
+
+#: templates/base.html:564
+msgid "Navigation profiles"
+msgstr ""
+
+#: templates/base.html:568
+msgid "Reading comfort"
+msgstr ""
+
+#: templates/base.html:569
+msgid "Larger text with cleaner reading spacing"
+msgstr ""
+
+#: templates/base.html:571 templates/base.html:578 templates/base.html:585 templates/dashboard_helper.html:43
+#: templates/pilot_dashboard.html:34
+msgid "Open"
+msgstr "Άνοιγμα"
+
+#: templates/base.html:576
+msgid "High contrast and larger text for central vision comfort"
+msgstr ""
+
+#: templates/base.html:583
+msgid "Extra-large text and simplified visuals for easier reading"
+msgstr ""
+
+#: templates/base.html:590
+msgid "Visual presets"
+msgstr ""
+
+#: templates/base.html:593
+msgid "Balanced"
+msgstr ""
+
+#: templates/base.html:594
+msgid "Keep a clean look without changing text size"
+msgstr ""
+
+#: templates/base.html:597
+msgid "Focus mode"
+msgstr ""
+
+#: templates/base.html:598
+msgid "Reduce motion and visual noise"
+msgstr ""
+
+#: templates/base.html:601
+msgid "High visibility"
+msgstr ""
+
+#: templates/base.html:602
+msgid "High contrast + bigger text"
+msgstr ""
+
+#: templates/base.html:610
+msgid "Reduce motion"
+msgstr "Μείωση κίνησης"
+
+#: templates/base.html:611
+msgid "Limit animations and transitions"
+msgstr "Περιορισμός κινούμενων σχεδίων και μεταβατικών μέτρων"
+
+#: templates/base.html:620
+msgid "Simplified mode"
+msgstr "Απλοποιημένη λειτουργία"
+
+#: templates/base.html:621
+msgid "Hide decorative elements and reduce visual noise"
+msgstr "Απόκρυψη διακοσμητικών στοιχείων και μείωση του οπτικού θορύβου"
+
+#: templates/base.html:630
+msgid "Audio support"
+msgstr ""
+
+#: templates/base.html:631
+msgid "Placeholder section for future speech and sound accessibility tools"
+msgstr ""
+
+#: templates/base.html:634
+msgid "Coming soon: read aloud, voice guidance, and audio feedback options."
+msgstr ""
+
+#: templates/base.html:640
+msgid "Motor assistance"
+msgstr ""
+
+#: templates/base.html:641
+msgid "Placeholder section for click targets, dwell, and keyboard assistance"
+msgstr ""
+
+#: templates/base.html:644
+msgid "Coming soon: larger touch targets, click delay settings, and keyboard navigation helpers."
+msgstr ""
+
+#: templates/base.html:651 templates/base.html:673
+msgid "Choose the interface language"
+msgstr "Επιλέξτε τη διεπαφή γλώσσας"
+
+#: templates/base.html:684
+msgid "Eco display"
+msgstr ""
+
+#: templates/base.html:685
+msgid "Lighter pages for faster display and lower data/energy use"
+msgstr ""
+
+#: templates/base.html:691
+msgid "Eco mode"
+msgstr ""
+
+#: templates/base.html:692
+msgid "Lighter pages with reduced visual effects to improve speed and lower data/energy use"
+msgstr ""
+
+#: templates/base.html:701
+msgid "More options"
+msgstr ""
+
+#: templates/base.html:702
+msgid "This section is ready for future accessibility modules"
+msgstr ""
+
+#: templates/base.html:705
+msgid "You can add more grouped settings here later (audio, keyboard help, reading profiles, etc.)."
+msgstr ""
+
+#: templates/base.html:712
+msgid "Reset only this section"
+msgstr ""
+
+#: templates/base.html:715
+msgid "Reset"
+msgstr ""
+
+#: templates/base.html:718
+msgid "Restore system defaults"
+msgstr "Επαναφορά προκαθορισμένων συστημάτων"
+
+#: templates/base.html:721
+msgid "Save as my profile"
+msgstr ""
+
+#: templates/base.html:724
+msgid "Done"
+msgstr "Έγινε"
+
+#: templates/base.html:728
+msgid "Shortcut: Alt + A"
+msgstr "Συντόμευση: Alt + A"
+
+#: templates/base.html:738 templates/base.html:777 templates/pilot_dashboard.html:19
+msgid "Back"
+msgstr "Πίσω"
+
+#: templates/base.html:744
+msgid "Select language"
+msgstr "Επιλογή γλώσσας"
+
+#: templates/base.html:783
+msgid "Profile details"
+msgstr ""
+
+#: templates/base.html:788
+msgid "Preset description"
+msgstr ""
+
+#: templates/base.html:789
+msgid "This profile applies"
+msgstr ""
+
+#: templates/base.html:791
+msgid "Loading profile…"
+msgstr ""
+
+#: templates/base.html:796
+msgid "Apply profile"
+msgstr ""
+
+#: templates/base.html:812 templates/orienter.html:86
+msgid "Données hébergées en Europe"
+msgstr "Δεδομένα που φιλοξενούνται στην Ευρώπη"
+
+#: templates/base.html:812
+msgid "Conforme RGPD"
+msgstr "Συμμόρφωση GDPR"
+
+#: templates/base.html:812
+msgid "Sécurité renforcée"
+msgstr "Ενίσχυση της ασφάλειας"
+
+#: templates/base.html:812
+msgid "Développé et opéré en France"
+msgstr "Αναπτύχθηκε και λειτούργησε στη Γαλλία"
+
+#: templates/base.html:815
+msgid "Footer"
+msgstr ""
+
+#: templates/base.html:818
+msgid "Mentions légales"
+msgstr "Νομικές πληροφορίες"
+
+#: templates/base.html:820 templates/contact.html:2 templates/contact.html:9 templates/privacy.html:49
+#: templates/terms.html:37
+msgid "Contact"
+msgstr "Επικοινωνία"
+
+#: templates/base.html:824
+msgid "Accès intervenants"
+msgstr "Πρόσβαση των ενδιαφερομένων"
+
+#: templates/base.html:827
+msgid "Connexion intervenant"
+msgstr "Παρεμβολή σύνδεσης"
+
+#: templates/base.html:830
+msgid "Inscription intervenant"
+msgstr "Καταχώριση"
+
+#: templates/become_volunteer.html:2 templates/volunteer_login.html:25
+msgid "Accès intervenant"
+msgstr "Παρεμβολή πρόσβασης"
+
+#: templates/become_volunteer.html:37
+msgid "Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes."
+msgstr "Εάν η διεύθυνση είναι έγκυρη, θα λάβετε ένα σύνδεσμο σύνδεσης μέσα σε λίγα λεπτά."
+
+#: templates/become_volunteer.html:53
+msgid "Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes)."
+msgstr "Χωρίς κωδικό πρόσβασης. Ένας ασφαλής σύνδεσμος μέσω e-mail (ισχύει 15 λεπτά)."
+
+#: templates/contact.html:11
+msgid "A question, a suggestion, or a concern? Write to us — a real human will read your message."
+msgstr "Ερωτήσεις, προτάσεις ή ανησυχίες; Γράψτε μας: ένας άνθρωπος θα διαβάσει το μήνυμά σας."
+
+#: templates/contact.html:19
+msgid "Your email"
+msgstr ""
+
+#: templates/contact.html:24
+msgid "Subject"
+msgstr "Αντικείμενο"
+
+#: templates/contact.html:25
+msgid "What is this about?"
+msgstr "Τι είναι;"
+
+#: templates/contact.html:29
+msgid "Message"
+msgstr "Μήνυμα"
+
+#: templates/contact.html:30
+msgid "Write your message here…"
+msgstr "Γράψε το μήνυμά σου εδώ..."
+
+#: templates/contact.html:35
+msgid "Send message"
+msgstr "Αποστολή μηνύματος"
+
+#: templates/contact.html:38
+msgid "This form is informational for now. Please use email below."
+msgstr "Αυτό το έντυπο είναι ενημερωτικό προς το παρόν. Παρακαλούμε χρησιμοποιήστε το παρακάτω email."
+
+#: templates/contact.html:46
+msgid "Direct contact"
+msgstr ""
+
+#: templates/contact.html:53
+msgid "Response time"
+msgstr "Χρόνος απόκρισης"
+
+#: templates/contact.html:55
+msgid "We usually reply within 24–48 hours on business days."
+msgstr "Συνήθως ανταποκρινόμαστε εντός 24 έως 48 ωρών τις εργάσιμες ημέρες."
+
+#: templates/contact.html:60
+msgid "Security & privacy"
+msgstr "Ασφάλεια και εμπιστευτικότητα"
+
+#: templates/contact.html:62
+msgid "We never sell or share contact data."
+msgstr ""
+
+#: templates/contact.html:63
+msgid "No automated marketing emails."
+msgstr "Κανένα αυτοματοποιημένο e-mail μάρκετινγκ."
+
+#: templates/contact.html:65
+msgid "Security issues can be reported at"
+msgstr "Θέματα ασφάλειας μπορούν να αναφερθούν"
+
+#: templates/dashboard_helper.html:6
+msgid "My assignments"
+msgstr "Οι εργασίες μου"
+
+#: templates/dashboard_helper.html:31
+msgid "Requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:65 templates/volunteer_request_details.html:202
+msgid "Email requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:70 templates/volunteer_request_details.html:207
+msgid "Call requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:75
+msgid "Use only this contact for this request. Stay respectful and keep it focused on solving the issue."
+msgstr ""
+"Χρησιμοποιήστε μόνο αυτή την επαφή για αυτό το αίτημα. Να δείχνετε σεβασμό και να επικεντρώνεστε στην επίλυση του "
+"ζητήματος."
+
+#: templates/dashboard_helper.html:79 templates/volunteer_request_details.html:218
+msgid "Contact appears once the request is assigned, in progress, and the requester shared details."
+msgstr "Εφαρμογές επικοινωνίας μόλις δοθεί η αίτηση, σε εξέλιξη, και ο αιτών μοιράζονται λεπτομέρειες."
+
+#: templates/dashboard_helper.html:87
+msgid "You don't have any assigned requests yet."
+msgstr "Δεν έχεις καμία απαίτηση ακόμα."
+
+#: templates/dashboard_requester.html:7
+msgid "My requests"
+msgstr ""
+
+#: templates/dashboard_requester.html:9 templates/profile_requester.html:16
+msgid "Submit a new request"
+msgstr ""
+
+#: templates/dashboard_requester.html:44 templates/profile_requester.html:67
+msgid "Assigned"
+msgstr ""
+
+#: templates/dashboard_requester.html:46 templates/profile_requester.html:68
+msgid "We will notify you when contact is available."
+msgstr "Θα σας ενημερώσουμε όταν η επαφή είναι διαθέσιμη."
+
+#: templates/dashboard_requester.html:50
+msgid "Not assigned yet. A volunteer/pro will take it as soon as possible."
+msgstr "Δεν έχει ανατεθεί ακόμα. Ένας εθελοντής/προς θα το πάρει το συντομότερο δυνατό."
+
+#: templates/dashboard_requester.html:58 templates/profile_requester.html:80
+msgid "You haven't submitted any requests yet."
+msgstr "Δεν έχεις υποβάλει ακόμα αιτήματα."
+
+#: templates/dashboard_requester.html:59 templates/profile_requester.html:81
+msgid "Submit your first request"
+msgstr ""
+
+#: templates/dashboard_unknown_role.html:6
+msgid "Dashboard access"
+msgstr ""
+
+#: templates/dashboard_unknown_role.html:8
+msgid "We couldn't determine your role for dashboard access."
+msgstr "Δεν μπορέσαμε να καθορίσουμε το ρόλο σου για πρόσβαση στο ταμπλό."
+
+#: templates/dashboard_unknown_role.html:9
+msgid "Detected role:"
+msgstr "Ανιχνευόμενος ρόλος:"
+
+#: templates/dashboard_unknown_role.html:12
+msgid "Back to home"
+msgstr ""
+
+#: templates/export_data.html:105 templates/export_data.html:115
+msgid "Export data"
+msgstr "Εξαγωγή δεδομένων"
+
+#: templates/export_data.html:117
+msgid "Download data from the system in various formats"
+msgstr "Λήψη δεδομένων από το σύστημα σε διάφορες μορφές"
+
+#: templates/export_data.html:181
+msgid "Choose format"
+msgstr "Επιλογή μορφής"
+
+#: templates/export_data.html:189
+msgid "CSV"
+msgstr "CSV"
+
+#: templates/export_data.html:190
+msgid "Comma separated"
+msgstr "Διαχωρισμένο κόμμα"
+
+#: templates/export_data.html:198
+msgid "JSON"
+msgstr "JSON"
+
+#: templates/export_data.html:199
+msgid "Structured data"
+msgstr "Δομημένα δεδομένα"
+
+#: templates/export_data.html:207
+msgid "PDF"
+msgstr "PDF"
+
+#: templates/export_data.html:208
+msgid "Formatted document"
+msgstr "Μορφοποιημένο έγγραφο"
+
+#: templates/export_data.html:216
+msgid "Excel"
+msgstr "Excel"
+
+#: templates/export_data.html:217
+msgid "Spreadsheet"
+msgstr "Λογιστικό φύλλο"
+
+#: templates/export_data.html:236
+msgid "Preview"
+msgstr "Προεπισκόπηση"
+
+#: templates/export_data.html:244
+msgid "Export"
+msgstr "Εξαγωγή"
+
+#: templates/home_new_slim.html:3 templates/submit_request.html:23
+msgid "Accueil"
+msgstr "Σπίτι"
+
+#: templates/home_new_slim.html:13
+msgid "Infrastructure numérique de coordination des situations sociales."
+msgstr "Ψηφιακή υποδομή για το συντονισμό κοινωνικών καταστάσεων."
+
+#: templates/home_new_slim.html:17
+msgid "Orientation structurée. Coordination traçable. Pilotage responsable."
+msgstr "Δομημένος προσανατολισμός. Εντοπιζόμενος συντονισμός. Υπεύθυνη πλοήγηση."
+
+#: templates/home_new_slim.html:35
+msgid "Conçu et opéré depuis la France"
+msgstr "Σχεδιασμένο και λειτουργεί από τη Γαλλία"
+
+#: templates/home_new_slim.html:35
+msgid "Infrastructure à vocation européenne"
+msgstr "Υποδομές με ευρωπαϊκό προσανατολισμό"
+
+#: templates/home_new_slim.html:41
+msgid "Vue opérationnelle"
+msgstr "Λειτουργική άποψη"
+
+#: templates/home_new_slim.html:46
+msgid "Situations traitées"
+msgstr "Αντιμετωπιζόμενες καταστάσεις"
+
+#: templates/home_new_slim.html:51
+msgid "Intervenants actifs"
+msgstr "Ενεργοί ενδιαφερόμενοι"
+
+#: templates/home_new_slim.html:56
+msgid "Territoires"
+msgstr "Εδάφη"
+
+#: templates/home_new_slim.html:61
+msgid "Processus structuré"
+msgstr "Δομημένη διαδικασία"
+
+#: templates/home_new_slim.html:61
+msgid "Suivi traçable"
+msgstr "Εντοπισμός"
+
+#: templates/home_new_slim.html:61
+msgid "Coordination continue"
+msgstr "Συνεχής συντονισμός"
+
+#: templates/home_new_slim.html:72
+msgid "Fonctionnement structuré"
+msgstr "Δομημένη λειτουργία"
+
+#: templates/home_new_slim.html:74
+msgid "Un cadre clair pour organiser l'orientation et la coordination des situations."
+msgstr "Ένα σαφές πλαίσιο για την οργάνωση της κατεύθυνσης και του συντονισμού των καταστάσεων."
+
+#: templates/home_new_slim.html:80
+msgid "1. Orientation"
+msgstr "1. Προσανατολισμός"
+
+#: templates/home_new_slim.html:82
+msgid "Classification structurée des situations et qualification initiale."
+msgstr "Ταξινόμηση δομημένης κατάστασης και αρχική πιστοποίηση."
+
+#: templates/home_new_slim.html:87
+msgid "2. Coordination"
+msgstr "2. Συντονισμός"
+
+#: templates/home_new_slim.html:89
+msgid "Attribution responsable et suivi continu des interventions."
+msgstr "Υπεύθυνη κατανομή και συνεχής παρακολούθηση των παρεμβάσεων."
+
+#: templates/home_new_slim.html:94
+msgid "3. Pilotage"
+msgstr "3. Πιλότο"
+
+#: templates/home_new_slim.html:96
+msgid "Indicateurs opérationnels, visibilité et traçabilité des actions."
+msgstr "Επιχειρησιακοί δείκτες, ορατότητα και ιχνηλασιμότητα των δράσεων."
+
+#: templates/home_new_slim.html:107
+msgid "Une infrastructure, pas un annuaire."
+msgstr "Μια υποδομή, όχι ένας κατάλογος."
+
+#: templates/home_new_slim.html:109
+msgid ""
+"HelpChain fournit une couche de coordination destinée aux associations, services publics et réseaux professionnels, "
+"avec un cadre structuré et sécurisé."
+msgstr ""
+"Το HelpChain παρέχει ένα πλαίσιο συντονισμού για ενώσεις, δημόσιες υπηρεσίες και επαγγελματικά δίκτυα, με ένα "
+"δομημένο και ασφαλές πλαίσιο."
+
+#: templates/home_new_slim.html:115
+msgid "Découvrir l'espace professionnel"
+msgstr ""
+
+#: templates/magic_link_invalid.html:2
+msgid "Lien invalide"
+msgstr "Μη έγκυρος δεσμός"
+
+#: templates/magic_link_invalid.html:8
+msgid "Lien invalide ou expiré"
+msgstr "Μη έγκυρος ή ληγμένος σύνδεσμος"
+
+#: templates/magic_link_invalid.html:10
+msgid "Ce lien n’est plus valable. Veuillez demander un nouveau lien."
+msgstr "Αυτός ο σύνδεσμος δεν είναι πλέον έγκυρος. Παρακαλώ ζητήστε ένα νέο σύνδεσμο."
+
+#: templates/magic_link_invalid.html:14
+msgid "Register"
+msgstr "Μητρώο"
+
+#: templates/orienter.html:13
+msgid "Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée."
+msgstr ""
+
+#: templates/orienter.html:22
+msgid "Accès alimentaire"
+msgstr ""
+
+#: templates/orienter.html:22
+msgid "Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles."
+msgstr ""
+
+#: templates/orienter.html:23
+msgid "Accompagnement administratif"
+msgstr ""
+
+#: templates/orienter.html:23
+msgid "Appui dans les démarches administratives, accès aux droits et médiation institutionnelle."
+msgstr ""
+
+#: templates/orienter.html:24
+msgid "Soutien psychosocial"
+msgstr ""
+
+#: templates/orienter.html:24
+msgid "Orientation et coordination pour les situations nécessitant un accompagnement individuel."
+msgstr ""
+
+#: templates/orienter.html:25
+msgid "Accès aux soins"
+msgstr ""
+
+#: templates/orienter.html:25
+msgid "Mise en relation et suivi pour les situations liées à l’accès aux services de santé."
+msgstr ""
+
+#: templates/orienter.html:26
+msgid "Inclusion numérique"
+msgstr ""
+
+#: templates/orienter.html:26
+msgid "Accompagnement vers l’accès aux outils et services numériques."
+msgstr ""
+
+#: templates/orienter.html:27
+msgid "Urgences & situations critiques"
+msgstr ""
+
+#: templates/orienter.html:27
+msgid "Coordination prioritaire des situations nécessitant une prise en charge rapide."
+msgstr ""
+
+#: templates/orienter.html:45
+msgid "Coordination structurée"
+msgstr ""
+
+#: templates/orienter.html:59
+msgid "Formulaire guidé – moins de 3 minutes."
+msgstr ""
+
+#: templates/orienter.html:66
+msgid "Vous représentez une structure ?"
+msgstr ""
+
+#: templates/orienter.html:69
+msgid ""
+"HelpChain propose une infrastructure de coordination destinée aux associations, services publics et réseaux "
+"professionnels."
+msgstr ""
+
+#: templates/orienter.html:79
+msgid "Accéder à l’espace professionnel"
+msgstr ""
+
+#: templates/orienter.html:86
+msgid "Infrastructure numérique de coordination"
+msgstr ""
+
+#: templates/pilot_dashboard.html:2 templates/pilot_dashboard.html:13
+msgid "Pilot Dashboard"
+msgstr "Πιλότος ταμπλό"
+
+#: templates/pilot_dashboard.html:15
+msgid "Read-only KPI overview (no personal data)."
+msgstr "Επισκόπηση μόνο ανάγνωσης KPI (χωρίς προσωπικά δεδομένα)."
+
+#: templates/pilot_dashboard.html:16
+msgid "Generated:"
+msgstr "Δημιουργία:"
+
+#: templates/pilot_dashboard.html:23
+msgid "This page contains only aggregated metrics and excludes personal data (GDPR-safe)."
+msgstr "Αυτή η σελίδα περιέχει μόνο συγκεντρωτικές μετρήσεις και αποκλείει τα προσωπικά δεδομένα (GDPR-safe)."
+
+#: templates/pilot_dashboard.html:26
+msgid "Impact"
+msgstr "Επιπτώσεις"
+
+#: templates/pilot_dashboard.html:36
+msgid "Not done / not rejected"
+msgstr "Δεν έγινε / δεν απορρίφθηκε"
+
+#: templates/admin/requests.html:207 templates/admin/requests.html:282 templates/pilot_dashboard.html:40
+msgid "Closed"
+msgstr "Κλειστό"
+
+#: templates/pilot_dashboard.html:45
+msgid "Closed (last 7 days)"
+msgstr "Κλειστό (τελευταία 7 ημέρες)"
+
+#: templates/pilot_dashboard.html:50
+msgid "Avg resolution"
+msgstr "Ανάλυση Avg"
+
+#: templates/pilot_dashboard.html:59 templates/pilot_dashboard.html:78
+msgid "Unassigned > 48h"
+msgstr "Χωρίς διορισμό > 48 ώρες"
+
+#: templates/pilot_dashboard.html:61
+msgid "Open without owner"
+msgstr "Άνοιγμα χωρίς ιδιοκτήτη"
+
+#: templates/pilot_dashboard.html:65
+msgid "Top risks"
+msgstr "Βασικοί κίνδυνοι"
+
+#: templates/pilot_dashboard.html:68
+msgid "High priority open"
+msgstr "Άνοιγμα υψηλής προτεραιότητας"
+
+#: templates/pilot_dashboard.html:73
+msgid "Stale > 7 days"
+msgstr "Επίπεδο > 7 ημέρες"
+
+#: templates/pilot_dashboard.html:88
+msgid "Requests by status"
+msgstr "Αιτήσεις ανά καθεστώς"
+
+#: templates/pilot_dashboard.html:94
+msgid "Requests by category"
+msgstr "Αιτήσεις ανά κατηγορία"
+
+#: templates/pilot_dashboard.html:102
+#, python-format
+msgid "New requests (last %(days)s days)"
+msgstr "Νέες αιτήσεις (τελευταία   %(days)s  ημέρες)"
+
+#: templates/admin/requests.html:2 templates/pilot_dashboard.html:118 templates/search_results.html:37
+msgid "Requests"
+msgstr "Αιτήσεις"
+
+#: templates/pilot_dashboard.html:124
+msgid "New requests"
+msgstr "Νέες αιτήσεις"
+
+#: templates/privacy.html:2 templates/privacy.html:7
+msgid "Privacy policy"
+msgstr "Πολιτική απορρήτου"
+
+#: templates/privacy.html:10 templates/terms.html:10
+msgid "Last updated:"
+msgstr "Τελευταία ενημέρωση:"
+
+#: templates/privacy.html:14
+msgid ""
+"HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with "
+"volunteers. We do not sell your data."
+msgstr ""
+"ΒοήθειαChain είναι μια πλατφόρμα αλληλεγγύης. Συλλέγουμε μόνο ό,τι είναι απαραίτητο για να συνδέσουμε ανθρώπους που "
+"χρειάζονται βοήθεια με εθελοντές. Δεν πουλάμε τα δεδομένα σου."
+
+#: templates/privacy.html:19
+msgid "What data we collect"
+msgstr "Τι δεδομένα συλλέγουμε"
+
+#: templates/privacy.html:21
+msgid "Account and contact details you provide (name, email, phone - if you choose)."
+msgstr "Στοιχεία λογαριασμού και επικοινωνίας που παρέχετε (όνομα, email, τηλέφωνο - αν επιλέξετε)."
+
+#: templates/privacy.html:22
+msgid "Request information you submit (category, description, location - if needed for the service)."
+msgstr "Ζητήστε πληροφορίες που υποβάλλετε (κατηγορία, περιγραφή, τοποθεσία - αν χρειάζεται για την υπηρεσία)."
+
+#: templates/privacy.html:23
+msgid "Basic technical data for security (e.g., IP address, logs) to prevent abuse."
+msgstr "Βασικά τεχνικά δεδομένα για την ασφάλεια (π.χ. διεύθυνση IP, αρχεία καταγραφής) για την πρόληψη της κατάχρησης."
+
+#: templates/privacy.html:26
+msgid "How we use it"
+msgstr "Πώς το χρησιμοποιούμε;"
+
+#: templates/privacy.html:28
+msgid "To operate the service and match requests with volunteers."
+msgstr "Να λειτουργεί την υπηρεσία και να ταιριάζει με αιτήματα με εθελοντές."
+
+#: templates/privacy.html:29
+msgid "To communicate about your request (updates, messages, notifications)."
+msgstr "Για να επικοινωνήσετε σχετικά με το αίτημά σας (ενημερώσεις, μηνύματα, ειδοποιήσεις)."
+
+#: templates/privacy.html:30
+msgid "To keep the platform safe (fraud prevention, security monitoring)."
+msgstr "Για να διατηρηθεί η πλατφόρμα ασφαλής (πρόληψη της απάτης, παρακολούθηση της ασφάλειας)."
+
+#: templates/privacy.html:33
+msgid "What we do not do"
+msgstr "Αυτό που δεν κάνουμε"
+
+#: templates/privacy.html:35
+msgid "We do not sell personal data."
+msgstr "Δεν πουλάμε προσωπικά δεδομένα."
+
+#: templates/privacy.html:36
+msgid "We do not run advertising profiling."
+msgstr "Δεν κάνουμε διαφημιστικό προφίλ."
+
+#: templates/privacy.html:39
+msgid "Data retention"
+msgstr "Διατήρηση δεδομένων"
+
+#: templates/privacy.html:41
+msgid ""
+"We keep data only as long as needed for the service and legal obligations. You can request deletion of your account "
+"data."
+msgstr ""
+"Διατηρούμε δεδομένα μόνο για όσο διάστημα χρειάζεται για την υπηρεσία και τις νομικές υποχρεώσεις. Μπορείτε να "
+"ζητήσετε διαγραφή των δεδομένων του λογαριασμού σας."
+
+#: templates/privacy.html:44
+msgid "Your rights"
+msgstr "Τα δικαιώματά σας"
+
+#: templates/privacy.html:46
+msgid ""
+"You can request access, correction, or deletion of your personal data. You can also object to certain processing "
+"where applicable."
+msgstr ""
+"Μπορείτε να ζητήσετε πρόσβαση, διόρθωση ή διαγραφή των προσωπικών σας δεδομένων. Μπορείτε επίσης να αντιταχθείτε σε "
+"ορισμένες επεξεργασίες, όπου χρειάζεται."
+
+#: templates/privacy.html:51
+msgid "Questions about privacy? Contact us at"
+msgstr "Ερωτήσεις για την ιδιωτικότητα; Επικοινωνήστε μαζί μας στο"
+
+#: templates/professionnels.html:14
+msgid "Infrastructure sociale"
+msgstr ""
+
+#: templates/professionnels.html:14
+msgid "France"
+msgstr ""
+
+#: templates/professionnels.html:18
+msgid "Infrastructure numerique de coordination - pour associations et professionnels"
+msgstr ""
+
+#: templates/professionnels.html:22
+msgid "Centralisez les demandes, attribuez les dossiers et pilotez chaque action"
+msgstr ""
+
+#: templates/professionnels.html:23
+msgid "dans un cadre structuré, sécurisé et traçable."
+msgstr ""
+
+#: templates/professionnels.html:28
+msgid "Demander un accès professionnel — phase pilote"
+msgstr ""
+
+#: templates/professionnels.html:31
+msgid "Voir comment ca marche"
+msgstr ""
+
+#: templates/professionnels.html:36
+msgid "Phase pilote : accès validé manuellement afin de garantir un réseau structuré et fiable."
+msgstr ""
+
+#: templates/professionnels.html:39
+msgid "Conçu pour les associations et réseaux professionnels opérant en France."
+msgstr ""
+
+#: templates/professionnels.html:52
+msgid "Pour qui ?"
+msgstr ""
+
+#: templates/professionnels.html:55
+msgid "Une infrastructure conçue pour structurer la coordination entre acteurs locaux et professionnels qualifiés."
+msgstr ""
+
+#: templates/professionnels.html:62
+msgid "Associations & structures locales"
+msgstr ""
+
+#: templates/professionnels.html:64
+msgid "Centralisation structurée des demandes"
+msgstr ""
+
+#: templates/professionnels.html:65
+msgid "Attribution claire des responsables"
+msgstr ""
+
+#: templates/professionnels.html:66
+msgid "Suivi par statut avec historique complet"
+msgstr ""
+
+#: templates/professionnels.html:67
+msgid "Réduction des canaux informels"
+msgstr ""
+
+#: templates/professionnels.html:68
+msgid "Visibilité opérationnelle sur l’activité et les délais"
+msgstr ""
+
+#: templates/professionnels.html:75
+msgid "Professionnels partenaires"
+msgstr ""
+
+#: templates/professionnels.html:77
+msgid "Dossiers structurés et contextualisés"
+msgstr ""
+
+#: templates/professionnels.html:78
+msgid "Qualification préalable des demandes"
+msgstr ""
+
+#: templates/professionnels.html:79
+msgid "Cadre opérationnel clair (nouvelle -> en cours -> résolue)"
+msgstr ""
+
+#: templates/professionnels.html:80
+msgid "Traçabilité complète des actions"
+msgstr ""
+
+#: templates/professionnels.html:81
+msgid "Respect du temps et des priorités professionnelles"
+msgstr ""
+
+#: templates/professionnels.html:90
+msgid "HelpChain n’est pas une plateforme d’annonces."
+msgstr ""
+
+#: templates/professionnels.html:93
+msgid "C’est une infrastructure de coordination structurée."
+msgstr ""
+
+#: templates/professionnels.html:105
+msgid "Comment fonctionne HelpChain"
+msgstr ""
+
+#: templates/professionnels.html:113
+msgid "Entree structuree"
+msgstr ""
+
+#: templates/professionnels.html:115
+msgid "Une situation humaine devient un dossier exploitable :"
+msgstr ""
+
+#: templates/professionnels.html:116
+msgid "categorie, localisation, contexte."
+msgstr ""
+
+#: templates/professionnels.html:124
+msgid "Qualification & tri"
+msgstr ""
+
+#: templates/professionnels.html:126
+msgid "Infos cles verifiees. Reduction du bruit."
+msgstr ""
+
+#: templates/professionnels.html:127
+msgid "Protection du temps des equipes."
+msgstr ""
+
+#: templates/professionnels.html:135
+msgid "Matching cible"
+msgstr ""
+
+#: templates/professionnels.html:137
+msgid "La bonne demande au bon moment :"
+msgstr ""
+
+#: templates/professionnels.html:138
+msgid "pertinence, localisation, tracabilite."
+msgstr ""
+
+#: templates/professionnels.html:146
+msgid "Suivi & cloture"
+msgstr ""
+
+#: templates/professionnels.html:148
+msgid "Historique complet, statut clair,"
+msgstr ""
+
+#: templates/professionnels.html:149
+msgid "coordination mesurable."
+msgstr ""
+
+#: templates/professionnels.html:165
+msgid "Sécurité & conformité (RGPD)"
+msgstr ""
+
+#: templates/professionnels.html:168
+msgid ""
+"La protection des données, la gouvernance des accès et la traçabilité des actions constituent le socle de "
+"l’infrastructure."
+msgstr ""
+
+#: templates/professionnels.html:174
+msgid "Accès sécurisé et contrôle des rôles"
+msgstr ""
+
+#: templates/professionnels.html:175
+msgid "Journalisation complète des actions"
+msgstr ""
+
+#: templates/professionnels.html:181
+msgid "Données minimisées et usage encadré (RGPD)"
+msgstr ""
+
+#: templates/professionnels.html:182
+msgid "Hébergement conforme aux standards européens"
+msgstr ""
+
+#: templates/professionnels.html:195
+msgid "Rejoindre la phase pilote"
+msgstr ""
+
+#: templates/professionnels.html:197
+msgid "L'acces est valide manuellement afin de garantir un environnement structure,"
+msgstr ""
+
+#: templates/professionnels.html:198
+msgid "securise et utile."
+msgstr ""
+
+#: templates/professionnels.html:202
+msgid "Demander un acces professionnel"
+msgstr ""
+
+#: templates/profile_requester.html:9
+msgid "My profile"
+msgstr ""
+
+#: templates/profile_requester.html:11
+msgid "This is where you track your requests and their progress."
+msgstr "Εδώ παρακολουθείς τα αιτήματά σου και την πρόοδό τους."
+
+#: templates/profile_requester.html:15
+msgid "Dashboard"
+msgstr "Επιτραπέζιος πίνακας"
+
+#: templates/profile_requester.html:18
+msgid "Déconnexion demandeur"
+msgstr "Αιτών αποσύνδεσης"
+
+#: templates/profile_requester.html:33
+msgid "Account"
+msgstr ""
+
+#: templates/profile_requester.html:35
+msgid "Role"
+msgstr ""
+
+#: templates/profile_requester.html:38
+msgid "Session for"
+msgstr "Συνεδρία για"
+
+#: templates/profile_requester.html:41
+msgid "Email"
+msgstr ""
+
+#: templates/profile_requester.html:47
+msgid "Latest requests"
+msgstr "Υποβολή αίτησης"
+
+#: templates/profile_requester.html:72
+msgid "Not assigned yet. Someone will take it soon."
+msgstr "Δεν έχει ανατεθεί ακόμα. Κάποιος θα το πάρει σύντομα."
+
+#: templates/search_results.html:22
+msgid "Type a keyword to search across requests, categories and professionals."
+msgstr "Πληκτρολογήστε μια λέξη κλειδί για την αναζήτηση σε αιτήματα, κατηγορίες και επαγγελματίες."
+
+#: templates/search_results.html:30
+msgid "Results for"
+msgstr ""
+
+#: templates/search_results.html:34
+msgid "No results found."
+msgstr ""
+
+#: templates/search_results.html:38
+msgid "Categories"
+msgstr "Κατηγορίες"
+
+#: templates/search_results.html:39
+msgid "Professionals"
+msgstr ""
+
+#: templates/submit_request.html:18
+msgid "Déposer une demande d’aide"
+msgstr "Αίτηση ενίσχυσης"
+
+#: templates/submit_request.html:19
+msgid "Décrivez votre situation — on s’occupe du reste."
+msgstr "Περιγράψτε την κατάστασή σας — φροντίζουμε εμείς για τα υπόλοιπα."
+
+#: templates/submit_request.html:42
+msgid "Примери:"
+msgstr ""
+
+#: templates/submit_request.html:44 templates/submit_request.html:140
+msgid "Медицинска помощ"
+msgstr ""
+
+#: templates/submit_request.html:45 templates/submit_request.html:141
+msgid "Социална подкрепа"
+msgstr ""
+
+#: templates/submit_request.html:46 templates/submit_request.html:142
+msgid "Технически проблем"
+msgstr ""
+
+#: templates/submit_request.html:56
+msgid "Sufficient info"
+msgstr "Αρκετές πληροφορίες"
+
+#: templates/submit_request.html:57
+msgid "Add a bit more detail (20+ chars)"
+msgstr "Προσθέστε λίγο περισσότερες λεπτομέρειες (20+ δεξαμενές)"
+
+#: templates/submit_request.html:67
+msgid "What happens next"
+msgstr "Τι θα γίνει μετά;"
+
+#: templates/submit_request.html:68
+msgid "Une personne de confiance vous contacte"
+msgstr "Ένα έμπιστο άτομο επικοινωνεί μαζί σας"
+
+#: templates/submit_request.html:69
+msgid "Vos données servent uniquement à la coordination"
+msgstr "Τα δεδομένα σας χρησιμοποιούνται μόνο για συντονισμό"
+
+#: templates/submit_request.html:70
+msgid "En cas d’urgence, votre demande est priorisée"
+msgstr "Σε περίπτωση ανάγκης, το αίτημά σας έχει προτεραιότητα"
+
+#: templates/submit_request.html:88
+msgid "Вашето име"
+msgstr ""
+
+#: templates/submit_request.html:96
+msgid "Напр. Мария Иванова"
+msgstr ""
+
+#: templates/submit_request.html:99
+msgid "Поне 2 символа."
+msgstr ""
+
+#: templates/submit_request.html:112
+msgid "+359… / +33…"
+msgstr ""
+
+#: templates/submit_request.html:132
+msgid "Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter."
+msgstr "Προσθέστε ένα τηλέφωνο ή ένα email — ώστε να μπορέσουμε να επικοινωνήσουμε ξανά μαζί σας."
+
+#: templates/submit_request.html:137
+msgid "Категория"
+msgstr ""
+
+#: templates/submit_request.html:139
+msgid "Избери…"
+msgstr ""
+
+#: templates/submit_request.html:143 templates/volunteer_dashboard.html:644
+msgid "Административна помощ"
+msgstr "Διοικητική ενίσχυση"
+
+#: templates/submit_request.html:144
+msgid "Друго"
+msgstr ""
+
+#: templates/submit_request.html:146
+msgid "Ако не избереш, системата ще запише “general”."
+msgstr ""
+
+#: templates/submit_request.html:150
+msgid "Спешност"
+msgstr ""
+
+#: templates/submit_request.html:152
+msgid "Ниска"
+msgstr ""
+
+#: templates/submit_request.html:153
+msgid "Нормална"
+msgstr ""
+
+#: templates/submit_request.html:154
+msgid "Спешна"
+msgstr ""
+
+#: templates/submit_request.html:155
+msgid "Критична"
+msgstr ""
+
+#: templates/submit_request.html:157
+msgid "Това влияе на приоритета (low/medium/high)."
+msgstr ""
+
+#: templates/submit_request.html:161
+msgid "Кратко заглавие (по избор)"
+msgstr ""
+
+#: templates/submit_request.html:170
+msgid "Напр. Нужен придружител до лекар"
+msgstr ""
+
+#: templates/submit_request.html:172
+msgid "Ако оставиш празно, системата ще го попълни автоматично."
+msgstr ""
+
+#: templates/submit_request.html:177
+msgid "Локация / адрес"
+msgstr ""
+
+#: templates/submit_request.html:185
+msgid "Град, квартал (без точен адрес, ако не е нужно)"
+msgstr ""
+
+#: templates/submit_request.html:199
+msgid "Напиши с 2–3 изречения какво се случва и каква помощ търсиш."
+msgstr ""
+
+#: templates/submit_request.html:201
+msgid "Минимум 10 символа."
+msgstr ""
+
+#: templates/submit_request.html:217
+msgid "I agree to the Privacy Policy (GDPR)."
+msgstr "Συμφωνώ με την Πολιτική Απορρήτου (GDPR)."
+
+#: templates/submit_request.html:223
+msgid "Отказ"
+msgstr ""
+
+#: templates/submit_request.html:224
+msgid "Изпрати заявка"
+msgstr ""
+
+#: templates/submit_request_check_email.html:3 templates/submit_request_check_email.html:9
+msgid "Проверете имейла си"
+msgstr "имейла си."
+
+#: templates/submit_request_check_email.html:11
+msgid "Изпратихме линк за потвърждение на:"
+msgstr ""
+
+#: templates/submit_request_check_email.html:21
+msgid "Отвори имейл приложението"
+msgstr "Отвори имейл ирилоението."
+
+#: templates/submit_request_check_email.html:29
+msgid "Копирай имейла"
+msgstr "имейла."
+
+#: templates/submit_request_check_email.html:38
+msgid "Линкът е валиден 15 минути."
+msgstr ""
+
+#: templates/submit_request_check_email.html:39
+msgid "Проверете и папките Spam/Promotions."
+msgstr "- Προβολές."
+
+#: templates/submit_request_check_email.html:55 templates/submit_request_check_email.html:140
+msgid "Изпрати отново"
+msgstr ""
+
+#: templates/submit_request_check_email.html:59
+msgid "Ако адресът е валиден, ще изпратим нов линк."
+msgstr ""
+
+#: templates/submit_request_check_email.html:65
+msgid "Сесията изтече. Моля, върнете се към формата."
+msgstr "Η συνεδρία έληξε. Παρακαλώ υποβάλετε ξανά την αίτηση."
+
+#: templates/submit_request_check_email.html:70
+msgid "Сгреших имейла / Подай заявката отново"
+msgstr "Η συνεδρία έληξε. Παρακαλώ υποβάλετε ξανά την αίτηση."
+
+#: templates/submit_request_check_email.html:121
+msgid "Копирано ✅"
+msgstr ""
+
+#: templates/submit_request_check_email.html:126
+msgid "Не успях да копирам. Опитай ръчно."
+msgstr "- Όχι, όχι."
+
+#: templates/submit_request_check_email.html:145
+msgid "Можете да изпратите отново след"
+msgstr ""
+
+#: templates/submit_request_check_email.html:146
+msgid "Изпращане..."
+msgstr "Αποστολή..."
+
+#: templates/terms.html:2 templates/terms.html:7
+msgid "Terms of service"
+msgstr "Όροι υπηρεσίας"
+
+#: templates/terms.html:14
+msgid ""
+"HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic "
+"rules to keep everyone safe."
+msgstr ""
+"Βοήθεια Η αλυσίδα βοηθά στη σύνδεση των ανθρώπων που χρειάζονται βοήθεια με εθελοντές. Χρησιμοποιώντας την πλατφόρμα,"
+" συμφωνείτε να ακολουθήσετε αυτούς τους βασικούς κανόνες για να κρατήσετε τους πάντες ασφαλείς."
+
+#: templates/terms.html:19
+msgid "Use of the platform"
+msgstr "Χρήση της πλατφόρμας"
+
+#: templates/terms.html:21
+msgid "Provide accurate information and use respectful language."
+msgstr "Παρέχετε ακριβείς πληροφορίες και χρησιμοποιήστε σεβαστή γλώσσα."
+
+#: templates/terms.html:22
+msgid "Do not post illegal, harmful, or abusive content."
+msgstr "Μην δημοσιεύετε παράνομο, βλαβερό ή καταχρηστικό περιεχόμενο."
+
+#: templates/terms.html:23
+msgid "Do not impersonate others or misrepresent your identity."
+msgstr "Μην υποδύεστε τους άλλους ή μην παραποιείτε την ταυτότητά σας."
+
+#: templates/terms.html:26
+msgid "Safety"
+msgstr "Ασφάλεια"
+
+#: templates/terms.html:28
+msgid ""
+"HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency "
+"services."
+msgstr ""
+"ΒοήθειαChain είναι μια πλατφόρμα σύνδεσης, όχι μια υπηρεσία έκτακτης ανάγκης. Εάν υπάρχει άμεσος κίνδυνος, "
+"επικοινωνήστε με τις τοπικές υπηρεσίες έκτακτης ανάγκης."
+
+#: templates/terms.html:29
+msgid "We may limit or suspend accounts to prevent abuse or protect the community."
+msgstr "Μπορεί να περιορίσουμε ή να αναστείλουμε λογαριασμούς για να αποτρέψουμε την κατάχρηση ή την προστασία της κοινότητας."
+
+#: templates/terms.html:32
+msgid "Liability"
+msgstr "Ευθύνη"
+
+#: templates/terms.html:34
+msgid ""
+"Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions "
+"taken by users. We encourage safe, transparent communication and caution when sharing personal details."
+msgstr ""
+"Ο εθελοντισμός περιλαμβάνει ανθρώπινες αλληλεπιδράσεις. Βοήθεια Η αλυσίδα δεν μπορεί να εγγυηθεί τα αποτελέσματα και "
+"δεν είναι υπεύθυνη για τις ενέργειες των χρηστών. Ενθαρρύνουμε την ασφαλή, διαφανή επικοινωνία και προσοχή κατά την "
+"ανταλλαγή προσωπικών στοιχείων."
+
+#: templates/terms.html:39
+msgid "Questions about these terms? Contact us at"
+msgstr "Ερωτήσεις για αυτούς τους όρους; Επικοινωνήστε μαζί μας στο"
+
+#: templates/volunteer_confirmation.html:2
+msgid "Кандидатурата е получена"
+msgstr "Кандидатурата е получена."
+
+#: templates/volunteer_confirmation.html:11
+msgid "Благодарим ти"
+msgstr "Ευχαριστώ."
+
+#: templates/volunteer_confirmation.html:14
+msgid "Получихме твоята кандидатура за доброволец."
+msgstr "Λάβαμε την αίτηση σου."
+
+#: templates/volunteer_confirmation.html:15
+msgid "Нищо не си задължен/длъжна на този етап."
+msgstr "Δεν έχετε καμία υποχρέωση σε αυτό το στάδιο."
+
+#: templates/volunteer_confirmation.html:19
+msgid "Какво следва"
+msgstr ""
+
+#: templates/volunteer_confirmation.html:21
+msgid "Преглеждаме информацията ти."
+msgstr "Ψάχνουμε τις πληροφορίες σου."
+
+#: templates/volunteer_confirmation.html:22
+msgid "При подходящи заявки ще можеш да избереш дали да се включиш."
+msgstr "Όταν εμφανίζονται σχετικές αιτήσεις, μπορείτε να επιλέξετε αν θέλετε να δεσμευθείτε."
+
+#: templates/volunteer_confirmation.html:23
+msgid "Ако решиш - ще се свържеш директно с човека в нужда."
+msgstr "Εάν αποφασίσετε, θα επικοινωνήσετε απευθείας με το άτομο που έχει ανάγκη."
+
+#: templates/volunteer_confirmation.html:27
+msgid "Няма автоматично включване."
+msgstr ""
+
+#: templates/volunteer_confirmation.html:27
+msgid "Ти контролираш ангажимента си."
+msgstr "Κρατάς τον έλεγχο της δέσμευσής σου."
+
+#: templates/volunteer_confirmation.html:33
+msgid "Към началната страница"
+msgstr "Επιστροφή στη ρεσεψιόν"
+
+#: templates/volunteer_confirmation.html:37
+msgid "Как работи HelpChain →"
+msgstr "Πώς Βοήθεια Chain Έργα →"
+
+#: templates/volunteer_confirmation.html:42
+msgid "Важно:"
+msgstr "Σημαντικό:"
+
+#: templates/volunteer_confirmation.html:42
+msgid "HelpChain не е платформа за спешни случаи и не замества институции."
+msgstr "ΒοήθειαChain δεν είναι μια πλατφόρμα έκτακτης ανάγκης και δεν αντικαθιστά τα ιδρύματα."
+
+#: templates/volunteer_dashboard.html:2 templates/volunteer_dashboard.html:16
+msgid "Моето табло"
+msgstr "Το ταμπλό μου"
+
+#: templates/volunteer_dashboard.html:18
+msgid ""
+"Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти "
+"решаваш</strong>."
+msgstr "Εδώ βλέπετε αιτήματα που ταιριάζουν με το προφίλ σας. Τίποτα δεν λαμβάνεται αυτόματα — αποφασίζετε."
+
+#: templates/volunteer_dashboard.html:124
+msgid "Recommended for you"
+msgstr "Συνιστάται για εσάς"
+
+#: templates/volunteer_dashboard.html:125
+msgid "Match score + urgency + freshness."
+msgstr "Ισοπαλία σκορ + επείγον + φρεσκάδα."
+
+#: templates/volunteer_dashboard.html:128
+msgid "matches"
+msgstr "ταίριασμα"
+
+#: templates/volunteer_dashboard.html:129
+msgid "Sorted by match score & urgency"
+msgstr "Ταξινόμηση ανά σκορ αγώνα & επείγον"
+
+#: templates/volunteer_dashboard.html:139
+msgid "Min match"
+msgstr "Ελάχιστος αγώνας"
+
+#: templates/admin/requests.html:204 templates/components/match_card.html:60 templates/volunteer_dashboard.html:146
+msgid "Priority"
+msgstr "Προτεραιότητα"
+
+#: templates/volunteer_dashboard.html:148
+msgid "All"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:149 templates/volunteer_dashboard.html:174
+msgid "Urgent only"
+msgstr "Επείγον μόνο"
+
+#: templates/volunteer_dashboard.html:150 templates/volunteer_dashboard.html:176
+msgid "High+"
+msgstr "Υψηλό+"
+
+#: templates/volunteer_dashboard.html:154
+msgid "Enable location in profile"
+msgstr "Προσβάσιμη ενοικίαση σε προφίλ"
+
+#: templates/volunteer_dashboard.html:156
+msgid "Near me"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:160
+msgid "Enable location in profile to use Near me."
+msgstr "Ενεργοποίηση τοποθεσίας στο προφίλ για χρήση Κοντά μου."
+
+#: templates/volunteer_dashboard.html:164
+msgid "Apply filters"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:179
+msgid "Near"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:191
+#, python-format
+msgid "We found %(n)s low-confidence matches (40-54%%)."
+msgstr "Βρήκαμε %(n)s αγώνες χαμηλής εμπιστοσύνης (40-54%)."
+
+#: templates/volunteer_dashboard.html:192
+msgid "Improve your profile to unlock stronger matches."
+msgstr "Βελτιώστε το προφίλ σας για να ξεκλειδώσετε ισχυρότερους αγώνες."
+
+#: templates/volunteer_dashboard.html:199
+msgid "Help us match you better"
+msgstr "Βοήθησέ μας να ταιριάξουμε καλύτερα."
+
+#: templates/volunteer_dashboard.html:200
+msgid "Add your location and a few skills. Then you will start seeing high-confidence matches."
+msgstr "Προσθέστε την τοποθεσία σας και μερικές δεξιότητες. Εκεί θα αρχίσετε να βλέπετε αγώνες υψηλής εμπιστοσύνης."
+
+#: templates/volunteer_dashboard.html:203
+msgid "Profile completeness"
+msgstr "Πλήρες προφίλ"
+
+#: templates/volunteer_dashboard.html:213
+msgid "Update my profile"
+msgstr "Ενημέρωση του προφίλ μου"
+
+#: templates/volunteer_dashboard.html:218
+msgid "No strong matches yet"
+msgstr "Δεν υπάρχουν ισχυρά σπίρτα ακόμα."
+
+#: templates/volunteer_dashboard.html:219
+msgid "Add more specific skills or enable location to improve matching."
+msgstr "Προσθέστε πιο συγκεκριμένες δεξιότητες ή ενεργοποιήστε την τοποθεσία για να βελτιώσετε το ταίριασμα."
+
+#: templates/volunteer_dashboard.html:222
+#, python-format
+msgid "Try 50%%"
+msgstr "Δοκίμασε το 50%."
+
+#: templates/volunteer_dashboard.html:224
+msgid "Improve my profile"
+msgstr "Βελτίωση του προφίλ μου"
+
+#: templates/volunteer_dashboard.html:256
+msgid "Показваме само липсващото, за да станеш готов за свързване."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:263 templates/volunteer_dashboard.html:269
+msgid "не е зададена"
+msgstr "δεν έχει οριστεί"
+
+#: templates/volunteer_dashboard.html:277
+msgid "Попълни профила"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:280
+msgid "Профилът е готов"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:282
+msgid "Ако искаш, можеш да обновиш наличност или умения по-късно."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:285
+msgid "Редактирай профила"
+msgstr "Επεξεργασία προφίλ"
+
+#: templates/volunteer_dashboard.html:291
+msgid "по избор"
+msgstr "Εμπειρία (προαιρετική)"
+
+#: templates/volunteer_dashboard.html:300
+msgid "All active requests"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:302
+msgid "Open requests ordered by freshness."
+msgstr "Ανοιχτά αιτήματα που παραγγέλθηκαν από τη φρεσκάδα."
+
+#: templates/volunteer_dashboard.html:305
+msgid "This list is not personalized. Use the section above for intelligent matching."
+msgstr "Αυτή η λίστα δεν είναι εξατομικευμένη. Χρησιμοποιήστε το παραπάνω τμήμα για έξυπνο ταίριασμα."
+
+#: templates/volunteer_dashboard.html:312 templates/volunteer_dashboard.html:711
+msgid "Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш."
+msgstr "Αυτή είναι πρόσκληση, όχι δέσμευση. Μπορείτε ελεύθερα να διαβάσετε τις λεπτομέρειες και να αποφασίσετε."
+
+#: templates/volunteer_dashboard.html:328 templates/volunteer_request_details.html:82
+msgid "Завършено"
+msgstr "Ολοκληρώθηκε"
+
+#: templates/volunteer_dashboard.html:331 templates/volunteer_request_details.html:84
+msgid "Отказано"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:337 templates/volunteer_request_details.html:86
+msgid "Нова"
+msgstr "Νέο"
+
+#: templates/volunteer_dashboard.html:342
+msgid "Assigned to you"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:345 templates/volunteer_request_details.html:93
+msgid "Одобрен/а"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:348 templates/volunteer_dashboard.html:431 templates/volunteer_dashboard.html:554
+#: templates/volunteer_dashboard.html:697 templates/volunteer_request_details.html:97
+msgid "В изчакване"
+msgstr "Σε αναμονή"
+
+#: templates/volunteer_dashboard.html:351 templates/volunteer_request_details.html:95
+msgid "Отхвърлен/а"
+msgstr "Απορρίπτεται"
+
+#: templates/volunteer_dashboard.html:361
+msgid "Нова заявка"
+msgstr "Νέα αίτηση"
+
+#: templates/volunteer_dashboard.html:372
+msgid "Assigned to you. Next action: open details."
+msgstr "Σου έχει ανατεθεί. Επόμενη δράση: ανοικτές λεπτομέρειες."
+
+#: templates/volunteer_dashboard.html:374
+msgid "В изчакване — ще получиш известие при потвърждение."
+msgstr "Εν αναμονή, θα ενημερωθείτε κατά την επιβεβαίωση."
+
+#: templates/volunteer_dashboard.html:387
+msgid "Благодарим! Заявката е маркирана като приключена."
+msgstr "Δεν ξέρω. Είμαι μέλος της οικογένειάς μου."
+
+#: templates/volunteer_dashboard.html:389
+msgid "Assigned to you. Next action: click “View details”."
+msgstr "Σου έχει ανατεθεί. Επόμενη ενέργεια: κλικ"
+
+#: templates/volunteer_dashboard.html:391
+msgid "Одобрен/а си. Отвори заявката за контакт и следващи стъпки."
+msgstr "Одоярен/а си. Отвори таявката та а контакт и и следваи стики."
+
+#: templates/volunteer_dashboard.html:393
+msgid "Тази заявка вече е поета. Виж други активни заявки."
+msgstr "Επιστρέφω αμέσως."
+
+#: templates/volunteer_dashboard.html:395
+msgid "Администратор преглежда интереса ти. Ще получиш известие."
+msgstr "ти."
+
+#: templates/volunteer_dashboard.html:397
+msgid "Натисни “Искам да помогна”, за да поискаш достъп."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:408 templates/volunteer_dashboard.html:511 templates/volunteer_dashboard.html:722
+#, python-format
+msgid "Виждаш тази заявка, защото съвпада с профила ти в %(loc)s"
+msgstr "Βλέπετε αυτό το αίτημα επειδή ταιριάζει με το προφίλ σας στο   %(loc)s  "
+
+#: templates/volunteer_dashboard.html:410 templates/volunteer_dashboard.html:513 templates/volunteer_dashboard.html:722
+msgid "Виждаш тази заявка, защото съвпада с профила ти"
+msgstr "Βλέπετε αυτό το αίτημα επειδή ταιριάζει με το προφίλ σας."
+
+#: templates/volunteer_dashboard.html:418 templates/volunteer_dashboard.html:428
+msgid "Виж други активни заявки"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:423 templates/volunteer_dashboard.html:655 templates/volunteer_dashboard.html:709
+msgid "Виж детайли"
+msgstr "Δείτε λεπτομέρειες"
+
+#: templates/volunteer_dashboard.html:437
+msgid "Искам да помогна"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:467
+msgid "Това изпраща сигнал към админите."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:471
+msgid "Нищо не се поема автоматично."
+msgstr "Τίποτα δεν γίνεται αυτόματα."
+
+#: templates/volunteer_dashboard.html:479
+msgid "Няма активни заявки в момента"
+msgstr "Καμία ενεργή αίτηση αυτή τη στιγμή"
+
+#: templates/volunteer_dashboard.html:484
+msgid "По-точна локация + 2–3 умения = по-бърз match."
+msgstr "Πιο ακριβής τοποθεσία + 2–3 δεξιότητες = ταχύτερη ταύτιση."
+
+#: templates/volunteer_dashboard.html:487
+msgid "Виж пример"
+msgstr "Βλέπε παράδειγμα"
+
+#: templates/volunteer_dashboard.html:489
+msgid "Това е само пример — реалните заявки ще се покажат автоматично."
+msgstr "Αυτό είναι απλώς ένα δείγμα — τα πραγματικά αιτήματα θα εμφανιστούν αυτόματα."
+
+#: templates/volunteer_dashboard.html:495 templates/volunteer_dashboard.html:704
+msgid "Примерна заявка"
+msgstr "Αίτηση δείγματος"
+
+#: templates/volunteer_dashboard.html:499 templates/volunteer_dashboard.html:705
+msgid "току-що"
+msgstr "Μόλις τώρα."
+
+#: templates/volunteer_dashboard.html:502 templates/volunteer_dashboard.html:706
+msgid "Пример (демо)"
+msgstr "Δείγμα (demo)"
+
+#: templates/volunteer_dashboard.html:506 templates/volunteer_dashboard.html:707
+msgid "Току-що се появи. Провери дали ти е удобно."
+msgstr "Απλά εμφανίστηκε. Δες αν σου ταιριάζει."
+
+#: templates/volunteer_dashboard.html:508 templates/volunteer_dashboard.html:708
+msgid "Човек търси помощ за документи и насоки къде да ги подаде."
+msgstr "Κάποιος χρειάζεται βοήθεια με έγγραφα και πού να τα υποβάλει."
+
+#: templates/volunteer_dashboard.html:540 templates/volunteer_dashboard.html:546
+msgid "Моите заявки"
+msgstr "Τα αιτήματά μου"
+
+#: templates/volunteer_dashboard.html:542
+msgid "Виж подадените от теб заявки и статуса им."
+msgstr "Δείτε τα αιτήματα που υποβάλατε και την κατάστασή τους."
+
+#: templates/volunteer_dashboard.html:565
+msgid "Одобрени"
+msgstr "Εγκεκριμένο"
+
+#: templates/volunteer_dashboard.html:576
+msgid "Отказани"
+msgstr "Απορρίπτεται"
+
+#: templates/volunteer_dashboard.html:585
+msgid "Няма заявки в този статус"
+msgstr "Καμία αίτηση σε αυτή την κατάσταση"
+
+#: templates/volunteer_dashboard.html:599
+msgid "Виж"
+msgstr "Προβολή"
+
+#: templates/volunteer_dashboard.html:638
+msgid "Как ще изглежда заявка"
+msgstr "Πώς μοιάζει ένα αίτημα"
+
+#: templates/volunteer_dashboard.html:639
+msgid "Пример, за да знаеш какво да очакваш."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:646
+msgid "Онлайн"
+msgstr "Σύνδεση"
+
+#: templates/volunteer_dashboard.html:649
+msgid "Помощ с документи"
+msgstr "Βοήθεια για έγγραφα"
+
+#: templates/volunteer_dashboard.html:651
+msgid "Човек търси помощ за попълване на документи и ориентация къде да подаде заявление."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:656 templates/volunteer_dashboard.html:710
+#: templates/volunteer_request_details.html:15
+msgid "Ще помогна"
+msgstr "Θα βοηθήσω"
+
+#: templates/volunteer_dashboard.html:660
+msgid "Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш."
+msgstr "Δεν χρειάζεται να απαντάς σε κάθε αίτημα. Διαλέγεις πότε και πώς να βοηθήσεις."
+
+#: templates/volunteer_dashboard.html:667
+msgid "Потвърди помощта"
+msgstr "Επιβεβαίωση της ενίσχυσης"
+
+#: templates/volunteer_dashboard.html:669
+msgid "Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:674
+msgid "Откажи"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:677
+msgid "Да, ще помогна"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:684
+msgid "Помощта е заявена. Очаква се кратко потвърждение от екипа."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:688
+msgid "Детайлите ще се показват тук. Нищо не е изпратено автоматично."
+msgstr "Οι λεπτομέρειες θα εμφανιστούν εδώ. Τίποτα δεν στάλθηκε αυτόματα."
+
+#: templates/volunteer_dashboard.html:694
+msgid "ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница."
+msgstr "Έτσι θα είναι οι λεπτομέρειες. Τα πραγματικά αιτήματα θα ανοίξουν μια σελίδα."
+
+#: templates/volunteer_dashboard.html:695
+msgid "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."
+msgstr "Demo: Θα στείλετε ένα \"interest\". Είναι πρόσκληση, όχι δέσμευση. Τότε αποφασίζεις ήσυχα."
+
+#: templates/volunteer_dashboard.html:696
+msgid "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично."
+msgstr "Θα στείλεις ένα ενδιαφέρον. Είναι πρόσκληση, όχι δέσμευση. Τίποτα δεν λαμβάνεται αυτόματα."
+
+#: templates/volunteer_dashboard.html:696
+msgid "Продължаваме?"
+msgstr "Να συνεχίσω;"
+
+#: templates/volunteer_dashboard.html:698
+msgid "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:699
+msgid "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:700
+msgid "ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."
+msgstr "Αν Demo: Λεπτομέρειες θα εμφανιστούν εδώ. Τα πραγματικά αιτήματα θα ανοίξουν μια σελίδα με λεπτομέρειες."
+
+#: templates/volunteer_dashboard.html:701
+msgid "🟢 НОВО"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:702
+msgid "Какво става, ако натиснеш?"
+msgstr "Τι θα γίνει αν κάνεις κλικ;"
+
+#: templates/volunteer_dashboard.html:703
+msgid "Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично."
+msgstr ""
+"Κοιτάς τις λεπτομέρειες και στέλνεις ένα ενδιαφέρον. Τότε αποφάσισε ήσυχα αν αναλάβεις εσύ. Τίποτα δεν γίνεται "
+"αυτόματα."
+
+#: templates/volunteer_dashboard.html:712
+msgid "Обработва се…"
+msgstr "Θεραπεία..."
+
+#: templates/volunteer_login.html:6
+msgid "Intervenant access - HelpChain"
+msgstr "Πρόσβαση στο ηχείο - HelpChain"
+
+#: templates/volunteer_login.html:27
+msgid "Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe."
+msgstr "Χωρίς κωδικό πρόσβασης. Ένας ασφαλής σύνδεσμος μέσω e-mail (ισχύει 15 λεπτά)."
+
+#: templates/volunteer_login.html:51
+msgid "Email address"
+msgstr "Διεύθυνση ηλεκτρονικού ταχυδρομείου"
+
+#: templates/volunteer_login.html:60
+msgid "your@email.com"
+msgstr "your@email.com"
+
+#: templates/volunteer_login.html:70
+msgid "Recevoir mon lien de connexion"
+msgstr "Λάβετε το σύνδεσμο σύνδεσης μου"
+
+#: templates/volunteer_login.html:72
+msgid "~2 min."
+msgstr "~2 λεπτά."
+
+#: templates/volunteer_login.html:87
+msgid "Demander un accès intervenant"
+msgstr "Αιτούμαι ενδιάμεσης πρόσβασης."
+
+#: templates/volunteer_login.html:92
+msgid "Back to home page"
+msgstr "Επιστροφή στην αρχική σελίδα"
+
+#: templates/volunteer_login.html:97
+msgid "Login as a requester"
+msgstr "Υποβολή αίτησης"
+
+#: templates/volunteer_login.html:132
+msgid "Sending..."
+msgstr "Αποστολή..."
+
+#: templates/volunteer_notifications.html:11
+msgid "Unread"
+msgstr ""
+
+#: templates/volunteer_notifications.html:19
+msgid "No notifications yet"
+msgstr ""
+
+#: templates/volunteer_notifications.html:20
+msgid "When a request matches your profile, you'll see it here."
+msgstr "Όταν ένα αίτημα ταιριάζει με το προφίλ σου, θα το δεις εδώ."
+
+#: templates/volunteer_notifications.html:23
+msgid "View requests"
+msgstr ""
+
+#: templates/volunteer_notifications.html:64
+msgid "Open request"
+msgstr ""
+
+#: templates/volunteer_profile.html:2
+msgid "Профил"
+msgstr "Про"
+
+#: templates/volunteer_profile.html:11
+msgid "Профил на доброволец"
+msgstr "Про"
+
+#: templates/volunteer_profile.html:28 templates/volunteer_profile.html:35 templates/volunteer_profile.html:41
+#: templates/volunteer_profile.html:50 templates/volunteer_profile.html:57
+msgid "Затвори"
+msgstr "Затвори."
+
+#: templates/volunteer_profile.html:64
+msgid "Статус: Активен"
+msgstr "Статус: Активен Бостритин."
+
+#: templates/volunteer_profile.html:71
+msgid "Изход"
+msgstr "Изход"
+
+#: templates/volunteer_profile.html:80
+msgid "Готовност за свързване"
+msgstr "Έτοιμοι για σύνδεση"
+
+#: templates/volunteer_profile.html:82
+msgid "Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш."
+msgstr "Колкото по-точно е това, толкова по-качествени заявки  Ни"
+
+#: templates/volunteer_profile.html:88
+msgid "Локация:"
+msgstr "Гокация:"
+
+#: templates/volunteer_profile.html:89 templates/volunteer_profile.html:93 templates/volunteer_profile.html:101
+msgid "Липсва"
+msgstr "Λείπει"
+
+#: templates/volunteer_profile.html:92
+msgid "Наличност:"
+msgstr "Наличност:"
+
+#: templates/volunteer_profile.html:96
+msgid "Умения:"
+msgstr "Δυνάμεις:"
+
+#: templates/volunteer_profile.html:106 templates/volunteer_profile.html:259
+msgid "Как работи свързването →"
+msgstr "Как работи свързването →"
+
+#: templates/volunteer_profile.html:139
+msgid "Наличност"
+msgstr "Διαθεσιμότητα"
+
+#: templates/volunteer_profile.html:152
+msgid "Попълни профила си"
+msgstr "Попълни про"
+
+#: templates/volunteer_profile.html:154
+msgid "Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. Няма автоматични ангажименти."
+msgstr "Това е всичко. Когато има заявка, която пасва -  Няма автоматични ангажименти."
+
+#: templates/volunteer_profile.html:243
+msgid "Какво да очакваш"
+msgstr "Какво да очакваш."
+
+#: templates/volunteer_profile.html:244
+msgid "HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да помогнеш."
+msgstr "ΒοήθειαChain не е «чат за всичко». Показваме ти заявки, ти решаваш дали да помогнеш."
+
+#: templates/volunteer_profile.html:248
+msgid "Няма автоматични ангажименти."
+msgstr "Няма автоматични ангажименти."
+
+#: templates/volunteer_profile.html:249
+msgid "Можеш да откажеш без обяснения."
+msgstr "Можеш да откажеш без обяснения."
+
+#: templates/volunteer_profile.html:250
+msgid "Личните данни се показват само при нужда/съгласие."
+msgstr "Τα προσωπικά δεδομένα εμφανίζονται μόνο εάν είναι απαραίτητο ή απαιτείται συναίνεση."
+
+#: templates/volunteer_profile.html:254
+msgid "Съвет:"
+msgstr "Съвет: (στα Αγγλικά)."
+
+#: templates/volunteer_profile.html:255
+msgid "Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо."
+msgstr "Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо."
+
+#: templates/volunteer_request_details.html:2 templates/volunteer_request_details.html:28
+msgid "Детайли за заявка"
+msgstr ""
+
+#: templates/volunteer_request_details.html:18
+msgid "Демо: нищо не се записва."
+msgstr "Demo: τίποτα καταγεγραμμένο."
+
+#: templates/volunteer_request_details.html:20
+msgid "Следва кратък преглед и потвърждение."
+msgstr "Ακολουθεί σύντομη ανασκόπηση και επιβεβαίωση."
+
+#: templates/volunteer_request_details.html:29
+msgid "Назад"
+msgstr "Επιστροφή"
+
+#: templates/volunteer_request_details.html:37
+msgid "You marked that you can help."
+msgstr "Σημείωσες ότι μπορείς να βοηθήσεις."
+
+#: templates/volunteer_request_details.html:39
+msgid "Go to contact"
+msgstr ""
+
+#: templates/volunteer_request_details.html:43
+msgid "You marked that you can't help right now."
+msgstr "Σημείωσες ότι δεν μπορείς να βοηθήσεις τώρα."
+
+#: templates/volunteer_request_details.html:45 templates/volunteer_request_details.html:139
+msgid "Last signal"
+msgstr ""
+
+#: templates/volunteer_request_details.html:48
+msgid "You haven't sent a signal yet."
+msgstr "Δεν έχεις νιώσει σήμα ακόμα."
+
+#: templates/volunteer_request_details.html:53
+msgid "Заявка"
+msgstr ""
+
+#: templates/volunteer_request_details.html:67
+msgid "Няма описание."
+msgstr ""
+
+#: templates/volunteer_request_details.html:91
+msgid "Назначен/а"
+msgstr "Οριζόμενο"
+
+#: templates/volunteer_request_details.html:103
+msgid "Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека."
+msgstr "Έχετε το πράσινο φως για αυτό το αίτημα. Χρησιμοποιήστε τα παρακάτω κουμπιά για να επικοινωνήσετε με το άτομο."
+
+#: templates/volunteer_request_details.html:107
+msgid "Заявката е изпратена. Ще получиш известие при решение."
+msgstr "Το αίτημα στάλθηκε. Θα ενημερωθείτε όταν ληφθεί μια απόφαση."
+
+#: templates/volunteer_request_details.html:113
+msgid "Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно)."
+msgstr "Μόλις επιβεβαιωθεί η ομάδα, θα ενημερωθείτε και θα αποδεσμεύσουμε την επαφή (αν χρειαστεί)."
+
+#: templates/volunteer_request_details.html:115
+msgid "Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно."
+msgstr "Επιβεβαιώθηκε η αίτησή σας. Ακολουθήστε τις παρακάτω οδηγίες και ενεργήστε ήρεμα."
+
+#: templates/volunteer_request_details.html:117
+msgid "Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти."
+msgstr "Μην ανησυχείς, μπορείς να βοηθήσεις σε άλλο αίτημα. Ευχαριστώ."
+
+#: templates/volunteer_request_details.html:119
+msgid "Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем."
+msgstr "Αν μπορείτε να βοηθήσετε, κάντε κλικ στο \"Μπορώ να βοηθήσω\": μας λέει να σας συνδέσουμε."
+
+#: templates/volunteer_request_details.html:133
+msgid "Твоят сигнал"
+msgstr "Το σήμα σας."
+
+#: templates/volunteer_request_details.html:135
+msgid "Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно."
+msgstr "Είναι ένα γρήγορο σήμα για την ομάδα. Δεν είναι δέσμευση, μας βοηθά να αντιδράσουμε ακριβέστερα."
+
+#: templates/admin/request_details.html:221 templates/admin/requests.html:305 templates/volunteer_request_details.html:142
+msgid "Can help"
+msgstr ""
+
+#: templates/admin/request_details.html:223 templates/admin/requests.html:307 templates/volunteer_request_details.html:144
+msgid "Can't help"
+msgstr ""
+
+#: templates/volunteer_request_details.html:159
+msgid "Мога да помогна"
+msgstr ""
+
+#: templates/volunteer_request_details.html:163
+msgid "Не мога да помогна"
+msgstr ""
+
+#: templates/volunteer_request_details.html:169
+msgid "Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина."
+msgstr "Αν δεν μπορείς, δεν πειράζει. Καλύτερα ένα ειλικρινές σήμα παρά σιωπή."
+
+#: templates/volunteer_request_details.html:174
+msgid "Изчакване"
+msgstr ""
+
+#: templates/volunteer_request_details.html:176
+msgid "Потвърдено"
+msgstr "Επιβεβαίωση"
+
+#: templates/volunteer_request_details.html:213
+msgid "Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта."
+msgstr "Χρησιμοποιήστε αυτή την επαφή μόνο για αυτό το αίτημα. Να δείχνετε σεβασμό και ακρίβεια: επιταχύνει τη βοήθεια."
+
+#: templates/admin/login.html:6 templates/admin/login.html:19
+msgid "Admin login"
+msgstr "Σύνδεση διαχειριστή"
+
+#: templates/admin/login.html:32 templates/admin/login.html:41 templates/admin/login.html:42
+msgid "Username"
+msgstr "Όνομα χρήστη"
+
+#: templates/admin/login.html:48 templates/admin/login.html:57 templates/admin/login.html:58
+msgid "Password"
+msgstr "Κωδικός πρόσβασης"
+
+#: templates/admin/login.html:63
+msgid "Sign in as admin"
+msgstr "Σύνδεση ως διαχειριστής"
+
+#: templates/admin/mfa_setup.html:4
+msgid "Set up MFA"
+msgstr "Set MFA"
+
+#: templates/admin/mfa_setup.html:6
+msgid "Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code."
+msgstr "Σαρώστε τον κώδικα QR με το Google Authy / Microsoft Authenticator, στη συνέχεια εισάγετε τον 6-ψήφιο κώδικα."
+
+#: templates/admin/mfa_setup.html:14
+msgid "Manual key (if QR does not work):"
+msgstr "Χειροκίνητο κλειδί (αν το QR δεν λειτουργεί):"
+
+#: templates/admin/mfa_setup.html:21 templates/admin/mfa_setup.html:24
+msgid "Verification code (6 digits)"
+msgstr "Κωδικός επαλήθευσης (6 ψηφία)"
+
+#: templates/admin/mfa_setup.html:26
+msgid "Activate MFA"
+msgstr "Ενεργοποίηση MFA"
+
+#: templates/admin/request_details.html:219 templates/admin/requests.html:210
+msgid "Volunteer signal"
+msgstr ""
+
+#: templates/admin/requests.html:124 templates/admin/requests.html:203
+msgid "Status"
+msgstr "Κατάσταση"
+
+#: templates/admin/requests.html:125
+msgid "All statuses"
+msgstr "Όλες οι καταστάσεις"
+
+#: templates/admin/requests.html:136
+msgid "Search by name, title, description..."
+msgstr "Αναζήτηση με όνομα, τίτλο, περιγραφή..."
+
+#: templates/admin/requests.html:143
+msgid "Filter"
+msgstr "Αποθηκευμένο φίλτρο"
+
+#: templates/admin/requests.html:156
+msgid "Show deleted"
+msgstr "Εμφάνιση διαγραμμένων"
+
+#: templates/admin/requests.html:200
+msgid "ID"
+msgstr "ID"
+
+#: templates/admin/requests.html:201
+msgid "Title"
+msgstr "Τίτλος"
+
+#: templates/admin/requests.html:202
+msgid "Name"
+msgstr "Όνομα"
+
+#: templates/admin/requests.html:205
+msgid "Category"
+msgstr "Κατηγορία"
+
+#: templates/admin/requests.html:206 templates/admin/requests.html:266
+msgid "Created"
+msgstr "Απομακρυσμένο"
+
+#: templates/admin/requests.html:208
+msgid "SLA"
+msgstr "ΣΛΑ"
+
+#: templates/admin/requests.html:209
+msgid "Signals"
+msgstr ""
+
+#: templates/admin/requests.html:211 templates/admin/requests.html:357
+msgid "Details"
+msgstr "Λεπτομέρειες"
+
+#: templates/admin/requests.html:276
+msgid "No owner assigned"
+msgstr "Δεν έχει ανατεθεί ιδιοκτήτης"
+
+#: templates/admin/requests.html:276
+msgid "No owner"
+msgstr "Χωρίς ιδιοκτήτη"
+
+#: templates/admin/requests.html:279
+msgid "Stale request"
+msgstr "Υποβολή αίτησης"
+
+#: templates/admin/requests.html:279
+msgid "Stale"
+msgstr "Σταθερό"
+
+#: templates/admin/requests.html:361
+msgid "No results."
+msgstr "Καμία πίεση"
+
+#: templates/components/match_card.html:9
+#, python-format
+msgid "%(pct)s%% Match"
+msgstr "%(pct)s % % match"
+
+#: templates/components/match_card.html:11
+msgid "High priority"
+msgstr ""
+
+#: templates/components/match_card.html:22
+msgid "Untitled request"
+msgstr ""
+
+#: templates/components/match_card.html:38
+msgid "Skills"
+msgstr "Επιδεξιότητες"
+
+#: templates/components/match_card.html:41
+msgid "Skills match"
+msgstr "Ταίριασμα δεξιοτήτων"
+
+#: templates/components/match_card.html:49
+msgid "Location"
+msgstr ""
+
+#: templates/components/match_card.html:52
+msgid "Location match"
+msgstr "Ταίριασμα ενοικίου"
+
+#: templates/components/match_card.html:63
+msgid "Priority boost"
+msgstr ""
+
+#: templates/components/match_card.html:79
+msgid "View details"
+msgstr "Προβολή λεπτομερειών"
+
+#: templates/components/match_card.html:90
+msgid "I'll help"
+msgstr "Θα βοηθήσω."
+
+#: templates/components/match_card.html:97
+msgid "Dismiss this request for 48 hours"
+msgstr "Απορρίπτει την αίτηση αυτή για 48 ώρες"
+
+#: templates/components/match_card.html:99
+msgid "Not for me (48h)"
+msgstr "Όχι για μένα (48 ώρες)"
+
+#: templates/components/match_card.html:108
+#, python-format
+msgid "Why %(pct)s%%?"
+msgstr "Γιατί %(pct)s %;"
+

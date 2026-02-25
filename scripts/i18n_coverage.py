@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import sys
 from dataclasses import dataclass
 
 VISIBLE_HINTS = [
@@ -50,6 +51,16 @@ HIGH_VALUE_TEMPLATES = [
     "templates/volunteer_request_details.html",
     "templates/all_categories.html",
 ]
+
+
+def _configure_stdio_utf8() -> None:
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        if stream and hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
 
 
 @dataclass
@@ -184,6 +195,7 @@ def visibility_score(entry: PoEntry, only_templates: bool) -> int:
 
 
 def main():
+    _configure_stdio_utf8()
     ap = argparse.ArgumentParser()
     ap.add_argument("--lang", default="fr", help="Language code (fr|bg|en)")
     ap.add_argument("--top", type=int, default=30, help="Top N missing translations")

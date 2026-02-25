@@ -1,0 +1,2958 @@
+# Korean translations for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-02-24 23:30+0100\n"
+"PO-Revision-Date: 2026-02-24 13:47+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: ko\n"
+"Language-Team: ko <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: backend/appy_with_analytics.py:619
+msgid "Доброволецът е добавен успешно!"
+msgstr "Доброволец добавен успешно!"
+
+#: backend/helpchain_backend/src/copy.py:15
+msgid "HelpChain"
+msgstr "도움말Chain"
+
+#: backend/helpchain_backend/src/copy.py:18
+msgid "Подай заявка за помощ"
+msgstr "Подай заявка за помощ"
+
+#: backend/helpchain_backend/src/copy.py:20
+msgid "Попълни формата и екипът ни ще се свърже с теб възможно най-бързо."
+msgstr "Попълни формата и екипът ни ще се свкарже с теб вказможно най-бързо."
+
+#: backend/helpchain_backend/src/copy.py:22
+msgid "Изпрати заявката"
+msgstr "Изпрати заявката, 그리스"
+
+#: backend/helpchain_backend/src/copy.py:25
+msgid "Категории помощ"
+msgstr "Категории помощ помощ"
+
+#: backend/helpchain_backend/src/routes/main.py:549
+msgid "Your session has been cleared."
+msgstr "귀하의 세션이 명확했습니다."
+
+#: backend/helpchain_backend/src/routes/main.py:817 templates/dashboard_helper.html:25
+#: templates/dashboard_requester.html:28 templates/profile_requester.html:56 templates/submit_request.html:54
+msgid "Request"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:951
+msgid "If the email is valid, you will receive a login link."
+msgstr "이메일이 유효한 경우 로그인 링크를 받게 됩니다."
+
+#: backend/helpchain_backend/src/routes/main.py:1171 backend/helpchain_backend/src/routes/main.py:2415
+msgid "Sans mot de passe. Recevez un lien sécurisé par e-mail."
+msgstr "비밀번호 메일로 안전한 링크 (무효 15 분)."
+
+#: backend/helpchain_backend/src/routes/main.py:1173 backend/helpchain_backend/src/routes/main.py:2417
+msgid "Ouvrir mon lien de connexion"
+msgstr "연결 링크 열기"
+
+#: backend/helpchain_backend/src/routes/main.py:1175 backend/helpchain_backend/src/routes/main.py:2419
+msgid "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
+msgstr "버튼이 작동하지 않는 경우, 복사 및 붙여 넣기 이 링크:"
+
+#: backend/helpchain_backend/src/routes/main.py:1177 backend/helpchain_backend/src/routes/main.py:2421
+msgid "Données minimales, respect RGPD"
+msgstr "최소 데이터, GDPR 준수"
+
+#: backend/helpchain_backend/src/routes/main.py:1179 backend/helpchain_backend/src/routes/main.py:2423
+msgid "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
+msgstr "이 요청의 시작자가 아닌 경우,이 이메일을 무시합니다."
+
+#: backend/helpchain_backend/src/routes/main.py:1259
+msgid "You're all set! You can now see requests where your help matters."
+msgstr "모든 세트입니다! 도움을 요청할 수 있습니다."
+
+#: backend/helpchain_backend/src/routes/main.py:1846 backend/helpchain_backend/src/routes/main.py:1901
+#: backend/helpchain_backend/src/routes/main.py:1920
+msgid "Got it. Your signal was sent to the team."
+msgstr "뚱 베어 당신의 신호는 팀에 보내졌습니다."
+
+#: backend/helpchain_backend/src/routes/main.py:2139
+msgid "Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."
+msgstr "개인 정보 보호 정책 (GDPR)을 계속받습니다."
+
+#: backend/helpchain_backend/src/routes/main.py:2152
+msgid "Please shorten the text."
+msgstr "본문 바로가기"
+
+#: backend/helpchain_backend/src/routes/main.py:2154
+#, python-format
+msgid "Please shorten the %(field)s."
+msgstr "%(field)s을 단축하십시오."
+
+#: backend/helpchain_backend/src/routes/main.py:2163
+msgid "Invalid characters detected."
+msgstr "잘못된 문자가 감지되었습니다."
+
+#: backend/helpchain_backend/src/routes/main.py:2166
+msgid "Моля, въведете име (поне 2 символа)."
+msgstr "이름을 입력해주세요 (최소 2자)."
+
+#: backend/helpchain_backend/src/routes/main.py:2169
+msgid "Моля, опишете проблема (поне 10 символа)."
+msgstr "문제를 설명하십시오 (최소 10 자)."
+
+#: backend/helpchain_backend/src/routes/main.py:2172
+msgid "Моля, въведете поне телефон или имейл."
+msgstr "전화 또는 전자 메일을 입력하세요."
+
+#: backend/helpchain_backend/src/routes/main.py:2178
+msgid "Please select a valid category."
+msgstr "자주 묻는 질문"
+
+#: backend/helpchain_backend/src/routes/main.py:2182
+msgid "Please select a valid urgency."
+msgstr "유효한 비상사태를 선택하십시오."
+
+#: backend/helpchain_backend/src/routes/main.py:2216 backend/helpchain_backend/src/routes/main.py:2299
+msgid "Verified volunteers only"
+msgstr "검증된 자원 봉사자 만"
+
+#: backend/helpchain_backend/src/routes/main.py:2217 backend/helpchain_backend/src/routes/main.py:2300
+msgid "Fast matching - no bureaucracy"
+msgstr "빠른 일치 - bureaucracy 없음"
+
+#: backend/helpchain_backend/src/routes/main.py:2218 backend/helpchain_backend/src/routes/main.py:2301
+msgid "We keep your data private"
+msgstr "우리는 당신의 자료 개인을 지킵니다"
+
+#: backend/helpchain_backend/src/routes/main.py:2261
+msgid "Please correct the errors below."
+msgstr "아래 오류를 수정하십시오."
+
+#: backend/helpchain_backend/src/routes/main.py:2274
+#, python-format
+msgid "Заявка: %(category)s"
+msgstr "요구: %(category)s"
+
+#: backend/helpchain_backend/src/routes/main.py:2276
+msgid "Заявка за помощ"
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:2310
+msgid "Сесията изтече. Моля, подай заявката отново."
+msgstr "세션이 만료되었습니다. 신청서를 다시 제출하십시오."
+
+#: templates/about.html:3 templates/base.html:816
+msgid "À propos"
+msgstr "제품정보"
+
+#: templates/about.html:13
+msgid "À propos de HelpChain"
+msgstr ""
+
+#: templates/about.html:15
+msgid ""
+"HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en "
+"charge des situations sociales."
+msgstr ""
+
+#: templates/about.html:24 templates/all_categories.html:77 templates/orienter.html:57 templates/submit_request.html:4
+msgid "Déposer une demande"
+msgstr "지원하다"
+
+#: templates/about.html:31 templates/home_new_slim.html:24 templates/orienter.html:3 templates/orienter.html:11
+msgid "Orienter une demande"
+msgstr "Orient 요청"
+
+#: templates/about.html:36 templates/about.html:140 templates/orienter.html:86
+msgid "Conformité RGPD"
+msgstr ""
+
+#: templates/about.html:36 templates/about.html:147
+msgid "Hébergement européen"
+msgstr ""
+
+#: templates/about.html:36
+msgid "Traçabilité opérationnelle"
+msgstr ""
+
+#: templates/about.html:42
+msgid "Conçu et opéré depuis la France."
+msgstr ""
+
+#: templates/about.html:44
+msgid "Infrastructure à vocation européenne."
+msgstr ""
+
+#: templates/about.html:50
+msgid "Repères"
+msgstr ""
+
+#: templates/about.html:52
+msgid "Approche"
+msgstr ""
+
+#: templates/about.html:53
+msgid "Structurée"
+msgstr ""
+
+#: templates/about.html:56
+msgid "Pilotage"
+msgstr ""
+
+#: templates/about.html:57
+msgid "Opérationnel"
+msgstr ""
+
+#: templates/about.html:60
+msgid "Conformité"
+msgstr ""
+
+#: templates/about.html:61
+msgid "RGPD"
+msgstr ""
+
+#: templates/about.html:72
+msgid "Notre mission"
+msgstr ""
+
+#: templates/about.html:74
+msgid "Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable."
+msgstr ""
+
+#: templates/about.html:80
+msgid "Orientation claire"
+msgstr ""
+
+#: templates/about.html:82
+msgid "Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé."
+msgstr ""
+
+#: templates/about.html:87
+msgid "Coordination traçable"
+msgstr ""
+
+#: templates/about.html:89
+msgid "Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions."
+msgstr ""
+
+#: templates/about.html:94
+msgid "Pilotage opérationnel"
+msgstr ""
+
+#: templates/about.html:96
+msgid "Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement."
+msgstr ""
+
+#: templates/about.html:104
+msgid "Pour qui"
+msgstr ""
+
+#: templates/about.html:106
+msgid ""
+"HelpChain est pensé pour les organisations et acteurs territoriaux qui ont besoin d’un dispositif fiable de "
+"coordination."
+msgstr ""
+
+#: templates/about.html:113
+msgid "Associations"
+msgstr ""
+
+#: templates/about.html:113
+msgid "structuration des parcours, suivi et coordination multi-intervenants."
+msgstr ""
+
+#: templates/about.html:114
+msgid "Services publics"
+msgstr ""
+
+#: templates/about.html:114
+msgid "orientation, traçabilité et pilotage des prises en charge."
+msgstr ""
+
+#: templates/about.html:115
+msgid "Réseaux professionnels"
+msgstr ""
+
+#: templates/about.html:115
+msgid "coordination de l’intervention et continuité opérationnelle."
+msgstr ""
+
+#: templates/about.html:121
+msgid "Ce que HelpChain n’est pas"
+msgstr ""
+
+#: templates/about.html:123
+msgid ""
+"Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est une couche de coordination, avec des "
+"processus et de la gouvernance."
+msgstr ""
+
+#: templates/about.html:132
+msgid "Sécurité & conformité"
+msgstr ""
+
+#: templates/about.html:134
+msgid "Une base institutionnelle : conformité, contrôle et responsabilité."
+msgstr ""
+
+#: templates/about.html:142
+msgid "Minimisation des données, finalités explicites et gestion des accès."
+msgstr ""
+
+#: templates/about.html:149
+msgid "Données hébergées en Europe, avec une approche orientée sécurité."
+msgstr ""
+
+#: templates/about.html:154
+msgid "Traçabilité"
+msgstr ""
+
+#: templates/about.html:156
+msgid "Journalisation des actions clés, visibilité sur les délais et la prise en charge."
+msgstr ""
+
+#: templates/about.html:164
+msgid "Notre vision"
+msgstr ""
+
+#: templates/about.html:166
+msgid "Une coordination efficace repose sur la structure, la responsabilité et la transparence — pas sur l’improvisation."
+msgstr ""
+
+#: templates/about.html:175
+msgid "Commencer"
+msgstr ""
+
+#: templates/about.html:182 templates/home_new_slim.html:30
+msgid "Espace professionnel"
+msgstr ""
+
+#: templates/admin_analytics.html:132
+msgid "Export JSON"
+msgstr "JSON 내보내기"
+
+#: templates/admin_analytics.html:135
+msgid "Export CSV"
+msgstr "수출 CSV"
+
+#: templates/admin/requests.html:12 templates/admin_analytics.html:683
+msgid "⚠️ This export contains personal data."
+msgstr "⚠️ 이 수출은 개인 데이터를 포함합니다."
+
+#: templates/admin/requests.html:13 templates/admin_analytics.html:684
+msgid "Internal use only."
+msgstr "내부 사용 만."
+
+#: templates/admin/requests.html:15 templates/admin_analytics.html:686
+msgid "Are you sure you want to continue?"
+msgstr "계속하시겠습니까?"
+
+#: templates/admin_dashboard.html:2
+msgid "Admin panel"
+msgstr "관리자 패널"
+
+#: templates/admin_dashboard.html:12
+msgid "Pending"
+msgstr "관련 기사"
+
+#: templates/admin_dashboard.html:14
+msgid "In progress"
+msgstr "진행 중"
+
+#: templates/admin_dashboard.html:16
+msgid "Completed"
+msgstr "한국어"
+
+#: templates/admin_dashboard.html:18
+msgid "Cancelled"
+msgstr "이름 *"
+
+#: templates/admin_dashboard.html:20
+msgid "Unknown"
+msgstr "이름 *"
+
+#: templates/admin_dashboard.html:27
+msgid "Admin dashboard"
+msgstr "관리자 대시보드"
+
+#: templates/admin_dashboard.html:39 templates/pilot_dashboard.html:29
+msgid "Total requests"
+msgstr "총 요청"
+
+#: templates/admin_dashboard.html:48
+msgid "Pending requests"
+msgstr "Pending 요청"
+
+#: templates/admin_dashboard.html:57
+msgid "Total volunteers"
+msgstr "총 자원"
+
+#: templates/admin_dashboard.html:196
+msgid "Requests by city (Top 10)"
+msgstr "도시별 요청 (Top 10)"
+
+#: templates/admin_dashboard.html:209
+msgid "📈 Requests trend (last 30 days)"
+msgstr "📈 (마지막 30 일)"
+
+#: templates/admin_dashboard.html:225
+msgid "Общо заявки"
+msgstr "Общо заявки"
+
+#: templates/admin_dashboard.html:233
+msgid "Чакащи"
+msgstr "인기 카테고리"
+
+#: templates/admin_dashboard.html:241 templates/volunteer_dashboard.html:334 templates/volunteer_request_details.html:80
+msgid "В процес"
+msgstr "В процес"
+
+#: templates/admin_dashboard.html:249 templates/admin_dashboard.html:317
+msgid "Доброволци"
+msgstr "Доброволци의"
+
+#: templates/admin_dashboard.html:257
+msgid "Заявки"
+msgstr "다운로드"
+
+#: templates/admin_dashboard.html:263 templates/admin_dashboard.html:323
+msgid "Име"
+msgstr "사이트맵"
+
+#: templates/admin_dashboard.html:264 templates/submit_request.html:190 templates/volunteer_request_details.html:64
+msgid "Описание"
+msgstr "Описание"
+
+#: templates/admin_dashboard.html:265
+msgid "Статус"
+msgstr "뚱 베어"
+
+#: templates/admin_dashboard.html:266
+msgid "История"
+msgstr "카테고리"
+
+#: templates/admin_dashboard.html:267 templates/admin_roles.html:103 templates/admin_roles.html:184
+#: templates/admin_volunteers.html:289 templates/dashboard.html:267
+msgid "Actions"
+msgstr "푸시 알림 관리"
+
+#: templates/admin_dashboard.html:276
+msgid "Без име"
+msgstr "Без име"
+
+#: templates/admin_dashboard.html:277
+msgid "Без описание"
+msgstr "Без описание(으)로"
+
+#: templates/admin_dashboard.html:296
+msgid "No history"
+msgstr "이름 *"
+
+#: templates/admin_dashboard.html:300
+#, python-format
+msgid "Actions for request %(id)s"
+msgstr "요청의 동작   %(id)s  "
+
+#: templates/admin_dashboard.html:310
+msgid "Няма намерени заявки"
+msgstr "Няманамерени заявки"
+
+#: templates/admin_dashboard.html:324 templates/submit_request.html:117
+msgid "Имейл"
+msgstr "Имейл ·"
+
+#: templates/admin_dashboard.html:325 templates/submit_request.html:103
+msgid "Телефон"
+msgstr "사이트 맵"
+
+#: templates/admin_dashboard.html:326 templates/volunteer_profile.html:136
+msgid "Локация"
+msgstr "카테고리"
+
+#: templates/admin_dashboard.html:327 templates/volunteer_profile.html:142
+msgid "Умения"
+msgstr "Умения ·"
+
+#: templates/admin_dashboard.html:345
+msgid "Няма"
+msgstr "ღ♥ღ"
+
+#: templates/admin_dashboard.html:352
+msgid "Няма намерени доброволци"
+msgstr "Няма намерени доброволци"
+
+#: templates/all_categories.html:2
+msgid "Help categories - HelpChain"
+msgstr "도움말 카테고리 - HelpChain"
+
+#: templates/all_categories.html:16
+msgid "Catégories d'aide"
+msgstr ""
+
+#: templates/all_categories.html:17
+msgid "Dites-nous de quoi vous avez besoin — on s'occupe du reste."
+msgstr "필요한 것을 알려주십시오. 우리는 나머지를 돌봐."
+
+#: templates/all_categories.html:25
+msgid "J’ai besoin d’aide"
+msgstr "나는 도움이 필요."
+
+#: templates/all_categories.html:33
+msgid "Je veux aider"
+msgstr "나는 도움"
+
+#: templates/all_categories.html:56
+msgid "Demander de l’aide"
+msgstr "자주 묻는 질문"
+
+#: templates/all_categories.html:58 templates/submit_request.html:64
+msgid "Ça prend ~2 minutes"
+msgstr ""
+
+#: templates/all_categories.html:69
+msgid "Besoin d’aide ?"
+msgstr "도움이 필요하십니까?"
+
+#: templates/all_categories.html:70
+msgid "Déposez une demande — nous trouverons une personne pour vous répondre."
+msgstr "Apply — 우리는 당신에게 대답하는 사람을 찾을 것입니다."
+
+#: templates/all_categories.html:85
+msgid "Vous voulez aider ?"
+msgstr "당신은 도움을 원합니까?"
+
+#: templates/all_categories.html:86
+msgid "Rejoignez notre communauté de bénévoles."
+msgstr ""
+
+#: templates/all_categories.html:93
+msgid "Devenir bénévole"
+msgstr "봉사활동"
+
+#: templates/all_categories.html:101
+msgid "Retour à l’accueil"
+msgstr "자주 묻는 질문"
+
+#: templates/base.html:9 templates/base.html:14 templates/base.html:25
+msgid ""
+"Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation "
+"européenne."
+msgstr "구조적인 오리엔테이션, traceable 조정, 책임 조타. 프랑스에서 설계 및 운영, 유럽 직업."
+
+#: templates/base.html:13 templates/base.html:24
+msgid "HelpChain - Infrastructure numérique de coordination"
+msgstr "HelpChain - 디지털 조정 인프라"
+
+#: templates/base.html:58
+msgid "Skip to main content"
+msgstr "본문 바로가기"
+
+#: templates/base.html:133
+msgid "Toggle navigation"
+msgstr "회사소개"
+
+#: templates/base.html:143 templates/base.html:144 templates/base.html:351
+msgid "Language"
+msgstr "* 이름"
+
+#: templates/admin/requests.html:25 templates/base.html:159
+msgid "Home"
+msgstr "이름 *"
+
+#: templates/base.html:164
+msgid "Orienter"
+msgstr ""
+
+#: templates/base.html:169
+msgid "About"
+msgstr "제품정보"
+
+#: templates/base.html:174 templates/professionnels.html:2
+msgid "Professionnels"
+msgstr ""
+
+#: templates/base.html:181
+msgid "Pilot (KPI)"
+msgstr "파일럿 (KPI)"
+
+#: templates/base.html:182
+msgid "LIVE"
+msgstr "ღ♥ღ"
+
+#: templates/base.html:188 templates/magic_link_invalid.html:13
+msgid "Submit a request"
+msgstr "자주 묻는 질문"
+
+#: templates/admin/requests.html:2 templates/base.html:195
+msgid "Admin"
+msgstr "계정 관리"
+
+#: templates/base.html:222 templates/base.html:292
+msgid "Logout"
+msgstr "로그아웃"
+
+#: templates/base.html:229
+msgid "My dashboard"
+msgstr "내 대시보드"
+
+#: templates/base.html:239 templates/base.html:253 templates/base.html:333 templates/volunteer_dashboard.html:113
+#: templates/volunteer_notifications.html:2 templates/volunteer_notifications.html:8
+msgid "Notifications"
+msgstr "푸시 알림 관리"
+
+#: templates/base.html:244
+msgid "unread notifications"
+msgstr ""
+
+#: templates/base.html:255
+msgid "View all"
+msgstr ""
+
+#: templates/base.html:259
+msgid "No notifications"
+msgstr ""
+
+#: templates/base.html:260
+msgid "When you get matched, you'll see it here."
+msgstr "당신이 일치할 때, 당신은 여기에서 볼 수 있습니다."
+
+#: templates/base.html:269
+msgid "Notification"
+msgstr ""
+
+#: templates/base.html:270 templates/volunteer_notifications.html:44
+msgid "New"
+msgstr "- 한국어"
+
+#: templates/base.html:275
+msgid "Mark as seen & open"
+msgstr "표시 및 열기"
+
+#: templates/base.html:285 templates/base.html:782 templates/profile_requester.html:2
+msgid "Profile"
+msgstr "제품정보"
+
+#: templates/base.html:308
+msgid "Search…"
+msgstr ""
+
+#: templates/admin/requests.html:136 templates/base.html:309 templates/base.html:312 templates/search_results.html:2
+#: templates/search_results.html:7 templates/search_results.html:14 templates/search_results.html:15
+#: templates/search_results.html:17
+msgid "Search"
+msgstr "제품정보"
+
+#: templates/base.html:327
+msgid "Toggle theme"
+msgstr "관련 기사"
+
+#: templates/base.html:352 templates/base.html:447 templates/volunteer_dashboard.html:246
+#: templates/volunteer_dashboard.html:713
+msgid "Close"
+msgstr ""
+
+#: templates/base.html:403
+msgid "Accessibility settings"
+msgstr "Accessibility 설정"
+
+#: templates/base.html:427
+msgid "Accessibility menu"
+msgstr ""
+
+#: templates/base.html:442 templates/base.html:443
+msgid "Toggle accessibility settings"
+msgstr ""
+
+#: templates/base.html:453
+msgid "Accessibility"
+msgstr ""
+
+#: templates/base.html:455
+msgid "Adjust readability and motion. Settings are saved on this device."
+msgstr "접근성 및 동의를 조정하십시오. 설정은이 장치에 저장됩니다."
+
+#: templates/base.html:466 templates/base.html:470
+msgid "No options enabled"
+msgstr "옵션 없음"
+
+#: templates/base.html:467
+msgid "1 option enabled"
+msgstr "1 옵션 활성화"
+
+#: templates/base.html:468
+#, python-brace-format
+msgid "{count} options enabled"
+msgstr "{count} 옵션 활성화"
+
+#: templates/base.html:469
+msgid "Accessibility paused"
+msgstr ""
+
+#: templates/base.html:474 templates/base.html:477
+msgid "Following system"
+msgstr "시스템"
+
+#: templates/base.html:475
+msgid "Power off"
+msgstr ""
+
+#: templates/base.html:480
+msgid "Accessibility sections"
+msgstr ""
+
+#: templates/base.html:483
+msgid "Display"
+msgstr ""
+
+#: templates/base.html:487
+msgid "Navigation"
+msgstr ""
+
+#: templates/base.html:497 templates/base.html:650 templates/base.html:669 templates/base.html:743
+msgid "Translations"
+msgstr ""
+
+#: templates/base.html:501
+msgid "Audio"
+msgstr ""
+
+#: templates/base.html:505
+msgid "Motor"
+msgstr ""
+
+#: templates/base.html:509
+msgid "Eco"
+msgstr ""
+
+#: templates/base.html:513
+msgid "More"
+msgstr ""
+
+#: templates/base.html:520
+msgid "Display & reading"
+msgstr ""
+
+#: templates/base.html:521
+msgid "Improve readability and visual comfort"
+msgstr ""
+
+#: templates/base.html:527
+msgid "High contrast"
+msgstr ""
+
+#: templates/base.html:528
+msgid "Increase visual contrast across the interface"
+msgstr "인터페이스의 시각적 대비 증가"
+
+#: templates/base.html:536 templates/base.html:539
+msgid "Text size"
+msgstr "글자 크기"
+
+#: templates/base.html:537
+msgid "Choose a comfortable reading size"
+msgstr "안락한 독서 크기를 선택하십시오"
+
+#: templates/base.html:540
+msgid "Normal"
+msgstr "자주 묻는 질문"
+
+#: templates/base.html:541
+msgid "Large"
+msgstr "주요 특징"
+
+#: templates/base.html:542
+msgid "Extra large"
+msgstr "더 알아보기"
+
+#: templates/base.html:550
+msgid "Dyslexia-friendly font"
+msgstr "Dyslexia 친절한 일"
+
+#: templates/base.html:551
+msgid "Use a clearer fallback font stack with increased spacing"
+msgstr "향상된 간격을 가진 더 명확한 fallback 글꼴 더미를 사용하십시오"
+
+#: templates/base.html:560
+msgid "Navigation comfort"
+msgstr ""
+
+#: templates/base.html:561
+msgid "Reduce distraction and simplify movement across pages"
+msgstr ""
+
+#: templates/base.html:564
+msgid "Navigation profiles"
+msgstr ""
+
+#: templates/base.html:568
+msgid "Reading comfort"
+msgstr ""
+
+#: templates/base.html:569
+msgid "Larger text with cleaner reading spacing"
+msgstr ""
+
+#: templates/base.html:571 templates/base.html:578 templates/base.html:585 templates/dashboard_helper.html:43
+#: templates/pilot_dashboard.html:34
+msgid "Open"
+msgstr "기타"
+
+#: templates/base.html:576
+msgid "High contrast and larger text for central vision comfort"
+msgstr ""
+
+#: templates/base.html:583
+msgid "Extra-large text and simplified visuals for easier reading"
+msgstr ""
+
+#: templates/base.html:590
+msgid "Visual presets"
+msgstr ""
+
+#: templates/base.html:593
+msgid "Balanced"
+msgstr ""
+
+#: templates/base.html:594
+msgid "Keep a clean look without changing text size"
+msgstr ""
+
+#: templates/base.html:597
+msgid "Focus mode"
+msgstr ""
+
+#: templates/base.html:598
+msgid "Reduce motion and visual noise"
+msgstr ""
+
+#: templates/base.html:601
+msgid "High visibility"
+msgstr ""
+
+#: templates/base.html:602
+msgid "High contrast + bigger text"
+msgstr ""
+
+#: templates/base.html:610
+msgid "Reduce motion"
+msgstr "감소 모션"
+
+#: templates/base.html:611
+msgid "Limit animations and transitions"
+msgstr "한계 애니메이션 및 전환"
+
+#: templates/base.html:620
+msgid "Simplified mode"
+msgstr "단순 모드"
+
+#: templates/base.html:621
+msgid "Hide decorative elements and reduce visual noise"
+msgstr "장식 요소 숨기기 및 시각적 소음 감소"
+
+#: templates/base.html:630
+msgid "Audio support"
+msgstr ""
+
+#: templates/base.html:631
+msgid "Placeholder section for future speech and sound accessibility tools"
+msgstr ""
+
+#: templates/base.html:634
+msgid "Coming soon: read aloud, voice guidance, and audio feedback options."
+msgstr ""
+
+#: templates/base.html:640
+msgid "Motor assistance"
+msgstr ""
+
+#: templates/base.html:641
+msgid "Placeholder section for click targets, dwell, and keyboard assistance"
+msgstr ""
+
+#: templates/base.html:644
+msgid "Coming soon: larger touch targets, click delay settings, and keyboard navigation helpers."
+msgstr ""
+
+#: templates/base.html:651 templates/base.html:673
+msgid "Choose the interface language"
+msgstr "언어 인터페이스 선택"
+
+#: templates/base.html:684
+msgid "Eco display"
+msgstr ""
+
+#: templates/base.html:685
+msgid "Lighter pages for faster display and lower data/energy use"
+msgstr ""
+
+#: templates/base.html:691
+msgid "Eco mode"
+msgstr ""
+
+#: templates/base.html:692
+msgid "Lighter pages with reduced visual effects to improve speed and lower data/energy use"
+msgstr ""
+
+#: templates/base.html:701
+msgid "More options"
+msgstr ""
+
+#: templates/base.html:702
+msgid "This section is ready for future accessibility modules"
+msgstr ""
+
+#: templates/base.html:705
+msgid "You can add more grouped settings here later (audio, keyboard help, reading profiles, etc.)."
+msgstr ""
+
+#: templates/base.html:712
+msgid "Reset only this section"
+msgstr ""
+
+#: templates/base.html:715
+msgid "Reset"
+msgstr ""
+
+#: templates/base.html:718
+msgid "Restore system defaults"
+msgstr "Restore 시스템 기본값"
+
+#: templates/base.html:721
+msgid "Save as my profile"
+msgstr ""
+
+#: templates/base.html:724
+msgid "Done"
+msgstr "이름 *"
+
+#: templates/base.html:728
+msgid "Shortcut: Alt + A"
+msgstr "단축키: Alt + A"
+
+#: templates/base.html:738 templates/base.html:777 templates/pilot_dashboard.html:19
+msgid "Back"
+msgstr "이름 *"
+
+#: templates/base.html:744
+msgid "Select language"
+msgstr "한국어"
+
+#: templates/base.html:783
+msgid "Profile details"
+msgstr ""
+
+#: templates/base.html:788
+msgid "Preset description"
+msgstr ""
+
+#: templates/base.html:789
+msgid "This profile applies"
+msgstr ""
+
+#: templates/base.html:791
+msgid "Loading profile…"
+msgstr ""
+
+#: templates/base.html:796
+msgid "Apply profile"
+msgstr ""
+
+#: templates/base.html:812 templates/orienter.html:86
+msgid "Données hébergées en Europe"
+msgstr "유럽에서 호스팅되는 데이터"
+
+#: templates/base.html:812
+msgid "Conforme RGPD"
+msgstr "GDPR 준수"
+
+#: templates/base.html:812
+msgid "Sécurité renforcée"
+msgstr "향상된 보안"
+
+#: templates/base.html:812
+msgid "Développé et opéré en France"
+msgstr "프랑스에서 개발 및 운영"
+
+#: templates/base.html:815
+msgid "Footer"
+msgstr ""
+
+#: templates/base.html:818
+msgid "Mentions légales"
+msgstr "법률 정보"
+
+#: templates/base.html:820 templates/contact.html:2 templates/contact.html:9 templates/privacy.html:49
+#: templates/terms.html:37
+msgid "Contact"
+msgstr "제품정보"
+
+#: templates/base.html:824
+msgid "Accès intervenants"
+msgstr "Stakeholder 접근"
+
+#: templates/base.html:827
+msgid "Connexion intervenant"
+msgstr "Intervening 연결"
+
+#: templates/base.html:830
+msgid "Inscription intervenant"
+msgstr "이름 *"
+
+#: templates/become_volunteer.html:2 templates/volunteer_login.html:25
+msgid "Accès intervenant"
+msgstr "자주 묻는 질문"
+
+#: templates/become_volunteer.html:37
+msgid "Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes."
+msgstr "주소가 유효하다면 몇 분 안에 연결 링크를 받게됩니다."
+
+#: templates/become_volunteer.html:53
+msgid "Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes)."
+msgstr "비밀번호 메일로 안전한 링크 (무효 15 분)."
+
+#: templates/contact.html:11
+msgid "A question, a suggestion, or a concern? Write to us — a real human will read your message."
+msgstr "질문, 제안 또는 우려? 저희에게 쓰기: 인간은 당신의 메시지를 읽을 것입니다."
+
+#: templates/contact.html:19
+msgid "Your email"
+msgstr ""
+
+#: templates/contact.html:24
+msgid "Subject"
+msgstr "제목 내용"
+
+#: templates/contact.html:25
+msgid "What is this about?"
+msgstr "그것은 무엇입니까?"
+
+#: templates/contact.html:29
+msgid "Message"
+msgstr "이름 *"
+
+#: templates/contact.html:30
+msgid "Write your message here…"
+msgstr "자주 묻는 질문"
+
+#: templates/contact.html:35
+msgid "Send message"
+msgstr "공지사항"
+
+#: templates/contact.html:38
+msgid "This form is informational for now. Please use email below."
+msgstr "이 양식은 순간에 대한 정보입니다. 아래 이메일을 보내주십시오."
+
+#: templates/contact.html:46
+msgid "Direct contact"
+msgstr ""
+
+#: templates/contact.html:53
+msgid "Response time"
+msgstr "응답 시간"
+
+#: templates/contact.html:55
+msgid "We usually reply within 24–48 hours on business days."
+msgstr "우리는 보통 작업 일에 24 48 시간 이내에 응답합니다."
+
+#: templates/contact.html:60
+msgid "Security & privacy"
+msgstr "보안 및 기밀성"
+
+#: templates/contact.html:62
+msgid "We never sell or share contact data."
+msgstr ""
+
+#: templates/contact.html:63
+msgid "No automated marketing emails."
+msgstr "자동화된 이메일 마케팅 없음."
+
+#: templates/contact.html:65
+msgid "Security issues can be reported at"
+msgstr "안전 문제는 보고될 수 있습니다"
+
+#: templates/dashboard_helper.html:6
+msgid "My assignments"
+msgstr "내 할당"
+
+#: templates/dashboard_helper.html:31
+msgid "Requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:65 templates/volunteer_request_details.html:202
+msgid "Email requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:70 templates/volunteer_request_details.html:207
+msgid "Call requester"
+msgstr ""
+
+#: templates/dashboard_helper.html:75
+msgid "Use only this contact for this request. Stay respectful and keep it focused on solving the issue."
+msgstr "이 요청에 대한 만이 연락처를 사용합니다. 존중을 유지하고 문제를 해결하는 데 중점을 둡니다."
+
+#: templates/dashboard_helper.html:79 templates/volunteer_request_details.html:218
+msgid "Contact appears once the request is assigned, in progress, and the requester shared details."
+msgstr "한 번의 요청이 할당되고 진행 중이며, 요청자는 세부 정보를 공유합니다."
+
+#: templates/dashboard_helper.html:87
+msgid "You don't have any assigned requests yet."
+msgstr "아직 할당된 요청이 없습니다."
+
+#: templates/dashboard_requester.html:7
+msgid "My requests"
+msgstr ""
+
+#: templates/dashboard_requester.html:9 templates/profile_requester.html:16
+msgid "Submit a new request"
+msgstr ""
+
+#: templates/dashboard_requester.html:44 templates/profile_requester.html:67
+msgid "Assigned"
+msgstr ""
+
+#: templates/dashboard_requester.html:46 templates/profile_requester.html:68
+msgid "We will notify you when contact is available."
+msgstr "연락이 가능합니다."
+
+#: templates/dashboard_requester.html:50
+msgid "Not assigned yet. A volunteer/pro will take it as soon as possible."
+msgstr "아직 할당되지 않음. 자원 봉사자 / 전문가는 가능한 한 빨리 걸릴 것입니다."
+
+#: templates/dashboard_requester.html:58 templates/profile_requester.html:80
+msgid "You haven't submitted any requests yet."
+msgstr "아직 요청을 제출하지 않았습니다."
+
+#: templates/dashboard_requester.html:59 templates/profile_requester.html:81
+msgid "Submit your first request"
+msgstr ""
+
+#: templates/dashboard_unknown_role.html:6
+msgid "Dashboard access"
+msgstr ""
+
+#: templates/dashboard_unknown_role.html:8
+msgid "We couldn't determine your role for dashboard access."
+msgstr "대시보드 액세스의 역할을 결정할 수 없습니다."
+
+#: templates/dashboard_unknown_role.html:9
+msgid "Detected role:"
+msgstr "탐지된 역할:"
+
+#: templates/dashboard_unknown_role.html:12
+msgid "Back to home"
+msgstr ""
+
+#: templates/export_data.html:105 templates/export_data.html:115
+msgid "Export data"
+msgstr "수출 자료"
+
+#: templates/export_data.html:117
+msgid "Download data from the system in various formats"
+msgstr "다양한 형식의 시스템에서 데이터를 다운로드"
+
+#: templates/export_data.html:181
+msgid "Choose format"
+msgstr "형식 선택"
+
+#: templates/export_data.html:189
+msgid "CSV"
+msgstr "CSV 파일"
+
+#: templates/export_data.html:190
+msgid "Comma separated"
+msgstr "Comma 분리"
+
+#: templates/export_data.html:198
+msgid "JSON"
+msgstr "구글 맵"
+
+#: templates/export_data.html:199
+msgid "Structured data"
+msgstr "구조화된 자료"
+
+#: templates/export_data.html:207
+msgid "PDF"
+msgstr "PDF 파일"
+
+#: templates/export_data.html:208
+msgid "Formatted document"
+msgstr "관련 문서"
+
+#: templates/export_data.html:216
+msgid "Excel"
+msgstr "파일 형식"
+
+#: templates/export_data.html:217
+msgid "Spreadsheet"
+msgstr "스프레드시트"
+
+#: templates/export_data.html:236
+msgid "Preview"
+msgstr "다운로드"
+
+#: templates/export_data.html:244
+msgid "Export"
+msgstr "수출입"
+
+#: templates/home_new_slim.html:3 templates/submit_request.html:23
+msgid "Accueil"
+msgstr "이름 *"
+
+#: templates/home_new_slim.html:13
+msgid "Infrastructure numérique de coordination des situations sociales."
+msgstr "사회적 상황에 대한 디지털 인프라."
+
+#: templates/home_new_slim.html:17
+msgid "Orientation structurée. Coordination traçable. Pilotage responsable."
+msgstr "구조적인 오리엔테이션. Traceable 조정. 책임있는 파일럿."
+
+#: templates/home_new_slim.html:35
+msgid "Conçu et opéré depuis la France"
+msgstr "프랑스에서 설계 및 운영"
+
+#: templates/home_new_slim.html:35
+msgid "Infrastructure à vocation européenne"
+msgstr "유럽 직업을 가진 인프라"
+
+#: templates/home_new_slim.html:41
+msgid "Vue opérationnelle"
+msgstr "운영 전망"
+
+#: templates/home_new_slim.html:46
+msgid "Situations traitées"
+msgstr "Situations 주소"
+
+#: templates/home_new_slim.html:51
+msgid "Intervenants actifs"
+msgstr "법적고지"
+
+#: templates/home_new_slim.html:56
+msgid "Territoires"
+msgstr "관련 기사"
+
+#: templates/home_new_slim.html:61
+msgid "Processus structuré"
+msgstr "건설 공정"
+
+#: templates/home_new_slim.html:61
+msgid "Suivi traçable"
+msgstr "Traceable 추적"
+
+#: templates/home_new_slim.html:61
+msgid "Coordination continue"
+msgstr "관련 링크"
+
+#: templates/home_new_slim.html:72
+msgid "Fonctionnement structuré"
+msgstr "구조 작업"
+
+#: templates/home_new_slim.html:74
+msgid "Un cadre clair pour organiser l'orientation et la coordination des situations."
+msgstr "상황의 방향 및 조정을 조직하기위한 명확한 프레임 워크."
+
+#: templates/home_new_slim.html:80
+msgid "1. Orientation"
+msgstr "1. 방향"
+
+#: templates/home_new_slim.html:82
+msgid "Classification structurée des situations et qualification initiale."
+msgstr "구조 상황 분류 및 초기 자격."
+
+#: templates/home_new_slim.html:87
+msgid "2. Coordination"
+msgstr "2. 조정"
+
+#: templates/home_new_slim.html:89
+msgid "Attribution responsable et suivi continu des interventions."
+msgstr "책임있는 할당 및 개입의 지속적인 모니터링."
+
+#: templates/home_new_slim.html:94
+msgid "3. Pilotage"
+msgstr "3. 파일럿"
+
+#: templates/home_new_slim.html:96
+msgid "Indicateurs opérationnels, visibilité et traçabilité des actions."
+msgstr "작업의 조작 지표, 가시성 및 추적성."
+
+#: templates/home_new_slim.html:107
+msgid "Une infrastructure, pas un annuaire."
+msgstr "인프라, 디렉토리가 아닙니다."
+
+#: templates/home_new_slim.html:109
+msgid ""
+"HelpChain fournit une couche de coordination destinée aux associations, services publics et réseaux professionnels, "
+"avec un cadre structuré et sécurisé."
+msgstr "HelpChain은 건축 및 보안 프레임 워크와 함께 협회, 공공 서비스 및 전문 네트워크를위한 조정 층을 제공합니다."
+
+#: templates/home_new_slim.html:115
+msgid "Découvrir l'espace professionnel"
+msgstr ""
+
+#: templates/magic_link_invalid.html:2
+msgid "Lien invalide"
+msgstr "잘못된 링크"
+
+#: templates/magic_link_invalid.html:8
+msgid "Lien invalide ou expiré"
+msgstr "잘못된 또는 만료된 링크"
+
+#: templates/magic_link_invalid.html:10
+msgid "Ce lien n’est plus valable. Veuillez demander un nouveau lien."
+msgstr "이 링크는 더 이상 유효하지 않습니다. 새 링크를 요청하세요."
+
+#: templates/magic_link_invalid.html:14
+msgid "Register"
+msgstr "이름 *"
+
+#: templates/orienter.html:13
+msgid "Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée."
+msgstr ""
+
+#: templates/orienter.html:22
+msgid "Accès alimentaire"
+msgstr ""
+
+#: templates/orienter.html:22
+msgid "Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles."
+msgstr ""
+
+#: templates/orienter.html:23
+msgid "Accompagnement administratif"
+msgstr ""
+
+#: templates/orienter.html:23
+msgid "Appui dans les démarches administratives, accès aux droits et médiation institutionnelle."
+msgstr ""
+
+#: templates/orienter.html:24
+msgid "Soutien psychosocial"
+msgstr ""
+
+#: templates/orienter.html:24
+msgid "Orientation et coordination pour les situations nécessitant un accompagnement individuel."
+msgstr ""
+
+#: templates/orienter.html:25
+msgid "Accès aux soins"
+msgstr ""
+
+#: templates/orienter.html:25
+msgid "Mise en relation et suivi pour les situations liées à l’accès aux services de santé."
+msgstr ""
+
+#: templates/orienter.html:26
+msgid "Inclusion numérique"
+msgstr ""
+
+#: templates/orienter.html:26
+msgid "Accompagnement vers l’accès aux outils et services numériques."
+msgstr ""
+
+#: templates/orienter.html:27
+msgid "Urgences & situations critiques"
+msgstr ""
+
+#: templates/orienter.html:27
+msgid "Coordination prioritaire des situations nécessitant une prise en charge rapide."
+msgstr ""
+
+#: templates/orienter.html:45
+msgid "Coordination structurée"
+msgstr ""
+
+#: templates/orienter.html:59
+msgid "Formulaire guidé – moins de 3 minutes."
+msgstr ""
+
+#: templates/orienter.html:66
+msgid "Vous représentez une structure ?"
+msgstr ""
+
+#: templates/orienter.html:69
+msgid ""
+"HelpChain propose une infrastructure de coordination destinée aux associations, services publics et réseaux "
+"professionnels."
+msgstr ""
+
+#: templates/orienter.html:79
+msgid "Accéder à l’espace professionnel"
+msgstr ""
+
+#: templates/orienter.html:86
+msgid "Infrastructure numérique de coordination"
+msgstr ""
+
+#: templates/pilot_dashboard.html:2 templates/pilot_dashboard.html:13
+msgid "Pilot Dashboard"
+msgstr "파일럿 Dashboard"
+
+#: templates/pilot_dashboard.html:15
+msgid "Read-only KPI overview (no personal data)."
+msgstr "읽기 전용 KPI 개요 (개인 데이터 없음)."
+
+#: templates/pilot_dashboard.html:16
+msgid "Generated:"
+msgstr "공급 능력:"
+
+#: templates/pilot_dashboard.html:23
+msgid "This page contains only aggregated metrics and excludes personal data (GDPR-safe)."
+msgstr "이 페이지는 집계된 미터만 포함하고 개인 데이터 (GDPR-safe)를 제외합니다."
+
+#: templates/pilot_dashboard.html:26
+msgid "Impact"
+msgstr "제품정보"
+
+#: templates/pilot_dashboard.html:36
+msgid "Not done / not rejected"
+msgstr "수행되지 않음 / 거절되지 않음"
+
+#: templates/admin/requests.html:207 templates/admin/requests.html:282 templates/pilot_dashboard.html:40
+msgid "Closed"
+msgstr "【특징】"
+
+#: templates/pilot_dashboard.html:45
+msgid "Closed (last 7 days)"
+msgstr "휴관일(7일)"
+
+#: templates/pilot_dashboard.html:50
+msgid "Avg resolution"
+msgstr "Avg 해결책"
+
+#: templates/pilot_dashboard.html:59 templates/pilot_dashboard.html:78
+msgid "Unassigned > 48h"
+msgstr "할당되지 않음 > 48h"
+
+#: templates/pilot_dashboard.html:61
+msgid "Open without owner"
+msgstr "소유자없이 열기"
+
+#: templates/pilot_dashboard.html:65
+msgid "Top risks"
+msgstr "최고 위험"
+
+#: templates/pilot_dashboard.html:68
+msgid "High priority open"
+msgstr "높은 우선 순위"
+
+#: templates/pilot_dashboard.html:73
+msgid "Stale > 7 days"
+msgstr "이야기 > 7 일"
+
+#: templates/pilot_dashboard.html:88
+msgid "Requests by status"
+msgstr "상태별 요청"
+
+#: templates/pilot_dashboard.html:94
+msgid "Requests by category"
+msgstr "자주 묻는 질문"
+
+#: templates/pilot_dashboard.html:102
+#, python-format
+msgid "New requests (last %(days)s days)"
+msgstr "새로운 요청 (마지막   %(days)s   일)"
+
+#: templates/admin/requests.html:2 templates/pilot_dashboard.html:118 templates/search_results.html:37
+msgid "Requests"
+msgstr "제품정보"
+
+#: templates/pilot_dashboard.html:124
+msgid "New requests"
+msgstr "새로운 요청"
+
+#: templates/privacy.html:2 templates/privacy.html:7
+msgid "Privacy policy"
+msgstr "회사 소개"
+
+#: templates/privacy.html:10 templates/terms.html:10
+msgid "Last updated:"
+msgstr "마지막 업데이트:"
+
+#: templates/privacy.html:14
+msgid ""
+"HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with "
+"volunteers. We do not sell your data."
+msgstr "HelpChain은 견고한 플랫폼입니다. 우리는 자원 봉사자가 필요한 사람들을 연결하는 데 필요한 것을 수집합니다. 우리는 당신의 자료를 판매하지 않습니다."
+
+#: templates/privacy.html:19
+msgid "What data we collect"
+msgstr "우리가 수집 한 데이터"
+
+#: templates/privacy.html:21
+msgid "Account and contact details you provide (name, email, phone - if you choose)."
+msgstr "계정 및 연락처 세부 사항 제공 (이름, 이메일, 전화 - 당신이 선택한 경우)."
+
+#: templates/privacy.html:22
+msgid "Request information you submit (category, description, location - if needed for the service)."
+msgstr "제출 (종류, 설명, 위치 - 서비스에 필요한 경우)."
+
+#: templates/privacy.html:23
+msgid "Basic technical data for security (e.g., IP address, logs) to prevent abuse."
+msgstr "보안을 위한 기본 기술 데이터(예: IP 주소, 로그)"
+
+#: templates/privacy.html:26
+msgid "How we use it"
+msgstr "우리가 사용하는 방법"
+
+#: templates/privacy.html:28
+msgid "To operate the service and match requests with volunteers."
+msgstr "자원 봉사와 일치하기 위해."
+
+#: templates/privacy.html:29
+msgid "To communicate about your request (updates, messages, notifications)."
+msgstr "요청에 대해 통신하기 (업데이트, 메시지, 알림)."
+
+#: templates/privacy.html:30
+msgid "To keep the platform safe (fraud prevention, security monitoring)."
+msgstr "플랫폼 안전(fraud 예방, 보안 모니터링)을 유지하려면."
+
+#: templates/privacy.html:33
+msgid "What we do not do"
+msgstr "우리가하지 않는 것"
+
+#: templates/privacy.html:35
+msgid "We do not sell personal data."
+msgstr "개인정보를 판매하지 않습니다."
+
+#: templates/privacy.html:36
+msgid "We do not run advertising profiling."
+msgstr "광고 프로파일링을 실행하지 않습니다."
+
+#: templates/privacy.html:39
+msgid "Data retention"
+msgstr "데이터 보유"
+
+#: templates/privacy.html:41
+msgid ""
+"We keep data only as long as needed for the service and legal obligations. You can request deletion of your account "
+"data."
+msgstr "당사는 서비스 및 법적 의무에 필요한 한도에만 데이터 유지. 계정 데이터의 삭제를 요청할 수 있습니다."
+
+#: templates/privacy.html:44
+msgid "Your rights"
+msgstr "당신의 권리"
+
+#: templates/privacy.html:46
+msgid ""
+"You can request access, correction, or deletion of your personal data. You can also object to certain processing "
+"where applicable."
+msgstr "개인 데이터의 액세스, 수정 또는 삭제를 요청할 수 있습니다. 적용 가능한 특정 처리에 대상이 될 수 있습니다."
+
+#: templates/privacy.html:51
+msgid "Questions about privacy? Contact us at"
+msgstr "개인 정보 보호에 대한 질문? 자주 묻는 질문"
+
+#: templates/professionnels.html:14
+msgid "Infrastructure sociale"
+msgstr ""
+
+#: templates/professionnels.html:14
+msgid "France"
+msgstr ""
+
+#: templates/professionnels.html:18
+msgid "Infrastructure numerique de coordination - pour associations et professionnels"
+msgstr ""
+
+#: templates/professionnels.html:22
+msgid "Centralisez les demandes, attribuez les dossiers et pilotez chaque action"
+msgstr ""
+
+#: templates/professionnels.html:23
+msgid "dans un cadre structuré, sécurisé et traçable."
+msgstr ""
+
+#: templates/professionnels.html:28
+msgid "Demander un accès professionnel — phase pilote"
+msgstr ""
+
+#: templates/professionnels.html:31
+msgid "Voir comment ca marche"
+msgstr ""
+
+#: templates/professionnels.html:36
+msgid "Phase pilote : accès validé manuellement afin de garantir un réseau structuré et fiable."
+msgstr ""
+
+#: templates/professionnels.html:39
+msgid "Conçu pour les associations et réseaux professionnels opérant en France."
+msgstr ""
+
+#: templates/professionnels.html:52
+msgid "Pour qui ?"
+msgstr ""
+
+#: templates/professionnels.html:55
+msgid "Une infrastructure conçue pour structurer la coordination entre acteurs locaux et professionnels qualifiés."
+msgstr ""
+
+#: templates/professionnels.html:62
+msgid "Associations & structures locales"
+msgstr ""
+
+#: templates/professionnels.html:64
+msgid "Centralisation structurée des demandes"
+msgstr ""
+
+#: templates/professionnels.html:65
+msgid "Attribution claire des responsables"
+msgstr ""
+
+#: templates/professionnels.html:66
+msgid "Suivi par statut avec historique complet"
+msgstr ""
+
+#: templates/professionnels.html:67
+msgid "Réduction des canaux informels"
+msgstr ""
+
+#: templates/professionnels.html:68
+msgid "Visibilité opérationnelle sur l’activité et les délais"
+msgstr ""
+
+#: templates/professionnels.html:75
+msgid "Professionnels partenaires"
+msgstr ""
+
+#: templates/professionnels.html:77
+msgid "Dossiers structurés et contextualisés"
+msgstr ""
+
+#: templates/professionnels.html:78
+msgid "Qualification préalable des demandes"
+msgstr ""
+
+#: templates/professionnels.html:79
+msgid "Cadre opérationnel clair (nouvelle -> en cours -> résolue)"
+msgstr ""
+
+#: templates/professionnels.html:80
+msgid "Traçabilité complète des actions"
+msgstr ""
+
+#: templates/professionnels.html:81
+msgid "Respect du temps et des priorités professionnelles"
+msgstr ""
+
+#: templates/professionnels.html:90
+msgid "HelpChain n’est pas une plateforme d’annonces."
+msgstr ""
+
+#: templates/professionnels.html:93
+msgid "C’est une infrastructure de coordination structurée."
+msgstr ""
+
+#: templates/professionnels.html:105
+msgid "Comment fonctionne HelpChain"
+msgstr ""
+
+#: templates/professionnels.html:113
+msgid "Entree structuree"
+msgstr ""
+
+#: templates/professionnels.html:115
+msgid "Une situation humaine devient un dossier exploitable :"
+msgstr ""
+
+#: templates/professionnels.html:116
+msgid "categorie, localisation, contexte."
+msgstr ""
+
+#: templates/professionnels.html:124
+msgid "Qualification & tri"
+msgstr ""
+
+#: templates/professionnels.html:126
+msgid "Infos cles verifiees. Reduction du bruit."
+msgstr ""
+
+#: templates/professionnels.html:127
+msgid "Protection du temps des equipes."
+msgstr ""
+
+#: templates/professionnels.html:135
+msgid "Matching cible"
+msgstr ""
+
+#: templates/professionnels.html:137
+msgid "La bonne demande au bon moment :"
+msgstr ""
+
+#: templates/professionnels.html:138
+msgid "pertinence, localisation, tracabilite."
+msgstr ""
+
+#: templates/professionnels.html:146
+msgid "Suivi & cloture"
+msgstr ""
+
+#: templates/professionnels.html:148
+msgid "Historique complet, statut clair,"
+msgstr ""
+
+#: templates/professionnels.html:149
+msgid "coordination mesurable."
+msgstr ""
+
+#: templates/professionnels.html:165
+msgid "Sécurité & conformité (RGPD)"
+msgstr ""
+
+#: templates/professionnels.html:168
+msgid ""
+"La protection des données, la gouvernance des accès et la traçabilité des actions constituent le socle de "
+"l’infrastructure."
+msgstr ""
+
+#: templates/professionnels.html:174
+msgid "Accès sécurisé et contrôle des rôles"
+msgstr ""
+
+#: templates/professionnels.html:175
+msgid "Journalisation complète des actions"
+msgstr ""
+
+#: templates/professionnels.html:181
+msgid "Données minimisées et usage encadré (RGPD)"
+msgstr ""
+
+#: templates/professionnels.html:182
+msgid "Hébergement conforme aux standards européens"
+msgstr ""
+
+#: templates/professionnels.html:195
+msgid "Rejoindre la phase pilote"
+msgstr ""
+
+#: templates/professionnels.html:197
+msgid "L'acces est valide manuellement afin de garantir un environnement structure,"
+msgstr ""
+
+#: templates/professionnels.html:198
+msgid "securise et utile."
+msgstr ""
+
+#: templates/professionnels.html:202
+msgid "Demander un acces professionnel"
+msgstr ""
+
+#: templates/profile_requester.html:9
+msgid "My profile"
+msgstr ""
+
+#: templates/profile_requester.html:11
+msgid "This is where you track your requests and their progress."
+msgstr "이것은 당신이 당신의 요청과 진행 상황을 추적하는 곳입니다."
+
+#: templates/profile_requester.html:15
+msgid "Dashboard"
+msgstr "대시보드"
+
+#: templates/profile_requester.html:18
+msgid "Déconnexion demandeur"
+msgstr "로그인"
+
+#: templates/profile_requester.html:33
+msgid "Account"
+msgstr ""
+
+#: templates/profile_requester.html:35
+msgid "Role"
+msgstr ""
+
+#: templates/profile_requester.html:38
+msgid "Session for"
+msgstr "세션"
+
+#: templates/profile_requester.html:41
+msgid "Email"
+msgstr ""
+
+#: templates/profile_requester.html:47
+msgid "Latest requests"
+msgstr "자주 묻는 질문"
+
+#: templates/profile_requester.html:72
+msgid "Not assigned yet. Someone will take it soon."
+msgstr "아직 할당되지 않음. 누군가가 곧 걸릴 것입니다."
+
+#: templates/search_results.html:22
+msgid "Type a keyword to search across requests, categories and professionals."
+msgstr "요청에 따라 검색 키워드를 입력, 범주 및 전문가."
+
+#: templates/search_results.html:30
+msgid "Results for"
+msgstr ""
+
+#: templates/search_results.html:34
+msgid "No results found."
+msgstr ""
+
+#: templates/search_results.html:38
+msgid "Categories"
+msgstr "1,050원"
+
+#: templates/search_results.html:39
+msgid "Professionals"
+msgstr ""
+
+#: templates/submit_request.html:18
+msgid "Déposer une demande d’aide"
+msgstr "aid에 적용"
+
+#: templates/submit_request.html:19
+msgid "Décrivez votre situation — on s’occupe du reste."
+msgstr "당신의 상황을 설명 — 우리는 나머지를 돌봐."
+
+#: templates/submit_request.html:42
+msgid "Примери:"
+msgstr ""
+
+#: templates/submit_request.html:44 templates/submit_request.html:140
+msgid "Медицинска помощ"
+msgstr ""
+
+#: templates/submit_request.html:45 templates/submit_request.html:141
+msgid "Социална подкрепа"
+msgstr ""
+
+#: templates/submit_request.html:46 templates/submit_request.html:142
+msgid "Технически проблем"
+msgstr ""
+
+#: templates/submit_request.html:56
+msgid "Sufficient info"
+msgstr "자주 묻는 질문"
+
+#: templates/submit_request.html:57
+msgid "Add a bit more detail (20+ chars)"
+msgstr "조금 더 세부사항 (20+ 탱크)를 추가하십시오"
+
+#: templates/submit_request.html:67
+msgid "What happens next"
+msgstr "다음 것"
+
+#: templates/submit_request.html:68
+msgid "Une personne de confiance vous contacte"
+msgstr "신뢰할 수있는 사람의 접촉"
+
+#: templates/submit_request.html:69
+msgid "Vos données servent uniquement à la coordination"
+msgstr "귀하의 데이터는 조정에만 사용됩니다."
+
+#: templates/submit_request.html:70
+msgid "En cas d’urgence, votre demande est priorisée"
+msgstr "긴급의 경우, 귀하의 요청이 우선됩니다."
+
+#: templates/submit_request.html:88
+msgid "Вашето име"
+msgstr ""
+
+#: templates/submit_request.html:96
+msgid "Напр. Мария Иванова"
+msgstr ""
+
+#: templates/submit_request.html:99
+msgid "Поне 2 символа."
+msgstr ""
+
+#: templates/submit_request.html:112
+msgid "+359… / +33…"
+msgstr ""
+
+#: templates/submit_request.html:132
+msgid "Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter."
+msgstr "전화 또는 이메일 추가 - 그래서 우리는 다시 연락 할 수 있습니다."
+
+#: templates/submit_request.html:137
+msgid "Категория"
+msgstr ""
+
+#: templates/submit_request.html:139
+msgid "Избери…"
+msgstr ""
+
+#: templates/submit_request.html:143 templates/volunteer_dashboard.html:644
+msgid "Административна помощ"
+msgstr "관리 지원"
+
+#: templates/submit_request.html:144
+msgid "Друго"
+msgstr ""
+
+#: templates/submit_request.html:146
+msgid "Ако не избереш, системата ще запише “general”."
+msgstr ""
+
+#: templates/submit_request.html:150
+msgid "Спешност"
+msgstr ""
+
+#: templates/submit_request.html:152
+msgid "Ниска"
+msgstr ""
+
+#: templates/submit_request.html:153
+msgid "Нормална"
+msgstr ""
+
+#: templates/submit_request.html:154
+msgid "Спешна"
+msgstr ""
+
+#: templates/submit_request.html:155
+msgid "Критична"
+msgstr ""
+
+#: templates/submit_request.html:157
+msgid "Това влияе на приоритета (low/medium/high)."
+msgstr ""
+
+#: templates/submit_request.html:161
+msgid "Кратко заглавие (по избор)"
+msgstr ""
+
+#: templates/submit_request.html:170
+msgid "Напр. Нужен придружител до лекар"
+msgstr ""
+
+#: templates/submit_request.html:172
+msgid "Ако оставиш празно, системата ще го попълни автоматично."
+msgstr ""
+
+#: templates/submit_request.html:177
+msgid "Локация / адрес"
+msgstr ""
+
+#: templates/submit_request.html:185
+msgid "Град, квартал (без точен адрес, ако не е нужно)"
+msgstr ""
+
+#: templates/submit_request.html:199
+msgid "Напиши с 2–3 изречения какво се случва и каква помощ търсиш."
+msgstr ""
+
+#: templates/submit_request.html:201
+msgid "Минимум 10 символа."
+msgstr ""
+
+#: templates/submit_request.html:217
+msgid "I agree to the Privacy Policy (GDPR)."
+msgstr "개인 정보 보호 정책 (GDPR)에 동의합니다."
+
+#: templates/submit_request.html:223
+msgid "Отказ"
+msgstr ""
+
+#: templates/submit_request.html:224
+msgid "Изпрати заявка"
+msgstr ""
+
+#: templates/submit_request_check_email.html:3 templates/submit_request_check_email.html:9
+msgid "Проверете имейла си"
+msgstr "имейла си ·"
+
+#: templates/submit_request_check_email.html:11
+msgid "Изпратихме линк за потвърждение на:"
+msgstr ""
+
+#: templates/submit_request_check_email.html:21
+msgid "Отвори имейл приложението"
+msgstr "Отвори имейл ирилоението"
+
+#: templates/submit_request_check_email.html:29
+msgid "Копирай имейла"
+msgstr "имейла ·"
+
+#: templates/submit_request_check_email.html:38
+msgid "Линкът е валиден 15 минути."
+msgstr ""
+
+#: templates/submit_request_check_email.html:39
+msgid "Проверете и папките Spam/Promotions."
+msgstr "- 감정."
+
+#: templates/submit_request_check_email.html:55 templates/submit_request_check_email.html:140
+msgid "Изпрати отново"
+msgstr ""
+
+#: templates/submit_request_check_email.html:59
+msgid "Ако адресът е валиден, ще изпратим нов линк."
+msgstr ""
+
+#: templates/submit_request_check_email.html:65
+msgid "Сесията изтече. Моля, върнете се към формата."
+msgstr "세션이 만료되었습니다. 신청서를 다시 제출하십시오."
+
+#: templates/submit_request_check_email.html:70
+msgid "Сгреших имейла / Подай заявката отново"
+msgstr "세션이 만료되었습니다. 신청서를 다시 제출하십시오."
+
+#: templates/submit_request_check_email.html:121
+msgid "Копирано ✅"
+msgstr ""
+
+#: templates/submit_request_check_email.html:126
+msgid "Не успях да копирам. Опитай ръчно."
+msgstr "- 아니, 아니."
+
+#: templates/submit_request_check_email.html:145
+msgid "Можете да изпратите отново след"
+msgstr ""
+
+#: templates/submit_request_check_email.html:146
+msgid "Изпращане..."
+msgstr "이름 *"
+
+#: templates/terms.html:2 templates/terms.html:7
+msgid "Terms of service"
+msgstr "이용 약관"
+
+#: templates/terms.html:14
+msgid ""
+"HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic "
+"rules to keep everyone safe."
+msgstr "지원하다 Chain은 자원 봉사자와 도움을 필요로하는 사람들을 연결합니다. 플랫폼에서, 당신은 모든 것을 안전하게 유지하기 위해 이러한 기본 규칙을 따르는 것에 동의합니다."
+
+#: templates/terms.html:19
+msgid "Use of the platform"
+msgstr "플랫폼 사용"
+
+#: templates/terms.html:21
+msgid "Provide accurate information and use respectful language."
+msgstr "정확한 정보를 제공하고 존경받는 언어를 사용합니다."
+
+#: templates/terms.html:22
+msgid "Do not post illegal, harmful, or abusive content."
+msgstr "불법, 유해, 또는 학비 콘텐츠를 게시하지 마십시오."
+
+#: templates/terms.html:23
+msgid "Do not impersonate others or misrepresent your identity."
+msgstr "다른 사람이나 다른 사람의 정체성을 나타내지 마십시오."
+
+#: templates/terms.html:26
+msgid "Safety"
+msgstr "제품정보"
+
+#: templates/terms.html:28
+msgid ""
+"HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency "
+"services."
+msgstr "HelpChain은 긴급 서비스가 아닌 연결 플랫폼입니다. 즉각적인 위험이 있는 경우, 지역 비상 사태 서비스에 문의하십시오."
+
+#: templates/terms.html:29
+msgid "We may limit or suspend accounts to prevent abuse or protect the community."
+msgstr "우리는 남용을 방지하거나 커뮤니티를 보호 할 수있는 제한 또는 중단 계정이있을 수 있습니다."
+
+#: templates/terms.html:32
+msgid "Liability"
+msgstr "책임"
+
+#: templates/terms.html:34
+msgid ""
+"Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions "
+"taken by users. We encourage safe, transparent communication and caution when sharing personal details."
+msgstr "봉사는 인간의 상호 작용을 포함한다. 지원하다 Chain은 outcomes를 보장하고 사용자가 찍은 행동에 대해 책임을지지 않습니다. 개인 정보를 공유 할 때 안전하고 투명한 통신 및주의를 격려합니다."
+
+#: templates/terms.html:39
+msgid "Questions about these terms? Contact us at"
+msgstr "이 약관에 대한 질문? 자주 묻는 질문"
+
+#: templates/volunteer_confirmation.html:2
+msgid "Кандидатурата е получена"
+msgstr "Кандидатурата е получена"
+
+#: templates/volunteer_confirmation.html:11
+msgid "Благодарим ти"
+msgstr "감사합니다."
+
+#: templates/volunteer_confirmation.html:14
+msgid "Получихме твоята кандидатура за доброволец."
+msgstr "우리는 자원 봉사 신청을 받았습니다."
+
+#: templates/volunteer_confirmation.html:15
+msgid "Нищо не си задължен/длъжна на този етап."
+msgstr "이 단계에서 의무가 없습니다."
+
+#: templates/volunteer_confirmation.html:19
+msgid "Какво следва"
+msgstr ""
+
+#: templates/volunteer_confirmation.html:21
+msgid "Преглеждаме информацията ти."
+msgstr "우리는 당신의 정보를 찾고 있습니다."
+
+#: templates/volunteer_confirmation.html:22
+msgid "При подходящи заявки ще можеш да избереш дали да се включиш."
+msgstr "관련 요청이 나타날 때, 당신은 당신이 커밋 할 경우 선택할 수 있습니다."
+
+#: templates/volunteer_confirmation.html:23
+msgid "Ако решиш - ще се свържеш директно с човека в нужда."
+msgstr "당신이 결정하면, 당신은 직접 필요한 사람에게 연락 할 것입니다."
+
+#: templates/volunteer_confirmation.html:27
+msgid "Няма автоматично включване."
+msgstr ""
+
+#: templates/volunteer_confirmation.html:27
+msgid "Ти контролираш ангажимента си."
+msgstr "당신은 당신의 투입의 통제를 지킵니다."
+
+#: templates/volunteer_confirmation.html:33
+msgid "Към началната страница"
+msgstr "자주 묻는 질문"
+
+#: templates/volunteer_confirmation.html:37
+msgid "Как работи HelpChain →"
+msgstr "HelpChain 소개 작품 →"
+
+#: templates/volunteer_confirmation.html:42
+msgid "Важно:"
+msgstr "중요 :"
+
+#: templates/volunteer_confirmation.html:42
+msgid "HelpChain не е платформа за спешни случаи и не замества институции."
+msgstr "HelpChain은 비상 플랫폼이 아니며 기관을 대체하지 않습니다."
+
+#: templates/volunteer_dashboard.html:2 templates/volunteer_dashboard.html:16
+msgid "Моето табло"
+msgstr "내 대시보드"
+
+#: templates/volunteer_dashboard.html:18
+msgid ""
+"Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти "
+"решаваш</strong>."
+msgstr "프로필에 일치하는 요청이 있습니다. 아무것도 자동으로 촬영됩니다 — 당신은 결정합니다."
+
+#: templates/volunteer_dashboard.html:124
+msgid "Recommended for you"
+msgstr "당신을 위해 추천하는"
+
+#: templates/volunteer_dashboard.html:125
+msgid "Match score + urgency + freshness."
+msgstr "경기 점수 + 긴급 + 신선도."
+
+#: templates/volunteer_dashboard.html:128
+msgid "matches"
+msgstr "이름 *"
+
+#: templates/volunteer_dashboard.html:129
+msgid "Sorted by match score & urgency"
+msgstr "정렬 점수 및 긴급"
+
+#: templates/volunteer_dashboard.html:139
+msgid "Min match"
+msgstr "Min 일치"
+
+#: templates/admin/requests.html:204 templates/components/match_card.html:60 templates/volunteer_dashboard.html:146
+msgid "Priority"
+msgstr "회사연혁"
+
+#: templates/volunteer_dashboard.html:148
+msgid "All"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:149 templates/volunteer_dashboard.html:174
+msgid "Urgent only"
+msgstr "Urgent 만"
+
+#: templates/volunteer_dashboard.html:150 templates/volunteer_dashboard.html:176
+msgid "High+"
+msgstr "높은+"
+
+#: templates/volunteer_dashboard.html:154
+msgid "Enable location in profile"
+msgstr "오시는 길"
+
+#: templates/volunteer_dashboard.html:156
+msgid "Near me"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:160
+msgid "Enable location in profile to use Near me."
+msgstr "프로필에 있는 위치가 나 근처에서 사용 가능합니다."
+
+#: templates/volunteer_dashboard.html:164
+msgid "Apply filters"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:179
+msgid "Near"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:191
+#, python-format
+msgid "We found %(n)s low-confidence matches (40-54%%)."
+msgstr "우리는 %(n)s 저조도 일치 (40-54%)를 발견했습니다."
+
+#: templates/volunteer_dashboard.html:192
+msgid "Improve your profile to unlock stronger matches."
+msgstr "더 강한 일치를 자물쇠로 여는 당신의 단면도를 개량하십시오."
+
+#: templates/volunteer_dashboard.html:199
+msgid "Help us match you better"
+msgstr "더 나은 것을 돕기"
+
+#: templates/volunteer_dashboard.html:200
+msgid "Add your location and a few skills. Then you will start seeing high-confidence matches."
+msgstr "위치와 몇 가지 기술을 추가하십시오. 높은 수준의 일치를 볼 수 있습니다."
+
+#: templates/volunteer_dashboard.html:203
+msgid "Profile completeness"
+msgstr "전체 프로필"
+
+#: templates/volunteer_dashboard.html:213
+msgid "Update my profile"
+msgstr "내 프로필"
+
+#: templates/volunteer_dashboard.html:218
+msgid "No strong matches yet"
+msgstr "아직 강한 일치"
+
+#: templates/volunteer_dashboard.html:219
+msgid "Add more specific skills or enable location to improve matching."
+msgstr "더 구체적인 기술을 추가하거나 일치하는 위치를 활성화하십시오."
+
+#: templates/volunteer_dashboard.html:222
+#, python-format
+msgid "Try 50%%"
+msgstr "50% 할인"
+
+#: templates/volunteer_dashboard.html:224
+msgid "Improve my profile"
+msgstr "내 프로필"
+
+#: templates/volunteer_dashboard.html:256
+msgid "Показваме само липсващото, за да станеш готов за свързване."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:263 templates/volunteer_dashboard.html:269
+msgid "не е зададена"
+msgstr "이름 *"
+
+#: templates/volunteer_dashboard.html:277
+msgid "Попълни профила"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:280
+msgid "Профилът е готов"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:282
+msgid "Ако искаш, можеш да обновиш наличност или умения по-късно."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:285
+msgid "Редактирай профила"
+msgstr "관련 기사"
+
+#: templates/volunteer_dashboard.html:291
+msgid "по избор"
+msgstr "(선택) 경험"
+
+#: templates/volunteer_dashboard.html:300
+msgid "All active requests"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:302
+msgid "Open requests ordered by freshness."
+msgstr "Freshness에서 주문한 요청을 엽니다."
+
+#: templates/volunteer_dashboard.html:305
+msgid "This list is not personalized. Use the section above for intelligent matching."
+msgstr "이 목록은 개인화되지 않습니다. 위의 섹션을 사용하십시오."
+
+#: templates/volunteer_dashboard.html:312 templates/volunteer_dashboard.html:711
+msgid "Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш."
+msgstr "이것은 초대, 약속이 아닙니다. 세부사항을 읽고 결정하게 자유롭게 느끼십시오."
+
+#: templates/volunteer_dashboard.html:328 templates/volunteer_request_details.html:82
+msgid "Завършено"
+msgstr "한국어"
+
+#: templates/volunteer_dashboard.html:331 templates/volunteer_request_details.html:84
+msgid "Отказано"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:337 templates/volunteer_request_details.html:86
+msgid "Нова"
+msgstr "- 한국어"
+
+#: templates/volunteer_dashboard.html:342
+msgid "Assigned to you"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:345 templates/volunteer_request_details.html:93
+msgid "Одобрен/а"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:348 templates/volunteer_dashboard.html:431 templates/volunteer_dashboard.html:554
+#: templates/volunteer_dashboard.html:697 templates/volunteer_request_details.html:97
+msgid "В изчакване"
+msgstr "관련 기사"
+
+#: templates/volunteer_dashboard.html:351 templates/volunteer_request_details.html:95
+msgid "Отхвърлен/а"
+msgstr "뚱 베어"
+
+#: templates/volunteer_dashboard.html:361
+msgid "Нова заявка"
+msgstr "새로운 요청"
+
+#: templates/volunteer_dashboard.html:372
+msgid "Assigned to you. Next action: open details."
+msgstr "당신에게 할당. 다음 작업: 열린 세부 사항."
+
+#: templates/volunteer_dashboard.html:374
+msgid "В изчакване — ще получиш известие при потвърждение."
+msgstr "종료, 당신은 확인에 통보됩니다."
+
+#: templates/volunteer_dashboard.html:387
+msgid "Благодарим! Заявката е маркирана като приключена."
+msgstr "나는 모른다. 내 가족의 일원입니다."
+
+#: templates/volunteer_dashboard.html:389
+msgid "Assigned to you. Next action: click “View details”."
+msgstr "당신에게 할당. 다음 작업: 클릭"
+
+#: templates/volunteer_dashboard.html:391
+msgid "Одобрен/а си. Отвори заявката за контакт и следващи стъпки."
+msgstr "Одоярен/а си. Отвори таявката та а контакт и следваи стики."
+
+#: templates/volunteer_dashboard.html:393
+msgid "Тази заявка вече е поета. Виж други активни заявки."
+msgstr "나는 맞습니다."
+
+#: templates/volunteer_dashboard.html:395
+msgid "Администратор преглежда интереса ти. Ще получиш известие."
+msgstr "뚱 베어"
+
+#: templates/volunteer_dashboard.html:397
+msgid "Натисни “Искам да помогна”, за да поискаш достъп."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:408 templates/volunteer_dashboard.html:511 templates/volunteer_dashboard.html:722
+#, python-format
+msgid "Виждаш тази заявка, защото съвпада с профила ти в %(loc)s"
+msgstr " %(loc)s  에서 프로필에 일치하기 때문에이 요청을 보라."
+
+#: templates/volunteer_dashboard.html:410 templates/volunteer_dashboard.html:513 templates/volunteer_dashboard.html:722
+msgid "Виждаш тази заявка, защото съвпада с профила ти"
+msgstr "당신은 당신의 프로필에 일치하기 때문에이 요청을 볼."
+
+#: templates/volunteer_dashboard.html:418 templates/volunteer_dashboard.html:428
+msgid "Виж други активни заявки"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:423 templates/volunteer_dashboard.html:655 templates/volunteer_dashboard.html:709
+msgid "Виж детайли"
+msgstr "자주 묻는 질문"
+
+#: templates/volunteer_dashboard.html:437
+msgid "Искам да помогна"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:467
+msgid "Това изпраща сигнал към админите."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:471
+msgid "Нищо не се поема автоматично."
+msgstr "자주 묻는 질문"
+
+#: templates/volunteer_dashboard.html:479
+msgid "Няма активни заявки в момента"
+msgstr "지금 유효한"
+
+#: templates/volunteer_dashboard.html:484
+msgid "По-точна локация + 2–3 умения = по-бърз match."
+msgstr "더 정확한 위치 + 2–3 기술 = 빠른 경기."
+
+#: templates/volunteer_dashboard.html:487
+msgid "Виж пример"
+msgstr "예제 보기"
+
+#: templates/volunteer_dashboard.html:489
+msgid "Това е само пример — реалните заявки ще се покажат автоматично."
+msgstr "이것은 단지 샘플입니다 - 실제 요청은 자동으로 나타납니다."
+
+#: templates/volunteer_dashboard.html:495 templates/volunteer_dashboard.html:704
+msgid "Примерна заявка"
+msgstr "표본 요구"
+
+#: templates/volunteer_dashboard.html:499 templates/volunteer_dashboard.html:705
+msgid "току-що"
+msgstr "지금 시작"
+
+#: templates/volunteer_dashboard.html:502 templates/volunteer_dashboard.html:706
+msgid "Пример (демо)"
+msgstr "샘플 (demo)"
+
+#: templates/volunteer_dashboard.html:506 templates/volunteer_dashboard.html:707
+msgid "Току-що се появи. Провери дали ти е удобно."
+msgstr "그냥 등장. 당신이 맞는 경우 확인."
+
+#: templates/volunteer_dashboard.html:508 templates/volunteer_dashboard.html:708
+msgid "Човек търси помощ за документи и насоки къде да ги подаде."
+msgstr "누군가는 서류와 그(것)들을 제출하는 것을 도울 필요가 있습니다."
+
+#: templates/volunteer_dashboard.html:540 templates/volunteer_dashboard.html:546
+msgid "Моите заявки"
+msgstr "내 요청"
+
+#: templates/volunteer_dashboard.html:542
+msgid "Виж подадените от теб заявки и статуса им."
+msgstr "제출된 요청과 그 상태를 참조하십시오."
+
+#: templates/volunteer_dashboard.html:565
+msgid "Одобрени"
+msgstr "이름 *"
+
+#: templates/volunteer_dashboard.html:576
+msgid "Отказани"
+msgstr "관련 상품"
+
+#: templates/volunteer_dashboard.html:585
+msgid "Няма заявки в този статус"
+msgstr "이 상태의 요청 없음"
+
+#: templates/volunteer_dashboard.html:599
+msgid "Виж"
+msgstr "(주)"
+
+#: templates/volunteer_dashboard.html:638
+msgid "Как ще изглежда заявка"
+msgstr "자주 묻는 질문"
+
+#: templates/volunteer_dashboard.html:639
+msgid "Пример, за да знаеш какво да очакваш."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:646
+msgid "Онлайн"
+msgstr "- 한국어"
+
+#: templates/volunteer_dashboard.html:649
+msgid "Помощ с документи"
+msgstr "자주 묻는 질문"
+
+#: templates/volunteer_dashboard.html:651
+msgid "Човек търси помощ за попълване на документи и ориентация къде да подаде заявление."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:656 templates/volunteer_dashboard.html:710
+#: templates/volunteer_request_details.html:15
+msgid "Ще помогна"
+msgstr "나는 도움"
+
+#: templates/volunteer_dashboard.html:660
+msgid "Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш."
+msgstr "각 요청에 응답하지 않습니다. 당신을 선택할 때와 도움이되는 방법."
+
+#: templates/volunteer_dashboard.html:667
+msgid "Потвърди помощта"
+msgstr "aid 확인"
+
+#: templates/volunteer_dashboard.html:669
+msgid "Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:674
+msgid "Откажи"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:677
+msgid "Да, ще помогна"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:684
+msgid "Помощта е заявена. Очаква се кратко потвърждение от екипа."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:688
+msgid "Детайлите ще се показват тук. Нищо не е изпратено автоматично."
+msgstr "세부 사항이 있습니다. 자주 묻는 질문"
+
+#: templates/volunteer_dashboard.html:694
+msgid "ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница."
+msgstr "이 세부 사항은 다음과 같습니다. 실제 요청은 페이지를 엽니다."
+
+#: templates/volunteer_dashboard.html:695
+msgid "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."
+msgstr "데모: \"interest\"를 보낼 것입니다. 그것은 초대, 약속하지 않습니다. 그럼 당신은 조용히 결정한다."
+
+#: templates/volunteer_dashboard.html:696
+msgid "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично."
+msgstr "\"interest\"를 보낼 것입니다. 그것은 초대, 약속하지 않습니다. 자주 묻는 질문"
+
+#: templates/volunteer_dashboard.html:696
+msgid "Продължаваме?"
+msgstr "계속?"
+
+#: templates/volunteer_dashboard.html:698
+msgid "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:699
+msgid "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:700
+msgid "ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."
+msgstr "데모: 세부 사항이 여기에 표시됩니다. 실제 요청은 페이지의 내용을 엽니다."
+
+#: templates/volunteer_dashboard.html:701
+msgid "🟢 НОВО"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:702
+msgid "Какво става, ако натиснеш?"
+msgstr "클릭하면 어떻게됩니까?"
+
+#: templates/volunteer_dashboard.html:703
+msgid "Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично."
+msgstr "자세한 내용은 \"interest\"를 보내주십시오. 그런 다음 너를 따르면 조용히 결정하십시오. 자주 묻는 질문"
+
+#: templates/volunteer_dashboard.html:712
+msgid "Обработва се…"
+msgstr "치료 ..."
+
+#: templates/volunteer_login.html:6
+msgid "Intervenant access - HelpChain"
+msgstr "Speaker access - 도움말체인"
+
+#: templates/volunteer_login.html:27
+msgid "Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe."
+msgstr "비밀번호 메일로 안전한 링크 (무효 15 분)."
+
+#: templates/volunteer_login.html:51
+msgid "Email address"
+msgstr "이메일 주소"
+
+#: templates/volunteer_login.html:60
+msgid "your@email.com"
+msgstr "이메일: support@email.com"
+
+#: templates/volunteer_login.html:70
+msgid "Recevoir mon lien de connexion"
+msgstr "내 연결 링크를 수신"
+
+#: templates/volunteer_login.html:72
+msgid "~2 min."
+msgstr "2분"
+
+#: templates/volunteer_login.html:87
+msgid "Demander un accès intervenant"
+msgstr "복수의 접근"
+
+#: templates/volunteer_login.html:92
+msgid "Back to home page"
+msgstr "홈 페이지로"
+
+#: templates/volunteer_login.html:97
+msgid "Login as a requester"
+msgstr "자주 묻는 질문"
+
+#: templates/volunteer_login.html:132
+msgid "Sending..."
+msgstr "이름 *"
+
+#: templates/volunteer_notifications.html:11
+msgid "Unread"
+msgstr ""
+
+#: templates/volunteer_notifications.html:19
+msgid "No notifications yet"
+msgstr ""
+
+#: templates/volunteer_notifications.html:20
+msgid "When a request matches your profile, you'll see it here."
+msgstr "요청이 프로필에 일치하면, 여기에서 볼 수 있습니다."
+
+#: templates/volunteer_notifications.html:23
+msgid "View requests"
+msgstr ""
+
+#: templates/volunteer_notifications.html:64
+msgid "Open request"
+msgstr ""
+
+#: templates/volunteer_profile.html:2
+msgid "Профил"
+msgstr "Профил, 영국"
+
+#: templates/volunteer_profile.html:11
+msgid "Профил на доброволец"
+msgstr "Профил на доброволец"
+
+#: templates/volunteer_profile.html:28 templates/volunteer_profile.html:35 templates/volunteer_profile.html:41
+#: templates/volunteer_profile.html:50 templates/volunteer_profile.html:57
+msgid "Затвори"
+msgstr "다운로드"
+
+#: templates/volunteer_profile.html:64
+msgid "Статус: Активен"
+msgstr "Статус: Активен"
+
+#: templates/volunteer_profile.html:71
+msgid "Изход"
+msgstr "Изход"
+
+#: templates/volunteer_profile.html:80
+msgid "Готовност за свързване"
+msgstr "연결하기"
+
+#: templates/volunteer_profile.html:82
+msgid "Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш."
+msgstr "Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш.ш."
+
+#: templates/volunteer_profile.html:88
+msgid "Локация:"
+msgstr "Локация:"
+
+#: templates/volunteer_profile.html:89 templates/volunteer_profile.html:93 templates/volunteer_profile.html:101
+msgid "Липсва"
+msgstr "다운로드"
+
+#: templates/volunteer_profile.html:92
+msgid "Наличност:"
+msgstr "Наличност:"
+
+#: templates/volunteer_profile.html:96
+msgid "Умения:"
+msgstr "Умения:"
+
+#: templates/volunteer_profile.html:106 templates/volunteer_profile.html:259
+msgid "Как работи свързването →"
+msgstr "Как работи свкарзването →"
+
+#: templates/volunteer_profile.html:139
+msgid "Наличност"
+msgstr "제품정보"
+
+#: templates/volunteer_profile.html:152
+msgid "Попълни профила си"
+msgstr ""
+"Поп профила си профила си профила си профила си профила си профи профила си профи профила си профила си профи профила"
+" си си пропрофи профи профила си си си си си про си си про си си про пропропропрофи профи си си си пропропропрофи "
+"пропрофи профи профи про"
+
+#: templates/volunteer_profile.html:154
+msgid "Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. Няма автоматични ангажименти."
+msgstr "Това е всичко. Когато има заявка, която пасва - ще я видишв таблото. Няма автоматични ангажименти."
+
+#: templates/volunteer_profile.html:243
+msgid "Какво да очакваш"
+msgstr "Какво да очакваш"
+
+#: templates/volunteer_profile.html:244
+msgid "HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да помогнеш."
+msgstr "도움말체인 не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да помогнеш."
+
+#: templates/volunteer_profile.html:248
+msgid "Няма автоматични ангажименти."
+msgstr "Няма автоматични ангажименти."
+
+#: templates/volunteer_profile.html:249
+msgid "Можеш да откажеш без обяснения."
+msgstr "Можеш да откажеш без обяснения."
+
+#: templates/volunteer_profile.html:250
+msgid "Личните данни се показват само при нужда/съгласие."
+msgstr "Личните данни се показват само при нужда/скагласие."
+
+#: templates/volunteer_profile.html:254
+msgid "Съвет:"
+msgstr "다운로드"
+
+#: templates/volunteer_profile.html:255
+msgid "Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо."
+msgstr "Ако добавиш точна локация + 2-3 умения, шанскат за 경기 се вдига осезаемо."
+
+#: templates/volunteer_request_details.html:2 templates/volunteer_request_details.html:28
+msgid "Детайли за заявка"
+msgstr ""
+
+#: templates/volunteer_request_details.html:18
+msgid "Демо: нищо не се записва."
+msgstr "데모: 아무것도 기록."
+
+#: templates/volunteer_request_details.html:20
+msgid "Следва кратък преглед и потвърждение."
+msgstr "간단한 검토 및 확인 후."
+
+#: templates/volunteer_request_details.html:29
+msgid "Назад"
+msgstr "이름 *"
+
+#: templates/volunteer_request_details.html:37
+msgid "You marked that you can help."
+msgstr "도움이 될 수 있습니다."
+
+#: templates/volunteer_request_details.html:39
+msgid "Go to contact"
+msgstr ""
+
+#: templates/volunteer_request_details.html:43
+msgid "You marked that you can't help right now."
+msgstr "지금 당장 도움을 줄 수 없습니다."
+
+#: templates/volunteer_request_details.html:45 templates/volunteer_request_details.html:139
+msgid "Last signal"
+msgstr ""
+
+#: templates/volunteer_request_details.html:48
+msgid "You haven't sent a signal yet."
+msgstr "아직 신호를 느끼지 않았습니다."
+
+#: templates/volunteer_request_details.html:53
+msgid "Заявка"
+msgstr ""
+
+#: templates/volunteer_request_details.html:67
+msgid "Няма описание."
+msgstr ""
+
+#: templates/volunteer_request_details.html:91
+msgid "Назначен/а"
+msgstr "관련 상품"
+
+#: templates/volunteer_request_details.html:103
+msgid "Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека."
+msgstr "이 요청에 대한 녹색 빛이 있습니다. 아래 버튼을 사용하여 담당자에게 연락하십시오."
+
+#: templates/volunteer_request_details.html:107
+msgid "Заявката е изпратена. Ще получиш известие при решение."
+msgstr "요청이 전송되었습니다. 결정이 이루어질 때 알려드립니다."
+
+#: templates/volunteer_request_details.html:113
+msgid "Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно)."
+msgstr "팀이 확인되면 통보되며 연락처를 차단하지 않습니다 (필요한 경우)."
+
+#: templates/volunteer_request_details.html:115
+msgid "Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно."
+msgstr "이 요청에 대해 확인됩니다. 아래 지침을 따르고 진정으로 행동하십시오."
+
+#: templates/volunteer_request_details.html:117
+msgid "Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти."
+msgstr "걱정하지 마세요. 다른 요청에 도움을 줄 수 있습니다. 감사합니다."
+
+#: templates/volunteer_request_details.html:119
+msgid "Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем."
+msgstr "도움이 될 경우, \"나는 도움이 될 수 있습니다\"를 클릭하십시오 : 연결하기 위해 우리에게 알려줍니다."
+
+#: templates/volunteer_request_details.html:133
+msgid "Твоят сигнал"
+msgstr "당신의 신호"
+
+#: templates/volunteer_request_details.html:135
+msgid "Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно."
+msgstr "그것은 팀에 빠른 신호입니다. 더 정확하게 반응하는 데 도움이되지 않습니다."
+
+#: templates/admin/request_details.html:221 templates/admin/requests.html:305 templates/volunteer_request_details.html:142
+msgid "Can help"
+msgstr ""
+
+#: templates/admin/request_details.html:223 templates/admin/requests.html:307 templates/volunteer_request_details.html:144
+msgid "Can't help"
+msgstr ""
+
+#: templates/volunteer_request_details.html:159
+msgid "Мога да помогна"
+msgstr ""
+
+#: templates/volunteer_request_details.html:163
+msgid "Не мога да помогна"
+msgstr ""
+
+#: templates/volunteer_request_details.html:169
+msgid "Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина."
+msgstr "할 수 없다면 괜찮습니다. 침묵보다 정직한 신호를 더."
+
+#: templates/volunteer_request_details.html:174
+msgid "Изчакване"
+msgstr ""
+
+#: templates/volunteer_request_details.html:176
+msgid "Потвърдено"
+msgstr "이름 *"
+
+#: templates/volunteer_request_details.html:213
+msgid "Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта."
+msgstr "이 요청에만 이 연락처를 사용합니다. 존경하고 정확합니다: 그것은 도움을 가속화합니다."
+
+#: templates/admin/login.html:6 templates/admin/login.html:19
+msgid "Admin login"
+msgstr "비밀번호"
+
+#: templates/admin/login.html:32 templates/admin/login.html:41 templates/admin/login.html:42
+msgid "Username"
+msgstr "사용자 이름"
+
+#: templates/admin/login.html:48 templates/admin/login.html:57 templates/admin/login.html:58
+msgid "Password"
+msgstr "비밀번호"
+
+#: templates/admin/login.html:63
+msgid "Sign in as admin"
+msgstr "자주 묻는 질문"
+
+#: templates/admin/mfa_setup.html:4
+msgid "Set up MFA"
+msgstr "MFA 설정"
+
+#: templates/admin/mfa_setup.html:6
+msgid "Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code."
+msgstr "Google Authenticator / Authy / Microsoft Authenticator를 사용하여 QR 코드를 스캔 한 다음 6자리 코드를 입력하십시오."
+
+#: templates/admin/mfa_setup.html:14
+msgid "Manual key (if QR does not work):"
+msgstr "수동 키 ( QR이 작동하지 않는 경우) :"
+
+#: templates/admin/mfa_setup.html:21 templates/admin/mfa_setup.html:24
+msgid "Verification code (6 digits)"
+msgstr "검증 코드 (6 자리)"
+
+#: templates/admin/mfa_setup.html:26
+msgid "Activate MFA"
+msgstr "MFA를 활성화"
+
+#: templates/admin/request_details.html:219 templates/admin/requests.html:210
+msgid "Volunteer signal"
+msgstr ""
+
+#: templates/admin/requests.html:124 templates/admin/requests.html:203
+msgid "Status"
+msgstr "주요연혁"
+
+#: templates/admin/requests.html:125
+msgid "All statuses"
+msgstr "모든 상태"
+
+#: templates/admin/requests.html:136
+msgid "Search by name, title, description..."
+msgstr "이름, 제목, 설명에 의해 검색 ..."
+
+#: templates/admin/requests.html:143
+msgid "Filter"
+msgstr "저장 필터"
+
+#: templates/admin/requests.html:156
+msgid "Show deleted"
+msgstr "공지사항"
+
+#: templates/admin/requests.html:200
+msgid "ID"
+msgstr "이름 *"
+
+#: templates/admin/requests.html:201
+msgid "Title"
+msgstr "이름 *"
+
+#: templates/admin/requests.html:202
+msgid "Name"
+msgstr "이름 *"
+
+#: templates/admin/requests.html:205
+msgid "Category"
+msgstr "(주)"
+
+#: templates/admin/requests.html:206 templates/admin/requests.html:266
+msgid "Created"
+msgstr "원격 제어"
+
+#: templates/admin/requests.html:208
+msgid "SLA"
+msgstr "사이트맵"
+
+#: templates/admin/requests.html:209
+msgid "Signals"
+msgstr ""
+
+#: templates/admin/requests.html:211 templates/admin/requests.html:357
+msgid "Details"
+msgstr "이름 *"
+
+#: templates/admin/requests.html:276
+msgid "No owner assigned"
+msgstr "할당 된 소유자 없음"
+
+#: templates/admin/requests.html:276
+msgid "No owner"
+msgstr "이름 *"
+
+#: templates/admin/requests.html:279
+msgid "Stale request"
+msgstr "자주 묻는 질문"
+
+#: templates/admin/requests.html:279
+msgid "Stale"
+msgstr "이름 *"
+
+#: templates/admin/requests.html:361
+msgid "No results."
+msgstr "압력 없음"
+
+#: templates/components/match_card.html:9
+#, python-format
+msgid "%(pct)s%% Match"
+msgstr "%(pct)s %% 일치"
+
+#: templates/components/match_card.html:11
+msgid "High priority"
+msgstr ""
+
+#: templates/components/match_card.html:22
+msgid "Untitled request"
+msgstr ""
+
+#: templates/components/match_card.html:38
+msgid "Skills"
+msgstr "한국어"
+
+#: templates/components/match_card.html:41
+msgid "Skills match"
+msgstr "스킬 일치"
+
+#: templates/components/match_card.html:49
+msgid "Location"
+msgstr ""
+
+#: templates/components/match_card.html:52
+msgid "Location match"
+msgstr "관련 상품"
+
+#: templates/components/match_card.html:63
+msgid "Priority boost"
+msgstr ""
+
+#: templates/components/match_card.html:79
+msgid "View details"
+msgstr "더 보기"
+
+#: templates/components/match_card.html:90
+msgid "I'll help"
+msgstr "나는 도움이 될거야"
+
+#: templates/components/match_card.html:97
+msgid "Dismiss this request for 48 hours"
+msgstr "이 요청을 48 시간 동안 버려"
+
+#: templates/components/match_card.html:99
+msgid "Not for me (48h)"
+msgstr "나를 위해 (48h)"
+
+#: templates/components/match_card.html:108
+#, python-format
+msgid "Why %(pct)s%%?"
+msgstr "왜 %(pct)s %%?"
+
