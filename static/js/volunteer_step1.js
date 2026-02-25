@@ -12,9 +12,20 @@
     const msg = document.getElementById("magicLinkMsg");
 
     if (checkboxes.length && hint) {
+      const selectedTemplate =
+        hint.dataset.selectedTemplate || "({count}/{max}) skills selected";
+      const maxTemplate =
+        hint.dataset.maxTemplate || "Maximum {max} skills. You can adjust later.";
+      const fmt = (tpl, vars) =>
+        String(tpl).replace(/\{(\w+)\}/g, (_, k) =>
+          Object.prototype.hasOwnProperty.call(vars, k) ? String(vars[k]) : ""
+        );
       const update = () => {
         const checked = checkboxes.filter((c) => c.checked);
-        hint.textContent = `(${checked.length}/${maxSkills}) competences selectionnees`;
+        hint.textContent = fmt(selectedTemplate, {
+          count: checked.length,
+          max: maxSkills,
+        });
         hint.classList.remove("hc-error");
       };
 
@@ -23,7 +34,7 @@
           const checked = checkboxes.filter((c) => c.checked);
           if (checked.length > maxSkills) {
             cb.checked = false;
-            hint.textContent = `Maximum ${maxSkills} competences. Vous pourrez ajuster plus tard.`;
+            hint.textContent = fmt(maxTemplate, { max: maxSkills });
             hint.classList.add("hc-error");
           } else {
             update();
@@ -38,6 +49,8 @@
 
     const btnText = btn.querySelector(".btn-text");
     const btnSpinner = btn.querySelector(".btn-spinner");
+    const defaultBtnLabel = btnText ? btnText.textContent : "";
+    const sendingBtnLabel = form.dataset.hcSendingLabel || "Sending…";
 
     let busy = false;
     const started = Date.now();
@@ -48,7 +61,7 @@
       btn.disabled = !!isSending;
       if (btnSpinner) btnSpinner.style.display = isSending ? "inline-block" : "none";
       if (btnText)
-        btnText.textContent = isSending ? "Envoi…" : "Recevoir mon lien d’accès";
+        btnText.textContent = isSending ? sendingBtnLabel : defaultBtnLabel;
     }
 
     form.addEventListener("submit", (e) => {

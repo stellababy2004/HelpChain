@@ -22,21 +22,21 @@
           {% for cat, msg in flashes %}
             {% if cat == 'success' %}
               <div class="hc-alert hc-alert--ok" role="status" aria-live="polite">
-                <strong>✅ Промените са запазени</strong><br>
+                <strong> Промените са запазени</strong><br>
                 Профилът ти е обновен успешно. Ще използваме тази информация, за да ти показваме по-подходящи заявки, когато се появят.<br>
                 <span class="hc-muted">Можеш да редактираш профила си по всяко време.</span>
                 <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
               </div>
             {% elif cat == 'error' %}
               <div class="hc-alert hc-alert--err" role="status" aria-live="polite">
-                <strong>⚠️ Не успяхме да запазим промените.</strong><br>
+                <strong> Не успяхме да запазим промените.</strong><br>
                 Провери полетата и опитай отново.<br>
                 <span class="hc-muted">Ако проблемът остане - презареди страницата.</span>
                 <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
               </div>
             {% elif cat == 'info' %}
               <div class="hc-alert hc-alert--info" role="status" aria-live="polite">
-                <strong>ℹ️ Няма промени за запазване.</strong><br>
+                <strong> Няма промени за запазване.</strong><br>
                 Профилът ти вече е актуален.
                 <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
               </div>
@@ -44,14 +44,14 @@
           {% endfor %}
         {% elif request and request.method == 'POST' %}
           <div class="hc-alert hc-alert--ok" role="status" aria-live="polite">
-            <strong>✅ Промените са запазени</strong><br>
+            <strong> Промените са запазени</strong><br>
             Профилът ти е обновен успешно. Ще използваме тази информация, за да ти показваме по-подходящи заявки, когато се появят.<br>
             <span class="hc-muted">Можеш да редактираш профила си по всяко време.</span>
             <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
           </div>
         {% else %}
           <div class="hc-alert hc-alert--ok" id="hc-profile-success-js" role="status" aria-live="polite" style="display:none;">
-            <strong>✅ Промените са запазени</strong><br>
+            <strong> Промените са запазени</strong><br>
             Профилът ти е обновен успешно. Ще използваме тази информация, за да ти показваме по-подходящи заявки, когато се появят.<br>
             <span class="hc-muted">Можеш да редактираш профила си по всяко време.</span>
             <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
@@ -61,7 +61,7 @@
 
       <div class="hc-prof__headRight">
         <span class="hc-pill hc-pill--ok">
-          {{ _('Статус: Активен') }} ✅
+          {{ _('Статус: Активен') }} 
         </span>
 
         <!-- Logout (POST-only) -->
@@ -85,15 +85,15 @@
 
       <div class="hc-prof__chips">
         <span class="hc-chip">
-          📍 {{ _('Локация:') }}
+           {{ _('Локация:') }}
           <strong>{{ volunteer.location or _('Липсва') }}</strong>
         </span>
         <span class="hc-chip">
-          🕒 {{ _('Наличност:') }}
+           {{ _('Наличност:') }}
           <strong>{{ volunteer.availability or _('Липсва') }}</strong>
         </span>
         <span class="hc-chip">
-          🧩 {{ _('Умения:') }}
+           {{ _('Умения:') }}
           <strong>
             {% if volunteer.skills %}
               {{ volunteer.skills }}
@@ -116,10 +116,10 @@
 
         <div class="hc-prof__progressTop">
           {% if ready == 3 %}
-            <span class="hc-pill hc-pill--ok">Профилът ти е напълно готов за свързване ✅</span>
+            <span class="hc-pill hc-pill--ok">Профилът ти е напълно готов за свързване </span>
             <span class="hc-muted">Ще виждаш подходящите заявки веднага щом се появят.</span>
           {% elif ready == 2 %}
-            <span class="hc-pill hc-pill--ok">Профилът ти вече “работи” ✅</span>
+            <span class="hc-pill hc-pill--ok">Профилът ти вече “работи” </span>
             <span class="hc-muted">Остава още 1 дребно нещо и става още по-точно.</span>
           {% else %}
             <span class="hc-pill hc-pill--warn">Още малко и си готов/а</span>
@@ -133,13 +133,13 @@
 
       <ul class="hc-prof__check">
         <li class="{{ 'is-ok' if ok_loc else 'is-miss' }}">
-          {{ '✅' if ok_loc else '⬜' }} {{ _('Локация') }}
+          {{ '' if ok_loc else '⬜' }} {{ _('Локация') }}
         </li>
         <li class="{{ 'is-ok' if ok_av else 'is-miss' }}">
-          {{ '✅' if ok_av else '⬜' }} {{ _('Наличност') }}
+          {{ '' if ok_av else '⬜' }} {{ _('Наличност') }}
         </li>
         <li class="{{ 'is-ok' if ok_sk else 'is-miss' }}">
-          {{ '✅' if ok_sk else '⬜' }} {{ _('Умения') }}
+          {{ '' if ok_sk else '⬜' }} {{ _('Умения') }}
         </li>
       </ul>
     </section>
@@ -220,7 +220,7 @@
                 <button class="hc-btn hc-btn--primary" type="submit">
                   Запази промените
                 </button>
-                <span class="hc-muted">Отнема 5 секунди. Няма наказания. 😊</span>
+                <span class="hc-muted">Отнема 5 секунди. Няма наказания. </span>
               </div>
             </section>
           </div>
@@ -245,9 +245,9 @@
         </div>
 
         <ul class="hc-bullets">
-          <li>🤝 {{ _('Няма автоматични ангажименти.') }}</li>
-          <li>🕊️ {{ _('Можеш да откажеш без обяснения.') }}</li>
-          <li>🔒 {{ _('Личните данни се показват само при нужда/съгласие.') }}</li>
+          <li> {{ _('Няма автоматични ангажименти.') }}</li>
+          <li> {{ _('Можеш да откажеш без обяснения.') }}</li>
+          <li> {{ _('Личните данни се показват само при нужда/съгласие.') }}</li>
         </ul>
 
         <div class="hc-note">

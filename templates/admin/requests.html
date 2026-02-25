@@ -9,7 +9,7 @@
 
   {# Localized export confirmation (stable multiline msgids) #}
   {% set export_confirm = '\n'.join([
-    _('⚠️ This export contains personal data.'),
+    _(' This export contains personal data.'),
     _('Internal use only.'),
     '',
     _('Are you sure you want to continue?')
@@ -34,7 +34,7 @@
       <button type="button" class="hc-tab" data-hc-tab="CLOSED">Clôturées</button>
       <button type="button" class="hc-tab" id="hcToggleActionable">Action only</button>
       <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="Copier le lien">
-        <span aria-hidden="true">🔗</span>
+        <span aria-hidden="true"></span>
         <span class="hc-copy-tick" aria-hidden="true">✓</span>
         <span class="visually-hidden">Copier le lien</span>
       </button>
@@ -273,10 +273,10 @@
               <span class="badge {{ risk_badge_class }} ms-1" title="Not seen risk tier">{{ risk_notseen_tier_hours }}h+</span>
             {% endif %}
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
-              <span class="badge text-bg-warning ms-1" title="{{ _('No owner assigned') }}">⚠️ {{ _('No owner') }}</span>
+              <span class="badge text-bg-warning ms-1" title="{{ _('No owner assigned') }}"> {{ _('No owner') }}</span>
             {% endif %}
             {% if age_days >= SLA_STALE_DAYS and r.status not in ['done','rejected'] %}
-              <span class="badge text-bg-danger ms-1" title="{{ _('Stale request') }}">⏱️ {{ _('Stale') }}</span>
+              <span class="badge text-bg-danger ms-1" title="{{ _('Stale request') }}"> {{ _('Stale') }}</span>
             {% endif %}
             {% if r.completed_at %}
               <span class="badge text-bg-success ms-1" title="{{ _('Closed') }}">✓ {{ _('Closed') }}</span>
@@ -302,9 +302,9 @@
             {% set eng = engagement_by_request.get(r.id) %}
             {% if sig %}
               {% if sig.action == "CAN_HELP" %}
-                <span class="badge text-bg-success">✅ {{ _("Can help") }}</span>
+                <span class="badge text-bg-success"> {{ _("Can help") }}</span>
               {% elif sig.action == "CANT_HELP" %}
-                <span class="badge text-bg-danger">🚫 {{ _("Can't help") }}</span>
+                <span class="badge text-bg-danger"> {{ _("Can't help") }}</span>
               {% else %}
                 <span class="badge text-bg-secondary">{{ sig.action }}</span>
               {% endif %}

@@ -118,7 +118,7 @@
           document.body.removeChild(ta);
         }
 
-        if (copyStatus) copyStatus.textContent = "{{ _('Копирано ✅') }}";
+        if (copyStatus) copyStatus.textContent = "{{ _('Копирано ') }}";
         window.setTimeout(function () {
           if (copyStatus) copyStatus.textContent = "";
         }, 2000);

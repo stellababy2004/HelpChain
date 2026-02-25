@@ -86,7 +86,7 @@
           <ul class="nav-menu">
             <li><a class="nav-link-light" href="#features">Функции</a></li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('main.categories') }}"
+              <a class="nav-link-light" href="{{ safe_url_for('main.orienter') }}"
                 >Категории</a
               >
             </li>
@@ -358,7 +358,7 @@
               <h5>Бързи връзки</h5>
               <ul class="list-unstyled">
                 <li>
-                  <a href="{{ safe_url_for('main.categories') }}" class="text-light"
+                  <a href="{{ safe_url_for('main.orienter') }}" class="text-light"
                     >Категории помощ</a
                   >
                 </li>
@@ -659,7 +659,7 @@
 
         // Show welcome toast
         setTimeout(() => {
-          feedback.showToast("Добре дошли в HelpChain! 🚀", "info", 4000);
+          feedback.showToast("Добре дошли в HelpChain! ", "info", 4000);
         }, 1000);
       });
 
@@ -699,7 +699,6 @@
     <script src="{{ url_for('static', filename='js/nav-scroll.js') }}"></script>
   </body>
 </html>
-
 
 
 

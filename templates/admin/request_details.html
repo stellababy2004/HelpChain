@@ -160,8 +160,8 @@
                     <div class="text-muted small">{{ v.email }}</div>
                   </td>
                   <td>{{ v.location or '—' }}</td>
-                  <td>{% if f.notified %}✅{% else %}—{% endif %}</td>
-                  <td>{% if f.seen %}👁️{% else %}—{% endif %}</td>
+                  <td>{% if f.notified %}{% else %}—{% endif %}</td>
+                  <td>{% if f.seen %}{% else %}—{% endif %}</td>
                   <td>{% if f.interested %}⭐{% else %}—{% endif %}</td>
                   <td>
                     {% if req.assigned_volunteer_id == v.id %}
@@ -209,8 +209,8 @@
       <div class="d-flex align-items-center justify-content-between mb-2">
         <h5 class="card-title mb-0">Volunteer signals</h5>
         <div class="text-muted small">
-          {% if can_help_count %}✅ {{ can_help_count }} can help{% endif %}
-          {% if cant_help_count %} <span class="ms-2">🚫 {{ cant_help_count }} can’t help</span>{% endif %}
+          {% if can_help_count %} {{ can_help_count }} can help{% endif %}
+          {% if cant_help_count %} <span class="ms-2"> {{ cant_help_count }} can’t help</span>{% endif %}
           {% if not can_help_count and not cant_help_count %}—{% endif %}
         </div>
       </div>
@@ -218,9 +218,9 @@
         <div class="alert alert-info py-2 px-3 mb-3">
           <strong>{{ _("Volunteer signal") }}:</strong>
           {% if last_vol_signal.action == 'CAN_HELP' %}
-            ✅ {{ _("Can help") }}
+             {{ _("Can help") }}
           {% elif last_vol_signal.action == 'CANT_HELP' %}
-            🚫 {{ _("Can't help") }}
+             {{ _("Can't help") }}
           {% else %}
             {{ last_vol_signal.action }}
           {% endif %}
@@ -265,7 +265,7 @@
                     <div class="text-muted small">{{ v.email if v else '' }}</div>
                   </td>
                   <td>
-                    {% if s.action == 'CAN_HELP' %}✅ Can help{% elif s.action == 'CANT_HELP' %}🚫 Can’t help{% else %}{{ s.action }}{% endif %}
+                    {% if s.action == 'CAN_HELP' %} Can help{% elif s.action == 'CANT_HELP' %} Can’t help{% else %}{{ s.action }}{% endif %}
                   </td>
                   <td class="text-muted small">
                     {{ s.updated_at or s.created_at }}
@@ -328,7 +328,7 @@
       {% if is_locked %}
         <div class="alert alert-warning d-flex justify-content-between align-items-center">
           <div>
-            🔒 Заключено от admin #{{ locked_by }}.
+             Заключено от admin #{{ locked_by }}.
             Само той/тя може да редактира, освен ако не отключиш ръчно.
           </div>
           <form method="post" action="{{ url_for('admin.admin_request_unlock', req_id=req.id) }}" class="m-0">
@@ -367,7 +367,7 @@
           </div>
           {% if is_locked %}
             <div class="alert alert-warning py-2 mt-2 mb-2">
-              🔒 Заявката е заключена (done/cancelled). Смени статуса от dropdown-а, за да отключиш Approve/Reject.
+               Заявката е заключена (done/cancelled). Смени статуса от dropdown-а, за да отключиш Approve/Reject.
             </div>
           {% endif %}
 

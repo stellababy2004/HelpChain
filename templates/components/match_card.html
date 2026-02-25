@@ -24,7 +24,7 @@
   </h3>
 
   <div class="hc-card__meta hc-recCard__meta">
-    {% if req.city %}<span>📍 {{ req.city }}</span>{% endif %}
+    {% if req.city %}<span> {{ req.city }}</span>{% endif %}
     {% if req.city %}<span>•</span>{% endif %}
     <span>{{ req.created_at.strftime('%d %b') if req.created_at else "" }}</span>
   </div>

@@ -46,9 +46,9 @@
   {% set locale_code = (get_locale()|string)[:2] %}
   {% set copy_map = {
     'fr': {
-      'almost_ready': {'title': '🔔 Votre profil est presque prêt', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir des demandes adaptées.', 'cta': 'Compléter mon profil'},
-      'waiting': {'title': "🌿 C’est calme pour l’instant", 'body': "Nous cherchons des demandes correspondant à votre profil.\nVous serez notifié dès qu’une aide vous correspond.", 'cta': 'Comment ça marche ?'},
-      'matches': {'title': '🚨 Des demandes correspondent à votre profil', 'body': 'Consultez-les et choisissez comment aider.', 'cta': 'Voir les demandes'},
+      'almost_ready': {'title': 'Votre profil est presque prêt', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir des demandes adaptées.', 'cta': 'Compléter mon profil'},
+      'waiting': {'title': "C’est calme pour l’instant", 'body': "Nous cherchons des demandes correspondant à votre profil.\nVous serez notifié dès qu’une aide vous correspond.", 'cta': 'Comment ça marche ?'},
+      'matches': {'title': 'Des demandes correspondent à votre profil', 'body': 'Consultez-les et choisissez comment aider.', 'cta': 'Voir les demandes'},
       'checklist_title': 'Votre profil',
       'label_location': 'Localisation',
       'label_availability': 'Disponibilité',
@@ -56,9 +56,9 @@
       'empty': "Aucune demande ne correspond encore à votre profil.\nCela peut prendre un peu de temps — votre aide compte.",
     },
     'bg': {
-      'almost_ready': {'title': '🔔 Профилът ти е почти готов', 'body': 'Добави локация и наличност, за да получаваш подходящи заявки.', 'cta': 'Попълни профила'},
-      'waiting': {'title': '🌿 В момента е спокойно', 'body': 'Търсим заявки, които отговарят на твоя профил.\nЩе бъдеш уведомен веднага щом има съвпадение.', 'cta': 'Как работи?'},
-      'matches': {'title': '🚨 Има заявки, подходящи за теб', 'body': 'Виж ги и избери как да помогнеш.', 'cta': 'Виж заявките'},
+      'almost_ready': {'title': 'Профилът ти е почти готов', 'body': 'Добави локация и наличност, за да получаваш подходящи заявки.', 'cta': 'Попълни профила'},
+      'waiting': {'title': 'В момента е спокойно', 'body': 'Търсим заявки, които отговарят на твоя профил.\nЩе бъдеш уведомен веднага щом има съвпадение.', 'cta': 'Как работи?'},
+      'matches': {'title': 'Има заявки, подходящи за теб', 'body': 'Виж ги и избери как да помогнеш.', 'cta': 'Виж заявките'},
       'checklist_title': 'Твоят профил',
       'label_location': 'Локация',
       'label_availability': 'Наличност',
@@ -66,9 +66,9 @@
       'empty': "Все още няма заявки, които да съвпадат с профила ти.\nТова е нормално — помощта ти е ценна.",
     },
     'en': {
-      'almost_ready': {'title': '🔔 Your profile is almost ready', 'body': 'Add your location and availability to receive relevant requests.', 'cta': 'Complete profile'},
-      'waiting': {'title': "🌿 It’s calm for now", 'body': "We’re looking for requests that match your profile.\nYou’ll be notified as soon as there’s a match.", 'cta': 'How it works'},
-      'matches': {'title': '🚨 Requests match your profile', 'body': 'Review them and choose how to help.', 'cta': 'View requests'},
+      'almost_ready': {'title': 'Your profile is almost ready', 'body': 'Add your location and availability to receive relevant requests.', 'cta': 'Complete profile'},
+      'waiting': {'title': "It’s calm for now", 'body': "We’re looking for requests that match your profile.\nYou’ll be notified as soon as there’s a match.", 'cta': 'How it works'},
+      'matches': {'title': 'Requests match your profile', 'body': 'Review them and choose how to help.', 'cta': 'View requests'},
       'checklist_title': 'Your profile',
       'label_location': 'Location',
       'label_availability': 'Availability',
@@ -99,7 +99,7 @@
       <span class="hc-dot {% if has_matches %}is-live{% else %}is-idle{% endif %}" aria-hidden="true"></span>
       <strong class="hc-status__title">{{ status.title }}</strong>
       {% if volunteer.location %}
-        <span class="hc-chip hc-chip--soft">📍 {{ volunteer.location }}</span>
+        <span class="hc-chip hc-chip--soft"> {{ volunteer.location }}</span>
       {% endif %}
     </div>
 
@@ -195,7 +195,6 @@
 
     {% if smart_tips and smart_tips|length %}
       <div class="hc-smart-empty mt-3">
-        <div class="hc-smart-empty__icon">🧭</div>
         <h4>{{ _('Help us match you better') }}</h4>
         <p>{{ _('Add your location and a few skills. Then you will start seeing high-confidence matches.') }}</p>
 
@@ -206,7 +205,7 @@
 
         <ul class="hc-smart-tips">
           {% for tip in smart_tips %}
-            <li>{{ tip.icon }} {{ tip.text }}</li>
+            <li>{% if tip.icon %}{{ tip.icon }} {% endif %}{{ tip.text }}</li>
           {% endfor %}
         </ul>
 
@@ -214,7 +213,6 @@
       </div>
     {% else %}
       <div class="hc-smart-empty">
-        <div class="hc-smart-empty__icon">🧠</div>
         <h4>{{ _('No strong matches yet') }}</h4>
         <p>{{ _('Add more specific skills or enable location to improve matching.') }}</p>
         <div class="hc-empty-actions">
@@ -259,25 +257,25 @@
           {% if missing_count > 0 %}
             {% if missing_location %}
               <div class="hc-ready__row">
-                <span class="hc-ready__label">🔴 {{ copy_lang['label_location'] }}</span>
+                <span class="hc-ready__label"> {{ copy_lang['label_location'] }}</span>
                 <span class="hc-ready__value is-missing">{{ _('не е зададена') }}</span>
               </div>
             {% endif %}
             {% if missing_availability %}
               <div class="hc-ready__row">
-                <span class="hc-ready__label">🔴 {{ copy_lang['label_availability'] }}</span>
+                <span class="hc-ready__label"> {{ copy_lang['label_availability'] }}</span>
                 <span class="hc-ready__value is-missing">{{ _('не е зададена') }}</span>
               </div>
             {% endif %}
 
             <p class="hc-muted" style="margin:8px 0;">
-              🟦 {{ missing_count }} {{ copy_lang['steps'] }}
+               {{ missing_count }} {{ copy_lang['steps'] }}
             </p>
             <a href="{{ safe_url_for('main.volunteer_profile') }}" class="btn btn-primary w-100">
               {{ copy_lang['almost_ready']['cta'] if 'almost_ready' in copy_lang else _('Попълни профила') }}
             </a>
           {% else %}
-            <p class="hc-success">✅ {{ _('Профилът е готов') }}</p>
+            <p class="hc-success"> {{ _('Профилът е готов') }}</p>
             <p class="hc-muted" style="margin:4px 0 8px;">
               {{ _('Ако искаш, можеш да обновиш наличност или умения по-късно.') }}
             </p>
@@ -288,7 +286,7 @@
         </div>
 
         <p class="hc-muted small" style="margin-top:10px;">
-          ⚠️ {{ copy_lang['label_availability'] }}: {{ volunteer.availability or _('по избор') }}
+           {{ copy_lang['label_availability'] }}: {{ volunteer.availability or _('по избор') }}
         </p>
       </section>
     </aside>
@@ -369,13 +367,13 @@
                 </div>
 
                 {% if is_assigned %}
-                  <div class="hc-statusCopy">✅ {{ _("Assigned to you. Next action: open details.") }}</div>
+                  <div class="hc-statusCopy"> {{ _("Assigned to you. Next action: open details.") }}</div>
                 {% elif is_pending %}
-                  <div class="hc-statusCopy">⏳ {{ _("В изчакване — ще получиш известие при потвърждение.") }}</div>
+                  <div class="hc-statusCopy"> {{ _("В изчакване — ще получиш известие при потвърждение.") }}</div>
                 {% endif %}
 
                 <div class="hc-listItem__metaRow">
-                  <span class="hc-metaItem">📍 {{ m.city or m.location_text or '-' }}</span>
+                  <span class="hc-metaItem"> {{ m.city or m.location_text or '-' }}</span>
                   {% if time_attr %}
                     <time class="hc-metaItem hc-time" datetime="{{ time_attr }}">{{ time_attr }}</time>
                   {% endif %}
@@ -458,9 +456,9 @@
                       I can’t help
                     </button>
                     {% if act == 'CAN_HELP' %}
-                      <span class="badge text-bg-success ms-2">✅ Sent: I can help</span>
+                      <span class="badge text-bg-success ms-2"> Sent: I can help</span>
                     {% elif act == 'CANT_HELP' %}
-                      <span class="badge text-bg-secondary ms-2">🚫 Sent: I can’t help</span>
+                      <span class="badge text-bg-secondary ms-2"> Sent: I can’t help</span>
                     {% endif %}
                   </form>
                 </div>
@@ -475,16 +473,15 @@
         </div>
       {% else %}
         <section class="hc-empty hc-empty--tight">
-          <div class="hc-empty__icon">🤝</div>
           <h2 class="hc-empty__title">{{ _('Няма активни заявки в момента') }}</h2>
           <p class="hc-empty__text">
             {{ copy_lang['empty'].replace('\n', '<br>')|safe }}
           </p>
 
-          <p class="hc-tip">💡 {{ _('По-точна локация + 2–3 умения = по-бърз match.') }}</p>
+          <p class="hc-tip">{{ _('По-точна локация + 2–3 умения = по-бърз match.') }}</p>
 
           <details class="hc-demoWrap" style="margin-top:12px;">
-            <summary>👀 {{ _('Виж пример') }}</summary>
+            <summary>{{ _('Виж пример') }}</summary>
             <p class="hc-demoNote">
               {{ _('Това е само пример — реалните заявки ще се покажат автоматично.') }}
             </p>
@@ -494,7 +491,7 @@
                 <div class="hc-match__titleWrap">
                   <strong class="hc-match__title">{{ _('Примерна заявка') }}</strong>
                   <div class="hc-match__meta">
-                <span class="hc-match__city">📍 Paris</span>
+                <span class="hc-match__city"> Paris</span>
                 <span class="hc-dotSep" aria-hidden="true">•</span>
                 <span class="hc-match__time">{{ _('току-що') }}</span>
               </div>
@@ -593,7 +590,7 @@
               <div>
                 <div class="fw-semibold">{{ req.title }}</div>
                 <div class="text-muted" style="font-size: 0.9rem;">
-                  📍 {{ req.city or req.location_text or '-' }}
+                   {{ req.city or req.location_text or '-' }}
                 </div>
               </div>
               <span class="hc-pill">{{ _('Виж') }}</span>
@@ -681,24 +678,24 @@
   </div>
 
   <div id="hc-help-success" class="hc-help-success" hidden>
-    ✅ {{ _("Помощта е заявена. Очаква се кратко потвърждение от екипа.") }}
+     {{ _("Помощта е заявена. Очаква се кратко потвърждение от екипа.") }}
   </div>
 
   <div id="hc-detail-toast" class="hc-help-success" hidden>
-    ℹ️ {{ _("Детайлите ще се показват тук. Нищо не е изпратено автоматично.") }}
+     {{ _("Детайлите ще се показват тук. Нищо не е изпратено автоматично.") }}
   </div>
 
 </section>
 <script type="application/json" id="hc-volDash-i18n">
 {{ {
-  "toastDemoDetails": _("ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница."),
+  "toastDemoDetails": _(" Демо: детайлите ще изглеждат така. Реалните ще отварят страница."),
   "confirmDemoInterest": _("Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."),
   "confirmSendInterest": _("Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.") ~ "\n\n" ~ _("Продължаваме?"),
   "pending": _("В изчакване"),
-  "toastDemoHelpSent": _("✅ Демо: помощта е заявена. Нищо не се поема автоматично."),
-  "toastHelpSent": _("✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."),
-  "toastDemoInlineDetails": _("ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."),
-  "newPill": _("🟢 НОВО"),
+  "toastDemoHelpSent": _(" Демо: помощта е заявена. Нищо не се поема автоматично."),
+  "toastHelpSent": _(" Помощта е заявена. Очаква се кратко потвърждение от екипа."),
+  "toastDemoInlineDetails": _(" Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."),
+  "newPill": _(" НОВО"),
   "tipTitle": _("Какво става, ако натиснеш?"),
   "tipText": _("Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично."),
   "demoTitle": _("Примерна заявка"),
@@ -727,4 +724,3 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/pages/volunteer_dashboard.js') }}" defer></script>
 {% endblock %}
-

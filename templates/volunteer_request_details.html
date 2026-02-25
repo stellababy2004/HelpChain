@@ -34,18 +34,18 @@
   {% if _sig_top %}
     {% if _sig_top.action == "CAN_HELP" %}
       <div class="alert alert-success d-flex align-items-center justify-content-between gap-3">
-        <div>✅ {{ _("You marked that you can help.") }}</div>
+        <div> {{ _("You marked that you can help.") }}</div>
         {% if _is_assigned %}
           <a class="btn btn-sm btn-outline-success" href="#hc-contact">{{ _("Go to contact") }}</a>
         {% endif %}
       </div>
     {% elif _sig_top.action == "CANT_HELP" %}
-      <div class="alert alert-warning">🚫 {{ _("You marked that you can't help right now.") }}</div>
+      <div class="alert alert-warning"> {{ _("You marked that you can't help right now.") }}</div>
     {% else %}
-      <div class="alert alert-info">ℹ️ {{ _("Last signal") }}: {{ _sig_top.action }}</div>
+      <div class="alert alert-info"> {{ _("Last signal") }}: {{ _sig_top.action }}</div>
     {% endif %}
   {% else %}
-    <div class="alert alert-secondary">ℹ️ {{ _("You haven't sent a signal yet.") }}</div>
+    <div class="alert alert-secondary"> {{ _("You haven't sent a signal yet.") }}</div>
   {% endif %}
 
   <div class="card">
@@ -53,11 +53,11 @@
       <h2 class="h5">{{ req.title or _("Заявка") }}</h2>
 
       {% if req.city %}
-        <div class="text-muted mb-2">📍 {{ req.city }}</div>
+        <div class="text-muted mb-2"> {{ req.city }}</div>
       {% endif %}
 
       {% if req.created_at %}
-        <div class="text-muted mb-3">🕒 {{ req.created_at }}</div>
+        <div class="text-muted mb-3"> {{ req.created_at }}</div>
       {% endif %}
 
       {% if req.description %}
@@ -100,11 +100,11 @@
 
       {% if istatus == "APPROVED" or is_assigned %}
         <p class="hc-statusCopy">
-          ✅ {{ _("Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека.") }}
+           {{ _("Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека.") }}
         </p>
       {% elif istatus %}
         <p class="hc-statusCopy">
-          ⏳ {{ _("Заявката е изпратена. Ще получиш известие при решение.") }}
+           {{ _("Заявката е изпратена. Ще получиш известие при решение.") }}
         </p>
       {% endif %}
 
@@ -139,9 +139,9 @@
         <span class="text-muted small">{{ _("Last signal") }}:</span>
         {% if _sig %}
           {% if _sig.action == 'CAN_HELP' %}
-            <span class="badge bg-success ms-1">✅ {{ _("Can help") }}</span>
+            <span class="badge bg-success ms-1"> {{ _("Can help") }}</span>
           {% elif _sig.action == 'CANT_HELP' %}
-            <span class="badge bg-secondary ms-1">🚫 {{ _("Can't help") }}</span>
+            <span class="badge bg-secondary ms-1"> {{ _("Can't help") }}</span>
           {% else %}
             <span class="badge bg-secondary ms-1">{{ _sig.action }}</span>
           {% endif %}

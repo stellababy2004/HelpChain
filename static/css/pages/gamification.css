@@ -605,7 +605,7 @@
       }
 
       .leaderboard-rank.top-3::after {
-        content: "👑";
+        content: "";
         position: absolute;
         top: -5px;
         right: -15px;

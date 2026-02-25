@@ -1,19 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Lien envoye | HelpChain{% endblock %}
+{% block title %}{{ _('Check your email') }} | HelpChain{% endblock %}
 
 {% block content %}
 <section class="hc-page">
   <div class="hc-card hc-card--center">
-    <div class="hc-card__icon" aria-hidden="true">📩</div>
-    <h1 class="hc-title hc-title--sm">Vérifiez votre e-mail</h1>
+    <h1 class="hc-title hc-title--sm">{{ _('Check your email') }}</h1>
     <p>
-      Si cet e-mail existe, un lien sécurisé vient d’être envoyé.
-      <strong>Aucun mot de passe.</strong>
+      {{ _('If this email exists, a secure link has just been sent.') }}
+      <strong>{{ _('No password.') }}</strong>
     </p>
     <ul class="hc-list">
-      <li>Lien valable <strong>15 minutes</strong></li>
-      <li>Regardez aussi vos spams</li>
-      <li>Vous gardez le contrôle. Vous pourrez arrêter à tout moment.</li>
+      <li>{{ _('Link valid for') }} <strong>15 {{ _('minutes') }}</strong></li>
+      <li>{{ _('Also check your spam folder') }}</li>
+      <li>{{ _('You stay in control. You can stop at any time.') }}</li>
     </ul>
 
     <div class="hc-actions">
@@ -24,12 +23,12 @@
         data-cooldown="{{ cooldown_seconds or 14 }}"
         {% if not (resend_email or '') %}disabled{% endif %}
       >
-        Renvoyer le lien
+        {{ _('Resend link') }}
       </button>
-      <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">Retour a l’accueil</a>
+      <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">{{ _('Back to home') }}</a>
     </div>
     <p class="hc-muted" style="margin-top:.5rem">
-      Si vous ne le voyez pas sous 1 minute, vérifiez Indésirables/Spam.
+      {{ _('If you do not see it within 1 minute, check Spam/Junk.') }}
     </p>
     <p id="resend-msg" class="hc-muted" style="margin-top:.35rem; display:none" aria-live="polite"></p>
     {% if csrf_token is defined %}
@@ -54,7 +53,7 @@
     msgEl.style.display = "block";
   }
   if (!email) {
-    showResendMsg("Veuillez recommencer depuis le formulaire.");
+    showResendMsg("{{ _('Please start again from the form.') }}");
     btn.disabled = true;
     return;
   }
@@ -65,7 +64,7 @@
   function startCooldown(seconds) {
     left = Math.max(1, Number(seconds) || defaultCooldown);
     btn.disabled = true;
-    btn.textContent = `Renvoyer le lien (${left}s)`;
+    btn.textContent = `{{ _('Resend link') }} (${left}s)`;
     if (timer) window.clearInterval(timer);
     timer = window.setInterval(() => {
       left -= 1;
@@ -73,16 +72,16 @@
         window.clearInterval(timer);
         timer = null;
         btn.disabled = false;
-        btn.textContent = "Renvoyer le lien";
+        btn.textContent = "{{ _('Resend link') }}";
         return;
       }
-      btn.textContent = `Renvoyer le lien (${left}s)`;
+      btn.textContent = `{{ _('Resend link') }} (${left}s)`;
     }, 1000);
   }
 
   async function resend() {
     btn.disabled = true;
-    btn.textContent = "Envoi…";
+    btn.textContent = "{{ _('Sending…') }}";
     const params = new URLSearchParams();
     params.append("email", email);
     params.append("started_at", String(Date.now() - 5000));
@@ -112,10 +111,10 @@
       } catch (e) {
         // Keep generic UX even when JSON parsing fails.
       }
-      showResendMsg("Lien renvoyé (si l’adresse est valide).");
+      showResendMsg("{{ _('Link sent again (if the address is valid).') }}");
       startCooldown(cooldown);
     } catch (e) {
-      showResendMsg("Impossible de renvoyer maintenant. Réessayez dans un instant.");
+      showResendMsg("{{ _('Unable to resend right now. Please try again shortly.') }}");
       startCooldown(defaultCooldown);
     }
   }
