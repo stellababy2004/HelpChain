@@ -6,6 +6,7 @@ import time
 from collections import deque
 from datetime import UTC, datetime, timedelta, timezone
 from functools import wraps
+from pathlib import Path
 from types import SimpleNamespace
 from urllib.parse import urljoin, urlparse
 
@@ -309,10 +310,27 @@ def inject_template_helpers():
             delta, add_direction=True, locale=str(babel_get_locale())
         )
 
+    def og_image_url(filename: str | None = None):
+        fallback_rel = "img/og-home-1200x630.jpg"
+        try:
+            candidate = (filename or "").strip()
+            if candidate:
+                candidate = candidate.replace("\\", "/")
+                candidate_rel = (
+                    candidate if candidate.startswith("img/") else f"img/{candidate}"
+                )
+                candidate_path = Path(current_app.static_folder) / Path(candidate_rel)
+                if candidate_path.is_file():
+                    return url_for("static", filename=candidate_rel, _external=True)
+        except Exception:
+            pass
+        return url_for("static", filename=fallback_rel, _external=True)
+
     return {
         "url_lang": url_lang,
         "safe_url_for": safe_url_for,
         "time_ago": time_ago,
+        "og_image_url": og_image_url,
     }
 
 
@@ -1354,28 +1372,28 @@ def volunteer_dashboard():
     if not has_location:
         smart_tips.append(
             {
-                "icon": "📍",
+                "icon": "",
                 "text": "Enable location to unlock distance scoring (+20%).",
             }
         )
     if not has_skill_depth:
         smart_tips.append(
             {
-                "icon": "🧠",
+                "icon": "",
                 "text": "Add 2-3 specific skills to increase match score (+45%).",
             }
         )
     if not has_coords:
         smart_tips.append(
             {
-                "icon": "🛰️",
+                "icon": "",
                 "text": "Distance matching is currently disabled (missing coordinates).",
             }
         )
     if not has_availability:
         smart_tips.append(
             {
-                "icon": "🕒",
+                "icon": "",
                 "text": "Add availability so requests can be prioritized for your schedule.",
             }
         )
@@ -1926,7 +1944,7 @@ def volunteer_cant_help(req_id: int):
 def volunteer_request_help_demo():
     """Demo: не записваме нищо, само връщаме UX feedback."""
     session["demo_pending"] = True
-    flash("✅ Благодарим! Интересът ти е отбелязан (демо).", "success")
+    flash("Благодарим! Интересът ти е отбелязан (демо).", "success")
     return redirect(url_for("main.volunteer_request_demo"))
 
 
@@ -2927,7 +2945,12 @@ def request_public(req_id: int):
 @main_bp.post("/set-language")
 @main_bp.post("/set_language")
 def set_language():
-    supported = {"bg", "fr", "en"}
+    supported = {
+        "fr", "en", "es", "it", "de", "ar", "br", "ca", "cs", "co", "cy", "da",
+        "et", "eu", "sw", "mfe", "lv", "lb", "lt", "hu", "nl", "no", "oc", "pl",
+        "pt", "ro", "sk", "sl", "fi", "sv", "vi", "tr", "el", "bg", "ru", "uk",
+        "yi", "he", "ps", "hi", "th", "ko", "zh", "ja",
+    }
     lang = (request.form.get("lang") or "").strip().lower()
     if lang not in supported:
         lang = "bg"

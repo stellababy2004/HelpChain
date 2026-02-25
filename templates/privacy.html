@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Privacy policy") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _('Privacy policy for HelpChain: what data we collect, how we use it, retention, your rights, and how to contact us.') }}{% endblock %}
+{% block og_title %}{{ _('Privacy policy | HelpChain') }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-privacy-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _('Preview image for the HelpChain privacy policy page') }}{% endblock %}
 
 {% block content %}
 <main class="container py-5" role="main">

@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Terms of service") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _('Terms of service for HelpChain: platform usage rules, safety principles, liability information, and contact details.') }}{% endblock %}
+{% block og_title %}{{ _('Terms of service | HelpChain') }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-terms-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _('Preview image for the HelpChain terms of service page') }}{% endblock %}
 
 {% block content %}
 <main class="container py-5" role="main">

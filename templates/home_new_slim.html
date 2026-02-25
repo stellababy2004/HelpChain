@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Accueil{% endblock %}
+{% block title %}{{ _('Accueil') }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _('Infrastructure numérique de coordination des situations sociales. Orientation structurée, coordination traçable et pilotage responsable pour associations et réseaux professionnels.') }}{% endblock %}
+{% block og_title %}{{ _('HelpChain | Infrastructure numérique de coordination des situations sociales') }}{% endblock %}
 {% block body_class %}hc-page-home{% endblock %}
 
 {% block content %}
@@ -10,55 +12,55 @@
       <div class="hc-home__hero-inner">
         <div class="hc-home__hero-copy">
           <h1 class="hc-home__title">
-            Infrastructure numérique de coordination des situations sociales.
+            {{ _('Infrastructure numérique de coordination des situations sociales.') }}
           </h1>
 
           <p class="hc-home__subtitle">
-            Orientation structurée. Coordination traçable. Pilotage responsable.
+            {{ _('Orientation structurée. Coordination traçable. Pilotage responsable.') }}
           </p>
 
           <div class="hc-home__actions">
             <a class="hc-btn hc-btn--primary"
                href="{{ url_for('main.orienter') }}"
                data-hc-event="home_primary_cta">
-              Orienter une demande
+              {{ _('Orienter une demande') }}
             </a>
 
             <a class="hc-btn hc-btn-outline"
                href="{{ url_for('main.professionnels') }}"
                data-hc-event="home_pro_cta">
-              Espace professionnel
+              {{ _('Espace professionnel') }}
             </a>
           </div>
 
           <p class="hc-home__trust">
-            Conçu et opéré depuis la France <span aria-hidden="true">•</span> Infrastructure à vocation européenne
+            {{ _('Conçu et opéré depuis la France') }} <span aria-hidden="true">•</span> {{ _('Infrastructure à vocation européenne') }}
           </p>
         </div>
 
         <div class="hc-home__snapshot">
           <div class="hc-home__snapshot-card">
-            <h2 class="hc-home__snapshot-title">Vue opérationnelle</h2>
+            <h2 class="hc-home__snapshot-title">{{ _('Vue opérationnelle') }}</h2>
 
             <div class="hc-home__snapshot-grid">
               <div class="hc-home__metric">
                 <span class="hc-home__metric-value" data-hc-kpi="helped">{{ helped|default(0, true) }}</span>
-                <span class="hc-home__metric-label">Situations traitées</span>
+                <span class="hc-home__metric-label">{{ _('Situations traitées') }}</span>
               </div>
 
               <div class="hc-home__metric">
                 <span class="hc-home__metric-value" data-hc-kpi="volunteers">{{ active_volunteers|default(0, true) }}</span>
-                <span class="hc-home__metric-label">Intervenants actifs</span>
+                <span class="hc-home__metric-label">{{ _('Intervenants actifs') }}</span>
               </div>
 
               <div class="hc-home__metric">
                 <span class="hc-home__metric-value" data-hc-kpi="countries">{{ countries|default(0, true) }}</span>
-                <span class="hc-home__metric-label">Territoires</span>
+                <span class="hc-home__metric-label">{{ _('Territoires') }}</span>
               </div>
             </div>
 
             <p class="hc-home__snapshot-sub">
-              Processus structuré • Suivi traçable • Coordination continue
+              {{ _('Processus structuré') }} • {{ _('Suivi traçable') }} • {{ _('Coordination continue') }}
             </p>
           </div>
         </div>
@@ -69,31 +71,31 @@
   <section class="hc-home__how">
     <div class="hc-container">
       <header class="hc-home__section-head">
-        <h2>Fonctionnement structuré</h2>
+        <h2>{{ _('Fonctionnement structuré') }}</h2>
         <p>
-          Un cadre clair pour organiser l'orientation et la coordination des situations.
+          {{ _("Un cadre clair pour organiser l'orientation et la coordination des situations.") }}
         </p>
       </header>
 
       <div class="hc-home__how-grid">
         <div class="hc-home__card">
-          <h3>1. Orientation</h3>
+          <h3>{{ _('1. Orientation') }}</h3>
           <p>
-            Classification structurée des situations et qualification initiale.
+            {{ _('Classification structurée des situations et qualification initiale.') }}
           </p>
         </div>
 
         <div class="hc-home__card">
-          <h3>2. Coordination</h3>
+          <h3>{{ _('2. Coordination') }}</h3>
           <p>
-            Attribution responsable et suivi continu des interventions.
+            {{ _('Attribution responsable et suivi continu des interventions.') }}
           </p>
         </div>
 
         <div class="hc-home__card">
-          <h3>3. Pilotage</h3>
+          <h3>{{ _('3. Pilotage') }}</h3>
           <p>
-            Indicateurs opérationnels, visibilité et traçabilité des actions.
+            {{ _('Indicateurs opérationnels, visibilité et traçabilité des actions.') }}
           </p>
         </div>
       </div>
@@ -104,16 +106,15 @@
     <div class="hc-container">
       <div class="hc-home__positioning-inner">
         <div class="hc-home__positioning-copy">
-          <h2>Une infrastructure, pas un annuaire.</h2>
+          <h2>{{ _('Une infrastructure, pas un annuaire.') }}</h2>
           <p>
-            HelpChain fournit une couche de coordination destinée aux associations,
-            services publics et réseaux professionnels, avec un cadre structuré et sécurisé.
+            {{ _('HelpChain fournit une couche de coordination destinée aux associations, services publics et réseaux professionnels, avec un cadre structuré et sécurisé.') }}
           </p>
         </div>
 
         <div class="hc-home__positioning-cta">
           <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.professionnels') }}">
-            Découvrir l'espace professionnel
+            {{ _("Découvrir l'espace professionnel") }}
           </a>
         </div>
       </div>

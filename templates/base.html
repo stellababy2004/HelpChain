@@ -6,24 +6,53 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Step 13 - SEO & Social preview -->
-    <meta name="description" content="{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.') }}">
+    <meta name="description" content="{% block meta_description %}{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.') }}{% endblock %}">
     <meta name="robots" content="index,follow">
 
     <meta property="og:site_name" content="HelpChain">
-    <meta property="og:title" content="{{ _('HelpChain - Infrastructure numérique de coordination') }}">
-    <meta property="og:description" content="{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.') }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.url }}">
-    <link rel="canonical" href="{{ request.base_url }}">
+    <meta property="og:title" content="{% block og_title %}{{ self.title()|striptags|trim }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.meta_description()|striptags|trim }}{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.base_url }}{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ request.base_url }}{% endblock %}">
+    {% set _seo_ep = (request.endpoint or '') %}
+    {% set _hreflang_public_eps = [
+      'main.index',
+      'main.orienter',
+      'main.about',
+      'main.professionnels',
+      'main.submit_request',
+      'main.become_volunteer',
+      'main.contact',
+      'main.faq',
+      'main.pilot',
+      'main.legal',
+      'main.privacy',
+      'main.terms'
+    ] %}
+    {% if _seo_ep in _hreflang_public_eps %}
+      {% set _hreflang_next = request.path %}
+      {% if _seo_ep == 'main.submit_request' %}
+        {% set _hreflang_next = url_for('main.submit_request') %}
+      {% elif _seo_ep == 'main.become_volunteer' %}
+        {% set _hreflang_next = url_for('main.become_volunteer') %}
+      {% endif %}
+      {% for _lang in ['fr', 'en', 'bg'] %}
+    <link rel="alternate" hreflang="{{ _lang }}" href="{{ url_for('main.set_lang', locale=_lang, next=_hreflang_next, _external=True) }}">
+      {% endfor %}
+    <link rel="alternate" hreflang="x-default" href="{{ url_for('main.set_lang', locale='fr', next=_hreflang_next, _external=True) }}">
+    {% endif %}
 
-    <meta property="og:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
+    <meta property="og:image" content="{% block og_image %}{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}{% endblock %}">
+    <meta property="og:image:alt" content="{% block og_image_alt %}{{ self.og_title()|striptags|trim }}{% endblock %}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ _('HelpChain - Infrastructure numérique de coordination') }}">
-    <meta name="twitter:description" content="{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.') }}">
-    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-home-1200x630.jpg', _external=True) }}">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ self.og_title()|striptags|trim }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ self.og_description()|striptags|trim }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ self.og_image()|striptags|trim }}{% endblock %}">
+    <meta name="twitter:image:alt" content="{% block twitter_image_alt %}{{ self.og_image_alt()|striptags|trim }}{% endblock %}">
 
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-32x32.png') }}">
@@ -68,11 +97,58 @@
     {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
     {% set admin_logged_in = session.get('admin_logged_in') %}
     {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
+    {% set hc_locale_code = ((session.get('lang') or (get_locale()|string) or 'fr')|string)[:2]|lower %}
+    {% set hc_lang_return = request.full_path if (request and request.query_string) else request.path %}
+    {% set hc_languages = [
+      {'code': 'fr', 'name': 'Français', 'flag': ''},
+      {'code': 'en', 'name': 'English', 'flag': ''},
+      {'code': 'es', 'name': 'Español', 'flag': ''},
+      {'code': 'it', 'name': 'Italiano', 'flag': ''},
+      {'code': 'de', 'name': 'Deutsch', 'flag': ''},
+      {'code': 'ar', 'name': 'العربية', 'flag': ''},
+      {'code': 'br', 'name': 'Brezhoneg', 'flag': '', 'note': 'Régional'},
+      {'code': 'ca', 'name': 'Català', 'flag': '', 'note': 'Régional'},
+      {'code': 'cs', 'name': 'Čeština', 'flag': ''},
+      {'code': 'co', 'name': 'Corsu', 'flag': '', 'note': 'Régional'},
+      {'code': 'cy', 'name': 'Cymraeg', 'flag': ''},
+      {'code': 'da', 'name': 'Dansk', 'flag': ''},
+      {'code': 'et', 'name': 'Eesti', 'flag': ''},
+      {'code': 'eu', 'name': 'Euskara', 'flag': '', 'note': 'Régional'},
+      {'code': 'sw', 'name': 'Kiswahili', 'flag': ''},
+      {'code': 'mfe', 'name': 'Kreol Morisien', 'flag': ''},
+      {'code': 'lv', 'name': 'Latviešu', 'flag': ''},
+      {'code': 'lb', 'name': 'Lëtzebuergesch', 'flag': ''},
+      {'code': 'lt', 'name': 'Lietuvių', 'flag': ''},
+      {'code': 'hu', 'name': 'Magyar', 'flag': ''},
+      {'code': 'nl', 'name': 'Nederlands', 'flag': ''},
+      {'code': 'no', 'name': 'Norsk', 'flag': ''},
+      {'code': 'oc', 'name': 'Occitan', 'flag': '', 'note': 'Régional'},
+      {'code': 'pl', 'name': 'Polski', 'flag': ''},
+      {'code': 'pt', 'name': 'Português', 'flag': ''},
+      {'code': 'ro', 'name': 'Română', 'flag': ''},
+      {'code': 'sk', 'name': 'Slovenčina', 'flag': ''},
+      {'code': 'sl', 'name': 'Slovenščina', 'flag': ''},
+      {'code': 'fi', 'name': 'Suomi', 'flag': ''},
+      {'code': 'sv', 'name': 'Svenska', 'flag': ''},
+      {'code': 'vi', 'name': 'Tiếng Việt', 'flag': ''},
+      {'code': 'tr', 'name': 'Türkçe', 'flag': ''},
+      {'code': 'el', 'name': 'Ελληνικά', 'flag': ''},
+      {'code': 'bg', 'name': 'Български', 'flag': ''},
+      {'code': 'ru', 'name': 'Русский', 'flag': ''},
+      {'code': 'uk', 'name': 'Українська', 'flag': ''},
+      {'code': 'yi', 'name': 'ייִדיש', 'flag': ''},
+      {'code': 'he', 'name': 'עברית', 'flag': ''},
+      {'code': 'ps', 'name': 'پښتو', 'flag': ''},
+      {'code': 'hi', 'name': 'हिन्दी', 'flag': ''},
+      {'code': 'th', 'name': 'ไทย', 'flag': ''},
+      {'code': 'ko', 'name': '한국어', 'flag': ''},
+      {'code': 'zh', 'name': '中文', 'flag': ''},
+      {'code': 'ja', 'name': '日本語', 'flag': ''}
+    ] %}
     <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass">
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
-          <img src="{{ url_for('static', filename='icons/icon-32x32.png') }}" width="24" height="24" alt="" aria-hidden="true" />
           <span>HelpChain.live</span>
         </a>
         <button
@@ -86,6 +162,21 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
+        <button
+          class="btn btn-outline-secondary btn-sm d-lg-none ms-2 hc-lang-top-trigger"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#hcLangSheet"
+          aria-controls="hcLangSheet"
+          aria-label="{{ _('Language') }}"
+          title="{{ _('Language') }}"
+        >
+          {% for lang in hc_languages if lang.code == hc_locale_code %}
+            <span class="hc-lang-flag" aria-hidden="true">{{ lang.code|upper }}</span>
+          {% else %}
+            <span class="hc-lang-flag" aria-hidden="true">{{ hc_locale_code|upper }}</span>
+          {% endfor %}
+        </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           {% if not hide_full_nav %}
           {% set ep = request.endpoint or '' %}
@@ -98,7 +189,7 @@
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.categories') or ep.startswith('main.orienter') else '' }}" href="{{ safe_url_for('main.orienter') }}" {% if ep.startswith('main.categories') or ep.startswith('main.orienter') %}aria-current="page"{% endif %}>
-                <i class="fas fa-th-list me-1" aria-hidden="true"></i>Orienter
+                <i class="fas fa-th-list me-1" aria-hidden="true"></i>{{ _('Orienter') }}
               </a>
             </li>
             <li class="nav-item">
@@ -108,7 +199,13 @@
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
-                <i class="fas fa-briefcase me-1" aria-hidden="true"></i>Professionnels
+                <i class="fas fa-briefcase me-1" aria-hidden="true"></i>
+                <span class="hc-labelswap">
+                  <span class="hc-labelswap__long">{{ _('Professionnels') }}</span>
+                  <span class="hc-labelswap__short" aria-hidden="true">
+                    {% if hc_locale_code == 'bg' %}{{ _('Проф.') }}{% elif hc_locale_code == 'fr' %}Pros{% else %}Pros{% endif %}
+                  </span>
+                </span>
               </a>
             </li>
             {# Temporary: route removed/renamed; avoid BuildError in shared base template #}
@@ -122,7 +219,12 @@
             <li class="nav-item">
               <a class="nav-link hc-nav-cta hc-cta {{ 'active' if ep.startswith('main.submit_request') else '' }}" href="{{ url_for('main.submit_request') }}" data-hc-nav="submit" {% if ep.startswith('main.submit_request') %}aria-current="page"{% endif %}>
                 <span class="hc-navicon" aria-hidden="true"><i class="fas fa-plus-circle" aria-hidden="true"></i></span>
-                <span class="hc-navlabel">{{ _('Submit a request') }}</span>
+                <span class="hc-navlabel hc-labelswap">
+                  <span class="hc-labelswap__long">{{ _('Submit a request') }}</span>
+                  <span class="hc-labelswap__short" aria-hidden="true">
+                    {% if hc_locale_code == 'bg' %}{{ _('Подай') }}{% elif hc_locale_code == 'fr' %}Déposer{% else %}Submit{% endif %}
+                  </span>
+                </span>
               </a>
             </li>
             {% if current_user.is_authenticated %}
@@ -242,15 +344,35 @@
                 type="search"
                 name="q"
                 value="{{ request.args.get('q','') if request else '' }}"
-                placeholder="Rechercher…"
-                aria-label="Search"
+                placeholder="{{ _('Search…') }}"
+                aria-label="{{ _('Search') }}"
                 autocomplete="off"
               />
-              <button class="hc-nav-search__btn hc-iconbtn" type="submit" aria-label="Search">
+              <button class="hc-nav-search__btn hc-iconbtn" type="submit" aria-label="{{ _('Search') }}">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
             </div>
           </form>
+          {% if not is_any_logged_in %}
+          <div class="hc-nav-intervenant-links d-none d-lg-flex ms-2" aria-label="{{ _('Accès intervenants') }}">
+            <a class="hc-nav-intervenant-links__item" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}" aria-label="{{ _('Connexion intervenant') }}">
+              <span class="hc-labelswap">
+                <span class="hc-labelswap__long">{{ _('Connexion intervenant') }}</span>
+                <span class="hc-labelswap__short" aria-hidden="true">
+                  {% if hc_locale_code == 'bg' %}{{ _('Вход') }}{% elif hc_locale_code == 'fr' %}Connexion{% else %}Login{% endif %}
+                </span>
+              </span>
+            </a>
+            <a class="hc-nav-intervenant-links__item hc-nav-intervenant-links__item--accent" href="{{ safe_url_for('main.become_volunteer') }}" aria-label="{{ _('Inscription intervenant') }}">
+              <span class="hc-labelswap">
+                <span class="hc-labelswap__long">{{ _('Inscription intervenant') }}</span>
+                <span class="hc-labelswap__short" aria-hidden="true">
+                  {% if hc_locale_code == 'bg' %}{{ _('Рег.') }}{% elif hc_locale_code == 'fr' %}Inscription{% else %}Sign up{% endif %}
+                </span>
+              </span>
+            </a>
+          </div>
+          {% endif %}
 
           {% set ep = request.endpoint or '' %}
           {% set public_eps = [
@@ -273,9 +395,46 @@
             {% endif %}
           </div>
           {% endif %}
+
         </div>
       </div>
     </nav>
+
+    <div
+      class="offcanvas offcanvas-bottom hc-lang-sheet d-lg-none"
+      tabindex="-1"
+      id="hcLangSheet"
+      aria-labelledby="hcLangSheetTitle"
+    >
+      <div class="offcanvas-header">
+        <h2 class="offcanvas-title h5 mb-0" id="hcLangSheetTitle">{{ _('Language') }}</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ _('Close') }}"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="hc-lang-sheet__list" role="list">
+          {% for lang in hc_languages %}
+            <form method="post" action="{{ url_for('main.set_language') }}" class="hc-lang-form" role="listitem">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="lang" value="{{ lang.code }}">
+              <input type="hidden" name="next" value="{{ hc_lang_return }}">
+              <button
+                type="submit"
+                class="hc-lang-item hc-lang-item--sheet {% if lang.code == hc_locale_code %}is-active{% endif %}"
+              >
+                <span class="hc-lang-flag" aria-hidden="true">{{ lang.code|upper }}</span>
+                <span class="hc-lang-name">
+                  {{ lang.name }}
+                  {% if lang.note %}<span class="hc-lang-note">{{ lang.note }}</span>{% endif %}
+                </span>
+                {% if lang.code == hc_locale_code %}
+                  <span class="hc-lang-check" aria-hidden="true">✓</span>
+                {% endif %}
+              </button>
+            </form>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
 
     <!-- Flash Messages -->
     {% if request.endpoint != 'main.volunteer_confirmation' %}
@@ -304,7 +463,7 @@
       aria-controls="hcA11yDrawer"
       aria-expanded="false"
     >
-      ♿
+      <span class="hc-a11y-fab__icon" aria-hidden="true">♿</span>
     </button>
 
     <div
@@ -319,40 +478,494 @@
       <div class="hc-a11y-drawer__overlay" data-a11y-close="true"></div>
       <div class="hc-a11y-drawer__panel" role="document">
         <header class="hc-a11y-drawer__header">
-          <h2 id="hcA11yTitle" class="hc-a11y-drawer__title">{{ _('Accessibility') }}</h2>
-          <button type="button" class="hc-a11y-drawer__close" data-a11y-close="true" aria-label="{{ _('Close') }}">
-            ✕
-          </button>
+          <div class="hc-a11y-topbar">
+            <button
+              type="button"
+              id="hcA11yHome"
+              class="hc-a11y-topbar__btn hc-a11y-topbar__btn--menu"
+              aria-label="{{ _('Accessibility menu') }}"
+            >
+              ☰
+            </button>
+
+            <div class="hc-a11y-topbar__brand" aria-hidden="true">
+              <span class="hc-a11y-topbar__brand-mark">♞</span>
+              <span class="hc-a11y-topbar__brand-text">HelpChain</span>
+            </div>
+
+            <div class="hc-a11y-topbar__actions">
+              <button
+                type="button"
+                id="hcA11yPower"
+                class="hc-a11y-topbar__btn hc-a11y-topbar__btn--power"
+                aria-label="{{ _('Toggle accessibility settings') }}"
+                title="{{ _('Toggle accessibility settings') }}"
+              >
+                ⏻
+              </button>
+              <button type="button" class="hc-a11y-topbar__btn hc-a11y-topbar__btn--close" data-a11y-close="true" aria-label="{{ _('Close') }}">
+                ✕
+              </button>
+            </div>
+          </div>
+          <div class="hc-a11y-drawer__headcopy">
+            <h2 id="hcA11yTitle" class="hc-a11y-drawer__title">{{ _('Accessibility') }}</h2>
+            <p class="hc-a11y-drawer__subtitle">
+              {{ _('Adjust readability and motion. Settings are saved on this device.') }}
+            </p>
+          </div>
         </header>
         <div class="hc-a11y-drawer__body">
-          <div class="hc-a11y-row">
-            <label class="hc-a11y-switch">
-              <input type="checkbox" id="hcA11yContrast">
-              <span>{{ _('High contrast') }}</span>
-            </label>
+          <div id="hcA11yMainScreen" class="hc-a11y-screen" data-a11y-screen="main">
+          <div class="hc-a11y-summary" id="hcA11ySummary" aria-live="polite" aria-atomic="true">
+            <span class="hc-a11y-summary__dot" aria-hidden="true"></span>
+            <span class="hc-a11y-summary__textwrap">
+              <span
+                id="hcA11ySummaryText"
+                data-none="{{ _('No options enabled') }}"
+                data-one="{{ _('1 option enabled') }}"
+                data-many="{{ _('{count} options enabled') }}"
+                data-disabled="{{ _('Accessibility paused') }}"
+              >{{ _('No options enabled') }}</span>
+              <span
+                id="hcA11ySummaryMode"
+                class="hc-a11y-badge"
+                data-label-system="{{ _('Following system') }}"
+                data-label-disabled="{{ _('Power off') }}"
+                hidden
+              >{{ _('Following system') }}</span>
+            </span>
           </div>
-          <div class="hc-a11y-row">
-            <label class="hc-a11y-switch">
-              <input type="checkbox" id="hcA11yText">
-              <span>{{ _('Bigger text') }}</span>
-            </label>
+          <div class="hc-a11y-tabs" role="tablist" aria-label="{{ _('Accessibility sections') }}">
+            <button type="button" class="hc-a11y-tab is-active" id="hcA11yTabDisplay" data-a11y-pane-target="display" role="tab" aria-selected="true" aria-controls="hcA11yPaneDisplay">
+              <span class="hc-a11y-tab__icon" aria-hidden="true"><i class="fas fa-desktop"></i></span>
+              <span class="hc-a11y-tab__label">{{ _('Display') }}</span>
+            </button>
+            <button type="button" class="hc-a11y-tab" id="hcA11yTabNav" data-a11y-pane-target="nav" role="tab" aria-selected="false" aria-controls="hcA11yPaneNav">
+              <span class="hc-a11y-tab__icon" aria-hidden="true"><i class="fas fa-laptop"></i></span>
+              <span class="hc-a11y-tab__label">{{ _('Navigation') }}</span>
+            </button>
+            <button type="button" class="hc-a11y-tab" id="hcA11yTabLang" data-a11y-pane-target="lang" role="tab" aria-selected="false" aria-controls="hcA11yPaneLang">
+              <span class="hc-a11y-tab__icon" aria-hidden="true">
+                {% for lang in hc_languages if lang.code == hc_locale_code %}
+                  <span class="hc-lang-flag">{{ lang.code|upper }}</span>
+                {% else %}
+                  
+                {% endfor %}
+              </span>
+              <span class="hc-a11y-tab__label">{{ _('Translations') }}</span>
+            </button>
+            <button type="button" class="hc-a11y-tab" id="hcA11yTabAudio" data-a11y-pane-target="audio" role="tab" aria-selected="false" aria-controls="hcA11yPaneAudio">
+              <span class="hc-a11y-tab__icon" aria-hidden="true"><i class="fas fa-volume-up"></i></span>
+              <span class="hc-a11y-tab__label">{{ _('Audio') }}</span>
+            </button>
+            <button type="button" class="hc-a11y-tab" id="hcA11yTabMotor" data-a11y-pane-target="motor" role="tab" aria-selected="false" aria-controls="hcA11yPaneMotor">
+              <span class="hc-a11y-tab__icon" aria-hidden="true"><i class="fas fa-hand-paper"></i></span>
+              <span class="hc-a11y-tab__label">{{ _('Motor') }}</span>
+            </button>
+            <button type="button" class="hc-a11y-tab" id="hcA11yTabEco" data-a11y-pane-target="eco" role="tab" aria-selected="false" aria-controls="hcA11yPaneEco">
+              <span class="hc-a11y-tab__icon" aria-hidden="true"><i class="fas fa-leaf"></i></span>
+              <span class="hc-a11y-tab__label">{{ _('Eco') }}</span>
+            </button>
+            <button type="button" class="hc-a11y-tab" id="hcA11yTabMore" data-a11y-pane-target="more" role="tab" aria-selected="false" aria-controls="hcA11yPaneMore">
+              <span class="hc-a11y-tab__icon" aria-hidden="true"><i class="fas fa-sliders-h"></i></span>
+              <span class="hc-a11y-tab__label">{{ _('More') }}</span>
+            </button>
           </div>
-          <div class="hc-a11y-row">
-            <label class="hc-a11y-switch">
-              <input type="checkbox" id="hcA11yMotion">
-              <span>{{ _('Reduce motion') }}</span>
-            </label>
-          </div>
-          <div class="hc-a11y-row">
-            <label class="hc-a11y-switch">
-              <input type="checkbox" id="hcA11ySimple">
-              <span>{{ _('Simplified mode') }}</span>
-            </label>
+
+          <div class="hc-a11y-panes">
+            <section class="hc-a11y-pane is-active" id="hcA11yPaneDisplay" data-a11y-pane="display" role="tabpanel" aria-labelledby="hcA11yTabDisplay">
+              <div class="hc-a11y-pane__head">
+                <h3 class="hc-a11y-pane__title">{{ _('Display & reading') }}</h3>
+                <p class="hc-a11y-pane__subtitle">{{ _('Improve readability and visual comfort') }}</p>
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11yContrast">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('High contrast') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Increase visual contrast across the interface') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+              <div class="hc-a11y-row">
+                <div class="hc-a11y-control">
+                  <div class="hc-a11y-switch__content">
+                    <label for="hcA11yTextScale" class="hc-a11y-switch__label">{{ _('Text size') }}</label>
+                    <span class="hc-a11y-switch__hint">{{ _('Choose a comfortable reading size') }}</span>
+                  </div>
+                  <select id="hcA11yTextScale" class="hc-a11y-select" aria-label="{{ _('Text size') }}">
+                    <option value="normal">{{ _('Normal') }}</option>
+                    <option value="large">{{ _('Large') }}</option>
+                    <option value="xlarge">{{ _('Extra large') }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11yFontDyslexic">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('Dyslexia-friendly font') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Use a clearer fallback font stack with increased spacing') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="hc-a11y-pane" id="hcA11yPaneNav" data-a11y-pane="nav" role="tabpanel" aria-labelledby="hcA11yTabNav" hidden>
+              <div class="hc-a11y-pane__head">
+                <h3 class="hc-a11y-pane__title">{{ _('Navigation comfort') }}</h3>
+                <p class="hc-a11y-pane__subtitle">{{ _('Reduce distraction and simplify movement across pages') }}</p>
+              </div>
+              <div class="hc-a11y-subprofiles">
+                <div class="hc-a11y-subprofiles__head">{{ _('Navigation profiles') }}</div>
+                <div class="hc-a11y-presetlist" role="list">
+                  <button type="button" class="hc-a11y-preset" data-a11y-preset="reading_comfort" data-a11y-profile-open="reading_comfort" role="listitem">
+                    <span class="hc-a11y-preset__main">
+                      <span class="hc-a11y-preset__name">{{ _('Reading comfort') }}</span>
+                      <span class="hc-a11y-preset__desc">{{ _('Larger text with cleaner reading spacing') }}</span>
+                    </span>
+                    <span class="hc-a11y-preset__apply">{{ _('Open') }}</span>
+                  </button>
+                  <button type="button" class="hc-a11y-preset" data-a11y-preset="dmla" data-a11y-profile-open="dmla" role="listitem">
+                    <span class="hc-a11y-preset__main">
+                      <span class="hc-a11y-preset__name">DMLA</span>
+                      <span class="hc-a11y-preset__desc">{{ _('High contrast and larger text for central vision comfort') }}</span>
+                    </span>
+                    <span class="hc-a11y-preset__apply">{{ _('Open') }}</span>
+                  </button>
+                  <button type="button" class="hc-a11y-preset" data-a11y-preset="presbyopia" data-a11y-profile-open="presbyopia" role="listitem">
+                    <span class="hc-a11y-preset__main">
+                      <span class="hc-a11y-preset__name">Presbyopia</span>
+                      <span class="hc-a11y-preset__desc">{{ _('Extra-large text and simplified visuals for easier reading') }}</span>
+                    </span>
+                    <span class="hc-a11y-preset__apply">{{ _('Open') }}</span>
+                  </button>
+                </div>
+              </div>
+              <div class="hc-a11y-subprofiles">
+                <div class="hc-a11y-subprofiles__head">{{ _('Visual presets') }}</div>
+                <div class="hc-a11y-presetgrid" role="list">
+                  <button type="button" class="hc-a11y-presetcard" data-a11y-preset="balanced" data-a11y-profile-open="balanced" role="listitem">
+                    <span class="hc-a11y-presetcard__title">{{ _('Balanced') }}</span>
+                    <span class="hc-a11y-presetcard__desc">{{ _('Keep a clean look without changing text size') }}</span>
+                  </button>
+                  <button type="button" class="hc-a11y-presetcard" data-a11y-preset="focus" data-a11y-profile-open="focus" role="listitem">
+                    <span class="hc-a11y-presetcard__title">{{ _('Focus mode') }}</span>
+                    <span class="hc-a11y-presetcard__desc">{{ _('Reduce motion and visual noise') }}</span>
+                  </button>
+                  <button type="button" class="hc-a11y-presetcard" data-a11y-preset="high_visibility" data-a11y-profile-open="high_visibility" role="listitem">
+                    <span class="hc-a11y-presetcard__title">{{ _('High visibility') }}</span>
+                    <span class="hc-a11y-presetcard__desc">{{ _('High contrast + bigger text') }}</span>
+                  </button>
+                </div>
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11yMotion">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('Reduce motion') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Limit animations and transitions') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11ySimple">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('Simplified mode') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Hide decorative elements and reduce visual noise') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="hc-a11y-pane" id="hcA11yPaneAudio" data-a11y-pane="audio" role="tabpanel" aria-labelledby="hcA11yTabAudio" hidden>
+              <div class="hc-a11y-pane__head">
+                <h3 class="hc-a11y-pane__title">{{ _('Audio support') }}</h3>
+                <p class="hc-a11y-pane__subtitle">{{ _('Read content aloud and tune voice feedback for better accessibility') }}</p>
+              </div>
+              <div
+                class="hc-a11y-note hc-a11y-note--compact"
+                id="hcA11yAudioSupport"
+                role="status"
+                aria-live="polite"
+                data-supported="{{ _('Uses your browser or device voice. Availability depends on browser support.') }}"
+                data-unsupported="{{ _('Speech playback is not available in this browser.') }}"
+              >
+                {{ _('Uses your browser or device voice. Availability depends on browser support.') }}
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11yReadAloud">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('Read aloud') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Enable speech playback for reading content') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+              <div class="hc-a11y-row">
+                <div class="hc-a11y-note hc-a11y-note--compact">
+                  {{ _('Turn on Read aloud, close the menu, and select text on the page. Play / Stop will appear.') }}
+                </div>
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11yVoiceGuidance">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('Voice guidance') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Allow short spoken confirmations for key actions (future)') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+              <div class="hc-a11y-row">
+                <div class="hc-a11y-control">
+                  <div class="hc-a11y-switch__content">
+                    <label for="hcA11ySpeechRate" class="hc-a11y-switch__label">{{ _('Speech rate') }}</label>
+                    <span class="hc-a11y-switch__hint">{{ _('Choose a comfortable reading speed') }}</span>
+                  </div>
+                  <select id="hcA11ySpeechRate" class="hc-a11y-select" aria-label="{{ _('Speech rate') }}">
+                    <option value="slow">{{ _('Slow') }}</option>
+                    <option value="normal">{{ _('Normal') }}</option>
+                    <option value="fast">{{ _('Fast') }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="hc-a11y-row">
+                <div class="hc-a11y-control hc-a11y-control--stack">
+                  <div class="hc-a11y-switch__content">
+                    <label for="hcA11ySpeechVolume" class="hc-a11y-switch__label">{{ _('Volume') }}</label>
+                    <span class="hc-a11y-switch__hint">{{ _('Adjust speech playback volume') }}</span>
+                  </div>
+                  <div class="hc-a11y-rangewrap">
+                    <input type="range" id="hcA11ySpeechVolume" class="hc-a11y-range" min="0" max="100" step="5" value="80" aria-label="{{ _('Speech volume') }}">
+                    <output for="hcA11ySpeechVolume" id="hcA11ySpeechVolumeValue" class="hc-a11y-rangevalue">80%</output>
+                  </div>
+                </div>
+              </div>
+              <div class="hc-a11y-row">
+                <div class="hc-a11y-control">
+                  <div class="hc-a11y-switch__content">
+                    <label for="hcA11ySpeechVoice" class="hc-a11y-switch__label">{{ _('Voice') }}</label>
+                    <span class="hc-a11y-switch__hint">{{ _('Choose a browser voice when available') }}</span>
+                  </div>
+                  <select id="hcA11ySpeechVoice" class="hc-a11y-select" aria-label="{{ _('Voice') }}">
+                    <option value="default">{{ _('Default voice') }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="hc-a11y-row">
+                <div class="hc-a11y-control hc-a11y-control--stack">
+                  <div class="hc-a11y-switch__content">
+                    <div class="hc-a11y-switch__label">{{ _('Voice test') }}</div>
+                    <span class="hc-a11y-switch__hint">{{ _('Try the selected voice and settings before saving') }}</span>
+                  </div>
+                  <div class="hc-a11y-inline-actions">
+                    <button
+                      type="button"
+                      id="hcA11yAudioTest"
+                      class="hc-a11y-inlinebtn"
+                      data-sample-text="{{ _('Accessibility voice test. This is a preview of your audio settings.') }}"
+                    >
+                      {{ _('Test voice') }}
+                    </button>
+                    <button type="button" id="hcA11yAudioStop" class="hc-a11y-inlinebtn hc-a11y-inlinebtn--secondary">
+                      {{ _('Stop') }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11yReadHighlight">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('Highlight while reading') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Highlight the current paragraph or block during page reading') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11yAutoRead">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('Auto-read on page load') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Start reading automatically when supported (future)') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="hc-a11y-pane" id="hcA11yPaneMotor" data-a11y-pane="motor" role="tabpanel" aria-labelledby="hcA11yTabMotor" hidden>
+              <div class="hc-a11y-pane__head">
+                <h3 class="hc-a11y-pane__title">{{ _('Motor assistance') }}</h3>
+                <p class="hc-a11y-pane__subtitle">{{ _('Placeholder section for click targets, dwell, and keyboard assistance') }}</p>
+              </div>
+              <div class="hc-a11y-note">
+                {{ _('Coming soon: larger touch targets, click delay settings, and keyboard navigation helpers.') }}
+              </div>
+            </section>
+
+            <section class="hc-a11y-pane" id="hcA11yPaneLang" data-a11y-pane="lang" role="tabpanel" aria-labelledby="hcA11yTabLang" hidden>
+              <div class="hc-a11y-pane__head">
+                <h3 class="hc-a11y-pane__title">{{ _('Translations') }}</h3>
+                <p class="hc-a11y-pane__subtitle">{{ _('Choose the interface language') }}</p>
+              </div>
+              <div class="hc-a11y-row">
+                <div class="hc-a11y-langnav">
+                  <button
+                    type="button"
+                    id="hcA11yLangOpen"
+                    class="hc-a11y-navitem"
+                    aria-controls="hcA11yLangScreen"
+                  >
+                    <span class="hc-a11y-navitem__icon" aria-hidden="true">
+                      {% for lang in hc_languages if lang.code == hc_locale_code %}
+                        <span class="hc-lang-flag">{{ lang.code|upper }}</span>
+                      {% else %}
+                        <span class="hc-lang-flag">{{ hc_locale_code|upper }}</span>
+                      {% endfor %}
+                    </span>
+                    <span class="hc-a11y-navitem__content">
+                      <span class="hc-a11y-navitem__title">{{ _('Translations') }}</span>
+                      {% for lang in hc_languages if lang.code == hc_locale_code %}
+                        <span class="hc-a11y-navitem__subtitle">{{ lang.name }}</span>
+                      {% else %}
+                        <span class="hc-a11y-navitem__subtitle">{{ _('Choose the interface language') }}</span>
+                      {% endfor %}
+                    </span>
+                    <span class="hc-a11y-navitem__chevron" aria-hidden="true">›</span>
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section class="hc-a11y-pane" id="hcA11yPaneEco" data-a11y-pane="eco" role="tabpanel" aria-labelledby="hcA11yTabEco" hidden>
+              <div class="hc-a11y-pane__head">
+                <h3 class="hc-a11y-pane__title">{{ _('Eco display') }}</h3>
+                <p class="hc-a11y-pane__subtitle">{{ _('Lighter pages for faster display and lower data/energy use') }}</p>
+              </div>
+              <div class="hc-a11y-row">
+                <label class="hc-a11y-switch">
+                  <input type="checkbox" id="hcA11yEco">
+                  <span class="hc-a11y-switch__content">
+                    <span class="hc-a11y-switch__label">{{ _('Eco mode') }}</span>
+                    <span class="hc-a11y-switch__hint">{{ _('Lighter pages with reduced visual effects to improve speed and lower data/energy use') }}</span>
+                  </span>
+                  <span class="hc-a11y-toggle" aria-hidden="true"></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="hc-a11y-pane" id="hcA11yPaneMore" data-a11y-pane="more" role="tabpanel" aria-labelledby="hcA11yTabMore" hidden>
+              <div class="hc-a11y-pane__head">
+                <h3 class="hc-a11y-pane__title">{{ _('More options') }}</h3>
+                <p class="hc-a11y-pane__subtitle">{{ _('This section is ready for future accessibility modules') }}</p>
+              </div>
+              <div class="hc-a11y-note">
+                {{ _('You can add more grouped settings here later (audio, keyboard help, reading profiles, etc.).') }}
+              </div>
+            </section>
           </div>
           <hr class="hc-a11y-sep">
-          <button type="button" id="hcA11yReset" class="btn btn-outline-secondary btn-sm">
-            {{ _('Reset') }}
-          </button>
+          <div class="hc-a11y-actions">
+            <button type="button" id="hcA11yResetSection" class="btn btn-outline-secondary btn-sm">
+              {{ _('Reset only this section') }}
+            </button>
+            <button type="button" id="hcA11yReset" class="btn btn-outline-secondary btn-sm">
+              {{ _('Reset') }}
+            </button>
+            <button type="button" id="hcA11ySystem" class="btn btn-outline-light btn-sm">
+              {{ _('Restore system defaults') }}
+            </button>
+            <button type="button" id="hcA11ySaveProfile" class="btn btn-outline-primary btn-sm">
+              {{ _('Save as my profile') }}
+            </button>
+            <button type="button" class="btn btn-light btn-sm" data-a11y-close="true">
+              {{ _('Done') }}
+            </button>
+          </div>
+          <p class="hc-a11y-shortcut">
+            {{ _('Shortcut: Alt + A') }}
+          </p>
+          </div>
+
+          <div id="hcA11yLangScreen" class="hc-a11y-screen hc-a11y-screen--sub" data-a11y-screen="lang" hidden>
+            <div class="hc-a11y-subhead">
+              <button
+                type="button"
+                id="hcA11yLangBack"
+                class="hc-a11y-subhead__back"
+                aria-label="{{ _('Back') }}"
+              >
+                ‹
+              </button>
+              <div class="hc-a11y-subhead__titlewrap">
+                <div class="hc-a11y-subhead__title">{{ _('Translations') }}</div>
+                <div class="hc-a11y-subhead__subtitle">{{ _('Select language') }}</div>
+              </div>
+            </div>
+
+            <div class="hc-a11y-langscreen-list" role="list">
+              {% for lang in hc_languages %}
+                <form method="post" action="{{ url_for('main.set_language') }}" class="hc-lang-form" role="listitem">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="lang" value="{{ lang.code }}">
+                  <input type="hidden" name="next" value="{{ hc_lang_return }}">
+                  <button type="submit" class="hc-a11y-langitem hc-a11y-langitem--screen {% if lang.code == hc_locale_code %}is-active{% endif %}">
+                    <span class="hc-lang-flag" aria-hidden="true">{{ lang.code|upper }}</span>
+                    <span class="hc-lang-name">
+                      {{ lang.name }}
+                      {% if lang.note %}<span class="hc-lang-note">{{ lang.note }}</span>{% endif %}
+                    </span>
+                    {% if lang.code == hc_locale_code %}
+                      <span class="hc-lang-check" aria-hidden="true">✓</span>
+                    {% else %}
+                      <span class="hc-a11y-langitem__chevron" aria-hidden="true">›</span>
+                    {% endif %}
+                  </button>
+                </form>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div id="hcA11yProfileScreen" class="hc-a11y-screen hc-a11y-screen--sub" data-a11y-screen="profile" hidden>
+            <div class="hc-a11y-subhead">
+              <button
+                type="button"
+                id="hcA11yProfileBack"
+                class="hc-a11y-subhead__back"
+                aria-label="{{ _('Back') }}"
+              >
+                ‹
+              </button>
+              <div class="hc-a11y-subhead__titlewrap">
+                <div id="hcA11yProfileTitle" class="hc-a11y-subhead__title">{{ _('Profile') }}</div>
+                <div id="hcA11yProfileSubtitle" class="hc-a11y-subhead__subtitle">{{ _('Profile details') }}</div>
+              </div>
+            </div>
+
+            <div class="hc-a11y-profilecard">
+              <p id="hcA11yProfileDesc" class="hc-a11y-profilecard__desc">{{ _('Preset description') }}</p>
+              <div class="hc-a11y-profilecard__head">{{ _('This profile applies') }}</div>
+              <ul id="hcA11yProfileList" class="hc-a11y-profilelist">
+                <li>{{ _('Loading profile…') }}</li>
+              </ul>
+              <div id="hcA11yProfileBadges" class="hc-a11y-profilebadges"></div>
+              <div class="hc-a11y-profilecard__actions">
+                <button type="button" id="hcA11yProfileApply" class="btn btn-light btn-sm">
+                  {{ _('Apply profile') }}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -364,25 +977,25 @@
           <div class="hc-footer__copyright">&copy; {{ current_year|default(2026) }} HelpChain</div>
 
           <div class="hc-footer__trust">
-            Données hébergées en Europe · Conforme RGPD · Sécurité renforcée · Développé et opéré en France
+            {{ _('Données hébergées en Europe') }} · {{ _('Conforme RGPD') }} · {{ _('Sécurité renforcée') }} · {{ _('Développé et opéré en France') }}
           </div>
 
-          <nav class="hc-footer__nav" aria-label="Footer">
-            <a class="hc-footer__link" href="{{ url_for('main.about') }}">À propos</a>
+          <nav class="hc-footer__nav" aria-label="{{ _('Footer') }}">
+            <a class="hc-footer__link" href="{{ url_for('main.about') }}">{{ _('À propos') }}</a>
             <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.mentions_legales') }}">Mentions légales</a>
+            <a class="hc-footer__link" href="{{ url_for('main.mentions_legales') }}">{{ _('Mentions légales') }}</a>
             <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.contact') }}">Contact</a>
+            <a class="hc-footer__link" href="{{ url_for('main.contact') }}">{{ _('Contact') }}</a>
           </nav>
 
           <div class="hc-footer__intervenants">
-            <div class="hc-footer__intervenants-title">Accès intervenants</div>
+            <div class="hc-footer__intervenants-title">{{ _('Accès intervenants') }}</div>
             <div class="hc-footer__intervenants-links">
               <a class="hc-footer__link" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
-                Connexion intervenant
+                {{ _('Connexion intervenant') }}
               </a>
               <a class="hc-footer__link" href="{{ safe_url_for('main.become_volunteer') }}">
-                Inscription intervenant
+                {{ _('Inscription intervenant') }}
               </a>
             </div>
           </div>
@@ -390,6 +1003,20 @@
       </div>
     </footer>
     <div id="hc-toast" class="hc-toast" aria-live="polite" aria-atomic="true"></div>
+    <div
+      id="hcA11ySelectionAudioToolbar"
+      class="hc-a11y-selection-audio"
+      hidden
+      role="toolbar"
+      aria-label="{{ _('Selected text audio controls') }}"
+    >
+      <button type="button" id="hcA11ySelectionPlay" class="hc-a11y-selection-audio__btn hc-a11y-selection-audio__btn--play">
+        {{ _('Play') }}
+      </button>
+      <button type="button" id="hcA11ySelectionStop" class="hc-a11y-selection-audio__btn hc-a11y-selection-audio__btn--stop">
+        {{ _('Stop') }}
+      </button>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
@@ -411,7 +1038,5 @@
     {% endif %}
   </body>
 </html>
-
-
 
 
