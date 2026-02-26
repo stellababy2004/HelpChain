@@ -29,6 +29,42 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
 
+      - name: Validate AWS secrets format (safe preflight)
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID_RAW: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY_RAW: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION_RAW: ${{ secrets.AWS_REGION }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${AWS_ACCESS_KEY_ID_RAW:-}" || -z "${AWS_SECRET_ACCESS_KEY_RAW:-}" || -z "${AWS_REGION_RAW:-}" ]]; then
+            echo "Missing one of required secrets: AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_REGION"
+            exit 1
+          fi
+
+          if [[ ! "${AWS_ACCESS_KEY_ID_RAW}" =~ ^(AKIA|ASIA)[A-Z0-9]{16}$ ]]; then
+            echo "AWS_ACCESS_KEY_ID format looks invalid (expected AKIA... or ASIA..., no quotes/spaces)."
+            echo "Also verify AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are not swapped."
+            exit 1
+          fi
+
+          if [[ "${AWS_SECRET_ACCESS_KEY_RAW}" =~ ^(AKIA|ASIA)[A-Z0-9]{16}$ ]]; then
+            echo "AWS_SECRET_ACCESS_KEY looks like an Access Key ID. Secrets are likely swapped."
+            exit 1
+          fi
+
+          if [[ "${AWS_REGION_RAW}" =~ [[:space:]\"] ]]; then
+            echo "AWS_REGION contains spaces or quotes. Use plain value like eu-west-3."
+            exit 1
+          fi
+
+          if [[ "${AWS_ACCESS_KEY_ID_RAW}" =~ ^ASIA ]] && [[ -z "${AWS_SESSION_TOKEN:-}" ]]; then
+            echo "AWS_ACCESS_KEY_ID is temporary (ASIA...), but no AWS_SESSION_TOKEN is configured."
+            echo "Use long-lived IAM user keys (AKIA...) or add AWS_SESSION_TOKEN support."
+            exit 1
+          fi
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c
         with:
