@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Install pandoc
         run: sudo apt-get update && sudo apt-get install -y pandoc
@@ -22,7 +22,7 @@ jobs:
           pandoc docs/institutions/HelpChain_Overview_EN.md -o docs/institutions/HelpChain_Overview_EN.pdf
 
       - name: Upload PDFs as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: institutional-pdfs
           path: docs/institutions/*.pdf
