@@ -13,9 +13,12 @@ from backend.models import (  # noqa: F401
     Request,
     RequestActivity,
     RequestMetric,
+    current_structure,
+    get_default_structure,
     User,
     canonical_role,
     utc_now,
+    Structure,
 )
 
 # Local wrappers for canonical/legacy models (defined in `backend.models`)
@@ -38,10 +41,13 @@ __all__ = [
     "db",
     "utc_now",
     "canonical_role",
+    "get_default_structure",
+    "current_structure",
     "User",
     "Volunteer",
     "AdminUser",
     "Request",
+    "Structure",
     "RequestLog",
     "RequestActivity",
     "RequestMetric",

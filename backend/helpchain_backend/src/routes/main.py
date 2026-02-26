@@ -45,6 +45,7 @@ from ..models import (
     Volunteer,
     VolunteerAction,
     canonical_role,
+    current_structure,
     db,
     utc_now,
 )
@@ -64,6 +65,22 @@ from ..statuses import normalize_request_status
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
 main_bp = Blueprint("main", __name__)
+
+
+def _current_structure_id():
+    return int(current_structure().id)
+
+
+def _scope_requests(query):
+    return query.filter(Request.structure_id == _current_structure_id())
+
+
+def scoped_requests_query():
+    return _scope_requests(Request.query)
+
+
+def get_scoped_request_or_404(req_id: int):
+    return scoped_requests_query().filter(Request.id == req_id).first_or_404()
 
 
 def email_or_ip_key():
@@ -341,7 +358,8 @@ def index():
     active_count = 0
     try:
         latest_requests = (
-            Request.query.filter(Request.deleted_at.is_(None))
+            scoped_requests_query()
+            .filter(Request.deleted_at.is_(None))
             .filter(Request.is_archived.is_(False))
             .order_by(Request.created_at.desc())
             .limit(6)
@@ -349,6 +367,7 @@ def index():
         )
         active_count = (
             db.session.query(func.count(Request.id))
+            .filter(Request.structure_id == _current_structure_id())
             .filter(Request.deleted_at.is_(None))
             .filter(Request.is_archived.is_(False))
             .scalar()
@@ -463,7 +482,8 @@ def dashboard():
 
     if role == "requester":
         my_requests = (
-            Request.query.filter(Request.user_id == current_user.id)
+            scoped_requests_query()
+            .filter(Request.user_id == current_user.id)
             .populate_existing()
             .order_by(desc(Request.created_at))
             .limit(20)
@@ -472,6 +492,7 @@ def dashboard():
         counts = dict(
             ((s or "open"), c)
             for s, c in db.session.query(Request.status, func.count(Request.id))
+            .filter(Request.structure_id == _current_structure_id())
             .filter(Request.user_id == current_user.id)
             .group_by(Request.status)
             .all()
@@ -488,7 +509,8 @@ def dashboard():
 
     if role in ("volunteer", "professional"):
         assigned = (
-            Request.query.filter(Request.owner_id == current_user.id)
+            scoped_requests_query()
+            .filter(Request.owner_id == current_user.id)
             .populate_existing()
             .order_by(desc(Request.owned_at), desc(Request.created_at))
             .limit(20)
@@ -502,6 +524,7 @@ def dashboard():
         counts = dict(
             ((s or "open"), c)
             for s, c in db.session.query(Request.status, func.count(Request.id))
+            .filter(Request.structure_id == _current_structure_id())
             .filter(Request.owner_id == current_user.id)
             .group_by(Request.status)
             .all()
@@ -535,13 +558,15 @@ def profile():
         return redirect(url_for("main.submit_request"))
 
     my_requests = (
-        Request.query.filter(func.lower(Request.email) == requester_email)
+        scoped_requests_query()
+        .filter(func.lower(Request.email) == requester_email)
         .order_by(desc(Request.created_at))
         .limit(20)
         .all()
     )
     rows = (
         db.session.query(Request.status, func.count(Request.id))
+        .filter(Request.structure_id == _current_structure_id())
         .filter(func.lower(Request.email) == requester_email)
         .group_by(Request.status)
         .all()
@@ -582,7 +607,8 @@ def magic_link_consume(token: str):
     # Legacy compatibility (/r/<token> previously hashed into requests.requester_token_hash).
     if ml is None:
         legacy_req = (
-            Request.query.filter(Request.requester_token_hash == token_hash)
+            scoped_requests_query()
+            .filter(Request.requester_token_hash == token_hash)
             .order_by(desc(Request.created_at))
             .first()
         )
@@ -814,7 +840,7 @@ def search():
 
     try:
         req_rows = (
-            Request.query.filter(
+            scoped_requests_query().filter(
                 Request.deleted_at.is_(None),
                 Request.is_archived.is_(False),
                 or_(
@@ -1295,7 +1321,7 @@ def volunteer_dashboard():
 
     just_logged_in = session.pop("just_logged_in", None)
 
-    open_requests = Request.query.filter_by(status="open").all()
+    open_requests = scoped_requests_query().filter_by(status="open").all()
 
     my_interest_req_ids = set(
         rid
@@ -1428,6 +1454,7 @@ def volunteer_dashboard():
     my_interests = (
         db.session.query(VolunteerInterest, Request)
         .join(Request, Request.id == VolunteerInterest.request_id)
+        .filter(Request.structure_id == _current_structure_id())
         .filter(VolunteerInterest.volunteer_id == volunteer.id)
         .order_by(VolunteerInterest.created_at.desc())
         .limit(30)
@@ -1700,9 +1727,7 @@ def volunteer_request_details(req_id: int):
     if not volunteer:
         return redirect(url_for("main.become_volunteer", next=request.path))
 
-    req = db.session.get(Request, req_id)
-    if not req:
-        abort(404)
+    req = get_scoped_request_or_404(req_id)
     try:
         db.session.refresh(req)
     except Exception:
@@ -1823,9 +1848,7 @@ def volunteer_help(req_id: int):
     current_app.logger.info("VOL_HELP DB=%s", db.engine.url)
     current_app.logger.info("VOL_HELP req_id=%s", req_id)
 
-    req = db.session.get(Request, req_id)
-    if not req:
-        abort(404)
+    req = get_scoped_request_or_404(req_id)
 
     interest = VolunteerInterest.query.filter_by(
         volunteer_id=volunteer.id, request_id=req.id
@@ -1908,9 +1931,7 @@ def volunteer_can_help(req_id: int):
     if not volunteer:
         return redirect(url_for("main.become_volunteer", next=request.path))
 
-    req = db.session.get(Request, req_id)
-    if not req:
-        abort(404)
+    req = get_scoped_request_or_404(req_id)
 
     _upsert_volunteer_action(req, volunteer, "CAN_HELP")
 
@@ -1927,9 +1948,7 @@ def volunteer_cant_help(req_id: int):
     if not volunteer:
         return redirect(url_for("main.become_volunteer", next=request.path))
 
-    req = db.session.get(Request, req_id)
-    if not req:
-        abort(404)
+    req = get_scoped_request_or_404(req_id)
 
     _upsert_volunteer_action(req, volunteer, "CANT_HELP")
 
@@ -2371,6 +2390,7 @@ def submit_request_confirm():
             status="pending",
             priority=draft.get("priority"),
             category=draft.get("category"),
+            structure_id=current_structure().id,
         )
         # Legacy fields kept for backwards compatibility with existing /r/<token> links.
         req.requester_token_hash = token_hash
@@ -2509,22 +2529,26 @@ def pilot_dashboard():
     week_ago = now - timedelta(days=7)
     since_14d = now - timedelta(days=14)
 
+    tenant_filter = Request.structure_id == _current_structure_id()
     not_deleted = Request.deleted_at.is_(None)
 
     total_requests = (
-        db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
+        db.session.query(func.count(Request.id))
+        .filter(tenant_filter, not_deleted)
+        .scalar()
+        or 0
     )
 
     open_requests = (
         db.session.query(func.count(Request.id))
-        .filter(not_deleted, Request.status.notin_(["done", "rejected"]))
+        .filter(tenant_filter, not_deleted, Request.status.notin_(["done", "rejected"]))
         .scalar()
         or 0
     )
 
     closed_requests = (
         db.session.query(func.count(Request.id))
-        .filter(not_deleted, Request.status.in_(["done", "rejected"]))
+        .filter(tenant_filter, not_deleted, Request.status.in_(["done", "rejected"]))
         .scalar()
         or 0
     )
@@ -2532,6 +2556,7 @@ def pilot_dashboard():
     closed_last_7d = (
         db.session.query(func.count(Request.id))
         .filter(
+            tenant_filter,
             not_deleted,
             Request.completed_at.isnot(None),
             Request.completed_at >= week_ago,
@@ -2549,6 +2574,7 @@ def pilot_dashboard():
             * 24.0
         )
         .filter(
+            tenant_filter,
             not_deleted,
             Request.completed_at.isnot(None),
             Request.created_at.isnot(None),
@@ -2562,6 +2588,7 @@ def pilot_dashboard():
     unassigned_48h = (
         db.session.query(func.count(Request.id))
         .filter(
+            tenant_filter,
             not_deleted,
             Request.status.notin_(["done", "rejected"]),
             Request.owner_id.is_(None),
@@ -2574,6 +2601,7 @@ def pilot_dashboard():
     stale_7d = (
         db.session.query(func.count(Request.id))
         .filter(
+            tenant_filter,
             not_deleted,
             Request.status.notin_(["done", "rejected"]),
             Request.created_at <= (now - timedelta(days=7)),
@@ -2585,6 +2613,7 @@ def pilot_dashboard():
     high_open = (
         db.session.query(func.count(Request.id))
         .filter(
+            tenant_filter,
             not_deleted,
             Request.status.notin_(["done", "rejected"]),
             Request.priority == "high",
@@ -2595,7 +2624,7 @@ def pilot_dashboard():
 
     status_rows = (
         db.session.query(Request.status, func.count(Request.id))
-        .filter(not_deleted)
+        .filter(tenant_filter, not_deleted)
         .group_by(Request.status)
         .order_by(func.count(Request.id).desc())
         .all()
@@ -2605,7 +2634,7 @@ def pilot_dashboard():
 
     cat_rows = (
         db.session.query(Request.category, func.count(Request.id))
-        .filter(not_deleted)
+        .filter(tenant_filter, not_deleted)
         .group_by(Request.category)
         .order_by(func.count(Request.id).desc())
         .all()
@@ -2615,7 +2644,7 @@ def pilot_dashboard():
 
     trend_rows = (
         db.session.query(func.date(Request.created_at), func.count(Request.id))
-        .filter(not_deleted, Request.created_at >= since_14d)
+        .filter(tenant_filter, not_deleted, Request.created_at >= since_14d)
         .group_by(func.date(Request.created_at))
         .order_by(func.date(Request.created_at))
         .all()
@@ -2660,26 +2689,30 @@ def pilot_dashboard():
 
 @main_bp.get("/api/pilot/metrics")
 def pilot_metrics():
+    tenant_filter = Request.structure_id == _current_structure_id()
     not_deleted = Request.deleted_at.is_(None)
 
     total_requests = (
-        db.session.query(func.count(Request.id)).filter(not_deleted).scalar() or 0
+        db.session.query(func.count(Request.id))
+        .filter(tenant_filter, not_deleted)
+        .scalar()
+        or 0
     )
     open_requests = (
         db.session.query(func.count(Request.id))
-        .filter(not_deleted, Request.status.notin_(["done", "rejected"]))
+        .filter(tenant_filter, not_deleted, Request.status.notin_(["done", "rejected"]))
         .scalar()
         or 0
     )
     helped_requests = (
         db.session.query(func.count(Request.id))
-        .filter(not_deleted, Request.status == "done")
+        .filter(tenant_filter, not_deleted, Request.status == "done")
         .scalar()
         or 0
     )
     closed_requests = (
         db.session.query(func.count(Request.id))
-        .filter(not_deleted, Request.status.in_(["done", "rejected"]))
+        .filter(tenant_filter, not_deleted, Request.status.in_(["done", "rejected"]))
         .scalar()
         or 0
     )
@@ -2706,18 +2739,19 @@ def pilot_metrics():
 @main_bp.get("/api/pilot-kpi")
 def pilot_kpi_api():
     # v1: marketing-safe counters (read-only)
+    tenant_filter = Request.structure_id == _current_structure_id()
     not_deleted = Request.deleted_at.is_(None)
 
     helped_requests = (
         db.session.query(func.count(Request.id))
-        .filter(not_deleted, Request.status == "done")
+        .filter(tenant_filter, not_deleted, Request.status == "done")
         .scalar()
         or 0
     )
 
     closed_requests = (
         db.session.query(func.count(Request.id))
-        .filter(not_deleted, Request.status.in_(["done", "rejected"]))
+        .filter(tenant_filter, not_deleted, Request.status.in_(["done", "rejected"]))
         .scalar()
         or 0
     )

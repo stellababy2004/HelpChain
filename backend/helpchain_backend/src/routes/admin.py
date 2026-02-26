@@ -49,6 +49,7 @@ from ..models import (
     VolunteerAction,
     VolunteerInterest,
     VolunteerRequestState,
+    current_structure,
     utc_now,
 )
 
@@ -116,6 +117,15 @@ def _is_request_locked(req) -> bool:
 
 def _now_utc():
     return datetime.now(UTC)
+
+
+def _current_structure_id() -> int:
+    return int(current_structure().id)
+
+
+def _scope_requests(query):
+    """Sprint-1 tenant guard for request queries."""
+    return query.filter(Request.structure_id == _current_structure_id())
 
 
 def _engagement_label(score: int) -> str:
@@ -698,7 +708,7 @@ def emergency_requests():
     since = datetime.utcnow() - timedelta(days=days)
 
     # Emergency filter: category=="emergency" only (no urgency field)
-    query = Request.query.filter(
+    query = _scope_requests(Request.query).filter(
         Request.created_at >= since, Request.category == "emergency"
     ).order_by(Request.created_at.desc())
 
@@ -733,7 +743,7 @@ def api_requests():
     if not current_app.config.get("TESTING", False):
         if not getattr(current_user, "is_admin", False):
             return jsonify({"error": "Unauthorized"}), 403
-    query = Request.query
+    query = _scope_requests(Request.query)
     status = request.args.get("status")
     date_from = request.args.get("date_from")
     date_to = request.args.get("date_to")
@@ -1395,11 +1405,14 @@ def _sla_kpis(
         VolunteerRequestState.volunteer_id.label("vol_id"),
         VolunteerRequestState.notified_at.label("notified_at"),
         VolunteerRequestState.seen_at.label("seen_at"),
-    ).filter(VolunteerRequestState.notified_at.isnot(None))
+    ).join(Request, Request.id == VolunteerRequestState.request_id).filter(
+        VolunteerRequestState.notified_at.isnot(None)
+    )
+    base_states_q = base_states_q.filter(Request.structure_id == _current_structure_id())
     if scope == "assigned_only":
-        base_states_q = base_states_q.join(
-            Request, Request.id == VolunteerRequestState.request_id
-        ).filter(Request.assigned_volunteer_id == VolunteerRequestState.volunteer_id)
+        base_states_q = base_states_q.filter(
+            Request.assigned_volunteer_id == VolunteerRequestState.volunteer_id
+        )
     base_states = base_states_q.subquery()
 
     seen_delta = func.strftime("%s", base_states.c.seen_at) - func.strftime(
@@ -1411,6 +1424,28 @@ def _sla_kpis(
         .filter(seen_delta >= 0)
         .scalar()
     )
+
+    # Backward compatibility: some local SQLite snapshots don't have
+    # request_activities.volunteer_id yet. Keep the endpoint alive and return
+    # partial SLA metrics instead of 500.
+    if not _table_has_column("request_activities", "volunteer_id"):
+        return {
+            "avg_first_seen_seconds": (
+                float(avg_first_seen) if avg_first_seen is not None else None
+            ),
+            "avg_first_action_seconds": None,
+            "sla_under_12h_percent": 0.0,
+            "sla_hours": int(sla_hours),
+            "sla_samples": 0,
+            "sla_scope": scope,
+            "p90_first_seen_seconds_7d": None,
+            "p90_first_action_seconds_7d": None,
+            "p90_window_days": 7,
+            "sla_outliers_action_7d": [],
+            "sla_outliers_window_days": 7,
+            "sla_outliers_limit": 5,
+            "schema_warning": "request_activities.volunteer_id_missing",
+        }
 
     first_action_subq = (
         db.session.query(
@@ -1508,12 +1543,14 @@ def admin_risk_kpis():
     unassigned_cutoff = now - timedelta(days=unassigned_days)
     window_cutoff = now - timedelta(days=window_days)
     has_vrs_notified_at = _table_has_column("volunteer_request_states", "notified_at")
+    tenant_filter = Request.structure_id == _current_structure_id()
     open_filter = or_(
         Request.status.is_(None), ~Request.status.in_(list(CLOSED_STATUSES))
     )
 
     stale_count = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.created_at < stale_cutoff)
         .filter(open_filter)
         .scalar()
@@ -1521,6 +1558,7 @@ def admin_risk_kpis():
 
     unassigned_count = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.created_at < unassigned_cutoff)
         .filter(Request.assigned_volunteer_id.is_(None))
         .filter(open_filter)
@@ -1536,6 +1574,7 @@ def admin_risk_kpis():
                 .filter(VolunteerRequestState.notified_at.isnot(None))
                 .filter(VolunteerRequestState.notified_at < cutoff)
                 .filter(VolunteerRequestState.seen_at.is_(None))
+                .filter(tenant_filter)
                 .filter(open_filter)
                 .scalar()
             )
@@ -1546,6 +1585,7 @@ def admin_risk_kpis():
                 .join(Request, Request.id == Notification.request_id)
                 .filter(Notification.type == "new_match")
                 .filter(Notification.created_at < cutoff)
+                .filter(tenant_filter)
                 .filter(open_filter)
                 .scalar()
             )
@@ -1566,6 +1606,7 @@ def admin_risk_kpis():
 
     assigned_7d = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.assigned_volunteer_id.isnot(None))
         .filter(Request.created_at >= window_cutoff)
         .scalar()
@@ -1588,6 +1629,7 @@ def admin_risk_kpis():
                 .filter(VolunteerRequestState.notified_at.isnot(None))
                 .filter(VolunteerRequestState.notified_at < cutoff)
                 .filter(VolunteerRequestState.seen_at.is_(None))
+                .filter(tenant_filter)
                 .filter(open_filter)
                 .group_by(VolunteerRequestState.request_id)
                 .all()
@@ -1599,6 +1641,7 @@ def admin_risk_kpis():
                 .join(Request, Request.id == Notification.request_id)
                 .filter(Notification.type == "new_match")
                 .filter(Notification.created_at < cutoff)
+                .filter(tenant_filter)
                 .filter(open_filter)
                 .group_by(Notification.request_id)
                 .all()
@@ -1608,7 +1651,8 @@ def admin_risk_kpis():
         db.session.rollback()
 
     risky_candidates = (
-        Request.query.filter(Request.deleted_at.is_(None))
+        _scope_requests(Request.query)
+        .filter(Request.deleted_at.is_(None))
         .filter(open_filter)
         .order_by(Request.created_at.asc())
         .limit(300)
@@ -1702,9 +1746,11 @@ def admin_ops_kpis():
     now = datetime.utcnow()
     since = now - timedelta(days=days)
     stale_since = now - timedelta(days=7)
+    tenant_filter = Request.structure_id == _current_structure_id()
 
     new_count = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.created_at >= since)
         .scalar()
         or 0
@@ -1712,6 +1758,7 @@ def admin_ops_kpis():
 
     resolved_count = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.completed_at.isnot(None))
         .filter(Request.completed_at >= since)
         .scalar()
@@ -1720,6 +1767,7 @@ def admin_ops_kpis():
 
     avg_to_owner_assign_sec = (
         db.session.query(func.avg(_seconds_diff(Request.owned_at, Request.created_at)))
+        .filter(tenant_filter)
         .filter(Request.owned_at.isnot(None))
         .scalar()
     )
@@ -1729,6 +1777,7 @@ def admin_ops_kpis():
         db.session.query(
             func.avg(_seconds_diff(Request.completed_at, Request.created_at))
         )
+        .filter(tenant_filter)
         .filter(Request.completed_at.isnot(None))
         .scalar()
     )
@@ -1736,6 +1785,7 @@ def admin_ops_kpis():
 
     stale_count = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.created_at < stale_since)
         .filter(Request.completed_at.is_(None))
         .scalar()
@@ -1744,6 +1794,7 @@ def admin_ops_kpis():
 
     by_category_rows = (
         db.session.query(Request.category, func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.created_at >= since)
         .group_by(Request.category)
         .all()
@@ -1755,6 +1806,7 @@ def admin_ops_kpis():
 
     by_status_rows = (
         db.session.query(Request.status, func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.completed_at.is_(None))
         .group_by(Request.status)
         .all()
@@ -1773,6 +1825,7 @@ def admin_ops_kpis():
 
     assign_breach_count = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < assign_deadline)
         .filter(Request.owned_at.is_(None))
@@ -1783,6 +1836,7 @@ def admin_ops_kpis():
 
     resolve_breach_count = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < resolve_deadline)
         .filter(Request.completed_at.is_(None))
@@ -1794,6 +1848,7 @@ def admin_ops_kpis():
     volunteer_assign_deadline = now - timedelta(hours=VOLUNTEER_ASSIGN_SLA_HOURS)
     volunteer_assign_breach_count = (
         db.session.query(func.count(Request.id))
+        .filter(tenant_filter)
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < volunteer_assign_deadline)
         .filter(Request.assigned_volunteer_id.is_(None))
@@ -1856,7 +1911,7 @@ def admin_dashboard():
         flash("Нямате достъп до админ панела.", "error")
         return redirect(url_for("main.dashboard"))
 
-    requests = Request.query.all()
+    requests = _scope_requests(Request.query).all()
     logs = RequestLog.query.all()
     volunteers = Volunteer.query.all()
     logs_dict = {}
@@ -2432,7 +2487,7 @@ def admin_request_set_status(req_id: int):
 @login_required
 def admin_request_archive(req_id: int):
     """One-click archive/close action used by the details view button."""
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     if not can_edit_request(req, current_user):
         abort(403)
 
@@ -2628,7 +2683,7 @@ def admin_requests():
     }
 
     show_deleted = (request.args.get("deleted") or "").strip() == "1"
-    query = Request.query
+    query = _scope_requests(Request.query)
     query, status, q, risk = build_requests_query(query, request.args)
     requests = query.all()
     now_aware = utc_now()
@@ -2874,6 +2929,7 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
 
 
 def build_requests_query(base_query, request_args):
+    base_query = _scope_requests(base_query)
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
     category = (request_args.get("category") or "").strip()
@@ -3197,11 +3253,13 @@ def admin_request_details(req_id: int):
     admin_required_404()
     activities_supported = _table_has_column("request_activities", "volunteer_id")
     if activities_supported:
-        req = Request.query.options(
+        req = _scope_requests(Request.query).options(
             joinedload(Request.logs), joinedload(Request.activities)
         ).get_or_404(req_id)
     else:
-        req = Request.query.options(joinedload(Request.logs)).get_or_404(req_id)
+        req = _scope_requests(Request.query).options(joinedload(Request.logs)).get_or_404(
+            req_id
+        )
     admin_id = current_user.id
     now = _now_utc()
     latest_actions = []
@@ -3595,7 +3653,7 @@ def admin_interest_reject(req_id: int, interest_id: int):
 @admin_bp.post("/requests/<int:req_id>/assign", endpoint="admin_request_assign")
 @login_required
 def admin_request_assign(req_id: int):
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     if _locked_by_other(req, getattr(current_user, "id", None)):
         flash(
             "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
@@ -3657,7 +3715,7 @@ def admin_request_assign(req_id: int):
 @admin_bp.post("/requests/<int:req_id>/unassign", endpoint="admin_request_unassign")
 @login_required
 def admin_request_unassign(req_id: int):
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     if _locked_by_other(req, getattr(current_user, "id", None)):
         flash(
             "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
@@ -3700,7 +3758,7 @@ def admin_request_unassign(req_id: int):
 )
 @login_required
 def admin_assign_volunteer(req_id: int, volunteer_id: int):
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     if not can_edit_request(req, current_user):
         abort(403)
     if _is_request_locked(req):
@@ -3725,7 +3783,7 @@ def admin_assign_volunteer(req_id: int, volunteer_id: int):
 )
 @login_required
 def admin_unassign_volunteer(req_id: int):
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     if not can_edit_request(req, current_user):
         abort(403)
     old_val = getattr(req, "assigned_volunteer_id", None)
@@ -3746,7 +3804,7 @@ def admin_unassign_volunteer(req_id: int):
 @login_required
 def admin_request_nudge(req_id: int):
     admin_required_404()
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     if not can_edit_request(req, current_user):
         abort(403)
 
@@ -3770,7 +3828,7 @@ def admin_request_nudge(req_id: int):
 @admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")
 @login_required
 def admin_request_delete(req_id: int):
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     if not can_edit_request(req, current_user):
         abort(403)
 
@@ -3804,7 +3862,7 @@ def admin_request_delete(req_id: int):
 )
 @login_required
 def admin_request_restore_deleted(req_id: int):
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     if not can_edit_request(req, current_user):
         abort(403)
 
@@ -3830,7 +3888,7 @@ def admin_request_restore_deleted(req_id: int):
 @admin_bp.post("/requests/<int:req_id>/note")
 @login_required
 def admin_request_add_note(req_id: int):
-    req = Request.query.get_or_404(req_id)
+    req = _scope_requests(Request.query).get_or_404(req_id)
     note = (request.form.get("note") or "").strip()
     if not note:
         flash("Note is empty.", "warning")
@@ -3993,7 +4051,8 @@ def admin_professionnels_leads():
 @admin_required
 def admin_pro_access_list():
     if ProAccessRequest is None:
-        abort(404)
+        flash("Pro Access module is not available in this environment.", "info")
+        return redirect(url_for("admin.admin_requests"), code=303)
 
     status = (request.args.get("status") or "new").strip().lower()
     if status not in PRO_ACCESS_STATUSES and status != "all":

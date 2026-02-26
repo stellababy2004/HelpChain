@@ -2,6 +2,7 @@ import logging
 from datetime import UTC, datetime, timezone
 from typing import Optional
 
+from flask import current_app, g, has_app_context
 from flask_login import UserMixin
 
 from backend.extensions import db
@@ -559,6 +560,46 @@ class NotificationQueue(db.Model):
     error_message = Column(Text, nullable=True)
 
 
+class Structure(db.Model):
+    __tablename__ = "structures"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    slug = db.Column(db.String(80), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
+def get_default_structure():
+    """Sprint-1 helper: cached lookup of the bootstrap tenant."""
+    cached = getattr(g, "_hc_default_structure", None)
+    if cached is None:
+        cached = Structure.query.filter_by(slug="default").first()
+        g._hc_default_structure = cached
+    return cached
+
+
+def current_structure():
+    """
+    Sprint 1 temporary implementation:
+    always return Default structure.
+    Later: derive from logged-in user / subdomain / header.
+    """
+    s = get_default_structure()
+    if not s:
+        raise RuntimeError("Default structure not found (slug='default').")
+    allow = False
+    try:
+        if has_app_context():
+            allow = bool(current_app.config.get("ALLOW_DEFAULT_TENANT_FALLBACK", False))
+        else:
+            allow = os.getenv("ALLOW_DEFAULT_TENANT_FALLBACK", "0") == "1"
+    except Exception:
+        allow = False
+    if allow:
+        return s
+    raise RuntimeError("Tenant resolution not implemented (fallback disabled).")
+
+
 class Request(db.Model):
     """Модел за заявки"""
 
@@ -590,9 +631,11 @@ class Request(db.Model):
     deleted_at = Column(DateTime, nullable=True, index=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     user = relationship("User", back_populates="requests")
+    structure = relationship("Structure")
     # Relationship to link assigned volunteer (legacy field `assigned_volunteer_id`)
 
     try:
@@ -715,6 +758,12 @@ class SecurityEvent(db.Model):
 # a user won't fail due to NOT NULL constraints on existing DB schemas.
 try:
     from sqlalchemy import MetaData, Table, event, insert, select
+
+    @event.listens_for(Request, "before_insert")
+    def _request_set_structure_id(mapper, connection, target):
+        if getattr(target, "structure_id", None) is None:
+            # Sprint 1 safety net: default tenant id (migration guarantees row exists).
+            target.structure_id = 1
 
     @event.listens_for(Request, "before_insert")
     def _ensure_request_user(mapper, connection, target):
