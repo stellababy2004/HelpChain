@@ -22,13 +22,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
-      - name: Install postgres client (v17 for Neon PG17)
+      - name: Prepare PostgreSQL client (Docker postgres:17)
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client-17
-          pg_dump --version
+          docker pull postgres:17
+          docker run --rm postgres:17 pg_dump --version
 
       - name: Validate AWS secrets format (safe preflight)
         shell: bash
@@ -110,9 +109,11 @@ jobs:
           DUMP_URL="${DUMP_URL/%\?}"
           DUMP_URL="${DUMP_URL//\?&/?}"
 
-          # Force TLS, be quiet, consistent format
-          pg_dump "${DUMP_URL}" \
-            --no-owner --no-privileges \
+          # Run pg_dump from postgres:17 container to match Neon PG major version.
+          docker run --rm \
+            -e DUMP_URL="${DUMP_URL}" \
+            postgres:17 \
+            bash -lc 'pg_dump "$DUMP_URL" --no-owner --no-privileges' \
             | gzip -9 > "${out}"
 
           echo "Backup size:"
