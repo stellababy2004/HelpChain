@@ -89,8 +89,18 @@ jobs:
 
           echo "Creating backup: ${out}"
 
+          # Add sslmode=require only if missing, while preserving existing query params.
+          DUMP_URL="${DATABASE_URL}"
+          if [[ "${DUMP_URL}" != *"sslmode="* ]]; then
+            if [[ "${DUMP_URL}" == *"?"* ]]; then
+              DUMP_URL="${DUMP_URL}&sslmode=require"
+            else
+              DUMP_URL="${DUMP_URL}?sslmode=require"
+            fi
+          fi
+
           # Force TLS, be quiet, consistent format
-          pg_dump "${DATABASE_URL}?sslmode=require" \
+          pg_dump "${DUMP_URL}" \
             --no-owner --no-privileges \
             | gzip -9 > "${out}"
 
