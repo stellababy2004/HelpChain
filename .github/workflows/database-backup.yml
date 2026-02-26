@@ -7,20 +7,20 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 jobs:
   backup:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@v4
 
       - name: Detect database file
         id: detect_db
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
           echo "Searching for SQLite DB file to back up..."
           candidates=(
             "instance/volunteers.db"
@@ -34,6 +34,7 @@ jobs:
               break
             fi
           done
+
           if [ -n "$found" ]; then
             echo "Found DB at: $found"
             echo "db_path=$found" >> "$GITHUB_OUTPUT"
@@ -43,7 +44,8 @@ jobs:
           fi
 
       - name: Setup Python
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
+        if: ${{ steps.detect_db.outputs.db_path != '' }}
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -53,6 +55,7 @@ jobs:
         run: |
           cat > backup_db.py <<'PY'
           import os, sys, gzip, shutil, datetime, pathlib
+
           db_path = os.environ.get("DB_PATH", "").strip()
           if not db_path:
               print("No DB_PATH provided; nothing to do.")
@@ -60,15 +63,21 @@ jobs:
           if not os.path.exists(db_path):
               print(f"Database not found at {db_path}; skipping.")
               sys.exit(0)
+
           base = pathlib.Path("backups")
           base.mkdir(parents=True, exist_ok=True)
+
           ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
           db_name = pathlib.Path(db_path).stem
           out_name = f"{db_name}-{ts}.sqlite.gz"
           out_path = base / out_name
+
           with open(db_path, "rb") as src, gzip.open(out_path, "wb", compresslevel=6) as dst:
               shutil.copyfileobj(src, dst)
+
           print(f"Backup created: {out_path}")
+
+          # Keep only last N local backups in the runner workspace (cosmetic)
           keep = 7
           files = sorted(base.glob(f"{db_name}-*.sqlite.gz"))
           old = files[:-keep] if len(files) > keep else []
@@ -88,12 +97,39 @@ jobs:
 
       - name: Upload backup artifact
         if: ${{ steps.detect_db.outputs.db_path != '' }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@v4
         with:
           name: database-backup
           path: backups/*.sqlite.gz
           if-no-files-found: error
           retention-days: 14
+
+      # ---- S3 UPLOAD (matches your tightened IAM policy) ----
+      - name: Configure AWS credentials
+        if: ${{ steps.detect_db.outputs.db_path != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Upload backups to S3 (backups/ prefix + SSE)
+        if: ${{ steps.detect_db.outputs.db_path != '' }}
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          bucket="${S3_BUCKET:-helpchain-prod-backups}"
+          echo "Uploading backups to s3://$bucket/backups/"
+
+          # Put each file under backups/ + enforce headers required by IAM policy
+          for f in backups/*.sqlite.gz; do
+            [ -e "$f" ] || { echo "No backup files found."; exit 1; }
+            aws s3 cp "$f" "s3://$bucket/backups/$(basename "$f")" \
+              --sse AES256 \
+              --acl bucket-owner-full-control
+          done
 
       - name: Skipped (no DB found)
         if: ${{ steps.detect_db.outputs.db_path == '' }}
