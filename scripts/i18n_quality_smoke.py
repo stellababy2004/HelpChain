@@ -8,7 +8,6 @@ from pathlib import Path
 
 from babel.messages import pofile
 
-
 CRITICAL_PO_CHECKS = {
     "bg": {
         "Home": "Начало",

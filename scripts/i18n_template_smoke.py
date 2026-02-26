@@ -9,7 +9,6 @@ from pathlib import Path
 
 from babel.messages import pofile
 
-
 DEFAULT_GUARDED_TEMPLATES = [
     "templates/base.html",
     "templates/orienter.html",

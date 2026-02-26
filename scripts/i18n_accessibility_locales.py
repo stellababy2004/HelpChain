@@ -6,7 +6,6 @@ import re
 import sys
 from pathlib import Path
 
-
 CODE_RE = re.compile(r"'code'\s*:\s*'([^']+)'")
 
 

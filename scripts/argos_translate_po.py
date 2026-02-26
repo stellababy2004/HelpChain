@@ -16,12 +16,11 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Dict, Iterable, List, Sequence, Tuple
 
 from babel.messages import pofile
-
 
 LANG_CODE_MAP = {
     "no": "nb",  # Argos packages often use nb rather than no
@@ -130,12 +129,12 @@ def save_catalog(po_path: Path, catalog) -> None:
         pofile.write_po(f, catalog, width=120)
 
 
-def catalog_key(msg) -> Tuple[object, object]:
+def catalog_key(msg) -> tuple[object, object]:
     return (msg.context, msg.id)
 
 
-def build_source_map(catalog) -> Dict[Tuple[object, object], object]:
-    out: Dict[Tuple[object, object], object] = {}
+def build_source_map(catalog) -> dict[tuple[object, object], object]:
+    out: dict[tuple[object, object], object] = {}
     for msg in catalog:
       if not msg.id or msg.id == "":
           continue
@@ -170,8 +169,8 @@ def is_identical_translation(msg) -> bool:
     return False
 
 
-def mask_placeholders(text: str) -> Tuple[str, List[str]]:
-    placeholders: List[str] = []
+def mask_placeholders(text: str) -> tuple[str, list[str]]:
+    placeholders: list[str] = []
 
     def repl(match: re.Match) -> str:
         idx = len(placeholders)
@@ -193,7 +192,7 @@ def translate_text(text: str, translate_fn: Callable[[str], str]) -> str:
         return text
 
     lines = text.split("\n")
-    out_lines: List[str] = []
+    out_lines: list[str] = []
     for line in lines:
         if not line.strip():
             out_lines.append(line)
@@ -245,7 +244,7 @@ def normalize_plural_storage(msg, singular_text: str, plural_text: str):
 
 def translate_catalog(
     target_catalog,
-    source_map: Dict[Tuple[object, object], object],
+    source_map: dict[tuple[object, object], object],
     translate_fn: Callable[[str], str],
     overwrite: bool,
     overwrite_identical_only: bool,
@@ -305,7 +304,7 @@ def translate_catalog(
     return stats
 
 
-def resolve_targets(translations_dir: Path, source_locale: str, targets_arg: Sequence[str]) -> List[str]:
+def resolve_targets(translations_dir: Path, source_locale: str, targets_arg: Sequence[str]) -> list[str]:
     if targets_arg:
         return [t.strip() for t in targets_arg if t.strip()]
     return sorted([p.name for p in translations_dir.iterdir() if p.is_dir() and p.name != source_locale])

@@ -17,12 +17,11 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Sequence
 
 from babel.messages import pofile
-
 
 PLACEHOLDER_RE = re.compile(
     r"(\{\{[^{}]+\}\}"  # Jinja placeholders

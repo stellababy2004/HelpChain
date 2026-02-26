@@ -7,7 +7,6 @@ from pathlib import Path
 
 from babel.messages import pofile
 
-
 CYRILLIC_RE = __import__("re").compile(r"[\u0400-\u04FF]")
 
 

@@ -78,7 +78,7 @@ def main() -> int:
     if not Path(pybabel).exists():
         pybabel = "pybabel"
 
-    langs = [l.strip() for l in args.langs if l.strip()]
+    langs = [lang.strip() for lang in args.langs if lang.strip()]
     if not langs:
         raise SystemExit("No languages specified.")
 

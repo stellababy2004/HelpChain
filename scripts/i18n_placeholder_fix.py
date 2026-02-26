@@ -16,12 +16,11 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from babel.messages import pofile
-
 
 PLACEHOLDER_RE = re.compile(
     r"(\{\{[^{}]+\}\}"  # Jinja placeholders
@@ -180,7 +179,7 @@ def main() -> int:
 
     args = parse_args()
     root = Path(args.translations_dir)
-    locale_dirs = [root / l for l in args.langs] if args.langs else list(iter_locale_dirs(root))
+    locale_dirs = [root / locale for locale in args.langs] if args.langs else list(iter_locale_dirs(root))
 
     grand = Stats()
     for loc_dir in locale_dirs:
