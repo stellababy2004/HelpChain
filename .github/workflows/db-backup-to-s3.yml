@@ -1,0 +1,115 @@
+name: DB Backup to S3 (Neon Postgres)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every day at 02:05 UTC (adjust if you want)
+    - cron: "5 2 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-backup-to-s3
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install postgres client
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create pg_dump (gzip)
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${DATABASE_URL:-}" ]]; then
+            echo "Missing secret NEON_DATABASE_URL"
+            exit 1
+          fi
+
+          ts="$(date -u +'%Y%m%dT%H%M%SZ')"
+          out="helpchain_prod_${ts}.sql.gz"
+
+          echo "Creating backup: ${out}"
+
+          # Force TLS, be quiet, consistent format
+          pg_dump "${DATABASE_URL}?sslmode=require" \
+            --no-owner --no-privileges \
+            | gzip -9 > "${out}"
+
+          echo "Backup size:"
+          ls -lh "${out}"
+
+          echo "OUT_FILE=${out}" >> "$GITHUB_ENV"
+          echo "S3_KEY=postgres/${out}" >> "$GITHUB_ENV"
+
+      - name: Upload to S3
+        shell: bash
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${S3_BUCKET:-}" ]]; then
+            echo "Missing secret S3_BUCKET"
+            exit 1
+          fi
+
+          aws s3 cp "${OUT_FILE}" "s3://${S3_BUCKET}/${S3_KEY}" \
+            --only-show-errors
+
+          echo "Uploaded to s3://${S3_BUCKET}/${S3_KEY}"
+
+      - name: Retention (keep last 8 weekly-ish backups)
+        shell: bash
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          set -euo pipefail
+
+          # Keep newest 8 objects under postgres/
+          # (simple retention without lifecycle rules)
+          mapfile -t keys < <(aws s3api list-objects-v2 \
+            --bucket "${S3_BUCKET}" \
+            --prefix "postgres/helpchain_prod_" \
+            --query 'reverse(sort_by(Contents,&LastModified))[*].Key' \
+            --output text)
+
+          keep=8
+          count=${#keys[@]}
+          echo "Found ${count} backups"
+
+          if (( count <= keep )); then
+            echo "Nothing to delete (<= ${keep})"
+            exit 0
+          fi
+
+          echo "Deleting old backups (keeping newest ${keep})..."
+          for (( i=keep; i<count; i++ )); do
+            k="${keys[$i]}"
+            echo "Deleting: ${k}"
+            aws s3api delete-object --bucket "${S3_BUCKET}" --key "${k}" >/dev/null
+          done
+
+      - name: Done
+        run: echo "Backup completed successfully."
