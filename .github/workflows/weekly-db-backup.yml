@@ -1,0 +1,41 @@
+name: Weekly DB Backup to S3
+
+on:
+  schedule:
+    - cron: "30 3 * * 0" # Sun 03:30 UTC
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Dump and upload (sql.gz)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_PREFIX: ${{ secrets.S3_PREFIX }}
+        run: |
+          set -euo pipefail
+
+          TS=$(date -u +"%Y%m%dT%H%M%SZ")
+          PREFIX="${S3_PREFIX:-postgres}"
+          FILE="helpchain_${PREFIX}_${TS}.sql.gz"
+
+          pg_dump "$DATABASE_URL" | gzip -9 > "$FILE"
+
+          aws s3 cp "$FILE" "s3://$S3_BUCKET/$PREFIX/$FILE" --only-show-errors
+
+          echo "Uploaded s3://$S3_BUCKET/$PREFIX/$FILE"
