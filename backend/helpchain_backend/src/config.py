@@ -103,6 +103,11 @@ class Config:
     VOLUNTEER_DEV_BYPASS_EMAIL = (
         (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
     )
+    # Sprint-1 tenancy hardening:
+    # default deny in base/prod-like envs; DevConfig may override to True.
+    ALLOW_DEFAULT_TENANT_FALLBACK = (
+        os.getenv("ALLOW_DEFAULT_TENANT_FALLBACK", "0") == "1"
+    )
 
     # --- MFA ---
     MFA_ENABLED = os.getenv("MFA_ENABLED", "true").lower() in ("true", "1", "yes")
@@ -158,6 +163,10 @@ class DevConfig(Config):
     VOLUNTEER_DEV_BYPASS_EMAIL = (
         (os.getenv("VOLUNTEER_DEV_BYPASS_EMAIL") or "").strip().lower()
     )
+    # Dev convenience: allow Default tenant fallback unless explicitly disabled.
+    ALLOW_DEFAULT_TENANT_FALLBACK = (
+        os.getenv("ALLOW_DEFAULT_TENANT_FALLBACK", "1") == "1"
+    )
 
 
 class ProdConfig(Config):
@@ -165,3 +174,5 @@ class ProdConfig(Config):
     # Never allow volunteer dev bypass in production, even if env var is set.
     VOLUNTEER_DEV_BYPASS_ENABLED = False
     VOLUNTEER_DEV_BYPASS_EMAIL = ""
+    # Never silently fall back to Default tenant in production.
+    ALLOW_DEFAULT_TENANT_FALLBACK = False
