@@ -91,6 +91,12 @@ jobs:
 
           # Add sslmode=require only if missing, while preserving existing query params.
           DUMP_URL="${DATABASE_URL}"
+
+          # Some pg_dump/libpq builds in GitHub runners choke on Neon's channel_binding query param.
+          # Remove it for backup connections (TLS is still enforced via sslmode=require).
+          DUMP_URL="${DUMP_URL//&channel_binding=require/}"
+          DUMP_URL="${DUMP_URL//channel_binding=require&/}"
+          DUMP_URL="${DUMP_URL//\?channel_binding=require/?}"
           if [[ "${DUMP_URL}" != *"sslmode="* ]]; then
             if [[ "${DUMP_URL}" == *"?"* ]]; then
               DUMP_URL="${DUMP_URL}&sslmode=require"
@@ -98,6 +104,10 @@ jobs:
               DUMP_URL="${DUMP_URL}?sslmode=require"
             fi
           fi
+
+          # Cleanup a possible trailing ? or accidental ?&
+          DUMP_URL="${DUMP_URL/%\?}"
+          DUMP_URL="${DUMP_URL//\?&/?}"
 
           # Force TLS, be quiet, consistent format
           pg_dump "${DUMP_URL}" \
