@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Requests') }} | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="hc-admin-wrap">
+<div class="hc-admin-wrap hc-density-compact">
 
   {# Localized export confirmation (stable multiline msgids) #}
   {% set export_confirm = '\n'.join([
@@ -15,69 +16,78 @@
     _('Are you sure you want to continue?')
   ]) %}
 
-  <div class="hc-card mb-3">
-    <div class="hc-row">
+  <div class="hc-card mb-3 hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
       <div>
-        <h1 style="margin:0;font-size:18px;">Demandes</h1>
-        <div class="hc-muted">Vue structurée par statut</div>
+        <h1 class="hc-admin-title">{{ _('Requests') }}</h1>
+        <div class="hc-muted">{{ _('Structured view by status') }}</div>
       </div>
-      <a class="btn btn-outline-light btn-sm" href="{{ safe_url_for('main.index') }}">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ safe_url_for('main.index') }}">
         {{ _('Home') }}
       </a>
     </div>
     <div class="hc-tabs">
-      <button type="button" class="hc-tab" data-hc-tab="ALL" aria-current="true">Tous</button>
-      <button type="button" class="hc-tab" data-hc-tab="NEW">New</button>
-      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED">Assigned</button>
-      <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS">En cours</button>
-      <button type="button" class="hc-tab" data-hc-tab="COMPLETED">Terminé</button>
-      <button type="button" class="hc-tab" data-hc-tab="CLOSED">Clôturées</button>
-      <button type="button" class="hc-tab" id="hcToggleActionable">Action only</button>
-      <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="Copier le lien">
+      <button type="button" class="hc-tab" data-hc-tab="ALL" aria-current="true">{{ _('All') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="NEW">{{ _('New') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED">{{ _('Assigned') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS">{{ _('In progress') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="COMPLETED">{{ _('Completed') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="CLOSED">{{ _('Closed') }}</button>
+      <button type="button" class="hc-tab" id="hcToggleActionable">{{ _('Action only') }}</button>
+      <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="{{ _('Copy link') }}">
         <span aria-hidden="true"></span>
         <span class="hc-copy-tick" aria-hidden="true">✓</span>
-        <span class="visually-hidden">Copier le lien</span>
+        <span class="visually-hidden">{{ _('Copy link') }}</span>
       </button>
     </div>
 
     <div class="hc-kpis" id="hcAdminKpis" style="margin-top:12px;">
       <div class="hc-kpi" data-kpi="NEW">
-        <div class="hc-kpi__label">New</div>
+        <div class="hc-kpi__label">{{ _('New') }}</div>
         <div class="hc-kpi__value">0</div>
       </div>
       <div class="hc-kpi" data-kpi="ASSIGNED">
-        <div class="hc-kpi__label">Assigned</div>
+        <div class="hc-kpi__label">{{ _('Assigned') }}</div>
         <div class="hc-kpi__value">0</div>
       </div>
       <div class="hc-kpi" data-kpi="IN_PROGRESS">
-        <div class="hc-kpi__label">En cours</div>
+        <div class="hc-kpi__label">{{ _('In progress') }}</div>
         <div class="hc-kpi__value">0</div>
       </div>
       <div class="hc-kpi" data-kpi="COMPLETED">
-        <div class="hc-kpi__label">Terminé</div>
+        <div class="hc-kpi__label">{{ _('Completed') }}</div>
         <div class="hc-kpi__value">0</div>
       </div>
     </div>
   </div>
 
+  <section class="hc-insights hc-card mb-3" id="hcInsights">
+    <button type="button" class="hc-live-header" id="hcInsightsToggle" aria-expanded="false">
+      <span class="hc-live-header__copy">
+        <span class="hc-live-header__title">{{ _('Insights') }}</span>
+        <span class="hc-muted">{{ _('Operational status, KPIs and live queue snapshot') }}</span>
+      </span>
+      <span class="hc-live-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="hc-live-body hc-live-hidden" id="hcInsightsBody">
   <div class="hc-health" id="hc-health">
     <div>
-      <div class="hc-health__label">État opérationnel</div>
+      <div class="hc-health__label">{{ _('Operational status') }}</div>
       <div class="hc-health__sub" id="hc-health-sub">—</div>
       <div class="hc-health__cta-container" id="hc-health-cta"></div>
     </div>
     <div class="hc-health__value" id="hc-health-value">—</div>
   </div>
 
-  <section class="hc-ops-kpis mb-3" data-days="30">
+  <section class="hc-ops-kpis mb-0" data-days="30">
     <div class="hc-ops-kpis__header">
-      <h2 class="hc-h2">Pilotage opérationnel</h2>
+      <h2 class="hc-h2">{{ _('Operational dashboard') }}</h2>
       <div class="hc-ops-kpis__controls">
-        <span class="hc-ops-kpis__meta" id="opsWindowLabel">Fenêtre: 30 jours</span>
+        <span class="hc-ops-kpis__meta" id="opsWindowLabel">{{ _('Window: 30 days') }}</span>
         <select id="opsDaysSelect" class="form-select form-select-sm hc-ops-kpis__select" data-ops-days>
-          <option value="7">7 jours</option>
-          <option value="30" selected>30 jours</option>
-          <option value="90">90 jours</option>
+          <option value="7">{{ _('7 days') }}</option>
+          <option value="30" selected>{{ _('30 days') }}</option>
+          <option value="90">{{ _('90 days') }}</option>
         </select>
       </div>
     </div>
@@ -118,10 +128,13 @@
       </div>
     </div>
   </section>
+    </div>
+  </section>
 
-  <form class="row g-2 mb-3" method="GET" action="{{ safe_url_for('admin.admin_requests') }}">
-    <div class="col-md-3">
-      <select class="form-select" name="status" aria-label="{{ _('Status') }}">
+  <div class="hc-admin-stickybar mb-3">
+  <form class="row g-2 align-items-end" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminFilterForm">
+    <div class="col-xl-3 col-lg-4">
+      <select class="form-select" name="status" id="hcAdminFilterStatus" aria-label="{{ _('Status') }}">
         <option value="">{{ _('All statuses') }}</option>
         {% for key, msgid in STATUS_LABELS.items() %}
           <option value="{{ key }}" {% if status == key %}selected{% endif %}>
@@ -131,16 +144,20 @@
       </select>
     </div>
 
-    <div class="col-md-6">
-            <input class="form-control" type="text" name="q" value="{{ q or '' }}"
+    <div class="col-xl-5 col-lg-4">
+            <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
+              autofocus
               placeholder="{{ _('Search by name, title, description...') }}" aria-label="{{ _('Search') }}" />
     </div>
     {% if request.args.get('category') %}
     <input type="hidden" name="category" value="{{ request.args.get('category') }}">
     {% endif %}
 
-    <div class="col-md-3 d-grid">
+    <div class="col-xl-2 col-lg-2 d-grid">
       <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
+    </div>
+    <div class="col-xl-2 col-lg-2 d-grid">
+      <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_requests') }}">{{ _('Reset') }}</a>
     </div>
 
     <div class="col-12">
@@ -157,48 +174,78 @@
       </div>
     </div>
   </form>
-
   {% if request.args.get('category') %}
-  <div class="mb-3">
+  <div class="mt-2">
     <span class="badge text-bg-primary">
-      Category: {{ request.args.get('category') }}
+      {{ _('Category') }}: {{ request.args.get('category') }}
     </span>
-    <a class="btn btn-link btn-sm" href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None) }}">Clear</a>
+    <a class="btn btn-link btn-sm" href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None) }}">{{ _('Clear') }}</a>
   </div>
   {% endif %}
 
-  <div class="d-flex flex-wrap gap-2 mb-3">
+  <div class="d-flex flex-wrap gap-2 mt-2">
     <a class="btn btn-outline-secondary btn-sm"
        href="{{ url_for('admin.admin_requests_export_csv') }}"
        onclick="return confirm({{ export_confirm|tojson }});">
-      Export CSV
+      {{ _('Export CSV') }}
     </a>
     <a class="btn btn-outline-secondary btn-sm"
        href="{{ url_for('admin.admin_requests_export_xlsx') }}"
        onclick="return confirm({{ export_confirm|tojson }});">
-      Export XLSX
+      {{ _('Export XLSX') }}
     </a>
     <a class="btn btn-outline-secondary btn-sm"
        href="{{ url_for('admin.admin_requests_export_csv_anonymized') }}"
        onclick="return confirm({{ export_confirm|tojson }});">
-      Export CSV (anonymized)
+      {{ _('Export CSV (anonymized)') }}
     </a>
     <a class="btn btn-outline-secondary btn-sm"
        href="{{ url_for('admin.admin_requests_export_xlsx_anonymized') }}"
        onclick="return confirm({{ export_confirm|tojson }});">
-      Export XLSX (anonymized)
+      {{ _('Export XLSX (anonymized)') }}
     </a>
     <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_audit', entity='export') }}">
-      View export logs
+      {{ _('View export logs') }}
     </a>
   </div>
-
-  <div class="table-responsive">
-    <table class="table table-hover align-middle">
+  <div class="hc-bulkbar mt-2" id="hcBulkBar" data-csrf="{{ csrf_token() }}">
+    <label class="form-check m-0">
+      <input class="form-check-input" type="checkbox" id="hcSelectAllVisible">
+      <span class="form-check-label ms-1">{{ _('Select visible') }}</span>
+    </label>
+    <span class="hc-bulkbar__count" id="hcBulkCount">{{ _('0 selected') }}</span>
+    <select class="form-select form-select-sm hc-bulkbar__select" id="hcBulkAction">
+      <option value="">{{ _('Bulk action') }}</option>
+      <option value="open">{{ _('Open selected') }}</option>
+      <option value="copy_ids">{{ _('Copy IDs') }}</option>
+      <option value="copy_links">{{ _('Copy links') }}</option>
+      <option value="nudge">{{ _('Nudge selected volunteers') }}</option>
+      <option value="status:pending">{{ _('Set status: Pending') }}</option>
+      <option value="status:in_progress">{{ _('Set status: In progress') }}</option>
+      <option value="status:done">{{ _('Set status: Done') }}</option>
+      <option value="status:rejected">{{ _('Set status: Rejected') }}</option>
+    </select>
+    <button type="button" class="btn btn-sm btn-primary" id="hcBulkApply">{{ _('Apply') }}</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="hcBulkClear">{{ _('Clear selection') }}</button>
+    <span class="hc-bulkbar__hint">{{ _('/ search · j/k move · Enter open') }}</span>
+  </div>
+  <div class="hc-quickchips mt-2" id="hcQuickChips">
+    <button type="button" class="hc-quickchip" data-quick-filter="no_owner">{{ _('No owner') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="stale">{{ _('Stale') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="urgent">{{ _('Urgent') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="can_help">{{ _('Has CAN_HELP') }}</button>
+    <button type="button" class="hc-quickchip hc-quickchip--ghost" data-quick-filter="clear">{{ _('Clear quick filters') }}</button>
+  </div>
+  </div>
+  <div class="table-responsive hc-admin-tablewrap">
+    <table class="table table-hover align-middle hc-admin-table">
       <thead>
         <tr>
+          <th style="width:44px;" title="{{ _('Select') }}">
+            <span class="visually-hidden">{{ _('Select') }}</span>
+          </th>
           <th style="width:70px;">{{ _('ID') }}</th>
-          <th>{{ _('Title') }}</th>
+          <th style="width:280px;">{{ _('Title') }}</th>
           <th style="width:180px;">{{ _('Name') }}</th>
           <th style="width:140px;">{{ _('Status') }}</th>
           <th style="width:120px;">{{ _('Priority') }}</th>
@@ -238,14 +285,23 @@
         {% endif %}
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
             data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
+            data-request-id="{{ r.id }}"
             data-hc-status-row="{{ row_status }}"
             data-assigned-volunteer-id="{{ r.assigned_volunteer_id or '' }}"
             data-sig-can-help="{{ ch }}"
             data-sig-cant-help="{{ cc }}"
             data-priority="{{ row_priority }}"
             style="cursor:pointer">
-          <td>{{ r.id }}</td>
-          <td>{{ r.title }}</td>
+          <td class="hc-col-select">
+            <input type="checkbox"
+                   class="form-check-input hc-row-select"
+                   value="{{ r.id }}"
+                   data-link="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
+                   aria-label="{{ _('Select request') }} {{ r.id }}"
+                   data-no-rowclick>
+          </td>
+          <td class="hc-col-id">{{ r.id }}</td>
+          <td class="hc-col-title">{{ r.title }}</td>
           <td>{{ r.name or r.requester_name }}</td>
           <td>
             {% set status_class = {
@@ -313,16 +369,9 @@
                 {% set already_assigned = r.assigned_volunteer_id and r.assigned_volunteer_id != sig.volunteer_id %}
                 {% set closed_statuses = ['done','closed','cancelled','canceled','rejected'] %}
                 {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
-                <form method="post"
-                      action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
-                      class="d-inline ms-2">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit"
-                          class="btn btn-sm btn-outline-primary"
-                          {% if already_assigned or is_closed %}disabled{% endif %}>
-                    Assign #{{ sig.volunteer_id }}
-                  </button>
-                </form>
+                <span class="d-inline-block ms-2">
+                  <span class="badge text-bg-light border">#{{ sig.volunteer_id }}</span>
+                </span>
               {% endif %}
 
               <div class="text-muted small">
@@ -341,50 +390,385 @@
               {% endif %}
             </div>
           </td>
-          <td class="text-end">
+          <td class="text-end hc-td-action">
             {% set nu = (nudge_ui or {}).get(r.id, {}) %}
             {% set is_disabled = nu.get('disabled', False) %}
             {% set tip = nu.get('title', 'Send reminder to assigned volunteer') %}
-            <form method="post" action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}" class="d-inline">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit"
-                      class="btn btn-sm {{ 'btn-outline-secondary' if is_disabled else 'btn-outline-primary' }} me-1"
-                      title="{{ tip }}"
-                      {% if is_disabled %}disabled aria-disabled="true"{% endif %}>
-                Nudge
-              </button>
-            </form>
-            <a class="btn btn-sm btn-outline-light" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('Details') }}</a>
+            {% set sig = last_signal_by_req.get(r.id) %}
+            <details class="hc-rowmenu" data-no-rowclick>
+              <summary class="btn btn-sm btn-outline-secondary hc-rowmenu__summary" data-no-rowclick>
+                {{ _('Actions') }}
+              </summary>
+              <div class="hc-rowmenu__list" data-no-rowclick>
+                <a class="hc-rowmenu__item" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}" data-no-rowclick>
+                  {{ _('Open details') }}
+                </a>
+
+                {% if sig and sig.action == 'CAN_HELP' and sig.volunteer_id %}
+                  {% set already_assigned = r.assigned_volunteer_id and r.assigned_volunteer_id != sig.volunteer_id %}
+                  {% set closed_statuses = ['done','closed','cancelled','canceled','rejected'] %}
+                  {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
+                  <form method="post"
+                        action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
+                        class="hc-rowmenu__form"
+                        data-no-rowclick>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                            class="hc-rowmenu__item hc-rowmenu__item--button"
+                            data-no-rowclick
+                            {% if already_assigned or is_closed %}disabled{% endif %}>
+                      {{ _('Assign volunteer') }} #{{ sig.volunteer_id }}
+                    </button>
+                  </form>
+                {% endif %}
+
+                <form method="post" action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}" class="hc-rowmenu__form" data-no-rowclick>
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit"
+                          class="hc-rowmenu__item hc-rowmenu__item--button"
+                          title="{{ tip }}"
+                          data-no-rowclick
+                          {% if is_disabled %}disabled aria-disabled="true"{% endif %}>
+                    {{ _('Nudge volunteer') }}
+                  </button>
+                </form>
+              </div>
+            </details>
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="12" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
+        <tr><td colspan="13" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
-  <div class="hc-card" style="margin-top:12px;">
-    <h3>Live</h3>
-    <div class="hc-muted">État opérationnel instantané</div>
+  <div class="hc-card hc-live-card" style="margin-top:12px;">
+    <button type="button" class="hc-live-header" id="hcLiveToggle" aria-expanded="false">
+      <span class="hc-live-header__copy">
+        <span class="hc-live-header__title">{{ _('Live') }}</span>
+        <span class="hc-muted">{{ _('Instant operational status') }}</span>
+      </span>
+      <span class="hc-live-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="hc-live-body hc-live-hidden" id="hcLiveBody">
+      <div class="hc-activity-item">
+        <p class="hc-activity-title" id="hcLiveUnassigned">• Sans bénévole assigné: 0</p>
+        <div class="hc-activity-meta">Priorité: assigner ou clôturer</div>
+      </div>
 
-    <div class="hc-activity-item">
-      <p class="hc-activity-title" id="hcLiveUnassigned">• Sans bénévole assigné: 0</p>
-      <div class="hc-activity-meta">Priorité: assigner ou clôturer</div>
-    </div>
+      <div class="hc-activity-item">
+        <p class="hc-activity-title" id="hcLiveInProgress">• En cours: 0</p>
+        <div class="hc-activity-meta">À surveiller</div>
+      </div>
 
-    <div class="hc-activity-item">
-      <p class="hc-activity-title" id="hcLiveInProgress">• En cours: 0</p>
-      <div class="hc-activity-meta">À surveiller</div>
-    </div>
-
-    <div class="hc-activity-item">
-      <p class="hc-activity-title" id="hcLiveCanHelp">• Disponibles (CAN_HELP): 0</p>
-      <div class="hc-activity-meta">Volontaires prêts à aider</div>
+      <div class="hc-activity-item">
+        <p class="hc-activity-title" id="hcLiveCanHelp">• Disponibles (CAN_HELP): 0</p>
+        <div class="hc-activity-meta">Volontaires prêts à aider</div>
+      </div>
     </div>
   </div>
 
 </div>
+<script>
+(() => {
+  const liveBtn = document.getElementById('hcLiveToggle');
+  const liveBody = document.getElementById('hcLiveBody');
+  if (liveBtn && liveBody) {
+    liveBtn.addEventListener('click', () => {
+      const isHidden = liveBody.classList.toggle('hc-live-hidden');
+      liveBtn.setAttribute('aria-expanded', String(!isHidden));
+    });
+  }
+  const insightsBtn = document.getElementById('hcInsightsToggle');
+  const insightsBody = document.getElementById('hcInsightsBody');
+  if (insightsBtn && insightsBody) {
+    insightsBtn.addEventListener('click', () => {
+      const isHidden = insightsBody.classList.toggle('hc-live-hidden');
+      insightsBtn.setAttribute('aria-expanded', String(!isHidden));
+    });
+  }
+
+  const STORAGE_KEY = 'hc.admin.requests.filters.v1';
+  const form = document.getElementById('hcAdminFilterForm');
+  const statusEl = document.getElementById('hcAdminFilterStatus');
+  const searchEl = document.getElementById('hcAdminFilterSearch');
+  const deletedEl = document.getElementById('filterDeleted');
+  const hasQuery = new URLSearchParams(window.location.search);
+
+  if (form && statusEl && searchEl) {
+    const saveFilters = () => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          status: statusEl.value || '',
+          q: searchEl.value || '',
+          deleted: !!(deletedEl && deletedEl.checked),
+        }));
+      } catch {}
+    };
+    form.addEventListener('submit', saveFilters);
+    statusEl.addEventListener('change', saveFilters);
+    searchEl.addEventListener('change', saveFilters);
+    if (deletedEl) deletedEl.addEventListener('change', saveFilters);
+
+    const hasExplicitFilters = ['status','q','deleted','category','risk'].some((k) => hasQuery.has(k));
+    if (hasExplicitFilters) {
+      sessionStorage.removeItem('hcAdminFiltersRestored');
+    }
+    if (!hasExplicitFilters && !sessionStorage.getItem('hcAdminFiltersRestored')) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const saved = raw ? JSON.parse(raw) : null;
+        if (saved && (saved.status || saved.q || saved.deleted)) {
+          if (saved.status) statusEl.value = saved.status;
+          if (typeof saved.q === 'string') searchEl.value = saved.q;
+          if (deletedEl) deletedEl.checked = !!saved.deleted;
+          sessionStorage.setItem('hcAdminFiltersRestored', '1');
+          form.submit();
+        }
+      } catch {}
+    }
+  }
+
+  const menus = Array.from(document.querySelectorAll('.hc-rowmenu'));
+  if (!menus.length) return;
+
+  document.addEventListener('toggle', (e) => {
+    const menu = e.target;
+    if (!(menu instanceof HTMLElement) || !menu.classList.contains('hc-rowmenu')) return;
+    if (!menu.open) return;
+    menus.forEach((m) => { if (m !== menu) m.open = false; });
+  }, true);
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.hc-rowmenu')) return;
+    menus.forEach((m) => { m.open = false; });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    menus.forEach((m) => { m.open = false; });
+  });
+})();
+</script>
+<script>
+(() => {
+  const rows = Array.from(document.querySelectorAll('tr[data-href]'));
+  const searchEl = document.getElementById('hcAdminFilterSearch');
+  const selectAll = document.getElementById('hcSelectAllVisible');
+  const bulkCount = document.getElementById('hcBulkCount');
+  const bulkAction = document.getElementById('hcBulkAction');
+  const bulkApply = document.getElementById('hcBulkApply');
+  const bulkClear = document.getElementById('hcBulkClear');
+  const bulkBar = document.getElementById('hcBulkBar');
+  const csrf = bulkBar?.dataset.csrf || '';
+  const quickState = new Set();
+  const quickChipsRoot = document.getElementById('hcQuickChips');
+  function paintQuickChipState() {
+    quickChipsRoot?.querySelectorAll('.hc-quickchip').forEach((btn) => {
+      const key = btn.dataset.quickFilter;
+      btn.classList.toggle('is-active', !!key && quickState.has(key));
+    });
+  }
+  quickChipsRoot?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.hc-quickchip');
+    if (!btn) return;
+    const key = btn.dataset.quickFilter;
+    if (!key) return;
+    if (key === 'clear') quickState.clear();
+    else if (quickState.has(key)) quickState.delete(key);
+    else quickState.add(key);
+    paintQuickChipState();
+    if (typeof applyQuickFilters === 'function') applyQuickFilters();
+  });
+  if (!rows.length) {
+    paintQuickChipState();
+    return;
+  }
+
+  let focusedIndex = -1;
+  const rowCheckboxes = () => Array.from(document.querySelectorAll('.hc-row-select'));
+  const visibleRows = () => rows.filter((r) => r.offsetParent !== null);
+  function rowMatchesQuickFilters(row) {
+    if (!quickState.size) return true;
+    const hasNoOwner = !String(row.dataset.assignedVolunteerId || '').trim();
+    const isUrgent = String(row.dataset.priority || '').toUpperCase() === 'URGENT';
+    const hasCanHelp = Number(row.dataset.sigCanHelp || 0) > 0;
+    const isStale = !!row.querySelector('[title*="Stale request"], [title*="Stale"]');
+    for (const key of quickState) {
+      if (key === 'no_owner' && !hasNoOwner) return false;
+      if (key === 'urgent' && !isUrgent) return false;
+      if (key === 'can_help' && !hasCanHelp) return false;
+      if (key === 'stale' && !isStale) return false;
+    }
+    return true;
+  }
+  function applyQuickFilters() {
+    rows.forEach((row) => { row.style.display = rowMatchesQuickFilters(row) ? '' : 'none'; });
+    paintQuickChipState();
+    updateBulkUi();
+    const vis = visibleRows();
+    if (!vis.includes(rows[focusedIndex])) {
+      focusedIndex = vis.length ? rows.indexOf(vis[0]) : -1;
+      syncRowFocus();
+    }
+  }
+
+  function syncRowFocus() {
+    rows.forEach((r, i) => r.classList.toggle('hc-row-focus', i === focusedIndex));
+  }
+
+  function selectedBoxes() {
+    return rowCheckboxes().filter((cb) => cb.checked && cb.closest('tr')?.offsetParent !== null);
+  }
+
+  function updateBulkUi() {
+    const selected = selectedBoxes();
+    if (bulkCount) bulkCount.textContent = `${selected.length} selected`;
+    if (selectAll) {
+      const visibleChecks = rowCheckboxes().filter((cb) => cb.closest('tr')?.offsetParent !== null);
+      selectAll.checked = visibleChecks.length > 0 && visibleChecks.every((cb) => cb.checked);
+      selectAll.indeterminate = visibleChecks.some((cb) => cb.checked) && !selectAll.checked;
+    }
+  }
+
+  rowCheckboxes().forEach((cb) => {
+    cb.addEventListener('change', updateBulkUi);
+    cb.addEventListener('click', (e) => e.stopPropagation());
+  });
+
+  if (selectAll) {
+    selectAll.addEventListener('change', () => {
+      const on = !!selectAll.checked;
+      rowCheckboxes().forEach((cb) => {
+        if (cb.closest('tr')?.offsetParent !== null) cb.checked = on;
+      });
+      updateBulkUi();
+    });
+  }
+
+  if (bulkClear) {
+    bulkClear.addEventListener('click', () => {
+      rowCheckboxes().forEach((cb) => { cb.checked = false; });
+      updateBulkUi();
+    });
+  }
+
+  async function postForm(url, data) {
+    const body = new URLSearchParams(data);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body,
+      credentials: 'same-origin',
+    });
+    return res.ok;
+  }
+
+  if (bulkApply) {
+    bulkApply.addEventListener('click', async () => {
+      const action = bulkAction?.value || '';
+      const selected = selectedBoxes();
+      if (!action || !selected.length) return;
+
+      const ids = selected.map((cb) => cb.value);
+      const links = selected.map((cb) => cb.dataset.link).filter(Boolean);
+
+      if (action === 'open') {
+        links.forEach((href) => window.open(href, '_blank', 'noopener'));
+        return;
+      }
+      if (action === 'copy_ids') {
+        await navigator.clipboard.writeText(ids.join(', '));
+        return;
+      }
+      if (action === 'copy_links') {
+        await navigator.clipboard.writeText(links.join('\n'));
+        return;
+      }
+
+      bulkApply.disabled = true;
+      const oldLabel = bulkApply.textContent;
+      bulkApply.textContent = 'Working...';
+      let okCount = 0;
+      try {
+        if (action === 'nudge') {
+          for (const id of ids) {
+            const ok = await postForm(`/admin/requests/${id}/nudge`, { csrf_token: csrf });
+            if (ok) okCount += 1;
+          }
+        } else if (action.startsWith('status:')) {
+          const status = action.split(':', 2)[1];
+          for (const id of ids) {
+            const ok = await postForm(`/admin/requests/${id}/status`, { csrf_token: csrf, status });
+            if (ok) okCount += 1;
+          }
+        }
+      } finally {
+        bulkApply.disabled = false;
+        bulkApply.textContent = oldLabel;
+      }
+
+      if (okCount > 0) window.location.reload();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const target = e.target;
+    const inInput = target && (target.matches?.('input, textarea, select') || target.closest?.('[contenteditable="true"]'));
+    if (e.key === '/' && !inInput) {
+      e.preventDefault();
+      if (searchEl) { searchEl.focus(); searchEl.select(); }
+      return;
+    }
+    if (inInput) return;
+
+    const vis = visibleRows();
+    if (!vis.length) return;
+    if ((e.key === 'j' || e.key === 'J')) {
+      e.preventDefault();
+      const currentRow = focusedIndex >= 0 ? rows[focusedIndex] : null;
+      const currentVisibleIdx = currentRow ? vis.indexOf(currentRow) : -1;
+      const nextVisible = vis[Math.min((currentVisibleIdx < 0 ? -1 : currentVisibleIdx) + 1, vis.length - 1)];
+      focusedIndex = rows.indexOf(nextVisible);
+      syncRowFocus();
+      nextVisible?.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    if ((e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      const currentRow = focusedIndex >= 0 ? rows[focusedIndex] : null;
+      const currentVisibleIdx = currentRow ? vis.indexOf(currentRow) : vis.length;
+      const prevVisible = vis[Math.max((currentVisibleIdx < 0 ? vis.length : currentVisibleIdx) - 1, 0)];
+      focusedIndex = rows.indexOf(prevVisible);
+      syncRowFocus();
+      prevVisible?.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    if (e.key === 'Enter' && focusedIndex >= 0) {
+      const row = rows[focusedIndex];
+      if (!row || document.activeElement?.closest('.hc-rowmenu')) return;
+      e.preventDefault();
+      const href = row.dataset.href;
+      if (href) window.location.href = href;
+    }
+    if (e.key === 'x' || e.key === 'X') {
+      if (focusedIndex >= 0) {
+        const cb = rows[focusedIndex].querySelector('.hc-row-select');
+        if (cb) { cb.checked = !cb.checked; updateBulkUi(); }
+      }
+    }
+  });
+
+  const firstVisible = visibleRows()[0];
+  if (firstVisible) {
+    focusedIndex = rows.indexOf(firstVisible);
+    syncRowFocus();
+  }
+  applyQuickFilters();
+  updateBulkUi();
+})();
+</script>
 <script src="{{ url_for('static', filename='js/admin-requests-kpis.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-live-now.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-requests-rowhints.js') }}"></script>
@@ -394,4 +778,3 @@
 <script src="{{ url_for('static', filename='js/admin-requests-rowclick.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}"></script>
 {% endblock %}
-

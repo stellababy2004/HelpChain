@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • {{ _('Audit logs') }} | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">{{ _('Audit logs') }}</h1>
+        <div class="hc-muted">{{ _('Traceability view for admin actions and exports') }}</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">{{ _('Back to requests') }}</a>
+    </div>
+
+    <form class="row g-2 align-items-end" method="GET" action="{{ url_for('admin.admin_audit') }}">
+      <div class="col-lg-3">
+        <label class="form-label mb-1">{{ _('Entity') }}</label>
+        <select class="form-select" name="entity">
+          <option value="all" {% if entity == 'all' %}selected{% endif %}>{{ _('All') }}</option>
+          {% for e in entities %}
+            <option value="{{ e }}" {% if entity == e %}selected{% endif %}>{{ e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-3">
+        <label class="form-label mb-1">{{ _('Action') }}</label>
+        <select class="form-select" name="action">
+          <option value="all" {% if action == 'all' %}selected{% endif %}>{{ _('All') }}</option>
+          {% for a in actions %}
+            <option value="{{ a }}" {% if action == a %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-4">
+        <label class="form-label mb-1">{{ _('Search') }}</label>
+        <input class="form-control" type="text" name="q" value="{{ q or '' }}" placeholder="{{ _('Search logs...') }}">
+      </div>
+      <div class="col-lg-2 d-grid">
+        <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="hc-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="hc-muted">{{ _('Total') }}: {{ total or 0 }}</div>
+      <div class="hc-muted">{{ _('Audit page UI placeholder is active (template restored).') }}</div>
+    </div>
+
+    {% if rows %}
+      <div class="table-responsive hc-admin-tablewrap">
+        <table class="table table-hover align-middle hc-admin-table">
+          <thead>
+            <tr>
+              <th>{{ _('When') }}</th>
+              <th>{{ _('Entity') }}</th>
+              <th>{{ _('Action') }}</th>
+              <th>{{ _('Actor') }}</th>
+              <th>{{ _('Details') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                <td>{{ row.created_at if row.created_at is defined else '-' }}</td>
+                <td>{{ row.entity if row.entity is defined else '-' }}</td>
+                <td>{{ row.action if row.action is defined else '-' }}</td>
+                <td>{{ row.actor_admin_id if row.actor_admin_id is defined else '-' }}</td>
+                <td><code>{{ row.message if row.message is defined else '-' }}</code></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-muted py-3">{{ _('No audit logs found for the current filters.') }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

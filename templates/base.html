@@ -240,9 +240,11 @@
                 <li class="nav-item">
                   <a class="nav-link" href="{{ url_for('admin.admin_professional_leads') }}">Pros Leads</a>
                 </li>
+                {% if HC_PRO_ACCESS_AVAILABLE %}
                 <li class="nav-item">
                   <a class="nav-link" href="{{ url_for('admin.admin_pro_access_list') }}">Pro Access</a>
                 </li>
+                {% endif %}
                 <li class="nav-item">
                   <a class="nav-link" href="{{ url_for('admin.admin_sla_breakdown') }}">SLA</a>
                 </li>
@@ -1038,5 +1040,4 @@
     {% endif %}
   </body>
 </html>
-
 
