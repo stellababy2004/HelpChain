@@ -479,6 +479,11 @@ def create_app(config_object=None) -> Flask:
     def inject_config_flags():
         try:
             from flask import current_app as _ca
+            try:
+                from backend.helpchain_backend.src.models import ProAccessRequest as _PAR  # type: ignore
+                _pro_access_available = _PAR is not None
+            except Exception:
+                _pro_access_available = False
 
             return {
                 "VOLUNTEER_DEV_BYPASS_ENABLED": _ca.config.get(
@@ -487,6 +492,7 @@ def create_app(config_object=None) -> Flask:
                 "VOLUNTEER_DEV_BYPASS_EMAIL": _ca.config.get(
                     "VOLUNTEER_DEV_BYPASS_EMAIL"
                 ),
+                "HC_PRO_ACCESS_AVAILABLE": _pro_access_available,
             }
         except Exception:
             return {}

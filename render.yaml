@@ -2,6 +2,7 @@ services:
   - type: web
     name: helpchain
     env: python
+    healthCheckPath: /health
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python -m flask --app run:app db upgrade --directory migrations && gunicorn run:app --bind 0.0.0.0:$PORT"
     region: frankfurt
