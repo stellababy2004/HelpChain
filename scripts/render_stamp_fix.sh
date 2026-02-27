@@ -8,6 +8,7 @@ else
 fi
 
 echo "=== RENDER BUILD PREP START ==="
+echo "[HC] render_stamp_fix.sh running"
 "$PY" -V
 "$PY" -m pip install --upgrade pip
 "$PY" -m pip install -r requirements.txt

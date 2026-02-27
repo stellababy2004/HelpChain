@@ -8,5 +8,6 @@ else
 fi
 
 echo "=== RENDER START ==="
+echo "[HC] render_start.sh running"
 "$PY" -m flask --app run:app db upgrade --directory migrations
 exec gunicorn run:app --bind 0.0.0.0:"$PORT"
