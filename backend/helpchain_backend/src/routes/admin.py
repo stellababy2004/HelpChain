@@ -29,7 +29,6 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.audit import log_activity
-from backend.core.tenant import current_structure_id
 from backend.extensions import db, limiter
 from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
 from backend.helpchain_backend.src.observability import (
@@ -2212,8 +2211,6 @@ def add_volunteer():
             location=request.form["location"],
             skills=request.form.get("skills", ""),
         )
-        if hasattr(Volunteer, "structure_id"):
-            volunteer.structure_id = current_structure_id()
         db.session.add(volunteer)
         db.session.commit()
         flash("Доброволецът е добавен успешно!", "success")
