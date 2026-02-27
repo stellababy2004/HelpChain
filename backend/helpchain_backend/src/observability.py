@@ -1,21 +1,49 @@
 from __future__ import annotations
 
-from threading import Lock
+from sqlalchemy import text
 
-_lock = Lock()
-_tenant_leak_total = 0
+from backend.extensions import db
+
+TENANT_LEAK_KEY = "tenant_leak_total"
 
 
-def tenant_leak_inc(value: int = 1) -> int:
-    global _tenant_leak_total
-    inc = int(value)
+def guardrail_get(key: str) -> int:
+    row = db.session.execute(
+        text('SELECT value FROM guardrail_counters WHERE "key" = :key'),
+        {"key": key},
+    ).first()
+    return int(row[0]) if row else 0
+
+
+def guardrail_incr(key: str, delta: int = 1) -> int:
+    inc = int(delta)
     if inc <= 0:
-        return tenant_leak_get()
-    with _lock:
-        _tenant_leak_total += inc
-        return int(_tenant_leak_total)
+        return guardrail_get(key)
+
+    db.session.execute(
+        text(
+            """
+            INSERT INTO guardrail_counters ("key", value, updated_at)
+            VALUES (:key, :delta, CURRENT_TIMESTAMP)
+            ON CONFLICT ("key")
+            DO UPDATE SET
+              value = guardrail_counters.value + :delta,
+              updated_at = CURRENT_TIMESTAMP
+            """
+        ),
+        {"key": key, "delta": inc},
+    )
+    row = db.session.execute(
+        text('SELECT value FROM guardrail_counters WHERE "key" = :key'),
+        {"key": key},
+    ).first()
+    db.session.commit()
+    return int(row[0]) if row else 0
 
 
 def tenant_leak_get() -> int:
-    with _lock:
-        return int(_tenant_leak_total)
+    return guardrail_get(TENANT_LEAK_KEY)
+
+
+def tenant_leak_inc(value: int = 1) -> int:
+    return guardrail_incr(TENANT_LEAK_KEY, value)

@@ -461,7 +461,7 @@ def metrics():
     return Response(payload, mimetype="text/plain; version=0.0.4; charset=utf-8")
 
 
-@admin_bp.route("/metrics/tenant-leak-test", methods=["GET", "POST"])
+@admin_bp.get("/metrics/tenant-leak-test")
 def metrics_tenant_leak_test():
     if not _metrics_token_valid():
         return jsonify({"ok": False, "error": "forbidden"}), 403

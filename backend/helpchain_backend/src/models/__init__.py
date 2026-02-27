@@ -24,6 +24,7 @@ from backend.models import (  # noqa: F401
 # Local wrappers for canonical/legacy models (defined in `backend.models`)
 from .admin_user import AdminUser  # noqa: F401
 from .email_send_event import EmailSendEvent  # noqa: F401
+from .guardrail_counter import GuardrailCounter  # noqa: F401
 from .magic_link_token import MagicLinkToken  # noqa: F401
 from .notification import Notification  # noqa: F401
 from .professional_lead import ProfessionalLead  # noqa: F401
@@ -61,4 +62,5 @@ __all__ = [
     "VolunteerRequestState",
     "VolunteerMatchFeedback",
     "EmailSendEvent",
+    "GuardrailCounter",
 ]
