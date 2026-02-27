@@ -29,8 +29,13 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.audit import log_activity
+from backend.core.tenant import current_structure_id
 from backend.extensions import db, limiter
 from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
+from backend.helpchain_backend.src.observability import (
+    inc_tenant_leak_total,
+    render_prometheus_metrics,
+)
 from backend.helpchain_backend.src.statuses import (
     REQUEST_STATUS_ALLOWED,
     normalize_request_status,
@@ -420,6 +425,8 @@ def require_admin_session():
     allowed = {
         "admin.ops_login",
         "admin.admin_login_legacy",
+        "admin.metrics",
+        "admin.metrics_tenant_leak_test",
     }
     if request.endpoint in allowed or (
         request.endpoint and request.endpoint.startswith("static")
@@ -431,6 +438,29 @@ def require_admin_session():
 
     nxt = request.full_path if request.query_string else request.path
     return redirect(url_for("admin.ops_login", next=nxt), code=303)
+
+
+def _metrics_token_valid() -> bool:
+    token = (request.args.get("token", "") or "").strip()
+    expected = (current_app.config.get("METRICS_TOKEN", "") or "").strip()
+    return bool(expected) and secrets.compare_digest(token, expected)
+
+
+@admin_bp.get("/metrics")
+def metrics():
+    if not _metrics_token_valid():
+        return Response("forbidden\n", status=403, mimetype="text/plain")
+    payload = render_prometheus_metrics()
+    return Response(payload, mimetype="text/plain; version=0.0.4; charset=utf-8")
+
+
+@admin_bp.post("/metrics/tenant-leak-test")
+def metrics_tenant_leak_test():
+    if not _metrics_token_valid():
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+    value = request.args.get("value", default=1, type=int) or 1
+    total = inc_tenant_leak_total(value)
+    return jsonify({"ok": True, "tenant_leak_total": int(total)}), 200
 
 
 @admin_bp.get("/")
@@ -2182,6 +2212,8 @@ def add_volunteer():
             location=request.form["location"],
             skills=request.form.get("skills", ""),
         )
+        if hasattr(Volunteer, "structure_id"):
+            volunteer.structure_id = current_structure_id()
         db.session.add(volunteer)
         db.session.commit()
         flash("Доброволецът е добавен успешно!", "success")
