@@ -93,7 +93,7 @@ We appreciate security researchers helping us keep HelpChain secure. Responsible
 
 For critical security incidents requiring immediate attention:
 
-- **Phone**: +359 XX XXX XXX (available 24/7 for emergencies)
+
 - **Email**: security@helpchain.live
 
 ## 📖 Additional Resources
