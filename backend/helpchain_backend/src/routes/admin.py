@@ -32,8 +32,8 @@ from backend.audit import log_activity
 from backend.extensions import db, limiter
 from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
 from backend.helpchain_backend.src.observability import (
-    inc_tenant_leak_total,
-    render_prometheus_metrics,
+    tenant_leak_get,
+    tenant_leak_inc,
 )
 from backend.helpchain_backend.src.statuses import (
     REQUEST_STATUS_ALLOWED,
@@ -449,7 +449,15 @@ def _metrics_token_valid() -> bool:
 def metrics():
     if not _metrics_token_valid():
         return Response("forbidden\n", status=403, mimetype="text/plain")
-    payload = render_prometheus_metrics()
+    val = tenant_leak_get()
+    payload = "\n".join(
+        [
+            "# HELP tenant_leak_total Tenant guardrail violations detected.",
+            "# TYPE tenant_leak_total counter",
+            f"tenant_leak_total {val}",
+            "",
+        ]
+    )
     return Response(payload, mimetype="text/plain; version=0.0.4; charset=utf-8")
 
 
@@ -458,7 +466,7 @@ def metrics_tenant_leak_test():
     if not _metrics_token_valid():
         return jsonify({"ok": False, "error": "forbidden"}), 403
     value = request.args.get("value", default=1, type=int) or 1
-    total = inc_tenant_leak_total(value)
+    total = tenant_leak_inc(value)
     return jsonify({"ok": True, "tenant_leak_total": int(total)}), 200
 
 
