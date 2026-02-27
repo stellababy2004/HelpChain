@@ -9,6 +9,9 @@ fi
 
 echo "=== STAMP FIX START ==="
 "$PY" -V
+echo "Installing runtime dependencies"
+"$PY" -m pip install --upgrade pip
+"$PY" -m pip install -r requirements.txt
 TARGET_REV="b2d5c3f1a9e0"
 echo "Forcing alembic_version to $TARGET_REV via SQL"
 "$PY" - <<PYCODE
