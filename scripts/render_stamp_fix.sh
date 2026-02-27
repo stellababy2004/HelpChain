@@ -7,14 +7,15 @@ else
   PY=python
 fi
 
-echo "=== STAMP FIX START ==="
+echo "=== RENDER BUILD PREP START ==="
 "$PY" -V
-echo "Installing runtime dependencies"
 "$PY" -m pip install --upgrade pip
 "$PY" -m pip install -r requirements.txt
-TARGET_REV="b2d5c3f1a9e0"
-echo "Forcing alembic_version to $TARGET_REV via SQL"
-"$PY" - <<PYCODE
+
+if [ "${HC_ENABLE_DB_STAMP_FIX:-0}" = "1" ]; then
+  TARGET_REV="${HC_STAMP_TARGET_REV:-b2d5c3f1a9e0}"
+  echo "Stamp fix enabled. Forcing alembic_version to ${TARGET_REV}"
+  "$PY" - <<PYCODE
 from run import app
 from sqlalchemy import text
 
@@ -47,9 +48,8 @@ db.session.commit()
 rows = db.session.execute(text("SELECT version_num FROM alembic_version")).fetchall()
 print("ALEMBIC_VERSION_AFTER=", rows)
 PYCODE
+else
+  echo "Stamp fix disabled (default)."
+fi
 
-echo "Running upgrade"
-"$PY" -m flask --app run:app db upgrade --directory migrations
-
-echo "Starting gunicorn"
-exec gunicorn run:app --bind 0.0.0.0:"$PORT"
+echo "=== RENDER BUILD PREP DONE ==="

@@ -3,8 +3,8 @@ services:
     name: helpchain
     env: python
     healthCheckPath: /health
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "python -m flask --app run:app db upgrade --directory migrations && gunicorn run:app --bind 0.0.0.0:$PORT"
+    buildCommand: "bash scripts/render_stamp_fix.sh"
+    startCommand: "bash scripts/render_start.sh"
     region: frankfurt
     envVars:
       - key: FLASK_ENV
