@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""
+Idempotent admin bootstrap for DB-backed admin login.
+
+Behavior:
+- If ADMIN_SEED_USERNAME or ADMIN_SEED_PASSWORD is missing, exits with no-op.
+- If admin user does not exist, creates it with a hashed password.
+- If admin user exists:
+  - ADMIN_SEED_FORCE_RESET=1 -> reset password (and update email if provided)
+  - otherwise no-op.
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+
+def _prepare_import_path() -> None:
+    # Support both:
+    # - `python backend/scripts/ensure_admin.py` (repo root cwd)
+    # - `python scripts/ensure_admin.py` (backend cwd)
+    this_file = Path(__file__).resolve()
+    backend_dir = this_file.parents[1]
+    repo_root = backend_dir.parent
+    for p in (str(repo_root), str(backend_dir)):
+        if p not in sys.path:
+            sys.path.insert(0, p)
+
+
+def _env_truthy(value: str | None) -> bool:
+    return (value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def main() -> int:
+    _prepare_import_path()
+
+    username = (os.getenv("ADMIN_SEED_USERNAME") or "").strip()
+    password = os.getenv("ADMIN_SEED_PASSWORD") or ""
+    email = (os.getenv("ADMIN_SEED_EMAIL") or "").strip()
+    role = (os.getenv("ADMIN_SEED_ROLE") or "admin").strip()
+    force_reset = _env_truthy(os.getenv("ADMIN_SEED_FORCE_RESET"))
+
+    if not username or not password:
+        print(
+            "ENSURE_ADMIN: skip (missing ADMIN_SEED_USERNAME or ADMIN_SEED_PASSWORD)"
+        )
+        return 0
+
+    from backend.extensions import db
+    from backend.helpchain_backend.src.app import create_app
+    from backend.models import AdminUser
+
+    app = create_app()
+
+    with app.app_context():
+        existing = db.session.query(AdminUser).filter_by(username=username).first()
+        if existing:
+            if not force_reset:
+                print("ENSURE_ADMIN: exists (no-op)")
+                return 0
+
+            if len(password) < 12:
+                print(
+                    "ENSURE_ADMIN: error (ADMIN_SEED_FORCE_RESET=1 requires password length >= 12)"
+                )
+                return 1
+
+            try:
+                existing.set_password(password)
+            except Exception as exc:
+                print(f"ENSURE_ADMIN: error (invalid ADMIN_SEED_PASSWORD: {exc})")
+                return 1
+
+            if email:
+                existing.email = email
+            db.session.commit()
+
+            # Best-effort audit entry for forced resets.
+            try:
+                from backend.audit import log_activity
+
+                log_activity(
+                    entity_type="admin",
+                    entity_id=getattr(existing, "id", 0) or 0,
+                    action="admin_seed_reset",
+                    message="Admin password reset via ensure_admin (forced)",
+                    meta={"username": username, "forced": True},
+                    persist=True,
+                )
+            except Exception:
+                pass
+
+            print("ENSURE_ADMIN: reset password (forced)")
+            return 0
+
+        create_email = email or "admin@helpchain.live"
+        admin = AdminUser(username=username, email=create_email, role=role)
+        try:
+            admin.set_password(password)
+        except Exception as exc:
+            print(f"ENSURE_ADMIN: error (invalid ADMIN_SEED_PASSWORD: {exc})")
+            return 1
+
+        db.session.add(admin)
+        db.session.commit()
+        print("ENSURE_ADMIN: created")
+        return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
