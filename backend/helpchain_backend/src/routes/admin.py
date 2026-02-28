@@ -463,9 +463,24 @@ def metrics():
 
 @admin_bp.get("/metrics/tenant-leak-test")
 def metrics_tenant_leak_test():
+    if not current_app.config.get("HC_ENABLE_LEAK_TEST", False):
+        abort(404)
+
+    allowlist = current_app.config.get("HC_LEAK_TEST_ALLOWLIST", set())
+    if allowlist:
+        forwarded_for = (request.headers.get("X-Forwarded-For", "") or "").split(",")
+        client_ip = (
+            (request.headers.get("CF-Connecting-IP", "") or "").strip()
+            or (forwarded_for[0].strip() if forwarded_for else "")
+            or (request.remote_addr or "").strip()
+        )
+        if client_ip not in allowlist:
+            abort(404)
+
     if not _metrics_token_valid():
         return jsonify({"ok": False, "error": "forbidden"}), 403
     value = request.args.get("value", default=1, type=int) or 1
+    value = max(0, min(value, 1000))
     total = tenant_leak_inc(value)
     return jsonify({"ok": True, "tenant_leak_total": int(total)}), 200
 
