@@ -16,6 +16,7 @@ from flask import current_app, has_request_context, render_template, request
 from flask_mail import Message
 from sqlalchemy.exc import SQLAlchemyError
 
+from backend.core.tenant import current_structure_id
 from backend.helpchain_backend.src.models import EmailSendEvent, db
 
 try:
@@ -51,18 +52,27 @@ def _client_ua() -> str | None:
     return request.headers.get("User-Agent")
 
 
-def _log_email_event(email_h: str, purpose: str, outcome: str, reason: str | None):
+def _log_email_event(
+    email_h: str,
+    purpose: str,
+    outcome: str,
+    reason: str | None,
+    *,
+    structure_id: int | None = None,
+):
     try:
-        db.session.add(
-            EmailSendEvent(
-                email_hash=email_h,
-                purpose=(purpose or "generic")[:64],
-                outcome=(outcome or "failed")[:16],
-                reason=(reason or None),
-                ip=(_client_ip() or None),
-                ua=(_client_ua() or "")[:256],
-            )
+        sid = structure_id or current_structure_id()
+        event_kwargs = dict(
+            email_hash=email_h,
+            purpose=(purpose or "generic")[:64],
+            outcome=(outcome or "failed")[:16],
+            reason=(reason or None),
+            ip=(_client_ip() or None),
+            ua=(_client_ua() or "")[:256],
         )
+        if hasattr(EmailSendEvent, "structure_id"):
+            event_kwargs["structure_id"] = sid
+        db.session.add(EmailSendEvent(**event_kwargs))
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
@@ -128,7 +138,7 @@ def utc_now() -> datetime:
 
 
 def send_notification_email(
-    recipient, subject, template, context=None, *, purpose="generic"
+    recipient, subject, template, context=None, *, purpose="generic", structure_id=None
 ):
     """
     Send notification email to recipient
@@ -143,6 +153,7 @@ def send_notification_email(
         bool: True if queued successfully, False otherwise
     """
     try:
+        sid = structure_id or current_structure_id()
         recipient = _norm_email(recipient)
         if not recipient:
             logger.warning("No recipient specified for email")
@@ -151,6 +162,7 @@ def send_notification_email(
                 purpose=purpose,
                 outcome="suppressed",
                 reason="empty_email",
+                structure_id=sid,
             )
             return False
         # Some SMTP providers reject SMTPUTF8 recipients; fail fast with a clear log.
@@ -166,6 +178,7 @@ def send_notification_email(
                 purpose=purpose,
                 outcome="suppressed",
                 reason="non_ascii_email",
+                structure_id=sid,
             )
             return False
 
@@ -177,6 +190,7 @@ def send_notification_email(
                 purpose=purpose,
                 outcome="suppressed",
                 reason=f"dedupe_{dedupe_min}m",
+                structure_id=sid,
             )
             return True
 
@@ -188,6 +202,7 @@ def send_notification_email(
                 purpose=purpose,
                 outcome="suppressed",
                 reason=f"per_email_rl_{rl_max}_per_{rl_window}m",
+                structure_id=sid,
             )
             return True
 
@@ -204,6 +219,7 @@ def send_notification_email(
                 purpose=purpose,
                 outcome="sent",
                 reason="mail_mock",
+                structure_id=sid,
             )
             return True
 
@@ -265,6 +281,7 @@ def send_notification_email(
                     recipients=[recipient],
                     html=html_content,
                     message_id=message_id,
+                    structure_id=sid,
                 )
                 queued = True
         except Exception as e:
@@ -291,6 +308,7 @@ def send_notification_email(
                 purpose=purpose,
                 outcome="sent",
                 reason="queued",
+                structure_id=sid,
             )
             return True
 
@@ -319,6 +337,7 @@ def send_notification_email(
                 purpose=purpose,
                 outcome="failed",
                 reason="smtp_not_configured",
+                structure_id=sid,
             )
             return False
 

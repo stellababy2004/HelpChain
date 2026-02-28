@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Volunteer Dashboard{% endblock %}
+
+{% block content %}
+<main class="container py-4">
+  <h1>volunteer dashboard</h1>
+  {% if volunteer and volunteer.name %}
+    <p>{{ volunteer.name }}</p>
+  {% endif %}
+  <p>Актуализирайте вашата локация</p>
+  <form>
+    <input name="latitude" />
+    <input name="longitude" />
+  </form>
+</main>
+{% endblock %}

@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 from flask import render_template
 
+from backend.core.tenant import current_structure_id
 from backend.extensions import db
 from backend.models import Request
 
@@ -260,6 +261,7 @@ class HelpChainController:
             description=data.get("description"),
             urgency=data.get("urgency"),
             status="pending",
+            structure_id=current_structure_id(),
         )
         db.session.add(req)
         db.session.commit()

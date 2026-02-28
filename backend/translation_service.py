@@ -13,7 +13,7 @@ import threading
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from backend.ai_service_clean import ai_service
+from backend.ai_service import ai_service
 
 
 def utc_now() -> datetime:

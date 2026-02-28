@@ -19,6 +19,7 @@
     {% set _hreflang_public_eps = [
       'main.index',
       'main.orienter',
+      'main.pour_les_structures',
       'main.about',
       'main.professionnels',
       'main.submit_request',
@@ -184,47 +185,39 @@
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep == 'main.index' else '' }}" href="{{ safe_url_for('main.index') }}" data-hc-nav="home" {% if ep == 'main.index' %}aria-current="page"{% endif %}>
                 <span class="hc-navicon" aria-hidden="true"><i class="fas fa-home" aria-hidden="true"></i></span>
-                <span class="hc-navlabel">{{ _('Home') }}</span>
+                <span class="hc-navlabel">{{ _('Accueil') }}</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.categories') or ep.startswith('main.orienter') else '' }}" href="{{ safe_url_for('main.orienter') }}" {% if ep.startswith('main.categories') or ep.startswith('main.orienter') %}aria-current="page"{% endif %}>
-                <i class="fas fa-th-list me-1" aria-hidden="true"></i>{{ _('Orienter') }}
+                <i class="fas fa-th-list me-1" aria-hidden="true"></i>{{ _('Fonctionnement') }}
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.about') else '' }}" href="{{ safe_url_for('main.about') }}" {% if ep.startswith('main.about') %}aria-current="page"{% endif %}
-                ><i class="fas fa-info-circle me-1" aria-hidden="true"></i>{{ _('About') }}</a
-              >
+              <a class="nav-link {{ 'active' if ep.startswith('main.submit_request') else '' }}" href="{{ url_for('main.submit_request') }}" {% if ep.startswith('main.submit_request') %}aria-current="page"{% endif %}>
+                <i class="fas fa-inbox me-1" aria-hidden="true"></i>{{ _('Demandes') }}
+              </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
+              <a class="nav-link nav-link--secondary {{ 'is-active' if ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
                 <i class="fas fa-briefcase me-1" aria-hidden="true"></i>
-                <span class="hc-labelswap">
-                  <span class="hc-labelswap__long">{{ _('Professionnels') }}</span>
-                  <span class="hc-labelswap__short" aria-hidden="true">
-                    {% if hc_locale_code == 'bg' %}{{ _('Проф.') }}{% elif hc_locale_code == 'fr' %}Pros{% else %}Pros{% endif %}
-                  </span>
-                </span>
-              </a>
-            </li>
-            {# Temporary: route removed/renamed; avoid BuildError in shared base template #}
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.pilot') else '' }}" href="{{ url_for('main.pilot') }}" data-hc-nav="kpi" {% if ep.startswith('main.pilot') %}aria-current="page"{% endif %}>
-                <span class="hc-navicon" aria-hidden="true"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
-                <span class="hc-navlabel">{{ _('Pilot (KPI)') }}</span>
-                <span class="badge text-bg-success ms-1">{{ _('LIVE') }}</span>
+                <span class="hc-navlabel">{{ _('Structures') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link hc-nav-cta hc-cta {{ 'active' if ep.startswith('main.submit_request') else '' }}" href="{{ url_for('main.submit_request') }}" data-hc-nav="submit" {% if ep.startswith('main.submit_request') %}aria-current="page"{% endif %}>
-                <span class="hc-navicon" aria-hidden="true"><i class="fas fa-plus-circle" aria-hidden="true"></i></span>
-                <span class="hc-navlabel hc-labelswap">
-                  <span class="hc-labelswap__long">{{ _('Submit a request') }}</span>
-                  <span class="hc-labelswap__short" aria-hidden="true">
-                    {% if hc_locale_code == 'bg' %}{{ _('Подай') }}{% elif hc_locale_code == 'fr' %}Déposer{% else %}Submit{% endif %}
-                  </span>
-                </span>
+              <a class="nav-link {{ 'active' if ep.startswith('main.about') else '' }}" href="{{ safe_url_for('main.about') }}" {% if ep.startswith('main.about') %}aria-current="page"{% endif %}>
+                <i class="fas fa-info-circle me-1" aria-hidden="true"></i>{{ _('À propos') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.contact') else '' }}" href="{{ url_for('main.contact') }}" {% if ep.startswith('main.contact') %}aria-current="page"{% endif %}>
+                <i class="fas fa-envelope me-1" aria-hidden="true"></i>{{ _('Contact') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
+                <span class="hc-navicon" aria-hidden="true"><i class="fas fa-comments" aria-hidden="true"></i></span>
+                <span class="hc-navlabel">{{ _('Demander un échange') }}</span>
               </a>
             </li>
             {% if current_user.is_authenticated %}
@@ -379,6 +372,7 @@
           {% set ep = request.endpoint or '' %}
           {% set public_eps = [
             'main.index', 'main.orienter', 'main.about', 'main.professionnels',
+            'main.pour_les_structures',
             'main.become_volunteer', 'main.volunteer_login', 'main.faq', 'main.contact'
           ] %}
           {% set show_nav_chrome = ep.startswith('admin.') or ep.startswith('main.volunteer_') or (ep not in public_eps) %}

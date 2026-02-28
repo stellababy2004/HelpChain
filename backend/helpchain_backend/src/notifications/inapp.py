@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
+from backend.core.tenant import current_structure_id
 from backend.extensions import db
 from backend.helpchain_backend.src.models import VolunteerRequestState
 from backend.models import Notification, RequestActivity
@@ -13,6 +14,7 @@ def touch_request_state_notified(
     request_id: int | None,
     notified_at: datetime | None = None,
     *,
+    structure_id: int | None = None,
     commit: bool = True,
 ) -> None:
     """
@@ -21,17 +23,24 @@ def touch_request_state_notified(
     """
     if not volunteer_id or not request_id:
         return
-    ts = notified_at or datetime.utcnow()
+    sid = structure_id or current_structure_id()
+    ts = notified_at or datetime.now(timezone.utc).replace(tzinfo=None)
     try:
-        row = VolunteerRequestState.query.filter_by(
+        q = VolunteerRequestState.query.filter_by(
             volunteer_id=volunteer_id, request_id=request_id
-        ).first()
+        )
+        if hasattr(VolunteerRequestState, "structure_id"):
+            q = q.filter_by(structure_id=sid)
+        row = q.first()
         if not row:
-            row = VolunteerRequestState(
-                volunteer_id=volunteer_id,
-                request_id=request_id,
-                notified_at=ts,
-            )
+            row_kwargs = {
+                "volunteer_id": volunteer_id,
+                "request_id": request_id,
+                "notified_at": ts,
+            }
+            if hasattr(VolunteerRequestState, "structure_id"):
+                row_kwargs["structure_id"] = sid
+            row = VolunteerRequestState(**row_kwargs)
             db.session.add(row)
         else:
             prev = getattr(row, "notified_at", None)
@@ -48,6 +57,7 @@ def touch_request_state_seen(
     request_id: int | None,
     seen_at: datetime | None = None,
     *,
+    structure_id: int | None = None,
     commit: bool = True,
 ) -> None:
     """
@@ -56,17 +66,24 @@ def touch_request_state_seen(
     """
     if not volunteer_id or not request_id:
         return
-    ts = seen_at or datetime.utcnow()
+    sid = structure_id or current_structure_id()
+    ts = seen_at or datetime.now(timezone.utc).replace(tzinfo=None)
     try:
-        row = VolunteerRequestState.query.filter_by(
+        q = VolunteerRequestState.query.filter_by(
             volunteer_id=volunteer_id, request_id=request_id
-        ).first()
+        )
+        if hasattr(VolunteerRequestState, "structure_id"):
+            q = q.filter_by(structure_id=sid)
+        row = q.first()
         if not row:
-            row = VolunteerRequestState(
-                volunteer_id=volunteer_id,
-                request_id=request_id,
-                seen_at=ts,
-            )
+            row_kwargs = {
+                "volunteer_id": volunteer_id,
+                "request_id": request_id,
+                "seen_at": ts,
+            }
+            if hasattr(VolunteerRequestState, "structure_id"):
+                row_kwargs["structure_id"] = sid
+            row = VolunteerRequestState(**row_kwargs)
             db.session.add(row)
         else:
             prev = getattr(row, "seen_at", None)
@@ -101,7 +118,7 @@ def mark_request_seen_for_volunteer(
     if getattr(row, "seen_at", None) is not None:
         return False
 
-    row.seen_at = seen_at or datetime.utcnow()
+    row.seen_at = seen_at or datetime.now(timezone.utc).replace(tzinfo=None)
     if commit:
         db.session.commit()
     return True
@@ -118,7 +135,7 @@ def ensure_new_match_notifications(volunteer_id: int, request_rows) -> int:
     created = 0
     for r in request_rows:
         req_id = getattr(r, "id", None)
-        ts = datetime.utcnow()
+        ts = datetime.now(timezone.utc).replace(tzinfo=None)
         notif = Notification(
             volunteer_id=volunteer_id,
             type="new_match",
@@ -180,7 +197,7 @@ def mark_notification_opened(
     if not n:
         raise LookupError("Notification not found")
 
-    ts = datetime.utcnow()
+    ts = datetime.now(timezone.utc).replace(tzinfo=None)
     changed = False
 
     if hasattr(n, "is_read") and not bool(getattr(n, "is_read", False)):
@@ -232,7 +249,7 @@ def send_nudge_notification(
     if not request_id or not volunteer_id:
         return False
 
-    now = now or datetime.utcnow()
+    now = now or datetime.now(timezone.utc).replace(tzinfo=None)
     cutoff = now - timedelta(hours=NUDGE_COOLDOWN_HOURS)
 
     existing = (

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import request as flask_request
 from flask_login import current_user
@@ -71,7 +71,7 @@ def log_activity(
         "old_value": old_value,
         "new_value": new_value,
         "meta": enriched_meta,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc).replace(tzinfo=None),
     }
 
     if persist:

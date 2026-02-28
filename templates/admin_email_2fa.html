@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Email 2FA{% endblock %}
+
+{% block content %}
+<main class="container py-4">
+  <h1>Код за верификация</h1>
+  <form method="post">
+    <div class="mb-3">
+      <label for="code" class="form-label">Код за верификация</label>
+      <input id="code" name="code" type="text" class="form-control" maxlength="6" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Потвърди</button>
+  </form>
+</main>
+{% endblock %}

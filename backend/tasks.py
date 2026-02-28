@@ -15,6 +15,7 @@ except ImportError:
     from backend.celery_app import celery
 
 from backend.extensions import db
+from backend.core.tenant import current_structure_id
 
 try:
     from backend.models import (
@@ -49,10 +50,7 @@ try:
 except ImportError:
     from backend.mail_service import send_notification_email
 
-try:
-    from ai_service_clean import ai_service
-except ImportError:
-    from backend.ai_service import ai_service
+from backend.ai_service import ai_service
 
 try:
     from analytics_service import analytics_service
@@ -120,6 +118,12 @@ logger = logging.getLogger(__name__)
 def utc_now() -> datetime:
     """Return naive UTC timestamp without relying on datetime.utcnow."""
     return datetime.now(UTC).replace(tzinfo=None)
+
+
+def _resolve_structure_id(structure_id: int | None = None) -> int:
+    if structure_id:
+        return int(structure_id)
+    return int(current_structure_id())
 
 
 # Email retry configuration
@@ -526,6 +530,7 @@ def send_email_task(
     recipient: str = None,
     template: str = None,
     context: dict | None = None,
+    structure_id: int | None = None,
 ):
     """
     Надеждно изпращане с автоматичен retry.
@@ -556,12 +561,14 @@ def send_email_task(
         "template": template,
         "context": context,
         "message_id": message_id or f"mail-{int(time.time() * 1000)}",
+        "structure_id": structure_id,
     }
 
     try:
         app = _get_app()
         mail = _get_mail()
         with app.app_context():
+            sid = _resolve_structure_id(structure_id)
             msg = Message(
                 subject=subject,
                 sender=sender or app.config["MAIL_DEFAULT_SENDER"],
@@ -577,10 +584,11 @@ def send_email_task(
 
             mail.send(msg)
             app.logger.info(
-                "✅ Email sent | to=%s | subject=%s | id=%s",
+                "✅ Email sent | to=%s | subject=%s | id=%s | sid=%s",
                 recipients,
                 subject,
                 payload["message_id"],
+                sid,
             )
             return "sent"
 
@@ -724,6 +732,7 @@ def requeue_dlq_emails(self, limit: int = 50):
                     sender=payload.get("sender"),
                     html=payload.get("html"),
                     message_id=payload.get("message_id"),
+                    structure_id=payload.get("structure_id"),
                 )
 
                 requeued_count += 1
@@ -900,10 +909,11 @@ def send_bulk_notifications(self, notifications):
 
 
 @celery.task(bind=True)
-def process_request_immediately(self, request_data):
+def process_request_immediately(self, request_data, structure_id: int | None = None):
     """Process new help request immediately with AI analysis"""
     try:
         logger.info("Processing new request immediately")
+        sid = _resolve_structure_id(structure_id)
 
         # Create request in database
         request = HelpRequest(
@@ -912,6 +922,8 @@ def process_request_immediately(self, request_data):
             message=request_data["message"],
             status="pending",
         )
+        if hasattr(HelpRequest, "structure_id"):
+            request.structure_id = sid
 
         if "category" in request_data:
             request.title = request_data["category"]

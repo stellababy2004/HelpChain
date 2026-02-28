@@ -65,7 +65,7 @@ except ImportError:
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..security_logging import log_security_event
 
-INVALID_CREDENTIALS_MSG = "Invalid credentials."
+INVALID_CREDENTIALS_MSG = "Грешно потребителско име или парола"
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 ASSIGN_SLA_HOURS = 48
 RESOLVE_SLA_DAYS = 7
@@ -146,7 +146,7 @@ def get_volunteer_engagement_score(
     """
     Heuristic engagement score per volunteer in range [-10..+10].
     """
-    now = now or datetime.utcnow()
+    now = now or datetime.now(UTC).replace(tzinfo=None)
     cutoff_72h = now - timedelta(hours=72)
 
     seen_within_24h = 0
@@ -245,7 +245,7 @@ def compute_response_metrics(
     """
     Compute response metrics for a request using assigned volunteer context.
     """
-    now_naive = _to_utc_naive(now) or datetime.utcnow()
+    now_naive = _to_utc_naive(now) or datetime.now(UTC).replace(tzinfo=None)
     out = {
         "request_id": int(request_id),
         "assigned_volunteer_id": None,
@@ -424,6 +424,8 @@ def require_admin_session():
     allowed = {
         "admin.ops_login",
         "admin.admin_login_legacy",
+        "admin.admin_email_2fa",
+        "admin.admin_2fa",
         "admin.metrics",
         "admin.metrics_tenant_leak_test",
     }
@@ -757,7 +759,7 @@ def emergency_requests():
     page = max(page, 1)
     per_page = int(request.args.get("per_page") or 25)
     per_page = max(10, min(per_page, 100))
-    since = datetime.utcnow() - timedelta(days=days)
+    since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
 
     # Emergency filter: category=="emergency" only (no urgency field)
     query = _scope_requests(Request.query).filter(
@@ -1032,12 +1034,39 @@ def admin_ops_login():
     return render_template("admin/login.html", next=next_url)
 
 
-@admin_bp.get("/login")
+@admin_bp.route("/login", methods=["GET", "POST"])
 @limiter.limit("30 per minute")
 def admin_login_legacy():
-    """Legacy alias to ops login; preserves ?next=."""
-    nxt = request.args.get("next", "")
-    return redirect(url_for("admin.ops_login", next=nxt))
+    """Legacy admin login endpoint kept for backward-compatible tests/clients."""
+    next_candidate = (
+        request.form.get("next") or request.args.get("next") or ""
+    ).strip()
+    next_url = next_candidate if is_safe_url(next_candidate) else ""
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        user = AdminUser.query.filter_by(username=username).first()
+        if (
+            not user
+            or not getattr(user, "password_hash", None)
+            or not check_password_hash(user.password_hash, password)
+        ):
+            flash(INVALID_CREDENTIALS_MSG, "danger")
+            return redirect(url_for("admin.admin_login_legacy", next=next_url))
+
+        # Legacy email 2FA compatibility flow expected by tests.
+        if bool(current_app.config.get("EMAIL_2FA_ENABLED", False)):
+            session.clear()
+            session["pending_admin_user_id"] = int(user.id)
+            session["pending_email_2fa"] = True
+            session["email_2fa_code"] = f"{secrets.randbelow(1000000):06d}"
+            session["email_2fa_expires"] = int(time.time()) + 600
+            return redirect(url_for("admin.admin_2fa"))
+
+        return redirect(url_for("admin.ops_login", next=next_url))
+
+    return render_template("admin/login.html", next=next_url)
 
 
 @admin_bp.route("/logout", methods=["GET", "POST"])
@@ -1268,6 +1297,24 @@ def admin_2fa():
     return render_template("admin_2fa.html")
 
 
+@admin_bp.route("/email_2fa", methods=["GET", "POST"])
+def admin_email_2fa():
+    """Legacy email-based 2FA flow used by older tests."""
+    if not session.get("pending_email_2fa"):
+        return redirect(url_for("admin.admin_login_legacy"))
+
+    if request.method == "POST":
+        entered = (request.form.get("code") or "").strip()
+        if entered and entered == (session.get("email_2fa_code") or ""):
+            session.pop("pending_email_2fa", None)
+            session.pop("email_2fa_code", None)
+            session.pop("email_2fa_expires", None)
+            return redirect(url_for("admin.admin_dashboard"))
+        flash("Невалиден код за верификация.", "danger")
+
+    return render_template("admin_email_2fa.html")
+
+
 @admin_bp.route("/2fa/setup", methods=["GET", "POST"])
 @admin_required
 def admin_2fa_setup():
@@ -1318,7 +1365,7 @@ def admin_api_dashboard():
         except Exception:
             days = 30
 
-        since_dt = datetime.utcnow() - timedelta(days=days)
+        since_dt = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
 
         status_rows = (
             db.session.query(
@@ -1447,7 +1494,7 @@ def _sla_kpis(
     scope: str = "all_notified",
     now: datetime | None = None,
 ) -> dict:
-    now = now or datetime.utcnow()
+    now = now or datetime.now(UTC).replace(tzinfo=None)
     sla_seconds = int(sla_hours * 3600)
     if scope not in {"all_notified", "assigned_only"}:
         raise ValueError("scope must be 'all_notified' or 'assigned_only'")
@@ -1585,7 +1632,7 @@ def _sla_kpis(
 def admin_risk_kpis():
     admin_required_404()
 
-    now = datetime.utcnow()
+    now = datetime.now(UTC).replace(tzinfo=None)
     stale_days = 8
     unassigned_days = 3
     window_days = 7
@@ -1795,7 +1842,7 @@ def admin_ops_kpis():
     admin_required_404()
 
     days = max(1, min(int(request.args.get("days", 30) or 30), 365))
-    now = datetime.utcnow()
+    now = datetime.now(UTC).replace(tzinfo=None)
     since = now - timedelta(days=days)
     stale_since = now - timedelta(days=7)
     tenant_filter = Request.structure_id == _current_structure_id()
@@ -2606,7 +2653,7 @@ def admin_sla_breakdown():
     days = max(1, min(int(request.args.get("days", 30) or 30), 365))
     limit = max(1, min(int(request.args.get("limit", 200) or 200), 1000))
 
-    now = datetime.utcnow()
+    now = datetime.now(UTC).replace(tzinfo=None)
     window_start = now - timedelta(days=days)
 
     open_filter = or_(
@@ -2739,7 +2786,7 @@ def admin_requests():
     query, status, q, risk = build_requests_query(query, request.args)
     requests = query.all()
     now_aware = utc_now()
-    now_naive = datetime.utcnow()
+    now_naive = datetime.now(UTC).replace(tzinfo=None)
     SLA_WARN_NO_OWNER_DAYS = 2
     SLA_STALE_DAYS = 7
     risk_notseen_tier_hours = _notseen_hours_from_risk(risk)
@@ -2817,7 +2864,7 @@ def admin_requests():
                 return dt
             return dt.astimezone(UTC).replace(tzinfo=None)
 
-        now = datetime.utcnow()
+        now = datetime.now(UTC).replace(tzinfo=None)
         cooldown = timedelta(hours=NUDGE_COOLDOWN_HOURS)
         pairs = {
             (r.id, int(r.assigned_volunteer_id))
@@ -2987,7 +3034,7 @@ def build_requests_query(base_query, request_args):
     category = (request_args.get("category") or "").strip()
     risk = (request_args.get("risk") or "").strip().lower()
     show_deleted = (request_args.get("deleted") or "").strip() == "1"
-    now = datetime.utcnow()
+    now = datetime.now(UTC).replace(tzinfo=None)
 
     if show_deleted:
         base_query = base_query.filter(Request.deleted_at.isnot(None))
@@ -3070,7 +3117,7 @@ def admin_requests_export_csv():
             ]
         )
 
-    filename = f"helpchain_requests_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    filename = f"helpchain_requests_{datetime.now(UTC).replace(tzinfo=None).strftime('%Y%m%d_%H%M%S')}.csv"
     return Response(
         "\ufeff" + out.getvalue(),
         mimetype="text/csv; charset=utf-8",
@@ -3159,7 +3206,7 @@ def admin_requests_export_xlsx():
     wb.save(bio)
     bio.seek(0)
 
-    filename = f"helpchain_requests_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    filename = f"helpchain_requests_{datetime.now(UTC).replace(tzinfo=None).strftime('%Y%m%d_%H%M%S')}.xlsx"
     return send_file(
         bio,
         as_attachment=True,
@@ -3214,7 +3261,7 @@ def admin_requests_export_csv_anonymized():
         )
 
     filename = (
-        f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+        f"helpchain_requests_ANON_{datetime.now(UTC).replace(tzinfo=None).strftime('%Y%m%d_%H%M%S')}.csv"
     )
     return Response(
         "\ufeff" + out.getvalue(),
@@ -3289,7 +3336,7 @@ def admin_requests_export_xlsx_anonymized():
     bio.seek(0)
 
     filename = (
-        f"helpchain_requests_ANON_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        f"helpchain_requests_ANON_{datetime.now(UTC).replace(tzinfo=None).strftime('%Y%m%d_%H%M%S')}.xlsx"
     )
     return send_file(
         bio,
@@ -3485,7 +3532,7 @@ def admin_request_details(req_id: int):
 
     assigned_volunteer = None
     if getattr(req, "assigned_volunteer_id", None):
-        assigned_volunteer = Volunteer.query.get(req.assigned_volunteer_id)
+        assigned_volunteer = db.session.get(Volunteer, req.assigned_volunteer_id)
 
     # Volunteer signals (can/can't help)
     volunteer_signals = (

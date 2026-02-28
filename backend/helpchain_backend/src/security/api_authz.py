@@ -4,6 +4,7 @@ import jwt
 from backend.helpchain_backend.src.jwt_utils import decode_token
 from flask import g, jsonify, request
 
+from ..extensions import db
 from ..models import AdminUser, canonical_role
 
 
@@ -29,7 +30,7 @@ def require_api_auth(fn):
 
         # Load fresh role/is_admin from DB when possible (tokens may omit them)
         try:
-            user = AdminUser.query.get(int(claims.get("sub")))
+            user = db.session.get(AdminUser, int(claims.get("sub")))
             if user:
                 role = getattr(user, "role", role)
                 is_admin = bool(getattr(user, "is_admin", is_admin))

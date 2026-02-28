@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency requests | Admin{% endblock %}
+
+{% block content %}
+<main class="hc-admin">
+  <div class="container py-4">
+    <h1>Emergency requests</h1>
+
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Status</th>
+            <th>City</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in items|default([]) %}
+            <tr>
+              <td>{{ r.id }}</td>
+              <td>{{ r.status|default("new") }}</td>
+              <td>{{ r.city|default("") }}</td>
+              <td>{{ r.created_at|default("") }}</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="4">No emergency requests.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+{% endblock %}
+

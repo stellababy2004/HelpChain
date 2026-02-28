@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import re
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
+from backend.core.tenant import current_structure_id
 from backend.helpchain_backend.src.models import (
     Request,
     Volunteer,
@@ -165,7 +166,7 @@ def _percent(total_score: int, max_score: int = 100) -> int:
 
 
 def _now() -> datetime:
-    return datetime.utcnow()
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def _is_feedback_table_unavailable_error(exc: Exception) -> bool:
@@ -205,18 +206,25 @@ def is_dismissed(volunteer_id: int, request_id: int) -> bool:
     return row.expires_at > now
 
 
-def mark_seen(volunteer_id: int, request_id: int) -> None:
+def mark_seen(volunteer_id: int, request_id: int, structure_id: int | None = None) -> None:
+    sid = structure_id or current_structure_id()
     try:
-        row = VolunteerMatchFeedback.query.filter_by(
+        q = VolunteerMatchFeedback.query.filter_by(
             volunteer_id=volunteer_id, request_id=request_id
-        ).first()
+        )
+        if hasattr(VolunteerMatchFeedback, "structure_id"):
+            q = q.filter_by(structure_id=sid)
+        row = q.first()
         if not row:
-            row = VolunteerMatchFeedback(
-                volunteer_id=volunteer_id,
-                request_id=request_id,
-                action="seen",
-                expires_at=None,
-            )
+            row_kwargs = {
+                "volunteer_id": volunteer_id,
+                "request_id": request_id,
+                "action": "seen",
+                "expires_at": None,
+            }
+            if hasattr(VolunteerMatchFeedback, "structure_id"):
+                row_kwargs["structure_id"] = sid
+            row = VolunteerMatchFeedback(**row_kwargs)
             db.session.add(row)
         db.session.commit()
     except (OperationalError, DatabaseError) as exc:
@@ -232,18 +240,30 @@ def mark_seen(volunteer_id: int, request_id: int) -> None:
         raise
 
 
-def dismiss_for(volunteer_id: int, request_id: int, hours: int = 48) -> None:
+def dismiss_for(
+    volunteer_id: int,
+    request_id: int,
+    hours: int = 48,
+    structure_id: int | None = None,
+) -> None:
+    sid = structure_id or current_structure_id()
     try:
-        row = VolunteerMatchFeedback.query.filter_by(
+        q = VolunteerMatchFeedback.query.filter_by(
             volunteer_id=volunteer_id, request_id=request_id
-        ).first()
+        )
+        if hasattr(VolunteerMatchFeedback, "structure_id"):
+            q = q.filter_by(structure_id=sid)
+        row = q.first()
         if not row:
-            row = VolunteerMatchFeedback(
-                volunteer_id=volunteer_id,
-                request_id=request_id,
-                action="dismissed",
-                expires_at=_now() + timedelta(hours=hours),
-            )
+            row_kwargs = {
+                "volunteer_id": volunteer_id,
+                "request_id": request_id,
+                "action": "dismissed",
+                "expires_at": _now() + timedelta(hours=hours),
+            }
+            if hasattr(VolunteerMatchFeedback, "structure_id"):
+                row_kwargs["structure_id"] = sid
+            row = VolunteerMatchFeedback(**row_kwargs)
             db.session.add(row)
         else:
             row.action = "dismissed"

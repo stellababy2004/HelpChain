@@ -197,7 +197,7 @@ class AdminLog(db.Model):
     user_agent = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
 
-    admin_user = db.relationship("AdminUser", back_populates="logs")
+    admin_user = db.relationship("AdminUser", backref="logs")
 
 
 class Feedback(db.Model):

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from backend.extensions import db
 
@@ -12,11 +12,16 @@ class RefreshToken(db.Model):
     )
 
     jti = db.Column(db.String(64), nullable=False, unique=True, index=True)
-    issued_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    @staticmethod
+    def _utcnow_naive():
+        return datetime.now(timezone.utc).replace(tzinfo=None)
+
+    issued_at = db.Column(db.DateTime, nullable=False, default=_utcnow_naive)
     expires_at = db.Column(db.DateTime, nullable=False)
 
     revoked_at = db.Column(db.DateTime, nullable=True)
     replaced_by_jti = db.Column(db.String(64), nullable=True)
 
     def is_active(self):
-        return self.revoked_at is None and self.expires_at > datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        return self.revoked_at is None and self.expires_at > now

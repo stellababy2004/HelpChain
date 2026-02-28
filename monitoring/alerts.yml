@@ -1,0 +1,12 @@
+groups:
+  - name: helpchain-guardrails
+    rules:
+      - alert: HelpChainTenantLeakDetected
+        expr: increase(tenant_leak_total[5m]) > 0
+        for: 30s
+        labels:
+          severity: warning
+          service: helpchain
+        annotations:
+          summary: "Tenant leak guardrail triggered"
+          description: "tenant_leak_total increased in the last 5 minutes. Potential cross-tenant data access."

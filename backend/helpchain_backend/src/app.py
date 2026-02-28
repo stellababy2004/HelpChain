@@ -4,7 +4,7 @@ import os
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, session
+from flask import Flask, jsonify, make_response, render_template, request, session
 from flask_babel import get_locale as babel_get_locale
 from flask_login import LoginManager
 from flask_wtf.csrf import generate_csrf
@@ -193,6 +193,7 @@ def create_app(config_object=None) -> Flask:
         template_folder=root_templates,
         static_folder=root_static,
     )
+    from backend.core.tenant import current_structure_id
 
     # Config: caller overrides, then Config class, then env defaults
     if isinstance(config_object, dict):
@@ -353,9 +354,13 @@ def create_app(config_object=None) -> Flask:
     @login_manager.user_loader
     def load_user(user_id):
         try:
-            return AdminUser.query.get(int(user_id))
+            return db.session.get(AdminUser, int(user_id))
         except Exception:
             return None
+
+    @app.before_request
+    def inject_structure_context():
+        current_structure_id()
 
     # Blueprints
     try:
@@ -444,14 +449,40 @@ def create_app(config_object=None) -> Flask:
         except Exception:
             path = ""
 
+        app.logger.warning("404 Not Found: %s", path)
+
+        if path.startswith("/api/"):
+            resp = make_response(
+                jsonify(
+                    {
+                        "error": "Not Found",
+                        "message": "The requested resource was not found",
+                        "status_code": 404,
+                    }
+                ),
+                404,
+            )
+            if app.config.get("TESTING", False):
+                resp.headers["X-Error-Logged"] = "1"
+            return resp
+
         if path.startswith("/volunteer/"):
-            return render_template("volunteer_404.html"), 404
+            resp = make_response(render_template("volunteer_404.html"), 404)
+            if app.config.get("TESTING", False):
+                resp.headers["X-Error-Logged"] = "1"
+            return resp
 
         # If a global 404 template doesn't exist, fall back to Flask's default.
         try:
-            return render_template("404.html"), 404
+            resp = make_response(render_template("404.html"), 404)
+            if app.config.get("TESTING", False):
+                resp.headers["X-Error-Logged"] = "1"
+            return resp
         except Exception:
-            return e, 404
+            resp = make_response(e, 404)
+            if app.config.get("TESTING", False):
+                resp.headers["X-Error-Logged"] = "1"
+            return resp
 
     # Status helpers for templates
     @app.context_processor

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Structures') }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _('Pilotage, traçabilité et gouvernance pour les structures qui coordonnent des demandes sociales à l’échelle locale.') }}{% endblock %}
+{% block og_title %}{{ _('Pour les structures | HelpChain') }}{% endblock %}
+{% block body_class %}hc-page-structures{% endblock %}
+
+{% block content %}
+<main class="hc-institutional">
+  <section class="hc-hero">
+    <div class="hc-container">
+      <h1>{{ _('Une infrastructure de pilotage pour centraliser, attribuer et suivre les demandes avec traçabilité opérationnelle, gouvernance mesurable et continuité.') }}</h1>
+      <p>
+        {{ _('HelpChain fournit un périmètre clair de coordination pour les structures locales.') }}<br>
+        {{ _('Déploiement progressif en phase pilote, avec indicateurs de suivi et cadre de responsabilité.') }}
+      </p>
+
+      <div class="hc-cta-row">
+        <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--primary">{{ _('Demander un échange') }}</a>
+        <a href="{{ url_for('static', filename='docs/HelpChain_Dossier_Institutionnel.pdf') }}" class="hc-btn hc-btn--ghost" target="_blank" rel="noopener">{{ _('Télécharger le dossier (PDF)') }}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-section">
+    <div class="hc-container">
+      <h2>{{ _('Cadre opérationnel') }}</h2>
+      <p class="hc-lead">
+        {{ _('Une approche orientée pilotage: chaque demande suit un cycle maîtrisé, avec attribution explicite, statut lisible et traçabilité de bout en bout.') }}
+      </p>
+      <div class="hc-grid-3">
+        <article class="hc-card hc-card-pad">
+          <h3>{{ _('Centralisation') }}</h3>
+          <ul class="hc-list">
+            <li>{{ _('Entrée structurée des demandes') }}</li>
+            <li>{{ _('Périmètre partagé entre équipes') }}</li>
+            <li>{{ _('Réduction des canaux informels') }}</li>
+          </ul>
+        </article>
+        <article class="hc-card hc-card-pad">
+          <h3>{{ _('Attribution') }}</h3>
+          <ul class="hc-list">
+            <li>{{ _('Règles d’affectation explicites') }}</li>
+            <li>{{ _('Responsabilité claire par dossier') }}</li>
+            <li>{{ _('Phase pilote contrôlée') }}</li>
+          </ul>
+        </article>
+        <article class="hc-card hc-card-pad">
+          <h3>{{ _('Pilotage') }}</h3>
+          <ul class="hc-list">
+            <li>{{ _('Indicateurs de délai et de charge') }}</li>
+            <li>{{ _('Traçabilité des actions') }}</li>
+            <li>{{ _('Gouvernance orientée résultat') }}</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-section">
+    <div class="hc-container">
+      <h2>{{ _('Cadre de confiance') }}</h2>
+      <div class="hc-trust-wrap">
+        <div class="hc-trust">
+          <div class="hc-pill">{{ _('Hébergement UE') }}</div>
+          <div class="hc-pill">{{ _('Conforme RGPD') }}</div>
+          <div class="hc-pill">{{ _('Sauvegardes chiffrées') }}</div>
+          <div class="hc-pill">{{ _('Isolation multi-structure') }}</div>
+          <div class="hc-pill">{{ _('Journal d’audit') }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

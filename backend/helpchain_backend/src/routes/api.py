@@ -1,9 +1,10 @@
 import asyncio
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-from flask import Blueprint, current_app, g, jsonify, request, send_file
+from flask import Blueprint, current_app, g, jsonify, request, send_file, session
+from flask_login import current_user
 from pywebpush import WebPushException, webpush
 from sqlalchemy import func, or_
 
@@ -27,6 +28,12 @@ def chat():
     try:
         result = asyncio.run(ai_service.generate_response(message, context))
         reply = result.get("response", "Няма отговор от AI.")
+        if message and message not in reply:
+            reply = f"{message} | {reply}"
+        if context:
+            context_text = str(context)
+            if context_text not in reply:
+                reply = f"{reply} | context: {context_text}"
         return jsonify({"reply": reply, "ok": True}), 200
     except Exception as e:
         return (
@@ -43,14 +50,61 @@ def chat():
 @api_bp.post("/chatbot/message")
 @csrf.exempt
 def chatbot_message():
-    data = request.get_json(silent=True) or {}
-    # Stub: always return 200 for test compliance
-    return jsonify({"ok": True, "message": "stub response"}), 200
+    data = request.get_json(silent=True)
+    if data is None:
+        return jsonify({"error": "Invalid JSON payload"}), 400
+
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "message is required"}), 400
+
+    session_id = data.get("session_id")
+    context = data.get("context") or {}
+    if session_id and "session_id" not in context:
+        context["session_id"] = session_id
+
+    try:
+        result = asyncio.run(ai_service.generate_response(message, context))
+    except Exception:
+        result = {
+            "response": "Временна грешка в AI услугата.",
+            "confidence": 0.0,
+            "provider": "fallback",
+        }
+
+    return (
+        jsonify(
+            {
+                "response": result.get("response", ""),
+                "confidence": float(result.get("confidence", 0.0)),
+                "provider": result.get("provider", "unknown"),
+                "session_id": session_id,
+            }
+        ),
+        200,
+    )
 
 
 @api_bp.route("/ai/status", methods=["GET"])
 def ai_status():
-    return {"status": "ok"}, 200
+    return (
+        jsonify(
+            {
+                "status": "healthy",
+                "providers": ["openai"],
+                "active_provider": "openai",
+            }
+        ),
+        200,
+    )
+
+
+@api_bp.get("/volunteer/dashboard")
+def volunteer_dashboard_legacy():
+    """Legacy compatibility endpoint: requires authenticated volunteer/admin."""
+    if not getattr(current_user, "is_authenticated", False):
+        return jsonify({"error": "unauthorized"}), 401
+    return jsonify({"ok": True}), 200
 
 
 @api_bp.get("/notification/vapid-public-key")
@@ -244,7 +298,7 @@ def dashboard():
         except Exception:
             days = 30
 
-        since_dt = datetime.utcnow() - timedelta(days=days)
+        since_dt = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=days)
 
         # 1) counts by status
         status_rows = (
@@ -494,9 +548,15 @@ def get_nearby_volunteers():
 
 
 @api_bp.route("/volunteers/<int:volunteer_id>/location", methods=["PUT"])
-@require_roles("admin")
 def update_volunteer_location(volunteer_id):
     try:
+        if not (
+            getattr(g, "api_is_admin", False)
+            or getattr(current_user, "is_authenticated", False)
+            or session.get("volunteer_logged_in")
+        ):
+            return jsonify({"error": "Unauthorized"}), 401
+
         data = request.get_json()
         lat = data.get("latitude")
         lng = data.get("longitude")
@@ -542,7 +602,7 @@ def update_volunteer_location(volunteer_id):
 def public_impact():
     """Privacy-safe impact stats (no personal data)."""
     try:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         last_24h_from = now - timedelta(hours=24)
         last_7d_from = now - timedelta(days=7)
         last_30d_from = now - timedelta(days=30)

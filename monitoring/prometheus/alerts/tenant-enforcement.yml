@@ -1,0 +1,15 @@
+groups:
+  - name: helpchain-tenant-enforcement
+    rules:
+      - alert: TenantLeakDetected
+        expr: increase(tenant_leak_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+          service: helpchain
+          component: tenant_enforcement
+        annotations:
+          summary: "Tenant leak detected in HelpChain"
+          description: |
+            One or more tenant guardrail violations occurred
+            in the last 5 minutes.

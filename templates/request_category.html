@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Orientation des demandes') }} | HelpChain{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+  <h1 class="mb-3">{{ _('Orientation des demandes') }}</h1>
+
+  {% if not_found %}
+    <div class="alert alert-warning" role="alert">
+      {{ _('Catégorie introuvable') }}{% if requested_slug %}: <strong>{{ requested_slug }}</strong>{% endif %}
+    </div>
+  {% endif %}
+
+  {% if category %}
+    <article class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h4 mb-2">{{ category.ui.title if category.ui and category.ui.title else _('Catégorie') }}</h2>
+        {% if category.ui and category.ui.summary %}
+          <p class="text-muted mb-0">{{ category.ui.summary }}</p>
+        {% endif %}
+      </div>
+    </article>
+  {% else %}
+    <div class="row g-3">
+      {% for slug, item in (categories or {}).items() %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <a class="card h-100 text-decoration-none" href="{{ url_for('main.request_category', category=slug) }}">
+            <div class="card-body">
+              <h2 class="h5 mb-2">{{ item.ui.title if item.ui and item.ui.title else slug }}</h2>
+              {% if item.ui and item.ui.summary %}
+                <p class="text-muted mb-0">{{ item.ui.summary }}</p>
+              {% endif %}
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

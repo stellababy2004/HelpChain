@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, current_app, jsonify, request
 from werkzeug.security import check_password_hash
@@ -41,7 +41,7 @@ def api_login():
 
     # refresh token issuance + store
     refresh_jti = new_jti()
-    exp_dt = datetime.utcnow() + timedelta(
+    exp_dt = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(
         seconds=current_app.config["JWT_REFRESH_TTL_SECONDS"]
     )
     db.session.add(RefreshToken(user_id=user.id, jti=refresh_jti, expires_at=exp_dt))
@@ -86,11 +86,11 @@ def api_refresh():
 
     # rotate: revoke old, issue new
     new_j = new_jti()
-    exp_dt = datetime.utcnow() + timedelta(
+    exp_dt = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(
         seconds=current_app.config["JWT_REFRESH_TTL_SECONDS"]
     )
 
-    row.revoked_at = datetime.utcnow()
+    row.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
     row.replaced_by_jti = new_j
     db.session.add(RefreshToken(user_id=user_id, jti=new_j, expires_at=exp_dt))
     db.session.commit()
@@ -122,7 +122,7 @@ def api_logout():
     jti = payload["jti"]
     row = RefreshToken.query.filter_by(jti=jti, user_id=user_id).first()
     if row and row.revoked_at is None:
-        row.revoked_at = datetime.utcnow()
+        row.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
         db.session.commit()
     log_security_event("auth_api_logout", actor_type="admin", actor_id=user_id)
     return jsonify({"ok": True}), 200
