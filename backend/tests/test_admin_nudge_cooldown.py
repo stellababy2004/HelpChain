@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from backend.helpchain_backend.src.models import Notification, Request, User, Volunteer
 from backend.helpchain_backend.src.notifications.inapp import (
@@ -41,7 +41,7 @@ def test_admin_nudge_cooldown_prevents_spam(app, session):
     session.add(req)
     session.commit()
 
-    t0 = datetime.utcnow()
+    t0 = datetime.now(timezone.utc).replace(tzinfo=None)
     assert (
         send_nudge_notification(request_id=req.id, volunteer_id=volunteer.id, now=t0)
         is True

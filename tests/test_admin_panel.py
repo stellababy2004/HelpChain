@@ -18,9 +18,9 @@ def test_admin_panel_loads_dashboard_and_analytics(authenticated_admin_client):
     soup = BeautifulSoup(dashboard_resp.data, "html.parser")
 
     # Basic smoke checks for volunteers / requests text in the dashboard
-    volunteers_text = soup.find(text=lambda t: t and "доброволци" in t.lower())
+    volunteers_text = soup.find(string=lambda t: t and "доброволци" in t.lower())
     requests_text = soup.find(
-        text=lambda t: t and ("заявки" in t.lower() or "requests" in t.lower())
+        string=lambda t: t and ("заявки" in t.lower() or "requests" in t.lower())
     )
 
     # Not strict assertions; just surface helpful logs if missing

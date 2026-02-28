@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from backend.extensions import db
 from backend.helpchain_backend.src.models import (
@@ -20,7 +20,7 @@ def _login_admin_session(client, admin_id: int):
 
 
 def test_admin_risk_kpis_includes_sla_aggregates(client, app):
-    now = datetime.utcnow().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
 
     with app.app_context():
         admin = AdminUser(
@@ -85,7 +85,7 @@ def test_admin_risk_kpis_includes_sla_aggregates(client, app):
 
 
 def test_admin_risk_kpis_accepts_sla_query_override(client, app):
-    now = datetime.utcnow().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
 
     with app.app_context():
         admin = AdminUser(
@@ -143,7 +143,7 @@ def test_admin_risk_kpis_accepts_sla_query_override(client, app):
 
 
 def test_admin_risk_kpis_sla_param_is_clamped(client, app):
-    now = datetime.utcnow().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
 
     with app.app_context():
         admin = AdminUser(
@@ -205,7 +205,7 @@ def test_admin_risk_kpis_sla_param_is_clamped(client, app):
 
 
 def test_admin_risk_kpis_includes_p90_metrics_7d(client, app):
-    now = datetime.utcnow().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
     delays_min = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
     with app.app_context():
@@ -276,7 +276,7 @@ def test_admin_risk_kpis_includes_p90_metrics_7d(client, app):
 
 
 def test_admin_sla_outliers_action_7d_sorted_and_limited(client, app):
-    now = datetime.utcnow().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
     delays_min = [10, 20, 30, 40, 50, 60]
 
     with app.app_context():

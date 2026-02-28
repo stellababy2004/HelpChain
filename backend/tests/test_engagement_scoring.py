@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from backend.helpchain_backend.src.models import (
     Request,
@@ -11,7 +11,7 @@ from backend.helpchain_backend.src.routes.admin import get_volunteer_engagement_
 
 
 def test_volunteer_engagement_scoring_medium(app, session):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
 
     req_user = User(
         username="engagement_seed_user",
