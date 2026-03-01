@@ -75,6 +75,14 @@ RESOLVE_SLA_DAYS = 7
 VOLUNTEER_ASSIGN_SLA_HOURS = 72
 NOTSEEN_TIERS_HOURS = (24, 48, 72)
 PRO_ACCESS_STATUSES = ("new", "reviewed", "approved", "rejected")
+RISKY_ACTIONS = (
+    "request.archive",
+    "request.assign_owner",
+    "request.unassign_owner",
+    "request.unlock",
+    "interest.approve",
+    "interest.reject",
+)
 ADMIN_LOGIN_RATE_WINDOW_MIN = 5
 ADMIN_LOGIN_MAX_FAILS = 5
 ADMIN_LOGIN_LOCKOUT_MIN = 15
@@ -4527,6 +4535,146 @@ def admin_audit():
                 "days": str(days),
             },
             actions=actions,
+        ),
+        200,
+    )
+
+
+@admin_bp.get("/security")
+@login_required
+@admin_required
+def admin_security():
+    now = datetime.now(timezone.utc)
+    since_24h = now - timedelta(hours=24)
+    since_1h = now - timedelta(hours=1)
+
+    success_24h = (
+        db.session.query(func.count(AdminLoginAttempt.id))
+        .filter(
+            AdminLoginAttempt.created_at >= since_24h,
+            AdminLoginAttempt.success.is_(True),
+        )
+        .scalar()
+        or 0
+    )
+    failed_24h = (
+        db.session.query(func.count(AdminLoginAttempt.id))
+        .filter(
+            AdminLoginAttempt.created_at >= since_24h,
+            AdminLoginAttempt.success.is_(False),
+        )
+        .scalar()
+        or 0
+    )
+    failed_1h = (
+        db.session.query(func.count(AdminLoginAttempt.id))
+        .filter(
+            AdminLoginAttempt.created_at >= since_1h,
+            AdminLoginAttempt.success.is_(False),
+        )
+        .scalar()
+        or 0
+    )
+
+    fail_buckets = (
+        db.session.query(
+            AdminLoginAttempt.ip.label("ip"),
+            func.coalesce(AdminLoginAttempt.username, "").label("username"),
+            func.count(AdminLoginAttempt.id).label("fails"),
+        )
+        .filter(
+            AdminLoginAttempt.created_at >= since_24h,
+            AdminLoginAttempt.success.is_(False),
+        )
+        .group_by(AdminLoginAttempt.ip, func.coalesce(AdminLoginAttempt.username, ""))
+        .having(func.count(AdminLoginAttempt.id) >= ADMIN_LOGIN_MAX_FAILS)
+        .subquery()
+    )
+    lockout_buckets_24h = (
+        db.session.query(func.count())
+        .select_from(fail_buckets)
+        .scalar()
+        or 0
+    )
+
+    risky_actions_24h = (
+        db.session.query(func.count(AdminAuditEvent.id))
+        .filter(
+            AdminAuditEvent.created_at >= since_24h,
+            AdminAuditEvent.action.in_(RISKY_ACTIONS),
+        )
+        .scalar()
+        or 0
+    )
+
+    recent_logins = (
+        AdminLoginAttempt.query.order_by(AdminLoginAttempt.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    recent_risky = (
+        AdminAuditEvent.query.filter(AdminAuditEvent.action.in_(RISKY_ACTIONS))
+        .order_by(AdminAuditEvent.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+    top_ips = (
+        db.session.query(
+            AdminLoginAttempt.ip, func.count(AdminLoginAttempt.id).label("fails")
+        )
+        .filter(
+            AdminLoginAttempt.created_at >= since_24h,
+            AdminLoginAttempt.success.is_(False),
+        )
+        .group_by(AdminLoginAttempt.ip)
+        .order_by(func.count(AdminLoginAttempt.id).desc())
+        .limit(10)
+        .all()
+    )
+
+    top_usernames = (
+        db.session.query(
+            AdminLoginAttempt.username, func.count(AdminLoginAttempt.id).label("fails")
+        )
+        .filter(
+            AdminLoginAttempt.created_at >= since_24h,
+            AdminLoginAttempt.success.is_(False),
+            AdminLoginAttempt.username.isnot(None),
+            AdminLoginAttempt.username != "",
+        )
+        .group_by(AdminLoginAttempt.username)
+        .order_by(func.count(AdminLoginAttempt.id).desc())
+        .limit(10)
+        .all()
+    )
+
+    avg_hourly = (float(failed_24h) / 24.0) if failed_24h else 0.0
+    anomalies = {
+        "spike_failed_logins": float(failed_1h) > max(10.0, 3.0 * avg_hourly),
+        "repeated_fails_by_ip": any(int(fails) >= 20 for _, fails in top_ips),
+        "repeated_fails_by_username": any(
+            int(fails) >= 10 for _, fails in top_usernames
+        ),
+        "failed_1h": int(failed_1h),
+        "avg_hourly": round(avg_hourly, 2),
+    }
+
+    return (
+        render_template(
+            "admin/security.html",
+            kpis={
+                "success_24h": int(success_24h),
+                "failed_24h": int(failed_24h),
+                "lockout_buckets_24h": int(lockout_buckets_24h),
+                "risky_actions_24h": int(risky_actions_24h),
+            },
+            recent_logins=recent_logins,
+            recent_risky=recent_risky,
+            top_ips=top_ips,
+            top_usernames=top_usernames,
+            anomalies=anomalies,
+            risky_actions=RISKY_ACTIONS,
         ),
         200,
     )

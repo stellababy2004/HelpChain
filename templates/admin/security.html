@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • {{ _('Security overview') }} | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">{{ _('Security overview') }}</h1>
+        <div class="hc-muted">{{ _('Operational signal for admin authentication and risky actions (last 24h).') }}</div>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_audit') }}">{{ _('Open audit trail') }}</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">{{ _('Back to requests') }}</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="hc-card p-3">
+        <div class="hc-muted small">{{ _('Successful logins (24h)') }}</div>
+        <div class="h3 mb-0">{{ kpis.success_24h }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="hc-card p-3">
+        <div class="hc-muted small">{{ _('Failed logins (24h)') }}</div>
+        <div class="h3 mb-0">{{ kpis.failed_24h }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="hc-card p-3">
+        <div class="hc-muted small">{{ _('Lockout buckets (24h)') }}</div>
+        <div class="h3 mb-0">{{ kpis.lockout_buckets_24h }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="hc-card p-3">
+        <div class="hc-muted small">{{ _('Risky actions (24h)') }}</div>
+        <div class="h3 mb-0">{{ kpis.risky_actions_24h }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3 p-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <h2 class="h5 mb-0">{{ _('Anomaly indicators') }}</h2>
+      <div class="small text-muted">{{ _('failed_1h') }}: {{ anomalies.failed_1h }} • {{ _('avg_hourly') }}: {{ anomalies.avg_hourly }}</div>
+    </div>
+    <div class="mt-3 d-flex flex-wrap gap-2">
+      <span class="badge {% if anomalies.spike_failed_logins %}text-bg-danger{% else %}text-bg-success{% endif %}">
+        {{ _('Failed-login spike') }}: {{ 'ON' if anomalies.spike_failed_logins else 'OFF' }}
+      </span>
+      <span class="badge {% if anomalies.repeated_fails_by_ip %}text-bg-danger{% else %}text-bg-success{% endif %}">
+        {{ _('Repeated fails by IP') }}: {{ 'ON' if anomalies.repeated_fails_by_ip else 'OFF' }}
+      </span>
+      <span class="badge {% if anomalies.repeated_fails_by_username %}text-bg-danger{% else %}text-bg-success{% endif %}">
+        {{ _('Repeated fails by username') }}: {{ 'ON' if anomalies.repeated_fails_by_username else 'OFF' }}
+      </span>
+    </div>
+    <div class="mt-3 small text-muted">
+      {{ _('Risky actions monitored:') }} {{ risky_actions|join(', ') }}
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-xl-6">
+      <div class="hc-card">
+        <div class="p-3 border-bottom"><strong>{{ _('Top failed-login IPs (24h)') }}</strong></div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table mb-0">
+            <thead>
+              <tr><th>IP</th><th>{{ _('Fails') }}</th></tr>
+            </thead>
+            <tbody>
+              {% for ip, fails in top_ips %}
+                <tr><td class="small">{{ ip or '—' }}</td><td>{{ fails }}</td></tr>
+              {% endfor %}
+              {% if top_ips|length == 0 %}
+                <tr><td colspan="2" class="text-muted text-center py-3">{{ _('No data') }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-6">
+      <div class="hc-card">
+        <div class="p-3 border-bottom"><strong>{{ _('Top failed-login usernames (24h)') }}</strong></div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table mb-0">
+            <thead>
+              <tr><th>{{ _('Username') }}</th><th>{{ _('Fails') }}</th></tr>
+            </thead>
+            <tbody>
+              {% for username, fails in top_usernames %}
+                <tr><td class="small">{{ username or '—' }}</td><td>{{ fails }}</td></tr>
+              {% endfor %}
+              {% if top_usernames|length == 0 %}
+                <tr><td colspan="2" class="text-muted text-center py-3">{{ _('No data') }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-6">
+      <div class="hc-card">
+        <div class="p-3 border-bottom"><strong>{{ _('Recent login attempts') }}</strong></div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table mb-0">
+            <thead>
+              <tr>
+                <th>{{ _('Time') }}</th>
+                <th>{{ _('Username') }}</th>
+                <th>IP</th>
+                <th>{{ _('Result') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in recent_logins %}
+                <tr>
+                  <td class="small text-muted">{{ row.created_at }}</td>
+                  <td class="small">{{ row.username or '—' }}</td>
+                  <td class="small">{{ row.ip or '—' }}</td>
+                  <td>
+                    <span class="badge {% if row.success %}text-bg-success{% else %}text-bg-danger{% endif %}">
+                      {{ _('success') if row.success else _('failed') }}
+                    </span>
+                  </td>
+                </tr>
+              {% endfor %}
+              {% if recent_logins|length == 0 %}
+                <tr><td colspan="4" class="text-muted text-center py-3">{{ _('No data') }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-6">
+      <div class="hc-card">
+        <div class="p-3 border-bottom"><strong>{{ _('Recent risky actions') }}</strong></div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table mb-0">
+            <thead>
+              <tr>
+                <th>{{ _('Time') }}</th>
+                <th>{{ _('Admin') }}</th>
+                <th>{{ _('Action') }}</th>
+                <th>{{ _('Target') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in recent_risky %}
+                <tr>
+                  <td class="small text-muted">{{ row.created_at }}</td>
+                  <td class="small">{{ row.admin_username or ("#" ~ row.admin_user_id) }}</td>
+                  <td><span class="badge text-bg-secondary">{{ row.action }}</span></td>
+                  <td class="small">
+                    {{ row.target_type }} #{{ row.target_id }}
+                    {% if row.target_type == "Request" %}
+                      <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=row.target_id) }}">{{ _('view') }}</a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+              {% if recent_risky|length == 0 %}
+                <tr><td colspan="4" class="text-muted text-center py-3">{{ _('No data') }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
