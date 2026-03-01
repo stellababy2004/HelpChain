@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <defs>
+    <style>
+      .title { font: 700 16px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Inter,Arial,sans-serif; fill:#111827; }
+      .text  { font: 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Inter,Arial,sans-serif; fill:#111827; }
+      .muted { font: 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Inter,Arial,sans-serif; fill:#6b7280; }
+      .panel { fill:#f9fafb; stroke:#e5e7eb; rx:18; ry:18; }
+      .box   { fill:#ffffff; stroke:#1f2a37; stroke-width:1.2; rx:14; ry:14; }
+      .ok    { fill:#eaffea; stroke:#16a34a; }
+      .warn  { fill:#fff7ed; stroke:#f97316; }
+      .bad   { fill:#ffecec; stroke:#ef4444; }
+      .arrow { stroke:#374151; stroke-width:1.7; fill:none; }
+      .dash  { stroke-dasharray:6 4; }
+      .pill  { fill:#f3f4f6; stroke:#d1d5db; stroke-width:1; rx:10; ry:10; }
+    </style>
+    <marker id="arrowHead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#374151"></polygon>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="520" fill="#ffffff"/>
+  <rect x="40" y="40" width="1120" height="440" class="panel"/>
+
+  <text x="70" y="82" class="title">SOC-ish loop — Denied actions → Audit → Security dashboard (KPIs + anomalies)</text>
+  <text x="70" y="104" class="muted">Shows how authorization denials become observable signals (24h counters + top IP/username + anomaly flags)</text>
+
+  <!-- 1) User action -->
+  <rect x="80" y="150" width="260" height="88" class="box"/>
+  <text x="100" y="182" class="title">User attempts action</text>
+  <text x="100" y="204" class="muted">POST/PUT/PATCH/DELETE</text>
+  <text x="100" y="224" class="muted">e.g. archive/unlock/role-change</text>
+
+  <!-- 2) RBAC check -->
+  <rect x="410" y="150" width="300" height="88" class="box"/>
+  <text x="430" y="182" class="title">RBAC allowlist check</text>
+  <text x="430" y="204" class="muted">admin_role_required(...)</text>
+  <text x="430" y="224" class="muted">required roles vs current_user.role</text>
+
+  <!-- 3) Denied response -->
+  <rect x="780" y="120" width="320" height="60" class="bad box"/>
+  <text x="800" y="152" class="text">HTTP 403 (Denied)</text>
+  <text x="930" y="152" class="muted">state-changing only</text>
+
+  <!-- 4) Denied logging -->
+  <rect x="780" y="200" width="320" height="88" class="warn box"/>
+  <text x="800" y="232" class="title">Log denied action</text>
+  <text x="800" y="254" class="muted">AdminAuditEvent: action=security.denied_action</text>
+  <text x="800" y="274" class="muted">ip + user_agent + admin_username + payload</text>
+
+  <!-- Payload pills -->
+  <rect x="800" y="300" width="150" height="26" class="pill"/>
+  <text x="812" y="318" class="muted">attempted_action</text>
+  <rect x="960" y="300" width="140" height="26" class="pill"/>
+  <text x="972" y="318" class="muted">required_roles</text>
+
+  <!-- 5) Security dashboard -->
+  <rect x="410" y="290" width="690" height="150" class="ok box"/>
+  <text x="430" y="324" class="title">/admin/security</text>
+  <text x="430" y="346" class="muted">Aggregates last 24h + recent events</text>
+
+  <!-- KPIs -->
+  <rect x="430" y="366" width="210" height="56" class="box"/>
+  <text x="446" y="396" class="text">Denied actions (24h)</text>
+  <text x="446" y="416" class="muted">counter from audit events</text>
+
+  <rect x="650" y="366" width="210" height="56" class="box"/>
+  <text x="666" y="396" class="text">Top denied IPs (24h)</text>
+  <text x="666" y="416" class="muted">group by ip</text>
+
+  <rect x="870" y="366" width="210" height="56" class="box"/>
+  <text x="886" y="396" class="text">Top denied usernames</text>
+  <text x="886" y="416" class="muted">group by admin_username</text>
+
+  <!-- Anomalies -->
+  <rect x="80" y="290" width="260" height="150" class="box"/>
+  <text x="100" y="324" class="title">Anomaly flags</text>
+  <text x="100" y="346" class="muted">computed from denied_1h vs baseline</text>
+
+  <rect x="100" y="366" width="220" height="28" class="warn box"/>
+  <text x="112" y="385" class="muted">Denied spike: ON/OFF</text>
+
+  <rect x="100" y="404" width="220" height="28" class="warn box"/>
+  <text x="112" y="423" class="muted">Repeated denied: ON/OFF</text>
+
+  <!-- Arrows -->
+  <path d="M 340 194 L 410 194" class="arrow" marker-end="url(#arrowHead)"/>
+  <path d="M 710 182 L 780 150" class="arrow" marker-end="url(#arrowHead)"/>
+  <path d="M 710 206 L 780 244" class="arrow" marker-end="url(#arrowHead)"/>
+
+  <!-- Deny log to dashboard -->
+  <path d="M 780 244 L 720 320" class="arrow dash" marker-end="url(#arrowHead)"/>
+
+  <!-- dashboard to anomalies -->
+  <path d="M 410 340 L 340 340" class="arrow dash" marker-end="url(#arrowHead)"/>
+
+  <!-- Footer -->
+  <text x="70" y="468" class="muted">
+    Policy: log only denied state-changing attempts (POST/PUT/PATCH/DELETE). Ignore GET 403 to avoid noise.
+  </text>
+</svg>
