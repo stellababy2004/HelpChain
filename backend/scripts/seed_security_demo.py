@@ -30,7 +30,15 @@ _prepare_import_path()
 
 from backend.extensions import db
 from backend.helpchain_backend.src.app import create_app
-from backend.models import AdminAuditEvent, AdminLoginAttempt
+from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
+from backend.models import (
+    AdminAuditEvent,
+    AdminLoginAttempt,
+    Request,
+    Structure,
+    User,
+    Volunteer,
+)
 
 
 def _utc_now() -> datetime:
@@ -156,8 +164,7 @@ def _insert_audit_events(now: datetime, rng: random.Random) -> dict[str, int]:
         "interest.approve",
         "interest.reject",
     ]
-    req_ids = [101, 102, 103, 104]
-    interest_ids = [9001, 9002, 9003]
+    req_ids, interest_ids = _ensure_demo_targets(rng)
     ips = ["127.0.0.1", "45.67.89.10", "91.121.13.77"]
 
     events: list[AdminAuditEvent] = []
@@ -222,6 +229,74 @@ def _insert_audit_events(now: datetime, rng: random.Random) -> dict[str, int]:
     db.session.add_all(events)
     db.session.commit()
     return {"audit_events_inserted": len(events)}
+
+
+def _ensure_demo_targets(rng: random.Random) -> tuple[list[int], list[int]]:
+    structure = db.session.query(Structure).filter_by(slug="default").first()
+    if not structure:
+        structure = Structure(name="Default", slug="default")
+        db.session.add(structure)
+        db.session.flush()
+
+    req_ids: list[int] = []
+    for idx in range(1, 5):
+        title = f"Security demo request {idx}"
+        req = db.session.query(Request).filter_by(title=title).first()
+        if not req:
+            user = db.session.query(User).filter_by(
+                email=f"security_demo_user_{idx}@test.local"
+            ).first()
+            if not user:
+                user = User(
+                    username=f"security_demo_user_{idx}",
+                    email=f"security_demo_user_{idx}@test.local",
+                    password_hash="x",
+                    role="requester",
+                    is_active=True,
+                )
+                db.session.add(user)
+                db.session.flush()
+            req = Request(
+                title=title,
+                user_id=user.id,
+                status=rng.choice(["pending", "approved", "in_progress"]),
+                category="general",
+                structure_id=getattr(structure, "id", None),
+            )
+            db.session.add(req)
+            db.session.flush()
+        req_ids.append(int(req.id))
+
+    interest_ids: list[int] = []
+    for idx in range(1, 4):
+        volunteer = db.session.query(Volunteer).filter_by(
+            email=f"security_demo_vol_{idx}@test.local"
+        ).first()
+        if not volunteer:
+            volunteer = Volunteer(
+                name=f"Security Demo Volunteer {idx}",
+                email=f"security_demo_vol_{idx}@test.local",
+                is_active=True,
+            )
+            db.session.add(volunteer)
+            db.session.flush()
+
+        request_id = req_ids[idx - 1]
+        interest = db.session.query(VolunteerInterest).filter_by(
+            volunteer_id=volunteer.id, request_id=request_id
+        ).first()
+        if not interest:
+            interest = VolunteerInterest(
+                volunteer_id=volunteer.id,
+                request_id=request_id,
+                status="pending",
+            )
+            db.session.add(interest)
+            db.session.flush()
+        interest_ids.append(int(interest.id))
+
+    db.session.commit()
+    return req_ids, interest_ids
 
 
 def main() -> None:
