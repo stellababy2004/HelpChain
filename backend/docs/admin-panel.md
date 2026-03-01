@@ -4,6 +4,10 @@
 
 ![Admin security architecture](assets/admin-security-architecture.svg)
 
+### Auth flow detail (SVG)
+
+![Auth lockout flow](assets/admin-auth-lockout-flow.svg)
+
 ### Mermaid (developer-readable)
 
 ```mermaid
